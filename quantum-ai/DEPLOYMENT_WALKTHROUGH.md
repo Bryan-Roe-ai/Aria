@@ -243,7 +243,7 @@ Updating parameters file...
 
 **The script asks for final confirmation:**
 
-```
+```text
 STEP 7: Deploying Azure Quantum Workspace
 
 This will create:
@@ -283,7 +283,7 @@ quantum-deployment-20251031   rg-quantum-ai     Succeeded  2025-10-31T10:30:00.0
 
 **The script updates your project configuration:**
 
-```
+```text
 STEP 8: Updating Quantum Configuration
 
 Updating quantum_config.yaml...
@@ -334,7 +334,7 @@ Available Quantum Providers:
 
 **The script shows a success summary:**
 
-```
+```text
 ========================================
   DEPLOYMENT COMPLETE!
 ========================================
@@ -409,7 +409,7 @@ python test_azure_quantum.py
 
 ### Test 1: Connection Verification
 
-```
+```text
 ========================================
   TEST 1: AZURE QUANTUM CONNECTION
 ========================================
@@ -443,7 +443,7 @@ Available Quantum Backends:
 
 **The test creates a quantum Bell state (entanglement test):**
 
-```
+```text
 ========================================
   TEST 2: BELL STATE ON QUANTUM HARDWARE
 ========================================
@@ -476,7 +476,7 @@ Enter choice (1-3):
 
 **If you choose simulator (1):**
 
-```
+```text
 Estimating cost...
 Cost Estimate: {'backend': 'ionq.simulator', 'shots': 100, 'note': 'FREE simulator'}
 
@@ -514,7 +514,7 @@ Entanglement Quality: 100.0%
 
 **The test runs your optimized 3-layer quantum classifier:**
 
-```
+```text
 ========================================
   TEST 3: OPTIMIZED QUANTUM CIRCUIT ON HARDWARE
 ========================================
@@ -655,40 +655,36 @@ Start-Process "https://portal.azure.com/#blade/Microsoft_Azure_CostManagement/Me
 
 ## 🔧 Troubleshooting
 
-### Deployment Issues
+### Error: "Workspace name already exists"
 
-**Error: "Workspace name already exists"**
-
-```
+```text
 ✗ Deployment failed
   • Workspace name already taken (try a different name)
 ```
 
 **Solution:** Run the script again and choose custom names when prompted
 
-**Error: "Storage account name invalid"**
+### Error: "Storage account name invalid"
 
-```
+```text
 ✗ Deployment failed
   • Storage account name invalid (lowercase letters/numbers only)
 ```
 
 **Solution:** Ensure storage name is lowercase, no hyphens, 3-24 characters
 
-**Error: "Region not supported"**
+### Error: "Region not supported"
 
-```
+```text
 ✗ Deployment failed
   • Region not supported
 ```
 
 **Solution:** Use supported regions: eastus, westus, westeurope, northeurope
 
-### Test Issues
+### Error: "Failed to connect to Azure Quantum"
 
-#### Error: "Failed to connect to Azure Quantum"
-
-```
+```text
 ✗ Connection failed: AuthenticationError
 ```
 
@@ -705,7 +701,7 @@ az account show
 python test_azure_quantum.py
 ```
 
-#### Error: "No backends available"
+### Error: "No backends available"
 
 ```text
 ✗ Found 0 quantum backend(s)
@@ -717,7 +713,7 @@ python test_azure_quantum.py
 - Providers need time to initialize
 - Check Azure Portal for provider status
 
-#### Error: "Insufficient credits"
+### Error: "Insufficient credits"
 
 ```text
 ✗ Job submission failed: Insufficient credits

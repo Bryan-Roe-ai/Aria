@@ -36,7 +36,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 }
 
 // Azure Quantum Workspace
-resource quantumWorkspace 'Microsoft.Quantum/workspaces@2023-11-13-preview' = {
+resource quantumWorkspace 'Microsoft.Quantum/workspaces@2019-11-04-preview' = {
   name: workspaceName
   location: location
   tags: tags
@@ -44,23 +44,28 @@ resource quantumWorkspace 'Microsoft.Quantum/workspaces@2023-11-13-preview' = {
     type: 'SystemAssigned'
   }
   properties: {
-    storageAccount: storageAccount.id
     providers: [
       {
-        providerId: 'ionq'
-        providerSku: 'pay-as-you-go-cred'
-      }
-      {
-        providerId: 'quantinuum'
-        providerSku: 'pay-as-you-go-cred'
-      }
-      {
-        providerId: 'microsoft-qc'
-        providerSku: 'learn-and-develop'
+        providerId: 'Microsoft'
+        providerSku: 'DZH3178M639F'
+        applicationName: '${workspaceName}-Microsoft'
       }
     ]
+    storageAccount: storageAccount.id
   }
 }
+
+// Grant workspace Contributor access to storage account
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: storageAccount
+  name: guid(quantumWorkspace.id, subscription().subscriptionId, storageAccount.id)
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c') // Contributor
+    principalId: quantumWorkspace.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 
 // Log Analytics Workspace for monitoring
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {

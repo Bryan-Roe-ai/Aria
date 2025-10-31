@@ -31,7 +31,8 @@ Ok "Azure CLI available."
 
 # 1) Login
 Info "Checking Azure login..."
-$null = az account show 2>$null
+# Call az directly; don't assign to an unused variable
+az account show *>$null
 if ($LASTEXITCODE -ne 0) {
     Info "Not logged in. Opening browser..."
     az login

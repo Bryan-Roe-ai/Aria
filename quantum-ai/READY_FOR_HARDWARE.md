@@ -473,10 +473,6 @@ Follow `AZURE_SETUP_CHECKLIST.md` and you'll be running quantum circuits on real
 
 ---
 
-*Welcome to the future of AI - quantum machine learning on real quantum hardware!* 🎉
-
----
-
 **Status:**
 
 - [x] Quantum AI optimized to 90% accuracy
@@ -486,4 +482,4 @@ Follow `AZURE_SETUP_CHECKLIST.md` and you'll be running quantum circuits on real
 - [ ] Tested on quantum hardware
 - [ ] Production deployed
 
-**Start your quantum computing journey now! 🌟**
+## Start Your Quantum Computing Journey Now! 🌟
