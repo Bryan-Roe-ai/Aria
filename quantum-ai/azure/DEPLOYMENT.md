@@ -50,6 +50,7 @@ az group create `
 ### 4. Review and Update Parameters
 
 Edit `quantum_workspace.parameters.json` to customize:
+
 - `location`: Azure region
 - `workspaceName`: Unique workspace name
 - `storageAccountName`: Unique storage account name
@@ -193,6 +194,7 @@ az monitor log-analytics query `
 ### Application Insights Queries
 
 Access Application Insights in Azure Portal to:
+
 - Track job execution times
 - Monitor success/failure rates
 - Analyze performance metrics
@@ -211,6 +213,7 @@ az group delete --name rg-quantum-ai --yes --no-wait
 ### Issue: Workspace Creation Fails
 
 **Solution**: Ensure Azure Quantum is available in your region. Supported regions:
+
 - East US
 - West US
 - West Europe
@@ -218,7 +221,8 @@ az group delete --name rg-quantum-ai --yes --no-wait
 
 ### Issue: Authentication Errors
 
-**Solution**: 
+**Solution**:
+
 1. Verify Azure CLI login: `az account show`
 2. Check RBAC permissions
 3. Ensure service principal has Contributor role
@@ -226,6 +230,7 @@ az group delete --name rg-quantum-ai --yes --no-wait
 ### Issue: Provider Not Available
 
 **Solution**: Some providers may require:
+
 1. Registration with the provider
 2. Credits to be purchased
 3. Terms of service acceptance
@@ -240,5 +245,6 @@ az group delete --name rg-quantum-ai --yes --no-wait
 ## Support
 
 For issues with:
+
 - **Azure Quantum**: Create support ticket in Azure Portal
 - **This Project**: Open GitHub issue or contact project maintainers

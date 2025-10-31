@@ -13,12 +13,15 @@ from mcp.client.stdio import stdio_client
 
 # Optional: Azure AI for chat with tools
 try:
-    from azure.ai.inference import ChatCompletionsClient
-    from azure.ai.inference.models import AssistantMessage, SystemMessage, UserMessage, ToolMessage
-    from azure.core.credentials import AzureKeyCredential
+    from azure.ai.inference import ChatCompletionsClient  # type: ignore
+    from azure.ai.inference.models import AssistantMessage, SystemMessage, UserMessage, ToolMessage  # type: ignore
+    from azure.core.credentials import AzureKeyCredential  # type: ignore
     HAS_AZURE_AI = True
 except ImportError:
     HAS_AZURE_AI = False
+    # Note: azure-ai-inference is optional for basic MCP client usage
+    # Install if you want to use Azure AI chat features:
+    # pip install azure-ai-inference azure-core
 
 
 class QuantumMCPClient:

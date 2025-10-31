@@ -17,14 +17,31 @@ src_path = Path(__file__).parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
 
+# Verify src directory exists
+if not src_path.exists():
+    print(f"Error: src/ directory not found at {src_path}")
+    print(f"Please ensure the following directory structure exists:")
+    print(f"  quantum-ai/")
+    print(f"    ├── quantum_mcp_server.py")
+    print(f"    └── src/")
+    print(f"        ├── quantum_classifier.py")
+    print(f"        └── azure_quantum_integration.py")
+    sys.exit(1)
+
 # Import MCP dependencies
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
     from mcp.types import Tool, TextContent
 except ImportError as e:
-    print(f"Error: MCP package not installed. Run: pip install mcp")
-    print(f"Details: {e}")
+    print(f"Error: MCP package not installed or incompatible version.")
+    print(f"\nTo install MCP dependencies, run:")
+    print(f"  pip install -r mcp-requirements.txt")
+    print(f"\nOr install directly:")
+    print(f"  pip install 'mcp>=0.9.0'")
+    print(f"\nIf you're using a virtual environment, ensure it's activated:")
+    print(f"  .\\venv\\Scripts\\Activate.ps1")
+    print(f"\nDetails: {e}")
     sys.exit(1)
 
 # Import quantum modules
@@ -32,10 +49,19 @@ try:
     from quantum_classifier import QuantumClassifier, HybridQuantumClassifier, train_quantum_model
     from azure_quantum_integration import AzureQuantumIntegration, create_sample_circuit
 except ImportError as e:
-    print(f"Error: Could not import quantum modules from src/. Ensure src/ directory contains:")
-    print("  - quantum_classifier.py")
-    print("  - azure_quantum_integration.py")
-    print(f"Details: {e}")
+    print(f"Error: Could not import quantum modules from {src_path}/")
+    print(f"\nEnsure the following files exist:")
+    print(f"  - {src_path / 'quantum_classifier.py'}")
+    print(f"  - {src_path / 'azure_quantum_integration.py'}")
+    print(f"\nMissing files should contain:")
+    print(f"  quantum_classifier.py:")
+    print(f"    - class QuantumClassifier")
+    print(f"    - class HybridQuantumClassifier")
+    print(f"    - def train_quantum_model()")
+    print(f"  azure_quantum_integration.py:")
+    print(f"    - class AzureQuantumIntegration")
+    print(f"    - def create_sample_circuit()")
+    print(f"\nDetails: {e}")
     sys.exit(1)
 
 import numpy as np

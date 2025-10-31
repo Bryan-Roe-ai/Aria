@@ -127,7 +127,7 @@ print(qml.draw(pennylane_circuit)([0.5, 1.0]))
 print("\n6. QUANTUM CLASSIFIER CIRCUIT (from our QML model)")
 print("-" * 60)
 
-from quantum_classifier import QuantumClassifier
+from src.quantum_classifier import QuantumClassifier
 
 qc = QuantumClassifier()
 weights = qc.initialize_weights()

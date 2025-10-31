@@ -9,6 +9,7 @@ pennylane-qiskit>=0.35.0,<1.0.0
 torch>=2.0.0,<3.0.0
 numpy>=1.24.0,<2.0.0
 scipy>=1.10.0,<2.0.0
+qiskit-machine-learning>=0.7.0,<0.8.0
 
 # Azure Integration
 azure-identity>=1.15.0,<2.0.0
@@ -27,3 +28,8 @@ jupyter>=1.0.0,<2.0.0
 ipykernel>=6.25.0,<7.0.0
 pytest>=7.4.0,<8.0.0
 black>=23.0.0,<24.0.0
+
+# Model Context Protocol (MCP) Server
+mcp>=1.0.0
+pydantic>=2.0.0
+anyio>=3.0.0

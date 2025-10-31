@@ -14,7 +14,7 @@ This project combines the power of quantum computing with classical machine lear
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │                   Classical Layer                        │
 │              (Data Preprocessing)                        │
@@ -42,24 +42,28 @@ This project combines the power of quantum computing with classical machine lear
 ## 🚀 Features
 
 ### Quantum Machine Learning
+
 - **Quantum Classifier**: Pure quantum circuit-based classification
 - **Hybrid QNN**: Classical-quantum hybrid neural networks
 - **Quantum Convolutional Layers**: Quantum filters for feature extraction
 - **Configurable Entanglement**: Linear, circular, and full connectivity patterns
 
 ### Azure Integration
+
 - Direct integration with Azure Quantum workspace
 - Support for multiple quantum providers (IonQ, Quantinuum, Microsoft)
 - Job management and result tracking
 - Cost estimation and monitoring
 
 ### Development Tools
+
 - Jupyter notebooks for experimentation
 - Comprehensive configuration system
 - Logging and diagnostics
 - Automated deployment with Bicep
 
 ### MCP Server
+
 - **Model Context Protocol** server exposing quantum tools to AI agents
 - 8 quantum computing tools for circuit creation, simulation, Azure integration, and ML
 - Compatible with VS Code Copilot, Claude, and other MCP clients
@@ -214,6 +218,7 @@ python example_mcp_client.py
 ```
 
 **Available MCP Tools:**
+
 - `create_quantum_circuit` - Build quantum circuits (Bell, GHZ, entanglement, custom)
 - `simulate_quantum_circuit` - Run local simulations with Qiskit Aer
 - `train_quantum_classifier` - Train hybrid quantum ML models
@@ -225,7 +230,7 @@ See [MCP_SERVER_README.md](MCP_SERVER_README.md) for complete documentation.
 
 ## 📊 Project Structure
 
-```
+```text
 quantum-ai/
 ├── src/
 │   ├── quantum_classifier.py      # Quantum classification models
@@ -304,15 +309,17 @@ Benchmark results on standard datasets:
 | Wine | 95.3% | 92.8% | **96.1%** |
 | Breast Cancer | 97.2% | 95.1% | **97.8%** |
 
-*Results may vary based on circuit configuration and training parameters*
+> **Note:** Results may vary based on circuit configuration and training parameters
 
 ## 💰 Cost Considerations
 
 ### Development (Free)
+
 - Use local simulators (Qiskit Aer)
 - Microsoft Quantum simulators on Azure
 
 ### Production
+
 - **IonQ**: ~$0.00003 per gate-shot
 - **Quantinuum**: ~$0.00015 per circuit execution
 - **Storage**: ~$0.02/GB/month

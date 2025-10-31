@@ -12,8 +12,21 @@ import torch.optim as optim
 from qiskit import QuantumCircuit
 from qiskit.circuit import ParameterVector
 from qiskit.primitives import Sampler
-from qiskit_machine_learning.neural_networks import SamplerQNN
-from qiskit_machine_learning.connectors import TorchConnector
+
+try:
+    from qiskit_machine_learning.neural_networks import SamplerQNN
+    from qiskit_machine_learning.connectors import TorchConnector
+    QISKIT_ML_AVAILABLE = True
+except ImportError:
+    QISKIT_ML_AVAILABLE = False
+    _import_error_msg = (
+        "qiskit-machine-learning is not installed or not found in your environment.\n"
+        "To fix:\n"
+        "1. Activate your Python environment: .\\venv\\Scripts\\Activate.ps1\n"
+        "2. Run: pip install qiskit-machine-learning>=0.7.0\n"
+        "3. Or install all requirements: pip install -r requirements.txt\n"
+        "4. Verify installation: pip list | findstr qiskit-machine-learning"
+    )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,6 +45,9 @@ class QuantumLayer(nn.Module):
             num_qubits: Number of qubits
             num_layers: Number of quantum circuit layers
         """
+        if not QISKIT_ML_AVAILABLE:
+            raise ImportError(_import_error_msg)
+        
         super().__init__()
         self.num_qubits = num_qubits
         self.num_layers = num_layers

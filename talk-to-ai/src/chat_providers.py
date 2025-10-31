@@ -9,11 +9,9 @@ from typing import Dict, Generator, Iterable, List, Optional
 try:
     # openai>=1.0
     from openai import OpenAI, AzureOpenAI
-    from openai.types.chat import ChatCompletion
 except Exception:  # pragma: no cover - optional at runtime
     OpenAI = None  # type: ignore
     AzureOpenAI = None  # type: ignore
-    ChatCompletion = None  # type: ignore
 
 
 RoleMessage = Dict[str, str]  # {"role": "system|user|assistant", "content": "..."}

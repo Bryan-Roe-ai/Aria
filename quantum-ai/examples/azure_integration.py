@@ -76,7 +76,8 @@ if configured:
     print("(This requires valid Azure credentials)")
     
     try:
-        from azure_quantum_integration import AzureQuantumIntegration
+        # Import from src directory (already added to sys.path)
+        from src.azure_quantum_integration import AzureQuantumIntegration
         
         azure = AzureQuantumIntegration()
         

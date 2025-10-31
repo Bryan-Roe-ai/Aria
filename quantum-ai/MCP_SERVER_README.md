@@ -7,17 +7,20 @@ An MCP (Model Context Protocol) server that exposes quantum computing and quantu
 The Quantum AI MCP server provides 8 powerful tools:
 
 ### Quantum Circuit Creation & Simulation
+
 - **create_quantum_circuit** - Build quantum circuits (entanglement, GHZ, Bell states, random, or custom)
 - **simulate_quantum_circuit** - Simulate circuits locally with Qiskit Aer
 - **get_quantum_circuit_properties** - Analyze circuit depth, gates, and topology
 
 ### Azure Quantum Integration
+
 - **connect_azure_quantum** - Connect to Azure Quantum workspace
 - **list_quantum_backends** - See available quantum hardware (IonQ, Quantinuum, etc.)
 - **submit_quantum_job** - Run circuits on real quantum computers
 - **estimate_quantum_cost** - Get cost estimates before running on hardware
 
 ### Quantum Machine Learning
+
 - **train_quantum_classifier** - Train hybrid quantum-classical ML models on standard datasets
 
 ## Installation
@@ -182,6 +185,7 @@ job = await session.call_tool(
 ### create_quantum_circuit
 
 **Parameters:**
+
 - `n_qubits` (int, required) - Number of qubits (1-20)
 - `circuit_type` (string, required) - Type: "entanglement", "ghz", "bell", "random", "custom"
 - `gates` (array, optional) - For custom circuits: `[{"gate": "h", "qubit": 0}, {"gate": "cx", "qubits": [0,1]}]`
@@ -191,6 +195,7 @@ job = await session.call_tool(
 ### simulate_quantum_circuit
 
 **Parameters:**
+
 - `circuit_id` (string, required) - ID from create_quantum_circuit
 - `shots` (int, optional, default=1024) - Number of measurements (1-100,000)
 
@@ -199,6 +204,7 @@ job = await session.call_tool(
 ### train_quantum_classifier
 
 **Parameters:**
+
 - `dataset` (string, required) - "iris", "wine", "breast_cancer", or "synthetic"
 - `n_qubits` (int, optional, default=4) - Quantum circuit qubits (2-10)
 - `n_layers` (int, optional, default=2) - Variational layers (1-5)
@@ -210,6 +216,7 @@ job = await session.call_tool(
 ### connect_azure_quantum
 
 **Parameters:**
+
 - `subscription_id` (string, required) - Azure subscription ID
 - `resource_group` (string, required) - Resource group name
 - `workspace_name` (string, required) - Quantum workspace name
@@ -238,6 +245,7 @@ Always use `estimate_quantum_cost` before submitting to paid hardware!
 ## Architecture
 
 The MCP server maintains:
+
 - **Circuit cache**: Stores created circuits by ID for reuse
 - **Azure connection**: Persistent connection to Azure Quantum workspace
 - **Quantum classifier**: Pre-initialized for ML training

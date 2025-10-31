@@ -14,9 +14,17 @@ from sklearn.datasets import make_moons
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-# Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent / "src"))
-from quantum_classifier import QuantumClassifier, HybridQuantumClassifier, train_quantum_model
+# Add project root to sys.path so 'src' can be imported as a package
+project_root = Path(__file__).resolve().parents[1]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+try:
+    from src.quantum_classifier import QuantumClassifier, HybridQuantumClassifier, train_quantum_model
+except ModuleNotFoundError:
+    # Fallback for environments without namespace package support
+    sys.path.insert(0, str(project_root / "src"))
+    from quantum_classifier import QuantumClassifier, HybridQuantumClassifier, train_quantum_model  # type: ignore
 
 # Results directory
 results_dir = Path(__file__).parent.parent / "results" / "experiments"

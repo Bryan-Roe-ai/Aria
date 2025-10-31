@@ -12,7 +12,7 @@ A comprehensive quantum machine learning framework combining **quantum computing
 
 ## 🏗️ Architecture
 
-```
+```text
 Classical Input → Classical Preprocessing → Quantum Layer → Classical Postprocessing → Output
 ```
 
@@ -174,7 +174,7 @@ Explore interactive examples in the `notebooks/` directory:
 
 ## 🛠️ Project Structure
 
-```
+```text
 quantum-ai/
 ├── src/
 │   ├── quantum_classifier.py      # Quantum ML classifiers
@@ -217,11 +217,13 @@ training:
 ## 🔬 Supported Quantum Backends
 
 ### Simulators (Free)
+
 - **Qiskit Aer** - Local quantum simulator
 - **IonQ Simulator** - Cloud-based ion trap simulator
 - **Quantinuum Simulator** - Trapped-ion quantum simulator
 
 ### Real Quantum Hardware (Requires Azure Quantum credits)
+
 - **IonQ Quantum Computer** - Ion trap quantum computer
 - **Quantinuum H1** - Trapped-ion quantum processor
 - **Rigetti** - Superconducting quantum processors
@@ -271,18 +273,22 @@ MIT License - see LICENSE file for details
 ## 🆘 Troubleshooting
 
 ### Import errors
+
 ```bash
 pip install --upgrade qiskit qiskit-machine-learning qiskit-algorithms
 ```
 
 ### Azure authentication issues
+
 ```bash
 az login
 az account set --subscription <subscription-id>
 ```
 
 ### Quantum backend not found
+
 Check available backends:
+
 ```python
 azure_qm.list_backends()
 ```

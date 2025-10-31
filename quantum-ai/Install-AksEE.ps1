@@ -30,7 +30,7 @@ try
     try
     {
         Write-Progress -Activity "Install AKS EE" -Status "Start..."
-        $installedAksEE = Get-Package | ? Name -like "*AKS Edge Essentials - K3s*"
+        $installedAksEE = Get-Package | Where-Object { $_.Name -like "*AKS Edge Essentials - K3s*" }
         if ($installedAksEE)
         {
             Write-Host "Found AKS EE already installed" -ForegroundColor Green
