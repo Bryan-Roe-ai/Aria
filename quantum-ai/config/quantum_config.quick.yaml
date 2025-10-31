@@ -17,9 +17,9 @@ ml:
     n_layers: 2
     n_qubits: 4
   training:
-    batch_size: 32
-    epochs: 50
-    learning_rate: 0.01
+    batch_size: 64
+    epochs: 25
+    learning_rate: 0.005
     validation_split: 0.2
 quantum:
   hardware:

@@ -1,0 +1,53 @@
+{
+  "datasets": {
+    "heart_disease": {
+      "category": "quantum",
+      "filename": "heart_disease.csv",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\heart_disease.csv",
+      "description": "Cleveland Heart Disease Dataset",
+      "size": 18461
+    },
+    "ionosphere": {
+      "category": "quantum",
+      "filename": "ionosphere.csv",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\ionosphere.csv",
+      "description": "Ionosphere Radar Dataset",
+      "size": 76467
+    },
+    "sonar": {
+      "category": "quantum",
+      "filename": "sonar.csv",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\sonar.csv",
+      "description": "Sonar Mines vs Rocks Dataset",
+      "size": 87776
+    },
+    "banknote": {
+      "category": "quantum",
+      "filename": "banknote.csv",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\banknote.csv",
+      "description": "Banknote Authentication Dataset",
+      "size": 46400
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "created": "2025-10-31",
+    "workspace": "AI Multi-Project Workspace",
+    "categories": [
+      "quantum",
+      "chat",
+      "vision",
+      "processed"
+    ]
+  },
+  "storage": {
+    "base_path": "datasets/",
+    "raw": "datasets/raw/",
+    "processed": "datasets/processed/",
+    "quantum": "datasets/quantum/",
+    "chat": "datasets/chat/",
+    "vision": "datasets/vision/"
+  },
+  "last_updated": "2025-10-31T10:30:36.554720",
+  "instructions": "Run scripts/download_datasets.py to populate this index automatically"
+}
