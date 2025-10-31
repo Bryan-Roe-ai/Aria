@@ -169,12 +169,12 @@ Use default names? (yes/no):
 
 **What to do:**
 
-**Option A: Use defaults (recommended)**
+#### Option A: Use defaults (recommended)
 
 - Type `yes` and press Enter
 - The script will make names unique automatically
 
-**Option B: Customize (advanced)**
+#### Option B: Customize (advanced)
 
 - Type `no` and Enter
 - Enter custom names when prompted
@@ -182,7 +182,7 @@ Use default names? (yes/no):
 
 **Example custom names:**
 
-```
+```powershell
 Resource Group Name [rg-quantum-ai]: rg-myquantum
 Location [eastus]: eastus
 Workspace Name [quantum-ai-workspace]: my-quantum-workspace-2025
@@ -191,7 +191,7 @@ Storage Account Name [quantumstorage]: myquantumstorage
 
 The script confirms:
 
-```
+```text
 ✓ Configuration set!
   Resource Group: rg-quantum-ai
   Workspace: quantum-ai-workspace
@@ -204,7 +204,7 @@ The script confirms:
 
 **The script creates an Azure resource group:**
 
-```
+```text
 STEP 5: Creating Resource Group
 
 Creating resource group in eastus...
@@ -223,7 +223,7 @@ Creating resource group in eastus...
 
 **The script updates configuration files:**
 
-```
+```text
 STEP 6: Preparing Deployment Parameters
 
 Updating parameters file...
@@ -262,7 +262,7 @@ Proceed with deployment? (yes/no):
 
 **The deployment begins:**
 
-```
+```text
 Starting deployment... (this takes 2-3 minutes)
 
 Name                          ResourceGroup     State      Timestamp
@@ -305,7 +305,7 @@ Updating quantum_config.yaml...
 
 **The script verifies everything is working:**
 
-```
+```text
 STEP 9: Verifying Deployment
 
 Checking workspace status...
@@ -377,7 +377,7 @@ Real Quantum Hardware (Optional):
 
 **The script asks if you want to run tests immediately:**
 
-```
+```text
 Would you like to run the tests now? (yes/no):
 ```
 
@@ -686,7 +686,7 @@ Start-Process "https://portal.azure.com/#blade/Microsoft_Azure_CostManagement/Me
 
 ### Test Issues
 
-**Error: "Failed to connect to Azure Quantum"**
+#### Error: "Failed to connect to Azure Quantum"
 
 ```
 ✗ Connection failed: AuthenticationError
@@ -705,9 +705,9 @@ az account show
 python test_azure_quantum.py
 ```
 
-**Error: "No backends available"**
+#### Error: "No backends available"
 
-```
+```text
 ✗ Found 0 quantum backend(s)
 ```
 
@@ -717,9 +717,9 @@ python test_azure_quantum.py
 - Providers need time to initialize
 - Check Azure Portal for provider status
 
-**Error: "Insufficient credits"**
+#### Error: "Insufficient credits"
 
-```
+```text
 ✗ Job submission failed: Insufficient credits
 ```
 

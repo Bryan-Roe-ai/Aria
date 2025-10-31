@@ -207,7 +207,7 @@ Entanglement Quality: 96.6%
 
 ### Your Optimized Circuit Results
 
-```
+```text
 Measurement distribution (optimized 3-layer circuit):
   0000:  17.4%  ████████
   1111:  16.4%  ████████
@@ -233,21 +233,21 @@ You've successfully tested on quantum hardware when:
 
 ✅ **Connection established**
 
-```
+```text
 ✓ Successfully connected to Azure Quantum!
 Available backends: ionq.simulator, ionq.qpu, ...
 ```
 
 ✅ **Bell state shows entanglement**
 
-```
+```text
 Entanglement Quality: 80%+
 ✓ Quantum entanglement verified!
 ```
 
 ✅ **Job completes successfully**
 
-```
+```text
 Job ID: 12345-6789-abcd-efgh
 Status: JobStatus.COMPLETED
 ✓ Results retrieved!
@@ -255,7 +255,7 @@ Status: JobStatus.COMPLETED
 
 ✅ **Results saved**
 
-```
+```text
 ✓ Results saved to results/bell_state_results_*.json
 ```
 
@@ -263,7 +263,7 @@ Status: JobStatus.COMPLETED
 
 ## 🔄 Testing Workflow
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │ 1. Deploy Azure Quantum Workspace              │
 │    (2-3 minutes, one-time setup)                │
@@ -316,7 +316,7 @@ Status: JobStatus.COMPLETED
 
 ## 📁 Files Created for You
 
-```
+```text
 quantum-ai/
 ├── test_azure_quantum.py           ← Main test script (run this!)
 ├── AZURE_SETUP_CHECKLIST.md        ← Step-by-step guide (start here!)
