@@ -1,18 +1,35 @@
 """
 Train Quantum AI on Your Custom Dataset
-========================================
+======================================
 
-Ready-to-use template for training on your own data.
-Modify the load_your_data() function with your actual data source.
+Free-first training pipeline with CLI support for CSVs and built-in presets.
+Works 100% locally using simulators (no Azure required). Use this script to
+train on your own data without changing code.
+
+Examples (PowerShell):
+
+    # Preset datasets (from datasets/quantum/*.csv)
+    python .\train_custom_dataset.py --preset heart --epochs 5 --batch-size 16
+    python .\train_custom_dataset.py --preset ionosphere --epochs 5
+
+    # Custom CSV
+    python .\train_custom_dataset.py --csv ..\datasets\quantum\banknote.csv `
+            --label-col class --epochs 5 --n-qubits 4
+
+Notes:
+- Binary or multiclass labels are supported. String labels are auto-encoded.
+- Features are standardized and dimension-matched to n_qubits via PCA/padding.
 
 Author: Quantum AI System
-Date: October 31, 2025
+Date: November 1, 2025
 """
 
 import numpy as np
 import pandas as pd
 from pathlib import Path
 import sys
+import argparse
+import yaml
 
 # Add src to path
 src_path = Path(__file__).parent / "src"
@@ -22,48 +39,127 @@ from src.hybrid_qnn import HybridQNN, QuantumClassicalTrainer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.impute import SimpleImputer
 import torch
 from torch.utils.data import TensorDataset, DataLoader
 import matplotlib.pyplot as plt
+import json
 
 
-def load_your_data():
+def _infer_label_column(df: pd.DataFrame, provided: str | None) -> str:
+    """Infer the label/target column if not provided.
+    Tries common names, else uses the last column.
     """
-    ⚠️ MODIFY THIS FUNCTION WITH YOUR DATA SOURCE ⚠️
-    
+    if provided:
+        if provided not in df.columns:
+            raise ValueError(f"Label column '{provided}' not in CSV columns: {list(df.columns)}")
+        return provided
+    candidates = [
+        "label", "target", "class", "y", "diagnosis", "outcome"
+    ]
+    for c in candidates:
+        if c in df.columns:
+            return c
+    # Fallback: last column
+    return df.columns[-1]
+
+
+def _encode_labels(y: pd.Series) -> np.ndarray:
+    """Encode labels to integer class indices starting at 0.
+    - If numeric, cast to int when safe; ensure non-negative contiguous classes.
+    - If strings/objects, factorize to 0..K-1.
+    """
+    if pd.api.types.is_numeric_dtype(y):
+        # If binary but not 0/1, normalize to 0/1
+        uniq = np.unique(y.dropna())
+        if len(uniq) == 2 and set(uniq) != {0, 1}:
+            mapping = {uniq.min(): 0, uniq.max(): 1}
+            y_enc = y.map(mapping).astype(int).values
+        else:
+            y_enc = y.astype(int).values
+        # Shift to start at 0
+        minv = y_enc.min()
+        if minv < 0:
+            y_enc = y_enc - minv
+        return y_enc
+    else:
+        vals, enc = pd.factorize(y.astype(str))
+        return vals
+
+
+def load_csv_dataset(
+    csv_path: str | Path,
+    label_col: str | None = None,
+    drop_cols: list[str] | None = None,
+    handle_missing: str = "auto",
+) -> tuple[np.ndarray, np.ndarray]:
+    """Load a dataset from CSV.
+
+    Args:
+        csv_path: Path to CSV file
+        label_col: Column name of the label/target (auto-infer if None)
+        drop_cols: Columns to drop before processing
+        handle_missing: 'auto' -> treat '?', 'NA', '', 'NaN' as missing
+
     Returns:
-        X: numpy array of shape (n_samples, n_features)
-        y: numpy array of shape (n_samples,) with class labels
+        (X, y) numpy arrays
     """
-    
-    # ============================================
-    # OPTION 1: Load from CSV
-    # ============================================
-    # df = pd.read_csv("path/to/your/data.csv")
-    # X = df.drop('label_column', axis=1).values
-    # y = df['label_column'].values
-    # return X, y
-    
-    # ============================================
-    # OPTION 2: Load from NumPy files
-    # ============================================
-    # X = np.load("features.npy")
-    # y = np.load("labels.npy")
-    # return X, y
-    
-    # ============================================
-    # OPTION 3: Use built-in dataset (DEMO)
-    # ============================================
-    # For demonstration, we'll use wine dataset
-    from sklearn.datasets import load_wine
-    data = load_wine()
-    X = data.data
-    y = (data.target == 0).astype(int)  # Binary: Class 0 vs Others
-    
-    print(f"📊 Loaded Wine dataset (demo)")
-    print(f"   Modify load_your_data() to use your own data!")
-    
-    return X, y
+    csv_path = Path(csv_path)
+    if not csv_path.exists():
+        raise FileNotFoundError(f"CSV not found: {csv_path}")
+
+    na_values = ["?", "NA", "", "NaN"] if handle_missing == "auto" else None
+    df = pd.read_csv(csv_path, na_values=na_values)
+
+    # Drop columns if requested
+    if drop_cols:
+        missing = [c for c in drop_cols if c not in df.columns]
+        if missing:
+            raise ValueError(f"Drop columns not found in CSV: {missing}")
+        df = df.drop(columns=drop_cols)
+
+    # Determine label column
+    y_col = _infer_label_column(df, label_col)
+    y = df[y_col]
+    X = df.drop(columns=[y_col])
+
+    # Impute missing values in features if needed
+    if X.isnull().any().any():
+        imputer = SimpleImputer(strategy='median')
+        X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+
+    y_enc = _encode_labels(y)
+    return X.values, y_enc
+
+
+def load_preset_dataset(name: str) -> tuple[np.ndarray, np.ndarray]:
+    """Load a preset dataset from datasets/quantum/*.csv.
+
+    Presets: heart, ionosphere, sonar, banknote
+    """
+    base = Path(__file__).parent.parent / "datasets" / "quantum"
+    presets = {
+        "heart": base / "heart_disease.csv",
+        "ionosphere": base / "ionosphere.csv",
+        "sonar": base / "sonar.csv",
+        "banknote": base / "banknote.csv",
+    }
+    if name not in presets:
+        raise ValueError(f"Unknown preset '{name}'. Choose from {list(presets)}")
+
+    path = presets[name]
+    if name == "heart":
+        # Special handling for heart disease (binary from multi-class 0..4)
+        df = pd.read_csv(path, na_values=["?"])
+        y = df.iloc[:, -1]
+        X = df.iloc[:, :-1]
+        if X.isnull().any().any():
+            imputer = SimpleImputer(strategy='median')
+            X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+        y = (y > 0).astype(int).values
+        return X.values, y
+    else:
+        return load_csv_dataset(path)
 
 
 def preprocess_data(X, y, n_qubits=4, test_size=0.2):
@@ -83,8 +179,15 @@ def preprocess_data(X, y, n_qubits=4, test_size=0.2):
     """
     print(f"\n🔧 Preprocessing data...")
     print(f"   Original shape: {X.shape}")
+    # Ensure labels are int (for CrossEntropyLoss)
+    if not np.issubdtype(y.dtype, np.integer):
+        # Factorize as safety net
+        vals, y = np.unique(y, return_inverse=True)
     print(f"   Classes: {np.unique(y)}")
-    print(f"   Class distribution: {np.bincount(y)}")
+    try:
+        print(f"   Class distribution: {np.bincount(y)}")
+    except Exception:
+        pass
     
     # Split data
     X_train, X_val, y_train, y_val = train_test_split(
@@ -209,8 +312,9 @@ def train_quantum_model(model, X_train, y_train, X_val, y_val,
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
     val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
     
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    # Use drop_last=True to avoid batchnorm errors on final batch of size 1
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, drop_last=False)
     
     # Create trainer
     trainer = QuantumClassicalTrainer(model, learning_rate=learning_rate)
@@ -218,40 +322,83 @@ def train_quantum_model(model, X_train, y_train, X_val, y_val,
     # Train
     trainer.train(train_loader, val_loader, num_epochs)
     
-    # Return history
+    # Return history (now includes real val_loss from trainer)
     history = {
         'train_loss': trainer.train_losses,
         'val_acc': trainer.val_accuracies,
-        'val_loss': [0] * len(trainer.val_accuracies)  # Placeholder, can be computed in trainer
+        'val_loss': trainer.val_losses
     }
     
     return history
 
 
-def main():
+def _default_n_qubits(config_path: str = "config/quantum_config.yaml", fallback: int = 4) -> int:
+    """Read default n_qubits from YAML config if available."""
+    try:
+        with open(config_path, 'r') as f:
+            cfg = yaml.safe_load(f)
+        return int(cfg.get('ml', {}).get('model', {}).get('n_qubits', fallback))
+    except Exception:
+        return fallback
+
+
+def main(argv: list[str] | None = None):
     """Main training pipeline"""
-    
+    parser = argparse.ArgumentParser(description="Train Hybrid Quantum-Classical model on CSV or preset dataset")
+    src_root = Path(__file__).parent
+    default_results = src_root / "results"
+    parser.add_argument("--csv", type=str, help="Path to CSV file containing dataset")
+    parser.add_argument("--preset", type=str, choices=["heart", "ionosphere", "sonar", "banknote"], help="Use a built-in preset dataset")
+    parser.add_argument("--label-col", type=str, help="Label/target column name (auto if omitted)")
+    parser.add_argument("--drop-cols", type=str, help="Comma-separated column names to drop before training")
+    parser.add_argument("--test-size", type=float, default=0.2, help="Validation split ratio (default 0.2)")
+    parser.add_argument("--n-qubits", type=int, help="Number of qubits (defaults from config ml.model.n_qubits or 4)")
+    parser.add_argument("--epochs", type=int, default=20, help="Training epochs (default 20)")
+    parser.add_argument("--batch-size", type=int, default=32, help="Batch size (default 32)")
+    parser.add_argument("--learning-rate", type=float, default=0.001, help="Learning rate (default 1e-3)")
+    args = parser.parse_args(argv)
+
+    drop_cols = [c.strip() for c in args.drop_cols.split(",")] if args.drop_cols else None
+    n_qubits = args.n_qubits or _default_n_qubits()
+
     print("="*70)
     print("  QUANTUM AI - CUSTOM DATASET TRAINING")
     print("="*70)
-    
+    print(f"Using n_qubits={n_qubits}, epochs={args.epochs}, batch={args.batch_size}, lr={args.learning_rate}")
+
     # ============================================
     # 1. LOAD DATA
     # ============================================
     print("\n📁 Step 1: Loading your data...")
-    X, y = load_your_data()
+    if args.preset:
+        X, y = load_preset_dataset(args.preset)
+        print(f"   ✅ Loaded preset dataset: {args.preset}")
+        dataset_desc = f"preset:{args.preset}"
+    elif args.csv:
+        X, y = load_csv_dataset(args.csv, label_col=args.label_col, drop_cols=drop_cols)
+        print(f"   ✅ Loaded CSV: {args.csv}")
+        dataset_desc = f"csv:{args.csv}"
+    else:
+        # Fallback demo: scikit-learn wine dataset (binary)
+        from sklearn.datasets import load_wine
+        data = load_wine()
+        X = data.data
+        # Binary: Class 0 vs others
+        y = (data.target == 0).astype(int)
+        print(f"   ℹ️  No dataset specified. Using demo Wine dataset (binary)")
+        dataset_desc = "demo:wine"
     
     # ============================================
     # 2. PREPROCESS
     # ============================================
     print("\n🔧 Step 2: Preprocessing...")
-    X_train, X_val, y_train, y_val, scaler, pca = preprocess_data(X, y)
+    X_train, X_val, y_train, y_val, scaler, pca = preprocess_data(X, y, n_qubits=n_qubits, test_size=args.test_size)
     
     # ============================================
     # 3. CREATE MODEL
     # ============================================
     print("\n🧠 Step 3: Creating quantum model...")
-    n_qubits = X_train.shape[1]  # Should be 4 after preprocessing
+    n_qubits = X_train.shape[1]  # After preprocessing
     
     # Determine number of classes
     n_classes = len(np.unique(y_train))
@@ -260,8 +407,8 @@ def main():
     model = HybridQNN(
         input_dim=n_qubits,
         hidden_dim=16,
-        num_qubits=n_qubits,
-        quantum_layers=2,
+        n_qubits=n_qubits,
+        n_quantum_layers=2,
         output_dim=n_classes,
         dropout=0.2
     )
@@ -280,7 +427,10 @@ def main():
         X_train=X_train,
         y_train=y_train,
         X_val=X_val,
-        y_val=y_val
+        y_val=y_val,
+        num_epochs=args.epochs,
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate,
     )
     
     # ============================================
@@ -324,13 +474,79 @@ def main():
     # 6. SAVE MODEL
     # ============================================
     print("\n💾 Step 5: Saving model and preprocessors...")
-    save_model_and_preprocessors(model, scaler, pca)
+    # Ensure results directory exists
+    results_dir = Path(Path(__file__).parent / "results")
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    model_path = str(results_dir / "custom_model.pt")
+    scaler_path = str(results_dir / "custom_scaler.pkl")
+    pca_path = str(results_dir / "custom_pca.pkl")
+    plot_path = str(results_dir / "custom_training.png")
+    summary_path = str(results_dir / "custom_training_summary.json")
+
+    save_model_and_preprocessors(model, scaler, pca, model_path=model_path, scaler_path=scaler_path, pca_path=pca_path)
     
     # ============================================
     # 7. PLOT RESULTS
     # ============================================
     print("\n📊 Step 6: Generating training plots...")
-    plot_training_results(history)
+    plot_training_results(history, save_path=plot_path)
+
+    # ============================================
+    # 7. SAVE SUMMARY
+    # ============================================
+    try:
+        y_train_counts = np.bincount(y_train).tolist()
+        y_val_counts = np.bincount(y_val).tolist()
+    except Exception:
+        y_train_counts, y_val_counts = None, None
+
+    pca_explained_variance = None
+    if pca is not None and hasattr(pca, "explained_variance_ratio_"):
+        try:
+            pca_explained_variance = float(np.sum(pca.explained_variance_ratio_))
+        except Exception:
+            pca_explained_variance = None
+
+    summary = {
+        "dataset": dataset_desc,
+        "params": {
+            "n_qubits": n_qubits,
+            "epochs": args.epochs,
+            "batch_size": args.batch_size,
+            "learning_rate": args.learning_rate,
+            "test_size": args.test_size,
+        },
+        "metrics": {
+            "train_loss_last": float(final_train_loss),
+            "val_loss_last": float(final_val_loss),
+            "val_acc_last": float(final_val_acc),
+            "val_acc_best": float(best_val_acc),
+            "history": {
+                "train_loss": [float(x) for x in history["train_loss"]],
+                "val_loss": [float(x) for x in history["val_loss"]],
+                "val_acc": [float(x) for x in history["val_acc"]],
+            }
+        },
+        "data": {
+            "n_train": int(len(X_train)),
+            "n_val": int(len(X_val)),
+            "n_classes": int(len(np.unique(y_train))),
+            "class_distribution_train": y_train_counts,
+            "class_distribution_val": y_val_counts,
+            "pca_explained_variance": pca_explained_variance,
+        },
+        "artifacts": {
+            "model": model_path,
+            "scaler": scaler_path,
+            "pca": pca_path if pca is not None else None,
+            "plot": plot_path,
+        }
+    }
+
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print(f"\n📝 Summary saved to: {summary_path}")
     
     # ============================================
     # 8. RECOMMENDATIONS
@@ -339,7 +555,7 @@ def main():
     
     if best_val_acc < 0.70:
         print("   ⚠️  Accuracy is low. Try:")
-        print("      - More training data (currently {len(X_train)} samples)")
+        print(f"      - More training data (currently {len(X_train)} samples)")
         print("      - Better feature engineering")
         print("      - Hyperparameter tuning (run experiments/parameter_tuning.py)")
         print("      - Check if data is properly standardized")

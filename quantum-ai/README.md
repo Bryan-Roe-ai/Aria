@@ -2,6 +2,30 @@
 
 A hybrid quantum-classical machine learning framework leveraging Azure Quantum for enhanced AI capabilities.
 
+---
+
+## 📋 Quick Start
+
+**New to this project?** Start here:
+
+1. **Hardware Testing Results:** [`HARDWARE_TEST_RESULTS.md`](./HARDWARE_TEST_RESULTS.md)
+  - Multi-backend validation (Rigetti ✅, Quantinuum ⚠️)
+  - GHZ and variational circuit tests
+  - Hardware vs simulator comparison
+
+2. **Provider Comparison:** [`PROVIDER_COMPARISON_RESULTS.md`](./PROVIDER_COMPARISON_RESULTS.md)
+  - Detailed gate pattern analysis
+  - MPS simulation validation (90.5% vs 91.5% entropy)
+  - Quantinuum bug investigation
+  - Production recommendations
+
+3. **Quick Reference:** [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)
+  - All commands, workflows, and tips in one place
+
+**Key Finding (Nov 2025):** Rigetti backend validated for production use. MPS simulations accurate within 1% of hardware. Avoid Quantinuum H-series simulators until Azure fixes fundamental bug.
+
+---
+
 ## 🌟 Overview
 
 This project combines the power of quantum computing with classical machine learning to create advanced AI models. It provides:

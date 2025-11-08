@@ -18,7 +18,7 @@ class QuantumLayer(nn.Module):
     A custom PyTorch layer that implements a quantum circuit.
     """
     
-    def __init__(self, n_qubits: int, n_layers: int, device: str = "default.qubit"):
+    def __init__(self, n_qubits: int, n_layers: int, device: str = "default.qubit", entanglement: str = "linear"):
         """
         Initialize quantum layer.
         
@@ -30,13 +30,17 @@ class QuantumLayer(nn.Module):
         super().__init__()
         self.n_qubits = n_qubits
         self.n_layers = n_layers
+        self.entanglement = entanglement.lower()
         
         # Create quantum device
         self.dev = qml.device(device, wires=n_qubits)
         
+        # Create QNode
+        self.qnode = qml.QNode(self._quantum_circuit, self.dev, interface='torch')
+        
         # Initialize quantum weights
         weight_shapes = {"weights": (n_layers, n_qubits, 3)}
-        self.qlayer = qml.qnn.TorchLayer(self._quantum_circuit, weight_shapes)
+        self.qlayer = qml.qnn.TorchLayer(self.qnode, weight_shapes)
         
     def _quantum_circuit(self, inputs, weights):
         """
@@ -61,8 +65,16 @@ class QuantumLayer(nn.Module):
                 qml.Rot(*weights[layer, i], wires=i)
             
             # Entangling layer
-            for i in range(self.n_qubits - 1):
-                qml.CNOT(wires=[i, i + 1])
+            if self.entanglement == "circular":
+                for i in range(self.n_qubits):
+                    qml.CNOT(wires=[i, (i + 1) % self.n_qubits])
+            elif self.entanglement == "full":
+                for i in range(self.n_qubits):
+                    for j in range(i + 1, self.n_qubits):
+                        qml.CNOT(wires=[i, j])
+            else:  # linear (default)
+                for i in range(self.n_qubits - 1):
+                    qml.CNOT(wires=[i, i + 1])
         
         # Measurement
         return [qml.expval(qml.PauliZ(i)) for i in range(self.n_qubits)]
@@ -85,6 +97,7 @@ class HybridQNN(nn.Module):
         hidden_dim: int,
         n_qubits: int,
         n_quantum_layers: int,
+        entanglement: str = "linear",
         output_dim: int = 1,
         dropout: float = 0.2
     ):
@@ -103,6 +116,7 @@ class HybridQNN(nn.Module):
         
         self.input_dim = input_dim
         self.n_qubits = n_qubits
+        self.entanglement = entanglement.lower()
         
         # Classical preprocessing
         self.encoder = nn.Sequential(
@@ -114,7 +128,7 @@ class HybridQNN(nn.Module):
         )
         
         # Quantum layer
-        self.quantum_layer = QuantumLayer(n_qubits, n_quantum_layers)
+        self.quantum_layer = QuantumLayer(n_qubits, n_quantum_layers, entanglement=self.entanglement)
         
         # Classical postprocessing
         self.decoder = nn.Sequential(
@@ -127,7 +141,7 @@ class HybridQNN(nn.Module):
         
         logger.info(
             f"Initialized HybridQNN: input_dim={input_dim}, "
-            f"n_qubits={n_qubits}, n_quantum_layers={n_quantum_layers}"
+            f"n_qubits={n_qubits}, n_quantum_layers={n_quantum_layers}, entanglement={self.entanglement}"
         )
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -283,6 +297,159 @@ class QCNN(nn.Module):
         return x
 
 
+class QuantumClassicalTrainer:
+    """
+    Trainer for hybrid quantum-classical models
+    """
+    
+    def __init__(
+        self,
+        model: nn.Module,
+        learning_rate: float = 0.001,
+        device: str = 'cpu'
+    ):
+        """
+        Initialize trainer
+        
+        Args:
+            model: Hybrid QNN model
+            learning_rate: Learning rate
+            device: Device to train on ('cpu' or 'cuda')
+        """
+        self.model = model.to(device)
+        self.device = device
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        self.criterion = nn.CrossEntropyLoss()
+        
+        self.train_losses = []
+        self.val_accuracies = []
+        self.val_losses = []
+        
+        logger.info(f"Initialized trainer with lr={learning_rate}, device={device}")
+    
+    def train_epoch(
+        self,
+        train_loader
+    ) -> float:
+        """
+        Train for one epoch
+        
+        Args:
+            train_loader: Training data loader
+            
+        Returns:
+            avg_loss: Average loss for the epoch
+        """
+        self.model.train()
+        total_loss = 0.0
+        
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(self.device), target.to(self.device)
+            
+            # Zero gradients
+            self.optimizer.zero_grad()
+            
+            # Forward pass
+            output = self.model(data)
+            
+            # Compute loss
+            loss = self.criterion(output, target)
+            
+            # Backward pass
+            loss.backward()
+            
+            # Update weights
+            self.optimizer.step()
+            
+            total_loss += loss.item()
+            
+            if (batch_idx + 1) % 10 == 0:
+                logger.info(f"Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}")
+        
+        avg_loss = total_loss / len(train_loader)
+        self.train_losses.append(avg_loss)
+        
+        return avg_loss
+    
+    def evaluate(
+        self,
+        val_loader
+    ) -> tuple:
+        """
+        Evaluate model
+        
+        Args:
+            val_loader: Validation data loader
+            
+        Returns:
+            accuracy, loss: Validation accuracy and loss
+        """
+        self.model.eval()
+        correct = 0
+        total = 0
+        total_loss = 0.0
+        
+        with torch.no_grad():
+            for data, target in val_loader:
+                data, target = data.to(self.device), target.to(self.device)
+                
+                # Forward pass
+                output = self.model(data)
+                
+                # Compute loss
+                loss = self.criterion(output, target)
+                total_loss += loss.item()
+                
+                # Get predictions
+                _, predicted = torch.max(output.data, 1)
+                total += target.size(0)
+                correct += (predicted == target).sum().item()
+        
+        accuracy = correct / total
+        avg_loss = total_loss / len(val_loader)
+        
+        # Record metrics
+        self.val_accuracies.append(accuracy)
+        self.val_losses.append(avg_loss)
+        
+        return accuracy, avg_loss
+    
+    def train(
+        self,
+        train_loader,
+        val_loader,
+        num_epochs: int = 20
+    ):
+        """
+        Train the model
+        
+        Args:
+            train_loader: Training data loader
+            val_loader: Validation data loader
+            num_epochs: Number of epochs
+        """
+        logger.info(f"Starting training for {num_epochs} epochs")
+        
+        for epoch in range(num_epochs):
+            # Train
+            train_loss = self.train_epoch(train_loader)
+            
+            # Evaluate
+            val_acc, val_loss = self.evaluate(val_loader)
+            
+            logger.info(
+                f"Epoch {epoch + 1}/{num_epochs} - "
+                f"Train Loss: {train_loss:.4f}, "
+                f"Val Loss: {val_loss:.4f}, "
+                f"Val Acc: {val_acc:.4f}"
+            )
+            
+            print(f"Epoch {epoch + 1}/{num_epochs} - "
+                  f"Train Loss: {train_loss:.4f}, "
+                  f"Val Loss: {val_loss:.4f}, "
+                  f"Val Acc: {val_acc:.4f}")
+
+
 def create_hybrid_model(config_path: str = "../config/quantum_config.yaml") -> HybridQNN:
     """
     Create a hybrid QNN model from configuration.
@@ -299,12 +466,14 @@ def create_hybrid_model(config_path: str = "../config/quantum_config.yaml") -> H
     input_dim = config['ml']['data']['feature_dimension']
     n_qubits = config['ml']['model']['n_qubits']
     n_layers = config['ml']['model']['n_layers']
+    entanglement = config['ml']['model'].get('entanglement', 'linear')
     
     model = HybridQNN(
         input_dim=input_dim,
         hidden_dim=16,
         n_qubits=n_qubits,
         n_quantum_layers=n_layers,
+        entanglement=entanglement,
         output_dim=1
     )
     

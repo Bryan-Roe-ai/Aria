@@ -21,7 +21,7 @@ class AzureQuantumIntegration:
     Manages connection and job submission to Azure Quantum workspace.
     """
     
-    def __init__(self, config_path: str = "../config/quantum_config.yaml"):
+    def __init__(self, config_path: str = "./config/quantum_config.yaml"):
         """
         Initialize Azure Quantum connection.
         
@@ -105,15 +105,21 @@ class AzureQuantumIntegration:
             # Use provider from config
             provider = self.quantum_config['provider']
             backends = self.provider.backends()
-            
-            # Find first backend matching provider
+
+            # Prefer simulators by default to avoid unintended costs
+            preferred = None
+            fallback = None
             for backend in backends:
-                if provider.lower() in backend.name().lower():
-                    backend_name = backend.name()
-                    break
-            
-            if backend_name is None:
-                backend_name = backends[0].name()
+                name = backend.name().lower()
+                if provider.lower() in name:
+                    if ('sim' in name or 'simulator' in name):
+                        preferred = backend.name()
+                        break
+                    # Track first provider match as fallback (likely QPU)
+                    if fallback is None:
+                        fallback = backend.name()
+
+            backend_name = preferred or fallback or backends[0].name()
         
         backend = self.provider.get_backend(backend_name)
         logger.info(f"Using backend: {backend_name}")
