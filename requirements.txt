@@ -3,3 +3,5 @@
 # azure-monitor-opentelemetry
 
 azure-functions
+openai>=1.37.0
+colorama>=0.4.6

@@ -94,6 +94,42 @@ The trainer computes and prints perplexity before and after training using the e
 ## Train at scale on Azure (optional)
 
 1. Provision resources using the bicep in `lora/infra/provision`. Fill in `finetuning.config.json` and run the documented deployment steps (see the top-level workspace docs).
+## Train on Azure Machine Learning (Recommended for GPU Training)
+
+Azure ML provides managed GPU compute with auto-scaling for cost-effective training.
+
+### Quick Start
+
+```powershell
+# 1. Install Azure dependencies
+pip install -r azure-requirements.txt
+
+# 2. Setup (one-time)
+.\setup_azure_ml.ps1 -SubscriptionId "<your-subscription-id>"
+
+# 3. Upload dataset
+python azure_ml_training.py --action upload `
+  --subscription-id "<your-subscription-id>" `
+  --resource-group rg-phi36-ml `
+  --workspace-name phi36-ml-workspace
+
+# 4. Start training (quick test)
+python azure_ml_training.py --action train `
+  --subscription-id "<your-subscription-id>" `
+  --resource-group rg-phi36-ml `
+  --workspace-name phi36-ml-workspace `
+  --max-train-samples 64
+```
+
+**Benefits:**
+- **GPU acceleration**: 1-4x V100 GPUs (Standard_NC6s_v3 @ ~$3/hour)
+- **Auto-scaling**: Scales to 0 when idle (no cost)
+- **Monitoring**: Real-time metrics in Azure ML Studio
+- **Cost-effective**: Pay only for training time (~$9 for full 8000-sample run)
+
+See **[AZURE_ML_TRAINING_GUIDE.md](./AZURE_ML_TRAINING_GUIDE.md)** for complete documentation.
+
+## Train at scale on Azure Container Apps (Alternative)
 2. Upload your dataset to the mounted file share path expected by the job (the infra uses `mount/<run_id>/dataset`).
 3. Ensure `lora.yaml` points to `finetune_dataset: "mount/<run_id>/dataset"` and `save_dir` is also under `mount/<run_id>/...`.
 4. Start the job. The standard runner will read `lora.yaml` and train using LoRA.
