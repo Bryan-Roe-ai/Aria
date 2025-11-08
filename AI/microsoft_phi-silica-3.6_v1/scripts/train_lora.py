@@ -343,7 +343,7 @@ def main():
         output_dir=str(out_dir),
         per_device_train_batch_size=cfg.finetune_train_batch_size,
         per_device_eval_batch_size=cfg.finetune_test_batch_size,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=cfg.eval_steps,
         save_steps=cfg.save_steps,
         num_train_epochs=cfg.epochs,

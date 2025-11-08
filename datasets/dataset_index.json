@@ -27,6 +27,14 @@
       "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\banknote.csv",
       "description": "Banknote Authentication Dataset",
       "size": 46400
+    },
+    "dolly": {
+      "category": "chat",
+      "hf_name": "databricks/databricks-dolly-15k",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\dolly",
+      "description": "Dolly 15k - High-quality instruction pairs",
+      "license": "CC BY-SA 3.0 (Commercial OK)",
+      "size_gb": 0.05
     }
   },
   "metadata": {
@@ -48,6 +56,6 @@
     "chat": "datasets/chat/",
     "vision": "datasets/vision/"
   },
-  "last_updated": "2025-10-31T10:30:36.554720",
+  "last_updated": "2025-11-07T03:13:26.948449",
   "instructions": "Run scripts/download_datasets.py to populate this index automatically"
 }
