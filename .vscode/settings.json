@@ -1,5 +1,5 @@
 {
-    "azureAutomation.directory.basePath": "c:\\Users\\Bryan",
+    "azureAutomation.directory.basePath": "",
     "azureFunctions.deploySubpath": ".",
     "azureFunctions.scmDoBuildDuringDeployment": true,
     "azureFunctions.pythonVenv": ".venv",
