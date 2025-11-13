@@ -159,3 +159,9 @@ Thumbs.db
 .Trash-*
 $RECYCLE.BIN/
 .fake
+
+# Large binary installers and archives (avoid exceeding GitHub 100MB limit)
+*.msi
+*.exe
+*.iso
+*.dmg
