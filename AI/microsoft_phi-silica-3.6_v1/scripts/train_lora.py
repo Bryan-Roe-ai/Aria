@@ -246,13 +246,37 @@ def main():
             # Fallback: use a small subset of train for eval
             eval_files = train_files[:1]
     else:
-        dataset_dir = Path(args.dataset) if args.dataset else resolve_path(cfg.finetune_dataset)
-        train_path = dataset_dir / "train.json"
-        test_path = dataset_dir / "test.json"
-        if not train_path.exists() or not test_path.exists():
-            raise FileNotFoundError(f"Expected dataset files at: {train_path} and {test_path}")
-        train_files = [str(train_path)]
-        eval_files = [str(test_path)]
+        dataset_path = Path(args.dataset) if args.dataset else resolve_path(cfg.finetune_dataset)
+        if dataset_path.is_file():
+            # Allow direct file usage (.json or .jsonl)
+            if dataset_path.suffix.lower() in (".json", ".jsonl"):
+                train_files = [str(dataset_path)]
+                eval_files = [str(dataset_path)]
+            else:
+                raise FileNotFoundError(f"Unsupported dataset file type: {dataset_path}")
+        else:
+            # Directory: accept train.json/test.json or train.jsonl/test.jsonl; fallback to single train file present
+            candidates = [
+                (dataset_path / "train.json", dataset_path / "test.json"),
+                (dataset_path / "train.jsonl", dataset_path / "test.jsonl"),
+            ]
+            found = False
+            for t_path, v_path in candidates:
+                if t_path.exists() and v_path.exists():
+                    train_files = [str(t_path)]
+                    eval_files = [str(v_path)]
+                    found = True
+                    break
+            if not found:
+                # Fallbacks: if any train.* exists, use it for both train/val
+                t_candidates = [dataset_path / "train.json", dataset_path / "train.jsonl"]
+                t_use = next((p for p in t_candidates if p.exists()), None)
+                if t_use is None:
+                    raise FileNotFoundError(f"Expected dataset files at: {dataset_path}/train.json[.l] and optionally test.json[.l]")
+                train_files = [str(t_use)]
+                eval_candidates = [dataset_path / "test.json", dataset_path / "test.jsonl"]
+                v_use = next((p for p in eval_candidates if p.exists()), None)
+                eval_files = [str(v_use)] if v_use else [str(t_use)]
 
     # Dry run: count/validate records only (no model/tokenizer downloads)
     if args.dry_run:
@@ -298,7 +322,62 @@ def main():
         texts = []
         if isinstance(examples, dict) and "messages" in examples:
             msgs = examples["messages"]
-            # Batched: list of lists
+            try:
+                print(f"[preprocess] messages type: {type(msgs)}")
+                if isinstance(msgs, dict):
+                    print(f"[preprocess] messages dict keys: {list(msgs.keys())}")
+                    # Attempt to reconstruct per-sample conversations if messages is a dict of lists
+                    # Expect shape: msgs[key][i] gives ith sample's list of that field
+                    keys = list(msgs.keys())
+                    batch_size = len(msgs[keys[0]]) if keys and isinstance(msgs[keys[0]], list) else 0
+                    print(f"[preprocess] inferred batch_size from dict: {batch_size}")
+                    for i in range(batch_size):
+                        # Reconstruct sample i as list of dicts using available fields
+                        sample_messages = []
+                        # Try common fields 'role' and 'content'
+                        roles = msgs.get('role', [])[i] if 'role' in msgs else None
+                        contents = msgs.get('content', [])[i] if 'content' in msgs else None
+                        if isinstance(roles, list) and isinstance(contents, list) and len(roles) == len(contents):
+                            for r, c in zip(roles, contents):
+                                sample_messages.append({"role": r, "content": c})
+                        else:
+                            # Fallback: try to rebuild from a generic list of dicts if present
+                            # msgs may have a single key representing the full objects
+                            for k in keys:
+                                candidate = msgs[k][i] if isinstance(msgs[k], list) else None
+                                if isinstance(candidate, list) and candidate and isinstance(candidate[0], dict):
+                                    sample_messages = candidate
+                                    break
+                        if sample_messages:
+                            text = tokenizer.apply_chat_template(
+                                sample_messages,
+                                tokenize=False,
+                                add_generation_prompt=False,
+                            ) if hasattr(tokenizer, "apply_chat_template") else build_text_from_messages(sample_messages)
+                            texts.append(text)
+                # Batched: list of lists
+                elif isinstance(msgs, list) and msgs and isinstance(msgs[0], list):
+                    for obj in msgs:
+                        if obj and isinstance(obj[0], dict):
+                            text = tokenizer.apply_chat_template(
+                                obj,
+                                tokenize=False,
+                                add_generation_prompt=False,
+                            ) if hasattr(tokenizer, "apply_chat_template") else build_text_from_messages(obj)
+                            texts.append(text)
+                # Single example: list of dicts
+                elif isinstance(msgs, list) and msgs and isinstance(msgs[0], dict):
+                    text = tokenizer.apply_chat_template(
+                        msgs,
+                        tokenize=False,
+                        add_generation_prompt=False,
+                    ) if hasattr(tokenizer, "apply_chat_template") else build_text_from_messages(msgs)
+                    texts.append(text)
+            except Exception as e:
+                print(f"[preprocess] error reconstructing messages: {e}")
+        # When using input_columns=["messages"], the function may receive just the messages column values
+        elif isinstance(examples, list):
+            msgs = examples
             if isinstance(msgs, list) and msgs and isinstance(msgs[0], list):
                 for obj in msgs:
                     if obj and isinstance(obj[0], dict):
@@ -308,18 +387,19 @@ def main():
                             add_generation_prompt=False,
                         ) if hasattr(tokenizer, "apply_chat_template") else build_text_from_messages(obj)
                         texts.append(text)
-            # Single example: list of dicts
-            elif isinstance(msgs, list) and msgs and isinstance(msgs[0], dict):
-                text = tokenizer.apply_chat_template(
-                    msgs,
-                    tokenize=False,
-                    add_generation_prompt=False,
-                ) if hasattr(tokenizer, "apply_chat_template") else build_text_from_messages(msgs)
-                texts.append(text)
 
         if not texts:
-            return {}
+            # Return empty dict for batch
+            print("[preprocess] empty texts batch")
+            return {"input_ids": [], "attention_mask": []}
         tokenized = tokenizer(texts, truncation=True, max_length=cfg.finetune_train_seqlen, padding=False)
+        try:
+            n_in = len(texts)
+            n_out = len(tokenized.get("input_ids", []))
+            print(f"[preprocess] batch texts={n_in} -> tokenized input_ids={n_out}")
+        except Exception:
+            pass
+        # Return as dict of lists for batched mapping
         return tokenized
 
     ds = make_hf_dataset_from_files(train_files, eval_files, streaming=not args.no_stream)
@@ -327,6 +407,17 @@ def main():
     # For streaming datasets, map with batched=False
     train_ds = ds["train"]
     eval_ds = ds["validation"]
+    # Debug raw dataset structure
+    try:
+        print(f"[debug] raw train columns: {train_ds.column_names}")
+        sample0 = train_ds[0]
+        print(f"[debug] raw train sample0 keys: {list(sample0.keys())}")
+        if "messages" in sample0:
+            print(f"[debug] raw train sample0 messages type: {type(sample0['messages'])}")
+            if isinstance(sample0["messages"], list) and sample0["messages"]:
+                print(f"[debug] raw train sample0 messages[0] type: {type(sample0['messages'][0])}")
+    except Exception as e:
+        print(f"[debug] error inspecting raw dataset: {e}")
 
     if args.max_train_samples:
         train_ds = train_ds.take(args.max_train_samples)
@@ -397,22 +488,62 @@ def main():
                 except Exception:
                     pass
 
+    # Remove 'messages' column so only tokenized output is kept
+    train_dataset = train_ds.map(
+        preprocess,
+        batched=True,
+        input_columns=["messages"],
+        load_from_cache_file=False,
+        desc="Tokenizing train",
+    ) if hasattr(train_ds, "map") else train_ds
+    eval_dataset = eval_ds.map(
+        preprocess,
+        batched=True,
+        input_columns=["messages"],
+        load_from_cache_file=False,
+        desc="Tokenizing eval",
+    ) if hasattr(eval_ds, "map") else eval_ds
+    # Remove all non-model columns to avoid DataCollator confusion
+    keep_cols = {"input_ids", "attention_mask"}
+    drop_train = [c for c in train_dataset.column_names if c not in keep_cols]
+    drop_eval = [c for c in eval_dataset.column_names if c not in keep_cols]
+    if drop_train:
+        train_dataset = train_dataset.remove_columns(drop_train)
+    if drop_eval:
+        eval_dataset = eval_dataset.remove_columns(drop_eval)
+    # Debug dataset sizes and sample
+    try:
+        print(f"[debug] train_dataset len: {len(train_dataset)}")
+        print(f"[debug] eval_dataset len: {len(eval_dataset)}")
+        # Show first sample keys if available
+        if len(train_dataset) > 0:
+            first = train_dataset[0]
+            print(f"[debug] first train sample keys: {list(first.keys())}")
+            for k in ("input_ids", "attention_mask"):
+                if k in first:
+                    print(f"[debug] first train sample {k} len: {len(first[k])}")
+    except Exception as e:
+        print(f"[debug] dataset inspection error: {e}")
+
     trainer = Trainer(
         model=model,
         args=training_args,
-        train_dataset=train_ds.map(preprocess) if hasattr(train_ds, "map") else train_ds,
-        eval_dataset=eval_ds.map(preprocess) if hasattr(eval_ds, "map") else eval_ds,
+        train_dataset=train_dataset,
+        eval_dataset=eval_dataset,
         tokenizer=tokenizer,
         data_collator=data_collator,
     )
     if TrainerCallback is not None:
         trainer.add_callback(PerplexityLoggingCallback())
-        # Add OpenTelemetry tracing callback if available
+        # Add OpenTelemetry tracing callback if available and compatible
         try:
-            from otel_callback import OpenTelemetryTrainerCallback
-            trainer.add_callback(OpenTelemetryTrainerCallback())
-        except Exception:
-            pass
+            from otel_callback import OpenTelemetryTrainerCallback  # type: ignore
+            if hasattr(OpenTelemetryTrainerCallback, "on_prediction_step"):
+                trainer.add_callback(OpenTelemetryTrainerCallback())
+            else:
+                print("[debug] Skipping OpenTelemetryTrainerCallback: missing on_prediction_step")
+        except Exception as e:
+            print(f"[debug] Skipping OpenTelemetryTrainerCallback: {e}")
 
     # Pre-training evaluation (perplexity)
     pre_metrics = trainer.evaluate()

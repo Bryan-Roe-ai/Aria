@@ -6,11 +6,23 @@ Supports multiple evaluation metrics and automated benchmarking
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 import numpy as np
 from dataclasses import dataclass, asdict
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+try:
+    from peft import PeftModel  # type: ignore
+except Exception:
+    PeftModel = None  # type: ignore
+try:
+    import sacrebleu  # type: ignore
+except Exception:
+    sacrebleu = None  # type: ignore
+try:
+    from rouge_score import rouge_scorer  # type: ignore
+except Exception:
+    rouge_scorer = None  # type: ignore
 from datasets import load_dataset
 import yaml
 
@@ -66,12 +78,41 @@ class AutomaticEvaluator:
             EvaluationMetrics object with results
         """
         print(f"Loading model from {model_path}...")
-        model = AutoModelForCausalLM.from_pretrained(
-            model_path,
-            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
-            device_map="auto" if self.device == "cuda" else None
-        )
-        tokenizer = AutoTokenizer.from_pretrained(model_path)
+        model_dir = Path(model_path)
+        adapter_dir = None
+        if (model_dir / "lora_adapter").exists():
+            adapter_dir = model_dir / "lora_adapter"
+        elif (model_dir / "adapter_config.json").exists():
+            adapter_dir = model_dir
+
+        if adapter_dir is not None and PeftModel is not None:
+            # Load base model from adapter config if available
+            try:
+                import json as _json
+                with open(adapter_dir / "adapter_config.json", "r", encoding="utf-8") as f:
+                    adapter_cfg = _json.load(f)
+                base_model_id = adapter_cfg.get("base_model_name_or_path") or self.config.get("model")
+                # Fallback mapping similar to training script
+                if base_model_id == "Phi-3.6-mini-instruct":
+                    base_model_id = "microsoft/Phi-3.5-mini-instruct"
+                print(f"Detected LoRA adapter. Base model: {base_model_id}")
+                base_model = AutoModelForCausalLM.from_pretrained(
+                    base_model_id,
+                    torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                    device_map="auto" if self.device == "cuda" else None,
+                )
+                tokenizer_source = model_dir / "tokenizer" if (model_dir / "tokenizer").exists() else base_model_id
+                tokenizer = AutoTokenizer.from_pretrained(tokenizer_source)
+                model = PeftModel.from_pretrained(base_model, adapter_dir)
+            except Exception as e:
+                raise RuntimeError(f"Failed to load LoRA adapter from {adapter_dir}: {e}")
+        else:
+            model = AutoModelForCausalLM.from_pretrained(
+                model_path,
+                torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+                device_map="auto" if self.device == "cuda" else None
+            )
+            tokenizer = AutoTokenizer.from_pretrained(model_path)
         
         print(f"Loading test dataset: {test_dataset}...")
         dataset = self._load_test_data(test_dataset, num_samples)
@@ -194,12 +235,90 @@ class AutomaticEvaluator:
         metrics: List[str]
     ) -> Dict[str, Any]:
         """Compute generation quality metrics (BLEU, ROUGE)"""
-        # Placeholder for quality metrics
-        # Would require rouge-score and sacrebleu packages
-        return {
-            "bleu_score": None,
-            "rouge_scores": None
-        }
+        want_bleu = "bleu" in metrics
+        want_rouge = "rouge" in metrics
+
+        if not want_bleu and not want_rouge:
+            return {"bleu_score": None, "rouge_scores": None}
+
+        if want_bleu and sacrebleu is None:
+            print("[quality] sacrebleu not installed; skipping BLEU")
+            want_bleu = False
+        if want_rouge and rouge_scorer is None:
+            print("[quality] rouge-score not installed; skipping ROUGE")
+            want_rouge = False
+
+        prompts: List[str] = []
+        refs: List[str] = []
+        preds: List[str] = []
+
+        # Prepare small eval subset (already controlled by caller num_samples)
+        pairs: List[Tuple[str, str]] = []
+        for ex in dataset:
+            p, r = self._extract_prompt_and_reference(ex)
+            if p and r:
+                pairs.append((p, r))
+
+        # Generate predictions
+        model.eval()
+        with torch.no_grad():
+            for p, r in pairs:
+                inputs = tokenizer(p, return_tensors="pt", truncation=True, max_length=512)
+                inputs = {k: v.to(self.device) for k, v in inputs.items()}
+                output_ids = model.generate(**inputs, max_new_tokens=96, do_sample=False)
+                text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+                # Heuristic: keep only completion after prompt
+                if text.startswith(p):
+                    text = text[len(p):].strip()
+                prompts.append(p)
+                refs.append(r)
+                preds.append(text)
+
+        results: Dict[str, Any] = {"bleu_score": None, "rouge_scores": None}
+
+        if want_bleu and preds and refs:
+            try:
+                bleu = sacrebleu.corpus_bleu(preds, [refs])
+                results["bleu_score"] = float(bleu.score)
+            except Exception as e:
+                print(f"[quality] BLEU failed: {e}")
+
+        if want_rouge and preds and refs:
+            try:
+                scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
+                totals = {"rouge1": 0.0, "rouge2": 0.0, "rougeL": 0.0}
+                for hyp, ref in zip(preds, refs):
+                    scores = scorer.score(ref, hyp)
+                    for k in totals:
+                        totals[k] += scores[k].fmeasure
+                n = max(1, len(preds))
+                results["rouge_scores"] = {k: float(v / n) for k, v in totals.items()}
+            except Exception as e:
+                print(f"[quality] ROUGE failed: {e}")
+
+        return results
+
+    def _extract_prompt_and_reference(self, example: Dict[str, Any]) -> Tuple[str, str]:
+        """Return (prompt, reference) for chat-style examples.
+        Prompt: last user message; Reference: last assistant message.
+        Fallbacks to text-only examples if needed.
+        """
+        if "messages" in example and isinstance(example["messages"], list):
+            user = ""
+            assistant = ""
+            for m in example["messages"]:
+                role = (m.get("role") or "").lower()
+                content = m.get("content") or ""
+                if role == "user":
+                    user = content
+                elif role == "assistant":
+                    assistant = content
+            return user.strip(), assistant.strip()
+        if "instruction" in example and "response" in example:
+            return str(example.get("instruction", "")), str(example.get("response", ""))
+        # Fallback: use text twice so it contributes neutrally to averages
+        t = self._extract_text(example)
+        return t, t
     
     def _extract_text(self, example: Dict[str, Any]) -> str:
         """Extract text from dataset example"""
