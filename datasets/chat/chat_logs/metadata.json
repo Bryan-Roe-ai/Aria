@@ -1,0 +1,8 @@
+{
+  "log_files": [],
+  "total_examples": 1,
+  "train_examples": 1,
+  "test_examples": 1,
+  "seed": 42,
+  "context_window": 6
+}

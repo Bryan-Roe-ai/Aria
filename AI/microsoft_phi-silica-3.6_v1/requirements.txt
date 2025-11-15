@@ -6,6 +6,7 @@ peft>=0.12.0
 accelerate>=0.33.0
 tqdm>=4.66.0
 einops>=0.7.0
+numpy>=1.24.0
 # Install torch appropriate to your CUDA; example:
 # pip install torch --index-url https://download.pytorch.org/whl/cu121
 
@@ -14,3 +15,10 @@ einops>=0.7.0
 # opentelemetry-api>=1.20.0
 # opentelemetry-sdk>=1.20.0
 # opentelemetry-exporter-otlp-proto-grpc>=1.20.0
+
+# Optional: Advanced training features (install as needed)
+# sentence-transformers>=2.2.0  # For semantic pruning & RAG
+# rouge-score>=0.1.2            # For evaluation metrics
+# sacrebleu>=2.3.0              # For BLEU scores
+# bitsandbytes>=0.41.0          # For 4-bit/8-bit quantization
+# flash-attn>=2.3.0             # For flash attention (Linux only)

@@ -169,6 +169,33 @@ ds = load_dataset("WizardLM/WizardLM_evol_instruct_70k")
 - **Code Contests**: Programming competition problems
 - **The Stack**: 3TB of permissively licensed code
 
+#### Internal Repository Corpus (Synthetic)
+- **Source**: Local workspace files (code + markdown docs)
+- **Location**: `datasets/chat/app_repo`
+- **Format**: `train.json` / `test.json` newline-delimited JSON (each line has `messages` array)
+- **Size**: Small (synthetic; generated on demand)
+- **License**: Internal use only (do not distribute externally)
+- **Use**: Fine-tune Phi-3.6 adapters to improve model awareness of project-specific patterns, configuration philosophy, and extension guidelines.
+- **Generation Script**: `scripts/generate_repo_training_dataset.py`
+- **Prompt Types**: Summary, functions/classes listing, safe extension guidance.
+
+**Generate (PowerShell):**
+```powershell
+python .\scripts\generate_repo_training_dataset.py --max-records 300
+```
+
+**Dry-run validate:**
+```powershell
+python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets\chat\app_repo --dry-run
+```
+
+**Smoke-test training (CPU friendly):**
+```powershell
+python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets\chat\app_repo --max-train-samples 64 --max-eval-samples 16
+```
+
+> Tip: Re-run generation script after significant repository changes to refresh synthetic summaries. Keep max-records modest (≤500) to avoid overfitting and retain generalization from broader public datasets.
+
 #### Customer Support
 - **MultiWOZ**: Multi-domain dialogue (10,000 conversations)
 - **Ubuntu IRC**: Technical support logs

@@ -1,0 +1,33 @@
+# Optional dependencies for advanced training features
+# Install with: pip install -r requirements-advanced.txt
+
+# Semantic search and document embedding
+sentence-transformers>=2.2.0
+
+# Evaluation metrics
+rouge-score>=0.1.2
+sacrebleu>=2.3.0
+
+# Memory optimization
+bitsandbytes>=0.41.0
+
+# GPU optimization (Linux only - fails gracefully on Windows)
+# flash-attn>=2.3.0
+
+# Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+scipy>=1.11.0
+
+# Model serving & deployment
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.4.0
+
+# Model export
+onnx>=1.15.0
+onnxruntime>=1.16.0
+
+# Experiment tracking (optional)
+# mlflow>=2.8.0
+# wandb>=0.16.0

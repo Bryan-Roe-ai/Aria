@@ -35,6 +35,36 @@
       "description": "Dolly 15k - High-quality instruction pairs",
       "license": "CC BY-SA 3.0 (Commercial OK)",
       "size_gb": 0.05
+    },
+    "app_repo": {
+      "category": "chat",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\app_repo",
+      "description": "Internal repository corpus (code + docs) synthetic Q/A for model awareness",
+      "license": "Internal use only (do not distribute externally)",
+      "size_gb": 0.0,
+      "generation_script": "scripts/generate_repo_training_dataset.py",
+      "source": "Local workspace files",
+      "status": "synthetic-internal"
+    },
+    "chat_logs": {
+      "category": "chat",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\chat_logs",
+      "description": "Extracted user-assistant interaction logs (local provider or cloud when enabled)",
+      "license": "Internal user interaction data",
+      "size_gb": 0.0,
+      "generation_script": "scripts/extract_chat_logs_dataset.py",
+      "source": "talk-to-ai/logs/*.jsonl",
+      "status": "dynamic"
+    },
+    "mixed_chat": {
+      "category": "chat",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\mixed_chat",
+      "description": "Merged corpus: internal (app_repo + chat_logs) + selected public instruction datasets",
+      "license": "Composite (internal + respective public licenses)",
+      "size_gb": 0.0,
+      "generation_script": "scripts/merge_chat_datasets.py",
+      "source": "Multiple dataset directories",
+      "status": "composite"
     }
   },
   "metadata": {
