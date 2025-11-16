@@ -18,7 +18,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -26,25 +28,57 @@
             padding: 20px;
         }
 
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .chat-container {
             width: 100%;
             max-width: 800px;
             height: 90vh;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chat-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.4);
         }
 
         .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .chat-header h1 {
@@ -62,9 +96,11 @@
 
         .chat-messages {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
-            padding: 20px;
-            background: #f8f9fa;
+            padding: 24px;
+            background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+            scroll-behavior: smooth;
         }
 
         .message {
@@ -189,13 +225,29 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transform: scale(1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .message.user .message-content:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
         }
 
         .message.assistant .message-content {
             background: white;
             color: #333;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #e8e8e8;
             border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transform: scale(1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .message.assistant .message-content:hover {
+            transform: scale(1.01);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
         }
 
         .message.system .message-content {
@@ -223,13 +275,14 @@
         }
 
         .typing-indicator span {
-            height: 8px;
-            width: 8px;
-            background: #667eea;
+            height: 10px;
+            width: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: inline-block;
-            margin: 0 2px;
+            margin: 0 3px;
             animation: bounce 1.4s infinite ease-in-out both;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
         }
 
         .typing-indicator span:nth-child(1) {
@@ -304,42 +357,86 @@
 
         #messageInput {
             flex: 1;
-            padding: 12px 16px;
+            padding: 14px 20px;
             border: 2px solid #e0e0e0;
             border-radius: 24px;
             font-size: 15px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
             resize: none;
             max-height: 150px;
             min-height: 48px;
             font-family: inherit;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
         #messageInput:focus {
             border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+            transform: translateY(-1px);
+        }
+
+        #messageInput::placeholder {
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        #messageInput:focus::placeholder {
+            color: #bbb;
         }
 
         #sendButton {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 28px;
             border-radius: 24px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #sendButton::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        #sendButton:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         #sendButton:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        #sendButton:active:not(:disabled) {
+            transform: translateY(-1px) scale(1.02);
         }
 
         #sendButton:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.4; }
         }
 
         .cancel-stream-btn {
@@ -401,21 +498,27 @@
         }
 
         .control-button {
-            background: #f0f0f0;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 16px;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            border: 1px solid #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 13px;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
 
         .control-button:hover {
-            background: #e0e0e0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
         .control-button:active {
-            transform: scale(0.95);
+            transform: translateY(0) scale(0.98);
         }
 
         .copy-button {
@@ -502,11 +605,15 @@
 
         /* Dark Theme */
         body.dark-theme {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
         }
 
         body.dark-theme .chat-container {
-            background: #1e1e1e;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
         body.dark-theme .chat-header {
@@ -795,12 +902,8 @@
 
     <div class="chat-container">
         <div class="chat-header">
-            <h1>🤖 AI Chat</h1>
-            <div class="provider-info" id="providerInfo">Local</div>
-            <div id="backendStatusBox" class="backend-status-box">
-                <span id="backendStatusText" class="backend-status-text">Backend</span>
-                <button id="startBackendBtn" class="start-backend-btn">▶️ Start</button>
-            </div>
+            <h1>🤖 AI Chat - LM Studio</h1>
+            <div class="provider-info" id="providerInfo">Connecting...</div>
         </div>
 
         <div class="chat-messages" id="chatMessages">
@@ -900,97 +1003,37 @@
 
     <script src="chat.js"></script>
     <script>
-    // Backend status check logic
+    // LM Studio status check logic
     document.addEventListener('DOMContentLoaded', function() {
-        var backendStatusText = document.getElementById('backendStatusText');
-        var startBackendBtn = document.getElementById('startBackendBtn');
-        // Auto-check backend status on page load
-        function checkBackendStatus(auto) {
-            if (!backendStatusText) return;
-            backendStatusText.textContent = 'Checking...';
-            backendStatusText.classList.remove('ok', 'fail');
-            fetch('/api/ai/status').then(function(resp) {
-                if (resp.ok) {
-                    backendStatusText.textContent = 'Backend running!';
-                    backendStatusText.classList.add('ok');
-                } else {
-                    backendStatusText.textContent = 'Backend not responding.';
-                    backendStatusText.classList.add('fail');
-                }
-            }).catch(function() {
-                backendStatusText.textContent = 'Backend not responding.';
-                backendStatusText.classList.add('fail');
-            });
-            setTimeout(function() {
-                backendStatusText.textContent = 'Check backend';
-                backendStatusText.classList.remove('ok', 'fail');
-            }, auto ? 6000 : 4000);
-        }
-        // Initial check on load
-        checkBackendStatus(true);
-        if (backendStatusText) {
-            backendStatusText.addEventListener('click', function() {
-                checkBackendStatus(false);
-            });
-        }
-        if (startBackendBtn) {
-            startBackendBtn.addEventListener('click', function() {
-                startBackendBtn.disabled = true;
-                startBackendBtn.textContent = 'Starting...';
-                
-                // First check if backend is already running
-                fetch('/api/ai/status')
-                    .then(function(resp) {
-                        if (resp.ok) {
-                            // Backend already running
-                            startBackendBtn.textContent = 'Already running!';
-                            setTimeout(function() {
-                                startBackendBtn.textContent = '▶️ Start';
-                                startBackendBtn.disabled = false;
-                            }, 2000);
-                            return;
-                        }
-                        throw new Error('Backend not running');
-                    })
-                    .catch(function() {
-                        // Backend not running - show modal with instructions
-                        var modal = document.getElementById('backendModal');
-                        if (modal) {
-                            modal.style.display = 'block';
-                            // Try to open PowerShell with the command (requires user to paste)
-                            var command = 'func start';
-                            // Copy command to clipboard
-                            if (navigator.clipboard) {
-                                navigator.clipboard.writeText(command).then(function() {
-                                    startBackendBtn.textContent = 'Cmd copied!';
-                                }).catch(function() {
-                                    startBackendBtn.textContent = 'See instructions';
-                                });
-                            } else {
-                                startBackendBtn.textContent = 'See instructions';
-                            }
-                        }
-                        setTimeout(function() {
-                            startBackendBtn.textContent = '▶️ Start';
-                            startBackendBtn.disabled = false;
-                        }, 3000);
-                    });
-            });
+        var providerInfo = document.getElementById('providerInfo');
+        
+        // Auto-check LM Studio status on page load
+        function checkLMStudioStatus() {
+            if (!providerInfo) return;
+            fetch('http://127.0.0.1:1234/v1/models')
+                .then(function(resp) {
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        throw new Error('Not running');
+                    }
+                })
+                .then(function(data) {
+                    var modelId = data?.data?.[0]?.id || 'Ready';
+                    providerInfo.textContent = 'LM Studio - ' + modelId;
+                    providerInfo.style.color = '#fff';
+                })
+                .catch(function() {
+                    providerInfo.textContent = 'LM Studio not running';
+                    providerInfo.style.color = '#ffc107';
+                });
         }
         
-        var closeModalBtn = document.getElementById('closeBackendModal');
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', function() {
-                var modal = document.getElementById('backendModal');
-                if (modal) modal.style.display = 'none';
-            });
-        }
-        window.onclick = function(event) {
-            var modal = document.getElementById('backendModal');
-            if (modal && event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
+        // Initial check on load
+        checkLMStudioStatus();
+        
+        // Check every 30 seconds
+        setInterval(checkLMStudioStatus, 30000);
     });
     </script>
 </body>

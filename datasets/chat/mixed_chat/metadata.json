@@ -1,0 +1,29 @@
+{
+  "sources": [
+    "datasets/chat/app_repo",
+    "datasets/chat/chat_logs",
+    "datasets/chat/dolly"
+  ],
+  "source_stats": {
+    "app_repo": {
+      "train_loaded": 270,
+      "test_loaded": 30,
+      "used": 200
+    },
+    "chat_logs": {
+      "train_loaded": 1,
+      "test_loaded": 1,
+      "used": 2
+    },
+    "dolly": {
+      "train_loaded": 15011,
+      "test_loaded": 1,
+      "used": 200
+    }
+  },
+  "total_unique_records": 316,
+  "train_records": 290,
+  "test_records": 26,
+  "train_ratio": 0.92,
+  "seed": 42
+}

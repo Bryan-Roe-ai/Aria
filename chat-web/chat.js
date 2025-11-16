@@ -1,8 +1,9 @@
 // Chat Web Client - Version 2024-11-15 18:31 - Quantum Enhanced
 console.log('chat.js loaded - v2024-11-15-18:31-quantum - Provider: auto-detect with quantum mode');
-const API_BASE = '/api/chat';
-const STREAM_API = '/api/chat/stream';
-const STATUS_API = '/api/ai/status';
+const AI_BASE = 'http://127.0.0.1:1234';
+const API_BASE = `${AI_BASE}/v1/chat/completions`;
+const STREAM_API = `${AI_BASE}/v1/chat/completions`;
+const STATUS_API = `${AI_BASE}/v1/models`;
 const QUANTUM_CLASSIFY_API = '/api/quantum/classify';
 const QUANTUM_CIRCUIT_API = '/api/quantum/circuit';
 const QUANTUM_INFO_API = '/api/quantum/info';
@@ -93,8 +94,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     sendButton.addEventListener('click', sendMessage);
-    newChatButton.addEventListener('click', newChat);
-    clearButton.addEventListener('click', () => clearChat(false));
+    newChatButton.addEventListener('click', () => {
+        console.log('New Chat button clicked');
+        newChat();
+    });
+    clearButton.addEventListener('click', () => {
+        console.log('Clear button clicked');
+        clearChat(false);
+    });
     exportButton.addEventListener('click', exportChat);
     importButton.addEventListener('click', importChat);
     toggleThemeButton.addEventListener('click', toggleTheme);
@@ -142,29 +149,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchSystemStatus() {
     try {
-        updateStatus('Checking system status...');
+        updateStatus('Checking LM Studio...');
         const response = await fetch(STATUS_API);
         if (response.ok) {
-            systemStatus = await response.json();
+            const data = await response.json();
+            systemStatus = { status: 'ok', data };
             updateStatusFromSystem();
         }
     } catch (error) {
-        console.warn('Status check failed:', error);
-        updateStatus('Status check unavailable');
+        console.warn('LM Studio not available:', error);
+        updateStatus('LM Studio not responding');
     }
 }
 
 function updateStatusFromSystem() {
     if (!systemStatus) return;
 
-    // Update provider info with actual detected provider
-    const provider = systemStatus.active_provider || 'local';
-    const model = systemStatus.model || 'default';
-
     // Show success message if everything looks good
     if (systemStatus.status === 'ok') {
-        updateStatus(`Ready - ${provider} (${model})`);
-        providerInfo.textContent = `${provider} - ${model}`;
+        const modelData = systemStatus.data?.data?.[0];
+        const modelId = modelData?.id || 'unknown';
+        updateStatus(`Ready - LM Studio (${modelId})`);
+        providerInfo.textContent = `LM Studio - ${modelId}`;
     }
 }
 
@@ -232,9 +238,10 @@ async function sendMessage() {
             // Max retries exceeded or non-retryable error
             retryCount = 0;
             const errorMsg = error.message.includes('NetworkError') || error.message.includes('Failed to fetch')
-                ? '❌ Network error. Please check your connection and ensure the Functions host is running.'
+                ? '❌ Network error. Please ensure LM Studio is running on http://127.0.0.1:1234'
                 : `❌ Error: ${error.message}`;
             addMessage('system', errorMsg);
+            console.error('Full error details:', error);
             updateStatus('Error - check console');
             messageInput.disabled = false;
             sendButton.disabled = false;
@@ -245,29 +252,46 @@ async function sendMessage() {
 }
 
 async function oneShotResponse(typingIndicator) {
+    // Prepare messages with system prompt if provided
+    const apiMessages = systemPrompt ? 
+        [{ role: 'system', content: systemPrompt }, ...messages] : 
+        messages;
+
+    console.log('Sending non-streaming request to:', API_BASE);
+    console.log('Request body:', { messages: apiMessages, temperature, max_tokens: maxOutputTokens });
+
     const response = await fetch(API_BASE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            messages: messages,
-            provider: quantumMode ? 'quantum' : 'auto',
+            messages: apiMessages,
             temperature: temperature,
-            max_output_tokens: maxOutputTokens,
-            system_prompt: systemPrompt,
+            max_tokens: maxOutputTokens,
+            stream: false
         })
     });
+    
+    console.log('Response status:', response.status, response.statusText);
+    
     if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+    
     const data = await response.json();
+    console.log('Response data:', data);
+    
     retryCount = 0;
     typingIndicator.remove();
-    const assistantMessage = data.response || 'No response received.';
+    const assistantMessage = data.choices?.[0]?.message?.content || 'No response received.';
+    console.log('Assistant message:', assistantMessage);
+    
     addMessage('assistant', assistantMessage, true);
     messages.push({ role: 'assistant', content: assistantMessage });
     updateMessageCount();
-    if (data.provider) {
-        providerInfo.textContent = `${data.provider} - ${data.model || 'default'}`;
+    if (data.model) {
+        providerInfo.textContent = `LM Studio - ${data.model}`;
     }
     updateStatus('Ready');
     saveToStorage();
@@ -291,19 +315,28 @@ async function streamResponse(typingIndicator) {
 
     activeAbortController = new AbortController();
     
+    // Prepare messages with system prompt if provided
+    const apiMessages = systemPrompt ? 
+        [{ role: 'system', content: systemPrompt }, ...messages] : 
+        messages;
+    
+    console.log('Sending streaming request to:', STREAM_API);
+    console.log('Request body:', { messages: apiMessages, temperature, max_tokens: maxOutputTokens, stream: true });
+    
     try {
         const response = await fetch(STREAM_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                messages: messages,
-                provider: quantumMode ? 'quantum' : 'auto',
+                messages: apiMessages,
                 temperature: temperature,
-                max_output_tokens: maxOutputTokens,
-                system_prompt: systemPrompt,
+                max_tokens: maxOutputTokens,
+                stream: true
             }),
             signal: activeAbortController.signal
         });
+        
+        console.log('Stream response status:', response.status, response.statusText);
         
         if (!response.ok || !response.body) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -329,22 +362,29 @@ async function streamResponse(typingIndicator) {
                 buffer = buffer.slice(idx + 2);
                 if (chunk.startsWith('data:')) {
                     const dataJson = chunk.slice(5).trim();
-                    if (!dataJson) continue;
+                    if (!dataJson || dataJson === '[DONE]') {
+                        console.log('Stream chunk: [DONE]');
+                        continue;
+                    }
                     try {
                         const obj = JSON.parse(dataJson);
-                        const delta = obj.delta || '';
+                        const delta = obj.choices?.[0]?.delta?.content || '';
                         if (delta) {
+                            console.log('Stream delta:', delta);
                             fullText += delta;
                             // Update plain text during stream for speed
                             contentDiv.textContent = fullText;
                             chatMessages.scrollTop = chatMessages.scrollHeight;
                         }
-                    } catch {}
+                    } catch (e) {
+                        console.error('Parse error:', e, 'Data:', dataJson);
+                    }
                 }
             }
         }
 
         // Render final markdown for the whole message
+        console.log('Stream complete. Full text length:', fullText.length);
         if (typeof marked !== 'undefined') {
             contentDiv.innerHTML = marked.parse(fullText || '');
             // Add copy buttons to code blocks
@@ -390,6 +430,7 @@ async function streamResponse(typingIndicator) {
         isProcessing = false;
         messageInput.focus();
     }
+}
 
 function addMessage(role, content, useMarkdown = false) {
     const messageDiv = document.createElement('div');
@@ -448,27 +489,45 @@ function showTypingIndicator() {
 }
 
 function newChat() {
+    console.log('newChat() called');
     if (messages.length > 0 && !confirm('Start a new chat? Current conversation will be cleared.')) {
+        console.log('User cancelled new chat');
         return;
     }
     messages = [];
     messageCounter = 0;
-    clearChat();
+    isProcessing = false;
+    chatMessages.innerHTML = '';
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+    messageInput.value = '';
+    messageInput.focus();
+    localStorage.setItem('chatMessages', JSON.stringify([]));
     addMessage('system', 'New conversation started. How can I help you?');
     updateMessageCount();
+    updateStatus('Ready');
     saveToStorage();
+    console.log('New chat complete');
 }
 
 function clearChat(preserveMessages = false) {
+    console.log('clearChat() called, preserveMessages:', preserveMessages);
     if (!preserveMessages) {
         messages = [];
         messageCounter = 0;
+        isProcessing = false;
+        localStorage.setItem('chatMessages', JSON.stringify([]));
     }
     chatMessages.innerHTML = '';
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+    messageInput.value = '';
+    messageInput.focus();
     addMessage('system', 'Chat cleared. Type a message to continue.');
-    messageCounter = 1;
     updateMessageCount();
+    updateStatus('Ready');
     saveToStorage();
+    console.log('Clear chat complete');
 }
 
 function exportChat() {
