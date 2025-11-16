@@ -646,6 +646,114 @@
         .backend-status-text.fail {
             color: #dc3545 !important;
         }
+        .quantum-mode-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s;
+        }
+        .quantum-mode-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .quantum-mode-btn.active {
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+        }
+        .quantum-indicator {
+            color: #667eea;
+            font-weight: bold;
+            animation: quantumPulse 2s infinite;
+        }
+        @keyframes quantumPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .quantum-panel {
+            position: fixed;
+            right: 20px;
+            top: 80px;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .quantum-panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quantum-panel-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .quantum-panel-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .quantum-panel-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .quantum-panel-content {
+            padding: 20px;
+        }
+        .quantum-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .quantum-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .quantum-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+        .quantum-circuit-viz {
+            margin-top: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .circuit-display {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            white-space: pre;
+            color: #333;
+        }
+        body.dark-theme .quantum-panel {
+            background: #2a2a2a;
+        }
+        body.dark-theme .quantum-stat {
+            border-bottom-color: #444;
+        }
+        body.dark-theme .quantum-label {
+            color: #aaa;
+        }
+        body.dark-theme .quantum-circuit-viz {
+            background: #1a1a1a;
+        }
+        body.dark-theme .circuit-display {
+            color: #ccc;
+        }
         .start-backend-btn {
             font-size: 13px;
             font-weight: 500;
@@ -744,6 +852,7 @@
                 <button class="control-button" id="exportButton">💾 Export</button>
                 <button class="control-button" id="importButton">📥 Import</button>
                 <button class="control-button" id="toggleThemeButton">🌙 Dark</button>
+                <button class="control-button quantum-mode-btn" id="quantumModeButton">🔬 Quantum OFF</button>
             </div>
         </div>
 
@@ -753,6 +862,38 @@
             </div>
             <div class="stat-item">
                 <span id="statusText">Ready</span>
+            </div>
+            <div class="stat-item quantum-indicator" id="quantumIndicator" style="display:none;">
+                <span>🔬 <strong>Quantum Mode</strong></span>
+            </div>
+        </div>
+
+        <!-- Quantum Visualization Panel -->
+        <div class="quantum-panel" id="quantumPanel" style="display:none;">
+            <div class="quantum-panel-header">
+                <h3>⚛️ Quantum Analysis</h3>
+                <button class="quantum-panel-close" id="quantumPanelClose">✕</button>
+            </div>
+            <div class="quantum-panel-content">
+                <div class="quantum-stat">
+                    <span class="quantum-label">Classification:</span>
+                    <span class="quantum-value" id="quantumClassification">-</span>
+                </div>
+                <div class="quantum-stat">
+                    <span class="quantum-label">Confidence:</span>
+                    <span class="quantum-value" id="quantumConfidence">-</span>
+                </div>
+                <div class="quantum-stat">
+                    <span class="quantum-label">Qubits:</span>
+                    <span class="quantum-value" id="quantumQubits">4</span>
+                </div>
+                <div class="quantum-stat">
+                    <span class="quantum-label">Circuit Layers:</span>
+                    <span class="quantum-value" id="quantumLayers">2</span>
+                </div>
+                <div class="quantum-circuit-viz" id="quantumCircuitViz">
+                    <pre class="circuit-display">Awaiting quantum analysis...</pre>
+                </div>
             </div>
         </div>
     </div>

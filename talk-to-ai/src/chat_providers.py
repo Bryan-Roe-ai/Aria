@@ -349,12 +349,28 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
 
     Priority:
       1) explicit selection if provided
-      2) Azure if all required vars present
-      3) OpenAI if OPENAI_API_KEY is present
-      4) Local fallback
-            5) LoRA if provider is 'lora' and model_override is set
+      2) Quantum if selected
+      3) Azure if all required vars present
+      4) OpenAI if OPENAI_API_KEY is present
+      5) Local fallback
+      6) LoRA if provider is 'lora' and model_override is set
     """
     choice = (explicit or "auto").lower()
+
+    # Quantum config
+    if choice == "quantum":
+        try:
+            from quantum_provider import create_quantum_provider
+            temp_val = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+            max_tokens = int(max_output_tokens) if max_output_tokens is not None else 1024
+            provider, info = create_quantum_provider(
+                model=model_override,
+                temperature=temp_val,
+                max_output_tokens=max_tokens
+            )
+            return provider, ProviderChoice(name=info.name, model=info.model)
+        except ImportError as e:
+            raise RuntimeError(f"Quantum provider selected but quantum_provider module not available: {e}")
 
     # LoRA config
     if choice == "lora":

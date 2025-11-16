@@ -1,13 +1,17 @@
-// Chat Web Client - Version 2024-11-15 18:31
-console.log('chat.js loaded - v2024-11-15-18:31 - Provider: auto-detect only');
+// Chat Web Client - Version 2024-11-15 18:31 - Quantum Enhanced
+console.log('chat.js loaded - v2024-11-15-18:31-quantum - Provider: auto-detect with quantum mode');
 const API_BASE = '/api/chat';
 const STREAM_API = '/api/chat/stream';
 const STATUS_API = '/api/ai/status';
+const QUANTUM_CLASSIFY_API = '/api/quantum/classify';
+const QUANTUM_CIRCUIT_API = '/api/quantum/circuit';
+const QUANTUM_INFO_API = '/api/quantum/info';
 
 let messages = [];
 let isProcessing = false;
 let messageCounter = 0;
 let currentProvider = 'auto'; // Always use auto-detect for best available
+let quantumMode = false; // Quantum enhancement toggle
 let systemStatus = null;
 let retryCount = 0;
 const MAX_RETRIES = 3;
@@ -28,6 +32,10 @@ const clearButton = document.getElementById('clearButton');
 const exportButton = document.getElementById('exportButton');
 const importButton = document.getElementById('importButton');
 const toggleThemeButton = document.getElementById('toggleThemeButton');
+const quantumModeButton = document.getElementById('quantumModeButton');
+const quantumPanel = document.getElementById('quantumPanel');
+const quantumPanelClose = document.getElementById('quantumPanelClose');
+const quantumIndicator = document.getElementById('quantumIndicator');
 const providerInfo = document.getElementById('providerInfo');
 const messageCount = document.getElementById('messageCount');
 const statusText = document.getElementById('statusText');
@@ -90,6 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
     exportButton.addEventListener('click', exportChat);
     importButton.addEventListener('click', importChat);
     toggleThemeButton.addEventListener('click', toggleTheme);
+    quantumModeButton.addEventListener('click', toggleQuantumMode);
+    if (quantumPanelClose) {
+        quantumPanelClose.addEventListener('click', () => {
+            quantumPanel.style.display = 'none';
+        });
+    }
     streamToggle.addEventListener('change', (e) => {
         streamEnabled = !!e.target.checked;
         saveToStorage();
@@ -159,9 +173,16 @@ async function sendMessage() {
     console.log('- messageInput.value:', messageInput.value);
     console.log('- isProcessing:', isProcessing);
     console.log('- sendButton.disabled:', sendButton.disabled);
+    console.log('- quantumMode:', quantumMode);
     
     const text = messageInput.value.trim();
     if (!text || isProcessing) return;
+
+    // Perform quantum analysis if enabled
+    if (quantumMode) {
+        updateStatus('Performing quantum analysis...');
+        await performQuantumAnalysis(text);
+    }
 
     // Add user message to UI
     addMessage('user', text);
@@ -229,7 +250,7 @@ async function oneShotResponse(typingIndicator) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             messages: messages,
-            provider: 'auto',
+            provider: quantumMode ? 'quantum' : 'auto',
             temperature: temperature,
             max_output_tokens: maxOutputTokens,
             system_prompt: systemPrompt,
@@ -276,7 +297,7 @@ async function streamResponse(typingIndicator) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 messages: messages,
-                provider: 'auto',
+                provider: quantumMode ? 'quantum' : 'auto',
                 temperature: temperature,
                 max_output_tokens: maxOutputTokens,
                 system_prompt: systemPrompt,
@@ -610,3 +631,144 @@ function loadFromStorage() {
         console.error('Failed to load from storage:', e);
     }
 }
+
+// =============================================================================
+// Quantum Mode Functions
+// =============================================================================
+
+function toggleQuantumMode() {
+    quantumMode = !quantumMode;
+    
+    if (quantumMode) {
+        quantumModeButton.textContent = '🔬 Quantum ON';
+        quantumModeButton.classList.add('active');
+        quantumIndicator.style.display = 'flex';
+        quantumPanel.style.display = 'block';
+        currentProvider = 'quantum';
+        updateStatus('Quantum mode enabled');
+        
+        // Fetch quantum info
+        fetchQuantumInfo();
+    } else {
+        quantumModeButton.textContent = '🔬 Quantum OFF';
+        quantumModeButton.classList.remove('active');
+        quantumIndicator.style.display = 'none';
+        quantumPanel.style.display = 'none';
+        currentProvider = 'auto';
+        updateStatus('Quantum mode disabled');
+    }
+    
+    saveToStorage();
+}
+
+async function fetchQuantumInfo() {
+    try {
+        const response = await fetch(QUANTUM_INFO_API);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.available) {
+                updateStatus('Quantum backend ready');
+            } else {
+                updateStatus('Quantum backend unavailable - using classical fallback');
+            }
+        }
+    } catch (error) {
+        console.warn('Could not fetch quantum info:', error);
+    }
+}
+
+async function performQuantumAnalysis(text) {
+    if (!quantumMode) return null;
+    
+    try {
+        // Convert text to features (simple hash-based approach)
+        const features = textToFeatures(text);
+        
+        const response = await fetch(QUANTUM_CLASSIFY_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                features: features,
+                n_qubits: 4,
+                n_layers: 2
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Quantum API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Update quantum panel
+        document.getElementById('quantumClassification').textContent = 
+            data.classification.toUpperCase();
+        document.getElementById('quantumConfidence').textContent = 
+            (data.confidence * 100).toFixed(1) + '%';
+        document.getElementById('quantumQubits').textContent = 
+            data.quantum_state.n_qubits;
+        document.getElementById('quantumLayers').textContent = 
+            data.quantum_state.n_layers;
+        
+        // Get circuit visualization
+        await fetchCircuitVisualization(data.quantum_state.n_qubits, data.quantum_state.n_layers);
+        
+        return data;
+    } catch (error) {
+        console.error('Quantum analysis failed:', error);
+        document.getElementById('quantumClassification').textContent = 'ERROR';
+        return null;
+    }
+}
+
+async function fetchCircuitVisualization(nQubits, nLayers) {
+    try {
+        const response = await fetch(QUANTUM_CIRCUIT_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                n_qubits: nQubits,
+                n_layers: nLayers,
+                entanglement: 'linear'
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const vizElement = document.querySelector('.circuit-display');
+            if (vizElement) {
+                vizElement.textContent = data.visualization;
+            }
+        }
+    } catch (error) {
+        console.error('Circuit visualization failed:', error);
+    }
+}
+
+function textToFeatures(text) {
+    // Simple feature extraction: convert text to numeric features
+    // Using character codes and length statistics
+    const features = [];
+    const normalized = text.toLowerCase();
+    
+    // Add basic statistics
+    features.push(normalized.length / 100.0);  // Normalized length
+    features.push(normalized.split(' ').length / 50.0);  // Word count
+    features.push(normalized.split('?').length / 10.0);  // Question marks
+    features.push(normalized.split('!').length / 10.0);  // Exclamation marks
+    
+    // Add character distribution (simple hash)
+    let sum = 0;
+    for (let i = 0; i < Math.min(normalized.length, 20); i++) {
+        sum += normalized.charCodeAt(i);
+    }
+    features.push((sum % 256) / 256.0);
+    
+    // Pad or truncate to 8 features
+    while (features.length < 8) {
+        features.push(0.0);
+    }
+    
+    return features.slice(0, 8);
+}
+
