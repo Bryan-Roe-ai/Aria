@@ -10,7 +10,7 @@ This workspace contains **three independent AI/ML projects**:
 
 Hybrid quantum-classical ML using Azure Quantum + PennyLane + PyTorch with **Interactive Web Dashboard** and MCP Server support.
 
-**✨ NEW: Web Training Dashboard**
+#### ✨ NEW: Web Training Dashboard
 
 Train and visualize quantum AI models with a beautiful interactive UI:
 
@@ -55,7 +55,8 @@ python src/quantum_classifier.py
 python quantum_mcp_server.py
 ```
 
-**Documentation:** 
+**Documentation:**
+
 - 🎨 **[Web Dashboard Guide](quantum-ai/WEB_DASHBOARD_README.md)** - Interactive training UI (NEW!)
 - 📖 [Main README](quantum-ai/README.md) - Full project documentation
 - 🤖 [MCP Server Guide](quantum-ai/MCP_SERVER_README.md) - AI agent integration
@@ -192,7 +193,6 @@ See `quantum-ai/azure/DEPLOYMENT.md` for complete deployment guide.
 - Use local provider for development/testing
 
 ---
-
 
 ### Quantum AI MCP Server
 

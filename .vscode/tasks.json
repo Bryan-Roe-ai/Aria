@@ -75,6 +75,29 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Run: Quantum AutoRun (dry-run)",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\quantum_autorun.py",
+				"--dry-run"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run: Quantum AutoRun (all)",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\quantum_autorun.py"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
 			"label": "pip install (quantum-ai)",
 			"type": "shell",
 			"windows": {

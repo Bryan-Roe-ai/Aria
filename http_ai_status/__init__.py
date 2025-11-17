@@ -114,6 +114,17 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             except Exception:
                 autotrain_last = {"error": "failed to parse status.json"}
 
+        # Quantum AutoRun status if present
+        qautorun_dir = repo_root / "data_out" / "quantum_autorun"
+        qautorun_status_path = qautorun_dir / "status.json"
+        qautorun_last: dict | None = None
+        if qautorun_status_path.exists():
+            try:
+                with qautorun_status_path.open("r", encoding="utf-8") as f:
+                    qautorun_last = json.load(f)
+            except Exception:
+                qautorun_last = {"error": "failed to parse status.json"}
+
         payload = {
             "active_provider": info.name,
             "model": info.model,
@@ -136,6 +147,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "chat_web_js": chat_web_js,
             },
             "autotrain": autotrain_last,
+            "quantum_autorun": qautorun_last,
             "endpoints": [
                 "/api/chat-web",
                 "/api/chat-web/chat.js",
