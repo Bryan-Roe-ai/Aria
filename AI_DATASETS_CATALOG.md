@@ -52,28 +52,210 @@ python .\src\quantum_classifier.py --dataset iris
 ```
 
 ### UCI Machine Learning Repository
-**Free, High-Quality Datasets for Quantum Experiments**
+**29 Datasets (27 Working) - Free, High-Quality Datasets for Quantum Experiments**
 
-#### Heart Disease
-- **URL**: https://archive.ics.uci.edu/ml/datasets/Heart+Disease
-- **Size**: 303 samples, 14 features
-- **Task**: Binary classification (disease presence)
-- **Format**: CSV
-- **Use**: Quantum medical diagnosis models
+#### Medical Domain (8 datasets)
+Healthcare applications for quantum machine learning
 
-#### Ionosphere
-- **URL**: https://archive.ics.uci.edu/ml/datasets/Ionosphere
-- **Size**: 351 samples, 34 features
-- **Task**: Binary classification
-- **Format**: CSV
-- **Use**: Quantum feature extraction
+**Heart Disease**
+- **Size**: 303 samples, 14 features, 2 classes
+- **Task**: Binary classification (disease presence/absence)
+- **Use**: Quantum medical diagnosis, feature entanglement analysis
+- **Training**: `python train_custom_dataset.py --dataset heart_disease --qubits 5 --layers 2`
 
-#### Sonar
-- **URL**: https://archive.ics.uci.edu/ml/datasets/Connectionist+Bench+(Sonar,+Mines+vs.+Rocks)
-- **Size**: 208 samples, 60 features
-- **Task**: Binary classification (mines vs rocks)
-- **Format**: CSV
-- **Use**: Quantum signal processing
+**Parkinson's Disease Detection**
+- **Size**: 195 samples, 22 features, 2 classes
+- **Task**: Binary classification from voice measurements
+- **Use**: Quantum voice biomarker analysis, high-dimensional feature processing
+- **Training**: `python train_custom_dataset.py --dataset parkinsons --qubits 6 --layers 3`
+
+**Dermatology**
+- **Size**: 366 samples, 34 features, 6 classes
+- **Task**: Multi-class skin disease classification
+- **Use**: Quantum multi-class medical diagnosis
+- **Training**: `python train_custom_dataset.py --dataset dermatology --qubits 6 --layers 3`
+
+**Liver Disorders**
+- **Size**: 345 samples, 6 features, 2 classes
+- **Task**: Binary classification from blood tests
+- **Use**: Quantum medical screening, low-dimensional quantum circuits
+- **Training**: `python train_custom_dataset.py --dataset liver_disorders --qubits 4 --layers 2`
+
+**Thyroid Conditions**
+- **Size**: 215 samples, 5 features, 3 classes
+- **Task**: Multi-class endocrine disorder classification
+- **Use**: Quantum medical diagnostics with limited features
+- **Training**: `python train_custom_dataset.py --dataset thyroid --qubits 4 --layers 2`
+
+**Statlog Heart Disease**
+- **Size**: 270 samples, 13 features, 2 classes
+- **Task**: Binary cardiac disease classification
+- **Use**: Quantum cardiology models, alternative heart disease dataset
+- **Training**: `python train_custom_dataset.py --dataset statlog_heart --qubits 5 --layers 2`
+
+**Breast Cancer**
+- **Size**: 569 samples, 30 features, 2 classes (built-in)
+- **Task**: Binary malignant/benign classification
+- **Use**: Quantum cancer diagnosis benchmark
+- **Training**: `python src/quantum_classifier.py --dataset breast_cancer`
+
+**Diabetes**
+- **Size**: 768 samples, 8 features, 2 classes
+- **Task**: Binary diabetes prediction
+- **Use**: Quantum metabolic disease screening
+- **Training**: `python train_custom_dataset.py --dataset diabetes --qubits 5 --layers 2`
+
+#### Biology Domain (4 datasets)
+Biological sequence and protein classification
+
+**E. coli Protein Localization**
+- **Size**: 336 samples, 7 features, 8 classes
+- **Task**: Multi-class protein cellular location prediction
+- **Use**: Quantum bioinformatics, protein targeting analysis
+- **Training**: `python train_custom_dataset.py --dataset ecoli --qubits 5 --layers 3`
+
+**Yeast Protein Localization**
+- **Size**: 1,484 samples, 8 features, 10 classes
+- **Task**: 10-class protein location classification (challenging)
+- **Use**: Large-scale quantum multi-class classification
+- **Training**: `python train_custom_dataset.py --dataset yeast --qubits 5 --layers 4`
+
+**Ionosphere**
+- **Size**: 351 samples, 34 features, 2 classes
+- **Task**: Binary classification of radar returns
+- **Use**: Quantum signal processing, feature entanglement
+- **Training**: `python train_custom_dataset.py --dataset ionosphere --qubits 6 --layers 2`
+
+**Sonar**
+- **Size**: 208 samples, 60 features, 2 classes
+- **Task**: Binary classification (mines vs rocks from sonar signals)
+- **Use**: Quantum signal processing, high-dimensional feature space
+- **Training**: `python train_custom_dataset.py --dataset sonar --qubits 6 --layers 2`
+
+#### Image Features Domain (4 datasets)
+Computer vision feature-based classification
+
+**Optical Recognition of Handwritten Digits**
+- **Size**: 3,823 samples, 64 features, 10 classes
+- **Task**: 10-class digit recognition (0-9)
+- **Use**: Large-scale quantum image classification, PCA testing (64→6 qubits)
+- **Note**: Requires aggressive dimensionality reduction
+- **Training**: `python train_custom_dataset.py --dataset optical_recognition --qubits 6 --layers 4`
+
+**Pen-Based Handwritten Digits**
+- **Size**: 7,494 samples, 16 features, 10 classes (largest dataset)
+- **Task**: 10-class digit recognition from pen trajectories
+- **Use**: Large-scale quantum ML scalability testing
+- **Training**: `python train_custom_dataset.py --dataset pendigits --qubits 6 --layers 4 --batch 32`
+
+**Iris**
+- **Size**: 150 samples, 4 features, 3 classes (built-in)
+- **Task**: Multi-class flower species classification
+- **Use**: Quantum ML benchmark, classic test case
+- **Training**: `python src/quantum_classifier.py --dataset iris`
+
+**Digits**
+- **Size**: 1,797 samples, 64 features, 10 classes (built-in)
+- **Task**: 10-class digit image classification
+- **Use**: Quantum image classification benchmark
+- **Training**: `python src/quantum_classifier.py --dataset digits`
+
+#### Chemistry/Materials Domain (3 datasets)
+
+**Wine Quality (Combined Red+White)**
+- **Size**: 6,497 samples, 12 features, 7 classes
+- **Task**: Multi-class wine quality rating (3-9 scale)
+- **Use**: Largest quantum chemistry dataset, quality regression
+- **Note**: Combined 1,599 red + 4,898 white wines with wine_type feature
+- **Training**: `python train_custom_dataset.py --dataset wine_quality_combined --qubits 5 --layers 3`
+
+**Wine (Red)**
+- **Size**: 1,599 samples, 11 features, 6 classes
+- **Task**: Red wine quality classification
+- **Use**: Quantum chemistry, quality prediction
+- **Training**: `python train_custom_dataset.py --dataset wine_red --qubits 5 --layers 2`
+
+**Wine (White)**
+- **Size**: 4,898 samples, 11 features, 7 classes
+- **Task**: White wine quality classification
+- **Use**: Large-scale quantum chemistry
+- **Training**: `python train_custom_dataset.py --dataset wine_white --qubits 5 --layers 3`
+
+#### Agriculture Domain (2 datasets)
+
+**Wheat Seeds**
+- **Size**: 210 samples, 7 features, 3 classes
+- **Task**: Multi-class wheat variety classification
+- **Use**: Quantum agriculture, seed quality analysis
+- **Training**: `python train_custom_dataset.py --dataset wheat_seeds --qubits 5 --layers 2`
+
+**Seeds (Alternative)**
+- **Size**: 210 samples, 7 features, 3 classes
+- **Task**: Wheat kernel variety classification
+- **Use**: Alternative agriculture dataset for cross-validation
+- **Training**: `python train_custom_dataset.py --dataset seeds --qubits 5 --layers 2`
+
+#### Finance Domain (1 dataset)
+
+**Statlog Australian Credit Approval**
+- **Size**: 690 samples, 14 features, 2 classes
+- **Task**: Binary credit decision classification
+- **Use**: Quantum finance, risk assessment models
+- **Training**: `python train_custom_dataset.py --dataset statlog_australian --qubits 5 --layers 2`
+
+#### Social Science Domain (1 dataset)
+
+**Contraceptive Method Choice**
+- **Size**: 1,473 samples, 9 features, 3 classes
+- **Task**: Multi-class contraceptive preference prediction
+- **Use**: Quantum social science, demographic analysis
+- **Training**: `python train_custom_dataset.py --dataset contraceptive --qubits 5 --layers 2`
+
+#### Physics Domain (1 dataset)
+
+**Balance Scale**
+- **Size**: 625 samples, 4 features, 3 classes
+- **Task**: Multi-class balance tip direction prediction
+- **Use**: Quantum physics modeling, equilibrium classification
+- **Training**: `python train_custom_dataset.py --dataset balance_scale --qubits 4 --layers 2`
+
+#### Forensics Domain (1 dataset)
+
+**Banknote Authentication**
+- **Size**: 1,372 samples, 4 features, 2 classes
+- **Task**: Binary genuine/counterfeit classification
+- **Use**: Quantum security, forensic analysis
+- **Training**: `python train_custom_dataset.py --dataset banknote --qubits 4 --layers 2`
+
+#### Other Domains
+
+**Glass Identification**
+- **Size**: 214 samples, 9 features, 6 classes
+- **Task**: Multi-class glass type classification
+- **Use**: Quantum forensics, materials analysis
+- **Training**: `python train_custom_dataset.py --dataset glass --qubits 5 --layers 2`
+
+**Blood Transfusion Service**
+- **Size**: 748 samples, 4 features, 2 classes
+- **Task**: Binary donation prediction
+- **Use**: Quantum healthcare logistics
+- **Training**: `python train_custom_dataset.py --dataset blood_transfusion --qubits 4 --layers 2`
+
+**Haberman Survival**
+- **Size**: 306 samples, 3 features, 2 classes
+- **Task**: Binary cancer survival prediction
+- **Use**: Quantum medical prognosis
+- **Training**: `python train_custom_dataset.py --dataset haberman --qubits 4 --layers 2`
+
+**Magic Gamma Telescope**
+- **Size**: 19,020 samples, 10 features, 2 classes
+- **Task**: Binary particle classification (gamma vs hadron)
+- **Use**: Large-scale quantum physics simulation
+- **Training**: `python train_custom_dataset.py --dataset magic_gamma --qubits 5 --layers 2`
+
+**Vertebral Column (CORRUPTED - DO NOT USE)**
+- **Status**: File corruption, unable to load
+- **Note**: Excluded from all benchmarks
 
 ### Quantum-Specific Datasets
 
