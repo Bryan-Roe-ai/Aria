@@ -6,13 +6,16 @@ Trains the hybrid quantum-classical neural network on all quantum datasets
 and generates a comprehensive comparison report.
 
 Datasets tested:
-- Ionosphere (radar returns)
-- Banknote (fraud detection)
-- Heart Disease (medical diagnosis)
-- Sonar (object classification)
+- Original 4: Ionosphere, Banknote, Heart Disease, Sonar
+- Medical 5: Breast Cancer, Diabetes, Vertebral Column, Blood Transfusion, Haberman
+- Chemistry 2: Red Wine, White Wine
+- Physics: MAGIC Gamma
+- Biology: Iris
+- Agriculture: Wheat Seeds
+- Forensics: Glass
 
 Author: Quantum AI System
-Date: November 1, 2025
+Date: November 16, 2025
 """
 
 import numpy as np
@@ -37,26 +40,103 @@ import matplotlib.pyplot as plt
 
 # Dataset configurations
 DATASETS = {
+    # Original 4
     'ionosphere': {
         'file': 'ionosphere.csv',
         'description': 'Radar returns classification',
         'task': 'Binary classification: Good vs Bad radar signals',
+        'category': 'physics',
     },
     'banknote': {
         'file': 'banknote.csv',
         'description': 'Banknote authentication',
         'task': 'Binary classification: Genuine vs Forged banknotes',
+        'category': 'forensics',
     },
     'heart_disease': {
         'file': 'heart_disease.csv',
         'description': 'Heart disease diagnosis',
         'task': 'Binary classification: Disease present vs absent',
+        'category': 'medical',
     },
     'sonar': {
         'file': 'sonar.csv',
         'description': 'Sonar returns classification',
         'task': 'Binary classification: Mine vs Rock detection',
-    }
+        'category': 'geophysics',
+    },
+    # New Medical Datasets
+    'breast_cancer': {
+        'file': 'breast_cancer.csv',
+        'description': 'Wisconsin Breast Cancer Diagnostic',
+        'task': 'Binary classification: Malignant vs Benign',
+        'category': 'medical',
+    },
+    'diabetes': {
+        'file': 'diabetes.csv',
+        'description': 'Pima Indians Diabetes',
+        'task': 'Binary classification: Diabetes onset prediction',
+        'category': 'medical',
+    },
+    'vertebral_column': {
+        'file': 'vertebral_column.csv',
+        'description': 'Vertebral Column Classification',
+        'task': 'Multi-class: Normal, Disk Hernia, Spondylolisthesis',
+        'category': 'medical',
+    },
+    'blood_transfusion': {
+        'file': 'blood_transfusion.csv',
+        'description': 'Blood Transfusion Service Center',
+        'task': 'Binary: Blood donation prediction',
+        'category': 'medical',
+    },
+    'haberman': {
+        'file': 'haberman.csv',
+        'description': 'Haberman Survival',
+        'task': 'Binary: Patient survival (5+ years)',
+        'category': 'medical',
+    },
+    # Chemistry
+    'wine_red': {
+        'file': 'wine_red.csv',
+        'description': 'Red Wine Quality',
+        'task': 'Multi-class: Wine quality rating (3-8)',
+        'category': 'chemistry',
+    },
+    'wine_white': {
+        'file': 'wine_white.csv',
+        'description': 'White Wine Quality',
+        'task': 'Multi-class: Wine quality rating (3-9)',
+        'category': 'chemistry',
+    },
+    # Physics
+    'magic_gamma': {
+        'file': 'magic_gamma.csv',
+        'description': 'MAGIC Gamma Telescope',
+        'task': 'Binary: Gamma signal vs Hadron background',
+        'category': 'physics',
+    },
+    # Biology
+    'iris': {
+        'file': 'iris.csv',
+        'description': 'Iris Flower Species',
+        'task': 'Multi-class: Iris species (setosa, versicolor, virginica)',
+        'category': 'biology',
+    },
+    # Agriculture
+    'wheat_seeds': {
+        'file': 'wheat_seeds.csv',
+        'description': 'Wheat Seeds Classification',
+        'task': 'Multi-class: Wheat variety classification',
+        'category': 'agriculture',
+    },
+    # Forensics
+    'glass': {
+        'file': 'glass.csv',
+        'description': 'Glass Identification',
+        'task': 'Multi-class: Glass type classification',
+        'category': 'forensics',
+    },
 }
 
 
@@ -69,11 +149,23 @@ def load_dataset(dataset_name):
     print(f"   File: {dataset_config['file']}")
     print(f"   Task: {dataset_config['task']}")
     
-    df = pd.read_csv(dataset_path)
+    # Read CSV with proper missing value handling
+    df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
+    
+    # Handle missing values by median imputation for features
+    from sklearn.impute import SimpleImputer
+    imputer = SimpleImputer(strategy='median')
     
     # Separate features and labels (last column is target)
-    X = df.iloc[:, :-1].values
+    X = df.iloc[:, :-1]
     y = df.iloc[:, -1].values
+    
+    # Impute missing values in features if any
+    if X.isnull().any().any():
+        print(f"   ⚠️  Found missing values - imputing with median...")
+        X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+    
+    X = X.values
     
     # Convert labels to binary if needed
     if y.dtype == object or len(np.unique(y)) > 2:
@@ -148,10 +240,10 @@ def train_model(X_train, y_train, X_val, y_val, num_epochs=25, batch_size=16):
     X_val_t = torch.FloatTensor(X_val)
     y_val_t = torch.LongTensor(y_val)
     
-    # Create data loaders
+    # Create data loaders with drop_last for training to avoid batch norm issues
     train_dataset = TensorDataset(X_train_t, y_train_t)
     val_dataset = TensorDataset(X_val_t, y_val_t)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     
     # Train
