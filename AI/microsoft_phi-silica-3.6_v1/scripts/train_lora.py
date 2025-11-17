@@ -447,10 +447,38 @@ def main():
     )
     model = get_peft_model(base_model, lora_config)
 
-    data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
+    class FilteringDataCollator(DataCollatorForLanguageModeling):
+        def torch_call(self, features):  # type: ignore[override]
+            # Keep only model-relevant keys to avoid nested fields like 'messages'
+            filtered = []
+            for f in features:
+                if isinstance(f, dict):
+                    filtered.append({k: v for k, v in f.items() if k in ("input_ids", "attention_mask", "labels")})
+                else:
+                    filtered.append(f)
+            return super().torch_call(filtered)
+
+    data_collator = FilteringDataCollator(tokenizer=tokenizer, mlm=False)
 
     out_dir = Path(cfg.save_dir).expanduser()
     out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Determine if dataset is streaming (IterableDataset) which lacks __len__
+    def _is_iterable_dataset(ds) -> bool:
+        try:
+            # Many IterableDataset types don't define __len__
+            return (not hasattr(ds, "__len__")) or ("iterable" in ds.__class__.__name__.lower())
+        except Exception:
+            return True
+
+    streaming_train = _is_iterable_dataset(train_ds)
+    # If streaming, Trainer requires max_steps for LR scheduler. Heuristic: derive from max-train-samples if provided.
+    max_steps_override = None
+    if streaming_train:
+        # Steps per epoch based on desired sample count and batch size
+        target_samples = args.max_train_samples or cfg.finetune_train_batch_size
+        steps_per_epoch = max(1, math.ceil(target_samples / max(1, cfg.finetune_train_batch_size)))
+        max_steps_override = max(1, steps_per_epoch * max(1, cfg.epochs))
 
     training_args = TrainingArguments(
         output_dir=str(out_dir),
@@ -460,6 +488,7 @@ def main():
         eval_steps=cfg.eval_steps,
         save_steps=cfg.save_steps,
         num_train_epochs=cfg.epochs,
+        max_steps=(max_steps_override if max_steps_override is not None else -1),
         learning_rate=cfg.learning_rate,
         logging_steps=max(1, cfg.eval_steps // 2),
         bf16=torch.cuda.is_available(),

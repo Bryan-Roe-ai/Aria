@@ -229,6 +229,25 @@ def run_job(job: QJob, dry_run: bool = False) -> Dict[str, Any]:
 
     cmd = build_command(job)
 
+    # Include a compact snapshot of job parameters for status enrichment
+    meta: Dict[str, Any] = {
+        "preset": job.preset,
+        "csv": job.csv,
+        "label_col": job.label_col,
+        "drop_cols": job.drop_cols,
+        "n_qubits": job.n_qubits,
+        "epochs": job.epochs,
+        "batch_size": job.batch_size,
+        "learning_rate": job.learning_rate,
+        "test_size": job.test_size,
+    }
+    if job.mode == MODE_AZURE:
+        meta.update({
+            "azure_backend": job.azure_backend,
+            "azure_shots": job.azure_shots,
+            "azure_confirm_cost": job.azure_confirm_cost,
+        })
+
     result: Dict[str, Any] = {
         "name": job.name,
         "mode": job.mode,
@@ -237,6 +256,7 @@ def run_job(job: QJob, dry_run: bool = False) -> Dict[str, Any]:
         "status": "planned" if dry_run else "running",
         "return_code": None,
         "log": str(log_path),
+        "meta": meta,
     }
 
     if dry_run:
