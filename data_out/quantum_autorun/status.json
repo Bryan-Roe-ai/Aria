@@ -1,52 +1,48 @@
 {
-  "generated_at": "2025-11-17T04:04:33Z",
+  "generated_at": "2025-11-17T11:02:40Z",
   "jobs": [
     {
-      "name": "heart_quick",
-      "mode": "train_custom_dataset",
+      "name": "azure_ionq_simulator",
+      "mode": "azure_hardware",
       "cmd": [
         "C:\\Users\\Bryan\\OneDrive\\AI\\venv\\Scripts\\python.exe",
-        "C:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\train_custom_dataset.py",
-        "--preset",
-        "heart",
-        "--n-qubits",
-        "4",
-        "--epochs",
-        "1",
-        "--batch-size",
-        "16",
-        "--learning-rate",
-        "0.001",
-        "--test-size",
-        "0.2"
+        "C:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\deploy_to_azure_quantum.py",
+        "--backend",
+        "ionq.simulator",
+        "--shots",
+        "100"
       ],
-      "start_time": "20251117T040433Z",
-      "status": "validated",
-      "return_code": null,
-      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\heart_quick\\20251117T040433Z\\stdout.log",
+      "start_time": "20251117T110239Z",
+      "status": "failed",
+      "return_code": 1,
+      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\azure_ionq_simulator\\20251117T110239Z\\stdout.log",
       "meta": {
-        "preset": "heart",
+        "preset": null,
         "csv": null,
         "label_col": null,
         "drop_cols": null,
-        "n_qubits": 4,
-        "epochs": 1,
-        "batch_size": 16,
-        "learning_rate": 0.001,
-        "test_size": 0.2
-      }
+        "n_qubits": null,
+        "epochs": null,
+        "batch_size": null,
+        "learning_rate": null,
+        "test_size": null,
+        "azure_backend": "ionq.simulator",
+        "azure_shots": 100,
+        "azure_confirm_cost": false
+      },
+      "duration_sec": 1.81
     }
   ],
   "summary": {
     "counts": {
-      "validated": 1
+      "failed": 1
     },
     "latest": {
-      "name": "heart_quick",
-      "status": "validated",
-      "mode": "train_custom_dataset",
-      "start_time": "20251117T040433Z",
-      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\heart_quick\\20251117T040433Z\\stdout.log"
+      "name": "azure_ionq_simulator",
+      "status": "failed",
+      "mode": "azure_hardware",
+      "start_time": "20251117T110239Z",
+      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\azure_ionq_simulator\\20251117T110239Z\\stdout.log"
     }
   }
 }
