@@ -174,21 +174,11 @@ These are used for local testing of Azure Functions and Storage features.
 
 ### Quantum AI Deployment
 
-```powershell
-cd quantum-ai\azure
-az deployment group create `
-  --resource-group rg-quantum-ai `
-  --template-file quantum_workspace.bicep `
   --parameters quantum_workspace.parameters.json
-```
 
 See `quantum-ai/azure/DEPLOYMENT.md` for complete deployment guide.
 
 ---
-
-## 📊 Cost Awareness
-
-### Quantum Jobs
 
 - **Microsoft Simulators:** Free
 - **IonQ:** ~$0.00003 per gate-shot
@@ -203,7 +193,6 @@ See `quantum-ai/azure/DEPLOYMENT.md` for complete deployment guide.
 
 ---
 
-## 🔗 Integration Points
 
 ### Quantum AI MCP Server
 

@@ -103,6 +103,17 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         chat_web_html = (repo_root / "chat-web" / "index.html").exists()
         chat_web_js = (repo_root / "chat-web" / "chat.js").exists()
 
+        # AutoTrain status if present
+        autotrain_dir = repo_root / "data_out" / "autotrain"
+        autotrain_status_path = autotrain_dir / "status.json"
+        autotrain_last: dict | None = None
+        if autotrain_status_path.exists():
+            try:
+                with autotrain_status_path.open("r", encoding="utf-8") as f:
+                    autotrain_last = json.load(f)
+            except Exception:
+                autotrain_last = {"error": "failed to parse status.json"}
+
         payload = {
             "active_provider": info.name,
             "model": info.model,
@@ -124,6 +135,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "chat_web_html": chat_web_html,
                 "chat_web_js": chat_web_js,
             },
+            "autotrain": autotrain_last,
             "endpoints": [
                 "/api/chat-web",
                 "/api/chat-web/chat.js",
