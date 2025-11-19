@@ -17,10 +17,10 @@
     "--test-size",
     "0.2"
   ],
-  "start_time": "20251117T103643Z",
+  "start_time": "20251119T150840Z",
   "status": "failed",
   "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\heart_quick\\20251117T103643Z\\stdout.log",
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\heart_quick\\20251119T150840Z\\stdout.log",
   "meta": {
     "preset": "heart",
     "csv": null,
@@ -32,5 +32,5 @@
     "learning_rate": 0.001,
     "test_size": 0.2
   },
-  "duration_sec": 0.48
+  "duration_sec": 0.31
 }

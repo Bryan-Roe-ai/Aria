@@ -1,76 +1,260 @@
-# QAI workspace – Copilot instructions
+# QAI Workspace – AI Agent Guide
 
-This repo contains three independent projects; treat them as separate apps with their own deps and configs:
-- `quantum-ai/` – Hybrid quantum–classical ML with Azure Quantum + Qiskit/PennyLane, includes an MCP server
-- `talk-to-ai/` – Minimal CLI chat with local fallback, OpenAI, and Azure OpenAI
-- `AI/microsoft_phi-silica-3.6_v1/` – Phi‑3.6 LoRA/soft‑prompt fine‑tuning (Azure AI Toolkit–style configs)
+Three independent AI/ML projects in one repo—each with separate deps, configs, and workflows:
+- **`quantum-ai/`** – Hybrid quantum-classical ML (Azure Quantum + Qiskit/PennyLane) + MCP server
+- **`talk-to-ai/`** – Multi-provider CLI chat (OpenAI/Azure/Local fallback)
+- **`AI/microsoft_phi-silica-3.6_v1/`** – Phi-3.6 LoRA fine-tuning
 
-## Dev Container & Cross-Platform Support
+## Architecture Patterns
 
-**Environment:** Alpine Linux dev container (3.20) with bash as default shell
-- **Windows host conventions:** Original docs use PowerShell syntax (`.\path\`, `$env:VAR`)
-- **Linux container commands:** Use bash syntax (`./path/`, `export VAR=value`)
-- Commands in this file are **Linux/bash-first** for container compatibility
-- When editing code, maintain PowerShell examples in per-project READMEs for Windows users
+### 1. YAML-Driven Orchestration (Critical for All Projects)
 
-## 🆓 Free Tier Quick Start (No Cloud Costs)
+**Never hardcode**: Models, backends, hyperparams live in YAML. Three orchestrators automate training:
 
-All projects work **100% locally** without any paid services:
-
-```bash
-# 1. Quantum AI - Local simulation (NO Azure required)
-cd quantum-ai
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-python src/quantum_classifier.py          # Free: Qiskit Aer simulator
-
-# 2. Chat - Local mode (NO API keys required)
-cd ../talk-to-ai
-pip install -r requirements.txt
-python src/chat_cli.py --provider local --once "Test"  # Zero cost, offline-capable
-
-# 3. Datasets - All free, open-source
-cd ..
-python scripts/quick_setup_datasets.py    # Dolly 15k, UCI datasets (all free)
+```python
+# Standard config loading pattern (relative from script location)
+current_dir = Path(__file__).parent
+config_path = current_dir.parent / "config" / "quantum_config.yaml"
+with open(config_path) as f:
+    config = yaml.safe_load(f)
 ```
 
-**💡 Free alternatives to paid services:**
-- Quantum hardware → Use `qiskit_aer` or `lightning.qubit` simulators (unlimited, free)
-- OpenAI/Azure OpenAI → Use `--provider local` mode (rule-based, no keys needed)
-- GPU training → Use `--max-train-samples 64` for CPU-friendly tests
-- Azure Storage → Local Azurite emulator (already configured at repo root)
+**Orchestrators** (`scripts/quantum_autorun.py`, `scripts/autotrain.py`):
+- Define jobs in `quantum_autorun.yaml` / `autotrain.yaml`
+- Sequential execution with machine-readable status → `data_out/{quantum_autorun,autotrain}/status.json`
+- Dry-run mode (`--dry-run`) validates all configs without execution
+- Azure safety: QPU jobs require `azure_confirm_cost: true` to prevent accidental charges
 
-## Core conventions
+### 2. Provider Abstraction (Chat System)
 
-**Configuration philosophy:**
-- **YAML-first**: Never hardcode models/backends—read `quantum-ai/config/quantum_config.yaml`, `lora/lora.yaml`, `soft_prompt/soft_prompt.yaml`.
-- **Config structure**: `azure.*` for infra, `quantum.*` for circuits/backends, `ml.*` for training hyperparams.
-- **Config loading pattern**: All quantum modules use relative paths from script location:
-  ```python
-  current_dir = Path(__file__).parent
-  config_path = current_dir.parent / "config" / "quantum_config.yaml"
-  with open(config_path) as f:
-      config = yaml.safe_load(f)
-  ```
-- **Logs/results**: Always write to project-local dirs (`talk-to-ai/logs/*.jsonl`, `quantum-ai/results/*.json`, `AI/microsoft_phi-silica-3.6_v1/data_out/`).
+All chat providers implement `BaseChatProvider.complete(messages, stream)`:
 
-**Azure Functions integration:**
-- Repo root contains Azure Functions app (`function_app.py`) that serves chat web UI and REST API
-- Provider abstraction: All chat providers inherit `BaseChatProvider` and implement `complete(messages, stream)` method
-- Functions import talk-to-ai modules dynamically: `sys.path.insert(0, "talk-to-ai/src")`
-- Local dev: Azurite emulator files at root (`__azurite_db_*.json`, `__blobstorage__/`, `__queuestorage__/`)
-- Config: `local.settings.json` sets `AzureWebJobsStorage: UseDevelopmentStorage=true`
-- **Status endpoint** (`/api/ai/status`):
-  - Returns comprehensive JSON with provider info, ML dependencies, LoRA adapter readiness, AutoTrain status, and Quantum AutoRun status.
-  - **Azure Quantum context**: Includes workspace details from `quantum-ai/config/quantum_config.yaml`, direct portal link, and array of Azure jobs with IDs/backends/results.
-  - Portal links: `quantum_azure.workspace_portal_url` for workspace, `portal_job_url_template` for deep-linking to specific jobs.
+```python
+# talk-to-ai/src/chat_providers.py
+class BaseChatProvider:
+    def complete(self, messages: List[RoleMessage], stream: bool) -> Iterable[str] | str:
+        raise NotImplementedError
 
-**Dataset integration:**
-- `datasets/dataset_index.json`: Metadata registry for all datasets (quantum CSVs, chat JSONL, sizes, licenses)
-- Structure: `datasets/{quantum,chat,vision,raw,processed}/` 
-- Quantum training: `train_custom_dataset.py` loads from `datasets/quantum/*.csv` via pandas
-- LLM training: Scripts accept `--dataset path/to/jsonl` or manifest files
-- Quick setup: `scripts/quick_setup_datasets.py` downloads UCI + Dolly 15k (~500MB, auto-validates)
+# Providers: LocalEchoProvider, OpenAIProvider, AzureOpenAIProvider, LoraLocalProvider, QuantumChatProvider
+```
+
+**Auto-detection priority**: Azure OpenAI → OpenAI → LoRA (if adapter exists) → Local fallback
+
+### 3. Azure Functions + Azurite Pattern
+
+**Root-level integration** (`function_app.py`):
+- Imports from `talk-to-ai/src` and `quantum-ai/src` via `sys.path.insert(0, ...)`
+- Local dev uses Azurite emulator (files at repo root: `__azurite_db_*.json`, `__blobstorage__/`)
+- Key endpoint: `/api/ai/status` returns provider health, ML deps, LoRA adapter readiness, orchestrator status
+
+**Config**: `local.settings.json` → `AzureWebJobsStorage: UseDevelopmentStorage=true`
+
+### 4. Dataset Registry System
+
+**Centralized metadata**: `datasets/dataset_index.json` tracks all datasets (quantum CSVs, chat JSONL)
+- Structure: `datasets/{quantum,chat,vision,raw,processed}/`
+- Quantum: CSV with features+labels → PCA to `n_qubits` dims → StandardScaler normalization
+- Chat: JSONL with Phi-3 template `{"messages": [{"role": "...", "content": "..."}]}`
+- License tracking: Commercial (Dolly, OpenAssistant) vs non-commercial (Alpaca)
+
+## Critical Workflows
+
+### Quantum Training (Local → Azure Hardware Pipeline)
+
+**Always test locally first** (CRITICAL cost-saving pattern):
+
+```powershell
+# 1. Local validation (FREE - required before Azure)
+cd quantum-ai
+python train_custom_dataset.py --preset heart --epochs 1
+
+# 2. Orchestrated multi-job runs
+python ..\scripts\quantum_autorun.py --dry-run              # Validate config
+python ..\scripts\quantum_autorun.py --job heart_quick      # Run specific job
+
+# 3. Azure hardware (PAID - requires safety flag)
+# Edit quantum_autorun.yaml: azure_confirm_cost: true
+python ..\scripts\quantum_autorun.py --job azure_ionq_qpu_test
+```
+
+**Circuit patterns** (enforced by YAML + code):
+- Entanglement: `linear` (chain CNOTs), `circular` (ring), `full` (all-to-all)
+- Layers: Input RY encoding → Variational (RY/RZ + entanglement) → PauliZ measurement
+- Backend priority: `qiskit_aer` (local, unlimited) → `lightning.qubit` (fast >10 qubits) → Azure hardware
+
+**Hardware validation** (Nov 2025 status):
+- ✅ **Rigetti `rigetti.sim.qvm`**: Production-ready (1% accuracy vs hardware)
+- ⚠️ **Quantinuum H-series simulators**: Known Azure bug—avoid until fixed
+- Results: `quantum-ai/results/*.json`, visualize with `scripts/visualize_hardware_results.py`
+
+### LoRA Training Pipeline
+
+**Two runners** (`autotrain.yaml` specifies which):
+
+```powershell
+# Full HF stack (runner: hf)
+cd AI\microsoft_phi-silica-3.6_v1
+python .\scripts\train_lora.py --dataset ..\..\datasets\chat\dolly --config .\lora\lora.yaml --max-train-samples 64 --epochs 1
+
+# Local streamlined runner (runner: local) - faster setup
+python ..\..\scripts\run_local_lora_training.py
+
+# Orchestrated multi-config training
+cd ..\..
+python .\scripts\autotrain.py --dry-run
+python .\scripts\autotrain.py --job phi36_mixed_chat
+```
+
+**Config hierarchy**: `lora.yaml` base → CLI overrides → Job-specific overrides
+**Output**: `data_out/lora_training/` (adapter, tokenizer, checkpoints, logs)
+
+**Streaming dataset handling** (default, memory-efficient):
+- Auto-computes `max_steps` from dataset size
+- Use `--no-stream` only for small datasets (<500 samples)
+- FilteringDataCollator removes invalid samples during training
+
+### Chat Provider Usage
+
+```powershell
+cd talk-to-ai
+
+# Local (FREE, offline-capable)
+python .\src\chat_cli.py --provider local --once "Test"
+
+# LoRA adapter (if trained)
+python .\src\chat_cli.py --provider lora --model ..\..\data_out\lora_training\lora_adapter
+
+# Azure OpenAI (requires 4 env vars)
+$env:AZURE_OPENAI_API_KEY = "..."; $env:AZURE_OPENAI_ENDPOINT = "https://....openai.azure.com/"
+$env:AZURE_OPENAI_DEPLOYMENT = "gpt-4o-mini"; $env:AZURE_OPENAI_API_VERSION = "2024-08-01-preview"
+python .\src\chat_cli.py --provider azure
+
+# Interactive commands: /new, /save (→ logs/chat_*.jsonl), /exit
+```
+
+### Azure Functions Local Dev
+
+```powershell
+# Start Azurite emulator (auto-configured in local.settings.json)
+# Run Functions host
+func host start  # or use VS Code task "func: host start"
+
+# Test endpoints
+curl http://localhost:7071/api/chat-web          # Web UI
+curl http://localhost:7071/api/ai/status         # Health check (shows LoRA adapter status)
+curl -X POST http://localhost:7071/api/chat -H "Content-Type: application/json" -d '{"messages":[{"role":"user","content":"Hello"}]}'
+```
+
+**Key debugging pattern**: Check `/api/ai/status` → shows active provider, ML lib availability, LoRA adapter readiness, orchestrator status
+
+### MCP Server (Quantum AI for AI Agents)
+
+**Exposes 8 quantum tools** to AI agents via Model Context Protocol:
+
+```powershell
+cd quantum-ai
+pip install -r mcp-requirements.txt
+python quantum_mcp_server.py  # stdio server for VS Code/Claude
+
+# Example VS Code config (.vscode/mcp.json)
+{
+  "quantum-ai": {
+    "type": "stdio",
+    "command": "python",
+    "args": ["c:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\quantum_mcp_server.py"]
+  }
+}
+```
+
+**Tools**: `create_quantum_circuit`, `simulate_quantum_circuit`, `train_quantum_classifier`, `connect_azure_quantum`, `submit_quantum_job`, `list_quantum_backends`, `estimate_quantum_cost`, `get_quantum_circuit_properties`
+
+**Architecture**: ProcessPoolExecutor (CPU-bound quantum ops) + ThreadPoolExecutor (I/O) + LRU circuit cache (100 circuits, 3600s TTL)
+
+## Testing & Validation
+
+**Unit + integration tests** (`tests/`):
+```powershell
+pytest tests/test_autotrain_unit.py                    # Fast unit tests
+pytest tests/test_autotrain_integration.py             # Full orchestrator tests
+pytest tests/test_quantum_autorun_integration.py       # Quantum orchestrator tests
+```
+
+**Validation scripts**:
+```powershell
+python .\scripts\validate_datasets.py --category chat --verbose    # Check JSONL integrity
+python .\quantum-ai\scripts\visualize_hardware_results.py          # Charts from Azure job results
+```
+
+## Common Pitfalls
+
+### 1. Azure Quantum Auth Failures
+**Root cause**: Must call `azure_integration.connect()` before any backend ops
+**Fix**: Check `quantum_config.yaml` matches Portal (subscription_id, resource_group, workspace_name) + run `az login`
+
+### 2. LoRA Training OOM
+**Symptom**: GPU/CPU out of memory during training
+**Fix**: Reduce `finetune_train_batch_size` (2→1) or `finetune_train_seqlen` (1024→512) in `lora.yaml`, or use `--max-train-samples 64`
+
+### 3. Chat Streaming Not Working
+**Root cause**: Old openai SDK or missing env vars
+**Fix**: `pip install --upgrade openai` (need ≥1.37.0), verify all 4 Azure OpenAI env vars set
+
+### 4. Quantum Results Differ Across Backends
+**Expected behavior**: Simulators show 1-2% variance, hardware shows 5-10% noise
+**Validation**: Compare Bell state fidelity (should be >95% for `|00⟩ + |11⟩`)
+
+### 5. Dataset Not Found
+**Root cause**: Orchestrators use repo-root relative paths
+**Fix**: Run from repo root, or check `datasets/dataset_index.json` for canonical paths
+
+## Cost Optimization Checklist
+
+1. **Quantum**: Default `simulator.backend: qiskit_aer` in `quantum_config.yaml` (FREE, unlimited)
+2. **Chat**: Use `--provider local` for development (no API costs)
+3. **Training**: Start with `--max-train-samples 64 --epochs 1` on CPU (smoke test) before GPU scaling
+4. **Azure**: Only provision resources when needed—simulators are FREE, QPU charges per gate-shot
+5. **Free GPU alternatives**: Google Colab (12hrs/day), Kaggle Notebooks (30hrs/week), GitHub Codespaces (120 core-hrs/month)
+
+## File Conventions
+
+- **Config**: `*.yaml` (never hardcode in Python)
+- **Logs**: Project-local dirs (`talk-to-ai/logs/`, `quantum-ai/results/`, `data_out/`)
+- **Orchestrator status**: `data_out/{quantum_autorun,autotrain}/status.json` (machine-readable progress)
+- **Persistence**: Chat → JSONL (`{"role": "user|assistant", "content": "...", "timestamp": "..."}`), Quantum → JSON with metadata
+
+## Key Commands Reference
+
+```powershell
+# Quick setup (all free, ~500MB)
+python .\scripts\quick_setup_datasets.py
+
+# Orchestrators (dry-run before real runs)
+python .\scripts\quantum_autorun.py --dry-run          # Validate quantum jobs
+python .\scripts\autotrain.py --dry-run                # Validate LoRA jobs
+python .\scripts\quantum_autorun.py --list             # List all quantum jobs
+python .\scripts\autotrain.py --job phi36_mixed_chat  # Run specific LoRA job
+
+# Local chat (no keys required)
+python .\talk-to-ai\src\chat_cli.py --provider local --once "Test"
+
+# Azure Functions local dev
+func host start
+
+# MCP server (for AI agents)
+python .\quantum-ai\quantum_mcp_server.py
+
+# Validation
+python .\scripts\validate_datasets.py --verbose
+pytest tests/
+```
+
+## When Adding New Features
+
+1. **New quantum backend**: Update `quantum_config.yaml` → test with Bell state → validate with `scripts/visualize_hardware_results.py`
+2. **New chat provider**: Subclass `BaseChatProvider` → implement `complete(messages, stream)` → add to `detect_provider()` priority chain
+3. **New dataset**: Add to `datasets/dataset_index.json` → validate with `scripts/validate_datasets.py`
+4. **New training preset**: Add to `quantum_autorun.yaml` or `autotrain.yaml` → test with `--dry-run` → document in orchestrator README
+5. **New Azure Function endpoint**: Add route in `function_app.py` → update `/api/ai/status` response → test with `func host start`
 
 ## Quantum AI (`quantum-ai/`)
 

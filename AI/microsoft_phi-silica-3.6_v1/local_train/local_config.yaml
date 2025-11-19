@@ -1,8 +1,12 @@
 # Local LoRA fine-tuning configuration
 # Optimized for consumer hardware (single GPU or CPU)
 
-# Model
-model_id: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"  # smaller CPU-friendly model
+# Model (choose one - uncomment your preference)
+model_id: "mistralai/Mistral-7B-Instruct-v0.3"  # Mistral 7B v0.3 - excellent performance
+# model_id: "mistralai/Mixtral-8x7B-Instruct-v0.1"  # Mixtral 8x7B - MoE, very powerful
+# model_id: "Qwen/Qwen2.5-3B-Instruct"  # Qwen 2.5 3B (Sep 2024) - lighter option
+# model_id: "microsoft/Phi-3.5-mini-instruct"  # Phi-3.5 3.8B - Microsoft's latest open
+# model_id: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"  # Legacy fallback for very limited hardware
 
 # Data files (relative to data directory)
 train_file: "train.json"
