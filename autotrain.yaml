@@ -58,6 +58,19 @@ jobs:
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
 
+  # Phi-3.5 MAX PERFORMANCE - Full Dolly dataset, 3 epochs
+  - name: phi35_max_performance
+    runner: hf
+    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+    dataset: datasets/chat/dolly
+    save_dir: data_out/lora_training/phi35_max_performance
+    epochs: 3
+    max_train_samples: null  # Use full dataset
+    max_eval_samples: null
+    learning_rate: 0.0002
+    lora_dropout: 0.1
+    hf_model_id: microsoft/Phi-3.5-mini-instruct
+
   # Qwen2.5 7B (Sep 2024) - stronger model, requires more VRAM
   - name: qwen25_7b_mixed_chat
     runner: hf

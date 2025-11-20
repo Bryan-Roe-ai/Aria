@@ -21,7 +21,7 @@ learning_rate: !!float 0.0002
 lora_dropout: !!float 0.1
 lr_scheduler_type: "linear_with_warmup"
 max_grad_norm: 1
-model: "Phi-4"  # Updated to latest Phi-4 (Nov 2024)
+model: "microsoft/Phi-3.5-mini-instruct"  # Using publicly available Phi-3.5
 model_path: "model"
 num_training_steps: 100
 num_warmup_steps: 10
