@@ -6,6 +6,27 @@ import sys
 from pathlib import Path
 import subprocess
 import importlib.util as _iu
+import time
+
+# Memory / DB logging utilities (fault-tolerant)
+try:
+    from shared.db_logging import log_chat_message_safe
+except Exception:  # pragma: no cover - if shared not on path
+    log_chat_message_safe = None  # type: ignore
+try:
+    from shared.chat_memory import (
+        generate_embedding,
+        fetch_similar_messages,
+        store_embedding,
+    )
+except Exception:
+    # Provide graceful degradations so endpoint still works
+    def generate_embedding(text: str):  # type: ignore
+        return []
+    def fetch_similar_messages(query_emb, top_k=5, session_id=None):  # type: ignore
+        return []
+    def store_embedding(message_id, embedding, model):  # type: ignore
+        return False
 
 # Add talk-to-ai to path so we can import chat_providers
 talk_to_ai_path = Path(__file__).resolve().parent / "talk-to-ai" / "src"
@@ -124,6 +145,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         # Parse request
         req_body = req.get_json()
         messages = req_body.get('messages', [])
+        session_id = req_body.get('session_id')  # Optional client-provided session identifier
         provider_choice = req_body.get('provider', 'auto')
         model_override = req_body.get('model')
         temperature = req_body.get('temperature')
@@ -149,17 +171,39 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                     headers=_cors_headers()
                 )
 
-        # Get provider (with overrides)
+        # =============================
+        # Memory Retrieval (SQL-backed)
+        # =============================
+        user_message_content = next((m['content'] for m in reversed(messages) if m.get('role') == 'user'), None)
+        memory_messages: list[dict] = []
+        user_embedding = None
+        if user_message_content:
+            try:
+                user_embedding = generate_embedding(user_message_content)
+                similar = fetch_similar_messages(user_embedding, top_k=5, session_id=session_id)
+                for idx, sm in enumerate(similar):
+                    # Inject prior memory as system messages (helps provider summarize past context)
+                    memory_messages.append({
+                        "role": "system",
+                        "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {sm.get('content')}"
+                    })
+            except Exception as mem_err:  # noqa: BLE001
+                logging.warning(f"Memory retrieval failed: {mem_err}")
+
+        # Compose final message list with memory injected before existing system/user messages
+        if memory_messages:
+            messages = memory_messages + messages
+
+        # Get provider (with overrides) AFTER memory injection so pruning sees augmented context
         provider, info = detect_provider(
             explicit=provider_choice,
             model_override=model_override,
             temperature=temperature,
             max_output_tokens=max_output_tokens,
         )
-        
         logging.info(f'Using provider: {info.name}, model: {info.model}')
 
-        # Prune messages to fit context and reserve space for output tokens
+        start_time = time.perf_counter()
         pruned_messages, stats, system_msg = prune_messages(
             messages=messages,
             provider=info.name,
@@ -168,18 +212,53 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             reserve_output_tokens=int(max_output_tokens) if max_output_tokens else 1024,
             system_prompt=system_prompt,
         )
-
-        # Get completion (non-streaming for HTTP simplicity)
+        # Completion (non-streaming for HTTP simplicity)
         result = provider.complete(pruned_messages, stream=False)
+        duration_ms = int((time.perf_counter() - start_time) * 1000)
         
         # If result is still a generator, consume it
         if hasattr(result, '__iter__') and not isinstance(result, str):
             result = ''.join(result)
 
+        # =============================
+        # Logging + Embedding Storage
+        # =============================
+        if log_chat_message_safe:
+            try:
+                # Log user message first (so conversation exists), then assistant reply
+                if user_message_content:
+                    user_log = log_chat_message_safe(
+                        session_id=session_id,
+                        provider=info.name,
+                        model=info.model,
+                        role="user",
+                        content=user_message_content,
+                        execution_time_ms=None,
+                        finish_reason=None,
+                    )
+                    if user_log.get("success") and user_embedding:
+                        try:
+                            store_embedding(user_log.get("message_id"), user_embedding, model=info.model)
+                        except Exception as se:  # noqa: BLE001
+                            logging.warning(f"Store embedding failed: {se}")
+                # Log assistant message
+                assistant_log = log_chat_message_safe(
+                    session_id=session_id,
+                    provider=info.name,
+                    model=info.model,
+                    role="assistant",
+                    content=str(result),
+                    execution_time_ms=duration_ms,
+                    finish_reason="stop",
+                )
+            except Exception as log_err:  # noqa: BLE001
+                logging.warning(f"Chat DB logging failed: {log_err}")
+
         response_data = {
             "response": result,
             "provider": info.name,
             "model": info.model,
+            "memory_injected": len(memory_messages),
             "pruning": {
                 "original_tokens": stats.original_tokens,
                 "pruned_tokens": stats.pruned_tokens,

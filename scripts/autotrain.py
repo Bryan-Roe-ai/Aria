@@ -35,6 +35,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Optional DB logging (safe no-op if not configured)
+try:  # noqa: SIM105
+    from shared.db_logging import log_lora_run_safe  # type: ignore
+except Exception:  # noqa: BLE001
+    def log_lora_run_safe(*_a, **_kw):  # type: ignore
+        return {"success": False, "skipped": True}
+
 try:
     import yaml  # type: ignore
 except Exception as e:  # noqa: BLE001
@@ -279,6 +286,16 @@ def main() -> None:
         results.append(res)
         # Make it easier to view what happens in CI/logs
         print(json.dumps(res, indent=2))
+
+        # === DB Logging (only on successful real runs) ===
+        if not args.dry_run and res.get("status") == "succeeded":
+            log_info = log_lora_run_safe(j, res)
+            if log_info.get("success"):
+                print(f"[autotrain] Logged LoRA run to DB (run_id={log_info.get('run_id')})")
+            elif log_info.get("skipped"):
+                print("[autotrain] DB logging skipped (QAI_DB_CONN not set)")
+            else:
+                print(f"[autotrain] DB logging failed: {log_info.get('error')}")
 
     collect_status(results)
     # Non-zero exit if any job failed during non-dry run

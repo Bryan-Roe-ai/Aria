@@ -29,10 +29,18 @@ import os
 import subprocess
 import sys
 import time
+from pathlib import Path as _Path  # local alias used for dataset name inference
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+# Optional DB logging (safe no-op if not configured)
+try:  # noqa: SIM105
+    from shared.db_logging import log_quantum_run_safe  # type: ignore
+except Exception:  # noqa: BLE001
+    def log_quantum_run_safe(*_a, **_kw):  # type: ignore
+        return {"success": False, "skipped": True}
 
 try:
     import yaml  # type: ignore
@@ -371,6 +379,17 @@ def main() -> None:
         res = run_job(j, dry_run=args.dry_run)
         results.append(res)
         print(json.dumps(res, indent=2))
+
+        # === DB Logging (only on successful real runs) ===
+        if not args.dry_run and res.get("status") == "succeeded":
+            dataset_name = j.preset or (j.csv and _Path(str(j.csv)).stem) or "unknown"
+            log_info = log_quantum_run_safe(j, res, dataset_name, res.get("log", ""))
+            if log_info.get("success"):
+                print(f"[quantum_autorun] Logged quantum run to DB (run_id={log_info.get('run_id')})")
+            elif log_info.get("skipped"):
+                print("[quantum_autorun] DB logging skipped (QAI_DB_CONN not set)")
+            else:
+                print(f"[quantum_autorun] DB logging failed: {log_info.get('error')}")
 
     collect_status(results)
     # Non-zero exit if any job failed during non-dry run
