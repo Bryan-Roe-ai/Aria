@@ -1,9 +1,29 @@
 # QAI Workspace – AI Agent Guide
 
-Three independent AI/ML projects in one repo—each with separate deps, configs, and workflows:
+**Three independent AI/ML projects** in one monorepo, each with isolated virtual environments, configs, and workflows:
 - **`quantum-ai/`** – Hybrid quantum-classical ML (Azure Quantum + Qiskit/PennyLane) + MCP server
 - **`talk-to-ai/`** – Multi-provider CLI chat (OpenAI/Azure/Local fallback)
 - **`AI/microsoft_phi-silica-3.6_v1/`** – Phi-3.6 LoRA fine-tuning
+
+**Root-level integration**: `function_app.py` (Azure Functions) + orchestrators (`scripts/`) unify all three projects for production deployment.
+
+## Quick Orientation
+
+**Project boundaries** (each has its own venv):
+- `quantum-ai/venv/` – quantum computing deps (qiskit, pennylane, pytorch)
+- `talk-to-ai/venv/` – minimal chat deps (openai SDK only)
+- `AI/microsoft_phi-silica-3.6_v1/venv/` – HuggingFace ML stack (transformers, peft, accelerate)
+- Root `venv/` – Azure Functions runtime + shared utils
+
+**Key execution points**:
+- Always run orchestrators from repo root: `python .\scripts\autotrain.py`
+- Always run project-specific scripts from their directory: `cd quantum-ai; python train_custom_dataset.py`
+- Azure Functions uses root venv and imports from project src dirs via `sys.path.insert(0, ...)`
+
+**State/output locations**:
+- `data_out/` – all training outputs, logs, checkpoints, status.json files
+- `datasets/` – source data only (never modified by training)
+- `__azurite_db_*.json`, `__blobstorage__/` – local Azure emulator state (gitignored in production)
 
 ## Architecture Patterns
 
@@ -20,10 +40,27 @@ with open(config_path) as f:
 ```
 
 **Orchestrators** (`scripts/quantum_autorun.py`, `scripts/autotrain.py`):
-- Define jobs in `quantum_autorun.yaml` / `autotrain.yaml`
+- Define jobs in `quantum_autorun.yaml` / `autotrain.yaml` (root-level YAML files)
 - Sequential execution with machine-readable status → `data_out/{quantum_autorun,autotrain}/status.json`
+- Per-job timestamped logs → `data_out/autotrain/<job_name>/<timestamp>/stdout.log`
 - Dry-run mode (`--dry-run`) validates all configs without execution
+- List mode (`--list`) shows all available jobs
 - Azure safety: QPU jobs require `azure_confirm_cost: true` to prevent accidental charges
+
+**Job structure pattern** (autotrain.yaml example):
+```yaml
+jobs:
+  - name: phi35_mixed_chat           # Required: unique identifier
+    runner: hf                        # "hf" (full HuggingFace) or "local" (streamlined)
+    config: AI/.../lora/lora.yaml     # Base config path
+    dataset: datasets/chat/mixed_chat # Dataset directory
+    save_dir: data_out/lora_training  # Output location
+    epochs: 1                         # CLI override
+    hf_model_id: microsoft/Phi-3.5-mini-instruct  # Model override
+    max_train_samples: 64             # Limit for quick tests (null = full dataset)
+```
+
+**Command resolution hierarchy**: YAML base → CLI args → Job-specific overrides
 
 ### 2. Provider Abstraction (Chat System)
 
@@ -38,7 +75,9 @@ class BaseChatProvider:
 # Providers: LocalEchoProvider, OpenAIProvider, AzureOpenAIProvider, LoraLocalProvider, QuantumChatProvider
 ```
 
-**Auto-detection priority**: Azure OpenAI → OpenAI → LoRA (if adapter exists) → Local fallback
+**Auto-detection priority** (`detect_provider()`): Azure OpenAI → OpenAI → LoRA (if adapter exists) → Local fallback
+
+**Adding new providers**: Subclass `BaseChatProvider`, implement `complete()`, add to `detect_provider()` chain in priority order
 
 ### 3. Azure Functions + Azurite Pattern
 
@@ -179,6 +218,11 @@ pytest tests/test_autotrain_integration.py             # Full orchestrator tests
 pytest tests/test_quantum_autorun_integration.py       # Quantum orchestrator tests
 ```
 
+**Test patterns**:
+- Unit tests: Dataclass creation, YAML parsing, command building (no subprocesses)
+- Integration tests: Full job execution with mocked datasets and outputs
+- Mock strategy: Use `unittest.mock.patch` for subprocess calls, temp directories for file I/O
+
 **Validation scripts**:
 ```powershell
 python .\scripts\validate_datasets.py --category chat --verbose    # Check JSONL integrity
@@ -206,6 +250,11 @@ python .\quantum-ai\scripts\visualize_hardware_results.py          # Charts from
 ### 5. Dataset Not Found
 **Root cause**: Orchestrators use repo-root relative paths
 **Fix**: Run from repo root, or check `datasets/dataset_index.json` for canonical paths
+
+### 6. Module Import Errors in Azure Functions
+**Root cause**: `function_app.py` imports from project src dirs—wrong working directory breaks paths
+**Debug**: Check `/api/ai/status` → shows Python path, venv location, and ML library availability
+**Fix**: Ensure `func host start` runs from repo root, not a subdirectory
 
 ## Cost Optimization Checklist
 
@@ -255,6 +304,7 @@ pytest tests/
 3. **New dataset**: Add to `datasets/dataset_index.json` → validate with `scripts/validate_datasets.py`
 4. **New training preset**: Add to `quantum_autorun.yaml` or `autotrain.yaml` → test with `--dry-run` → document in orchestrator README
 5. **New Azure Function endpoint**: Add route in `function_app.py` → update `/api/ai/status` response → test with `func host start`
+6. **New script in `scripts/`**: Follow standard pattern: argparse CLI → `main()` function → `if __name__ == "__main__"` guard → comprehensive `--help` text
 
 ## Quantum AI (`quantum-ai/`)
 
