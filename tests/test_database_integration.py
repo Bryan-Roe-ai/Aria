@@ -2,8 +2,15 @@ from __future__ import annotations
 
 import os
 import math
+import sys
+from pathlib import Path
 
-from shared import chat_memory
+# Ensure repository root is on path for 'shared'
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import shared.chat_memory as chat_memory  # noqa: E402
 
 
 def test_generate_embedding_hash_fallback(monkeypatch):

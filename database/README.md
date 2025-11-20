@@ -11,25 +11,30 @@ This database project provides comprehensive tracking and analytics for the QAI 
 ### Tables
 
 #### Training & Execution
+
 - **QuantumTrainingRuns** - Quantum ML training metadata, results, and hardware tracking
 - **LoRATrainingRuns** - LoRA fine-tuning runs with hyperparameters and metrics
 - **AzureQuantumJobs** - Azure Quantum job submissions, status, and cost tracking
 - **OrchestratorJobs** - Orchestrator execution history (quantum_autorun, autotrain)
 
 #### Chat & Conversations
+
 - **ChatConversations** - Chat session metadata for talk-to-ai and Azure Functions
 - **ChatMessages** - Individual messages with token usage and timing
 
 #### Semantic Memory (Embeddings)
+
 - **ChatMessageEmbeddings** - Per-message embedding vectors (VARBINARY float32 array) enabling semantic retrieval. Populated automatically by Azure Function `/api/chat` and the backfill script `scripts/ingest_chat_logs_to_sql.py`. Supports future migration to native `VECTOR` type when available.
 
 Memory retrieval flow:
+
 1. User sends message to `/api/chat` (optional `session_id` in POST body).
 2. Endpoint generates embedding (Azure OpenAI > OpenAI > local hash fallback) and queries recent embeddings for similar past messages.
 3. Top-K similar messages are injected as system memory prompts to enhance contextual continuity.
 4. User and assistant messages are logged via `sp_LogChatConversation` and embeddings stored in `ChatMessageEmbeddings`.
 
 Embedding configuration:
+
 | Priority | Method | Env Vars Required |
 |----------|--------|-------------------|
 | 1 | Azure OpenAI Embeddings | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` |
@@ -37,11 +42,13 @@ Embedding configuration:
 | 3 | Local Hash Fallback (dim=256) | None |
 
 Backfill existing logs:
+
 ```powershell
 python .\scripts\ingest_chat_logs_to_sql.py --logs-dir talk-to-ai\logs --embed-assistant
 ```
 
 Table schema excerpt:
+
 ```sql
 CREATE TABLE [dbo].[ChatMessageEmbeddings] (
   EmbeddingId UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
@@ -56,10 +63,12 @@ CREATE TABLE [dbo].[ChatMessageEmbeddings] (
 Retrieval (Python-side cosine similarity) selects recent rows (TOP 500) optionally filtered by `SessionId` for targeted personalization.
 
 #### Datasets & Usage
+
 - **Datasets** - Dataset registry with licensing and validation status
 - **DatasetUsage** - Dataset usage tracking across training runs
 
 #### MCP Server
+
 - **MCPServerSessions** - Model Context Protocol server session tracking
 - **MCPToolCalls** - Individual MCP tool invocations and results
 
@@ -143,24 +152,26 @@ az sql server firewall-rule create `
 ### Python Integration
 
 Install dependencies:
+
 ```powershell
 pip install pyodbc sqlalchemy
 ```
 
 Example usage:
+
 ```python
 import pyodbc
 from datetime import datetime
 
 # Connection string (use Azure Key Vault in production)
 conn_str = (
-    "Driver={ODBC Driver 18 for SQL Server};"
-    "Server=tcp:qai-sql-server.database.windows.net,1433;"
-    "Database=qai-db;"
-    "Uid=qai-admin;"
-    "Pwd={your_password};"
-    "Encrypt=yes;"
-    "TrustServerCertificate=no;"
+  "Driver={ODBC Driver 18 for SQL Server};"
+  "Server=tcp:qai-sql-server.database.windows.net,1433;"
+  "Database=qai-db;"
+  "Uid=qai-admin;"
+  "Pwd={your_password};"
+  "Encrypt=yes;"
+  "TrustServerCertificate=no;"
 )
 
 # Log quantum training run
@@ -168,24 +179,24 @@ conn = pyodbc.connect(conn_str)
 cursor = conn.cursor()
 
 cursor.execute("""
-    DECLARE @RunId UNIQUEIDENTIFIER;
-    EXEC sp_LogQuantumTrainingRun 
-        @JobName = ?,
-        @DatasetName = ?,
-        @Backend = ?,
-        @NumQubits = ?,
-        @NumLayers = ?,
-        @Entanglement = ?,
-        @LearningRate = ?,
-        @Epochs = ?,
-        @BatchSize = ?,
-        @TestAccuracy = ?,
-        @ExecutionTimeSeconds = ?,
-        @Status = ?,
-        @RunId = @RunId OUTPUT;
-    SELECT @RunId;
+  DECLARE @RunId UNIQUEIDENTIFIER;
+  EXEC sp_LogQuantumTrainingRun 
+    @JobName = ?,
+    @DatasetName = ?,
+    @Backend = ?,
+    @NumQubits = ?,
+    @NumLayers = ?,
+    @Entanglement = ?,
+    @LearningRate = ?,
+    @Epochs = ?,
+    @BatchSize = ?,
+    @TestAccuracy = ?,
+    @ExecutionTimeSeconds = ?,
+    @Status = ?,
+    @RunId = @RunId OUTPUT;
+  SELECT @RunId;
 """, 'heart_quick', 'heart_disease', 'qiskit_aer', 4, 2, 'linear', 
-     0.01, 10, 16, 0.85, 45.2, 'completed')
+   0.01, 10, 16, 0.85, 45.2, 'completed')
 
 run_id = cursor.fetchone()[0]
 conn.commit()
@@ -201,25 +212,25 @@ Modify `scripts/quantum_autorun.py` and `scripts/autotrain.py` to log runs:
 import pyodbc
 
 def log_to_database(job_config, results):
-    conn = pyodbc.connect(DB_CONNECTION_STRING)
-    cursor = conn.cursor()
+  conn = pyodbc.connect(DB_CONNECTION_STRING)
+  cursor = conn.cursor()
     
-    cursor.execute("""
-        DECLARE @RunId UNIQUEIDENTIFIER;
-        EXEC sp_LogQuantumTrainingRun 
-            @JobName = ?, @DatasetName = ?, @Backend = ?, 
-            @NumQubits = ?, @NumLayers = ?, @Entanglement = ?,
-            @LearningRate = ?, @Epochs = ?, @BatchSize = ?,
-            @TestAccuracy = ?, @TestLoss = ?, @ExecutionTimeSeconds = ?,
-            @StatusJsonPath = ?, @ResultsJsonPath = ?,
-            @Status = ?, @RunId = @RunId OUTPUT;
-    """, job_config['name'], job_config['dataset'], job_config['backend'],
-         job_config['n_qubits'], job_config['n_layers'], job_config['entanglement'],
-         job_config['learning_rate'], job_config['epochs'], job_config['batch_size'],
-         results['test_accuracy'], results['test_loss'], results['execution_time'],
-         results['status_json_path'], results['results_json_path'], 'completed')
+  cursor.execute("""
+    DECLARE @RunId UNIQUEIDENTIFIER;
+    EXEC sp_LogQuantumTrainingRun 
+      @JobName = ?, @DatasetName = ?, @Backend = ?, 
+      @NumQubits = ?, @NumLayers = ?, @Entanglement = ?,
+      @LearningRate = ?, @Epochs = ?, @BatchSize = ?,
+      @TestAccuracy = ?, @TestLoss = ?, @ExecutionTimeSeconds = ?,
+      @StatusJsonPath = ?, @ResultsJsonPath = ?,
+      @Status = ?, @RunId = @RunId OUTPUT;
+  """, job_config['name'], job_config['dataset'], job_config['backend'],
+     job_config['n_qubits'], job_config['n_layers'], job_config['entanglement'],
+     job_config['learning_rate'], job_config['epochs'], job_config['batch_size'],
+     results['test_accuracy'], results['test_loss'], results['execution_time'],
+     results['status_json_path'], results['results_json_path'], 'completed')
     
-    conn.commit()
+  conn.commit()
 ```
 
 ### Azure Functions Integration
@@ -232,32 +243,32 @@ from azure.identity import DefaultAzureCredential
 
 # Use managed identity in production
 def get_db_connection():
-    credential = DefaultAzureCredential()
-    token = credential.get_token("https://database.windows.net/")
+  credential = DefaultAzureCredential()
+  token = credential.get_token("https://database.windows.net/")
     
-    conn_str = (
-        f"Driver={{ODBC Driver 18 for SQL Server}};"
-        f"Server=tcp:qai-sql-server.database.windows.net,1433;"
-        f"Database=qai-db;"
-        f"Authentication=ActiveDirectoryMsi;"
-    )
-    return pyodbc.connect(conn_str)
+  conn_str = (
+    f"Driver={{ODBC Driver 18 for SQL Server}};"
+    f"Server=tcp:qai-sql-server.database.windows.net,1433;"
+    f"Database=qai-db;"
+    f"Authentication=ActiveDirectoryMsi;"
+  )
+  return pyodbc.connect(conn_str)
 
 @app.route(route="chat", methods=["POST"])
 async def chat_endpoint(req: func.HttpRequest) -> func.HttpResponse:
-    # ... existing chat logic ...
+  # ... existing chat logic ...
     
-    # Log conversation
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        DECLARE @ConvId UNIQUEIDENTIFIER, @MsgId UNIQUEIDENTIFIER;
-        EXEC sp_LogChatConversation 
-            @SessionId = ?, @Provider = ?, @Model = ?,
-            @Role = ?, @Content = ?, @TotalTokens = ?,
-            @ConversationId = @ConvId OUTPUT, @MessageId = @MsgId OUTPUT;
-    """, session_id, provider, model, 'user', user_message, token_count)
-    conn.commit()
+  # Log conversation
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute("""
+    DECLARE @ConvId UNIQUEIDENTIFIER, @MsgId UNIQUEIDENTIFIER;
+    EXEC sp_LogChatConversation 
+      @SessionId = ?, @Provider = ?, @Model = ?,
+      @Role = ?, @Content = ?, @TotalTokens = ?,
+      @ConversationId = @ConvId OUTPUT, @MessageId = @MsgId OUTPUT;
+  """, session_id, provider, model, 'user', user_message, token_count)
+  conn.commit()
 ```
 
 ## Cost Optimization
@@ -288,6 +299,7 @@ WHERE Timestamp < DATEADD(day, -30, GETUTCDATE());
 ### Power BI Integration
 
 Connect Power BI Desktop to Azure SQL:
+
 1. Get Data → Azure → Azure SQL Database
 2. Server: `qai-sql-server.database.windows.net`
 3. Database: `qai-db`
