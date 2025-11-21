@@ -253,6 +253,39 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             result = ''.join(result)
 
         # =============================
+        # Self-Learning: Log conversation for training
+        # =============================
+        try:
+            logs_dir = Path(__file__).resolve().parent / "talk-to-ai" / "logs"
+            logs_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create timestamped log file
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            log_file = logs_dir / f"chat_{timestamp}_{session_id or 'anonymous'}.jsonl"
+            
+            # Append conversation to log
+            with open(log_file, "a", encoding="utf-8") as f:
+                # Log user message
+                if user_message_content:
+                    f.write(json.dumps({
+                        "role": "user",
+                        "content": user_message_content,
+                        "timestamp": datetime.now().isoformat(),
+                        "provider": info.name,
+                        "model": info.model
+                    }) + "\n")
+                # Log assistant response
+                f.write(json.dumps({
+                    "role": "assistant",
+                    "content": str(result),
+                    "timestamp": datetime.now().isoformat(),
+                    "provider": info.name,
+                    "model": info.model
+                }) + "\n")
+        except Exception as log_err:
+            logging.warning(f"Self-learning conversation logging failed: {log_err}")
+
+        # =============================
         # Logging + Embedding Storage
         # =============================
         if log_chat_message_safe:

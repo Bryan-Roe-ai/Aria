@@ -1,0 +1,10 @@
+{
+  "started_at": "2025-11-21T04:04:18.283876",
+  "training_cycles": 0,
+  "total_conversations": 30,
+  "conversations_since_last_train": 30,
+  "last_training": null,
+  "best_model_path": null,
+  "current_accuracy": 0.0,
+  "learning_enabled": true
+}

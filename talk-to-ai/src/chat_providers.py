@@ -298,6 +298,52 @@ class OpenAIProvider(BaseChatProvider):
                 return ""
 
 
+class LMStudioProvider(BaseChatProvider):
+    """Provider for LM Studio local server (compatible with OpenAI API)."""
+    def __init__(self, base_url: str = "http://127.0.0.1:1234/v1", model: str = "local-model", temperature: float = 0.7, max_output_tokens: Optional[int] = None):
+        if OpenAI is None:
+            raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
+        self.client = OpenAI(
+            base_url=base_url,
+            api_key="lm-studio"  # LM Studio doesn't require real key
+        )
+        self.model = model
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
+
+    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+        if stream:
+            resp = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_output_tokens,
+                stream=True,
+            )
+
+            def gen() -> Generator[str, None, None]:
+                for chunk in resp:
+                    try:
+                        delta = chunk.choices[0].delta
+                        if delta and delta.content:
+                            yield delta.content
+                    except Exception:
+                        pass
+            return gen()
+        else:
+            resp = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_output_tokens,
+                stream=False,
+            )
+            try:
+                return resp.choices[0].message.content or ""
+            except Exception:
+                return ""
+
+
 class AzureOpenAIProvider(BaseChatProvider):
     def __init__(self, deployment: str, endpoint: str, api_key: str, api_version: str = "2024-08-01-preview", temperature: float = 0.7, max_output_tokens: Optional[int] = None):
         if AzureOpenAI is None:
@@ -349,13 +395,18 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
 
     Priority:
       1) explicit selection if provided
-      2) Quantum if selected
-      3) Azure if all required vars present
-      4) OpenAI if OPENAI_API_KEY is present
-      5) Local fallback
-      6) LoRA if provider is 'lora' and model_override is set
+      2) LM Studio if LMSTUDIO_BASE_URL is set
+      3) Quantum if selected
+      4) Azure if all required vars present
+      5) OpenAI if OPENAI_API_KEY is present
+      6) Local fallback
+      7) LoRA if provider is 'lora' and model_override is set
     """
     choice = (explicit or "auto").lower()
+
+    # LM Studio config
+    lms_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
+    lms_model = os.getenv("LMSTUDIO_MODEL", "local-model")
 
     # Quantum config
     if choice == "quantum":
@@ -395,6 +446,11 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
     temp = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
 
     # Resolve based on explicit choice first
+    if choice == "lmstudio":
+        model = model_override or lms_model
+        provider = LMStudioProvider(base_url=lms_url, model=model, temperature=temp, max_output_tokens=max_output_tokens)
+        return provider, ProviderChoice(name="lmstudio", model=model)
+
     if choice == "azure":
         if not (az_key and az_ep and (model_override or az_dep)):
             raise RuntimeError("Azure OpenAI selected but required env vars are missing. Set AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT.")
@@ -414,7 +470,19 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
         provider = LocalEchoProvider()
         return provider, ProviderChoice(name="local", model=model)
 
-    # Auto mode
+    # Auto mode - check for LM Studio first
+    try:
+        # Quick health check for LM Studio
+        import urllib.request
+        import urllib.error
+        req = urllib.request.Request(lms_url.replace("/v1", "") + "/v1/models", headers={"User-Agent": "QAI"})
+        urllib.request.urlopen(req, timeout=1)
+        model = model_override or lms_model
+        provider = LMStudioProvider(base_url=lms_url, model=model, temperature=temp, max_output_tokens=max_output_tokens)
+        return provider, ProviderChoice(name="lmstudio", model=model)
+    except (urllib.error.URLError, Exception):
+        pass  # LM Studio not available, continue to other providers
+
     if az_key and az_ep and (model_override or az_dep):
         model = model_override or az_dep
         provider = AzureOpenAIProvider(deployment=model, endpoint=az_ep, api_key=az_key, api_version=az_ver, temperature=temp, max_output_tokens=max_output_tokens)
