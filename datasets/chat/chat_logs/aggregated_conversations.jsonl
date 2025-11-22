@@ -8,3 +8,7 @@
 {"messages": [{"role": "user", "content": "What are LSTMs?"}, {"role": "assistant", "content": "LSTMs (Long Short-Term Memory networks) are a type of recurrent neural network designed to learn long-term dependencies by using gates to control information flow."}]}
 {"messages": [{"role": "user", "content": "What is overfitting?"}, {"role": "assistant", "content": "Overfitting occurs when a model learns the training data too well, including noise and outliers, resulting in poor generalization to new data."}]}
 {"messages": [{"role": "user", "content": "Explain backpropagation"}, {"role": "assistant", "content": "Backpropagation is an algorithm for training neural networks that computes gradients of the loss function with respect to network parameters by applying the chain rule backwards through the network."}]}
+{"messages": [{"role": "user", "content": "Hello test endpoint"}, {"role": "assistant", "content": "Hello! \ud83d\udc4b The endpoint is working fine. How can I assist you today?"}]}
+{"messages": [{"role": "user", "content": "Hello test endpoint"}, {"role": "assistant", "content": "Hello! \ud83d\udc4b The endpoint is up and running\u2014how can I assist you today?"}]}
+{"messages": [{"role": "user", "content": "Hello test endpoint"}, {"role": "assistant", "content": "Hello! \ud83d\udc4b The endpoint is working\u2014how can I assist you today?"}]}
+{"messages": [{"role": "user", "content": "Hello test endpoint"}, {"role": "assistant", "content": "Hello! \ud83d\udc4b The endpoint is working fine. How can I assist you today?"}]}

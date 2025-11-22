@@ -433,7 +433,7 @@ def main():
     dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
     base_model = AutoModelForCausalLM.from_pretrained(
         hf_model_id,
-        torch_dtype=dtype,
+        dtype=dtype,
         device_map="auto",
     )
 
