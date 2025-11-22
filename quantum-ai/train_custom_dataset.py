@@ -24,10 +24,19 @@ Author: Quantum AI System
 Date: November 1, 2025
 """
 
+import sys
+import os
+
+# Fix Windows console encoding for emoji support
+if os.name == 'nt':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 import numpy as np
 import pandas as pd
 from pathlib import Path
-import sys
 import argparse
 import yaml
 

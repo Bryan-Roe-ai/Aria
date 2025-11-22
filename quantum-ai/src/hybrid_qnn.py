@@ -99,7 +99,9 @@ class HybridQNN(nn.Module):
         n_quantum_layers: int,
         entanglement: str = "linear",
         output_dim: int = 1,
-        dropout: float = 0.2
+        dropout: float = 0.2,
+        use_batch_norm: bool = True,
+        use_residual: bool = True
     ):
         """
         Initialize hybrid QNN.
@@ -109,39 +111,66 @@ class HybridQNN(nn.Module):
             hidden_dim: Hidden layer dimension
             n_qubits: Number of qubits in quantum layer
             n_quantum_layers: Number of quantum variational layers
+            entanglement: Entanglement pattern (linear, circular, full)
             output_dim: Output dimension
             dropout: Dropout rate
+            use_batch_norm: Enable batch normalization for stability
+            use_residual: Enable residual connections
         """
         super().__init__()
         
         self.input_dim = input_dim
+        self.use_residual = use_residual
+        self.use_batch_norm = use_batch_norm
         self.n_qubits = n_qubits
         self.entanglement = entanglement.lower()
         
-        # Classical preprocessing
-        self.encoder = nn.Sequential(
+        # Classical preprocessing with residual option
+        encoder_layers = [
             nn.Linear(input_dim, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
+        ]
+        if use_batch_norm:
+            encoder_layers.append(nn.BatchNorm1d(hidden_dim))
+        encoder_layers.extend([
             nn.ReLU(),
             nn.Dropout(dropout),
             nn.Linear(hidden_dim, 2**n_qubits)  # Prepare for quantum encoding
-        )
+        ])
+        self.encoder = nn.Sequential(*encoder_layers)
+        
+        # Residual projection if dimensions don't match
+        if use_residual and input_dim != 2**n_qubits:
+            self.residual_proj = nn.Linear(input_dim, 2**n_qubits)
+        else:
+            self.residual_proj = None
         
         # Quantum layer
         self.quantum_layer = QuantumLayer(n_qubits, n_quantum_layers, entanglement=self.entanglement)
         
-        # Classical postprocessing
-        self.decoder = nn.Sequential(
+        # Classical postprocessing with improved architecture
+        decoder_layers = [
             nn.Linear(n_qubits, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
+        ]
+        if use_batch_norm:
+            decoder_layers.append(nn.BatchNorm1d(hidden_dim))
+        decoder_layers.extend([
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_dim, output_dim)
-        )
+            nn.Linear(hidden_dim, hidden_dim // 2),
+        ])
+        if use_batch_norm:
+            decoder_layers.append(nn.BatchNorm1d(hidden_dim // 2))
+        decoder_layers.extend([
+            nn.ReLU(),
+            nn.Dropout(dropout / 2),  # Less dropout in final layer
+            nn.Linear(hidden_dim // 2, output_dim)
+        ])
+        self.decoder = nn.Sequential(*decoder_layers)
         
         logger.info(
-            f"Initialized HybridQNN: input_dim={input_dim}, "
-            f"n_qubits={n_qubits}, n_quantum_layers={n_quantum_layers}, entanglement={self.entanglement}"
+            f"Initialized Enhanced HybridQNN: input_dim={input_dim}, "
+            f"n_qubits={n_qubits}, n_quantum_layers={n_quantum_layers}, "
+            f"entanglement={self.entanglement}, residual={use_residual}"
         )
     
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -154,8 +183,13 @@ class HybridQNN(nn.Module):
         Returns:
             Network output
         """
+        # Store input for residual connection
+        x_input = x
         # Classical encoding
         x = self.encoder(x)
+        # Add residual connection if enabled
+        if self.use_residual and self.residual_proj is not None:
+            x = x + self.residual_proj(x_input)
         
         # Normalize for amplitude encoding
         x = torch.nn.functional.normalize(x, p=2, dim=1)
@@ -306,7 +340,9 @@ class QuantumClassicalTrainer:
         self,
         model: nn.Module,
         learning_rate: float = 0.001,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        use_scheduler: bool = True,
+        gradient_clip_val: float = 1.0
     ):
         """
         Initialize trainer
@@ -315,17 +351,60 @@ class QuantumClassicalTrainer:
             model: Hybrid QNN model
             learning_rate: Learning rate
             device: Device to train on ('cpu' or 'cuda')
+            use_scheduler: Enable learning rate scheduling
+            gradient_clip_val: Gradient clipping value for stability
         """
         self.model = model.to(device)
         self.device = device
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-        self.criterion = nn.CrossEntropyLoss()
+        self.gradient_clip_val = gradient_clip_val
+        
+        # Use AdamW optimizer with weight decay for better generalization
+        self.optimizer = torch.optim.AdamW(
+            model.parameters(),
+            lr=learning_rate,
+            weight_decay=0.01,
+            betas=(0.9, 0.999)
+        )
+        
+        # Learning rate scheduler for adaptive training
+        if use_scheduler:
+            self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+                self.optimizer,
+                mode='min',
+                factor=0.5,
+                patience=5,
+                verbose=True
+            )
+        else:
+            self.scheduler = None
+        
+        # Choose appropriate loss function (binary vs multi-class)
+        # If final linear layer has single output, use BCEWithLogitsLoss
+        last_out_features = None
+        try:
+            if hasattr(model, 'decoder') and isinstance(model.decoder, nn.Sequential):
+                for layer in model.decoder:
+                    if isinstance(layer, nn.Linear):
+                        last_out_features = layer.out_features
+        except Exception:
+            last_out_features = None
+        if last_out_features == 1:
+            self.criterion = nn.BCEWithLogitsLoss()
+        else:
+            self.criterion = nn.CrossEntropyLoss()
         
         self.train_losses = []
         self.val_accuracies = []
         self.val_losses = []
+        self.learning_rates = []
+        self.best_val_acc = 0.0
+        self.best_model_state = None
         
-        logger.info(f"Initialized trainer with lr={learning_rate}, device={device}")
+        logger.info(
+            f"Initialized enhanced trainer: lr={learning_rate}, "
+            f"device={device}, scheduler={use_scheduler}, "
+            f"gradient_clip={gradient_clip_val}"
+        )
     
     def train_epoch(
         self,
@@ -342,6 +421,7 @@ class QuantumClassicalTrainer:
         """
         self.model.train()
         total_loss = 0.0
+        n_batches = len(train_loader)
         
         for batch_idx, (data, target) in enumerate(train_loader):
             data, target = data.to(self.device), target.to(self.device)
@@ -349,25 +429,47 @@ class QuantumClassicalTrainer:
             # Zero gradients
             self.optimizer.zero_grad()
             
-            # Forward pass
-            output = self.model(data)
-            
-            # Compute loss
-            loss = self.criterion(output, target)
-            
-            # Backward pass
-            loss.backward()
-            
-            # Update weights
-            self.optimizer.step()
-            
-            total_loss += loss.item()
+            try:
+                # Forward pass
+                output = self.model(data)
+                
+                # Compute loss
+                original_target = target
+                if isinstance(self.criterion, nn.BCEWithLogitsLoss):
+                    target = target.float().unsqueeze(1)
+                loss = self.criterion(output, target)
+                
+                # Backward pass
+                loss.backward()
+                
+                # Gradient clipping for stability
+                if self.gradient_clip_val > 0:
+                    torch.nn.utils.clip_grad_norm_(
+                        self.model.parameters(),
+                        self.gradient_clip_val
+                    )
+                
+                # Update weights
+                self.optimizer.step()
+                
+                total_loss += loss.item()
+                
+            except RuntimeError as e:
+                logger.warning(f"Error in batch {batch_idx}: {e}")
+                continue
             
             if (batch_idx + 1) % 10 == 0:
-                logger.info(f"Batch {batch_idx + 1}/{len(train_loader)}, Loss: {loss.item():.4f}")
+                progress = (batch_idx + 1) / n_batches * 100
+                logger.debug(
+                    f"Batch {batch_idx + 1}/{n_batches} ({progress:.1f}%), "
+                    f"Loss: {loss.item():.4f}"
+                )
         
         avg_loss = total_loss / len(train_loader)
         self.train_losses.append(avg_loss)
+        # Record current learning rate
+        current_lr = self.optimizer.param_groups[0]['lr']
+        self.learning_rates.append(current_lr)
         
         return avg_loss
     
@@ -397,13 +499,22 @@ class QuantumClassicalTrainer:
                 output = self.model(data)
                 
                 # Compute loss
+                original_target = target
+                if isinstance(self.criterion, nn.BCEWithLogitsLoss):
+                    target = target.float().unsqueeze(1)
                 loss = self.criterion(output, target)
                 total_loss += loss.item()
                 
                 # Get predictions
-                _, predicted = torch.max(output.data, 1)
-                total += target.size(0)
-                correct += (predicted == target).sum().item()
+                if isinstance(self.criterion, nn.BCEWithLogitsLoss):
+                    probs = torch.sigmoid(output)
+                    predicted = (probs > 0.5).long().view(-1)
+                    total += original_target.size(0)
+                    correct += (predicted == original_target).sum().item()
+                else:
+                    _, predicted = torch.max(output.data, 1)
+                    total += target.size(0)
+                    correct += (predicted == target).sum().item()
         
         accuracy = correct / total
         avg_loss = total_loss / len(val_loader)
@@ -411,6 +522,11 @@ class QuantumClassicalTrainer:
         # Record metrics
         self.val_accuracies.append(accuracy)
         self.val_losses.append(avg_loss)
+        # Save best model
+        if accuracy > self.best_val_acc:
+            self.best_val_acc = accuracy
+            self.best_model_state = self.model.state_dict().copy()
+            logger.info(f"New best validation accuracy: {accuracy:.4f}")
         
         return accuracy, avg_loss
     
@@ -418,7 +534,8 @@ class QuantumClassicalTrainer:
         self,
         train_loader,
         val_loader,
-        num_epochs: int = 20
+        num_epochs: int = 20,
+        early_stopping_patience: int = 10
     ):
         """
         Train the model
@@ -427,8 +544,11 @@ class QuantumClassicalTrainer:
             train_loader: Training data loader
             val_loader: Validation data loader
             num_epochs: Number of epochs
+                    early_stopping_patience: Epochs to wait before early stopping
         """
         logger.info(f"Starting training for {num_epochs} epochs")
+        epochs_without_improvement = 0
+        best_val_loss = float('inf')
         
         for epoch in range(num_epochs):
             # Train
@@ -437,17 +557,41 @@ class QuantumClassicalTrainer:
             # Evaluate
             val_acc, val_loss = self.evaluate(val_loader)
             
+            # Update learning rate scheduler
+            if self.scheduler is not None:
+                self.scheduler.step(val_loss)
+            
             logger.info(
                 f"Epoch {epoch + 1}/{num_epochs} - "
                 f"Train Loss: {train_loss:.4f}, "
                 f"Val Loss: {val_loss:.4f}, "
-                f"Val Acc: {val_acc:.4f}"
+                f"Val Acc: {val_acc:.4f}, "
+                f"LR: {self.learning_rates[-1]:.6f}"
             )
             
             print(f"Epoch {epoch + 1}/{num_epochs} - "
                   f"Train Loss: {train_loss:.4f}, "
                   f"Val Loss: {val_loss:.4f}, "
                   f"Val Acc: {val_acc:.4f}")
+            
+            # Early stopping check
+            if val_loss < best_val_loss:
+                best_val_loss = val_loss
+                epochs_without_improvement = 0
+            else:
+                epochs_without_improvement += 1
+            
+            if epochs_without_improvement >= early_stopping_patience:
+                logger.info(
+                    f"Early stopping triggered after {epoch + 1} epochs "
+                    f"(no improvement for {early_stopping_patience} epochs)"
+                )
+                break
+        
+        # Restore best model
+        if self.best_model_state is not None:
+            self.model.load_state_dict(self.best_model_state)
+            logger.info(f"Restored best model with val_acc={self.best_val_acc:.4f}")
 
 
 def create_hybrid_model(config_path: str = "../config/quantum_config.yaml") -> HybridQNN:

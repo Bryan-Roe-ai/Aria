@@ -63,9 +63,14 @@ class QuantumClassifier:
         Returns:
             Expectation values of Pauli-Z measurements
         """
-        # Encode classical data into quantum state
+        # Enhanced data encoding with amplitude and phase
         for i in range(self.n_qubits):
-            qml.RY(inputs[i % len(inputs)], wires=i)
+            idx = i % len(inputs)
+            # RY for amplitude encoding
+            qml.RY(inputs[idx], wires=i)
+            # Add RZ for phase encoding (increases circuit expressiveness)
+            if i < len(inputs):
+                qml.RZ(inputs[idx] * 0.5, wires=i)
         
         # Variational layers
         for layer in range(self.n_layers):
@@ -85,6 +90,10 @@ class QuantumClassifier:
                 for i in range(self.n_qubits):
                     for j in range(i + 1, self.n_qubits):
                         qml.CNOT(wires=[i, j])
+        
+                # Final rotation layer for enhanced expressiveness
+                for i in range(self.n_qubits):
+                    qml.RY(weights[-1, i, 0] * 0.5, wires=i)
         
         # Measurements
         return [qml.expval(qml.PauliZ(i)) for i in range(self.n_qubits)]

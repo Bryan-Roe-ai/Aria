@@ -88,20 +88,20 @@ def validate_sample(path: Path) -> Dict[str, Any]:
 
 
 def build_text_from_messages(messages: List[Dict[str, str]]) -> str:
-    # Generic fallback: simple chat turn format
+    """Convert messages to training text with improved formatting and end tokens."""
     parts: List[str] = []
     for m in messages:
         role = m.get("role", "").lower()
-        content = m.get("content", "")
+        content = m.get("content", "").strip()
+        if not content:  # Skip empty messages
+            continue
         if role == "system":
-            parts.append(f"<|system|>\n{content}\n")
+            parts.append(f"<|system|>\n{content}<|end|>\n")
         elif role == "user":
-            parts.append(f"<|user|>\n{content}\n")
+            parts.append(f"<|user|>\n{content}<|end|>\n")
         elif role == "assistant":
-            parts.append(f"<|assistant|>\n{content}\n")
-        else:
-            parts.append(f"<|user|>\n{content}\n")
-    return "\n".join(parts).strip()
+            parts.append(f"<|assistant|>\n{content}<|end|>\n")
+    return "".join(parts)
 
 
 def make_hf_dataset_from_files(train_files: List[str], eval_files: List[str], streaming: bool = True):

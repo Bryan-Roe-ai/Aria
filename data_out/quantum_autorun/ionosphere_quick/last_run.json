@@ -17,10 +17,10 @@
     "--test-size",
     "0.2"
   ],
-  "start_time": "20251121T135020Z",
-  "status": "failed",
-  "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\ionosphere_quick\\20251121T135020Z\\stdout.log",
+  "start_time": "20251122T034701Z",
+  "status": "succeeded",
+  "return_code": 0,
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\quantum_autorun\\ionosphere_quick\\20251122T034701Z\\stdout.log",
   "meta": {
     "preset": "ionosphere",
     "csv": null,
@@ -32,5 +32,5 @@
     "learning_rate": 0.001,
     "test_size": 0.2
   },
-  "duration_sec": 0.85
+  "duration_sec": 21.61
 }

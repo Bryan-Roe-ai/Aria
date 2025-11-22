@@ -40,12 +40,35 @@ class LoraLocalProvider(BaseChatProvider):
     falls back to a subprocess bridge that uses the workspace venv
     (./venv/Scripts/python.exe) to perform inference.
     """
-    def __init__(self, adapter_dir: str, device: str = None, temperature: float = 0.7, max_new_tokens: int = 256):
+    def __init__(
+        self,
+        adapter_dir: str,
+        device: str = None,
+        temperature: float = 0.7,
+        max_new_tokens: int = 256,
+        top_p: float = 0.9,
+        top_k: int = 50,
+        repetition_penalty: float = 1.1
+    ):
+        """Initialize LoRA provider with enhanced generation parameters.
+        
+        Args:
+            adapter_dir: Path to LoRA adapter
+            device: Device for inference (cuda/cpu)
+            temperature: Sampling temperature (higher = more random)
+            max_new_tokens: Maximum tokens to generate
+            top_p: Nucleus sampling threshold
+            top_k: Top-k sampling parameter
+            repetition_penalty: Penalty for repeating tokens
+        """
         self.adapter_dir = Path(adapter_dir)
         self.use_subprocess = False
         self.bridge_python: Optional[str] = None
         self.temperature = float(temperature)
         self.max_new_tokens = int(max_new_tokens)
+        self.top_p = float(top_p)
+        self.top_k = int(top_k)
+        self.repetition_penalty = float(repetition_penalty)
         # Lazy import heavy deps on demand
         self._lazy_setup()
         if not self.use_subprocess:
@@ -100,7 +123,11 @@ class LoraLocalProvider(BaseChatProvider):
                 max_new_tokens=self.max_new_tokens,
                 do_sample=True,
                 temperature=self.temperature,
+                top_p=self.top_p,
+                top_k=self.top_k,
+                repetition_penalty=self.repetition_penalty,
                 pad_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
             )
         response = self.tokenizer.decode(output[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
         if not stream:

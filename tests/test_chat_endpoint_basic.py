@@ -31,9 +31,10 @@ def make_request(body: dict):
 
 
 def test_chat_endpoint_basic_local_provider():
-    """Ensure /api/chat logic returns a valid payload with local provider fallback.
+    """Ensure /api/chat logic returns a valid payload with provider fallback.
 
     Memory injection should be zero when DB unavailable or no prior messages.
+    Provider can be lmstudio (if running) or local (fallback).
     """
     req = make_request({
         "messages": [{"role": "user", "content": "Hello test endpoint"}],
@@ -42,7 +43,8 @@ def test_chat_endpoint_basic_local_provider():
     resp = function_app.chat(req)
     assert resp.status_code == 200, resp.get_body()
     payload = json.loads(resp.get_body())
-    assert payload["provider"] == "local"
+    # Provider can be lmstudio (if LM Studio is running) or local (fallback)
+    assert payload["provider"] in ["local", "lmstudio"], f"Unexpected provider: {payload['provider']}"
     assert isinstance(payload.get("response"), str)
     assert "memory_injected" in payload
     assert isinstance(payload["memory_injected"], int)

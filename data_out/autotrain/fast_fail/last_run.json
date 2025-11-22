@@ -9,10 +9,10 @@
     "--max-train-samples",
     "1"
   ],
-  "start_time": "20251121T110449Z",
+  "start_time": "20251122T012441Z",
   "status": "failed",
   "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\fast_fail\\20251121T110449Z\\stdout.log",
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\fast_fail\\20251122T012441Z\\stdout.log",
   "output_dir": null,
-  "duration_sec": 11.35
+  "duration_sec": 6.83
 }
