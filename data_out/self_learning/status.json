@@ -1,10 +1,18 @@
 {
   "started_at": "2025-11-21T04:04:18.283876",
-  "training_cycles": 0,
+  "training_cycles": 1,
   "total_conversations": 58,
-  "conversations_since_last_train": 58,
-  "last_training": null,
-  "best_model_path": null,
+  "conversations_since_last_train": 0,
+  "last_training": "2025-11-22T01:12:46.543072",
+  "best_model_path": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\self_learning\\cycle_1_20251122_002448\\lora_adapter",
   "current_accuracy": 0.0,
-  "learning_enabled": true
+  "learning_enabled": true,
+  "model_history": [
+    {
+      "cycle": 1,
+      "timestamp": "2025-11-22T01:12:46.543072",
+      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\self_learning\\cycle_1_20251122_002448\\lora_adapter",
+      "conversations_used": 58
+    }
+  ]
 }
