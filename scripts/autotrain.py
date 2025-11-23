@@ -69,6 +69,8 @@ class Job:
     max_eval_samples: Optional[int] = None
     seed: Optional[int] = None
     hf_model_id: Optional[str] = None
+    no_stream: bool = False  # disable streaming dataset for stability on small GPU runs
+    device: Optional[str] = None  # explicit device preference (auto|cuda|cpu|directml|mps)
     # Local runner specific
     reinstall: bool = False
     extra_args: List[str] = field(default_factory=list)
@@ -96,6 +98,8 @@ def load_jobs(config_path: Path) -> List[Job]:
             max_eval_samples=item.get("max_eval_samples"),
             seed=item.get("seed"),
             hf_model_id=item.get("hf_model_id"),
+            no_stream=bool(item.get("no_stream", False)),
+            device=item.get("device"),
             reinstall=bool(item.get("reinstall", False)),
             extra_args=list(item.get("extra_args", [])),
         )
@@ -150,6 +154,14 @@ def build_hf_command(job: Job) -> List[str]:
         cmd += ["--seed", str(job.seed)]
     if job.save_dir:
         cmd += ["--save-dir", str(job.save_dir)]
+    # Streaming control & device preference
+    if job.no_stream:
+        cmd += ["--no-stream"]
+    if job.device:
+        cmd += ["--device", str(job.device)]
+    else:
+        # Default to auto to pick up GPU if available
+        cmd += ["--device", "auto"]
     # Pass through any extra args
     cmd += list(job.extra_args)
     return cmd
@@ -185,11 +197,15 @@ def write_json(path: Path, obj: Dict[str, Any]) -> None:
         json.dump(obj, f, indent=2, ensure_ascii=False)
 
 
-def run_job(job: Job, dry_run: bool = False) -> Dict[str, Any]:
+def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int = 1) -> Dict[str, Any]:
     ts = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
     job_dir = DATA_OUT / job.name / ts
     ensure_dirs(job_dir)
     log_path = job_dir / "stdout.log"
+    
+    # Progress indicator
+    progress_pct = int((job_index / max(total_jobs, 1)) * 100)
+    print(f"\n[autotrain] [{progress_pct}%] Job {job_index + 1}/{total_jobs}: {job.name}")
 
     env = os.environ.copy()
     if job.hf_model_id:
@@ -237,7 +253,9 @@ def run_job(job: Job, dry_run: bool = False) -> Dict[str, Any]:
     duration = time.time() - t0
     result["return_code"] = rc
     result["duration_sec"] = round(duration, 2)
+    result["duration_human"] = f"{int(duration // 60)}m {int(duration % 60)}s"
     result["status"] = "succeeded" if rc == 0 else "failed"
+    print(f"[autotrain] Completed in {result['duration_human']} - Status: {result['status']}")
 
     # Guess output directory if specified on job
     if job.save_dir:
@@ -263,6 +281,7 @@ def main() -> None:
     ap.add_argument("--job", default=None, help="Run only the named job")
     ap.add_argument("--dry-run", action="store_true", help="Validate and print commands; do not execute")
     ap.add_argument("--list", action="store_true", help="List configured jobs and exit")
+    ap.add_argument("--resume", action="store_true", help="Skip jobs that recently succeeded (check last_run.json)")
     ap.add_argument("--reinstall", action="store_true", help="Force reinstall for local runner jobs (alias to job.reinstall)")
     args = ap.parse_args()
 
@@ -289,10 +308,34 @@ def main() -> None:
 
     ensure_dirs(DATA_OUT)
     results: List[Dict[str, Any]] = []
-    for j in jobs:
+    start_time = time.time()
+    
+    for idx, j in enumerate(jobs):
+        # Check if job was recently completed successfully and skip if --resume
+        last_run_file = DATA_OUT / j.name / "last_run.json"
+        if args.resume and last_run_file.exists():
+            try:
+                with last_run_file.open("r") as f:
+                    last = json.load(f)
+                    if last.get("status") == "succeeded":
+                        print(f"[autotrain] Skipping {j.name} (already succeeded recently)")
+                        results.append(last)
+                        continue
+            except Exception:
+                pass
+
         print(f"[autotrain] Running job: {j.name} (runner={j.runner})")
-        res = run_job(j, dry_run=args.dry_run)
+        res = run_job(j, dry_run=args.dry_run, job_index=idx, total_jobs=len(jobs))
         results.append(res)
+
+        # Show estimated time remaining (after including this job's duration)
+        if idx > 0 and not args.dry_run:
+            elapsed = time.time() - start_time
+            avg_per_job = elapsed / (idx + 1)
+            remaining_jobs = len(jobs) - (idx + 1)
+            eta_sec = avg_per_job * remaining_jobs
+            print(f"[autotrain] ETA for remaining jobs: {int(eta_sec // 60)}m {int(eta_sec % 60)}s")
+
         # Make it easier to view what happens in CI/logs
         print(json.dumps(res, indent=2))
 

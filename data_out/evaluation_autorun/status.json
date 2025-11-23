@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-23T06:53:37Z",
+  "generated_at": "2025-11-23T07:41:39Z",
   "total_jobs": 1,
   "succeeded": 1,
   "failed": 0,
@@ -7,7 +7,7 @@
   "missing": 0,
   "jobs": [
     {
-      "name": "eval_phi35_lr_low",
+      "name": "eval_phi35_drop_high",
       "model_type": "lora",
       "cmd": [
         "C:\\Users\\Bryan\\OneDrive\\AI\\venv\\Scripts\\python.exe",
@@ -15,7 +15,7 @@
         "--dataset",
         "datasets/chat/mixed_chat",
         "--model",
-        "data_out/lora_training/phi35_lr_low",
+        "data_out/lora_training/phi35_drop_high",
         "--max-samples",
         "20",
         "--metric",
@@ -29,20 +29,20 @@
         "--output-format",
         "json",
         "--save-dir",
-        "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low"
+        "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_drop_high"
       ],
-      "start_time": "20251123T065337Z",
+      "start_time": "20251123T074139Z",
       "status": "succeeded",
       "return_code": 0,
-      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low\\20251123T065337Z\\stdout.log",
-      "results_file": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low\\20251123T065337Z\\results.json",
+      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_drop_high\\20251123T074139Z\\stdout.log",
+      "results_file": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_drop_high\\20251123T074139Z\\results.json",
       "metrics_computed": [
         "accuracy",
         "bleu",
         "rouge",
         "response_time"
       ],
-      "duration_sec": 0.12
+      "duration_sec": 0.06
     }
   ]
 }

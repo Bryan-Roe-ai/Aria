@@ -21,12 +21,16 @@
     "--max-eval-samples",
     "16",
     "--save-dir",
-    "data_out/lora_training/phi35_drop_high"
+    "data_out/lora_training/phi35_drop_high",
+    "--no-stream",
+    "--device",
+    "cuda"
   ],
-  "start_time": "20251123T065302Z",
+  "start_time": "20251123T081847Z",
   "status": "failed",
   "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_dropout_high\\20251123T065302Z\\stdout.log",
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_dropout_high\\20251123T081847Z\\stdout.log",
   "output_dir": "data_out\\lora_training\\phi35_drop_high",
-  "duration_sec": 34.79
+  "duration_sec": 0.89,
+  "duration_human": "0m 0s"
 }

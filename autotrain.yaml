@@ -65,6 +65,8 @@ jobs:
     learning_rate: 0.0001
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
+    no_stream: true
+    device: cuda
 
   - name: phi35_mixed_chat_lr_high
     runner: hf
@@ -77,6 +79,8 @@ jobs:
     learning_rate: 0.0003
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
+    no_stream: true
+    device: cuda
 
   - name: phi35_mixed_chat_dropout_low
     runner: hf
@@ -89,6 +93,8 @@ jobs:
     learning_rate: 0.0002
     lora_dropout: 0.05
     hf_model_id: microsoft/Phi-3.5-mini-instruct
+    no_stream: true
+    device: cuda
 
   - name: phi35_mixed_chat_dropout_high
     runner: hf
@@ -101,4 +107,6 @@ jobs:
     learning_rate: 0.0002
     lora_dropout: 0.15
     hf_model_id: microsoft/Phi-3.5-mini-instruct
+    no_stream: true
+    device: cuda
 

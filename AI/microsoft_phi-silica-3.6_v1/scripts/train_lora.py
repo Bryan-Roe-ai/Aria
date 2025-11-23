@@ -24,8 +24,12 @@ try:
     )
     from peft import LoraConfig, get_peft_model, PeftModel
     from transformers import TrainerCallback
-except Exception:
-    # We'll allow dry-run without these
+except Exception as e:
+    # Provide visibility into which dependency import failed
+    import traceback
+    print(f"[import-debug] training dependency import failed: {e}")
+    traceback.print_exc()
+    # We'll allow dry-run without these by nulling all symbols
     torch = None  # type: ignore
     load_dataset = None  # type: ignore
     AutoModelForCausalLM = AutoTokenizer = Trainer = TrainingArguments = DataCollatorForLanguageModeling = None  # type: ignore
@@ -322,11 +326,23 @@ def main():
 
     # Real training requires heavy deps
     if AutoTokenizer is None or AutoModelForCausalLM is None or load_dataset is None or torch is None:
-        venv_path = Path(__file__).resolve().parents[2] / "venv"
+        missing = []
+        if torch is None:
+            missing.append("torch")
+        if load_dataset is None:
+            missing.append("datasets")
+        if AutoTokenizer is None or AutoModelForCausalLM is None:
+            missing.append("transformers")
+        if LoraConfig is None:
+            missing.append("peft")
+        model_venv = Path(__file__).resolve().parents[1] / "venv"
+        root_venv = Path(__file__).resolve().parents[3] / "venv"
         raise RuntimeError(
-            f"Training dependencies not installed in current environment.\n"
-            f"Install with: {venv_path / 'Scripts' / 'pip.exe'} install transformers datasets peft accelerate torch\n"
-            f"Or run from project venv: {venv_path / 'Scripts' / 'python.exe'}"
+            "Training dependencies not installed or import failed.\n"
+            f"missing={missing}\n"
+            f"To fix (model env): {model_venv / 'Scripts' / 'pip.exe'} install transformers datasets peft accelerate torch\n"
+            f"Alt (root env): {root_venv / 'Scripts' / 'pip.exe'} install transformers datasets peft accelerate torch\n"
+            "After installing, re-run this script."
         )
 
     # Resolve model id

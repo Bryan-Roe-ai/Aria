@@ -21,12 +21,16 @@
     "--max-eval-samples",
     "16",
     "--save-dir",
-    "data_out/lora_training/phi35_lr_low"
+    "data_out/lora_training/phi35_lr_low",
+    "--no-stream",
+    "--device",
+    "cuda"
   ],
-  "start_time": "20251123T052526Z",
-  "status": "succeeded",
-  "return_code": 0,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_lr_low\\20251123T052526Z\\stdout.log",
+  "start_time": "20251123T081844Z",
+  "status": "failed",
+  "return_code": 1,
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_lr_low\\20251123T081844Z\\stdout.log",
   "output_dir": "data_out\\lora_training\\phi35_lr_low",
-  "duration_sec": 3229.28
+  "duration_sec": 0.91,
+  "duration_human": "0m 0s"
 }

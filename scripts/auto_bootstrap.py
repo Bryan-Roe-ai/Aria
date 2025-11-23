@@ -131,6 +131,8 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true", help="Do not create venvs or install deps; just report plan")
     ap.add_argument("--create-venvs", action="store_true", help="Create missing venvs before validation")
     ap.add_argument("--install", action="store_true", help="Install requirements after creating venvs")
+    ap.add_argument("--watch", action="store_true", help="Continuously monitor status files (30s refresh)")
+    ap.add_argument("--check-training", action="store_true", help="Include training job status in monitoring")
     args = ap.parse_args()
 
     summary: Dict[str, Any] = {"generated_at": None, "projects": {}, "orchestrators": {}, "problems": []}
@@ -175,6 +177,25 @@ def main() -> None:
                 print(f"[auto_bootstrap] Orchestrator issue: {oc}")
                 sys.exit(1)
 
+    if args.watch:
+        print("[auto_bootstrap] Entering watch mode (Ctrl+C to exit)...")
+        try:
+            while True:
+                time.sleep(30)
+                # Re-check orchestrator status
+                if args.check_training:
+                    autotrain_status = REPO_ROOT / "data_out" / "autotrain" / "status.json"
+                    if autotrain_status.exists():
+                        with autotrain_status.open("r") as f:
+                            data = json.load(f)
+                            succeeded = sum(1 for j in data.get("jobs", []) if j.get("status") == "succeeded")
+                            total = len(data.get("jobs", []))
+                            print(f"[watch] AutoTrain: {succeeded}/{total} succeeded")
+                print("[watch] Status refreshed. Waiting 30s...")
+        except KeyboardInterrupt:
+            print("\n[auto_bootstrap] Watch mode stopped")
+            sys.exit(0)
+    
     print("[auto_bootstrap] Validation complete")
     sys.exit(0)
 

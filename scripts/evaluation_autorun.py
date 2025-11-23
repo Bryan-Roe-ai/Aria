@@ -189,8 +189,13 @@ def write_json(path: Path, obj: Dict[str, Any]) -> None:
         json.dump(obj, f, indent=2, ensure_ascii=False)
 
 
-def validate_job(job: EvalJob) -> Dict[str, Any]:
-    """Validate job configuration and paths without executing."""
+def validate_job(job: EvalJob, parallel: bool = False) -> Dict[str, Any]:
+    """Validate job configuration and paths without executing.
+    
+    Args:
+        job: The evaluation job to validate
+        parallel: If True, skip expensive checks for faster batch validation
+    """
     missing: List[str] = []
     warnings: List[str] = []
     
@@ -255,9 +260,12 @@ def run_job(job: EvalJob, dry_run: bool = False) -> Dict[str, Any]:
     }
     
     if dry_run:
-        # Validate without execution
-        validation = validate_job(job)
+        # Validate without execution (fast mode for batch)
+        validation = validate_job(job, parallel=True)
         result.update(validation)
+        # Check for critical blockers
+        if validation.get("missing"):
+            result["blocker"] = True
         return result
     
     # Execute evaluation
@@ -343,8 +351,9 @@ def main() -> None:
     ensure_dirs(DATA_OUT)
     results: List[Dict[str, Any]] = []
     
-    for j in jobs:
-        print(f"[evaluation_autorun] Running job: {j.name} (model_type={j.model_type})")
+    for idx, j in enumerate(jobs):
+        progress = int(((idx + 1) / len(jobs)) * 100)
+        print(f"[evaluation_autorun] [{progress}%] Job {idx + 1}/{len(jobs)}: {j.name} (model_type={j.model_type})")
         res = run_job(j, dry_run=args.dry_run)
         results.append(res)
         print(json.dumps(res, indent=2, default=str))

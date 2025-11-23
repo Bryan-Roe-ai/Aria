@@ -18,3 +18,13 @@
 {"step": 64, "eval_loss": 2.4234747886657715, "eval_perplexity": 11.285004270202743, "timestamp": "2025-11-21T15:12:26.026571Z"}
 {"step": 64, "eval_loss": 2.4234747886657715, "eval_perplexity": 11.285004270202743, "timestamp": "2025-11-21T15:13:52.734671Z"}
 {"phase": "post", "eval_loss": 2.4234747886657715, "eval_perplexity": 11.285004270202743, "timestamp": "2025-11-21T15:13:52.736171Z"}
+{"step": 0, "eval_loss": 3.2323498725891113, "eval_perplexity": 25.3391307945276, "timestamp": "2025-11-23T08:01:27.917893Z"}
+{"phase": "pre", "eval_loss": 3.2323498725891113, "eval_perplexity": 25.3391307945276, "timestamp": "2025-11-23T08:01:27.921890Z"}
+{"step": 0, "eval_loss": 3.2323498725891113, "eval_perplexity": 25.3391307945276, "timestamp": "2025-11-23T08:05:01.659406Z"}
+{"phase": "pre", "eval_loss": 3.2323498725891113, "eval_perplexity": 25.3391307945276, "timestamp": "2025-11-23T08:05:01.660414Z"}
+{"step": 64, "eval_loss": 2.4278831481933594, "eval_perplexity": 11.334862441925571, "timestamp": "2025-11-23T08:13:39.421675Z"}
+{"step": 64, "eval_loss": 2.4278831481933594, "eval_perplexity": 11.334862441925571, "timestamp": "2025-11-23T08:16:47.892838Z"}
+{"phase": "post", "eval_loss": 2.4278831481933594, "eval_perplexity": 11.334862441925571, "timestamp": "2025-11-23T08:16:47.893359Z"}
+{"step": 64, "eval_loss": 2.425840139389038, "eval_perplexity": 11.311728857265923, "timestamp": "2025-11-23T08:17:24.529248Z"}
+{"step": 64, "eval_loss": 2.425840139389038, "eval_perplexity": 11.311728857265923, "timestamp": "2025-11-23T08:18:18.552249Z"}
+{"phase": "post", "eval_loss": 2.425840139389038, "eval_perplexity": 11.311728857265923, "timestamp": "2025-11-23T08:18:18.552748Z"}
