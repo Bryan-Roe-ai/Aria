@@ -15,30 +15,36 @@
         "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
         "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\autotrain.py",
         "--job",
-        "phi35_mixed_chat_lr_high",
-        "--dry-run"
+        "phi35_mixed_chat_lr_high"
       ],
-      "status": "validated"
+      "status": "failed",
+      "return_code": 1,
+      "stdout_tail": "thon.exe\",\n    \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\AI\\\\microsoft_phi-silica-3.6_v1\\\\scripts\\\\train_lora.py\",\n    \"--config\",\n    \"AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml\",\n    \"--dataset\",\n    \"datasets/chat/mixed_chat\",\n    \"--hf-model-id\",\n    \"microsoft/Phi-3.5-mini-instruct\",\n    \"--learning-rate\",\n    \"0.0003\",\n    \"--lora-dropout\",\n    \"0.1\",\n    \"--epochs\",\n    \"1\",\n    \"--max-train-samples\",\n    \"64\",\n    \"--max-eval-samples\",\n    \"16\",\n    \"--save-dir\",\n    \"data_out/lora_training/phi35_lr_high\"\n  ],\n  \"start_time\": \"20251123T065156Z\",\n  \"status\": \"failed\",\n  \"return_code\": 1,\n  \"log\": \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\data_out\\\\autotrain\\\\phi35_mixed_chat_lr_high\\\\20251123T065156Z\\\\stdout.log\",\n  \"output_dir\": \"data_out\\\\lora_training\\\\phi35_lr_high\",\n  \"duration_sec\": 34.82\n}\n",
+      "stderr_tail": ""
     },
     "phi35_mixed_chat_dropout_low": {
       "cmd": [
         "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
         "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\autotrain.py",
         "--job",
-        "phi35_mixed_chat_dropout_low",
-        "--dry-run"
+        "phi35_mixed_chat_dropout_low"
       ],
-      "status": "validated"
+      "status": "failed",
+      "return_code": 1,
+      "stdout_tail": "e\",\n    \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\AI\\\\microsoft_phi-silica-3.6_v1\\\\scripts\\\\train_lora.py\",\n    \"--config\",\n    \"AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml\",\n    \"--dataset\",\n    \"datasets/chat/mixed_chat\",\n    \"--hf-model-id\",\n    \"microsoft/Phi-3.5-mini-instruct\",\n    \"--learning-rate\",\n    \"0.0002\",\n    \"--lora-dropout\",\n    \"0.05\",\n    \"--epochs\",\n    \"1\",\n    \"--max-train-samples\",\n    \"64\",\n    \"--max-eval-samples\",\n    \"16\",\n    \"--save-dir\",\n    \"data_out/lora_training/phi35_drop_low\"\n  ],\n  \"start_time\": \"20251123T065231Z\",\n  \"status\": \"failed\",\n  \"return_code\": 1,\n  \"log\": \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\data_out\\\\autotrain\\\\phi35_mixed_chat_dropout_low\\\\20251123T065231Z\\\\stdout.log\",\n  \"output_dir\": \"data_out\\\\lora_training\\\\phi35_drop_low\",\n  \"duration_sec\": 30.46\n}\n",
+      "stderr_tail": ""
     },
     "phi35_mixed_chat_dropout_high": {
       "cmd": [
         "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
         "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\autotrain.py",
         "--job",
-        "phi35_mixed_chat_dropout_high",
-        "--dry-run"
+        "phi35_mixed_chat_dropout_high"
       ],
-      "status": "validated"
+      "status": "failed",
+      "return_code": 1,
+      "stdout_tail": "\n    \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\AI\\\\microsoft_phi-silica-3.6_v1\\\\scripts\\\\train_lora.py\",\n    \"--config\",\n    \"AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml\",\n    \"--dataset\",\n    \"datasets/chat/mixed_chat\",\n    \"--hf-model-id\",\n    \"microsoft/Phi-3.5-mini-instruct\",\n    \"--learning-rate\",\n    \"0.0002\",\n    \"--lora-dropout\",\n    \"0.15\",\n    \"--epochs\",\n    \"1\",\n    \"--max-train-samples\",\n    \"64\",\n    \"--max-eval-samples\",\n    \"16\",\n    \"--save-dir\",\n    \"data_out/lora_training/phi35_drop_high\"\n  ],\n  \"start_time\": \"20251123T065302Z\",\n  \"status\": \"failed\",\n  \"return_code\": 1,\n  \"log\": \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\data_out\\\\autotrain\\\\phi35_mixed_chat_dropout_high\\\\20251123T065302Z\\\\stdout.log\",\n  \"output_dir\": \"data_out\\\\lora_training\\\\phi35_drop_high\",\n  \"duration_sec\": 34.79\n}\n",
+      "stderr_tail": ""
     }
   },
   "evaluation": {
@@ -47,40 +53,12 @@
         "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
         "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\evaluation_autorun.py",
         "--job",
-        "eval_phi35_lr_low",
-        "--dry-run"
+        "eval_phi35_lr_low"
       ],
-      "status": "validated"
-    },
-    "eval_phi35_lr_high": {
-      "cmd": [
-        "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
-        "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\evaluation_autorun.py",
-        "--job",
-        "eval_phi35_lr_high",
-        "--dry-run"
-      ],
-      "status": "validated"
-    },
-    "eval_phi35_drop_low": {
-      "cmd": [
-        "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
-        "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\evaluation_autorun.py",
-        "--job",
-        "eval_phi35_drop_low",
-        "--dry-run"
-      ],
-      "status": "validated"
-    },
-    "eval_phi35_drop_high": {
-      "cmd": [
-        "C:\\Users\\Bryan\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
-        "C:\\Users\\Bryan\\OneDrive\\AI\\scripts\\evaluation_autorun.py",
-        "--job",
-        "eval_phi35_drop_high",
-        "--dry-run"
-      ],
-      "status": "validated"
+      "status": "succeeded",
+      "return_code": 0,
+      "stdout_tail": "curacy\",\n    \"--metric\",\n    \"bleu\",\n    \"--metric\",\n    \"rouge\",\n    \"--metric\",\n    \"response_time\",\n    \"--output-format\",\n    \"json\",\n    \"--save-dir\",\n    \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\data_out\\\\evaluation_autorun\\\\eval_phi35_lr_low\"\n  ],\n  \"start_time\": \"20251123T065337Z\",\n  \"status\": \"succeeded\",\n  \"return_code\": 0,\n  \"log\": \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\data_out\\\\evaluation_autorun\\\\eval_phi35_lr_low\\\\20251123T065337Z\\\\stdout.log\",\n  \"results_file\": \"C:\\\\Users\\\\Bryan\\\\OneDrive\\\\AI\\\\data_out\\\\evaluation_autorun\\\\eval_phi35_lr_low\\\\20251123T065337Z\\\\results.json\",\n  \"metrics_computed\": [\n    \"accuracy\",\n    \"bleu\",\n    \"rouge\",\n    \"response_time\"\n  ],\n  \"duration_sec\": 0.12\n}\n[evaluation_autorun] DB logging skipped (not configured)\n\n[evaluation_autorun] Summary: 1/1 succeeded\n",
+      "stderr_tail": ""
     }
   },
   "evaluation_metrics": {
@@ -96,5 +74,5 @@
       "metrics": {}
     }
   ],
-  "dry_run": true
+  "dry_run": false
 }

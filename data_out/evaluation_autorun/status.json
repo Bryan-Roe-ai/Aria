@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-23T06:21:04Z",
+  "generated_at": "2025-11-23T06:53:37Z",
   "total_jobs": 1,
   "succeeded": 1,
   "failed": 0,
@@ -31,18 +31,18 @@
         "--save-dir",
         "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low"
       ],
-      "start_time": "20251123T062104Z",
+      "start_time": "20251123T065337Z",
       "status": "succeeded",
       "return_code": 0,
-      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low\\20251123T062104Z\\stdout.log",
-      "results_file": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low\\20251123T062104Z\\results.json",
+      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low\\20251123T065337Z\\stdout.log",
+      "results_file": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\evaluation_autorun\\eval_phi35_lr_low\\20251123T065337Z\\results.json",
       "metrics_computed": [
         "accuracy",
         "bleu",
         "rouge",
         "response_time"
       ],
-      "duration_sec": 0.17
+      "duration_sec": 0.12
     }
   ]
 }

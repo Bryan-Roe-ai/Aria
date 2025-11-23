@@ -453,10 +453,12 @@ def main():
     # DType selection: prefer bfloat16 on CUDA, else float32. (MPS/directml kept at float32 for stability.)
     use_cuda = (chosen_device == "cuda" and torch.cuda.is_available())
     dtype = torch.bfloat16 if use_cuda and hasattr(torch, "bfloat16") else torch.float32
+    # Use explicit device for single GPU to avoid meta device issues with device_map="auto"
+    device_map_param = "cuda:0" if use_cuda and torch.cuda.device_count() == 1 else "auto"
     base_model = AutoModelForCausalLM.from_pretrained(
         hf_model_id,
         torch_dtype=dtype,
-        device_map="auto",  # Let transformers shard if multiple GPUs
+        device_map=device_map_param,
     )
 
     if cfg.gradient_checkpointing:

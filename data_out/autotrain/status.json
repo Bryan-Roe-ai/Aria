@@ -1,8 +1,8 @@
 {
-  "generated_at": "2025-11-23T06:19:15Z",
+  "generated_at": "2025-11-23T06:53:37Z",
   "jobs": [
     {
-      "name": "phi35_mixed_chat_lr_low",
+      "name": "phi35_mixed_chat_dropout_high",
       "runner": "hf",
       "cmd": [
         "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\venv\\Scripts\\python.exe",
@@ -14,9 +14,9 @@
         "--hf-model-id",
         "microsoft/Phi-3.5-mini-instruct",
         "--learning-rate",
-        "0.0001",
+        "0.0002",
         "--lora-dropout",
-        "0.1",
+        "0.15",
         "--epochs",
         "1",
         "--max-train-samples",
@@ -24,14 +24,14 @@
         "--max-eval-samples",
         "16",
         "--save-dir",
-        "data_out/lora_training/phi35_lr_low"
+        "data_out/lora_training/phi35_drop_high"
       ],
-      "start_time": "20251123T052526Z",
-      "status": "succeeded",
-      "return_code": 0,
-      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_lr_low\\20251123T052526Z\\stdout.log",
-      "output_dir": "data_out\\lora_training\\phi35_lr_low",
-      "duration_sec": 3229.28
+      "start_time": "20251123T065302Z",
+      "status": "failed",
+      "return_code": 1,
+      "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_dropout_high\\20251123T065302Z\\stdout.log",
+      "output_dir": "data_out\\lora_training\\phi35_drop_high",
+      "duration_sec": 34.79
     }
   ]
 }
