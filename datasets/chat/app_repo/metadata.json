@@ -1,7 +1,7 @@
 {
-  "total_records": 300,
-  "train_records": 270,
-  "test_records": 30,
+  "total_records": 500,
+  "train_records": 450,
+  "test_records": 50,
   "generation_seed": 42,
   "source_root": "C:\\Users\\Bryan\\OneDrive\\AI",
   "excluded_dirs": [

@@ -17,9 +17,9 @@ Outputs:
 - data_out/autotrain/status.json                              (summary of all jobs)
 
 Usage examples (PowerShell):
-  python .\scripts\autotrain.py --dry-run
-  python .\scripts\autotrain.py --job phi36_mixed_chat
-  python .\scripts\autotrain.py --job phi36_mixed_chat --reinstall  # when using local runner
+    python .\\scripts\\autotrain.py --dry-run
+    python .\\scripts\\autotrain.py --job phi36_mixed_chat
+    python .\\scripts\\autotrain.py --job phi36_mixed_chat --reinstall  # when using local runner
 """
 
 from __future__ import annotations
@@ -58,6 +58,7 @@ LOCAL_RUNNER = REPO_ROOT / "scripts" / "run_local_lora_training.py"
 class Job:
     name: str
     runner: str = "hf"  # "hf" | "local"
+    category: Optional[str] = None
     dataset: Optional[str] = None
     config: Optional[str] = None
     save_dir: Optional[str] = None
@@ -88,6 +89,7 @@ def load_jobs(config_path: Path) -> List[Job]:
         j = Job(
             name=str(item.get("name")),
             runner=str(item.get("runner", "hf")),
+            category=item.get("category"),
             dataset=item.get("dataset"),
             config=item.get("config"),
             save_dir=item.get("save_dir"),
@@ -121,12 +123,12 @@ def _venv_python_default() -> Path:
 
 
 def _venv_python_ml() -> Path:
-    # Use project-specific venv with ML dependencies
-    venv_python = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "venv" / "Scripts" / "python.exe"
-    if venv_python.exists():
-        return venv_python
-    # Fallback to root venv
-    return _venv_python_default()
+    """Return the model-specific virtual environment python if available.
+
+    Falls back to root venv/system python only if the model venv is missing.
+    """
+    model_py = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "venv" / "Scripts" / "python.exe"
+    return model_py if model_py.exists() else _venv_python_default()
 
 
 def build_hf_command(job: Job) -> List[str]:
@@ -219,6 +221,7 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
     result: Dict[str, Any] = {
         "name": job.name,
         "runner": job.runner,
+        "category": job.category,
         "cmd": cmd,
         "start_time": ts,
         "status": "planned" if dry_run else "running",
@@ -227,28 +230,53 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
         "output_dir": None,
     }
 
+    # Preflight validation (applies to both dry-run and real runs)
+    missing: List[str] = []
+    if job.runner == "local" and not LOCAL_RUNNER.exists():
+        missing.append(str(LOCAL_RUNNER))
+    if job.runner == "hf" and not HF_TRAIN_SCRIPT.exists():
+        missing.append(str(HF_TRAIN_SCRIPT))
+    if job.dataset:
+        dp = Path(job.dataset)
+        if not dp.exists():
+            missing.append(str(dp))
+
     if dry_run:
-        # Validate script presence and dataset paths
-        missing: List[str] = []
-        if job.runner == "local" and not LOCAL_RUNNER.exists():
-            missing.append(str(LOCAL_RUNNER))
-        if job.runner == "hf" and not HF_TRAIN_SCRIPT.exists():
-            missing.append(str(HF_TRAIN_SCRIPT))
-        if job.dataset:
-            dp = Path(job.dataset)
-            if not dp.exists():
-                missing.append(str(dp))
         result["status"] = "validated" if not missing else "missing"
+        result["validated_type"] = "dry-run"
         if missing:
             result["missing"] = missing
         return result
+    else:
+        if missing:
+            result["status"] = "missing"
+            result["validated_type"] = "preflight"
+            result["missing"] = missing
+            return result
+        else:
+            result["validated_type"] = "preflight"
 
     t0 = time.time()
     with log_path.open("w", encoding="utf-8") as logf:
         logf.write(f"$ {' '.join(str(x) for x in cmd)}\n\n")
         logf.flush()
         proc = subprocess.Popen(cmd, cwd=str(REPO_ROOT), env=env, stdout=logf, stderr=subprocess.STDOUT, text=True)
+        
+        # Write PID file for dashboard cancellation support
+        pid_file = DATA_OUT / f"{job.name}.pid"
+        try:
+            pid_file.write_text(str(proc.pid), encoding="utf-8")
+        except Exception:
+            pass
+        
         rc = proc.wait()
+        
+        # Clean up PID file after completion
+        try:
+            if pid_file.exists():
+                pid_file.unlink()
+        except Exception:
+            pass
 
     duration = time.time() - t0
     result["return_code"] = rc
@@ -260,6 +288,37 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
     # Guess output directory if specified on job
     if job.save_dir:
         result["output_dir"] = str(Path(job.save_dir))
+        # Attempt metrics extraction for HF jobs
+        if job.runner == "hf":
+            metrics_path = Path(job.save_dir) / "metrics.jsonl"
+            if metrics_path.exists():
+                pre_loss = pre_ppl = post_loss = post_ppl = None
+                try:
+                    with metrics_path.open("r", encoding="utf-8") as mf:
+                        for line in mf.readlines()[-400:]:  # tail subset
+                            line = line.strip()
+                            if not line:
+                                continue
+                            try:
+                                obj = json.loads(line)
+                            except Exception:
+                                continue
+                            phase = obj.get("phase")
+                            if phase == "pre":
+                                pre_loss = obj.get("eval_loss")
+                                pre_ppl = obj.get("eval_perplexity")
+                            elif phase == "post":
+                                post_loss = obj.get("eval_loss")
+                                post_ppl = obj.get("eval_perplexity")
+                    if any(x is not None for x in (pre_loss, pre_ppl, post_loss, post_ppl)):
+                        result["metrics"] = {
+                            "pre_eval_loss": pre_loss,
+                            "pre_eval_perplexity": pre_ppl,
+                            "post_eval_loss": post_loss,
+                            "post_eval_perplexity": post_ppl,
+                        }
+                except Exception:
+                    pass
 
     # Persist last_run.json for job
     write_json(DATA_OUT / job.name / "last_run.json", result)
@@ -320,16 +379,36 @@ def main() -> None:
                     if last.get("status") == "succeeded":
                         print(f"[autotrain] Skipping {j.name} (already succeeded recently)")
                         results.append(last)
+                        collect_status(results)  # incremental update
                         continue
             except Exception:
                 pass
 
         print(f"[autotrain] Running job: {j.name} (runner={j.runner})")
-        res = run_job(j, dry_run=args.dry_run, job_index=idx, total_jobs=len(jobs))
-        results.append(res)
+
+        # Insert a placeholder 'running' record before launching (for dashboard progress)
+        if not args.dry_run:
+            running_placeholder = {
+                "name": j.name,
+                "runner": j.runner,
+                "category": j.category,
+                "status": "running",
+                "start_time": datetime.utcnow().strftime("%Y%m%dT%H%M%SZ"),
+                "cmd": None,
+                "return_code": None,
+                "duration_sec": None,
+            }
+            results.append(running_placeholder)
+            collect_status(results)
+            # Now execute the real job; replace placeholder with final result
+            res = run_job(j, dry_run=False, job_index=idx, total_jobs=len(jobs))
+            results[-1] = res
+        else:
+            res = run_job(j, dry_run=True, job_index=idx, total_jobs=len(jobs))
+            results.append(res)
 
         # Show estimated time remaining (after including this job's duration)
-        if idx > 0 and not args.dry_run:
+        if idx > 0 and not args.dry_run and res.get("status") in {"succeeded", "failed"}:
             elapsed = time.time() - start_time
             avg_per_job = elapsed / (idx + 1)
             remaining_jobs = len(jobs) - (idx + 1)
@@ -349,6 +428,10 @@ def main() -> None:
             else:
                 print(f"[autotrain] DB logging failed: {log_info.get('error')}")
 
+        # Incremental status write after each job
+        collect_status(results)
+
+    # Final status write (includes any skipped jobs already appended)
     collect_status(results)
     # Non-zero exit if any job failed during non-dry run
     if not args.dry_run:

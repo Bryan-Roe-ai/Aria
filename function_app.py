@@ -1,62 +1,6 @@
 # =============================================================================
-# Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
+# QAI Azure Functions Application
 # =============================================================================
-
-@app.route(route="resource-monitor", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
-    """Return latest resource monitor snapshot."""
-    try:
-        snap_path = Path(__file__).resolve().parent / "data_out" / "resource_monitor_snapshot.json"
-        if snap_path.exists():
-            with open(snap_path, "r") as f:
-                data = json.load(f)
-            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
-        else:
-            return func.HttpResponse(json.dumps({"error": "No snapshot found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
-    except Exception as e:
-        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
-
-@app.route(route="model-deployer/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def model_deployer_status(req: func.HttpRequest) -> func.HttpResponse:
-    """Return model deployer registry status."""
-    try:
-        reg_path = Path(__file__).resolve().parent / "deployed_models" / "model_registry.json"
-        if reg_path.exists():
-            with open(reg_path, "r") as f:
-                data = json.load(f)
-            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
-        else:
-            return func.HttpResponse(json.dumps({"error": "No registry found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
-    except Exception as e:
-        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
-
-@app.route(route="results-export", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def results_export(req: func.HttpRequest) -> func.HttpResponse:
-    """Return latest results export (all orchestrators)."""
-    try:
-        res_path = Path(__file__).resolve().parent / "exports" / "all_orchestrators.json"
-        if res_path.exists():
-            with open(res_path, "r") as f:
-                data = json.load(f)
-            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
-        else:
-            return func.HttpResponse(json.dumps({"error": "No results found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
-    except Exception as e:
-        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
-
-@app.route(route="evaluation-results", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
-    """Return latest batch evaluation results."""
-    try:
-        eval_path = Path(__file__).resolve().parent / "data_out" / "evaluation_results.json"
-        if eval_path.exists():
-            with open(eval_path, "r") as f:
-                data = json.load(f)
-            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
-        else:
-            return func.HttpResponse(json.dumps({"error": "No evaluation results found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
-    except Exception as e:
-        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
 import azure.functions as func
 import json
 import logging
@@ -68,6 +12,17 @@ import importlib.util as _iu
 import time
 from typing import Optional
 from datetime import datetime
+
+# -----------------------------------------------------------------------------
+# Optional unified SQL engine health + pool metrics (multi-database support)
+# -----------------------------------------------------------------------------
+try:  # pragma: no cover - defensive import
+    from shared.sql_engine import sql_health, engine_stats  # type: ignore
+except Exception:  # noqa: BLE001
+    def sql_health():  # type: ignore
+        return {"enabled": False, "error": "sql_engine_import_failed"}
+    def engine_stats():  # type: ignore
+        return {"enabled": False, "error": "engine_stats_import_failed"}
 
 # -----------------------------------------------------------------------------
 # Early Telemetry Initialization (non-fatal if unavailable)
@@ -489,6 +444,67 @@ def _cors_headers():
 
 
 # =============================================================================
+# Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
+# =============================================================================
+
+@app.route(route="resource-monitor", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
+    """Return latest resource monitor snapshot."""
+    try:
+        snap_path = Path(__file__).resolve().parent / "data_out" / "resource_monitor_snapshot.json"
+        if snap_path.exists():
+            with open(snap_path, "r") as f:
+                data = json.load(f)
+            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
+        else:
+            return func.HttpResponse(json.dumps({"error": "No snapshot found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
+    except Exception as e:
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
+
+@app.route(route="model-deployer/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def model_deployer_status(req: func.HttpRequest) -> func.HttpResponse:
+    """Return model deployer registry status."""
+    try:
+        reg_path = Path(__file__).resolve().parent / "deployed_models" / "model_registry.json"
+        if reg_path.exists():
+            with open(reg_path, "r") as f:
+                data = json.load(f)
+            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
+        else:
+            return func.HttpResponse(json.dumps({"error": "No registry found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
+    except Exception as e:
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
+
+@app.route(route="results-export", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def results_export(req: func.HttpRequest) -> func.HttpResponse:
+    """Return latest results export (all orchestrators)."""
+    try:
+        res_path = Path(__file__).resolve().parent / "exports" / "all_orchestrators.json"
+        if res_path.exists():
+            with open(res_path, "r") as f:
+                data = json.load(f)
+            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
+        else:
+            return func.HttpResponse(json.dumps({"error": "No results found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
+    except Exception as e:
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
+
+@app.route(route="evaluation-results", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
+    """Return latest batch evaluation results."""
+    try:
+        eval_path = Path(__file__).resolve().parent / "data_out" / "evaluation_results.json"
+        if eval_path.exists():
+            with open(eval_path, "r") as f:
+                data = json.load(f)
+            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=_cors_headers())
+        else:
+            return func.HttpResponse(json.dumps({"error": "No evaluation results found"}), status_code=404, mimetype="application/json", headers=_cors_headers())
+    except Exception as e:
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=_cors_headers())
+
+
+# =============================================================================
 # Streaming Chat API (Server-Sent Events compatible)
 # =============================================================================
 
@@ -703,6 +719,25 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             except Exception as cs_err:  # noqa: BLE001
                 cosmos_status = {"enabled": False, "error": str(cs_err)}
 
+        # Unified SQL status (may reflect Azure SQL, PostgreSQL, MySQL, SQLite)
+        sql_info = None
+        try:
+            sql_info = sql_health()
+            try:  # augment with pool metrics + saturation alerts
+                pool_info = engine_stats()
+                sql_info["pool"] = pool_info
+                # Surface critical alerts at top level for visibility
+                if pool_info.get("saturation_alert"):
+                    sql_info["alert"] = pool_info["saturation_alert"]
+                if pool_info.get("slow_queries_1min", 0) > 10:
+                    freq_alert = f"{pool_info['slow_queries_1min']} slow queries in last 60s (threshold={pool_info.get('slow_query_threshold_ms')}ms)"
+                    sql_info["slow_query_alert"] = freq_alert
+                    logging.warning(f"[ai_status] {freq_alert}")
+            except Exception as _ps:  # noqa: BLE001
+                sql_info["pool"] = {"enabled": False, "error": str(_ps)}
+        except Exception as _se:  # noqa: BLE001
+            sql_info = {"enabled": False, "error": str(_se)}
+
         # Telemetry status
         try:
             from shared.telemetry import is_enabled as _telemetry_is_enabled  # type: ignore
@@ -814,6 +849,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "lora": lora_info,
             "venv": venv_info,
             "cosmos": cosmos_status,
+            "sql": sql_info,
             "telemetry": telemetry_info,
             "quantum": quantum_info,
             "self_learning": learning_info,

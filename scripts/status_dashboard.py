@@ -40,6 +40,8 @@ STATUS_FILES = {
     "evaluation": REPO_ROOT / "data_out" / "evaluation_autorun" / "status.json",
     "train_and_eval": REPO_ROOT / "data_out" / "train_and_evaluate" / "summary.json",
     "quantum": REPO_ROOT / "data_out" / "quantum_autorun" / "status.json",
+    "env_autofix": REPO_ROOT / "data_out" / "env_autofix" / "status.json",
+    "metrics_ranker": REPO_ROOT / "data_out" / "metrics_ranker" / "ranking.json",
     "smart_orchestrator": REPO_ROOT / "data_out" / "smart_orchestrator",
 }
 
@@ -163,6 +165,40 @@ def parse_quantum_status() -> OrchestratorStatus:
         last_updated=data.get("generated_at"),
     )
     
+    return status
+
+
+def parse_env_status() -> OrchestratorStatus:
+    """Parse env_autofix status.json"""
+    data = load_status(STATUS_FILES["env_autofix"])
+    if not data:
+        return OrchestratorStatus(name="EnvRepair", alerts=["No env_autofix status (not run)"])
+    state = data.get("state")
+    status = OrchestratorStatus(name="EnvRepair", total_jobs=1)
+    if state in ("healthy", "repaired"):
+        status.succeeded = 1
+    else:
+        status.failed = 1
+        status.alerts.append(f"Environment state: {state}")
+    if data.get("timestamp"):
+        status.last_updated = data.get("timestamp")
+    return status
+
+
+def parse_ranking_status() -> OrchestratorStatus:
+    """Parse metrics_ranker ranking.json"""
+    data = load_status(STATUS_FILES["metrics_ranker"])
+    if not data:
+        return OrchestratorStatus(name="Ranking", alerts=["No ranking results yet"])
+    models = data.get("models", [])
+    status = OrchestratorStatus(name="Ranking", total_jobs=len(models))
+    status.succeeded = sum(1 for m in models if m.get("delta") is not None)
+    failed_models = [m.get("job") for m in models if m.get("delta") is None]
+    if failed_models:
+        status.alerts.append(f"No score for: {', '.join(failed_models[:5])}")
+    if data.get("alerts"):
+        status.alerts.extend(data.get("alerts"))
+    status.last_updated = data.get("generated_at")
     return status
 
 
@@ -333,9 +369,11 @@ def main() -> None:
     def collect_and_render():
         # Collect status from all orchestrators
         statuses = [
+            parse_env_status(),
             parse_autotrain_status(),
             parse_evaluation_status(),
             parse_train_eval_status(),
+            parse_ranking_status(),
             parse_quantum_status(),
         ]
         
@@ -350,14 +388,14 @@ def main() -> None:
             output = render_markdown(statuses, resources)
             out_file = REPO_ROOT / "data_out" / "status_dashboard.md"
             out_file.parent.mkdir(parents=True, exist_ok=True)
-            with out_file.open("w") as f:
+            with out_file.open("w", encoding="utf-8") as f:
                 f.write(output)
             print(f"Exported to: {out_file}")
         elif args.export == "json":
             output = render_json(statuses, resources)
             out_file = REPO_ROOT / "data_out" / "status_dashboard.json"
             out_file.parent.mkdir(parents=True, exist_ok=True)
-            with out_file.open("w") as f:
+            with out_file.open("w", encoding="utf-8") as f:
                 f.write(output)
             print(f"Exported to: {out_file}")
         else:

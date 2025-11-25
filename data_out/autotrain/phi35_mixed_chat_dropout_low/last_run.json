@@ -1,6 +1,7 @@
 {
   "name": "phi35_mixed_chat_dropout_low",
   "runner": "hf",
+  "category": "hpo",
   "cmd": [
     "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\venv\\Scripts\\python.exe",
     "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\scripts\\train_lora.py",
@@ -24,13 +25,20 @@
     "data_out/lora_training/phi35_drop_low",
     "--no-stream",
     "--device",
-    "cuda"
+    "auto"
   ],
-  "start_time": "20251123T081846Z",
-  "status": "failed",
-  "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_dropout_low\\20251123T081846Z\\stdout.log",
+  "start_time": "20251124T003944Z",
+  "status": "succeeded",
+  "return_code": 0,
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_mixed_chat_dropout_low\\20251124T003944Z\\stdout.log",
   "output_dir": "data_out\\lora_training\\phi35_drop_low",
-  "duration_sec": 0.89,
-  "duration_human": "0m 0s"
+  "validated_type": "preflight",
+  "duration_sec": 10919.62,
+  "duration_human": "181m 59s",
+  "metrics": {
+    "pre_eval_loss": 3.2323498725891113,
+    "pre_eval_perplexity": 25.3391307945276,
+    "post_eval_loss": 2.4327664375305176,
+    "post_eval_perplexity": 11.390349223567133
+  }
 }

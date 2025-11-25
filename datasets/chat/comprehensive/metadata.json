@@ -1,0 +1,35 @@
+{
+  "sources": [
+    ".\\datasets\\chat\\mixed_chat",
+    ".\\datasets\\chat\\dolly",
+    ".\\datasets\\chat\\app_repo_augmented",
+    ".\\datasets\\chat\\chat_logs"
+  ],
+  "source_stats": {
+    "mixed_chat": {
+      "train_loaded": 290,
+      "test_loaded": 26,
+      "used": 316
+    },
+    "dolly": {
+      "train_loaded": 15011,
+      "test_loaded": 1,
+      "used": 15012
+    },
+    "app_repo_augmented": {
+      "train_loaded": 1350,
+      "test_loaded": 150,
+      "used": 1500
+    },
+    "chat_logs": {
+      "train_loaded": 1,
+      "test_loaded": 1,
+      "used": 2
+    }
+  },
+  "total_unique_records": 15277,
+  "train_records": 13749,
+  "test_records": 1528,
+  "train_ratio": 0.9,
+  "seed": 42
+}

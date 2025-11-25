@@ -334,6 +334,48 @@ See individual project directories for license information.
 
 ---
 
+## 🧪 Testing
+
+This workspace has comprehensive test coverage with **68 automated tests** fully integrated with VS Code's native Testing UI.
+
+### Quick Start
+
+1. **Open Test Explorer:** Click the beaker icon (🧪) in the Activity Bar or press `Ctrl+Shift+T`
+2. **Run Tests:** Click the ▶️ play button next to any test, suite, or file
+3. **Debug Tests:** Set breakpoints, then right-click test → "Debug Test"
+4. **View Results:** Click any test to see output, assertions, and stack traces
+
+### Test Suites
+
+- **Unit Tests (Fast):** 40 tests (~0.4 seconds)
+- **Integration Tests:** 15 tests (external services)
+- **Quantum Tests:** 24 tests (quantum validation)
+- **All Tests:** Complete suite with coverage support
+
+### Documentation
+
+- **Quick Reference:** See `VSCODE_TESTING_QUICKREF.md` for keyboard shortcuts and common tasks
+- **Full Guide:** See `VSCODE_TESTING_GUIDE.md` for comprehensive documentation
+- **Setup Details:** See `VSCODE_TESTING_COMPLETE.md` for configuration details
+
+### Terminal Commands
+
+```powershell
+# Run all fast tests
+python -m pytest -m "not slow and not azure" tests/
+
+# Run with coverage
+python -m pytest tests/ --cov=. --cov-report=html
+
+# Run specific test file
+python -m pytest tests/test_autotrain_unit.py -v
+
+# Use test orchestrator
+python .\scripts\test_runner.py --unit --coverage
+```
+
+---
+
 ## 🔍 Quick Navigation
 
 | Project | Path | Purpose |

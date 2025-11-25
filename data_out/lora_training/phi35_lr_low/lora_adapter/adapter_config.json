@@ -29,11 +29,11 @@
   "rank_pattern": {},
   "revision": null,
   "target_modules": [
-    "o_proj",
-    "q_proj",
     "k_proj",
+    "q_proj",
     "fc1",
     "v_proj",
+    "o_proj",
     "fc2"
   ],
   "target_parameters": null,

@@ -1,6 +1,7 @@
 {
   "name": "phi35_max_performance",
   "runner": "hf",
+  "category": "baseline",
   "cmd": [
     "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\venv\\Scripts\\python.exe",
     "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\scripts\\train_lora.py",
@@ -15,17 +16,26 @@
     "--lora-dropout",
     "0.1",
     "--epochs",
-    "3",
+    "1",
+    "--max-train-samples",
+    "1000",
     "--save-dir",
     "data_out/lora_training/phi35_max_performance",
     "--device",
     "auto"
   ],
-  "start_time": "20251123T081843Z",
-  "status": "failed",
-  "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_max_performance\\20251123T081843Z\\stdout.log",
+  "start_time": "20251123T223336Z",
+  "status": "succeeded",
+  "return_code": 0,
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\phi35_max_performance\\20251123T223336Z\\stdout.log",
   "output_dir": "data_out\\lora_training\\phi35_max_performance",
-  "duration_sec": 1.15,
-  "duration_human": "0m 1s"
+  "validated_type": "preflight",
+  "duration_sec": 2295.96,
+  "duration_human": "38m 15s",
+  "metrics": {
+    "pre_eval_loss": 7.93035888671875,
+    "pre_eval_perplexity": 2780.424482898914,
+    "post_eval_loss": 4.010866165161133,
+    "post_eval_perplexity": 55.19465755421701
+  }
 }

@@ -336,6 +336,69 @@
 			],
 			"isBackground": false,
 			"problemMatcher": []
+		},
+		{
+			"label": "Run: Tests - All Fast",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\test_runner.py",
+				"--all"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run: Tests - Unit Only",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\test_runner.py",
+				"--unit"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run: Tests - Integration",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\test_runner.py",
+				"--integration"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run: Tests - With Coverage",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\test_runner.py",
+				"--all",
+				"--coverage"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run: Tests - Watch Mode",
+			"type": "shell",
+			"options": { "cwd": "${workspaceFolder}" },
+			"command": "python",
+			"args": [
+				".\\scripts\\test_runner.py",
+				"--unit",
+				"--integration",
+				"--watch"
+			],
+			"isBackground": true,
+			"problemMatcher": []
 		}
 	]
 }

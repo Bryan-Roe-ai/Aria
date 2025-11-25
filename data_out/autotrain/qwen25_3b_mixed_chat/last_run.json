@@ -1,6 +1,7 @@
 {
   "name": "qwen25_3b_mixed_chat",
   "runner": "hf",
+  "category": "baseline",
   "cmd": [
     "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\venv\\Scripts\\python.exe",
     "C:\\Users\\Bryan\\OneDrive\\AI\\AI\\microsoft_phi-silica-3.6_v1\\scripts\\train_lora.py",
@@ -15,17 +16,28 @@
     "--lora-dropout",
     "0.1",
     "--epochs",
-    "3",
+    "1",
+    "--max-train-samples",
+    "500",
+    "--max-eval-samples",
+    "50",
     "--save-dir",
     "data_out/lora_training/qwen25_3b",
     "--device",
     "auto"
   ],
-  "start_time": "20251123T081842Z",
-  "status": "failed",
-  "return_code": 1,
-  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\qwen25_3b_mixed_chat\\20251123T081842Z\\stdout.log",
+  "start_time": "20251123T220635Z",
+  "status": "succeeded",
+  "return_code": 0,
+  "log": "C:\\Users\\Bryan\\OneDrive\\AI\\data_out\\autotrain\\qwen25_3b_mixed_chat\\20251123T220635Z\\stdout.log",
   "output_dir": "data_out\\lora_training\\qwen25_3b",
-  "duration_sec": 0.91,
-  "duration_human": "0m 0s"
+  "validated_type": "preflight",
+  "duration_sec": 1620.52,
+  "duration_human": "27m 0s",
+  "metrics": {
+    "pre_eval_loss": 4.040474891662598,
+    "pre_eval_perplexity": 56.85333557069555,
+    "post_eval_loss": 1.1891062259674072,
+    "post_eval_perplexity": 3.2841446120787365
+  }
 }

@@ -6,55 +6,121 @@ version: 1
 #   - local: Uses the streamlined local runner scripts/run_local_lora_training.py
 
 jobs:
+  # ===== COMPREHENSIVE TRAINING - All Data =====
+  
+  # Phi-3.5 on comprehensive merged dataset (15K+ samples)
+  - name: phi35_comprehensive_full
+    category: comprehensive
+    runner: hf
+    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+    dataset: datasets/chat/comprehensive
+    save_dir: data_out/lora_training/phi35_comprehensive_full
+    epochs: 1
+    max_train_samples: 1000
+    max_eval_samples: 100
+    learning_rate: 0.0002
+    lora_dropout: 0.1
+    hf_model_id: microsoft/Phi-3.5-mini-instruct
+    device: auto
+
+  # Qwen2.5 on comprehensive merged dataset
+  - name: qwen25_comprehensive_full
+    category: comprehensive
+    runner: hf
+    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+    dataset: datasets/chat/comprehensive
+    save_dir: data_out/lora_training/qwen25_comprehensive_full
+    epochs: 1
+    max_train_samples: 1000
+    max_eval_samples: 100
+    learning_rate: 0.0002
+    lora_dropout: 0.1
+    hf_model_id: Qwen/Qwen2.5-3B-Instruct
+    device: auto
+
+  # ===== BASELINE TRAINING - Original Datasets =====
+  
   # Phi-3.5 Mini (Aug 2024) - Microsoft's latest open model (MOST EFFICIENT)
   - name: phi35_mixed_chat
+    category: baseline
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/mixed_chat
     save_dir: data_out/lora_training/phi35
-    epochs: 3
-    max_train_samples: null
-    max_eval_samples: null
+    epochs: 1
+    max_train_samples: 500
+    max_eval_samples: 50
     learning_rate: 0.0002
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
+    device: auto
 
   # Qwen2.5 3B (Sep 2024) - excellent performance, no gating
   - name: qwen25_3b_mixed_chat
+    category: baseline
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/mixed_chat
     save_dir: data_out/lora_training/qwen25_3b
-    epochs: 3
-    max_train_samples: null
-    max_eval_samples: null
+    epochs: 1
+    max_train_samples: 500
+    max_eval_samples: 50
     learning_rate: 0.0002
     lora_dropout: 0.1
     hf_model_id: Qwen/Qwen2.5-3B-Instruct
+    device: auto
 
   # Phi-3.5 MAX PERFORMANCE - Full Dolly dataset, 3 epochs
   - name: phi35_max_performance
+    category: baseline
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/dolly
     save_dir: data_out/lora_training/phi35_max_performance
-    epochs: 3
-    max_train_samples: null  # Use full dataset
+    epochs: 1
+    max_train_samples: 1000  # Fast sampling
     max_eval_samples: null
     learning_rate: 0.0002
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
+    device: auto
 
-  # Example of using the local runner (QLoRA-friendly, simple)
-  # - name: local_quickstart
-  #   runner: local
-  #   config: AI/microsoft_phi-silica-3.6_v1/local_train/local_config.yaml
-  #   epochs: 1
-  #   max_train_samples: 10
-  #   reinstall: false   # set true to force re-install of venv deps
+  # ===== DOMAIN-SPECIFIC TRAINING =====
+  
+  # Phi-3.5 on augmented repository data (code understanding)
+  - name: phi35_repo_augmented
+    category: domain
+    runner: hf
+    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+    dataset: datasets/chat/app_repo_augmented
+    save_dir: data_out/lora_training/phi35_repo_augmented
+    epochs: 1
+    max_train_samples: 500
+    max_eval_samples: 50
+    learning_rate: 0.0003
+    lora_dropout: 0.1
+    hf_model_id: microsoft/Phi-3.5-mini-instruct
+    device: auto
 
-  # --- Hyperparameter exploration (small, fast jobs) ---
+  # Qwen2.5 on augmented repository data
+  - name: qwen25_repo_augmented
+    category: domain
+    runner: hf
+    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+    dataset: datasets/chat/app_repo_augmented
+    save_dir: data_out/lora_training/qwen25_repo_augmented
+    epochs: 1
+    max_train_samples: 500
+    max_eval_samples: 50
+    learning_rate: 0.0003
+    lora_dropout: 0.1
+    hf_model_id: Qwen/Qwen2.5-3B-Instruct
+    device: auto
+
+  # ===== HYPERPARAMETER EXPLORATION (quick validation jobs) =====
+  
   - name: phi35_mixed_chat_lr_low
+    category: hpo
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/mixed_chat
@@ -66,9 +132,10 @@ jobs:
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
     no_stream: true
-    device: cuda
+    device: auto
 
   - name: phi35_mixed_chat_lr_high
+    category: hpo
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/mixed_chat
@@ -80,9 +147,10 @@ jobs:
     lora_dropout: 0.1
     hf_model_id: microsoft/Phi-3.5-mini-instruct
     no_stream: true
-    device: cuda
+    device: auto
 
   - name: phi35_mixed_chat_dropout_low
+    category: hpo
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/mixed_chat
@@ -94,9 +162,10 @@ jobs:
     lora_dropout: 0.05
     hf_model_id: microsoft/Phi-3.5-mini-instruct
     no_stream: true
-    device: cuda
+    device: auto
 
   - name: phi35_mixed_chat_dropout_high
+    category: hpo
     runner: hf
     config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
     dataset: datasets/chat/mixed_chat
@@ -108,5 +177,5 @@ jobs:
     lora_dropout: 0.15
     hf_model_id: microsoft/Phi-3.5-mini-instruct
     no_stream: true
-    device: cuda
+    device: auto
 

@@ -52,11 +52,13 @@ except ImportError:
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "smart_orchestrator"
 
-# Orchestrator scripts
+# Orchestrator & utility scripts
 BOOTSTRAP = REPO_ROOT / "scripts" / "auto_bootstrap.py"
 AUTOTRAIN = REPO_ROOT / "scripts" / "autotrain.py"
 EVAL_AUTORUN = REPO_ROOT / "scripts" / "evaluation_autorun.py"
 TRAIN_EVAL = REPO_ROOT / "scripts" / "train_and_evaluate.py"
+ENV_AUTOFIX = REPO_ROOT / "scripts" / "env_autofix.py"
+METRICS_RANKER = REPO_ROOT / "scripts" / "metrics_ranker.py"
 
 
 @dataclass
@@ -127,21 +129,29 @@ class Pipeline:
 
 
 def build_variant_pipeline() -> Pipeline:
-    """Build pipeline for hyperparameter variant training + evaluation"""
+    """Build pipeline for hyperparameter variant training + evaluation + ranking.
+
+    Order:
+      env_repair → train_* → eval_* → rank_variants
+    """
     pipeline = Pipeline(name="variants", parallel_limit=1)
-    
+
+    # Environment health/repair step first
+    env_job = JobNode(name="env_repair", job_type="env")
+    pipeline.add_job(env_job)
+
     variants = [
         "phi35_mixed_chat_lr_low",
-        "phi35_mixed_chat_lr_high", 
+        "phi35_mixed_chat_lr_high",
         "phi35_mixed_chat_dropout_low",
         "phi35_mixed_chat_dropout_high",
     ]
-    
-    # Add training jobs
+
+    # Add training jobs depending on env repair
     for v in variants:
-        train_job = JobNode(name=f"train_{v}", job_type="train")
+        train_job = JobNode(name=f"train_{v}", job_type="train", dependencies={"env_repair"})
         pipeline.add_job(train_job)
-    
+
     # Add evaluation jobs (depend on corresponding training)
     for v in variants:
         eval_name = v.replace("dropout_", "drop_").replace("phi35_mixed_chat_", "phi35_")
@@ -151,26 +161,29 @@ def build_variant_pipeline() -> Pipeline:
             dependencies={f"train_{v}"}
         )
         pipeline.add_job(eval_job)
-    
+
     # Add ranking job (depends on all evals)
     rank_job = JobNode(
         name="rank_variants",
-        job_type="deploy",
+        job_type="rank",
         dependencies={f"eval_{v.replace('dropout_', 'drop_').replace('phi35_mixed_chat_', 'phi35_')}" for v in variants}
     )
     pipeline.add_job(rank_job)
-    
+
     return pipeline
 
 
 def build_full_pipeline() -> Pipeline:
-    """Build complete pipeline: bootstrap → train → eval → deploy"""
+    """Build complete pipeline: env_repair → bootstrap → train → eval → variants → rank"""
     pipeline = Pipeline(name="full", parallel_limit=1)
-    
-    # Environment validation
-    bootstrap = JobNode(name="bootstrap", job_type="validate")
+
+    env_job = JobNode(name="env_repair", job_type="env")
+    pipeline.add_job(env_job)
+
+    # Environment validation after repair
+    bootstrap = JobNode(name="bootstrap", job_type="validate", dependencies={"env_repair"})
     pipeline.add_job(bootstrap)
-    
+
     # Primary training job
     train_main = JobNode(
         name="train_phi35_mixed_chat",
@@ -178,7 +191,7 @@ def build_full_pipeline() -> Pipeline:
         dependencies={"bootstrap"}
     )
     pipeline.add_job(train_main)
-    
+
     # Evaluation
     eval_main = JobNode(
         name="eval_phi35",
@@ -186,24 +199,30 @@ def build_full_pipeline() -> Pipeline:
         dependencies={"train_phi35_mixed_chat"}
     )
     pipeline.add_job(eval_main)
-    
-    # Variants (parallel after main succeeds)
+
+    # Variants (train jobs depend on env_repair + main training)
     variants = build_variant_pipeline()
     for job in variants.jobs.values():
         if job.job_type == "train":
             job.dependencies.add("train_phi35_mixed_chat")
+        elif job.job_type == "env":
+            # Already have env_repair in full; skip duplicate
+            continue
         pipeline.add_job(job)
-    
+
     return pipeline
 
 
 def build_quick_pipeline() -> Pipeline:
-    """Build quick smoke test pipeline"""
+    """Build quick smoke test pipeline: env_repair → bootstrap → single train → eval"""
     pipeline = Pipeline(name="quick", parallel_limit=1)
-    
-    bootstrap = JobNode(name="bootstrap", job_type="validate")
+
+    env_job = JobNode(name="env_repair", job_type="env")
+    pipeline.add_job(env_job)
+
+    bootstrap = JobNode(name="bootstrap", job_type="validate", dependencies={"env_repair"})
     pipeline.add_job(bootstrap)
-    
+
     # One quick training job (small sample)
     train_quick = JobNode(
         name="train_phi35_mixed_chat_lr_low",
@@ -211,7 +230,7 @@ def build_quick_pipeline() -> Pipeline:
         dependencies={"bootstrap"}
     )
     pipeline.add_job(train_quick)
-    
+
     # Quick eval
     eval_quick = JobNode(
         name="eval_phi35_lr_low",
@@ -219,7 +238,7 @@ def build_quick_pipeline() -> Pipeline:
         dependencies={"train_phi35_mixed_chat_lr_low"}
     )
     pipeline.add_job(eval_quick)
-    
+
     return pipeline
 
 
@@ -231,7 +250,39 @@ def execute_job(job: JobNode) -> Dict[str, Any]:
     result = {"name": job.name, "type": job.job_type, "status": "failed"}
     
     try:
-        if job.job_type == "validate":
+        if job.job_type == "env":
+            # Run env_autofix dry-run first; if not healthy attempt repair
+            cmd = [sys.executable, str(ENV_AUTOFIX), "--dry-run"]
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            result["dry_run_output"] = proc.stdout[-500:]
+            # Parse status.json if present
+            status_path = REPO_ROOT / "data_out" / "env_autofix" / "status.json"
+            state = None
+            if status_path.exists():
+                try:
+                    with status_path.open("r") as f:
+                        env_status = json.load(f)
+                        state = env_status.get("state")
+                        result["env_status"] = env_status
+                except Exception as e:
+                    result["env_check_error"] = str(e)
+            if state not in ("healthy", "repaired"):
+                # Attempt actual repair
+                repair_cmd = [sys.executable, str(ENV_AUTOFIX)]
+                proc2 = subprocess.run(repair_cmd, capture_output=True, text=True, timeout=1800)
+                result["repair_output"] = proc2.stdout[-500:]
+                # Reload status
+                if status_path.exists():
+                    try:
+                        with status_path.open("r") as f:
+                            env_status2 = json.load(f)
+                            state = env_status2.get("state")
+                            result["env_status_final"] = env_status2
+                    except Exception:
+                        pass
+            result["status"] = "succeeded" if state in ("healthy", "repaired") else "failed"
+
+        elif job.job_type == "validate":
             # Run bootstrap validation
             cmd = [sys.executable, str(BOOTSTRAP), "--dry-run"]
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
@@ -254,11 +305,14 @@ def execute_job(job: JobNode) -> Dict[str, Any]:
             result["status"] = "succeeded" if proc.returncode == 0 else "failed"
             result["output"] = proc.stdout[-500:]
             
-        elif job.job_type == "deploy":
-            # Ranking or deployment
-            if "rank" in job.name.lower():
-                cmd = [sys.executable, str(TRAIN_EVAL), "--all-variants", "--skip-existing"]
-                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        elif job.job_type == "rank":
+            # Metrics ranking aggregator
+            if not METRICS_RANKER.exists():
+                result["status"] = "failed"
+                result["error"] = "metrics_ranker.py missing"
+            else:
+                cmd = [sys.executable, str(METRICS_RANKER)]
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
                 result["status"] = "succeeded" if proc.returncode == 0 else "failed"
                 result["output"] = proc.stdout[-500:]
                 
@@ -371,8 +425,8 @@ def watch_pipelines() -> None:
                             succeeded = sum(1 for j in jobs if j.get("status") == "succeeded")
                             total = len(jobs)
                             print(f"[{name}] {succeeded}/{total} succeeded")
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        print(f"[watch] Error reading {sf}: {e}")
             
             time.sleep(10)
     except KeyboardInterrupt:

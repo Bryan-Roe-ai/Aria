@@ -30,11 +30,11 @@
   "revision": null,
   "target_modules": [
     "o_proj",
-    "fc1",
     "v_proj",
-    "fc2",
+    "fc1",
     "q_proj",
-    "k_proj"
+    "k_proj",
+    "fc2"
   ],
   "target_parameters": null,
   "task_type": "CAUSAL_LM",
