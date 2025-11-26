@@ -8,6 +8,8 @@ import yaml
 import subprocess
 import time
 import os
+import re
+import random
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
@@ -90,6 +92,18 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "server_time": datetime.now().isoformat()
                 }
                 self.wfile.write(json.dumps(error_data).encode())
+            return
+        
+        # API: Job progress
+        if self.path.startswith('/api/job-progress/'):
+            job_id = self.path.split('/')[-1]
+            self.send_json_response(self.get_job_progress(job_id))
+            return
+        
+        # API: Job metrics
+        if self.path.startswith('/api/job-metrics/'):
+            job_id = self.path.split('/')[-1]
+            self.send_json_response(self.get_job_metrics(job_id))
             return
         
         # API: List available datasets
@@ -223,6 +237,30 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json_response(result)
             return
         
+        # API: Pause job
+        if self.path.startswith('/api/job-control/') and self.path.endswith('/pause'):
+            job_id = self.path.split('/')[-2]
+            result = self.control_job(job_id, action='pause')
+            self.send_json_response(result)
+            return
+        
+        # API: Stop job
+        if self.path.startswith('/api/job-control/') and self.path.endswith('/stop'):
+            job_id = self.path.split('/')[-2]
+            result = self.control_job(job_id, action='stop')
+            self.send_json_response(result)
+            return
+        
+        # API: Benchmark models
+        if self.path == '/api/benchmark':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            params = json.loads(post_data.decode())
+            model_ids = params.get('model_ids', [])
+            results = self.run_benchmark(model_ids)
+            self.send_json_response({'results': results})
+            return
+        
         self.send_error(404)
     
     def send_json_response(self, data):
@@ -231,6 +269,96 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
+
+    def get_job_progress(self, job_id):
+        """Return job progress information"""
+        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
+        try:
+            with open(status_file, 'r') as f:
+                data = json.load(f)
+            job = next((j for j in data.get('jobs', []) if j.get('name') == job_id), None)
+            if not job:
+                return {'error': 'Job not found', 'job_id': job_id}
+            
+            metrics = job.get('metrics', {})
+            current_epoch = job.get('current_epoch') or metrics.get('current_epoch') or 0
+            total_epochs = job.get('epochs') or job.get('config', {}).get('epochs') or 0
+            post_loss = metrics.get('post_eval_loss')
+            current_loss = metrics.get('current_loss', post_loss)
+            lr = job.get('config', {}).get('learning_rate') or metrics.get('learning_rate')
+            steps_per_sec = metrics.get('steps_per_sec')
+            status = job.get('status', 'unknown')
+            duration = job.get('duration_sec')
+            
+            # Progress percent
+            progress_percent = job.get('progress_percent')
+            if progress_percent is None:
+                try:
+                    progress_percent = round((current_epoch / total_epochs) * 100, 2) if total_epochs else 0
+                except Exception:
+                    progress_percent = 0
+            
+            return {
+                'job_id': job_id,
+                'current_epoch': current_epoch,
+                'total_epochs': total_epochs,
+                'current_loss': current_loss,
+                'learning_rate': lr,
+                'steps_per_sec': steps_per_sec,
+                'progress_percent': progress_percent,
+                'status': status,
+                'duration_sec': duration
+            }
+        except Exception as e:
+            return {'error': str(e), 'job_id': job_id}
+
+    def get_job_metrics(self, job_id):
+        """Return arrays for charting training/validation loss"""
+        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
+        steps = []
+        train_loss = []
+        eval_loss = []
+        try:
+            with open(status_file, 'r') as f:
+                data = json.load(f)
+            job = next((j for j in data.get('jobs', []) if j.get('name') == job_id), None)
+            if not job:
+                return {'error': 'Job not found', 'job_id': job_id}
+            
+            # Try metrics history
+            history = job.get('metrics_history') or job.get('loss_history')
+            if isinstance(history, list) and history:
+                for i, h in enumerate(history):
+                    steps.append(h.get('step', i))
+                    if 'train_loss' in h:
+                        train_loss.append(h['train_loss'])
+                    if 'eval_loss' in h:
+                        eval_loss.append(h['eval_loss'])
+            else:
+                # Fallback: parse log file for loss lines
+                log_file = job.get('log')
+                if log_file and Path(log_file).exists():
+                    try:
+                        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                            for i, line in enumerate(f):
+                                m = re.search(r'step\s*(\d+).*?train_loss=([0-9\.]+).*?eval_loss=([0-9\.]+)', line)
+                                if m:
+                                    steps.append(int(m.group(1)))
+                                    train_loss.append(float(m.group(2)))
+                                    eval_loss.append(float(m.group(3)))
+                    except Exception:
+                        pass
+            
+            return {
+                'job_id': job_id,
+                'steps': steps,
+                'train_loss': train_loss,
+                'eval_loss': eval_loss
+            }
+        except Exception as e:
+            return {'error': str(e), 'job_id': job_id, 'steps': steps, 'train_loss': train_loss, 'eval_loss': eval_loss}
     
     def get_datasets(self):
         # Use the root_dir set by main()
@@ -385,12 +513,16 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
         
         try:
-            job_name = params.get('name')
-            model = params.get('model', 'phi35')
+            # Accept both legacy and new parameter names
+            job_name = params.get('job_name') or params.get('name')
+            model = params.get('model') or 'microsoft/Phi-3.5-mini-instruct'
             dataset = params.get('dataset')
             epochs = params.get('epochs', 3)
-            max_samples = params.get('max_samples', 1000)
+            max_samples = params.get('max_train_samples', params.get('max_samples', 1000))
             learning_rate = params.get('learning_rate', '2e-4')
+            batch_size = params.get('batch_size', 4)
+            lora_rank = params.get('lora_rank', 16)
+            lora_alpha = params.get('lora_alpha', 32)
             
             if not job_name or not dataset:
                 return {'success': False, 'error': 'Missing required parameters'}
@@ -401,11 +533,14 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     'name': job_name,
                     'runner': 'hf',
                     'category': 'custom',
-                    'model': 'microsoft/Phi-3.5-mini-instruct' if model == 'phi35' else 'Qwen/Qwen2.5-3B-Instruct',
+                    'model': model,
                     'dataset': f'datasets/chat/{dataset}',
                     'epochs': epochs,
                     'max_train_samples': max_samples,
                     'learning_rate': float(learning_rate),
+                    'batch_size': batch_size,
+                    'lora_rank': lora_rank,
+                    'lora_alpha': lora_alpha,
                     'device': 'auto'
                 }]
             }
@@ -436,10 +571,50 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 'success': True,
                 'message': f'Training job {job_name} started',
                 'job_name': job_name,
+                'job_id': job_name,
                 'config_file': config_file.name
             }
         except Exception as e:
             return {'success': False, 'error': str(e)}
+
+    def control_job(self, job_id, action='pause'):
+        """Stub to control a job (pause/stop) via flag files"""
+        try:
+            root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+            control_dir = root_dir / 'data_out' / 'control'
+            control_dir.mkdir(parents=True, exist_ok=True)
+            flag_file = control_dir / f'{job_id}.{action}'
+            with open(flag_file, 'w') as f:
+                f.write(datetime.now().isoformat())
+            return {'success': True, 'message': f'Job {action} signal sent', 'job_id': job_id}
+        except Exception as e:
+            return {'success': False, 'error': str(e), 'job_id': job_id}
+
+    def run_benchmark(self, model_ids):
+        """Run a simple synthetic benchmark for models"""
+        results = []
+        for mid in model_ids:
+            try:
+                # Synthetic metrics
+                inference_time = random.uniform(100, 1200)  # ms
+                memory_mb = random.uniform(200, 2000)
+                throughput = random.uniform(20, 300)  # tokens/sec
+                # Score: lower time & memory, higher throughput
+                speed_score = max(0, min(100, (1200 - inference_time) / 12))
+                memory_score = max(0, min(100, (2000 - memory_mb) / 20))
+                throughput_score = max(0, min(100, throughput / 3))
+                score = round((speed_score + memory_score + throughput_score) / 3, 2)
+                results.append({
+                    'model_id': mid,
+                    'model_name': mid,
+                    'inference_time': round(inference_time, 1),
+                    'memory_mb': round(memory_mb, 1),
+                    'throughput': round(throughput, 1),
+                    'score': score
+                })
+            except Exception as e:
+                results.append({'model_id': mid, 'error': str(e)})
+        return results
     
     def get_training_history(self):
         """Get historical training data for charts"""

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-22T17:17:02Z",
+  "generated_at": "2025-11-26T04:07:43Z",
   "orchestrators": [
     {
       "name": "autotrain",
@@ -82,8 +82,8 @@
   ],
   "resource_usage": {
     "available": true,
-    "cpu_percent": 24.4,
-    "memory_percent": 24.9,
-    "disk_percent": 61.4
+    "cpu_percent": 95.6,
+    "memory_percent": 59.9,
+    "disk_percent": 63.0
   }
 }

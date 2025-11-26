@@ -20,6 +20,11 @@ Essential knowledge for AI agents working in this hybrid quantum-AI/ML workspace
 - `quantum_autorun.py` → `quantum_autorun.yaml` (quantum ML training)
 - `evaluation_autorun.py` → `evaluation_autorun.yaml` (model evaluation)
 
+**Advanced Automation** (multi-model orchestration):
+- `automated_training_pipeline.py`: Single entry point for data gen + training + eval + ranking
+- `parallel_train.py`: Concurrent multi-model training with shared evaluation
+- `train_and_promote.py`: Full pipeline (train → evaluate → auto-deploy best model)
+
 **Execution Protocol**:
 1. **Always dry-run first**: `python .\scripts\autotrain.py --dry-run`
 2. **Consume status.json**: Read `data_out/<orchestrator>/status.json` for job states (never parse stdout)
@@ -34,6 +39,12 @@ Essential knowledge for AI agents working in this hybrid quantum-AI/ML workspace
   "timestamp": "2025-11-24T10:30:00Z"
 }
 ```
+
+**Ranking Metrics** (parallel_train.py, automated_training_pipeline.py):
+- `perplexity_improvement`: Relative reduction (higher is better, default)
+- `post_perplexity`: Final perplexity (lower is better, stored as negative for sorting)
+- `diversity_avg` / `distinct_diversity`: Average of Distinct-1 & Distinct-2 (higher is better)
+- `combined_improvement`: 70% perplexity + 30% diversity (balanced quality + variety)
 
 ## Provider Auto-Detection
 
@@ -125,6 +136,11 @@ python .\scripts\evaluation_autorun.py --dry-run
 # Run specific job
 python .\scripts\autotrain.py --job phi35_mixed_chat
 
+# Advanced automation (NEW)
+python .\scripts\automated_training_pipeline.py --quick  # Multi-model training + eval
+python .\scripts\parallel_train.py --models phi,qwen --quick  # Parallel execution
+python .\scripts\train_and_promote.py --quick --auto-promote  # Train + deploy best
+
 # Azure Functions local dev
 func host start  # Serves /api/chat, /api/ai/status, /api/quantum/*, /api/chat-web
 
@@ -155,6 +171,8 @@ curl http://localhost:7071/api/ai/status | jq  # Runtime health
 3. **Quantum job cost surprises**: Forgot `azure_confirm_cost: true` in YAML (safety gate prevents execution)
 4. **Status JSON outdated**: Each orchestrator writes independent status files; use master_orchestrator for unified view
 5. **Dataset not found**: Orchestrators run from repo root; relative paths in YAML assume `datasets/` prefix
+6. **Parallel training conflicts**: `parallel_train.py` uses ThreadPoolExecutor; avoid running concurrent instances manually
+7. **VS Code tasks not found**: Ensure `.vscode/tasks.json` exists; tasks auto-register from workspace config
 
 ## Safety & Secrets
 
@@ -169,6 +187,9 @@ curl http://localhost:7071/api/ai/status | jq  # Runtime health
 - **QUANTUM_AUTORUN_README.md**: Quantum job configuration & Azure submission
 - **TELEMETRY_COSMOS_ENABLEMENT.md**: Observability stack setup
 - **VSCODE_TESTING_QUICKREF.md**: Test Explorer keyboard shortcuts
+- **ADVANCED_AUTOMATION.md**: Multi-level orchestration architecture
+- **AUTOMATION_QUICKREF.md**: One-command training pipelines
+- **scripts/README.md**: Comprehensive script documentation
 - **Root README.md**: Project overviews, quick starts, deployment guides
 
 Last updated: 2025-11-25

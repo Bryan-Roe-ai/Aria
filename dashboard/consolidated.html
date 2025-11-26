@@ -9,6 +9,9 @@
     <script src="anomaly-detector.js"></script>
     <script src="keyboard-nav.js"></script>
     <script src="session-history.js"></script>
+        <script src="live-progress.js"></script>
+        <script src="model-comparator.js"></script>
+        <script src="hyperparameter-optimizer.js"></script>
     <style>
         /* Tab Navigation */
         .tab-nav {
@@ -201,6 +204,38 @@
                     <span class="status-dot"></span>
                     <span>System Online</span>
                 </div>
+
+                            <!-- Hyperparameter Optimizer (Phase 30) -->
+                            <div class="card" style="margin-top:20px">
+                                <div class="card-header">
+                                    <h2 class="card-title">🎯 Hyperparameter Optimizer</h2>
+                                </div>
+                                <p style="margin-bottom:15px">Automated hyperparameter tuning with Bayesian optimization, grid search, and early stopping.</p>
+                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Optimization Strategy</label>
+                                        <select id="optimStrategy" title="Optimization Strategy">
+                                            <option value="bayesian">Bayesian Optimization</option>
+                                            <option value="grid">Grid Search</option>
+                                            <option value="random">Random Search</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Max Trials</label>
+                                        <input type="number" id="optimMaxTrials" value="10" min="3" max="50" title="Max Trials" placeholder="10">
+                                    </div>
+                                </div>
+                
+                                <button class="btn btn-primary" onclick="startHyperparamOptimization()">
+                                    🚀 Start Optimization
+                                </button>
+                                <button class="btn btn-secondary" onclick="configureSearchSpace()">
+                                    ⚙️ Configure Search Space
+                                </button>
+                
+                                <div id="hyperoptContainer" style="margin-top:20px;display:none"></div>
+                            </div>
                 <div class="status-pill">
                     <span>🖥️ GPU Ready</span>
                 </div>
@@ -384,6 +419,9 @@
                         </button>
                     </div>
                 </form>
+
+                        <!-- Live Progress Tracker (Phase 28) -->
+                        <div id="liveProgressContainer" style="display:none"></div>
             </div>
         </div>
 
@@ -411,25 +449,17 @@
 
             <div class="card" style="margin-top:20px">
                 <div class="card-header">
-                    <h2 class="card-title">📈 Model Comparison</h2>
+                    <h2 class="card-title">📈 Advanced Model Comparison (Phase 29)</h2>
                 </div>
-                <div style="overflow-x:auto">
-                    <table id="comparisonTable">
-                        <thead>
-                            <tr>
-                                <th>Model</th>
-                                <th>Final Loss</th>
-                                <th>Improvement</th>
-                                <th>Duration</th>
-                                <th>LoRA Rank</th>
-                                <th>Score</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td colspan="6" style="text-align:center;color:#888;padding:20px">No data available</td></tr>
-                        </tbody>
-                    </table>
+                <div id="modelComparisonContainer">
+                    <p style="text-align:center;padding:20px;color:#888">
+                        Select up to 4 completed jobs from the History tab to compare.
+                    </p>
                 </div>
+                <div class="chart-container" style="margin-top:20px">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+                <div id="benchmarkResults" style="margin-top:20px"></div>
             </div>
         </div>
 
@@ -552,6 +582,28 @@
                 // Initialize session history
                 if (typeof TrainingSessionHistory !== 'undefined') {
                     sessionHistory = new TrainingSessionHistory();
+
+                                // Initialize Phase 28-30 modules
+                                if (typeof LiveProgressTracker !== 'undefined') {
+                                    window.liveTracker = new LiveProgressTracker({
+                                        onComplete: () => {
+                                            refreshData();
+                                            alert('Training completed!');
+                                        },
+                                        onError: (err) => {
+                                            console.error('Training error:', err);
+                                            alert('Training failed: ' + err.message);
+                                        }
+                                    });
+                                }
+
+                                if (typeof ModelComparator !== 'undefined') {
+                                    window.modelComparator = new ModelComparator();
+                                }
+
+                                if (typeof HyperparameterOptimizer !== 'undefined') {
+                                    window.hyperOptimizer = new HyperparameterOptimizer();
+                                }
                 }
 
                 // Initialize charts
@@ -829,7 +881,12 @@
                 
                 const result = await response.json();
                 alert(result.message || 'Training started!');
-                
+
+                // Start live progress tracking (Phase 28)
+                if (window.liveTracker && result.job_id) {
+                    window.liveTracker.startTracking(result.job_id, config.epochs);
+                }
+
                 // Start session tracking
                 if (sessionHistory) {
                     sessionHistory.startSession(config);
@@ -968,6 +1025,7 @@
                 <div style="overflow-x:auto">
                     <table>
                         <thead>
+                                                            <th><input type="checkbox" id="selectAllHistory" onclick="toggleSelectAll()"></th>
                             <tr>
                                 <th>Start Time</th>
                                 <th>Duration</th>
@@ -979,6 +1037,7 @@
                         </thead>
                         <tbody>
                             ${sessions.slice(-20).reverse().map(s => `
+                                                                    <td><input type="checkbox" class="compare-checkbox" data-session-id="${s.id}"></td>
                                 <tr>
                                     <td>${new Date(s.startTime).toLocaleString()}</td>
                                     <td>${s.duration ? Math.round(s.duration / 60000) + ' min' : 'N/A'}</td>
@@ -992,6 +1051,10 @@
                             `).join('')}
                         </tbody>
                     </table>
+                                    <div style="margin-top:15px">
+                                        <button class="btn btn-primary" onclick="compareSelectedModels()">📊 Compare Selected</button>
+                                        <button class="btn btn-secondary" onclick="clearComparisonSelection()">Clear Selection</button>
+                                    </div>
                 </div>
             `;
         }
@@ -1077,6 +1140,98 @@
                 reader.readAsText(file);
             };
             input.click();
+
+                // Phase 30: Hyperparameter Optimizer Functions
+                function startHyperparamOptimization() {
+                    if (!window.hyperOptimizer) {
+                        alert('Hyperparameter optimizer not initialized');
+                        return;
+                    }
+
+                    const strategy = document.getElementById('optimStrategy').value;
+                    const maxTrials = parseInt(document.getElementById('optimMaxTrials').value);
+
+                    // Define default search space
+                    const searchSpace = {
+                        learning_rate: {
+                            range: [1e-5, 1e-3],
+                            scale: 'log',
+                            type: 'float'
+                        },
+                        batch_size: {
+                            values: [2, 4, 8, 16]
+                        },
+                        lora_rank: {
+                            values: [8, 16, 32, 64]
+                        },
+                        lora_alpha: {
+                            values: [16, 32, 64]
+                        },
+                        epochs: {
+                            range: [1, 5],
+                            type: 'int'
+                        }
+                    };
+
+                    hyperOptimizer.defineSearchSpace(searchSpace);
+                    hyperOptimizer.startOptimization({
+                        strategy: strategy,
+                        maxTrials: maxTrials
+                    });
+                }
+
+                function configureSearchSpace() {
+                    alert('Search Space Configuration:\n\nDefault search space includes:\n' +
+                          '• Learning Rate: 1e-5 to 1e-3 (log scale)\n' +
+                          '• Batch Size: [2, 4, 8, 16]\n' +
+                          '• LoRA Rank: [8, 16, 32, 64]\n' +
+                          '• LoRA Alpha: [16, 32, 64]\n' +
+                          '• Epochs: 1 to 5\n\n' +
+                          'Custom configuration coming in future update!');
+
+                        // Phase 29: Model Comparison Functions
+                        function toggleSelectAll() {
+                            const selectAll = document.getElementById('selectAllHistory');
+                            const checkboxes = document.querySelectorAll('.compare-checkbox');
+                            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                        }
+
+                        function compareSelectedModels() {
+                            if (!window.modelComparator) {
+                                alert('Model comparator not initialized');
+                                return;
+                            }
+
+                            const checkboxes = document.querySelectorAll('.compare-checkbox:checked');
+                            if (checkboxes.length === 0) {
+                                alert('Please select at least 2 models to compare');
+                                return;
+                            }
+                            if (checkboxes.length > 4) {
+                                alert('Maximum 4 models can be compared at once');
+                                return;
+                            }
+
+                            // Clear previous selection
+                            modelComparator.clearSelection();
+
+                            // Add selected models
+                            checkboxes.forEach(cb => {
+                                const sessionId = cb.getAttribute('data-session-id');
+                                modelComparator.addModel(sessionId);
+                            });
+
+                            // Switch to analytics tab
+                            switchTab('analytics');
+                            alert(`Comparing ${checkboxes.length} models. View results in Analytics tab.`);
+                        }
+
+                        function clearComparisonSelection() {
+                            const checkboxes = document.querySelectorAll('.compare-checkbox');
+                            checkboxes.forEach(cb => cb.checked = false);
+                            document.getElementById('selectAllHistory').checked = false;
+                        }
+                }
         }
 
         // Restore last active tab on page load
