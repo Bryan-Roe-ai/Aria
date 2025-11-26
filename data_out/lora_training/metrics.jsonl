@@ -54,3 +54,8 @@
 {"phase": "pre", "eval_loss": 3.1877269744873047, "eval_perplexity": 24.233281925180826, "timestamp": "2025-11-26T07:19:08.997060Z"}
 {"step": 32, "eval_loss": 3.1675801277160645, "eval_perplexity": 23.749942934409646, "timestamp": "2025-11-26T07:26:23.382509Z"}
 {"phase": "post", "eval_loss": 3.1675801277160645, "eval_perplexity": 23.749942934409646, "timestamp": "2025-11-26T07:26:23.383509Z"}
+{"step": 0, "eval_loss": 3.148756742477417, "eval_perplexity": 23.30706987078547, "timestamp": "2025-11-26T07:32:23.235620Z"}
+{"phase": "pre", "eval_loss": 3.148756742477417, "eval_perplexity": 23.30706987078547, "timestamp": "2025-11-26T07:32:23.236120Z"}
+{"step": 64, "eval_loss": 1.1502054929733276, "eval_perplexity": 3.1588419628267674, "timestamp": "2025-11-26T07:35:39.234327Z"}
+{"step": 64, "eval_loss": 1.1502054929733276, "eval_perplexity": 3.1588419628267674, "timestamp": "2025-11-26T07:35:48.034860Z"}
+{"phase": "post", "eval_loss": 1.1502054929733276, "eval_perplexity": 3.1588419628267674, "timestamp": "2025-11-26T07:35:48.035360Z"}

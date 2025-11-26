@@ -193,8 +193,8 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         req_body = req.get_json()
         messages = req_body.get('messages', [])
         session_id = req_body.get('session_id')  # Optional client-provided session identifier
-        provider_choice = req_body.get('provider', 'auto')
-        model_override = req_body.get('model')
+        provider_choice = req_body.get('provider', os.getenv('QAI_PROVIDER', 'auto'))
+        model_override = req_body.get('model', os.getenv('QAI_LORA_MODEL'))
         temperature = req_body.get('temperature')
         max_output_tokens = req_body.get('max_output_tokens')
         max_context_tokens = req_body.get('max_context_tokens')
