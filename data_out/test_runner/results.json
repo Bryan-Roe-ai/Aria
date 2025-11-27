@@ -1,10 +1,10 @@
 {
-  "generated_at": "2025-11-27T06:35:10.161190Z",
+  "generated_at": "2025-11-27T11:07:08.769200Z",
   "suites": [
     {
       "name": "integration",
       "status": "passed",
-      "duration_sec": 7.86,
+      "duration_sec": 8.22,
       "tests_collected": 31,
       "tests_passed": 24,
       "tests_failed": 0,
@@ -20,6 +20,6 @@
     "total_tests": 31,
     "total_passed": 24,
     "total_failed": 0,
-    "total_duration_sec": 7.86
+    "total_duration_sec": 8.22
   }
 }

@@ -350,7 +350,7 @@ def run_pipeline(pipeline: Pipeline, dry_run: bool = False) -> None:
                 print("[smart_orchestrator] No jobs ready and none running. Stopping.")
                 break
             # Wait for running jobs (in real impl, this would be async)
-            time.sleep(1)
+            time.sleep(0.1)  # Reduced from 1s for faster response
             continue
         
         # Execute next ready job
@@ -373,7 +373,7 @@ def run_pipeline(pipeline: Pipeline, dry_run: bool = False) -> None:
                 job.retries += 1
                 job.status = "pending"
                 print(f"[smart_orchestrator] ↻ {job.name} failed, retrying ({job.retries}/{job.max_retries})")
-                time.sleep(5 * job.retries)  # Exponential backoff
+                time.sleep(min(5 * job.retries, 10))  # Exponential backoff (capped at 10s)
             else:
                 job.status = "failed"
                 print(f"[smart_orchestrator] ✗ {job.name} failed after {job.max_retries} retries")
@@ -428,7 +428,7 @@ def watch_pipelines() -> None:
                     except Exception as e:
                         print(f"[watch] Error reading {sf}: {e}")
             
-            time.sleep(10)
+            time.sleep(3)  # Reduced from 10s for faster iteration
     except KeyboardInterrupt:
         print("\n[smart_orchestrator] Watch stopped")
 

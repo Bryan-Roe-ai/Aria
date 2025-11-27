@@ -362,7 +362,7 @@ def watch_mode(suites: List[str], coverage: bool) -> None:
     
     try:
         while True:
-            time.sleep(2)
+            time.sleep(0.5)  # Faster watch mode response
             current_mtimes = get_mtimes()
             
             changed = [

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-25T04:52:52Z",
+  "timestamp": "2025-11-27T11:07:08Z",
   "configurations": [
     "autotrain.yaml",
     "quantum_autorun.yaml",
@@ -10,13 +10,18 @@
   "models": [
     {
       "type": "lora",
-      "path": "data_out\\lora_training\\checkpoint-64",
-      "size_mb": 21.54149055480957
+      "path": "data_out\\lora_training\\checkpoint-1472",
+      "size_mb": 22.031200408935547
+    },
+    {
+      "type": "lora",
+      "path": "data_out\\lora_training\\checkpoint-1500",
+      "size_mb": 22.03119945526123
     },
     {
       "type": "lora",
       "path": "data_out\\lora_training\\lora_adapter",
-      "size_mb": 6.014050483703613
+      "size_mb": 6.013946533203125
     }
   ],
   "scripts": []

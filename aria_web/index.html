@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Aria Visual Command System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stage-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .stage {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 100%);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid #667eea;
+        }
+
+        .aria-character {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 200px;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            z-index: 10;
+        }
+
+        /* Head */
+        .aria-head {
+            width: 60px;
+            height: 60px;
+            background: #FFD4A3;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 3px solid #333;
+            z-index: 4;
+        }
+
+        /* Hair */
+        .aria-hair {
+            width: 70px;
+            height: 40px;
+            background: #8B4513;
+            border-radius: 50% 50% 0 0;
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 3px solid #333;
+            border-bottom: none;
+            z-index: 5;
+        }
+
+        /* Eyes */
+        .aria-eyes {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 10px;
+        }
+
+        .aria-eye {
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+        }
+
+        /* Mouth */
+        .aria-mouth {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 10px;
+            border: 2px solid #333;
+            border-top: none;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .aria-mouth.smile {
+            border-radius: 0 0 30px 30px;
+            width: 25px;
+        }
+
+        .aria-mouth.sad {
+            border-radius: 30px 30px 0 0;
+            border-top: 2px solid #333;
+            border-bottom: none;
+            top: 42px;
+        }
+
+        /* Body */
+        .aria-body {
+            width: 50px;
+            height: 70px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 25px 25px 10px 10px;
+            position: absolute;
+            top: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 3px solid #333;
+            z-index: 2;
+        }
+
+        /* Arms */
+        .aria-arm {
+            width: 15px;
+            height: 50px;
+            background: #FFD4A3;
+            border-radius: 10px;
+            position: absolute;
+            top: 60px;
+            border: 2px solid #333;
+            z-index: 1;
+        }
+
+        .aria-arm.left {
+            left: 15px;
+            transform: rotate(-20deg);
+            transform-origin: top center;
+        }
+
+        .aria-arm.right {
+            right: 15px;
+            transform: rotate(20deg);
+            transform-origin: top center;
+        }
+
+        /* Legs */
+        .aria-leg {
+            width: 18px;
+            height: 60px;
+            background: #555;
+            border-radius: 5px;
+            position: absolute;
+            top: 120px;
+            border: 2px solid #333;
+            z-index: 1;
+        }
+
+        .aria-leg.left {
+            left: 35px;
+        }
+
+        .aria-leg.right {
+            right: 35px;
+        }
+
+        /* Feet */
+        .aria-foot {
+            width: 25px;
+            height: 12px;
+            background: #8B4513;
+            border-radius: 5px 10px 10px 5px;
+            position: absolute;
+            top: 175px;
+            border: 2px solid #333;
+        }
+
+        .aria-foot.left {
+            left: 30px;
+        }
+
+        .aria-foot.right {
+            right: 30px;
+            border-radius: 10px 5px 5px 10px;
+        }
+
+        .aria-character.jumping {
+            animation: jump 0.6s ease-in-out;
+        }
+
+        .aria-character.dancing {
+            animation: dance 1s ease-in-out infinite;
+        }
+
+        .aria-character.spinning {
+            animation: spin 1s ease-in-out;
+        }
+
+        .aria-character.waving {
+            animation: wave 1s ease-in-out;
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-100px); }
+        }
+
+        @keyframes dance {
+            0%, 100% { transform: translateX(-50%) rotate(-10deg); }
+            50% { transform: translateX(-50%) rotate(10deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: translateX(-50%) rotate(0deg); }
+            100% { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            25% { transform: translateX(-50%) scale(1.1) rotate(5deg); }
+            75% { transform: translateX(-50%) scale(1.1) rotate(-5deg); }
+        }
+
+        .effect {
+            position: absolute;
+            pointer-events: none;
+            animation: fadeOut 1.5s ease-out forwards;
+        }
+
+        .sparkle {
+            font-size: 30px;
+        }
+
+        .hearts {
+            font-size: 40px;
+            animation: floatUp 2s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-200px); }
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: #333;
+        }
+
+        .control-panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .command-input {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1em;
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .quick-commands {
+            margin-top: 20px;
+        }
+
+        .quick-commands h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .quick-btn {
+            padding: 8px;
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .status-log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .status-log h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .log-entry {
+            padding: 5px;
+            margin-bottom: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .command-categories {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .command-categories h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 5px;
+        }
+
+        .category-examples {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Aria Visual Command System</h1>
+            <p class="subtitle">Control Aria with natural language commands</p>
+        </header>
+
+        <div class="main-content">
+            <div class="stage-container">
+                <div class="stage" id="stage">
+                    <div class="aria-character" id="aria">
+                        <div class="aria-hair"></div>
+                        <div class="aria-head">
+                            <div class="aria-eyes">
+                                <div class="aria-eye"></div>
+                                <div class="aria-eye"></div>
+                            </div>
+                            <div class="aria-mouth" id="ariaMouth"></div>
+                        </div>
+                        <div class="aria-arm left" id="ariaArmLeft"></div>
+                        <div class="aria-arm right" id="ariaArmRight"></div>
+                        <div class="aria-body"></div>
+                        <div class="aria-leg left" id="ariaLegLeft"></div>
+                        <div class="aria-leg right" id="ariaLegRight"></div>
+                        <div class="aria-foot left"></div>
+                        <div class="aria-foot right"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h2>🎮 Command Input</h2>
+                <div class="command-input">
+                    <input type="text" id="commandInput" placeholder="Type a command (e.g., 'aria smile', 'jump', 'dance with sparkles')" 
+                           onkeypress="if(event.key === 'Enter') sendCommand()">
+                    <button onclick="sendCommand()">Execute Command</button>
+                </div>
+
+                <div class="quick-commands">
+                    <h3>⚡ Quick Commands</h3>
+                    <div class="command-grid">
+                        <button class="quick-btn" onclick="quickCommand('smile')">😊 Smile</button>
+                        <button class="quick-btn" onclick="quickCommand('jump')">💃 Jump</button>
+                        <button class="quick-btn" onclick="quickCommand('dance')">🎵 Dance</button>
+                        <button class="quick-btn" onclick="quickCommand('wave')">👋 Wave</button>
+                        <button class="quick-btn" onclick="quickCommand('sparkle')">✨ Sparkle</button>
+                        <button class="quick-btn" onclick="quickCommand('spin')">🌀 Spin</button>
+                        <button class="quick-btn" onclick="quickCommand('move left')">⬅️ Move Left</button>
+                        <button class="quick-btn" onclick="quickCommand('move right')">➡️ Move Right</button>
+                    </div>
+                </div>
+
+                <div class="status-log">
+                    <h3>📋 Command Log</h3>
+                    <div id="logContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="command-categories">
+            <h2>📚 Available Commands</h2>
+            <div class="category">
+                <div class="category-title">😊 Expressions:</div>
+                <div class="category-examples">smile, happy, sad, surprised, confused, thinking, wink</div>
+            </div>
+            <div class="category">
+                <div class="category-title">👋 Gestures:</div>
+                <div class="category-examples">wave, thumbs up, point left/right, clap, shrug</div>
+            </div>
+            <div class="category">
+                <div class="category-title">💃 Animations:</div>
+                <div class="category-examples">jump, dance, spin, bow, flip, backflip</div>
+            </div>
+            <div class="category">
+                <div class="category-title">🚶 Movement:</div>
+                <div class="category-examples">move left/right/up/down, walk left/right, run left/right</div>
+            </div>
+            <div class="category">
+                <div class="category-title">✨ Effects:</div>
+                <div class="category-examples">sparkle, glow, hearts</div>
+            </div>
+            <div class="category">
+                <div class="category-title">🎭 Combinations:</div>
+                <div class="category-examples">dance with sparkles, jump and smile, walk left and wave</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="aria_controller.js"></script>
+</body>
+</html>

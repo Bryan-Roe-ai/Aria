@@ -1,0 +1,62 @@
+[
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "make aria smile"
+      },
+      {
+        "role": "assistant",
+        "content": "[aria:expression:smile]"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "aria jump high"
+      },
+      {
+        "role": "assistant",
+        "content": "[aria:animate:jump]"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "show thumbs up"
+      },
+      {
+        "role": "assistant",
+        "content": "[aria:gesture:thumbs_up]"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "dance with sparkles"
+      },
+      {
+        "role": "assistant",
+        "content": "[aria:animate:dance] [aria:effect:sparkle]"
+      }
+    ]
+  },
+  {
+    "messages": [
+      {
+        "role": "user",
+        "content": "look surprised"
+      },
+      {
+        "role": "assistant",
+        "content": "[aria:expression:surprised]"
+      }
+    ]
+  }
+]
