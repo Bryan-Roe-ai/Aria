@@ -46,7 +46,7 @@ def main():
     try:
         workspace = azure.connect()
     except Exception as e:
-        print(f"\n❌ Failed to connect to Azure Quantum: {e}")
+        print(f"\n[ERROR] Failed to connect to Azure Quantum: {e}")
         print('Ensure az login is complete and config/quantum_config.yaml is set correctly.')
         return
 
@@ -57,12 +57,16 @@ def main():
         for b in backends:
             print(f' - {b}')
     except Exception as e:
-        print(f"\n⚠️ Could not list backends: {e}")
+        print(f"\n[WARNING] Could not list backends: {e}")
 
     # Build test circuit
     qc = create_ghz(n_qubits=args.qubits)
     print('\nTest circuit (GHZ):')
-    print(qc)
+    try:
+        print(qc.draw(output='text'))
+    except Exception:
+        # Fallback if Unicode rendering fails
+        print(f"GHZ circuit: {args.qubits} qubits, Hadamard + {args.qubits-1} CNOTs + measurement")
 
     # Submit job
     try:
@@ -77,11 +81,11 @@ def main():
         with open(out_path, 'w') as f:
             import json
             json.dump(results, f, indent=2)
-        print(f"\n✅ Job complete. Results saved to: {out_path}")
+        print(f"\n[SUCCESS] Job complete. Results saved to: {out_path}")
     except Exception as e:
-        print(f"\n❌ Submission failed: {e}")
+        print(f"\n[ERROR] Submission failed: {e}")
         print('Tip: This script prefers simulator backends by default via config.\n'
-              '     To target a specific backend, pass --backend explicitly (e.g., --backend ionq.simulator).')
+              '     To target a specific backend, pass --backend explicitly (e.g., --backend quantinuum.sim.h2-1sc).')
 
 
 if __name__ == '__main__':

@@ -28,7 +28,17 @@ class AzureQuantumIntegration:
         Args:
             config_path: Path to configuration file
         """
-        with open(config_path, 'r') as f:
+        # Handle both relative and absolute paths, and resolve from script location
+        config_file = Path(config_path)
+        if not config_file.is_absolute():
+            # Try relative to quantum-ai directory
+            quantum_ai_dir = Path(__file__).parent.parent
+            config_file = quantum_ai_dir / config_path
+        
+        if not config_file.exists():
+            raise FileNotFoundError(f"Config file not found: {config_file}")
+        
+        with open(config_file, 'r') as f:
             self.config = yaml.safe_load(f)
         
         self.azure_config = self.config['azure']

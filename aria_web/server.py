@@ -5,6 +5,7 @@ Serves the HTML/JS frontend and provides API endpoint for command generation
 """
 import sys
 from pathlib import Path
+from typing import List
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
 import re
@@ -36,7 +37,7 @@ except Exception as e:
     print(f"⚠️ Could not load model: {e}")
     print("Using rule-based fallback parser")
 
-def generate_tags_ai(command: str) -> list[str]:
+def generate_tags_ai(command: str) -> List[str]:
     """Generate tags using AI model"""
     if MODEL is None:
         return []
@@ -67,7 +68,7 @@ def generate_tags_ai(command: str) -> list[str]:
         print(f"AI generation error: {e}")
         return []
 
-def generate_tags_fallback(command: str) -> list[str]:
+def generate_tags_fallback(command: str) -> List[str]:
     """Simple rule-based fallback tag generation"""
     cmd = command.lower()
     tags = []
@@ -106,6 +107,71 @@ def generate_tags_fallback(command: str) -> list[str]:
     elif 'shrug' in cmd:
         tags.append('[aria:gesture:shrug]')
     
+    # Limb controls and poses (AI may also emit these; fallback supports natural phrases)
+    # Hands up / T-pose / Cross arms
+    if 'hands up' in cmd or 'raise hands' in cmd:
+        tags.append('[aria:limb:left_arm:raise]')
+        tags.append('[aria:limb:right_arm:raise]')
+    if 't-pose' in cmd or 'tpose' in cmd or 't pose' in cmd:
+        tags.append('[aria:pose:t-pose]')
+    if 'cross arms' in cmd or 'arms crossed' in cmd:
+        tags.append('[aria:pose:cross_arms]')
+
+    # Per-limb commands
+    def limb_tag(part: str, action: str):
+        tags.append(f'[aria:limb:{part}:{action}]')
+
+    # Helper maps
+    left_arm = any(k in cmd for k in ['left arm', 'arm left', 'left hand'])
+    right_arm = any(k in cmd for k in ['right arm', 'arm right', 'right hand'])
+    left_leg = any(k in cmd for k in ['left leg', 'leg left'])
+    right_leg = any(k in cmd for k in ['right leg', 'leg right'])
+
+    # Numeric angle if present (e.g., "left arm 45 degrees")
+    angle_match = None
+    try:
+        angle_match = next((m for m in __import__('re').finditer(r'(-?\d{1,3})\s*(deg|degree|degrees)?', cmd)), None)
+    except Exception:
+        angle_match = None
+    angle_val = angle_match.group(1) if angle_match else None
+
+    # Arm actions
+    if left_arm or right_arm or 'arm' in cmd:
+        # Choose default arm if unspecified
+        parts = []
+        if left_arm:
+            parts.append('left_arm')
+        if right_arm:
+            parts.append('right_arm')
+        if not parts:
+            parts = ['right_arm']
+        if any(k in cmd for k in ['wave', 'wiggle']):
+            for p in parts: limb_tag(p, 'wave')
+        elif any(k in cmd for k in ['raise', 'up', 'lift']):
+            for p in parts: limb_tag(p, 'raise')
+        elif any(k in cmd for k in ['lower', 'down']):
+            for p in parts: limb_tag(p, 'lower')
+        elif angle_val is not None:
+            for p in parts: limb_tag(p, angle_val)
+
+    # Leg actions
+    if left_leg or right_leg or 'leg' in cmd:
+        parts = []
+        if left_leg:
+            parts.append('left_leg')
+        if right_leg:
+            parts.append('right_leg')
+        if not parts:
+            parts = ['left_leg']
+        if 'kick' in cmd:
+            for p in parts: limb_tag(p, 'kick')
+        elif any(k in cmd for k in ['forward', 'front']):
+            for p in parts: limb_tag(p, 'forward')
+        elif any(k in cmd for k in ['back', 'backward', 'behind']):
+            for p in parts: limb_tag(p, 'back')
+        elif angle_val is not None:
+            for p in parts: limb_tag(p, angle_val)
+
     # Movement
     if 'left' in cmd:
         if 'walk' in cmd:
@@ -136,7 +202,7 @@ def generate_tags_fallback(command: str) -> list[str]:
     elif 'zoom' in cmd:
         tags.append('[aria:camera:zoom_in]' if 'in' in cmd else '[aria:camera:zoom_out]')
     
-    # Poses
+    # Poses (body positions)
     if 'sit' in cmd:
         tags.append('[aria:pose:sit]')
     elif 'stand' in cmd:

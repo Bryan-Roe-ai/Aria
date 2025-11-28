@@ -35,11 +35,11 @@ jobs:
   # IMPORTANT: Set azure_confirm_cost: true to acknowledge hardware costs
   # Use simulators (*.simulator) for free Azure testing
   
-  - name: azure_ionq_simulator
+  - name: azure_quantinuum_simulator
     mode: azure_hardware
-    azure_backend: ionq.simulator  # FREE: IonQ cloud simulator
+    azure_backend: quantinuum.sim.h2-1sc  # FREE: Quantinuum cloud simulator
     azure_shots: 100
-    qubits: 3  # Changed from n_qubits to match deploy script argument
+    qubits: 3
     enabled: true  # ENABLED for Azure testing
     # Note: Requires Azure credentials and quantum workspace
     # Run: az login before executing this job

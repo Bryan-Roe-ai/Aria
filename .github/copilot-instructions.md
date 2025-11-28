@@ -2,6 +2,33 @@
 
 Essential knowledge for AI agents working in this hybrid quantum-AI/ML workspace. Focus: immediate productivity, safe execution, and cost awareness.
 
+## Copilot Quickstart for QAI (condensed)
+
+- Architecture in one breath: three independent projects — `quantum-ai/` (quantum ML + MCP server), `talk-to-ai/` (CLI chat), and `AI/microsoft_phi-silica-3.6_v1/` (LoRA fine-tuning) — unified by `function_app.py` (Azure Functions) and shared infra in `shared/`.
+- Key endpoints (served by Functions): `/api/chat`, `/api/chat-web`, `/api/tts`, `/api/quantum/*`, `/api/ai/status`. Check runtime health at `/api/ai/status`.
+- Provider detection order (see `shared/chat_providers.py:detect_provider()`): Azure OpenAI → OpenAI → LoRA → Local. Azure needs all 4 env vars: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`.
+- Immutable data model: read-only `datasets/`; write-only `data_out/`. Orchestrators run from repo root and emit machine-readable status JSON under `data_out/<orchestrator>/status.json`.
+- Orchestrators you’ll use most (PowerShell):
+  - Dry-run safety first: `python .\scripts\autotrain.py --dry-run`; `python .\scripts\quantum_autorun.py --dry-run`; `python .\scripts\evaluation_autorun.py --dry-run`.
+  - Quick LoRA train+deploy: `python .\scripts\train_and_promote.py --quick --auto-promote`.
+  - Ultrafast TinyLlama: `python .\scripts\automated_training_pipeline.py --models tinyllama --quick`.
+- LoRA readiness: adapter must contain `adapter_config.json` and `adapter_model.safetensors`. Use CLI: `python .\talk-to-ai\src\chat_cli.py --provider lora --model <adapter_dir>`.
+- Dataset convention (chat): `datasets/chat/<name>/{train.json,test.json}` with `[{"messages": [{"role": "user|assistant", "content": "..."}]}]`. Validate with `python .\scripts\validate_datasets.py --category chat`.
+- Quantum guardrails: always simulate locally (Qiskit Aer) before cloud; real QPU runs require `azure_confirm_cost: true` in `quantum_autorun.yaml`. Use `python .\scripts\quantum_autorun.py --job azure_ionq_simulator` first.
+- MCP server (quantum tools): `python .\quantum-ai\quantum_mcp_server.py`. Tools include `create_quantum_circuit`, `simulate_quantum_circuit`, `submit_quantum_job`, `estimate_quantum_cost` (see `quantum-ai/quantum_mcp_server.py`).
+- Testing workflow: prefer `python .\scripts\test_runner.py --all` (fast) or VS Code Test Explorer (🧪). Pytest markers: `not slow and not azure` for local runs.
+- Azure storage/dev: Azurite databases present at root; Functions host can run offline. Configure speech TTS via `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION` or enable local fallback with `QAI_ENABLE_LOCAL_TTS=true`.
+- Config precedence: YAML base < CLI flags < per-job YAML overrides < environment variables. Never hardcode secrets; use `local.settings.json` (dev) or Azure App Settings (prod).
+- High-signal files to read first:
+  - `function_app.py` — HTTP endpoints and dynamic imports.
+  - `shared/chat_providers.py` — provider abstraction and detection logic.
+  - `scripts/autotrain.py`, `scripts/quantum_autorun.py`, `scripts/evaluation_autorun.py` — orchestrators and status writing.
+  - `autotrain.yaml`, `quantum_autorun.yaml`, `evaluation_autorun.yaml` — declarative job specs.
+- Health and observability: Application Insights integrates via `shared/telemetry.py`; optional Cosmos persistence via `shared/cosmos_client.py` (feature-flagged). Failures are non-blocking; check `/api/ai/status` for env and pool saturation.
+- Safety habits that save money: dry-run orchestrators; start QPU shots ≤100; prefer simulator backends; enable TTL for ephemeral Cosmos items; watch connection pool saturation alerts.
+
+For full details and workflows, see the extended guide below (preserved). This quickstart is designed for immediate agent productivity and aligns with VS Code’s custom instructions guidance.
+
 ## 🚀 Getting Started (New Contributors)
 
 ### First-Time Setup (5 minutes)
@@ -199,21 +226,21 @@ request = {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
 - **Max Qubits**: 10 (local simulator), 20 (Azure with approval)
 - **Max Shots**: 1000 (default), 100000 (with `high_shots=true`)
 - **Timeout**: 60 seconds per tool call
-- **Cost Gate**: Azure jobs require explicit `confirm_cost=true` parameter
+- **Cost Gate**: Azure QPU jobs require explicit `confirm_cost=true` parameter (simulators are FREE)
 
 ## Quantum Computing Boundaries
 
-**Two Modes**:
-- **Training**: `quantum-ai/train_custom_dataset.py` (long-running, local simulator, epochs/batching)
+**Three Modes**:
+- **Training**: `quantum-ai/train_custom_dataset.py` (long-running, local/Azure simulator, epochs/batching)
 - **MCP Server**: `quantum-ai/quantum_mcp_server.py` (8 tools, ≤10 qubits, ≤1k shots, 60s timeout, CircuitCache with LRU+TTL)
 - **Web Dashboard**: `quantum-ai/start_dashboard.sh` (interactive training UI at http://localhost:5000, real-time charts, session management)
 
 **Cost Gates**:
-- Local simulators (qiskit_aer, pennylane default.qubit): FREE
-- Azure simulators (ionq.simulator): FREE
-- **Paid QPU** (ionq.qpu, quantinuum.*): ~$0.00003-$0.00015 per gate-shot
+- Local simulators (qiskit_aer, pennylane default.qubit): **FREE**
+- Azure simulators (ionq.simulator, quantinuum.sim.*): **FREE**
+- **Paid QPU** (ionq.qpu, quantinuum.qpu.*): ~$0.00003-$0.00015 per gate-shot
   - Safety: YAML jobs require `azure_confirm_cost: true`
-  - Always test Bell state on simulator first: `quantum_autorun.py --job azure_ionq_simulator --dry-run`
+  - Always test on FREE Azure simulator first: `quantum_autorun.py --job azure_ionq_simulator`
 
 **Auth**: `az login` + valid `quantum-ai/config/quantum_config.yaml` (subscription_id, resource_group, workspace).
 
