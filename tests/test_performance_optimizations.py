@@ -18,8 +18,6 @@ class TestSqlEngineOptimizations:
     
     def test_deque_slow_query_log(self):
         """Test that the slow query log uses efficient deque operations."""
-        from collections import deque
-        
         # Simulate the optimized implementation
         log = deque()
         
@@ -35,10 +33,9 @@ class TestSqlEngineOptimizations:
         while log and log[0][0] < cutoff:
             log.popleft()
         
-        # Should keep only entries from the last 60 seconds
-        # Entries 0-39 should be pruned (they are > 60 seconds old)
-        # Entries 40-99 should remain (they are <= 60 seconds old)
-        assert len(log) <= 61  # At most 61 entries (0 to 60 seconds old)
+        # Should keep entries from approximately the last 60 seconds
+        # Due to timing, we allow for the boundary case (60 or 61 entries)
+        assert 59 <= len(log) <= 61
         
     def test_query_hash_normalization(self):
         """Test that query hash normalization is efficient."""

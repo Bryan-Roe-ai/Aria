@@ -48,7 +48,7 @@ _LAST_URL = None
 # Slow query frequency tracking (in-memory, last 60 seconds)
 # Use collections.deque for O(1) append and efficient pruning from left
 from collections import deque
-_SLOW_QUERY_LOG: deque = deque()  # (timestamp, duration_ms)
+_SLOW_QUERY_LOG: deque[tuple[float, float]] = deque()  # (timestamp, duration_ms)
 _SLOW_QUERY_CACHE_SIZE = 1000  # Maximum entries to prevent unbounded growth
 
 def _prune_slow_query_log() -> None:

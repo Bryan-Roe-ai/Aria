@@ -225,10 +225,10 @@ class DatasetDownloader:
                             if "messages" in example:
                                 line = json.dumps({"messages": example["messages"]})
                             elif "instruction" in example and "response" in example:
-                                # Alpaca/Dolly format
-                                user_content = example["instruction"]
-                                if example.get("input"):  # Context field
-                                    user_content = f"{example['input']}\n\n{example['instruction']}"
+                                # Alpaca/Dolly format - build user content
+                                input_text = example.get("input", "").strip()
+                                instruction = example["instruction"]
+                                user_content = f"{input_text}\n\n{instruction}".strip() if input_text else instruction
                                 messages = [
                                     {"role": "user", "content": user_content},
                                     {"role": "assistant", "content": example["response"]}

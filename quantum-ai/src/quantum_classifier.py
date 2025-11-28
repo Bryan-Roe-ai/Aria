@@ -153,8 +153,9 @@ class QuantumClassifier:
         # Use in-place operations for better memory efficiency
         X_min = X.min()
         X_range = X.max() - X_min
+        # Use small epsilon to avoid division by zero when all values are identical
         if X_range == 0:
-            X_range = 1  # Avoid division by zero
+            X_range = 1e-8
         X_normalized = (X - X_min) / X_range * (2 * np.pi)
         return torch.FloatTensor(X_normalized)
     
