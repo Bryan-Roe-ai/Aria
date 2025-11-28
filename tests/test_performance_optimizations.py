@@ -5,6 +5,7 @@ These tests verify that the optimizations made to various modules
 maintain correct functionality while improving performance.
 """
 import json
+import math
 import tempfile
 import time
 from pathlib import Path
@@ -328,38 +329,32 @@ class TestCosineSimOptimizations:
         """Test NumPy-based cosine similarity calculation."""
         try:
             import numpy as np
-            has_numpy = True
         except ImportError:
-            has_numpy = False
             pytest.skip("NumPy not available")
         
-        if has_numpy:
-            # Test vectors
-            a = [1.0, 2.0, 3.0]
-            b = [4.0, 5.0, 6.0]
-            
-            # NumPy calculation
-            a_arr = np.asarray(a, dtype=np.float32)
-            b_arr = np.asarray(b, dtype=np.float32)
-            dot = np.dot(a_arr, b_arr)
-            na = np.linalg.norm(a_arr)
-            nb = np.linalg.norm(b_arr)
-            numpy_result = float(dot / (na * nb))
-            
-            # Pure Python calculation
-            import math
-            dot_py = sum(x * y for x, y in zip(a, b))
-            na_py = math.sqrt(sum(x * x for x in a))
-            nb_py = math.sqrt(sum(y * y for y in b))
-            python_result = dot_py / (na_py * nb_py)
-            
-            # Results should be nearly identical
-            assert abs(numpy_result - python_result) < 1e-6
+        # Test vectors
+        a = [1.0, 2.0, 3.0]
+        b = [4.0, 5.0, 6.0]
+        
+        # NumPy calculation
+        a_arr = np.asarray(a, dtype=np.float32)
+        b_arr = np.asarray(b, dtype=np.float32)
+        dot = np.dot(a_arr, b_arr)
+        na = np.linalg.norm(a_arr)
+        nb = np.linalg.norm(b_arr)
+        numpy_result = float(dot / (na * nb))
+        
+        # Pure Python calculation
+        dot_py = sum(x * y for x, y in zip(a, b))
+        na_py = math.sqrt(sum(x * x for x in a))
+        nb_py = math.sqrt(sum(y * y for y in b))
+        python_result = dot_py / (na_py * nb_py)
+        
+        # Results should be nearly identical
+        assert abs(numpy_result - python_result) < 1e-6
     
     def test_cosine_edge_cases(self):
         """Test cosine similarity edge cases."""
-        import math
-        
         # Empty vectors
         assert _cosine_pure_python([], []) == 0.0
         
@@ -382,7 +377,6 @@ def _cosine_pure_python(a, b) -> float:
     """Pure Python cosine similarity for testing."""
     if not a or not b or len(a) != len(b):
         return 0.0
-    import math
     dot = sum(x * y for x, y in zip(a, b))
     na = math.sqrt(sum(x * x for x in a)) or 1.0
     nb = math.sqrt(sum(y * y for y in b)) or 1.0
