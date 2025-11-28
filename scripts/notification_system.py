@@ -67,13 +67,23 @@ class NotificationManager:
     
     def _send_macos(self, title: str, message: str):
         """Send macOS notification using osascript"""
-        script = f'''
-        display notification "{message}" with title "{title}"
-        '''
-        os.system(f"osascript -e '{script}'")
+        import subprocess
+        import shlex
+        
+        # Escape special characters to prevent command injection
+        safe_title = title.replace('\\', '\\\\').replace('"', '\\"')
+        safe_message = message.replace('\\', '\\\\').replace('"', '\\"')
+        
+        script = f'display notification "{safe_message}" with title "{safe_title}"'
+        try:
+            subprocess.run(['osascript', '-e', script], check=False, capture_output=True)
+        except Exception as e:
+            print(f"macOS notification error: {e}")
     
     def _send_linux(self, title: str, message: str, icon: str):
         """Send Linux notification using notify-send"""
+        import subprocess
+        
         icon_name = {
             "info": "dialog-information",
             "success": "dialog-ok",
@@ -81,7 +91,11 @@ class NotificationManager:
             "error": "dialog-error"
         }.get(icon, "dialog-information")
         
-        os.system(f'notify-send -i {icon_name} "{title}" "{message}"')
+        # Use subprocess with list arguments to prevent command injection
+        try:
+            subprocess.run(['notify-send', '-i', icon_name, title, message], check=False, capture_output=True)
+        except Exception as e:
+            print(f"Linux notification error: {e}")
     
     def notify_job_started(self, job_name: str):
         """Notify when training job starts"""

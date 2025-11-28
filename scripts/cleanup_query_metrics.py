@@ -76,17 +76,34 @@ def get_retention_days(args_retention):
     return 7  # Default to 7 days
 
 
+def _validate_table_name(table_name: str) -> str:
+    """Validate table name to prevent SQL injection.
+    
+    Only allows alphanumeric characters and underscores.
+    Raises ValueError if table name contains invalid characters.
+    """
+    import re
+    if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
+        raise ValueError(f"Invalid table name: {table_name}. Table names must start with a letter or underscore and contain only alphanumeric characters and underscores.")
+    return table_name
+
+
 def count_old_records(engine, table_name, cutoff_timestamp):
     """Count records older than cutoff timestamp."""
     from sqlalchemy import text
     
     try:
-        query = text(f"SELECT COUNT(*) FROM {table_name} WHERE executed_at < :cutoff")
+        # Validate table name to prevent SQL injection
+        safe_table_name = _validate_table_name(table_name)
+        query = text(f"SELECT COUNT(*) FROM {safe_table_name} WHERE executed_at < :cutoff")
         
         with engine.connect() as conn:
             result = conn.execute(query, {"cutoff": cutoff_timestamp})
             count = result.scalar()
             return count
+    except ValueError as ve:
+        logger.error(f"Invalid table name: {ve}")
+        return None
     except Exception as e:
         logger.error(f"Failed to count old records: {e}")
         return None
@@ -101,13 +118,18 @@ def delete_old_records(engine, table_name, cutoff_timestamp, dry_run=False):
         return True
     
     try:
-        delete_query = text(f"DELETE FROM {table_name} WHERE executed_at < :cutoff")
+        # Validate table name to prevent SQL injection
+        safe_table_name = _validate_table_name(table_name)
+        delete_query = text(f"DELETE FROM {safe_table_name} WHERE executed_at < :cutoff")
         
         with engine.begin() as conn:
             result = conn.execute(delete_query, {"cutoff": cutoff_timestamp})
             deleted_count = result.rowcount
-            logger.info(f"Deleted {deleted_count} records from {table_name}")
+            logger.info(f"Deleted {deleted_count} records from {safe_table_name}")
             return deleted_count
+    except ValueError as ve:
+        logger.error(f"Invalid table name: {ve}")
+        return None
     except Exception as e:
         logger.error(f"Failed to delete old records: {e}")
         return None
@@ -118,8 +140,11 @@ def get_table_stats(engine, table_name):
     from sqlalchemy import text
     
     try:
+        # Validate table name to prevent SQL injection
+        safe_table_name = _validate_table_name(table_name)
+        
         # Total count
-        count_query = text(f"SELECT COUNT(*) FROM {table_name}")
+        count_query = text(f"SELECT COUNT(*) FROM {safe_table_name}")
         with engine.connect() as conn:
             total_count = conn.execute(count_query).scalar()
         
@@ -128,7 +153,7 @@ def get_table_stats(engine, table_name):
             SELECT 
                 MIN(executed_at) as oldest,
                 MAX(executed_at) as newest
-            FROM {table_name}
+            FROM {safe_table_name}
         """)
         
         with engine.connect() as conn:
@@ -142,6 +167,9 @@ def get_table_stats(engine, table_name):
                 }
         
         return {"total_count": total_count}
+    except ValueError as ve:
+        logger.warning(f"Invalid table name: {ve}")
+        return {"total_count": 0}
     except Exception as e:
         logger.warning(f"Failed to get table stats: {e}")
         return {"total_count": 0}
