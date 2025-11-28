@@ -116,7 +116,8 @@ class TestHFCommandBuilder:
         cmd = build_hf_command(job)
         # Should have python + script at minimum
         assert len(cmd) >= 2
-        assert cmd[0].endswith("python.exe") or cmd[0] == "python"
+        # Accept any valid Python executable path (full path on Linux, python.exe on Windows, or bare python)
+        assert "python" in cmd[0].lower()
         assert "train_lora.py" in cmd[1]
 
     def test_command_with_dataset_and_config(self):
@@ -179,7 +180,8 @@ class TestLocalCommandBuilder:
         job = Job(name="test", runner="local")
         cmd = build_local_command(job)
         assert len(cmd) >= 2
-        assert cmd[0].endswith("python.exe") or cmd[0] == "python"
+        # Accept any valid Python executable path (full path on Linux, python.exe on Windows, or bare python)
+        assert "python" in cmd[0].lower()
         assert "run_local_lora_training.py" in cmd[1]
 
     def test_command_with_config(self):
