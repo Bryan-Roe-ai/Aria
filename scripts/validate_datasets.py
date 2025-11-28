@@ -75,7 +75,10 @@ class DatasetValidator:
         return stats
     
     def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
-        """Validate JSONL dataset (chat format)."""
+        """Validate JSONL dataset (chat format).
+        
+        Uses streaming line-by-line reading for memory efficiency with large files.
+        """
         stats = {
             "valid": False,
             "samples": 0,
@@ -86,48 +89,46 @@ class DatasetValidator:
         }
         
         try:
+            # Stream file line-by-line instead of loading all into memory
             with open(filepath, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
+                for i, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line:
+                        stats["warnings"].append(f"Line {i}: Empty line (should be removed)")
+                        continue
+                    
+                    try:
+                        data = json.loads(line)
+                        
+                        # Check for messages field (Phi-3 format)
+                        if "messages" in data:
+                            messages = data["messages"]
+                            if not isinstance(messages, list):
+                                stats["format_errors"].append(
+                                    f"Line {i}: 'messages' should be a list"
+                                )
+                            else:
+                                stats["total_messages"] += len(messages)
+                                
+                                # Validate message structure
+                                for msg_idx, msg in enumerate(messages):
+                                    if not isinstance(msg, dict):
+                                        stats["format_errors"].append(
+                                            f"Line {i}, message {msg_idx}: Should be a dict"
+                                        )
+                                    elif "role" not in msg or "content" not in msg:
+                                        stats["format_errors"].append(
+                                            f"Line {i}, message {msg_idx}: Missing 'role' or 'content'"
+                                        )
+                        
+                        stats["samples"] += 1
+                    
+                    except json.JSONDecodeError as e:
+                        stats["format_errors"].append(f"Line {i}: Invalid JSON - {e}")
             
-            if not lines:
+            # Check if file was empty
+            if stats["samples"] == 0 and not stats["format_errors"]:
                 stats["format_errors"].append("File is empty")
-                return stats
-            
-            # Validate each line
-            for i, line in enumerate(lines, 1):
-                line = line.strip()
-                if not line:
-                    stats["warnings"].append(f"Line {i}: Empty line (should be removed)")
-                    continue
-                
-                try:
-                    data = json.loads(line)
-                    
-                    # Check for messages field (Phi-3 format)
-                    if "messages" in data:
-                        messages = data["messages"]
-                        if not isinstance(messages, list):
-                            stats["format_errors"].append(
-                                f"Line {i}: 'messages' should be a list"
-                            )
-                        else:
-                            stats["total_messages"] += len(messages)
-                            
-                            # Validate message structure
-                            for msg_idx, msg in enumerate(messages):
-                                if not isinstance(msg, dict):
-                                    stats["format_errors"].append(
-                                        f"Line {i}, message {msg_idx}: Should be a dict"
-                                    )
-                                elif "role" not in msg or "content" not in msg:
-                                    stats["format_errors"].append(
-                                        f"Line {i}, message {msg_idx}: Missing 'role' or 'content'"
-                                    )
-                    
-                    stats["samples"] += 1
-                
-                except json.JSONDecodeError as e:
-                    stats["format_errors"].append(f"Line {i}: Invalid JSON - {e}")
             
             # Calculate statistics
             if stats["samples"] > 0:

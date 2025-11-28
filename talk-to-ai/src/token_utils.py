@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Callable, List, Dict, Optional, Tuple
 
 RoleMessage = Dict[str, str]
@@ -15,6 +16,36 @@ try:
     from transformers import AutoTokenizer  # type: ignore
 except Exception:  # pragma: no cover - optional
     AutoTokenizer = None  # type: ignore
+
+
+# -------------------------------------------------------------------------
+# Cached tokenizer instances to avoid repeated loading (performance opt)
+# -------------------------------------------------------------------------
+
+@lru_cache(maxsize=8)
+def _get_tiktoken_encoding(model: str):
+    """Cache tiktoken encodings to avoid repeated initialization."""
+    if tiktoken is None:
+        return None
+    try:
+        from tiktoken import encoding_for_model
+        return encoding_for_model(model)
+    except Exception:
+        try:
+            return tiktoken.get_encoding("cl100k_base")
+        except Exception:
+            return None
+
+
+@lru_cache(maxsize=4)
+def _get_hf_tokenizer(model: str):
+    """Cache HuggingFace tokenizers to avoid repeated loading from disk."""
+    if AutoTokenizer is None:
+        return None
+    try:
+        return AutoTokenizer.from_pretrained(model, use_fast=True)
+    except Exception:
+        return None
 
 
 # Reasonable default context sizes by popular models/deployments
@@ -53,34 +84,28 @@ def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], in
     """Return a function that approximates token count for a given text.
 
     Priority: tiktoken (OpenAI/Azure) -> transformers tokenizer (if available) -> heuristic.
+    
+    Uses cached tokenizer instances for performance (see _get_tiktoken_encoding
+    and _get_hf_tokenizer).
     """
     prov = (provider or "").lower()
     mdl = (model or "").lower()
 
-    # Try tiktoken for OpenAI/Azure
+    # Try tiktoken for OpenAI/Azure (using cached encoding)
     if tiktoken is not None and (prov in ("openai", "azure") or any(k in mdl for k in ("gpt-", "-o"))):
-        try:
-            from tiktoken import encoding_for_model
-            enc = None
-            try:
-                enc = encoding_for_model(model or "gpt-4o-mini")
-            except Exception:
-                enc = tiktoken.get_encoding("cl100k_base")
+        enc = _get_tiktoken_encoding(model or "gpt-4o-mini")
+        if enc is not None:
             def _count(text: str) -> int:
                 return len(enc.encode(text or ""))
             return _count
-        except Exception:
-            pass
 
-    # Try transformers tokenizer for local models
+    # Try transformers tokenizer for local models (using cached tokenizer)
     if AutoTokenizer is not None and mdl:
-        try:
-            tok = AutoTokenizer.from_pretrained(model, use_fast=True)
+        tok = _get_hf_tokenizer(model)
+        if tok is not None:
             def _count(text: str) -> int:
                 return len(tok.encode(text or ""))
             return _count
-        except Exception:
-            pass
 
     # Fallback heuristic: 1 token ~ 4 characters in English text
     def _heuristic(text: str) -> int:
