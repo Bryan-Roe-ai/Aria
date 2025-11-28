@@ -290,9 +290,9 @@ python .\src\chat_cli.py --provider local --once "Hello"
 ```
 ├── config/                 # Configuration files
 │   ├── training/           # LoRA training configs (autotrain.yaml, etc.)
-│   ├── autogen/            # Auto-generated training configs
-│   ├── quantum_autorun.yaml
-│   ├── evaluation_autorun.yaml
+│   ├── quantum/            # Quantum job configs (quantum_autorun.yaml)
+│   ├── evaluation/         # Evaluation configs (evaluation_autorun.yaml)
+│   ├── autogen/            # Auto-generated configs (gitignored)
 │   └── master_orchestrator.yaml
 ├── docs/                   # All documentation
 │   ├── guides/             # Feature guides and summaries

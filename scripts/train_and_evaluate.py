@@ -37,7 +37,7 @@ AUTOTRAIN = REPO_ROOT / "scripts" / "autotrain.py"
 EVAL_AUTORUN = REPO_ROOT / "scripts" / "evaluation_autorun.py"
 TRAIN_AND_EVAL_OUT = REPO_ROOT / "data_out" / "train_and_evaluate"
 AUTOTRAIN_CFG = REPO_ROOT / "config" / "training" / "autotrain.yaml"
-EVAL_CFG = REPO_ROOT / "config" / "evaluation_autorun.yaml"
+EVAL_CFG = REPO_ROOT / "config" / "evaluation" / "evaluation_autorun.yaml"
 
 VARIANT_JOBS = [
     "phi35_mixed_chat_lr_low",
