@@ -134,10 +134,10 @@ class CIOrchestrator:
         
         # List key configuration files
         config_files = [
-            "autotrain.yaml",
-            "quantum_autorun.yaml",
-            "evaluation_autorun.yaml",
-            "master_orchestrator.yaml",
+            "config/training/autotrain.yaml",
+            "config/quantum/quantum_autorun.yaml",
+            "config/evaluation/evaluation_autorun.yaml",
+            "config/master_orchestrator.yaml",
             "local.settings.json",
         ]
         for cfg in config_files:
