@@ -15,27 +15,9 @@ from urllib.parse import urlparse, parse_qs
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1"))
 
-# Try to load the model (optional - will work without it using fallback)
+# Skip AI model loading for faster startup - use rule-based fallback
 MODEL = None
-try:
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-    from peft import PeftModel
-    import torch
-    
-    print("🔍 Loading Aria model...")
-    adapter_path = REPO_ROOT / "data_out" / "aria_models" / "aria_expanded_v2" / "lora_adapter"
-    
-    if adapter_path.exists():
-        base_model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-        tokenizer = AutoTokenizer.from_pretrained(base_model)
-        model = AutoModelForCausalLM.from_pretrained(base_model, torch_dtype=torch.float16, device_map="auto")
-        MODEL = PeftModel.from_pretrained(model, str(adapter_path))
-        print("✅ Model loaded successfully!")
-    else:
-        print("⚠️ Model not found, using rule-based fallback")
-except Exception as e:
-    print(f"⚠️ Could not load model: {e}")
-    print("Using rule-based fallback parser")
+print("⚠️ Skipping AI model loading - using rule-based fallback for faster startup")
 
 def generate_tags_ai(command: str) -> List[str]:
     """Generate tags using AI model"""

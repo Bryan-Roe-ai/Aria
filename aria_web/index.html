@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎨 Aria Visual Command System</title>
+    <title>👤 Aria Visual Command System</title>
     <style>
         * {
             margin: 0;
@@ -13,13 +13,13 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #d4e4f7 0%, #b8d4ed 50%, #a8c5e3 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            color: #fff;
+            color: #333;
         }
 
         .container {
@@ -35,7 +35,11 @@
         h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #4a90e2, #5a9fe5, #6aaff0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .subtitle {
@@ -141,160 +145,481 @@
             bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
-            height: 200px;
+            width: 140px;
+            height: 230px;
             transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));
             z-index: 10;
+            animation: breathe 4s ease-in-out infinite;
         }
 
-        /* Head */
+        @keyframes breathe {
+            0%, 100% { transform: translateX(-50%) scaleY(1); }
+            50% { transform: translateX(-50%) scaleY(0.98); }
+        }
+
+        /* Head - Natural human proportions */
         .aria-head {
             width: 60px;
-            height: 60px;
-            background: #FFD4A3;
-            border-radius: 50%;
+            height: 75px;
+            background: radial-gradient(circle at 35% 25%, #f5d4b8, #e8c4a8);
+            border-radius: 50% 50% 47% 47%;
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            border: 3px solid #333;
+            border: 2px solid #2c2c2c;
             z-index: 4;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
         }
 
-        /* Hair */
+        /* Hair - Natural brown flowing hair */
         .aria-hair {
             width: 70px;
-            height: 40px;
-            background: #8B4513;
-            border-radius: 50% 50% 0 0;
+            height: 65px;
+            background: linear-gradient(135deg, #4a3728 0%, #6b4f3d 100%);
+            border-radius: 60% 60% 25% 25%;
             position: absolute;
-            top: -5px;
+            top: -12px;
             left: 50%;
             transform: translateX(-50%);
-            border: 3px solid #333;
+            border: 2px solid #2c2c2c;
             border-bottom: none;
             z-index: 5;
+            box-shadow: inset 0 -3px 8px rgba(0,0,0,0.2);
         }
 
-        /* Eyes */
+        /* Hair bangs - Natural brown */
+        .aria-bangs {
+            position: absolute;
+            top: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 55px;
+            height: 22px;
+            z-index: 6;
+        }
+
+        .aria-bang {
+            position: absolute;
+            width: 13px;
+            height: 24px;
+            background: linear-gradient(135deg, #4a3728 0%, #6b4f3d 100%);
+            border-radius: 50% 50% 65% 65%;
+            border: 2px solid #2c2c2c;
+        }
+
+        .aria-bang:nth-child(1) { left: 5px; transform: rotate(-12deg); }
+        .aria-bang:nth-child(2) { left: 21px; }
+        .aria-bang:nth-child(3) { right: 5px; transform: rotate(12deg); }
+
+        /* Hair ponytails - Natural brown */
+        .aria-ponytail {
+            position: absolute;
+            top: 30px;
+            width: 18px;
+            height: 55px;
+            background: linear-gradient(180deg, #4a3728 0%, #6b4f3d 50%, #3d2d20 100%);
+            border-radius: 45%;
+            border: 3px solid #2c2c2c;
+            z-index: 3;
+        }
+
+        .aria-ponytail.left {
+            left: -15px;
+            transform: rotate(-20deg);
+        }
+
+        .aria-ponytail.right {
+            right: -15px;
+            transform: rotate(20deg);
+        }
+
+        /* Eyes - Natural human proportions */
         .aria-eyes {
             position: absolute;
-            top: 20px;
+            top: 30px;
             width: 100%;
             display: flex;
             justify-content: space-around;
-            padding: 0 10px;
+            padding: 0 15px;
+            z-index: 7;
         }
 
         .aria-eye {
-            width: 12px;
-            height: 12px;
-            background: #333;
+            width: 15px;
+            height: 17px;
+            background: radial-gradient(circle at 40% 40%, #fff, #5b8fb9);
             border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            position: relative;
         }
 
-        /* Mouth */
+        .aria-eye::before {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #3d2d20;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .aria-eye::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            top: 35%;
+            left: 35%;
+        }
+
+        /* Eyelashes - Natural */
+        .aria-eyelash {
+            position: absolute;
+            width: 1px;
+            height: 5px;
+            background: #2c2c2c;
+            top: -4px;
+        }
+
+        .aria-eyelash:nth-child(2) { left: -2px; transform: rotate(-20deg); }
+        .aria-eyelash:nth-child(3) { left: 4px; transform: rotate(-10deg); }
+        .aria-eyelash:nth-child(4) { right: 4px; transform: rotate(10deg); }
+        .aria-eyelash:nth-child(5) { right: -2px; transform: rotate(20deg); }
+
+        /* Blush - Subtle natural */
+        .aria-blush {
+            position: absolute;
+            width: 13px;
+            height: 9px;
+            background: radial-gradient(circle, rgba(230,150,150,0.3), transparent);
+            border-radius: 50%;
+            top: 45px;
+        }
+
+        .aria-blush.left { left: 8px; }
+        .aria-blush.right { right: 8px; }
+
+        /* Mouth - Natural human */
         .aria-mouth {
             position: absolute;
-            top: 40px;
+            top: 56px;
             left: 50%;
             transform: translateX(-50%);
-            width: 20px;
-            height: 10px;
-            border: 2px solid #333;
+            width: 14px;
+            height: 6px;
+            border: 2px solid #d4a5a5;
             border-top: none;
-            border-radius: 0 0 20px 20px;
+            border-radius: 0 0 15px 15px;
+            z-index: 6;
         }
 
         .aria-mouth.smile {
-            border-radius: 0 0 30px 30px;
-            width: 25px;
+            border-radius: 0 0 25px 25px;
+            width: 18px;
+            height: 8px;
+            border-color: #d4a5a5;
         }
 
         .aria-mouth.sad {
-            border-radius: 30px 30px 0 0;
-            border-top: 2px solid #333;
+            border-radius: 25px 25px 0 0;
+            border-top: 2px solid #a89090;
             border-bottom: none;
-            top: 42px;
+            top: 58px;
         }
 
-        /* Body */
+        /* Body - Casual shirt */
         .aria-body {
-            width: 50px;
-            height: 70px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 25px 25px 10px 10px;
+            width: 52px;
+            height: 68px;
+            background: linear-gradient(135deg, #4a90e2 0%, #5a9fe5 100%);
+            border-radius: 35% 35% 45% 45%;
             position: absolute;
-            top: 55px;
+            top: 72px;
             left: 50%;
             transform: translateX(-50%);
-            border: 3px solid #333;
+            border: 2px solid #2c2c2c;
             z-index: 2;
+            box-shadow: inset 0 2px 6px rgba(255,255,255,0.3);
         }
 
-        /* Arms */
-        .aria-arm {
-            width: 15px;
-            height: 50px;
-            background: #FFD4A3;
+        /* Shirt collar */
+        .aria-bow {
+            position: absolute;
+            top: 76px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28px;
+            height: 7px;
+            background: #f5f5f5;
+            border: 2px solid #2c2c2c;
+            border-radius: 3px;
+            z-index: 3;
+        }
+
+        .aria-bow::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #4a90e2;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .aria-bow::after {
+            display: none;
+        }
+
+        /* Shoulders */
+        .aria-shoulder {
+            position: absolute;
+            width: 11px;
+            height: 11px;
+            background: #4a90e2;
+            border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            top: 72px;
+            z-index: 3;
+        }
+
+        .aria-shoulder.left { left: 17px; }
+        .aria-shoulder.right { right: 17px; }
+
+        /* Upper Arms */
+        .aria-upper-arm {
+            width: 14px;
+            height: 32px;
+            background: linear-gradient(180deg, #f5d4b8 0%, #e8c4a8 100%);
             border-radius: 10px;
             position: absolute;
-            top: 60px;
-            border: 2px solid #333;
+            top: 72px;
+            border: 2px solid #2c2c2c;
             z-index: 1;
+            box-shadow: inset 1px 1px 3px rgba(255,255,255,0.3);
+            transition: transform 0.3s ease;
         }
 
-        .aria-arm.left {
-            left: 15px;
+        .aria-upper-arm.left {
+            left: 17px;
             transform: rotate(-20deg);
             transform-origin: top center;
         }
 
-        .aria-arm.right {
-            right: 15px;
+        .aria-upper-arm.right {
+            right: 17px;
             transform: rotate(20deg);
             transform-origin: top center;
         }
 
-        /* Legs */
-        .aria-leg {
-            width: 18px;
-            height: 60px;
-            background: #555;
-            border-radius: 5px;
+        /* Elbows */
+        .aria-elbow {
             position: absolute;
-            top: 120px;
-            border: 2px solid #333;
+            width: 9px;
+            height: 9px;
+            background: #e8c4a8;
+            border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Lower Arms (Forearms) */
+        .aria-lower-arm {
+            width: 13px;
+            height: 30px;
+            background: linear-gradient(180deg, #e8c4a8 0%, #f5d4b8 100%);
+            border-radius: 10px;
+            position: absolute;
+            border: 2px solid #2c2c2c;
             z-index: 1;
+            box-shadow: inset 1px 1px 3px rgba(255,255,255,0.3);
+            transition: transform 0.3s ease;
         }
 
-        .aria-leg.left {
-            left: 35px;
+        .aria-lower-arm.left {
+            top: 100px;
+            left: 17px;
+            transform: rotate(-15deg);
+            transform-origin: top center;
         }
 
-        .aria-leg.right {
-            right: 35px;
+        .aria-lower-arm.right {
+            top: 100px;
+            right: 17px;
+            transform: rotate(15deg);
+            transform-origin: top center;
         }
 
-        /* Feet */
-        .aria-foot {
-            width: 25px;
-            height: 12px;
-            background: #8B4513;
-            border-radius: 5px 10px 10px 5px;
+        /* Wrists */
+        .aria-wrist {
             position: absolute;
-            top: 175px;
-            border: 2px solid #333;
+            width: 8px;
+            height: 8px;
+            background: #f5d4b8;
+            border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Hands */
+        .aria-hand {
+            position: absolute;
+            width: 13px;
+            height: 14px;
+            background: radial-gradient(circle at 30% 30%, #f5d4b8, #e8c4a8);
+            border-radius: 45% 45% 50% 50%;
+            border: 2px solid #2c2c2c;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .aria-hand.left {
+            top: 127px;
+            left: 14px;
+            transform: rotate(-10deg);
+        }
+
+        .aria-hand.right {
+            top: 127px;
+            right: 14px;
+            transform: rotate(10deg);
+        }
+
+        /* Fingers */
+        .aria-finger {
+            position: absolute;
+            width: 3px;
+            height: 7px;
+            background: #e8c4a8;
+            border-radius: 3px;
+            bottom: -5px;
+        }
+
+        .aria-finger:nth-child(1) { left: 1px; }
+        .aria-finger:nth-child(2) { left: 4px; }
+        .aria-finger:nth-child(3) { right: 4px; }
+        .aria-finger:nth-child(4) { right: 1px; }
+
+        /* Hips */
+        .aria-hip {
+            position: absolute;
+            width: 11px;
+            height: 11px;
+            background: #3d5a80;
+            border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            top: 130px;
+            z-index: 3;
+        }
+
+        .aria-hip.left { left: 42px; }
+        .aria-hip.right { right: 42px; }
+
+        /* Upper Legs (Thighs) */
+        .aria-upper-leg {
+            width: 16px;
+            height: 35px;
+            background: linear-gradient(180deg, #3d5a80 0%, #4a6a90 100%);
+            border-radius: 8px;
+            position: absolute;
+            top: 130px;
+            border: 2px solid #2c2c2c;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .aria-upper-leg.left { left: 42px; }
+        .aria-upper-leg.right { right: 42px; }
+
+        /* Knees */
+        .aria-knee {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #4a6a90;
+            border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Lower Legs (Shins/Calves) */
+        .aria-lower-leg {
+            width: 15px;
+            height: 36px;
+            background: linear-gradient(180deg, #4a6a90 0%, #3d5a80 100%);
+            border-radius: 7px;
+            position: absolute;
+            top: 161px;
+            border: 2px solid #2c2c2c;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+
+        .aria-lower-leg.left { left: 42px; }
+        .aria-lower-leg.right { right: 42px; }
+
+        /* Ankles */
+        .aria-ankle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #3d5a80;
+            border-radius: 50%;
+            border: 2px solid #2c2c2c;
+            bottom: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        /* Shoes - White sneakers */
+        .aria-foot {
+            width: 26px;
+            height: 13px;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            border-radius: 8px 12px 12px 8px;
+            position: absolute;
+            top: 197px;
+            border: 2px solid #2c2c2c;
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.4);
         }
 
         .aria-foot.left {
-            left: 30px;
+            left: 35px;
         }
 
         .aria-foot.right {
-            right: 30px;
-            border-radius: 10px 5px 5px 10px;
+            right: 35px;
+            border-radius: 12px 8px 8px 12px;
+        }
+
+        /* Shoe laces */
+        .aria-foot::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 2px;
+            background: #2c2c2c;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 1px;
         }
 
         .aria-character.jumping {
@@ -372,7 +697,7 @@
         }
 
         .control-panel h2 {
-            color: #667eea;
+            color: #ff6b9d;
             margin-bottom: 15px;
             font-size: 1.5em;
         }
@@ -384,7 +709,7 @@
         input[type="text"] {
             width: 100%;
             padding: 12px;
-            border: 2px solid #667eea;
+            border: 2px solid #ff6b9d;
             border-radius: 10px;
             font-size: 1em;
             margin-bottom: 10px;
@@ -393,13 +718,14 @@
 
         input[type="text"]:focus {
             outline: none;
-            border-color: #764ba2;
+            border-color: #ff8fab;
+            box-shadow: 0 0 8px rgba(255,107,157,0.3);
         }
 
         button {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffa5c5 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -407,6 +733,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: transform 0.2s;
+            box-shadow: 0 4px 8px rgba(255,107,157,0.3);
         }
 
         button:hover {
@@ -420,11 +747,11 @@
 
         .quick-commands {
             margin-top: 20px;
-        }
-
         .quick-commands h3 {
-            color: #667eea;
+            color: #ff6b9d;
             margin-bottom: 10px;
+            font-size: 1.2em;
+        }   margin-bottom: 10px;
             font-size: 1.2em;
         }
 
@@ -433,12 +760,11 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
         }
-
         .quick-btn {
             padding: 8px;
             background: #f0f0f0;
             color: #333;
-            border: 2px solid #667eea;
+            border: 2px solid #ff6b9d;
             border-radius: 8px;
             font-size: 0.9em;
             cursor: pointer;
@@ -446,8 +772,11 @@
         }
 
         .quick-btn:hover {
-            background: #667eea;
+            background: #ff6b9d;
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255,107,157,0.3);
+        }   color: white;
         }
 
         .status-log {
@@ -456,11 +785,8 @@
             background: #f9f9f9;
             border-radius: 10px;
             max-height: 200px;
-            overflow-y: auto;
-        }
-
         .status-log h3 {
-            color: #667eea;
+            color: #ff6b9d;
             margin-bottom: 10px;
             font-size: 1.1em;
         }
@@ -468,8 +794,11 @@
         .log-entry {
             padding: 5px;
             margin-bottom: 5px;
-            border-left: 3px solid #667eea;
+            border-left: 3px solid #ff6b9d;
             padding-left: 10px;
+            font-size: 0.9em;
+            color: #555;
+        }   padding-left: 10px;
             font-size: 0.9em;
             color: #555;
         }
@@ -480,11 +809,8 @@
             padding: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             color: #333;
-            margin-top: 20px;
-        }
-
         .command-categories h2 {
-            color: #667eea;
+            color: #ff6b9d;
             margin-bottom: 15px;
         }
 
@@ -494,6 +820,9 @@
 
         .category-title {
             font-weight: bold;
+            color: #ff8fab;
+            margin-bottom: 5px;
+        }   font-weight: bold;
             color: #764ba2;
             margin-bottom: 5px;
         }
@@ -508,9 +837,9 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎨 Aria Visual Command System</h1>
-            <p class="subtitle">Control Aria with natural language commands</p>
-            <p class="subtitle" id="evolutionTimer" style="color:#667eea; font-weight:bold; margin-top:10px;">⏰ Next evolution in: 30s</p>
+            <h1>👤 Aria - Human-Like AI Character</h1>
+            <p class="subtitle">Your adorable anime companion who responds to voice commands! ✨</p>
+            <p class="subtitle" id="evolutionTimer" style="color:#ff6b9d; font-weight:bold; margin-top:10px;">⏰ Next evolution in: 30s</p>
         </header>
 
         <div class="main-content">
@@ -530,20 +859,86 @@
                     <div id="flower" class="object flower" data-object="flower">🌸</div>
                     
                     <div class="aria-character" id="aria">
+                        <div class="aria-ponytail left"></div>
+                        <div class="aria-ponytail right"></div>
                         <div class="aria-hair"></div>
+                        <div class="aria-bangs">
+                            <div class="aria-bang"></div>
+                            <div class="aria-bang"></div>
+                            <div class="aria-bang"></div>
+                        </div>
                         <div class="aria-head">
+                            <div class="aria-blush left"></div>
+                            <div class="aria-blush right"></div>
                             <div class="aria-eyes">
-                                <div class="aria-eye"></div>
-                                <div class="aria-eye"></div>
+                                <div class="aria-eye">
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                </div>
+                                <div class="aria-eye">
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                    <div class="aria-eyelash"></div>
+                                </div>
                             </div>
                             <div class="aria-mouth" id="ariaMouth"></div>
                         </div>
-                        <div class="aria-arm left" id="ariaArmLeft"></div>
-                        <div class="aria-arm right" id="ariaArmRight"></div>
+                        <div class="aria-bow"></div>
                         <div class="aria-body"></div>
-                        <div class="aria-leg left" id="ariaLegLeft"></div>
-                        <div class="aria-leg right" id="ariaLegRight"></div>
+                        
+                        <!-- Left Arm with Joints -->
+                        <div class="aria-shoulder left"></div>
+                        <div class="aria-upper-arm left" id="ariaUpperArmLeft">
+                            <div class="aria-elbow"></div>
+                        </div>
+                        <div class="aria-lower-arm left" id="ariaLowerArmLeft">
+                            <div class="aria-wrist"></div>
+                        </div>
+                        <div class="aria-hand left" id="ariaHandLeft">
+                            <div class="aria-finger"></div>
+                            <div class="aria-finger"></div>
+                            <div class="aria-finger"></div>
+                            <div class="aria-finger"></div>
+                        </div>
+                        
+                        <!-- Right Arm with Joints -->
+                        <div class="aria-shoulder right"></div>
+                        <div class="aria-upper-arm right" id="ariaUpperArmRight">
+                            <div class="aria-elbow"></div>
+                        </div>
+                        <div class="aria-lower-arm right" id="ariaLowerArmRight">
+                            <div class="aria-wrist"></div>
+                        </div>
+                        <div class="aria-hand right" id="ariaHandRight">
+                            <div class="aria-finger"></div>
+                            <div class="aria-finger"></div>
+                            <div class="aria-finger"></div>
+                            <div class="aria-finger"></div>
+                        </div>
+                        
+                        <!-- Left Leg with Joints -->
+                        <div class="aria-hip left"></div>
+                        <div class="aria-upper-leg left" id="ariaUpperLegLeft">
+                            <div class="aria-knee"></div>
+                        </div>
+                        <div class="aria-lower-leg left" id="ariaLowerLegLeft">
+                            <div class="aria-ankle"></div>
+                        </div>
                         <div class="aria-foot left"></div>
+                        
+                        <!-- Right Leg with Joints -->
+                        <div class="aria-hip right"></div>
+                        <div class="aria-upper-leg right" id="ariaUpperLegRight">
+                            <div class="aria-knee"></div>
+                        </div>
+                        <div class="aria-lower-leg right" id="ariaLowerLegRight">
+                            <div class="aria-ankle"></div>
+                        </div>
                         <div class="aria-foot right"></div>
                     </div>
                 </div>
