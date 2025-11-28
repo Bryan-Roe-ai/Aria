@@ -212,14 +212,18 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
         a_arr = np.asarray(a, dtype=np.float32)
         b_arr = np.asarray(b, dtype=np.float32)
         dot = np.dot(a_arr, b_arr)
-        na = np.linalg.norm(a_arr) or 1.0
-        nb = np.linalg.norm(b_arr) or 1.0
+        na = np.linalg.norm(a_arr)
+        nb = np.linalg.norm(b_arr)
+        if na == 0.0 or nb == 0.0:
+            return 0.0
         return float(dot / (na * nb))
     
     # Pure Python fallback
     dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a)) or 1.0
-    nb = math.sqrt(sum(y * y for y in b)) or 1.0
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(y * y for y in b))
+    if na == 0.0 or nb == 0.0:
+        return 0.0
     return dot / (na * nb)
 
 
