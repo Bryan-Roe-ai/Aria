@@ -24,7 +24,7 @@ from __future__ import annotations
 import os
 import math
 import struct
-from typing import Any, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 try:
     import pyodbc  # type: ignore
