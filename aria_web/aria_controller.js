@@ -22,11 +22,11 @@ let characterState = {
     energy: 50,
     personality: 'balanced',
     colors: {
-        hair: '#8B4513',
-        skin: '#FFD4A3',
-        body: '#667eea',
-        legs: '#555',
-        feet: '#8B4513'
+        hair: '#4a3728',
+        skin: '#f5d4b8',
+        body: '#4a90e2',
+        legs: '#3d5a80',
+        feet: '#f5f5f5'
     },
     size: 1.0,
     style: 'default',
@@ -65,12 +65,12 @@ function analyzeAIResponse(text) {
 
 function generateCharacterFromMood(mood, energy) {
     const moodColors = {
-        happy: { body: '#FFD700', hair: '#FF6B6B', accent: '#4ECDC4' },
-        sad: { body: '#6C7A89', hair: '#34495E', accent: '#95A5A6' },
-        angry: { body: '#E74C3C', hair: '#C0392B', accent: '#8E44AD' },
-        calm: { body: '#3498DB', hair: '#2ECC71', accent: '#1ABC9C' },
-        thinking: { body: '#9B59B6', hair: '#8E44AD', accent: '#E67E22' },
-        neutral: { body: '#667eea', hair: '#8B4513', accent: '#764ba2' }
+        happy: { body: '#5fb3f5', hair: '#6b4f3d', accent: '#7ac5ff' },
+        sad: { body: '#6C7A89', hair: '#4a3728', accent: '#95A5A6' },
+        angry: { body: '#E74C3C', hair: '#4a3728', accent: '#ff6b6b' },
+        calm: { body: '#4a90e2', hair: '#4a3728', accent: '#5a9fe5' },
+        thinking: { body: '#5a7fa8', hair: '#4a3728', accent: '#6b8fb3' },
+        neutral: { body: '#4a90e2', hair: '#4a3728', accent: '#5a9fe5' }
     };
     
     const colors = moodColors[mood] || moodColors.neutral;
