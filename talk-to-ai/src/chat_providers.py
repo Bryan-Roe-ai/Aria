@@ -193,8 +193,11 @@ class LoraLocalProvider(BaseChatProvider):
                 parts.append(f"User: {content}")
             elif role == "assistant":
                 parts.append(f"Assistant: {content}")
-        parts.append("Assistant: ")
-        return "\n".join(parts[:-1]) + "\n" + parts[-1] if len(parts) > 1 else parts[0]
+        
+        # Build final prompt: messages joined by newlines, ending with "Assistant: "
+        if parts:
+            return "\n".join(parts) + "\nAssistant: "
+        return "Assistant: "
 
     def _lazy_setup(self) -> None:
         """Import heavy dependencies lazily so that non-LoRA providers don't require them.
