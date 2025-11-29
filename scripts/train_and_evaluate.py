@@ -6,9 +6,9 @@ jobs (eval_<jobName>) defined in evaluation_autorun.yaml. Produces a consolidate
 summary ranking models by a primary metric (accuracy → bleu → rouge fallback).
 
 Usage (PowerShell):
-  python .\scripts\train_and_evaluate.py --jobs phi35_mixed_chat_lr_low,phi35_mixed_chat_lr_high --dry-run
-  python .\scripts\train_and_evaluate.py --jobs phi35_mixed_chat_lr_low
-  python .\scripts\train_and_evaluate.py --all-variants   # run all newly added variant jobs
+  python .\\scripts\\train_and_evaluate.py --jobs phi35_mixed_chat_lr_low,phi35_mixed_chat_lr_high --dry-run
+  python .\\scripts\\train_and_evaluate.py --jobs phi35_mixed_chat_lr_low
+  python .\\scripts\\train_and_evaluate.py --all-variants   # run all newly added variant jobs
 
 Flags:
     --dry-run         Validate commands only (no training/evaluation execution)
@@ -36,8 +36,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 AUTOTRAIN = REPO_ROOT / "scripts" / "autotrain.py"
 EVAL_AUTORUN = REPO_ROOT / "scripts" / "evaluation_autorun.py"
 TRAIN_AND_EVAL_OUT = REPO_ROOT / "data_out" / "train_and_evaluate"
-AUTOTRAIN_CFG = REPO_ROOT / "config" / "training" / "autotrain.yaml"
-EVAL_CFG = REPO_ROOT / "config" / "evaluation" / "evaluation_autorun.yaml"
+AUTOTRAIN_CFG = REPO_ROOT / "autotrain.yaml"
+EVAL_CFG = REPO_ROOT / "evaluation_autorun.yaml"
 
 VARIANT_JOBS = [
     "phi35_mixed_chat_lr_low",

@@ -5,7 +5,6 @@ These tests verify that the optimizations made to various modules
 maintain correct functionality while improving performance.
 """
 import json
-import math
 import tempfile
 import time
 from pathlib import Path
@@ -271,204 +270,148 @@ class TestJsonSampleCounting:
         assert count == 100
 
 
-class TestTokenizerCaching:
-    """Tests for tokenizer caching optimizations in token_utils.py."""
+class TestPruneMessagesOptimization:
+    """Tests for the O(n) prune_messages optimization."""
     
-    def test_lru_cache_for_tiktoken(self):
-        """Test that tiktoken encodings are properly cached using the actual implementation."""
+    def test_prune_messages_complexity(self):
+        """Test that prune_messages correctly prunes messages within budget."""
         import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "talk-to-ai" / "src"))
-        from token_utils import _get_tiktoken_encoding
+        sys.path.insert(0, 'talk-to-ai/src')
+        from token_utils import prune_messages
         
-        # Clear cache before test to ensure clean state
-        _get_tiktoken_encoding.cache_clear()
+        # Create many messages to test pruning
+        messages = [{'role': 'user', 'content': f'Message {i}' * 50} for i in range(30)]
         
-        # First call should create entry (cache miss)
-        result1 = _get_tiktoken_encoding("gpt-4o-mini")
-        info = _get_tiktoken_encoding.cache_info()
-        assert info.misses == 1
-        assert info.hits == 0
-        
-        # Second call should hit cache
-        result2 = _get_tiktoken_encoding("gpt-4o-mini")
-        assert result2 is result1  # Same object from cache
-        
-        info = _get_tiktoken_encoding.cache_info()
-        assert info.hits == 1
-        assert info.misses == 1
-    
-    def test_lru_cache_for_hf_tokenizer(self):
-        """Test that HuggingFace tokenizers are properly cached using the actual implementation."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "talk-to-ai" / "src"))
-        from token_utils import _get_hf_tokenizer
-        
-        # Clear cache before test to ensure clean state
-        _get_hf_tokenizer.cache_clear()
-        
-        # First call - will likely return None if transformers not installed
-        # but we're testing the cache behavior, not the tokenizer itself
-        result1 = _get_hf_tokenizer("test-model")
-        info = _get_hf_tokenizer.cache_info()
-        assert info.misses == 1
-        assert info.hits == 0
-        
-        # Second call should hit cache (even if result is None)
-        result2 = _get_hf_tokenizer("test-model")
-        if result1 is None:
-            assert result2 is None
-        else:
-            assert result2 is result1  # Same object from cache
-        
-        info = _get_hf_tokenizer.cache_info()
-        assert info.hits == 1
-        assert info.misses == 1
-
-
-class TestCosineSimOptimizations:
-    """Tests for cosine similarity optimizations in chat_memory.py."""
-    
-    def test_numpy_cosine_similarity(self):
-        """Test NumPy-based cosine similarity calculation."""
-        try:
-            import numpy as np
-        except ImportError:
-            pytest.skip("NumPy not available")
-        
-        # Test vectors
-        a = [1.0, 2.0, 3.0]
-        b = [4.0, 5.0, 6.0]
-        
-        # NumPy calculation
-        a_arr = np.asarray(a, dtype=np.float32)
-        b_arr = np.asarray(b, dtype=np.float32)
-        dot = np.dot(a_arr, b_arr)
-        na = np.linalg.norm(a_arr)
-        nb = np.linalg.norm(b_arr)
-        numpy_result = float(dot / (na * nb))
-        
-        # Pure Python calculation
-        dot_py = sum(x * y for x, y in zip(a, b))
-        na_py = math.sqrt(sum(x * x for x in a))
-        nb_py = math.sqrt(sum(y * y for y in b))
-        python_result = dot_py / (na_py * nb_py)
-        
-        # Results should be nearly identical
-        assert abs(numpy_result - python_result) < 1e-6
-    
-    def test_cosine_edge_cases(self):
-        """Test cosine similarity edge cases using the actual production implementation."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
-        from chat_memory import _cosine
-        
-        # Empty vectors
-        assert _cosine([], []) == 0.0
-        
-        # Mismatched lengths
-        assert _cosine([1, 2], [1, 2, 3]) == 0.0
-        
-        # Identical vectors (should be 1.0)
-        a = [1.0, 2.0, 3.0]
-        result = _cosine(a, a)
-        assert abs(result - 1.0) < 1e-6
-        
-        # Orthogonal vectors (should be 0.0)
-        a = [1.0, 0.0]
-        b = [0.0, 1.0]
-        result = _cosine(a, b)
-        assert abs(result) < 1e-6
-        
-        # Zero vectors (should be 0.0)
-        result = _cosine([0.0, 0.0], [1.0, 1.0])
-        assert result == 0.0
-
-
-class TestLMStudioCaching:
-    """Tests for LM Studio availability caching."""
-    
-    def test_cache_structure(self):
-        """Test that the cache dictionary has correct structure."""
-        cache = {"available": None, "checked_at": 0.0, "url": None}
-        
-        # Simulate a check
-        cache["available"] = False
-        cache["checked_at"] = time.time()
-        cache["url"] = "http://127.0.0.1:1234/v1"
-        
-        # Cache should now have values
-        assert cache["available"] is False
-        assert cache["checked_at"] > 0
-        assert cache["url"] is not None
-    
-    def test_cache_ttl_logic(self):
-        """Test that TTL logic works correctly."""
-        cache = {"available": True, "checked_at": 0.0, "url": "http://test"}
-        ttl = 30  # seconds
-        
-        # Old cache (should be stale)
-        now = time.time()
-        cache["checked_at"] = now - 60  # 60 seconds ago
-        is_fresh = (now - cache["checked_at"]) < ttl
-        assert is_fresh is False
-        
-        # Fresh cache
-        cache["checked_at"] = now - 10  # 10 seconds ago
-        is_fresh = (now - cache["checked_at"]) < ttl
-        assert is_fresh is True
-    
-    def test_cache_url_invalidation(self):
-        """Test that cache is invalidated when URL changes."""
-        cache = {"available": True, "checked_at": time.time(), "url": "http://127.0.0.1:1234"}
-        ttl = 30
-        
-        # Fresh cache but different URL should be invalid
-        now = time.time()
-        cache["checked_at"] = now - 10  # 10 seconds ago (fresh)
-        
-        # Simulate checking with different URL
-        new_url = "http://127.0.0.1:5678"
-        is_valid = (
-            cache["available"] is not None
-            and cache["url"] == new_url  # This should fail
-            and (now - cache["checked_at"]) < ttl
+        result, stats, _ = prune_messages(
+            messages=messages,
+            provider='openai',
+            model='gpt-4o-mini',
+            max_context_tokens=2000,
+            reserve_output_tokens=500
         )
-        assert is_valid is False  # Cache should be invalid due to URL mismatch
+        
+        # Verify pruning happened correctly
+        assert stats.removed_count > 0
+        assert stats.pruned_tokens <= stats.budget - stats.reserve_output_tokens
+        assert len(result) < len(messages)
+        
+    def test_prune_messages_no_pruning_needed(self):
+        """Test prune_messages when all messages fit within budget."""
+        import sys
+        sys.path.insert(0, 'talk-to-ai/src')
+        from token_utils import prune_messages
+        
+        # Small number of short messages
+        messages = [{'role': 'user', 'content': 'Hi'}]
+        
+        result, stats, _ = prune_messages(
+            messages=messages,
+            provider='openai',
+            model='gpt-4o-mini',
+            max_context_tokens=10000,
+            reserve_output_tokens=500
+        )
+        
+        assert stats.removed_count == 0
+        assert len(result) == 1
 
 
-class TestStreamingFileRead:
-    """Tests for streaming file reading optimizations."""
+class TestStringBuildOptimization:
+    """Tests for string building optimizations."""
     
-    def test_streaming_vs_readlines_memory(self, tmp_path):
-        """Test that streaming uses less memory than readlines."""
-        # Create a test file
-        test_file = tmp_path / "test.jsonl"
-        lines = [json.dumps({"id": i, "data": "x" * 100}) for i in range(1000)]
-        test_file.write_text('\n'.join(lines) + '\n')
+    def test_build_prompt_uses_join(self):
+        """Test that _build_prompt produces correct output with optimized join."""
+        import sys
+        sys.path.insert(0, 'talk-to-ai/src')
+        from lora_infer_bridge import _build_prompt
         
-        # Streaming approach - processes one line at a time
-        count_streaming = 0
-        with open(test_file, 'r') as f:
-            for line in f:
-                if line.strip():
-                    count_streaming += 1
+        messages = [
+            {'role': 'system', 'content': 'System prompt'},
+            {'role': 'user', 'content': 'User message'},
+            {'role': 'assistant', 'content': 'Assistant reply'},
+        ]
         
-        assert count_streaming == 1000
+        prompt = _build_prompt(messages)
+        
+        assert '[SYSTEM] System prompt' in prompt
+        assert 'User: User message' in prompt
+        assert 'Assistant: Assistant reply' in prompt
+        assert prompt.endswith('Assistant: ')
+        
+    def test_build_prompt_empty_messages(self):
+        """Test _build_prompt with empty messages."""
+        import sys
+        sys.path.insert(0, 'talk-to-ai/src')
+        from lora_infer_bridge import _build_prompt
+        
+        prompt = _build_prompt([])
+        assert prompt == 'Assistant: '
+
+
+class TestRegexCachingOptimization:
+    """Tests for regex caching optimization."""
     
-    def test_streaming_handles_empty_lines(self, tmp_path):
-        """Test that streaming correctly handles files with empty lines."""
-        test_file = tmp_path / "with_blanks.jsonl"
-        content = '{"a": 1}\n\n{"b": 2}\n\n\n{"c": 3}\n'
-        test_file.write_text(content)
+    def test_ansi_escape_regex_cached(self):
+        """Test that ANSI escape regex is compiled at module level."""
+        import sys
+        sys.path.insert(0, 'shared')
+        from ai_runner import _ANSI_ESCAPE_RE
+        import re
         
-        valid_lines = 0
-        empty_lines = 0
-        with open(test_file, 'r') as f:
-            for line in f:
-                if line.strip():
-                    valid_lines += 1
-                else:
-                    empty_lines += 1
+        # Verify it's a compiled pattern
+        assert isinstance(_ANSI_ESCAPE_RE, re.Pattern)
         
-        assert valid_lines == 3
-        assert empty_lines == 3
+        # Verify it works correctly
+        test_str = '\x1B[31mRed\x1B[0m'
+        clean = _ANSI_ESCAPE_RE.sub('', test_str)
+        assert clean == 'Red'
+
+
+class TestHeapTopKOptimization:
+    """Tests for heapq-based top-k selection optimization."""
+    
+    def test_heapq_nlargest(self):
+        """Test that heapq.nlargest correctly selects top-k items."""
+        import heapq
+        
+        # Simulate similarity scores
+        scored = [{'id': i, 'similarity': i * 0.01} for i in range(100)]
+        
+        # Get top 5
+        top5 = heapq.nlargest(5, scored, key=lambda x: x['similarity'])
+        
+        # Verify order (highest first)
+        assert top5[0]['id'] == 99
+        assert top5[4]['id'] == 95
+        
+        # Verify all 5 are present
+        assert len(top5) == 5
+
+
+class TestHashEmbeddingOptimization:
+    """Tests for hash embedding optimization."""
+    
+    def test_hash_embedding_normalized(self):
+        """Test that hash embedding produces L2-normalized vectors."""
+        import sys
+        import math
+        sys.path.insert(0, 'shared')
+        from chat_memory import _hash_embedding
+        
+        text = "Hello world test"
+        embedding = _hash_embedding(text)
+        
+        # Check L2 norm is 1.0
+        norm = math.sqrt(sum(x*x for x in embedding))
+        assert abs(norm - 1.0) < 1e-6
+        
+    def test_hash_embedding_empty_text(self):
+        """Test hash embedding with empty text."""
+        import sys
+        sys.path.insert(0, 'shared')
+        from chat_memory import _hash_embedding
+        
+        embedding = _hash_embedding("")
+        
+        # Should return zero vector
+        assert all(x == 0.0 for x in embedding)

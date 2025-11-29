@@ -15,11 +15,11 @@ Features:
 - GitHub Actions / Azure Pipelines integration
 
 Usage examples (PowerShell):
-  python .\scripts\ci_orchestrator.py --validate-all
-  python .\scripts\ci_orchestrator.py --quick-test
-  python .\scripts\ci_orchestrator.py --full-test
-  python .\scripts\ci_orchestrator.py --prepare-deployment
-  python .\scripts\ci_orchestrator.py --ci-pipeline  # Run full CI pipeline
+  python .\\scripts\\ci_orchestrator.py --validate-all
+  python .\\scripts\\ci_orchestrator.py --quick-test
+  python .\\scripts\\ci_orchestrator.py --full-test
+  python .\\scripts\\ci_orchestrator.py --prepare-deployment
+  python .\\scripts\\ci_orchestrator.py --ci-pipeline  # Run full CI pipeline
 """
 
 from __future__ import annotations
@@ -115,7 +115,7 @@ class CIOrchestrator:
         print("\n[ci] Preparing Deployment Artifacts")
         
         artifacts = {
-            "timestamp": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "configurations": [],
             "models": [],
             "scripts": [],
@@ -134,10 +134,10 @@ class CIOrchestrator:
         
         # List key configuration files
         config_files = [
-            "config/training/autotrain.yaml",
-            "config/quantum/quantum_autorun.yaml",
-            "config/evaluation/evaluation_autorun.yaml",
-            "config/master_orchestrator.yaml",
+            "autotrain.yaml",
+            "quantum_autorun.yaml",
+            "evaluation_autorun.yaml",
+            "master_orchestrator.yaml",
             "local.settings.json",
         ]
         for cfg in config_files:
@@ -353,7 +353,7 @@ class CIOrchestrator:
     def _save_results(self):
         """Save CI results to disk."""
         summary = {
-            "generated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "total_steps": len(self.results),
             "succeeded": sum(1 for r in self.results if r["status"] == "succeeded"),
             "failed": sum(1 for r in self.results if r["status"] == "failed"),

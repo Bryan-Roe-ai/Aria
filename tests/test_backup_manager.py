@@ -20,14 +20,11 @@ def create_dummy_structure(root: Path):
     dataset_file = root / 'datasets' / 'chat' / 'train.json'
     dataset_file.write_text('[{"messages":[{"role":"user","content":"Hello"}]}]')
 
-    # Config files (in consistent directory structure)
-    (root / 'config' / 'training').mkdir(parents=True, exist_ok=True)
-    (root / 'config' / 'quantum').mkdir(parents=True, exist_ok=True)
-    (root / 'config' / 'evaluation').mkdir(parents=True, exist_ok=True)
-    (root / 'config' / 'training' / 'autotrain.yaml').write_text('epochs: 1')
-    (root / 'config' / 'quantum' / 'quantum_autorun.yaml').write_text('jobs: []')
-    (root / 'config' / 'evaluation' / 'evaluation_autorun.yaml').write_text('eval: true')
-    (root / 'config' / 'evaluation' / 'batch_eval_config.yaml').write_text('batch: true')
+    # Config files
+    (root / 'autotrain.yaml').write_text('epochs: 1')
+    (root / 'quantum_autorun.yaml').write_text('jobs: []')
+    (root / 'evaluation_autorun.yaml').write_text('eval: true')
+    (root / 'batch_eval_config.yaml').write_text('batch: true')
 
 
 def test_basic_backup(tmp_path: Path):

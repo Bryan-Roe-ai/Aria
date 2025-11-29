@@ -21,11 +21,12 @@ Table schema created in database/Tables/ChatMessageEmbeddings.sql
 """
 from __future__ import annotations
 
+import hashlib
+import heapq
 import os
 import math
 import struct
-import threading
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Iterable, List, Optional, Sequence
 
 try:
     import pyodbc  # type: ignore
@@ -37,62 +38,6 @@ try:  # OpenAI unified SDK
 except Exception:  # pragma: no cover
     OpenAI = None  # type: ignore
     AzureOpenAI = None  # type: ignore
-
-# Optional NumPy for faster cosine similarity
-try:
-    import numpy as np  # type: ignore
-    _HAS_NUMPY = True
-except ImportError:  # pragma: no cover
-    _HAS_NUMPY = False
-
-# ------------------------- Cached Embedding Clients -------------------------
-# Cache embedding clients to avoid repeated instantiation overhead
-
-_embedding_clients: Dict[str, Any] = {}
-_embedding_clients_lock = threading.RLock()
-
-
-def _get_embedding_client(provider: str) -> Any:
-    """Get or create a cached embedding client for the given provider.
-    
-    Thread-safe implementation using double-checked locking pattern.
-    """
-    # Always check cache under lock for thread safety
-    with _embedding_clients_lock:
-        if provider in _embedding_clients:
-            return _embedding_clients[provider]
-    
-    # Create client outside lock to avoid blocking during I/O
-    client = None
-    if provider == "azure":
-        az_key = os.getenv("AZURE_OPENAI_API_KEY")
-        az_ep = os.getenv("AZURE_OPENAI_ENDPOINT")
-        if az_key and az_ep and AzureOpenAI is not None:
-            try:
-                client = AzureOpenAI(api_key=az_key, azure_endpoint=az_ep)
-            except Exception:
-                # Client initialization failed (e.g., invalid credentials, network error)
-                # Fall through to return None, allowing caller to use fallback
-                pass
-    elif provider == "openai":
-        oi_key = os.getenv("OPENAI_API_KEY")
-        if oi_key and OpenAI is not None:
-            try:
-                client = OpenAI(api_key=oi_key)
-            except Exception:
-                # Client initialization failed (e.g., invalid API key, network error)
-                # Fall through to return None, allowing caller to use fallback
-                pass
-    
-    if client is not None:
-        with _embedding_clients_lock:
-            # Double-check: another thread may have created it
-            if provider not in _embedding_clients:
-                _embedding_clients[provider] = client
-            return _embedding_clients[provider]
-    
-    return client
-
 
 # ------------------------- DB Helpers -------------------------
 
@@ -115,42 +60,50 @@ def _hash_embedding(text: str, dim: int = _LOCAL_DIM) -> List[float]:
 
     Not semantically rich but provides some signal for similarity
     within the same workspace when no embedding API is configured.
+    
+    Optimized: Uses module-level hashlib import and single-pass norm calculation.
     """
-    import hashlib
     tokens = [t for t in text.lower().split() if t]
     vec = [0.0] * dim
     if not tokens:
         return vec
+    
+    # Build vector with hash-based indices
     for tok in tokens:
         h = int(hashlib.sha256(tok.encode("utf-8")).hexdigest(), 16)
         idx = h % dim
         vec[idx] += 1.0
-    # L2 normalize
-    norm = math.sqrt(sum(v * v for v in vec)) or 1.0
-    return [v / norm for v in vec]
+    
+    # L2 normalize in single pass
+    sum_sq = sum(v * v for v in vec)
+    if sum_sq > 0:
+        norm = math.sqrt(sum_sq)
+        return [v / norm for v in vec]
+    return vec
 
 
 def generate_embedding(text: str) -> List[float]:  # noqa: ANN001
     """Generate an embedding for text using Azure OpenAI > OpenAI > local hash.
 
     Returns a list[float]; errors fall back to hash embedding.
-    Uses cached clients for performance (see _get_embedding_client).
     """
     text = text or ""
-    # Azure first (using cached client)
+    # Azure first
+    az_key = os.getenv("AZURE_OPENAI_API_KEY")
+    az_ep = os.getenv("AZURE_OPENAI_ENDPOINT")
     az_emb = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
-    if az_emb:
-        client = _get_embedding_client("azure")
-        if client is not None:
-            try:
-                resp = client.embeddings.create(model=az_emb, input=[text])
-                return resp.data[0].embedding  # type: ignore[attr-defined]
-            except Exception:
-                pass
-    # Public OpenAI (using cached client)
-    client = _get_embedding_client("openai")
-    if client is not None:
+    if az_key and az_ep and az_emb and AzureOpenAI is not None:
         try:
+            client = AzureOpenAI(api_key=az_key, azure_endpoint=az_ep)
+            resp = client.embeddings.create(model=az_emb, input=[text])
+            return resp.data[0].embedding  # type: ignore[attr-defined]
+        except Exception:
+            pass
+    # Public OpenAI
+    oi_key = os.getenv("OPENAI_API_KEY")
+    if oi_key and OpenAI is not None:
+        try:
+            client = OpenAI(api_key=oi_key)
             resp = client.embeddings.create(model="text-embedding-3-small", input=[text])
             return resp.data[0].embedding  # type: ignore[attr-defined]
         except Exception:
@@ -212,35 +165,11 @@ def _deserialize_f32(blob: bytes, dim: int) -> List[float]:
 
 
 def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
-    """Compute cosine similarity between two vectors.
-    
-    Uses NumPy for faster computation when available, falling back
-    to pure Python for environments without NumPy.
-    
-    Note: float32 is used intentionally for memory efficiency. The precision
-    loss is negligible for cosine similarity comparisons (< 1e-6 difference).
-    """
     if not a or not b or len(a) != len(b):
         return 0.0
-    
-    if _HAS_NUMPY:
-        # NumPy path: ~8x faster for typical embedding dimensions (256-1536)
-        # Using float32 for memory efficiency; precision loss is negligible
-        a_arr = np.asarray(a, dtype=np.float32)
-        b_arr = np.asarray(b, dtype=np.float32)
-        dot = np.dot(a_arr, b_arr)
-        na = np.linalg.norm(a_arr)
-        nb = np.linalg.norm(b_arr)
-        if na == 0.0 or nb == 0.0:
-            return 0.0
-        return float(dot / (na * nb))
-    
-    # Pure Python fallback
     dot = sum(x * y for x, y in zip(a, b))
-    na = math.sqrt(sum(x * x for x in a))
-    nb = math.sqrt(sum(y * y for y in b))
-    if na == 0.0 or nb == 0.0:
-        return 0.0
+    na = math.sqrt(sum(x * x for x in a)) or 1.0
+    nb = math.sqrt(sum(y * y for y in b)) or 1.0
     return dot / (na * nb)
 
 
@@ -249,6 +178,9 @@ def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, ses
 
     If session_id is provided, restrict search to that session's conversation(s).
     For performance we limit to the most recent 500 embeddings.
+    
+    Optimization: Uses heapq.nlargest for O(n log k) top-k selection instead of
+    O(n log n) full sort when top_k is small relative to result set.
     """
     if not query_embedding:
         return []
@@ -272,21 +204,24 @@ def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, ses
                 "ORDER BY e.CreatedAt DESC",
             )
         rows = cursor.fetchall()
+        
+        # Build scored list with only positive similarities
         scored = []
         for r in rows:
             dim = r.EmbeddingDim
             emb = _deserialize_f32(r.EmbeddingVector, dim)
             sim = _cosine(query_embedding, emb)
-            if sim <= 0:
-                continue
-            scored.append({
-                "message_id": r.MessageId,
-                "content": r.Content,
-                "similarity": sim,
-                "embedding_model": r.EmbeddingModel,
-            })
-        scored.sort(key=lambda x: x["similarity"], reverse=True)
-        return scored[:top_k]
+            if sim > 0:
+                scored.append({
+                    "message_id": r.MessageId,
+                    "content": r.Content,
+                    "similarity": sim,
+                    "embedding_model": r.EmbeddingModel,
+                })
+        
+        # Use heapq.nlargest for efficient top-k selection (O(n log k) vs O(n log n))
+        # This is more efficient when top_k << len(scored)
+        return heapq.nlargest(top_k, scored, key=lambda x: x["similarity"])
     except Exception:
         return []
     finally:
