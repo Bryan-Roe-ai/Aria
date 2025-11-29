@@ -114,13 +114,126 @@
             position: relative;
             width: 100%;
             height: 500px;
-            background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 100%);
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 50%, #b8e2f2 100%);
             border-radius: 15px;
             overflow: visible;
             border: 3px solid #667eea;
-            perspective: 1200px;
+            perspective: 2000px;
             perspective-origin: 50% 50%;
             transform-style: preserve-3d;
+            box-shadow: inset 0 0 100px rgba(255,255,255,0.2),
+                        inset 0 -50px 100px rgba(0,0,0,0.1),
+                        0 15px 50px rgba(0,0,0,0.2);
+            animation: stage-ambient 8s ease-in-out infinite;
+        }
+        
+        @keyframes stage-ambient {
+            0%, 100% { 
+                background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 50%, #b8e2f2 100%);
+            }
+            50% { 
+                background: linear-gradient(180deg, #a8d8f0 0%, #b8e8f8 50%, #c8f0ff 100%);
+            }
+        }
+        
+        /* Particle system */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            animation: particle-float 3s ease-out forwards;
+        }
+        
+        @keyframes particle-float {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #fff 0%, #ffd700 50%, transparent 100%);
+            pointer-events: none;
+            z-index: 999;
+            animation: sparkle-burst 0.8s ease-out forwards;
+        }
+        
+        @keyframes sparkle-burst {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(0) rotate(0deg);
+                filter: brightness(2);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(var(--dx), var(--dy)) scale(1.5) rotate(180deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(calc(var(--dx) * 2), calc(var(--dy) * 2)) scale(0.2) rotate(360deg);
+                filter: brightness(0);
+            }
+        }
+        
+        /* 3D Floor plane */
+        .stage::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, 
+                rgba(150, 200, 230, 0.3) 0%, 
+                rgba(120, 180, 220, 0.5) 50%, 
+                rgba(100, 160, 200, 0.7) 100%);
+            transform: rotateX(60deg) translateZ(-100px);
+            transform-origin: bottom center;
+            transform-style: preserve-3d;
+            border-radius: 0 0 15px 15px;
+            z-index: 1;
+        }
+        
+        /* 3D Floor plane */
+        .stage::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, 
+                rgba(150, 200, 230, 0.2) 0%, 
+                rgba(120, 180, 220, 0.4) 50%, 
+                rgba(100, 160, 200, 0.6) 100%);
+            transform: rotateX(65deg) translateZ(-120px);
+            transform-origin: bottom center;
+            transform-style: preserve-3d;
+            border-radius: 0 0 15px 15px;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* Ground shadow */
+        .stage::after {
+            content: '';
+            position: absolute;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 40px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            z-index: 1;
         }
         
         /* Table */
@@ -153,29 +266,68 @@
             position: absolute;
             font-size: 35px;
             cursor: grab;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 10;
             user-select: none;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            filter: drop-shadow(3px 3px 6px rgba(0,0,0,0.3))
+                    drop-shadow(0 0 0 rgba(255,215,0,0));
             transform-style: preserve-3d;
             transform: translateZ(-50px);
+            animation: object-idle 3s ease-in-out infinite;
+        }
+        
+        @keyframes object-idle {
+            0%, 100% { transform: translateZ(-50px) translateY(0); }
+            50% { transform: translateZ(-50px) translateY(-2px); }
         }
         
         .object:hover {
-            transform: scale(1.15);
-            filter: drop-shadow(3px 3px 8px rgba(255,215,0,0.6));
+            transform: translateZ(-30px) scale(1.2) rotateZ(5deg);
+            filter: drop-shadow(4px 4px 12px rgba(255,215,0,0.7))
+                    drop-shadow(0 0 20px rgba(255,215,0,0.5));
+            animation: object-hover-pulse 0.6s ease-in-out infinite;
+        }
+        
+        @keyframes object-hover-pulse {
+            0%, 100% { 
+                transform: translateZ(-30px) scale(1.2) rotateZ(5deg);
+            }
+            50% { 
+                transform: translateZ(-25px) scale(1.25) rotateZ(5deg);
+            }
         }
         
         .object.grabbed {
             cursor: grabbing;
             z-index: 100;
-            filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));
-            animation: float 0.5s ease-in-out infinite;
+            filter: drop-shadow(0 0 25px rgba(255,215,0,0.9))
+                    drop-shadow(0 8px 16px rgba(0,0,0,0.4));
+            animation: float-grabbed 0.4s ease-in-out infinite;
+        }
+        
+        @keyframes float-grabbed {
+            0%, 100% { 
+                transform: translateZ(20px) translateY(0) scale(1.15) rotateZ(-3deg);
+            }
+            50% { 
+                transform: translateZ(25px) translateY(-10px) scale(1.2) rotateZ(3deg);
+            }
         }
         
         .object.held {
             z-index: 15;
-            animation: bobbing 0.6s ease-in-out infinite;
+            filter: drop-shadow(0 0 15px rgba(74,144,226,0.6))
+                    drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+            animation: bobbing-held 0.8s ease-in-out infinite;
+        }
+        
+        @keyframes bobbing-held {
+            0%, 100% { 
+                transform: translateY(-5px) scale(0.95) rotateZ(-2deg);
+            }
+            50% { 
+                transform: translateY(2px) scale(1) rotateZ(2deg);
+            }
         }
         
         @keyframes float {
@@ -197,16 +349,37 @@
 
         .aria-character {
             position: absolute;
-            bottom: 10%;
-            left: 20%;
-            transform: translateX(-50%) translateZ(0px) rotateY(0deg);
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%) translateZ(50px) rotateY(0deg);
             width: 160px;
             height: 260px;
             transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.25));
+            filter: drop-shadow(0 12px 24px rgba(0,0,0,0.3))
+                    drop-shadow(0 0 20px rgba(74,144,226,0.2));
             transform-style: preserve-3d;
-            z-index: 10;
+            z-index: 50;
             animation: breathe 4s ease-in-out infinite;
+        }
+        
+        /* Enhanced ambient glow on hover */
+        .aria-character:hover {
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.35))
+                    drop-shadow(0 0 40px rgba(95,163,238,0.6))
+                    brightness(1.1);
+            animation: breathe 2s ease-in-out infinite, subtle-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes subtle-glow {
+            0%, 100% { 
+                filter: drop-shadow(0 15px 30px rgba(0,0,0,0.35))
+                        drop-shadow(0 0 40px rgba(95,163,238,0.6));
+            }
+            50% { 
+                filter: drop-shadow(0 18px 35px rgba(0,0,0,0.4))
+                        drop-shadow(0 0 60px rgba(95,163,238,0.8))
+                        brightness(1.15);
+            }
         }
         
         /* Walking animation states */
@@ -219,16 +392,37 @@
         }
 
         .aria-character.arrived {
-            animation: arrival-bounce 0.9s cubic-bezier(.2,.9,.2,1);
-            filter: drop-shadow(0 18px 30px rgba(255,215,0,0.25)) brightness(1.12);
-            transform: translateX(-50%) translateZ(10px) translateY(-6px) scale(1.06);
+            animation: arrival-bounce 1.2s cubic-bezier(.2,.9,.2,1) forwards;
+            filter: drop-shadow(0 20px 40px rgba(95,163,238,0.4))
+                    drop-shadow(0 0 60px rgba(255,215,0,0.3))
+                    brightness(1.15);
         }
 
         @keyframes arrival-bounce {
-            0% { transform: translateX(-50%) translateZ(0px) translateY(0) scale(1); }
-            40% { transform: translateX(-50%) translateZ(18px) translateY(-16px) scale(1.08); }
-            70% { transform: translateX(-50%) translateZ(8px) translateY(-6px) scale(1.03); }
-            100% { transform: translateX(-50%) translateZ(0px) translateY(0) scale(1); }
+            0% { 
+                transform: translateX(-50%) translateZ(0px) translateY(0) scale(1) rotateY(0deg);
+                filter: brightness(1);
+            }
+            25% {
+                transform: translateX(-50%) translateZ(30px) translateY(-25px) scale(1.12) rotateY(360deg);
+                filter: brightness(1.3);
+            }
+            45% { 
+                transform: translateX(-50%) translateZ(20px) translateY(-8px) scale(1.05) rotateY(360deg);
+                filter: brightness(1.2);
+            }
+            65% {
+                transform: translateX(-50%) translateZ(10px) translateY(-12px) scale(1.08) rotateY(360deg);
+                filter: brightness(1.15);
+            }
+            80% {
+                transform: translateX(-50%) translateZ(5px) translateY(-4px) scale(1.02) rotateY(360deg);
+                filter: brightness(1.1);
+            }
+            100% { 
+                transform: translateX(-50%) translateZ(0px) translateY(0) scale(1) rotateY(360deg);
+                filter: brightness(1);
+            }
         }
 
         @keyframes breathe {
@@ -276,22 +470,13 @@
             position: absolute;
             top: -8px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateZ(1px);
             border: 2px solid rgba(60, 50, 45, 0.7);
             border-bottom: none;
             z-index: 5;
             box-shadow: inset 2px 2px 10px rgba(155, 125, 106, 0.3),
                         inset -2px -2px 12px rgba(0,0,0,0.25),
                         0 3px 8px rgba(0,0,0,0.2);
-        }
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 2px solid #2c2c2c;
-            border-bottom: none;
-            z-index: 5;
-            box-shadow: inset 0 -3px 8px rgba(0,0,0,0.2);
         }
 
         /* Hair bangs - Natural brown */
@@ -302,7 +487,7 @@
             transform: translateX(-50%);
             width: 55px;
             height: 22px;
-            z-index: 6;
+            z-index: 7;
         }
 
         .aria-bang {
@@ -323,13 +508,16 @@
         /* Hair ponytails - Natural brown */
         .aria-ponytail {
             position: absolute;
-            top: 30px;
+            top: 25px;
             width: 18px;
             height: 55px;
             background: linear-gradient(180deg, #4a3728 0%, #6b4f3d 50%, #3d2d20 100%);
             border-radius: 45%;
+            border-bottom-left-radius: 55%;
+            border-bottom-right-radius: 55%;
             border: 3px solid #2c2c2c;
-            z-index: 3;
+            z-index: 2;
+            transform: translateZ(-3px);
         }
 
         .aria-ponytail.left {
@@ -350,7 +538,7 @@
             display: flex;
             justify-content: space-around;
             padding: 0 15px;
-            z-index: 7;
+            z-index: 8;
         }
 
         .aria-eye {
@@ -414,6 +602,7 @@
             border-radius: 60% 60% 50% 50%;
             top: 48px;
             filter: blur(1px);
+            z-index: 6;
         }
 
         .aria-blush.left { left: 8px; }
@@ -457,9 +646,9 @@
             background: linear-gradient(135deg, #5fa3ee 0%, #4a90e2 40%, #6db0f5 70%, #5a9fe5 100%);
             border-radius: 38% 38% 48% 48%;
             position: absolute;
-            top: 75px;
+            top: 78px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateZ(-3px);
             border: 2px solid rgba(60, 50, 45, 0.5);
             z-index: 2;
             box-shadow: inset -2px -3px 8px rgba(74, 144, 226, 0.3),
@@ -472,13 +661,13 @@
             position: absolute;
             top: 79px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateZ(2px);
             width: 30px;
             height: 8px;
             background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 50%, #f0f0f0 100%);
             border: 2px solid rgba(60, 50, 45, 0.4);
             border-radius: 4px;
-            z-index: 3;
+            z-index: 6;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1),
                         inset 0 1px 2px rgba(255,255,255,0.6);
         }
@@ -519,12 +708,12 @@
 
         /* Upper Arms - Natural skin with subtle shading */
         .aria-upper-arm {
-            width: 15px;
-            height: 34px;
+            width: 16px;
+            height: 38px;
             background: linear-gradient(180deg, #fef5e7 0%, #f5d4b8 40%, #e8c4a8 100%);
             border-radius: 11px;
             position: absolute;
-            top: 78px;
+            top: 80px;
             border: 2px solid rgba(60, 50, 45, 0.4);
             z-index: 1;
             box-shadow: inset -1px -1px 4px rgba(232, 196, 168, 0.3),
@@ -534,14 +723,14 @@
         }
 
         .aria-upper-arm.left {
-            left: 33px;
-            transform: rotate(-20deg);
+            left: 32px;
+            transform: rotate(-30deg) translateZ(-2px);
             transform-origin: top center;
         }
 
         .aria-upper-arm.right {
-            right: 33px;
-            transform: rotate(20deg);
+            right: 32px;
+            transform: rotate(30deg) translateZ(-2px);
             transform-origin: top center;
         }
 
@@ -563,7 +752,7 @@
         /* Lower Arms (Forearms) - Smooth natural skin */
         .aria-lower-arm {
             width: 14px;
-            height: 32px;
+            height: 36px;
             background: linear-gradient(180deg, #e8c4a8 0%, #f5d4b8 50%, #fef5e7 100%);
             border-radius: 10px;
             position: absolute;
@@ -576,16 +765,16 @@
         }
 
         .aria-lower-arm.left {
-            top: 108px;
-            left: 26px;
-            transform: rotate(-15deg);
+            top: 114px;
+            left: 20px;
+            transform: rotate(-40deg) translateZ(-2px);
             transform-origin: top center;
         }
 
         .aria-lower-arm.right {
-            top: 108px;
-            right: 26px;
-            transform: rotate(15deg);
+            top: 114px;
+            right: 20px;
+            transform: rotate(40deg) translateZ(-2px);
             transform-origin: top center;
         }
 
@@ -607,27 +796,28 @@
         /* Hands - Delicate with natural skin tone */
         .aria-hand {
             position: absolute;
-            width: 14px;
-            height: 15px;
+            width: 15px;
+            height: 16px;
             background: radial-gradient(ellipse at 35% 28%, #fef5e7 0%, #f5d4b8 50%, #e8c4a8 100%);
             border-radius: 48% 48% 52% 52%;
             border: 2px solid rgba(60, 50, 45, 0.4);
-            z-index: 1;
+            z-index: 3;
+            transform: translateZ(2px);
             box-shadow: inset 1px 1px 3px rgba(255,255,255,0.3),
                         1px 2px 5px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
 
         .aria-hand.left {
-            top: 137px;
-            left: 20px;
-            transform: rotate(-10deg);
+            top: 144px;
+            left: 8px;
+            transform: rotate(-25deg) translateZ(2px);
         }
 
         .aria-hand.right {
-            top: 137px;
-            right: 20px;
-            transform: rotate(10deg);
+            top: 144px;
+            right: 8px;
+            transform: rotate(25deg) translateZ(2px);
         }
 
         /* Fingers */
@@ -668,10 +858,11 @@
             background: linear-gradient(180deg, #3d5a80 0%, #4a6a90 100%);
             border-radius: 8px;
             position: absolute;
-            top: 142px;
+            top: 145px;
             border: 2px solid #2c2c2c;
             z-index: 1;
             transition: transform 0.3s ease;
+            transform: translateZ(-4px);
         }
 
         .aria-upper-leg.left { left: 54px; }
@@ -699,10 +890,11 @@
             background: linear-gradient(180deg, #4a6a90 0%, #3d5a80 100%);
             border-radius: 7px;
             position: absolute;
-            top: 173px;
+            top: 176px;
             border: 2px solid #2c2c2c;
             z-index: 1;
             transition: transform 0.3s ease;
+            transform: translateZ(-4px);
         }
 
         .aria-lower-leg.left { left: 54px; }
@@ -730,9 +922,10 @@
             background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
             border-radius: 8px 12px 12px 8px;
             position: absolute;
-            top: 206px;
+            top: 209px;
             border: 2px solid #2c2c2c;
             box-shadow: inset 0 1px 3px rgba(255,255,255,0.4);
+            transform: translateZ(-4px);
         }
 
         .aria-foot.left {
@@ -942,12 +1135,37 @@
             display: flex;
             gap: 8px;
             align-items: flex-start;
+            animation: slide-in 0.3s ease-out;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .chat-msg.user { justify-content: flex-end; }
         .chat-msg.aria { justify-content: flex-start; }
 
-        .chat-msg .sender { font-size: 0.75rem; color: #666; margin-bottom: 3px; }
+        .chat-msg .sender { 
+            font-size: 0.75rem; 
+            color: #666; 
+            margin-bottom: 3px;
+            animation: fade-in 0.4s ease-out 0.1s;
+            animation-fill-mode: backwards;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
 
         .chat-msg .bubble {
             max-width: 70%;
@@ -956,10 +1174,38 @@
             font-size: 0.95rem;
             line-height: 1.2;
             box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .chat-msg.user .bubble { background: linear-gradient(135deg,#667eea,#764ba2); color: white; }
-        .chat-msg.aria .bubble { background: #f3f6ff; color: #24324a; }
+        .chat-msg .bubble:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .chat-msg.user .bubble { 
+            background: linear-gradient(135deg,#667eea,#764ba2); 
+            color: white;
+            animation: bubble-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+            animation-fill-mode: backwards;
+        }
+        
+        .chat-msg.aria .bubble { 
+            background: #f3f6ff; 
+            color: #24324a;
+            animation: bubble-pop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.1s;
+            animation-fill-mode: backwards;
+        }
+
+        @keyframes bubble-pop {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
 
         .chat-input-block { display:flex; gap:8px; align-items:center; }
         .chat-input-block input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid #ddd; }

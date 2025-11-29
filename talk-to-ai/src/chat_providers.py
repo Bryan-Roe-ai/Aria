@@ -213,15 +213,46 @@ class LoraLocalProvider(BaseChatProvider):
 
     def _configure_subprocess_bridge(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]
-        venv_python = repo_root / "venv" / "Scripts" / "python.exe"
-        if venv_python.exists():
-            self.bridge_python = str(venv_python)
+        # Try Windows-style venv first
+        win_python = repo_root / "venv" / "Scripts" / "python.exe"
+        # Try POSIX-style venv
+        posix_python = repo_root / "venv" / "bin" / "python"
+        # Try workspace .venv (POSIX)
+        dotvenv_python = repo_root / ".venv" / "bin" / "python"
+
+        if win_python.exists():
+            self.bridge_python = str(win_python)
             self.use_subprocess = True
-        else:
-            raise RuntimeError(
-                "Missing dependencies for LoRA provider and no venv found. "
-                "Create ./venv and install 'torch', 'transformers', 'peft'."
-            )
+            return
+        if posix_python.exists():
+            self.bridge_python = str(posix_python)
+            self.use_subprocess = True
+            return
+        if dotvenv_python.exists():
+            self.bridge_python = str(dotvenv_python)
+            self.use_subprocess = True
+            return
+
+        # Fallback to system python3 if available
+        py_candidates = [
+            Path("/usr/bin/python3"),
+            Path("/usr/local/bin/python3"),
+            Path(sys.executable),
+        ]
+        for cand in py_candidates:
+            try:
+                if cand.exists():
+                    self.bridge_python = str(cand)
+                    self.use_subprocess = True
+                    return
+            except Exception:
+                pass
+
+        # No suitable Python found
+        raise RuntimeError(
+            "Missing dependencies for LoRA provider and no Python found for subprocess bridge. "
+            "Install 'torch', 'transformers', 'peft' in the current environment or create ./venv."
+        )
 
 
 class LocalEchoProvider(BaseChatProvider):

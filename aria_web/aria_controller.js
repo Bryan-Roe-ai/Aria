@@ -80,13 +80,55 @@ let characterState = {
     currentWaypoint: null
 };
 
-// Visual feedback function
-function showFeedback(message) {
+// Visual feedback function with enhanced effects
+function showFeedback(message, type = 'info') {
     const feedback = document.createElement('div');
     feedback.textContent = message;
-    feedback.style.cssText = 'position:absolute; top:20px; left:50%; transform:translateX(-50%); background:#e74c3c; color:white; padding:15px 30px; border-radius:15px; font-size:28px; font-weight:bold; z-index:999; box-shadow:0 5px 20px rgba(0,0,0,0.3); animation:pulse 0.5s ease;';
+    
+    // Color based on type
+    let bgColor = '#e74c3c'; // default red
+    if (type === 'success') bgColor = '#27ae60';
+    else if (type === 'warning') bgColor = '#f39c12';
+    else if (type === 'info') bgColor = '#3498db';
+    
+    feedback.style.cssText = `
+        position: absolute; 
+        top: 20px; 
+        left: 50%; 
+        transform: translateX(-50%) translateY(-20px) scale(0.8); 
+        background: ${bgColor}; 
+        color: white; 
+        padding: 15px 30px; 
+        border-radius: 15px; 
+        font-size: 28px; 
+        font-weight: bold; 
+        z-index: 999; 
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3), 0 0 20px ${bgColor}80;
+        opacity: 0;
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    `;
+    
     stage.appendChild(feedback);
-    setTimeout(() => feedback.remove(), 2500);
+    
+    // Trigger animation
+    setTimeout(() => {
+        feedback.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+        feedback.style.opacity = '1';
+    }, 10);
+    
+    // Fade out and remove
+    setTimeout(() => {
+        feedback.style.transform = 'translateX(-50%) translateY(-20px) scale(0.9)';
+        feedback.style.opacity = '0';
+        setTimeout(() => feedback.remove(), 300);
+    }, 2200);
+    
+    // Add sparkle effect for success messages
+    if (type === 'success' || message.includes('✨')) {
+        setTimeout(() => {
+            createEffect('sparkle', 50, 15);
+        }, 150);
+    }
 }
 
 // AI-Driven Character Generation
@@ -432,6 +474,26 @@ async function sendCommand() {
     log(`Command: "${command}"`);
     commandInput.value = '';
     
+    // Show loading indicator
+    const loadingFeedback = document.createElement('div');
+    loadingFeedback.id = 'loading-indicator';
+    loadingFeedback.innerHTML = '⏳ Processing...';
+    loadingFeedback.style.cssText = `
+        position: absolute;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(52, 152, 219, 0.95);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 18px;
+        z-index: 998;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        animation: pulse 1.5s ease-in-out infinite;
+    `;
+    stage.appendChild(loadingFeedback);
+    
     try {
         // Gather current stage state for AI to see
         const stageRect = stage.getBoundingClientRect();
@@ -475,11 +537,17 @@ async function sendCommand() {
             })
         });
         
+        // Remove loading indicator
+        loadingFeedback.remove();
+        
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const data = await response.json();
+        
+        // Success sparkle effect
+        createEffect('sparkle', 50, 15);
         
         // AI automatically generates character based on response
         if (data.response) {
@@ -499,7 +567,13 @@ async function sendCommand() {
         // Return the parsed result so callers (chat UI) can inspect tags / response
         return data;
     } catch (error) {
+        // Remove loading indicator
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) indicator.remove();
+        
         log(`⚠️ Network error, using fallback`, true);
+        showFeedback('⚠️ Server Error - Using Fallback', 'warning');
+        
         // Fallback: parse command locally without AI
         executeLocalCommand(command);
         return { error: String(error) };
@@ -566,6 +640,14 @@ function setPosition(xPercent, yPercent, zDepth = 0, rotateY = 0) {
         animateWalkCycle();
     }, 200);
     
+    // Create particle trail if moving fast
+    let trailInterval = null;
+    if (walkStyle === 'run') {
+        trailInterval = setInterval(() => {
+            createEffect('particle', currentX, 100 - currentY);
+        }, 150);
+    }
+    
     // Smooth 3D transition to target
     aria.style.transition = `left ${duration}ms ease-in-out, bottom ${duration}ms ease-in-out, transform ${duration}ms ease-in-out`;
     
@@ -591,6 +673,7 @@ function setPosition(xPercent, yPercent, zDepth = 0, rotateY = 0) {
         aria.classList.remove('walking', 'running');
         aria.style.transition = ''; // Reset transition
         clearInterval(walkInterval);
+        if (trailInterval) clearInterval(trailInterval);
         resetWalkCycle();
         log(`✅ Arrived at (${Math.round(xPercent)}%, ${Math.round(yPercent)}%)`);
         // If we were targeting a waypoint, announce in chat
@@ -1487,26 +1570,57 @@ function move(direction, speed = 'normal') {
     setTimeout(() => { isPerformingAction = false; }, 1000);
 }
 
-function createEffect(type) {
+function createEffect(type, x, y) {
     const effects = {
         'sparkle': '✨',
         'glow': '💫',
-        'hearts': '💕'
+        'hearts': '💕',
+        'particle': '✨'
     };
     
     const emoji = effects[type] || '✨';
     
-    for (let i = 0; i < 5; i++) {
+    // Get Aria's position if x/y not provided
+    if (x === undefined || y === undefined) {
+        const ariaRect = aria.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        x = ((ariaRect.left + ariaRect.width/2 - stageRect.left) / stageRect.width) * 100;
+        y = ((ariaRect.top + ariaRect.height/2 - stageRect.top) / stageRect.height) * 100;
+    }
+    
+    const count = type === 'sparkle' ? 8 : (type === 'particle' ? 12 : 5);
+    
+    for (let i = 0; i < count; i++) {
         setTimeout(() => {
             const effect = document.createElement('div');
             effect.className = `effect ${type}`;
             effect.textContent = emoji;
-            effect.style.left = (Math.random() * 80 + 10) + '%';
-            effect.style.top = (Math.random() * 80 + 10) + '%';
+            
+            // Position near target with spread
+            const spreadX = (Math.random() - 0.5) * 20;
+            const spreadY = (Math.random() - 0.5) * 20;
+            effect.style.left = Math.max(5, Math.min(95, x + spreadX)) + '%';
+            effect.style.top = Math.max(5, Math.min(95, y + spreadY)) + '%';
+            
+            // Set random trajectory for CSS animation
+            if (type === 'particle' || type === 'sparkle') {
+                const dx = (Math.random() - 0.5) * 200;
+                const dy = (Math.random() - 0.5) * 200;
+                effect.style.setProperty('--dx', dx + 'px');
+                effect.style.setProperty('--dy', dy + 'px');
+                
+                // Use particle-float or sparkle-burst animation
+                if (type === 'particle') {
+                    effect.style.animation = 'particle-float 2s ease-out forwards';
+                } else {
+                    effect.style.animation = 'sparkle-burst 1.2s ease-out forwards';
+                }
+            }
+            
             stage.appendChild(effect);
             
-            setTimeout(() => effect.remove(), 1500);
-        }, i * 100);
+            setTimeout(() => effect.remove(), type === 'particle' ? 2000 : 1500);
+        }, i * (type === 'sparkle' ? 80 : 60));
     }
 }
 
@@ -1686,12 +1800,23 @@ function pickUpObject(objectId) {
     console.log('🤏 Picking up:', objectId);
     showFeedback('🤏 PICKED UP ' + objectId.toUpperCase() + '!');
     
+    // Visual pickup effect - sparkles at object location
+    const objRect = obj.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    const objX = ((objRect.left + objRect.width/2 - stageRect.left) / stageRect.width) * 100;
+    const objY = ((objRect.top + objRect.height/2 - stageRect.top) / stageRect.height) * 100;
+    createEffect('sparkle', objX, objY);
+    
     // Store held object
     characterState.heldObject = objectId;
     characterState.heldObjectElement = obj;
     
-    // Visual feedback
+    // Visual feedback - glow effect
     obj.classList.add('held');
+    obj.style.filter = 'brightness(1.3) drop-shadow(0 0 15px gold)';
+    setTimeout(() => {
+        obj.style.filter = '';
+    }, 600);
 
     // Sync server side: mark object as held
     sendObjectUpdate('update', objectId, { state: 'held' }).catch(() => {});
@@ -1729,6 +1854,17 @@ function dropObject() {
     
     obj.style.left = dropLeft + '%';
     obj.style.bottom = (dropBottom + 10) + '%';
+    
+    // Visual drop effect - brief bounce and sparkles
+    obj.style.transition = 'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+    obj.style.transform = 'scale(1.2) translateY(-10px)';
+    setTimeout(() => {
+        obj.style.transform = 'scale(1) translateY(0)';
+        createEffect('sparkle', dropLeft, 100 - (dropBottom + 10));
+    }, 150);
+    setTimeout(() => {
+        obj.style.transition = '';
+    }, 450);
     
     // Arm dropping animation
     moveArm(ariaArmRight, -90, 200);
@@ -1786,17 +1922,44 @@ function throwObject(direction) {
             break;
     }
     
-    // Animate throw with arc
+    // Visual throw effect - arc with rotation and particle trail
     obj.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     obj.style.left = targetLeft + '%';
     obj.style.bottom = targetBottom + '%';
     obj.style.transform = 'rotate(360deg) scale(0.9)';
+    obj.style.filter = 'brightness(1.2) drop-shadow(0 0 20px rgba(255,215,0,0.6))';
     
-    // Reset after landing
+    // Create particle trail during throw
+    const trailInterval = setInterval(() => {
+        const currentObjLeft = parseFloat(obj.style.left);
+        const currentObjBottom = parseFloat(obj.style.bottom);
+        createEffect('particle', currentObjLeft, 100 - currentObjBottom);
+    }, 100);
+    
+    setTimeout(() => clearInterval(trailInterval), 800);
+    
+    // Reset after landing with bounce
     setTimeout(() => {
         obj.style.transition = 'all 0.3s ease';
         obj.style.transform = 'rotate(0deg) scale(1)';
+        obj.style.filter = '';
+        // Landing sparkle effect
+        createEffect('sparkle', targetLeft, 100 - targetBottom);
     }, 800);
+    
+    // Clear held object
+    characterState.heldObject = null;
+    characterState.heldObjectElement = null;
+
+    // Sync server side after throw completes
+    setTimeout(() => {
+        const left = Math.round(targetLeft);
+        const bottom = Math.round(targetBottom);
+        sendObjectUpdate('update', obj.id, { position: { x: left, y: bottom }, state: 'on_stage' }).catch(() => {});
+    }, 900);
+    
+    return true;
+}
     
     // Clear held object
     characterState.heldObject = null;

@@ -235,13 +235,11 @@
 		{
 			"label": "pip install (quantum-ai)",
 			"type": "shell",
+			"command": "./quantum-ai/venv/bin/python -m pip install -r ./quantum-ai/requirements.txt",
 			"windows": {
 				"command": ".\\quantum-ai\\venv\\Scripts\\python.exe -m pip install -r .\\quantum-ai\\requirements.txt"
 			},
 			"osx": {
-				"command": "./quantum-ai/venv/bin/python -m pip install -r ./quantum-ai/requirements.txt"
-			},
-			"linux": {
 				"command": "./quantum-ai/venv/bin/python -m pip install -r ./quantum-ai/requirements.txt"
 			},
 			"options": {
@@ -252,13 +250,11 @@
 		{
 			"label": "pip install (talk-to-ai)",
 			"type": "shell",
+			"command": "./talk-to-ai/venv/bin/python -m pip install -r ./talk-to-ai/requirements.txt",
 			"windows": {
 				"command": ".\\talk-to-ai\\venv\\Scripts\\python.exe -m pip install -r .\\talk-to-ai\\requirements.txt"
 			},
 			"osx": {
-				"command": "./talk-to-ai/venv/bin/python -m pip install -r ./talk-to-ai/requirements.txt"
-			},
-			"linux": {
 				"command": "./talk-to-ai/venv/bin/python -m pip install -r ./talk-to-ai/requirements.txt"
 			},
 			"options": {
