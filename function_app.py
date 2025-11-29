@@ -1586,6 +1586,14 @@ def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
             
             except Exception as openai_error:
                 logging.warning(f'OpenAI image generation failed: {openai_error}')
+                # Detect Azure/OpenAI quota/premium allowance errors and provide
+                # a clearer fallback message for users.
+                try:
+                    from shared.azure_utils import is_quota_error, format_quota_message
+                except Exception:
+                    is_quota_error = None
+                    format_quota_message = None
+
             
                 placeholder_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
                     <defs>
@@ -1606,7 +1614,13 @@ def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
                 import base64
                 svg_base64 = base64.b64encode(placeholder_svg.encode()).decode()
             
-                response_data = {'image_data': svg_base64, 'prompt': prompt, 'model': 'fallback-svg', 'size': '512x512', 'fallback': True, 'error': str(openai_error)}
+                # Prefer a helpful quota message when available
+                err_text = str(openai_error)
+                if is_quota_error is not None and is_quota_error(openai_error):
+                    if format_quota_message is not None:
+                        err_text = format_quota_message(openai_error, service_name="OpenAI / Azure Images API")
+
+                response_data = {'image_data': svg_base64, 'prompt': prompt, 'model': 'fallback-svg', 'size': '512x512', 'fallback': True, 'error': err_text}
             
                 return func.HttpResponse(json.dumps(response_data), status_code=200, mimetype="application/json", headers=create_cors_response_headers())
     

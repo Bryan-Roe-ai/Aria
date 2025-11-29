@@ -9,6 +9,32 @@ import json as _json
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, Generator, Iterable, List, Optional
+import logging
+
+# Helpers for Azure quota/rate-limit detection
+try:  # shared package may not be importable in all contexts (tests add paths)
+    from shared.azure_utils import (
+        is_quota_error,
+        is_transient_rate_error,
+        format_quota_message,
+    )
+except Exception:  # pragma: no cover - best-effort import
+    # Provide fallbacks if shared module isn't available in runtime/test harness
+    def is_quota_error(e: Any) -> bool:
+        txt = str(e).lower() if e is not None else ""
+        return any(k in txt for k in ("quota", "premium", "exceed", "allowance", "insufficient", "billing"))
+
+    def is_transient_rate_error(e: Any) -> bool:
+        txt = str(e).lower() if e is not None else ""
+        return any(k in txt for k in ("rate limit", "429", "too many requests", "rate_limit"))
+
+    def format_quota_message(exc: Any, service_name: str = "Azure OpenAI") -> str:
+        return (
+            f"{service_name} quota/premium limit reached. Check billing/limits or use another provider."
+            f" Details: {str(exc)}"
+        )
+
+_LOGGER = logging.getLogger(__name__)
 
 try:
     # openai>=1.0
@@ -457,32 +483,90 @@ class AzureOpenAIProvider(BaseChatProvider):
         self.max_output_tokens = max_output_tokens
 
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
-        if stream:
-            resp = self.client.chat.completions.create(
+        """Complete with Azure OpenAI and handle quota/rate-limit errors gracefully.
+
+        Behavior:
+          - If a quota/premium allowance error is detected, return a friendly
+            message instead of raising an exception.
+          - Retry transient rate-limit style errors a small number of times with
+            exponential backoff.
+
+        Returns either a string (non-stream) or a generator yielding string chunks.
+        """
+        # Internal helper: attempt the SDK call with small retry/backoff for
+        # transient rate-limit style errors. If we detect a quota/premium error
+        # we return the exception directly for caller to handle.
+        def _attempt_create(**kwargs):
+            max_retries = 3
+            base_backoff = 0.4
+            attempt = 0
+            while True:
+                try:
+                    return self.client.chat.completions.create(**kwargs)
+                except Exception as e:  # pragma: no cover - depends on runtime
+                    # If this looks like a quota/premium allowance error, bail out
+                    if is_quota_error(e):
+                        raise
+                    # Retry transient rate-limit errors a few times
+                    if is_transient_rate_error(e) and attempt < max_retries:
+                        sleep_time = base_backoff * (2 ** attempt)
+                        jitter = min(sleep_time * 0.1, 0.5)
+                        import time
+
+                        _LOGGER.info(
+                            "Azure rate-limit detected, retrying in %.2fs (attempt %d)", sleep_time + jitter, attempt + 1)
+                        time.sleep(sleep_time + jitter)
+                        attempt += 1
+                        continue
+                    # Propagate other exceptions
+                    raise
+
+        try:
+            resp = _attempt_create(
                 model=self.deployment,  # In Azure, 'model' is your deployment name
                 messages=messages,
                 temperature=self.temperature,
                 max_tokens=self.max_output_tokens,
-                stream=True,
+                stream=stream,
             )
+        except Exception as e:
+            # If quota/premium, return a friendly message instead of bubbling an
+            # exception to callers (better UX for local & CLI users)
+            if is_quota_error(e):
+                friendly = format_quota_message(e, service_name="Azure OpenAI")
+                if stream:
+                    def gen_err() -> Generator[str, None, None]:
+                        yield friendly
 
+                    return gen_err()
+                return friendly
+            # Not a quota error -> re-raise so upstream can observe generic failures
+            raise
+
+        if stream:
             def gen() -> Generator[str, None, None]:
-                for chunk in resp:
-                    try:
-                        delta = chunk.choices[0].delta
-                        if delta and delta.content:
-                            yield delta.content
-                    except Exception:
-                        pass
+                # resp can be an iterator/generator from the SDK. We iterate and
+                # guard against runtime errors that may occur during streaming.
+                try:
+                    for chunk in resp:
+                        try:
+                            delta = chunk.choices[0].delta
+                            if delta and delta.content:
+                                yield delta.content
+                        except Exception:
+                            # Resilient: skip unexpected chunk shapes
+                            continue
+                except Exception as e:
+                    # Catch runtime errors during iteration and turn them into
+                    # a short user-friendly message (quota or otherwise).
+                    if is_quota_error(e):
+                        yield format_quota_message(e, service_name="Azure OpenAI")
+                    else:
+                        yield f"[AzureOpenAI error: {str(e)}]"
+
             return gen()
+
         else:
-            resp = self.client.chat.completions.create(
-                model=self.deployment,
-                messages=messages,
-                temperature=self.temperature,
-                max_tokens=self.max_output_tokens,
-                stream=False,
-            )
             try:
                 return resp.choices[0].message.content or ""
             except Exception:
