@@ -52,9 +52,12 @@ except Exception:  # noqa: BLE001
 
 try:
     import yaml  # type: ignore
-except Exception as e:  # noqa: BLE001
-    raise SystemExit(
-        f"pyyaml is required. Install with: pip install pyyaml\nImport error: {e}")
+except Exception:  # noqa: BLE001
+    # Allow importing this module even if pyyaml is not installed so tests and
+    # tooling can import functions without requiring optional deps at module
+    # import time. Provide a very small in-file fallback YAML loader for the
+    # minimal subset used by unit tests (mappings, lists, simple scalars).
+    yaml = None
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -91,8 +94,116 @@ class Job:
 
 
 def read_yaml(path: Path) -> Dict[str, Any]:
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    text = path.read_text(encoding="utf-8")
+    if yaml is not None:
+        # Use PyYAML when available for full-featured parsing
+        return yaml.safe_load(text) or {}
+
+    # Very small, permissive YAML subset parser used as a fallback in test
+    # environments where PyYAML isn't available. It supports:
+    # - top-level mappings (key: value)
+    # - simple lists ("- item") and lists of mappings ("- key: value")
+    # - null/None values using 'null' / 'None' / '~'
+    # - booleans true/false and integers/floats
+    def _convert_scalar(val: str):
+        if val is None:
+            return None
+        v = val.strip()
+        if v == "" or v in ("null", "Null", "NULL", "~", "None", "none"):
+            return None
+        if v in ("true", "True", "TRUE"):
+            return True
+        if v in ("false", "False", "FALSE"):
+            return False
+        # Try integer then float then fallback to string
+        try:
+            return int(v)
+        except Exception:
+            try:
+                return float(v)
+            except Exception:
+                return v
+
+    root: Dict[str, Any] = {}
+    stack: List[tuple[int, Any]] = [(-1, root)]
+
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if not line.strip() or line.strip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        content = line.lstrip(" ")
+
+        # Pop stack until we find the correct parent context for the current
+        # indentation level.
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+
+        parent = stack[-1][1]
+
+        if content.startswith("- "):
+            item_text = content[2:].strip()
+            # If parent is a dict, make sure the last key holds a list
+            if isinstance(parent, dict):
+                if not parent:
+                    # No key to attach list to; create a synthetic list key
+                    # (unlikely in our tests) and attach it to a numeric key.
+                    key = "_list"
+                    parent.setdefault(key, [])
+                last_key = next(reversed(parent))
+                if parent[last_key] is None or not isinstance(parent[last_key], list):
+                    parent[last_key] = []
+                lst = parent[last_key]
+                # Ensure stack knows about this list container
+                stack.append((indent, lst))
+                parent = lst
+
+            # Now parent should be a list
+            if item_text == "":
+                # empty list item; create an empty dict placeholder
+                new_item: Any = {}
+                parent.append(new_item)
+                # allow nested children under this new item
+                stack.append((indent, new_item))
+            elif ":" in item_text:
+                key, val = (x.strip() for x in item_text.split(":", 1))
+                val_parsed = _convert_scalar(val) if val != "" else None
+                new_item = {key: val_parsed}
+                parent.append(new_item)
+                if val_parsed is None:
+                    # value may contain nested children in following lines
+                    stack.append((indent, new_item))
+            else:
+                parent.append(_convert_scalar(item_text))
+
+        elif ":" in content:
+            key, val = (x.strip() for x in content.split(":", 1))
+            # If parent is a list, attach mappings to the last element
+            if isinstance(parent, list):
+                if not parent or not isinstance(parent[-1], dict):
+                    parent.append({})
+                if val == "":
+                    parent[-1][key] = None
+                    # push the parent dict back so its nested children can be
+                    # assigned on subsequent lines
+                    stack.append((indent, parent))
+                else:
+                    parent[-1][key] = _convert_scalar(val)
+            else:
+                if val == "":
+                    parent[key] = None
+                    # push current parent so nested children populate this key
+                    stack.append((indent, parent))
+                else:
+                    parent[key] = _convert_scalar(val)
+
+        else:
+            # Bare scalars on a line by themselves - append into parent list if
+            # present, otherwise skip.
+            if isinstance(parent, list):
+                parent.append(_convert_scalar(content))
+
+    return root
 
 
 def load_jobs(config_path: Path) -> List[Job]:
@@ -255,7 +366,7 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
     log_path = job_dir / "stdout.log"
 
     # Progress indicator
-    progress_pct = int(((job_index + 1) / max(total_jobs, 1)) * 100)
+    progress_pct = int((job_index / max(total_jobs, 1)) * 100)
     print(
         f"\n[autotrain] [{progress_pct}%] Job {job_index + 1}/{total_jobs}: {job.name}")
 

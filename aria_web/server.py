@@ -3,8 +3,12 @@
 Simple web server for Aria Visual Command System
 Serves the HTML/JS frontend and provides API endpoint for command generation
 """
+import random
+import math
 import sys
 from pathlib import Path
+import datetime
+from datetime import timezone
 from typing import List
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
@@ -13,7 +17,8 @@ from urllib.parse import urlparse, parse_qs
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Add project paths
@@ -28,7 +33,8 @@ try:
     logger.info("✓ LLM providers available for automatic action generation")
 except ImportError:
     LLM_AVAILABLE = False
-    logger.warning("✗ LLM providers not available - will use rule-based fallback only")
+    logger.warning(
+        "✗ LLM providers not available - will use rule-based fallback only")
 
 # Skip AI model loading for faster startup - use rule-based fallback
 MODEL = None
@@ -122,17 +128,18 @@ class AriaActionParser:
             else:
                 # older style (just provider)
                 self.provider = detected
-            provider_name = getattr(self.provider_choice, 'name', getattr(self.provider, '__class__', type(self.provider)).__class__.__name__)
+            provider_name = getattr(self.provider_choice, 'name', getattr(
+                self.provider, '__class__', type(self.provider)).__class__.__name__)
             logger.info(f"✓ Initialized LLM provider: {provider_name}")
         except Exception as e:
             logger.warning(f"Failed to initialize LLM provider: {e}")
             self.provider = None
-    
+
     def _build_system_prompt(self) -> str:
         """Build system prompt with action schema and current state"""
         actions_json = json.dumps(ARIA_ACTIONS, indent=2)
         state_json = json.dumps(stage_state, indent=2)
-        
+
         return f"""You are an action planner for Aria, a 3D character assistant.
 
 Available Actions:
@@ -160,24 +167,24 @@ Rules:
 3. Objects on table are at y=35, x varies
 4. Stage bounds: 0-100 for both x and y
 5. If command is unclear, choose most reasonable interpretation"""
-    
+
     def parse_with_llm(self, command: str) -> List[dict]:
         """Parse command using LLM provider"""
         if not self.provider:
             raise ValueError("LLM provider not available")
-        
+
         system_prompt = self._build_system_prompt()
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": command}
         ]
-        
+
         try:
             response = self.provider.complete(messages, stream=False)
-            
+
             # Extract JSON from response
             content = response.get('content', '').strip()
-            
+
             # Try to parse as JSON
             if content.startswith('['):
                 actions = json.loads(content)
@@ -189,7 +196,7 @@ Rules:
                     actions = json.loads(json_match.group(0))
                 else:
                     raise ValueError("No JSON array found in response")
-            
+
             # Validate actions
             validated = []
             for action in actions:
@@ -197,124 +204,144 @@ Rules:
                     validated.append(action)
                 else:
                     logger.warning(f"Skipping invalid action: {action}")
-            
+
             return validated
-            
+
         except Exception as e:
             logger.error(f"LLM parsing failed: {e}")
             raise
-    
+
     def parse_with_fallback(self, command: str) -> List[dict]:
         """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
         actions = []
         command_lower = command.lower()
-        
+
         # Parse move commands
         if any(word in command_lower for word in ['go', 'move', 'walk', 'run']):
             # Extract target from command
             if 'table' in command_lower:
-                actions.append({"action": "move", "target": {"x": 60, "y": 35}, "speed": "normal"})
+                actions.append({"action": "move", "target": {
+                               "x": 60, "y": 35}, "speed": "normal"})
             elif 'center' in command_lower or 'middle' in command_lower:
-                actions.append({"action": "move", "target": {"x": 50, "y": 50}, "speed": "normal"})
+                actions.append({"action": "move", "target": {
+                               "x": 50, "y": 50}, "speed": "normal"})
             elif 'left' in command_lower:
-                actions.append({"action": "move", "target": {"x": 20, "y": 50}, "speed": "normal"})
+                actions.append({"action": "move", "target": {
+                               "x": 20, "y": 50}, "speed": "normal"})
             elif 'right' in command_lower:
-                actions.append({"action": "move", "target": {"x": 80, "y": 50}, "speed": "normal"})
-        
+                actions.append({"action": "move", "target": {
+                               "x": 80, "y": 50}, "speed": "normal"})
+
         # Parse say commands
         if any(word in command_lower for word in ['say', 'speak', 'tell', 'greet']):
             # Extract text after say/speak
             for trigger in ['say ', 'speak ', 'tell ', 'greet ']:
                 if trigger in command_lower:
-                    text = command[command_lower.index(trigger) + len(trigger):].strip(' "\'')
-                    emotion = 'happy' if any(w in text.lower() for w in ['!', 'hello', 'hi']) else 'neutral'
-                    actions.append({"action": "say", "text": text, "emotion": emotion})
+                    text = command[command_lower.index(
+                        trigger) + len(trigger):].strip(' "\'')
+                    emotion = 'happy' if any(w in text.lower() for w in [
+                                             '!', 'hello', 'hi']) else 'neutral'
+                    actions.append(
+                        {"action": "say", "text": text, "emotion": emotion})
                     break
-        
+
         # Parse pickup commands
         for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
             if obj in command_lower and any(word in command_lower for word in ['pick', 'get', 'grab', 'take']):
                 # Move to object first
                 obj_pos = stage_state['objects'][obj]['position']
-                actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
+                actions.append(
+                    {"action": "move", "target": obj_pos, "speed": "normal"})
                 actions.append({"action": "pickup", "object_id": obj})
                 break
-        
+
         # Parse gesture commands
         gestures = ['wave', 'bow', 'nod', 'shake', 'point']
         for gesture in gestures:
             if gesture in command_lower:
                 actions.append({"action": "gesture", "gesture_type": gesture})
                 break
-        
+
         return actions
-    
+
     def parse(self, command: str, use_llm: bool = True) -> List[dict]:
         """
         Parse command into structured actions
-        
+
         Args:
             command: Natural language command
             use_llm: Try LLM first if available
-        
+
         Returns:
             List of action dicts
         """
         if use_llm and self.provider:
             try:
                 actions = self.parse_with_llm(command)
-                logger.info(f"✓ LLM parsed: {command} -> {len(actions)} actions")
+                logger.info(
+                    f"✓ LLM parsed: {command} -> {len(actions)} actions")
                 return actions
             except Exception as e:
                 logger.warning(f"LLM parsing failed, using fallback: {e}")
-        
+
         actions = self.parse_with_fallback(command)
         logger.info(f"✓ Fallback parsed: {command} -> {len(actions)} actions")
         return actions
 
 
 # --------------------------- World Generation ---------------------------
-import random, datetime
-import math
+
 
 def _sanitize_id(raw: str) -> str:
     import re as _re
     cleaned = _re.sub(r"[^a-zA-Z0-9_]+", "_", raw.strip().lower())
-    return cleaned[:30] or f"obj_{random.randint(1000,9999)}"
+    return cleaned[:30] or f"obj_{random.randint(1000, 9999)}"
+
 
 THEME_OBJECT_LIBRARY = {
     'forest': [
-        ("tree", "🌲"), ("mushroom", "🍄"), ("rock", "🪨"), ("flower", "🌼"), ("owl", "🦉"), ("fox", "🦊")
+        ("tree", "🌲"), ("mushroom", "🍄"), ("rock",
+                                           "🪨"), ("flower", "🌼"), ("owl", "🦉"), ("fox", "🦊")
     ],
     'space': [
-        ("planet", "🪐"), ("star", "⭐"), ("rocket", "🚀"), ("alien", "👽"), ("astronaut", "👩‍🚀"), ("satellite", "🛰️")
+        ("planet", "🪐"), ("star", "⭐"), ("rocket", "🚀"), ("alien",
+                                                          "👽"), ("astronaut", "👩‍🚀"), ("satellite", "🛰️")
     ],
     'ocean': [
-        ("fish", "🐟"), ("shell", "🐚"), ("coral", "🪸"), ("whale", "🐋"), ("ship", "🚢"), ("dolphin", "🐬")
+        ("fish", "🐟"), ("shell", "🐚"), ("coral",
+                                        "🪸"), ("whale", "🐋"), ("ship", "🚢"), ("dolphin", "🐬")
     ],
     'lab': [
-        ("beaker", "🧪"), ("microscope", "🔬"), ("dna", "🧬"), ("robot", "🤖"), ("atom", "⚛️"), ("chip", "💾")
+        ("beaker", "🧪"), ("microscope", "🔬"), ("dna",
+                                               "🧬"), ("robot", "🤖"), ("atom", "⚛️"), ("chip", "💾")
     ],
     'medieval': [
-        ("sword", "🗡️"), ("shield", "🛡️"), ("crown", "👑"), ("scroll", "📜"), ("goblet", "🍷"), ("castle", "🏰")
+        ("sword", "🗡️"), ("shield", "🛡️"), ("crown",
+                                            "👑"), ("scroll", "📜"), ("goblet", "🍷"), ("castle", "🏰")
     ],
     'desert': [
-        ("cactus", "🌵"), ("skull", "💀"), ("camel", "🐪"), ("scorpion", "🦂"), ("sun", "☀️"), ("sand", "🟨")
+        ("cactus", "🌵"), ("skull", "💀"), ("camel",
+                                          "🐪"), ("scorpion", "🦂"), ("sun", "☀️"), ("sand", "🟨")
     ],
     'garden': [
-        ("rose", "🌹"), ("tulip", "🌷"), ("butterfly", "🦋"), ("bee", "🐝"), ("bench", "🪑"), ("pond", "💧")
+        ("rose", "🌹"), ("tulip", "🌷"), ("butterfly",
+                                        "🦋"), ("bee", "🐝"), ("bench", "🪑"), ("pond", "💧")
     ],
     'cyberpunk': [
-        ("drone", "🛸"), ("neon", "💡"), ("chip", "💾"), ("server", "🖥️"), ("bot", "🤖"), ("battery", "🔋")
+        ("drone", "🛸"), ("neon", "💡"), ("chip",
+                                        "💾"), ("server", "🖥️"), ("bot", "🤖"), ("battery", "🔋")
     ],
     'arcade': [
-        ("joystick", "🕹️"), ("coin", "🪙"), ("ghost", "👻"), ("trophy", "🏆"), ("console", "🎮"), ("heart", "❤️")
+        ("joystick", "🕹️"), ("coin", "🪙"), ("ghost",
+                                            "👻"), ("trophy", "🏆"), ("console", "🎮"), ("heart", "❤️")
     ],
 }
 
+
 def generate_world_fallback(theme: str, count: int) -> dict:
     """Generate a world procedurally without LLM."""
-    objects_catalog = THEME_OBJECT_LIBRARY.get(theme.lower(), THEME_OBJECT_LIBRARY['forest'])
+    objects_catalog = THEME_OBJECT_LIBRARY.get(
+        theme.lower(), THEME_OBJECT_LIBRARY['forest'])
     random.shuffle(objects_catalog)
     chosen = objects_catalog[: max(1, count)]
     stage_objects = {}
@@ -344,6 +371,7 @@ def generate_world_fallback(theme: str, count: int) -> dict:
         'environment': environment
     }
 
+
 def generate_world_with_llm(theme: str, count: int, provider) -> dict:
     """Use LLM provider to generate a themed world. Returns fallback on failure."""
     system_prompt = (
@@ -362,11 +390,13 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
         # Strip code fences
         if '```' in raw_str:
             import re as _re
-            m = _re.search(r"```(?:json)?\n(.*?)(```)$", raw_str, flags=_re.DOTALL)
+            m = _re.search(r"```(?:json)?\n(.*?)(```)$",
+                           raw_str, flags=_re.DOTALL)
             if m:
                 raw_str = m.group(1).strip()
         # Extract first JSON object
-        import json as _json, re as _re
+        import json as _json
+        import re as _re
         obj_match = _re.search(r"\{.*\}\s*$", raw_str, flags=_re.DOTALL)
         if obj_match:
             raw_str = obj_match.group(0)
@@ -394,7 +424,8 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
         if not sanitized_objects:
             return generate_world_fallback(theme, count)
         env.setdefault('theme', theme)
-        env.setdefault('generated_at', datetime.datetime.now(timezone.utc).isoformat() + 'Z')
+        env.setdefault('generated_at', datetime.datetime.now(
+            timezone.utc).isoformat() + 'Z')
         env.setdefault('stage_bounds', {'width': 100, 'height': 100})
         return {
             'objects': sanitized_objects,
@@ -415,7 +446,7 @@ def get_stage_context() -> str:
     """Generate natural language description of current stage state for AI"""
     aria = stage_state['aria']
     objects = stage_state['objects']
-    
+
     # Calculate distances to objects
     aria_pos = aria['position']
     nearby_objects = []
@@ -426,10 +457,11 @@ def get_stage_context() -> str:
         obj_pos = obj_data['position']
         if not isinstance(obj_pos, dict) or 'x' not in obj_pos or 'y' not in obj_pos:
             continue
-        distance = ((aria_pos['x'] - obj_pos['x'])**2 + (aria_pos['y'] - obj_pos['y'])**2)**0.5
+        distance = ((aria_pos['x'] - obj_pos['x'])**2 +
+                    (aria_pos['y'] - obj_pos['y'])**2)**0.5
         if distance < 30:  # Within reach
             nearby_objects.append(obj_name)
-    
+
     context = f"""STAGE VIEW:
 - Aria is at position ({aria_pos['x']}%, {aria_pos['y']}%), facing {aria['facing']}
 - Expression: {aria['expression']}
@@ -441,12 +473,13 @@ def get_stage_context() -> str:
 """
     return context
 
+
 def determine_position_from_context(cmd: str) -> str:
     """AI-driven position determination based on command semantics and stage state"""
     aria_pos = stage_state['aria']['position']
     objects = stage_state['objects']
     table_pos = stage_state['environment']['table']['position']
-    
+
     # Object interaction positioning - move near the object
     for obj_name in ['apple', 'book', 'cup', 'ball', 'flower', 'bear']:
         if obj_name in cmd and ('pick' in cmd or 'get' in cmd or 'grab' in cmd or 'take' in cmd):
@@ -458,7 +491,7 @@ def determine_position_from_context(cmd: str) -> str:
                     if isinstance(obj_pos, dict) and 'x' in obj_pos and 'y' in obj_pos:
                         # Position slightly to the left of object
                         return f'[aria:position:{max(10, obj_pos["x"] - 10)}:{obj_pos["y"] + 10}]'
-    
+
     # Action-based positioning
     if any(k in cmd for k in ['jump', 'leap', 'hop']):
         return '[aria:position:50:60]'  # Center for jumping
@@ -472,7 +505,8 @@ def determine_position_from_context(cmd: str) -> str:
             return '[aria:position:40:60]'  # Position to see table
         return '[aria:position:20:40]'  # Left side for observing
     elif any(k in cmd for k in ['sit', 'rest', 'relax']):
-        return f'[aria:position:{table_pos["x"] - 5}:{table_pos["y"] + 35}]'  # Near table to sit
+        # Near table to sit
+        return f'[aria:position:{table_pos["x"] - 5}:{table_pos["y"] + 35}]'
     elif any(k in cmd for k in ['run', 'race', 'sprint']):
         return '[aria:position:85:70]'  # Far right for running space
     elif any(k in cmd for k in ['hide', 'crouch', 'duck']):
@@ -497,19 +531,20 @@ def determine_position_from_context(cmd: str) -> str:
         y = 60 + (pos_hash % 20)  # Random between 60-80%
         return f'[aria:position:{x}:{y}]'
 
+
 def generate_tags_ai(command: str) -> List[str]:
     """Generate tags using AI model"""
     if MODEL is None:
         return []
-    
+
     try:
         from transformers import AutoTokenizer
         base_model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
         tokenizer = AutoTokenizer.from_pretrained(base_model)
-        
+
         input_text = f"<|user|>\n{command}</s>\n<|assistant|>\n"
         inputs = tokenizer(input_text, return_tensors="pt").to(MODEL.device)
-        
+
         with torch.no_grad():
             outputs = MODEL.generate(
                 **inputs,
@@ -520,34 +555,37 @@ def generate_tags_ai(command: str) -> List[str]:
                 repetition_penalty=1.5,
                 pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id
             )
-        
-        response = tokenizer.decode(outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
+
+        response = tokenizer.decode(
+            outputs[0][inputs['input_ids'].shape[1]:], skip_special_tokens=True)
         tags = re.findall(r'\[aria:[^\]]+\]', response)
         return tags[:2]  # Return first 2 tags max
     except Exception as e:
         print(f"AI generation error: {e}")
         return []
 
+
 def generate_tags_fallback(command: str) -> List[str]:
     """Simple rule-based fallback tag generation with automatic positioning"""
     cmd = command.lower()
     tags = []
-    
+
     # AI-driven automatic positioning based on command context
     # Determine optimal position for the action
     auto_position = determine_position_from_context(cmd)
     if auto_position:
         tags.append(auto_position)
-    
+
     # Track if limb commands are detected to avoid movement conflicts
     has_limb_command = any(k in cmd for k in [
         'left arm', 'arm left', 'left hand', 'right arm', 'arm right', 'right hand',
         'left leg', 'leg left', 'right leg', 'leg right'
     ])
-    
+
     # Special: server-side "say" / announce detection (capture original text)
     try:
-        say_match = re.search(r"(?:\b(?:say|announce|shout|speak|tell)\b)(?:\s+(?:everyone|that|to))?[:\-\s]+(.+)", command, flags=re.I)
+        say_match = re.search(
+            r"(?:\b(?:say|announce|shout|speak|tell)\b)(?:\s+(?:everyone|that|to))?[:\-\s]+(.+)", command, flags=re.I)
         if say_match:
             raw_msg = say_match.group(1).strip()
             # basic sanitization and length cap
@@ -570,7 +608,7 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append('[aria:expression:thinking]')
     elif 'wink' in cmd:
         tags.append('[aria:expression:wink]')
-    
+
     # Animations
     if 'jump' in cmd:
         tags.append('[aria:animate:jump]')
@@ -582,7 +620,7 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append('[aria:animate:bow]')
     elif 'flip' in cmd:
         tags.append('[aria:animate:flip]')
-    
+
     # Gestures
     if 'wave' in cmd:
         tags.append('[aria:gesture:wave]')
@@ -592,7 +630,7 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append('[aria:gesture:clap]')
     elif 'shrug' in cmd:
         tags.append('[aria:gesture:shrug]')
-    
+
     # Limb controls and poses (AI may also emit these; fallback supports natural phrases)
     # Hands up / T-pose / Cross arms
     if 'hands up' in cmd or 'raise hands' in cmd:
@@ -616,7 +654,8 @@ def generate_tags_fallback(command: str) -> List[str]:
     # Numeric angle if present (e.g., "left arm 45 degrees")
     angle_match = None
     try:
-        angle_match = next((m for m in __import__('re').finditer(r'(-?\d{1,3})\s*(deg|degree|degrees)?', cmd)), None)
+        angle_match = next((m for m in __import__('re').finditer(
+            r'(-?\d{1,3})\s*(deg|degree|degrees)?', cmd)), None)
     except Exception:
         angle_match = None
     angle_val = angle_match.group(1) if angle_match else None
@@ -632,17 +671,23 @@ def generate_tags_fallback(command: str) -> List[str]:
         if not parts:
             parts = ['right_arm']
         if any(k in cmd for k in ['wave', 'wiggle']):
-            for p in parts: limb_tag(p, 'wave')
+            for p in parts:
+                limb_tag(p, 'wave')
         elif any(k in cmd for k in ['raise', 'up', 'lift']):
-            for p in parts: limb_tag(p, 'raise')
+            for p in parts:
+                limb_tag(p, 'raise')
         elif any(k in cmd for k in ['lower', 'down']):
-            for p in parts: limb_tag(p, 'lower')
+            for p in parts:
+                limb_tag(p, 'lower')
         elif any(k in cmd for k in ['forward', 'front']):
-            for p in parts: limb_tag(p, 'forward')
+            for p in parts:
+                limb_tag(p, 'forward')
         elif any(k in cmd for k in ['back', 'backward', 'behind']):
-            for p in parts: limb_tag(p, 'back')
+            for p in parts:
+                limb_tag(p, 'back')
         elif angle_val is not None:
-            for p in parts: limb_tag(p, angle_val)
+            for p in parts:
+                limb_tag(p, angle_val)
 
     # Leg actions
     if left_leg or right_leg or 'leg' in cmd:
@@ -654,13 +699,17 @@ def generate_tags_fallback(command: str) -> List[str]:
         if not parts:
             parts = ['left_leg']
         if 'kick' in cmd:
-            for p in parts: limb_tag(p, 'kick')
+            for p in parts:
+                limb_tag(p, 'kick')
         elif any(k in cmd for k in ['forward', 'front']):
-            for p in parts: limb_tag(p, 'forward')
+            for p in parts:
+                limb_tag(p, 'forward')
         elif any(k in cmd for k in ['back', 'backward', 'behind']):
-            for p in parts: limb_tag(p, 'back')
+            for p in parts:
+                limb_tag(p, 'back')
         elif angle_val is not None:
-            for p in parts: limb_tag(p, angle_val)
+            for p in parts:
+                limb_tag(p, angle_val)
 
     # Movement - only add if not a limb command (to avoid conflicts like "left arm" -> "move:left")
     if not has_limb_command:
@@ -676,7 +725,7 @@ def generate_tags_fallback(command: str) -> List[str]:
             movement_style = 'walk'
         else:
             movement_style = 'move'
-        
+
         # Determine direction - exclude if keywords could be part of limb commands
         has_forward_limb = 'leg' in cmd or 'arm' in cmd
         if 'left' in cmd:
@@ -687,7 +736,7 @@ def generate_tags_fallback(command: str) -> List[str]:
             tags.append(f'[aria:{movement_style}:up]')
         elif ('down' in cmd or 'back' in cmd) and not has_forward_limb:
             tags.append(f'[aria:{movement_style}:down]')
-    
+
     # Effects
     if 'sparkle' in cmd:
         tags.append('[aria:effect:sparkle]')
@@ -695,13 +744,14 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append('[aria:effect:glow]')
     elif 'hearts' in cmd:
         tags.append('[aria:effect:hearts]')
-    
+
     # Camera
     if 'center' in cmd:
         tags.append('[aria:camera:center]')
     elif 'zoom' in cmd:
-        tags.append('[aria:camera:zoom_in]' if 'in' in cmd else '[aria:camera:zoom_out]')
-    
+        tags.append(
+            '[aria:camera:zoom_in]' if 'in' in cmd else '[aria:camera:zoom_out]')
+
     # Poses (body positions)
     if 'sit' in cmd:
         tags.append('[aria:pose:sit]')
@@ -711,7 +761,7 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append('[aria:pose:crouch]')
     elif 'lie' in cmd or 'lay' in cmd:
         tags.append('[aria:pose:lie]')
-    
+
     # Position control - let AI determine where Aria should be
     # Format: [aria:position:x:y] where x and y are percentages (0-100)
     # Or named positions: [aria:position:center], [aria:position:left], etc.
@@ -727,7 +777,7 @@ def generate_tags_fallback(command: str) -> List[str]:
         'front': '[aria:position:50:85]',
         'back': '[aria:position:50:15]'
     }
-    
+
     # Check for position commands
     if 'position' in cmd or 'move to' in cmd or 'go to' in cmd or 'stand at' in cmd:
         for keyword, tag in position_keywords.items():
@@ -740,7 +790,7 @@ def generate_tags_fallback(command: str) -> List[str]:
             if coord_match:
                 x, y = coord_match.groups()
                 tags.append(f'[aria:position:{x}:{y}]')
-    
+
     # Object management (add/remove objects)
     if 'add' in cmd or 'create' in cmd or 'spawn' in cmd:
         object_emojis = {
@@ -754,25 +804,25 @@ def generate_tags_fallback(command: str) -> List[str]:
             if obj_name in cmd:
                 tags.append(f'[aria:interact:add:{obj_name}:{emoji}]')
                 break
-    
+
     return tags
 
 
 def execute_aria_action(action: dict) -> dict:
     """
     Execute a single structured action and update stage state
-    
+
     Args:
         action: Action dict with 'action' key and params
-    
+
     Returns:
         Result dict with status, message, and updated state
     """
     action_type = action.get('action')
-    
+
     if action_type not in ARIA_ACTIONS:
         return {'status': 'error', 'message': f'Unknown action: {action_type}'}
-    
+
     try:
         if action_type == 'move':
             target = action.get('target')
@@ -786,13 +836,14 @@ def execute_aria_action(action: dict) -> dict:
             elif isinstance(target, str) and target in stage_state['objects']:
                 # Move to object
                 obj_pos = stage_state['objects'][target]['position']
-                stage_state['aria']['position'] = {'x': obj_pos['x'] - 10, 'y': obj_pos['y'] + 5}
+                stage_state['aria']['position'] = {
+                    'x': obj_pos['x'] - 10, 'y': obj_pos['y'] + 5}
                 return {
                     'status': 'success',
                     'message': f'Moved to {target}',
                     'tags': [f'[aria:position:{obj_pos["x"] - 10}:{obj_pos["y"] + 5}]']
                 }
-        
+
         elif action_type == 'say':
             text = action.get('text', '')
             emotion = action.get('emotion', 'neutral')
@@ -802,23 +853,24 @@ def execute_aria_action(action: dict) -> dict:
                 'message': f'Said: "{text}" with {emotion} emotion',
                 'tags': [f'[aria:say:{text}]', f'[aria:expression:{emotion}]']
             }
-        
+
         elif action_type == 'pickup':
             obj_id = action.get('object_id')
             if obj_id not in stage_state['objects']:
                 return {'status': 'error', 'message': f'Object not found: {obj_id}'}
-            
+
             if stage_state['aria']['held_object']:
                 return {'status': 'error', 'message': 'Already holding an object'}
-            
+
             # Check distance
             aria_pos = stage_state['aria']['position']
             obj_pos = stage_state['objects'][obj_id]['position']
-            distance = ((aria_pos['x'] - obj_pos['x'])**2 + (aria_pos['y'] - obj_pos['y'])**2)**0.5
-            
+            distance = ((aria_pos['x'] - obj_pos['x']) **
+                        2 + (aria_pos['y'] - obj_pos['y'])**2)**0.5
+
             if distance > 30:
                 return {'status': 'error', 'message': f'Too far from {obj_id}. Move closer first.'}
-            
+
             stage_state['aria']['held_object'] = obj_id
             stage_state['objects'][obj_id]['state'] = 'held'
             return {
@@ -826,55 +878,56 @@ def execute_aria_action(action: dict) -> dict:
                 'message': f'Picked up {obj_id}',
                 'tags': [f'[aria:pickup:{obj_id}]', f'[aria:limb:right_arm:grab]']
             }
-        
+
         elif action_type == 'drop':
             if not stage_state['aria']['held_object']:
                 return {'status': 'error', 'message': 'Not holding anything'}
-            
+
             obj_id = stage_state['aria']['held_object']
             position = action.get('position', stage_state['aria']['position'])
-            
+
             stage_state['objects'][obj_id]['position'] = position
             stage_state['objects'][obj_id]['state'] = 'dropped'
             stage_state['aria']['held_object'] = None
-            
+
             return {
                 'status': 'success',
                 'message': f'Dropped {obj_id}',
                 'tags': [f'[aria:drop:{obj_id}]', '[aria:limb:right_arm:release]']
             }
-        
+
         elif action_type == 'throw':
             if not stage_state['aria']['held_object']:
                 return {'status': 'error', 'message': 'Not holding anything'}
-            
+
             obj_id = stage_state['aria']['held_object']
             target = action.get('target', {'x': 70, 'y': 40})
             force = action.get('force', 'medium')
-            
+
             stage_state['objects'][obj_id]['position'] = target
             stage_state['objects'][obj_id]['state'] = 'thrown'
             stage_state['aria']['held_object'] = None
-            
+
             return {
                 'status': 'success',
                 'message': f'Threw {obj_id} with {force} force',
                 'tags': [f'[aria:throw:{obj_id}]', '[aria:limb:right_arm:throw]', f'[aria:animation:throw_{force}]']
             }
-        
+
         elif action_type == 'gesture':
             gesture_type = action.get('gesture_type', 'wave')
-            valid_gestures = ['wave', 'bow', 'nod', 'shake', 'point', 'shrug', 'clap']
-            
+            valid_gestures = ['wave', 'bow', 'nod',
+                              'shake', 'point', 'shrug', 'clap']
+
             if gesture_type not in valid_gestures:
                 gesture_type = 'wave'  # Default fallback
-            
+
             return {
                 'status': 'success',
                 'message': f'Performed {gesture_type} gesture',
                 'tags': [f'[aria:gesture:{gesture_type}]', f'[aria:animation:{gesture_type}]']
             }
-        
+
         elif action_type == 'look':
             target = action.get('target')
             if isinstance(target, str) and target in stage_state['objects']:
@@ -898,7 +951,7 @@ def execute_aria_action(action: dict) -> dict:
                     'message': f'Looking at position',
                     'tags': [f'[aria:facing:{facing}]']
                 }
-        
+
         elif action_type == 'wait':
             duration = action.get('duration', 1.0)
             return {
@@ -906,9 +959,9 @@ def execute_aria_action(action: dict) -> dict:
                 'message': f'Waiting {duration}s',
                 'tags': [f'[aria:wait:{duration}]']
             }
-        
+
         return {'status': 'error', 'message': f'Action not implemented: {action_type}'}
-        
+
     except Exception as e:
         logger.error(f"Action execution failed: {e}")
         return {'status': 'error', 'message': str(e)}
@@ -921,12 +974,12 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         super().end_headers()
-    
+
     def do_OPTIONS(self):
         """Handle CORS preflight"""
         self.send_response(200)
         self.end_headers()
-    
+
     def do_GET(self):
         """Serve static files"""
         print(f"📥 GET request: {self.path}")
@@ -935,37 +988,48 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            payload = {'objects': stage_state.get('objects', {}), 'aria': stage_state.get('aria', {})}
+            payload = {'objects': stage_state.get(
+                'objects', {}), 'aria': stage_state.get('aria', {})}
             self.wfile.write(json.dumps(payload).encode('utf-8'))
             return
         if self.path == '/':
             self.path = '/index.html'
         return super().do_GET()
-    
+
     def do_POST(self):
+        # --- /api/aria/object endpoint ---
+        # Expected payloads:
+        # 1. Bulk update:
+        #    {"objects": {"id1": {"position": {...}, "state": ...}, ...}}
+        # 2. Single object action:
+        #    {"action": "add|update|remove", "object": {"id": "...", "position": {...}, "state": ...}}
+        #    - "add": adds a new object
+        #    - "update": updates position/state of existing object
+        #    - "remove": deletes object by id
+        #    - "object" must include "id" or "name"
         """Handle API requests"""
         if self.path == '/api/aria/command':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
-                
+
                 data = json.loads(post_data.decode('utf-8'))
                 command = data.get('command', '')
-                
+
                 # Update stage state if provided
                 if 'stage_state' in data:
                     stage_state.update(data['stage_state'])
-                
+
                 print(f"📝 Command received: {command}")
                 print(f"👁️  Stage context:\n{get_stage_context()}")
-                
+
                 # Try AI first with full context, fallback to rules
                 tags = generate_tags_ai(command)
                 if not tags:
                     tags = generate_tags_fallback(command)
-                
+
                 print(f"✨ Generated tags: {tags}")
-                
+
                 response = {
                     'command': command,
                     'tags': tags,
@@ -973,12 +1037,12 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     'stage_context': get_stage_context(),
                     'stage_aware': True
                 }
-                
+
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
-                
+
             except ConnectionAbortedError:
                 # Client disconnected, ignore
                 pass
@@ -1004,19 +1068,23 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     for k, v in data['objects'].items():
                         if isinstance(v, dict) and 'position' in v:
                             stage_state['objects'][k] = v
-                    result = {'status': 'ok', 'objects': stage_state['objects']}
+                    result = {'status': 'ok',
+                              'objects': stage_state['objects']}
                 elif 'object' in data and 'action' in data:
                     action = data['action']
                     obj = data['object']
                     obj_id = obj.get('id') or obj.get('name')
                     if not obj_id:
-                        raise ValueError('object missing id/name')
+                        raise ValueError(
+                            'Object payload must include "id" or "name" field.')
 
                     if action == 'add':
                         position = obj.get('position', {'x': 50, 'y': 50})
                         state = obj.get('state', 'on_stage')
-                        stage_state['objects'][obj_id] = {'position': position, 'state': state}
-                        result = {'status': 'added', 'id': obj_id, 'object': stage_state['objects'][obj_id]}
+                        stage_state['objects'][obj_id] = {
+                            'position': position, 'state': state}
+                        result = {'status': 'added', 'id': obj_id,
+                                  'object': stage_state['objects'][obj_id]}
                     elif action == 'update':
                         if obj_id not in stage_state['objects']:
                             stage_state['objects'][obj_id] = {}
@@ -1024,15 +1092,19 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             stage_state['objects'][obj_id]['position'] = obj['position']
                         if 'state' in obj:
                             stage_state['objects'][obj_id]['state'] = obj['state']
-                        result = {'status': 'updated', 'id': obj_id, 'object': stage_state['objects'][obj_id]}
+                        result = {'status': 'updated', 'id': obj_id,
+                                  'object': stage_state['objects'][obj_id]}
                     elif action == 'remove' or action == 'delete':
                         removed = stage_state['objects'].pop(obj_id, None)
-                        result = {'status': 'removed', 'id': obj_id, 'object': removed}
+                        result = {'status': 'removed',
+                                  'id': obj_id, 'object': removed}
                     else:
-                        raise ValueError(f'unknown action: {action}')
+                        raise ValueError(
+                            f'Unknown action: {action}. Supported: add, update, remove/delete.')
 
                 else:
-                    raise ValueError('invalid payload')
+                    raise ValueError(
+                        'Invalid payload: must include either "objects" (dict) or both "action" and "object" (dict with id/name).')
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
@@ -1045,28 +1117,29 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     self.send_response(400)
                     self.send_header('Content-Type', 'application/json')
                     self.end_headers()
-                    self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+                    self.wfile.write(json.dumps(
+                        {'error': str(e)}).encode('utf-8'))
                 except:
                     pass
                 return
-        
+
         # /api/aria/execute - LLM-powered automatic action execution
         elif self.path == '/api/aria/execute':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(content_length)
                 data = json.loads(body.decode('utf-8'))
-                
+
                 command = data.get('command', '')
                 auto_execute = data.get('auto_execute', False)
                 use_llm = data.get('use_llm', True)
-                
+
                 if not command:
                     raise ValueError('command is required')
-                
+
                 # Parse command into actions
                 actions = action_parser.parse(command, use_llm=use_llm)
-                
+
                 if not actions:
                     result = {
                         'status': 'error',
@@ -1078,7 +1151,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     # Execute actions if auto_execute is True
                     results = []
                     all_tags = []
-                    
+
                     if auto_execute:
                         for action in actions:
                             exec_result = execute_aria_action(action)
@@ -1088,7 +1161,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             })
                             if exec_result.get('tags'):
                                 all_tags.extend(exec_result['tags'])
-                    
+
                     result = {
                         'status': 'success',
                         'message': f'Parsed {len(actions)} actions' + (' and executed' if auto_execute else ' (plan only)'),
@@ -1099,16 +1172,16 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         'tags': all_tags if auto_execute else None,
                         'state': stage_state if auto_execute else None
                     }
-                
+
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
-                
-                print(f"✓ Execute API: {command} -> {len(actions)} actions" + 
+
+                print(f"✓ Execute API: {command} -> {len(actions)} actions" +
                       (f" (executed)" if auto_execute else " (plan only)"))
                 return
-                
+
             except Exception as e:
                 print(f"❌ Execute API error: {e}")
                 import traceback
@@ -1125,7 +1198,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 except:
                     pass
                 return
-        
+
         # /api/aria/world - Generate or regenerate themed world layout
         elif self.path == '/api/aria/world':
             try:
@@ -1138,7 +1211,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
 
                 # Generate
                 if use_llm and action_parser.provider:
-                    world = generate_world_with_llm(theme, count, action_parser.provider)
+                    world = generate_world_with_llm(
+                        theme, count, action_parser.provider)
                 else:
                     world = generate_world_fallback(theme, count)
                     world['llm'] = False
@@ -1152,8 +1226,10 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         'emoji': obj.get('emoji', '')
                     }
                 # Update environment meta
-                stage_state['environment']['theme'] = world['environment'].get('theme', theme)
-                stage_state['environment']['generated_at'] = world['environment'].get('generated_at')
+                stage_state['environment']['theme'] = world['environment'].get(
+                    'theme', theme)
+                stage_state['environment']['generated_at'] = world['environment'].get(
+                    'generated_at')
 
                 response = {
                     'status': 'success',
@@ -1167,51 +1243,59 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps(response, indent=2).encode('utf-8'))
-                logger.info(f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']})")
+                self.wfile.write(json.dumps(
+                    response, indent=2).encode('utf-8'))
+                logger.info(
+                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']})")
                 return
             except Exception as e:
                 logger.error(f"World generation error: {e}")
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
         else:
             self.send_response(404)
             self.end_headers()
-    
+
     def log_message(self, format, *args):
         """Custom logging"""
         if 'favicon' not in args[0] if args else True:
             print(f"🌐 {args[0] if args else format}")
 
+
 def main():
     import os
-    
+
     # Change to aria_web directory
     web_dir = Path(__file__).parent
     os.chdir(web_dir)
-    
-    port = 8080
+
+    # Allow the port to be overridden via the ARIA_PORT environment variable.
+    # This helps avoid address‑in‑use errors when the default port is already bound.
+    port = int(os.getenv('ARIA_PORT', '8080'))
     # Default to localhost for security; use environment variable to override if needed
     host = os.environ.get('ARIA_HOST', '127.0.0.1')
     server = HTTPServer((host, port), AriaRequestHandler)
-    
+
     print("\n" + "=" * 70)
     print("🎨 Aria Visual Command System - Web Server")
     print("=" * 70)
     print(f"🌐 Open in browser: http://localhost:{port}")
-    print(f"🤖 Model: {'AI (aria_expanded_v2)' if MODEL else 'Rule-based fallback'}")
+    print(
+        f"🤖 Model: {'AI (aria_expanded_v2)' if MODEL else 'Rule-based fallback'}")
     print("📝 Type commands in the web interface to control Aria")
     print("\nPress Ctrl+C to stop the server")
     print("=" * 70 + "\n")
-    
+
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\n👋 Server stopped")
+
 
 if __name__ == '__main__':
     main()
