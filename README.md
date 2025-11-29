@@ -511,7 +511,7 @@ See individual project directories for license information.
 
 ## 🧪 Testing
 
-This workspace has comprehensive test coverage with **68 automated tests** fully integrated with VS Code's native Testing UI.
+This workspace has comprehensive test coverage across multiple automated test suites fully integrated with VS Code's native Testing UI.
 
 ### Quick Start
 
@@ -523,8 +523,8 @@ This workspace has comprehensive test coverage with **68 automated tests** fully
 ### Test Suites
 
 - **Unit Tests (Fast):** 40 tests (~0.5 seconds) ✅
-- **Integration Tests:** 30 tests (external services) - 29 passing
-- **All Fast Tests:** 83 tests (~10 seconds) - all passing ✅
+- **Integration Tests:** 30 tests (external services)
+- **All Fast Tests:** 70 tests (~10 seconds) - fast tests (unit + integration)
 - **Complete Test Suite:** 84+ tests with coverage support
 
 ### Test Orchestrator (Recommended)
