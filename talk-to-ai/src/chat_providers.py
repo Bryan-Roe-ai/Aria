@@ -27,6 +27,46 @@ _LMSTUDIO_CACHE_TTL = 30  # seconds
 RoleMessage = Dict[str, str]  # {"role": "system|user|assistant", "content": "..."}
 
 
+# -------------------------------------------------------------------------
+# LM Studio availability cache to avoid repeated HTTP health checks
+# -------------------------------------------------------------------------
+
+_lmstudio_cache: Dict[str, Any] = {"available": None, "checked_at": 0.0, "url": None}
+_LMSTUDIO_CACHE_TTL = 30  # seconds
+
+
+def _check_lmstudio_available(url: str) -> bool:
+    """Check LM Studio availability with caching to avoid repeated HTTP requests.
+    
+    Results are cached for 30 seconds to prevent latency on every auto-detect call.
+    """
+    now = time.time()
+    # Return cached result if within TTL and URL matches
+    if (
+        _lmstudio_cache["available"] is not None
+        and _lmstudio_cache["url"] == url
+        and (now - _lmstudio_cache["checked_at"]) < _LMSTUDIO_CACHE_TTL
+    ):
+        return _lmstudio_cache["available"]
+    
+    # Perform health check
+    try:
+        import urllib.request
+        import urllib.error
+        req = urllib.request.Request(
+            url.replace("/v1", "") + "/v1/models",
+            headers={"User-Agent": "QAI"}
+        )
+        urllib.request.urlopen(req, timeout=1)
+        _lmstudio_cache["available"] = True
+    except Exception:
+        _lmstudio_cache["available"] = False
+    
+    _lmstudio_cache["checked_at"] = now
+    _lmstudio_cache["url"] = url
+    return _lmstudio_cache["available"]
+
+
 @dataclass
 class ProviderChoice:
     name: str  # 'azure' | 'openai' | 'local'
