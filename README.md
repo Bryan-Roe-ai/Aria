@@ -614,10 +614,10 @@ Train and use fine-tuned Aria models using LoRA adapters:
 
 ```powershell
 # Chat with a trained Aria adapter
-python .\talk-to-ai\src\chat_cli.py --provider lora --model data_out\aria_models\aria_direct
+python ./talk-to-ai/src/chat_cli.py --provider lora --model data_out/aria_models/aria_direct
 
 # Or use the default adapter location
-python .\talk-to-ai\src\chat_cli.py --provider lora --model data_out\lora_training\lora_adapter
+python ./talk-to-ai/src/chat_cli.py --provider lora --model data_out/lora_training/lora_adapter
 ```
 
 ### Web App
