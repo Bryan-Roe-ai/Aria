@@ -1,6 +1,7 @@
 """Desktop Notification System for QAI Training Events"""
 import os
 import platform
+import subprocess
 from datetime import datetime
 from typing import Optional
 from pathlib import Path
@@ -67,8 +68,6 @@ class NotificationManager:
     
     def _send_macos(self, title: str, message: str):
         """Send macOS notification using osascript"""
-        import subprocess
-        
         # Escape special AppleScript characters to prevent injection
         # AppleScript uses backslash for escaping, so we escape backslashes first, then quotes
         safe_title = title.replace('\\', '\\\\').replace('"', '\\"').replace('\n', ' ').replace('\r', ' ')
@@ -90,8 +89,6 @@ class NotificationManager:
     
     def _send_linux(self, title: str, message: str, icon: str):
         """Send Linux notification using notify-send"""
-        import subprocess
-        
         icon_name = {
             "info": "dialog-information",
             "success": "dialog-ok",

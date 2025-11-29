@@ -16,6 +16,7 @@ Environment Variables:
 import argparse
 import logging
 import os
+import re
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -82,7 +83,6 @@ def _validate_table_name(table_name: str) -> str:
     Only allows alphanumeric characters and underscores.
     Raises ValueError if table name contains invalid characters.
     """
-    import re
     if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', table_name):
         raise ValueError(f"Invalid table name: {table_name}. Table names must start with a letter or underscore and contain only alphanumeric characters and underscores.")
     return table_name

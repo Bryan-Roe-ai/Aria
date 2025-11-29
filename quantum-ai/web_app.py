@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import json
+import re
 import time
 import threading
 from datetime import datetime
@@ -644,7 +645,6 @@ def get_result_detail(filename):
     
     # Validate filename to prevent path traversal attacks
     # Only allow alphanumeric, underscores, dashes, and .json extension
-    import re
     if not re.match(r'^[A-Za-z0-9_\-]+\.json$', filename):
         return jsonify({"error": "Invalid filename"}), 400
     
@@ -833,8 +833,15 @@ def load_checkpoint():
             return jsonify({"error": "Invalid checkpoint path"}), 400
         
         # Verify the resolved path is within allowed_dir (path containment check)
-        if not resolved_path.is_relative_to(allowed_dir):
-            return jsonify({"error": "Invalid checkpoint path: must be within checkpoints directory"}), 403
+        # Python 3.9+: use is_relative_to; fallback for earlier versions
+        if hasattr(resolved_path, "is_relative_to"):
+            if not resolved_path.is_relative_to(allowed_dir):
+                return jsonify({"error": "Invalid checkpoint path: must be within checkpoints directory"}), 403
+        else:
+            try:
+                resolved_path.relative_to(allowed_dir)
+            except ValueError:
+                return jsonify({"error": "Invalid checkpoint path: must be within checkpoints directory"}), 403
         
         if not resolved_path.exists():
             return jsonify({"error": "Checkpoint file not found"}), 404
