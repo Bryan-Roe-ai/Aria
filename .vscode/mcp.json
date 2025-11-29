@@ -1,25 +1,22 @@
 {
-  // NOTE: For cross-platform compatibility, ensure the appropriate Python virtual environment is activated before launching these servers.
-  // On Unix: source venv/bin/activate
-  // On Windows: venv\Scripts\activate
   "servers": {
     "quantum-mcp-server": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/quantum-ai/venv/bin/python",
       "args": [
         "${workspaceFolder}/quantum-ai/quantum_mcp_server.py"
       ]
     },
     "phi-model-server": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/AI/microsoft_phi-silica-3.6_v1/venv/bin/python",
       "args": [
         "${workspaceFolder}/AI/microsoft_phi-silica-3.6_v1/scripts/model_server.py"
       ]
     },
     "phi-mcp-client": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/AI/microsoft_phi-silica-3.6_v1/venv/bin/python",
       "args": [
         "${workspaceFolder}/AI/microsoft_phi-silica-3.6_v1/mcp.py"
       ]

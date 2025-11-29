@@ -44,13 +44,18 @@ except Exception:  # noqa: BLE001
 
 try:
     import yaml  # type: ignore
-except Exception as e:  # noqa: BLE001
-    raise SystemExit("pyyaml is required. Install with: pip install pyyaml")
+except Exception:  # noqa: BLE001
+    # Allow importing this module even if pyyaml is not installed so tests and
+    # tooling can import functions without requiring optional deps at module
+    # import time. Provide a very small in-file fallback YAML loader for the
+    # minimal subset used by unit tests (mappings, lists, simple scalars).
+    yaml = None
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "autotrain"
-HF_TRAIN_SCRIPT = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "scripts" / "train_lora.py"
+HF_TRAIN_SCRIPT = REPO_ROOT / "AI" / \
+    "microsoft_phi-silica-3.6_v1" / "scripts" / "train_lora.py"
 LOCAL_RUNNER = REPO_ROOT / "scripts" / "run_local_lora_training.py"
 
 
@@ -71,15 +76,124 @@ class Job:
     seed: Optional[int] = None
     hf_model_id: Optional[str] = None
     no_stream: bool = False  # disable streaming dataset for stability on small GPU runs
-    device: Optional[str] = None  # explicit device preference (auto|cuda|cpu|directml|mps)
+    # explicit device preference (auto|cuda|cpu|directml|mps)
+    device: Optional[str] = None
     # Local runner specific
     reinstall: bool = False
     extra_args: List[str] = field(default_factory=list)
 
 
 def read_yaml(path: Path) -> Dict[str, Any]:
-    with path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    text = path.read_text(encoding="utf-8")
+    if yaml is not None:
+        # Use PyYAML when available for full-featured parsing
+        return yaml.safe_load(text) or {}
+
+    # Very small, permissive YAML subset parser used as a fallback in test
+    # environments where PyYAML isn't available. It supports:
+    # - top-level mappings (key: value)
+    # - simple lists ("- item") and lists of mappings ("- key: value")
+    # - null/None values using 'null' / 'None' / '~'
+    # - booleans true/false and integers/floats
+    def _convert_scalar(val: str):
+        if val is None:
+            return None
+        v = val.strip()
+        if v == "" or v in ("null", "Null", "NULL", "~", "None", "none"):
+            return None
+        if v in ("true", "True", "TRUE"):
+            return True
+        if v in ("false", "False", "FALSE"):
+            return False
+        # Try integer then float then fallback to string
+        try:
+            return int(v)
+        except Exception:
+            try:
+                return float(v)
+            except Exception:
+                return v
+
+    root: Dict[str, Any] = {}
+    stack: List[tuple[int, Any]] = [(-1, root)]
+
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if not line.strip() or line.strip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        content = line.lstrip(" ")
+
+        # Pop stack until we find the correct parent context for the current
+        # indentation level.
+        while stack and indent <= stack[-1][0]:
+            stack.pop()
+
+        parent = stack[-1][1]
+
+        if content.startswith("- "):
+            item_text = content[2:].strip()
+            # If parent is a dict, make sure the last key holds a list
+            if isinstance(parent, dict):
+                if not parent:
+                    # No key to attach list to; create a synthetic list key
+                    # (unlikely in our tests) and attach it to a numeric key.
+                    key = "_list"
+                    parent.setdefault(key, [])
+                last_key = next(reversed(parent))
+                if parent[last_key] is None or not isinstance(parent[last_key], list):
+                    parent[last_key] = []
+                lst = parent[last_key]
+                # Ensure stack knows about this list container
+                stack.append((indent, lst))
+                parent = lst
+
+            # Now parent should be a list
+            if item_text == "":
+                # empty list item; create an empty dict placeholder
+                new_item: Any = {}
+                parent.append(new_item)
+                # allow nested children under this new item
+                stack.append((indent, new_item))
+            elif ":" in item_text:
+                key, val = (x.strip() for x in item_text.split(":", 1))
+                val_parsed = _convert_scalar(val) if val != "" else None
+                new_item = {key: val_parsed}
+                parent.append(new_item)
+                if val_parsed is None:
+                    # value may contain nested children in following lines
+                    stack.append((indent, new_item))
+            else:
+                parent.append(_convert_scalar(item_text))
+
+        elif ":" in content:
+            key, val = (x.strip() for x in content.split(":", 1))
+            # If parent is a list, attach mappings to the last element
+            if isinstance(parent, list):
+                if not parent or not isinstance(parent[-1], dict):
+                    parent.append({})
+                if val == "":
+                    parent[-1][key] = None
+                    # push the parent dict back so its nested children can be
+                    # assigned on subsequent lines
+                    stack.append((indent, parent))
+                else:
+                    parent[-1][key] = _convert_scalar(val)
+            else:
+                if val == "":
+                    parent[key] = None
+                    # push current parent so nested children populate this key
+                    stack.append((indent, parent))
+                else:
+                    parent[key] = _convert_scalar(val)
+
+        else:
+            # Bare scalars on a line by themselves - append into parent list if
+            # present, otherwise skip.
+            if isinstance(parent, list):
+                parent.append(_convert_scalar(content))
+
+    return root
 
 
 def load_jobs(config_path: Path) -> List[Job]:
@@ -135,8 +249,10 @@ def _venv_python_ml() -> Path:
     Falls back to root venv/system python only if the model venv is missing.
     """
     # Try Windows path first, then Linux
-    model_py_win = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "venv" / "Scripts" / "python.exe"
-    model_py_linux = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "venv" / "bin" / "python"
+    model_py_win = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / \
+        "venv" / "Scripts" / "python.exe"
+    model_py_linux = REPO_ROOT / "AI" / \
+        "microsoft_phi-silica-3.6_v1" / "venv" / "bin" / "python"
     if model_py_win.exists():
         return model_py_win
     elif model_py_linux.exists():
@@ -218,10 +334,11 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
     job_dir = DATA_OUT / job.name / ts
     ensure_dirs(job_dir)
     log_path = job_dir / "stdout.log"
-    
+
     # Progress indicator
     progress_pct = int((job_index / max(total_jobs, 1)) * 100)
-    print(f"\n[autotrain] [{progress_pct}%] Job {job_index + 1}/{total_jobs}: {job.name}")
+    print(
+        f"\n[autotrain] [{progress_pct}%] Job {job_index + 1}/{total_jobs}: {job.name}")
 
     env = os.environ.copy()
     if job.hf_model_id:
@@ -269,7 +386,8 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
             # Create log file even for missing files error
             try:
                 with log_path.open("w", encoding="utf-8") as logf:
-                    logf.write(f"Preflight validation failed - missing files:\n")
+                    logf.write(
+                        f"Preflight validation failed - missing files:\n")
                     for m in missing:
                         logf.write(f"  - {m}\n")
             except Exception:
@@ -282,17 +400,18 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
     with log_path.open("w", encoding="utf-8") as logf:
         logf.write(f"$ {' '.join(str(x) for x in cmd)}\n\n")
         logf.flush()
-        proc = subprocess.Popen(cmd, cwd=str(REPO_ROOT), env=env, stdout=logf, stderr=subprocess.STDOUT, text=True)
-        
+        proc = subprocess.Popen(cmd, cwd=str(
+            REPO_ROOT), env=env, stdout=logf, stderr=subprocess.STDOUT, text=True)
+
         # Write PID file for dashboard cancellation support
         pid_file = DATA_OUT / f"{job.name}.pid"
         try:
             pid_file.write_text(str(proc.pid), encoding="utf-8")
         except Exception:
             pass
-        
+
         rc = proc.wait()
-        
+
         # Clean up PID file after completion
         try:
             if pid_file.exists():
@@ -305,7 +424,8 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
     result["duration_sec"] = round(duration, 2)
     result["duration_human"] = f"{int(duration // 60)}m {int(duration % 60)}s"
     result["status"] = "succeeded" if rc == 0 else "failed"
-    print(f"[autotrain] Completed in {result['duration_human']} - Status: {result['status']}")
+    print(
+        f"[autotrain] Completed in {result['duration_human']} - Status: {result['status']}")
 
     # Guess output directory if specified on job
     if job.save_dir:
@@ -358,12 +478,17 @@ def collect_status(all_results: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="AutoTrain orchestrator")
-    ap.add_argument("--config", default=str(REPO_ROOT / "config" / "training" / "autotrain.yaml"), help="Path to autotrain.yaml")
+    ap.add_argument("--config", default=str(REPO_ROOT / "config" /
+                    "training" / "autotrain.yaml"), help="Path to autotrain.yaml")
     ap.add_argument("--job", default=None, help="Run only the named job")
-    ap.add_argument("--dry-run", action="store_true", help="Validate and print commands; do not execute")
-    ap.add_argument("--list", action="store_true", help="List configured jobs and exit")
-    ap.add_argument("--resume", action="store_true", help="Skip jobs that recently succeeded (check last_run.json)")
-    ap.add_argument("--reinstall", action="store_true", help="Force reinstall for local runner jobs (alias to job.reinstall)")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="Validate and print commands; do not execute")
+    ap.add_argument("--list", action="store_true",
+                    help="List configured jobs and exit")
+    ap.add_argument("--resume", action="store_true",
+                    help="Skip jobs that recently succeeded (check last_run.json)")
+    ap.add_argument("--reinstall", action="store_true",
+                    help="Force reinstall for local runner jobs (alias to job.reinstall)")
     args = ap.parse_args()
 
     cfg_path = Path(args.config)
@@ -390,7 +515,7 @@ def main() -> None:
     ensure_dirs(DATA_OUT)
     results: List[Dict[str, Any]] = []
     start_time = time.time()
-    
+
     for idx, j in enumerate(jobs):
         # Check if job was recently completed successfully and skip if --resume
         last_run_file = DATA_OUT / j.name / "last_run.json"
@@ -399,7 +524,8 @@ def main() -> None:
                 with last_run_file.open("r") as f:
                     last = json.load(f)
                     if last.get("status") == "succeeded":
-                        print(f"[autotrain] Skipping {j.name} (already succeeded recently)")
+                        print(
+                            f"[autotrain] Skipping {j.name} (already succeeded recently)")
                         results.append(last)
                         collect_status(results)  # incremental update
                         continue
@@ -423,7 +549,8 @@ def main() -> None:
             results.append(running_placeholder)
             collect_status(results)
             # Now execute the real job; replace placeholder with final result
-            res = run_job(j, dry_run=False, job_index=idx, total_jobs=len(jobs))
+            res = run_job(j, dry_run=False, job_index=idx,
+                          total_jobs=len(jobs))
             results[-1] = res
         else:
             res = run_job(j, dry_run=True, job_index=idx, total_jobs=len(jobs))
@@ -435,7 +562,8 @@ def main() -> None:
             avg_per_job = elapsed / (idx + 1)
             remaining_jobs = len(jobs) - (idx + 1)
             eta_sec = avg_per_job * remaining_jobs
-            print(f"[autotrain] ETA for remaining jobs: {int(eta_sec // 60)}m {int(eta_sec % 60)}s")
+            print(
+                f"[autotrain] ETA for remaining jobs: {int(eta_sec // 60)}m {int(eta_sec % 60)}s")
 
         # Make it easier to view what happens in CI/logs
         print(json.dumps(res, indent=2))
@@ -444,11 +572,13 @@ def main() -> None:
         if not args.dry_run and res.get("status") == "succeeded":
             log_info = log_lora_run_safe(j, res)
             if log_info.get("success"):
-                print(f"[autotrain] Logged LoRA run to DB (run_id={log_info.get('run_id')})")
+                print(
+                    f"[autotrain] Logged LoRA run to DB (run_id={log_info.get('run_id')})")
             elif log_info.get("skipped"):
                 print("[autotrain] DB logging skipped (QAI_DB_CONN not set)")
             else:
-                print(f"[autotrain] DB logging failed: {log_info.get('error')}")
+                print(
+                    f"[autotrain] DB logging failed: {log_info.get('error')}")
 
         # Incremental status write after each job
         collect_status(results)
