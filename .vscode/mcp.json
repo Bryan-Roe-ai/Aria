@@ -1,8 +1,11 @@
 {
+  // NOTE: For cross-platform compatibility, ensure the appropriate Python virtual environment is activated before launching these servers.
+  // On Unix: source venv/bin/activate
+  // On Windows: venv\Scripts\activate
   "servers": {
-    "quantum-ai": {
+    "quantum-mcp-server": {
       "type": "stdio",
-      "command": "${workspaceFolder}/quantum-ai/venv/bin/python3",
+      "command": "python3",
       "args": [
         "${workspaceFolder}/quantum-ai/quantum_mcp_server.py"
       ]
@@ -20,11 +23,6 @@
       "args": [
         "${workspaceFolder}/AI/microsoft_phi-silica-3.6_v1/mcp.py"
       ]
-    },
-    "aria-web": {
-      "type": "http",
-      "http": {
-        "port": 8080,
-        "host": "localhost"
-      }
     }
+  }
+}
