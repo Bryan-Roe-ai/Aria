@@ -78,7 +78,7 @@ class NotificationManager:
         try:
             # Using subprocess with list arguments prevents shell injection
             # The script is passed as a single argument to osascript -e
-            result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
+            result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True, timeout=5)
             if result.returncode != 0:
                 print(f"macOS notification warning: osascript returned {result.returncode}")
         except Exception as e:
