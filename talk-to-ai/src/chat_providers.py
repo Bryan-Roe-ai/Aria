@@ -451,7 +451,9 @@ def _check_lmstudio_available(url: str) -> bool:
     try:
         import urllib.request
         import urllib.error
-        check_url = url.replace("/v1", "") + "/v1/models"
+        # Remove trailing /v1 if present, then append /v1/models
+        base_url = url.removesuffix("/v1")
+        check_url = base_url + "/v1/models"
         req = urllib.request.Request(check_url, headers={"User-Agent": "QAI"})
         urllib.request.urlopen(req, timeout=1)
         available = True

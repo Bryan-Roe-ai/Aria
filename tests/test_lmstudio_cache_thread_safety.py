@@ -146,7 +146,7 @@ class TestLMStudioCacheThreadSafety:
 
     def test_lock_is_rlock(self):
         """Verify that the lock is an RLock (reentrant) for flexibility."""
-        assert isinstance(chat_providers._lmstudio_cache_lock, type(threading.RLock()))
+        assert type(chat_providers._lmstudio_cache_lock).__name__ == "RLock"
 
     def test_cache_ttl_value(self):
         """Verify TTL constant is set to reasonable value."""
