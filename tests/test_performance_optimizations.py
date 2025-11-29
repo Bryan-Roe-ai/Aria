@@ -315,7 +315,10 @@ class TestTokenizerCaching:
         
         # Second call should hit cache (even if result is None)
         result2 = _get_hf_tokenizer("test-model")
-        assert result2 is result1  # Same object from cache
+        if result1 is None:
+            assert result2 is None
+        else:
+            assert result2 is result1  # Same object from cache
         
         info = _get_hf_tokenizer.cache_info()
         assert info.hits == 1
