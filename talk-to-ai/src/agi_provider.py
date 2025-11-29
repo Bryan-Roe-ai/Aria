@@ -9,10 +9,16 @@ This module implements advanced reasoning capabilities for the Aria platform:
 
 The AGI provider wraps an underlying provider (Azure/OpenAI/Local) and enhances
 responses with structured reasoning processes.
+
+Security considerations:
+- Input is sanitized to prevent injection attacks
+- Content length is limited to prevent DoS
+- Error messages are sanitized to prevent information leakage
 """
 from __future__ import annotations
 
-import json
+import html
+import logging
 import os
 import re
 import time
@@ -25,6 +31,63 @@ from chat_providers import (
     RoleMessage,
     detect_provider,
 )
+
+# Configure logger for security events
+_logger = logging.getLogger(__name__)
+
+# Security constants
+MAX_INPUT_LENGTH = 10000  # Maximum characters per input
+MAX_HISTORY_SIZE = 50  # Maximum conversation history entries
+MAX_GOALS = 5  # Maximum active goals
+MAX_REASONING_CHAINS = 10  # Maximum stored reasoning chains
+
+
+def _sanitize_input(text: str, max_length: int = MAX_INPUT_LENGTH) -> str:
+    """
+    Sanitize user input to prevent injection attacks.
+    
+    Args:
+        text: Raw input text.
+        max_length: Maximum allowed length.
+        
+    Returns:
+        Sanitized text.
+    """
+    if not isinstance(text, str):
+        return ""
+    
+    # Truncate to max length
+    text = text[:max_length]
+    
+    # Remove null bytes and other control characters (except newlines/tabs)
+    text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', text)
+    
+    return text
+
+
+def _sanitize_for_logging(text: str, max_length: int = 200) -> str:
+    """
+    Sanitize text for safe logging (no sensitive data exposure).
+    
+    Args:
+        text: Text to sanitize.
+        max_length: Maximum length for logs.
+        
+    Returns:
+        Sanitized text safe for logging.
+    """
+    if not isinstance(text, str):
+        return "[invalid]"
+    
+    # Truncate for logging
+    text = text[:max_length]
+    if len(text) == max_length:
+        text += "..."
+    
+    # Escape any special characters
+    text = html.escape(text)
+    
+    return text
 
 
 @dataclass
@@ -43,11 +106,16 @@ class AGIContext:
     reasoning_chains: List[List[ReasoningStep]] = field(default_factory=list)
     goals: List[str] = field(default_factory=list)
     learned_patterns: Dict[str, Any] = field(default_factory=dict)
-    max_history: int = 50
+    max_history: int = MAX_HISTORY_SIZE
     
     def add_message(self, message: RoleMessage) -> None:
-        """Add a message to conversation history with pruning."""
-        self.conversation_history.append(message)
+        """Add a message to conversation history with pruning and sanitization."""
+        # Sanitize message content
+        sanitized_msg = {
+            "role": _sanitize_input(str(message.get("role", "user")), max_length=20),
+            "content": _sanitize_input(str(message.get("content", "")))
+        }
+        self.conversation_history.append(sanitized_msg)
         if len(self.conversation_history) > self.max_history:
             # Keep system messages and recent messages
             system_msgs = [m for m in self.conversation_history if m.get("role") == "system"]
@@ -57,14 +125,17 @@ class AGIContext:
             self.conversation_history = system_msgs + other_msgs[-keep_count:]
     
     def add_reasoning_chain(self, chain: List[ReasoningStep]) -> None:
-        """Store a reasoning chain for future reference."""
+        """Store a reasoning chain for future reference with limits."""
         self.reasoning_chains.append(chain)
-        # Keep only last 10 chains
-        if len(self.reasoning_chains) > 10:
-            self.reasoning_chains = self.reasoning_chains[-10:]
+        # Keep only last N chains to prevent memory issues
+        if len(self.reasoning_chains) > MAX_REASONING_CHAINS:
+            self.reasoning_chains = self.reasoning_chains[-MAX_REASONING_CHAINS:]
     
     def get_relevant_context(self, query: str) -> str:
         """Extract relevant context for the current query."""
+        # Sanitize query input
+        query = _sanitize_input(query)
+        
         context_parts = []
         
         # Add recent conversation context
@@ -72,13 +143,14 @@ class AGIContext:
         if recent:
             context_parts.append("Recent conversation:")
             for msg in recent:
-                role = msg.get("role", "unknown")
-                content = msg.get("content", "")[:200]  # Truncate for context
+                role = _sanitize_for_logging(str(msg.get("role", "unknown")), 20)
+                content = _sanitize_for_logging(str(msg.get("content", "")), 200)
                 context_parts.append(f"  {role}: {content}")
         
-        # Add active goals if any
+        # Add active goals if any (limit to prevent injection)
         if self.goals:
-            context_parts.append(f"Active goals: {', '.join(self.goals[:3])}")
+            safe_goals = [_sanitize_for_logging(g, 50) for g in self.goals[:3]]
+            context_parts.append(f"Active goals: {', '.join(safe_goals)}")
         
         return "\n".join(context_parts)
 
@@ -147,7 +219,7 @@ class AGIProvider(BaseChatProvider):
     
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         """
-        Generate an AGI-enhanced response.
+        Generate an AGI-enhanced response with security validation.
         
         Args:
             messages: Conversation history including the new user message.
@@ -155,37 +227,55 @@ class AGIProvider(BaseChatProvider):
             
         Returns:
             Response string or generator of response chunks.
+            
+        Security:
+            - Input is sanitized to prevent injection attacks
+            - Message count is limited to prevent DoS
+            - Exceptions are caught without exposing internal details
         """
+        # Validate and limit message count to prevent DoS
+        if len(messages) > MAX_HISTORY_SIZE:
+            messages = messages[-MAX_HISTORY_SIZE:]
+            _logger.warning("Message count exceeded limit, truncating to %d", MAX_HISTORY_SIZE)
+        
         # Update context with new messages (use content comparison to avoid duplicates)
         existing_contents = {m.get("content", "") for m in self.context.conversation_history}
         for msg in messages:
-            if msg.get("content", "") not in existing_contents:
-                self.context.add_message(msg)
-                existing_contents.add(msg.get("content", ""))
+            content = msg.get("content", "")
+            # Sanitize content before storage
+            sanitized_content = _sanitize_input(str(content))
+            if sanitized_content not in existing_contents:
+                self.context.add_message({"role": msg.get("role", "user"), "content": sanitized_content})
+                existing_contents.add(sanitized_content)
         
-        # Extract the latest user query
+        # Extract and sanitize the latest user query
         user_query = ""
         for msg in reversed(messages):
             if msg.get("role") == "user":
-                user_query = msg.get("content", "")
+                user_query = _sanitize_input(str(msg.get("content", "")))
                 break
         
         if not user_query.strip():
             response = "I'm ready to help. What would you like to discuss?"
             return self._stream_text(response) if stream else response
         
-        # Perform AGI reasoning pipeline
-        reasoning_chain = self._reason(user_query, messages)
-        
-        # Generate final response
-        response = self._generate_response(user_query, reasoning_chain, messages)
-        
-        # Self-reflection and improvement
-        if self.enable_self_reflection:
-            response = self._reflect_and_improve(user_query, response, reasoning_chain)
-        
-        # Store reasoning chain
-        self.context.add_reasoning_chain(reasoning_chain)
+        try:
+            # Perform AGI reasoning pipeline
+            reasoning_chain = self._reason(user_query, messages)
+            
+            # Generate final response
+            response = self._generate_response(user_query, reasoning_chain, messages)
+            
+            # Self-reflection and improvement
+            if self.enable_self_reflection:
+                response = self._reflect_and_improve(user_query, response, reasoning_chain)
+            
+            # Store reasoning chain
+            self.context.add_reasoning_chain(reasoning_chain)
+        except Exception as e:
+            # Log error securely without exposing details to user
+            _logger.error("AGI processing error: %s", _sanitize_for_logging(str(e)))
+            response = self._generate_fallback_response(user_query, {"intent": "general", "domain": "general"})
         
         if stream:
             return self._stream_text(response)
@@ -431,7 +521,7 @@ class AGIProvider(BaseChatProvider):
                 # Append user's system prompt after AGI prompt
                 enhanced_messages[0]["content"] += f"\n\nAdditional context: {msg.get('content', '')}"
         
-        # Get response from base provider
+        # Get response from base provider with secure exception handling
         try:
             provider = self._get_base_provider()
             result = provider.complete(enhanced_messages, stream=False)
@@ -441,6 +531,8 @@ class AGIProvider(BaseChatProvider):
                 # Consume the generator
                 response = "".join(result)
         except Exception as e:
+            # Log error securely without exposing internal details to user
+            _logger.error("Base provider error: %s", _sanitize_for_logging(str(e)))
             # Fallback to rule-based response if provider fails
             response = self._generate_fallback_response(query, analysis)
         
@@ -650,11 +742,16 @@ class AGIProvider(BaseChatProvider):
             time.sleep(delay)
     
     def set_goal(self, goal: str) -> None:
-        """Add a goal to the active goals list."""
-        if goal not in self.context.goals:
-            self.context.goals.append(goal)
-            if len(self.context.goals) > 5:
-                self.context.goals = self.context.goals[-5:]
+        """Add a goal to the active goals list with input sanitization."""
+        # Sanitize goal input
+        sanitized_goal = _sanitize_input(str(goal), max_length=200)
+        if not sanitized_goal:
+            return
+        
+        if sanitized_goal not in self.context.goals:
+            self.context.goals.append(sanitized_goal)
+            if len(self.context.goals) > MAX_GOALS:
+                self.context.goals = self.context.goals[-MAX_GOALS:]
     
     def clear_goals(self) -> None:
         """Clear all active goals."""

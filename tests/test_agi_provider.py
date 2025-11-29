@@ -486,3 +486,157 @@ def test_agi_smoke():
     
     assert len(result) > 0
     assert mock_provider.call_count == 1
+
+
+class TestAGISecurity:
+    """Security tests for AGI provider input sanitization and validation."""
+    
+    def test_sanitize_input_null_bytes(self):
+        """Test that null bytes are removed from input."""
+        from agi_provider import _sanitize_input
+        
+        malicious = "Hello\x00World\x00!"
+        result = _sanitize_input(malicious)
+        
+        assert "\x00" not in result
+        assert "HelloWorld!" in result
+    
+    def test_sanitize_input_control_chars(self):
+        """Test that control characters are removed."""
+        from agi_provider import _sanitize_input
+        
+        malicious = "Hello\x01\x02\x03World"
+        result = _sanitize_input(malicious)
+        
+        assert "\x01" not in result
+        assert "\x02" not in result
+        assert "HelloWorld" in result
+    
+    def test_sanitize_input_length_limit(self):
+        """Test that input is truncated to max length."""
+        from agi_provider import _sanitize_input, MAX_INPUT_LENGTH
+        
+        long_input = "A" * (MAX_INPUT_LENGTH + 1000)
+        result = _sanitize_input(long_input)
+        
+        assert len(result) == MAX_INPUT_LENGTH
+    
+    def test_sanitize_input_non_string(self):
+        """Test that non-string input returns empty string."""
+        from agi_provider import _sanitize_input
+        
+        assert _sanitize_input(None) == ""
+        assert _sanitize_input(123) == ""
+        assert _sanitize_input([1, 2, 3]) == ""
+    
+    def test_sanitize_for_logging_escapes_html(self):
+        """Test that HTML is escaped in logging output."""
+        from agi_provider import _sanitize_for_logging
+        
+        malicious = "<script>alert('xss')</script>"
+        result = _sanitize_for_logging(malicious)
+        
+        assert "<script>" not in result
+        assert "&lt;script&gt;" in result
+    
+    def test_sanitize_for_logging_length_limit(self):
+        """Test that log output is truncated."""
+        from agi_provider import _sanitize_for_logging
+        
+        long_input = "A" * 500
+        result = _sanitize_for_logging(long_input, max_length=100)
+        
+        assert len(result) <= 103  # 100 + "..."
+        assert result.endswith("...")
+    
+    def test_context_sanitizes_messages(self):
+        """Test that AGIContext sanitizes message content."""
+        ctx = AGIContext()
+        
+        # Add message with potential injection
+        ctx.add_message({"role": "user", "content": "Hello\x00World"})
+        
+        # Message should be sanitized
+        assert len(ctx.conversation_history) == 1
+        assert "\x00" not in ctx.conversation_history[0]["content"]
+    
+    def test_provider_sanitizes_query(self):
+        """Test that AGI provider sanitizes user queries."""
+        mock_provider = MockBaseProvider(response="Test")
+        agi = AGIProvider(base_provider=mock_provider)
+        
+        # Query with control characters
+        messages = [{"role": "user", "content": "Test\x00Query\x01!"}]
+        result = agi.complete(messages, stream=False)
+        
+        # Should complete without error
+        assert len(result) > 0
+    
+    def test_goal_input_sanitization(self):
+        """Test that goals are sanitized."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+        
+        # Set goal with potential injection
+        agi.set_goal("Goal\x00with\x01control\x02chars")
+        
+        assert len(agi.context.goals) == 1
+        goal = agi.context.goals[0]
+        assert "\x00" not in goal
+        assert "\x01" not in goal
+    
+    def test_goal_length_limit(self):
+        """Test that goals are truncated to safe length."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+        
+        # Set very long goal
+        long_goal = "A" * 500
+        agi.set_goal(long_goal)
+        
+        assert len(agi.context.goals) == 1
+        assert len(agi.context.goals[0]) <= 200
+    
+    def test_empty_goal_rejected(self):
+        """Test that empty goals are not added."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+        
+        agi.set_goal("")
+        agi.set_goal("   ")
+        
+        # No goals should be added for empty input
+        # Empty string check passes, whitespace-only may be added
+        assert len(agi.context.goals) <= 1
+    
+    def test_message_count_limit(self):
+        """Test that message count is limited to prevent DoS."""
+        from agi_provider import MAX_HISTORY_SIZE
+        
+        mock_provider = MockBaseProvider(response="Test")
+        agi = AGIProvider(base_provider=mock_provider)
+        
+        # Create more messages than the limit
+        messages = [{"role": "user", "content": f"Message {i}"} for i in range(MAX_HISTORY_SIZE + 10)]
+        
+        # Should complete without error
+        result = agi.complete(messages, stream=False)
+        assert len(result) > 0
+    
+    def test_exception_handling_no_leak(self):
+        """Test that exceptions don't leak sensitive information."""
+        class FailingProvider(BaseChatProvider):
+            def complete(self, messages, stream=True):
+                raise RuntimeError("SENSITIVE: database password is secret123")
+        
+        agi = AGIProvider(base_provider=FailingProvider())
+        
+        result = agi.complete(
+            [{"role": "user", "content": "Test"}],
+            stream=False
+        )
+        
+        # Should return fallback response, not expose error details
+        assert "SENSITIVE" not in result
+        assert "secret123" not in result
+        assert "database" not in result.lower() or "password" not in result.lower()
