@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""
+r"""
 Quantum AutoRun Orchestrator
 
 Automates local quantum training runs defined in a YAML config.
