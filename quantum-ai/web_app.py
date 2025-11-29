@@ -654,9 +654,16 @@ def get_result_detail(filename):
     try:
         resolved_path = result_file.resolve()
         allowed_dir = results_dir.resolve()
-        # Verify the resolved path has allowed_dir as a parent (path containment check)
-        if allowed_dir not in resolved_path.parents:
-            return jsonify({"error": "Invalid file path"}), 403
+        # Verify the resolved path is within allowed_dir (path containment check)
+        # Python 3.9+: use is_relative_to; fallback for earlier versions
+        if hasattr(resolved_path, "is_relative_to"):
+            if not resolved_path.is_relative_to(allowed_dir):
+                return jsonify({"error": "Invalid file path"}), 403
+        else:
+            try:
+                resolved_path.relative_to(allowed_dir)
+            except ValueError:
+                return jsonify({"error": "Invalid file path"}), 403
     except (OSError, RuntimeError):
         return jsonify({"error": "Invalid file path"}), 400
     
