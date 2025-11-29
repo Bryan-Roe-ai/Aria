@@ -15,8 +15,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "quantum-ai"))
 
 
-# Dynamically import web_app from quantum-ai/web_app.py
-web_app_path = REPO_ROOT / "web_app.py"
+# Dynamically import web_app from quantum-ai/web_app.py (file lives in the quantum-ai/ dir)
+web_app_path = REPO_ROOT / "quantum-ai" / "web_app.py"
 spec = importlib.util.spec_from_file_location("web_app", str(web_app_path))
 if spec is None:
     raise ImportError(f"Could not load spec for {web_app_path}")

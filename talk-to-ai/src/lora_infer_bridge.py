@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -19,7 +18,7 @@ def _read_stdin_json() -> dict:
 
 def _build_prompt(messages):
     """Build prompt string from messages.
-    
+
     Uses list join instead of string += for O(n) instead of O(n²) complexity.
     """
     parts = []
@@ -32,7 +31,7 @@ def _build_prompt(messages):
             parts.append(f"User: {content}")
         elif role == "assistant":
             parts.append(f"Assistant: {content}")
-    
+
     # Build final prompt: messages joined by newlines, ending with "Assistant: "
     if parts:
         return "\n".join(parts) + "\nAssistant: "
@@ -61,7 +60,8 @@ def main() -> int:
     # Determine base model id from adapter config
     adapter_cfg_path = adapter_dir / "adapter_config.json"
     if not adapter_cfg_path.exists():
-        print(f"adapter_config.json not found in {adapter_dir}", file=sys.stderr)
+        print(
+            f"adapter_config.json not found in {adapter_dir}", file=sys.stderr)
         return 4
     try:
         with open(adapter_cfg_path, "r", encoding="utf-8") as f:
@@ -70,7 +70,8 @@ def main() -> int:
         print(f"Failed to read adapter_config.json: {e}", file=sys.stderr)
         return 5
 
-    base_model_id = adapter_cfg.get("base_model_name_or_path", "microsoft/Phi-3.5-mini-instruct")
+    base_model_id = adapter_cfg.get(
+        "base_model_name_or_path", "microsoft/Phi-3.5-mini-instruct")
     if base_model_id == "Phi-3.6-mini-instruct":
         base_model_id = "microsoft/Phi-3.5-mini-instruct"
 

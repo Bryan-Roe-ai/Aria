@@ -24,6 +24,8 @@ Usage examples (PowerShell):
 
 from __future__ import annotations
 
+import logging
+
 import argparse
 import json
 import os
@@ -33,13 +35,19 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 # Optional DB logging (safe no-op if not configured)
 try:  # noqa: SIM105
     from shared.db_logging import log_lora_run_safe  # type: ignore
 except Exception:  # noqa: BLE001
-    def log_lora_run_safe(*_a, **_kw):  # type: ignore
+
+    # type: ignore
+    def log_lora_run_safe(*_a: Any, **_kw: Any) -> Dict[str, Any]:
+        """Fallback safe no-op logging function used when DB logging isn't configured.
+
+        Typed to satisfy static type checkers.
+        """
         return {"success": False, "skipped": True}
 
 try:
@@ -79,8 +87,10 @@ class Job:
     # explicit device preference (auto|cuda|cpu|directml|mps)
     device: Optional[str] = None
     # Local runner specific
+    # Forces dependency reinstallation when using the local runner (--reinstall flag)
     reinstall: bool = False
-    extra_args: List[str] = field(default_factory=list)
+    # Ensure the default factory is typed as List[str] for static checkers
+    extra_args: List[str] = field(default_factory=lambda: cast(List[str], []))
 
 
 def read_yaml(path: Path) -> Dict[str, Any]:
@@ -197,12 +207,37 @@ def read_yaml(path: Path) -> Dict[str, Any]:
 
 
 def load_jobs(config_path: Path) -> List[Job]:
+    """Load jobs from a YAML config file and validate required fields.
+
+    The YAML file should contain a top-level `jobs` list where each item must
+    include a non-empty string `name`. If a job is missing `name` or its
+    `name` is empty/whitespace-only, a ValueError is raised to fail fast.
+
+    Args:
+        config_path: Path to the YAML config file.
+
+    Returns:
+        List[Job]: The parsed and validated job objects.
+
+    Raises:
+        ValueError: If the `jobs` array contains an entry missing a name or
+            whose name is empty when stripped.
+    """
     raw = read_yaml(config_path)
     jobs: List[Job] = []
     for item in raw.get("jobs", []):
+        # Ensure required 'name' is present and coercible to string
+        raw_name = item.get("name")
+        if raw_name is None:
+            raise ValueError("Every job requires a 'name'")
+
+        # Normalize runner with a sensible default
+        runner_val = item.get("runner")
+        raw_runner = runner_val if runner_val is not None else "hf"
+
         j = Job(
-            name=str(item.get("name")),
-            runner=str(item.get("runner", "hf")),
+            name=str(raw_name),
+            runner=str(raw_runner),
             category=item.get("category"),
             dataset=item.get("dataset"),
             config=item.get("config"),
@@ -219,15 +254,10 @@ def load_jobs(config_path: Path) -> List[Job]:
             reinstall=bool(item.get("reinstall", False)),
             extra_args=list(item.get("extra_args", [])),
         )
-        if not j.name:
-            raise ValueError("Every job requires a 'name'")
+        if not j.name.strip():
+            raise ValueError("Every job requires a non-empty 'name'")
         jobs.append(j)
     return jobs
-
-
-def _powershell_exe() -> str:
-    # Use Windows PowerShell if present for .ps1 convenience; otherwise default to python invocation only
-    return os.environ.get("ComSpec", "powershell.exe")
 
 
 def _venv_python_default() -> Path:
@@ -437,13 +467,17 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
                 pre_loss = pre_ppl = post_loss = post_ppl = None
                 try:
                     with metrics_path.open("r", encoding="utf-8") as mf:
-                        for line in mf.readlines()[-400:]:  # tail subset
+                        from collections import deque
+                        # tail subset, memory efficient
+                        for line in deque(mf, maxlen=400):
                             line = line.strip()
                             if not line:
                                 continue
                             try:
                                 obj = json.loads(line)
-                            except Exception:
+                            except Exception as e:
+                                print(
+                                    f"[autotrain] Failed to parse metrics line: {e}")
                                 continue
                             phase = obj.get("phase")
                             if phase == "pre":
@@ -459,8 +493,11 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
                             "post_eval_loss": post_loss,
                             "post_eval_perplexity": post_ppl,
                         }
-                except Exception:
-                    pass
+                except Exception as e:
+                    print(
+                        f"[autotrain] Failed to extract metrics from {metrics_path}: {e}")
+                    import traceback
+                    traceback.print_exc()
 
     # Persist last_run.json for job
     write_json(DATA_OUT / job.name / "last_run.json", result)
@@ -468,7 +505,7 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
 
 
 def collect_status(all_results: List[Dict[str, Any]]) -> Dict[str, Any]:
-    summary = {
+    summary: Dict[str, Any] = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "jobs": all_results,
     }
@@ -491,11 +528,28 @@ def main() -> None:
                     help="Force reinstall for local runner jobs (alias to job.reinstall)")
     args = ap.parse_args()
 
+    # Initialize optional tracing (best-effort)
+    try:
+        from shared.tracing import init_tracing
+
+        init_tracing(service_name="autotrain")
+    except Exception as _e:  # pragma: no cover - non-fatal
+        logging.debug(f"[tracing] init skipped in autotrain: {_e}")
+
     cfg_path = Path(args.config)
     if not cfg_path.exists():
-        raise SystemExit(f"Config not found: {cfg_path}")
+        raise SystemExit(
+            f"Config not found: {cfg_path}\n"
+            f"Expected location: {REPO_ROOT / 'config' / 'training' / 'autotrain.yaml'}\n"
+            "Run with --help to see configuration options or create the config file at the expected location."
+        )
 
-    jobs = load_jobs(cfg_path)
+    try:
+        jobs = load_jobs(cfg_path)
+    except ValueError as e:
+        print(
+            f"[autotrain] ERROR: {e}\nPlease check your YAML config file for missing or empty job names. Each job must have a non-empty 'name' field.")
+        raise SystemExit(2)
     if args.list:
         print(json.dumps([j.__dict__ for j in jobs], indent=2))
         return
@@ -521,22 +575,36 @@ def main() -> None:
         last_run_file = DATA_OUT / j.name / "last_run.json"
         if args.resume and last_run_file.exists():
             try:
-                with last_run_file.open("r") as f:
+                # Only skip if the last run completed successfully
+                with last_run_file.open("r", encoding="utf-8") as f:
                     last = json.load(f)
-                    if last.get("status") == "succeeded":
+                # Narrow the type and explicitly cast the status to Optional[str].
+                # When loading JSON we get Any; cast the container to Dict[str, Any]
+                # first so dict.get() is statically known. Then ensure the value
+                # is a string before treating it as an Optional[str].
+                if isinstance(last, dict):
+                    last_dict = cast(Dict[str, Any], last)
+                    raw_status = last_dict.get("status")
+                    status = cast(Optional[str], raw_status) if isinstance(
+                        raw_status, str) else None
+                    if status == "succeeded":
                         print(
                             f"[autotrain] Skipping {j.name} (already succeeded recently)")
-                        results.append(last)
+                        # 'last' was loaded as Any from JSON; cast to the expected
+                        # Dict[str, Any] before appending to results to satisfy
+                        # static type checkers.
+                        results.append(last_dict)
                         collect_status(results)  # incremental update
                         continue
             except Exception:
+                # If anything goes wrong reading/parsing, fall through and run the job
                 pass
 
         print(f"[autotrain] Running job: {j.name} (runner={j.runner})")
 
         # Insert a placeholder 'running' record before launching (for dashboard progress)
         if not args.dry_run:
-            running_placeholder = {
+            running_placeholder: Dict[str, Any] = {
                 "name": j.name,
                 "runner": j.runner,
                 "category": j.category,
@@ -557,7 +625,7 @@ def main() -> None:
             results.append(res)
 
         # Show estimated time remaining (after including this job's duration)
-        if idx > 0 and not args.dry_run and res.get("status") in {"succeeded", "failed"}:
+        if not args.dry_run and res.get("status") in {"succeeded", "failed"}:
             elapsed = time.time() - start_time
             avg_per_job = elapsed / (idx + 1)
             remaining_jobs = len(jobs) - (idx + 1)
@@ -587,8 +655,13 @@ def main() -> None:
     collect_status(results)
     # Non-zero exit if any job failed during non-dry run
     if not args.dry_run:
-        failed = [r for r in results if r.get("status") == "failed"]
-        if failed:
+        # Treat any job that failed or whose preflight validation was missing
+        # required files as an overall non-zero exit. This makes CI / callers
+        # aware when the orchestrator could not run all jobs successfully.
+        problematic = [
+            r for r in results if r.get("status") in {"failed", "missing"}
+        ]
+        if problematic:
             raise SystemExit(1)
 
 
