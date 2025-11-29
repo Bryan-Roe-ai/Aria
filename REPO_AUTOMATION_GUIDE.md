@@ -18,57 +18,120 @@ python scripts/repo_automation.py --start --daemon
 ./scripts/start_repo_automation.sh stop
 ```
 
-## Components
+## Components (Current Architecture)
 
-### 1. Aria Character Automation
+The automation system now uses a lightweight component registry with dynamic enabling and automatic dependency resolution. Some legacy scripts listed previously have been consolidated or made optional.
 
-- **What**: Aria web server + continuous training
+### 1. Aria Character Automation (`aria`)
+
+- **What**: Aria web server + Aria-specific training loop + backend (Azure Functions) if available
 - **Script**: `scripts/aria_automation.py`
-- **Health Check**: Every 60s
+- **Health Check Interval**: 60s
 - **Auto-Restart**: Yes
+- **Dependencies Auto-Installed**: `psutil`
 
-### 2. LoRA Training Pipeline
+### 2. Autonomous Training System (`training`)
 
-- **What**: Automated LoRA fine-tuning with dataset rotation
-- **Script**: `scripts/autotrain.py`
-- **Health Check**: Every 5min
+- **What**: Continuous adaptive cycles (dataset discovery + optional download + distributed benchmark training + performance analysis)
+- **Script**: `scripts/autonomous_training_orchestrator.py`
+- **Health Check Interval**: 5min
 - **Auto-Restart**: Yes
+- **Integrated**: Dataset auto-discovery (replaces standalone dataset component)
+- **Dependencies Auto-Installed**: `pandas`, `torch`, `numpy`, `pyyaml`
 
-### 3. Quantum Computing Workflows
+### 3. Quantum Computing Workflows (`quantum`)
 
-- **What**: Quantum ML pipelines and job management
+- **What**: Quantum ML / job submission orchestrator
 - **Script**: `scripts/quantum_autorun.py`
-- **Health Check**: Every 10min
-- **Auto-Restart**: Yes
+- **Enabled When**: `quantum_autorun.yaml` present at repo root
+- **Auto-Restart**: No (jobs are typically batch / scheduled)
+- **Dependencies**: (Add Azure Quantum SDK when environment configured)
 
-### 4. Model Evaluation System
+### 4. Model Evaluation System (`evaluation`)
 
-- **What**: Continuous evaluation of trained models
+- **What**: Batch model evaluation against curated test sets
 - **Script**: `scripts/evaluation_autorun.py`
-- **Dependencies**: Training pipeline
-- **Health Check**: Every 5min
-- **Auto-Restart**: Yes
+- **Enabled When**: `evaluation_autorun.yaml` present at repo root
+- **Dependencies**: `training` component must be running
+- **Auto-Restart**: No (designed for batch cycles)
+- **Dependencies Auto-Installed**: `scikit-learn`, `numpy`, `matplotlib`, `seaborn`
 
-### 5. Dataset Auto-Discovery
+### 5. Status Dashboard (`monitoring` / optional)
 
-- **What**: Automatic dataset collection from OpenML/HuggingFace/Kaggle
-- **Script**: `scripts/collect_more_datasets.py`
-- **Health Check**: Every 1hr
-- **Auto-Restart**: Yes
+- **What**: Web dashboard for live status (optional)
+- **Script**: `scripts/status_dashboard.py`
+- **Enabled**: Manually (disabled by default)
+- **Dependencies Auto-Installed**: `Flask`, `flask-socketio`, `python-socketio`
 
-### 6. System Health Monitor
+### 6. Backup Manager (`backup` / optional)
 
-- **What**: Resource monitoring, alerts, auto-recovery
-- **Script**: `scripts/system_health_check.py`
-- **Health Check**: Every 60s
-- **Auto-Restart**: Yes
-
-### 7. Backup Manager
-
-- **What**: Automated backups of models, datasets, configs
+- **What**: Point-in-time backups of adapters, configs, logs
 - **Script**: `scripts/backup_manager.py`
-- **Schedule**: Daily
-- **Retention**: 30 days
+- **Enabled**: Manually (disabled by default; invoke on-demand or via cron)
+- **Supports**: Incremental backups (hardlinks) + compression + manifest tracking
+
+### Deprecated / Integrated
+
+- **Dataset Auto-Discovery**: Integrated into `training` component (no separate process)
+- **System Health Monitor**: Basic health checking performed internally; full external monitor can be added if needed.
+
+Each component’s dependency set is verified just-in-time; missing packages are installed automatically via `pip` before the component starts. Failures are recorded and the component will not start until resolved (preventing restart loops caused purely by missing dependencies).
+
+## Automatic Dependency Resolution & Conditional Enabling
+
+### How It Works
+
+1. On startup or when starting a component, required packages listed in `ComponentConfig.required_packages` are imported.
+2. Missing modules trigger automatic `pip install` attempts.
+3. Post-install imports are re-validated; any remaining failures are logged and block component start.
+4. Dependency health per component appears in `status.json` under `dependency_status` and in `--status` output with an icon:
+   - `🧩` Dependencies satisfied
+   - `⚠️` Dependency issue (component may not have started)
+
+### Conditional Enabling
+
+Components are auto-enabled based on presence of configuration files:
+
+| Component   | Condition                          | Default |
+|-------------|------------------------------------|---------|
+| `quantum`   | `quantum_autorun.yaml` exists       | Disabled (enabled if present) |
+| `evaluation`| `evaluation_autorun.yaml` exists    | Disabled (enabled if present) |
+| `training`  | Always enabled                      | Enabled |
+| `aria`      | Always enabled                      | Enabled |
+| `monitoring`| Manual                              | Disabled |
+| `backup`    | Manual                              | Disabled |
+| `datasets`  | Integrated (no separate component)  | Disabled |
+
+### Adding New Components
+
+Update `scripts/repo_automation.py` and include a `required_packages` list. Example:
+
+```python
+"my_component": ComponentConfig(
+    name="My Custom Service",
+    script="scripts/my_service.py",
+    command=["python3", "scripts/my_service.py"],
+    auto_restart=True,
+    health_check_interval=120,
+    required_packages=["requests", "rich"],
+),
+```
+
+### Handling Heavy Dependencies (e.g., `torch`)
+
+- Install attempts are synchronous; large packages may take time.
+- To avoid blocking other components, start with smaller ones (`aria`) first or pre-install heavy libs via `pip install -r requirements.txt`.
+- If you need GPU variants, pre-install manually (automation will skip if already present).
+
+### Failure Recovery
+
+- If dependency installation fails, a concise error is appended to `errors` in `status.json`.
+- Fix by manually installing or adjusting network/proxy settings, then restart the component.
+
+### Security & Safety
+
+- Only standard `pip install <package>` commands are executed—no arbitrary shell code.
+- Consider pinning versions in `requirements.txt` for reproducibility in production environments.
 
 ## Usage Modes
 
