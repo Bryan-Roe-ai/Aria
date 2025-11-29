@@ -25,6 +25,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 CHAT_CLI = ROOT_DIR / "talk-to-ai" / "src" / "chat_cli.py"
 LOG_DIR = ROOT_DIR / "talk-to-ai" / "logs"
 
+# Cached ANSI escape regex for performance across imports
+_ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+
 
 def run_chat_once(
     prompt: str,
@@ -68,15 +71,6 @@ def run_chat_once(
     # Strip ANSI color codes for easier consumption (module-level cached regex)
     output = _ANSI_ESCAPE_RE.sub("", raw_output).strip()
 
-
-# Export ANSI escape regex for testing purposes
-_ANSI_ESCAPE_RE = None
-try:
-    import re
-    _ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
-except ImportError:
-    pass
-
     # Try to extract only the assistant content after the 'assistant> ' prompt
     reply = output
     marker = "assistant> "
@@ -105,6 +99,3 @@ except ImportError:
             logging.warning("Failed to write AI run log: %s", e)
 
     return reply, metadata
-
-# Cached ANSI escape regex for performance across imports
-_ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
