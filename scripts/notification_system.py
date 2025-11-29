@@ -71,8 +71,8 @@ class NotificationManager:
         
         # Escape special AppleScript characters to prevent injection
         # AppleScript uses backslash for escaping, so we escape backslashes first, then quotes
-        safe_title = title.replace('\\', '\\\\').replace('"', '\\"')
-        safe_message = message.replace('\\', '\\\\').replace('"', '\\"')
+        safe_title = title.replace('\\', '\\\\').replace('"', '\\"').replace('\n', ' ').replace('\r', ' ')
+        safe_message = message.replace('\\', '\\\\').replace('"', '\\"').replace('\n', ' ').replace('\r', ' ')
         
         script = f'display notification "{safe_message}" with title "{safe_title}"'
         try:
