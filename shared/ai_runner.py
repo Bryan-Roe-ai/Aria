@@ -12,6 +12,7 @@ The runner returns the raw assistant output as a string plus a metadata dict.
 """
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 import os
@@ -23,6 +24,9 @@ from typing import Tuple, Dict, Optional
 ROOT_DIR = Path(__file__).resolve().parent.parent
 CHAT_CLI = ROOT_DIR / "talk-to-ai" / "src" / "chat_cli.py"
 LOG_DIR = ROOT_DIR / "talk-to-ai" / "logs"
+
+# Pre-compiled regex for stripping ANSI escape codes (compiled once at module load)
+_ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 
 def run_chat_once(
@@ -63,11 +67,8 @@ def run_chat_once(
 
     raw_output = proc.stdout
 
-    # Strip ANSI color codes for easier consumption
-    import re  # local import to avoid overhead if unused at import time
-
-    ansi_escape = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
-    output = ansi_escape.sub("", raw_output).strip()
+    # Strip ANSI color codes using pre-compiled regex
+    output = _ANSI_ESCAPE_RE.sub("", raw_output).strip()
 
     # Try to extract only the assistant content after the 'assistant> ' prompt
     reply = output

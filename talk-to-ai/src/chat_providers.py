@@ -179,19 +179,22 @@ class LoraLocalProvider(BaseChatProvider):
         return text
 
     def _build_prompt(self, messages: List[RoleMessage]) -> str:
-        # Simple concatenation; can be improved for chat templates
-        prompt = ""
+        """Build prompt string from messages.
+        
+        Uses list join instead of string += for O(n) instead of O(n²) complexity.
+        """
+        parts = []
         for msg in messages:
             role = msg.get("role", "user")
             content = msg.get("content", "")
             if role == "system":
-                prompt += f"[SYSTEM] {content}\n"
+                parts.append(f"[SYSTEM] {content}")
             elif role == "user":
-                prompt += f"User: {content}\n"
+                parts.append(f"User: {content}")
             elif role == "assistant":
-                prompt += f"Assistant: {content}\n"
-        prompt += "Assistant: "
-        return prompt
+                parts.append(f"Assistant: {content}")
+        parts.append("Assistant: ")
+        return "\n".join(parts[:-1]) + "\n" + parts[-1] if len(parts) > 1 else parts[0]
 
     def _lazy_setup(self) -> None:
         """Import heavy dependencies lazily so that non-LoRA providers don't require them.
