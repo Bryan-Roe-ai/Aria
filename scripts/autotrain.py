@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""
+r"""
 AutoTrain Orchestrator
 
 Lightweight runner to automate model fine-tuning jobs defined in a YAML config.
@@ -17,9 +17,9 @@ Outputs:
 - data_out/autotrain/status.json                              (summary of all jobs)
 
 Usage examples (PowerShell):
-    python .\\scripts\\autotrain.py --dry-run
-    python .\\scripts\\autotrain.py --job phi36_mixed_chat
-    python .\\scripts\\autotrain.py --job phi36_mixed_chat --reinstall  # when using local runner
+    python .\scripts\autotrain.py --dry-run
+    python .\scripts\autotrain.py --job phi36_mixed_chat
+    python .\scripts\autotrain.py --job phi36_mixed_chat --reinstall  # when using local runner
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -214,7 +214,7 @@ def write_json(path: Path, obj: Dict[str, Any]) -> None:
 
 
 def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int = 1) -> Dict[str, Any]:
-    ts = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     job_dir = DATA_OUT / job.name / ts
     ensure_dirs(job_dir)
     log_path = job_dir / "stdout.log"
@@ -349,7 +349,7 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
 
 def collect_status(all_results: List[Dict[str, Any]]) -> Dict[str, Any]:
     summary = {
-        "generated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "jobs": all_results,
     }
     write_json(DATA_OUT / "status.json", summary)
@@ -415,7 +415,7 @@ def main() -> None:
                 "runner": j.runner,
                 "category": j.category,
                 "status": "running",
-                "start_time": datetime.utcnow().strftime("%Y%m%dT%H%M%SZ"),
+                "start_time": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
                 "cmd": None,
                 "return_code": None,
                 "duration_sec": None,

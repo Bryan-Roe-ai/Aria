@@ -21,6 +21,8 @@ Table schema created in database/Tables/ChatMessageEmbeddings.sql
 """
 from __future__ import annotations
 
+import hashlib
+import heapq
 import os
 import math
 import struct
@@ -50,27 +52,34 @@ def _get_conn():  # noqa: ANN001
 
 # ------------------------- Embedding Generation -------------------------
 
-_LOCAL_EMBEDDING_DIMENSION = 256  # dimension for lightweight local fallback
+_LOCAL_DIM = 256  # dimension for lightweight local fallback
 
 
-def _hash_embedding(text: str, dimension: int = _LOCAL_EMBEDDING_DIMENSION) -> List[float]:
+def _hash_embedding(text: str, dim: int = _LOCAL_DIM) -> List[float]:
     """Very lightweight deterministic hashing embedding.
 
     Not semantically rich but provides some signal for similarity
     within the same workspace when no embedding API is configured.
+    
+    Optimized: Uses module-level hashlib import and single-pass norm calculation.
     """
-    import hashlib
-    tokens = [token for token in text.lower().split() if token]
-    embedding_vector = [0.0] * dimension
+    tokens = [t for t in text.lower().split() if t]
+    vec = [0.0] * dim
     if not tokens:
-        return embedding_vector
-    for token in tokens:
-        hash_value = int(hashlib.sha256(token.encode("utf-8")).hexdigest(), 16)
-        vector_index = hash_value % dimension
-        embedding_vector[vector_index] += 1.0
-    # L2 normalize
-    vector_magnitude = math.sqrt(sum(value * value for value in embedding_vector)) or 1.0
-    return [value / vector_magnitude for value in embedding_vector]
+        return vec
+    
+    # Build vector with hash-based indices
+    for tok in tokens:
+        h = int(hashlib.sha256(tok.encode("utf-8")).hexdigest(), 16)
+        idx = h % dim
+        vec[idx] += 1.0
+    
+    # L2 normalize in single pass
+    sum_sq = sum(v * v for v in vec)
+    if sum_sq > 0:
+        norm = math.sqrt(sum_sq)
+        return [v / norm for v in vec]
+    return vec
 
 
 def generate_embedding(text: str) -> List[float]:  # noqa: ANN001
@@ -80,23 +89,23 @@ def generate_embedding(text: str) -> List[float]:  # noqa: ANN001
     """
     text = text or ""
     # Azure first
-    azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
-    azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-    azure_embedding_deployment = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
-    if azure_openai_api_key and azure_openai_endpoint and azure_embedding_deployment and AzureOpenAI is not None:
+    az_key = os.getenv("AZURE_OPENAI_API_KEY")
+    az_ep = os.getenv("AZURE_OPENAI_ENDPOINT")
+    az_emb = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+    if az_key and az_ep and az_emb and AzureOpenAI is not None:
         try:
-            client = AzureOpenAI(api_key=azure_openai_api_key, azure_endpoint=azure_openai_endpoint)
-            response = client.embeddings.create(model=azure_embedding_deployment, input=[text])
-            return response.data[0].embedding  # type: ignore[attr-defined]
+            client = AzureOpenAI(api_key=az_key, azure_endpoint=az_ep)
+            resp = client.embeddings.create(model=az_emb, input=[text])
+            return resp.data[0].embedding  # type: ignore[attr-defined]
         except Exception:
             pass
     # Public OpenAI
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if openai_api_key and OpenAI is not None:
+    oi_key = os.getenv("OPENAI_API_KEY")
+    if oi_key and OpenAI is not None:
         try:
-            client = OpenAI(api_key=openai_api_key)
-            response = client.embeddings.create(model="text-embedding-3-small", input=[text])
-            return response.data[0].embedding  # type: ignore[attr-defined]
+            client = OpenAI(api_key=oi_key)
+            resp = client.embeddings.create(model="text-embedding-3-small", input=[text])
+            return resp.data[0].embedding  # type: ignore[attr-defined]
         except Exception:
             pass
     # Fallback
@@ -105,66 +114,63 @@ def generate_embedding(text: str) -> List[float]:  # noqa: ANN001
 # ------------------------- Embedding Persistence -------------------------
 
 
-def _serialize_float32_to_bytes(embedding_vector: Sequence[float]) -> bytes:
-    """Serialize a float32 vector to bytes in little-endian format."""
-    return struct.pack(f"<{len(embedding_vector)}f", *[float(value) for value in embedding_vector])
+def _serialize_f32(vec: Sequence[float]) -> bytes:
+    return struct.pack(f"<{len(vec)}f", *[float(v) for v in vec])
 
 
 def store_embedding(message_id: Optional[str], embedding: Sequence[float], model: str) -> bool:  # noqa: ANN001
     if not message_id or not embedding:
         return False
-    connection = _get_conn()
-    if not connection:
+    conn = _get_conn()
+    if not conn:
         return False
     try:
-        cursor = connection.cursor()
-        serialized_embedding = _serialize_float32_to_bytes(embedding)
+        cursor = conn.cursor()
+        blob = _serialize_f32(embedding)
         cursor.execute(
             "INSERT INTO dbo.ChatMessageEmbeddings (MessageId, EmbeddingModel, EmbeddingDim, EmbeddingVector) VALUES (?,?,?,?)",
             message_id,
             model or "unknown-model",
             len(embedding),
-            serialized_embedding,
+            blob,
         )
-        connection.commit()
+        conn.commit()
         return True
     except Exception:
         return False
     finally:
         try:
-            connection.close()
+            conn.close()
         except Exception:
             pass
 
 # ------------------------- Similarity Search -------------------------
 
-def _deserialize_bytes_to_float32(blob: bytes, dimension: int) -> List[float]:
-    """Deserialize bytes to a float32 vector."""
+def _deserialize_f32(blob: bytes, dim: int) -> List[float]:
     if not blob:
-        return [0.0] * dimension
-    # Expect exact length = dimension * 4 bytes
+        return [0.0] * dim
+    # Expect exact length = dim * 4
     try:
-        return list(struct.unpack(f"<{dimension}f", blob[: dimension * 4]))
+        return list(struct.unpack(f"<{dim}f", blob[: dim * 4]))
     except Exception:
-        # Fallback slice-based deserialization
-        result = []
-        for i in range(dimension):
+        # Fallback slice-based
+        out = []
+        for i in range(dim):
             chunk = blob[i * 4 : (i + 1) * 4]
             if len(chunk) == 4:
-                result.append(struct.unpack("<f", chunk)[0])
+                out.append(struct.unpack("<f", chunk)[0])
             else:
-                result.append(0.0)
-        return result
+                out.append(0.0)
+        return out
 
 
-def calculate_cosine_similarity(vector_a: Sequence[float], vector_b: Sequence[float]) -> float:
-    """Calculate cosine similarity between two vectors."""
-    if not vector_a or not vector_b or len(vector_a) != len(vector_b):
+def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
+    if not a or not b or len(a) != len(b):
         return 0.0
-    dot_product = sum(x * y for x, y in zip(vector_a, vector_b))
-    magnitude_a = math.sqrt(sum(x * x for x in vector_a)) or 1.0
-    magnitude_b = math.sqrt(sum(y * y for y in vector_b)) or 1.0
-    return dot_product / (magnitude_a * magnitude_b)
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a)) or 1.0
+    nb = math.sqrt(sum(y * y for y in b)) or 1.0
+    return dot / (na * nb)
 
 
 def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, session_id: Optional[str] = None) -> List[dict]:  # noqa: ANN001
@@ -172,14 +178,17 @@ def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, ses
 
     If session_id is provided, restrict search to that session's conversation(s).
     For performance we limit to the most recent 500 embeddings.
+    
+    Optimization: Uses heapq.nlargest for O(n log k) top-k selection instead of
+    O(n log n) full sort when top_k is small relative to result set.
     """
     if not query_embedding:
         return []
-    connection = _get_conn()
-    if not connection:
+    conn = _get_conn()
+    if not conn:
         return []
     try:
-        cursor = connection.cursor()
+        cursor = conn.cursor()
         if session_id:
             cursor.execute(
                 "SELECT TOP 500 e.MessageId, e.EmbeddingModel, e.EmbeddingDim, e.EmbeddingVector, m.Content "
@@ -195,26 +204,29 @@ def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, ses
                 "ORDER BY e.CreatedAt DESC",
             )
         rows = cursor.fetchall()
-        scored_messages = []
-        for row in rows:
-            embedding_dimension = row.EmbeddingDim
-            stored_embedding = _deserialize_bytes_to_float32(row.EmbeddingVector, embedding_dimension)
-            similarity_score = calculate_cosine_similarity(query_embedding, stored_embedding)
-            if similarity_score <= 0:
-                continue
-            scored_messages.append({
-                "message_id": row.MessageId,
-                "content": row.Content,
-                "similarity": similarity_score,
-                "embedding_model": row.EmbeddingModel,
-            })
-        scored_messages.sort(key=lambda x: x["similarity"], reverse=True)
-        return scored_messages[:top_k]
+        
+        # Build scored list with only positive similarities
+        scored = []
+        for r in rows:
+            dim = r.EmbeddingDim
+            emb = _deserialize_f32(r.EmbeddingVector, dim)
+            sim = _cosine(query_embedding, emb)
+            if sim > 0:
+                scored.append({
+                    "message_id": r.MessageId,
+                    "content": r.Content,
+                    "similarity": sim,
+                    "embedding_model": r.EmbeddingModel,
+                })
+        
+        # Use heapq.nlargest for efficient top-k selection (O(n log k) vs O(n log n))
+        # This is more efficient when top_k << len(scored)
+        return heapq.nlargest(top_k, scored, key=lambda x: x["similarity"])
     except Exception:
         return []
     finally:
         try:
-            connection.close()
+            conn.close()
         except Exception:
             pass
 
