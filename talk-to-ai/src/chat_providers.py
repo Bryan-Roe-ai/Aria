@@ -41,35 +41,30 @@ _LMSTUDIO_CACHE_TTL = 30  # seconds
 
 
 def _check_lmstudio_available(url: str) -> bool:
-    """Check LM Studio availability with caching to avoid repeated HTTP requests.
+    """Backward-compatible alias for the newer `_check_lm_studio_available` function.
 
-    Results are cached for 30 seconds to prevent latency on every auto-detect call.
+    Older parts of the codebase call `_check_lmstudio_available` (no underscore
+    between `lm` and `studio`) so keep a tiny wrapper here that delegates to the
+    canonical implementation defined later in this module. This avoids import
+    time IndentationError and keeps the two names consistent.
     """
-    now = time.time()
-    # Return cached result if within TTL and URL matches
-    if (
-        _lmstudio_cache["available"] is not None
-        and _lmstudio_cache["url"] == url
-        and (now - _lmstudio_cache["checked_at"]) < _LMSTUDIO_CACHE_TTL
-    ):
-        return _lmstudio_cache["available"]
-
-    # Perform health check
+    # Delegate to the canonical implementation which is defined below.
     try:
-        import urllib.request
-        import urllib.error
-        req = urllib.request.Request(
-            url.replace("/v1", "") + "/v1/models",
-            headers={"User-Agent": "QAI"}
-        )
-        urllib.request.urlopen(req, timeout=1)
-        _lmstudio_cache["available"] = True
-    except Exception:
-        _lmstudio_cache["available"] = False
-
-    _lmstudio_cache["checked_at"] = now
-    _lmstudio_cache["url"] = url
-    return _lmstudio_cache["available"]
+        return _check_lm_studio_available(url)
+    except NameError:
+        # If the canonical implementation isn't available for some reason,
+        # perform a conservative HTTP ping.
+        try:
+            import urllib.request
+            import urllib.error
+            base_url = url.removesuffix("/v1")
+            models_endpoint_url = base_url + "/v1/models"
+            request = urllib.request.Request(
+                models_endpoint_url, headers={"User-Agent": "QAI"})
+            urllib.request.urlopen(request, timeout=1)
+            return True
+        except Exception:
+            return False
 
 
 @dataclass
