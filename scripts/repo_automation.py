@@ -1,73 +1,36 @@
 #!/usr/bin/env python3
+"""Repository-Wide Automation System
+
+This script provides lightweight management for repository-level
+automation components: starting/stopping processes, tracking PIDs and
+status, performing health checks and automatically attempting to
+install Python package dependencies when needed.
 """
-Repository-Wide Automation System
-        pid_map = self._get_pid_map()
-        status = None
-        if STATUS_FILE.exists():
-            try:
-                with open(STATUS_FILE, "r") as f:
-                    status = json.load(f)
-            except Exception:
-                status = None
 
-        print("\n" + "=" * 80)
-        print("🤖 Repository Automation Status")
-        print("=" * 80)
+import argparse
+import importlib
+import json
+import signal
+import subprocess
+import sys
+import threading
+import time
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-        if status:
-            print(f"Started: {status.get('started', 'unknown')}")
-            print(f"Uptime: {timedelta(seconds=int(status.get('uptime_seconds', 0)))}")
-            print(f"Health Checks: {status.get('total_cycles', 0)}")
-        else:
-            print("Started: unknown (status file missing)")
-            print("Uptime: n/a")
-            print("Health Checks: n/a")
+try:
+    import psutil
+except Exception:  # pragma: no cover - optional dependency
+    psutil = None
 
-        print("\n📊 Components:")
-        # Build a dynamic running map using PID file and psutil
-        dynamic_running: Dict[str, bool] = {}
-        if psutil is not None:
-            # First, use PID file if available
-            for name, pid in pid_map.items():
-                try:
-                    p = psutil.Process(pid)
-                    dynamic_running[name] = p.is_running() and p.status() != psutil.STATUS_ZOMBIE
-                except Exception:
-                    dynamic_running[name] = False
-            # Fallback: if PID not recorded, try discovering existing processes by script name
-            for name, component in self.components.items():
-                if name not in dynamic_running:
-                    try:
-                        proc = self._find_existing_process(component)
-                        dynamic_running[name] = proc is not None
-                    except Exception:
-                        dynamic_running[name] = False
+REPO_ROOT = Path(__file__).resolve().parent.parent
+PID_FILE = REPO_ROOT / "processes.json"
+STATUS_FILE = REPO_ROOT / "automation_status.json"
 
-        # Prefer dynamic running info; fall back to status file content
-        components_running = status.get("components_running", {}) if status else {}
-        for name in self.components.keys():
-            running = dynamic_running.get(name, components_running.get(name, False))
-            component = self.components.get(name)
-            if component:
-                status_icon = "✅" if running else "❌"
-                dep_ok = (status.get("dependency_status", {}).get(name, True) if status else True)
-                dep_icon = "🧩" if dep_ok else "⚠️"
-                pid_info = f" (PID {pid_map.get(name)})" if name in pid_map else ""
-                print(f"  {status_icon} {component.name}{pid_info} ({dep_icon} deps)")
-
-        # Recent errors
-        if status and status.get("errors"):
-            print(f"\n⚠️  Recent Errors ({len(status['errors'])}):")
-            for error in status["errors"][-5:]:
-                print(f"  - {error}")
-
-        if not status and not pid_map:
-            print("\nℹ️  No status or PID information found. If automation is running in another session, it may not have written status yet.")
-
-        print("=" * 80 + "\n")
 
 class _ExistingProcessWrapper:
-    """Lightweight wrapper to mimic subprocess.Popen interface for existing processes"""
 
     def __init__(self, pid: int):
         self.pid = pid
@@ -87,12 +50,10 @@ class _ExistingProcessWrapper:
 
 @dataclass
 class ComponentConfig:
-    """Configuration for automated component
-
-    required_packages: list of importable module names (pip names assumed identical unless
-    a tuple 'pip_name:import_name' is provided). These will be verified/installed prior
-    to component start to achieve zero manual intervention.
-    """
+    # Configuration for automated component
+    # required_packages: list of importable module names (pip names assumed identical unless
+    # a tuple 'pip_name:import_name' is provided). These will be verified/installed prior
+    # to component start to achieve zero manual intervention.
     name: str
     enabled: bool = True
     script: Optional[str] = None
@@ -105,7 +66,7 @@ class ComponentConfig:
 
 @dataclass
 class AutomationStatus:
-    """Overall automation status"""
+    # Overall automation status
     started: str
     uptime_seconds: float = 0
     components_running: Dict[str, bool] = field(default_factory=dict)
@@ -116,7 +77,8 @@ class AutomationStatus:
 
 
 class RepoAutomation:
-    """Repository-wide automation orchestrator"""
+    """
+    """
 
     def __init__(self):
         self.components: Dict[str, ComponentConfig] = self._init_components()
@@ -380,7 +342,7 @@ class RepoAutomation:
 
     def stop_component(self, name: str):
         """Stop a single component"""
-        if name not in self.processes or self.processes[name] is None:
+                """
             return
 
         component = self.components[name]
@@ -467,9 +429,8 @@ class RepoAutomation:
         return health
 
     def _enforce_single_instance(self, component: ComponentConfig, keep_pid: Optional[int] = None):
-        """Ensure only one process for the given component's script is running.
-        Terminates any extra instances beyond keep_pid.
-        """
+        # Ensure only one process for the given component's script is running.
+        # Terminates any extra instances beyond keep_pid.
         if psutil is None or not component.script:
             return
         script_name = Path(component.script).name
