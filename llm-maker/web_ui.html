@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Maker - AI Tool Creation Studio</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -41,6 +43,7 @@
             color: white;
             padding: 30px 40px;
             text-align: center;
+            position: relative;
         }
 
         .header h1 {
@@ -52,6 +55,35 @@
         .header p {
             font-size: 1.1em;
             opacity: 0.95;
+            margin-bottom: 15px;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
         }
 
         .main-content {
@@ -356,6 +388,71 @@
         .add-param-btn:hover {
             background: #218838;
         }
+
+        .integration-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .integration-box h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .code-snippet {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .example-pills {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .example-pill {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+
+        .example-pill:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -363,6 +460,17 @@
         <div class="header">
             <h1>🤖 LLM Maker - AI Tool Creation Studio</h1>
             <p>Create, test, and manage custom AI tools with natural language</p>
+            <div class="header-actions">
+                <a href="#integration-guide" class="header-btn" onclick="scrollToIntegration(); return false;">
+                    📚 Integration Guide
+                </a>
+                <a href="#api-docs" class="header-btn" onclick="showAPIInfo(); return false;">
+                    💻 API Docs
+                </a>
+                <a href="#examples" class="header-btn" onclick="showExamples(); return false;">
+                    💡 Examples
+                </a>
+            </div>
         </div>
 
         <div class="main-content">
@@ -373,6 +481,11 @@
                     <div class="form-group">
                         <label for="toolName">Tool Name *</label>
                         <input type="text" id="toolName" placeholder="e.g., calculate_fibonacci" required>
+                        <div class="example-pills" style="margin-top: 8px;">
+                            <span class="example-pill" onclick="fillExample('fibonacci')">🔢 Fibonacci</span>
+                            <span class="example-pill" onclick="fillExample('palindrome')">🔄 Palindrome</span>
+                            <span class="example-pill" onclick="fillExample('temperature')">🌡️ Temperature</span>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -426,6 +539,64 @@
 
                 <div class="form-group" style="margin-top: 30px;">
                     <button class="btn btn-secondary" onclick="loadTools()">🔄 Refresh Tools</button>
+                </div>
+
+                <!-- Integration Guide Section -->
+                <div class="integration-box" id="integration-guide">
+                    <h3>📚 Quick Integration</h3>
+                    <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">
+                        Use these endpoints to integrate LLM Maker into your apps:
+                    </p>
+                    
+                    <strong style="font-size: 0.9em; display: block; margin-top: 15px; color: #555;">List all tools:</strong>
+                    <div class="code-snippet">
+                        <button class="copy-btn" onclick="copyToClipboard('GET http://localhost:8090/api/tools')">Copy</button>
+                        <code>GET http://localhost:8090/api/tools</code>
+                    </div>
+
+                    <strong style="font-size: 0.9em; display: block; margin-top: 15px; color: #555;">Create a tool:</strong>
+                    <div class="code-snippet">
+                        <button class="copy-btn" onclick="copyToClipboard(`fetch('/api/tools', {
+  method: 'POST',
+  headers: {'Content-Type': 'application/json'},
+  body: JSON.stringify({
+    name: 'my_tool',
+    description: 'What it does',
+    parameters: {'x': 'int'},
+    return_type: 'int'
+  })
+})`)">Copy</button>
+                        <code>fetch('/api/tools', {
+  method: 'POST',
+  body: JSON.stringify({
+    name: 'my_tool',
+    description: 'What it does',
+    parameters: {'x': 'int'}
+  })
+})</code>
+                    </div>
+
+                    <strong style="font-size: 0.9em; display: block; margin-top: 15px; color: #555;">Execute a tool:</strong>
+                    <div class="code-snippet">
+                        <button class="copy-btn" onclick="copyToClipboard(`fetch('/api/tools/execute', {
+  method: 'POST',
+  body: JSON.stringify({
+    tool_id: 'tool_xyz',
+    arguments: {'x': 5}
+  })
+})`)">Copy</button>
+                        <code>fetch('/api/tools/execute', {
+  method: 'POST',
+  body: JSON.stringify({
+    tool_id: 'tool_xyz',
+    arguments: {'x': 5}
+  })
+})</code>
+                    </div>
+
+                    <p style="font-size: 0.85em; color: #999; margin-top: 15px;">
+                        💡 Tip: Click "Copy" to copy code snippets to clipboard
+                    </p>
                 </div>
             </div>
 
@@ -647,6 +818,92 @@
 
             tools.push(newTool);
             return { success: true, tool_id: newTool.id };
+        }
+
+        // Helper functions for enhanced UX
+        function scrollToIntegration() {
+            document.getElementById('integration-guide').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showAPIInfo() {
+            alert('API Documentation:\n\n' +
+                  'GET /api/tools - List all tools\n' +
+                  'POST /api/tools - Create new tool\n' +
+                  'POST /api/tools/execute - Execute tool\n' +
+                  'DELETE /api/tools/{id} - Delete tool\n\n' +
+                  'See the Integration Guide section for code examples!');
+        }
+
+        function showExamples() {
+            const examples = [
+                '🔢 Fibonacci - Calculate Fibonacci numbers',
+                '🔄 Palindrome - Check if text is palindrome',
+                '🌡️ Temperature - Convert Celsius to Fahrenheit'
+            ];
+            alert('Example Tools:\n\n' + examples.join('\n') + '\n\nClick the pills below Tool Name to auto-fill!');
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const btn = event.target.closest('.copy-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = '✓ Copied!';
+                    btn.style.background = 'rgba(40, 167, 69, 0.3)';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                    }, 2000);
+                }).catch(() => prompt('Copy this code:', text));
+            } else {
+                prompt('Copy this code:', text);
+            }
+        }
+
+        function fillExample(exampleName) {
+            const examples = {
+                fibonacci: {
+                    name: 'calculate_fibonacci',
+                    description: 'Calculate the nth Fibonacci number using iteration. Returns the Fibonacci number at position n.',
+                    params: [{ name: 'n', type: 'int' }],
+                    returnType: 'int'
+                },
+                palindrome: {
+                    name: 'is_palindrome',
+                    description: 'Check if a string is a palindrome (reads the same forwards and backwards). Case-insensitive.',
+                    params: [{ name: 'text', type: 'str' }],
+                    returnType: 'bool'
+                },
+                temperature: {
+                    name: 'celsius_to_fahrenheit',
+                    description: 'Convert temperature from Celsius to Fahrenheit using the formula: F = (C * 9/5) + 32',
+                    params: [{ name: 'celsius', type: 'float' }],
+                    returnType: 'float'
+                }
+            };
+
+            const example = examples[exampleName];
+            if (!example) return;
+
+            document.getElementById('toolName').value = example.name;
+            document.getElementById('toolDescription').value = example.description;
+            document.getElementById('returnType').value = example.returnType;
+
+            const container = document.getElementById('parametersContainer');
+            container.innerHTML = '';
+            example.params.forEach(param => {
+                const row = document.createElement('div');
+                row.className = 'param-row';
+                row.innerHTML = `
+                    <input type="text" placeholder="Parameter name" class="param-name" value="${param.name}">
+                    <input type="text" placeholder="Type (e.g., int, str)" class="param-type" value="${param.type}">
+                    <button type="button" class="btn-icon" onclick="removeParam(this)">✕</button>
+                `;
+                container.appendChild(row);
+            });
+
+            document.getElementById('toolName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            showStatus('createStatus', `✨ Example "${exampleName}" loaded! Click "Create Tool" to generate it.`, 'info');
         }
 
         async function realLoadTools_OLD() {
