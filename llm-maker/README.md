@@ -2,6 +2,18 @@
 
 LLM Maker is a framework that enables Large Language Models to autonomously create, validate, and use Python tools. It provides a safe, sandboxed environment for dynamic tool generation and execution.
 
+## 🎨 New: Web UI
+
+**User-friendly web interface for creating and testing AI tools!**
+
+```bash
+cd llm-maker
+python web_server.py
+# Open http://localhost:8090 in your browser
+```
+
+See [WEB_UI_README.md](WEB_UI_README.md) for full web UI documentation.
+
 ## 🎯 Overview
 
 LLM Maker allows LLMs to:

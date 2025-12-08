@@ -13,8 +13,14 @@ repo_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(repo_root))
 
 from shared.chat_providers import detect_provider, BaseChatProvider
-from .tool_registry import Tool
-from .tool_validator import ToolValidator
+
+# Use try/except for imports to handle both package and direct execution
+try:
+    from .tool_registry import Tool
+    from .tool_validator import ToolValidator
+except ImportError:
+    from tool_registry import Tool
+    from tool_validator import ToolValidator
 
 logger = logging.getLogger(__name__)
 
