@@ -4,7 +4,7 @@ Tool Validator - Validates generated code for safety
 import ast
 import logging
 import re
-from typing import Tuple, List, Set
+from typing import Tuple, List, Set, Optional
 import yaml
 from pathlib import Path
 

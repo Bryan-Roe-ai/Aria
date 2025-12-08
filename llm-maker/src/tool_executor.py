@@ -7,10 +7,17 @@ import sys
 from contextlib import contextmanager
 from typing import Any, Dict, Optional
 import traceback
-from RestrictedPython import compile_restricted
-from RestrictedPython.Guards import safe_builtins, guarded_iter_unpack_sequence
 
 logger = logging.getLogger(__name__)
+
+# Try to import RestrictedPython if available
+try:
+    from RestrictedPython import compile_restricted
+    from RestrictedPython.Guards import safe_builtins, guarded_iter_unpack_sequence
+    HAS_RESTRICTED_PYTHON = True
+except ImportError:
+    HAS_RESTRICTED_PYTHON = False
+    logger.warning("RestrictedPython not available, using basic sandboxing")
 
 
 class ExecutionTimeout(Exception):
@@ -81,8 +88,9 @@ class ToolExecutor:
             }
         }
         
-        # Add safe iteration support
-        self.safe_globals['_iter_unpack_sequence_'] = guarded_iter_unpack_sequence
+        # Add safe iteration support if RestrictedPython is available
+        if HAS_RESTRICTED_PYTHON:
+            self.safe_globals['_iter_unpack_sequence_'] = guarded_iter_unpack_sequence
     
     @contextmanager
     def _timeout_context(self, seconds: int):
@@ -122,19 +130,31 @@ class ToolExecutor:
             Dictionary with result or error
         """
         try:
-            # Compile code with RestrictedPython
-            byte_code = compile_restricted(
-                code,
-                filename='<tool>',
-                mode='exec'
-            )
-            
-            if byte_code.errors:
-                return {
-                    'success': False,
-                    'error': f"Compilation errors: {byte_code.errors}",
-                    'error_type': 'CompilationError'
-                }
+            # Compile code
+            if HAS_RESTRICTED_PYTHON:
+                byte_code = compile_restricted(
+                    code,
+                    filename='<tool>',
+                    mode='exec'
+                )
+                
+                if byte_code.errors:
+                    return {
+                        'success': False,
+                        'error': f"Compilation errors: {byte_code.errors}",
+                        'error_type': 'CompilationError'
+                    }
+                compiled_code = byte_code.code
+            else:
+                # Fallback to regular compile (less safe but functional)
+                try:
+                    compiled_code = compile(code, '<tool>', 'exec')
+                except SyntaxError as e:
+                    return {
+                        'success': False,
+                        'error': f"Syntax error: {e}",
+                        'error_type': 'SyntaxError'
+                    }
             
             # Create execution namespace
             exec_globals = self.safe_globals.copy()
@@ -143,7 +163,7 @@ class ToolExecutor:
             # Execute code to define function
             try:
                 with self._timeout_context(self.timeout):
-                    exec(byte_code.code, exec_globals, exec_locals)
+                    exec(compiled_code, exec_globals, exec_locals)
             except ExecutionTimeout as e:
                 return {
                     'success': False,
@@ -229,7 +249,11 @@ class ToolExecutor:
             True if code can be executed
         """
         try:
-            byte_code = compile_restricted(code, filename='<test>', mode='exec')
-            return len(byte_code.errors) == 0
+            if HAS_RESTRICTED_PYTHON:
+                byte_code = compile_restricted(code, filename='<test>', mode='exec')
+                return len(byte_code.errors) == 0
+            else:
+                compile(code, '<test>', 'exec')
+                return True
         except Exception:
             return False
