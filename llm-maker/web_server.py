@@ -17,6 +17,7 @@ from tool_maker import ToolMaker
 from tool_validator import ToolValidator
 from tool_executor import ToolExecutor
 from tool_registry import ToolRegistry, Tool
+from website_maker import WebsiteMaker, WebsiteValidator
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -27,6 +28,7 @@ maker = ToolMaker()
 validator = ToolValidator()
 executor = ToolExecutor()
 registry = ToolRegistry()
+website_maker = WebsiteMaker()
 
 
 class LLMMakerHandler(BaseHTTPRequestHandler):
@@ -41,6 +43,10 @@ class LLMMakerHandler(BaseHTTPRequestHandler):
         if path == '/' or path == '/index.html':
             self.serve_file('web_ui.html', 'text/html')
         
+        # Serve website maker UI
+        elif path == '/website-maker' or path == '/website-maker.html':
+            self.serve_file('website_maker_ui.html', 'text/html')
+        
         # API: List tools
         elif path == '/api/tools':
             self.handle_list_tools()
@@ -53,6 +59,15 @@ class LLMMakerHandler(BaseHTTPRequestHandler):
         elif path.startswith('/api/tools/'):
             tool_id = path.split('/')[-1]
             self.handle_get_tool(tool_id)
+        
+        # API: List websites
+        elif path == '/api/websites':
+            self.handle_list_websites()
+        
+        # API: Get specific website
+        elif path.startswith('/api/websites/'):
+            website_name = path.split('/')[-1]
+            self.handle_get_website(website_name)
         
         else:
             self.send_error(404, "Not Found")
@@ -84,6 +99,14 @@ class LLMMakerHandler(BaseHTTPRequestHandler):
         elif path == '/api/tools/validate':
             self.handle_validate_tool(data)
         
+        # API: Create website
+        elif path == '/api/websites':
+            self.handle_create_website(data)
+        
+        # API: Update website
+        elif path == '/api/websites/update':
+            self.handle_update_website(data)
+        
         else:
             self.send_error(404, "Not Found")
     
@@ -96,6 +119,12 @@ class LLMMakerHandler(BaseHTTPRequestHandler):
         if path.startswith('/api/tools/'):
             tool_id = path.split('/')[-1]
             self.handle_delete_tool(tool_id)
+        
+        # API: Delete website
+        elif path.startswith('/api/websites/'):
+            website_name = path.split('/')[-1]
+            self.handle_delete_website(website_name)
+        
         else:
             self.send_error(404, "Not Found")
     
@@ -350,6 +379,127 @@ class LLMMakerHandler(BaseHTTPRequestHandler):
         
         except Exception as e:
             logger.error(f"Error getting stats: {e}", exc_info=True)
+            self.send_json_response({'error': str(e)}, 500)
+    
+    def handle_create_website(self, data):
+        """Handle website creation request"""
+        try:
+            name = data.get('name')
+            description = data.get('description')
+            style = data.get('style', 'modern')
+            pages = data.get('pages', ['index'])
+            features = data.get('features', ['responsive design', 'modern styling'])
+            
+            if not name or not description:
+                self.send_json_response({
+                    'success': False,
+                    'error': 'Missing required fields: name and description'
+                }, 400)
+                return
+            
+            logger.info(f"Creating website: {name}")
+            
+            result = website_maker.create_website(
+                name=name,
+                description=description,
+                style=style,
+                pages=pages,
+                features=features
+            )
+            
+            self.send_json_response(result)
+        
+        except Exception as e:
+            logger.error(f"Error creating website: {e}", exc_info=True)
+            self.send_json_response({
+                'success': False,
+                'error': str(e)
+            }, 500)
+    
+    def handle_update_website(self, data):
+        """Handle website update request"""
+        try:
+            name = data.get('name')
+            update_description = data.get('update_description')
+            target_file = data.get('target_file')
+            
+            if not name or not update_description:
+                self.send_json_response({
+                    'success': False,
+                    'error': 'Missing required fields: name and update_description'
+                }, 400)
+                return
+            
+            logger.info(f"Updating website: {name}")
+            
+            result = website_maker.update_website(
+                name=name,
+                update_description=update_description,
+                target_file=target_file
+            )
+            
+            self.send_json_response(result)
+        
+        except Exception as e:
+            logger.error(f"Error updating website: {e}", exc_info=True)
+            self.send_json_response({
+                'success': False,
+                'error': str(e)
+            }, 500)
+    
+    def handle_list_websites(self):
+        """Handle list websites request"""
+        try:
+            websites = website_maker.list_websites()
+            self.send_json_response({
+                'websites': websites,
+                'count': len(websites)
+            })
+        
+        except Exception as e:
+            logger.error(f"Error listing websites: {e}", exc_info=True)
+            self.send_json_response({'error': str(e)}, 500)
+    
+    def handle_get_website(self, name):
+        """Handle get specific website request"""
+        try:
+            websites = website_maker.list_websites()
+            website = next((w for w in websites if w['name'] == name), None)
+            
+            if website:
+                # Read website files
+                import os
+                files_content = {}
+                for filename in website.get('files', []):
+                    filepath = os.path.join(website['path'], filename)
+                    if os.path.exists(filepath):
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            files_content[filename] = f.read()
+                
+                website['files_content'] = files_content
+                
+                self.send_json_response({
+                    'success': True,
+                    'website': website
+                })
+            else:
+                self.send_json_response({
+                    'success': False,
+                    'error': f"Website '{name}' not found"
+                }, 404)
+        
+        except Exception as e:
+            logger.error(f"Error getting website: {e}", exc_info=True)
+            self.send_json_response({'error': str(e)}, 500)
+    
+    def handle_delete_website(self, name):
+        """Handle website deletion request"""
+        try:
+            result = website_maker.delete_website(name)
+            self.send_json_response(result)
+        
+        except Exception as e:
+            logger.error(f"Error deleting website: {e}", exc_info=True)
             self.send_json_response({'error': str(e)}, 500)
     
     def log_message(self, format, *args):

@@ -1,9 +1,10 @@
-# LLM Maker - Autonomous Tool Creation for LLMs
+# LLM Maker - Autonomous Tool & Website Creation for LLMs
 
-LLM Maker is a framework that enables Large Language Models to autonomously create, validate, and use Python tools. It provides a safe, sandboxed environment for dynamic tool generation and execution.
+LLM Maker is a comprehensive framework that enables Large Language Models to autonomously create, validate, and use Python tools, as well as generate complete websites. It provides a safe, sandboxed environment for dynamic code generation and execution.
 
-## 🎨 New: Web UI
+## 🎨 New: Web Interfaces
 
+### Tool Maker UI
 **User-friendly web interface for creating and testing AI tools!**
 
 ```bash
@@ -12,7 +13,16 @@ python web_server.py
 # Open http://localhost:8090 in your browser
 ```
 
-See [WEB_UI_README.md](WEB_UI_README.md) for full web UI documentation.
+### Website Maker UI
+**AI-powered automated website generator!**
+
+```bash
+cd llm-maker
+python web_server.py
+# Open http://localhost:8090/website-maker in your browser
+```
+
+See [WEB_UI_README.md](WEB_UI_README.md) and [WEBSITE_MAKER_README.md](WEBSITE_MAKER_README.md) for full documentation.
 
 ## 🎯 Overview
 
@@ -21,6 +31,8 @@ LLM Maker allows LLMs to:
 - **Validate Tools**: Automatically verify generated code for safety and correctness
 - **Execute Tools**: Run tools in a sandboxed environment with resource limits
 - **Manage Tools**: Store, retrieve, and version generated tools
+- **Generate Websites**: Create complete, modern, responsive websites from descriptions
+- **Update Websites**: Modify existing websites with natural language instructions
 
 ## 🚀 Quick Start
 
