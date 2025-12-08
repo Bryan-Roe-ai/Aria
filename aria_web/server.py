@@ -28,7 +28,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from urllib.parse import parse_qs, urlparse
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # project root for optional local imports
@@ -149,7 +150,8 @@ def _generate_positions_poisson(n: int, min_dist: int, rng: random.Random, width
             active.pop(idx)
 
     if len(pts) < n:
-        pts.extend(_generate_positions_rejection(n - len(pts), max(4, int(min_dist * 0.6)), rng))
+        pts.extend(_generate_positions_rejection(
+            n - len(pts), max(4, int(min_dist * 0.6)), rng))
     return [(int(p[0]), int(p[1])) for p in pts[:n]]
 
 
@@ -175,9 +177,11 @@ def generate_world_fallback(theme: str, count: int, seed: Optional[int] = None, 
     rng = random.Random(seed) if seed is not None else random.Random()
     effective_seed = seed if seed is not None else rng.randint(100000, 999999)
 
-    catalog = list(THEME_OBJECT_LIBRARY.get(theme.lower(), THEME_OBJECT_LIBRARY['forest']))
+    catalog = list(THEME_OBJECT_LIBRARY.get(
+        theme.lower(), THEME_OBJECT_LIBRARY['forest']))
     rng.shuffle(catalog)
-    chosen = [(catalog[i % len(catalog)][0], catalog[i % len(catalog)][1]) for i in range(count)]
+    chosen = [(catalog[i % len(catalog)][0], catalog[i % len(catalog)][1])
+              for i in range(count)]
 
     if algorithm == 'poisson':
         positions = _generate_positions_poisson(len(chosen), spacing, rng)
@@ -189,12 +193,15 @@ def generate_world_fallback(theme: str, count: int, seed: Optional[int] = None, 
     objs: Dict[str, Dict] = {}
     for (name, emoji), (x, y) in zip(chosen, positions):
         oid = _sanitize_id(name)
-        objs[oid] = {'id': oid, 'emoji': emoji, 'position': {'x': x, 'y': y}, 'state': 'on_stage'}
+        objs[oid] = {'id': oid, 'emoji': emoji, 'position': {
+            'x': x, 'y': y}, 'state': 'on_stage'}
 
-    env = {'theme': theme, 'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'), 'seed': effective_seed, 'spacing': spacing, 'generation_method': method, 'stage_bounds': {'width': 100, 'height': 100}}
+    env = {'theme': theme, 'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace(
+        '+00:00', 'Z'), 'seed': effective_seed, 'spacing': spacing, 'generation_method': method, 'stage_bounds': {'width': 100, 'height': 100}}
 
     return {'objects': objs, 'environment': env, 'llm': False}
-    env = {'theme': theme, 'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'), 'seed': effective_seed, 'spacing': spacing, 'generation_method': generation_method, 'stage_bounds': {'width': 100, 'height': 100}}
+    env = {'theme': theme, 'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace(
+        '+00:00', 'Z'), 'seed': effective_seed, 'spacing': spacing, 'generation_method': generation_method, 'stage_bounds': {'width': 100, 'height': 100}}
 
     return {'objects': objs, 'environment': env, 'llm': False}
 
@@ -212,14 +219,17 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: Optional[int
     user_prompt = f"theme: {theme}\ncount: {count}\nGoal: diverse distinct objects consistent with theme."
 
     try:
-        messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': user_prompt}]
+        messages = [{'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': user_prompt}]
         raw = provider.complete(messages, stream=False)
 
-        raw_str = raw.get('content') if isinstance(raw, dict) else (raw if isinstance(raw, str) else str(raw))
+        raw_str = raw.get('content') if isinstance(raw, dict) else (
+            raw if isinstance(raw, str) else str(raw))
 
         # Strip fenced blocks if present
         if '```' in raw_str:
-            m = re.search(r"```(?:json)?\n(.*?)(```)$", raw_str, flags=re.DOTALL)
+            m = re.search(r"```(?:json)?\n(.*?)(```)$",
+                          raw_str, flags=re.DOTALL)
             if m:
                 raw_str = m.group(1).strip()
 
@@ -242,7 +252,8 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: Optional[int
             pos = val.get('position', {})
             x = int(max(0, min(100, pos.get('x', random.randint(10, 90)))))
             y = int(max(0, min(100, pos.get('y', random.randint(10, 90)))))
-            sanitized[oid] = {'id': oid, 'emoji': val.get('emoji', '✨'), 'position': {'x': x, 'y': y}, 'state': val.get('state', 'on_stage')}
+            sanitized[oid] = {'id': oid, 'emoji': val.get('emoji', '✨'), 'position': {
+                'x': x, 'y': y}, 'state': val.get('state', 'on_stage')}
 
         # fallback if output unusable
         if not sanitized:
@@ -254,7 +265,8 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: Optional[int
 
         effective_seed = seed if seed is not None else random.Random().randint(100000, 999999)
         environment.setdefault('theme', theme)
-        environment.setdefault('generated_at', datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+        environment.setdefault('generated_at', datetime.datetime.now(
+            timezone.utc).isoformat().replace('+00:00', 'Z'))
         environment.setdefault('stage_bounds', {'width': 100, 'height': 100})
         environment.setdefault('generation_method', 'llm')
         environment.setdefault('seed', effective_seed)
@@ -272,7 +284,8 @@ def persist_world(world: Dict, theme: str, seed: Optional[int] = None, base_dir:
             base_dir = REPO_ROOT / 'data_out' / 'aria_worlds'
         base_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
-        seed_val = seed if seed is not None else world.get('environment', {}).get('seed', 'noseed')
+        seed_val = seed if seed is not None else world.get(
+            'environment', {}).get('seed', 'noseed')
         fname = f"world_{_sanitize_id(theme)}_{ts}_{seed_val}.json"
         path = base_dir / fname
         with open(path, 'w', encoding='utf-8') as fh:
@@ -370,7 +383,8 @@ class AriaActionParser:
 
             if adapter_dir.exists() and (adapter_dir / 'adapter_config.json').exists():
                 # explicit lora provider
-                provider, choice = detect_provider(explicit='lora', model_override=str(adapter_dir))
+                provider, choice = detect_provider(
+                    explicit='lora', model_override=str(adapter_dir))
             else:
                 provider, choice = detect_provider()
 
@@ -399,14 +413,17 @@ class AriaActionParser:
             raise RuntimeError('No LLM provider available')
 
         system_prompt = self._build_system_prompt()
-        messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': command}]
+        messages = [{'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': command}]
 
         raw = self.provider.complete(messages, stream=False)
-        raw_str = raw.get('content') if isinstance(raw, dict) else (raw if isinstance(raw, str) else str(raw))
+        raw_str = raw.get('content') if isinstance(raw, dict) else (
+            raw if isinstance(raw, str) else str(raw))
 
         # strip fenced blocks
         if '```' in raw_str:
-            m = re.search(r"```(?:json)?\n(.*?)(```)$", raw_str, flags=re.DOTALL)
+            m = re.search(r"```(?:json)?\n(.*?)(```)$",
+                          raw_str, flags=re.DOTALL)
             if m:
                 raw_str = m.group(1).strip()
 
@@ -439,31 +456,38 @@ class AriaActionParser:
         # Move detection
         if any(w in cmd for w in ['go ', 'move ', 'walk ', 'run ']):
             # Try to find coordinates or named object
-            coord = re.search(r'(?:to|to the)?\s*(\d{1,3})%?[,\s]+(\d{1,3})%?', cmd)
+            coord = re.search(
+                r'(?:to|to the)?\s*(\d{1,3})%?[,\s]+(\d{1,3})%?', cmd)
             if coord:
                 x = int(max(0, min(100, int(coord.group(1)))))
                 y = int(max(0, min(100, int(coord.group(2)))))
-                actions.append({'action': 'move', 'target': {'x': x, 'y': y}, 'speed': 'normal'})
+                actions.append({'action': 'move', 'target': {
+                               'x': x, 'y': y}, 'speed': 'normal'})
             else:
                 # Move near common objects
                 for o in ['apple', 'book', 'cup', 'ball', 'flower']:
                     if o in cmd and o in stage_state.get('objects', {}):
-                        actions.append({'action': 'move', 'target': stage_state['objects'][o]['position'], 'speed': 'normal'})
+                        actions.append(
+                            {'action': 'move', 'target': stage_state['objects'][o]['position'], 'speed': 'normal'})
                         break
 
         # Say / speak
         if any(w in cmd for w in ['say ', 'speak ', 'tell ', 'announce ']):
-            m = re.search(r'(?:say|speak|announce|tell)[:\s]+(.+)$', command, flags=re.I)
+            m = re.search(
+                r'(?:say|speak|announce|tell)[:\s]+(.+)$', command, flags=re.I)
             if m:
                 text = m.group(1).strip().strip('"\'')
-                emotion = 'happy' if any(c in text for c in ['!', 'hello', 'hi']) else 'neutral'
-                actions.append({'action': 'say', 'text': text, 'emotion': emotion})
+                emotion = 'happy' if any(
+                    c in text for c in ['!', 'hello', 'hi']) else 'neutral'
+                actions.append(
+                    {'action': 'say', 'text': text, 'emotion': emotion})
 
         # Pickup
         for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
             if obj in cmd and any(w in cmd for w in ['pick', 'get', 'grab', 'take']):
                 if obj in stage_state.get('objects', {}):
-                    actions.append({'action': 'move', 'target': stage_state['objects'][obj]['position'], 'speed': 'normal'})
+                    actions.append(
+                        {'action': 'move', 'target': stage_state['objects'][obj]['position'], 'speed': 'normal'})
                     actions.append({'action': 'pickup', 'object_id': obj})
                     break
 
@@ -479,7 +503,8 @@ class AriaActionParser:
         if use_llm and self.provider:
             try:
                 actions = self.parse_with_llm(command)
-                logger.info(f"✓ LLM parsed: {command} -> {len(actions)} actions")
+                logger.info(
+                    f"✓ LLM parsed: {command} -> {len(actions)} actions")
                 return actions
             except Exception as e:
                 logger.warning(f"LLM parsing failed, falling back: {e}")
@@ -503,16 +528,19 @@ def generate_tags_ai(command: str) -> Dict[str, object]:
         adapter_dir = Path(adapter_env) if adapter_env else default_adapter
 
         if adapter_dir.exists() and (adapter_dir / 'adapter_config.json').exists():
-            provider, choice = detect_provider(explicit='lora', model_override=str(adapter_dir))
+            provider, choice = detect_provider(
+                explicit='lora', model_override=str(adapter_dir))
         else:
             provider, choice = detect_provider()
 
         stage_context = get_stage_context()
         system_prompt = f"You are an AI assistant that controls Aria.\nStage state:\n{stage_context}\nEmit movement tags like [aria:move:left] or [aria:limb:left_arm:raise] as appropriate. Return natural language explanation and include tags."
 
-        messages = [{'role': 'system', 'content': system_prompt}, {'role': 'user', 'content': command}]
+        messages = [{'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': command}]
         raw = provider.complete(messages, stream=False)
-        raw_str = raw.get('content') if isinstance(raw, dict) else (raw if isinstance(raw, str) else str(raw))
+        raw_str = raw.get('content') if isinstance(raw, dict) else (
+            raw if isinstance(raw, str) else str(raw))
 
         tags = re.findall(r'\[aria:[^\]]+\]', raw_str)
 
@@ -568,11 +596,13 @@ def execute_aria_action(action: Dict) -> Dict:
         if t == 'move':
             target = action.get('target')
             if isinstance(target, dict) and 'x' in target and 'y' in target:
-                stage_state['aria']['position'] = {'x': int(target['x']), 'y': int(target['y'])}
+                stage_state['aria']['position'] = {
+                    'x': int(target['x']), 'y': int(target['y'])}
                 return {'status': 'success', 'message': f"Moved to ({target['x']},{target['y']})", 'tags': [f"[aria:position:{target['x']}:{target['y']}]"]}
             elif isinstance(target, str) and target in stage_state['objects']:
                 pos = stage_state['objects'][target]['position']
-                stage_state['aria']['position'] = {'x': max(0, pos['x'] - 10), 'y': pos['y'] + 5}
+                stage_state['aria']['position'] = {
+                    'x': max(0, pos['x'] - 10), 'y': pos['y'] + 5}
                 return {'status': 'success', 'message': f"Moved near {target}", 'tags': [f"[aria:position:{pos['x'] - 10}:{pos['y'] + 5}]"]}
 
         if t == 'say':
@@ -589,7 +619,8 @@ def execute_aria_action(action: Dict) -> Dict:
                 return {'status': 'error', 'message': 'Already holding an object'}
             aria_pos = stage_state['aria']['position']
             obj_pos = stage_state['objects'][obj]['position']
-            dist = math.hypot(aria_pos['x'] - obj_pos['x'], aria_pos['y'] - obj_pos['y'])
+            dist = math.hypot(
+                aria_pos['x'] - obj_pos['x'], aria_pos['y'] - obj_pos['y'])
             if dist > 40:
                 return {'status': 'error', 'message': 'Object out of reach'}
             stage_state['aria']['held_object'] = obj
@@ -611,7 +642,8 @@ def execute_aria_action(action: Dict) -> Dict:
                 return {'status': 'error', 'message': 'Not holding anything to throw'}
             obj = stage_state['aria']['held_object']
             target = action.get('target', {'x': 70, 'y': 40})
-            stage_state['objects'][obj]['position'] = {'x': int(target['x']), 'y': int(target['y'])}
+            stage_state['objects'][obj]['position'] = {
+                'x': int(target['x']), 'y': int(target['y'])}
             stage_state['objects'][obj]['state'] = 'thrown'
             stage_state['aria']['held_object'] = None
             return {'status': 'success', 'message': f'Threw {obj}', 'tags': [f'[aria:throw:{obj}]']}
@@ -706,7 +738,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            payload = {'aria': stage_state['aria'], 'objects': stage_state['objects']}
+            payload = {'aria': stage_state['aria'],
+                       'objects': stage_state['objects']}
             self.wfile.write(json.dumps(payload).encode('utf-8'))
             return
 
@@ -719,15 +752,18 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 if not theme or not seed:
                     raise ValueError('theme and seed parameters required')
 
-                world = fetch_world_cosmos(theme, seed) or fetch_world_filesystem(theme, seed)
+                world = fetch_world_cosmos(
+                    theme, seed) or fetch_world_filesystem(theme, seed)
                 if not world:
                     self.send_response(404)
                     self.send_header('Content-Type', 'application/json')
                     self.end_headers()
-                    self.wfile.write(json.dumps({'status': 'not_found', 'theme': theme, 'seed': seed}).encode('utf-8'))
+                    self.wfile.write(json.dumps(
+                        {'status': 'not_found', 'theme': theme, 'seed': seed}).encode('utf-8'))
                     return
 
-                resp = {'status': 'success', 'theme': theme, 'seed': seed, 'objects': world.get('objects', {}), 'environment': world.get('environment', {})}
+                resp = {'status': 'success', 'theme': theme, 'seed': seed, 'objects': world.get(
+                    'objects', {}), 'environment': world.get('environment', {})}
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
@@ -738,7 +774,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
         if self.path == '/api/aria/world/list':
@@ -752,7 +789,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         s = parts[-1] if len(parts) >= 4 else None
                         worlds.append({'file': str(f), 'theme': t, 'seed': s})
 
-                payload = {'status': 'success', 'worlds': worlds, 'cosmos': {'available': _cosmos_available()}}
+                payload = {'status': 'success', 'worlds': worlds,
+                           'cosmos': {'available': _cosmos_available()}}
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
@@ -762,7 +800,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 logger.exception('World list error')
                 self.send_response(400)
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
         if self.path == '/':
@@ -794,7 +833,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 else:
                     model_used = provider_used or 'ai'
 
-                response = {'command': command, 'tags': tags, 'response': response_text, 'model': model_used, 'stage_context': get_stage_context(), 'stage_aware': True}
+                response = {'command': command, 'tags': tags, 'response': response_text,
+                            'model': model_used, 'stage_context': get_stage_context(), 'stage_aware': True}
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
@@ -812,7 +852,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     for k, v in data['objects'].items():
                         if isinstance(v, dict) and 'position' in v:
                             stage_state['objects'][k] = v
-                    result = {'status': 'ok', 'objects': stage_state['objects']}
+                    result = {'status': 'ok',
+                              'objects': stage_state['objects']}
 
                 elif 'object' in data and 'action' in data:
                     obj = data['object']
@@ -824,8 +865,10 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     if action == 'add':
                         pos = obj.get('position', {'x': 50, 'y': 50})
                         state = obj.get('state', 'on_stage')
-                        stage_state['objects'][obj_id] = {'position': pos, 'state': state}
-                        result = {'status': 'added', 'id': obj_id, 'object': stage_state['objects'][obj_id]}
+                        stage_state['objects'][obj_id] = {
+                            'position': pos, 'state': state}
+                        result = {'status': 'added', 'id': obj_id,
+                                  'object': stage_state['objects'][obj_id]}
                     elif action == 'update':
                         if obj_id not in stage_state['objects']:
                             stage_state['objects'][obj_id] = {}
@@ -833,10 +876,12 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             stage_state['objects'][obj_id]['position'] = obj['position']
                         if 'state' in obj:
                             stage_state['objects'][obj_id]['state'] = obj['state']
-                        result = {'status': 'updated', 'id': obj_id, 'object': stage_state['objects'][obj_id]}
+                        result = {'status': 'updated', 'id': obj_id,
+                                  'object': stage_state['objects'][obj_id]}
                     elif action in ('remove', 'delete'):
                         removed = stage_state['objects'].pop(obj_id, None)
-                        result = {'status': 'removed', 'id': obj_id, 'object': removed}
+                        result = {'status': 'removed',
+                                  'id': obj_id, 'object': removed}
                     else:
                         raise ValueError('Unknown object action')
                 else:
@@ -862,7 +907,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 actions = action_parser.parse(command, use_llm=use_llm)
 
                 if not actions:
-                    result = {'status': 'error', 'message': 'Could not parse into actions', 'actions': []}
+                    result = {
+                        'status': 'error', 'message': 'Could not parse into actions', 'actions': []}
                 else:
                     results = []
                     tags = []
@@ -873,7 +919,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             if r.get('tags'):
                                 tags.extend(r.get('tags'))
 
-                    result = {'status': 'success', 'message': f'Parsed {len(actions)} actions', 'command': command, 'actions': actions, 'executed': auto_execute, 'results': results if auto_execute else None, 'tags': tags if auto_execute else None, 'state': stage_state if auto_execute else None}
+                    result = {'status': 'success', 'message': f'Parsed {len(actions)} actions', 'command': command, 'actions': actions, 'executed': auto_execute,
+                              'results': results if auto_execute else None, 'tags': tags if auto_execute else None, 'state': stage_state if auto_execute else None}
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
@@ -891,37 +938,48 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 seed = data.get('seed')
                 spacing = int(data.get('spacing', 10))
                 algorithm = data.get('algorithm', 'rejection')
-                persist_flag_env = os.getenv('ARIA_WORLD_PERSIST', 'false').lower() == 'true'
+                persist_flag_env = os.getenv(
+                    'ARIA_WORLD_PERSIST', 'false').lower() == 'true'
                 persist_flag = bool(data.get('persist', persist_flag_env))
 
                 if use_llm and action_parser.provider:
-                    world = generate_world_with_llm(theme, count, action_parser.provider, seed=seed, spacing=spacing, algorithm=algorithm)
+                    world = generate_world_with_llm(
+                        theme, count, action_parser.provider, seed=seed, spacing=spacing, algorithm=algorithm)
                 else:
-                    world = generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
+                    world = generate_world_fallback(
+                        theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
 
                 # Update stage_state
-                stage_state['objects'] = {oid: {'position': v['position'], 'state': v.get('state', 'on_stage'), 'emoji': v.get('emoji', '')} for oid, v in world['objects'].items()}
+                stage_state['objects'] = {oid: {'position': v['position'], 'state': v.get(
+                    'state', 'on_stage'), 'emoji': v.get('emoji', '')} for oid, v in world['objects'].items()}
                 # Update environment metadata
                 env = world.get('environment', {})
                 stage_state['environment']['theme'] = env.get('theme', theme)
-                stage_state['environment']['generated_at'] = env.get('generated_at')
+                stage_state['environment']['generated_at'] = env.get(
+                    'generated_at')
                 stage_state['environment']['seed'] = env.get('seed')
-                stage_state['environment']['generation_method'] = env.get('generation_method', 'unknown')
-                stage_state['environment']['spacing'] = env.get('spacing', spacing)
+                stage_state['environment']['generation_method'] = env.get(
+                    'generation_method', 'unknown')
+                stage_state['environment']['spacing'] = env.get(
+                    'spacing', spacing)
 
-                response = {'status': 'success', 'theme': theme, 'count': len(world['objects']), 'used_llm': world.get('llm', False), 'objects': world['objects'], 'environment': world.get('environment', {})}
+                response = {'status': 'success', 'theme': theme, 'count': len(world['objects']), 'used_llm': world.get(
+                    'llm', False), 'objects': world['objects'], 'environment': world.get('environment', {})}
                 if persist_flag:
                     path = persist_world(world, theme, seed=seed)
                     response['persisted'] = bool(path)
                     if path:
                         response['persisted_path'] = path
-                    response['cosmos_persisted'] = persist_world_cosmos(world, theme)
+                    response['cosmos_persisted'] = persist_world_cosmos(
+                        world, theme)
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps(response, indent=2).encode('utf-8'))
-                logger.info(f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']}, algo={algorithm})")
+                self.wfile.write(json.dumps(
+                    response, indent=2).encode('utf-8'))
+                logger.info(
+                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']}, algo={algorithm})")
                 return
 
         except ConnectionAbortedError:
@@ -932,7 +990,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
             except Exception:
                 pass
 
@@ -977,13 +1036,15 @@ if __name__ == '__main__':
 
 # --------------------------- World Generation ---------------------------
 
+
 def persist_world(world: Dict, theme: str, seed: int | None = None, base_dir: Path | None = None) -> str:
     try:
         if base_dir is None:
             base_dir = REPO_ROOT / "data_out" / "aria_worlds"
         base_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        seed_val = seed if seed is not None else world.get("environment", {}).get("seed", "noseed")
+        seed_val = seed if seed is not None else world.get(
+            "environment", {}).get("seed", "noseed")
         fname = f"world_{_sanitize_id(theme)}_{ts}_{seed_val}.json"
         path = base_dir / fname
         with open(path, "w", encoding="utf-8") as fh:
@@ -1033,6 +1094,7 @@ THEME_OBJECT_LIBRARY = {
     ],
 }
 
+
 def _generate_positions_rejection(n: int, min_dist: int, rng: random.Random) -> list:
     """Generate up to n non-overlapping (approx) positions using rejection sampling.
     Falls back gracefully if density too high.
@@ -1056,6 +1118,7 @@ def _generate_positions_rejection(n: int, min_dist: int, rng: random.Random) -> 
             if all(math.hypot(x - px, y - py) >= relax_dist for px, py in positions):
                 positions.append((x, y))
     return positions
+
 
 def _generate_positions_poisson(n: int, min_dist: int, rng: random.Random, width: int = 100, height: int = 100, k: int = 30) -> list:
     """Poisson-disc sampling (Bridson) for uniform-ish spacing.
@@ -1103,6 +1166,7 @@ def _generate_positions_poisson(n: int, min_dist: int, rng: random.Random, width
                 grid[gx][gy] = (nx, ny)
                 placed = True
 
+
 def generate_world_fallback(theme: str, count: int) -> dict:
     """Generate a world procedurally without LLM."""
     objects_catalog = THEME_OBJECT_LIBRARY.get(
@@ -1125,9 +1189,11 @@ def generate_world_fallback(theme: str, count: int) -> dict:
     if len(pts) < n:
         # Pad with relaxed rejection sampling
         remainder = n - len(pts)
-        pts.extend(_generate_positions_rejection(remainder, max(4, int(min_dist*0.6)), rng))
+        pts.extend(_generate_positions_rejection(
+            remainder, max(4, int(min_dist*0.6)), rng))
 
     return [(int(p[0]), int(p[1])) for p in pts[:n]]
+
 
 def generate_world_fallback(theme: str, count: int, seed: int | None = None, spacing: int = 10, algorithm: str = 'rejection') -> dict:
     """Generate a world procedurally without LLM using deterministic, spaced placement.
@@ -1141,14 +1207,16 @@ def generate_world_fallback(theme: str, count: int, seed: int | None = None, spa
     count = max(1, int(count))
     rng = random.Random(seed) if seed is not None else random.Random()
     effective_seed = seed if seed is not None else rng.randint(100000, 999999)
-    catalog_src = THEME_OBJECT_LIBRARY.get(theme.lower(), THEME_OBJECT_LIBRARY['forest'])
+    catalog_src = THEME_OBJECT_LIBRARY.get(
+        theme.lower(), THEME_OBJECT_LIBRARY['forest'])
     objects_catalog = list(catalog_src)  # copy
     rng.shuffle(objects_catalog)
     # If we need more than catalog size, cycle with suffixes
     chosen = []
     for idx in range(count):
         base_name, emoji = objects_catalog[idx % len(objects_catalog)]
-        name = base_name if idx < len(objects_catalog) else f"{base_name}_{idx}"
+        name = base_name if idx < len(
+            objects_catalog) else f"{base_name}_{idx}"
         chosen.append((name, emoji))
 
     if algorithm == 'poisson':
@@ -1168,7 +1236,7 @@ def generate_world_fallback(theme: str, count: int, seed: int | None = None, spa
         }
     environment = {
         'theme': theme,
-        'generated_at': datetime.datetime.now(datetime.UTC).isoformat().replace('+00:00','Z'),
+        'generated_at': datetime.datetime.now(datetime.UTC).isoformat().replace('+00:00', 'Z'),
         'seed': effective_seed,
         'spacing': spacing,
         'generation_method': generation_method,
@@ -1182,6 +1250,7 @@ def generate_world_fallback(theme: str, count: int, seed: int | None = None, spa
         'llm': False
     }
 
+
 def generate_world_with_llm(theme: str, count: int, provider, seed: int | None = None, spacing: int = 10, algorithm: str = 'rejection') -> dict:
     """Use LLM provider to generate a themed world. Returns fallback on failure.
 
@@ -1192,6 +1261,7 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: int | None =
         seed: optional seed passed to fallback if needed
         spacing: spacing for fallback if LLM output unusable
     """
+
 
 def generate_world_with_llm(theme: str, count: int, provider) -> dict:
     """Use LLM provider to generate a themed world. Returns fallback on failure."""
@@ -1225,12 +1295,14 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
                            raw_str, flags=_re.DOTALL)
             if m:
                 raw_str = m.group(1).strip()
-        import json as _json, re as _re
+        import json as _json
+        import re as _re
         # Attempt direct JSON parse
         json_candidate = raw_str.strip()
         # If provider wrapped inside text, try last JSON object
         if not json_candidate.startswith('{'):
-            obj_match = _re.search(r"\{.*\}\s*$", json_candidate, flags=_re.DOTALL)
+            obj_match = _re.search(
+                r"\{.*\}\s*$", json_candidate, flags=_re.DOTALL)
             if obj_match:
                 json_candidate = obj_match.group(0)
         data = _json.loads(json_candidate)
@@ -1264,10 +1336,11 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
             return generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
         # Distance post-check; if too many overlaps, fallback
         coords = [o['position'] for o in sanitized_objects.values()]
-        if any(math.hypot(a['x']-b['x'], a['y']-b['y']) < 5 for i,a in enumerate(coords) for j,b in enumerate(coords) if i<j):
+        if any(math.hypot(a['x']-b['x'], a['y']-b['y']) < 5 for i, a in enumerate(coords) for j, b in enumerate(coords) if i < j):
             return generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
         env.setdefault('theme', theme)
-        env.setdefault('generated_at', datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'))
+        env.setdefault('generated_at', datetime.datetime.now(
+            timezone.utc).isoformat().replace('+00:00', 'Z'))
         env.setdefault('stage_bounds', {'width': 100, 'height': 100})
         env.setdefault('generation_method', 'llm')
         env.setdefault('seed', effective_seed)
@@ -1277,6 +1350,7 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
         logger.warning(f"World generation via LLM failed: {e}; falling back.")
         return generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
 
+
 def persist_world(world: dict, theme: str, seed: int | None = None, base_dir: Path | None = None) -> str:
     """Persist world JSON to data_out/aria_worlds and return file path."""
     try:
@@ -1284,7 +1358,8 @@ def persist_world(world: dict, theme: str, seed: int | None = None, base_dir: Pa
             base_dir = REPO_ROOT / 'data_out' / 'aria_worlds'
         base_dir.mkdir(parents=True, exist_ok=True)
         ts = datetime.datetime.now(datetime.UTC).strftime('%Y%m%d_%H%M%S')
-        seed_val = seed if seed is not None else world.get('environment', {}).get('seed', 'noseed')
+        seed_val = seed if seed is not None else world.get(
+            'environment', {}).get('seed', 'noseed')
         fname = f"world_{_sanitize_id(theme)}_{ts}_{seed_val}.json"
         path = base_dir / fname
         with open(path, 'w', encoding='utf-8') as f:
@@ -1295,6 +1370,8 @@ def persist_world(world: dict, theme: str, seed: int | None = None, base_dir: Pa
         return ''
 
 # --------------------------- Cosmos Persistence ---------------------------
+
+
 @lru_cache(maxsize=1)
 def _cosmos_available() -> bool:
     try:
@@ -1302,6 +1379,7 @@ def _cosmos_available() -> bool:
         return cosmos_client.health().get('enabled') and cosmos_client.init()
     except Exception:
         return False
+
 
 def persist_world_cosmos(world: dict, theme: str) -> bool:
     """Persist world to dedicated Cosmos 'aria_worlds' container (partition key /theme_seed).
@@ -1417,9 +1495,11 @@ def get_stage_context() -> str:
         if not isinstance(obj_pos, dict):
             continue
         obj_state = obj_data.get("state", "unknown")
-        context_lines.append(f"  - {obj_id}: x={obj_pos.get('x')}%, y={obj_pos.get('y')}%, state={obj_state}")
+        context_lines.append(
+            f"  - {obj_id}: x={obj_pos.get('x')}%, y={obj_pos.get('y')}%, state={obj_state}")
 
     return "\n".join(context_lines)
+
 
 def determine_position_from_context(cmd: str) -> str:
     """AI-driven position determination based on command semantics and stage state"""
@@ -1478,6 +1558,7 @@ def determine_position_from_context(cmd: str) -> str:
         y = 60 + (pos_hash % 20)  # Random between 60-80%
         return f'[aria:position:{x}:{y}]'
 
+
 def generate_tags_ai(command: str) -> dict:
     """Generate tags using LLM chat provider.
 
@@ -1489,26 +1570,28 @@ def generate_tags_ai(command: str) -> dict:
     """
     if not LLM_AVAILABLE:
         return {'response_text': '', 'tags': [], 'success': False, 'provider': 'none'}
-    
+
     try:
         # Prefer LoRA if adapter dir is available
         import os
         from pathlib import Path
         adapter_env = os.getenv('ARIA_LORA_ADAPTER_DIR')
-        default_adapter = Path(REPO_ROOT) / 'data_out' / 'lora_training' / 'lora_adapter'
+        default_adapter = Path(REPO_ROOT) / 'data_out' / \
+            'lora_training' / 'lora_adapter'
         adapter_dir = Path(adapter_env) if adapter_env else default_adapter
         provider = None
         provider_name = None
 
         if adapter_dir.exists() and (adapter_dir / 'adapter_config.json').exists():
             # Try LoRA provider explicitly
-            provider, choice = detect_provider(explicit='lora', model_override=str(adapter_dir))
+            provider, choice = detect_provider(
+                explicit='lora', model_override=str(adapter_dir))
             provider_name = choice.name
         else:
             # Auto-detect (Azure/OpenAI/LMStudio/local)
             provider, choice = detect_provider()
             provider_name = choice.name
-        
+
         # Build context-aware system prompt
         stage_context = get_stage_context()
         system_prompt = f"""You are an AI assistant that controls Aria, a 3D character.
@@ -1548,33 +1631,34 @@ Current stage state:
 
 Respond naturally to the user's command and include the appropriate tags in your response.
 Always include at least one movement or action tag when relevant."""
-        
+
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": command}
         ]
-        
+
         # Get LLM response
         response = provider.complete(messages, stream=False)
-        
+
         # Handle both dict and string responses
         if isinstance(response, dict):
             response_text = response.get('content', '')
         else:
             response_text = str(response)
-        
+
         # Extract tags from response
         tags = re.findall(r'\[aria:[^\]]+\]', response_text)
-        
+
         logger.info(f"LLM generated response: {response_text[:100]}...")
         logger.info(f"Extracted tags: {tags}")
-        
+
         return {
             'response_text': response_text,
             'tags': tags[:3],  # Return first 3 tags max
             'success': True,
             'provider': provider_name or 'unknown',
         }
+
 
 def generate_tags_ai(command: str) -> List[str]:
     """Generate tags using AI model"""
@@ -1694,7 +1778,8 @@ def generate_tags_fallback(command: str) -> List[str]:
     # Helper maps
     left_arm = any(k in cmd for k in ['left arm', 'arm left', 'left hand'])
     right_arm = any(k in cmd for k in ['right arm', 'arm right', 'right hand'])
-    both_arms = any(k in cmd for k in ['both arms', 'arms', 'both hands', 'hands'])
+    both_arms = any(k in cmd for k in [
+                    'both arms', 'arms', 'both hands', 'hands'])
     left_leg = any(k in cmd for k in ['left leg', 'leg left'])
     right_leg = any(k in cmd for k in ['right leg', 'leg right'])
 
@@ -1722,7 +1807,7 @@ def generate_tags_fallback(command: str) -> List[str]:
             if not parts:
                 # Default to right arm only if neither specified
                 parts = ['right_arm']
-        
+
         if any(k in cmd for k in ['wave', 'wiggle']):
             for p in parts:
                 limb_tag(p, 'wave')
@@ -2054,7 +2139,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 theme = q.get('theme', [''])[0]
                 seed = q.get('seed', [''])[0]
                 if not theme or not seed:
-                    raise ValueError('theme and seed query params are required')
+                    raise ValueError(
+                        'theme and seed query params are required')
                 cosmos_doc = fetch_world_cosmos(theme, seed)
                 source = None
                 world_data = None
@@ -2076,7 +2162,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     self.send_response(404)
                     self.send_header('Content-Type', 'application/json')
                     self.end_headers()
-                    self.wfile.write(json.dumps({'status': 'not_found', 'theme': theme, 'seed': seed}).encode('utf-8'))
+                    self.wfile.write(json.dumps(
+                        {'status': 'not_found', 'theme': theme, 'seed': seed}).encode('utf-8'))
                     return
                 resp = {
                     'status': 'success',
@@ -2096,7 +2183,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
         # World list (GET variant) - enumerate filesystem + cosmos metadata
@@ -2109,7 +2197,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         parts = f.stem.split('_')
                         theme_val = parts[1] if len(parts) >= 4 else None
                         seed_val = parts[-1] if len(parts) >= 4 else None
-                        worlds_fs.append({'file': str(f), 'theme': theme_val, 'seed': seed_val})
+                        worlds_fs.append(
+                            {'file': str(f), 'theme': theme_val, 'seed': seed_val})
                 cosmos_worlds = []
                 if _cosmos_available():
                     try:
@@ -2136,7 +2225,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
         if self.path == '/':
@@ -2175,17 +2265,16 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 tags = ai_result['tags']
                 response_text = ai_result.get('response_text', '')
                 provider_used = ai_result.get('provider', 'unknown')
-                
+
                 if not tags:
                     tags = generate_tags_fallback(command)
                     model_used = 'fallback'
                 else:
                     model_used = provider_used or 'ai'
-                
+
                 print(f"✨ Generated tags: {tags}")
                 if response_text:
                     print(f"💬 LLM response: {response_text[:100]}...")
-                
 
                 print(f"✨ Generated tags: {tags}")
 
@@ -2370,17 +2459,20 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 use_llm = bool(data.get('use_llm', True))
                 seed = data.get('seed')
                 spacing = int(data.get('spacing', 10))
-                persist_flag_env = os.getenv('ARIA_WORLD_PERSIST', 'false').lower() == 'true'
+                persist_flag_env = os.getenv(
+                    'ARIA_WORLD_PERSIST', 'false').lower() == 'true'
                 persist_flag = bool(data.get('persist', persist_flag_env))
                 algorithm = data.get('algorithm', 'rejection')
 
                 # Generate
                 if use_llm and action_parser.provider:
-                    world = generate_world_with_llm(theme, count, action_parser.provider, seed=seed, spacing=spacing, algorithm=algorithm)
+                    world = generate_world_with_llm(
+                        theme, count, action_parser.provider, seed=seed, spacing=spacing, algorithm=algorithm)
                     world = generate_world_with_llm(
                         theme, count, action_parser.provider)
                 else:
-                    world = generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
+                    world = generate_world_fallback(
+                        theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
 
                 # Update global stage_state (replace objects, keep aria position)
                 stage_state['objects'] = {}
@@ -2391,11 +2483,16 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         'emoji': obj.get('emoji', '')
                     }
                 # Update environment meta
-                stage_state['environment']['theme'] = world['environment'].get('theme', theme)
-                stage_state['environment']['generated_at'] = world['environment'].get('generated_at')
-                stage_state['environment']['seed'] = world['environment'].get('seed')
-                stage_state['environment']['generation_method'] = world['environment'].get('generation_method', 'unknown')
-                stage_state['environment']['spacing'] = world['environment'].get('spacing', spacing)
+                stage_state['environment']['theme'] = world['environment'].get(
+                    'theme', theme)
+                stage_state['environment']['generated_at'] = world['environment'].get(
+                    'generated_at')
+                stage_state['environment']['seed'] = world['environment'].get(
+                    'seed')
+                stage_state['environment']['generation_method'] = world['environment'].get(
+                    'generation_method', 'unknown')
+                stage_state['environment']['spacing'] = world['environment'].get(
+                    'spacing', spacing)
                 stage_state['environment']['theme'] = world['environment'].get(
                     'theme', theme)
                 stage_state['environment']['generated_at'] = world['environment'].get(
@@ -2418,13 +2515,16 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         response['persisted'] = False
                         response['persist_error'] = 'failed_to_write_file'
                     # Attempt Cosmos persistence
-                    response['cosmos_persisted'] = persist_world_cosmos(world, theme)
+                    response['cosmos_persisted'] = persist_world_cosmos(
+                        world, theme)
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps(response, indent=2).encode('utf-8'))
-                logger.info(f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']}, algo={algorithm})")
+                self.wfile.write(json.dumps(
+                    response, indent=2).encode('utf-8'))
+                logger.info(
+                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']}, algo={algorithm})")
                 self.wfile.write(json.dumps(
                     response, indent=2).encode('utf-8'))
                 logger.info(
@@ -2450,7 +2550,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         # world_<theme>_<timestamp>_<seed>.json
                         theme = parts[1] if len(parts) >= 4 else None
                         seed_val = parts[-1] if len(parts) >= 4 else None
-                        worlds.append({'file': str(f), 'theme': theme, 'seed': seed_val})
+                        worlds.append(
+                            {'file': str(f), 'theme': theme, 'seed': seed_val})
                 payload = {
                     'status': 'success',
                     'worlds': worlds,
@@ -2468,7 +2569,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps({'status': 'error', 'error': str(e)}).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
         else:
