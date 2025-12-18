@@ -19,6 +19,7 @@ Aria is an interactive AI character that combines:
 - **Multi-Provider AI Backend** - Powered by Azure OpenAI, OpenAI, or local models with LoRA fine-tuning
 - **Real-time Object Interaction** - Add, pickup, drop, and throw objects on a virtual stage
 - **Quantum ML Integration** - Experimental quantum-classical hybrid training
+- **🆕 LLM Tool Maker** - Autonomous tool creation system where LLMs create, validate, and execute Python tools
 
 ## 🚀 Quick Start
 
@@ -233,6 +234,62 @@ cd quantum-ai
 
 ---
 
+### 🔧 **llm-maker/** - LLM Tool Maker (NEW!)
+
+Autonomous tool creation system where LLMs can create, validate, and execute Python tools in a sandboxed environment.
+
+**Features:**
+
+- 🤖 AI-powered tool generation from natural language descriptions
+- 🔒 Multi-layer security validation (code analysis, sandboxing, resource limits)
+- 📦 Tool registry for storage and management
+- ⚡ Safe execution environment with timeout and memory limits
+- 🔌 MCP server integration for seamless tool discovery and execution
+
+**Quick Start:**
+
+```bash
+cd llm-maker
+
+# Create a tool
+python examples/quick_start.py
+
+# Or use the MCP server
+python llm_maker_mcp_server.py
+```
+
+**Example: Creating a Tool**
+
+```python
+from llm_maker import ToolMaker, ToolRegistry
+
+maker = ToolMaker()
+registry = ToolRegistry()
+
+# Create a Fibonacci calculator
+tool = maker.create_tool(
+    name="calculate_fibonacci",
+    description="Calculate the nth Fibonacci number",
+    parameters={"n": "int"},
+    return_type="int"
+)
+
+# Register and use it
+tool_id = registry.register(tool)
+```
+
+**Security Features:**
+
+- No dangerous imports (os, sys, subprocess, etc.)
+- No file system or network access
+- No code execution (eval, exec, compile)
+- Sandboxed execution with resource limits
+- Static code analysis before execution
+
+**Documentation:** [llm-maker/README.md](llm-maker/README.md)
+
+---
+
 ## 🔧 Development Environment
 
 ### Prerequisites
@@ -421,6 +478,7 @@ python .\src\chat_cli.py --provider local --once "Move Aria left"
 │   └── test_aria_dataset.py
 ├── talk-to-ai/             # Chat CLI for Aria
 ├── quantum-ai/             # Quantum ML platform
+├── llm-maker/              # 🔧 LLM Tool Maker (autonomous tool creation)
 ├── AI/                     # Model fine-tuning workspace
 ├── config/                 # Configuration files
 ├── shared/                 # Shared Python modules
