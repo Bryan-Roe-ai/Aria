@@ -277,18 +277,22 @@ def _venv_python_ml() -> Path:
     """Return the model-specific virtual environment python if available.
 
     Falls back to root venv/system python only if the model venv is missing.
+    Skips Windows paths on Linux systems.
     """
-    # Try Windows path first, then Linux
-    model_py_win = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / \
-        "venv" / "Scripts" / "python.exe"
+    # Try Linux path first (more reliable on Linux systems)
     model_py_linux = REPO_ROOT / "AI" / \
         "microsoft_phi-silica-3.6_v1" / "venv" / "bin" / "python"
-    if model_py_win.exists():
-        return model_py_win
-    elif model_py_linux.exists():
+    if model_py_linux.exists():
         return model_py_linux
-    else:
-        return _venv_python_default()
+    
+    # Try Windows path (in case we're on Windows or WSL with Windows env)
+    model_py_win = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / \
+        "venv" / "Scripts" / "python.exe"
+    if model_py_win.exists() and sys.platform == "win32":
+        return model_py_win
+    
+    # Fall back to system Python (not venv, which may not be compatible)
+    return Path(sys.executable)
 
 
 def build_hf_command(job: Job) -> List[str]:

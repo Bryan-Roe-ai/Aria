@@ -111,7 +111,7 @@ def run_phase(phase_name: str, phase_config: Dict, auto_promote: bool = False) -
         print("-" * 70)
         
         cmd = [
-            sys.executable,
+            sys.executable,  # Use system Python
             "scripts/training/autotrain.py",
             "--job", job_name,
         ]
