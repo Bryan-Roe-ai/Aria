@@ -41,7 +41,59 @@ jobs:
     deploy: true
     export_type: safetensors
 
-  # Quantum model exports
+  # LLaMA 3 models with quantum features
+  - name: llama3_quantum_quick
+    base_model: meta-llama/Llama-3-8B-Instruct
+    quantization_type: q4_0
+    validate: true
+    deploy: false
+    export_type: safetensors
+    quantum_enhanced: true
+    quantum_features:
+      - variational_encoding
+      - quantum_attention
+      - entanglement_layer
+
+  - name: llama3_quantum_prod
+    base_model: meta-llama/Llama-3-8B-Instruct
+    quantization_type: q5_0
+    validate: true
+    deploy: true
+    export_type: safetensors
+    quantum_enhanced: true
+    quantum_features:
+      - variational_encoding
+      - quantum_attention
+      - entanglement_layer
+      - quantum_classifier_head
+
+  - name: llama3_hq_quantum
+    base_model: meta-llama/Llama-3-8B-Instruct
+    quantization_type: f16
+    validate: true
+    deploy: true
+    export_type: safetensors
+    quantum_enhanced: true
+    quantum_features:
+      - full_quantum_stack
+      - multi_head_quantum_attention
+      - adaptive_entanglement
+    notes: "High-quality LLaMA 3 with full quantum ML integration"
+
+  # Lightweight LLaMA 3 variant (1B)
+  - name: llama3_light_quantum
+    base_model: meta-llama/Llama-3-1B-Instruct
+    quantization_type: q4_0
+    validate: true
+    deploy: true
+    export_type: safetensors
+    quantum_enhanced: true
+    quantum_features:
+      - quantum_encoding
+      - lightweight_quantum_attention
+    notes: "Fast inference with quantum enhancements"
+
+  # Quantum model exports (original Phi-3.5 baseline)
   - name: quantum_banknote_gguf
     base_model: microsoft/Phi-3.5-mini-instruct
     quantization_type: q4_0

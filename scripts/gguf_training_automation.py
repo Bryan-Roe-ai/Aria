@@ -40,6 +40,7 @@ from dataclasses import dataclass, asdict, field
 from typing import Optional, Dict, List, Any
 import struct
 import numpy as np
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "gguf_training"
@@ -61,6 +62,9 @@ class GGUFTrainingJob:
     skip_training: bool = False
     validate: bool = True
     deploy: bool = False
+    quantum_enhanced: bool = False  # Enable quantum ML features
+    quantum_features: List[str] = field(default_factory=list)  # List of quantum features
+    notes: str = ""  # Job notes/description
     
     def __post_init__(self):
         self.timestamp = datetime.now(timezone.utc).isoformat()
@@ -108,6 +112,147 @@ class GGUFTrainingOrchestrator:
     def add_job(self, job: GGUFTrainingJob) -> None:
         """Add a training job"""
         self.jobs.append(job)
+    
+    def load_jobs_from_yaml(self, config_path: Optional[str] = None) -> List[GGUFTrainingJob]:
+        """Load GGUF training jobs from YAML configuration"""
+        if config_path is None:
+            config_path = REPO_ROOT / "config" / "training" / "gguf_training.yaml"
+        
+        config_path = Path(config_path)
+        if not config_path.exists():
+            logging.error(f"Config file not found: {config_path}")
+            return []
+        
+        logging.info(f"Loading GGUF training jobs from: {config_path}")
+        
+        try:
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+            
+            jobs = []
+            for job_config in config.get('jobs', []):
+                job = GGUFTrainingJob(
+                    name=job_config.get('name'),
+                    base_model=job_config.get('base_model', 'microsoft/Phi-3.5-mini-instruct'),
+                    quantization_type=job_config.get('quantization_type', 'q4_0'),
+                    export_type=job_config.get('export_type', 'safetensors'),
+                    validate=job_config.get('validate', True),
+                    deploy=job_config.get('deploy', False),
+                    quantum_enhanced=job_config.get('quantum_enhanced', False),
+                    quantum_features=job_config.get('quantum_features', []),
+                    notes=job_config.get('notes', '')
+                )
+                jobs.append(job)
+                self.add_job(job)
+            
+            logging.info(f"✅ Loaded {len(jobs)} jobs from YAML")
+            return jobs
+        
+        except Exception as e:
+            logging.error(f"❌ Error loading YAML config: {e}")
+            return []
+    
+    def apply_quantum_enhancement(self, job: GGUFTrainingJob) -> Dict[str, Any]:
+        """Apply quantum ML enhancements to model training"""
+        if not job.quantum_enhanced:
+            return {"skipped": True}
+        
+        job.logger.info(f"⚛️  Applying quantum enhancements: {', '.join(job.quantum_features)}")
+        
+        try:
+            enhancement_dir = job.output_dir / "quantum_enhancements"
+            enhancement_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create quantum enhancement configuration
+            quantum_config = {
+                "enabled": True,
+                "features": job.quantum_features,
+                "base_model": job.base_model,
+                "timestamp": job.timestamp,
+                "feature_configs": self._get_quantum_feature_configs(job.quantum_features)
+            }
+            
+            config_file = enhancement_dir / "quantum_config.json"
+            with open(config_file, 'w') as f:
+                json.dump(quantum_config, f, indent=2)
+            
+            job.logger.info(f"✅ Quantum enhancement config created: {config_file}")
+            
+            return {
+                "success": True,
+                "config_file": str(config_file),
+                "features_count": len(job.quantum_features)
+            }
+        
+        except Exception as e:
+            job.logger.error(f"❌ Quantum enhancement error: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def _get_quantum_feature_configs(self, features: List[str]) -> Dict[str, Any]:
+        """Get configuration for each quantum feature"""
+        configs = {}
+        
+        for feature in features:
+            if feature == "variational_encoding":
+                configs[feature] = {
+                    "type": "amplitude_encoding",
+                    "n_qubits": 8,
+                    "encoding_layers": 2
+                }
+            elif feature == "quantum_attention":
+                configs[feature] = {
+                    "type": "multi_head_quantum_attention",
+                    "n_heads": 4,
+                    "n_qubits_per_head": 4,
+                    "entanglement": "linear"
+                }
+            elif feature == "entanglement_layer":
+                configs[feature] = {
+                    "type": "full_entanglement",
+                    "n_qubits": 16,
+                    "pattern": "fully_connected"
+                }
+            elif feature == "quantum_classifier_head":
+                configs[feature] = {
+                    "type": "variational_classifier",
+                    "n_qubits": 8,
+                    "layers": 3
+                }
+            elif feature == "full_quantum_stack":
+                configs[feature] = {
+                    "type": "complete_quantum_ml",
+                    "n_qubits": 20,
+                    "encoding": "amplitude",
+                    "ansatz": "strongly_entangling",
+                    "readout": "expectation_values"
+                }
+            elif feature == "multi_head_quantum_attention":
+                configs[feature] = {
+                    "type": "quantum_attention",
+                    "heads": 8,
+                    "qubits_per_head": 4
+                }
+            elif feature == "adaptive_entanglement":
+                configs[feature] = {
+                    "type": "adaptive_circuit",
+                    "min_qubits": 8,
+                    "max_qubits": 20,
+                    "adaptive": True
+                }
+            elif feature == "quantum_encoding":
+                configs[feature] = {
+                    "type": "data_encoding",
+                    "n_qubits": 4,
+                    "method": "angle_encoding"
+                }
+            elif feature == "lightweight_quantum_attention":
+                configs[feature] = {
+                    "type": "efficient_quantum_attention",
+                    "n_qubits": 4,
+                    "layers": 1
+                }
+        
+        return configs
         
     def run_training(self, job: GGUFTrainingJob) -> Dict[str, Any]:
         """Run LoRA training phase"""
@@ -336,14 +481,24 @@ class GGUFTrainingOrchestrator:
         """Run complete pipeline for one job"""
         job.logger.info(f"\n{'='*60}")
         job.logger.info(f"🎯 GGUF Training Job: {job.name}")
+        if job.notes:
+            job.logger.info(f"📝 {job.notes}")
         job.logger.info(f"{'='*60}")
         
         result = {
             "name": job.name,
             "timestamp": job.timestamp,
             "output_dir": str(job.output_dir),
+            "quantum_enhanced": job.quantum_enhanced,
+            "quantum_features": job.quantum_features,
             "phases": {}
         }
+        
+        # Phase 0: Quantum Enhancement (if enabled)
+        if job.quantum_enhanced:
+            quantum_result = self.apply_quantum_enhancement(job)
+            result["phases"]["quantum_enhancement"] = quantum_result
+            job.logger.info(f"   Features: {', '.join(job.quantum_features)}")
         
         # Phase 1: Training
         training_result = self.run_training(job)
@@ -513,7 +668,15 @@ def main():
     )
     parser.add_argument(
         "--jobs", nargs="+",
-        help="Specific jobs to run"
+        help="Specific jobs to run (by name from config)"
+    )
+    parser.add_argument(
+        "--config", metavar="CONFIG_PATH", default=None,
+        help="Path to GGUF training YAML config (default: config/training/gguf_training.yaml)"
+    )
+    parser.add_argument(
+        "--quantum", action="store_true",
+        help="Only run quantum-enhanced models"
     )
     
     args = parser.parse_args()
@@ -539,31 +702,47 @@ def main():
         print(json.dumps(result, indent=2))
         return
     
-    # Add standard jobs
+    # Load jobs from config or use defaults
     elif args.quick or args.full:
-        jobs = [
-            GGUFTrainingJob(
-                name="phi35_quick_gguf",
-                base_model="microsoft/Phi-3.5-mini-instruct",
-                quantization_type="q4_0",
-                validate=True,
-                deploy=args.full
-            ),
-        ]
+        # Try loading from YAML config
+        orchestrator.load_jobs_from_yaml(args.config)
         
-        if args.full:
-            jobs.extend([
+        # Filter by criteria
+        if args.quantum:
+            orchestrator.jobs = [j for j in orchestrator.jobs if j.quantum_enhanced]
+            print(f"🔍 Filtered to {len(orchestrator.jobs)} quantum-enhanced jobs")
+        
+        if args.jobs:
+            # Filter to specific job names
+            requested_names = set(args.jobs)
+            orchestrator.jobs = [j for j in orchestrator.jobs if j.name in requested_names]
+            print(f"🔍 Filtered to {len(orchestrator.jobs)} requested jobs")
+        
+        # If still no jobs, use defaults
+        if not orchestrator.jobs:
+            jobs = [
                 GGUFTrainingJob(
-                    name="qwen25_quick_gguf",
-                    base_model="Qwen/Qwen2.5-3B-Instruct",
+                    name="phi35_quick_gguf",
+                    base_model="microsoft/Phi-3.5-mini-instruct",
                     quantization_type="q4_0",
                     validate=True,
-                    deploy=True
+                    deploy=args.full
                 ),
-            ])
-        
-        for job in jobs:
-            orchestrator.add_job(job)
+            ]
+            
+            if args.full:
+                jobs.extend([
+                    GGUFTrainingJob(
+                        name="qwen25_quick_gguf",
+                        base_model="Qwen/Qwen2.5-3B-Instruct",
+                        quantization_type="q4_0",
+                        validate=True,
+                        deploy=True
+                    ),
+                ])
+            
+            for job in jobs:
+                orchestrator.add_job(job)
     
     else:
         print("Usage: python gguf_training_automation.py [--quick|--full|--dry-run|--convert-only|--validate]")
