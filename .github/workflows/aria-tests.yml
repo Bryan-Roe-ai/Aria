@@ -165,17 +165,18 @@ jobs:
           sleep 3
         env:
           PYTHONPATH: ${{ github.workspace }}
+          ARIA_HOST: 0.0.0.0
 
       - name: Wait for server
         run: |
-          timeout 30 bash -c 'until curl -f http://localhost:8000/api/aria/state; do sleep 1; done'
+          timeout 30 bash -c 'until curl -f http://localhost:8080/api/aria/state; do sleep 1; done'
 
       - name: Run Pyppeteer E2E tests
         run: |
           pytest tests/test_ui_pyppeteer.py -v --tb=short
         env:
           PYTHONPATH: ${{ github.workspace }}
-          ARIA_SERVER_URL: http://localhost:8000
+          ARIA_SERVER_URL: http://localhost:8080
 
       - name: Stop Aria server
         if: always()
@@ -226,10 +227,11 @@ jobs:
           sleep 3
         env:
           PYTHONPATH: ${{ github.workspace }}
+          ARIA_HOST: 0.0.0.0
 
       - name: Wait for server
         run: |
-          timeout 30 bash -c 'until curl -f http://localhost:8000/api/aria/state; do sleep 1; done'
+          timeout 30 bash -c 'until curl -f http://localhost:8080/api/aria/state; do sleep 1; done'
 
       - name: Wait for Selenium Chrome
         run: |
@@ -240,7 +242,7 @@ jobs:
           pytest tests/test_ui_selenium.py -v --tb=short
         env:
           PYTHONPATH: ${{ github.workspace }}
-          ARIA_SERVER_URL: http://localhost:8000
+          ARIA_SERVER_URL: http://localhost:8080
           SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
 
       - name: Stop Aria server
