@@ -561,8 +561,8 @@ def main():
             base_model.config.use_cache = False
 
     # Use target_modules from config if present, else default to Phi-3.5 list
-    default_target_modules = ["q_proj", "v_proj",
-                              "k_proj", "o_proj", "fc1", "fc2"]
+    default_target_modules = ["qkv_proj", "o_proj",
+                              "gate_up_proj", "down_proj"]
     config_target_modules = getattr(cfg, "target_modules", None)
     lora_config = LoraConfig(
         r=8,

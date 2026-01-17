@@ -31,7 +31,9 @@ save_steps: 64
 seed: 42
 weight_decay: 0
 
-# LoRA/PEFT target modules for GPT-2
+# LoRA/PEFT target modules for Phi-3.5 (correct module names)
 target_modules:
-  - "c_attn"
-  - "c_proj"
+  - "qkv_proj"
+  - "o_proj"
+  - "gate_up_proj"
+  - "down_proj"
