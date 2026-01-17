@@ -180,28 +180,32 @@ def generate_world_fallback(theme: str, count: int, seed: Optional[int] = None, 
     catalog = list(THEME_OBJECT_LIBRARY.get(
         theme.lower(), THEME_OBJECT_LIBRARY['forest']))
     rng.shuffle(catalog)
-    chosen = [(catalog[i % len(catalog)][0], catalog[i % len(catalog)][1])
+    chosen = [(catalog[i % len(catalog)][0], catalog[i % len(catalog)][1], i)
               for i in range(count)]
 
     if algorithm == 'poisson':
         positions = _generate_positions_poisson(len(chosen), spacing, rng)
-        method = 'fallback_poisson'
+        method = 'fallback_poisson_disc'
     else:
         positions = _generate_positions_rejection(len(chosen), spacing, rng)
         method = 'fallback_rejection'
 
     objs: Dict[str, Dict] = {}
-    for (name, emoji), (x, y) in zip(chosen, positions):
-        oid = _sanitize_id(name)
+    id_counts: Dict[str, int] = {}
+    for (name, emoji, idx), (x, y) in zip(chosen, positions):
+        base_id = _sanitize_id(name)
+        # Add suffix if we've seen this base_id before
+        if base_id in id_counts:
+            id_counts[base_id] += 1
+            oid = f"{base_id}_{id_counts[base_id]}"
+        else:
+            id_counts[base_id] = 0
+            oid = base_id
         objs[oid] = {'id': oid, 'emoji': emoji, 'position': {
             'x': x, 'y': y}, 'state': 'on_stage'}
 
     env = {'theme': theme, 'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace(
         '+00:00', 'Z'), 'seed': effective_seed, 'spacing': spacing, 'generation_method': method, 'stage_bounds': {'width': 100, 'height': 100}}
-
-    return {'objects': objs, 'environment': env, 'llm': False}
-    env = {'theme': theme, 'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace(
-        '+00:00', 'Z'), 'seed': effective_seed, 'spacing': spacing, 'generation_method': generation_method, 'stage_bounds': {'width': 100, 'height': 100}}
 
     return {'objects': objs, 'environment': env, 'llm': False}
 
@@ -1165,23 +1169,6 @@ def _generate_positions_poisson(n: int, min_dist: int, rng: random.Random, width
                 gx, gy = grid_coords((nx, ny))
                 grid[gx][gy] = (nx, ny)
                 placed = True
-
-
-def generate_world_fallback(theme: str, count: int) -> dict:
-    """Generate a world procedurally without LLM."""
-    objects_catalog = THEME_OBJECT_LIBRARY.get(
-        theme.lower(), THEME_OBJECT_LIBRARY['forest'])
-    random.shuffle(objects_catalog)
-    chosen = objects_catalog[: max(1, count)]
-    stage_objects = {}
-    used_positions = []
-    for name, emoji in chosen:
-        # Avoid overlapping positions (simple Poisson-ish attempt)
-        for attempt in range(10):
-            x = random.randint(10, 90)
-            y = random.randint(20, 80)
-            if all(math.hypot(x - px, y - py) > 8 for px, py in used_positions):
-                used_positions.append((x, y))
                 break
         if not placed:
             active.pop(idx)
@@ -1236,12 +1223,10 @@ def generate_world_fallback(theme: str, count: int, seed: int | None = None, spa
         }
     environment = {
         'theme': theme,
-        'generated_at': datetime.datetime.now(datetime.UTC).isoformat().replace('+00:00', 'Z'),
+        'generated_at': datetime.datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
         'seed': effective_seed,
         'spacing': spacing,
         'generation_method': generation_method,
-        'generated_at': datetime.datetime.now(timezone.utc).isoformat() + 'Z',
-        'seed': random.randint(100000, 999999),
         'stage_bounds': {'width': 100, 'height': 100}
     }
     return {
@@ -1260,11 +1245,8 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: int | None =
         provider: LLM provider implementing .complete(messages, stream=False)
         seed: optional seed passed to fallback if needed
         spacing: spacing for fallback if LLM output unusable
+        algorithm: positioning algorithm ('rejection' or 'poisson')
     """
-
-
-def generate_world_with_llm(theme: str, count: int, provider) -> dict:
-    """Use LLM provider to generate a themed world. Returns fallback on failure."""
     system_prompt = (
         "You are a STRICT JSON generator for a 2D stage (x,y in 0-100).\n"
         "Return ONLY a single JSON object with keys: objects, environment.\n"
@@ -1295,9 +1277,10 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
                            raw_str, flags=_re.DOTALL)
             if m:
                 raw_str = m.group(1).strip()
+        
+        # Attempt direct JSON parse
         import json as _json
         import re as _re
-        # Attempt direct JSON parse
         json_candidate = raw_str.strip()
         # If provider wrapped inside text, try last JSON object
         if not json_candidate.startswith('{'):
@@ -1305,14 +1288,8 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
                 r"\{.*\}\s*$", json_candidate, flags=_re.DOTALL)
             if obj_match:
                 json_candidate = obj_match.group(0)
+        
         data = _json.loads(json_candidate)
-        # Extract first JSON object
-        import json as _json
-        import re as _re
-        obj_match = _re.search(r"\{.*\}\s*$", raw_str, flags=_re.DOTALL)
-        if obj_match:
-            raw_str = obj_match.group(0)
-        data = _json.loads(raw_str)
         # Basic validation
         objects = data.get('objects') or {}
         env = data.get('environment') or {}
@@ -1343,7 +1320,8 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
             timezone.utc).isoformat().replace('+00:00', 'Z'))
         env.setdefault('stage_bounds', {'width': 100, 'height': 100})
         env.setdefault('generation_method', 'llm')
-        env.setdefault('seed', effective_seed)
+        if seed is not None:
+            env.setdefault('seed', seed)
 
         return {'objects': sanitized_objects, 'environment': env, 'llm': True, 'raw_response_len': len(raw_str)}
     except Exception as e:
@@ -1357,7 +1335,7 @@ def persist_world(world: dict, theme: str, seed: int | None = None, base_dir: Pa
         if base_dir is None:
             base_dir = REPO_ROOT / 'data_out' / 'aria_worlds'
         base_dir.mkdir(parents=True, exist_ok=True)
-        ts = datetime.datetime.now(datetime.UTC).strftime('%Y%m%d_%H%M%S')
+        ts = datetime.datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
         seed_val = seed if seed is not None else world.get(
             'environment', {}).get('seed', 'noseed')
         fname = f"world_{_sanitize_id(theme)}_{ts}_{seed_val}.json"

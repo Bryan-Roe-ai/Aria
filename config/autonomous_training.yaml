@@ -57,7 +57,8 @@ learning_strategy:
 
 resource_management:
   max_gpu_memory_gb: 0  # 0 = use all available
-  max_cpu_cores: 20
+  device: cuda  # Force GPU training
+  max_cpu_cores: 0  # 0 = use all available (GPU preferred)
   disk_space_warning_gb: 50  # Alert when disk space below this
 
 notifications:

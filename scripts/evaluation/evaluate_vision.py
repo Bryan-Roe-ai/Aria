@@ -143,7 +143,7 @@ def run_eval(argv=None):
         cm = skm.confusion_matrix(gts, preds, labels=list(range(len(classes))))
         results['confusion_matrix'] = cm.tolist()
         results['classification_report'] = skm.classification_report(
-            gts, preds, target_names=classes, output_dict=True)
+            gts, preds, labels=list(range(len(classes))), target_names=classes, output_dict=True, zero_division=0)
     else:
         # simple confusion matrix fallback
         k = len(classes)

@@ -1,0 +1,1301 @@
+race/ethnicity,parental level of education,lunch,test preparation course,math score,reading score,writing score,target
+group B,bachelor's degree,standard,none,72.0,72.0,74.0,female
+group C,some college,standard,completed,69.0,90.0,88.0,female
+group B,master's degree,standard,none,90.0,95.0,93.0,female
+group A,associate's degree,free/reduced,none,47.0,57.0,44.0,male
+group C,some college,standard,none,76.0,78.0,75.0,male
+group B,associate's degree,standard,none,71.0,83.0,78.0,female
+group B,some college,standard,completed,88.0,95.0,92.0,female
+group B,some college,free/reduced,none,40.0,43.0,39.0,male
+group D,high school,free/reduced,completed,64.0,64.0,67.0,male
+group B,high school,free/reduced,none,38.0,60.0,50.0,female
+group C,associate's degree,standard,none,58.0,54.0,52.0,male
+group D,associate's degree,standard,none,40.0,52.0,43.0,male
+group B,high school,standard,none,65.0,81.0,73.0,female
+group A,some college,standard,completed,78.0,72.0,70.0,male
+group A,master's degree,standard,none,50.0,53.0,58.0,female
+group C,some high school,standard,none,69.0,75.0,78.0,female
+group C,high school,standard,none,88.0,89.0,86.0,male
+group B,some high school,free/reduced,none,18.0,32.0,28.0,female
+group C,master's degree,free/reduced,completed,46.0,42.0,46.0,male
+group C,associate's degree,free/reduced,none,54.0,58.0,61.0,female
+group D,high school,standard,none,66.0,69.0,63.0,male
+group B,some college,free/reduced,completed,65.0,75.0,70.0,female
+group D,some college,standard,none,44.0,54.0,53.0,male
+group C,some high school,standard,none,69.0,73.0,73.0,female
+group D,bachelor's degree,free/reduced,completed,74.0,71.0,80.0,male
+group A,master's degree,free/reduced,none,73.0,74.0,72.0,male
+group B,some college,standard,none,69.0,54.0,55.0,male
+group C,bachelor's degree,standard,none,67.0,69.0,75.0,female
+group C,high school,standard,none,70.0,70.0,65.0,male
+group D,master's degree,standard,none,62.0,70.0,75.0,female
+group D,some college,standard,none,69.0,74.0,74.0,female
+group B,some college,standard,none,63.0,65.0,61.0,female
+group E,master's degree,free/reduced,none,56.0,72.0,65.0,female
+group D,some college,standard,none,40.0,42.0,38.0,male
+group E,some college,standard,none,97.0,87.0,82.0,male
+group E,associate's degree,standard,completed,81.0,81.0,79.0,male
+group D,associate's degree,standard,none,74.0,81.0,83.0,female
+group D,some high school,free/reduced,none,50.0,64.0,59.0,female
+group D,associate's degree,free/reduced,completed,75.0,90.0,88.0,female
+group B,associate's degree,free/reduced,none,57.0,56.0,57.0,male
+group C,associate's degree,free/reduced,none,55.0,61.0,54.0,male
+group C,associate's degree,standard,none,58.0,73.0,68.0,female
+group B,associate's degree,standard,none,53.0,58.0,65.0,female
+group B,some college,free/reduced,completed,59.0,65.0,66.0,male
+group E,associate's degree,free/reduced,none,50.0,56.0,54.0,female
+group B,associate's degree,standard,none,65.0,54.0,57.0,male
+group A,associate's degree,standard,completed,55.0,65.0,62.0,female
+group C,high school,standard,none,66.0,71.0,76.0,female
+group D,associate's degree,free/reduced,completed,57.0,74.0,76.0,female
+group C,high school,standard,completed,82.0,84.0,82.0,male
+group E,some college,standard,none,53.0,55.0,48.0,male
+group E,associate's degree,free/reduced,completed,77.0,69.0,68.0,male
+group C,some college,standard,none,53.0,44.0,42.0,male
+group D,high school,standard,none,88.0,78.0,75.0,male
+group C,some high school,free/reduced,completed,71.0,84.0,87.0,female
+group C,high school,free/reduced,none,33.0,41.0,43.0,female
+group E,associate's degree,standard,completed,82.0,85.0,86.0,female
+group D,associate's degree,standard,none,52.0,55.0,49.0,male
+group D,some college,standard,completed,58.0,59.0,58.0,male
+group C,some high school,free/reduced,none,0.0,17.0,10.0,female
+group E,bachelor's degree,free/reduced,completed,79.0,74.0,72.0,male
+group A,some high school,free/reduced,none,39.0,39.0,34.0,male
+group A,associate's degree,free/reduced,none,62.0,61.0,55.0,male
+group C,associate's degree,standard,none,69.0,80.0,71.0,female
+group D,some high school,standard,none,59.0,58.0,59.0,female
+group B,some high school,standard,none,67.0,64.0,61.0,male
+group D,some high school,free/reduced,none,45.0,37.0,37.0,male
+group C,some college,standard,none,60.0,72.0,74.0,female
+group B,associate's degree,free/reduced,none,61.0,58.0,56.0,male
+group C,associate's degree,standard,none,39.0,64.0,57.0,female
+group D,some college,free/reduced,completed,58.0,63.0,73.0,female
+group D,some college,standard,completed,63.0,55.0,63.0,male
+group A,associate's degree,free/reduced,none,41.0,51.0,48.0,female
+group C,some high school,free/reduced,none,61.0,57.0,56.0,male
+group C,some high school,standard,none,49.0,49.0,41.0,male
+group B,associate's degree,free/reduced,none,44.0,41.0,38.0,male
+group E,some high school,standard,none,30.0,26.0,22.0,male
+group A,bachelor's degree,standard,completed,80.0,78.0,81.0,male
+group D,some high school,standard,completed,61.0,74.0,72.0,female
+group E,master's degree,standard,none,62.0,68.0,68.0,female
+group B,associate's degree,standard,none,47.0,49.0,50.0,female
+group B,high school,free/reduced,none,49.0,45.0,45.0,male
+group A,some college,free/reduced,completed,50.0,47.0,54.0,male
+group E,associate's degree,standard,none,72.0,64.0,63.0,male
+group D,high school,free/reduced,none,42.0,39.0,34.0,male
+group C,some college,standard,none,73.0,80.0,82.0,female
+group C,some college,free/reduced,none,76.0,83.0,88.0,female
+group D,associate's degree,standard,none,71.0,71.0,74.0,female
+group A,some college,standard,none,58.0,70.0,67.0,female
+group D,some high school,standard,none,73.0,86.0,82.0,female
+group C,bachelor's degree,standard,none,65.0,72.0,74.0,female
+group C,high school,free/reduced,none,27.0,34.0,36.0,male
+group C,high school,standard,none,71.0,79.0,71.0,male
+group C,associate's degree,free/reduced,completed,43.0,45.0,50.0,male
+group B,some college,standard,none,79.0,86.0,92.0,female
+group C,associate's degree,free/reduced,completed,78.0,81.0,82.0,male
+group B,some high school,standard,completed,65.0,66.0,62.0,male
+group E,some college,standard,completed,63.0,72.0,70.0,female
+group D,some college,free/reduced,none,58.0,67.0,62.0,female
+group D,bachelor's degree,standard,none,65.0,67.0,62.0,female
+group B,some college,standard,none,79.0,67.0,67.0,male
+group D,bachelor's degree,standard,completed,68.0,74.0,74.0,male
+group D,associate's degree,standard,none,85.0,91.0,89.0,female
+group B,high school,standard,completed,60.0,44.0,47.0,male
+group C,some college,standard,completed,98.0,86.0,90.0,male
+group C,some college,standard,none,58.0,67.0,72.0,female
+group D,master's degree,standard,none,87.0,100.0,100.0,female
+group E,associate's degree,standard,completed,66.0,63.0,64.0,male
+group B,associate's degree,free/reduced,none,52.0,76.0,70.0,female
+group B,some high school,standard,none,70.0,64.0,72.0,female
+group D,associate's degree,free/reduced,completed,77.0,89.0,98.0,female
+group C,high school,standard,none,62.0,55.0,49.0,male
+group A,associate's degree,standard,none,54.0,53.0,47.0,male
+group D,some college,standard,none,51.0,58.0,54.0,female
+group E,bachelor's degree,standard,completed,99.0,100.0,100.0,female
+group C,high school,standard,none,84.0,77.0,74.0,male
+group B,bachelor's degree,free/reduced,none,75.0,85.0,82.0,female
+group D,bachelor's degree,standard,none,78.0,82.0,79.0,female
+group D,some high school,standard,none,51.0,63.0,61.0,female
+group C,some college,standard,none,55.0,69.0,65.0,female
+group C,bachelor's degree,standard,completed,79.0,92.0,89.0,female
+group B,associate's degree,standard,completed,91.0,89.0,92.0,male
+group C,some college,standard,completed,88.0,93.0,93.0,female
+group D,high school,free/reduced,none,63.0,57.0,56.0,male
+group E,some college,standard,none,83.0,80.0,73.0,male
+group B,high school,standard,none,87.0,95.0,86.0,female
+group B,some high school,standard,none,72.0,68.0,67.0,male
+group D,some college,standard,completed,65.0,77.0,74.0,male
+group D,master's degree,standard,none,82.0,82.0,74.0,male
+group A,bachelor's degree,standard,none,51.0,49.0,51.0,female
+group D,master's degree,standard,none,89.0,84.0,82.0,male
+group C,some high school,free/reduced,completed,53.0,37.0,40.0,male
+group E,some college,free/reduced,completed,87.0,74.0,70.0,male
+group C,some college,standard,completed,75.0,81.0,84.0,female
+group D,bachelor's degree,free/reduced,completed,74.0,79.0,75.0,male
+group C,bachelor's degree,standard,none,58.0,55.0,48.0,male
+group B,some high school,standard,completed,51.0,54.0,41.0,male
+group E,high school,standard,none,70.0,55.0,56.0,male
+group C,associate's degree,standard,none,59.0,66.0,67.0,female
+group D,some college,standard,completed,71.0,61.0,69.0,male
+group D,some high school,standard,none,76.0,72.0,71.0,female
+group C,some college,free/reduced,none,59.0,62.0,64.0,female
+group E,some college,free/reduced,completed,42.0,55.0,54.0,female
+group A,high school,standard,none,57.0,43.0,47.0,male
+group D,some college,standard,none,88.0,73.0,78.0,male
+group C,some college,free/reduced,none,22.0,39.0,33.0,female
+group B,some high school,standard,none,88.0,84.0,75.0,male
+group C,associate's degree,free/reduced,none,73.0,68.0,66.0,male
+group D,bachelor's degree,standard,completed,68.0,75.0,81.0,female
+group E,associate's degree,free/reduced,completed,100.0,100.0,93.0,male
+group A,some high school,standard,completed,62.0,67.0,69.0,male
+group A,bachelor's degree,standard,none,77.0,67.0,68.0,male
+group B,associate's degree,standard,completed,59.0,70.0,66.0,female
+group D,bachelor's degree,standard,none,54.0,49.0,47.0,male
+group D,some high school,standard,none,62.0,67.0,61.0,male
+group C,some college,standard,completed,70.0,89.0,88.0,female
+group E,high school,free/reduced,completed,66.0,74.0,78.0,female
+group B,some college,free/reduced,none,60.0,60.0,60.0,male
+group B,associate's degree,standard,completed,61.0,86.0,87.0,female
+group D,associate's degree,free/reduced,none,66.0,62.0,64.0,male
+group B,associate's degree,free/reduced,completed,82.0,78.0,74.0,male
+group E,some college,free/reduced,completed,75.0,88.0,85.0,female
+group B,master's degree,free/reduced,none,49.0,53.0,52.0,male
+group C,high school,standard,none,52.0,53.0,49.0,male
+group E,master's degree,standard,none,81.0,92.0,91.0,female
+group C,bachelor's degree,standard,completed,96.0,100.0,100.0,female
+group C,high school,free/reduced,completed,53.0,51.0,51.0,male
+group B,master's degree,free/reduced,completed,58.0,76.0,78.0,female
+group B,high school,standard,completed,68.0,83.0,78.0,female
+group C,some college,free/reduced,completed,67.0,75.0,70.0,female
+group A,high school,standard,completed,72.0,73.0,74.0,male
+group E,some high school,standard,none,94.0,88.0,78.0,male
+group D,some college,standard,none,79.0,86.0,81.0,female
+group C,associate's degree,standard,none,63.0,67.0,70.0,female
+group C,bachelor's degree,free/reduced,completed,43.0,51.0,54.0,female
+group C,master's degree,standard,completed,81.0,91.0,87.0,female
+group B,high school,free/reduced,completed,46.0,54.0,58.0,female
+group C,associate's degree,standard,completed,71.0,77.0,77.0,female
+group B,master's degree,free/reduced,completed,52.0,70.0,62.0,female
+group D,some high school,standard,completed,97.0,100.0,100.0,female
+group C,master's degree,free/reduced,completed,62.0,68.0,75.0,male
+group C,some college,free/reduced,none,46.0,64.0,66.0,female
+group E,high school,standard,none,50.0,50.0,47.0,female
+group D,associate's degree,standard,none,65.0,69.0,70.0,female
+group C,some high school,free/reduced,completed,45.0,52.0,49.0,male
+group C,associate's degree,free/reduced,completed,65.0,67.0,65.0,male
+group E,high school,standard,none,80.0,76.0,65.0,male
+group D,some high school,standard,completed,62.0,66.0,68.0,male
+group B,some high school,free/reduced,none,48.0,52.0,45.0,male
+group C,bachelor's degree,standard,none,77.0,88.0,87.0,female
+group E,associate's degree,standard,none,66.0,65.0,69.0,female
+group D,some college,standard,completed,76.0,83.0,79.0,male
+group B,some high school,standard,none,62.0,64.0,66.0,female
+group D,some college,standard,completed,77.0,62.0,62.0,male
+group C,master's degree,standard,completed,69.0,84.0,85.0,female
+group D,associate's degree,standard,none,61.0,55.0,52.0,male
+group C,some high school,free/reduced,completed,59.0,69.0,65.0,male
+group E,high school,free/reduced,none,55.0,56.0,51.0,male
+group B,some college,free/reduced,none,45.0,53.0,55.0,female
+group B,bachelor's degree,free/reduced,none,78.0,79.0,76.0,female
+group C,associate's degree,standard,completed,67.0,84.0,86.0,female
+group D,some college,free/reduced,none,65.0,81.0,77.0,female
+group C,associate's degree,standard,none,69.0,77.0,69.0,male
+group B,associate's degree,standard,none,57.0,69.0,68.0,female
+group C,some college,standard,none,59.0,41.0,42.0,male
+group D,some high school,standard,completed,74.0,71.0,78.0,male
+group E,bachelor's degree,standard,none,82.0,62.0,62.0,male
+group E,high school,standard,completed,81.0,80.0,76.0,male
+group B,some college,free/reduced,none,74.0,81.0,76.0,female
+group B,some college,free/reduced,none,58.0,61.0,66.0,female
+group D,some high school,free/reduced,completed,80.0,79.0,79.0,male
+group C,some college,free/reduced,none,35.0,28.0,27.0,male
+group C,high school,free/reduced,none,42.0,62.0,60.0,female
+group C,associate's degree,free/reduced,completed,60.0,51.0,56.0,male
+group E,high school,standard,completed,87.0,91.0,81.0,male
+group B,some high school,standard,completed,84.0,83.0,75.0,male
+group E,associate's degree,free/reduced,completed,83.0,86.0,88.0,female
+group C,high school,free/reduced,none,34.0,42.0,39.0,female
+group B,high school,free/reduced,none,66.0,77.0,70.0,male
+group B,some high school,standard,completed,61.0,56.0,56.0,male
+group D,high school,standard,completed,56.0,68.0,74.0,female
+group B,associate's degree,standard,none,87.0,85.0,73.0,male
+group C,some high school,free/reduced,none,55.0,65.0,62.0,female
+group D,some high school,standard,none,86.0,80.0,75.0,male
+group B,associate's degree,standard,completed,52.0,66.0,73.0,female
+group E,master's degree,free/reduced,none,45.0,56.0,54.0,female
+group C,some college,standard,none,72.0,72.0,71.0,female
+group D,high school,standard,none,57.0,50.0,54.0,male
+group A,some high school,free/reduced,none,68.0,72.0,64.0,male
+group C,some college,standard,completed,88.0,95.0,94.0,female
+group D,some college,standard,none,76.0,64.0,66.0,male
+group C,associate's degree,standard,none,46.0,43.0,42.0,male
+group B,bachelor's degree,standard,none,67.0,86.0,83.0,female
+group E,some high school,standard,none,92.0,87.0,78.0,male
+group C,bachelor's degree,standard,completed,83.0,82.0,84.0,male
+group D,associate's degree,standard,none,80.0,75.0,77.0,male
+group D,bachelor's degree,free/reduced,none,63.0,66.0,67.0,male
+group D,some high school,standard,completed,64.0,60.0,74.0,female
+group B,some college,standard,none,54.0,52.0,51.0,male
+group C,associate's degree,standard,none,84.0,80.0,80.0,male
+group D,high school,free/reduced,completed,73.0,68.0,66.0,male
+group E,bachelor's degree,standard,none,80.0,83.0,83.0,female
+group D,high school,standard,none,56.0,52.0,55.0,female
+group E,some college,standard,none,59.0,51.0,43.0,male
+group D,some high school,standard,none,75.0,74.0,69.0,male
+group C,associate's degree,standard,none,85.0,76.0,71.0,male
+group E,associate's degree,standard,none,89.0,76.0,74.0,male
+group B,high school,standard,completed,58.0,70.0,68.0,female
+group B,high school,standard,none,65.0,64.0,62.0,female
+group C,high school,standard,none,68.0,60.0,53.0,male
+group A,some high school,standard,completed,47.0,49.0,49.0,male
+group D,some college,free/reduced,none,71.0,83.0,83.0,female
+group B,some high school,standard,completed,60.0,70.0,70.0,female
+group D,master's degree,standard,none,80.0,80.0,72.0,male
+group D,high school,standard,none,54.0,52.0,52.0,male
+group E,some college,standard,none,62.0,73.0,70.0,female
+group C,associate's degree,free/reduced,none,64.0,73.0,68.0,female
+group C,associate's degree,standard,completed,78.0,77.0,77.0,male
+group B,some college,standard,none,70.0,75.0,78.0,female
+group C,master's degree,free/reduced,completed,65.0,81.0,81.0,female
+group C,some high school,free/reduced,completed,64.0,79.0,77.0,female
+group C,some college,standard,completed,79.0,79.0,78.0,male
+group C,some high school,free/reduced,none,44.0,50.0,51.0,female
+group E,high school,standard,none,99.0,93.0,90.0,female
+group D,high school,standard,none,76.0,73.0,68.0,male
+group D,some high school,free/reduced,none,59.0,42.0,41.0,male
+group C,bachelor's degree,standard,none,63.0,75.0,81.0,female
+group D,high school,standard,none,69.0,72.0,77.0,female
+group D,associate's degree,standard,completed,88.0,92.0,95.0,female
+group E,some college,free/reduced,none,71.0,76.0,70.0,female
+group C,bachelor's degree,standard,none,69.0,63.0,61.0,male
+group C,some college,standard,none,58.0,49.0,42.0,male
+group D,associate's degree,free/reduced,none,47.0,53.0,58.0,female
+group D,some college,standard,none,65.0,70.0,71.0,female
+group B,some college,standard,completed,88.0,85.0,76.0,male
+group C,bachelor's degree,standard,none,83.0,78.0,73.0,male
+group C,some high school,standard,completed,85.0,92.0,93.0,female
+group E,high school,standard,completed,59.0,63.0,75.0,female
+group C,some high school,free/reduced,none,65.0,86.0,80.0,female
+group B,bachelor's degree,free/reduced,none,73.0,56.0,57.0,male
+group D,high school,standard,none,53.0,52.0,42.0,male
+group D,high school,standard,none,45.0,48.0,46.0,male
+group D,bachelor's degree,free/reduced,none,73.0,79.0,84.0,female
+group D,some college,free/reduced,completed,70.0,78.0,78.0,female
+group B,some high school,standard,none,37.0,46.0,46.0,female
+group B,associate's degree,standard,completed,81.0,82.0,82.0,male
+group E,associate's degree,standard,completed,97.0,82.0,88.0,male
+group B,some high school,standard,none,67.0,89.0,82.0,female
+group B,bachelor's degree,free/reduced,none,88.0,75.0,76.0,male
+group E,some high school,standard,completed,77.0,76.0,77.0,male
+group C,associate's degree,standard,none,76.0,70.0,68.0,male
+group D,some high school,standard,none,86.0,73.0,70.0,male
+group C,some high school,standard,completed,63.0,60.0,57.0,male
+group E,bachelor's degree,standard,none,65.0,73.0,75.0,female
+group D,high school,free/reduced,completed,78.0,77.0,80.0,male
+group B,associate's degree,free/reduced,none,67.0,62.0,60.0,male
+group A,some high school,standard,completed,46.0,41.0,43.0,male
+group E,associate's degree,standard,completed,71.0,74.0,68.0,male
+group C,high school,free/reduced,completed,40.0,46.0,50.0,male
+group D,associate's degree,free/reduced,none,90.0,87.0,75.0,male
+group A,some college,free/reduced,completed,81.0,78.0,81.0,male
+group D,some high school,free/reduced,none,56.0,54.0,52.0,male
+group C,associate's degree,standard,completed,67.0,84.0,81.0,female
+group B,associate's degree,standard,none,80.0,76.0,64.0,male
+group C,associate's degree,standard,completed,74.0,75.0,83.0,female
+group A,some college,standard,none,69.0,67.0,69.0,male
+group E,some college,standard,completed,99.0,87.0,81.0,male
+group C,some high school,standard,none,51.0,52.0,44.0,male
+group B,associate's degree,free/reduced,none,53.0,71.0,67.0,female
+group D,high school,free/reduced,none,49.0,57.0,52.0,female
+group B,associate's degree,standard,none,73.0,76.0,80.0,female
+group B,bachelor's degree,standard,none,66.0,60.0,57.0,male
+group D,bachelor's degree,standard,completed,67.0,61.0,68.0,male
+group C,associate's degree,free/reduced,completed,68.0,67.0,69.0,female
+group C,bachelor's degree,standard,completed,59.0,64.0,75.0,female
+group C,high school,standard,none,71.0,66.0,65.0,male
+group D,master's degree,standard,completed,77.0,82.0,91.0,female
+group C,associate's degree,standard,none,83.0,72.0,78.0,male
+group B,bachelor's degree,standard,none,63.0,71.0,69.0,male
+group D,associate's degree,free/reduced,none,56.0,65.0,63.0,female
+group C,high school,free/reduced,completed,67.0,79.0,84.0,female
+group E,high school,standard,none,75.0,86.0,79.0,female
+group C,some college,standard,none,71.0,81.0,80.0,female
+group C,some high school,free/reduced,none,43.0,53.0,53.0,female
+group C,high school,free/reduced,none,41.0,46.0,43.0,female
+group C,some college,standard,none,82.0,90.0,94.0,female
+group C,some college,standard,none,61.0,61.0,62.0,male
+group A,some college,free/reduced,none,28.0,23.0,19.0,male
+group C,associate's degree,standard,completed,82.0,75.0,77.0,male
+group B,some high school,standard,none,41.0,55.0,51.0,female
+group C,high school,standard,none,71.0,60.0,61.0,male
+group C,associate's degree,standard,none,47.0,37.0,35.0,male
+group E,associate's degree,standard,completed,62.0,56.0,53.0,male
+group B,associate's degree,standard,none,90.0,78.0,81.0,male
+group C,bachelor's degree,standard,none,83.0,93.0,95.0,female
+group B,some college,free/reduced,none,61.0,68.0,66.0,female
+group D,some high school,standard,completed,76.0,70.0,69.0,male
+group C,associate's degree,standard,none,49.0,51.0,43.0,male
+group B,some high school,free/reduced,none,24.0,38.0,27.0,female
+group D,some high school,free/reduced,completed,35.0,55.0,60.0,female
+group C,high school,free/reduced,none,58.0,61.0,52.0,male
+group C,high school,standard,none,61.0,73.0,63.0,female
+group B,high school,standard,completed,69.0,76.0,74.0,female
+group D,associate's degree,standard,completed,67.0,72.0,67.0,male
+group D,some college,standard,none,79.0,73.0,67.0,male
+group C,high school,standard,none,72.0,80.0,75.0,female
+group B,some college,standard,none,62.0,61.0,57.0,male
+group C,bachelor's degree,standard,completed,77.0,94.0,95.0,female
+group D,high school,free/reduced,none,75.0,74.0,66.0,male
+group E,associate's degree,standard,none,87.0,74.0,76.0,male
+group B,bachelor's degree,standard,none,52.0,65.0,69.0,female
+group E,some college,standard,none,66.0,57.0,52.0,male
+group C,some college,standard,completed,63.0,78.0,80.0,female
+group C,associate's degree,standard,none,46.0,58.0,57.0,female
+group C,some college,standard,none,59.0,71.0,70.0,female
+group B,bachelor's degree,standard,none,61.0,72.0,70.0,female
+group A,associate's degree,standard,none,63.0,61.0,61.0,male
+group C,some college,free/reduced,completed,42.0,66.0,69.0,female
+group D,some college,free/reduced,none,59.0,62.0,61.0,male
+group D,some college,standard,none,80.0,90.0,89.0,female
+group B,high school,standard,none,58.0,62.0,59.0,female
+group B,some high school,standard,completed,85.0,84.0,78.0,male
+group C,some college,standard,none,52.0,58.0,58.0,female
+group D,some high school,free/reduced,none,27.0,34.0,32.0,female
+group C,some college,standard,none,59.0,60.0,58.0,male
+group A,bachelor's degree,free/reduced,completed,49.0,58.0,60.0,male
+group C,high school,standard,completed,69.0,58.0,53.0,male
+group C,bachelor's degree,free/reduced,none,61.0,66.0,61.0,male
+group A,some high school,free/reduced,none,44.0,64.0,58.0,female
+group D,some high school,standard,none,73.0,84.0,85.0,female
+group E,some college,standard,none,84.0,77.0,71.0,male
+group C,some college,free/reduced,completed,45.0,73.0,70.0,female
+group D,some high school,standard,none,74.0,74.0,72.0,male
+group D,some college,standard,completed,82.0,97.0,96.0,female
+group D,bachelor's degree,standard,none,59.0,70.0,73.0,female
+group E,associate's degree,free/reduced,none,46.0,43.0,41.0,male
+group D,some high school,standard,none,80.0,90.0,82.0,female
+group D,master's degree,free/reduced,completed,85.0,95.0,100.0,female
+group A,some high school,standard,none,71.0,83.0,77.0,female
+group A,bachelor's degree,standard,none,66.0,64.0,62.0,male
+group B,associate's degree,standard,none,80.0,86.0,83.0,female
+group C,associate's degree,standard,completed,87.0,100.0,95.0,male
+group C,master's degree,free/reduced,none,79.0,81.0,71.0,male
+group E,some high school,free/reduced,none,38.0,49.0,45.0,female
+group A,some high school,free/reduced,none,38.0,43.0,43.0,female
+group E,some college,standard,none,67.0,76.0,75.0,female
+group E,bachelor's degree,standard,none,64.0,73.0,70.0,female
+group C,associate's degree,free/reduced,none,57.0,78.0,67.0,female
+group D,high school,standard,none,62.0,64.0,64.0,female
+group D,master's degree,standard,none,73.0,70.0,75.0,male
+group E,some high school,free/reduced,completed,73.0,67.0,59.0,male
+group D,some college,standard,none,77.0,68.0,77.0,female
+group E,some college,standard,none,76.0,67.0,67.0,male
+group C,associate's degree,standard,completed,57.0,54.0,56.0,male
+group C,some high school,standard,completed,65.0,74.0,77.0,female
+group A,high school,free/reduced,none,48.0,45.0,41.0,male
+group B,high school,free/reduced,none,50.0,67.0,63.0,female
+group C,associate's degree,standard,none,85.0,89.0,95.0,female
+group B,some high school,standard,none,74.0,63.0,57.0,male
+group D,some high school,standard,none,60.0,59.0,54.0,male
+group C,some high school,standard,completed,59.0,54.0,67.0,female
+group A,some college,standard,none,53.0,43.0,43.0,male
+group A,some college,free/reduced,none,49.0,65.0,55.0,female
+group D,high school,standard,completed,88.0,99.0,100.0,female
+group C,high school,standard,none,54.0,59.0,62.0,female
+group C,some high school,standard,none,63.0,73.0,68.0,female
+group B,associate's degree,standard,completed,65.0,65.0,63.0,male
+group B,associate's degree,standard,none,82.0,80.0,77.0,female
+group D,high school,free/reduced,completed,52.0,57.0,56.0,female
+group D,associate's degree,standard,completed,87.0,84.0,85.0,male
+group D,master's degree,standard,completed,70.0,71.0,74.0,female
+group E,some college,standard,completed,84.0,83.0,78.0,male
+group D,associate's degree,standard,none,71.0,66.0,60.0,male
+group B,some high school,standard,completed,63.0,67.0,67.0,male
+group C,bachelor's degree,free/reduced,completed,51.0,72.0,79.0,female
+group E,high school,standard,none,84.0,73.0,69.0,male
+group C,bachelor's degree,standard,completed,71.0,74.0,68.0,male
+group C,associate's degree,standard,none,74.0,73.0,67.0,male
+group D,some college,standard,none,68.0,59.0,62.0,male
+group E,high school,free/reduced,completed,57.0,56.0,54.0,male
+group C,associate's degree,free/reduced,completed,82.0,93.0,93.0,female
+group D,high school,standard,completed,57.0,58.0,64.0,female
+group D,master's degree,free/reduced,completed,47.0,58.0,67.0,female
+group A,some high school,standard,completed,59.0,85.0,80.0,female
+group B,some college,free/reduced,none,41.0,39.0,34.0,male
+group C,some college,free/reduced,none,62.0,67.0,62.0,female
+group C,bachelor's degree,standard,none,86.0,83.0,86.0,male
+group C,some high school,free/reduced,none,69.0,71.0,65.0,male
+group A,some high school,free/reduced,none,65.0,59.0,53.0,male
+group C,some high school,free/reduced,none,68.0,63.0,54.0,male
+group C,associate's degree,free/reduced,none,64.0,66.0,59.0,male
+group C,high school,standard,none,61.0,72.0,70.0,female
+group C,high school,standard,none,61.0,56.0,55.0,male
+group A,some high school,free/reduced,none,47.0,59.0,50.0,female
+group C,some high school,standard,none,73.0,66.0,66.0,male
+group C,some college,free/reduced,completed,50.0,48.0,53.0,male
+group D,associate's degree,standard,none,75.0,68.0,64.0,male
+group D,associate's degree,free/reduced,none,75.0,66.0,73.0,male
+group C,high school,standard,none,70.0,56.0,51.0,male
+group D,some high school,standard,completed,89.0,88.0,82.0,male
+group C,some college,standard,completed,67.0,81.0,79.0,female
+group D,high school,standard,none,78.0,81.0,80.0,female
+group A,some high school,free/reduced,none,59.0,73.0,69.0,female
+group B,associate's degree,standard,none,73.0,83.0,76.0,female
+group A,some high school,free/reduced,none,79.0,82.0,73.0,male
+group C,some high school,standard,completed,67.0,74.0,77.0,female
+group D,some college,free/reduced,none,69.0,66.0,60.0,male
+group C,high school,standard,completed,86.0,81.0,80.0,male
+group B,high school,standard,none,47.0,46.0,42.0,male
+group B,associate's degree,standard,none,81.0,73.0,72.0,male
+group C,some college,free/reduced,completed,64.0,85.0,85.0,female
+group E,some college,standard,none,100.0,92.0,97.0,female
+group C,associate's degree,free/reduced,none,65.0,77.0,74.0,female
+group C,some college,free/reduced,none,65.0,58.0,49.0,male
+group C,associate's degree,free/reduced,none,53.0,61.0,62.0,female
+group C,bachelor's degree,free/reduced,none,37.0,56.0,47.0,male
+group D,bachelor's degree,standard,none,79.0,89.0,89.0,female
+group D,associate's degree,free/reduced,none,53.0,54.0,48.0,male
+group E,bachelor's degree,standard,none,100.0,100.0,100.0,female
+group B,high school,standard,completed,72.0,65.0,68.0,male
+group C,bachelor's degree,free/reduced,none,53.0,58.0,55.0,male
+group B,some college,free/reduced,none,54.0,54.0,45.0,male
+group E,some college,standard,none,71.0,70.0,76.0,female
+group C,some college,free/reduced,none,77.0,90.0,91.0,female
+group A,bachelor's degree,standard,completed,75.0,58.0,62.0,male
+group C,some college,standard,none,84.0,87.0,91.0,female
+group D,associate's degree,free/reduced,none,26.0,31.0,38.0,female
+group A,high school,free/reduced,completed,72.0,67.0,65.0,male
+group A,high school,free/reduced,completed,77.0,88.0,85.0,female
+group C,some college,standard,none,91.0,74.0,76.0,male
+group C,associate's degree,standard,completed,83.0,85.0,90.0,female
+group C,high school,standard,none,63.0,69.0,74.0,female
+group C,associate's degree,standard,completed,68.0,86.0,84.0,female
+group D,some high school,standard,none,59.0,67.0,61.0,female
+group B,associate's degree,standard,completed,90.0,90.0,91.0,female
+group D,bachelor's degree,standard,completed,71.0,76.0,83.0,female
+group E,bachelor's degree,standard,completed,76.0,62.0,66.0,male
+group D,associate's degree,standard,none,80.0,68.0,72.0,male
+group D,master's degree,standard,none,55.0,64.0,70.0,female
+group E,associate's degree,standard,none,76.0,71.0,67.0,male
+group B,high school,standard,completed,73.0,71.0,68.0,male
+group D,associate's degree,free/reduced,none,52.0,59.0,56.0,female
+group C,some college,free/reduced,none,68.0,68.0,61.0,male
+group A,high school,standard,none,59.0,52.0,46.0,male
+group B,associate's degree,standard,none,49.0,52.0,54.0,female
+group C,high school,standard,none,70.0,74.0,71.0,male
+group D,some college,free/reduced,none,61.0,47.0,56.0,male
+group C,associate's degree,free/reduced,none,60.0,75.0,74.0,female
+group B,some high school,standard,completed,64.0,53.0,57.0,male
+group A,associate's degree,free/reduced,completed,79.0,82.0,82.0,male
+group A,associate's degree,free/reduced,none,65.0,85.0,76.0,female
+group C,associate's degree,standard,none,64.0,64.0,70.0,female
+group C,some college,standard,none,83.0,83.0,90.0,female
+group C,bachelor's degree,standard,none,81.0,88.0,90.0,female
+group B,high school,standard,none,54.0,64.0,68.0,female
+group D,high school,standard,completed,68.0,64.0,66.0,male
+group C,some college,standard,none,54.0,48.0,52.0,female
+group D,some college,free/reduced,completed,59.0,78.0,76.0,female
+group B,some high school,standard,none,66.0,69.0,68.0,female
+group E,some college,standard,none,76.0,71.0,72.0,male
+group D,master's degree,standard,none,74.0,79.0,82.0,female
+group B,associate's degree,standard,completed,94.0,87.0,92.0,female
+group C,some college,free/reduced,none,63.0,61.0,54.0,male
+group E,associate's degree,standard,completed,95.0,89.0,92.0,female
+group D,master's degree,free/reduced,none,40.0,59.0,54.0,female
+group B,some high school,standard,none,82.0,82.0,80.0,female
+group A,high school,standard,none,68.0,70.0,66.0,male
+group B,bachelor's degree,free/reduced,none,55.0,59.0,54.0,male
+group C,master's degree,standard,none,79.0,78.0,77.0,male
+group C,bachelor's degree,standard,none,86.0,92.0,87.0,female
+group D,some college,standard,none,76.0,71.0,73.0,male
+group A,some high school,standard,none,64.0,50.0,43.0,male
+group D,some high school,free/reduced,none,62.0,49.0,52.0,male
+group B,some high school,standard,completed,54.0,61.0,62.0,female
+group B,master's degree,free/reduced,completed,77.0,97.0,94.0,female
+group C,some high school,standard,completed,76.0,87.0,85.0,female
+group D,some college,standard,none,74.0,89.0,84.0,female
+group E,some college,standard,completed,66.0,74.0,73.0,female
+group D,some high school,standard,completed,66.0,78.0,78.0,female
+group B,high school,free/reduced,completed,67.0,78.0,79.0,female
+group D,some college,standard,none,71.0,49.0,52.0,male
+group C,associate's degree,standard,none,91.0,86.0,84.0,female
+group D,bachelor's degree,standard,none,69.0,58.0,57.0,male
+group C,master's degree,free/reduced,none,54.0,59.0,50.0,male
+group C,high school,standard,completed,53.0,52.0,49.0,male
+group E,some college,standard,none,68.0,60.0,59.0,male
+group C,some high school,free/reduced,completed,56.0,61.0,60.0,male
+group C,high school,free/reduced,none,36.0,53.0,43.0,female
+group D,bachelor's degree,free/reduced,none,29.0,41.0,47.0,female
+group C,associate's degree,standard,none,62.0,74.0,70.0,female
+group C,associate's degree,standard,completed,68.0,67.0,73.0,female
+group C,some high school,standard,none,47.0,54.0,53.0,female
+group E,associate's degree,standard,completed,62.0,61.0,58.0,male
+group E,associate's degree,standard,completed,79.0,88.0,94.0,female
+group B,high school,standard,completed,73.0,69.0,68.0,male
+group C,bachelor's degree,free/reduced,completed,66.0,83.0,83.0,female
+group C,associate's degree,standard,completed,51.0,60.0,58.0,male
+group D,high school,standard,none,51.0,66.0,62.0,female
+group E,bachelor's degree,standard,completed,85.0,66.0,71.0,male
+group A,associate's degree,standard,completed,97.0,92.0,86.0,male
+group C,high school,standard,completed,75.0,69.0,68.0,male
+group D,associate's degree,free/reduced,completed,79.0,82.0,80.0,male
+group C,associate's degree,standard,none,81.0,77.0,79.0,female
+group D,associate's degree,standard,none,82.0,95.0,89.0,female
+group D,master's degree,standard,none,64.0,63.0,66.0,female
+group E,some high school,free/reduced,completed,78.0,83.0,80.0,male
+group A,some high school,standard,completed,92.0,100.0,97.0,female
+group C,high school,standard,completed,72.0,67.0,64.0,male
+group C,high school,free/reduced,none,62.0,67.0,64.0,female
+group C,master's degree,standard,none,79.0,72.0,69.0,male
+group C,some high school,free/reduced,none,79.0,76.0,65.0,male
+group B,bachelor's degree,free/reduced,completed,87.0,90.0,88.0,male
+group B,associate's degree,standard,none,40.0,48.0,50.0,female
+group D,some college,free/reduced,none,77.0,62.0,64.0,male
+group E,associate's degree,standard,none,53.0,45.0,40.0,male
+group C,some college,free/reduced,none,32.0,39.0,33.0,female
+group C,associate's degree,standard,completed,55.0,72.0,79.0,female
+group C,master's degree,free/reduced,none,61.0,67.0,66.0,male
+group B,associate's degree,free/reduced,none,53.0,70.0,70.0,female
+group D,some high school,standard,none,73.0,66.0,62.0,male
+group D,some college,standard,completed,74.0,75.0,79.0,female
+group C,some college,standard,none,63.0,74.0,74.0,female
+group C,bachelor's degree,standard,completed,96.0,90.0,92.0,male
+group D,some college,free/reduced,completed,63.0,80.0,80.0,female
+group B,bachelor's degree,free/reduced,none,48.0,51.0,46.0,male
+group B,associate's degree,standard,none,48.0,43.0,45.0,male
+group E,bachelor's degree,free/reduced,completed,92.0,100.0,100.0,female
+group D,master's degree,free/reduced,completed,61.0,71.0,78.0,female
+group B,high school,free/reduced,none,63.0,48.0,47.0,male
+group D,bachelor's degree,free/reduced,none,68.0,68.0,67.0,male
+group B,some college,standard,completed,71.0,75.0,70.0,male
+group A,bachelor's degree,standard,none,91.0,96.0,92.0,male
+group C,some college,standard,none,53.0,62.0,56.0,female
+group C,high school,free/reduced,completed,50.0,66.0,64.0,female
+group E,high school,standard,none,74.0,81.0,71.0,female
+group A,associate's degree,free/reduced,completed,40.0,55.0,53.0,male
+group A,some college,standard,completed,61.0,51.0,52.0,male
+group B,high school,standard,none,81.0,91.0,89.0,female
+group B,some college,free/reduced,completed,48.0,56.0,58.0,female
+group D,master's degree,standard,none,53.0,61.0,68.0,female
+group D,some high school,standard,none,81.0,97.0,96.0,female
+group E,some high school,standard,none,77.0,79.0,80.0,female
+group D,bachelor's degree,free/reduced,none,63.0,73.0,78.0,female
+group D,associate's degree,standard,completed,73.0,75.0,80.0,female
+group D,some college,standard,none,69.0,77.0,77.0,female
+group C,associate's degree,standard,none,65.0,76.0,76.0,female
+group A,high school,standard,none,55.0,73.0,73.0,female
+group C,bachelor's degree,free/reduced,none,44.0,63.0,62.0,female
+group C,some college,standard,none,54.0,64.0,65.0,female
+group A,some high school,standard,none,48.0,66.0,65.0,female
+group C,some college,free/reduced,none,58.0,57.0,54.0,male
+group A,some high school,standard,none,71.0,62.0,50.0,male
+group E,bachelor's degree,standard,none,68.0,68.0,64.0,male
+group E,high school,standard,none,74.0,76.0,73.0,female
+group C,bachelor's degree,standard,completed,92.0,100.0,99.0,female
+group C,bachelor's degree,standard,completed,56.0,79.0,72.0,female
+group B,high school,free/reduced,none,30.0,24.0,15.0,male
+group A,some high school,standard,none,53.0,54.0,48.0,male
+group D,high school,standard,none,69.0,77.0,73.0,female
+group D,some high school,standard,none,65.0,82.0,81.0,female
+group D,master's degree,standard,none,54.0,60.0,63.0,female
+group C,high school,standard,none,29.0,29.0,30.0,female
+group E,some college,standard,none,76.0,78.0,80.0,female
+group D,high school,free/reduced,none,60.0,57.0,51.0,male
+group D,master's degree,free/reduced,completed,84.0,89.0,90.0,male
+group C,some high school,standard,none,75.0,72.0,62.0,male
+group C,associate's degree,standard,none,85.0,84.0,82.0,female
+group C,master's degree,free/reduced,none,40.0,58.0,54.0,female
+group E,some college,standard,none,61.0,64.0,62.0,female
+group B,associate's degree,standard,none,58.0,63.0,65.0,female
+group D,some college,free/reduced,completed,69.0,60.0,63.0,male
+group C,some college,standard,none,58.0,59.0,66.0,female
+group C,bachelor's degree,standard,completed,94.0,90.0,91.0,male
+group C,associate's degree,standard,none,65.0,77.0,74.0,female
+group A,associate's degree,standard,none,82.0,93.0,93.0,female
+group C,high school,standard,none,60.0,68.0,72.0,female
+group E,bachelor's degree,standard,none,37.0,45.0,38.0,female
+group D,bachelor's degree,standard,none,88.0,78.0,83.0,male
+group D,master's degree,standard,none,95.0,81.0,84.0,male
+group C,associate's degree,free/reduced,completed,65.0,73.0,68.0,male
+group C,high school,free/reduced,none,35.0,61.0,54.0,female
+group B,bachelor's degree,free/reduced,none,62.0,63.0,56.0,male
+group C,high school,free/reduced,completed,58.0,51.0,52.0,male
+group A,some college,standard,completed,100.0,96.0,86.0,male
+group E,bachelor's degree,free/reduced,none,61.0,58.0,62.0,female
+group D,some college,standard,completed,100.0,97.0,99.0,male
+group B,associate's degree,free/reduced,completed,69.0,70.0,63.0,male
+group D,associate's degree,standard,none,61.0,48.0,46.0,male
+group D,some college,free/reduced,none,49.0,57.0,46.0,male
+group C,some high school,standard,completed,44.0,51.0,55.0,female
+group D,some college,standard,none,67.0,64.0,70.0,male
+group B,high school,standard,none,79.0,60.0,65.0,male
+group B,bachelor's degree,standard,completed,66.0,74.0,81.0,female
+group C,high school,standard,none,75.0,88.0,85.0,female
+group D,some high school,standard,none,84.0,84.0,80.0,male
+group A,high school,standard,none,71.0,74.0,64.0,male
+group B,high school,free/reduced,completed,67.0,80.0,81.0,female
+group D,some high school,standard,completed,80.0,92.0,88.0,female
+group E,some college,standard,none,86.0,76.0,74.0,male
+group D,associate's degree,standard,none,76.0,74.0,73.0,female
+group D,high school,standard,none,41.0,52.0,51.0,male
+group D,associate's degree,free/reduced,completed,74.0,88.0,90.0,female
+group B,some high school,free/reduced,none,72.0,81.0,79.0,female
+group E,high school,standard,completed,74.0,79.0,80.0,female
+group B,high school,standard,none,70.0,65.0,60.0,male
+group B,bachelor's degree,standard,completed,65.0,81.0,81.0,female
+group D,associate's degree,standard,none,59.0,70.0,65.0,female
+group E,high school,free/reduced,none,64.0,62.0,68.0,female
+group B,high school,standard,none,50.0,53.0,55.0,female
+group D,some college,standard,completed,69.0,79.0,81.0,female
+group C,some high school,free/reduced,completed,51.0,56.0,53.0,male
+group A,high school,standard,completed,68.0,80.0,76.0,female
+group D,some college,standard,completed,85.0,86.0,98.0,female
+group A,associate's degree,standard,completed,65.0,70.0,74.0,female
+group B,some high school,standard,none,73.0,79.0,79.0,female
+group B,some college,standard,none,62.0,67.0,67.0,female
+group C,associate's degree,free/reduced,none,77.0,67.0,64.0,male
+group D,some high school,standard,none,69.0,66.0,61.0,male
+group D,associate's degree,free/reduced,none,43.0,60.0,58.0,female
+group D,associate's degree,standard,none,90.0,87.0,85.0,male
+group C,some college,free/reduced,none,74.0,77.0,73.0,male
+group C,some high school,standard,none,73.0,66.0,63.0,male
+group D,some college,free/reduced,none,55.0,71.0,69.0,female
+group C,high school,standard,none,65.0,69.0,67.0,female
+group D,associate's degree,standard,none,80.0,63.0,63.0,male
+group C,some high school,free/reduced,completed,50.0,60.0,60.0,female
+group C,some college,free/reduced,completed,63.0,73.0,71.0,female
+group B,bachelor's degree,free/reduced,none,77.0,85.0,87.0,female
+group C,some college,standard,none,73.0,74.0,61.0,male
+group D,associate's degree,standard,completed,81.0,72.0,77.0,male
+group C,high school,free/reduced,none,66.0,76.0,68.0,female
+group D,associate's degree,free/reduced,none,52.0,57.0,50.0,male
+group C,some college,standard,none,69.0,78.0,76.0,female
+group C,associate's degree,standard,completed,65.0,84.0,84.0,female
+group D,high school,standard,completed,69.0,77.0,78.0,female
+group B,some college,standard,completed,50.0,64.0,66.0,female
+group E,some college,standard,completed,73.0,78.0,76.0,female
+group C,some high school,standard,completed,70.0,82.0,76.0,female
+group D,associate's degree,free/reduced,none,81.0,75.0,78.0,male
+group D,some college,free/reduced,none,63.0,61.0,60.0,male
+group D,high school,standard,none,67.0,72.0,74.0,female
+group B,high school,standard,none,60.0,68.0,60.0,male
+group B,high school,standard,none,62.0,55.0,54.0,male
+group C,some high school,free/reduced,completed,29.0,40.0,44.0,female
+group B,some college,standard,completed,62.0,66.0,68.0,male
+group E,master's degree,standard,completed,94.0,99.0,100.0,female
+group E,some college,standard,completed,85.0,75.0,68.0,male
+group D,associate's degree,free/reduced,none,77.0,78.0,73.0,male
+group A,high school,free/reduced,none,53.0,58.0,44.0,male
+group E,some college,free/reduced,none,93.0,90.0,83.0,male
+group C,associate's degree,standard,none,49.0,53.0,53.0,female
+group E,associate's degree,free/reduced,none,73.0,76.0,78.0,female
+group C,bachelor's degree,free/reduced,completed,66.0,74.0,81.0,female
+group D,associate's degree,standard,none,77.0,77.0,73.0,female
+group C,some high school,standard,none,49.0,63.0,56.0,female
+group D,some college,free/reduced,none,79.0,89.0,86.0,female
+group C,associate's degree,standard,completed,75.0,82.0,90.0,female
+group A,bachelor's degree,standard,none,59.0,72.0,70.0,female
+group D,associate's degree,standard,completed,57.0,78.0,79.0,female
+group C,high school,free/reduced,none,66.0,66.0,59.0,male
+group E,bachelor's degree,standard,completed,79.0,81.0,82.0,female
+group B,some high school,standard,none,57.0,67.0,72.0,female
+group A,bachelor's degree,standard,completed,87.0,84.0,87.0,male
+group D,some college,standard,none,63.0,64.0,67.0,female
+group B,some high school,free/reduced,completed,59.0,63.0,64.0,female
+group A,bachelor's degree,free/reduced,none,62.0,72.0,65.0,male
+group D,high school,standard,none,46.0,34.0,36.0,male
+group C,some college,standard,none,66.0,59.0,52.0,male
+group D,high school,standard,none,89.0,87.0,79.0,male
+group D,associate's degree,free/reduced,completed,42.0,61.0,58.0,female
+group C,some college,standard,completed,93.0,84.0,90.0,male
+group E,some high school,standard,completed,80.0,85.0,85.0,female
+group D,some college,standard,none,98.0,100.0,99.0,female
+group D,master's degree,standard,none,81.0,81.0,84.0,male
+group B,some high school,standard,completed,60.0,70.0,74.0,female
+group B,associate's degree,free/reduced,completed,76.0,94.0,87.0,female
+group C,associate's degree,standard,completed,73.0,78.0,72.0,male
+group C,associate's degree,standard,completed,96.0,96.0,99.0,female
+group C,high school,standard,none,76.0,76.0,74.0,female
+group E,associate's degree,free/reduced,completed,91.0,73.0,80.0,male
+group C,some college,free/reduced,none,62.0,72.0,70.0,female
+group D,some high school,free/reduced,completed,55.0,59.0,59.0,male
+group B,some high school,free/reduced,completed,74.0,90.0,88.0,female
+group C,high school,standard,none,50.0,48.0,42.0,male
+group B,some college,standard,none,47.0,43.0,41.0,male
+group E,some college,standard,completed,81.0,74.0,71.0,male
+group E,associate's degree,standard,completed,65.0,75.0,77.0,female
+group E,some high school,standard,completed,68.0,51.0,57.0,male
+group D,high school,free/reduced,none,73.0,92.0,84.0,female
+group C,some college,standard,none,53.0,39.0,37.0,male
+group B,associate's degree,free/reduced,completed,68.0,77.0,80.0,female
+group A,some high school,free/reduced,none,55.0,46.0,43.0,male
+group C,some college,standard,completed,87.0,89.0,94.0,female
+group D,some high school,standard,none,55.0,47.0,44.0,male
+group E,some college,free/reduced,none,53.0,58.0,57.0,female
+group C,master's degree,standard,none,67.0,57.0,59.0,male
+group C,associate's degree,standard,none,92.0,79.0,84.0,male
+group B,some college,free/reduced,completed,53.0,66.0,73.0,female
+group D,associate's degree,standard,none,81.0,71.0,73.0,male
+group C,high school,free/reduced,none,61.0,60.0,55.0,male
+group D,bachelor's degree,standard,none,80.0,73.0,72.0,male
+group A,associate's degree,free/reduced,none,37.0,57.0,56.0,female
+group C,high school,standard,none,81.0,84.0,82.0,female
+group C,associate's degree,standard,completed,59.0,73.0,72.0,female
+group B,some college,free/reduced,none,55.0,55.0,47.0,male
+group D,associate's degree,standard,none,72.0,79.0,74.0,male
+group D,high school,standard,none,69.0,75.0,71.0,male
+group C,some college,standard,none,69.0,64.0,68.0,male
+group C,bachelor's degree,free/reduced,none,50.0,60.0,59.0,female
+group B,some college,standard,completed,87.0,84.0,86.0,male
+group D,some high school,standard,completed,71.0,69.0,68.0,male
+group E,some college,standard,none,68.0,72.0,65.0,male
+group C,master's degree,free/reduced,completed,79.0,77.0,75.0,male
+group C,some high school,standard,completed,77.0,90.0,85.0,female
+group C,associate's degree,free/reduced,none,58.0,55.0,53.0,male
+group E,associate's degree,standard,none,84.0,95.0,92.0,female
+group D,some college,standard,none,55.0,58.0,52.0,male
+group E,bachelor's degree,free/reduced,completed,70.0,68.0,72.0,male
+group D,some college,free/reduced,completed,52.0,59.0,65.0,female
+group B,some college,standard,completed,69.0,77.0,77.0,male
+group C,high school,free/reduced,none,53.0,72.0,64.0,female
+group D,some high school,standard,none,48.0,58.0,54.0,female
+group D,some high school,standard,completed,78.0,81.0,86.0,male
+group B,high school,standard,none,62.0,62.0,63.0,female
+group D,some college,standard,none,60.0,63.0,59.0,male
+group B,high school,standard,none,74.0,72.0,72.0,female
+group C,high school,standard,completed,58.0,75.0,77.0,female
+group B,high school,standard,completed,76.0,62.0,60.0,male
+group D,some high school,standard,none,68.0,71.0,75.0,female
+group A,some college,free/reduced,none,58.0,60.0,57.0,male
+group B,high school,standard,none,52.0,48.0,49.0,male
+group D,bachelor's degree,standard,none,75.0,73.0,74.0,male
+group B,some high school,free/reduced,completed,52.0,67.0,72.0,female
+group C,bachelor's degree,free/reduced,none,62.0,78.0,79.0,female
+group B,some college,standard,none,66.0,65.0,60.0,male
+group B,some high school,free/reduced,none,49.0,58.0,55.0,female
+group B,high school,standard,none,66.0,72.0,70.0,female
+group C,some college,free/reduced,none,35.0,44.0,43.0,female
+group A,some college,standard,completed,72.0,79.0,82.0,female
+group E,associate's degree,standard,completed,94.0,85.0,82.0,male
+group D,associate's degree,free/reduced,none,46.0,56.0,57.0,female
+group B,master's degree,standard,none,77.0,90.0,84.0,female
+group B,high school,free/reduced,completed,76.0,85.0,82.0,female
+group C,associate's degree,standard,completed,52.0,59.0,62.0,female
+group C,bachelor's degree,standard,completed,91.0,81.0,79.0,male
+group B,some high school,standard,completed,32.0,51.0,44.0,female
+group E,some high school,free/reduced,none,72.0,79.0,77.0,female
+group B,some college,standard,none,19.0,38.0,32.0,female
+group C,associate's degree,free/reduced,none,68.0,65.0,61.0,male
+group C,master's degree,free/reduced,none,52.0,65.0,61.0,female
+group B,high school,standard,none,48.0,62.0,60.0,female
+group D,some college,free/reduced,none,60.0,66.0,70.0,female
+group D,high school,free/reduced,none,66.0,74.0,69.0,male
+group E,some high school,standard,completed,89.0,84.0,77.0,male
+group B,high school,standard,none,42.0,52.0,51.0,female
+group E,associate's degree,free/reduced,completed,57.0,68.0,73.0,female
+group D,high school,standard,none,70.0,70.0,70.0,male
+group E,associate's degree,free/reduced,none,70.0,84.0,81.0,female
+group E,some college,standard,none,69.0,60.0,54.0,male
+group C,associate's degree,standard,none,52.0,55.0,57.0,female
+group C,some high school,standard,completed,67.0,73.0,68.0,male
+group C,some high school,standard,completed,76.0,80.0,73.0,male
+group E,associate's degree,standard,none,87.0,94.0,95.0,female
+group B,some college,standard,none,82.0,85.0,87.0,female
+group C,some college,standard,none,73.0,76.0,78.0,female
+group A,some college,free/reduced,none,75.0,81.0,74.0,male
+group D,some college,free/reduced,none,64.0,74.0,75.0,female
+group E,high school,free/reduced,none,41.0,45.0,40.0,female
+group C,high school,standard,none,90.0,75.0,69.0,male
+group B,bachelor's degree,standard,none,59.0,54.0,51.0,male
+group A,some high school,standard,none,51.0,31.0,36.0,male
+group A,high school,free/reduced,none,45.0,47.0,49.0,male
+group C,master's degree,standard,completed,54.0,64.0,67.0,female
+group E,some high school,standard,completed,87.0,84.0,76.0,male
+group C,high school,standard,none,72.0,80.0,83.0,female
+group B,some high school,standard,completed,94.0,86.0,87.0,male
+group A,bachelor's degree,standard,none,45.0,59.0,64.0,female
+group D,bachelor's degree,free/reduced,completed,61.0,70.0,76.0,male
+group B,high school,free/reduced,none,60.0,72.0,68.0,female
+group C,some high school,standard,none,77.0,91.0,88.0,female
+group A,some high school,standard,completed,85.0,90.0,92.0,female
+group D,bachelor's degree,free/reduced,none,78.0,90.0,93.0,female
+group E,some college,free/reduced,completed,49.0,52.0,51.0,male
+group B,high school,free/reduced,none,71.0,87.0,82.0,female
+group C,some high school,free/reduced,none,48.0,58.0,52.0,female
+group C,high school,standard,none,62.0,67.0,58.0,male
+group C,associate's degree,free/reduced,completed,56.0,68.0,70.0,female
+group C,some high school,standard,none,65.0,69.0,76.0,female
+group D,some high school,free/reduced,completed,69.0,86.0,81.0,female
+group B,some high school,standard,none,68.0,54.0,53.0,male
+group A,some college,free/reduced,none,61.0,60.0,57.0,female
+group C,bachelor's degree,free/reduced,completed,74.0,86.0,89.0,female
+group A,bachelor's degree,standard,none,64.0,60.0,58.0,male
+group B,high school,standard,completed,77.0,82.0,89.0,female
+group B,some college,standard,none,58.0,50.0,45.0,male
+group C,high school,standard,completed,60.0,64.0,74.0,female
+group E,high school,standard,none,73.0,64.0,57.0,male
+group A,high school,standard,completed,75.0,82.0,79.0,female
+group B,associate's degree,free/reduced,completed,58.0,57.0,53.0,male
+group C,associate's degree,standard,none,66.0,77.0,73.0,female
+group D,high school,free/reduced,none,39.0,52.0,46.0,female
+group C,some high school,standard,none,64.0,58.0,51.0,male
+group B,high school,free/reduced,completed,23.0,44.0,36.0,female
+group B,some college,free/reduced,completed,74.0,77.0,76.0,male
+group D,some high school,free/reduced,completed,40.0,65.0,64.0,female
+group E,master's degree,standard,none,90.0,85.0,84.0,male
+group C,master's degree,standard,completed,91.0,85.0,85.0,male
+group D,high school,standard,none,64.0,54.0,50.0,male
+group C,high school,standard,none,59.0,72.0,68.0,female
+group D,associate's degree,standard,none,80.0,75.0,69.0,male
+group C,master's degree,standard,none,71.0,67.0,67.0,male
+group A,high school,standard,none,61.0,68.0,63.0,female
+group E,some college,standard,none,87.0,85.0,93.0,female
+group E,some high school,standard,none,82.0,67.0,61.0,male
+group C,some high school,standard,none,62.0,64.0,55.0,male
+group B,bachelor's degree,standard,none,97.0,97.0,96.0,female
+group B,some college,free/reduced,none,75.0,68.0,65.0,male
+group C,bachelor's degree,standard,none,65.0,79.0,81.0,female
+group B,high school,standard,completed,52.0,49.0,46.0,male
+group C,associate's degree,free/reduced,none,87.0,73.0,72.0,male
+group C,associate's degree,standard,none,53.0,62.0,53.0,female
+group E,master's degree,free/reduced,none,81.0,86.0,87.0,female
+group D,bachelor's degree,free/reduced,completed,39.0,42.0,38.0,male
+group C,some college,standard,completed,71.0,71.0,80.0,female
+group C,associate's degree,standard,none,97.0,93.0,91.0,male
+group D,some college,standard,completed,82.0,82.0,88.0,male
+group C,high school,free/reduced,none,59.0,53.0,52.0,male
+group B,associate's degree,standard,none,61.0,42.0,41.0,male
+group E,associate's degree,free/reduced,completed,78.0,74.0,72.0,male
+group C,associate's degree,free/reduced,none,49.0,51.0,51.0,male
+group B,high school,standard,none,59.0,58.0,47.0,male
+group C,some college,standard,completed,70.0,72.0,76.0,female
+group B,associate's degree,standard,completed,82.0,84.0,78.0,male
+group E,associate's degree,free/reduced,none,90.0,90.0,82.0,male
+group C,bachelor's degree,free/reduced,none,43.0,62.0,61.0,female
+group C,some college,free/reduced,none,80.0,64.0,66.0,male
+group D,some college,standard,none,81.0,82.0,84.0,male
+group C,some high school,standard,none,57.0,61.0,54.0,male
+group D,some high school,standard,none,59.0,72.0,80.0,female
+group D,associate's degree,standard,none,64.0,76.0,74.0,female
+group C,bachelor's degree,standard,completed,63.0,64.0,66.0,male
+group E,bachelor's degree,standard,completed,71.0,70.0,70.0,female
+group B,high school,free/reduced,none,64.0,73.0,71.0,female
+group D,bachelor's degree,free/reduced,none,55.0,46.0,44.0,male
+group E,associate's degree,standard,none,51.0,51.0,54.0,female
+group C,associate's degree,standard,completed,62.0,76.0,80.0,female
+group E,associate's degree,standard,completed,93.0,100.0,95.0,female
+group C,high school,free/reduced,none,54.0,72.0,59.0,male
+group D,some college,free/reduced,none,69.0,65.0,74.0,female
+group D,high school,free/reduced,none,44.0,51.0,48.0,male
+group E,some college,standard,completed,86.0,85.0,91.0,female
+group E,associate's degree,standard,none,85.0,92.0,85.0,female
+group A,master's degree,free/reduced,none,50.0,67.0,73.0,female
+group D,some high school,standard,completed,88.0,74.0,75.0,male
+group E,associate's degree,standard,none,59.0,62.0,69.0,female
+group E,some high school,free/reduced,none,32.0,34.0,38.0,female
+group B,high school,free/reduced,none,36.0,29.0,27.0,male
+group B,some high school,free/reduced,completed,63.0,78.0,79.0,female
+group D,associate's degree,standard,completed,67.0,54.0,63.0,male
+group D,some high school,standard,completed,65.0,78.0,82.0,female
+group D,master's degree,standard,none,85.0,84.0,89.0,male
+group C,master's degree,standard,none,73.0,78.0,74.0,female
+group A,high school,free/reduced,completed,34.0,48.0,41.0,female
+group D,bachelor's degree,free/reduced,completed,93.0,100.0,100.0,female
+group D,some high school,free/reduced,none,67.0,84.0,84.0,female
+group D,some college,standard,none,88.0,77.0,77.0,male
+group B,high school,standard,none,57.0,48.0,51.0,male
+group D,some college,standard,completed,79.0,84.0,91.0,female
+group C,bachelor's degree,free/reduced,none,67.0,75.0,72.0,female
+group E,bachelor's degree,standard,completed,70.0,64.0,70.0,male
+group D,bachelor's degree,free/reduced,none,50.0,42.0,48.0,male
+group A,some college,standard,none,69.0,84.0,82.0,female
+group C,bachelor's degree,standard,completed,52.0,61.0,66.0,female
+group C,bachelor's degree,free/reduced,completed,47.0,62.0,66.0,female
+group B,associate's degree,free/reduced,none,46.0,61.0,55.0,female
+group E,some college,standard,none,68.0,70.0,66.0,female
+group E,bachelor's degree,standard,completed,100.0,100.0,100.0,male
+group C,high school,standard,none,44.0,61.0,52.0,female
+group C,associate's degree,standard,completed,57.0,77.0,80.0,female
+group B,some college,standard,completed,91.0,96.0,91.0,male
+group D,high school,free/reduced,none,69.0,70.0,67.0,male
+group C,high school,free/reduced,none,35.0,53.0,46.0,female
+group D,high school,standard,none,72.0,66.0,66.0,male
+group B,associate's degree,free/reduced,none,54.0,65.0,65.0,female
+group D,high school,free/reduced,none,74.0,70.0,69.0,male
+group E,some high school,standard,completed,74.0,64.0,60.0,male
+group E,associate's degree,free/reduced,none,64.0,56.0,52.0,male
+group D,high school,free/reduced,completed,65.0,61.0,71.0,female
+group E,associate's degree,free/reduced,completed,46.0,43.0,44.0,male
+group C,some high school,free/reduced,none,48.0,56.0,51.0,female
+group C,some college,free/reduced,completed,67.0,74.0,70.0,male
+group D,some college,free/reduced,none,62.0,57.0,62.0,male
+group D,associate's degree,free/reduced,completed,61.0,71.0,73.0,male
+group C,bachelor's degree,free/reduced,completed,70.0,75.0,74.0,male
+group C,associate's degree,standard,completed,98.0,87.0,90.0,male
+group D,some college,free/reduced,none,70.0,63.0,58.0,male
+group A,associate's degree,standard,none,67.0,57.0,53.0,male
+group E,high school,free/reduced,none,57.0,58.0,57.0,female
+group D,some college,standard,completed,85.0,81.0,85.0,male
+group D,some high school,standard,completed,77.0,68.0,69.0,male
+group C,master's degree,free/reduced,completed,72.0,66.0,72.0,male
+group D,master's degree,standard,none,78.0,91.0,96.0,female
+group C,high school,standard,none,81.0,66.0,64.0,male
+group A,some high school,free/reduced,completed,61.0,62.0,61.0,male
+group B,high school,standard,none,58.0,68.0,61.0,female
+group C,associate's degree,standard,none,54.0,61.0,58.0,female
+group B,high school,standard,none,82.0,82.0,80.0,male
+group D,some college,free/reduced,none,49.0,58.0,60.0,female
+group B,some high school,free/reduced,completed,49.0,50.0,52.0,male
+group E,high school,free/reduced,completed,57.0,75.0,73.0,female
+group E,high school,standard,none,94.0,73.0,71.0,male
+group D,some college,standard,completed,75.0,77.0,83.0,female
+group E,some high school,free/reduced,none,74.0,74.0,72.0,female
+group C,high school,standard,completed,58.0,52.0,54.0,male
+group C,some college,standard,none,62.0,69.0,69.0,female
+group E,associate's degree,standard,none,72.0,57.0,62.0,male
+group C,some college,standard,none,84.0,87.0,81.0,male
+group D,master's degree,standard,none,92.0,100.0,100.0,female
+group D,high school,standard,none,45.0,63.0,59.0,female
+group C,high school,standard,none,75.0,81.0,71.0,male
+group A,some college,standard,none,56.0,58.0,64.0,female
+group D,some high school,free/reduced,none,48.0,54.0,53.0,female
+group E,associate's degree,standard,none,100.0,100.0,100.0,female
+group C,some high school,free/reduced,completed,65.0,76.0,75.0,female
+group D,some college,standard,none,72.0,57.0,58.0,male
+group D,some college,standard,none,62.0,70.0,72.0,female
+group A,some high school,standard,completed,66.0,68.0,64.0,male
+group C,some college,standard,none,63.0,63.0,60.0,male
+group E,associate's degree,standard,none,68.0,76.0,67.0,female
+group B,bachelor's degree,standard,none,75.0,84.0,80.0,female
+group D,bachelor's degree,standard,none,89.0,100.0,100.0,female
+group C,some high school,standard,completed,78.0,72.0,69.0,male
+group A,high school,free/reduced,completed,53.0,50.0,60.0,female
+group D,some college,free/reduced,none,49.0,65.0,61.0,female
+group A,some college,standard,none,54.0,63.0,67.0,female
+group C,some college,standard,completed,64.0,82.0,77.0,female
+group B,some college,free/reduced,completed,60.0,62.0,60.0,male
+group C,associate's degree,standard,none,62.0,65.0,58.0,male
+group D,high school,standard,completed,55.0,41.0,48.0,male
+group C,associate's degree,standard,none,91.0,95.0,94.0,female
+group B,high school,free/reduced,none,8.0,24.0,23.0,female
+group D,some high school,standard,none,81.0,78.0,78.0,male
+group B,some high school,standard,completed,79.0,85.0,86.0,male
+group A,some college,standard,completed,78.0,87.0,91.0,female
+group C,some high school,standard,none,74.0,75.0,82.0,female
+group A,high school,standard,none,57.0,51.0,54.0,male
+group C,associate's degree,standard,none,40.0,59.0,51.0,female
+group E,some high school,standard,completed,81.0,75.0,76.0,male
+group A,some high school,free/reduced,none,44.0,45.0,45.0,female
+group D,some college,free/reduced,completed,67.0,86.0,83.0,female
+group E,high school,free/reduced,completed,86.0,81.0,75.0,male
+group B,some high school,standard,completed,65.0,82.0,78.0,female
+group D,associate's degree,free/reduced,none,55.0,76.0,76.0,female
+group D,bachelor's degree,free/reduced,none,62.0,72.0,74.0,female
+group A,high school,standard,none,63.0,63.0,62.0,male
+group E,master's degree,standard,completed,88.0,99.0,95.0,female
+group C,high school,free/reduced,none,62.0,55.0,55.0,male
+group C,high school,free/reduced,completed,59.0,71.0,65.0,female
+group D,some college,standard,completed,68.0,78.0,77.0,female
+group D,some college,free/reduced,none,77.0,86.0,86.0,female
+group D,some college,free/reduced,none,,,,female
+group D,some college,free/reduced,none,,,,female
+group B,high school,free/reduced,none,,,,female
+group E,associate's degree,standard,none,,,,female
+group C,bachelor's degree,free/reduced,none,,,,male
+group B,some high school,standard,none,,,,female
+group D,high school,standard,none,,,,male
+group D,master's degree,standard,completed,,,,female
+group D,high school,standard,none,,,,female
+group A,some high school,free/reduced,none,,,,male
+group C,some college,free/reduced,none,,,,female
+group C,associate's degree,standard,none,,,,female
+group D,master's degree,standard,none,,,,female
+group B,high school,standard,none,,,,female
+group E,associate's degree,standard,completed,,,,female
+group C,some college,standard,none,,,,female
+group C,high school,standard,none,,,,female
+group D,some college,standard,none,,,,female
+group D,bachelor's degree,free/reduced,completed,,,,male
+group E,some college,standard,none,,,,male
+group C,associate's degree,standard,completed,,,,male
+group B,some high school,standard,none,,,,female
+group D,some college,standard,none,,,,male
+group D,some college,free/reduced,none,,,,female
+group D,some high school,free/reduced,none,,,,female
+group E,master's degree,standard,completed,,,,female
+group D,associate's degree,free/reduced,completed,,,,male
+group B,some high school,standard,completed,,,,male
+group C,associate's degree,free/reduced,none,,,,female
+group C,bachelor's degree,standard,completed,,,,male
+group D,associate's degree,free/reduced,none,,,,female
+group D,bachelor's degree,standard,none,,,,female
+group E,bachelor's degree,standard,none,,,,female
+group E,associate's degree,standard,none,,,,male
+group C,associate's degree,standard,completed,,,,female
+group D,some college,free/reduced,none,,,,male
+group D,high school,free/reduced,none,,,,male
+group D,bachelor's degree,standard,none,,,,female
+group C,some high school,standard,completed,,,,female
+group C,associate's degree,standard,completed,,,,female
+group E,some high school,standard,none,,,,female
+group B,some high school,standard,completed,,,,female
+group D,some high school,free/reduced,none,,,,male
+group D,bachelor's degree,free/reduced,none,,,,male
+group B,high school,standard,none,,,,female
+group C,bachelor's degree,free/reduced,none,,,,female
+group E,some high school,standard,none,,,,male
+group E,associate's degree,free/reduced,completed,,,,female
+group E,associate's degree,free/reduced,none,,,,male
+group C,some high school,free/reduced,completed,,,,female
+group D,bachelor's degree,standard,none,,,,male
+group D,high school,standard,completed,,,,female
+group E,some college,standard,none,,,,male
+group B,some high school,standard,none,,,,male
+group D,some college,standard,completed,,,,female
+group B,high school,standard,none,,,,male
+group B,associate's degree,standard,none,,,,male
+group C,bachelor's degree,standard,completed,,,,male
+group A,some college,standard,none,,,,female
+group C,associate's degree,free/reduced,none,,,,male
+group D,high school,standard,none,,,,female
+group D,high school,free/reduced,none,,,,male
+group C,some high school,standard,completed,,,,male
+group C,some high school,standard,completed,,,,female
+group B,high school,free/reduced,none,,,,female
+group C,master's degree,standard,none,,,,female
+group B,some college,standard,none,,,,female
+group C,associate's degree,standard,none,,,,female
+group C,high school,standard,none,,,,male
+group B,bachelor's degree,free/reduced,none,,,,male
+group D,high school,standard,completed,,,,female
+group C,bachelor's degree,standard,none,,,,female
+group B,high school,standard,none,,,,female
+group D,bachelor's degree,standard,none,,,,female
+group C,associate's degree,standard,completed,,,,female
+group C,associate's degree,standard,none,,,,male
+group D,some college,standard,none,,,,female
+group B,high school,free/reduced,completed,,,,female
+group C,high school,standard,none,,,,female
+group D,associate's degree,standard,none,,,,female
+group D,high school,free/reduced,completed,,,,female
+group D,some college,standard,none,,,,male
+group A,bachelor's degree,standard,none,,,,male
+group C,some college,standard,none,,,,female
+group C,associate's degree,standard,completed,,,,male
+group A,some college,standard,completed,,,,male
+group E,associate's degree,standard,none,,,,male
+group D,master's degree,standard,none,,,,male
+group B,high school,standard,none,,,,female
+group B,associate's degree,free/reduced,none,,,,male
+group D,high school,free/reduced,none,,,,male
+group D,high school,standard,none,,,,male
+group C,high school,standard,none,,,,female
+group C,high school,standard,none,,,,male
+group D,bachelor's degree,standard,none,,,,female
+group C,master's degree,free/reduced,none,,,,female
+group C,bachelor's degree,free/reduced,completed,,,,female
+group D,associate's degree,standard,completed,,,,male
+group B,associate's degree,standard,none,,,,male
+group D,master's degree,standard,none,,,,male
+group C,some high school,free/reduced,none,54.3464787025199,56.37327745210051,56.98660062520969,female
+group A,bachelor's degree,standard,none,47.8090144412309,54.228943818038516,56.14116211675005,male
+group A,associate's degree,standard,completed,55.90446195330403,65.60297463553603,62.0,female
+group E,bachelor's degree,free/reduced,completed,76.98930817737414,75.00534591131293,72.14362084447328,male
+group B,high school,standard,completed,74.98549038539042,64.3671891007557,62.70535897229223,male
+group D,associate's degree,free/reduced,none,58.77730030778295,69.06355549596043,63.706683090049154,female
+group D,associate's degree,free/reduced,none,77.25842850480883,76.40308931069669,77.0646071262022,male
+group B,some college,standard,completed,75.90547770080292,72.99882316312825,77.3430512531074,male
+group A,some college,standard,none,66.32331755406445,65.77318721227954,67.32707347129028,male
+group C,associate's degree,free/reduced,completed,49.16585017175726,53.96850934073784,56.726382005553376,male
+group B,some college,standard,completed,65.24200235931477,71.9436709920771,73.9436709920771,male
+group D,some college,free/reduced,none,71.68149529142411,82.04590659200623,81.77330847543658,female
+group C,associate's degree,standard,none,43.30582968197612,56.409118138985406,53.485575559479436,female
+group E,associate's degree,free/reduced,none,63.92264700910556,57.93553917425463,53.695208298116434,male
+group E,some college,free/reduced,completed,65.12145687434263,76.9167564931649,73.9167564931649,female
+group B,high school,free/reduced,completed,52.764308503117746,63.66570383241709,54.602692814448595,female
+group D,some college,standard,none,61.69638576950808,58.82628702804766,56.217524685365106,male
+group A,high school,free/reduced,completed,76.55928926032962,87.82371570413184,84.82371570413184,female
+group C,associate's degree,free/reduced,completed,66.80712368154377,73.5778702872484,75.57787028724839,female
+group D,some high school,standard,none,84.04817351540657,84.02189705245753,80.05255292589808,male
+group E,associate's degree,standard,completed,75.71943183146826,73.93705611833457,76.33453836306796,female
+group D,high school,standard,none,61.569161417561574,57.56916141756157,59.97246555139426,female
+group B,associate's degree,standard,none,66.42257356841765,67.44934563894294,66.8451471368353,female
+group E,some college,standard,none,64.54716470594096,57.72641764702952,54.542461764603324,male
+group C,bachelor's degree,standard,completed,58.87638219941157,62.26935079176205,71.29146598234726,female
+group A,some college,standard,completed,79.92794254290463,89.89191381435694,89.07205745709537,female
+group B,associate's degree,standard,none,53.58962953374723,58.88444430062084,65.17688886012417,female
+group E,bachelor's degree,standard,none,63.19354863104578,65.3782992532977,62.47067456442366,male
+group D,some college,free/reduced,none,48.41317383641892,60.696608133738735,57.6746517397072,female
+group A,some college,standard,none,56.83566396895418,50.71212280119857,54.71212280119856,female
+group D,associate's degree,free/reduced,none,89.67357224439722,86.7461117456423,75.03626975062254,male
+group C,associate's degree,standard,none,84.42730287318656,91.39168620751289,92.26112413834193,male
+group D,some high school,standard,none,59.71888986285571,66.02238136979531,63.932855890614086,male
+group D,bachelor's degree,standard,none,82.50511059962471,87.24744470018764,86.54642258026269,female
+group B,bachelor's degree,standard,none,62.91694828644448,57.91694828644448,57.65881208695562,male
+group B,associate's degree,free/reduced,completed,71.1266969567676,89.89616585833062,84.9480829291653,female
+group D,some college,free/reduced,completed,66.374393353689,84.61472814031136,81.4359833842225,female
+group B,high school,free/reduced,completed,75.25326986762387,78.0,76.24891004412538,female
+group D,high school,free/reduced,none,57.48470358833951,61.11352769125463,57.27073371698341,male
+group D,high school,standard,none,63.95459073375869,64.43188610063804,68.17053378407772,female
+group D,master's degree,standard,none,89.0,84.77210445557496,82.0,male
+group D,high school,standard,none,52.00667955795792,51.772827454285036,47.077950701224296,male
+group D,some college,standard,completed,99.79359632411328,96.58719264822656,98.41518958498763,male
+group C,master's degree,free/reduced,completed,64.23766620978495,70.0511940256362,76.30530528904121,male
+group B,associate's degree,standard,none,60.409842223015744,68.58652642045844,61.233158025573054,female
+group D,associate's degree,standard,none,79.22301217377681,83.43891478356234,84.55042087045074,male
+group A,some college,free/reduced,completed,59.909940626887376,66.21437858561353,61.77082821863261,male
+group E,associate's degree,standard,completed,76.79005727699298,82.62652004694755,90.17900572769929,female
+group E,some college,standard,completed,74.03890447413491,79.73150745689153,80.15561789653965,female
+group C,some college,standard,none,76.37620877240535,93.40881478622016,87.16123233103086,female
+group B,some high school,free/reduced,none,56.27795933597825,49.18602255901064,55.34139952569875,female
+group A,associate's degree,free/reduced,none,42.18237023171956,51.90085350988157,48.731943476778774,female
+group C,high school,standard,none,67.52155331086912,72.76077665543457,69.59554687615918,male
+group D,some college,standard,completed,65.50395072509058,73.67017842230274,69.08706457369667,male
+group C,high school,standard,completed,65.74366099801185,59.16513981038758,55.27253387226628,male
+group C,high school,free/reduced,none,35.86896350207429,51.82067151866855,43.0,female
+group D,associate's degree,standard,none,65.66532355409814,72.11424504043767,74.55510785136605,female
+group C,high school,standard,none,72.1965078939281,73.81659449724005,76.563318899448,female
+group B,associate's degree,standard,completed,68.60989048344794,73.7004188246632,73.25968107111633,female
+group B,associate's degree,free/reduced,none,55.268321117369084,60.45643380684182,57.63762253789454,male
+group C,associate's degree,standard,completed,64.95599354677593,73.63895889982189,76.6340692939081,female
+group A,bachelor's degree,free/reduced,completed,49.92153463145185,57.50851486322568,58.95559408435457,male
+group C,bachelor's degree,free/reduced,completed,64.53887551128022,72.46685777625103,75.73199556624272,female
+group D,some high school,standard,completed,88.74786518826386,91.07877317650147,91.07877317650147,female
+group C,bachelor's degree,standard,completed,82.50898231262445,83.65344302730486,79.0,male
+group D,master's degree,standard,none,57.12128025972773,66.5152001855198,65.9395204823515,female
+group E,some college,standard,completed,85.42579970371158,78.99470238936837,78.56360507502515,male
+group D,associate's degree,standard,none,60.73768179493189,74.0632500182678,74.66045457866872,male
+group E,associate's degree,standard,completed,96.77569405676738,82.40375069781872,88.15701416026285,male
+group C,some college,standard,completed,66.26629354486371,87.36533536348318,88.17028745441417,female
+group C,associate's degree,standard,none,64.70525440401104,56.24206295272006,53.25259948137384,male
+group D,some college,standard,none,37.78320706994735,61.46386784499123,55.52413720497117,female
+group D,master's degree,standard,none,69.93073946398846,75.2598288891133,80.25982888911331,male
+group D,some high school,standard,none,62.54955979923565,62.96938371892992,65.38920763862419,female
+group D,some college,standard,none,83.53284128614072,68.22476137484009,72.30052164093816,male
+group C,master's degree,standard,none,62.29797970284436,62.4199893172865,61.96198824901515,male
+group C,high school,standard,completed,61.3284301433315,64.7702595531083,66.76731763910719,male
+group C,some college,standard,none,72.15661288514373,76.95185490199694,69.01217759113453,female
+group B,associate's degree,free/reduced,completed,81.57365088358009,75.44190530148055,75.27904734925973,male
+group E,associate's degree,free/reduced,completed,81.5888915304025,84.01161988374899,85.69091341338593,female
+group B,some high school,free/reduced,completed,50.812054045255096,51.087232427153054,50.1879459547449,male
+group A,bachelor's degree,standard,completed,60.50436035084138,49.90941042837658,53.90941042837658,male
+group B,associate's degree,standard,completed,72.82654136073452,76.7157486609282,76.27114501083136,female
+group C,some high school,free/reduced,none,53.66330197393602,60.934789075769714,61.680491655402975,female
+group D,bachelor's degree,standard,none,74.08898742496132,67.9101334065036,66.9101334065036,male
+group D,some high school,standard,none,57.76771123454179,60.95325266977593,59.30168581796325,male
+group D,some high school,standard,none,81.61221835114745,90.1515845365339,91.1515845365339,female
+group B,some high school,standard,none,85.39704416541201,79.08824785821827,77.08824785821827,female
+group E,some high school,free/reduced,none,67.465954948025,76.52688451710455,74.11469860328864,female
+group E,high school,free/reduced,none,56.25092781588819,60.89298968798403,63.01845359592812,female
+group D,bachelor's degree,free/reduced,none,66.3879255032424,75.3266252795791,77.3879255032424,female
+group D,some high school,standard,completed,67.34024372532906,74.97458064324638,76.82831541041332,female
+group E,associate's degree,standard,none,88.96985530156738,75.98572093232139,73.984134369246,male
+group B,some college,standard,none,26.75667717941104,46.5952368744825,40.385596950714636,female
+group A,high school,free/reduced,none,60.820112950690856,60.092507269537265,64.82011295069086,male
+group E,associate's degree,free/reduced,completed,65.87349930872368,68.94729137863487,69.47364568931744,male
+group E,high school,free/reduced,completed,74.77453396491384,84.35501787627044,81.4195160886434,female
+group C,bachelor's degree,standard,completed,81.37266080073745,81.67453216014749,83.34906432029499,male
+group B,high school,standard,none,57.80631482952226,67.80631482952225,61.33894904833605,female
+group E,some college,standard,none,91.97526519548315,83.45312837328223,78.74870100884203,male
+group C,high school,standard,none,91.88305086073083,74.05847456963458,69.94152543036542,male
+group A,some college,free/reduced,none,74.83354564154703,81.0,73.50063692464109,male
+group C,some high school,free/reduced,completed,56.75378617476072,61.37689308738036,59.62310691261964,male
+group E,bachelor's degree,standard,completed,70.09358712645673,68.18717425291345,71.81282574708655,female
+group A,some high school,standard,completed,46.24701007586322,41.49402015172645,42.50597984827355,male
+group B,high school,free/reduced,completed,47.804218043621134,55.804218043621134,58.0,female
+group C,associate's degree,standard,completed,87.0,100.0,97.0442167922085,male
+group E,some college,standard,none,88.54944934418877,76.0,74.0,male
+group E,some college,standard,none,95.21794398567431,85.81196265711621,82.0,male
+group B,associate's degree,standard,none,89.0167561112502,78.0,81.9832438887498,male
+group B,bachelor's degree,standard,none,70.97038789710828,72.0,75.02961210289172,female
+group D,associate's degree,standard,none,80.0444728392165,74.9555271607835,69.088945678433,male
+group B,high school,free/reduced,none,38.506444412522896,59.493555587477104,51.0128888250458,female
+group A,master's degree,standard,none,50.0,53.0,57.28132208404436,female
+group A,associate's degree,free/reduced,completed,79.23635753503291,82.23635753503291,82.23635753503291,male
+group D,high school,standard,none,50.10994399330614,66.0,63.78011201338772,female
+group C,high school,free/reduced,none,37.13289193748494,50.15614408335341,45.28903602083835,female
+group E,some college,standard,none,68.0,59.705008970159376,59.88497308952187,male
+group D,bachelor's degree,free/reduced,completed,74.0,72.996777259916,80.998388629958,male
+group D,associate's degree,free/reduced,none,53.497709358958566,58.497709358958566,50.0,male
+group B,high school,standard,none,48.282073164084565,62.8462194922537,60.282073164084565,female
+group C,some college,standard,none,59.701735319338496,71.40347063867699,73.7017353193385,female
+group E,high school,standard,none,83.00840379997086,73.33053206667638,69.66106413335275,male
+group C,associate's degree,standard,completed,78.66771755512954,77.66771755512954,77.0,male
+group E,bachelor's degree,standard,completed,79.0,81.80652455277038,82.0,female
+group C,some college,free/reduced,none,64.27290251734196,56.54580503468392,51.18129244797411,male
+group A,high school,free/reduced,completed,52.92162568329936,50.07837431670064,59.869376138832266,female
+group E,some high school,free/reduced,completed,78.05688647657311,82.94311352342689,80.0,male
+group D,bachelor's degree,free/reduced,completed,93.233969149002,100.0,100.0,female
+group D,some college,free/reduced,none,59.7045091302309,62.0,60.2954908697691,male
+group E,bachelor's degree,standard,none,65.55218787036098,72.7239060648195,74.7239060648195,female
+group B,high school,standard,none,74.0,73.17886757726986,72.0,female
+group B,some college,standard,completed,69.0,77.0,77.98480591016876,male
+group B,some college,standard,none,62.0,61.0,55.94143572110015,male
+group E,associate's degree,standard,none,73.83687110512783,64.0,60.24469334230826,male
+group B,high school,free/reduced,completed,46.07009139382863,54.07009139382863,58.0,female
+group B,high school,standard,completed,53.98665503775091,49.0,46.993327518875454,male
+group C,master's degree,standard,completed,79.68390682688077,89.68390682688077,86.34195341344038,female
+group C,some high school,free/reduced,none,68.0,60.097425174265176,53.032475058088394,male
+group D,high school,free/reduced,none,65.97396512297081,74.02603487702919,69.02603487702919,male
+group C,some high school,free/reduced,none,44.971044025327096,51.94208805065419,49.05791194934581,female
+group C,some high school,free/reduced,none,65.44474737098959,85.55525262901041,80.2223736854948,female
+group D,high school,standard,none,56.0,53.76565070157164,52.35152394764255,female
+group C,bachelor's degree,standard,completed,51.22661153176506,62.160082702352405,66.0,female
+group C,associate's degree,standard,none,80.93460557225224,77.13078885549552,79.0,female
+group C,associate's degree,standard,completed,98.0,86.53438779038798,90.0,male
+group C,master's degree,free/reduced,completed,45.09650431013479,43.35524353479781,45.548252155067395,male
+group B,some college,standard,completed,69.0,77.969419156957,76.030580843043,male
+group D,associate's degree,standard,none,76.0,75.43644428421578,73.71822214210789,female
+group C,some college,free/reduced,none,77.0,90.16784411351051,90.49646765946848,female
+group C,bachelor's degree,free/reduced,none,44.0,63.656006027695994,59.375975889216015,female
+group B,some high school,standard,completed,51.62591969052798,55.25183938105596,41.93887953579197,male
+group E,some high school,standard,none,80.98386243004748,64.96772486009498,62.01613756995251,male
+group C,some high school,standard,none,71.9078015252575,73.54609923737125,63.54609923737125,male
+group C,some college,free/reduced,none,32.0,35.67837580183025,36.32162419816975,female
+group B,some high school,standard,completed,86.20868524372608,84.0,76.79131475627392,male
+group D,high school,standard,none,44.56748106813218,49.29755679560346,46.86503786373564,male
+group D,bachelor's degree,free/reduced,completed,92.61131577481751,100.0,99.61131577481751,female
+group C,some high school,free/reduced,none,68.9352346091548,71.0647653908452,65.0,male
+group C,high school,standard,none,72.53308064525609,80.26654032262805,83.0,female
+group C,some college,standard,none,63.0,61.25023162293964,60.0,male
+group B,high school,standard,completed,52.0,48.57497370474836,47.275078885754915,male
+group D,some high school,standard,none,84.34555537042168,84.0,80.69111074084336,male
+group D,some college,standard,completed,82.01309489949533,82.03928469848599,88.02618979899066,male
+group E,master's degree,standard,none,90.0,85.42181832003155,84.21090916001577,male
+group A,some high school,standard,none,61.3156764144779,50.53686471710442,43.0,male
+group B,associate's degree,standard,completed,65.0,64.37596075419893,62.37596075419892,male
+group B,some high school,free/reduced,completed,49.0,50.08260937107585,51.95869531446208,male
+group C,associate's degree,standard,completed,52.90684397455797,58.546578012721014,61.546578012721014,female
+group A,high school,free/reduced,completed,77.0,88.0,85.00497955141334,female
+group D,some college,free/reduced,none,49.795145898912665,65.0,61.0,female
+group C,some college,standard,none,73.77293813637448,72.0,71.88646906818724,female
+group E,bachelor's degree,standard,completed,76.0,62.5440304920804,66.0,male
+group C,some college,free/reduced,none,61.01481265456589,72.0,70.0,female
+group C,high school,standard,none,80.56472378689992,64.69417136069977,63.564723786899926,male
+group C,some college,free/reduced,none,80.0,63.10750841376667,63.32252524130002,male
+group A,bachelor's degree,standard,none,51.05315926470781,48.94684073529219,50.89368147058439,female
+group C,some high school,free/reduced,completed,42.96260960412074,52.0,50.358260263919504,male
+group A,some high school,standard,none,49.48801704883067,66.74400852441534,63.51198295116933,female
+group E,associate's degree,standard,none,68.87082198562906,64.04305933812364,68.04305933812364,female
+group A,high school,standard,none,60.08446141296709,49.83107717406582,46.0,male
+group E,associate's degree,standard,completed,65.11520388247517,74.88479611752483,77.11520388247517,female
+group C,high school,standard,none,89.84935063602376,87.15064936397624,85.07532468198812,male
+group C,associate's degree,standard,completed,80.98888455562353,75.0,77.0,male
+group C,bachelor's degree,standard,completed,82.78923674152016,82.42152651695969,83.57847348304031,male
+group D,some high school,standard,completed,89.50587257331374,87.49412742668626,82.50587257331374,male
+group B,some college,standard,none,47.0,44.412937339412444,41.47097911313748,male
+group C,associate's degree,free/reduced,completed,60.125724032760466,50.49710386895815,56.0,male
+group D,some high school,standard,completed,62.60937300529859,66.0,67.3906269947014,male
+group D,some college,free/reduced,none,61.432701900923725,57.567298099076275,62.0,male
+group B,high school,standard,none,74.78501284454798,72.0,71.60749357772602,female
+group B,some high school,standard,completed,53.763471001096555,61.0,62.0,female
+group C,some high school,standard,none,48.36990072968702,62.57993381979134,55.789966909895675,female
+group C,high school,standard,completed,53.0,52.618964154442594,48.6905179227787,male
+group C,high school,free/reduced,none,44.00853784127766,62.66951261375922,59.33048738624078,female
+group C,some college,standard,none,59.438455058080976,70.56154494191902,70.0,female
+group B,some high school,standard,completed,32.50478994987799,50.24281507518301,43.24281507518301,female
+group D,some college,free/reduced,none,59.71968889392753,62.0,60.28031110607247,male
+group E,some college,standard,none,95.27021781047432,86.42340593682478,84.88297031587614,male
+group C,associate's degree,standard,none,62.55130483817905,67.44869516182095,69.1026096763581,female
