@@ -431,6 +431,11 @@ class QuantumEnhancedLLMTrainer:
             
             # Wait for next cycle
             if self.running:
+                if self.interval == 0:
+                    logger.info(
+                        "Interval is 0; completed single passive training cycle, exiting."
+                    )
+                    break
                 logger.info(f"Waiting {self.interval} seconds until next cycle...")
                 time.sleep(self.interval)
         
