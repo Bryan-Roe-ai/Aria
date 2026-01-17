@@ -37,7 +37,6 @@ import yaml
 
 import numpy as np
 import torch
-import torch.nn as nn
 
 # Add quantum-ai to path
 quantum_ai_path = Path(__file__).parent.parent / "quantum-ai"
