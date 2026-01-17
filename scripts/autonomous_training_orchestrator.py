@@ -411,7 +411,6 @@ class AutonomousTrainingOrchestrator:
                 cmd = [
                     sys.executable,
                     str(quantum_script),
-                    "--passive",
                     "--config", config_file,
                     "--interval", "0"  # Single run, orchestrator handles timing
                 ]
