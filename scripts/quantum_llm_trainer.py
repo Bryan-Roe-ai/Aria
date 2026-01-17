@@ -52,7 +52,7 @@ except ImportError as e:
     QUANTUM_AVAILABLE = False
 
 try:
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+    import transformers
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     logging.warning("Transformers not available - using mock implementations")
