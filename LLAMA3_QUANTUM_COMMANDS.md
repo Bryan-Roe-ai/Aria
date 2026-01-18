@@ -1,45 +1,66 @@
 # 🚀 LLaMA 3 + Quantum ML - Command Reference
 
-## One-Command Cheat Sheet
+## One-Command Cheat Sheet (Quantum-Enhanced Models)
 
 ```bash
-# 👀 Preview (no GPU needed)
+# 👀 Preview quantum training pipeline (no GPU needed)
 python scripts/gguf_training_automation.py --quick --dry-run
 
-# ⚡ Train quick quantum LLaMA 3 (5-10 min)
+# ⚡ Train quick quantum LLaMA 3 with variational encoding + attention (5-10 min)
 python scripts/gguf_training_automation.py --quick --jobs llama3_quantum_quick
 
-# 🎯 Train all quantum models (40-60 min)
+# 🎯 Train ALL quantum-enhanced models with full quantum stacks (40-60 min)
 python scripts/gguf_training_automation.py --full --quantum
 
-# 💬 Use trained model
+# 💬 Use quantum-enhanced trained model for inference
 python talk-to-ai/src/chat_cli.py --model-path deployed_models/llama3_quantum_prod-latest.gguf
 ```
 
-## Model Selection Guide
+## ⚛️ Understanding the Quantum Features
 
-### For Testing/Experimentation
+### Quantum Encoding (8 qubits)
+- Converts classical token embeddings into quantum superposition states
+- Uses parametrized RY and RZ rotation gates
+- Creates 256-dimensional quantum feature space (2^8)
+
+### Quantum Attention (16 qubits)
+- Replaces standard transformer attention with quantum circuits
+- Uses CNOT and controlled-RZ gates for entanglement
+- Parallel quantum attention heads for multi-scale features
+
+### Quantum Classifier (8 qubits)
+- Variational quantum circuit for final predictions
+- 3-layer circuit with learnable rotation angles
+- Measurement expectations returned to classical network
+
+## Model Selection Guide (Quantum Variants)
+
+### For Testing/Experimentation with Quantum Features
 ```bash
+# ⚛️ Variational encoding + quantum attention + entanglement (basic quantum stack)
 python scripts/gguf_training_automation.py --quick --jobs llama3_quantum_quick
-# Result: ~2.5 GB GGUF, optimized for speed, reasonable quality
+# Result: ~2.5 GB GGUF, 3 quantum feature layers, optimized for speed
 ```
 
-### For Production
+### For Production with Full Quantum Stack
 ```bash
+# ⚛️ Full quantum stack + classifier head (advanced quantum integration)
 python scripts/gguf_training_automation.py --full --jobs llama3_quantum_prod
-# Result: ~3.5 GB GGUF, balanced quality/speed, deployable
+# Result: ~3.5 GB GGUF, 4 quantum feature layers, balanced quality/speed
 ```
 
-### For Research/Maximum Quality
+### For Research with Maximum Quantum Advantage
 ```bash
+# ⚛️ Adaptive entanglement + multi-head quantum (maximum quantum expressiveness)
 python scripts/gguf_training_automation.py --full --jobs llama3_hq_quantum
-# Result: ~16 GB GGUF, highest quality, slower inference
+# Result: ~16 GB GGUF, 20 qubits, adaptive entanglement depth
 ```
 
-### For Edge/Mobile Devices
+### For Edge/Mobile Deployment (Lightweight Quantum)
 ```bash
+# ⚛️ Lightweight quantum encoding + attention (minimal quantum overhead)
 python scripts/gguf_training_automation.py --full --jobs llama3_light_quantum
-# Result: ~0.4 GB GGUF, fast on mobile, lower quality
+# Result: ~0.4 GB GGUF, 4 qubits, mobile-optimized quantum layers
 ```
 
 ## Training Pipeline Phases

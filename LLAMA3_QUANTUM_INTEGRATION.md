@@ -1,10 +1,12 @@
 # LLaMA 3 + Quantum ML Integration Guide
 
-This guide describes the newly added quantum-enhanced LLaMA 3 support in the GGUF training pipeline.
+**⚛️ Quantum Machine Learning Integration for LLaMA 3 Models**
+
+This guide describes how to train and deploy **hybrid classical-quantum LLaMA 3 models** with integrated quantum machine learning capabilities including variational quantum circuits, multi-qubit entanglement, and quantum classifiers.
 
 ## Overview
 
-You can now train and export **LLaMA 3 models** with integrated **quantum ML features**. The quantum enhancements include:
+You can now train and export **LLaMA 3 models enhanced with quantum ML**. The quantum enhancements include:
 
 - **Variational Encoding**: Amplitude-based quantum encoding of input features
 - **Quantum Attention**: Multi-head quantum attention layers with entanglement

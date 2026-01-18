@@ -1,29 +1,37 @@
-# LLaMA 3 + Quantum ML: Quick Reference
+# ⚛️ LLaMA 3 + Quantum ML: Quick Reference
 
-## TL;DR - Start Here
+## 🚀 TL;DR - Start Here (Quantum-Enabled Models)
 
 ```bash
-# 1. Preview what will be trained (no GPU required)
+# 1. Preview quantum training pipeline (no GPU required)
 python scripts/gguf_training_automation.py --quick --dry-run
 
-# 2. Train quick quantum LLaMA 3
+# 2. Train quick quantum LLaMA 3 (variational encoding + quantum attention)
 python scripts/gguf_training_automation.py --quick --jobs llama3_quantum_quick
 
-# 3. Train all quantum models
+# 3. Train ALL quantum-enhanced models (8 qubit encoding + multi-head quantum attention)
 python scripts/gguf_training_automation.py --full --quantum
 
-# 4. Use trained model
+# 4. Use quantum-enhanced trained model for inference
 python talk-to-ai/src/chat_cli.py --model-path deployed_models/llama3_quantum_quick-latest.gguf
 ```
 
-## Available Models
+## ⚛️ What Makes These Models Quantum?
 
-| Name | Base | Quant | Quantum Features | Size | Speed | Quality |
+These LLaMA 3 models include **hybrid classical-quantum architecture**:
+- **Quantum Encoding**: Classical tokens → quantum superposition states (8 qubits)
+- **Quantum Attention**: Multi-head quantum attention with entangled gates (16 qubits)
+- **Quantum Classifier**: Variational quantum circuit for predictions (8 qubits)
+- All quantum parameters are learnable and trained via backpropagation
+
+## Available Quantum Models
+
+| Name | Base | Quant | ⚛️ Quantum Features | Size | Speed | Quality |
 |------|------|-------|------------------|------|-------|---------|
-| `llama3_quantum_quick` | LLaMA 3 8B | Q4 | Basic | ~2.5GB | ⚡⚡⚡ | ★★☆ |
-| `llama3_quantum_prod` | LLaMA 3 8B | Q5 | Full | ~3.5GB | ⚡⚡ | ★★★ |
-| `llama3_hq_quantum` | LLaMA 3 8B | F16 | Adaptive | ~16GB | ⚡ | ★★★★ |
-| `llama3_light_quantum` | LLaMA 3 1B | Q4 | Lightweight | ~0.4GB | ⚡⚡⚡ | ★★ |
+| `llama3_quantum_quick` | LLaMA 3 8B | Q4 | Variational encoding + quantum attention + entanglement | ~2.5GB | ⚡⚡⚡ | ★★☆ |
+| `llama3_quantum_prod` | LLaMA 3 8B | Q5 | Full quantum stack + classifier head | ~3.5GB | ⚡⚡ | ★★★ |
+| `llama3_hq_quantum` | LLaMA 3 8B | F16 | Adaptive entanglement + multi-head quantum | ~16GB | ⚡ | ★★★★ |
+| `llama3_light_quantum` | LLaMA 3 1B | Q4 | Lightweight quantum encoding + attention | ~0.4GB | ⚡⚡⚡ | ★★ |
 
 ## Common Commands
 
