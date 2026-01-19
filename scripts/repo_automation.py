@@ -342,7 +342,7 @@ class RepoAutomation:
 
     def stop_component(self, name: str):
         """Stop a single component"""
-                """
+        if name not in self.processes:
             return
 
         component = self.components[name]
@@ -599,14 +599,6 @@ class RepoAutomation:
             if component:
                 status_icon = "✅" if running else "❌"
                 dep_ok = (status.get("dependency_status", {}).get(
-                    # Fallback: if PID not recorded, try discovering existing processes
-                    for name, component in self.components.items():
-                        if name not in dynamic_running:
-                            try:
-                                proc=self._find_existing_process(component)
-                                dynamic_running[name]=proc is not None
-                            except Exception:
-                                dynamic_running[name]=False
                     name, True) if status else True)
                 dep_icon = "🧩" if dep_ok else "⚠️"
                 pid_info = f" (PID {pid_map.get(name)})" if name in pid_map else ""
