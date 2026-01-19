@@ -13,5 +13,48 @@
 			},
 			"detail": "Builds the SQL project"
 		}
+		{
+			"label": "DB: Migrate (All)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"database/migrate.py",
+				"--all"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"group": "none",
+			"detail": "Apply tables, migrations, procedures, and views via SQLAlchemy"
+		},
+		{
+			"label": "DB: Migrate (Init)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"database/migrate.py",
+				"--init"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"group": "none",
+			"detail": "Apply table creation only"
+		},
+		{
+			"label": "DB: Migrate (SP + Views)",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"database/migrate.py",
+				"--sp",
+				"--views"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"group": "none",
+			"detail": "Apply stored procedures and views"
+		}
 	]
 }

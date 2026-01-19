@@ -7,9 +7,9 @@
       "path": "datasets/quantum"
     },
     "chat": {
-      "count": 3,
+      "count": 14,
       "csv_files": 0,
-      "jsonl_files": 3,
+      "jsonl_files": 14,
       "path": "datasets/chat"
     },
     "vision": {
@@ -25,5 +25,5 @@
       "path": "datasets/massive_quantum"
     }
   },
-  "updated_at": "2026-01-19T14:54:47.407762"
+  "updated_at": "2026-01-19T15:49:52.090299"
 }

@@ -260,7 +260,10 @@ class GGUFTrainingOrchestrator:
         
         if job.skip_training:
             job.logger.info("⏭️  Training skipped (skip_training=True)")
-            return {"skipped": True, "model_path": job.lora_model}
+            if not job.lora_model:
+                job.logger.error("❌ skip_training=True but no lora_model provided")
+                return {"success": False, "error": "No model path with skip_training"}
+            return {"success": True, "model_path": job.lora_model}
         
         training_log = job.output_dir / "training.log"
         
@@ -504,13 +507,21 @@ class GGUFTrainingOrchestrator:
         training_result = self.run_training(job)
         result["phases"]["training"] = training_result
         
-        if not training_result.get("success") and not training_result.get("dry_run"):
+        # Handle dry-run mode - skip rest of pipeline
+        if training_result.get("dry_run"):
+            job.logger.info("✅ Dry-run mode - skipping remaining phases")
+            result["success"] = True
+            result["dry_run"] = True
+            return result
+        
+        if not training_result.get("success"):
             job.logger.error("❌ Pipeline stopped at training phase")
             return result
         
         model_path = training_result.get("model_path") or job.lora_model
         if not model_path:
             job.logger.error("❌ No model path available")
+            job.logger.error("   Hint: Ensure training completed or provide --lora-model path")
             return result
         
         # Phase 2: GGUF Conversion
