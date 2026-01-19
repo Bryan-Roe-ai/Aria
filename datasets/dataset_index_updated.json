@@ -1,0 +1,29 @@
+{
+  "datasets": {
+    "quantum": {
+      "count": 72,
+      "csv_files": 72,
+      "jsonl_files": 0,
+      "path": "datasets/quantum"
+    },
+    "chat": {
+      "count": 3,
+      "csv_files": 0,
+      "jsonl_files": 3,
+      "path": "datasets/chat"
+    },
+    "vision": {
+      "count": 0,
+      "csv_files": 0,
+      "jsonl_files": 0,
+      "path": "datasets/vision"
+    },
+    "massive_quantum": {
+      "count": 1135,
+      "csv_files": 1135,
+      "jsonl_files": 0,
+      "path": "datasets/massive_quantum"
+    }
+  },
+  "updated_at": "2026-01-19T14:54:47.407762"
+}

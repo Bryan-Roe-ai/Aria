@@ -12,7 +12,7 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: microsoft/Phi-3.5-mini-instruct
-  device: cuda
+  device: cpu
 - name: qwen25_comprehensive_full
   category: comprehensive
   runner: hf
@@ -25,7 +25,7 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: Qwen/Qwen2.5-3B-Instruct
-  device: cuda
+  device: cpu
 - name: phi35_mixed_chat
   category: baseline
   runner: hf
@@ -38,7 +38,7 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: microsoft/Phi-3.5-mini-instruct
-  device: cuda
+  device: cpu
 - name: qwen25_3b_mixed_chat
   category: baseline
   runner: hf
@@ -51,7 +51,7 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: Qwen/Qwen2.5-3B-Instruct
-  device: cuda
+  device: cpu
 - name: phi35_max_performance
   category: baseline
   runner: hf
@@ -64,7 +64,7 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: microsoft/Phi-3.5-mini-instruct
-  device: cuda
+  device: cpu
 - name: phi35_repo_augmented
   category: domain
   runner: hf
@@ -77,7 +77,7 @@ jobs:
   learning_rate: 0.0003
   lora_dropout: 0.1
   hf_model_id: microsoft/Phi-3.5-mini-instruct
-  device: cuda
+  device: cpu
 - name: qwen25_repo_augmented
   category: domain
   runner: hf
@@ -90,7 +90,7 @@ jobs:
   learning_rate: 0.0003
   lora_dropout: 0.1
   hf_model_id: Qwen/Qwen2.5-3B-Instruct
-  device: cuda
+  device: cpu
 - name: phi35_mixed_chat_lr_low
   category: hpo
   runner: hf
@@ -104,7 +104,7 @@ jobs:
   lora_dropout: 0.1
   hf_model_id: microsoft/Phi-3.5-mini-instruct
   no_stream: true
-  device: cuda
+  device: cpu
 - name: phi35_mixed_chat_lr_high
   category: hpo
   runner: hf
@@ -118,7 +118,7 @@ jobs:
   lora_dropout: 0.1
   hf_model_id: microsoft/Phi-3.5-mini-instruct
   no_stream: true
-  device: cuda
+  device: cpu
 - name: phi35_mixed_chat_dropout_low
   category: hpo
   runner: hf
@@ -129,7 +129,7 @@ jobs:
   max_train_samples: 64
   max_eval_samples: 16
   learning_rate: 0.0002
-  device: cuda
+  device: cpu
 - name: anime_avatar
   category: anime_avatar
   runner: hf
@@ -144,7 +144,7 @@ jobs:
   lora_rank: 16
   lora_alpha: 32
   hf_model_id: microsoft/Phi-3.5-mini-instruct
-  device: cuda
+  device: cpu
 - name: phi35_mixed_chat_dropout_high
   category: hpo
   runner: hf
@@ -158,7 +158,7 @@ jobs:
   lora_dropout: 0.15
   hf_model_id: microsoft/Phi-3.5-mini-instruct
   no_stream: true
-  device: cuda
+  device: cpu
 - name: llama3_quantum_quick
   category: quantum
   runner: hf
@@ -171,7 +171,7 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: meta-llama/Llama-3.2-3B-Instruct
-  device: cuda
+  device: cpu
 - name: llama3_quantum_prod
   category: quantum
   runner: hf
@@ -184,4 +184,4 @@ jobs:
   learning_rate: 0.0002
   lora_dropout: 0.1
   hf_model_id: meta-llama/Llama-3.2-3B-Instruct
-  device: cuda
+  device: cpu
