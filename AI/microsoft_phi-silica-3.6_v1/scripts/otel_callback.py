@@ -13,11 +13,10 @@ The callback will create a training-level span and brief spans for prediction
 steps when possible.
 """
 from __future__ import annotations
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 import sys
 import os
 
-import logging
 from typing import Any
 
 # Transformers' TrainerCallback is optional at import time.
@@ -34,79 +33,9 @@ except Exception:  # pragma: no cover - graceful fallback
     trace = None  # type: ignore
 
 
-class OpenTelemetryTrainerCallback(TrainerCallback):
-    """A robust, best-effort TrainerCallback that emits spans.
-
-    This callback intentionally swallows exceptions so it never interferes
-    with training if OpenTelemetry or the Trainer API is not available.
-    """
-
-    def __init__(self, tracer_name: str = "qai.hf.trainer") -> None:
-        self._tracer_name = tracer_name
-        self._tracer = None
-        self._train_span = None
-        self._train_scope = None
-        if trace is not None:
-            try:
-                self._tracer = trace.get_tracer(self._tracer_name)
-            except Exception as e:
-                logging.debug(f"[otel_callback] Could not get tracer: {e}")
-
-    def on_train_begin(self, args: Any, state: Any, control: Any, **kwargs: Any) -> None:  # type: ignore
-        try:
-            if not self._tracer:
-                return
-            # Create a persistent span for the whole training session
-            self._train_span = self._tracer.start_span("hf.train_session")
-            # Make it the current span for subsequent events
-            self._train_scope = trace.use_span(
-                self._train_span, end_on_exit=False)
-            self._train_scope.__enter__()
-        except Exception:
-            # Never allow tracing errors to disrupt training
-            pass
-
-    def on_train_end(self, args: Any, state: Any, control: Any, **kwargs: Any) -> None:  # type: ignore
-        try:
-            if not self._tracer or not self._train_span:
-                return
-            # Close the session span
-            try:
-                if self._train_scope is not None:
-                    self._train_scope.__exit__(None, None, None)
-            finally:
-                try:
-                    self._train_span.end()
-                except Exception:
-                    pass
-        except Exception:
-            pass
-
-    def on_epoch_begin(self, args: Any, state: Any, control: Any, **kwargs: Any) -> None:  # type: ignore
-        """Called at the beginning of each epoch."""
-        try:
-            if not self._tracer:
-                return
-            # No-op span for epoch tracking
-            pass
-        except Exception:
-            pass
-
-    def on_prediction_step(self, args: Any, state: Any, control: Any, **kwargs: Any) -> None:  # type: ignore
-        # Called for prediction-related steps (if supported). We create a
-        # short-lived span around prediction work so that prediction latencies
-        # are visible in the tracing backend.
-        try:
-            if not self._tracer:
-                return
-            with self._tracer.start_as_current_span("hf.prediction_step"):
-                # No-op inside span — HF will continue its normal workflow
-                pass
-        except Exception:
-            pass
 
 
-__all__ = ["OpenTelemetryTrainerCallback"]
+__all__: list[str] = ["OpenTelemetryTrainerCallback"]
 
 # Optional OpenTelemetry imports
 try:
@@ -148,7 +77,7 @@ class OpenTelemetryTrainerCallback:
                     f"[otel] Failed to init OpenTelemetry tracer: {e}", file=sys.stderr)
 
     # type: ignore[no-untyped-def]
-    def on_train_begin(self, args, state, control, **kwargs):
+    def on_train_begin(self, args: Any, state, control, **kwargs):
         if self.tracer:
             self.training_span = self.tracer.start_span(
                 "training_run")  # type: ignore[union-attr]
@@ -160,7 +89,7 @@ class OpenTelemetryTrainerCallback:
                 "learning_rate", float(getattr(args, "learning_rate", 0.0)))
 
     # type: ignore[no-untyped-def]
-    def on_train_end(self, args, state, control, **kwargs):
+    def on_train_end(self, args: Any, state: Any, control, **kwargs: Any):
         if self.training_span:
             self.training_span.set_attribute(
                 "final_global_step", int(getattr(state, "global_step", 0)))
