@@ -21,6 +21,7 @@ import hashlib
 import json
 import random
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 import yaml
@@ -527,7 +528,7 @@ def main():
         "generation_seed": args.seed,
         "workflows_parsed": len(workflows),
         "workflow_names": [w.name for w in workflows],
-        "generation_date": json.dumps({"isoformat": "2026-01-19T16:54:51.492Z"}),
+        "generation_date": datetime.now().isoformat(),
     }
     with (out_dir / "metadata.json").open("w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
