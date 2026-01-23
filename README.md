@@ -79,6 +79,41 @@ See [ARIA_AUTOMATION_GUIDE.md](ARIA_AUTOMATION_GUIDE.md) for details
 
 ---
 
+### 💬 GitHub Pages Chat Interface (NEW!)
+
+An interactive chat interface with Aria is now available on GitHub Pages. No build required!
+
+**Live Site**: https://github.com/YourUsername/AI/blob/main/docs/index.html
+
+**Features**:
+- ✨ Animated Aria character
+- 💬 Real-time chat with streaming responses
+- 🔌 Multi-provider LLM support (Azure OpenAI, OpenAI, LMStudio)
+- 📱 Responsive design (desktop & mobile)
+- 💾 Chat history (localStorage)
+
+**Quick Start**:
+1. Start function_app: `func host start`
+2. Open [docs/index.html](docs/index.html) in your browser
+3. Configure server URL: `http://localhost:7071`
+4. Click "Test Connection"
+5. Start chatting!
+
+**Deployment**:
+```bash
+# 1. Deploy function_app to Azure
+func azure functionapp publish <app-name>
+
+# 2. Update server URL in docs/index.html
+# 3. Enable GitHub Pages in settings (branch: main, folder: /docs)
+# 4. Share: https://yourusername.github.io/AI/docs/
+```
+
+📖 **Full Setup Guide:** [docs/GITHUB_PAGES_SETUP.md](docs/GITHUB_PAGES_SETUP.md)  
+⚙️ **Server Configuration:** [docs/SERVER_CONFIGURATION.md](docs/SERVER_CONFIGURATION.md)
+
+---
+
 ### Chat with Aria (Web Interface)
 
 ```bash

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Aria - Interactive AI Character Chat</title>
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            color: #333;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: auto;
+            min-height: calc(100vh - 40px);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            color: white;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: rgba(255,255,255,0.95);
+            margin-bottom: 5px;
+        }
+
+        /* ========== ARIA CHARACTER SECTION ========== */
+        .aria-section {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+        }
+
+        .aria-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .aria-stage {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .aria-character {
+            font-size: 120px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+            transition: all 0.3s ease;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .aria-character.speaking {
+            animation: speak 0.5s ease;
+        }
+
+        @keyframes speak {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(1.1); }
+        }
+
+        .aria-state {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f7fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            font-size: 0.9em;
+            color: #555;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* ========== CHAT SECTION ========== */
+        .chat-section {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }
+
+        .chat-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .settings-panel {
+            background: #f5f7fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e7ff;
+        }
+
+        .settings-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .settings-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .setting-group label {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .setting-group input,
+        .setting-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: border-color 0.3s;
+        }
+
+        .setting-group input:focus,
+        .setting-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #e0e7ff;
+            border-radius: 10px;
+            padding: 15px;
+            background: #fafbfc;
+            margin-bottom: 15px;
+            min-height: 300px;
+            max-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-size: 0.95em;
+            word-wrap: break-word;
+            max-width: 85%;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 18px 4px 18px 18px;
+        }
+
+        .message.assistant .message-content {
+            background: #e0e7ff;
+            color: #333;
+            border-radius: 4px 18px 18px 18px;
+        }
+
+        .message-code {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            margin-top: 8px;
+        }
+
+        .message-code code {
+            background: none;
+            padding: 0;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-field {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-field textarea {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 50px;
+            max-height: 100px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .send-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            padding: 10px;
+            background: #f5f7fa;
+            border-radius: 8px;
+            font-size: 0.85em;
+            color: #666;
+            border: 1px solid #e0e7ff;
+            text-align: center;
+        }
+
+        .status-bar.loading {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .status-bar.error {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .status-bar.success {
+            color: #27ae60;
+            font-weight: 500;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 5px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ========== UTILITY ========== */
+        .connection-url-container {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .connection-url-container h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .connection-url {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #f5f7fa;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+
+        .connection-url input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        .connection-url input:focus {
+            outline: none;
+        }
+
+        .copy-btn {
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .test-btn {
+            padding: 8px 16px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.3s;
+            margin-left: 10px;
+        }
+
+        .test-btn:hover {
+            background: #229954;
+        }
+
+        @media (max-width: 768px) {
+            .settings-row {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .aria-character {
+                font-size: 80px;
+            }
+
+            .aria-stage {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 Aria - Interactive AI Character</h1>
+        <p class="subtitle">Chat with Aria powered by LLM • Real-time streaming responses</p>
+    </header>
+
+    <div class="connection-url-container">
+        <h3>Server Configuration</h3>
+        <div class="connection-url">
+            <input type="text" id="serverUrl" placeholder="http://localhost:7071" value="http://localhost:7071">
+            <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
+            <button class="test-btn" onclick="testConnection()">Test Connection</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- LEFT: ARIA CHARACTER -->
+        <div class="aria-section">
+            <div class="aria-title">Meet Aria</div>
+            <div class="aria-stage">
+                <div class="aria-character" id="ariaCharacter">🤖</div>
+            </div>
+            <div class="aria-state">
+                <div id="ariaStatus">Ready to chat! 👋</div>
+                <div id="ariaExpression" style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT: CHAT INTERFACE -->
+        <div class="chat-section">
+            <div class="chat-title">Chat with Aria</div>
+
+            <div class="settings-panel">
+                <div class="settings-row">
+                    <div class="setting-group">
+                        <label for="provider">Provider:</label>
+                        <select id="provider">
+                            <option value="auto">Auto (Best Available)</option>
+                            <option value="lmstudio">LMStudio (Local)</option>
+                            <option value="azure">Azure OpenAI</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="local">Local Echo</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="temperature">Temperature:</label>
+                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                        <span id="tempValue" style="font-size: 0.8em;">0.7</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div class="input-area">
+                <div class="input-field" style="flex: 1;">
+                    <textarea id="userInput" placeholder="Type your message to Aria..." onkeydown="handleKeydown(event)"></textarea>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+
+            <div class="status-bar" id="statusBar">Ready</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let CONFIG = {
+            getServerUrl: () => document.getElementById('serverUrl').value || 'http://localhost:7071',
+            getChatEndpoint: () => `${CONFIG.getServerUrl()}/api/chat/stream`,
+            getTestEndpoint: () => `${CONFIG.getServerUrl()}/api/ai/status`,
+        };
+
+        // Message history for context
+        let messageHistory = [];
+        let isWaitingForResponse = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('temperature').addEventListener('input', (e) => {
+                document.getElementById('tempValue').textContent = e.target.value;
+            });
+
+            // Load saved messages
+            loadChatHistory();
+
+            // Welcome message
+            if (messageHistory.length === 0) {
+                addMessage('assistant', '👋 Hello! I\'m Aria. I\'m an interactive AI character here to chat with you. Ask me anything!');
+            }
+        });
+
+        function handleKeydown(event) {
+            if (event.key === 'Enter' && event.ctrlKey) {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+
+            if (!message || isWaitingForResponse) return;
+
+            // Add user message
+            addMessage('user', message);
+            messageHistory.push({ role: 'user', content: message });
+            input.value = '';
+            isWaitingForResponse = true;
+            updateStatus('loading', 'Aria is thinking...');
+            updateAriaState('thinking', 'Thinking...');
+
+            try {
+                await streamResponse(message);
+            } catch (error) {
+                console.error('Error:', error);
+                updateStatus('error', `Error: ${error.message}`);
+                updateAriaState('error', '❌ Error occurred');
+            } finally {
+                isWaitingForResponse = false;
+                document.getElementById('sendBtn').disabled = false;
+                updateAriaState('ready', 'Ready to chat');
+            }
+        }
+
+        async function streamResponse(userMessage) {
+            const endpoint = CONFIG.getChatEndpoint();
+            const provider = document.getElementById('provider').value;
+            const temperature = parseFloat(document.getElementById('temperature').value);
+
+            const requestBody = {
+                messages: messageHistory,
+                provider: provider === 'auto' ? undefined : provider,
+                temperature: temperature,
+                stream: true,
+            };
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullResponse = '';
+                let providerInfo = '';
+
+                updateStatus('loading', 'Streaming response...');
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('event:')) {
+                            const eventType = line.replace('event:', '').trim();
+                            if (eventType === 'meta') {
+                                // Skip meta info for now
+                            }
+                        } else if (line.startsWith('data:')) {
+                            try {
+                                const data = JSON.parse(line.replace('data:', '').trim());
+
+                                if (data.provider && data.model) {
+                                    providerInfo = `(${data.provider} • ${data.model})`;
+                                }
+
+                                if (data.delta) {
+                                    fullResponse += data.delta;
+                                    updateLastMessage(fullResponse);
+                                    updateAriaState('speaking', 'Speaking...');
+                                }
+                            } catch (e) {
+                                // Ignore JSON parse errors for incomplete lines
+                            }
+                        }
+                    }
+                }
+
+                // Add complete response to history
+                messageHistory.push({ role: 'assistant', content: fullResponse });
+                saveChatHistory();
+                updateStatus('success', `Response complete ${providerInfo}`);
+            } catch (error) {
+                console.error('Stream error:', error);
+                updateStatus('error', `Stream error: ${error.message}`);
+                throw error;
+            }
+        }
+
+        function addMessage(role, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${role}`;
+
+            // Check if content has code blocks
+            let displayContent = content;
+            try {
+                if (content.includes('```')) {
+                    // Parse markdown-like code blocks
+                    displayContent = content.split('```').map((part, i) => {
+                        if (i % 2 === 1) {
+                            return `<div class="message-code"><code>${escapeHtml(part.trim())}</code></div>`;
+                        }
+                        return escapeHtml(part);
+                    }).join('');
+                } else {
+                    displayContent = escapeHtml(content);
+                }
+            } catch (e) {
+                displayContent = escapeHtml(content);
+            }
+
+            messageEl.innerHTML = `<div class="message-content">${displayContent}</div>`;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateLastMessage(content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messages = messagesDiv.querySelectorAll('.message.assistant');
+            if (messages.length === 0) {
+                addMessage('assistant', content);
+            } else {
+                const lastMessage = messages[messages.length - 1];
+                const contentDiv = lastMessage.querySelector('.message-content');
+                let displayContent = content;
+                try {
+                    if (content.includes('```')) {
+                        displayContent = content.split('```').map((part, i) => {
+                            if (i % 2 === 1) {
+                                return `<div class="message-code"><code>${escapeHtml(part.trim())}</code></div>`;
+                            }
+                            return escapeHtml(part);
+                        }).join('');
+                    } else {
+                        displayContent = escapeHtml(content);
+                    }
+                } catch (e) {
+                    displayContent = escapeHtml(content);
+                }
+                contentDiv.innerHTML = displayContent;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+
+        function updateAriaState(state, message) {
+            const character = document.getElementById('ariaCharacter');
+            const expression = document.getElementById('ariaExpression');
+
+            character.classList.remove('speaking');
+
+            if (state === 'speaking') {
+                character.classList.add('speaking');
+                expression.textContent = '💬 ' + message;
+            } else if (state === 'thinking') {
+                expression.textContent = '🤔 ' + message;
+            } else if (state === 'error') {
+                expression.textContent = message;
+            } else {
+                expression.textContent = '✨ ' + message;
+            }
+        }
+
+        function updateStatus(type, message) {
+            const statusBar = document.getElementById('statusBar');
+            const sendBtn = document.getElementById('sendBtn');
+
+            statusBar.className = `status-bar ${type}`;
+            statusBar.innerHTML = type === 'loading'
+                ? `<span class="spinner"></span>${message}`
+                : message;
+
+            sendBtn.disabled = type === 'loading';
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function saveChatHistory() {
+            try {
+                localStorage.setItem('ariaChat', JSON.stringify(messageHistory));
+            } catch (e) {
+                console.warn('Could not save chat history:', e);
+            }
+        }
+
+        function loadChatHistory() {
+            try {
+                const saved = localStorage.getItem('ariaChat');
+                if (saved) {
+                    messageHistory = JSON.parse(saved);
+                    // Replay messages in UI
+                    const messagesDiv = document.getElementById('chatMessages');
+                    messagesDiv.innerHTML = '';
+                    messageHistory.forEach(msg => {
+                        addMessage(msg.role, msg.content);
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load chat history:', e);
+            }
+        }
+
+        function copyToClipboard() {
+            const input = document.getElementById('serverUrl');
+            input.select();
+            document.execCommand('copy');
+            alert('Server URL copied to clipboard!');
+        }
+
+        async function testConnection() {
+            const testBtn = event.target;
+            const originalText = testBtn.textContent;
+            testBtn.disabled = true;
+            testBtn.textContent = 'Testing...';
+
+            try {
+                const response = await fetch(CONFIG.getTestEndpoint());
+                if (response.ok) {
+                    const data = await response.json();
+                    testBtn.textContent = '✓ Connected';
+                    setTimeout(() => { testBtn.textContent = originalText; testBtn.disabled = false; }, 2000);
+                    updateStatus('success', `Connected to ${data.provider || 'server'}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                testBtn.textContent = '✗ Failed';
+                setTimeout(() => { testBtn.textContent = originalText; testBtn.disabled = false; }, 2000);
+                updateStatus('error', `Connection failed: ${error.message}`);
+            }
+        }
+
+        // Update aria status display
+        function updateAriaDisplay() {
+            const status = document.getElementById('ariaStatus');
+            status.textContent = isWaitingForResponse ? '💭 Listening...' : '✨ Ready to chat!';
+        }
+
+        // Monitor changes
+        const observer = new MutationObserver(() => updateAriaDisplay());
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+</body>
+</html>
