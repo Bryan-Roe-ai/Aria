@@ -5,7 +5,10 @@
       "command": "${workspaceFolder}/quantum-ai/venv/bin/python",
       "args": [
         "${workspaceFolder}/quantum-ai/quantum_mcp_server.py"
-      ]
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/quantum-ai"
+      }
     },
     "phi-model-server": {
       "type": "stdio",
