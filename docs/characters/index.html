@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stylized Characters • Unity URP</title>
+    <style>
+        :root {
+            --bg-1: #0f141d;
+            --bg-2: #1f2a3a;
+            --accent: #ff7a59;
+            --accent-2: #4ecdc4;
+            --text: #f4f6fb;
+            --muted: #b7c1d1;
+            --card: rgba(255, 255, 255, 0.07);
+            --card-border: rgba(255, 255, 255, 0.14);
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 10% -10%, rgba(78, 205, 196, 0.3), transparent 60%),
+                radial-gradient(900px 500px at 90% 0%, rgba(255, 122, 89, 0.25), transparent 55%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+            min-height: 100vh;
+        }
+        header {
+            padding: 48px 24px 24px;
+            text-align: center;
+        }
+        header h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin: 0 0 12px;
+            letter-spacing: 0.5px;
+        }
+        header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 1rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .overview {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            margin-bottom: 32px;
+        }
+        .pill {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px 18px;
+            backdrop-filter: blur(10px);
+        }
+        .pill h3 {
+            margin: 0 0 6px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-2);
+        }
+        .pill p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(255, 122, 89, 0.12), transparent 60%);
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .card h2 {
+            margin: 0 0 6px;
+            font-size: 1.4rem;
+        }
+        .card p {
+            margin: 0 0 14px;
+            color: var(--muted);
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(78, 205, 196, 0.2);
+            color: #d5fffb;
+            border: 1px solid rgba(78, 205, 196, 0.35);
+        }
+        .links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .links a {
+            text-decoration: none;
+            color: var(--text);
+            background: rgba(255, 122, 89, 0.2);
+            border: 1px solid rgba(255, 122, 89, 0.4);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+        .links a:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 122, 89, 0.35);
+        }
+        .footer {
+            text-align: center;
+            padding: 36px 12px 60px;
+            color: var(--muted);
+        }
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            margin: 36px 0 14px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            gap: 10px;
+        }
+        .checklist li {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        @media (max-width: 600px) {
+            header {
+                padding: 36px 16px 12px;
+            }
+            .container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stylized Humanoids • Unity URP</h1>
+        <p>Game-ready character set with PBR textures, Humanoid rig, and LOD structure.</p>
+    </header>
+
+    <div class="container">
+        <section class="overview">
+            <div class="pill">
+                <h3>Pipeline</h3>
+                <p>Unity URP • Humanoid rig • FBX export</p>
+            </div>
+            <div class="pill">
+                <h3>Targets</h3>
+                <p>LOD0 15k-25k tris • 2K PBR textures</p>
+            </div>
+            <div class="pill">
+                <h3>LOD</h3>
+                <p>LOD1 50% • LOD2 25% (optional)</p>
+            </div>
+            <div class="pill">
+                <h3>Scale</h3>
+                <p>1 unit = 1 meter • Y up • -Z forward</p>
+            </div>
+        </section>
+
+        <div class="section-title">Characters</div>
+        <section class="grid">
+            <div class="card">
+                <h2>Hero</h2>
+                <p>Confident silhouette, layered cloth, signature weapon.</p>
+                <div class="tags">
+                    <span class="tag">18k-22k tris</span>
+                    <span class="tag">Slate + Muted Red</span>
+                    <span class="tag">Cape / Long Coat</span>
+                </div>
+                <div class="links">
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/briefs/hero.md" target="_blank">Brief</a>
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/hero/" target="_blank">Asset Folder</a>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Scout</h2>
+                <p>Lean, agile frame with tech accents and light gear.</p>
+                <div class="tags">
+                    <span class="tag">15k-18k tris</span>
+                    <span class="tag">Teal + Amber</span>
+                    <span class="tag">Cloak / Scarf</span>
+                </div>
+                <div class="links">
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/briefs/scout.md" target="_blank">Brief</a>
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/scout/" target="_blank">Asset Folder</a>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Bruiser</h2>
+                <p>Heavy armor, massive silhouette, power-first design.</p>
+                <div class="tags">
+                    <span class="tag">20k-25k tris</span>
+                    <span class="tag">Gunmetal + Orange</span>
+                    <span class="tag">Shield / Heavy Weapon</span>
+                </div>
+                <div class="links">
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/briefs/bruiser.md" target="_blank">Brief</a>
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/bruiser/" target="_blank">Asset Folder</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-title">Unity Tools</div>
+        <section class="grid">
+            <div class="card">
+                <h2>Import Settings</h2>
+                <p>Applies model + texture import defaults for URP.</p>
+                <div class="links">
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/tools/unity/ApplyCharacterImportSettings.cs" target="_blank">Script</a>
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/tools/unity/README.md" target="_blank">Usage</a>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Material Assignment</h2>
+                <p>Auto-creates URP/Lit materials and assigns maps.</p>
+                <div class="links">
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/tools/unity/ApplyCharacterMaterials.cs" target="_blank">Script</a>
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/tools/unity/README.md" target="_blank">Usage</a>
+                </div>
+            </div>
+            <div class="card">
+                <h2>LOD Prefabs</h2>
+                <p>Generates prefabs with LODGroup using lod0-2.</p>
+                <div class="links">
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/tools/unity/CreateCharacterPrefabs.cs" target="_blank">Script</a>
+                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/tools/unity/README.md" target="_blank">Usage</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="section-title">Production Checklist</div>
+        <ul class="checklist">
+            <li>Model, retopo, and UV in Blender/Maya (check briefs for silhouette).</li>
+            <li>Author PBR textures: basecolor, normal, metallicsmoothness, occlusion, emission.</li>
+            <li>Export FBX to `assets/characters/&lt;id&gt;/model/lod*/` with Unity axes.</li>
+            <li>Run Unity tools to apply import settings, materials, and prefab LODs.</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <a href="/AI/index.html">Back to Home</a>
+    </div>
+</body>
+</html>
