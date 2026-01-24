@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum World - 3D Enhanced</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: white;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+        
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0a 100%);
+        }
+        
+        #quantum-canvas {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+        
+        .controls-overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #667eea;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+        
+        .control-group select,
+        .control-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 5px;
+            color: white;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .stats-overlay {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            z-index: 1000;
+        }
+        
+        .stat-line {
+            margin: 5px 0;
+            color: #667eea;
+        }
+        
+        .particle-system {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .quantum-particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(102, 126, 234, 1);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
+            animation: particleDrift 20s linear infinite;
+        }
+        
+        @keyframes particleDrift {
+            0% { transform: translate(0, 0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+        }
+        
+        .info-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(102, 126, 234, 0.5);
+            pointer-events: none;
+            z-index: 2000;
+            font-size: 0.85em;
+            display: none;
+        }
+        
+        .quantum-wave {
+            position: absolute;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: waveExpand 3s ease-out infinite;
+        }
+        
+        @keyframes waveExpand {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 500px;
+                height: 500px;
+                opacity: 0;
+            }
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            z-index: 3000;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <canvas id="quantum-canvas"></canvas>
+        <div class="particle-system" id="particleSystem"></div>
+    </div>
+    
+    <div class="controls-overlay">
+        <h3 style="margin-bottom: 15px; color: #667eea;">⚛️ Quantum 3D Control</h3>
+        
+        <div class="control-group">
+            <label for="objectCount">Objects: <span id="countValue">50</span></label>
+            <input type="range" id="objectCount" min="10" max="200" value="50">
+        </div>
+        
+        <div class="control-group">
+            <label for="rotationSpeed">Rotation Speed</label>
+            <input type="range" id="rotationSpeed" min="0" max="5" step="0.1" value="1">
+        </div>
+        
+        <div class="control-group">
+            <label for="spread">Spread</label>
+            <input type="range" id="spread" min="100" max="500" value="300">
+        </div>
+        
+        <div class="control-group">
+            <label for="visualMode">Visual Mode</label>
+            <select id="visualMode">
+                <option value="sphere">Sphere</option>
+                <option value="helix">Helix</option>
+                <option value="cube">Cube</option>
+                <option value="torus">Torus</option>
+                <option value="random">Random Cloud</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="colorScheme">Color Scheme</label>
+            <select id="colorScheme">
+                <option value="rainbow">Rainbow</option>
+                <option value="neon">Neon</option>
+                <option value="ocean">Ocean</option>
+                <option value="fire">Fire</option>
+                <option value="aurora">Aurora</option>
+                <option value="matrix">Matrix</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="zoom">Zoom: <span id="zoomValue">100%</span></label>
+            <input type="range" id="zoom" min="50" max="200" value="100">
+        </div>
+        
+        <button class="btn btn-primary" onclick="regenerate()">🔄 Regenerate</button>
+        <button class="btn btn-secondary" onclick="toggleAnimation()">⏯️ Pause/Play</button>
+        <button class="btn btn-secondary" onclick="addParticles()">✨ Add Particles</button>
+        <button class="btn btn-secondary" onclick="screenshot()">📸 Screenshot</button>
+    </div>
+    
+    <div class="stats-overlay">
+        <div class="stat-line">FPS: <span id="fps">0</span></div>
+        <div class="stat-line">Objects: <span id="objCount">0</span></div>
+        <div class="stat-line">Rotation: <span id="rotation">0°</span></div>
+        <div class="stat-line">Mode: <span id="mode">sphere</span></div>
+    </div>
+    
+    <div class="info-tooltip" id="tooltip"></div>
+    <div class="loading" id="loading">⚛️ Initializing Quantum Field...</div>
+    
+    <div style="position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 10px; border: 2px solid rgba(102, 126, 234, 0.3); max-width: 250px; z-index: 1000;">
+        <h4 style="color: #667eea; margin-bottom: 10px;">🎮 Controls</h4>
+        <div style="font-size: 0.85em; line-height: 1.6;">
+            <div>🖱️ <strong>Drag</strong> - Rotate view</div>
+            <div>🔍 <strong>Scroll</strong> - Zoom in/out</div>
+            <div>👆 <strong>Click</strong> - Pause/Play</div>
+            <div>🎯 <strong>Hover</strong> - Object info</div>
+        </div>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('quantum-canvas');
+        const ctx = canvas.getContext('2d');
+        const particleSystem = document.getElementById('particleSystem');
+        
+        let width, height, centerX, centerY;
+        let objects = [];
+        let rotation = 0;
+        let animating = true;
+        let fps = 0;
+        let lastTime = performance.now();
+        let frameCount = 0;
+        
+        // Camera and interaction
+        let cameraRotationX = 0;
+        let cameraRotationY = 0;
+        let zoomLevel = 1;
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let hoveredObject = null;
+        
+        // Initialize canvas
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            centerX = width / 2;
+            centerY = height / 2;
+        }
+        
+        // Object class
+        class QuantumObject {
+            constructor(index, total, mode) {
+                this.index = index;
+                this.mode = mode;
+                this.calculatePosition(index, total);
+                this.updateColor(index, total);
+                this.size = Math.random() * 3 + 2;
+                this.phase = Math.random() * Math.PI * 2;
+                this.name = `Quantum-${index}`;
+            }
+            
+            updateColor(index, total) {
+                const scheme = document.getElementById('colorScheme').value;
+                const ratio = index / total;
+                
+                switch(scheme) {
+                    case 'rainbow':
+                        this.color = `hsl(${ratio * 360}, 70%, 60%)`;
+                        break;
+                    case 'neon':
+                        const neonColors = ['#ff006e', '#fb5607', '#ffbe0b', '#8338ec', '#3a86ff'];
+                        this.color = neonColors[Math.floor(ratio * neonColors.length)];
+                        break;
+                    case 'ocean':
+                        this.color = `hsl(${180 + ratio * 60}, 80%, ${40 + ratio * 30}%)`;
+                        break;
+                    case 'fire':
+                        this.color = `hsl(${ratio * 60}, 100%, ${50 + ratio * 20}%)`;
+                        break;
+                    case 'aurora':
+                        this.color = `hsl(${120 + ratio * 180}, 70%, 60%)`;
+                        break;
+                    case 'matrix':
+                        this.color = `hsl(120, ${50 + ratio * 50}%, ${30 + ratio * 40}%)`;
+                        break;
+                    default:
+                        this.color = `hsl(${ratio * 360}, 70%, 60%)`;
+                }
+            }
+            
+            calculatePosition(index, total) {
+                const spread = parseFloat(document.getElementById('spread').value);
+                
+                switch(this.mode) {
+                    case 'sphere':
+                        const phi = Math.acos(-1 + (2 * index) / total);
+                        const theta = Math.sqrt(total * Math.PI) * phi;
+                        this.x = spread * Math.cos(theta) * Math.sin(phi);
+                        this.y = spread * Math.sin(theta) * Math.sin(phi);
+                        this.z = spread * Math.cos(phi);
+                        break;
+                        
+                    case 'helix':
+                        const angle = (index / total) * Math.PI * 8;
+                        this.x = Math.cos(angle) * spread;
+                        this.y = (index / total) * spread * 2 - spread;
+                        this.z = Math.sin(angle) * spread;
+                        break;
+                        
+                    case 'cube':
+                        this.x = (Math.random() - 0.5) * spread * 2;
+                        this.y = (Math.random() - 0.5) * spread * 2;
+                        this.z = (Math.random() - 0.5) * spread * 2;
+                        break;
+                        
+                    case 'torus':
+                        const u = (index / total) * Math.PI * 2;
+                        const v = ((index * 7) % total / total) * Math.PI * 2;
+                        const R = spread;
+                        const r = spread * 0.3;
+                        this.x = (R + r * Math.cos(v)) * Math.cos(u);
+                        this.y = r * Math.sin(v);
+                        this.z = (R + r * Math.cos(v)) * Math.sin(u);
+                        break;
+                        
+                    case 'random':
+                    default:
+                        const r = Math.random() * spread;
+                        const theta2 = Math.random() * Math.PI * 2;
+                        const phi2 = Math.random() * Math.PI * 2;
+                        this.x = r * Math.cos(theta2) * Math.sin(phi2);
+                        this.y = r * Math.sin(theta2) * Math.sin(phi2);
+                        this.z = r * Math.cos(phi2);
+                }
+            }
+            
+            project() {
+                const rotSpeed = parseFloat(document.getElementById('rotationSpeed').value);
+                
+                // Apply automatic rotation
+                let rx = this.x;
+                let ry = this.y * Math.cos(rotation * rotSpeed) - this.z * Math.sin(rotation * rotSpeed);
+                let rz = this.y * Math.sin(rotation * rotSpeed) + this.z * Math.cos(rotation * rotSpeed);
+                
+                // Apply camera rotation X (vertical)
+                let ry2 = ry * Math.cos(cameraRotationX) - rz * Math.sin(cameraRotationX);
+                let rz2 = ry * Math.sin(cameraRotationX) + rz * Math.cos(cameraRotationX);
+                
+                // Apply camera rotation Y (horizontal)
+                let rx2 = rx * Math.cos(cameraRotationY) - rz2 * Math.sin(cameraRotationY);
+                let rz3 = rx * Math.sin(cameraRotationY) + rz2 * Math.cos(cameraRotationY);
+                
+                // Apply zoom
+                const scale = (600 * zoomLevel) / (600 + rz3);
+                const x2d = centerX + rx2 * scale;
+                const y2d = centerY + ry2 * scale;
+                
+                return { x: x2d, y: y2d, scale, z: rz3 };
+            }
+            
+            draw(mouseX, mouseY) {
+                const proj = this.project();
+                const size = this.size * proj.scale;
+                const alpha = Math.max(0.2, Math.min(1, proj.scale));
+                
+                // Check hover
+                const isHovered = mouseX && mouseY && 
+                    Math.hypot(mouseX - proj.x, mouseY - proj.y) < size * 3;
+                
+                // Enhanced glow for hovered objects
+                const glowSize = isHovered ? size * 5 : size * 3;
+                const gradient = ctx.createRadialGradient(proj.x, proj.y, 0, proj.x, proj.y, glowSize);
+                gradient.addColorStop(0, this.color + 'ff');
+                gradient.addColorStop(0.5, this.color + (isHovered ? 'cc' : '88'));
+                gradient.addColorStop(1, this.color + '00');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, glowSize, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Core with pulse effect on hover
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = alpha * (isHovered ? 1.5 : 1);
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, size * (isHovered ? 1.2 : 1), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                return { z: proj.z, isHovered, x: proj.x, y: proj.y };
+            }
+        }
+        
+        // Generate objects
+        function generateObjects() {
+            const count = parseInt(document.getElementById('objectCount').value);
+            const mode = document.getElementById('visualMode').value;
+            objects = [];
+            
+            for (let i = 0; i < count; i++) {
+                objects.push(new QuantumObject(i, count, mode));
+            }
+            
+            document.getElementById('objCount').textContent = count;
+            document.getElementById('mode').textContent = mode;
+        }
+        
+        // Animation loop
+        function animate() {
+            if (!animating) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            
+            // Clear canvas with trail effect
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Sort by z-depth
+            objects.sort((a, b) => {
+                const az = a.project().z;
+                const bz = b.project().z;
+                return az - bz;
+            });
+            
+            // Draw objects and check hover
+            let newHoveredObject = null;
+            objects.forEach(obj => {
+                const result = obj.draw(lastMouseX, lastMouseY);
+                if (result.isHovered) {
+                    newHoveredObject = obj;
+                }
+            });
+            
+            // Update tooltip
+            const tooltip = document.getElementById('tooltip');
+            if (newHoveredObject) {
+                hoveredObject = newHoveredObject;
+                tooltip.style.display = 'block';
+                tooltip.innerHTML = `
+                    <strong>${hoveredObject.name}</strong><br>
+                    Mode: ${hoveredObject.mode}<br>
+                    Color: ${hoveredObject.color}<br>
+                    Size: ${hoveredObject.size.toFixed(2)}
+                `;
+            } else {
+                tooltip.style.display = 'none';
+                hoveredObject = null;
+            }
+            
+            // Draw connections (optional)
+            if (objects.length < 100) {
+                ctx.strokeStyle = 'rgba(102, 126, 234, 0.1)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < objects.length; i++) {
+                    const p1 = objects[i].project();
+                    for (let j = i + 1; j < Math.min(i + 3, objects.length); j++) {
+                        const p2 = objects[j].project();
+                        const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            rotation += 0.005;
+            document.getElementById('rotation').textContent = Math.round((rotation % (Math.PI * 2)) * 57.3) + '°';
+            
+            // Calculate FPS
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime - lastTime >= 1000) {
+                fps = Math.round(frameCount * 1000 / (currentTime - lastTime));
+                document.getElementById('fps').textContent = fps;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // Add background particles
+        function addParticles() {
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'quantum-particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.setProperty('--dy', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particleSystem.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 20000);
+            }
+        }
+        
+        // Controls
+        function regenerate() {
+            generateObjects();
+            addParticles();
+        }
+        
+        function toggleAnimation() {
+            animating = !animating;
+        }
+        
+        function screenshot() {
+            const link = document.createElement('a');
+            link.download = `quantum-world-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        // Event listeners
+        document.getElementById('objectCount').addEventListener('input', (e) => {
+            document.getElementById('countValue').textContent = e.target.value;
+        });
+        
+        document.getElementById('visualMode').addEventListener('change', regenerate);
+        
+        document.getElementById('colorScheme').addEventListener('change', () => {
+            objects.forEach((obj, i) => obj.updateColor(i, objects.length));
+        });
+        
+        document.getElementById('zoom').addEventListener('input', (e) => {
+            zoomLevel = e.target.value / 100;
+            document.getElementById('zoomValue').textContent = e.target.value + '%';
+        });
+        
+        window.addEventListener('resize', resize);
+        
+        // Mouse drag to rotate
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            // Update tooltip position
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.left = e.clientX + 15 + 'px';
+            tooltip.style.top = e.clientY + 15 + 'px';
+            
+            // Track mouse for hover detection
+            const rect = canvas.getBoundingClientRect();
+            lastMouseX = e.clientX - rect.left;
+            lastMouseY = e.clientY - rect.top;
+            
+            // Handle drag rotation
+            if (isDragging) {
+                const deltaX = e.clientX - lastMouseX;
+                const deltaY = e.clientY - lastMouseY;
+                
+                cameraRotationY += deltaX * 0.005;
+                cameraRotationX += deltaY * 0.005;
+                
+                // Clamp vertical rotation
+                cameraRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotationX));
+                
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+            }
+        });
+        
+        // Mouse wheel zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            zoomLevel *= delta;
+            zoomLevel = Math.max(0.5, Math.min(2, zoomLevel));
+            document.getElementById('zoom').value = Math.round(zoomLevel * 100);
+            document.getElementById('zoomValue').textContent = Math.round(zoomLevel * 100) + '%';
+        });
+        
+        // Click to pause/play
+        canvas.addEventListener('click', (e) => {
+            if (!isDragging) {
+                toggleAnimation();
+            }
+        });
+        
+        canvas.style.cursor = 'grab';
+        
+        // Initialize
+        resize();
+        generateObjects();
+        
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            animate();
+            addParticles();
+        }, 1000);
+        
+        // Auto-add particles periodically
+        setInterval(addParticles, 5000);
+    </script>
+</body>
+</html>

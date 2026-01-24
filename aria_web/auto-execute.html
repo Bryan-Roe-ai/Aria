@@ -318,6 +318,18 @@
     </div>
 
     <script>
+        const API_BASE = (() => {
+            const params = new URLSearchParams(window.location.search);
+            const apiParam = params.get('api');
+            if (apiParam) {
+                return apiParam.replace(/\/+$/, '');
+            }
+            if (window.location.origin === 'null') {
+                return 'http://localhost:8080';
+            }
+            return '';
+        })();
+
         function setCommand(cmd) {
             document.getElementById('command').value = cmd;
         }
@@ -351,7 +363,7 @@
             results.innerHTML = '';
 
             try {
-                const response = await fetch('http://localhost:8080/api/aria/execute', {
+                const response = await fetch(`${API_BASE}/api/aria/execute`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -371,7 +383,7 @@
                     <div class="section">
                         <h3>❌ Error</h3>
                         <p style="color: #721c24;">${error.message}</p>
-                        <p style="margin-top: 10px; font-size: 0.9em;">Make sure the server is running on port 8080</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">If you are on GitHub Pages, pass ?api=https://your-server to the URL or run the server on port 8080.</p>
                     </div>
                 `;
             } finally {

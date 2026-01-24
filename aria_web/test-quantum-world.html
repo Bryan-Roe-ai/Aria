@@ -35,6 +35,18 @@
     </div>
     
     <script>
+        const API_BASE = (() => {
+            const params = new URLSearchParams(window.location.search);
+            const apiParam = params.get('api');
+            if (apiParam) {
+                return apiParam.replace(/\/+$/, '');
+            }
+            if (window.location.origin === 'null') {
+                return 'http://localhost:8080';
+            }
+            return '';
+        })();
+
         // Test render functions
         function testRenderWorld() {
             const mockData = {
@@ -92,7 +104,7 @@
             resultsDiv.innerHTML += '<p>Testing /api/aria/world...</p>';
             
             try {
-                const response = await fetch('/api/aria/world', {
+                const response = await fetch(`${API_BASE}/api/aria/world`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ theme: 'nature', count: 5 })
@@ -114,7 +126,7 @@
             resultsDiv.innerHTML += '<p>Testing /api/aria/quantum/circuit...</p>';
             
             try {
-                const response = await fetch('/api/aria/quantum/circuit', {
+                const response = await fetch(`${API_BASE}/api/aria/quantum/circuit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({})
