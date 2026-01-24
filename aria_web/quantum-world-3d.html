@@ -178,6 +178,24 @@
             z-index: 3000;
             animation: pulse 2s ease-in-out infinite;
         }
+
+        .portal-link {
+            display: inline-block;
+            margin: 12px 0 0 12px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid #d7d7d7;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .portal-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+        }
         
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
@@ -192,6 +210,7 @@
     </div>
     
     <div class="controls-overlay">
+        <a class="portal-link" id="portalLink" href="quantum-portal.html">← Back to Portal</a>
         <h3 style="margin-bottom: 15px; color: #667eea;">⚛️ Quantum 3D Control</h3>
         
         <div class="control-group">
@@ -656,6 +675,17 @@
         
         // Auto-add particles periodically
         setInterval(addParticles, 5000);
+
+        (function () {
+            const link = document.getElementById('portalLink');
+            if (!link) {
+                return;
+            }
+            const query = window.location.search;
+            if (query) {
+                link.setAttribute('href', `quantum-portal.html${query}`);
+            }
+        })();
     </script>
 </body>
 </html>

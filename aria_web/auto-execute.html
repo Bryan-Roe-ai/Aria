@@ -16,6 +16,23 @@
             min-height: 100vh;
             padding: 20px;
         }
+        .portal-link {
+            display: inline-block;
+            margin: 12px 0 0 12px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid #d7d7d7;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .portal-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -264,6 +281,7 @@
     </style>
 </head>
 <body>
+    <a class="portal-link" id="portalLink" href="quantum-portal.html">← Back to Portal</a>
     <div class="container">
         <div class="header">
             <h1>🤖 Aria Auto-Execute</h1>
@@ -328,6 +346,17 @@
                 return 'http://localhost:8080';
             }
             return '';
+        })();
+
+        (function () {
+            const link = document.getElementById('portalLink');
+            if (!link) {
+                return;
+            }
+            const query = window.location.search;
+            if (query) {
+                link.setAttribute('href', `quantum-portal.html${query}`);
+            }
         })();
 
         function setCommand(cmd) {

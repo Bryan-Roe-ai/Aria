@@ -185,6 +185,7 @@
     <div class="portal-container">
         <h1>🌍⚛️ Quantum World 3D Portal</h1>
         <p class="subtitle">Choose Your Quantum Experience</p>
+        <p class="subtitle" id="apiNotice" style="display: none; font-size: 1rem; margin-bottom: 30px;"></p>
         
         <div class="portal-grid">
             <a href="index.html" class="portal-card">
@@ -334,5 +335,29 @@
             </p>
         </div>
     </div>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const apiParam = params.get('api');
+            if (!apiParam) {
+                return;
+            }
+            const apiValue = apiParam.replace(/\/+$/, '');
+            const notice = document.getElementById('apiNotice');
+            if (notice) {
+                notice.textContent = `API target: ${apiValue}`;
+                notice.style.display = 'block';
+            }
+            document.querySelectorAll('.portal-card').forEach((card) => {
+                const href = card.getAttribute('href');
+                if (!href || href.includes('://')) {
+                    return;
+                }
+                const url = new URL(href, window.location.href);
+                url.searchParams.set('api', apiValue);
+                card.setAttribute('href', url.pathname + url.search + url.hash);
+            });
+        })();
+    </script>
 </body>
 </html>

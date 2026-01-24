@@ -284,6 +284,24 @@
             pointer-events: none;
             animation: particleFloat 3s ease-out forwards;
         }
+
+        .portal-link {
+            display: inline-block;
+            margin: 12px 0 0 12px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a1a;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid #d7d7d7;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .portal-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+        }
         
         @keyframes particleFloat {
             0% { opacity: 1; transform: translate(0, 0) scale(1); }
@@ -292,6 +310,7 @@
     </style>
 </head>
 <body>
+    <a class="portal-link" id="portalLink" href="quantum-portal.html">← Back to Portal</a>
     <div class="header">
         <h1>⚛️ Quantum World Generator</h1>
         <p>3D World powered by Quantum Computing</p>
@@ -395,6 +414,17 @@
                 return 'http://localhost:8080';
             }
             return '';
+        })();
+
+        (function () {
+            const link = document.getElementById('portalLink');
+            if (!link) {
+                return;
+            }
+            const query = window.location.search;
+            if (query) {
+                link.setAttribute('href', `quantum-portal.html${query}`);
+            }
         })();
         let currentWorld = null;
         let selectedObject = null;
