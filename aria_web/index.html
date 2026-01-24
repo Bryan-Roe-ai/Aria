@@ -107,6 +107,28 @@
             box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
         }
 
+        .nav-hub {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0 0 12px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(11, 138, 131, 0.1);
+            color: var(--accent-cool);
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid var(--accent-cool);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+        .nav-hub:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(11, 138, 131, 0.25);
+            background: rgba(11, 138, 131, 0.15);
+        }
+
         .container {
             max-width: 1200px;
             width: 100%;
@@ -1539,6 +1561,7 @@
 </head>
 <body>
     <a class="skip-link" href="#main">Skip to main content</a>
+    <a class="nav-hub" href="../../web-hub.html">🏠 Web Hub</a>
     <a class="portal-link" id="portalLink" href="quantum-portal.html">Quantum Portal</a>
     <div class="container">
         <header class="hero">
