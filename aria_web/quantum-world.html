@@ -156,6 +156,7 @@
             cursor: pointer;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
             animation: float 3s ease-in-out infinite;
+            opacity: 0;
         }
         
         .object:hover {
@@ -386,14 +387,21 @@
             const stageWidth = stage.offsetWidth;
             const stageHeight = stage.offsetHeight;
             
+            if (Object.keys(objects).length === 0) {
+                stage.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0.5;"><p style="font-size: 3em;">⚛️</p><p style="margin-top: 10px;">No objects generated</p></div>';
+                return;
+            }
+            
             for (const [id, obj] of Object.entries(objects)) {
                 const elem = document.createElement('div');
                 elem.className = 'object';
                 elem.textContent = obj.emoji || '✨';
                 elem.title = id;
                 
-                const x = (obj.position.x / 100) * stageWidth;
-                const y = (obj.position.y / 100) * stageHeight;
+                // Handle position from response
+                const position = obj.position || { x: 50, y: 50 };
+                const x = (position.x / 100) * stageWidth;
+                const y = (position.y / 100) * stageHeight;
                 
                 elem.style.left = `${x}px`;
                 elem.style.top = `${y}px`;
@@ -408,10 +416,9 @@
                 }
                 
                 elem.addEventListener('click', () => {
-                    alert(`Object: ${id}\n` +
-                          `Position: (${obj.position.x}, ${obj.position.y})\n` +
-                          `State: ${obj.state}\n` +
-                          (obj.quantum_state ? `Quantum State: ${JSON.stringify(obj.quantum_state)}` : ''));
+                    const state = obj.state || 'on_stage';
+                    const quantumInfo = obj.quantum_state ? `Quantum State: ${JSON.stringify(obj.quantum_state)}` : '';
+                    alert(`Object: ${id}\nPosition: (${position.x}, ${position.y})\nState: ${state}\n${quantumInfo}`);
                 });
                 
                 stage.appendChild(elem);
@@ -436,7 +443,8 @@
             qubits.forEach(qubit => {
                 const line = document.createElement('div');
                 line.className = 'qubit-line';
-                const y = (qubit.position.y / 100) * stageHeight;
+                const position = qubit.position || { y: 50 };
+                const y = (position.y / 100) * stageHeight;
                 line.style.top = `${y}px`;
                 line.style.left = '0';
                 line.style.width = '100%';
@@ -448,23 +456,28 @@
                 const elem = document.createElement('div');
                 elem.className = 'object quantum-object';
                 elem.textContent = obj.emoji || '✨';
-                elem.title = `${id} (${obj.properties?.gate_type || obj.properties?.type || 'unknown'})`;
+                const gateType = obj.properties?.gate_type || obj.properties?.type || 'unknown';
+                elem.title = `${id} (${gateType})`;
                 
-                const x = (obj.position.x / 100) * stageWidth;
-                const y = (obj.position.y / 100) * stageHeight;
+                const position = obj.position || { x: 50, y: 50 };
+                const x = (position.x / 100) * stageWidth;
+                const y = (position.y / 100) * stageHeight;
                 
                 elem.style.left = `${x}px`;
                 elem.style.top = `${y}px`;
                 elem.style.transform = 'translate(-50%, -50%)';
                 
                 elem.addEventListener('click', () => {
-                    alert(`${id}\n` +
-                          `Type: ${obj.properties?.type || 'unknown'}\n` +
-                          (obj.properties?.gate_type ? `Gate: ${obj.properties.gate_type}\n` : '') +
-                          `Position: (${obj.position.x}, ${obj.position.y})`);
+                    const gateInfo = obj.properties?.gate_type ? `Gate: ${obj.properties.gate_type}\n` : '';
+                    alert(`${id}\nType: ${obj.properties?.type || 'unknown'}\n${gateInfo}Position: (${position.x}, ${position.y})`);
                 });
                 
                 stage.appendChild(elem);
+                
+                // Animate in
+                setTimeout(() => {
+                    elem.style.opacity = '1';
+                }, Math.random() * 500);
             }
         }
         
