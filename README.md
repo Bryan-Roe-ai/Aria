@@ -27,6 +27,12 @@ Aria is an interactive AI character that combines:
 - Catalog of moved reference docs: [docs/catalog/README.md](docs/catalog/README.md)
 - Key components: [aria_web/](aria_web/), [talk-to-ai/](talk-to-ai/), [quantum-ai/](quantum-ai/), [AI/microsoft_phi-silica-3.6_v1/](AI/microsoft_phi-silica-3.6_v1/)
 
+## 🌐 GitHub Pages
+
+- Landing page: `index.html` (redirects to `aria_web/quantum-portal.html`)
+- Entry points: `aria_web/WEB_PAGES.md`
+- API-backed pages accept `?api=https://your-server`
+
 ## 🚀 Quick Start
 
 ### 🤖 **NEW: Complete Repository Automation**

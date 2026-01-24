@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Quantum World</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; margin: 20px; }
+        .test-box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .warning { color: orange; }
+        code { background: #eee; padding: 2px 6px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>⚛️ Quantum World - Test Suite</h1>
+    
+    <div class="test-box">
+        <h2>Browser Compatibility</h2>
+        <p id="browserCheck" class="pass">✓ JavaScript enabled</p>
+    </div>
+    
+    <div class="test-box">
+        <h2>API Endpoint Validation</h2>
+        <button onclick="testWorldAPI()">Test /api/aria/world</button>
+        <button onclick="testCircuitAPI()">Test /api/aria/quantum/circuit</button>
+        <div id="apiResults"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Render Functions</h2>
+        <p id="renderTest" class="warning">Testing render functions...</p>
+        <div id="stageSample" style="width: 400px; height: 300px; background: #e0e0e0; border-radius: 8px; position: relative; margin: 10px 0;"></div>
+    </div>
+    
+    <script>
+        const API_BASE = (() => {
+            const params = new URLSearchParams(window.location.search);
+            const apiParam = params.get('api');
+            if (apiParam) {
+                return apiParam.replace(/\/+$/, '');
+            }
+            if (window.location.origin === 'null') {
+                return 'http://localhost:8080';
+            }
+            return '';
+        })();
+
+        // Test render functions
+        function testRenderWorld() {
+            const mockData = {
+                objects: {
+                    'obj1': { emoji: '🌳', position: { x: 25, y: 50 }, state: 'on_stage' },
+                    'obj2': { emoji: '⚛️', position: { x: 75, y: 50 }, state: 'on_stage', properties: { quantum_generated: true } },
+                    'obj3': { emoji: '🎯', position: { x: 50, y: 20 }, state: 'on_stage' }
+                }
+            };
+            
+            try {
+                // Copy renderWorld function from quantum-world.html
+                const stage = document.getElementById('stageSample');
+                stage.innerHTML = '';
+                
+                const objects = mockData.objects || {};
+                const stageWidth = stage.offsetWidth;
+                const stageHeight = stage.offsetHeight;
+                
+                if (Object.keys(objects).length === 0) {
+                    stage.innerHTML = '<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0.5;"><p style="font-size: 3em;">⚛️</p><p style="margin-top: 10px;">No objects</p></div>';
+                    return;
+                }
+                
+                for (const [id, obj] of Object.entries(objects)) {
+                    const elem = document.createElement('div');
+                    elem.style.cssText = 'position: absolute; font-size: 2em; cursor: pointer;';
+                    elem.textContent = obj.emoji || '✨';
+                    elem.title = id;
+                    
+                    const position = obj.position || { x: 50, y: 50 };
+                    const x = (position.x / 100) * stageWidth;
+                    const y = (position.y / 100) * stageHeight;
+                    
+                    elem.style.left = x + 'px';
+                    elem.style.top = y + 'px';
+                    elem.style.transform = 'translate(-50%, -50%)';
+                    elem.style.opacity = '1';
+                    
+                    elem.addEventListener('click', () => {
+                        alert(`Object: ${id}\nPosition: (${position.x}, ${position.y})\nState: ${obj.state}`);
+                    });
+                    
+                    stage.appendChild(elem);
+                }
+                
+                document.getElementById('renderTest').innerHTML = '<span class="pass">✓ Render test passed - click objects above</span>';
+            } catch (e) {
+                document.getElementById('renderTest').innerHTML = `<span class="fail">✗ Render test failed: ${e.message}</span>`;
+            }
+        }
+        
+        async function testWorldAPI() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML += '<p>Testing /api/aria/world...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/aria/world`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ theme: 'nature', count: 5 })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += `<p class="pass">✓ /api/aria/world responded with status ${response.status}</p>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="warning">⚠ /api/aria/world returned status ${response.status}</p>`;
+                }
+            } catch (e) {
+                resultsDiv.innerHTML += `<p class="fail">✗ /api/aria/world error: ${e.message}</p>`;
+            }
+        }
+        
+        async function testCircuitAPI() {
+            const resultsDiv = document.getElementById('apiResults');
+            resultsDiv.innerHTML += '<p>Testing /api/aria/quantum/circuit...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/aria/quantum/circuit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML += `<p class="pass">✓ /api/aria/quantum/circuit responded with status ${response.status}</p>`;
+                } else {
+                    resultsDiv.innerHTML += `<p class="warning">⚠ /api/aria/quantum/circuit returned status ${response.status}</p>`;
+                }
+            } catch (e) {
+                resultsDiv.innerHTML += `<p class="fail">✗ /api/aria/quantum/circuit error: ${e.message}</p>`;
+            }
+        }
+        
+        // Run tests on load
+        window.addEventListener('load', () => {
+            testRenderWorld();
+        });
+    </script>
+</body>
+</html>

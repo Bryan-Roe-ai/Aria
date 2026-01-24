@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum World 3D - Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .portal-container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(102, 126, 234, 0.5); }
+            50% { text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 40px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.3em;
+            margin-bottom: 50px;
+            opacity: 0.9;
+        }
+        
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .portal-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+        
+        .portal-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(102, 126, 234, 0.8);
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+        }
+        
+        .portal-card h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .portal-card .emoji {
+            font-size: 3em;
+            display: block;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .portal-card p {
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        .portal-card .features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .portal-card .features li {
+            padding: 5px 0;
+            opacity: 0.8;
+        }
+        
+        .portal-card .features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .btn-launch {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-launch:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .docs-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            margin-top: 40px;
+        }
+        
+        .docs-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .doc-link {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            text-decoration: none;
+            color: white;
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .doc-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateX(5px);
+        }
+        
+        .doc-link strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            opacity: 0.7;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="portal-container">
+        <h1>🌍⚛️ Quantum World 3D Portal</h1>
+        <p class="subtitle">Choose Your Quantum Experience</p>
+        
+        <div class="portal-grid">
+            <a href="quantum-world.html" class="portal-card">
+                <span class="emoji">🎮</span>
+                <h2>Interactive 2D World<span class="badge">MAIN</span></h2>
+                <p>Full-featured interactive quantum world with drag & drop, save/load, and complete control system.</p>
+                <ul class="features">
+                    <li>Drag & drop objects</li>
+                    <li>Save/Load worlds</li>
+                    <li>Keyboard shortcuts</li>
+                    <li>Particle effects</li>
+                    <li>5 themes, 4-16 objects</li>
+                </ul>
+                <span class="btn-launch">🚀 Launch Interactive World</span>
+            </a>
+            
+            <a href="quantum-world-3d.html" class="portal-card">
+                <span class="emoji">🌌</span>
+                <h2>3D Canvas Visualization<span class="badge">NEW</span></h2>
+                <p>Real-time 3D canvas rendering with stunning geometric patterns and smooth animations.</p>
+                <ul class="features">
+                    <li>5 geometric modes</li>
+                    <li>10-200 objects</li>
+                    <li>FPS monitoring</li>
+                    <li>Screenshot export</li>
+                    <li>Glow & trail effects</li>
+                </ul>
+                <span class="btn-launch">🎨 Launch 3D Visualization</span>
+            </a>
+            
+            <a href="quantum-world-features.html" class="portal-card">
+                <span class="emoji">📚</span>
+                <h2>Feature Showcase<span class="badge">INFO</span></h2>
+                <p>Interactive documentation with complete feature list, usage guide, and keyboard shortcuts.</p>
+                <ul class="features">
+                    <li>Complete feature list</li>
+                    <li>Usage instructions</li>
+                    <li>Keyboard reference</li>
+                    <li>Mobile guide</li>
+                    <li>Technical details</li>
+                </ul>
+                <span class="btn-launch">📖 View Features</span>
+            </a>
+            
+            <a href="test-quantum-world.html" class="portal-card">
+                <span class="emoji">🧪</span>
+                <h2>Test Suite</h2>
+                <p>Comprehensive test suite for validating all features and API endpoints.</p>
+                <ul class="features">
+                    <li>API validation</li>
+                    <li>Render tests</li>
+                    <li>Browser compatibility</li>
+                    <li>Performance checks</li>
+                    <li>Interactive testing</li>
+                </ul>
+                <span class="btn-launch">🔬 Run Tests</span>
+            </a>
+        </div>
+        
+        <div class="docs-section">
+            <h2>📄 Documentation</h2>
+            <div class="docs-grid">
+                <a href="START_HERE.md" class="doc-link" download>
+                    <strong>START_HERE.md</strong>
+                    Quick start guide (30 seconds)
+                </a>
+                <a href="COMPLETE_FEATURES.md" class="doc-link" download>
+                    <strong>COMPLETE_FEATURES.md</strong>
+                    Full feature documentation
+                </a>
+                <a href="QUANTUM_WORLD_FIXES.md" class="doc-link" download>
+                    <strong>QUANTUM_WORLD_FIXES.md</strong>
+                    Technical fix details
+                </a>
+                <a href="QUANTUM_WORLD_QUICKSTART.md" class="doc-link" download>
+                    <strong>QUANTUM_WORLD_QUICKSTART.md</strong>
+                    User guide & troubleshooting
+                </a>
+                <a href="FIXES_SUMMARY.txt" class="doc-link" download>
+                    <strong>FIXES_SUMMARY.txt</strong>
+                    Summary of all fixes
+                </a>
+                <a href="README.md" class="doc-link" download>
+                    <strong>README.md</strong>
+                    Main project documentation
+                </a>
+            </div>
+        </div>
+        
+        <div class="docs-section">
+            <h2>⚡ Quick Start</h2>
+            <p style="font-size: 1.1em; line-height: 1.8; opacity: 0.9;">
+                <strong>1.</strong> Start the server: <code style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 4px;">python server.py</code><br>
+                <strong>2.</strong> Click any card above to launch<br>
+                <strong>3.</strong> Explore features, save worlds, take screenshots<br>
+                <strong>4.</strong> Use keyboard shortcuts for power user mode
+            </p>
+        </div>
+        
+        <div class="docs-section">
+            <h2>⌨️ Essential Shortcuts</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                    <strong style="color: #667eea;">Ctrl+S</strong> → Save world
+                </div>
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                    <strong style="color: #667eea;">Ctrl+O</strong> → Load world
+                </div>
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                    <strong style="color: #667eea;">Ctrl+R</strong> → Randomize
+                </div>
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                    <strong style="color: #667eea;">Delete</strong> → Remove object
+                </div>
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                    <strong style="color: #667eea;">Shift+Click</strong> → Select
+                </div>
+                <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px;">
+                    <strong style="color: #667eea;">Esc</strong> → Deselect
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p style="font-size: 1.2em; margin-bottom: 10px;">
+                🎉 <strong>All Features Ready!</strong> 🎉
+            </p>
+            <p>
+                Built with HTML5 Canvas, CSS3 Animations, Vanilla JavaScript & Quantum Mechanics ⚛️
+            </p>
+            <p style="margin-top: 20px; opacity: 0.6;">
+                Version 2.0 • Enhanced with full interactivity, 3D rendering & comprehensive docs
+            </p>
+        </div>
+    </div>
+</body>
+</html>

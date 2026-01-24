@@ -5,6 +5,12 @@
 ```bash
 cd /workspaces/AI/aria_web && python server.py
 # Then open: http://localhost:8080/quantum-world.html
+
+## GitHub Pages quick links
+
+- Landing page: `/index.html` (redirects to `/aria_web/quantum-portal.html`)
+- Entry points list: `/aria_web/WEB_PAGES.md`
+- API-backed pages accept `?api=https://your-server`
 ```
 
 ## 🎯 What's Fixed

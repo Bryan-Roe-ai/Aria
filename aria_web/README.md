@@ -26,6 +26,10 @@ python server.py
 # Navigate to: http://localhost:8080
 ```
 
+## Web Pages Index
+
+See `WEB_PAGES.md` for a concise list of HTML entry points and documentation links.
+
 ## Architecture
 
 ### Frontend (`index.html` + `aria_controller.js`)
