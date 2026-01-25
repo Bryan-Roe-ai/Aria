@@ -37,7 +37,7 @@ def test_model_info():
     print("TEST 2: Model Info")
     print("="*70)
     
-    response = requests.get(f"{BASE_URL}/api/model_info", timeout=REQUEST_TIMEOUT)
+    response = requests.get(f"{BASE_URL}/api/model_info")
     print(f"Status Code: {response.status_code}")
     print(f"Response: {json.dumps(response.json(), indent=2)}")
     
