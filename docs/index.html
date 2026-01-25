@@ -3,13 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 Aria - Interactive AI Character Chat</title>
-    <!-- Marked.js for markdown rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Highlight.js for code syntax highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <title>Aria Quantum AI - Web Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --ink: #1a232f;
+            --ink-soft: #2f3b4a;
+            --muted: #5d6b7c;
+            --accent-warm: #ff7a59;
+            --accent-cool: #0b8a83;
+            --accent-gold: #f2b24c;
+            --glass: rgba(255, 255, 255, 0.88);
+            --glass-strong: rgba(255, 255, 255, 0.95);
+            --shadow-1: 0 24px 60px rgba(19, 26, 38, 0.18);
+            --shadow-2: 0 14px 30px rgba(19, 26, 38, 0.16);
+            --border: rgba(255, 255, 255, 0.6);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -17,921 +29,464 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 15s ease infinite;
+            font-family: 'Outfit', sans-serif;
+            color: var(--ink);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            color: #333;
+            background:
+                radial-gradient(1100px 700px at 8% 10%, rgba(255, 244, 228, 0.9), transparent 60%),
+                radial-gradient(900px 620px at 90% 12%, rgba(202, 238, 231, 0.7), transparent 55%),
+                radial-gradient(750px 520px at 20% 85%, rgba(255, 232, 214, 0.6), transparent 60%),
+                linear-gradient(140deg, #f3e6d3 0%, #d9e5dd 45%, #c7d7e4 100%);
+            padding: 32px 20px 48px;
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .container {
-            max-width: 1400px;
-            width: 100%;
+        .shell {
+            max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            height: auto;
-            min-height: calc(100vh - 40px);
-        }
-
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
         }
 
         header {
-            grid-column: 1 / -1;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 44px;
         }
 
         h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-            color: white;
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(2.6rem, 3vw + 1.4rem, 3.6rem);
+            letter-spacing: 0.5px;
+            margin-bottom: 14px;
+            color: var(--ink);
+            text-shadow: 0 14px 24px rgba(16, 24, 35, 0.08);
         }
 
         .subtitle {
-            font-size: 1.1em;
-            color: rgba(255,255,255,0.95);
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            color: var(--ink-soft);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
 
-        /* ========== ARIA CHARACTER SECTION ========== */
-        .aria-section {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        .meta-bar {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 600px;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 18px;
         }
 
-        .aria-title {
-            font-size: 1.5em;
-            color: #667eea;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .aria-stage {
-            width: 100%;
-            height: 400px;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 15px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .aria-character {
-            font-size: 120px;
-            animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
-            transition: all 0.3s ease;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .aria-character.speaking {
-            animation: speak 0.5s ease;
-        }
-
-        @keyframes speak {
-            0%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(1.1); }
-        }
-
-        .aria-state {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f5f7fa;
-            border-radius: 10px;
-            border-left: 4px solid #667eea;
-            font-size: 0.9em;
-            color: #555;
-            width: 100%;
-            text-align: center;
-        }
-
-        /* ========== CHAT SECTION ========== */
-        .chat-section {
-            background: rgba(255, 255, 255, 0.98);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            min-height: 600px;
-        }
-
-        .chat-title {
-            font-size: 1.5em;
-            color: #667eea;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .settings-panel {
-            background: #f5f7fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #e0e7ff;
-        }
-
-        .settings-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .settings-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .setting-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .setting-group label {
-            font-size: 0.85em;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .setting-group input,
-        .setting-group select {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9em;
-            transition: border-color 0.3s;
-        }
-
-        .setting-group input:focus,
-        .setting-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            border: 1px solid #e0e7ff;
-            border-radius: 10px;
-            padding: 15px;
-            background: #fafbfc;
-            margin-bottom: 15px;
-            min-height: 300px;
-            max-height: 400px;
-        }
-
-        .message {
-            margin-bottom: 12px;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message.user {
-            text-align: right;
-        }
-
-        .message-content {
-            display: inline-block;
-            padding: 12px 15px;
-            border-radius: 12px;
-            font-size: 0.95em;
-            word-wrap: break-word;
-            max-width: 85%;
-        }
-
-        .message.user .message-content {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 18px 4px 18px 18px;
-        }
-
-        .message.assistant .message-content {
-            background: #e0e7ff;
-            color: #333;
-            border-radius: 4px 18px 18px 18px;
-        }
-
-        .message-code {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 12px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-            margin-top: 8px;
-        }
-
-        .message-code code {
-            background: none;
-            padding: 0;
-        }
-
-        .input-area {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-
-        .input-field {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-field textarea {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 0.95em;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 50px;
-            max-height: 100px;
-            transition: border-color 0.3s;
-        }
-
-        .input-field textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .send-btn {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            white-space: nowrap;
-        }
-
-        .send-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-        }
-
-        .send-btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .status-bar {
-            padding: 10px;
-            background: #f5f7fa;
-            border-radius: 8px;
-            font-size: 0.85em;
-            color: #666;
-            border: 1px solid #e0e7ff;
-            text-align: center;
-        }
-
-        .status-bar.loading {
-            color: #667eea;
-            font-weight: 500;
-        }
-
-        .status-bar.error {
-            color: #e74c3c;
-            font-weight: 500;
-        }
-
-        .status-bar.success {
-            color: #27ae60;
-            font-weight: 500;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid rgba(102, 126, 234, 0.3);
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 5px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ========== UTILITY ========== */
-        .connection-url-container {
-            grid-column: 1 / -1;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .connection-url-container h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 1em;
-        }
-
-        .connection-url {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            background: #f5f7fa;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #e0e7ff;
-        }
-
-        .connection-url input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-            color: #555;
-        }
-
-        .connection-url input:focus {
-            outline: none;
-        }
-
-        .copy-btn {
-            padding: 8px 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background 0.3s;
-        }
-
-        .copy-btn:hover {
-            background: #764ba2;
-        }
-
-        .test-btn {
+        .meta-chip {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 999px;
             padding: 8px 16px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            transition: background 0.3s;
-            margin-left: 10px;
+            font-size: 0.9rem;
+            color: var(--muted);
+            box-shadow: 0 8px 20px rgba(19, 26, 38, 0.12);
         }
 
-        .test-btn:hover {
-            background: #229954;
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
         }
 
-        @media (max-width: 768px) {
-            .settings-row {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 1.8em;
-            }
-
-            .aria-character {
-                font-size: 80px;
-            }
-
-            .aria-stage {
-                min-height: 300px;
-            }
+        .section {
+            background: var(--glass);
+            border-radius: 22px;
+            padding: 28px;
+            box-shadow: var(--shadow-1);
+            border: 1px solid var(--border);
         }
 
-        /* ========== PAGES HUB ========== */
-        .pages-hub {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-
-        .pages-hub h3 {
-            color: #667eea;
-            margin-bottom: 12px;
-        }
-
-        .hub-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 12px;
-        }
-
-        .hub-card {
-            padding: 14px 16px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(240,245,255,0.98) 100%);
-            border: 1px solid #e0e7ff;
-            border-radius: 12px;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .hub-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 24px rgba(102,126,234,0.25);
-        }
-
-        .hub-title {
-            font-weight: 700;
-            color: #444;
-            margin-bottom: 6px;
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
+            color: var(--ink);
         }
 
-        .hub-links a {
-            display: inline-block;
-            margin-right: 10px;
-            margin-bottom: 6px;
-            color: #667eea;
+        .section p {
+            color: var(--muted);
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--glass-strong);
+            border-radius: 18px;
+            padding: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: var(--shadow-2);
+            position: relative;
+            overflow: hidden;
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
+            animation: rise 0.7s ease forwards;
+            opacity: 0;
+            animation-delay: var(--delay, 0s);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(11, 138, 131, 0.4);
+            box-shadow: 0 18px 36px rgba(19, 26, 38, 0.18);
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--ink);
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        .link-set {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cool), var(--accent-warm));
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateX(4px);
+            box-shadow: 0 10px 24px rgba(11, 138, 131, 0.25);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--accent-cool);
+            border-color: rgba(11, 138, 131, 0.4);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(11, 138, 131, 0.08);
+        }
+
+        .btn-tertiary {
+            background: transparent;
+            color: var(--accent-warm);
+            border-color: rgba(255, 122, 89, 0.5);
+        }
+
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--accent-cool);
+            background: rgba(11, 138, 131, 0.1);
+            padding: 6px 12px;
+            border-radius: 999px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-cool);
+            animation: pulse 2s infinite;
+        }
+
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+            color: var(--accent-cool);
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.95em;
         }
 
-        .hub-links a:hover {
+        .footer-links a:hover {
             text-decoration: underline;
+        }
+
+        @keyframes rise {
+            from {
+                transform: translateY(14px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @media (max-width: 720px) {
+            .section {
+                padding: 22px;
+            }
+
+            .meta-chip {
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .card {
+                animation: none;
+                opacity: 1;
+            }
+
+            .status-dot {
+                animation: none;
+            }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>🤖 Aria - Interactive AI Character</h1>
-        <p class="subtitle">Chat with Aria powered by LLM • Real-time streaming responses</p>
-    </header>
+    <div class="shell">
+        <header>
+            <h1>Aria Quantum AI</h1>
+            <p class="subtitle">Everything in one place. Launch every Aria experience, dashboard, and portal directly from GitHub Pages.</p>
+            <div class="meta-bar">
+                <div class="meta-chip">All sites are hosted in this Pages build</div>
+                <div class="meta-chip">Fast navigation • No setup required</div>
+            </div>
+        </header>
 
-    <div class="connection-url-container">
-        <h3>Server Configuration</h3>
-        <div class="connection-url">
-            <input type="text" id="serverUrl" placeholder="http://localhost:7071" value="http://localhost:7071">
-            <button class="copy-btn" onclick="copyToClipboard()">Copy</button>
-            <button class="test-btn" onclick="testConnection()">Test Connection</button>
-        </div>
-    </div>
-
-    <section class="pages-hub">
-        <h3>Static Experience Hub (GitHub Pages) • <a href="sitemap.html" style="color: #ff7a59; text-decoration: underline;">View Full Site Map 🗺️</a></h3>
-        <div class="hub-grid">
-            <div class="hub-card">
-                <div class="hub-title">🌐 Aria Web (Portal + Worlds)</div>
-                <div class="hub-links">
-                    <a href="aria_web/quantum-portal.html">Portal</a>
-                    <a href="aria_web/quantum-world-3d.html">3D World</a>
-                    <a href="aria_web/quantum-world.html">2D World</a>
-                    <a href="aria_web/quantum-world-features.html">Features</a>
-                    <a href="aria_web/test-quantum-world.html">Tests</a>
-                    <a href="aria_web/auto-execute.html">Auto-Execute</a>
-                    <a href="aria_web/index.html">Aria Home</a>
-                </div>
-            </div>
-            <div class="hub-card">
-                <div class="hub-title">💬 Chat Web</div>
-                <div class="hub-links">
-                    <a href="chat-web/index.html">Chat UI</a>
-                    <a href="chat-web/aria.html">Aria Chat</a>
-                    <a href="chat-web/start-backend.html">Backend Start Guide</a>
-                </div>
-            </div>
-            <div class="hub-card">
-                <div class="hub-title">📊 Dashboards</div>
-                <div class="hub-links">
-                    <a href="dashboard/index.html">Main Dashboard</a>
-                    <a href="dashboard/hub.html">Hub</a>
-                    <a href="dashboard/analytics.html">Analytics</a>
-                    <a href="dashboard/gguf_visualizer.html">GGUF Visualizer</a>
-                </div>
-            </div>
-            <div class="hub-card">
-                <div class="hub-title">🧩 3D Characters</div>
-                <div class="hub-links">
-                    <a href="characters/index.html">Character Hub</a>
-                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/README.md" target="_blank">Pipeline Docs</a>
-                    <a href="https://github.com/brycejonathan/AI/blob/main/assets/characters/characters_manifest.json" target="_blank">Manifest</a>
-                </div>
-            </div>
-            <div class="hub-card">
-                <div class="hub-title">📄 Docs & Guides</div>
-                <div class="hub-links">
-                    <a href="https://github.com/brycejonathan/AI/blob/main/docs/ARIA_QUICK_REFERENCE.md" target="_blank">Quick Reference</a>
-                    <a href="https://github.com/brycejonathan/AI/blob/main/docs/GETTING_STARTED_VSCODE.md" target="_blank">VS Code Setup</a>
-                    <a href="https://github.com/brycejonathan/AI/blob/main/docs/GITHUB_PAGES_SETUP.md" target="_blank">Pages Setup</a>
-                    <a href="dashboard/hub.html">All Dashboards</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="container">
-        <!-- LEFT: ARIA CHARACTER -->
-        <div class="aria-section">
-            <div class="aria-title">Meet Aria</div>
-            <div class="aria-stage">
-                <div class="aria-character" id="ariaCharacter">🤖</div>
-            </div>
-            <div class="aria-state">
-                <div id="ariaStatus">Ready to chat! 👋</div>
-                <div id="ariaExpression" style="margin-top: 10px; font-size: 0.85em; opacity: 0.8;"></div>
-            </div>
-        </div>
-
-        <!-- RIGHT: CHAT INTERFACE -->
-        <div class="chat-section">
-            <div class="chat-title">Chat with Aria</div>
-
-            <div class="settings-panel">
-                <div class="settings-row">
-                    <div class="setting-group">
-                        <label for="provider">Provider:</label>
-                        <select id="provider">
-                            <option value="auto">Auto (Best Available)</option>
-                            <option value="lmstudio">LMStudio (Local)</option>
-                            <option value="azure">Azure OpenAI</option>
-                            <option value="openai">OpenAI</option>
-                            <option value="local">Local Echo</option>
-                        </select>
+        <main>
+            <section class="section">
+                <h2>🚀 Start Here</h2>
+                <p>Quick-launch the most popular destinations or jump into the full site map.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.05s;">
+                        <h3>Web Hub Overview</h3>
+                        <p>Curated launchpad with access to every live interface and environment.</p>
+                        <div class="status-chip"><span class="status-dot"></span>GitHub Pages Ready</div>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="sitemap.html">Open Full Sitemap</a>
+                            <a class="btn btn-secondary" href="chat-web/index.html">Go to Chat UI</a>
+                        </div>
                     </div>
-                    <div class="setting-group">
-                        <label for="temperature">Temperature:</label>
-                        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
-                        <span id="tempValue" style="font-size: 0.8em;">0.7</span>
+                    <div class="card" style="--delay: 0.1s;">
+                        <h3>Quantum Portal</h3>
+                        <p>Gateway to every quantum experience, world, and visualization.</p>
+                        <div class="status-chip"><span class="status-dot"></span>Portal Live</div>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="aria_web/quantum-portal.html">Enter Portal</a>
+                            <a class="btn btn-tertiary" href="aria_web/quantum-world.html">2D World</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.15s;">
+                        <h3>Command Center</h3>
+                        <p>Unified control panel for dashboards, analytics, and monitoring.</p>
+                        <div class="status-chip"><span class="status-dot"></span>Dashboard Hub</div>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="dashboard/hub.html">Open Dashboard Hub</a>
+                            <a class="btn btn-secondary" href="dashboard/unified.html">Training View</a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <div class="chat-messages" id="chatMessages"></div>
-
-            <div class="input-area">
-                <div class="input-field" style="flex: 1;">
-                    <textarea id="userInput" placeholder="Type your message to Aria..." onkeydown="handleKeydown(event)"></textarea>
+            <section class="section">
+                <h2>🎯 Aria Interfaces</h2>
+                <p>Visual command, auto-execute planning, and core Aria controls.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.2s;">
+                        <h3>Aria Visual Command</h3>
+                        <p>Primary visual interface for Aria with real-time controls.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="aria_web/index.html">Open Aria Interface</a>
+                            <a class="btn btn-secondary" href="aria_web/auto-execute.html">Auto-Execute Planner</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.25s;">
+                        <h3>Feature Showcase</h3>
+                        <p>Interactive guide to everything the Aria web stack can do.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="aria_web/quantum-world-features.html">Explore Features</a>
+                            <a class="btn btn-secondary" href="aria_web/test-quantum-world.html">Run Test Suite</a>
+                        </div>
+                    </div>
                 </div>
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
-            </div>
+            </section>
 
-            <div class="status-bar" id="statusBar">Ready</div>
-        </div>
+            <section class="section">
+                <h2>💬 Chat Experiences</h2>
+                <p>Multiple chat interfaces optimized for fast conversation and streaming responses.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.3s;">
+                        <h3>Chat Web UI</h3>
+                        <p>Full chat interface with streaming, highlighting, and provider toggles.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="chat-web/index.html">Launch Chat UI</a>
+                            <a class="btn btn-secondary" href="chat-web/aria.html">Aria Character Chat</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.35s;">
+                        <h3>Backend Starter</h3>
+                        <p>Quick instructions for running the chat backend locally.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="chat-web/start-backend.html">Start Backend Guide</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>⚛️ Quantum Worlds</h2>
+                <p>Explore the 2D and 3D quantum environments with unique visuals and controls.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.4s;">
+                        <h3>Quantum World 2D</h3>
+                        <p>Interactive 2D simulation with drag & drop and multiple themes.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="aria_web/quantum-world.html">Launch 2D World</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.45s;">
+                        <h3>Quantum World 3D</h3>
+                        <p>Realtime canvas visualization with 3D geometry and motion.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="aria_web/quantum-world-3d.html">Launch 3D World</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>📊 Dashboards & Monitoring</h2>
+                <p>Track training, analytics, and model health across the entire platform.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.5s;">
+                        <h3>Main Dashboards</h3>
+                        <p>Core monitoring dashboards with metrics and training summaries.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="dashboard/index.html">Main Dashboard</a>
+                            <a class="btn btn-secondary" href="dashboard/unified.html">Unified Training</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.55s;">
+                        <h3>Analytics & Advanced</h3>
+                        <p>Deep analytics, advanced controls, and consolidated views.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="dashboard/analytics.html">Analytics</a>
+                            <a class="btn btn-secondary" href="dashboard/advanced.html">Advanced</a>
+                            <a class="btn btn-tertiary" href="dashboard/consolidated.html">Consolidated View</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.6s;">
+                        <h3>Specialized Views</h3>
+                        <p>Enhanced UI, GGUF visualizer, and extra monitoring tools.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="dashboard/enhanced.html">Enhanced Dashboard</a>
+                            <a class="btn btn-secondary" href="dashboard/gguf_visualizer.html">GGUF Visualizer</a>
+                            <a class="btn btn-tertiary" href="dashboard/hub.html">Dashboard Hub</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>🧩 Characters & Assets</h2>
+                <p>Explore the stylized humanoid pipeline and 3D character showcases.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.65s;">
+                        <h3>Character Hub</h3>
+                        <p>Stylized humanoid assets with Unity-ready pipeline details.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="characters/index.html">Open Character Hub</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>📚 Docs & Guides</h2>
+                <p>Reference documentation and quick-start guides hosted inside this Pages build.</p>
+                <div class="grid">
+                    <div class="card" style="--delay: 0.7s;">
+                        <h3>Documentation Index</h3>
+                        <p>Navigate the full documentation tree from a single page.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="README.md">Docs Overview</a>
+                            <a class="btn btn-secondary" href="ARIA_QUICK_REFERENCE.md">Quick Reference</a>
+                        </div>
+                    </div>
+                    <div class="card" style="--delay: 0.75s;">
+                        <h3>Setup Guides</h3>
+                        <p>Development setup and GitHub Pages deployment instructions.</p>
+                        <div class="link-set">
+                            <a class="btn btn-primary" href="GETTING_STARTED_VSCODE.md">VS Code Setup</a>
+                            <a class="btn btn-secondary" href="GITHUB_PAGES_SETUP.md">Pages Setup</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-links">
+                <a href="sitemap.html">Full Sitemap</a>
+                <a href="nav.html">Site Navigation Snippet</a>
+                <a href="dashboard/hub.html">Dashboard Hub</a>
+                <a href="aria_web/quantum-portal.html">Quantum Portal</a>
+            </div>
+            <p>&copy; 2026 Aria Quantum AI System. All rights reserved.</p>
+            <p id="environment"></p>
+        </footer>
     </div>
 
     <script>
-        // Configuration
-        let CONFIG = {
-            getServerUrl: () => document.getElementById('serverUrl').value || 'http://localhost:7071',
-            getChatEndpoint: () => `${CONFIG.getServerUrl()}/api/chat/stream`,
-            getTestEndpoint: () => `${CONFIG.getServerUrl()}/api/ai/status`,
-        };
-
-        // Message history for context
-        let messageHistory = [];
-        let isWaitingForResponse = false;
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('temperature').addEventListener('input', (e) => {
-                document.getElementById('tempValue').textContent = e.target.value;
-            });
-
-            // Load saved messages
-            loadChatHistory();
-
-            // Welcome message
-            if (messageHistory.length === 0) {
-                addMessage('assistant', '👋 Hello! I\'m Aria. I\'m an interactive AI character here to chat with you. Ask me anything!');
-            }
-        });
-
-        function handleKeydown(event) {
-            if (event.key === 'Enter' && event.ctrlKey) {
-                sendMessage();
-            }
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const message = input.value.trim();
-
-            if (!message || isWaitingForResponse) return;
-
-            // Add user message
-            addMessage('user', message);
-            messageHistory.push({ role: 'user', content: message });
-            input.value = '';
-            isWaitingForResponse = true;
-            updateStatus('loading', 'Aria is thinking...');
-            updateAriaState('thinking', 'Thinking...');
-
-            try {
-                await streamResponse(message);
-            } catch (error) {
-                console.error('Error:', error);
-                updateStatus('error', `Error: ${error.message}`);
-                updateAriaState('error', '❌ Error occurred');
-            } finally {
-                isWaitingForResponse = false;
-                document.getElementById('sendBtn').disabled = false;
-                updateAriaState('ready', 'Ready to chat');
-            }
-        }
-
-        async function streamResponse(userMessage) {
-            const endpoint = CONFIG.getChatEndpoint();
-            const provider = document.getElementById('provider').value;
-            const temperature = parseFloat(document.getElementById('temperature').value);
-
-            const requestBody = {
-                messages: messageHistory,
-                provider: provider === 'auto' ? undefined : provider,
-                temperature: temperature,
-                stream: true,
-            };
-
-            try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.error || `HTTP ${response.status}`);
-                }
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let fullResponse = '';
-                let providerInfo = '';
-
-                updateStatus('loading', 'Streaming response...');
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    const chunk = decoder.decode(value, { stream: true });
-                    const lines = chunk.split('\n');
-
-                    for (const line of lines) {
-                        if (line.startsWith('event:')) {
-                            const eventType = line.replace('event:', '').trim();
-                            if (eventType === 'meta') {
-                                // Skip meta info for now
-                            }
-                        } else if (line.startsWith('data:')) {
-                            try {
-                                const data = JSON.parse(line.replace('data:', '').trim());
-
-                                if (data.provider && data.model) {
-                                    providerInfo = `(${data.provider} • ${data.model})`;
-                                }
-
-                                if (data.delta) {
-                                    fullResponse += data.delta;
-                                    updateLastMessage(fullResponse);
-                                    updateAriaState('speaking', 'Speaking...');
-                                }
-                            } catch (e) {
-                                // Ignore JSON parse errors for incomplete lines
-                            }
-                        }
-                    }
-                }
-
-                // Add complete response to history
-                messageHistory.push({ role: 'assistant', content: fullResponse });
-                saveChatHistory();
-                updateStatus('success', `Response complete ${providerInfo}`);
-            } catch (error) {
-                console.error('Stream error:', error);
-                updateStatus('error', `Stream error: ${error.message}`);
-                throw error;
-            }
-        }
-
-        function addMessage(role, content) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageEl = document.createElement('div');
-            messageEl.className = `message ${role}`;
-
-            // Check if content has code blocks
-            let displayContent = content;
-            try {
-                if (content.includes('```')) {
-                    // Parse markdown-like code blocks
-                    displayContent = content.split('```').map((part, i) => {
-                        if (i % 2 === 1) {
-                            return `<div class="message-code"><code>${escapeHtml(part.trim())}</code></div>`;
-                        }
-                        return escapeHtml(part);
-                    }).join('');
-                } else {
-                    displayContent = escapeHtml(content);
-                }
-            } catch (e) {
-                displayContent = escapeHtml(content);
-            }
-
-            messageEl.innerHTML = `<div class="message-content">${displayContent}</div>`;
-            messagesDiv.appendChild(messageEl);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        function updateLastMessage(content) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messages = messagesDiv.querySelectorAll('.message.assistant');
-            if (messages.length === 0) {
-                addMessage('assistant', content);
-            } else {
-                const lastMessage = messages[messages.length - 1];
-                const contentDiv = lastMessage.querySelector('.message-content');
-                let displayContent = content;
-                try {
-                    if (content.includes('```')) {
-                        displayContent = content.split('```').map((part, i) => {
-                            if (i % 2 === 1) {
-                                return `<div class="message-code"><code>${escapeHtml(part.trim())}</code></div>`;
-                            }
-                            return escapeHtml(part);
-                        }).join('');
-                    } else {
-                        displayContent = escapeHtml(content);
-                    }
-                } catch (e) {
-                    displayContent = escapeHtml(content);
-                }
-                contentDiv.innerHTML = displayContent;
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            }
-        }
-
-        function updateAriaState(state, message) {
-            const character = document.getElementById('ariaCharacter');
-            const expression = document.getElementById('ariaExpression');
-
-            character.classList.remove('speaking');
-
-            if (state === 'speaking') {
-                character.classList.add('speaking');
-                expression.textContent = '💬 ' + message;
-            } else if (state === 'thinking') {
-                expression.textContent = '🤔 ' + message;
-            } else if (state === 'error') {
-                expression.textContent = message;
-            } else {
-                expression.textContent = '✨ ' + message;
-            }
-        }
-
-        function updateStatus(type, message) {
-            const statusBar = document.getElementById('statusBar');
-            const sendBtn = document.getElementById('sendBtn');
-
-            statusBar.className = `status-bar ${type}`;
-            statusBar.innerHTML = type === 'loading'
-                ? `<span class="spinner"></span>${message}`
-                : message;
-
-            sendBtn.disabled = type === 'loading';
-        }
-
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function saveChatHistory() {
-            try {
-                localStorage.setItem('ariaChat', JSON.stringify(messageHistory));
-            } catch (e) {
-                console.warn('Could not save chat history:', e);
-            }
-        }
-
-        function loadChatHistory() {
-            try {
-                const saved = localStorage.getItem('ariaChat');
-                if (saved) {
-                    messageHistory = JSON.parse(saved);
-                    // Replay messages in UI
-                    const messagesDiv = document.getElementById('chatMessages');
-                    messagesDiv.innerHTML = '';
-                    messageHistory.forEach(msg => {
-                        addMessage(msg.role, msg.content);
-                    });
-                }
-            } catch (e) {
-                console.warn('Could not load chat history:', e);
-            }
-        }
-
-        function copyToClipboard() {
-            const input = document.getElementById('serverUrl');
-            input.select();
-            document.execCommand('copy');
-            alert('Server URL copied to clipboard!');
-        }
-
-        async function testConnection() {
-            const testBtn = event.target;
-            const originalText = testBtn.textContent;
-            testBtn.disabled = true;
-            testBtn.textContent = 'Testing...';
-
-            try {
-                const response = await fetch(CONFIG.getTestEndpoint());
-                if (response.ok) {
-                    const data = await response.json();
-                    testBtn.textContent = '✓ Connected';
-                    setTimeout(() => { testBtn.textContent = originalText; testBtn.disabled = false; }, 2000);
-                    updateStatus('success', `Connected to ${data.provider || 'server'}`);
-                } else {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-            } catch (error) {
-                testBtn.textContent = '✗ Failed';
-                setTimeout(() => { testBtn.textContent = originalText; testBtn.disabled = false; }, 2000);
-                updateStatus('error', `Connection failed: ${error.message}`);
-            }
-        }
-
-        // Update aria status display
-        function updateAriaDisplay() {
-            const status = document.getElementById('ariaStatus');
-            status.textContent = isWaitingForResponse ? '💭 Listening...' : '✨ Ready to chat!';
-        }
-
-        // Monitor changes
-        const observer = new MutationObserver(() => updateAriaDisplay());
-        observer.observe(document.body, { childList: true, subtree: true });
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const env = isGitHubPages ? 'GitHub Pages (Deployment)' : isLocalhost ? 'Local Development' : 'Web Server';
+        const envLabel = document.getElementById('environment');
+        envLabel.textContent = `Environment: ${env}`;
     </script>
 </body>
 </html>

@@ -29,7 +29,8 @@ Aria is an interactive AI character that combines:
 
 ## 🌐 GitHub Pages
 
-- Landing page: `index.html` (redirects to `aria_web/quantum-portal.html`)
+- Landing page: `docs/index.html` (Web Hub with links to every site)
+- Chat UI: `docs/chat-web/index.html`
 - Entry points: `aria_web/WEB_PAGES.md`
 - API-backed pages accept `?api=https://your-server`
 
@@ -96,7 +97,8 @@ See [ARIA_AUTOMATION_GUIDE.md](ARIA_AUTOMATION_GUIDE.md) for details
 
 An interactive chat interface with Aria is now available on GitHub Pages. No build required!
 
-**Live Site**: https://github.com/YourUsername/AI/blob/main/docs/index.html
+**Live Hub**: https://yourusername.github.io/AI/docs/
+**Chat UI**: https://yourusername.github.io/AI/docs/chat-web/index.html
 
 **Features**:
 - ✨ Animated Aria character
@@ -107,7 +109,7 @@ An interactive chat interface with Aria is now available on GitHub Pages. No bui
 
 **Quick Start**:
 1. Start function_app: `func host start`
-2. Open [docs/index.html](docs/index.html) in your browser
+2. Open [docs/chat-web/index.html](docs/chat-web/index.html) in your browser
 3. Configure server URL: `http://localhost:7071`
 4. Click "Test Connection"
 5. Start chatting!
