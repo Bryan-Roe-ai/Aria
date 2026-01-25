@@ -1,6 +1,4 @@
-"""
-Test the Banknote Fraud Detector API
-
+"""
 Comprehensive test suite for the production API.
 
 Usage:

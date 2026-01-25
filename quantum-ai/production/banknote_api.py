@@ -1,6 +1,4 @@
-"""
-Banknote Fraud Detector - Production API
-
+"""
 REST API for quantum-powered banknote fraud detection.
 Achieves 100% accuracy on validation data.
 
