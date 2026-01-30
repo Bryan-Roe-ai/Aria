@@ -1,7 +1,7 @@
 <!-- Concise, actionable instructions for AI agents working in this repo. -->
 
 # Aria — Copilot Quick Guide
-*Last updated: January 24, 2026*
+*Last updated: January 29, 2026*
 
 ## Core Architecture
 
@@ -14,10 +14,15 @@
 Each project is completely self-contained with its own `requirements.txt` and venv; no shared dependencies between them.
 
 **Web Surfaces & Integration Points:**
-- **aria_web/server.py** (port 8080) — Interactive 3D character with movement, object interaction, auto-execute planner. Falls back gracefully to rule-based logic if LLM unavailable (see line 41-46 for provider detection try/catch pattern).
-- **chat-web/** — Pure static HTML/JS SSE client consuming `/api/chat` streaming responses from function_app.py
+- **src/web/aria/aria_web/server.py** (port 8080) — Interactive 3D character with movement, object interaction, auto-execute planner. Falls back gracefully to rule-based logic if LLM unavailable (see line 41-46 for provider detection try/catch pattern).
+- **src/web/chat/chat-web/** — Pure static HTML/JS SSE client consuming `/api/chat` streaming responses from function_app.py
 - **function_app.py** — Primary REST API hub: `/api/chat`, `/api/ai/status`, `/api/quantum/*`, `/api/tts`
 - **shared/** — Shared infrastructure: `chat_providers.py` (re-exports from talk-to-ai), `sql_engine.py`, `cosmos_client.py`, `telemetry.py`, `chat_memory.py`
+
+**Development Environments:**
+- **Dev Container**: `.devcontainer/devcontainer.json` provides Python 3.14 + Windows AI Studio extension
+- **VS Code Tasks**: 40+ preconfigured tasks in `.vscode/tasks.json` for training, testing, monitoring, orchestration
+- **Startup Scripts**: `scripts/start_aria.sh`, `scripts/start_aria_full.sh` for one-command environment setup
 
 ## Critical Patterns
 
@@ -31,7 +36,7 @@ Priority order (first match wins):
 5. LoRA adapter (--provider lora + adapter dir with adapter_config.json + adapter_model.safetensors)
 6. Local echo fallback (deterministic, zero dependencies)
 ```
-This chain is consumed by function_app.py (line 21), aria_web/server.py (line 41), and mount/app.py integrations.
+This chain is consumed by function_app.py (line 21), src/web/aria/aria_web/server.py (line 41), and mount/app.py integrations.
 
 **Orchestrator-Driven Workflows** (YAML-based state machines):
 All heavy operations (training, quantum, evaluation) write status.json to `data_out/<orchestrator>/` as source of truth:
@@ -86,7 +91,9 @@ Essential env vars for local.settings.json:
 - `curl http://localhost:7071/api/ai/status | jq` — Comprehensive health check (shows active provider, env vars, DB pool saturation, GPU/CUDA status)
 
 **Character & Chat:**
-- `cd aria_web && python server.py` — Start Aria web UI (port 8080), access at http://localhost:8080
+- `bash scripts/start_aria_full.sh` — One-command startup (Aria server + Functions + monitoring)
+- `bash scripts/start_aria.sh` — Interactive menu for selective startup
+- `cd src/web/aria/aria_web && python server.py` — Start Aria web UI (port 8080), access at http://localhost:8080
 - `python talk-to-ai/src/chat_cli.py --provider local --once "Hello"` — Quick chat CLI smoke test
 - `python talk-to-ai/src/chat_cli.py --provider azure --once "test"` — Test Azure OpenAI provider
 
@@ -108,11 +115,11 @@ Essential env vars for local.settings.json:
 **Component Isolation:**
 - Each project (quantum-ai/, talk-to-ai/, AI/microsoft_phi-silica-3.6_v1/) is completely isolated
 - Never import across project boundaries directly; always go through function_app.py's sys.path handling (lines 14-19) or shared/ re-exports
-- If adding new cross-project imports, update sys.path in function_app.py, aria_web/server.py, and mount/app.py
+- If adding new cross-project imports, update sys.path in function_app.py, src/web/aria/aria_web/server.py, and mount/app.py
 
 **Provider Detection & Fallback:**
 - Always preserve the detection chain; never assume a specific provider is available
-- Implement graceful degradation: try LLM first, fall back to rule-based logic (see aria_web/server.py line 41-46 pattern)
+- Implement graceful degradation: try LLM first, fall back to rule-based logic (see src/web/aria/aria_web/server.py line 41-46 pattern)
 - Use `detect_provider()` from shared/chat_providers.py to check availability before calling; test with `/api/ai/status`
 
 **Status Files & Observability:**
@@ -155,7 +162,7 @@ Essential env vars for local.settings.json:
 | File | Purpose |
 |------|---------|
 | [function_app.py](function_app.py) | REST API endpoints & Azure Functions integration |
-| [aria_web/server.py](aria_web/server.py) | Aria character server, endpoints, LLM fallback patterns |
+| [src/web/aria/aria_web/server.py](src/web/aria/aria_web/server.py) | Aria character server, endpoints, LLM fallback patterns |
 | [shared/chat_providers.py](shared/chat_providers.py) | Multi-provider detection chain re-export |
 | [scripts/training/autotrain.py](scripts/training/autotrain.py) | LoRA training orchestrator |
 | [config/training/autotrain.yaml](config/training/autotrain.yaml) | Training job configuration |
@@ -181,7 +188,7 @@ Essential env vars for local.settings.json:
 | CUDA out of memory | `tail -f data_out/autotrain/job_*.log` shows OOM | Reduce `max_train_samples` in YAML or use `device: cpu` |
 | LoRA adapter not found | `--provider lora` fails | Verify `adapter_config.json` + `adapter_model.safetensors` both exist in adapter dir |
 | Training not starting | Check orchestrator dry-run | `python scripts/training/autotrain.py --dry-run` reveals config errors |
-| Aria web UI not responding | Check server logs | `cd aria_web && python server.py`, verify port 8080 is free |
+| Aria web UI not responding | Check server logs | `cd src/web/aria/aria_web && python server.py`, verify port 8080 is free |
 | DB pool saturation | `/api/ai/status` shows `saturation_alert: true` | Increase `QAI_SQL_POOL_SIZE` environment variable |
 
 ## Modular Instructions

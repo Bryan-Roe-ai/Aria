@@ -1,0 +1,770 @@
+{
+  "timestamp": "2026-01-28T23:18:10",
+  "total_configs": 20,
+  "llm_available": true,
+  "results": [
+    {
+      "name": "1. Balanced",
+      "config": {
+        "name": "1. Balanced",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.246,
+        "max_state": "0010",
+        "entropy": 3.417673390705088,
+        "uniformity": 0.854418347676272,
+        "significant_states": 7.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0010",
+          0.246
+        ],
+        [
+          "1100",
+          0.121
+        ],
+        [
+          "0111",
+          0.121
+        ]
+      ]
+    },
+    {
+      "name": "2. Weak Coupling",
+      "config": {
+        "name": "2. Weak Coupling",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.35,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.171,
+        "max_state": "0010",
+        "entropy": 3.3729630790749754,
+        "uniformity": 0.8432407697687438,
+        "significant_states": 7.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1000",
+          0.171
+        ],
+        [
+          "0010",
+          0.171
+        ],
+        [
+          "1100",
+          0.17
+        ]
+      ]
+    },
+    {
+      "name": "3. Strong Coupling",
+      "config": {
+        "name": "3. Strong Coupling",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.12,
+        "max_state": "1000",
+        "entropy": 3.6795601283904444,
+        "uniformity": 0.9198900320976111,
+        "significant_states": 10.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1000",
+          0.12
+        ],
+        [
+          "0110",
+          0.114
+        ],
+        [
+          "0100",
+          0.107
+        ]
+      ]
+    },
+    {
+      "name": "4. All-to-All",
+      "config": {
+        "name": "4. All-to-All",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      },
+      "analysis": {
+        "max_prob": 0.27,
+        "max_state": "1000",
+        "entropy": 3.4041560068458043,
+        "uniformity": 0.8510390017114511,
+        "significant_states": 4.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1000",
+          0.27
+        ],
+        [
+          "1001",
+          0.165
+        ],
+        [
+          "1101",
+          0.108
+        ]
+      ]
+    },
+    {
+      "name": "5. Phase Gates",
+      "config": {
+        "name": "5. Phase Gates",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular",
+        "phase": true
+      },
+      "analysis": {
+        "max_prob": 0.178,
+        "max_state": "1100",
+        "entropy": 3.67091103115556,
+        "uniformity": 0.91772775778889,
+        "significant_states": 7.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1100",
+          0.178
+        ],
+        [
+          "1010",
+          0.145
+        ],
+        [
+          "0000",
+          0.105
+        ]
+      ]
+    },
+    {
+      "name": "6. Deep (6L)",
+      "config": {
+        "name": "6. Deep (6L)",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 6,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.191,
+        "max_state": "1101",
+        "entropy": 3.2003308305161555,
+        "uniformity": 0.8000827076290389,
+        "significant_states": 7.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1101",
+          0.191
+        ],
+        [
+          "1011",
+          0.18
+        ],
+        [
+          "0000",
+          0.149
+        ]
+      ]
+    },
+    {
+      "name": "7. Standard Angles",
+      "config": {
+        "name": "7. Standard Angles",
+        "qubits": 4,
+        "angles": [
+          1.5707963267948966,
+          0.7853981633974483,
+          1.0471975511965976,
+          0.5235987755982988
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.241,
+        "max_state": "0010",
+        "entropy": 2.983824027254321,
+        "uniformity": 0.7459560068135802,
+        "significant_states": 5.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0010",
+          0.241
+        ],
+        [
+          "0001",
+          0.186
+        ],
+        [
+          "1111",
+          0.182
+        ]
+      ]
+    },
+    {
+      "name": "8. Linear Chain",
+      "config": {
+        "name": "8. Linear Chain",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "linear"
+      },
+      "analysis": {
+        "max_prob": 0.254,
+        "max_state": "1001",
+        "entropy": 3.5377842124482957,
+        "uniformity": 0.8844460531120739,
+        "significant_states": 6.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1001",
+          0.254
+        ],
+        [
+          "1000",
+          0.109
+        ],
+        [
+          "1101",
+          0.108
+        ]
+      ]
+    },
+    {
+      "name": "9. Pyramid",
+      "config": {
+        "name": "9. Pyramid",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "pyramid"
+      },
+      "analysis": {
+        "max_prob": 0.225,
+        "max_state": "1000",
+        "entropy": 3.3811984117379357,
+        "uniformity": 0.8452996029344839,
+        "significant_states": 8.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1000",
+          0.225
+        ],
+        [
+          "0110",
+          0.161
+        ],
+        [
+          "1001",
+          0.126
+        ]
+      ]
+    },
+    {
+      "name": "10. Maximum",
+      "config": {
+        "name": "10. Maximum",
+        "qubits": 4,
+        "angles": [
+          3.141592653589793,
+          3.141592653589793,
+          3.141592653589793,
+          3.141592653589793
+        ],
+        "coupling": 1.0,
+        "layers": 5,
+        "entanglement": "all-to-all"
+      },
+      "analysis": {
+        "max_prob": 0.078,
+        "max_state": "0010",
+        "entropy": 3.990255990688957,
+        "uniformity": 0.9975639976722392,
+        "significant_states": 16.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0010",
+          0.078
+        ],
+        [
+          "1001",
+          0.074
+        ],
+        [
+          "1011",
+          0.07
+        ]
+      ]
+    },
+    {
+      "name": "11. Ultra-Weak",
+      "config": {
+        "name": "11. Ultra-Weak",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.1,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.1,
+        "max_state": "1000",
+        "entropy": 3.8764464526190876,
+        "uniformity": 0.9691116131547719,
+        "significant_states": 11.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1000",
+          0.1
+        ],
+        [
+          "1100",
+          0.089
+        ],
+        [
+          "0010",
+          0.089
+        ]
+      ]
+    },
+    {
+      "name": "12. Ultra-Deep",
+      "config": {
+        "name": "12. Ultra-Deep",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 10,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.244,
+        "max_state": "0010",
+        "entropy": 3.3131157359355137,
+        "uniformity": 0.8282789339838784,
+        "significant_states": 8.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0010",
+          0.244
+        ],
+        [
+          "1000",
+          0.142
+        ],
+        [
+          "1100",
+          0.119
+        ]
+      ]
+    },
+    {
+      "name": "13. Small Angles",
+      "config": {
+        "name": "13. Small Angles",
+        "qubits": 4,
+        "angles": [
+          0.1,
+          0.2,
+          0.15,
+          0.3
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.087,
+        "max_state": "1110",
+        "entropy": 3.881936246221646,
+        "uniformity": 0.9704840615554114,
+        "significant_states": 12.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1110",
+          0.087
+        ],
+        [
+          "0100",
+          0.085
+        ],
+        [
+          "1001",
+          0.083
+        ]
+      ]
+    },
+    {
+      "name": "14. Large Angles",
+      "config": {
+        "name": "14. Large Angles",
+        "qubits": 4,
+        "angles": [
+          2.5,
+          3.0,
+          2.8,
+          2.2
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.399,
+        "max_state": "0000",
+        "entropy": 3.0736766243259837,
+        "uniformity": 0.7684191560814959,
+        "significant_states": 5.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0000",
+          0.399
+        ],
+        [
+          "0001",
+          0.105
+        ],
+        [
+          "1010",
+          0.079
+        ]
+      ]
+    },
+    {
+      "name": "15. Alternating",
+      "config": {
+        "name": "15. Alternating",
+        "qubits": 4,
+        "angles": [
+          0.5,
+          2.5,
+          0.5,
+          2.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.163,
+        "max_state": "0111",
+        "entropy": 3.587489787425434,
+        "uniformity": 0.8968724468563585,
+        "significant_states": 7.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0111",
+          0.163
+        ],
+        [
+          "1010",
+          0.137
+        ],
+        [
+          "0100",
+          0.117
+        ]
+      ]
+    },
+    {
+      "name": "16. Star Pattern",
+      "config": {
+        "name": "16. Star Pattern",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "star"
+      },
+      "analysis": {
+        "max_prob": 0.25,
+        "max_state": "1000",
+        "entropy": 3.3228800250225676,
+        "uniformity": 0.8307200062556419,
+        "significant_states": 8.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1000",
+          0.25
+        ],
+        [
+          "0111",
+          0.16
+        ],
+        [
+          "1001",
+          0.107
+        ]
+      ]
+    },
+    {
+      "name": "17. Shallow Wide",
+      "config": {
+        "name": "17. Shallow Wide",
+        "qubits": 6,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5,
+          1.5,
+          1.8
+        ],
+        "coupling": 0.7,
+        "layers": 2,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.072,
+        "max_state": "111100",
+        "entropy": 5.206047587492422,
+        "uniformity": 0.8676745979154036,
+        "significant_states": 4.0,
+        "total_states": 64
+      },
+      "top_3_states": [
+        [
+          "111100",
+          0.072
+        ],
+        [
+          "010011",
+          0.069
+        ],
+        [
+          "011101",
+          0.066
+        ]
+      ]
+    },
+    {
+      "name": "18. No Entanglement",
+      "config": {
+        "name": "18. No Entanglement",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "none"
+      },
+      "analysis": {
+        "max_prob": 0.563,
+        "max_state": "1101",
+        "entropy": 1.9759173282116005,
+        "uniformity": 0.4939793320529001,
+        "significant_states": 3.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "1101",
+          0.563
+        ],
+        [
+          "0101",
+          0.219
+        ],
+        [
+          "1111",
+          0.082
+        ]
+      ]
+    },
+    {
+      "name": "19. Golden Ratio",
+      "config": {
+        "name": "19. Golden Ratio",
+        "qubits": 4,
+        "angles": [
+          1.618,
+          0.618,
+          1.618,
+          0.618
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.236,
+        "max_state": "0010",
+        "entropy": 2.867048058730213,
+        "uniformity": 0.7167620146825533,
+        "significant_states": 4.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0010",
+          0.236
+        ],
+        [
+          "1111",
+          0.222
+        ],
+        [
+          "0001",
+          0.189
+        ]
+      ]
+    },
+    {
+      "name": "20. Fibonacci",
+      "config": {
+        "name": "20. Fibonacci",
+        "qubits": 4,
+        "angles": [
+          1.0,
+          1.0,
+          2.0,
+          3.0
+        ],
+        "coupling": 0.7,
+        "layers": 3,
+        "entanglement": "circular"
+      },
+      "analysis": {
+        "max_prob": 0.143,
+        "max_state": "0001",
+        "entropy": 3.6632509863864566,
+        "uniformity": 0.9158127465966142,
+        "significant_states": 9.0,
+        "total_states": 16
+      },
+      "top_3_states": [
+        [
+          "0001",
+          0.143
+        ],
+        [
+          "1100",
+          0.139
+        ],
+        [
+          "1111",
+          0.126
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "timestamp": "2026-01-28T22:47:41.315658",
+  "optimized_configs": 8,
+  "best_config": {
+    "name": "\ud83c\udfaf Optimal-2: Small Angles + High Coupling",
+    "coupling": 1.0,
+    "layers": 3,
+    "entanglement": "circular",
+    "angles": [
+      0.1,
+      0.2,
+      0.15,
+      0.3
+    ],
+    "uniformity": 0.9438870252107103,
+    "max_prob": 0.102
+  },
+  "improvement": -0.052462321612517626,
+  "all_results": [
+    {
+      "name": "\ud83c\udfaf Optimal-1: High Coupling + All-to-All",
+      "uniformity": 0.8223833178553013,
+      "max_prob": 0.211,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-1: High Coupling + All-to-All",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-2: Small Angles + High Coupling",
+      "uniformity": 0.9438870252107103,
+      "max_prob": 0.102,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-2: Small Angles + High Coupling",
+        "qubits": 4,
+        "angles": [
+          0.1,
+          0.2,
+          0.15,
+          0.3
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "circular"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-3: Ultra-High Coupling",
+      "uniformity": 0.7412370087514772,
+      "max_prob": 0.294,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-3: Ultra-High Coupling",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 1.2,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-4: Adaptive Angles",
+      "uniformity": 0.8106465376752814,
+      "max_prob": 0.288,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-4: Adaptive Angles",
+        "qubits": 4,
+        "angles": [
+          0.5,
+          1.0,
+          1.5,
+          2.0
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-5: Golden Ratio + High Coupling",
+      "uniformity": 0.7346321029801308,
+      "max_prob": 0.325,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-5: Golden Ratio + High Coupling",
+        "qubits": 4,
+        "angles": [
+          1.618,
+          0.618,
+          1.618,
+          0.618
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-6: Fibonacci + All-to-All",
+      "uniformity": 0.8533170876182146,
+      "max_prob": 0.283,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-6: Fibonacci + All-to-All",
+        "qubits": 4,
+        "angles": [
+          1.0,
+          1.0,
+          2.0,
+          3.0
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-7: Perfect Pi Fractions",
+      "uniformity": 0.7936338740572224,
+      "max_prob": 0.326,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-7: Perfect Pi Fractions",
+        "qubits": 4,
+        "angles": [
+          0.5235987755982988,
+          0.7853981633974483,
+          1.0471975511965976,
+          1.5707963267948966
+        ],
+        "coupling": 1.0,
+        "layers": 3,
+        "entanglement": "all-to-all"
+      }
+    },
+    {
+      "name": "\ud83c\udfaf Optimal-8: Hybrid Entanglement",
+      "uniformity": 0.871457497314107,
+      "max_prob": 0.254,
+      "config": {
+        "name": "\ud83c\udfaf Optimal-8: Hybrid Entanglement",
+        "qubits": 4,
+        "angles": [
+          1.2,
+          0.8,
+          2.1,
+          0.5
+        ],
+        "coupling": 1.0,
+        "layers": 4,
+        "entanglement": "hybrid"
+      }
+    }
+  ]
+}

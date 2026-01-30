@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Custom Quantum Circuit
-Create and run your own quantum circuit
+Custom Quantum Circuit Collection
+Multiple quantum circuits with different configurations
 """
 import pennylane as qml
 import numpy as np
 import matplotlib.pyplot as plt
 
 print("=" * 70)
-print("  CREATING YOUR QUANTUM CIRCUIT")
+print("  QUANTUM CIRCUIT PLAYGROUND")
 print("=" * 70)
 
 # Create a quantum device
@@ -105,11 +105,140 @@ for i, test_p in enumerate(test_params):
     print(f"  Test {i+1}: max_state=|{max_state}⟩ prob={max_prob:.3f}")
 
 print("\n" + "=" * 70)
-print("  ✓ CIRCUIT COMPLETE!")
+print("  CIRCUIT #2: BELL STATE (Maximum Entanglement)")
 print("=" * 70)
-print("\nNext steps:")
-print("  • Modify parameters in the code")
-print("  • Add more gates (RX, RZ, Toffoli, etc.)")
-print("  • Try different entanglement patterns")
-print("  • Increase qubit count")
+
+@qml.qnode(dev)
+def bell_circuit():
+    """Create Bell state |Φ+⟩ = (|00⟩ + |11⟩)/√2"""
+    qml.Hadamard(wires=0)
+    qml.CNOT(wires=[0, 1])
+    return qml.probs(wires=[0, 1])
+
+bell_probs = bell_circuit()
+print("\nBell State Results:")
+print("  |00⟩:", f"{bell_probs[0]:.3f}")
+print("  |01⟩:", f"{bell_probs[1]:.3f}")
+print("  |10⟩:", f"{bell_probs[2]:.3f}")
+print("  |11⟩:", f"{bell_probs[3]:.3f}")
+print("  → Perfect correlation! Measuring qubit 0 determines qubit 1")
+
+print("\n" + "=" * 70)
+print("  CIRCUIT #3: GHZ STATE (3-Qubit Entanglement)")
+print("=" * 70)
+
+@qml.qnode(dev)
+def ghz_circuit():
+    """Create GHZ state |GHZ⟩ = (|000⟩ + |111⟩)/√2"""
+    qml.Hadamard(wires=0)
+    qml.CNOT(wires=[0, 1])
+    qml.CNOT(wires=[1, 2])
+    return qml.probs(wires=range(3))
+
+ghz_probs = ghz_circuit()
+print("\nGHZ State Results:")
+for i in [0, 7]:  # Only show |000⟩ and |111⟩
+    binary = format(i, '03b')
+    print(f"  |{binary}⟩:", f"{ghz_probs[i]:.3f}")
+print("  → All qubits perfectly entangled!")
+
+print("\n" + "=" * 70)
+print("  CIRCUIT #4: QUANTUM INTERFERENCE")
+print("=" * 70)
+
+@qml.qnode(dev)
+def interference_circuit(theta):
+    """Demonstrate quantum interference"""
+    qml.Hadamard(wires=0)
+    qml.RZ(theta, wires=0)
+    qml.Hadamard(wires=0)
+    return qml.probs(wires=0)
+
+theta_vals = np.linspace(0, 2*np.pi, 50)
+probs_0 = [interference_circuit(t)[0] for t in theta_vals]
+
+plt.figure(figsize=(10, 6))
+plt.plot(theta_vals, probs_0, 'b-', linewidth=2, label='|0⟩ probability')
+plt.plot(theta_vals, [1-p for p in probs_0], 'r-', linewidth=2, label='|1⟩ probability')
+plt.xlabel('Rotation Angle θ (radians)', fontsize=12, fontweight='bold')
+plt.ylabel('Probability', fontsize=12, fontweight='bold')
+plt.title('Quantum Interference Pattern', fontsize=14, fontweight='bold')
+plt.legend(fontsize=11)
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('interference_pattern.png', dpi=150, bbox_inches='tight')
+print("✓ Interference pattern saved to: interference_pattern.png")
+
+print("\n" + "=" * 70)
+print("  CIRCUIT #5: TOFFOLI GATE (3-Qubit Logic)")
+print("=" * 70)
+
+@qml.qnode(dev)
+def toffoli_circuit(state):
+    """Toffoli gate (CCNOT): flips target if both controls are |1⟩"""
+    # Prepare input state
+    if state[0]:
+        qml.PauliX(wires=0)
+    if state[1]:
+        qml.PauliX(wires=1)
+    if state[2]:
+        qml.PauliX(wires=2)
+    
+    # Apply Toffoli
+    qml.Toffoli(wires=[0, 1, 2])
+    
+    return qml.probs(wires=range(3))
+
+print("\nToffoli Truth Table:")
+print("  Input  → Output")
+test_states = [[0,0,0], [0,0,1], [0,1,0], [0,1,1], 
+               [1,0,0], [1,0,1], [1,1,0], [1,1,1]]
+for state in test_states:
+    result = toffoli_circuit(state)
+    output_state = np.argmax(result)
+    in_bin = ''.join(map(str, state))
+    out_bin = format(output_state, '03b')
+    print(f"  |{in_bin}⟩ → |{out_bin}⟩")
+
+print("\n" + "=" * 70)
+print("  CIRCUIT #6: PHASE KICKBACK")
+print("=" * 70)
+
+@qml.qnode(dev)
+def phase_kickback_circuit(theta):
+    """Demonstrate phase kickback phenomenon"""
+    # Control qubit in superposition
+    qml.Hadamard(wires=0)
+    
+    # Target qubit in |1⟩
+    qml.PauliX(wires=1)
+    
+    # Controlled rotation
+    qml.ControlledPhaseShift(theta, wires=[0, 1])
+    
+    # Hadamard on control to see phase
+    qml.Hadamard(wires=0)
+    
+    return qml.probs(wires=0)
+
+test_theta = np.pi/2
+pk_probs = phase_kickback_circuit(test_theta)
+print(f"\nPhase Kickback (θ={test_theta:.2f}):")
+print(f"  Control |0⟩: {pk_probs[0]:.3f}")
+print(f"  Control |1⟩: {pk_probs[1]:.3f}")
+print("  → Phase information transferred from target to control!")
+
+print("\n" + "=" * 70)
+print("  ✓ ALL CIRCUITS COMPLETE!")
+print("=" * 70)
+print("\nGenerated files:")
+print("  • my_circuit_results.png - Original parameterized circuit")
+print("  • interference_pattern.png - Quantum interference visualization")
+print("\nCircuits demonstrated:")
+print("  1. Parameterized VQC (rotation + entanglement)")
+print("  2. Bell State (2-qubit entanglement)")
+print("  3. GHZ State (3-qubit entanglement)")
+print("  4. Quantum Interference (H-RZ-H)")
+print("  5. Toffoli Gate (3-qubit logic)")
+print("  6. Phase Kickback (quantum phase transfer)")
 print("=" * 70)
