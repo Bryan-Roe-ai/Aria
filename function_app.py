@@ -87,6 +87,21 @@ sys.path.insert(0, str(quantum_ai_path))
 scripts_path = Path(__file__).resolve().parent / "scripts"
 sys.path.insert(0, str(scripts_path))
 
+# -----------------------------------------------------------------------------
+# Subscription Manager (optional)
+# -----------------------------------------------------------------------------
+try:  # pragma: no cover - defensive import
+    from shared.subscription_manager import (
+        get_subscription_manager,
+        SubscriptionTier,
+        Feature,
+    )
+    subscription_manager_available = True
+except Exception as _sub_err:  # noqa: BLE001
+    logging.info(f"[startup] Subscription manager unavailable: {_sub_err}")
+    subscription_manager_available = False
+    get_subscription_manager = None  # type: ignore
+
 
 # OpenTelemetry tracer (optional)
 try:  # pragma: no cover
@@ -2037,3 +2052,282 @@ def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
+
+
+# =============================================================================
+# SUBSCRIPTION & MONETIZATION ENDPOINTS
+# =============================================================================
+
+@app.route(route="subscription/pricing", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get pricing information for all subscription tiers.
+    
+    GET /api/subscription/pricing
+    
+    Response: {
+        "tiers": {
+            "free": {...},
+            "pro": {...},
+            "enterprise": {...}
+        }
+    }
+    """
+    logging.info('Pricing endpoint invoked')
+    
+    try:
+        from shared.subscription_manager import TIER_PRICING, TIER_FEATURES, TIER_LIMITS, SubscriptionTier
+        
+        pricing_info = {
+            "tiers": {}
+        }
+        
+        for tier in SubscriptionTier:
+            pricing_info["tiers"][tier.value] = {
+                "name": tier.name,
+                "price": TIER_PRICING[tier],
+                "currency": "USD",
+                "billing_period": "monthly",
+                "features": {f.value: enabled for f, enabled in TIER_FEATURES[tier].items()},
+                "limits": TIER_LIMITS[tier]
+            }
+        
+        return func.HttpResponse(
+            json.dumps(pricing_info),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Pricing endpoint error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to get pricing: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="subscription/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get subscription status for a user.
+    
+    GET /api/subscription/status?user_id=<user_id>
+    
+    Response: {
+        "user_id": "...",
+        "tier": "pro",
+        "is_active": true,
+        "usage": {...},
+        "limits": {...}
+    }
+    """
+    logging.info('Subscription status endpoint invoked')
+    
+    try:
+        if not subscription_manager_available:
+            return func.HttpResponse(
+                json.dumps({"error": "Subscription manager not available"}),
+                status_code=503,
+                mimetype="application/json",
+                headers=create_cors_response_headers()
+            )
+        
+        user_id = req.params.get('user_id', 'demo_user')
+        
+        manager = get_subscription_manager()
+        subscription = manager.get_subscription(user_id)
+        
+        return func.HttpResponse(
+            json.dumps(subscription.to_dict()),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Subscription status error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to get subscription status: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="subscription/upgrade", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Upgrade a user's subscription.
+    
+    POST /api/subscription/upgrade
+    Body: {
+        "user_id": "...",
+        "tier": "pro" | "enterprise",
+        "duration_days": 30,
+        "payment_method": "stripe",
+        "stripe_subscription_id": "..."
+    }
+    
+    Response: {
+        "success": true,
+        "subscription": {...}
+    }
+    """
+    logging.info('Subscription upgrade endpoint invoked')
+    
+    try:
+        if not subscription_manager_available:
+            return func.HttpResponse(
+                json.dumps({"error": "Subscription manager not available"}),
+                status_code=503,
+                mimetype="application/json",
+                headers=create_cors_response_headers()
+            )
+        
+        body = json.loads(req.get_body().decode('utf-8'))
+        user_id = body.get('user_id', 'demo_user')
+        tier_str = body.get('tier', 'pro')
+        duration_days = body.get('duration_days', 30)
+        payment_method = body.get('payment_method')
+        stripe_subscription_id = body.get('stripe_subscription_id')
+        
+        tier = SubscriptionTier(tier_str)
+        
+        manager = get_subscription_manager()
+        subscription = manager.upgrade_subscription(
+            user_id=user_id,
+            tier=tier,
+            duration_days=duration_days,
+            payment_method=payment_method,
+            stripe_subscription_id=stripe_subscription_id
+        )
+        
+        return func.HttpResponse(
+            json.dumps({
+                "success": True,
+                "subscription": subscription.to_dict()
+            }),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Subscription upgrade error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to upgrade subscription: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="subscription/revenue", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get revenue statistics and projections.
+    
+    GET /api/subscription/revenue
+    
+    Response: {
+        "total_subscribers": 15,
+        "active_subscribers": 15,
+        "by_tier": {...},
+        "monthly_recurring_revenue": 2235,
+        "annual_recurring_revenue": 26820
+    }
+    """
+    logging.info('Revenue stats endpoint invoked')
+    
+    try:
+        if not subscription_manager_available:
+            return func.HttpResponse(
+                json.dumps({"error": "Subscription manager not available"}),
+                status_code=503,
+                mimetype="application/json",
+                headers=create_cors_response_headers()
+            )
+        
+        manager = get_subscription_manager()
+        stats = manager.get_revenue_stats()
+        
+        return func.HttpResponse(
+            json.dumps(stats),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Revenue stats error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to get revenue stats: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="subscription/usage", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Track resource usage for a user.
+    
+    POST /api/subscription/usage
+    Body: {
+        "user_id": "...",
+        "resource": "chat_messages" | "quantum_jobs" | "training_hours" | "api_requests" | "websites_created",
+        "amount": 1
+    }
+    
+    Response: {
+        "success": true,
+        "allowed": true,
+        "current_usage": {...}
+    }
+    """
+    logging.info('Usage tracking endpoint invoked')
+    
+    try:
+        if not subscription_manager_available:
+            return func.HttpResponse(
+                json.dumps({"error": "Subscription manager not available"}),
+                status_code=503,
+                mimetype="application/json",
+                headers=create_cors_response_headers()
+            )
+        
+        body = json.loads(req.get_body().decode('utf-8'))
+        user_id = body.get('user_id', 'demo_user')
+        resource = body.get('resource', 'api_requests')
+        amount = body.get('amount', 1)
+        
+        manager = get_subscription_manager()
+        allowed = manager.track_usage(user_id, resource, amount)
+        
+        subscription = manager.get_subscription(user_id)
+        
+        return func.HttpResponse(
+            json.dumps({
+                "success": True,
+                "allowed": allowed,
+                "current_usage": subscription.usage,
+                "limits": subscription.to_dict()["limits"]
+            }),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Usage tracking error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to track usage: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
