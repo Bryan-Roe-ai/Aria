@@ -1,0 +1,90 @@
+# Quantum-Enhanced Training Configuration
+# Use with autotrain.py to enable quantum-LLM bridge during training
+
+# Add this job to config/training/autotrain.yaml
+
+quantum_enhanced_training:
+  model: "microsoft/Phi-3.5-mini-instruct"
+  finetune_dataset: "datasets/chat/aria/mixed"
+  save_dir: "AI/microsoft_phi-silica-3.6_v1/data_out/lora_training/quantum_enhanced"
+  
+  # Standard LoRA parameters
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.1
+  target_modules: ["q_proj", "k_proj", "v_proj", "o_proj"]
+  
+  # Training parameters
+  learning_rate: 5e-5
+  epochs: 3
+  finetune_train_batch_size: 4
+  finetune_test_batch_size: 4
+  gradient_accumulation_steps: 4
+  max_train_samples: 1000
+  max_eval_samples: 200
+  
+  # Quantum bridge configuration
+  quantum:
+    enabled: true
+    n_training_qubits: 4     # Qubits for encoding training state
+    n_token_qubits: 4        # Qubits for token generation influence
+    n_layers: 4              # Depth of quantum circuit
+    entanglement_pattern: "full"  # Options: linear, circular, full
+    backend: "lightning.qubit"    # PennyLane device
+    enhancement_strength: 0.1     # How much quantum affects generation (0.0-1.0)
+    log_quantum_metrics: true     # Save quantum state to logs
+    
+  # Evaluation with quantum enhancement
+  eval:
+    use_quantum_generation: true
+    quantum_temperature: 0.7
+    compare_with_standard: true  # Compare quantum vs standard generation
+
+---
+
+# Advanced Configuration: Multi-qubit Training
+quantum_enhanced_large:
+  model: "Qwen/Qwen2.5-3B-Instruct"
+  finetune_dataset: "datasets/chat/dolly/full"
+  save_dir: "AI/microsoft_phi-silica-3.6_v1/data_out/lora_training/quantum_large"
+  
+  lora_r: 32
+  lora_alpha: 64
+  learning_rate: 3e-5
+  epochs: 2
+  max_train_samples: 5000
+  
+  quantum:
+    enabled: true
+    n_training_qubits: 8     # More qubits for richer training state
+    n_token_qubits: 8        # More qubits for token generation
+    n_layers: 6              # Deeper circuit
+    entanglement_pattern: "full"
+    enhancement_strength: 0.15
+
+---
+
+# Experimental: Quantum Self-Learning
+quantum_self_learning:
+  model: "microsoft/Phi-3.5-mini-instruct"
+  finetune_dataset: "datasets/chat/synthetic/generated"
+  save_dir: "AI/microsoft_phi-silica-3.6_v1/data_out/lora_training/quantum_self"
+  
+  learning_rate: 1e-4
+  epochs: 5
+  
+  quantum:
+    enabled: true
+    n_training_qubits: 6
+    n_token_qubits: 6
+    n_layers: 8  # Very deep for self-learning
+    entanglement_pattern: "full"
+    enhancement_strength: 0.2  # Stronger quantum influence
+    adaptive_strength: true    # Adjust strength based on loss
+    
+  # Self-learning: generate synthetic data using quantum-enhanced model
+  self_learning:
+    enabled: true
+    generate_samples: 100
+    quality_threshold: 0.8
+    use_quantum_for_generation: true

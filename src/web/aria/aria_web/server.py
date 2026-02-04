@@ -21,6 +21,7 @@ import random
 import re
 import sys
 import datetime
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import timezone
 from functools import lru_cache
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -49,6 +50,23 @@ except Exception:
 # We avoid loading heavy models in the server; providers are used when available
 MODEL = None
 
+LLM_TIMEOUT_S = float(os.getenv('ARIA_LLM_TIMEOUT_S', '8'))
+
+
+def _call_with_timeout(fn, timeout_s: float, label: str):
+    if not timeout_s or timeout_s <= 0:
+        return fn()
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(fn)
+        try:
+            return future.result(timeout=timeout_s)
+        except FuturesTimeoutError:
+            logger.warning("LLM call timed out after %ss (%s)", timeout_s, label)
+            return None
+        except Exception as e:
+            logger.warning("LLM call failed (%s): %s", label, e)
+            return None
+
 # -- stage state ---------------------------------------------------------
 stage_state: Dict[str, Any] = {
     'aria': {'position': {'x': 15, 'y': 20}, 'expression': 'neutral', 'held_object': None, 'facing': 'right'},
@@ -72,6 +90,8 @@ ARIA_ACTIONS = {
     'gesture': {'params': ['gesture_type']},
     'look': {'params': ['target']},
     'wait': {'params': ['duration']},
+    'move_object': {'params': ['object_id', 'position']},
+    'animate_object': {'params': ['object_id', 'animation']},
 }
 
 
@@ -221,7 +241,13 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: Optional[int
     try:
         messages = [{'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': user_prompt}]
-        raw = provider.complete(messages, stream=False)
+        raw = _call_with_timeout(
+            lambda: provider.complete(messages, stream=False),
+            LLM_TIMEOUT_S,
+            "generate_tags_ai",
+        )
+        if raw is None:
+            raise TimeoutError("LLM tag generation timed out")
 
         raw_str = raw.get('content') if isinstance(raw, dict) else (
             raw if isinstance(raw, str) else str(raw))
@@ -416,7 +442,13 @@ class AriaActionParser:
         messages = [{'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': command}]
 
-        raw = self.provider.complete(messages, stream=False)
+        raw = _call_with_timeout(
+            lambda: self.provider.complete(messages, stream=False),
+            LLM_TIMEOUT_S,
+            "parse_with_llm",
+        )
+        if raw is None:
+            raise TimeoutError("LLM parse timed out")
         raw_str = raw.get('content') if isinstance(raw, dict) else (
             raw if isinstance(raw, str) else str(raw))
 
@@ -453,8 +485,16 @@ class AriaActionParser:
         actions: List[Dict] = []
         cmd = command.lower()
 
-        # Move detection
-        if any(w in cmd for w in ['go ', 'move ', 'walk ', 'run ']):
+        # Object movement commands (e.g., "move apple to 30,40")
+        obj_move = re.search(r'move\s+(apple|book|cup|ball|flower)\s+to\s+(\d{1,3})%?[,\s]+(\d{1,3})%?', cmd)
+        if obj_move:
+            obj_id = obj_move.group(1)
+            x = int(max(0, min(100, int(obj_move.group(2)))))
+            y = int(max(0, min(100, int(obj_move.group(3)))))
+            actions.append({'action': 'move_object', 'object_id': obj_id, 'position': {'x': x, 'y': y}})
+
+        # Aria move detection
+        if any(w in cmd for w in ['aria go', 'aria move', 'aria walk', 'go ', 'move ', 'walk ', 'run ']):
             # Try to find coordinates or named object
             coord = re.search(
                 r'(?:to|to the)?\s*(\d{1,3})%?[,\s]+(\d{1,3})%?', cmd)
@@ -538,7 +578,13 @@ def generate_tags_ai(command: str) -> Dict[str, object]:
 
         messages = [{'role': 'system', 'content': system_prompt},
                     {'role': 'user', 'content': command}]
-        raw = provider.complete(messages, stream=False)
+        raw = _call_with_timeout(
+            lambda: provider.complete(messages, stream=False),
+            LLM_TIMEOUT_S,
+            "generate_world_with_llm",
+        )
+        if raw is None:
+            return generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
         raw_str = raw.get('content') if isinstance(raw, dict) else (
             raw if isinstance(raw, str) else str(raw))
 
@@ -668,6 +714,26 @@ def execute_aria_action(action: Dict) -> Dict:
             dur = float(action.get('duration', 1.0))
             return {'status': 'success', 'message': f'Waited {dur}s', 'tags': [f'[aria:wait:{dur}]']}
 
+        if t == 'move_object':
+            obj_id = action.get('object_id')
+            position = action.get('position')
+            if not obj_id or obj_id not in stage_state['objects']:
+                return {'status': 'error', 'message': f'Object {obj_id} not found'}
+            if not position or 'x' not in position or 'y' not in position:
+                return {'status': 'error', 'message': 'Invalid position'}
+            stage_state['objects'][obj_id]['position'] = {
+                'x': int(max(0, min(100, position['x']))),
+                'y': int(max(0, min(100, position['y'])))
+            }
+            return {'status': 'success', 'message': f'Moved {obj_id} to ({position["x"]}, {position["y"]})', 'tags': [f'[object:move:{obj_id}:{position["x"]}:{position["y"]}]']}
+
+        if t == 'animate_object':
+            obj_id = action.get('object_id')
+            animation = action.get('animation', 'bounce')
+            if not obj_id or obj_id not in stage_state['objects']:
+                return {'status': 'error', 'message': f'Object {obj_id} not found'}
+            return {'status': 'success', 'message': f'Animating {obj_id} with {animation}', 'tags': [f'[object:animate:{obj_id}:{animation}]']}
+
         return {'status': 'error', 'message': f'Unimplemented action: {t}'}
     except Exception as e:
         logger.exception('Action execution failed')
@@ -718,321 +784,8 @@ def determine_position_from_context(cmd: str) -> Optional[str]:
     return None
 
 
-# ------------------------- HTTP request handler -------------------------
-class AriaRequestHandler(SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        super().end_headers()
-
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.end_headers()
-
-    def do_GET(self):
-        logger.debug(f'GET {self.path}')
-
-        # Basic state endpoints
-        if self.path in ('/api/aria/state', '/api/aria/objects'):
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            payload = {'aria': stage_state['aria'],
-                       'objects': stage_state['objects']}
-            self.wfile.write(json.dumps(payload).encode('utf-8'))
-            return
-
-        # /api/aria/world/get?theme=&seed=
-        if self.path.startswith('/api/aria/world/get'):
-            try:
-                q = parse_qs(urlparse(self.path).query)
-                theme = q.get('theme', [''])[0]
-                seed = q.get('seed', [''])[0]
-                if not theme or not seed:
-                    raise ValueError('theme and seed parameters required')
-
-                world = fetch_world_cosmos(
-                    theme, seed) or fetch_world_filesystem(theme, seed)
-                if not world:
-                    self.send_response(404)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(json.dumps(
-                        {'status': 'not_found', 'theme': theme, 'seed': seed}).encode('utf-8'))
-                    return
-
-                resp = {'status': 'success', 'theme': theme, 'seed': seed, 'objects': world.get(
-                    'objects', {}), 'environment': world.get('environment', {})}
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(resp).encode('utf-8'))
-                return
-            except Exception as e:
-                logger.exception('World GET error')
-                self.send_response(400)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
-                return
-
-        if self.path == '/api/aria/world/list':
-            try:
-                base_dir = REPO_ROOT / 'data_out' / 'aria_worlds'
-                worlds = []
-                if base_dir.exists():
-                    for f in sorted(base_dir.glob('world_*.json')):
-                        parts = f.stem.split('_')
-                        t = parts[1] if len(parts) >= 4 else None
-                        s = parts[-1] if len(parts) >= 4 else None
-                        worlds.append({'file': str(f), 'theme': t, 'seed': s})
-
-                payload = {'status': 'success', 'worlds': worlds,
-                           'cosmos': {'available': _cosmos_available()}}
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(payload, indent=2).encode('utf-8'))
-                return
-            except Exception as e:
-                logger.exception('World list error')
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
-                return
-
-        if self.path == '/':
-            self.path = '/index.html'
-
-        return super().do_GET()
-
-    def do_POST(self):
-        logger.debug(f'POST {self.path}')
-        try:
-            if self.path == '/api/aria/command':
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8')) if body else {}
-                command = data.get('command', '')
-
-                # Optionally accept stage_state updates
-                if 'stage_state' in data and isinstance(data['stage_state'], dict):
-                    stage_state.update(data['stage_state'])
-
-                ai_result = generate_tags_ai(command)
-                tags = ai_result.get('tags') or []
-                response_text = ai_result.get('response_text', '')
-                provider_used = ai_result.get('provider', 'unknown')
-
-                if not tags:
-                    tags = generate_tags_fallback(command)
-                    model_used = 'fallback'
-                else:
-                    model_used = provider_used or 'ai'
-
-                response = {'command': command, 'tags': tags, 'response': response_text,
-                            'model': model_used, 'stage_context': get_stage_context(), 'stage_aware': True}
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(response).encode('utf-8'))
-                return
-
-            if self.path in ('/api/aria/object', '/api/aria/objects'):
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8')) if body else {}
-
-                # Bulk update
-                if 'objects' in data and isinstance(data['objects'], dict):
-                    for k, v in data['objects'].items():
-                        if isinstance(v, dict) and 'position' in v:
-                            stage_state['objects'][k] = v
-                    result = {'status': 'ok',
-                              'objects': stage_state['objects']}
-
-                elif 'object' in data and 'action' in data:
-                    obj = data['object']
-                    action = data['action']
-                    obj_id = obj.get('id') or obj.get('name')
-                    if not obj_id:
-                        raise ValueError('object must include id or name')
-
-                    if action == 'add':
-                        pos = obj.get('position', {'x': 50, 'y': 50})
-                        state = obj.get('state', 'on_stage')
-                        stage_state['objects'][obj_id] = {
-                            'position': pos, 'state': state}
-                        result = {'status': 'added', 'id': obj_id,
-                                  'object': stage_state['objects'][obj_id]}
-                    elif action == 'update':
-                        if obj_id not in stage_state['objects']:
-                            stage_state['objects'][obj_id] = {}
-                        if 'position' in obj:
-                            stage_state['objects'][obj_id]['position'] = obj['position']
-                        if 'state' in obj:
-                            stage_state['objects'][obj_id]['state'] = obj['state']
-                        result = {'status': 'updated', 'id': obj_id,
-                                  'object': stage_state['objects'][obj_id]}
-                    elif action in ('remove', 'delete'):
-                        removed = stage_state['objects'].pop(obj_id, None)
-                        result = {'status': 'removed',
-                                  'id': obj_id, 'object': removed}
-                    else:
-                        raise ValueError('Unknown object action')
-                else:
-                    raise ValueError('Invalid payload')
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result).encode('utf-8'))
-                return
-
-            if self.path == '/api/aria/execute':
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8')) if body else {}
-                command = data.get('command', '')
-                use_llm = bool(data.get('use_llm', True))
-                auto_execute = bool(data.get('auto_execute', False))
-
-                if not command:
-                    raise ValueError('command required')
-
-                actions = action_parser.parse(command, use_llm=use_llm)
-
-                if not actions:
-                    result = {
-                        'status': 'error', 'message': 'Could not parse into actions', 'actions': []}
-                else:
-                    results = []
-                    tags = []
-                    if auto_execute:
-                        for a in actions:
-                            r = execute_aria_action(a)
-                            results.append({'action': a, 'result': r})
-                            if r.get('tags'):
-                                tags.extend(r.get('tags'))
-
-                    result = {'status': 'success', 'message': f'Parsed {len(actions)} actions', 'command': command, 'actions': actions, 'executed': auto_execute,
-                              'results': results if auto_execute else None, 'tags': tags if auto_execute else None, 'state': stage_state if auto_execute else None}
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
-                return
-
-            if self.path == '/api/aria/world':
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8')) if body else {}
-                theme = data.get('theme', 'forest')
-                count = int(data.get('count', 6))
-                use_llm = bool(data.get('use_llm', True))
-                seed = data.get('seed')
-                spacing = int(data.get('spacing', 10))
-                algorithm = data.get('algorithm', 'rejection')
-                persist_flag_env = os.getenv(
-                    'ARIA_WORLD_PERSIST', 'false').lower() == 'true'
-                persist_flag = bool(data.get('persist', persist_flag_env))
-
-                if use_llm and action_parser.provider:
-                    world = generate_world_with_llm(
-                        theme, count, action_parser.provider, seed=seed, spacing=spacing, algorithm=algorithm)
-                else:
-                    world = generate_world_fallback(
-                        theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
-
-                # Update stage_state
-                stage_state['objects'] = {oid: {'position': v['position'], 'state': v.get(
-                    'state', 'on_stage'), 'emoji': v.get('emoji', '')} for oid, v in world['objects'].items()}
-                # Update environment metadata
-                env = world.get('environment', {})
-                stage_state['environment']['theme'] = env.get('theme', theme)
-                stage_state['environment']['generated_at'] = env.get(
-                    'generated_at')
-                stage_state['environment']['seed'] = env.get('seed')
-                stage_state['environment']['generation_method'] = env.get(
-                    'generation_method', 'unknown')
-                stage_state['environment']['spacing'] = env.get(
-                    'spacing', spacing)
-
-                response = {'status': 'success', 'theme': theme, 'count': len(world['objects']), 'used_llm': world.get(
-                    'llm', False), 'objects': world['objects'], 'environment': world.get('environment', {})}
-                if persist_flag:
-                    path = persist_world(world, theme, seed=seed)
-                    response['persisted'] = bool(path)
-                    if path:
-                        response['persisted_path'] = path
-                    response['cosmos_persisted'] = persist_world_cosmos(
-                        world, theme)
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    response, indent=2).encode('utf-8'))
-                logger.info(
-                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']}, algo={algorithm})")
-                return
-
-        except ConnectionAbortedError:
-            return
-        except Exception as e:
-            logger.exception('POST handler error')
-            try:
-                self.send_response(400)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
-            except Exception:
-                pass
-
-        self.send_response(404)
-        self.end_headers()
-
-    def log_message(self, format, *args):
-        # Keep the log concise for headless usage
-        if args and isinstance(args[0], str) and 'favicon' in args[0]:
-            return
-        logger.info(format % args if args else format)
-
-
-# Instantiate parser (attempt LLM provider detection)
 action_parser = AriaActionParser()
 
-
-def main():
-    web_dir = Path(__file__).parent
-    os.chdir(web_dir)
-    port = int(os.getenv('ARIA_PORT', '8080'))
-    host = os.getenv('ARIA_HOST', '127.0.0.1')
-    server = HTTPServer((host, port), AriaRequestHandler)
-
-    print('\n' + '=' * 70)
-    print('🎨 Aria Visual Command System - Web Server')
-    print('=' * 70)
-    print(f'🌐 Open in browser: http://{host}:{port}')
-    print(f"🤖 Model: {'AI enabled' if MODEL else 'Rule-based fallback'}")
-    print('📝 Type commands in the web interface to control Aria')
-    print('\nPress Ctrl+C to stop the server')
-    print('=' * 70 + '\n')
-
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print('\n👋 Server stopped')
-
-
-if __name__ == '__main__':
-    main()
 
 # --------------------------- World Generation ---------------------------
 
@@ -1263,7 +1016,7 @@ def generate_world_with_llm(theme: str, count: int, provider, seed: int | None =
     """
 
 
-def generate_world_with_llm(theme: str, count: int, provider) -> dict:
+def generate_world_with_llm(theme: str, count: int, provider, seed: int | None = None, spacing: int = 10, algorithm: str = 'rejection') -> dict:
     """Use LLM provider to generate a themed world. Returns fallback on failure."""
     system_prompt = (
         "You are a STRICT JSON generator for a 2D stage (x,y in 0-100).\n"
@@ -1282,7 +1035,13 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_prompt}
         ]
-        raw = provider.complete(messages, stream=False)
+        raw = _call_with_timeout(
+            lambda: provider.complete(messages, stream=False),
+            LLM_TIMEOUT_S,
+            "generate_world_with_llm",
+        )
+        if raw is None:
+            return generate_world_fallback(theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
         # Provider may return dict with 'content' key or direct string
         if isinstance(raw, dict):
             raw_str = raw.get('content') or raw.get('text') or str(raw)
@@ -1480,6 +1239,37 @@ def get_stage_context() -> str:
 """
     return context
 
+
+def generate_autonomous_decision(current_stage_state: Dict) -> Dict:
+    """Generate an autonomous decision with tags based on current stage state."""
+    try:
+        import random
+        objects = current_stage_state.get('objects', {}) if isinstance(current_stage_state, dict) else {}
+        aria_state = current_stage_state.get('aria', {}) if isinstance(current_stage_state, dict) else {}
+
+        # Prefer moving an object if any are available
+        obj_ids = [k for k, v in objects.items() if isinstance(v, dict)]
+        if obj_ids:
+            obj_id = random.choice(obj_ids)
+            x = random.randint(10, 90)
+            y = random.randint(10, 90)
+            return {
+                'command': f'move {obj_id} to {x},{y}',
+                'tags': [f'[object:move:{obj_id}:{x}:{y}]'],
+                'response': ''
+            }
+
+        # Otherwise move Aria a bit
+        x = random.randint(10, 90)
+        y = random.randint(10, 90)
+        return {
+            'command': f'Aria move to {x},{y}',
+            'tags': [f'[aria:position:{x}:{y}]'],
+            'response': ''
+        }
+    except Exception:
+        return {'command': 'wait', 'tags': ['[aria:wait:1]'], 'response': ''}
+
     aria_pos = stage_state['aria']["position"]
     context_lines = [
         f"Aria position: x={aria_pos['x']}%, y={aria_pos['y']}%",
@@ -1638,7 +1428,13 @@ Always include at least one movement or action tag when relevant."""
         ]
 
         # Get LLM response
-        response = provider.complete(messages, stream=False)
+        response = _call_with_timeout(
+            lambda: provider.complete(messages, stream=False),
+            LLM_TIMEOUT_S,
+            "generate_tags_with_ai",
+        )
+        if response is None:
+            raise TimeoutError("LLM response timed out")
 
         # Handle both dict and string responses
         if isinstance(response, dict):
@@ -1699,6 +1495,15 @@ def generate_tags_fallback(command: str) -> List[str]:
     """Simple rule-based fallback tag generation with automatic positioning"""
     cmd = command.lower()
     tags = []
+
+    # Object move commands: "move apple to 50,50"
+    obj_move = re.search(r'\bmove\s+(apple|book|cup|ball|flower)\s+to\s+(\d{1,3})%?[,\s]+(\d{1,3})%?', cmd)
+    if obj_move:
+        obj_id = obj_move.group(1)
+        x = int(max(0, min(100, int(obj_move.group(2)))))
+        y = int(max(0, min(100, int(obj_move.group(3)))))
+        tags.append(f'[object:move:{obj_id}:{x}:{y}]')
+        return tags
 
     # AI-driven automatic positioning based on command context
     # Determine optimal position for the action
@@ -2132,6 +1937,15 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(payload).encode('utf-8'))
             return
 
+        # Version/identity endpoint
+        if self.path == '/api/aria/version':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps(
+                {'server_id': 'aria_web_main', 'file': 'src/web/aria/aria_web/server.py'}).encode('utf-8'))
+            return
+
         # World retrieval: /api/aria/world/get?theme=forest&seed=12345
         if self.path.startswith('/api/aria/world/get'):
             try:
@@ -2185,71 +1999,17 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps(
                     {'status': 'error', 'error': str(e)}).encode('utf-8'))
-                return
 
-        # World list (GET variant) - enumerate filesystem + cosmos metadata
-        if self.path == '/api/aria/world/list':
-            try:
-                base_dir = REPO_ROOT / 'data_out' / 'aria_worlds'
-                worlds_fs = []
-                if base_dir.exists():
-                    for f in sorted(base_dir.glob('world_*.json')):
-                        parts = f.stem.split('_')
-                        theme_val = parts[1] if len(parts) >= 4 else None
-                        seed_val = parts[-1] if len(parts) >= 4 else None
-                        worlds_fs.append(
-                            {'file': str(f), 'theme': theme_val, 'seed': seed_val})
-                cosmos_worlds = []
-                if _cosmos_available():
-                    try:
-                        from shared import cosmos_client  # type: ignore
-                        cosmos_worlds = cosmos_client.list_worlds(limit=50)
-                    except Exception as ce:
-                        logger.warning(f"Cosmos list_worlds error: {ce}")
-                payload = {
-                    'status': 'success',
-                    'worlds': worlds_fs,
-                    'cosmos': {
-                        'available': _cosmos_available(),
-                        'count': len(cosmos_worlds),
-                        'worlds': cosmos_worlds
-                    }
-                }
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(payload, indent=2).encode('utf-8'))
-                return
-            except Exception as e:
-                logger.error(f"World list error (GET): {e}")
-                self.send_response(400)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
-                return
-
-        if self.path == '/':
-            self.path = '/index.html'
-        return super().do_GET()
+        else:
+            self.send_response(404)
+            self.end_headers()
 
     def do_POST(self):
-        # --- /api/aria/object endpoint ---
-        # Expected payloads:
-        # 1. Bulk update:
-        #    {"objects": {"id1": {"position": {...}, "state": ...}, ...}}
-        # 2. Single object action:
-        #    {"action": "add|update|remove", "object": {"id": "...", "position": {...}, "state": ...}}
-        #    - "add": adds a new object
-        #    - "update": updates position/state of existing object
-        #    - "remove": deletes object by id
-        #    - "object" must include "id" or "name"
         """Handle API requests"""
         if self.path == '/api/aria/command':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
-
                 data = json.loads(post_data.decode('utf-8'))
                 command = data.get('command', '')
 
@@ -2257,83 +2017,152 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 if 'stage_state' in data:
                     stage_state.update(data['stage_state'])
 
-                print(f"📝 Command received: {command}")
-                print(f"👁️  Stage context:\n{get_stage_context()}")
+                use_llm_actions = bool(data.get('use_llm_actions', True))
+                auto_execute = bool(data.get('auto_execute', True))
 
-                # Try AI first with full context, fallback to rules
-                ai_result = generate_tags_ai(command)
-                tags = ai_result['tags']
-                response_text = ai_result.get('response_text', '')
-                provider_used = ai_result.get('provider', 'unknown')
+                actions: List[Dict] = []
+                results: List[Dict] = []
+                tags: List[str] = []
+                response_text = ''
+                model_used = 'fallback'
+
+                # Object move commands should generate object tags directly
+                obj_move = re.search(r'\bmove\s+(apple|book|cup|ball|flower)\s+to\s+(\d{1,3})%?[,\s]+(\d{1,3})%?', command.lower())
+                if obj_move:
+                    obj_id = obj_move.group(1)
+                    x = int(max(0, min(100, int(obj_move.group(2)))))
+                    y = int(max(0, min(100, int(obj_move.group(3)))))
+                    tags.append(f'[object:move:{obj_id}:{x}:{y}]')
+
+                    response = {
+                        'command': command,
+                        'tags': tags,
+                        'response': '',
+                        'model': 'fallback',
+                        'stage_context': get_stage_context(),
+                        'stage_aware': True,
+                        'actions': [],
+                        'executed': False,
+                        'results': None,
+                        'state': None,
+                        'server_id': 'aria_web_main',
+                        'object_move_hit': True
+                    }
+
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    return
+
+
+                if use_llm_actions and action_parser.provider:
+                    try:
+                        actions = action_parser.parse(command, use_llm=True)
+                        if auto_execute and actions:
+                            for a in actions:
+                                r = execute_aria_action(a)
+                                results.append({'action': a, 'result': r})
+                                if r.get('tags'):
+                                    tags.extend(r['tags'])
+                        if actions:
+                            response_text = f"Planned {len(actions)} action(s)."
+                            model_used = getattr(
+                                action_parser.provider_choice, 'name', 'ai') or 'ai'
+                    except Exception as e:
+                        logger.warning(f"LLM action parsing failed: {e}")
 
                 if not tags:
-                    tags = generate_tags_fallback(command)
-                    model_used = 'fallback'
-                else:
-                    model_used = provider_used or 'ai'
-
-                print(f"✨ Generated tags: {tags}")
-                if response_text:
-                    print(f"💬 LLM response: {response_text[:100]}...")
-
-                print(f"✨ Generated tags: {tags}")
+                    ai_result = generate_tags_ai(command)
+                    tags = ai_result.get('tags') or []
+                    response_text = ai_result.get('response_text', response_text)
+                    provider_used = ai_result.get('provider', 'unknown')
+                    if not tags:
+                        tags = generate_tags_fallback(command)
+                        model_used = 'fallback'
+                    else:
+                        model_used = provider_used or model_used
 
                 response = {
                     'command': command,
                     'tags': tags,
-                    'response': response_text,  # Include full LLM response
+                    'response': response_text,
                     'model': model_used,
                     'stage_context': get_stage_context(),
-                    'stage_aware': True
+                    'stage_aware': True,
+                    'actions': actions,
+                    'executed': bool(results),
+                    'results': results or None,
+                    'state': stage_state if results else None
                 }
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps(response).encode('utf-8'))
-
+                return
             except ConnectionAbortedError:
-                # Client disconnected, ignore
-                pass
+                return
             except Exception as e:
-                print(f"❌ Error: {e}")
-                try:
-                    self.send_response(500)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-                    error = {'error': str(e), 'tags': []}
-                    self.wfile.write(json.dumps(error).encode('utf-8'))
-                except:
-                    pass
-        elif self.path == '/api/aria/object' or self.path == '/api/aria/objects':
+                logger.error(f"POST /api/aria/command error: {e}")
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
+                return
+
+        if self.path == '/api/aria/autonomous/next':
+            try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(content_length) if content_length > 0 else b'{}'
+                data = json.loads(body.decode('utf-8'))
+                current_stage_state = data.get('stage_state', stage_state)
+
+                decision = generate_autonomous_decision(current_stage_state)
+                response = {
+                    'command': decision.get('command', 'wait'),
+                    'tags': decision.get('tags', []),
+                    'response': decision.get('response', '')
+                }
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+                return
+            except Exception as e:
+                logger.error(f"Autonomous decision error: {e}")
+                self.send_response(400)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(
+                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
+                return
+
+        if self.path == '/api/aria/object' or self.path == '/api/aria/objects':
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 post_data = self.rfile.read(content_length)
                 data = json.loads(post_data.decode('utf-8'))
 
-                # Support both single object ({action, object}) and bulk ({objects: {...}})
                 if 'objects' in data and isinstance(data['objects'], dict):
-                    # Merge supplied objects into stage_state
                     for k, v in data['objects'].items():
                         if isinstance(v, dict) and 'position' in v:
                             stage_state['objects'][k] = v
-                    result = {'status': 'ok',
-                              'objects': stage_state['objects']}
+                    result = {'status': 'ok', 'objects': stage_state['objects']}
                 elif 'object' in data and 'action' in data:
                     action = data['action']
                     obj = data['object']
                     obj_id = obj.get('id') or obj.get('name')
                     if not obj_id:
-                        raise ValueError(
-                            'Object payload must include "id" or "name" field.')
+                        raise ValueError('Object payload must include "id" or "name" field.')
 
                     if action == 'add':
                         position = obj.get('position', {'x': 50, 'y': 50})
                         state = obj.get('state', 'on_stage')
-                        stage_state['objects'][obj_id] = {
-                            'position': position, 'state': state}
-                        result = {'status': 'added', 'id': obj_id,
-                                  'object': stage_state['objects'][obj_id]}
+                        stage_state['objects'][obj_id] = {'position': position, 'state': state}
+                        result = {'status': 'added', 'id': obj_id, 'object': stage_state['objects'][obj_id]}
                     elif action == 'update':
                         if obj_id not in stage_state['objects']:
                             stage_state['objects'][obj_id] = {}
@@ -2341,19 +2170,14 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             stage_state['objects'][obj_id]['position'] = obj['position']
                         if 'state' in obj:
                             stage_state['objects'][obj_id]['state'] = obj['state']
-                        result = {'status': 'updated', 'id': obj_id,
-                                  'object': stage_state['objects'][obj_id]}
-                    elif action == 'remove' or action == 'delete':
+                        result = {'status': 'updated', 'id': obj_id, 'object': stage_state['objects'][obj_id]}
+                    elif action in ('remove', 'delete'):
                         removed = stage_state['objects'].pop(obj_id, None)
-                        result = {'status': 'removed',
-                                  'id': obj_id, 'object': removed}
+                        result = {'status': 'removed', 'id': obj_id, 'object': removed}
                     else:
-                        raise ValueError(
-                            f'Unknown action: {action}. Supported: add, update, remove/delete.')
-
+                        raise ValueError(f'Unknown action: {action}. Supported: add, update, remove/delete.')
                 else:
-                    raise ValueError(
-                        'Invalid payload: must include either "objects" (dict) or both "action" and "object" (dict with id/name).')
+                    raise ValueError('Invalid payload: must include either "objects" (dict) or both "action" and "object" (dict with id/name).')
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
@@ -2361,177 +2185,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps(result).encode('utf-8'))
                 return
             except Exception as e:
-                print(f"❌ Object API error: {e}")
-                try:
-                    self.send_response(400)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(json.dumps(
-                        {'error': str(e)}).encode('utf-8'))
-                except:
-                    pass
-                return
-
-        # /api/aria/execute - LLM-powered automatic action execution
-        elif self.path == '/api/aria/execute':
-            try:
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8'))
-
-                command = data.get('command', '')
-                auto_execute = data.get('auto_execute', False)
-                use_llm = data.get('use_llm', True)
-
-                if not command:
-                    raise ValueError('command is required')
-
-                # Parse command into actions
-                actions = action_parser.parse(command, use_llm=use_llm)
-
-                if not actions:
-                    result = {
-                        'status': 'error',
-                        'message': 'Could not parse command into actions',
-                        'command': command,
-                        'actions': []
-                    }
-                else:
-                    # Execute actions if auto_execute is True
-                    results = []
-                    all_tags = []
-
-                    if auto_execute:
-                        for action in actions:
-                            exec_result = execute_aria_action(action)
-                            results.append({
-                                'action': action,
-                                'result': exec_result
-                            })
-                            if exec_result.get('tags'):
-                                all_tags.extend(exec_result['tags'])
-
-                    result = {
-                        'status': 'success',
-                        'message': f'Parsed {len(actions)} actions' + (' and executed' if auto_execute else ' (plan only)'),
-                        'command': command,
-                        'actions': actions,
-                        'executed': auto_execute,
-                        'results': results if auto_execute else None,
-                        'tags': all_tags if auto_execute else None,
-                        'state': stage_state if auto_execute else None
-                    }
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(result, indent=2).encode('utf-8'))
-
-                print(f"✓ Execute API: {command} -> {len(actions)} actions" +
-                      (f" (executed)" if auto_execute else " (plan only)"))
-                return
-
-            except Exception as e:
-                print(f"❌ Execute API error: {e}")
-                import traceback
-                traceback.print_exc()
-                try:
-                    self.send_response(400)
-                    self.send_header('Content-Type', 'application/json')
-                    self.end_headers()
-                    self.wfile.write(json.dumps({
-                        'status': 'error',
-                        'error': str(e),
-                        'message': f'Failed to execute command: {str(e)}'
-                    }).encode('utf-8'))
-                except:
-                    pass
-                return
-
-        # /api/aria/world - Generate or regenerate themed world layout
-        elif self.path == '/api/aria/world':
-            try:
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length)
-                data = json.loads(body.decode('utf-8')) if body else {}
-                theme = data.get('theme', 'forest')
-                count = int(data.get('count', 6))
-                use_llm = bool(data.get('use_llm', True))
-                seed = data.get('seed')
-                spacing = int(data.get('spacing', 10))
-                persist_flag_env = os.getenv(
-                    'ARIA_WORLD_PERSIST', 'false').lower() == 'true'
-                persist_flag = bool(data.get('persist', persist_flag_env))
-                algorithm = data.get('algorithm', 'rejection')
-
-                # Generate
-                if use_llm and action_parser.provider:
-                    world = generate_world_with_llm(
-                        theme, count, action_parser.provider, seed=seed, spacing=spacing, algorithm=algorithm)
-                    world = generate_world_with_llm(
-                        theme, count, action_parser.provider)
-                else:
-                    world = generate_world_fallback(
-                        theme, count, seed=seed, spacing=spacing, algorithm=algorithm)
-
-                # Update global stage_state (replace objects, keep aria position)
-                stage_state['objects'] = {}
-                for oid, obj in world['objects'].items():
-                    stage_state['objects'][oid] = {
-                        'position': obj['position'],
-                        'state': obj.get('state', 'on_stage'),
-                        'emoji': obj.get('emoji', '')
-                    }
-                # Update environment meta
-                stage_state['environment']['theme'] = world['environment'].get(
-                    'theme', theme)
-                stage_state['environment']['generated_at'] = world['environment'].get(
-                    'generated_at')
-                stage_state['environment']['seed'] = world['environment'].get(
-                    'seed')
-                stage_state['environment']['generation_method'] = world['environment'].get(
-                    'generation_method', 'unknown')
-                stage_state['environment']['spacing'] = world['environment'].get(
-                    'spacing', spacing)
-                stage_state['environment']['theme'] = world['environment'].get(
-                    'theme', theme)
-                stage_state['environment']['generated_at'] = world['environment'].get(
-                    'generated_at')
-
-                response = {
-                    'status': 'success',
-                    'theme': theme,
-                    'count': len(world['objects']),
-                    'used_llm': world.get('llm', False),
-                    'objects': world['objects'],
-                    'environment': world['environment']
-                }
-                if persist_flag:
-                    persisted_path = persist_world(world, theme, seed=seed)
-                    if persisted_path:
-                        response['persisted_path'] = persisted_path
-                        response['persisted'] = True
-                    else:
-                        response['persisted'] = False
-                        response['persist_error'] = 'failed_to_write_file'
-                    # Attempt Cosmos persistence
-                    response['cosmos_persisted'] = persist_world_cosmos(
-                        world, theme)
-
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    response, indent=2).encode('utf-8'))
-                logger.info(
-                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']}, algo={algorithm})")
-                self.wfile.write(json.dumps(
-                    response, indent=2).encode('utf-8'))
-                logger.info(
-                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']})")
-                return
-            except Exception as e:
-                logger.error(f"World generation error: {e}")
+                logger.error(f"Object endpoint error: {e}")
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
@@ -2539,79 +2193,61 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     {'status': 'error', 'error': str(e)}).encode('utf-8'))
                 return
 
-        # /api/aria/world/list - list persisted worlds (filesystem) + cosmos status
-        elif self.path == '/api/aria/world/list':
-            try:
-                base_dir = REPO_ROOT / 'data_out' / 'aria_worlds'
-                worlds = []
-                if base_dir.exists():
-                    for f in sorted(base_dir.glob('world_*.json')):
-                        parts = f.stem.split('_')
-                        # world_<theme>_<timestamp>_<seed>.json
-                        theme = parts[1] if len(parts) >= 4 else None
-                        seed_val = parts[-1] if len(parts) >= 4 else None
-                        worlds.append(
-                            {'file': str(f), 'theme': theme, 'seed': seed_val})
-                payload = {
-                    'status': 'success',
-                    'worlds': worlds,
-                    'cosmos': {
-                        'available': _cosmos_available()
-                    }
-                }
-                self.send_response(200)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(payload, indent=2).encode('utf-8'))
-                return
-            except Exception as e:
-                logger.error(f"World list error: {e}")
-                self.send_response(400)
-                self.send_header('Content-Type', 'application/json')
-                self.end_headers()
-                self.wfile.write(json.dumps(
-                    {'status': 'error', 'error': str(e)}).encode('utf-8'))
-                return
-
-        else:
-            self.send_response(404)
-            self.end_headers()
+        self.send_response(404)
+        self.end_headers()
 
     def log_message(self, format, *args):
         """Custom logging"""
         if 'favicon' not in args[0] if args else True:
-            print(f"🌐 {args[0] if args else format}")
+            print(f"[WEB] {args[0] if args else format}")
 
 
-def main():
-    import os
-
+if __name__ == '__main__':
+    # Fix Unicode encoding for Windows console
+    import sys, codecs, locale
+    if sys.platform == 'win32':
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        except:
+            pass
+    
     # Change to aria_web directory
     web_dir = Path(__file__).parent
     os.chdir(web_dir)
 
     # Allow the port to be overridden via the ARIA_PORT environment variable.
-    # This helps avoid address‑in‑use errors when the default port is already bound.
     port = int(os.getenv('ARIA_PORT', '8080'))
-    # Default to localhost for security; use environment variable to override if needed
+    # Default to localhost for security
     host = os.environ.get('ARIA_HOST', '127.0.0.1')
     server = HTTPServer((host, port), AriaRequestHandler)
 
     print("\n" + "=" * 70)
-    print("🎨 Aria Visual Command System - Web Server")
+    print("Aria Visual Command System - Web Server")
     print("=" * 70)
-    print(f"🌐 Open in browser: http://localhost:{port}")
-    print(
-        f"🤖 Model: {'AI (aria_expanded_v2)' if MODEL else 'Rule-based fallback'}")
-    print("📝 Type commands in the web interface to control Aria")
+    print(f"Open in browser: http://{host}:{port}")
+    print(f"Model: {'AI enabled' if MODEL else 'Rule-based fallback'}")
+    print("Type commands in the web interface to control Aria")
     print("\nPress Ctrl+C to stop the server")
     print("=" * 70 + "\n")
+    sys.stdout.flush()
 
     try:
+        print(f"DEBUG: About to call server.serve_forever() on {host}:{port}")
+        print(f"DEBUG: Server object: {server}")
+        print(f"DEBUG: Server address: {server.server_address}")
+        sys.stdout.flush()
         server.serve_forever()
+        print(f"DEBUG: serve_forever() returned unexpectedly - this should never happen!")
+        sys.stdout.flush()
     except KeyboardInterrupt:
-        print("\n👋 Server stopped")
+        print("\nServer stopped (KeyboardInterrupt)")
+    except OSError as e:
+        print(f"\nDEBUG: OSError during serve_forever(): {e}")
+        import traceback
+        traceback.print_exc()
+    except Exception as e:
+        print(f"\nDEBUG: Exception during serve_forever(): {e}")
+        import traceback
+        traceback.print_exc()
 
-
-if __name__ == '__main__':
-    main()

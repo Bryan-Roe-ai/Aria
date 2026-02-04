@@ -62,7 +62,7 @@ except ImportError as e:
     print(f"    - class AzureQuantumIntegration")
     print(f"    - def create_sample_circuit()")
     print(f"\nDetails: {e}")
-        sys.exit(1)
+    sys.exit(1)
 
 import numpy as np
 import torch
@@ -938,7 +938,7 @@ Gate Breakdown:
 async def grover_search_handler(args: Dict) -> List[TextContent]:
     """Run Grover search for marked states"""
     if GroverCircuit is None:
-        return [TextContent(type="text", text="GroverCircuit not available. Install pennylane to enable this tool.")]]
+        return [TextContent(type="text", text="GroverCircuit not available. Install pennylane to enable this tool.")]
     
     n_qubits = args.get("n_qubits", 3)
     marked_states = args["marked_states"]

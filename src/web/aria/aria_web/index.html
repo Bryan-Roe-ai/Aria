@@ -61,6 +61,76 @@
             z-index: 1;
         }
 
+        .guide-menu {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: rgba(8, 14, 28, 0.78);
+            box-shadow: var(--glow);
+        }
+
+        .guide-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .guide-title h2 {
+            font-size: 1.1rem;
+            color: #7cf7d0;
+        }
+
+        .guide-title p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .guide-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .guide-btn {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .guide-btn:hover {
+            transform: translateY(-1px);
+            border-color: #7cf7d0;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+        }
+
+        .guide-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .guide-links a {
+            color: #f4b661;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+        }
+
+        .guide-links a:hover {
+            border-color: #f4b661;
+        }
+
         .hero {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -1357,6 +1427,24 @@
 </head>
 <body>
     <div class="container">
+        <nav class="guide-menu" id="guide">
+            <div class="guide-title">
+                <h2>🧭 Quick guide</h2>
+                <p>Try a starter command or jump to a section below.</p>
+            </div>
+            <div class="guide-actions">
+                <button class="guide-btn" onclick="document.getElementById('commandInput').value='move apple to 50,50'; sendCommand();">Move apple</button>
+                <button class="guide-btn" onclick="document.getElementById('commandInput').value='Aria walk to the apple'; sendCommand();">Walk to apple</button>
+                <button class="guide-btn" onclick="document.getElementById('commandInput').value='Aria pick up the book'; sendCommand();">Pick up book</button>
+                <button class="guide-btn" onclick="document.getElementById('commandInput').value='dance with sparkles'; sendCommand();">Dance + sparkles</button>
+            </div>
+            <div class="guide-links">
+                <a href="#object-manager">Stage props</a>
+                <a href="#stage">Stage view</a>
+                <a href="#command-console">Command console</a>
+                <a href="#logContainer">Command log</a>
+            </div>
+        </nav>
         <header class="hero">
             <div class="eyebrow">GitHub Pages live demo</div>
             <h1>Aria on Pages — interactive character control, effects, and props.</h1>
@@ -1494,12 +1582,13 @@
                 </div>
             </div>
 
-            <div class="control-panel">
+            <div class="control-panel" id="command-console">
                 <h2>🎮 Command console</h2>
                 <div class="command-input">
                     <input type="text" id="commandInput" placeholder="Type a command (e.g., 'aria smile', 'jump', 'dance with sparkles')" 
                            onkeypress="if(event.key === 'Enter') sendCommand()">
                     <button onclick="sendCommand()">Execute Command</button>
+                    <button id="autonomousBtn" onclick="toggleAutonomous()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-left: 8px;">🤖 Start Autonomous</button>
                 </div>
 
                 <div class="quick-commands">

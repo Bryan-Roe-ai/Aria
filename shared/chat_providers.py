@@ -1,18 +1,19 @@
-"""Re-export chat providers from the talk_to_ai package.
+"""Re-export chat providers from src.chat module.
 
-This keeps backward compatibility for imports from shared.chat_providers
-while using the canonical implementations under talk_to_ai.providers.
+This provides a unified import point for chat providers used throughout the workspace.
+Supports LMStudio, LoRA adapters, Azure OpenAI, OpenAI, and local fallback.
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-package_root = Path(__file__).resolve().parent.parent / "talk-to-ai" / "src"
+# Add src/chat to path for importing
+package_root = Path(__file__).resolve().parent.parent / "src" / "chat"
 if str(package_root) not in sys.path:
     sys.path.insert(0, str(package_root))
 
-from talk_to_ai.providers import (  # type: ignore
+from chat_providers import (  # type: ignore
     RoleMessage,
     ProviderChoice,
     BaseChatProvider,
@@ -33,29 +34,21 @@ __all__ = [
 ]
 
 try:  # Optional providers
-    from talk_to_ai.providers import LoraLocalProvider  # type: ignore
-
+    from chat_providers import LoraLocalProvider  # type: ignore
     LoraLocalProvider
     __all__.append("LoraLocalProvider")
 except Exception:
     pass
 
 try:
-    from talk_to_ai.providers import LMStudioProvider  # type: ignore
-
+    from chat_providers import LMStudioProvider  # type: ignore
     LMStudioProvider
     __all__.append("LMStudioProvider")
 except Exception:
     pass
 
 try:
-    from talk_to_ai.providers.agi_provider import (  # type: ignore
-        AGIProvider,
-        AGIContext,
-        ReasoningStep,
-        create_agi_provider,
-    )
-
+    from chat_providers import AGIProvider, AGIContext, ReasoningStep, create_agi_provider  # type: ignore
     __all__.extend([
         "AGIProvider",
         "AGIContext",
@@ -64,3 +57,5 @@ try:
     ])
 except Exception:
     pass
+
+

@@ -9,6 +9,10 @@ const stage = document.getElementById('stage');
 const commandInput = document.getElementById('commandInput');
 const logContainer = document.getElementById('logContainer');
 
+// Autonomous mode state
+let autonomousMode = false;
+let autonomousInterval = null;
+
 // Track active objects
 const activeObjects = {
     apple: true,
@@ -823,7 +827,25 @@ function executeLocalCommand(command) {
 function executeTags(tags) {
     console.log('📋 Executing tags:', tags);
     tags.forEach((tag, index) => {
-        // Parse tag format: [aria:category:action:param]
+        // Parse object tags: [object:move:id:x:y] or [object:animate:id:animation]
+        const objectMatch = tag.match(/\[object:(move|animate):([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
+        if (objectMatch) {
+            const [, action, objectId, param1, param2] = objectMatch;
+            console.log(`✅ Parsed object tag - Action: ${action}, Object: ${objectId}`);
+            
+            setTimeout(() => {
+                if (action === 'move') {
+                    const x = parseInt(param1);
+                    const y = parseInt(param2);
+                    moveObjectOnStage(objectId, x, y);
+                } else if (action === 'animate') {
+                    animateObjectOnStage(objectId, param1);
+                }
+            }, index * 500);
+            return;
+        }
+        
+        // Parse aria tag format: [aria:category:action:param]
         const match = tag.match(/\[aria:([^:]+):([^:\]]+)(?::([^\]]+))?\]/);
         if (!match) {
             console.log('⚠️ Failed to parse tag:', tag);
@@ -2199,10 +2221,162 @@ log('👀 Idle animations enabled - watch for breathing and blinking!');
 startAutoBehaviors();
 log('✨ Auto-behaviors enabled - Aria will move and react on her own!');
 
-// Expose minimal testing helpers
-window.ariaTest = {
-    limb: (part, actionOrAngle, duration) => handleLimbTag(part, typeof actionOrAngle === 'number' ? `${actionOrAngle},${duration||500}` : `${actionOrAngle||''}${duration?','+duration:''}`),
-    pose: (name) => applyPose(name)
-};
+// === AUTONOMOUS MODE ===
+async function toggleAutonomous() {
+    const btn = document.getElementById('autonomousBtn');
+    
+    if (autonomousMode) {
+        autonomousMode = false;
+        if (autonomousInterval) {
+            clearInterval(autonomousInterval);
+            autonomousInterval = null;
+        }
+        btn.textContent = '🤖 Start Autonomous';
+        btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        log('🛑 Autonomous mode stopped');
+    } else {
+        autonomousMode = true;
+        btn.textContent = '⏸️ Stop Autonomous';
+        btn.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+        log('🤖 Autonomous mode started - Aria will decide what to do...');
+        
+        await runAutonomousStep();
+        autonomousInterval = setInterval(runAutonomousStep, 5000);
+    }
+}
+
+async function runAutonomousStep() {
+    if (!autonomousMode) return;
+    
+    try {
+        const stageRect = stage.getBoundingClientRect();
+        const ariaRect = aria.getBoundingClientRect();
+        
+        const ariaX = ((ariaRect.left - stageRect.left) / stageRect.width) * 100;
+        const ariaY = 100 - ((ariaRect.bottom - stageRect.top) / stageRect.height) * 100;
+        
+        const objectPositions = {};
+        ['apple', 'book', 'cup', 'ball', 'flower'].forEach(objId => {
+            const obj = document.getElementById(objId);
+            if (obj && obj.style.display !== 'none') {
+                const objRect = obj.getBoundingClientRect();
+                objectPositions[objId] = {
+                    x: ((objRect.left - stageRect.left) / stageRect.width) * 100,
+                    y: 100 - ((objRect.bottom - stageRect.top) / stageRect.height) * 100,
+                    state: obj.classList.contains('held') ? 'held' : 'on_table'
+                };
+            }
+        });
+        
+        const currentStageState = {
+            aria: {
+                position: { x: Math.round(ariaX), y: Math.round(ariaY) },
+                expression: characterState.mood || 'neutral',
+                held_object: characterState.heldObject,
+                facing: 'right'
+            },
+            objects: objectPositions
+        };
+        
+        const response = await fetch('/api/aria/autonomous/next', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stage_state: currentStageState })
+        });
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        
+        if (data.command) {
+            log(`🧠 AI decision: "${data.command}"`);
+            
+            if (data.tags && data.tags.length > 0) {
+                executeTags(data.tags);
+            }
+            
+            if (data.response) {
+                autoGenerateCharacter(data.response);
+            }
+        }
+    } catch (error) {
+        log(`⚠️ Autonomous step failed: ${error.message}`, true);
+    }
+}
+
+// Object control functions for LLM-driven scene direction
+function moveObjectOnStage(objectId, x, y) {
+    const obj = document.getElementById(objectId);
+    if (!obj) {
+        console.log(`⚠️ Object not found: ${objectId}`);
+        return;
+    }
+    
+    console.log(`🎬 Moving ${objectId} to (${x}, ${y})`);
+    
+    // Clamp coordinates to stage bounds
+    const clampedX = Math.max(0, Math.min(100, x));
+    const clampedY = Math.max(0, Math.min(100, y));
+    
+    // Animate the move
+    obj.style.transition = 'left 1s ease-in-out, bottom 1s ease-in-out';
+    obj.style.left = `${clampedX}%`;
+    obj.style.bottom = `${clampedY}%`;
+    
+    log(`📦 Moved ${objectId} to (${clampedX}%, ${clampedY}%)`);
+    addChatMessage('aria', `Moving the ${objectId} to position (${clampedX}, ${clampedY})`);
+}
+
+function animateObjectOnStage(objectId, animation) {
+    const obj = document.getElementById(objectId);
+    if (!obj) {
+        console.log(`⚠️ Object not found: ${objectId}`);
+        return;
+    }
+    
+    console.log(`🎭 Animating ${objectId} with ${animation}`);
+    
+    // Apply animation effects
+    switch (animation) {
+        case 'bounce':
+            obj.style.transition = 'transform 0.3s ease-in-out';
+            obj.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                obj.style.transform = 'translateY(0)';
+            }, 300);
+            break;
+        case 'spin':
+            obj.style.transition = 'transform 1s ease-in-out';
+            obj.style.transform = 'rotate(360deg)';
+            setTimeout(() => {
+                obj.style.transform = 'rotate(0deg)';
+            }, 1000);
+            break;
+        case 'pulse':
+            obj.style.transition = 'transform 0.5s ease-in-out';
+            obj.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                obj.style.transform = 'scale(1)';
+            }, 500);
+            break;
+        case 'shake':
+            let shakeCount = 0;
+            const shakeInterval = setInterval(() => {
+                obj.style.transform = `translateX(${Math.random() * 10 - 5}px)`;
+                shakeCount++;
+                if (shakeCount > 5) {
+                    clearInterval(shakeInterval);
+                    obj.style.transform = 'translateX(0)';
+                }
+            }, 100);
+            break;
+        default:
+            console.log(`⚠️ Unknown animation: ${animation}`);
+    }
+    
+    log(`🎭 Animated ${objectId} with ${animation}`);
+}
+
 window.simulateTags = (arr) => Array.isArray(arr) && executeTags(arr);
+window.toggleAutonomous = toggleAutonomous;
 
