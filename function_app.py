@@ -2503,3 +2503,203 @@ def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
             headers=create_cors_response_headers()
         )
 
+
+# -----------------------------------------------------------------------------
+# Referral System Endpoints
+# -----------------------------------------------------------------------------
+@app.route(route="referrals/code", methods=["GET", "POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def referral_code(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get or generate referral code for a user.
+    
+    GET /api/referrals/code?user_id=...
+    POST /api/referrals/code with {"user_id": "..."}
+    
+    Response: {
+        "referral_code": "ABC123DEF",
+        "user_id": "..."
+    }
+    """
+    logging.info('Referral code endpoint invoked')
+    
+    try:
+        from shared.referral_system import get_referral_system
+        
+        if req.method == "GET":
+            user_id = req.params.get('user_id', 'demo_user')
+        else:
+            body = json.loads(req.get_body().decode('utf-8'))
+            user_id = body.get('user_id', 'demo_user')
+        
+        referral_system = get_referral_system()
+        
+        # Get existing or generate new code
+        code = referral_system.get_referral_code(user_id)
+        if not code:
+            code = referral_system.generate_referral_code(user_id)
+        
+        return func.HttpResponse(
+            json.dumps({
+                "referral_code": code,
+                "user_id": user_id
+            }),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Referral code error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to get referral code: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="referrals/stats", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get referral statistics for a user.
+    
+    GET /api/referrals/stats?user_id=...
+    
+    Response: {
+        "referral_code": "...",
+        "referral_count": 5,
+        "total_commission": 100.00,
+        "pending_commission": 50.00,
+        "paid_commission": 50.00,
+        "referrals": [...]
+    }
+    """
+    logging.info('Referral stats endpoint invoked')
+    
+    try:
+        from shared.referral_system import get_referral_system
+        
+        user_id = req.params.get('user_id', 'demo_user')
+        
+        referral_system = get_referral_system()
+        stats = referral_system.get_referral_stats(user_id)
+        
+        return func.HttpResponse(
+            json.dumps(stats),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Referral stats error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to get referral stats: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="referrals/record", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def record_referral(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Record a new referral.
+    
+    POST /api/referrals/record
+    Body: {
+        "referrer_code": "ABC123",
+        "new_user_id": "user123",
+        "tier": "pro",
+        "subscription_value": 49.00
+    }
+    
+    Response: {
+        "success": true,
+        "commission": 9.80,
+        "referral_count": 5
+    }
+    """
+    logging.info('Record referral endpoint invoked')
+    
+    try:
+        from shared.referral_system import get_referral_system
+        
+        body = json.loads(req.get_body().decode('utf-8'))
+        referrer_code = body.get('referrer_code')
+        new_user_id = body.get('new_user_id')
+        tier = body.get('tier')
+        subscription_value = body.get('subscription_value')
+        
+        if not all([referrer_code, new_user_id, tier, subscription_value]):
+            return func.HttpResponse(
+                json.dumps({"error": "Missing required fields"}),
+                status_code=400,
+                mimetype="application/json",
+                headers=create_cors_response_headers()
+            )
+        
+        referral_system = get_referral_system()
+        result = referral_system.record_referral(
+            referrer_code=referrer_code,
+            new_user_id=new_user_id,
+            tier=tier,
+            subscription_value=subscription_value
+        )
+        
+        return func.HttpResponse(
+            json.dumps(result),
+            status_code=200 if result.get('success') else 400,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Record referral error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to record referral: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Get referral leaderboard.
+    
+    GET /api/referrals/leaderboard?limit=10
+    
+    Response: {
+        "leaderboard": [
+            {"rank": 1, "user_id": "...", "referral_count": 50, "total_commission": 500}
+        ]
+    }
+    """
+    logging.info('Referral leaderboard endpoint invoked')
+    
+    try:
+        from shared.referral_system import get_referral_system
+        
+        limit = int(req.params.get('limit', '10'))
+        
+        referral_system = get_referral_system()
+        leaderboard = referral_system.get_leaderboard(limit)
+        
+        return func.HttpResponse(
+            json.dumps({"leaderboard": leaderboard}),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+    
+    except Exception as e:
+        logging.error(f'Referral leaderboard error: {str(e)}')
+        return func.HttpResponse(
+            json.dumps({"error": f"Failed to get leaderboard: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers()
+        )
+
