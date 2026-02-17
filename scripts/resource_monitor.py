@@ -246,7 +246,7 @@ class ResourceMonitor:
             print(f"[monitor] Duration: {duration}s")
         print()
         
-        start_time = time.time()
+        start_time = time.perf_counter()
         
         try:
             while True:
@@ -270,7 +270,7 @@ class ResourceMonitor:
                 print()
                 
                 # Check duration
-                if duration and (time.time() - start_time) >= duration:
+                if duration and (time.perf_counter() - start_time) >= duration:
                     print("[monitor] Duration reached, stopping...")
                     break
                 

@@ -164,9 +164,9 @@ def run_evaluation(dataset_path: Path, max_samples: int | None, metrics: List[st
     if "response_time" in metrics:
         times: List[float] = []
         for ex in data:
-            t0 = time.time()
+            t0 = time.perf_counter()
             _ = naive_predict(ex)
-            times.append((time.time() - t0) * 1000.0)
+            times.append((time.perf_counter() - t0) * 1000.0)
         avg_ms = sum(times) / len(times)
         results["response_time_ms"] = round(avg_ms, 3)
 

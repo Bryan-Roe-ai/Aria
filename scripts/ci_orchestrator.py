@@ -264,7 +264,7 @@ class CIOrchestrator:
     def _run_validation_job(self, job: ValidationJob) -> Dict[str, Any]:
         """Run a single validation job."""
         print(f"[ci] Validating: {job.name}")
-        t0 = time.time()
+        t0 = time.perf_counter()
         
         try:
             result = subprocess.run(
@@ -275,7 +275,7 @@ class CIOrchestrator:
                 timeout=300  # 5 minute timeout
             )
             
-            duration = time.time() - t0
+            duration = time.perf_counter() - t0
             status = "succeeded" if result.returncode == 0 else "failed"
             
             return {
@@ -302,7 +302,7 @@ class CIOrchestrator:
     
     def _run_command(self, name: str, cmd: List[str], critical: bool = True) -> bool:
         """Run a single command and track result."""
-        t0 = time.time()
+        t0 = time.perf_counter()
         
         try:
             result = subprocess.run(
@@ -313,7 +313,7 @@ class CIOrchestrator:
                 timeout=600  # 10 minute timeout
             )
             
-            duration = time.time() - t0
+            duration = time.perf_counter() - t0
             status = "succeeded" if result.returncode == 0 else "failed"
             
             self.results.append({
