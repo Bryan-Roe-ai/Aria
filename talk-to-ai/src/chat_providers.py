@@ -57,15 +57,6 @@ _LM_STUDIO_CACHE_TTL_SECONDS = 30
 RoleMessage = Dict[str, str]
 
 
-# -------------------------------------------------------------------------
-# LM Studio availability cache to avoid repeated HTTP health checks
-# -------------------------------------------------------------------------
-
-_lmstudio_cache: Dict[str, Any] = {
-    "available": None, "checked_at": 0.0, "url": None}
-_LMSTUDIO_CACHE_TTL = 30  # seconds
-
-
 def _check_lmstudio_available(url: str) -> bool:
     """Backward-compatible alias for the newer `_check_lm_studio_available` function.
 

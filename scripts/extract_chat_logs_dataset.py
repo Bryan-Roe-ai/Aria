@@ -53,16 +53,17 @@ def read_jsonl(path: Path) -> List[Dict]:
 
 
 def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
-    examples: List[Dict] = []
-    # Simple user->assistant pairs
+    # Simple user->assistant pairs - build list directly
+    pairs = []
     last_user = None
     for m in messages:
         if m.get("role") == "user":
             last_user = m
         elif m.get("role") == "assistant" and last_user:
-            pair = [last_user, m]
-            examples.append({"messages": pair})
-    # Rolling windows
+            pairs.append({"messages": [last_user, m]})
+    
+    # Rolling windows - use list comprehension for better performance
+    windows = []
     if context_window > 2:
         for i in range(len(messages)):
             if messages[i].get("role") == "assistant":
@@ -70,8 +71,10 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
                 window = messages[start : i + 1]
                 # Must contain at least one user+assistant
                 if any(x.get("role") == "user" for x in window) and any(x.get("role") == "assistant" for x in window):
-                    examples.append({"messages": window})
-    return examples
+                    windows.append({"messages": window})
+    
+    # Combine lists efficiently with extend
+    return pairs + windows
 
 
 def hash_example(example: Dict) -> str:
@@ -98,17 +101,15 @@ def main():
         if not msgs:
             continue
         exs = build_examples(msgs, args.context_window)
-        for e in exs:
-            e["source_file"] = lf.name
-            e["hash"] = hash_example(e)
-            all_examples.append(e)
+        # Add metadata and hash in batch using list comprehension
+        enriched_exs = [
+            {**e, "source_file": lf.name, "hash": hash_example(e)}
+            for e in exs
+        ]
+        all_examples.extend(enriched_exs)
 
-    # Deduplicate by hash
-    uniq = {}
-    for e in all_examples:
-        h = e["hash"]
-        if h not in uniq:
-            uniq[h] = e
+    # Deduplicate by hash - use dict comprehension for cleaner code
+    uniq = {e["hash"]: e for e in all_examples}
     examples = list(uniq.values())
 
     if not examples:

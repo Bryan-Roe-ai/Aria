@@ -45,6 +45,10 @@ STATUS_FILES = {
     "smart_orchestrator": REPO_ROOT / "data_out" / "smart_orchestrator",
 }
 
+# Simple cache for status files to avoid repeated I/O (TTL: 5 seconds)
+_status_cache: Dict[str, tuple[float, Optional[Dict[str, Any]]]] = {}
+_STATUS_CACHE_TTL = 5.0  # seconds
+
 
 @dataclass
 class OrchestratorStatus:
@@ -76,15 +80,40 @@ class OrchestratorStatus:
             return "⚪"
 
 
-def load_status(path: Path) -> Optional[Dict[str, Any]]:
-    """Load status JSON if it exists"""
+def load_status(path: Path, use_cache: bool = True) -> Optional[Dict[str, Any]]:
+    """Load status JSON if it exists, with optional caching to reduce I/O.
+    
+    Args:
+        path: Path to status JSON file
+        use_cache: If True, use cache with 5s TTL to avoid repeated reads
+    
+    Returns:
+        Parsed JSON dict or None if file doesn't exist or is invalid
+    """
+    path_str = str(path)
+    current_time = time.time()
+    
+    # Check cache if enabled
+    if use_cache and path_str in _status_cache:
+        cached_time, cached_data = _status_cache[path_str]
+        if current_time - cached_time < _STATUS_CACHE_TTL:
+            return cached_data
+    
+    # Load from file
     if not path.exists():
-        return None
-    try:
-        with path.open("r") as f:
-            return json.load(f)
-    except Exception:
-        return None
+        result = None
+    else:
+        try:
+            with path.open("r") as f:
+                result = json.load(f)
+        except Exception:
+            result = None
+    
+    # Update cache
+    if use_cache:
+        _status_cache[path_str] = (current_time, result)
+    
+    return result
 
 
 def parse_autotrain_status() -> OrchestratorStatus:
