@@ -83,11 +83,11 @@ fetch_similar_messages = chat_memory_funcs['fetch_similar_messages']
 store_embedding = chat_memory_funcs['store_embedding']
 
 # Add talk-to-ai to path so we can import chat_providers
-talk_to_ai_path = Path(__file__).resolve().parent / "talk-to-ai" / "src"
+talk_to_ai_path = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "src"
 sys.path.insert(0, str(talk_to_ai_path))
 
 # Add quantum-ai to path
-quantum_ai_path = Path(__file__).resolve().parent / "quantum-ai" / "src"
+quantum_ai_path = Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "src"
 sys.path.insert(0, str(quantum_ai_path))
 
 # Add scripts to path for vision inference
