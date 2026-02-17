@@ -1,5 +1,10 @@
 """
 Hyperparameter tuning for HybridQNN on Heart Disease dataset.
+
+NOTE: This is a simplified/quick version for the Heart Disease dataset.
+For comprehensive hyperparameter optimization across multiple datasets,
+use hyperparameter_optimization.py instead.
+
 Supports a quick mode for small grids to keep runs fast.
 """
 from pathlib import Path
