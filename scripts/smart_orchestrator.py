@@ -118,16 +118,18 @@ class Pipeline:
             "running": 0,
             "pending": 0,
             "skipped": 0,
+            "unknown": 0,  # Track unknown statuses separately
             "total_duration_sec": 0
         }
         
         # Single pass through jobs for all statistics
         for j in self.jobs.values():
             status = j.status
-            if status in stats:
+            if status in ("succeeded", "failed", "running", "pending", "skipped"):
                 stats[status] += 1
             else:
-                # Unknown status - log for debugging but don't crash
+                # Unknown status - count in separate bucket and log for debugging
+                stats["unknown"] += 1
                 logger.warning(f"Job {j.name} has unknown status: {status}")
             stats["total_duration_sec"] += j.duration_sec
         
@@ -141,6 +143,7 @@ class Pipeline:
             "running": stats["running"],
             "pending": stats["pending"],
             "skipped": stats["skipped"],
+            "unknown": stats["unknown"],
             "total_duration_sec": round(stats["total_duration_sec"], 2),
             "completion_pct": int(completed / max(total, 1) * 100),
         }

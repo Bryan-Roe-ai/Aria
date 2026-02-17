@@ -23,6 +23,7 @@ import json
 import os
 import statistics
 import sys
+import threading
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -46,9 +47,9 @@ STATUS_FILES = {
     "smart_orchestrator": REPO_ROOT / "data_out" / "smart_orchestrator",
 }
 
-# Simple cache for status files to avoid repeated I/O (TTL: 5 seconds)
-# Note: Not thread-safe - if concurrent access needed, add threading.Lock
+# Thread-safe cache for status files to avoid repeated I/O (TTL: 5 seconds)
 _status_cache: Dict[str, tuple[float, Optional[Dict[str, Any]]]] = {}
+_status_cache_lock = threading.Lock()
 _STATUS_CACHE_TTL = 5.0  # seconds
 
 
@@ -85,6 +86,8 @@ class OrchestratorStatus:
 def load_status(path: Path, use_cache: bool = True) -> Optional[Dict[str, Any]]:
     """Load status JSON if it exists, with optional caching to reduce I/O.
     
+    Thread-safe implementation using threading.Lock for cache access.
+    
     Args:
         path: Path to status JSON file
         use_cache: If True, use cache with 5s TTL to avoid repeated reads
@@ -95,11 +98,13 @@ def load_status(path: Path, use_cache: bool = True) -> Optional[Dict[str, Any]]:
     path_str = str(path)
     current_time = time.time()
     
-    # Check cache if enabled
-    if use_cache and path_str in _status_cache:
-        cached_time, cached_data = _status_cache[path_str]
-        if current_time - cached_time < _STATUS_CACHE_TTL:
-            return cached_data
+    # Check cache if enabled (thread-safe)
+    if use_cache:
+        with _status_cache_lock:
+            if path_str in _status_cache:
+                cached_time, cached_data = _status_cache[path_str]
+                if current_time - cached_time < _STATUS_CACHE_TTL:
+                    return cached_data
     
     # Load from file
     if not path.exists():
@@ -111,9 +116,10 @@ def load_status(path: Path, use_cache: bool = True) -> Optional[Dict[str, Any]]:
         except Exception:
             result = None
     
-    # Update cache
+    # Update cache (thread-safe)
     if use_cache:
-        _status_cache[path_str] = (current_time, result)
+        with _status_cache_lock:
+            _status_cache[path_str] = (current_time, result)
     
     return result
 
