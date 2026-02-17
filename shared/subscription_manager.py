@@ -132,6 +132,8 @@ class Subscription:
             "websites_created": 0,
         }
         self.usage_reset_date = datetime.now() + timedelta(days=30)
+        # Cache tier limits to avoid repeated dictionary lookups
+        self._tier_limits = TIER_LIMITS.get(self.tier, {})
     
     def is_active(self) -> bool:
         """Check if subscription is currently active"""
@@ -148,7 +150,7 @@ class Subscription:
         return TIER_FEATURES.get(self.tier, {}).get(feature, False)
     
     def check_limit(self, resource: str, amount: int = 1) -> bool:
-        """Check if usage is within limits"""
+        """Check if usage is within limits - optimized with cached tier limits"""
         if not self.is_active():
             return False
         
@@ -156,7 +158,8 @@ class Subscription:
         if datetime.now() > self.usage_reset_date:
             self.reset_usage()
         
-        limit = TIER_LIMITS.get(self.tier, {}).get(resource, 0)
+        # Use cached tier limits
+        limit = self._tier_limits.get(resource, 0)
         if limit == -1:  # unlimited
             return True
         
@@ -182,8 +185,9 @@ class Subscription:
         self.usage_reset_date = datetime.now() + timedelta(days=30)
     
     def get_usage_percentage(self, resource: str) -> float:
-        """Get usage as percentage of limit"""
-        limit = TIER_LIMITS.get(self.tier, {}).get(resource, 0)
+        """Get usage as percentage of limit - optimized with cached tier limits"""
+        # Use cached tier limits
+        limit = self._tier_limits.get(resource, 0)
         if limit == -1:
             return 0.0  # unlimited
         if limit == 0:

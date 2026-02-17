@@ -107,24 +107,35 @@ class Pipeline:
         )
     
     def get_stats(self) -> Dict[str, Any]:
-        """Get pipeline statistics"""
+        """Get pipeline statistics - optimized single-pass aggregation"""
+        stats = {
+            "succeeded": 0,
+            "failed": 0,
+            "running": 0,
+            "pending": 0,
+            "skipped": 0,
+            "total_duration_sec": 0
+        }
+        
+        # Single pass through jobs for all statistics
+        for j in self.jobs.values():
+            status = j.status
+            if status in stats:
+                stats[status] += 1
+            stats["total_duration_sec"] += j.duration_sec
+        
         total = len(self.jobs)
-        succeeded = sum(1 for j in self.jobs.values() if j.status == "succeeded")
-        failed = sum(1 for j in self.jobs.values() if j.status == "failed")
-        running = sum(1 for j in self.jobs.values() if j.status == "running")
-        pending = sum(1 for j in self.jobs.values() if j.status == "pending")
-        skipped = sum(1 for j in self.jobs.values() if j.status == "skipped")
-        total_time = sum(j.duration_sec for j in self.jobs.values())
+        completed = stats["succeeded"] + stats["failed"] + stats["skipped"]
         
         return {
             "total": total,
-            "succeeded": succeeded,
-            "failed": failed,
-            "running": running,
-            "pending": pending,
-            "skipped": skipped,
-            "total_duration_sec": round(total_time, 2),
-            "completion_pct": int((succeeded + failed + skipped) / max(total, 1) * 100),
+            "succeeded": stats["succeeded"],
+            "failed": stats["failed"],
+            "running": stats["running"],
+            "pending": stats["pending"],
+            "skipped": stats["skipped"],
+            "total_duration_sec": round(stats["total_duration_sec"], 2),
+            "completion_pct": int(completed / max(total, 1) * 100),
         }
 
 

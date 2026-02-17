@@ -135,13 +135,18 @@ class DatasetDownloader:
             success = self._download_file(info["url"], dest, info["description"])
             
             if success:
-                # Add to index
+                # Add to index - optimize: single stat() call
+                try:
+                    file_size = dest.stat().st_size
+                except (FileNotFoundError, OSError):
+                    file_size = 0
+                
                 self.index["datasets"][name] = {
                     "category": "quantum",
                     "filename": info["filename"],
                     "path": str(dest),
                     "description": info["description"],
-                    "size": dest.stat().st_size if dest.exists() else 0
+                    "size": file_size
                 }
         
         print(f"\n✅ Quantum datasets saved to: {self.quantum_dir}")
