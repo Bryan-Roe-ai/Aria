@@ -72,6 +72,9 @@ LEFT_ARM_KEYWORDS = frozenset(['left arm', 'arm left', 'left hand'])
 RIGHT_ARM_KEYWORDS = frozenset(['right arm', 'arm right', 'right hand'])
 LEFT_LEG_KEYWORDS = frozenset(['left leg', 'leg left'])
 RIGHT_LEG_KEYWORDS = frozenset(['right leg', 'leg right'])
+SPARKLE_KEYWORDS = frozenset(['sparkle', 'sparkles', 'glitter', 'shimmer', 'shine'])
+GLOW_KEYWORDS = frozenset(['glow', 'glowing', 'radiate', 'illuminate'])
+HEARTS_KEYWORDS = frozenset(['hearts', 'heart', 'love'])
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
     """Check if text contains any keyword from set. O(1) per keyword check."""
@@ -773,13 +776,19 @@ def generate_tags_fallback(command: str) -> List[str]:
         elif ('down' in cmd or 'back' in cmd) and not has_forward_limb:
             tags.append(f'[aria:{movement_style}:down]')
 
-    # Effects
-    if 'sparkle' in cmd:
-        tags.append('[aria:effect:sparkle]')
-    elif 'glow' in cmd:
-        tags.append('[aria:effect:glow]')
-    elif 'hearts' in cmd:
-        tags.append('[aria:effect:hearts]')
+    # Effects - with keyword matching and intensity support
+    effect_intensity = 'normal'
+    if 'light' in cmd or 'subtle' in cmd or 'gentle' in cmd:
+        effect_intensity = 'light'
+    elif 'heavy' in cmd or 'intense' in cmd or 'lots' in cmd or 'many' in cmd:
+        effect_intensity = 'heavy'
+
+    if _contains_any_keyword(cmd, SPARKLE_KEYWORDS):
+        tags.append(f'[aria:effect:sparkle:{effect_intensity}]')
+    elif _contains_any_keyword(cmd, GLOW_KEYWORDS):
+        tags.append(f'[aria:effect:glow:{effect_intensity}]')
+    elif _contains_any_keyword(cmd, HEARTS_KEYWORDS):
+        tags.append(f'[aria:effect:hearts:{effect_intensity}]')
 
     # Camera
     if 'center' in cmd:

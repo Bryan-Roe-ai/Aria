@@ -688,17 +688,24 @@ function executeLocalCommand(command) {
         executed = true;
     }
     
-    // Effects
+    // Effects - with intensity detection
+    let effectIntensity = 'normal';
+    if (cmd.includes('light') || cmd.includes('subtle') || cmd.includes('gentle')) {
+        effectIntensity = 'light';
+    } else if (cmd.includes('heavy') || cmd.includes('intense') || cmd.includes('lots') || cmd.includes('many')) {
+        effectIntensity = 'heavy';
+    }
+
     if (cmd.includes('sparkle')) {
-        createEffect('sparkle');
+        createEffect('sparkle', effectIntensity);
         executed = true;
     }
     if (cmd.includes('hearts')) {
-        createEffect('hearts');
+        createEffect('hearts', effectIntensity);
         executed = true;
     }
     if (cmd.includes('glow')) {
-        createEffect('glow');
+        createEffect('glow', effectIntensity);
         executed = true;
     }
     
@@ -814,7 +821,7 @@ function executeTags(tags) {
                     }
                     break;
                 case 'effect':
-                    createEffect(action);
+                    createEffect(action, param || 'normal');
                     break;
                 case 'camera':
                     if (action === 'center') centerAria();
@@ -1487,27 +1494,73 @@ function move(direction, speed = 'normal') {
     setTimeout(() => { isPerformingAction = false; }, 1000);
 }
 
-function createEffect(type) {
+function createEffect(type, intensity = 'normal') {
     const effects = {
         'sparkle': '✨',
         'glow': '💫',
         'hearts': '💕'
     };
-    
+
+    // Intensity configurations
+    const intensityConfig = {
+        'light': { count: 3, spread: 60, duration: 1200, delay: 150 },
+        'normal': { count: 5, spread: 80, duration: 1500, delay: 100 },
+        'heavy': { count: 10, spread: 90, duration: 1800, delay: 60 }
+    };
+
+    const config = intensityConfig[intensity] || intensityConfig['normal'];
     const emoji = effects[type] || '✨';
-    
-    for (let i = 0; i < 5; i++) {
+
+    // Color variations for sparkle effect
+    const sparkleColors = ['#FFD700', '#FFA500', '#FFFF00', '#FFE4B5', '#FAFAD2'];
+
+    // Use requestAnimationFrame for better performance
+    let createdCount = 0;
+
+    function createSingleEffect() {
+        if (createdCount >= config.count) return;
+
+        const effect = document.createElement('div');
+        effect.className = `effect ${type}`;
+        effect.textContent = emoji;
+
+        // Random position within spread area
+        const centerX = 50;
+        const centerY = 50;
+        const spreadRadius = config.spread / 2;
+        effect.style.left = (centerX + (Math.random() - 0.5) * spreadRadius) + '%';
+        effect.style.top = (centerY + (Math.random() - 0.5) * spreadRadius) + '%';
+
+        // Add color variation for sparkle
+        if (type === 'sparkle') {
+            const randomColor = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+            effect.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
+        }
+
+        // Add random rotation for variety
+        effect.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+        stage.appendChild(effect);
+
+        // Remove after duration
         setTimeout(() => {
-            const effect = document.createElement('div');
-            effect.className = `effect ${type}`;
-            effect.textContent = emoji;
-            effect.style.left = (Math.random() * 80 + 10) + '%';
-            effect.style.top = (Math.random() * 80 + 10) + '%';
-            stage.appendChild(effect);
-            
-            setTimeout(() => effect.remove(), 1500);
-        }, i * 100);
+            if (effect.parentNode) {
+                effect.remove();
+            }
+        }, config.duration);
+
+        createdCount++;
+
+        // Schedule next effect
+        if (createdCount < config.count) {
+            requestAnimationFrame(() => {
+                setTimeout(createSingleEffect, config.delay);
+            });
+        }
     }
+
+    // Start effect creation
+    requestAnimationFrame(createSingleEffect);
 }
 
 function centerAria() {
