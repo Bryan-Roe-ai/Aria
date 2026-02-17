@@ -42,8 +42,9 @@ def validate_messages(messages: Any) -> Tuple[bool, Optional[str]]:
         
         # Validate role is one of the expected values
         valid_roles = {'user', 'assistant', 'system'}
+        roles_str = ", ".join(sorted(valid_roles))
         if msg['role'] not in valid_roles:
-            return False, f"Message {idx} has invalid role '{msg['role']}'. Expected one of: {valid_roles}"
+            return False, f"Message {idx} has invalid role '{msg['role']}'. Expected one of: {roles_str}"
     
     return True, None
 
