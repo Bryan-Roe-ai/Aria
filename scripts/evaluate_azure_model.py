@@ -13,9 +13,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List
+
+# Add shared module to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
+from evaluation_utils import load_jsonl, naive_predict
 
 try:
     import openai  # type: ignore
@@ -23,32 +28,6 @@ try:
 except Exception:
     openai = None
     HAS_AZURE_OPENAI = False
-
-
-def load_jsonl(path: Path, max_samples: int | None = None) -> List[Dict[str, Any]]:
-    if not path.exists():
-        raise FileNotFoundError(path)
-    data: List[Dict[str, Any]] = []
-    with path.open("r", encoding="utf-8") as f:
-        for i, line in enumerate(f):
-            if max_samples is not None and i >= max_samples:
-                break
-            line = line.strip()
-            if not line:
-                continue
-            data.append(json.loads(line))
-    return data
-
-
-def naive_predict(example: Dict[str, Any]) -> str:
-    if "input" in example and isinstance(example["input"], str):
-        return f"echo: {example['input'].strip()}"
-    msgs = example.get("messages") or []
-    if msgs and isinstance(msgs, list):
-        for m in reversed(msgs):
-            if isinstance(m, dict) and m.get("role") == "user":
-                return f"echo: {m.get('content', '').strip()}"
-    return "echo:"
 
 
 def azure_call(example: Dict[str, Any], deployment: str | None) -> str:
