@@ -354,10 +354,19 @@ class BatchEvaluator:
         if not best_model_id:
             raise ValueError("No best model found (all evaluations may have failed)")
         
-        # Use O(1) cache lookup instead of O(n) linear search
+        # Prefer O(1) cache lookup instead of O(n) linear search, but fall back if needed
         best_result = self._results_cache.get(best_model_id)
-        if not best_result:
-            raise ValueError(f"Best model {best_model_id} not found in results cache")
+        if best_result is None:
+            # Fallback to linear search to tolerate transient cache inconsistencies
+            best_result = next(
+                (r for r in self.results if r.model_id == best_model_id),
+                None,
+            )
+        if best_result is None:
+            raise ValueError(
+                f"Best model {best_model_id} not found in evaluation results; "
+                "this indicates an internal consistency error."
+            )
         
         # Determine target directory
         if target_dir is None:
