@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from functools import lru_cache
 
 # Pre-compile regex patterns for performance
 _RE_ONCLICK = re.compile(r'onclick=["\']([^"\']+)["\']')
@@ -7,6 +8,19 @@ _RE_FUNC_NAMES = re.compile(r'([a-zA-Z_][a-zA-Z0-9_]*)\s*\(')
 _RE_ELEMENT_IDS = re.compile(r'id=["\']([^"\']+)["\']')
 _RE_GET_BY_ID = re.compile(r"getElementById\(['\"]([^'\"]+)['\"]\)")
 _RE_FETCH_CALLS = re.compile(r"fetch\(['\"]([^'\"]+)['\"]\)")
+
+
+@lru_cache(maxsize=128)
+def _compile_function_patterns(func_name: str):
+    """Compile and cache function definition patterns for a given function name."""
+    escaped = re.escape(func_name)
+    return [
+        re.compile(rf'function\s+{escaped}\s*\('),
+        re.compile(rf'const\s+{escaped}\s*='),
+        re.compile(rf'let\s+{escaped}\s*='),
+        re.compile(rf'var\s+{escaped}\s*=')
+    ]
+
 
 html_file = Path('dashboard/unified.html')
 content = html_file.read_text(encoding='utf-8')
@@ -25,13 +39,8 @@ function_calls -= built_in_methods
 
 defined_count = 0
 for func_name in function_calls:
-    # Pre-compile patterns for this specific function name
-    patterns = [
-        re.compile(rf'function\s+{re.escape(func_name)}\s*\('),
-        re.compile(rf'const\s+{re.escape(func_name)}\s*='),
-        re.compile(rf'let\s+{re.escape(func_name)}\s*='),
-        re.compile(rf'var\s+{re.escape(func_name)}\s*=')
-    ]
+    # Use cached pattern compilation for each unique function name
+    patterns = _compile_function_patterns(func_name)
     if any(p.search(content) for p in patterns):
         defined_count += 1
 

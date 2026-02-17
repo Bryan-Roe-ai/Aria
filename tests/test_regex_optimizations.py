@@ -153,7 +153,10 @@ class TestFunctionAppOptimizations:
         lines_with_import_re = [line for line in content.split('\n') if 'import re' in line and not line.strip().startswith('#')]
         
         # Filter for actual 're' imports (not 'requests', 'requirements', etc.)
-        actual_re_imports = [line for line in lines_with_import_re if 'import re' in line and 'import re\n' in line + '\n' or 'import re ' in line]
+        actual_re_imports = [
+            line for line in lines_with_import_re 
+            if 'import re' in line and ('import re\n' in (line + '\n') or 'import re ' in line)
+        ]
         
         # We expect exactly one import at the top level
         assert len(actual_re_imports) >= 1, "re module should be imported at module level"
