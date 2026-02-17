@@ -98,6 +98,7 @@ class AriaAutomation:
         self.start_time = datetime.now()
         self.training_cycles = 0
         self.errors: List[str] = []
+        self._status_dirty = True  # Track if status needs saving
 
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -110,8 +111,12 @@ class AriaAutomation:
         self.stop_all()
         sys.exit(0)
 
-    def save_status(self):
-        """Save current status to JSON"""
+    def save_status(self, force: bool = False):
+        """Save current status to JSON (only if changed or forced)"""
+        # Skip if status hasn't changed and not forced
+        if not self._status_dirty and not force:
+            return
+        
         status = AriaAutomationStatus(
             mode=self.mode,
             started=self.start_time.isoformat(),
@@ -127,6 +132,8 @@ class AriaAutomation:
 
         with open(STATUS_FILE, "w") as f:
             json.dump(vars(status), f, indent=2)
+        
+        self._status_dirty = False
 
     def load_pids(self) -> Dict[str, int]:
         """Load PIDs from previous run"""
@@ -170,22 +177,24 @@ class AriaAutomation:
         # Check if already running
         if self._check_port(8080):
             print("⚠️  Port 8080 already in use")
-            # Try to find existing process
+            # Try to find existing process (optimized: search keyword once outside loop)
             for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                 try:
                     cmdline = proc.info['cmdline']
-                    if cmdline and 'server.py' in ' '.join(cmdline):
-                        print(
-                            f"ℹ️  Found existing server (PID {proc.info['pid']})")
-                        self.processes["aria_server"] = ProcessInfo(
-                            name="aria_server",
-                            pid=proc.info['pid'],
-                            command="python server.py",
-                            started=datetime.now().isoformat(),
-                            port=8080,
-                            health_url="http://localhost:8080"
-                        )
-                        return True
+                    if cmdline:
+                        cmdline_str = ' '.join(cmdline)
+                        if 'server.py' in cmdline_str:
+                            print(
+                                f"ℹ️  Found existing server (PID {proc.info['pid']})")
+                            self.processes["aria_server"] = ProcessInfo(
+                                name="aria_server",
+                                pid=proc.info['pid'],
+                                command="python server.py",
+                                started=datetime.now().isoformat(),
+                                port=8080,
+                                health_url="http://localhost:8080"
+                            )
+                            return True
                 except (psutil.AccessDenied, psutil.NoSuchProcess):
                     continue
             return False
@@ -226,6 +235,7 @@ class AriaAutomation:
             error = f"Failed to start Aria server: {e}"
             print(f"❌ {error}")
             self.errors.append(error)
+            self._status_dirty = True
             return False
 
     def start_functions_backend(self) -> bool:
@@ -321,23 +331,27 @@ class AriaAutomation:
 
             if result.returncode == 0:
                 self.training_cycles += 1
+                self._status_dirty = True
                 print(f"✅ Training cycle #{self.training_cycles} completed")
                 return True
             else:
                 error = f"Training cycle failed: {result.stderr[-200:]}"
                 print(f"❌ {error}")
                 self.errors.append(error)
+                self._status_dirty = True
                 return False
 
         except subprocess.TimeoutExpired:
             error = "Training cycle timed out after 10 minutes"
             print(f"❌ {error}")
             self.errors.append(error)
+            self._status_dirty = True
             return False
         except Exception as e:
             error = f"Training cycle error: {e}"
             print(f"❌ {error}")
             self.errors.append(error)
+            self._status_dirty = True
             return False
 
     def health_check(self) -> Dict[str, bool]:

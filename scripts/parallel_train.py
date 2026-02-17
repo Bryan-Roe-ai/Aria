@@ -267,6 +267,9 @@ class ParallelTrainer:
                         elif phase == 'post':
                             post_loss = rec.get('eval_loss')
                             post_ppl = rec.get('eval_perplexity') or (math.e ** rec.get('eval_loss', 0))
+                        # Early exit once we have both phases
+                        if pre_ppl is not None and post_ppl is not None:
+                            break
                 if pre_loss is not None:
                     eval_info['pre_eval_loss'] = pre_loss
                 if pre_ppl is not None:
@@ -524,9 +527,23 @@ class ParallelTrainer:
         print("Parallel Training Summary")
         print("="*70)
         
-        succeeded = sum(1 for r in self.results if r.get('status') == 'succeeded')
-        skipped = sum(1 for r in self.results if r.get('status') == 'skipped')
-        failed = sum(1 for r in self.results if r.get('status') not in ('succeeded', 'skipped'))
+        # Single pass to classify results and collect failed/skipped for display
+        succeeded = 0
+        skipped = 0
+        failed = 0
+        failed_jobs = []
+        skipped_jobs = []
+        
+        for r in self.results:
+            status = r.get('status')
+            if status == 'succeeded':
+                succeeded += 1
+            elif status == 'skipped':
+                skipped += 1
+                skipped_jobs.append(r)
+            else:
+                failed += 1
+                failed_jobs.append(r)
 
         print(f"\nTotal Jobs: {len(self.results)}")
         print(f"Succeeded: {succeeded}")
@@ -538,14 +555,12 @@ class ParallelTrainer:
         # Show failed jobs if any
         if failed > 0:
             print("\nFailed Jobs:")
-            for r in self.results:
-                if r.get('status') not in ('succeeded', 'skipped'):
-                    print(f"  - {r['name']}: {r.get('error', 'return code ' + str(r.get('return_code')))}")
+            for r in failed_jobs:
+                print(f"  - {r['name']}: {r.get('error', 'return code ' + str(r.get('return_code')))}")
         if skipped > 0:
             print("\nSkipped Jobs:")
-            for r in self.results:
-                if r.get('status') == 'skipped':
-                    print(f"  - {r['name']}: {r.get('reason', 'min_train_samples threshold')} train_samples={r.get('dataset_train_samples')}")
+            for r in skipped_jobs:
+                print(f"  - {r['name']}: {r.get('reason', 'min_train_samples threshold')} train_samples={r.get('dataset_train_samples')}")
 
 def main():
     parser = argparse.ArgumentParser(description="Parallel training launcher with historical status & evaluation")

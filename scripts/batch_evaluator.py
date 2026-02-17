@@ -304,12 +304,9 @@ class BatchEvaluator:
     
     def compare_models(self, model_ids: List[str]) -> Dict:
         """Compare specific models side-by-side."""
-        comparison = []
-        
-        for model_id in model_ids:
-            result = next((r for r in self.results if r.model_id == model_id), None)
-            if result:
-                comparison.append(result)
+        # Build O(1) lookup dictionary instead of O(n) linear searches
+        results_by_id = {r.model_id: r for r in self.results}
+        comparison = [results_by_id[model_id] for model_id in model_ids if model_id in results_by_id]
         
         return {
             "models": [r.model_id for r in comparison],
@@ -346,7 +343,9 @@ class BatchEvaluator:
         if not best_model_id:
             raise ValueError("No best model found (all evaluations may have failed)")
         
-        best_result = next(r for r in self.results if r.model_id == best_model_id)
+        # Use O(1) dictionary lookup instead of O(n) linear search
+        results_by_id = {r.model_id: r for r in self.results}
+        best_result = results_by_id[best_model_id]
         
         # Determine target directory
         if target_dir is None:

@@ -59,14 +59,19 @@ class TrainingMonitor:
             return {"error": str(e)}
     
     def get_recent_logs(self, lines: int = 20) -> List[str]:
-        """Get recent log entries"""
+        """Get recent log entries using streaming to avoid memory issues"""
         if not self.log_file.exists():
             return []
         
         try:
+            # Stream log file with rolling buffer instead of loading entire file
+            buffer = []
             with open(self.log_file, 'r') as f:
-                all_lines = f.readlines()
-                return all_lines[-lines:]
+                for line in f:
+                    buffer.append(line)
+                    if len(buffer) > lines:
+                        buffer.pop(0)  # Keep only last N lines
+            return buffer
         except Exception:
             return []
     
