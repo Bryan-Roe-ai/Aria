@@ -117,11 +117,12 @@ def validate_command_coverage(dataset):
     for example in dataset:
         response = example['messages'][-1]['content'].lower()
         
-        for cmd in commands.keys():
+        # Performance optimization: Direct iteration instead of .keys()
+        for cmd in commands:
             if f'[aria:{cmd}' in response:
                 commands[cmd] += 1
         
-        for direction in directions.keys():
+        for direction in directions:
             if direction in response:
                 directions[direction] += 1
     

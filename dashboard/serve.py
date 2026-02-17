@@ -525,10 +525,47 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if job.get('name') == job_name and 'log' in job:
                     log_file = Path(job['log'])
                     if log_file.exists():
-                        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
-                            # Get last 500 lines
-                            lines = f.readlines()
-                            return {'logs': ''.join(lines[-500:])}
+                        # Performance optimization: Stream tail lines instead of loading entire file
+                        try:
+                            size = log_file.stat().st_size
+                            if size <= 65536:  # Small file (< 64KB) - safe to load in memory
+                                with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                                    lines = f.readlines()
+                                    return {'logs': ''.join(lines[-500:])}
+                            else:
+                                # Large file - read backwards efficiently
+                                with open(log_file, 'rb') as f:
+                                    # Start near end of file
+                                    block_size = 32768  # 32KB blocks
+                                    f.seek(0, 2)  # End of file
+                                    file_size = f.tell()
+                                    
+                                    # Read backwards in blocks until we have enough lines
+                                    chunks = []
+                                    remaining = file_size
+                                    target_lines = 500
+                                    
+                                    while remaining > 0 and len(chunks) < target_lines * 2:
+                                        read_size = min(block_size, remaining)
+                                        f.seek(remaining - read_size)
+                                        chunk = f.read(read_size)
+                                        chunks.insert(0, chunk)
+                                        remaining -= read_size
+                                        
+                                        # Check if we have enough lines
+                                        decoded = b''.join(chunks).decode('utf-8', errors='ignore')
+                                        if decoded.count('\n') >= target_lines:
+                                            break
+                                    
+                                    # Extract last 500 lines
+                                    decoded = b''.join(chunks).decode('utf-8', errors='ignore')
+                                    all_lines = decoded.splitlines(keepends=True)
+                                    return {'logs': ''.join(all_lines[-500:])}
+                        except Exception:
+                            # Fallback to simple read
+                            with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                                lines = f.readlines()
+                                return {'logs': ''.join(lines[-500:])}
             
             return {'logs': 'No logs available'}
         except Exception as e:
