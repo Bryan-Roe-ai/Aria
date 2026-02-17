@@ -46,6 +46,7 @@ STATUS_FILES = {
 }
 
 # Simple cache for status files to avoid repeated I/O (TTL: 5 seconds)
+# Note: Not thread-safe - if concurrent access needed, add threading.Lock
 _status_cache: Dict[str, tuple[float, Optional[Dict[str, Any]]]] = {}
 _STATUS_CACHE_TTL = 5.0  # seconds
 

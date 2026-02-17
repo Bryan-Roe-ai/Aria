@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import subprocess
 import sys
 import time
@@ -48,6 +49,9 @@ try:
     import yaml
 except ImportError:
     raise SystemExit("pyyaml required. Install: pip install pyyaml")
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "smart_orchestrator"
@@ -122,6 +126,9 @@ class Pipeline:
             status = j.status
             if status in stats:
                 stats[status] += 1
+            else:
+                # Unknown status - log for debugging but don't crash
+                logger.warning(f"Job {j.name} has unknown status: {status}")
             stats["total_duration_sec"] += j.duration_sec
         
         total = len(self.jobs)

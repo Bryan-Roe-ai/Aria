@@ -108,8 +108,8 @@ def main():
         ]
         all_examples.extend(enriched_exs)
 
-    # Deduplicate by hash - keeps first occurrence for consistency
-    # (dict comprehension would keep last, so we iterate forward)
+    # Deduplicate by hash - keeps first occurrence (Python 3.7+ dict is ordered)
+    # Explicit iteration ensures first occurrence is preserved
     uniq = {}
     for e in all_examples:
         h = e["hash"]

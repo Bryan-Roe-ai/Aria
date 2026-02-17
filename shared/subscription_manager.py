@@ -134,6 +134,8 @@ class Subscription:
         self.usage_reset_date = datetime.now() + timedelta(days=30)
         # Cache tier limits to avoid repeated dictionary lookups
         self._tier_limits = TIER_LIMITS.get(self.tier, {})
+        if not self._tier_limits:
+            logger.warning(f"Unknown tier {self.tier} - using empty limits")
     
     def is_active(self) -> bool:
         """Check if subscription is currently active"""
