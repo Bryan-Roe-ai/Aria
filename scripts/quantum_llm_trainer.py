@@ -321,7 +321,7 @@ class QuantumEnhancedLLMTrainer:
                         dataset = [data]
         elif dataset_path.is_dir():
             # Look for train files using glob for efficiency
-            train_files = list(dataset_path.glob("train.json*"))
+            train_files = list(dataset_path.glob("train.json")) + list(dataset_path.glob("train.jsonl"))
             if train_files:
                 return self._load_dataset(train_files[0])
         
