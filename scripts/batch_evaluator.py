@@ -305,13 +305,11 @@ class BatchEvaluator:
         print(f"[batch_eval] Exported JSON to: {output_file}")
     
     def compare_models(self, model_ids: List[str]) -> Dict:
-        """Compare specific models side-by-side."""
-        # Use list comprehension for better performance
-        comparison = [
-            r for model_id in model_ids
-            for r in self.results
-            if r.model_id == model_id
-        ]
+        """Compare specific models side-by-side - optimized O(n+m) lookup."""
+        # Convert model_ids to set for O(1) membership testing
+        model_ids_set = set(model_ids)
+        # Single pass through results for O(n+m) complexity instead of O(n*m)
+        comparison = [r for r in self.results if r.model_id in model_ids_set]
         
         return {
             "models": [r.model_id for r in comparison],

@@ -278,6 +278,8 @@ class SubscriptionManager:
         """Upgrade user subscription"""
         sub = self.get_subscription(user_id)
         sub.tier = tier
+        # Update cached tier limits when tier changes
+        sub._tier_limits = TIER_LIMITS.get(tier, {})
         sub.start_date = datetime.now()
         sub.end_date = datetime.now() + timedelta(days=duration_days)
         sub.payment_method = payment_method

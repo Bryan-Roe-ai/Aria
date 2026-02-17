@@ -108,8 +108,13 @@ def main():
         ]
         all_examples.extend(enriched_exs)
 
-    # Deduplicate by hash - use dict comprehension for cleaner code
-    uniq = {e["hash"]: e for e in all_examples}
+    # Deduplicate by hash - keeps first occurrence for consistency
+    # (dict comprehension would keep last, so we iterate forward)
+    uniq = {}
+    for e in all_examples:
+        h = e["hash"]
+        if h not in uniq:
+            uniq[h] = e
     examples = list(uniq.values())
 
     if not examples:
