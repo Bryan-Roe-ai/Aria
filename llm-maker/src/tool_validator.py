@@ -24,7 +24,7 @@ _NETWORK_OPERATION_PATTERNS = [
     (re.compile(r'\burllib\.\w+'), "urllib module usage"),
     (re.compile(r'\brequests\.\w+'), "requests module usage"),
     (re.compile(r'\bhttp\.\w+'), "http module usage"),
-    (re.compile(r'requests\.[get|post|put|delete|patch]'), "requests HTTP method"),
+    (re.compile(r'requests\.(get|post|put|delete|patch)\b'), "requests HTTP method"),
     (re.compile(r'urllib\.request\.urlopen'), "urllib.request.urlopen"),
     (re.compile(r'socket\.(socket|connect|bind|listen)'), "socket operations"),
 ]
