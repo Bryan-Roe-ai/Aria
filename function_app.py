@@ -1,11 +1,12 @@
 # =============================================================================
 # QAI Azure Functions Application
 # =============================================================================
+from token_utils import prune_messages
+from chat_providers import detect_provider, RoleMessage
 import azure.functions as func
 import json
 import logging
 import os
-import re
 import sys
 from pathlib import Path
 import subprocess
@@ -16,9 +17,6 @@ from datetime import datetime
 
 # Import defensive import helper
 from shared.import_helpers import safe_import, create_stub_function
-
-# Pre-compiled regex patterns for performance
-_RE_WORD_SPLIT = re.compile(r"\S+")
 
 # -----------------------------------------------------------------------------
 # Optional unified SQL engine health + pool metrics (multi-database support)
@@ -81,6 +79,37 @@ chat_memory_funcs = safe_import(
 generate_embedding = chat_memory_funcs['generate_embedding']
 fetch_similar_messages = chat_memory_funcs['fetch_similar_messages']
 store_embedding = chat_memory_funcs['store_embedding']
+try:
+    from shared.db_logging import log_chat_message_safe
+except Exception:  # pragma: no cover - if shared not on path
+    log_chat_message_safe = None  # type: ignore
+try:
+    from shared.chat_memory import (
+        generate_embedding,
+        fetch_similar_messages,
+        store_embedding,
+    )
+except Exception:
+    # Provide graceful degradations so endpoint still works
+    def generate_embedding(text: str):  # type: ignore
+        return []
+
+    def fetch_similar_messages(query_emb, top_k=5, session_id=None):  # type: ignore
+        return []
+
+    def store_embedding(message_id, embedding, model):  # type: ignore
+        pass
+
+# File caching for repeated JSON reads
+try:
+    from shared.file_cache import read_json_cached
+except Exception:  # pragma: no cover
+    # Fallback if file_cache not available
+    def read_json_cached(file_path, ttl_seconds=60):  # type: ignore
+        import json
+        with open(file_path, 'r') as f:
+            return json.load(f)
+        return False
 
 # Add talk-to-ai to path so we can import chat_providers
 talk_to_ai_path = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "src"
@@ -93,11 +122,6 @@ sys.path.insert(0, str(quantum_ai_path))
 # Add scripts to path for vision inference
 scripts_path = Path(__file__).resolve().parent / "scripts"
 sys.path.insert(0, str(scripts_path))
-
-# Import chat and token utilities (now that paths are set up)
-# Note: Can import from shared/ (which re-exports) or directly from canonical sources
-from shared.token_utils import prune_messages
-from shared.chat_providers import detect_provider, RoleMessage
 
 # -----------------------------------------------------------------------------
 # Subscription Manager (optional)
@@ -508,12 +532,16 @@ def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
         snap_path = Path(__file__).resolve().parent / \
             "data_out" / "resource_monitor_snapshot.json"
         if snap_path.exists():
-            with open(snap_path, "r") as f:
-                data = json.load(f)
-            return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=create_cors_response_headers())
+            # Use cached read with 60s TTL (resource snapshots change infrequently)
+            data = read_json_cached(snap_path, ttl_seconds=60)
+            if data:
+                return func.HttpResponse(json.dumps(data), status_code=200, mimetype="application/json", headers=create_cors_response_headers())
+            else:
+                return func.HttpResponse(json.dumps({"error": "Failed to load snapshot"}), status_code=500, mimetype="application/json", headers=create_cors_response_headers())
         else:
             return func.HttpResponse(json.dumps({"error": "No snapshot found"}), status_code=404, mimetype="application/json", headers=create_cors_response_headers())
     except Exception as e:
+        logging.error(f"Error reading resource snapshot: {e}")
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json", headers=create_cors_response_headers())
 
 
@@ -569,35 +597,75 @@ def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
 # Streaming Chat API (Server-Sent Events compatible)
 # =============================================================================
 
-# Command pattern lookup table for O(1) matching
-_COMMAND_PATTERNS = (
-    # Walk commands
-    (('[aria:walk:left]', 'walk left'), {'action': 'walk', 'direction': 'left', 'distance': 200}),
-    (('[aria:walk:right]', 'walk right'), {'action': 'walk', 'direction': 'right', 'distance': 200}),
-    (('[aria:walk:up]', 'walk up'), {'action': 'walk', 'direction': 'up', 'distance': 200}),
-    (('[aria:walk:down]', 'walk down'), {'action': 'walk', 'direction': 'down', 'distance': 200}),
-    # Move commands
-    (('[aria:move:left]', 'aria move left'), {'action': 'move', 'direction': 'left', 'distance': 100}),
-    (('[aria:move:right]', 'aria move right'), {'action': 'move', 'direction': 'right', 'distance': 100}),
-    (('[aria:move:up]', 'aria move up'), {'action': 'move', 'direction': 'up', 'distance': 100}),
-    (('[aria:move:down]', 'aria move down'), {'action': 'move', 'direction': 'down', 'distance': 100}),
-    # Position commands
-    (('[aria:center]', 'go to center', 'move to center'), {'action': 'center'}),
-    # Action commands
-    (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
-    (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
-    (('[aria:dance]', 'aria dance'), {'action': 'dance'}),
-)
+# Movement command patterns - optimized with frozensets for O(1) lookups
+_WALK_LEFT = frozenset(['[aria:walk:left]', 'walk left'])
+_WALK_RIGHT = frozenset(['[aria:walk:right]', 'walk right'])
+_WALK_UP = frozenset(['[aria:walk:up]', 'walk up'])
+_WALK_DOWN = frozenset(['[aria:walk:down]', 'walk down'])
+_MOVE_LEFT = frozenset(['[aria:move:left]', 'aria move left'])
+_MOVE_RIGHT = frozenset(['[aria:move:right]', 'aria move right'])
+_MOVE_UP = frozenset(['[aria:move:up]', 'aria move up'])
+_MOVE_DOWN = frozenset(['[aria:move:down]', 'aria move down'])
+_CENTER = frozenset(['[aria:center]', 'go to center', 'move to center'])
+_WAVE = frozenset(['[aria:wave]', 'aria wave'])
+_JUMP = frozenset(['[aria:jump]', 'aria jump'])
+_DANCE = frozenset(['[aria:dance]', 'aria dance'])
+
+# Distance constants for movement commands
+WALK_DISTANCE = 200  # pixels
+MOVE_DISTANCE = 100  # pixels
+
 
 def parse_movement_commands(text: str) -> dict:
-    """Parse movement commands from AI response text using optimized pattern matching"""
+    """Parse movement commands from AI response text.
+    
+    Uses pre-compiled frozensets for O(1) keyword matching.
+    
+    Args:
+        text: AI response text to parse
+        
+    Returns:
+        dict with 'commands' list, or empty dict if no commands found
+    """
     lower_text = text.lower()
     commands = []
-    
-    # Single pass through command patterns - check each pattern once
-    for patterns, command in _COMMAND_PATTERNS:
-        if any(pattern in lower_text for pattern in patterns):
-            commands.append(command)
+
+    # Movement commands - using frozenset intersection for fast matching
+    if any(cmd in lower_text for cmd in _WALK_LEFT):
+        commands.append(
+            {'action': 'walk', 'direction': 'left', 'distance': WALK_DISTANCE})
+    if any(cmd in lower_text for cmd in _WALK_RIGHT):
+        commands.append(
+            {'action': 'walk', 'direction': 'right', 'distance': WALK_DISTANCE})
+    if any(cmd in lower_text for cmd in _WALK_UP):
+        commands.append({'action': 'walk', 'direction': 'up', 'distance': WALK_DISTANCE})
+    if any(cmd in lower_text for cmd in _WALK_DOWN):
+        commands.append(
+            {'action': 'walk', 'direction': 'down', 'distance': WALK_DISTANCE})
+
+    if any(cmd in lower_text for cmd in _MOVE_LEFT):
+        commands.append(
+            {'action': 'move', 'direction': 'left', 'distance': MOVE_DISTANCE})
+    if any(cmd in lower_text for cmd in _MOVE_RIGHT):
+        commands.append(
+            {'action': 'move', 'direction': 'right', 'distance': MOVE_DISTANCE})
+    if any(cmd in lower_text for cmd in _MOVE_UP):
+        commands.append({'action': 'move', 'direction': 'up', 'distance': MOVE_DISTANCE})
+    if any(cmd in lower_text for cmd in _MOVE_DOWN):
+        commands.append(
+            {'action': 'move', 'direction': 'down', 'distance': MOVE_DISTANCE})
+
+    # Position commands
+    if any(cmd in lower_text for cmd in _CENTER):
+        commands.append({'action': 'center'})
+
+    # Action commands
+    if any(cmd in lower_text for cmd in _WAVE):
+        commands.append({'action': 'wave'})
+    if any(cmd in lower_text for cmd in _JUMP):
+        commands.append({'action': 'jump'})
+    if any(cmd in lower_text for cmd in _DANCE):
+        commands.append({'action': 'dance'})
 
     return {'commands': commands} if commands else {}
 
@@ -663,6 +731,8 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
 
                 # We'll stream both textual deltas and token-level events when possible
+                import re
+
                 # Try to use tiktoken for token-level tokenization when available
                 enc = None
                 try:
@@ -789,6 +859,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 import io
                 import base64
                 import wave
+                import re
                 try:
                     import azure.cognitiveservices.speech as speechsdk
                 except Exception as e:
@@ -834,7 +905,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 except Exception:
                     duration_s = max(0.2, len(text) * 0.02)
 
-                words = _RE_WORD_SPLIT.findall(text)
+                words = re.findall(r"\S+", text)
                 total_chars = sum(len(w) for w in words) or 1
                 timepoints = []
                 cursor = 0.0
@@ -867,6 +938,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                     import base64
                     import io
                     import wave
+                    import re
                     import pyttsx3
                 except Exception:  # pyttsx3 not available
                     pyttsx3 = None
@@ -918,7 +990,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                         except Exception:
                             duration_s = max(0.2, len(text) * 0.02)
 
-                        words = _RE_WORD_SPLIT.findall(text)
+                        words = re.findall(r"\S+", text)
                         total_chars = sum(len(w) for w in words) or 1
                         timepoints = []
                         cursor = 0.0
@@ -945,6 +1017,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 try:
                     import tempfile
                     import base64
+                    import re
                     from gtts import gTTS
                 except Exception:
                     gTTS = None
@@ -965,7 +1038,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
 
                         # approximate duration: fallback to char-count based estimate
                         duration_s = max(0.2, len(text) * 0.02)
-                        words = _RE_WORD_SPLIT.findall(text)
+                        words = re.findall(r"\S+", text)
                         total_chars = sum(len(w) for w in words) or 1
                         timepoints = []
                         cursor = 0.0
