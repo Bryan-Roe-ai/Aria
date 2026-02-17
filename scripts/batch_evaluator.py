@@ -303,11 +303,16 @@ class BatchEvaluator:
         print(f"[batch_eval] Exported JSON to: {output_file}")
     
     def compare_models(self, model_ids: List[str]) -> Dict:
-        """Compare specific models side-by-side."""
-        comparison = []
+        """Compare specific models side-by-side.
         
+        Optimized: Uses dictionary lookup instead of O(n²) linear search.
+        """
+        # Build dictionary for O(1) lookup instead of O(n) search per model_id
+        results_dict = {r.model_id: r for r in self.results}
+        
+        comparison = []
         for model_id in model_ids:
-            result = next((r for r in self.results if r.model_id == model_id), None)
+            result = results_dict.get(model_id)
             if result:
                 comparison.append(result)
         

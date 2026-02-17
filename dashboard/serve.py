@@ -526,9 +526,13 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     log_file = Path(job['log'])
                     if log_file.exists():
                         with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
-                            # Get last 500 lines
-                            lines = f.readlines()
-                            return {'logs': ''.join(lines[-500:])}
+                            # Efficiently tail last 500 lines without loading entire file
+                            lines = []
+                            for line in f:
+                                lines.append(line)
+                                if len(lines) > 500:
+                                    lines.pop(0)  # Keep only last 500
+                            return {'logs': ''.join(lines)}
             
             return {'logs': 'No logs available'}
         except Exception as e:

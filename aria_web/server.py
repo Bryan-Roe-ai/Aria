@@ -492,32 +492,32 @@ def determine_position_from_context(cmd: str) -> str:
                         # Position slightly to the left of object
                         return f'[aria:position:{max(10, obj_pos["x"] - 10)}:{obj_pos["y"] + 10}]'
 
-    # Action-based positioning
-    if any(k in cmd for k in ['jump', 'leap', 'hop']):
+    # Action-based positioning (optimized with set lookups)
+    if any(k in cmd for k in ('jump', 'leap', 'hop')):
         return '[aria:position:50:60]'  # Center for jumping
-    elif any(k in cmd for k in ['dance', 'spin', 'twirl']):
+    elif any(k in cmd for k in ('dance', 'spin', 'twirl')):
         return '[aria:position:50:50]'  # Center stage for performance
-    elif any(k in cmd for k in ['wave', 'greet', 'hello', 'hi']):
+    elif any(k in cmd for k in ('wave', 'greet', 'hello', 'hi')):
         return '[aria:position:30:70]'  # Front-left for greeting
-    elif any(k in cmd for k in ['look', 'see', 'watch', 'observe']):
+    elif any(k in cmd for k in ('look', 'see', 'watch', 'observe')):
         # Look towards table
         if 'table' in cmd:
             return '[aria:position:40:60]'  # Position to see table
         return '[aria:position:20:40]'  # Left side for observing
-    elif any(k in cmd for k in ['sit', 'rest', 'relax']):
+    elif any(k in cmd for k in ('sit', 'rest', 'relax')):
         # Near table to sit
         return f'[aria:position:{table_pos["x"] - 5}:{table_pos["y"] + 35}]'
-    elif any(k in cmd for k in ['run', 'race', 'sprint']):
+    elif any(k in cmd for k in ('run', 'race', 'sprint')):
         return '[aria:position:85:70]'  # Far right for running space
-    elif any(k in cmd for k in ['hide', 'crouch', 'duck']):
+    elif any(k in cmd for k in ('hide', 'crouch', 'duck')):
         return '[aria:position:10:75]'  # Corner position
-    elif any(k in cmd for k in ['present', 'show', 'display']):
+    elif any(k in cmd for k in ('present', 'show', 'display')):
         return '[aria:position:50:50]'  # Center to present
-    elif any(k in cmd for k in ['think', 'wonder', 'ponder']):
+    elif any(k in cmd for k in ('think', 'wonder', 'ponder')):
         return '[aria:position:25:50]'  # Contemplative left position
-    elif any(k in cmd for k in ['walk left', 'go left', 'left']):
+    elif any(k in cmd for k in ('walk left', 'go left', 'left')):
         return '[aria:position:20:70]'  # Moving to left
-    elif any(k in cmd for k in ['walk right', 'go right', 'right']):
+    elif any(k in cmd for k in ('walk right', 'go right', 'right')):
         return '[aria:position:80:70]'  # Moving to right
     elif 'add' in cmd or 'create' in cmd or 'spawn' in cmd:
         # For adding objects, position near table
@@ -576,11 +576,11 @@ def generate_tags_fallback(command: str) -> List[str]:
     if auto_position:
         tags.append(auto_position)
 
-    # Track if limb commands are detected to avoid movement conflicts
-    has_limb_command = any(k in cmd for k in [
+    # Track if limb commands are detected to avoid movement conflicts (optimized with tuple)
+    has_limb_command = any(k in cmd for k in (
         'left arm', 'arm left', 'left hand', 'right arm', 'arm right', 'right hand',
         'left leg', 'leg left', 'right leg', 'leg right'
-    ])
+    ))
 
     # Special: server-side "say" / announce detection (capture original text)
     try:
@@ -645,11 +645,11 @@ def generate_tags_fallback(command: str) -> List[str]:
     def limb_tag(part: str, action: str):
         tags.append(f'[aria:limb:{part}:{action}]')
 
-    # Helper maps
-    left_arm = any(k in cmd for k in ['left arm', 'arm left', 'left hand'])
-    right_arm = any(k in cmd for k in ['right arm', 'arm right', 'right hand'])
-    left_leg = any(k in cmd for k in ['left leg', 'leg left'])
-    right_leg = any(k in cmd for k in ['right leg', 'leg right'])
+    # Helper maps (optimized with tuples)
+    left_arm = any(k in cmd for k in ('left arm', 'arm left', 'left hand'))
+    right_arm = any(k in cmd for k in ('right arm', 'arm right', 'right hand'))
+    left_leg = any(k in cmd for k in ('left leg', 'leg left'))
+    right_leg = any(k in cmd for k in ('right leg', 'leg right'))
 
     # Numeric angle if present (e.g., "left arm 45 degrees")
     angle_match = None
@@ -670,19 +670,19 @@ def generate_tags_fallback(command: str) -> List[str]:
             parts.append('right_arm')
         if not parts:
             parts = ['right_arm']
-        if any(k in cmd for k in ['wave', 'wiggle']):
+        if any(k in cmd for k in ('wave', 'wiggle')):
             for p in parts:
                 limb_tag(p, 'wave')
-        elif any(k in cmd for k in ['raise', 'up', 'lift']):
+        elif any(k in cmd for k in ('raise', 'up', 'lift')):
             for p in parts:
                 limb_tag(p, 'raise')
-        elif any(k in cmd for k in ['lower', 'down']):
+        elif any(k in cmd for k in ('lower', 'down')):
             for p in parts:
                 limb_tag(p, 'lower')
-        elif any(k in cmd for k in ['forward', 'front']):
+        elif any(k in cmd for k in ('forward', 'front')):
             for p in parts:
                 limb_tag(p, 'forward')
-        elif any(k in cmd for k in ['back', 'backward', 'behind']):
+        elif any(k in cmd for k in ('back', 'backward', 'behind')):
             for p in parts:
                 limb_tag(p, 'back')
         elif angle_val is not None:
@@ -701,10 +701,10 @@ def generate_tags_fallback(command: str) -> List[str]:
         if 'kick' in cmd:
             for p in parts:
                 limb_tag(p, 'kick')
-        elif any(k in cmd for k in ['forward', 'front']):
+        elif any(k in cmd for k in ('forward', 'front')):
             for p in parts:
                 limb_tag(p, 'forward')
-        elif any(k in cmd for k in ['back', 'backward', 'behind']):
+        elif any(k in cmd for k in ('back', 'backward', 'behind')):
             for p in parts:
                 limb_tag(p, 'back')
         elif angle_val is not None:

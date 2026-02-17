@@ -59,14 +59,18 @@ class TrainingMonitor:
             return {"error": str(e)}
     
     def get_recent_logs(self, lines: int = 20) -> List[str]:
-        """Get recent log entries"""
+        """Get recent log entries (optimized - streaming instead of readlines)"""
         if not self.log_file.exists():
             return []
         
         try:
             with open(self.log_file, 'r') as f:
-                all_lines = f.readlines()
-                return all_lines[-lines:]
+                recent = []
+                for line in f:
+                    recent.append(line)
+                    if len(recent) > lines:
+                        recent.pop(0)  # Keep only last N lines
+                return recent
         except Exception:
             return []
     

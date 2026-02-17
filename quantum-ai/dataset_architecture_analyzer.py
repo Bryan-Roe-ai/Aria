@@ -73,11 +73,11 @@ def analyze_dataset(dataset_name):
     
     # Load dataset with specific strategies
     try:
-        if dataset_name in ['wine_red', 'wine_white']:
+        if dataset_name in {'wine_red', 'wine_white'}:
             df = pd.read_csv(dataset_path, sep=';', na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'wine_quality_combined':
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
-        elif dataset_name in ['wheat_seeds', 'seeds']:
+        elif dataset_name in {'wheat_seeds', 'seeds'}:
             df = pd.read_csv(dataset_path, sep=r'\s+', header=None, na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'yeast':
             df = pd.read_csv(dataset_path, sep=r'\s+', header=None, na_values=['?', 'NA', '', 'NaN'])
@@ -85,7 +85,7 @@ def analyze_dataset(dataset_name):
         elif dataset_name == 'parkinsons':
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
             df = df.drop(columns=df.columns[0])  # Skip name column
-        elif dataset_name in ['statlog_australian', 'statlog_heart']:
+        elif dataset_name in {'statlog_australian', 'statlog_heart'}:
             df = pd.read_csv(dataset_path, sep=' ', header=None, na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'blood_transfusion':
             df = pd.read_csv(dataset_path, skiprows=1, na_values=['?', 'NA', '', 'NaN'])
@@ -93,8 +93,8 @@ def analyze_dataset(dataset_name):
             df = pd.read_csv(dataset_path, header=None, na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'balance_scale':
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
-        elif dataset_name in ['optical_recognition', 'pendigits', 'contraceptive', 'dermatology', 
-                               'liver_disorders', 'thyroid']:
+        elif dataset_name in {'optical_recognition', 'pendigits', 'contraceptive', 'dermatology', 
+                               'liver_disorders', 'thyroid'}:
             df = pd.read_csv(dataset_path, header=None, na_values=['?', 'NA', '', 'NaN'])
         else:
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])

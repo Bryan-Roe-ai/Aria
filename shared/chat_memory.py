@@ -52,17 +52,57 @@ except Exception:  # pragma: no cover - best effort import
     def format_quota_message(e: Exception, service_name: str = "Azure OpenAI") -> str:  # noqa: D401
         return f"{service_name} quota/premium limit reached. Details: {str(e)}"
 
-# ------------------------- DB Helpers -------------------------
+# ------------------------- DB Helpers with Connection Pooling -------------------------
+
+# Connection pool for embedding operations (reduces connection overhead)
+_connection_pool = []
+_MAX_POOL_SIZE = 5
 
 
 def _get_conn():  # noqa: ANN001
+    """Get a database connection from the pool or create a new one.
+    
+    This implements a simple connection pool to avoid creating new connections
+    for every embedding operation, significantly reducing overhead.
+    """
     conn_str = os.getenv("QAI_DB_CONN")
     if not conn_str or not pyodbc:
         return None
+    
+    # Try to reuse an existing connection from the pool
+    while _connection_pool:
+        conn = _connection_pool.pop()
+        try:
+            # Test if connection is still alive
+            conn.cursor().execute("SELECT 1")
+            return conn
+        except Exception:
+            # Connection is dead, try next one
+            try:
+                conn.close()
+            except Exception:
+                pass
+    
+    # No valid connections in pool, create a new one
     try:
         return pyodbc.connect(conn_str, timeout=4)
     except Exception:
         return None
+
+
+def _return_conn(conn):  # noqa: ANN001
+    """Return a connection to the pool for reuse."""
+    if not conn:
+        return
+    
+    # Only pool if we're under the limit
+    if len(_connection_pool) < _MAX_POOL_SIZE:
+        _connection_pool.append(conn)
+    else:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 # ------------------------- Embedding Generation -------------------------
 
@@ -169,10 +209,8 @@ def store_embedding(message_id: Optional[str], embedding: Sequence[float], model
     except Exception:
         return False
     finally:
-        try:
-            conn.close()
-        except Exception:
-            pass
+        # Return connection to pool instead of closing
+        _return_conn(conn)
 
 # ------------------------- Similarity Search -------------------------
 
@@ -212,6 +250,7 @@ def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, ses
 
     Optimization: Uses heapq.nlargest for O(n log k) top-k selection instead of
     O(n log n) full sort when top_k is small relative to result set.
+    Uses connection pooling to avoid creating new connections for every query.
     """
     if not query_embedding:
         return []
@@ -256,10 +295,8 @@ def fetch_similar_messages(query_embedding: Sequence[float], top_k: int = 5, ses
     except Exception:
         return []
     finally:
-        try:
-            conn.close()
-        except Exception:
-            pass
+        # Return connection to pool instead of closing
+        _return_conn(conn)
 
 
 __all__ = [

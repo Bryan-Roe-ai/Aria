@@ -458,10 +458,14 @@ def _tail_lines(path: Path, max_lines: int) -> List[str]:
     """Efficiently read the last max_lines from a potentially large file."""
     try:
         size = path.stat().st_size
-        if size <= 65536:  # small file heuristic
+        if size <= 65536:  # small file heuristic - stream instead of readlines()
             with path.open("r", encoding="utf-8", errors="ignore") as f:
-                lines = f.readlines()
-                return lines[-max_lines:]
+                lines = []
+                for line in f:
+                    lines.append(line)
+                    if len(lines) > max_lines:
+                        lines.pop(0)  # Keep only last max_lines
+                return lines
         # Large file: read backwards in blocks
         block_size = 8192
         lines: List[str] = []

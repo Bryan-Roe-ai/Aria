@@ -70,13 +70,13 @@ def load_and_preprocess(dataset_name, n_qubits=4):
     
     try:
         # Dataset-specific loading strategies
-        if dataset_name in ['wine_red', 'wine_white']:
+        if dataset_name in {'wine_red', 'wine_white'}:
             # These use semicolon delimiter with header
             df = pd.read_csv(dataset_path, sep=';', na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'wine_quality_combined':
             # Combined wine dataset with comma delimiter (not semicolon!)
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
-        elif dataset_name in ['wheat_seeds', 'seeds']:
+        elif dataset_name in {'wheat_seeds', 'seeds'}:
             # Whitespace-delimited datasets with no header
             df = pd.read_csv(dataset_path, sep=r'\s+', header=None, na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'ecoli':
@@ -90,7 +90,7 @@ def load_and_preprocess(dataset_name, n_qubits=4):
             # Comma-delimited with header, skip first column (name)
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
             df = df.drop(columns=df.columns[0])  # Skip name column
-        elif dataset_name in ['statlog_australian', 'statlog_heart']:
+        elif dataset_name in {'statlog_australian', 'statlog_heart'}:
             # Space-delimited, no header
             df = pd.read_csv(dataset_path, sep=' ', header=None, na_values=['?', 'NA', '', 'NaN'])
         elif dataset_name == 'vertebral_column':
@@ -105,8 +105,8 @@ def load_and_preprocess(dataset_name, n_qubits=4):
         elif dataset_name == 'balance_scale':
             # Comma-delimited with header
             df = pd.read_csv(dataset_path, na_values=['?', 'NA', '', 'NaN'])
-        elif dataset_name in ['optical_recognition', 'pendigits', 'contraceptive', 'dermatology', 
-                               'liver_disorders', 'thyroid']:
+        elif dataset_name in {'optical_recognition', 'pendigits', 'contraceptive', 'dermatology', 
+                               'liver_disorders', 'thyroid'}:
             # Comma-delimited, no header
             df = pd.read_csv(dataset_path, header=None, na_values=['?', 'NA', '', 'NaN'])
         else:
@@ -124,7 +124,7 @@ def load_and_preprocess(dataset_name, n_qubits=4):
                     df = pd.read_csv(dataset_path, sep=';', na_values=['?', 'NA', '', 'NaN'], encoding='latin-1')
         
         # Check if first row looks like data (all numeric except possibly last column) - only for unhandled cases
-        if dataset_name not in ['breast_cancer', 'vertebral_column', 'blood_transfusion', 'wine_red', 'wine_white', 'wine_quality_combined', 'wheat_seeds']:
+        if dataset_name not in {'breast_cancer', 'vertebral_column', 'blood_transfusion', 'wine_red', 'wine_white', 'wine_quality_combined', 'wheat_seeds'}:
             first_row_numeric = all(str(df.iloc[0, i]).replace('.', '').replace('-', '').replace('e', '').isdigit() or str(df.iloc[0, i]).replace('.', '').replace('-', '').replace('e', '').replace('+', '').isdigit() 
                                      for i in range(min(3, df.shape[1] - 1)))
             
