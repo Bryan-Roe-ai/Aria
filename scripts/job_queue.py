@@ -292,7 +292,9 @@ class JobQueue:
             jobs = [j for j in jobs if j.status == status]
         
         if tags:
-            jobs = [j for j in jobs if any(tag in j.tags for tag in tags)]
+            # Set intersection optimization: convert to sets for O(n) instead of O(n²) lookup
+            tags_set = set(tags)
+            jobs = [j for j in jobs if set(j.tags) & tags_set]
         
         return [self.get_job_details(j.id) for j in jobs]
     

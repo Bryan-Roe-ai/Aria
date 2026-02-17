@@ -69,7 +69,9 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
                 start = max(0, i - context_window + 1)
                 window = messages[start : i + 1]
                 # Must contain at least one user+assistant
-                if any(x.get("role") == "user" for x in window) and any(x.get("role") == "assistant" for x in window):
+                # Single-pass collection optimization: check roles in one pass
+                roles = {x.get("role") for x in window}
+                if "user" in roles and "assistant" in roles:
                     examples.append({"messages": window})
     return examples
 

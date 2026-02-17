@@ -557,47 +557,35 @@ def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
 # Streaming Chat API (Server-Sent Events compatible)
 # =============================================================================
 
+# Command pattern lookup table for O(1) matching
+_COMMAND_PATTERNS = (
+    # Walk commands
+    (('[aria:walk:left]', 'walk left'), {'action': 'walk', 'direction': 'left', 'distance': 200}),
+    (('[aria:walk:right]', 'walk right'), {'action': 'walk', 'direction': 'right', 'distance': 200}),
+    (('[aria:walk:up]', 'walk up'), {'action': 'walk', 'direction': 'up', 'distance': 200}),
+    (('[aria:walk:down]', 'walk down'), {'action': 'walk', 'direction': 'down', 'distance': 200}),
+    # Move commands
+    (('[aria:move:left]', 'aria move left'), {'action': 'move', 'direction': 'left', 'distance': 100}),
+    (('[aria:move:right]', 'aria move right'), {'action': 'move', 'direction': 'right', 'distance': 100}),
+    (('[aria:move:up]', 'aria move up'), {'action': 'move', 'direction': 'up', 'distance': 100}),
+    (('[aria:move:down]', 'aria move down'), {'action': 'move', 'direction': 'down', 'distance': 100}),
+    # Position commands
+    (('[aria:center]', 'go to center', 'move to center'), {'action': 'center'}),
+    # Action commands
+    (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
+    (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
+    (('[aria:dance]', 'aria dance'), {'action': 'dance'}),
+)
+
 def parse_movement_commands(text: str) -> dict:
-    """Parse movement commands from AI response text"""
+    """Parse movement commands from AI response text using optimized pattern matching"""
     lower_text = text.lower()
     commands = []
-
-    # Movement commands
-    if '[aria:walk:left]' in lower_text or 'walk left' in lower_text:
-        commands.append(
-            {'action': 'walk', 'direction': 'left', 'distance': 200})
-    if '[aria:walk:right]' in lower_text or 'walk right' in lower_text:
-        commands.append(
-            {'action': 'walk', 'direction': 'right', 'distance': 200})
-    if '[aria:walk:up]' in lower_text or 'walk up' in lower_text:
-        commands.append({'action': 'walk', 'direction': 'up', 'distance': 200})
-    if '[aria:walk:down]' in lower_text or 'walk down' in lower_text:
-        commands.append(
-            {'action': 'walk', 'direction': 'down', 'distance': 200})
-
-    if '[aria:move:left]' in lower_text or 'aria move left' in lower_text:
-        commands.append(
-            {'action': 'move', 'direction': 'left', 'distance': 100})
-    if '[aria:move:right]' in lower_text or 'aria move right' in lower_text:
-        commands.append(
-            {'action': 'move', 'direction': 'right', 'distance': 100})
-    if '[aria:move:up]' in lower_text or 'aria move up' in lower_text:
-        commands.append({'action': 'move', 'direction': 'up', 'distance': 100})
-    if '[aria:move:down]' in lower_text or 'aria move down' in lower_text:
-        commands.append(
-            {'action': 'move', 'direction': 'down', 'distance': 100})
-
-    # Position commands
-    if '[aria:center]' in lower_text or 'go to center' in lower_text or 'move to center' in lower_text:
-        commands.append({'action': 'center'})
-
-    # Action commands
-    if '[aria:wave]' in lower_text or 'aria wave' in lower_text:
-        commands.append({'action': 'wave'})
-    if '[aria:jump]' in lower_text or 'aria jump' in lower_text:
-        commands.append({'action': 'jump'})
-    if '[aria:dance]' in lower_text or 'aria dance' in lower_text:
-        commands.append({'action': 'dance'})
+    
+    # Single pass through command patterns - check each pattern once
+    for patterns, command in _COMMAND_PATTERNS:
+        if any(pattern in lower_text for pattern in patterns):
+            commands.append(command)
 
     return {'commands': commands} if commands else {}
 
