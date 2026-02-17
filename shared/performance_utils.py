@@ -8,7 +8,10 @@ Provides reusable functions that follow best practices.
 from collections import deque
 from pathlib import Path
 from typing import List, Iterator, Optional, Callable, Any
+from functools import wraps, lru_cache
 import json
+import time
+import hashlib
 
 
 def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
@@ -281,6 +284,84 @@ class FileCache:
         }
 
 
+def timeit(func: Callable) -> Callable:
+    """
+    Decorator to measure function execution time.
+    
+    Prints timing information when the function completes.
+    Useful for identifying performance bottlenecks.
+    
+    Example:
+        >>> @timeit
+        ... def expensive_operation():
+        ...     # Do work
+        ...     pass
+        >>> 
+        >>> expensive_operation()
+        # Output: expensive_operation took 1.23s
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t0 = time.time()
+        result = func(*args, **kwargs)
+        duration = time.time() - t0
+        print(f"{func.__name__} took {duration:.2f}s")
+        return result
+    return wrapper
+
+
+def memoize_with_ttl(ttl_seconds: float = 60.0):
+    """
+    Memoization decorator with time-to-live (TTL) for cache entries.
+    
+    Unlike functools.lru_cache, this expires entries after a time period.
+    Useful for caching API responses or file reads that may change.
+    
+    Args:
+        ttl_seconds: How long to cache results (default: 60 seconds)
+        
+    Example:
+        >>> @memoize_with_ttl(ttl_seconds=300)  # 5 minutes
+        ... def fetch_config():
+        ...     return load_expensive_config()
+        >>> 
+        >>> # First call - reads from disk
+        >>> config1 = fetch_config()
+        >>> 
+        >>> # Second call within 5 min - returns cached
+        >>> config2 = fetch_config()
+    """
+    def decorator(func: Callable) -> Callable:
+        cache: dict = {}
+        cache_times: dict = {}
+        
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Create cache key from args/kwargs
+            key_data = (args, tuple(sorted(kwargs.items())))
+            cache_key = hashlib.md5(str(key_data).encode()).hexdigest()
+            
+            # Check if cached and not expired
+            if cache_key in cache:
+                age = time.time() - cache_times[cache_key]
+                if age < ttl_seconds:
+                    return cache[cache_key]
+            
+            # Call function and cache result
+            result = func(*args, **kwargs)
+            cache[cache_key] = result
+            cache_times[cache_key] = time.time()
+            
+            return result
+        
+        # Add cache management methods
+        wrapper.cache_clear = lambda: (cache.clear(), cache_times.clear())
+        wrapper.cache_info = lambda: {'size': len(cache), 'ttl': ttl_seconds}
+        
+        return wrapper
+    return decorator
+
+
 # Example usage and tests
 if __name__ == "__main__":
     import tempfile
@@ -340,6 +421,50 @@ if __name__ == "__main__":
     print(f"  Second read (cache): {t2*1000:.2f}ms")
     print(f"  Speedup: {t1/t2:.1f}x")
     print(f"  Cache stats: {cache.stats()}")
+    
+    # Test timeit decorator
+    print("\n5. @timeit decorator - Timing functions:")
+    
+    @timeit
+    def slow_function():
+        time.sleep(0.1)
+        return "done"
+    
+    result = slow_function()
+    
+    # Test memoize_with_ttl
+    print("\n6. @memoize_with_ttl - Caching with expiration:")
+    
+    call_count = 0
+    
+    @memoize_with_ttl(ttl_seconds=1.0)
+    def expensive_computation(x):
+        global call_count
+        call_count += 1
+        time.sleep(0.05)
+        return x * 2
+    
+    # First call
+    t0 = time.time()
+    r1 = expensive_computation(5)
+    t1 = time.time() - t0
+    print(f"  First call: {t1*1000:.2f}ms, result={r1}, calls={call_count}")
+    
+    # Second call (cached)
+    t0 = time.time()
+    r2 = expensive_computation(5)
+    t2 = time.time() - t0
+    print(f"  Cached call: {t2*1000:.2f}ms, result={r2}, calls={call_count}")
+    print(f"  Speedup: {t1/t2:.1f}x")
+    
+    # Wait for TTL expiration
+    time.sleep(1.1)
+    
+    # Third call (expired, recalculated)
+    t0 = time.time()
+    r3 = expensive_computation(5)
+    t3 = time.time() - t0
+    print(f"  After TTL: {t3*1000:.2f}ms, result={r3}, calls={call_count}")
     
     # Cleanup
     temp_path.unlink()
