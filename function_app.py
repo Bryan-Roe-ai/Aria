@@ -147,6 +147,11 @@ def _json_ok(data: dict, status_code: int = 200) -> func.HttpResponse:
     )
 
 
+def _cors_preflight() -> func.HttpResponse:
+    """Return an empty 200 with CORS headers for OPTIONS preflight requests."""
+    return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+
+
 # ---------------------------------------------------------------------------
 # Word-level timepoint helper (used by all TTS backends)
 # ---------------------------------------------------------------------------
@@ -178,19 +183,10 @@ def _serve_json_file(file_path: Path, not_found_msg: str = "No data found") -> f
         if file_path.exists():
             with open(file_path, "r") as f:
                 data = json.load(f)
-            return func.HttpResponse(
-                json.dumps(data), status_code=200,
-                mimetype="application/json", headers=create_cors_response_headers(),
-            )
-        return func.HttpResponse(
-            json.dumps({"error": not_found_msg}), status_code=404,
-            mimetype="application/json", headers=create_cors_response_headers(),
-        )
+            return _json_ok(data)
+        return _json_error(not_found_msg, 404)
     except Exception as e:
-        return func.HttpResponse(
-            json.dumps({"error": str(e)}), status_code=500,
-            mimetype="application/json", headers=create_cors_response_headers(),
-        )
+        return _json_error(str(e), 500)
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +234,88 @@ def serve_chat_js(req: func.HttpRequest) -> func.HttpResponse:
     """Serve the chat JavaScript file"""
     js_path = Path(__file__).resolve().parent / "chat-web" / "chat.js"
     return _serve_static_file(js_path, mimetype="application/javascript", label="chat.js")
+
+
+# ---------------------------------------------------------------------------
+# Chat post-processing helpers
+# ---------------------------------------------------------------------------
+
+def _log_self_learning(user_content: Optional[str], result: str,
+                       session_id: Optional[str], info: "ProviderChoice") -> None:
+    """Append conversation turn to JSONL log files for self-learning training data."""
+    try:
+        logs_dir = Path(__file__).resolve().parent / "talk-to-ai" / "logs"
+        logs_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        log_file = logs_dir / f"chat_{timestamp}_{session_id or 'anonymous'}.jsonl"
+        with open(log_file, "a", encoding="utf-8") as f:
+            if user_content:
+                f.write(json.dumps({
+                    "role": "user", "content": user_content,
+                    "timestamp": datetime.now().isoformat(),
+                    "provider": info.name, "model": info.model,
+                }) + "\n")
+            f.write(json.dumps({
+                "role": "assistant", "content": result,
+                "timestamp": datetime.now().isoformat(),
+                "provider": info.name, "model": info.model,
+            }) + "\n")
+    except Exception as log_err:
+        logging.warning(f"Self-learning conversation logging failed: {log_err}")
+
+
+def _log_chat_db(session_id: Optional[str], info: "ProviderChoice", user_content: Optional[str],
+                 user_embedding: Optional[list], result: str, duration_ms: int) -> None:
+    """Persist chat messages to the SQL database and store embeddings if available."""
+    if not log_chat_message_safe:
+        return
+    try:
+        if user_content:
+            user_log = log_chat_message_safe(
+                session_id=session_id, provider=info.name, model=info.model,
+                role="user", content=user_content,
+                execution_time_ms=None, finish_reason=None,
+            )
+            if user_log.get("success") and user_embedding:
+                try:
+                    store_embedding(user_log.get("message_id"), user_embedding, model=info.model)
+                except Exception as se:
+                    logging.warning(f"Store embedding failed: {se}")
+        log_chat_message_safe(
+            session_id=session_id, provider=info.name, model=info.model,
+            role="assistant", content=result,
+            execution_time_ms=duration_ms, finish_reason="stop",
+        )
+    except Exception as log_err:
+        logging.warning(f"Chat DB logging failed: {log_err}")
+
+
+def _persist_cosmos(session_id: Optional[str], messages: list[dict], user_content: Optional[str],
+                    result: str, info: "ProviderChoice") -> bool:
+    """Write conversation data to Cosmos DB when feature-flagged on.  Returns True on success."""
+    user_id = session_id or "anonymous"
+    if not (cosmos_client and os.getenv("QAI_ENABLE_COSMOS", "false").lower() == "true"):
+        return False
+    try:
+        if os.getenv("QAI_COSMOS_PERSIST_STRATEGY", "messages") == "messages":
+            last_user_msg = next(
+                (m for m in reversed(messages) if m.get("role") == "user"), None)
+            if last_user_msg:
+                cosmos_client.record_chat_message(user_id, {
+                    "role": "user", "content": user_content,
+                    "timestamp": time.time(),
+                }, provider=info.name, model=info.model)
+            cosmos_client.record_chat_message(user_id, {
+                "role": "assistant", "content": result,
+                "timestamp": time.time(),
+            }, provider=info.name, model=info.model)
+        else:
+            cosmos_client.record_chat_session(
+                user_id, messages, provider=info.name, model=info.model)
+        return True
+    except Exception as c_err:
+        logging.warning(f"[cosmos] Persistence failed: {c_err}")
+        return False
 
 
 # =============================================================================
@@ -346,104 +424,10 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         if hasattr(result, '__iter__') and not isinstance(result, str):
             result = ''.join(result)
 
-        # =============================
-        # Self-Learning: Log conversation for training
-        # =============================
-        try:
-            logs_dir = Path(__file__).resolve().parent / "talk-to-ai" / "logs"
-            logs_dir.mkdir(parents=True, exist_ok=True)
-
-            # Create timestamped log file
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            log_file = logs_dir / \
-                f"chat_{timestamp}_{session_id or 'anonymous'}.jsonl"
-
-            # Append conversation to log
-            with open(log_file, "a", encoding="utf-8") as f:
-                # Log user message
-                if user_message_content:
-                    f.write(json.dumps({
-                        "role": "user",
-                        "content": user_message_content,
-                        "timestamp": datetime.now().isoformat(),
-                        "provider": info.name,
-                        "model": info.model
-                    }) + "\n")
-                # Log assistant response
-                f.write(json.dumps({
-                    "role": "assistant",
-                    "content": str(result),
-                    "timestamp": datetime.now().isoformat(),
-                    "provider": info.name,
-                    "model": info.model
-                }) + "\n")
-        except Exception as log_err:
-            logging.warning(
-                f"Self-learning conversation logging failed: {log_err}")
-
-        # =============================
-        # Logging + Embedding Storage
-        # =============================
-        if log_chat_message_safe:
-            try:
-                # Log user message first (so conversation exists), then assistant reply
-                if user_message_content:
-                    user_log = log_chat_message_safe(
-                        session_id=session_id,
-                        provider=info.name,
-                        model=info.model,
-                        role="user",
-                        content=user_message_content,
-                        execution_time_ms=None,
-                        finish_reason=None,
-                    )
-                    if user_log.get("success") and user_embedding:
-                        try:
-                            store_embedding(user_log.get(
-                                "message_id"), user_embedding, model=info.model)
-                        except Exception as se:  # noqa: BLE001
-                            logging.warning(f"Store embedding failed: {se}")
-                # Log assistant message
-                assistant_log = log_chat_message_safe(
-                    session_id=session_id,
-                    provider=info.name,
-                    model=info.model,
-                    role="assistant",
-                    content=str(result),
-                    execution_time_ms=duration_ms,
-                    finish_reason="stop",
-                )
-            except Exception as log_err:  # noqa: BLE001
-                logging.warning(f"Chat DB logging failed: {log_err}")
-
-        # Cosmos persistence (feature-flagged)
-        cosmos_written = False
-        user_id = session_id or "anonymous"
-        if cosmos_client and os.getenv("QAI_ENABLE_COSMOS", "false").lower() == "true":
-            try:
-                if os.getenv("QAI_COSMOS_PERSIST_STRATEGY", "messages") == "messages":
-                    # Persist user and assistant messages separately
-                    last_user_msg = next((m for m in reversed(
-                        messages) if m.get("role") == "user"), None)
-                    if last_user_msg:
-                        cosmos_client.record_chat_message(user_id, {
-                            "role": "user",
-                            "content": user_message_content,
-                            "timestamp": time.time(),
-                        }, provider=info.name, model=info.model)
-                    cosmos_client.record_chat_message(user_id, {
-                        "role": "assistant",
-                        "content": str(result),
-                        "timestamp": time.time(),
-                    }, provider=info.name, model=info.model)
-                    cosmos_written = True
-                else:
-                    # Session-level persistence
-                    cosmos_client.record_chat_session(
-                        user_id, messages, provider=info.name, model=info.model)
-                    cosmos_written = True
-            except Exception as c_err:  # noqa: BLE001
-                logging.warning(f"[cosmos] Persistence failed: {c_err}")
+        # Post-processing: logging, persistence
+        _log_self_learning(user_message_content, str(result), session_id, info)
+        _log_chat_db(session_id, info, user_message_content, user_embedding, str(result), duration_ms)
+        cosmos_written = _persist_cosmos(session_id, messages, user_message_content, str(result), info)
 
         response_data = {
             "response": result,
@@ -491,11 +475,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="chat", methods=["OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def chat_options(req: func.HttpRequest) -> func.HttpResponse:
     """Handle CORS preflight requests"""
-    return func.HttpResponse(
-        "",
-        status_code=200,
-        headers=create_cors_response_headers()
-    )
+    return _cors_preflight()
 
 
 # =============================================================================
@@ -719,6 +699,132 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
         return _json_error(str(e), 500)
 
 
+# ---------------------------------------------------------------------------
+# TTS backend helpers
+# ---------------------------------------------------------------------------
+
+def _wav_duration(audio_bytes: bytes, text: str) -> float:
+    """Return duration in seconds from WAV bytes, falling back to char-count estimate."""
+    try:
+        with wave.open(io.BytesIO(audio_bytes), 'rb') as wr:
+            framerate = wr.getframerate()
+            frames = wr.getnframes()
+        if framerate and frames:
+            return frames / float(framerate)
+    except Exception:
+        pass
+    return max(0.2, len(text) * 0.02)
+
+
+def _tts_audio_response(audio_bytes: bytes, text: str, fmt: str = "wav") -> func.HttpResponse:
+    """Build a standard TTS JSON response with base64 audio and word timepoints."""
+    duration_s = _wav_duration(audio_bytes, text) if fmt == "wav" else max(0.2, len(text) * 0.02)
+    timepoints = _compute_word_timepoints(text, duration_s)
+    audio_b64 = base64.b64encode(audio_bytes).decode('ascii')
+    return _json_ok({"audio_base64": audio_b64, "format": fmt, "timepoints": timepoints})
+
+
+def _tts_azure(text: str, voice: Optional[str], rate: float, pitch: float,
+               az_key: str, az_region: str) -> Optional[func.HttpResponse]:
+    """Attempt Azure Speech SDK synthesis.  Returns HttpResponse on success, None on import failure."""
+    try:
+        import azure.cognitiveservices.speech as speechsdk
+    except Exception:
+        return _json_error("Azure Speech SDK not available on server (install azure-cognitiveservices-speech)", 500)
+
+    try:
+        scfg = speechsdk.SpeechConfig(subscription=az_key, region=az_region)
+        scfg.set_speech_synthesis_output_format(
+            speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm)
+        if voice:
+            try:
+                scfg.speech_synthesis_voice_name = voice
+            except Exception:
+                pass
+
+        synthesizer = speechsdk.SpeechSynthesizer(speech_config=scfg, audio_config=None)
+        result = synthesizer.speak_text_async(text).get()
+
+        if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
+            detail = getattr(result, 'error_details', None) or str(result.reason)
+            return _json_error("Synthesis failed", 500, detail=str(detail))
+
+        audio_bytes = speechsdk.AudioDataStream(result).readall()
+        return _tts_audio_response(audio_bytes, text, "wav")
+    except Exception as e:
+        logging.exception(f"TTS (Azure) synth failed: {e}")
+        return _json_error(f"TTS provider error: {e}", 500)
+
+
+def _tts_pyttsx3(text: str, voice: Optional[str], rate: float) -> Optional[func.HttpResponse]:
+    """Attempt pyttsx3 offline synthesis.  Returns HttpResponse on success, None if unavailable."""
+    try:
+        import pyttsx3
+    except Exception:
+        return None
+
+    tmp_path = None
+    try:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.wav')
+        tmp_path = tmp.name
+        tmp.close()
+
+        engine = pyttsx3.init()
+        try:
+            engine.setProperty('rate', int(200 * (rate or 1.0)))
+        except Exception:
+            pass
+        if voice:
+            try:
+                for v in (engine.getProperty('voices') or []):
+                    if voice.lower() in (v.name or '').lower():
+                        engine.setProperty('voice', v.id)
+                        break
+            except Exception:
+                pass
+
+        engine.save_to_file(text, tmp_path)
+        engine.runAndWait()
+
+        with open(tmp_path, 'rb') as fh:
+            audio_bytes = fh.read()
+
+        return _tts_audio_response(audio_bytes, text, "wav")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+
+
+def _tts_gtts(text: str) -> Optional[func.HttpResponse]:
+    """Attempt gTTS (Google Text-to-Speech) synthesis.  Returns HttpResponse on success, None if unavailable."""
+    try:
+        from gtts import gTTS as _gTTS
+    except Exception:
+        return None
+
+    tmp_path = None
+    try:
+        tmp = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+        tmp_path = tmp.name
+        tmp.close()
+
+        _gTTS(text=text).save(tmp_path)
+
+        with open(tmp_path, 'rb') as fh:
+            audio_bytes = fh.read()
+
+        return _tts_audio_response(audio_bytes, text, "mp3")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.unlink(tmp_path)
+            except Exception:
+                pass
+
+
 @app.route(route="tts", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def tts(req: func.HttpRequest) -> func.HttpResponse:
     """Synthesize text to audio using a remote TTS provider (Azure Speech preferred).
@@ -748,166 +854,19 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
             'AZURE_SPEECH_REGION') or os.getenv('AZURE_REGION')
 
         if az_key and az_region:
-            try:
-                try:
-                    import azure.cognitiveservices.speech as speechsdk
-                except Exception as e:
-                    return _json_error("Azure Speech SDK not available on server (install azure-cognitiveservices-speech)", 500)
-
-                # Configure speech
-                scfg = speechsdk.SpeechConfig(
-                    subscription=az_key, region=az_region)
-                # force WAV output for simpler handling
-                scfg.set_speech_synthesis_output_format(
-                    speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm)
-                if voice:
-                    try:
-                        scfg.speech_synthesis_voice_name = voice
-                    except Exception:
-                        pass
-
-                synthesizer = speechsdk.SpeechSynthesizer(
-                    speech_config=scfg, audio_config=None)
-
-                # Do the synthesis
-                result = synthesizer.speak_text_async(text).get()
-
-                if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
-                    # Could be 'Canceled' with details
-                    detail = getattr(result, 'error_details',
-                                     None) or str(result.reason)
-                    return _json_error("Synthesis failed", 500, detail=str(detail))
-
-                # Extract audio bytes
-                stream = speechsdk.AudioDataStream(result)
-                audio_bytes = stream.readall()
-
-                # Compute approximate word timings by splitting text and sizing by character counts
-                try:
-                    f = io.BytesIO(audio_bytes)
-                    with wave.open(f, 'rb') as wr:
-                        framerate = wr.getframerate()
-                        frames = wr.getnframes()
-                    duration_s = frames / \
-                        float(framerate) if framerate and frames else max(
-                            0.2, len(text) * 0.02)
-                except Exception:
-                    duration_s = max(0.2, len(text) * 0.02)
-
-                timepoints = _compute_word_timepoints(text, duration_s)
-
-                audio_b64 = base64.b64encode(audio_bytes).decode('ascii')
-
-                return func.HttpResponse(json.dumps({"audio_base64": audio_b64, "format": "wav", "timepoints": timepoints}), status_code=200, mimetype="application/json", headers=create_cors_response_headers())
-            except Exception as e:
-                logging.exception(f"TTS (Azure) synth failed: {e}")
-                return _json_error(f"TTS provider error: {e}", 500)
+            result = _tts_azure(text, voice, rate, pitch, az_key, az_region)
+            if result is not None:
+                return result
 
         # No remote TTS provider is configured. Attempt optional local fallbacks if enabled.
         enable_local = os.getenv('QAI_ENABLE_LOCAL_TTS', 'true').lower() in (
             'true', '1', 'yes', 'y')
 
         if enable_local:
-            # Try pyttsx3 (offline, best on Windows) first
             try:
-                try:
-                    import pyttsx3
-                except Exception:  # pyttsx3 not available
-                    pyttsx3 = None
-
-                if pyttsx3 is not None:
-                    tmp = None
-                    try:
-                        tmp = tempfile.NamedTemporaryFile(
-                            delete=False, suffix='.wav')
-                        tmp_path = tmp.name
-                        tmp.close()
-
-                        engine = pyttsx3.init()
-                        # Try to set rate (pyttsx3 rate is an int; we scale from given rate)
-                        try:
-                            engine.setProperty(
-                                'rate', int(200 * (rate or 1.0)))
-                        except Exception:
-                            pass
-                        # Try to select voice by name if provided
-                        try:
-                            if voice:
-                                voices = engine.getProperty('voices') or []
-                                for v in voices:
-                                    try:
-                                        if voice.lower() in (v.name or '').lower():
-                                            engine.setProperty('voice', v.id)
-                                            break
-                                    except Exception:
-                                        continue
-                        except Exception:
-                            pass
-
-                        engine.save_to_file(text, tmp_path)
-                        engine.runAndWait()
-
-                        with open(tmp_path, 'rb') as fh:
-                            audio_bytes = fh.read()
-
-                        # compute approximate duration using wave reader
-                        try:
-                            f = io.BytesIO(audio_bytes)
-                            with wave.open(f, 'rb') as wr:
-                                framerate = wr.getframerate()
-                                frames = wr.getnframes()
-                            duration_s = frames / \
-                                float(framerate) if framerate and frames else max(
-                                    0.2, len(text) * 0.02)
-                        except Exception:
-                            duration_s = max(0.2, len(text) * 0.02)
-
-                        timepoints = _compute_word_timepoints(text, duration_s)
-
-                        audio_b64 = base64.b64encode(
-                            audio_bytes).decode('ascii')
-                        return func.HttpResponse(json.dumps({"audio_base64": audio_b64, "format": "wav", "timepoints": timepoints}), status_code=200, mimetype="application/json", headers=create_cors_response_headers())
-                    finally:
-                        try:
-                            if tmp is not None and tmp_path and os.path.exists(tmp_path):
-                                os.unlink(tmp_path)
-                        except Exception:
-                            pass
-
-                # If pyttsx3 not available or failed, try gTTS (mp3 output)
-                try:
-                    from gtts import gTTS
-                except Exception:
-                    gTTS = None
-
-                if gTTS is not None:
-                    tmp = None
-                    try:
-                        tmp = tempfile.NamedTemporaryFile(
-                            delete=False, suffix='.mp3')
-                        tmp_path = tmp.name
-                        tmp.close()
-
-                        tts_obj = gTTS(text=text)
-                        tts_obj.save(tmp_path)
-
-                        with open(tmp_path, 'rb') as fh:
-                            audio_bytes = fh.read()
-
-                        # approximate duration: fallback to char-count based estimate
-                        duration_s = max(0.2, len(text) * 0.02)
-                        timepoints = _compute_word_timepoints(text, duration_s)
-
-                        audio_b64 = base64.b64encode(
-                            audio_bytes).decode('ascii')
-                        return func.HttpResponse(json.dumps({"audio_base64": audio_b64, "format": "mp3", "timepoints": timepoints}), status_code=200, mimetype="application/json", headers=create_cors_response_headers())
-                    finally:
-                        try:
-                            if tmp is not None and tmp_path and os.path.exists(tmp_path):
-                                os.unlink(tmp_path)
-                        except Exception:
-                            pass
-
+                result = _tts_pyttsx3(text, voice, rate) or _tts_gtts(text)
+                if result is not None:
+                    return result
             except Exception as e:
                 logging.exception(f"Local fallback TTS failed: {e}")
                 return _json_error(f"Local TTS provider failed: {e}", 500)
@@ -945,7 +904,7 @@ def start_backend(req: func.HttpRequest) -> func.HttpResponse:
 # =============================================================================
 
 
-def _status_venv_info(repo_root: Path) -> dict:
+def _status_venv_info(repo_root: Path) -> dict[str, object]:
     """Gather venv availability and package versions for ai_status."""
     venv_python = repo_root / "venv" / "Scripts" / "python.exe"
     info: dict = {"path": str(venv_python), "exists": venv_python.exists(),
@@ -973,7 +932,7 @@ def _status_venv_info(repo_root: Path) -> dict:
     return info
 
 
-def _status_quantum_info() -> dict:
+def _status_quantum_info() -> dict[str, object]:
     """Gather quantum environment info for ai_status (non-blocking)."""
     qinfo: dict = {
         "enabled": False,
@@ -1036,7 +995,7 @@ def _status_quantum_info() -> dict:
     return qinfo
 
 
-def _status_learning_info() -> dict:
+def _status_learning_info() -> dict[str, object]:
     """Gather self-learning system status for ai_status."""
     info: dict = {
         "enabled": False, "training_cycles": 0,
@@ -1095,37 +1054,13 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         }
 
         repo_root = Path(__file__).resolve().parent
-        venv_python = repo_root / "venv" / "Scripts" / "python.exe"
-        venv_info = {"path": str(
-            venv_python), "exists": venv_python.exists(), "packages": {}, "error": None}
-
-        if venv_info["exists"]:
-            try:
-                code = (
-                    "import json, importlib.util, importlib.metadata as md;"
-                    "mods=['torch','transformers','peft'];"
-                    "avail={m:(importlib.util.find_spec(m) is not None) for m in mods};"
-                    "vers={};"
-                    "\nfor m in mods:\n\t"
-                    "\n\ttry:\n\t\tvers[m]=md.version(m)\n\texcept Exception:\n\t\tvers[m]=None;"
-                    "print(json.dumps({'available':avail,'versions':vers}))"
-                )
-                proc = subprocess.run(
-                    [str(venv_python), "-c", code], capture_output=True, text=True, timeout=12)
-                if proc.returncode == 0:
-                    data = json.loads(proc.stdout.strip() or "{}")
-                    venv_info["packages"] = data
-                else:
-                    venv_info["error"] = proc.stderr.strip(
-                    ) or f"exit {proc.returncode}"
-            except Exception as e:  # noqa: BLE001
-                venv_info["error"] = str(e)
+        venv_info = _status_venv_info(repo_root)
 
         # LoRA adapter defaults
         lora_default = repo_root / "data_out" / "lora_training" / "lora_adapter"
         adapter_cfg = lora_default / "adapter_config.json"
         tokenizer_dir = lora_default.parent / "tokenizer"
-        lora_info = {
+        lora_info: dict = {
             "default_adapter_path": str(lora_default),
             "exists": lora_default.exists(),
             "adapter_config_exists": adapter_cfg.exists(),
@@ -1162,14 +1097,13 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             except Exception as cs_err:  # noqa: BLE001
                 cosmos_status = {"enabled": False, "error": str(cs_err)}
 
-        # Unified SQL status (may reflect Azure SQL, PostgreSQL, MySQL, SQLite)
+        # Unified SQL status
         sql_info = None
         try:
             sql_info = sql_health()
-            try:  # augment with pool metrics + saturation alerts
+            try:
                 pool_info = engine_stats()
                 sql_info["pool"] = pool_info
-                # Surface critical alerts at top level for visibility
                 if pool_info.get("saturation_alert"):
                     sql_info["alert"] = pool_info["saturation_alert"]
                 if pool_info.get("slow_queries_1min", 0) > 10:
@@ -1188,106 +1122,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception:
             telemetry_info = {"enabled": False}
 
-        # Quantum environment status (non-blocking, gated by optional env var)
-        quantum_info = {
-            "enabled": False,
-            "qiskit": None,
-            "pennylane": None,
-            "azure_quantum": {
-                "workspace_connected": False,
-                "backends": [],
-                "attempted": False,
-                "error": None,
-            },
-            "conflict": None,
-        }
-        try:  # gather local versions
-            import qiskit  # type: ignore
-            quantum_info["qiskit"] = getattr(qiskit, "__version__", None)
-            quantum_info["enabled"] = True
-        except Exception as _qe:
-            quantum_info["qiskit"] = f"error: {_qe}"  # noqa: BLE001
-        try:
-            import pennylane  # type: ignore
-            quantum_info["pennylane"] = getattr(pennylane, "__version__", None)
-        except Exception:
-            pass
-        # Conflict detection using validate script (import functions defensively)
-        try:
-            from quantum_ai.scripts.validate_qiskit_env import detect_conflict  # type: ignore
-        except Exception:
-            # Fallback manual conflict heuristic
-            def detect_conflict(versions):
-                groups = {"legacy": []}
-                if versions.get("qiskit") and str(versions.get("qiskit")).startswith("1.") and versions.get("qiskit_aer"):
-                    return {"conflict": True}
-                return {"conflict": False}
-        try:
-            # Build synthetic versions map for conflict check
-            versions_map = {}
-            for name in ["qiskit", "qiskit_aer", "qiskit_machine_learning"]:
-                try:
-                    mod = __import__(name)
-                    versions_map[name] = getattr(mod, "__version__", "unknown")
-                except Exception as ie:  # noqa: BLE001
-                    versions_map[name] = f"error: {ie}"
-            conflict_meta = detect_conflict(versions_map)
-            quantum_info["conflict"] = conflict_meta.get("conflict")
-        except Exception as _ce:  # noqa: BLE001
-            quantum_info["conflict"] = f"error: {_ce}"
-
-        # Optional Azure Quantum backend probing (requires env flag to avoid latency)
-        if os.getenv("QAI_STATUS_CONNECT_AZURE_QUANTUM", "false").lower() == "true":
-            quantum_info["azure_quantum"]["attempted"] = True
-            try:
-                from quantum_ai.src.azure_quantum_integration import AzureQuantumIntegration  # type: ignore
-                cfg_path = Path(__file__).resolve().parent / \
-                    "quantum-ai" / "config" / "quantum_config.yaml"
-                if cfg_path.exists():
-                    aq = AzureQuantumIntegration(str(cfg_path))
-                    aq.connect()
-                    bnames = aq.list_backends()[:8]
-                    quantum_info["azure_quantum"].update({
-                        "workspace_connected": True,
-                        "backends": bnames,
-                    })
-                else:
-                    quantum_info["azure_quantum"]["error"] = "quantum_config.yaml missing"
-            except Exception as aq_err:  # noqa: BLE001
-                quantum_info["azure_quantum"]["error"] = str(aq_err)
-
-        # Self-Learning System Status
-        learning_info = {
-            "enabled": False,
-            "training_cycles": 0,
-            "total_conversations": 0,
-            "new_conversations": 0,
-            "last_training": None,
-            "best_model_path": None,
-            "model_history": []
-        }
-        try:
-            learning_status_file = Path(__file__).resolve(
-            ).parent / "data_out" / "self_learning" / "status.json"
-            if learning_status_file.exists():
-                with open(learning_status_file, "r") as lf:
-                    learning_status = json.load(lf)
-                    learning_info["enabled"] = learning_status.get(
-                        "learning_enabled", True)
-                    learning_info["training_cycles"] = learning_status.get(
-                        "training_cycles", 0)
-                    learning_info["total_conversations"] = learning_status.get(
-                        "total_conversations", 0)
-                    learning_info["new_conversations"] = learning_status.get(
-                        "conversations_since_last_train", 0)
-                    learning_info["last_training"] = learning_status.get(
-                        "last_training")
-                    learning_info["best_model_path"] = learning_status.get(
-                        "best_model_path")
-                    learning_info["model_history"] = learning_status.get(
-                        "model_history", [])[-3:]  # Last 3
-        except Exception as _le:  # noqa: BLE001
-            learning_info["error"] = str(_le)
+        quantum_info = _status_quantum_info()
+        learning_info = _status_learning_info()
 
         payload = {
             "active_provider": info.name,
@@ -1445,11 +1281,7 @@ def vision_infer(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="vision/infer", methods=["OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def vision_infer_options(req: func.HttpRequest) -> func.HttpResponse:
     """Handle CORS preflight for vision inference"""
-    return func.HttpResponse(
-        "",
-        status_code=200,
-        headers=create_cors_response_headers()
-    )
+    return _cors_preflight()
 
 
 @app.route(route="vision/batch-infer", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -1591,7 +1423,6 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
 
         try:
             from openai import OpenAI
-            import os
 
             api_key = os.getenv('OPENAI_API_KEY')
             if not api_key:
