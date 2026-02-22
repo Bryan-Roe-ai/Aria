@@ -13,7 +13,7 @@ except ImportError:
     pytest.skip("torch or numpy not available", allow_module_level=True)
 
 train = importlib.import_module('scripts.training.train_vision')
-avatar = importlib.import_module('scripts.vision_avatar_integration')
+avatar = importlib.import_module('scripts.inference.vision_avatar_integration')
 
 
 def test_avatar_inference_small(tmp_path: Path):

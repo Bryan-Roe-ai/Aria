@@ -50,18 +50,27 @@ def quick_check_scripts() -> Dict[str, Any]:
     }
 
 def quick_check_venv() -> Dict[str, Any]:
-    """Check Python venv exists without inspecting packages."""
+    """Check Python venv or system Python exists without inspecting packages."""
+    import shutil
+
     venv_markers = [
-        "venv/Scripts/python.exe",
         "venv/bin/python",
-        "quantum-ai/venv/Scripts/python.exe"
+        "venv/Scripts/python.exe",
+        ".venv/bin/python",
+        ".venv/Scripts/python.exe",
+        "quantum-ai/venv/bin/python",
+        "quantum-ai/venv/Scripts/python.exe",
     ]
     found = sum(1 for m in venv_markers if (REPO_ROOT / m).exists())
-    
+
+    # In devcontainers / CI, system python3 is fine even without a local venv
+    system_python = shutil.which("python3") is not None
+
     return {
-        "status": "ok" if found > 0 else "no_venv",
+        "status": "ok" if found > 0 or system_python else "no_venv",
         "venvs_found": found,
-        "speed": "instant"
+        "system_python": system_python,
+        "speed": "instant",
     }
 
 def quick_check_outputs() -> Dict[str, Any]:

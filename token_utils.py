@@ -2,7 +2,7 @@
 from pathlib import Path
 import sys
 
-_package_root = Path(__file__).resolve().parent / "talk-to-ai" / "src"
+_package_root = Path(__file__).resolve().parent / "AI" / "http_chat" / "talk-to-ai" / "src"
 if str(_package_root) not in sys.path:
     sys.path.insert(0, str(_package_root))
 

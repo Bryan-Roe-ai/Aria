@@ -382,7 +382,8 @@ def run_example(example_id: str) -> None:
         print(f"{color('Invalid example ID', Colors.RED)}")
         return
     
-    print(f"\n{color(f'Running: {example[\"name\"]}', Colors.BOLD)}")
+    name = example['name']
+    print(f"\n{color(f'Running: {name}', Colors.BOLD)}")
     print("-" * 60)
     
     try:
