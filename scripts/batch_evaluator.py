@@ -37,6 +37,10 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "batch_evaluator"
 
+# Add shared directory to path for performance utilities
+sys.path.insert(0, str(REPO_ROOT / "shared"))
+from performance_utils import find_json_in_output
+
 
 @dataclass
 class EvaluationTask:
@@ -151,18 +155,12 @@ class BatchEvaluator:
                 duration=duration
             )
             
-            # Try to extract metrics from output
+            # Try to extract metrics from output using optimized utility
             if result.returncode == 0:
-                try:
-                    # Look for JSON output in stdout
-                    for line in result.stdout.splitlines():
-                        if line.strip().startswith("{"):
-                            data = json.loads(line)
-                            if "metrics" in data:
-                                result_obj.metrics = data["metrics"]
-                                break
-                except Exception:
-                    pass
+                data = find_json_in_output(result.stdout, key='metrics', 
+                                          search_from_end=True, max_lines=50)
+                if data and 'metrics' in data:
+                    result_obj.metrics = data['metrics']
             else:
                 result_obj.error = result.stderr
             

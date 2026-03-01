@@ -15,6 +15,12 @@ from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 from collections import defaultdict
 
+# Add shared directory to path for performance utilities
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "shared"))
+
+from performance_utils import tail_file
+
 # Import GPU monitoring
 sys.path.insert(0, str(Path(__file__).parent))
 from gpu_monitor import get_gpu_info, get_gpu_processes, get_system_resources
@@ -525,10 +531,9 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if job.get('name') == job_name and 'log' in job:
                     log_file = Path(job['log'])
                     if log_file.exists():
-                        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
-                            # Get last 500 lines
-                            lines = f.readlines()
-                            return {'logs': ''.join(lines[-500:])}
+                        # Memory-efficient: use tail_file utility
+                        lines = tail_file(log_file, max_lines=500)
+                        return {'logs': ''.join(lines)}
             
             return {'logs': 'No logs available'}
         except Exception as e:

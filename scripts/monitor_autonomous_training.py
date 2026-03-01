@@ -13,6 +13,12 @@ from pathlib import Path
 from typing import Dict, List, Optional
 import argparse
 
+# Add shared directory to path for performance utilities
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "shared"))
+
+from performance_utils import tail_file
+
 # Color codes for terminal output
 class Colors:
     HEADER = '\033[95m'
@@ -59,16 +65,8 @@ class TrainingMonitor:
             return {"error": str(e)}
     
     def get_recent_logs(self, lines: int = 20) -> List[str]:
-        """Get recent log entries"""
-        if not self.log_file.exists():
-            return []
-        
-        try:
-            with open(self.log_file, 'r') as f:
-                all_lines = f.readlines()
-                return all_lines[-lines:]
-        except Exception:
-            return []
+        """Get recent log entries using optimized tail_file utility"""
+        return tail_file(self.log_file, max_lines=lines)
     
     def format_duration(self, seconds: float) -> str:
         """Format duration in human-readable format"""
