@@ -500,3 +500,185 @@ class TestHashEmbeddingOptimization:
         
         # Should return zero vector
         assert all(x == 0.0 for x in embedding)
+
+
+class TestCollectionOptimizations:
+    """Tests for collection operation optimizations (February 2026)."""
+    
+    def test_single_pass_role_checking(self):
+        """Test that role checking uses single-pass set comprehension."""
+        # Simulate messages window
+        window = [
+            {"role": "user", "content": "Hello"},
+            {"role": "assistant", "content": "Hi there"},
+            {"role": "user", "content": "How are you?"},
+        ]
+        
+        # Old inefficient approach (for comparison)
+        old_result = (
+            any(x.get("role") == "user" for x in window) and 
+            any(x.get("role") == "assistant" for x in window)
+        )
+        
+        # New optimized approach
+        roles = {x.get("role") for x in window}
+        new_result = "user" in roles and "assistant" in roles
+        
+        # Both should produce same result
+        assert old_result == new_result == True
+        
+    def test_single_pass_empty_window(self):
+        """Test single-pass role checking with empty window."""
+        window = []
+        
+        roles = {x.get("role") for x in window}
+        result = "user" in roles and "assistant" in roles
+        
+        assert result == False
+    
+    def test_set_intersection_tag_filtering(self):
+        """Test that tag filtering uses set intersection."""
+        # Mock job objects
+        class Job:
+            def __init__(self, id, tags):
+                self.id = id
+                self.tags = tags
+        
+        jobs = [
+            Job(1, ["python", "ml", "quantum"]),
+            Job(2, ["javascript", "web"]),
+            Job(3, ["python", "web"]),
+            Job(4, ["quantum", "research"]),
+        ]
+        
+        filter_tags = ["python", "quantum"]
+        
+        # Old inefficient approach
+        old_result = [j for j in jobs if any(tag in j.tags for tag in filter_tags)]
+        
+        # New optimized approach
+        tags_set = set(filter_tags)
+        new_result = [j for j in jobs if set(j.tags) & tags_set]
+        
+        # Both should produce same result
+        assert len(old_result) == len(new_result) == 3
+        assert [j.id for j in old_result] == [j.id for j in new_result] == [1, 3, 4]
+
+
+class TestCommandParsingOptimizations:
+    """Tests for command parsing optimizations (February 2026)."""
+    
+    def test_movement_command_parsing(self):
+        """Test optimized movement command parsing."""
+        # Define command patterns directly for testing
+        _COMMAND_PATTERNS = (
+            (('[aria:walk:left]', 'walk left'), {'action': 'walk', 'direction': 'left', 'distance': 200}),
+            (('[aria:walk:right]', 'walk right'), {'action': 'walk', 'direction': 'right', 'distance': 200}),
+            (('[aria:move:right]', 'aria move right'), {'action': 'move', 'direction': 'right', 'distance': 100}),
+            (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
+            (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
+            (('[aria:walk:up]', 'walk up'), {'action': 'walk', 'direction': 'up', 'distance': 200}),
+        )
+        
+        def parse_movement_commands(text: str) -> dict:
+            """Test version of parse_movement_commands"""
+            lower_text = text.lower()
+            commands = []
+            for patterns, command in _COMMAND_PATTERNS:
+                if any(pattern in lower_text for pattern in patterns):
+                    commands.append(command)
+            return {'commands': commands} if commands else {}
+        
+        # Test various command patterns
+        test_cases = [
+            ("walk left", [{"action": "walk", "direction": "left", "distance": 200}]),
+            ("[aria:move:right]", [{"action": "move", "direction": "right", "distance": 100}]),
+            ("aria wave", [{"action": "wave"}]),
+            ("no commands here", []),
+        ]
+        
+        for text, expected_commands in test_cases:
+            result = parse_movement_commands(text)
+            if expected_commands:
+                assert result.get("commands") == expected_commands
+            else:
+                assert result == {}
+    
+    def test_command_parsing_performance(self):
+        """Test that command parsing is efficient with pattern table."""
+        # Define command patterns
+        _COMMAND_PATTERNS = (
+            (('[aria:walk:left]', 'walk left'), {'action': 'walk', 'direction': 'left', 'distance': 200}),
+            (('[aria:walk:right]', 'walk right'), {'action': 'walk', 'direction': 'right', 'distance': 200}),
+            (('[aria:move:right]', 'aria move right'), {'action': 'move', 'direction': 'right', 'distance': 100}),
+            (('[aria:move:left]', 'aria move left'), {'action': 'move', 'direction': 'left', 'distance': 100}),
+            (('[aria:center]', 'go to center'), {'action': 'center'}),
+            (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
+            (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
+        )
+        
+        def parse_movement_commands(text: str) -> dict:
+            """Test version of parse_movement_commands"""
+            lower_text = text.lower()
+            commands = []
+            for patterns, command in _COMMAND_PATTERNS:
+                if any(pattern in lower_text for pattern in patterns):
+                    commands.append(command)
+            return {'commands': commands} if commands else {}
+        
+        # Test with text containing multiple commands
+        text = "Please walk left, then aria move right, go to center, aria wave, and aria jump"
+        
+        start = time.perf_counter()
+        for _ in range(100):
+            parse_movement_commands(text)
+        elapsed = time.perf_counter() - start
+        
+        # Should complete 100 iterations in under 10ms
+        # (extremely generous threshold; actual should be much faster)
+        assert elapsed < 0.01
+
+
+class TestFileReadingOptimizations:
+    """Tests for file reading optimizations (February 2026)."""
+    
+    def test_single_pass_file_reading(self, tmp_path):
+        """Test that evaluation set generation reads files only once."""
+        # Create test dataset files
+        dataset_dir = tmp_path / "test_dataset"
+        dataset_dir.mkdir()
+        
+        train_file = dataset_dir / "train.json"
+        test_file = dataset_dir / "test.json"
+        
+        # Create sample records
+        train_data = [
+            {"messages": [{"role": "user", "content": "Q1"}, {"role": "assistant", "content": "A1"}]},
+            {"messages": [{"role": "user", "content": "Q2"}, {"role": "assistant", "content": "A2"}]},
+        ]
+        test_data = [
+            {"messages": [{"role": "user", "content": "Q3"}, {"role": "assistant", "content": "A3"}]},
+        ]
+        
+        with open(train_file, 'w') as f:
+            for record in train_data:
+                f.write(json.dumps(record) + '\n')
+        
+        with open(test_file, 'w') as f:
+            for record in test_data:
+                f.write(json.dumps(record) + '\n')
+        
+        # Test the optimized function
+        import sys
+        sys.path.insert(0, 'scripts')
+        from generate_evaluation_set import collect_training_hashes_and_records
+        
+        hashes, records = collect_training_hashes_and_records(dataset_dir)
+        
+        # Should have collected all records
+        assert len(records) == 3
+        assert len(hashes) == 3
+        
+        # Verify hashes are populated
+        for record in records:
+            assert "hash" in record

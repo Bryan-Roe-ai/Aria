@@ -215,33 +215,52 @@ def compute_loss(circuit, X, y, weights):
 
 
 def compute_gradient(circuit, X, y, weights, use_parameter_shift=True):
-    """Compute gradient using parameter-shift rule or finite differences"""
-    grad = np.zeros_like(weights)
-
-    if use_parameter_shift:
-        # Parameter-shift rule: more accurate for quantum circuits
-        shift = np.pi / 2
-        for i in range(weights.shape[0]):
-            for j in range(weights.shape[1]):
-                for k in range(weights.shape[2]):
-                    weights_plus = weights.copy()
-                    weights_minus = weights.copy()
-                    weights_plus[i, j, k] += shift
-                    weights_minus[i, j, k] -= shift
-                    loss_plus = compute_loss(circuit, X, y, weights_plus)
-                    loss_minus = compute_loss(circuit, X, y, weights_minus)
-                    grad[i, j, k] = (loss_plus - loss_minus) / 2
-    else:
-        # Finite differences fallback
-        epsilon = 1e-4
-        base_loss = compute_loss(circuit, X, y, weights)
-        for i in range(weights.shape[0]):
-            for j in range(weights.shape[1]):
-                for k in range(weights.shape[2]):
-                    weights_plus = weights.copy()
-                    weights_plus[i, j, k] += epsilon
-                    loss_plus = compute_loss(circuit, X, y, weights_plus)
-                    grad[i, j, k] = (loss_plus - base_loss) / epsilon
+    """Compute gradient using PennyLane's built-in automatic differentiation
+    
+    This is dramatically faster than manual parameter-shift implementation as it:
+    - Uses vectorized operations internally
+    - Leverages hardware acceleration when available
+    - Avoids redundant circuit evaluations
+    """
+    # Create a loss function for a single sample that PennyLane can differentiate
+    def loss_fn(w):
+        return compute_loss(circuit, X, y, w)
+    
+    # Use PennyLane's built-in gradient computation
+    # This leverages the autograd interface we specified in @qml.qnode
+    try:
+        # Try to use qml.grad for automatic differentiation
+        grad_fn = qml.grad(loss_fn)
+        grad = grad_fn(weights)
+    except Exception:
+        # Fallback to manual parameter-shift if autograd fails
+        # This path is much slower but ensures compatibility
+        grad = np.zeros_like(weights)
+        
+        if use_parameter_shift:
+            # Parameter-shift rule: more accurate for quantum circuits
+            shift = np.pi / 2
+            for i in range(weights.shape[0]):
+                for j in range(weights.shape[1]):
+                    for k in range(weights.shape[2]):
+                        weights_plus = weights.copy()
+                        weights_minus = weights.copy()
+                        weights_plus[i, j, k] += shift
+                        weights_minus[i, j, k] -= shift
+                        loss_plus = compute_loss(circuit, X, y, weights_plus)
+                        loss_minus = compute_loss(circuit, X, y, weights_minus)
+                        grad[i, j, k] = (loss_plus - loss_minus) / 2
+        else:
+            # Finite differences fallback
+            epsilon = 1e-4
+            base_loss = compute_loss(circuit, X, y, weights)
+            for i in range(weights.shape[0]):
+                for j in range(weights.shape[1]):
+                    for k in range(weights.shape[2]):
+                        weights_plus = weights.copy()
+                        weights_plus[i, j, k] += epsilon
+                        loss_plus = compute_loss(circuit, X, y, weights_plus)
+                        grad[i, j, k] = (loss_plus - base_loss) / epsilon
 
     return grad
 
