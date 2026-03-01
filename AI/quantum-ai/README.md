@@ -1,4 +1,24 @@
-# Quantum AI Project
+# Quantum AI Project (Qiskit Implementation)
+
+**⚠️ NOTE: This is an alternative Qiskit-based implementation.**
+
+The primary quantum AI implementation is in `/quantum-ai` and uses **PennyLane**.
+This directory (`/AI/quantum-ai`) contains an older **Qiskit-based** implementation
+that uses different quantum computing frameworks.
+
+## Key Differences
+
+| Feature | This Directory (AI/quantum-ai) | Main Directory (quantum-ai) |
+|---------|-------------------------------|---------------------------|
+| Framework | **Qiskit** | **PennyLane** |
+| Backend | Qiskit Aer, IBM Quantum | PennyLane, Azure Quantum |
+| Status | Legacy/Alternative | Primary/Active |
+
+For new development, use the **PennyLane-based** implementation in `/quantum-ai`.
+
+---
+
+# Original Documentation
 
 A comprehensive quantum machine learning framework combining **quantum computing** with **classical AI**, powered by **Azure Quantum** and **Qiskit**.
 
