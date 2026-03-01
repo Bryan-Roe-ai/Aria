@@ -80,30 +80,32 @@ class BatchEvaluator:
         with config_file.open("r") as f:
             config = yaml.safe_load(f)
         
-        for task_data in config.get("evaluation_tasks", []):
-            task = EvaluationTask(**task_data)
-            self.tasks.append(task)
+        # Use list comprehension for better performance
+        self.tasks.extend([
+            EvaluationTask(**task_data)
+            for task_data in config.get("evaluation_tasks", [])
+        ])
         
         print(f"[batch_eval] Loaded {len(self.tasks)} evaluation tasks")
     
     def scan_models(self) -> List[EvaluationTask]:
         """Scan for trained models and create evaluation tasks."""
-        tasks = []
-        
-        # Scan LoRA models
+        # Scan LoRA models - use list comprehension
         lora_dir = DATA_OUT.parent / "lora_training"
+        tasks = []
         if lora_dir.exists():
-            for model_dir in lora_dir.iterdir():
-                if model_dir.is_dir() and (model_dir / "adapter_config.json").exists():
-                    task = EvaluationTask(
-                        model_id=model_dir.name,
-                        model_type="lora",
-                        model_path=str(model_dir),
-                        dataset="datasets/chat/mixed_chat",
-                        metrics=["accuracy", "perplexity", "bleu"],
-                        max_samples=100
-                    )
-                    tasks.append(task)
+            tasks = [
+                EvaluationTask(
+                    model_id=model_dir.name,
+                    model_type="lora",
+                    model_path=str(model_dir),
+                    dataset="datasets/chat/mixed_chat",
+                    metrics=["accuracy", "perplexity", "bleu"],
+                    max_samples=100
+                )
+                for model_dir in lora_dir.iterdir()
+                if model_dir.is_dir() and (model_dir / "adapter_config.json").exists()
+            ]
         
         print(f"[batch_eval] Found {len(tasks)} models to evaluate")
         return tasks
@@ -310,6 +312,11 @@ class BatchEvaluator:
         print(f"[batch_eval] Exported JSON to: {output_file}")
     
     def compare_models(self, model_ids: List[str]) -> Dict:
+        """Compare specific models side-by-side - optimized O(n+m) lookup."""
+        # Convert model_ids to set for O(1) membership testing
+        model_ids_set = set(model_ids)
+        # Single pass through results for O(n+m) complexity instead of O(n*m)
+        comparison = [r for r in self.results if r.model_id in model_ids_set]
         """Compare specific models side-by-side using cached lookups."""
         comparison = []
         

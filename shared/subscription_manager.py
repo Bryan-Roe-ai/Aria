@@ -119,7 +119,7 @@ class Subscription:
         stripe_subscription_id: Optional[str] = None,
     ):
         self.user_id = user_id
-        self.tier = tier
+        self._tier = tier  # Use private attribute
         self.start_date = start_date or datetime.now()
         self.end_date = end_date
         self.payment_method = payment_method
@@ -132,6 +132,24 @@ class Subscription:
             "websites_created": 0,
         }
         self.usage_reset_date = datetime.now() + timedelta(days=30)
+        # Cache tier limits to avoid repeated dictionary lookups
+        self._tier_limits = TIER_LIMITS.get(self._tier, {})
+        if not self._tier_limits:
+            logger.warning(f"Unknown tier {self._tier} - using empty limits")
+    
+    @property
+    def tier(self) -> SubscriptionTier:
+        """Get subscription tier"""
+        return self._tier
+    
+    @tier.setter
+    def tier(self, value: SubscriptionTier):
+        """Set subscription tier and update cached limits"""
+        self._tier = value
+        # Update cached tier limits whenever tier changes
+        self._tier_limits = TIER_LIMITS.get(value, {})
+        if not self._tier_limits:
+            logger.warning(f"Unknown tier {value} - using empty limits")
     
     def is_active(self) -> bool:
         """Check if subscription is currently active"""
@@ -148,7 +166,7 @@ class Subscription:
         return TIER_FEATURES.get(self.tier, {}).get(feature, False)
     
     def check_limit(self, resource: str, amount: int = 1) -> bool:
-        """Check if usage is within limits"""
+        """Check if usage is within limits - optimized with cached tier limits"""
         if not self.is_active():
             return False
         
@@ -156,7 +174,8 @@ class Subscription:
         if datetime.now() > self.usage_reset_date:
             self.reset_usage()
         
-        limit = TIER_LIMITS.get(self.tier, {}).get(resource, 0)
+        # Use cached tier limits
+        limit = self._tier_limits.get(resource, 0)
         if limit == -1:  # unlimited
             return True
         
@@ -182,8 +201,9 @@ class Subscription:
         self.usage_reset_date = datetime.now() + timedelta(days=30)
     
     def get_usage_percentage(self, resource: str) -> float:
-        """Get usage as percentage of limit"""
-        limit = TIER_LIMITS.get(self.tier, {}).get(resource, 0)
+        """Get usage as percentage of limit - optimized with cached tier limits"""
+        # Use cached tier limits
+        limit = self._tier_limits.get(resource, 0)
         if limit == -1:
             return 0.0  # unlimited
         if limit == 0:
@@ -273,7 +293,7 @@ class SubscriptionManager:
     ) -> Subscription:
         """Upgrade user subscription"""
         sub = self.get_subscription(user_id)
-        sub.tier = tier
+        sub.tier = tier  # Property setter automatically updates _tier_limits
         sub.start_date = datetime.now()
         sub.end_date = datetime.now() + timedelta(days=duration_days)
         sub.payment_method = payment_method

@@ -101,9 +101,18 @@ class HealthChecker:
         status = {"files": {}}
         for doc, description in docs.items():
             path = REPO_ROOT / doc
+            # Optimize: single stat() call with exception handling
+            try:
+                file_stat = path.stat()
+                exists = True
+                size_kb = file_stat.st_size / 1024
+            except FileNotFoundError:
+                exists = False
+                size_kb = 0
+            
             status["files"][doc] = {
-                "exists": path.exists(),
-                "size_kb": path.stat().st_size / 1024 if path.exists() else 0,
+                "exists": exists,
+                "size_kb": size_kb,
                 "description": description,
             }
         

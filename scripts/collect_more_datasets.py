@@ -286,13 +286,18 @@ class QuantumDatasetCollector:
         else:
             index = {"datasets": {}, "metadata": {}, "storage": {}}
         
-        # Add dataset
+        # Add dataset - optimize: single stat() call
+        try:
+            file_size = path.stat().st_size
+        except (FileNotFoundError, OSError):
+            file_size = 0
+        
         index["datasets"][name] = {
             "category": "quantum",
             "filename": info["filename"],
             "path": str(path),
             "description": info["description"],
-            "size": path.stat().st_size if path.exists() else 0,
+            "size": file_size,
             "features": info["features"],
             "samples": info["samples"],
             "classes": info["classes"],
