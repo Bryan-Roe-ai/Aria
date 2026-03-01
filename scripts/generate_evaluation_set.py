@@ -48,13 +48,17 @@ def hash_messages(msgs: List[Dict]) -> str:
     return message_hash
 
 
-def collect_training_hashes(dataset_dir: Path) -> Set[str]:
+def collect_training_hashes_and_records(dataset_dir: Path) -> tuple[Set[str], List[Dict]]:
+    """Collect training hashes and records in a single pass to avoid re-reading files"""
     hashes: Set[str] = set()
+    records: List[Dict] = []
     for split_file in [dataset_dir / "train.json", dataset_dir / "test.json"]:
         for rec in read_jsonl(split_file):
-            record_hash = rec.get("hash") or hash_messages(rec.get("messages", []))
-            hashes.add(record_hash)
-    return hashes
+            h = rec.get("hash") or hash_messages(rec.get("messages", []))
+            hashes.add(h)
+            rec["hash"] = h  # Ensure hash is stored
+            records.append(rec)
+    return hashes, records
 
 
 def main():
@@ -70,34 +74,32 @@ def main():
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Collect training hashes to avoid reuse
+    # Collect training hashes and records in a single pass
     training_hashes: Set[str] = set()
+    source_records_cache: Dict[str, List[Dict]] = {}
     for src in args.sources:
-        training_hashes |= collect_training_hashes(Path(src))
+        src_path = Path(src)
+        hashes, records = collect_training_hashes_and_records(src_path)
+        training_hashes |= hashes
+        source_records_cache[str(src_path)] = records
 
     eval_records: List[Dict] = []
     source_stats = {}
     for src in args.sources:
         src_path = Path(src)
-        # Use both train and test content for evaluation sampling (fresh project might have small test split)
-        candidate_files = [src_path / "train.json", src_path / "test.json"]
+        # Use cached records instead of re-reading files
+        all_records = source_records_cache.get(str(src_path), [])
+        
+        # Filter out records that are in training hashes
         candidates: List[Dict] = []
-        for cf in candidate_files:
-            for rec in read_jsonl(cf):
-                record_hash = rec.get("hash") or hash_messages(rec.get("messages", []))
-                if record_hash in training_hashes:
-                    # Still part of training; skip for eval
-                    # We rely on separate generation or external datasets to build a truly fresh eval set.
-                    continue
-                rec["hash"] = record_hash
+        for rec in all_records:
+            h = rec.get("hash")
+            if h not in training_hashes:
                 candidates.append(rec)
-        # If no candidates remain (common when sources are entirely training sets), fallback sampling ignoring uniqueness
+        
+        # If no candidates remain, use all records (fallback)
         if not candidates:
-            for cf in candidate_files:
-                for rec in read_jsonl(cf):
-                    record_hash = rec.get("hash") or hash_messages(rec.get("messages", []))
-                    rec["hash"] = record_hash
-                    candidates.append(rec)
+            candidates = all_records
         random.shuffle(candidates)
         selected = candidates[: args.per_source]
         for s in selected:

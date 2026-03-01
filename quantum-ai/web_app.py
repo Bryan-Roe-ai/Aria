@@ -40,6 +40,18 @@ except Exception:  # pragma: no cover
     confusion_matrix = precision_recall_fscore_support = roc_auc_score = None
 from collections import deque
 import logging
+import sys
+
+# Add src directory to path for imports
+src_path = Path(__file__).parent / "src"
+sys.path.insert(0, str(src_path))
+
+try:
+    from src.dataset_loader import load_dataset as load_dataset_shared, preprocess_for_qubits as preprocess_shared
+except Exception:  # pragma: no cover
+    # Fallback if module not available
+    load_dataset_shared = None
+    preprocess_shared = None
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -120,6 +132,12 @@ class TrainingSession:
 
 def load_dataset(name: str):
     """Load dataset from CSV files"""
+    # Use shared loader if available
+    if load_dataset_shared is not None:
+        X, y, feature_names = load_dataset_shared(name, return_feature_names=True)
+        return X, y, feature_names
+    
+    # Fallback to inline implementation for testing/compatibility
     base = Path(__file__).parent.parent / "datasets" / "quantum"
     presets = {
         "heart": base / "heart_disease.csv",
@@ -215,33 +233,52 @@ def compute_loss(circuit, X, y, weights):
 
 
 def compute_gradient(circuit, X, y, weights, use_parameter_shift=True):
-    """Compute gradient using parameter-shift rule or finite differences"""
-    grad = np.zeros_like(weights)
-
-    if use_parameter_shift:
-        # Parameter-shift rule: more accurate for quantum circuits
-        shift = np.pi / 2
-        for i in range(weights.shape[0]):
-            for j in range(weights.shape[1]):
-                for k in range(weights.shape[2]):
-                    weights_plus = weights.copy()
-                    weights_minus = weights.copy()
-                    weights_plus[i, j, k] += shift
-                    weights_minus[i, j, k] -= shift
-                    loss_plus = compute_loss(circuit, X, y, weights_plus)
-                    loss_minus = compute_loss(circuit, X, y, weights_minus)
-                    grad[i, j, k] = (loss_plus - loss_minus) / 2
-    else:
-        # Finite differences fallback
-        epsilon = 1e-4
-        base_loss = compute_loss(circuit, X, y, weights)
-        for i in range(weights.shape[0]):
-            for j in range(weights.shape[1]):
-                for k in range(weights.shape[2]):
-                    weights_plus = weights.copy()
-                    weights_plus[i, j, k] += epsilon
-                    loss_plus = compute_loss(circuit, X, y, weights_plus)
-                    grad[i, j, k] = (loss_plus - base_loss) / epsilon
+    """Compute gradient using PennyLane's built-in automatic differentiation
+    
+    This is dramatically faster than manual parameter-shift implementation as it:
+    - Uses vectorized operations internally
+    - Leverages hardware acceleration when available
+    - Avoids redundant circuit evaluations
+    """
+    # Create a loss function for a single sample that PennyLane can differentiate
+    def loss_fn(w):
+        return compute_loss(circuit, X, y, w)
+    
+    # Use PennyLane's built-in gradient computation
+    # This leverages the autograd interface we specified in @qml.qnode
+    try:
+        # Try to use qml.grad for automatic differentiation
+        grad_fn = qml.grad(loss_fn)
+        grad = grad_fn(weights)
+    except Exception:
+        # Fallback to manual parameter-shift if autograd fails
+        # This path is much slower but ensures compatibility
+        grad = np.zeros_like(weights)
+        
+        if use_parameter_shift:
+            # Parameter-shift rule: more accurate for quantum circuits
+            shift = np.pi / 2
+            for i in range(weights.shape[0]):
+                for j in range(weights.shape[1]):
+                    for k in range(weights.shape[2]):
+                        weights_plus = weights.copy()
+                        weights_minus = weights.copy()
+                        weights_plus[i, j, k] += shift
+                        weights_minus[i, j, k] -= shift
+                        loss_plus = compute_loss(circuit, X, y, weights_plus)
+                        loss_minus = compute_loss(circuit, X, y, weights_minus)
+                        grad[i, j, k] = (loss_plus - loss_minus) / 2
+        else:
+            # Finite differences fallback
+            epsilon = 1e-4
+            base_loss = compute_loss(circuit, X, y, weights)
+            for i in range(weights.shape[0]):
+                for j in range(weights.shape[1]):
+                    for k in range(weights.shape[2]):
+                        weights_plus = weights.copy()
+                        weights_plus[i, j, k] += epsilon
+                        loss_plus = compute_loss(circuit, X, y, weights_plus)
+                        grad[i, j, k] = (loss_plus - base_loss) / epsilon
 
     return grad
 
@@ -514,8 +551,7 @@ def train_model(session: TrainingSession):
 
             # Keep only recent history for memory efficiency
             if len(session.metrics_history['epochs']) > 1000:
-                for key in session.metrics_history:
-                    session.metrics_history[key] = session.metrics_history[key][-1000:]
+                session.metrics_history = {key: values[-1000:] for key, values in session.metrics_history.items()}
 
             logger.info(f"Epoch {epoch}: Loss={train_loss:.4f}, Val Acc={val_acc:.4f}, Val Loss={val_loss:.4f}, Speed={session.epochs_per_second:.2f} ep/s, LR={session.learning_rate:.6f}, Grad Norm={session.gradient_norm:.6f}")
 

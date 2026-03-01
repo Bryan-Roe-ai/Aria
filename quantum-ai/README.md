@@ -1,6 +1,11 @@
-# Quantum AI Project
+# Quantum AI Project (PennyLane Implementation)
+
+**⚠️ Primary quantum AI implementation using PennyLane framework.**
 
 A hybrid quantum-classical machine learning framework leveraging Azure Quantum for enhanced AI capabilities.
+
+> **Note:** An alternative Qiskit-based implementation exists in `/AI/quantum-ai` for legacy compatibility.
+> This directory is the primary/active implementation using PennyLane.
 
 ---
 

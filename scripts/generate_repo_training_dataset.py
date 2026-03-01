@@ -120,8 +120,9 @@ def summarize_chunk(chunk: Chunk) -> str:
         summary_parts.append("Key symbols: " + ", ".join(funcs[:12]))
     # Heuristic responsibilities: look for keywords
     keywords = []
+    content_lower = chunk.content.lower()  # Cache lowercased content to avoid repeated .lower() calls
     for kw in ["quantum", "dataset", "train", "chat", "azure", "function", "api", "config", "model", "web", "cli", "script"]:
-        if kw in chunk.content.lower():
+        if kw in content_lower:
             keywords.append(kw)
     if keywords:
         summary_parts.append("Detected themes: " + ", ".join(sorted(set(keywords))))

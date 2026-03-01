@@ -232,11 +232,11 @@ def list_values(limit: int = 100) -> list[dict]:  # noqa: ANN001
     if not engine and not _SQLALCHEMY_AVAILABLE:
         try:
             conn = _get_sqlite_conn()
-            cur = conn.execute("SELECT key_name, value_data, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC")
-            out = []
-            for row in cur.fetchall()[:limit]:
-                out.append({"key_name": row[0], "value_data": row[1], "updated_at": row[2]})
-            return out
+            cur = conn.execute("SELECT k, v, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC LIMIT ?", (limit,))
+            # Use list comprehension for better performance
+            # Note: For memory-constrained environments with very large result sets,
+            # you can iterate directly: [{"k": r[0], "v": r[1], "updated_at": r[2]} for r in cur]
+            return [{"k": row[0], "v": row[1], "updated_at": row[2]} for row in cur.fetchall()]
         except Exception as e:  # noqa: BLE001
             logging.warning(f"[sql_repository] sqlite fallback list_values failed: {e}")
             return []
@@ -246,11 +246,11 @@ def list_values(limit: int = 100) -> list[dict]:  # noqa: ANN001
 
     try:
         with engine.connect() as conn:
-            res = conn.execute(text("SELECT key_name, value_data, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC"))
-            items = []
-            for row in res.fetchall()[:limit]:
-                items.append({"key_name": row[0], "value_data": row[1], "updated_at": row[2]})
-            return items
+            res = conn.execute(text("SELECT k, v, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC LIMIT :limit"), {"limit": limit})
+            # Use list comprehension for better performance
+            # Note: For memory-constrained environments with very large result sets,
+            # you can iterate directly: [{"k": r[0], "v": r[1], "updated_at": r[2]} for r in res]
+            return [{"k": row[0], "v": row[1], "updated_at": row[2]} for row in res.fetchall()]
     except Exception as e:  # noqa: BLE001
         logging.warning(f"[sql_repository] list_values failed: {e}")
         return []

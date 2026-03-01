@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import subprocess
 import sys
 import time
@@ -48,6 +49,9 @@ try:
     import yaml
 except ImportError:
     raise SystemExit("pyyaml required. Install: pip install pyyaml")
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "smart_orchestrator"
@@ -107,24 +111,41 @@ class Pipeline:
         )
     
     def get_stats(self) -> Dict[str, Any]:
-        """Get pipeline statistics"""
+        """Get pipeline statistics - optimized single-pass aggregation"""
+        stats = {
+            "succeeded": 0,
+            "failed": 0,
+            "running": 0,
+            "pending": 0,
+            "skipped": 0,
+            "unknown": 0,  # Track unknown statuses separately
+            "total_duration_sec": 0
+        }
+        
+        # Single pass through jobs for all statistics
+        for j in self.jobs.values():
+            status = j.status
+            if status in ("succeeded", "failed", "running", "pending", "skipped"):
+                stats[status] += 1
+            else:
+                # Unknown status - count in separate bucket and log for debugging
+                stats["unknown"] += 1
+                logger.warning(f"Job {j.name} has unknown status: {status}")
+            stats["total_duration_sec"] += j.duration_sec
+        
         total = len(self.jobs)
-        succeeded = sum(1 for j in self.jobs.values() if j.status == "succeeded")
-        failed = sum(1 for j in self.jobs.values() if j.status == "failed")
-        running = sum(1 for j in self.jobs.values() if j.status == "running")
-        pending = sum(1 for j in self.jobs.values() if j.status == "pending")
-        skipped = sum(1 for j in self.jobs.values() if j.status == "skipped")
-        total_time = sum(j.duration_sec for j in self.jobs.values())
+        completed = stats["succeeded"] + stats["failed"] + stats["skipped"]
         
         return {
             "total": total,
-            "succeeded": succeeded,
-            "failed": failed,
-            "running": running,
-            "pending": pending,
-            "skipped": skipped,
-            "total_duration_sec": round(total_time, 2),
-            "completion_pct": int((succeeded + failed + skipped) / max(total, 1) * 100),
+            "succeeded": stats["succeeded"],
+            "failed": stats["failed"],
+            "running": stats["running"],
+            "pending": stats["pending"],
+            "skipped": stats["skipped"],
+            "unknown": stats["unknown"],
+            "total_duration_sec": round(stats["total_duration_sec"], 2),
+            "completion_pct": int(completed / max(total, 1) * 100),
         }
 
 

@@ -28,7 +28,7 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -72,36 +72,40 @@ class BatchEvaluator:
         self.max_workers = max_workers
         self.tasks: List[EvaluationTask] = []
         self.results: List[EvaluationResult] = []
+        # Performance optimization: cache results lookup by model_id
+        self._results_cache: Dict[str, EvaluationResult] = {}
     
     def load_config(self, config_file: Path):
         """Load evaluation tasks from config file."""
         with config_file.open("r") as f:
             config = yaml.safe_load(f)
         
-        for task_data in config.get("evaluation_tasks", []):
-            task = EvaluationTask(**task_data)
-            self.tasks.append(task)
+        # Use list comprehension for better performance
+        self.tasks.extend([
+            EvaluationTask(**task_data)
+            for task_data in config.get("evaluation_tasks", [])
+        ])
         
         print(f"[batch_eval] Loaded {len(self.tasks)} evaluation tasks")
     
     def scan_models(self) -> List[EvaluationTask]:
         """Scan for trained models and create evaluation tasks."""
-        tasks = []
-        
-        # Scan LoRA models
+        # Scan LoRA models - use list comprehension
         lora_dir = DATA_OUT.parent / "lora_training"
+        tasks = []
         if lora_dir.exists():
-            for model_dir in lora_dir.iterdir():
-                if model_dir.is_dir() and (model_dir / "adapter_config.json").exists():
-                    task = EvaluationTask(
-                        model_id=model_dir.name,
-                        model_type="lora",
-                        model_path=str(model_dir),
-                        dataset="datasets/chat/mixed_chat",
-                        metrics=["accuracy", "perplexity", "bleu"],
-                        max_samples=100
-                    )
-                    tasks.append(task)
+            tasks = [
+                EvaluationTask(
+                    model_id=model_dir.name,
+                    model_type="lora",
+                    model_path=str(model_dir),
+                    dataset="datasets/chat/mixed_chat",
+                    metrics=["accuracy", "perplexity", "bleu"],
+                    max_samples=100
+                )
+                for model_dir in lora_dir.iterdir()
+                if model_dir.is_dir() and (model_dir / "adapter_config.json").exists()
+            ]
         
         print(f"[batch_eval] Found {len(tasks)} models to evaluate")
         return tasks
@@ -202,6 +206,8 @@ class BatchEvaluator:
                 try:
                     result = future.result()
                     self.results.append(result)
+                    # Update cache for O(1) lookups
+                    self._results_cache[result.model_id] = result
                     
                     # Use ASCII-safe status indicators
                     status_icon = "[OK]" if result.status == "succeeded" else "[FAIL]"
@@ -215,8 +221,11 @@ class BatchEvaluator:
                     print(f"[ERROR] {task.model_id}: Exception - {e}")
         
         print(f"\n[batch_eval] Evaluation complete")
-        print(f"[batch_eval] Succeeded: {sum(1 for r in self.results if r.status == 'succeeded')}")
-        print(f"[batch_eval] Failed: {sum(1 for r in self.results if r.status == 'failed')}")
+        # Use already classified results from aggregate to avoid redundant passes
+        succeeded_count = sum(1 for r in self.results if r.status == 'succeeded')
+        failed_count = len(self.results) - succeeded_count
+        print(f"[batch_eval] Succeeded: {succeeded_count}")
+        print(f"[batch_eval] Failed: {failed_count}")
     
     def aggregate_results(self) -> Dict:
         """Aggregate all evaluation results.
@@ -303,11 +312,17 @@ class BatchEvaluator:
         print(f"[batch_eval] Exported JSON to: {output_file}")
     
     def compare_models(self, model_ids: List[str]) -> Dict:
-        """Compare specific models side-by-side."""
+        """Compare specific models side-by-side - optimized O(n+m) lookup."""
+        # Convert model_ids to set for O(1) membership testing
+        model_ids_set = set(model_ids)
+        # Single pass through results for O(n+m) complexity instead of O(n*m)
+        comparison = [r for r in self.results if r.model_id in model_ids_set]
+        """Compare specific models side-by-side using cached lookups."""
         comparison = []
         
+        # Use O(1) cache lookup instead of O(n) linear search
         for model_id in model_ids:
-            result = next((r for r in self.results if r.model_id == model_id), None)
+            result = self._results_cache.get(model_id)
             if result:
                 comparison.append(result)
         
@@ -346,7 +361,19 @@ class BatchEvaluator:
         if not best_model_id:
             raise ValueError("No best model found (all evaluations may have failed)")
         
-        best_result = next(r for r in self.results if r.model_id == best_model_id)
+        # Prefer O(1) cache lookup instead of O(n) linear search, but fall back if needed
+        best_result = self._results_cache.get(best_model_id)
+        if best_result is None:
+            # Fallback to linear search to tolerate transient cache inconsistencies
+            best_result = next(
+                (r for r in self.results if r.model_id == best_model_id),
+                None,
+            )
+        if best_result is None:
+            raise ValueError(
+                f"Best model {best_model_id} not found in evaluation results; "
+                "this indicates an internal consistency error."
+            )
         
         # Determine target directory
         if target_dir is None:

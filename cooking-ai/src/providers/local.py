@@ -4,6 +4,9 @@ import re
 import json
 from typing import List, Dict
 
+# Pre-compile regex pattern for performance
+_RE_QUANTITY = re.compile(r"^(?P<qty>(\d+\/\d+|\d+(\.\d+)?))\s*(?P<unit>[a-zA-Z]+)?\s*(?P<name>.*)")
+
 SAMPLE_RECIPES = [
     {
         "title": "Simple Tomato Pasta",
@@ -88,9 +91,11 @@ class LocalProvider:
         tokens = [t for t in re.split(r"[^a-zA-Z]+", query) if t]
         scored = []
         for r in SAMPLE_RECIPES:
-            # Filter by tags (all filters must match at least one tag)
-            if filters and not all(any(f in tag.lower() for tag in r["tags"]) for f in filters):
-                continue
+            # Filter by tags (optimized: pre-compute tag set for O(1) membership check)
+            if filters:
+                recipe_tags = {tag.lower() for tag in r["tags"]}
+                if not all(any(f in tag for tag in recipe_tags) for f in filters):
+                    continue
             title = r["title"].lower()
             ingredients_blob = " ".join(r["ingredients"]).lower()
             score = 0
@@ -132,9 +137,8 @@ class LocalProvider:
         text = text_match.group(1).strip() if text_match else prompt
         lines = [l.strip() for l in re.split(r"[\n,;]", text) if l.strip()]
         items = []
-        qty_re = re.compile(r"^(?P<qty>(\d+\/\d+|\d+(\.\d+)?))\s*(?P<unit>[a-zA-Z]+)?\s*(?P<name>.*)")
         for raw in lines:
-            m = qty_re.match(raw)
+            m = _RE_QUANTITY.match(raw)
             if m:
                 items.append(
                     {

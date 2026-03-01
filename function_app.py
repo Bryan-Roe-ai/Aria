@@ -7,6 +7,7 @@ import azure.functions as func
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 import subprocess
@@ -15,65 +16,73 @@ import time
 from typing import Optional
 from datetime import datetime
 
+# Import defensive import helper
+from shared.import_helpers import safe_import, create_stub_function
+
+# Pre-compiled regex patterns for performance
+_RE_WORD_SPLIT = re.compile(r"\S+")
+
 # -----------------------------------------------------------------------------
 # Optional unified SQL engine health + pool metrics (multi-database support)
 # -----------------------------------------------------------------------------
-try:  # pragma: no cover - defensive import
-    from shared.sql_engine import sql_health, engine_stats  # type: ignore
-except Exception:  # noqa: BLE001
-    def sql_health():  # type: ignore
-        return {"enabled": False, "error": "sql_engine_import_failed"}
-
-    def engine_stats():  # type: ignore
-        return {"enabled": False, "error": "engine_stats_import_failed"}
+sql_funcs = safe_import(
+    'shared.sql_engine',
+    import_names=('sql_health', 'engine_stats'),
+    fallback_factory=create_stub_function
+)
+sql_health = sql_funcs['sql_health']
+engine_stats = sql_funcs['engine_stats']
 
 # -----------------------------------------------------------------------------
 # Early Telemetry Initialization (non-fatal if unavailable)
 # -----------------------------------------------------------------------------
-try:  # pragma: no cover - defensive import
-    from shared.telemetry import init_telemetry
-    init_telemetry()
-except Exception as _telemetry_err:  # noqa: BLE001
-    logging.warning(f"[startup] Telemetry init skipped: {_telemetry_err}")
+telemetry_module = safe_import('shared.telemetry', log_failure=False)
+if telemetry_module and hasattr(telemetry_module, 'init_telemetry'):
+    try:
+        telemetry_module.init_telemetry()
+    except Exception as _telemetry_err:  # noqa: BLE001
+        logging.warning(f"[startup] Telemetry init skipped: {_telemetry_err}")
+else:
+    logging.warning("[startup] Telemetry init skipped: module unavailable")
 
 # Try to initialize generic OpenTelemetry tracing (best-effort)
-try:  # pragma: no cover - optional
-    from shared.tracing import init_tracing
-
-    init_tracing(service_name="qai.functions")
-except Exception as _trace_err:  # noqa: BLE001 - don't fail on missing libs
-    logging.debug(f"[startup] Tracing init skipped: {_trace_err}")
+tracing_module = safe_import('shared.tracing', log_failure=False)
+if tracing_module and hasattr(tracing_module, 'init_tracing'):
+    try:
+        tracing_module.init_tracing(service_name="qai.functions")
+    except Exception as _trace_err:  # noqa: BLE001 - don't fail on missing libs
+        logging.debug(f"[startup] Tracing init skipped: {_trace_err}")
+else:
+    logging.debug("[startup] Tracing init skipped: module unavailable")
 
 # -----------------------------------------------------------------------------
 # Optional Cosmos Client import (lazy health + persistence)
 # -----------------------------------------------------------------------------
-try:  # pragma: no cover - defensive import
-    from shared import cosmos_client
-except Exception as _cosmos_err:  # noqa: BLE001
-    cosmos_client = None  # type: ignore
-    logging.info(f"[startup] Cosmos client unavailable: {_cosmos_err}")
+cosmos_client = safe_import('shared.cosmos_client', log_failure=True)
+if not cosmos_client:
+    logging.info("[startup] Cosmos client unavailable")
 
 # Memory / DB logging utilities (fault-tolerant)
-try:
-    from shared.db_logging import log_chat_message_safe
-except Exception:  # pragma: no cover - if shared not on path
-    log_chat_message_safe = None  # type: ignore
-try:
-    from shared.chat_memory import (
-        generate_embedding,
-        fetch_similar_messages,
-        store_embedding,
-    )
-except Exception:
-    # Provide graceful degradations so endpoint still works
-    def generate_embedding(text: str):  # type: ignore
-        return []
+db_logging = safe_import(
+    'shared.db_logging',
+    import_names=('log_chat_message_safe',),
+    fallback_factory=lambda name: None
+)
+log_chat_message_safe = db_logging['log_chat_message_safe']
 
-    def fetch_similar_messages(query_emb, top_k=5, session_id=None):  # type: ignore
-        return []
-
-    def store_embedding(message_id, embedding, model):  # type: ignore
-        return False
+# Chat memory functions with graceful degradation
+chat_memory_funcs = safe_import(
+    'shared.chat_memory',
+    import_names=('generate_embedding', 'fetch_similar_messages', 'store_embedding'),
+    fallback_factory=lambda name: {
+        'generate_embedding': lambda text: [],
+        'fetch_similar_messages': lambda query_emb, top_k=5, session_id=None: [],
+        'store_embedding': lambda message_id, embedding, model: False,
+    }.get(name, lambda *args, **kwargs: None)
+)
+generate_embedding = chat_memory_funcs['generate_embedding']
+fetch_similar_messages = chat_memory_funcs['fetch_similar_messages']
+store_embedding = chat_memory_funcs['store_embedding']
 
 # Add talk-to-ai to path so we can import chat_providers
 talk_to_ai_path = Path(__file__).resolve().parent / "talk-to-ai" / "src"
@@ -557,47 +566,35 @@ def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
 # Streaming Chat API (Server-Sent Events compatible)
 # =============================================================================
 
+# Command pattern lookup table for O(1) matching
+_COMMAND_PATTERNS = (
+    # Walk commands
+    (('[aria:walk:left]', 'walk left'), {'action': 'walk', 'direction': 'left', 'distance': 200}),
+    (('[aria:walk:right]', 'walk right'), {'action': 'walk', 'direction': 'right', 'distance': 200}),
+    (('[aria:walk:up]', 'walk up'), {'action': 'walk', 'direction': 'up', 'distance': 200}),
+    (('[aria:walk:down]', 'walk down'), {'action': 'walk', 'direction': 'down', 'distance': 200}),
+    # Move commands
+    (('[aria:move:left]', 'aria move left'), {'action': 'move', 'direction': 'left', 'distance': 100}),
+    (('[aria:move:right]', 'aria move right'), {'action': 'move', 'direction': 'right', 'distance': 100}),
+    (('[aria:move:up]', 'aria move up'), {'action': 'move', 'direction': 'up', 'distance': 100}),
+    (('[aria:move:down]', 'aria move down'), {'action': 'move', 'direction': 'down', 'distance': 100}),
+    # Position commands
+    (('[aria:center]', 'go to center', 'move to center'), {'action': 'center'}),
+    # Action commands
+    (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
+    (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
+    (('[aria:dance]', 'aria dance'), {'action': 'dance'}),
+)
+
 def parse_movement_commands(text: str) -> dict:
-    """Parse movement commands from AI response text"""
+    """Parse movement commands from AI response text using optimized pattern matching"""
     lower_text = text.lower()
     commands = []
-
-    # Movement commands
-    if '[aria:walk:left]' in lower_text or 'walk left' in lower_text:
-        commands.append(
-            {'action': 'walk', 'direction': 'left', 'distance': 200})
-    if '[aria:walk:right]' in lower_text or 'walk right' in lower_text:
-        commands.append(
-            {'action': 'walk', 'direction': 'right', 'distance': 200})
-    if '[aria:walk:up]' in lower_text or 'walk up' in lower_text:
-        commands.append({'action': 'walk', 'direction': 'up', 'distance': 200})
-    if '[aria:walk:down]' in lower_text or 'walk down' in lower_text:
-        commands.append(
-            {'action': 'walk', 'direction': 'down', 'distance': 200})
-
-    if '[aria:move:left]' in lower_text or 'aria move left' in lower_text:
-        commands.append(
-            {'action': 'move', 'direction': 'left', 'distance': 100})
-    if '[aria:move:right]' in lower_text or 'aria move right' in lower_text:
-        commands.append(
-            {'action': 'move', 'direction': 'right', 'distance': 100})
-    if '[aria:move:up]' in lower_text or 'aria move up' in lower_text:
-        commands.append({'action': 'move', 'direction': 'up', 'distance': 100})
-    if '[aria:move:down]' in lower_text or 'aria move down' in lower_text:
-        commands.append(
-            {'action': 'move', 'direction': 'down', 'distance': 100})
-
-    # Position commands
-    if '[aria:center]' in lower_text or 'go to center' in lower_text or 'move to center' in lower_text:
-        commands.append({'action': 'center'})
-
-    # Action commands
-    if '[aria:wave]' in lower_text or 'aria wave' in lower_text:
-        commands.append({'action': 'wave'})
-    if '[aria:jump]' in lower_text or 'aria jump' in lower_text:
-        commands.append({'action': 'jump'})
-    if '[aria:dance]' in lower_text or 'aria dance' in lower_text:
-        commands.append({'action': 'dance'})
+    
+    # Single pass through command patterns - check each pattern once
+    for patterns, command in _COMMAND_PATTERNS:
+        if any(pattern in lower_text for pattern in patterns):
+            commands.append(command)
 
     return {'commands': commands} if commands else {}
 
@@ -663,8 +660,6 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
 
                 # We'll stream both textual deltas and token-level events when possible
-                import re
-
                 # Try to use tiktoken for token-level tokenization when available
                 enc = None
                 try:
@@ -791,7 +786,6 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 import io
                 import base64
                 import wave
-                import re
                 try:
                     import azure.cognitiveservices.speech as speechsdk
                 except Exception as e:
@@ -837,7 +831,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 except Exception:
                     duration_s = max(0.2, len(text) * 0.02)
 
-                words = re.findall(r"\S+", text)
+                words = _RE_WORD_SPLIT.findall(text)
                 total_chars = sum(len(w) for w in words) or 1
                 timepoints = []
                 cursor = 0.0
@@ -870,7 +864,6 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                     import base64
                     import io
                     import wave
-                    import re
                     import pyttsx3
                 except Exception:  # pyttsx3 not available
                     pyttsx3 = None
@@ -922,7 +915,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                         except Exception:
                             duration_s = max(0.2, len(text) * 0.02)
 
-                        words = re.findall(r"\S+", text)
+                        words = _RE_WORD_SPLIT.findall(text)
                         total_chars = sum(len(w) for w in words) or 1
                         timepoints = []
                         cursor = 0.0
@@ -949,7 +942,6 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 try:
                     import tempfile
                     import base64
-                    import re
                     from gtts import gTTS
                 except Exception:
                     gTTS = None
@@ -970,7 +962,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
 
                         # approximate duration: fallback to char-count based estimate
                         duration_s = max(0.2, len(text) * 0.02)
-                        words = re.findall(r"\S+", text)
+                        words = _RE_WORD_SPLIT.findall(text)
                         total_chars = sum(len(w) for w in words) or 1
                         timepoints = []
                         cursor = 0.0
@@ -1939,21 +1931,25 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
                 "observable": "PauliZ"
             })
 
-        # Create text visualization
-        visualization = f"Quantum Circuit ({n_qubits} qubits, {n_layers} layers, {entanglement} entanglement)\n"
-        visualization += "=" * 60 + "\n\n"
+        # Create text visualization using list for efficiency (avoids O(n²) string concatenation)
+        viz_parts = [
+            f"Quantum Circuit ({n_qubits} qubits, {n_layers} layers, {entanglement} entanglement)\n",
+            "=" * 60 + "\n\n"
+        ]
 
         for layer in range(n_layers + 2):
-            visualization += f"Layer {layer}:\n"
+            viz_parts.append(f"Layer {layer}:\n")
             layer_gates = [g for g in gates if g.get('layer') == layer]
             for gate in layer_gates:
                 if gate['type'] in ['RY', 'RZ']:
-                    visualization += f"  {gate['type']}({gate['parameter']}) on qubit {gate['qubit']}\n"
+                    viz_parts.append(f"  {gate['type']}({gate['parameter']}) on qubit {gate['qubit']}\n")
                 elif gate['type'] == 'CNOT':
-                    visualization += f"  CNOT: control={gate['control']}, target={gate['target']}\n"
+                    viz_parts.append(f"  CNOT: control={gate['control']}, target={gate['target']}\n")
                 elif gate['type'] == 'Measure':
-                    visualization += f"  Measure qubit {gate['qubit']} ({gate['observable']})\n"
-            visualization += "\n"
+                    viz_parts.append(f"  Measure qubit {gate['qubit']} ({gate['observable']})\n")
+            viz_parts.append("\n")
+        
+        visualization = "".join(viz_parts)
 
         response_data = {
             "circuit_info": {
