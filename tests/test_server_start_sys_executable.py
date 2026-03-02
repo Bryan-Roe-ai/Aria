@@ -8,8 +8,8 @@ import pytest
 
 
 def test_server_startable_with_sys_executable():
-    """Regression test: starting aria_web/server.py using sys.executable should open port 8080."""
-    ARIA_WEB = Path(__file__).resolve().parents[1] / "aria_web"
+    """Regression test: starting web/aria_web/server.py using sys.executable should open port 8080."""
+    ARIA_WEB = Path(__file__).resolve().parents[1] / "web" / "aria_web"
     proc = subprocess.Popen([sys.executable, "server.py"], cwd=str(
         ARIA_WEB), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:

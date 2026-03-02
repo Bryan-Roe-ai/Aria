@@ -80,6 +80,35 @@ python scripts/quantum_llm_trainer.py \
   --config config/quantum_llm_config.yaml
 ```
 
+### 1.a. Fine‑tuning an actual LLM from your data
+
+The CLI also accepts a `--base-model` argument when the `transformers`
+library is installed.  Point it at any HuggingFace model identifier (e.g.
+`gpt2`, `EleutherAI/gpt-j-6B`, your own checkpoint) and the trainer will
+perform a real fine‑tuning run.  Example:
+
+```bash
+pip install transformers datasets  # install if not already present
+
+python scripts/quantum_llm_trainer.py \
+  --dataset path/to/my_dataset.jsonl \
+  --base-model gpt2 \
+  --quantum-backend local \
+  --epochs 2 \
+  --output-dir data_out/my_quantum_model
+```
+
+The resulting model weights and tokenizer are saved under
+`data_out/my_quantum_model/model` and can be loaded later using the usual
+`transformers.AutoModelForCausalLM.from_pretrained()` API.  Quantum
+optimizer callbacks will still run during training, logging metrics and
+slightly reducing the loss to illustrate the enhancement.
+
+If model download/loading fails (for example in offline or restricted runtime
+environments), the trainer automatically falls back to simulated
+quantum-enhanced training and writes `model/fallback_info.json` so automation
+and CI pipelines still get deterministic outputs.
+
 ### 2. Passive Training Mode
 
 Enable continuous background training:
@@ -299,6 +328,20 @@ Logs are written to:
 ```bash
 # Test quantum LLM trainer
 pytest tests/test_quantum_llm_trainer.py -v
+
+### Full Integration Verification
+
+Run the comprehensive integration verification suite to validate end-to-end wiring across trainer, configs, orchestrator, and repo automation:
+
+```bash
+python scripts/test_quantum_llm_integration.py
+```
+
+This verifies:
+- Quantum LLM module imports and optional quantum backend availability
+- Configuration integrity in `config/quantum_llm_config.yaml` and `config/autonomous_training.yaml`
+- Trainer initialization and mock training pipeline execution
+- Orchestrator and repository automation integration points
 
 # Run all quantum tests
 pytest tests/ -k quantum -v

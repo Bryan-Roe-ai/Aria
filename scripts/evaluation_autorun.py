@@ -130,8 +130,8 @@ def _venv_python_default() -> Path:
 
 
 def _venv_python_quantum() -> Path:
-    # Use quantum-ai venv for quantum evaluations
-    venv_python = REPO_ROOT / "quantum-ai" / "venv" / "Scripts" / "python.exe"
+    # Use quantum venv for quantum evaluations
+    venv_python = REPO_ROOT / "quantum" / "venv" / "Scripts" / "python.exe"
     return venv_python if venv_python.exists() else _venv_python_default()
 
 

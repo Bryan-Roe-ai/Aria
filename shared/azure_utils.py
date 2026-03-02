@@ -19,6 +19,12 @@ import logging
 import re
 from typing import Any
 
+__all__ = [
+    "is_quota_error",
+    "is_transient_rate_error",
+    "format_quota_message",
+]
+
 LOGGER = logging.getLogger(__name__)
 
 # Heuristic keywords that indicate a billing/quota/premium limit on Azure

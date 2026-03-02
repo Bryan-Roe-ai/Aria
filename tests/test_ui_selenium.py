@@ -84,7 +84,7 @@ def ensure_server_running():
 
     # Wait for server to be available
     for i in range(30):
-        if is_port_open(8000):
+        if is_port_open(DEFAULT_PORT):
             logger.info(f"Server started successfully after {i+1} attempts")
             return proc
         time.sleep(0.2)

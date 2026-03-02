@@ -23,6 +23,18 @@ python .\scripts\auto_data_train.py --model phi --quick
 ### Testing & Validation
 
 ```powershell
+# One-command local health check (fast validate + unit tests)
+bash ./scripts/auto_health.sh
+
+# Fast validation only
+bash ./scripts/auto_health.sh --validate-only
+
+# Fast validation (non-blocking, reports partial health)
+python .\scripts\fast_validate.py
+
+# Fast validation for CI (fail on degraded checks)
+python .\scripts\fast_validate.py --fail-on-errors
+
 # Run all fast tests
 python .\scripts\test_runner.py --all
 

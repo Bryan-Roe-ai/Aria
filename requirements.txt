@@ -36,6 +36,11 @@ scikit-learn>=1.2.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
 
+# Transformer models for LLM training (quantum-enhanced trainer)
+transformers>=4.30.0
+# lightweight datasets library to build training datasets
+datasets>=2.13.0
+
 # Vision inference dependencies
 Pillow>=10.0.0
 torch>=2.0.0

@@ -20,10 +20,17 @@ datasets/
 ├── raw/              # Original downloaded data (untouched)
 ├── processed/        # Cleaned and preprocessed data
 ├── quantum/          # Quantum ML datasets (UCI, specialized)
+├── massive_quantum/  # Large OpenML/synthetic corpus (supports subfolders)
 ├── chat/             # Chat/LLM fine-tuning datasets
 ├── vision/           # Image/video datasets
 └── dataset_index.json  # Metadata and inventory
 ```
+
+### `massive_quantum` organization
+
+- Legacy flat CSV files remain valid in `datasets/massive_quantum/`
+- New OpenML downloads now default to `datasets/massive_quantum/openml/`
+- Training/discovery scripts scan recursively, so both flat and nested layouts work
 
 ## Available Datasets
 

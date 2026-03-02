@@ -23,7 +23,7 @@ def download_openml_datasets(
     max_samples=50000,
     min_features=2,
     max_features=1000,
-    output_dir="datasets/massive_quantum"
+    output_dir="datasets/massive_quantum/openml"
 ):
     """
     Download classification datasets from OpenML.
@@ -198,7 +198,7 @@ def main():
     
     parser.add_argument(
         '--output-dir',
-        default='datasets/massive_quantum',
+        default='datasets/massive_quantum/openml',
         help='Output directory for datasets'
     )
     

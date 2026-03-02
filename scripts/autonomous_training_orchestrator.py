@@ -185,15 +185,15 @@ class AutonomousTrainingOrchestrator:
         for category in self.config["data_collection"]["categories"]:
             dataset_dir = Path(f"datasets/{category}")
             if dataset_dir.exists():
-                csv_files = self._cached_glob(dataset_dir, "*.csv")
-                jsonl_files = self._cached_glob(dataset_dir, "*.jsonl")
+                csv_files = self._cached_glob(dataset_dir, "**/*.csv")
+                jsonl_files = self._cached_glob(dataset_dir, "**/*.jsonl")
                 discovered[category] = len(csv_files) + len(jsonl_files)
                 logger.info(f"  Found {discovered[category]} datasets in {category}")
         
         # Check massive quantum datasets using cached glob
         massive_dir = Path("datasets/massive_quantum")
         if massive_dir.exists():
-            massive_files = self._cached_glob(massive_dir, "*.csv")
+            massive_files = self._cached_glob(massive_dir, "**/*.csv")
             massive_count = len(massive_files)
             discovered["massive_quantum"] = massive_count
             logger.info(f"  Found {massive_count} datasets in massive_quantum")
@@ -304,7 +304,7 @@ class AutonomousTrainingOrchestrator:
             logger.error("Distributed benchmark script not found")
             return {"success": False, "error": "Script not found"}
 
-        if not datasets_dir.exists() or not list(datasets_dir.glob("*.csv")):
+        if not datasets_dir.exists() or not list(datasets_dir.rglob("*.csv")):
             logger.error("No datasets found for training")
             return {"success": False, "error": "No datasets"}
 

@@ -34,7 +34,7 @@ def ensure_dependencies():
     """
     # always install the base requirements
     base_req = REPO_ROOT / "requirements.txt"
-    for req_file in (base_req, REPO_ROOT / "quantum-ai" / "requirements.txt"):
+    for req_file in (base_req, REPO_ROOT / "quantum" / "requirements.txt"):
         if req_file.exists():
             try:
                 print(f"[test_runner] installing dependencies from {req_file}")

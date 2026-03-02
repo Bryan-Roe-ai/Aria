@@ -1,0 +1,227 @@
+{
+  "prnn_crabs_446": {
+    "openml_id": 446,
+    "name": "prnn_crabs",
+    "samples": 200,
+    "features": 8,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/prnn_crabs_446.csv",
+    "description": "N/A"
+  },
+  "heart-long-beach_1512": {
+    "openml_id": 1512,
+    "name": "heart-long-beach",
+    "samples": 200,
+    "features": 14,
+    "classes": 5,
+    "file": "datasets/massive_quantum/openml/heart-long-beach_1512.csv",
+    "description": "N/A"
+  },
+  "Zombies-Apocalypse_43786": {
+    "openml_id": 43786,
+    "name": "Zombies-Apocalypse",
+    "samples": 200,
+    "features": 13,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/Zombies-Apocalypse_43786.csv",
+    "description": "N/A"
+  },
+  "Predicting_Risk_Factors_of_Chronic_Kidney_Disease_46844": {
+    "openml_id": 46844,
+    "name": "Predicting_Risk_Factors_of_Chronic_Kidney_Disease",
+    "samples": 200,
+    "features": 29,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/Predicting_Risk_Factors_of_Chronic_Kidney_Disease_46844.csv",
+    "description": "N/A"
+  },
+  "pwLinear_721": {
+    "openml_id": 721,
+    "name": "pwLinear",
+    "samples": 200,
+    "features": 11,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/pwLinear_721.csv",
+    "description": "N/A"
+  },
+  "Predicting_Risk_Factors_of_Chronic_Kidney_Disease_46602": {
+    "openml_id": 46602,
+    "name": "Predicting_Risk_Factors_of_Chronic_Kidney_Disease",
+    "samples": 200,
+    "features": 29,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/Predicting_Risk_Factors_of_Chronic_Kidney_Disease_46602.csv",
+    "description": "N/A"
+  },
+  "dataset-autoHorse_fixed_42223": {
+    "openml_id": 42223,
+    "name": "dataset-autoHorse_fixed",
+    "samples": 201,
+    "features": 69,
+    "classes": 186,
+    "file": "datasets/massive_quantum/openml/dataset-autoHorse_fixed_42223.csv",
+    "description": "N/A"
+  },
+  "stress_42167": {
+    "openml_id": 42167,
+    "name": "stress",
+    "samples": 202,
+    "features": 13,
+    "classes": 3,
+    "file": "datasets/massive_quantum/openml/stress_42167.csv",
+    "description": "N/A"
+  },
+  "regime_alimentaire_42172": {
+    "openml_id": 42172,
+    "name": "regime_alimentaire",
+    "samples": 202,
+    "features": 20,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/regime_alimentaire_42172.csv",
+    "description": "N/A"
+  },
+  "usp05_1047": {
+    "openml_id": 1047,
+    "name": "usp05",
+    "samples": 203,
+    "features": 17,
+    "classes": 11,
+    "file": "datasets/massive_quantum/openml/usp05_1047.csv",
+    "description": "N/A"
+  },
+  "autos_975": {
+    "openml_id": 975,
+    "name": "autos",
+    "samples": 205,
+    "features": 26,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/autos_975.csv",
+    "description": "N/A"
+  },
+  "autos_clean_46331": {
+    "openml_id": 46331,
+    "name": "autos_clean",
+    "samples": 205,
+    "features": 26,
+    "classes": 6,
+    "file": "datasets/massive_quantum/openml/autos_clean_46331.csv",
+    "description": "N/A"
+  },
+  "biomed_481": {
+    "openml_id": 481,
+    "name": "biomed",
+    "samples": 209,
+    "features": 9,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/biomed_481.csv",
+    "description": "N/A"
+  },
+  "cpu_796": {
+    "openml_id": 796,
+    "name": "cpu",
+    "samples": 209,
+    "features": 8,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/cpu_796.csv",
+    "description": "N/A"
+  },
+  "machine_cpu_733": {
+    "openml_id": 733,
+    "name": "machine_cpu",
+    "samples": 209,
+    "features": 7,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/machine_cpu_733.csv",
+    "description": "N/A"
+  },
+  "seismic-bumps_1500": {
+    "openml_id": 1500,
+    "name": "seismic-bumps",
+    "samples": 210,
+    "features": 8,
+    "classes": 3,
+    "file": "datasets/massive_quantum/openml/seismic-bumps_1500.csv",
+    "description": "N/A"
+  },
+  "glass_clean_46334": {
+    "openml_id": 46334,
+    "name": "glass_clean",
+    "samples": 214,
+    "features": 10,
+    "classes": 6,
+    "file": "datasets/massive_quantum/openml/glass_clean_46334.csv",
+    "description": "N/A"
+  },
+  "glass_41": {
+    "openml_id": 41,
+    "name": "glass",
+    "samples": 214,
+    "features": 10,
+    "classes": 6,
+    "file": "datasets/massive_quantum/openml/glass_41.csv",
+    "description": "N/A"
+  },
+  "prnn_fglass_996": {
+    "openml_id": 996,
+    "name": "prnn_fglass",
+    "samples": 214,
+    "features": 10,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/prnn_fglass_996.csv",
+    "description": "N/A"
+  },
+  "prnn_fglass_952": {
+    "openml_id": 952,
+    "name": "prnn_fglass",
+    "samples": 214,
+    "features": 10,
+    "classes": 6,
+    "file": "datasets/massive_quantum/openml/prnn_fglass_952.csv",
+    "description": "N/A"
+  },
+  "thyroid-new_40682": {
+    "openml_id": 40682,
+    "name": "thyroid-new",
+    "samples": 215,
+    "features": 6,
+    "classes": 3,
+    "file": "datasets/massive_quantum/openml/thyroid-new_40682.csv",
+    "description": "N/A"
+  },
+  "MIP-2016-PAR10-classification_41939": {
+    "openml_id": 41939,
+    "name": "MIP-2016-PAR10-classification",
+    "samples": 218,
+    "features": 144,
+    "classes": 5,
+    "file": "datasets/massive_quantum/openml/MIP-2016-PAR10-classification_41939.csv",
+    "description": "N/A"
+  },
+  "MIP-2016-classification_41703": {
+    "openml_id": 41703,
+    "name": "MIP-2016-classification",
+    "samples": 218,
+    "features": 148,
+    "classes": 5,
+    "file": "datasets/massive_quantum/openml/MIP-2016-classification_41703.csv",
+    "description": "N/A"
+  },
+  "chscase_geyser1_895": {
+    "openml_id": 895,
+    "name": "chscase_geyser1",
+    "samples": 222,
+    "features": 3,
+    "classes": 2,
+    "file": "datasets/massive_quantum/openml/chscase_geyser1_895.csv",
+    "description": "N/A"
+  },
+  "epiparo_extract_42169": {
+    "openml_id": 42169,
+    "name": "epiparo_extract",
+    "samples": 224,
+    "features": 20,
+    "classes": 6,
+    "file": "datasets/massive_quantum/openml/epiparo_extract_42169.csv",
+    "description": "N/A"
+  }
+}

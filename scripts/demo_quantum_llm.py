@@ -133,7 +133,15 @@ def demonstrate_quantum_llm_integration():
       --quantum-backend local \\
       --n-qubits 4 \\
       --epochs 3
-    
+
+    # Fine-tune a real model with your data (requires transformers & datasets)
+    python scripts/quantum_llm_trainer.py \\
+      --dataset path/to/my_data.jsonl \\
+      --base-model gpt2 \\
+      --quantum-backend local \\
+      --epochs 2 \\
+      --output-dir data_out/my_quantum_model
+
     # Passive Training (continuous background)
     python scripts/quantum_llm_trainer.py \\
       --passive \\

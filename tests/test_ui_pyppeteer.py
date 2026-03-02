@@ -28,13 +28,8 @@ def ensure_server_running():
     if is_port_open(8080):
         return None
 
-<<<<<<< HEAD
-    proc = subprocess.Popen(["python3", "server.py"], cwd=str(ARIA_WEB), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-=======
     # Use the same Python executable running the tests to avoid "python3" mismatch
-    proc = subprocess.Popen([sys.executable, "server.py"], cwd=str(
-        ARIA_WEB), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
->>>>>>> 7e621a4 (test: add sys.executable regression test; tracing: avoid OTLP exporter in CI/tests by default)
+    proc = subprocess.Popen([sys.executable, "server.py"], cwd=str(ARIA_WEB), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # wait for server to be available
     for _ in range(30):

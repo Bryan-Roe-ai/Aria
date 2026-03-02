@@ -564,8 +564,8 @@ def determine_position_from_context(cmd: str) -> str:
     else:
         # Context-aware positioning: stay put if already in good position
         # or move to interesting area if idle
-        import hashlib
-        pos_hash = int(hashlib.md5(cmd.encode()).hexdigest()[:4], 16)
+        # Use sum of ord values instead of MD5 to avoid FIPS/OpenSSL 3.0 issues
+        pos_hash = sum(ord(c) for c in cmd) % 10000
         x = 30 + (pos_hash % 40)  # Random between 30-70%
         y = 60 + (pos_hash % 20)  # Random between 60-80%
         return f'[aria:position:{x}:{y}]'

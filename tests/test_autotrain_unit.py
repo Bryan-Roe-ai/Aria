@@ -300,27 +300,6 @@ jobs:
             encoding="utf-8",
         )
 
-        def test_trainer_tokenizer_keyword_matches_signature(self):
-                """Ensure that ``train_lora`` chooses a valid Trainer keyword.
-
-                The script uses ``_trainer_tokenizer_kwarg`` to dynamically select
-                either ``tokenizer`` or ``processing_class`` depending on the
-                installed transformers version.  This test verifies that the chosen
-                key actually exists in ``Trainer.__init__`` so the training job will
-                not fail with a ``TypeError`` (which previously happened when
-                running with transformers>=5).
-                """
-
-                import inspect
-                from AI.microsoft_phi_silica_3.6_v1.scripts import train_lora  # type: ignore
-
-                chosen = train_lora._trainer_tokenizer_kwarg()
-                params = inspect.signature(train_lora.Trainer.__init__).parameters
-                assert chosen in params, (
-                        f"_trainer_tokenizer_kwarg returned '{chosen}' which is not in"
-                        f" Trainer.__init__ params {list(params)}"
-                )
-
         # We can't easily test main() with sys.exit, but we can test load_jobs
         jobs = load_jobs(cfg)
         job_dicts = [j.__dict__ for j in jobs]
@@ -330,6 +309,31 @@ jobs:
         assert "test2" in json_str
         parsed = json.loads(json_str)
         assert len(parsed) == 2
+
+    def test_trainer_tokenizer_keyword_matches_signature(self):
+        """Ensure that ``train_lora`` chooses a valid Trainer keyword.
+
+        The script uses ``_trainer_tokenizer_kwarg`` to dynamically select
+        either ``tokenizer`` or ``processing_class`` depending on the
+        installed transformers version.  This test verifies that the chosen
+        key actually exists in ``Trainer.__init__`` so the training job will
+        not fail with a ``TypeError`` (which previously happened when
+        running with transformers>=5).
+        """
+
+        import inspect
+        # Skip this test if the LoRA training module or its dependencies aren't available
+        try:
+            from lora.scripts import train_lora  # type: ignore
+        except (ImportError, ModuleNotFoundError, SystemExit):
+            pytest.skip("LoRA training module or its dependencies (transformers) not available")
+
+        chosen = train_lora._trainer_tokenizer_kwarg()
+        params = inspect.signature(train_lora.Trainer.__init__).parameters
+        assert chosen in params, (
+            f"_trainer_tokenizer_kwarg returned '{chosen}' which is not in"
+            f" Trainer.__init__ params {list(params)}"
+        )
 
 
 class TestEdgeCases:

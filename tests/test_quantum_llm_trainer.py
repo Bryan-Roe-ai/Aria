@@ -15,7 +15,8 @@ try:
     from quantum_llm_trainer import (
         QuantumAttentionOptimizer,
         QuantumFeatureEncoder,
-        QuantumEnhancedLLMTrainer
+        QuantumEnhancedLLMTrainer,
+        TRANSFORMERS_AVAILABLE,
     )
     QUANTUM_LLM_AVAILABLE = True
 except ImportError as e:
@@ -102,7 +103,7 @@ class TestQuantumEnhancedLLMTrainer:
         assert not trainer.passive_mode
     
     def test_train_with_quantum_enhancement(self):
-        """Test quantum-enhanced training"""
+        """Test quantum-enhanced training (mock path)"""
         config = {
             "quantum_backend": "local",
             "n_qubits": 4,
@@ -144,6 +145,40 @@ class TestQuantumEnhancedLLMTrainer:
             assert output_dir.exists()
             results_file = output_dir / "quantum_training_results.json"
             assert results_file.exists()
+
+    @pytest.mark.skipif(not TRANSFORMERS_AVAILABLE, reason="Transformers not installed")
+    def test_transformers_training_saves_model(self):
+        """When transformers is available, training should save a model directory"""
+        config = {
+            "quantum_backend": "local",
+            "n_qubits": 2,
+            "n_quantum_layers": 1,
+            "passive": False,
+            "base_model": "sshleifer/tiny-gpt2",
+            "batch_size": 2
+        }
+        trainer = QuantumEnhancedLLMTrainer(config)
+        
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dataset_path = Path(tmpdir) / "train.json"
+            output_dir = Path(tmpdir) / "output"
+            # simple text dataset
+            mock_data = [{"text": "Hello world"}, {"text": "Goodbye world"}]
+            with open(dataset_path, 'w') as f:
+                json.dump(mock_data, f)
+            
+            results = trainer.train_with_quantum_enhancement(
+                model=None,
+                dataset_path=dataset_path,
+                output_dir=output_dir,
+                epochs=1
+            )
+            assert results["status"] == "success"
+            assert results["epochs_completed"] == 1
+            # model directory should exist
+            model_dir = output_dir / "model"
+            assert model_dir.exists()
+            assert (model_dir / "config.json").exists() or len(list(model_dir.iterdir())) > 0
     
     def test_load_dataset_json(self):
         """Test loading JSON dataset"""
@@ -192,6 +227,19 @@ class TestQuantumEnhancedLLMTrainer:
             
             assert len(dataset) == 2
             assert dataset[0]["text"] == "Sample 1"
+
+    def test_config_mapping_from_llm_section(self):
+        """The trainer should pick up base_model/batch_size from nested llm_training section"""
+        config = {
+            "quantum_backend": "local",
+            "llm_training": {
+                "model_name": "gpt2",
+                "batch_size": 16
+            }
+        }
+        trainer = QuantumEnhancedLLMTrainer(config)
+        assert trainer.config.get("base_model") == "gpt2"
+        assert trainer.config.get("batch_size") == 16
     
     def test_train_epoch_with_quantum(self):
         """Test training epoch with quantum enhancement"""

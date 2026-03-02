@@ -51,12 +51,15 @@ jobs:
           git diff origin/${{ github.base_ref }}...HEAD --name-only | xargs grep -n "TODO\|FIXME" || echo "No TODO/FIXME found"
         continue-on-error: true
 
-      - name: Fast validation
+      - name: Repo health validation
         run: |
           if [ -f scripts/fast_validate.py ]; then
-            python scripts/fast_validate.py
+            python scripts/fast_validate.py --fail-on-errors --strict-warnings
+          elif [ -f scripts/auto_health.sh ]; then
+            bash ./scripts/auto_health.sh --validate-only
           else
-            echo "Fast validate script not found, skipping"
+            echo "No validation script found, failing"
+            exit 1
           fi
 
   size-check:

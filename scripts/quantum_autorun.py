@@ -33,14 +33,14 @@ except Exception:  # pragma: no cover
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CONFIG = REPO_ROOT / "quantum_autorun.yaml"
+DEFAULT_CONFIG = REPO_ROOT / "config" / "quantum" / "quantum_autorun.yaml"
 STATUS_DIR = REPO_ROOT / "data_out" / "quantum_autorun"
 STATUS_FILE = STATUS_DIR / "status.json"
 DATA_OUT = REPO_ROOT / "data_out"
 
 # Paths for helper scripts used by jobs
-TRAIN_SCRIPT = REPO_ROOT / "quantum-ai" / "train_custom_dataset.py"
-AZURE_SUBMIT_SCRIPT = REPO_ROOT / "quantum-ai" / "deploy_to_azure_quantum.py"
+TRAIN_SCRIPT = REPO_ROOT / "quantum" / "train_custom_dataset.py"
+AZURE_SUBMIT_SCRIPT = REPO_ROOT / "quantum" / "deploy_to_azure_quantum.py"
 
 # Known preset datasets
 PRESETS = ("heart", "ionosphere", "sonar", "banknote")
@@ -127,7 +127,7 @@ def load_jobs(path: Path) -> List[QJob]:
             batch_size=_int(_get("batch_size")),
             learning_rate=_float(_get("learning_rate")),
             test_size=_float(_get("test_size")),
-            n_qubits=_int(_get("n_qubits")),
+            n_qubits=_int(_get("n_qubits", _get("qubits"))),
             extra_args=_get("extra_args") or [],
             azure_backend=_get("azure_backend"),
             azure_shots=_int(_get("azure_shots")),
@@ -308,6 +308,10 @@ def main(argv: List[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     cfg_path = Path(args.config)
+    if not cfg_path.exists():
+        print(f"Config not found: {cfg_path}", file=sys.stderr)
+        return 1
+
     cfg = load_config(cfg_path)
     jobs: List[Dict[str, Any]] = cfg.get("jobs", [])
 

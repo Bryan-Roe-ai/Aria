@@ -9,6 +9,17 @@ Tests cover:
 - Memory/context management
 - Integration with base providers
 """
+import sys
+from pathlib import Path
+from typing import Iterable
+import pytest
+
+# Add tools/talk-to-ai/src to path BEFORE importing
+repo_root = Path(__file__).resolve().parent.parent
+talk_to_ai_src = repo_root / "tools/talk-to-ai" / "src"
+if str(talk_to_ai_src) not in sys.path:
+    sys.path.insert(0, str(talk_to_ai_src))
+
 from chat_providers import BaseChatProvider, ProviderChoice, RoleMessage
 from agi_provider import (
     AGIProvider,
@@ -16,15 +27,6 @@ from agi_provider import (
     ReasoningStep,
     create_agi_provider,
 )
-import sys
-from pathlib import Path
-from typing import Iterable
-import pytest
-
-# Add tools/talk-to-ai/src to path
-repo_root = Path(__file__).resolve().parent.parent
-talk_to_ai_src = repo_root / "tools/talk-to-ai" / "src"
-sys.path.insert(0, str(talk_to_ai_src))
 
 
 class MockBaseProvider(BaseChatProvider):

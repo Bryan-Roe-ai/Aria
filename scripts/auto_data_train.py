@@ -246,19 +246,19 @@ def create_training_config(dataset_dir: Path, output_name: str, model: str) -> t
     ds_path = dataset_dir.as_posix()  # POSIX style for YAML portability
 
     if model == 'qwen':
-        config_file = 'AI/microsoft_phi-silica-3.6_v1/lora/lora_qwen_ultrafast.yaml'
+        config_file = 'lora/lora/lora_qwen_ultrafast.yaml'
         hf_model_id = 'Qwen/Qwen2.5-3B-Instruct'
         prefix = 'qwen_ultra'
         learning_rate = 0.0003
         lora_rank = 4
     elif model == 'tinyllama':
-        config_file = 'AI/microsoft_phi-silica-3.6_v1/lora/lora_tinyllama_ultrafast.yaml'
+        config_file = 'lora/lora/lora_tinyllama_ultrafast.yaml'
         hf_model_id = 'TinyLlama/TinyLlama-1.1B-Chat-v1.0'
         prefix = 'tinyllama_ultra'
         learning_rate = 0.00035
         lora_rank = 4
     else:
-        config_file = 'AI/microsoft_phi-silica-3.6_v1/lora/lora_ultrafast.yaml'
+        config_file = 'lora/lora/lora_ultrafast.yaml'
         hf_model_id = 'microsoft/Phi-3.5-mini-instruct'
         prefix = 'phi35_ultra'
         learning_rate = 0.0004

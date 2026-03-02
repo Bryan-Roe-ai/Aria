@@ -2,7 +2,7 @@ import importlib.util
 import pathlib
 
 # Dynamically load the validation script so tests do not depend on package layout
-SCRIPT_PATH = pathlib.Path(__file__).resolve().parent.parent / "quantum-ai" / "scripts" / "validate_qiskit_env.py"
+SCRIPT_PATH = pathlib.Path(__file__).resolve().parent.parent / "quantum" / "scripts" / "validate_qiskit_env.py"
 _spec = importlib.util.spec_from_file_location("validate_qiskit_env", SCRIPT_PATH)
 mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(mod)  # type: ignore

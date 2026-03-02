@@ -364,6 +364,14 @@
       "task": "Multi-class: Protein cellular localization",
       "difficulty": "hard",
       "dataset_category": "biology"
+    },
+    "openassistant": {
+      "category": "chat",
+      "hf_name": "OpenAssistant/oasst1",
+      "path": "datasets/chat/openassistant",
+      "description": "OpenAssistant Conversations - Multi-turn dialogue",
+      "license": "Apache 2.0",
+      "size_gb": 0.5
     }
   },
   "metadata": {
@@ -385,6 +393,6 @@
     "chat": "datasets/chat/",
     "vision": "datasets/vision/"
   },
-  "last_updated": "2025-11-16T21:30:00.682665",
+  "last_updated": "2026-03-02T12:05:29.344862",
   "instructions": "Run scripts/download_datasets.py to populate this index automatically"
 }

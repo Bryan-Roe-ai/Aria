@@ -320,12 +320,15 @@ class DistributedBenchmark:
         print("🚀 DISTRIBUTED QUANTUM ML BENCHMARK")
         print("="*70)
         
-        # Find all CSV files
-        csv_files = list(self.datasets_dir.glob("*.csv"))
+        # Find all CSV files (including organized subfolders)
+        csv_files = list(self.datasets_dir.rglob("*.csv"))
         
         if not csv_files:
             print(f"❌ No CSV files found in {self.datasets_dir}")
             return
+
+        # Keep deterministic ordering for checkpoint/resume stability
+        csv_files = sorted(csv_files)
         
         print(f"\n📊 Configuration:")
         print(f"   Datasets: {len(csv_files)}")

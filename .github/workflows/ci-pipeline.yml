@@ -39,6 +39,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-timeout pytest-cov
+
+    - name: Fast validate (strict)
+      run: |
+        python scripts/fast_validate.py --fail-on-errors
     
     - name: Run CI validation
       run: |

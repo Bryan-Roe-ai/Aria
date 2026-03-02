@@ -49,8 +49,8 @@ class ParallelTrainer:
         self.min_train_samples = min_train_samples
         self.generate_samples = generate_samples
         self.root = Path(__file__).parent.parent
-        self.venv_python = self.root / "AI/microsoft_phi-silica-3.6_v1/venv/Scripts/python.exe"
-        self.train_script = self.root / "AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py"
+        self.venv_python = self.root / "lora/venv/Scripts/python.exe"
+        self.train_script = self.root / "lora/scripts/train_lora.py"
         self.perform_evaluation = perform_evaluation
         self.cleanup = cleanup
         self.ranking_metric = ranking_metric
@@ -147,7 +147,7 @@ class ParallelTrainer:
         cmd = [
             str(self.venv_python),
             str(self.train_script),
-            "--config", job.get('config', 'AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml'),
+            "--config", job.get('config', 'lora/lora/lora.yaml'),
             "--dataset", job['dataset'],
             "--save-dir", job['save_dir'],
             "--epochs", str(job.get('epochs', 1)),

@@ -7,8 +7,8 @@ import logging
 from pathlib import Path
 from typing import Iterator, Optional
 
-# Add quantum-ai to path
-quantum_path = Path(__file__).resolve().parent.parent.parent / "quantum-ai" / "src"
+# Add quantum to path
+quantum_path = Path(__file__).resolve().parent.parent.parent / "quantum" / "src"
 if str(quantum_path) not in sys.path:
     sys.path.insert(0, str(quantum_path))
 

@@ -10,9 +10,9 @@ service:
 # Paths (relative to workspace root)
 paths:
   workspace_root: ..
-  quantum_ai: ../quantum-ai
+  quantum_ai: ../quantum
   talk_to_ai: ../tools/talk-to-ai
-  phi_training: ../AI/microsoft_phi-silica-3.6_v1
+  phi_training: ../lora
   datasets: ../datasets
   data_out: ../data_out
   scripts: ../scripts

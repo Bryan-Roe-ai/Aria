@@ -110,7 +110,7 @@ def main():
     print("\n📚 Next Steps:\n")
     
     print("1️⃣  Train Quantum AI Model:")
-    print("   cd quantum-ai")
+    print("   cd quantum")
     print("   python .\\train_custom_dataset.py")
     print()
     

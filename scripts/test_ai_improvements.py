@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 # Add project paths
-sys.path.insert(0, str(Path(__file__).parent.parent / "quantum-ai" / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "quantum" / "src"))
 sys.path.insert(0, str(Path(__file__).parent.parent / "tools/talk-to-ai" / "src"))
 
 

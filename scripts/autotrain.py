@@ -8,7 +8,7 @@ Goals:
 - Zero external services required (works fully offline)
 - Sequential job execution with clear logs and machine-readable status
 - Supports two runners:
-  - hf: calls AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py (full HF stack)
+  - hf: calls lora/scripts/train_lora.py (full HF stack)
   - local: calls scripts/run_local_lora_training.py (streamlined local runner)
 
 Outputs:
@@ -94,6 +94,17 @@ class Job:
 
 
 def read_yaml(path: Path) -> Dict[str, Any]:
+    """Load and parse a YAML configuration file.
+    
+    Attempts to use PyYAML if available; falls back to minimal
+    YAML subset parser for test environments without PyYAML.
+    
+    Args:
+        path: Path to the YAML file to load.
+        
+    Returns:
+        Parsed YAML data as a dictionary, or empty dict if file is empty.
+    """
     text = path.read_text(encoding="utf-8")
     if yaml is not None:
         # Use PyYAML when available for full-featured parsing
@@ -292,6 +303,17 @@ def _venv_python_ml() -> Path:
 
 
 def build_hf_command(job: Job) -> List[str]:
+    """Build command-line arguments for HuggingFace LoRA training.
+    
+    Constructs a command to invoke the HF training script with all
+    job configuration parameters as CLI arguments.
+    
+    Args:
+        job: Job configuration containing training parameters.
+        
+    Returns:
+        List of command-line arguments ready for subprocess execution.
+    """
     py = str(_venv_python_ml())  # Use ML venv for HF training
     cmd: List[str] = [py, str(HF_TRAIN_SCRIPT)]
     # Dataset/config
@@ -330,6 +352,17 @@ def build_hf_command(job: Job) -> List[str]:
 
 
 def build_local_command(job: Job) -> List[str]:
+    """Build command-line arguments for local LoRA training runner.
+    
+    Constructs a command to invoke the local training script with all
+    job configuration parameters as CLI arguments.
+    
+    Args:
+        job: Job configuration containing training parameters.
+        
+    Returns:
+        List of command-line arguments ready for subprocess execution.
+    """
     py = str(_venv_python_default())
     cmd: List[str] = [py, str(LOCAL_RUNNER)]
     # Local runner args are different
@@ -350,10 +383,23 @@ def build_local_command(job: Job) -> List[str]:
 
 
 def ensure_dirs(path: Path) -> None:
+    """Create a directory and all parent directories if they don't exist.
+    
+    Args:
+        path: Path to the directory to create.
+    """
     path.mkdir(parents=True, exist_ok=True)
 
 
 def write_json(path: Path, obj: Dict[str, Any]) -> None:
+    """Write a Python object as indented JSON to a file.
+    
+    Creates parent directories as needed.
+    
+    Args:
+        path: Path to write the JSON file to.
+        obj: Python object to serialize as JSON.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         json.dump(obj, f, indent=2, ensure_ascii=False)

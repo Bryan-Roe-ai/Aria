@@ -7,6 +7,8 @@
 *An intelligent, animated AI character with movement, gestures, and natural language interaction*
 
 [![CI Pipeline](https://github.com/Bryan-Roe/Aria/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/ci-pipeline.yml)
+[![PR Checks](https://github.com/Bryan-Roe/Aria/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/pr-checks.yml)
+[![Auto Validation](https://github.com/Bryan-Roe/Aria/actions/workflows/auto-validation.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/auto-validation.yml)
 [![Code Quality](https://github.com/Bryan-Roe/Aria/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/code-quality.yml)
 [![CodeQL](https://github.com/Bryan-Roe/Aria/actions/workflows/codeql.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/codeql.yml)
 [![E2E Tests](https://github.com/Bryan-Roe/Aria/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/e2e-tests.yml)
@@ -25,6 +27,7 @@ Aria is an interactive AI character that combines:
 - **Real-time Object Interaction** - Add, pickup, drop, and throw objects on a virtual stage
 - **Quantum ML Integration** - Experimental quantum-classical hybrid training
 - **⚛️ Quantum-Enhanced Passive LLM Training** - Background training with quantum computing optimization
+  (can also fine-tune a real HuggingFace model using `--base-model` when `transformers` is installed)
 - **🆕 LLM Tool Maker** - Autonomous tool creation system where LLMs create, validate, and execute Python tools
 - **💰 Revenue Stream System** - Complete subscription and monetization platform achieving $2,235/month MRR
 
@@ -63,6 +66,17 @@ The live demo includes:
 **Note:** The GitHub Pages demo runs in **demo mode** with mock API responses. For full AI capabilities, quantum computing, and real-time training, run the project locally following the Quick Start guide below.
 
 ## 🚀 Quick Start
+
+### 📊 Automation Status
+
+The badges at the top of this README map to these automated checks:
+
+- **CI Pipeline** ([`.github/workflows/ci-pipeline.yml`](.github/workflows/ci-pipeline.yml)): Core validation, test execution, and scheduled training/deploy workflow.
+- **PR Checks** ([`.github/workflows/pr-checks.yml`](.github/workflows/pr-checks.yml)): Pull request guardrails (workflow YAML validation, repo health validation, size checks, and auto-labeling).
+- **Auto Validation** ([`.github/workflows/auto-validation.yml`](.github/workflows/auto-validation.yml)): Dry-run validation of orchestrator and automation configuration.
+- **Code Quality** ([`.github/workflows/code-quality.yml`](.github/workflows/code-quality.yml)): Static quality checks and lint-style enforcement.
+- **CodeQL** ([`.github/workflows/codeql.yml`](.github/workflows/codeql.yml)): Security/code scanning for vulnerabilities and risky patterns.
+- **E2E Tests** ([`.github/workflows/e2e-tests.yml`](.github/workflows/e2e-tests.yml)): Browser-level end-to-end coverage for Aria web flows.
 
 ### 🤖 **NEW: Complete Repository Automation**
 
@@ -706,6 +720,12 @@ This workspace has comprehensive test coverage across multiple automated test su
 ### Test Orchestrator (Recommended)
 
 ```powershell
+# One-command repo health automation (fast validate + unit tests)
+bash ./scripts/auto_health.sh
+
+# Validation only (no tests)
+bash ./scripts/auto_health.sh --validate-only
+
 # Run all fast tests
 python .\scripts\test_runner.py --all
 

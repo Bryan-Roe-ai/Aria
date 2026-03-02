@@ -43,9 +43,9 @@ class HealthChecker:
             "purpose": "Azure Functions runtime",
         }
         
-        # Check quantum-ai venv
-        quantum_venv = REPO_ROOT / "quantum-ai" / "venv" / "Scripts" / "python.exe"
-        status["venvs"]["quantum-ai"] = {
+        # Check quantum venv
+        quantum_venv = REPO_ROOT / "quantum" / "venv" / "Scripts" / "python.exe"
+        status["venvs"]["quantum"] = {
             "path": str(quantum_venv),
             "exists": quantum_venv.exists(),
             "purpose": "Quantum ML training",

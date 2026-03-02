@@ -95,7 +95,7 @@ class AriaTrainingAutomation:
         
         cmd = [
             sys.executable,
-            str(self.root / "AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py"),
+            str(self.root / "lora/scripts/train_lora.py"),
             "--dataset", self.dataset_path,
             "--save-dir", str(output_dir),
             "--epochs", str(epochs),

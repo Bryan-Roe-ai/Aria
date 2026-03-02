@@ -1,8 +1,17 @@
 # =============================================================================
 # QAI Azure Functions Application
 # =============================================================================
+import sys
+import importlib.util
+from pathlib import Path
+
+# Add tools/talk-to-ai/src to Python path for canonical imports
+_tools_path = Path(__file__).resolve().parent / "tools" / "talk-to-ai" / "src"
+if str(_tools_path) not in sys.path:
+    sys.path.insert(0, str(_tools_path))
+
 from token_utils import prune_messages
-from chat_providers import detect_provider, RoleMessage
+from shared.chat_providers import detect_provider, RoleMessage
 import azure.functions as func
 import json
 import logging
