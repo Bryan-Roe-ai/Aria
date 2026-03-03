@@ -16,14 +16,14 @@ name: Aria E2E Tests
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev, develop, linux]
     paths:
       - 'web/aria_web/**'
       - 'tests/test_*aria*.py'
       - 'tests/test_*ui*.py'
       - '.github/workflows/aria-tests.yml'
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev, develop, linux]
     paths:
       - 'web/aria_web/**'
       - 'tests/test_*aria*.py'

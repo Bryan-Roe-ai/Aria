@@ -58,6 +58,13 @@ except ImportError:
     logging.warning("Transformers not available - using mock implementations")
     TRANSFORMERS_AVAILABLE = False
 
+try:
+    from custom_llm_from_scratch import run_training_from_config as run_custom_arch_training
+    CUSTOM_ARCH_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Custom architecture module not available: {e}")
+    CUSTOM_ARCH_AVAILABLE = False
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -632,6 +639,69 @@ def main():
     )
 
     parser.add_argument(
+        "--architecture",
+        type=str,
+        default="quantum_enhanced",
+        choices=["quantum_enhanced", "custom"],
+        help="Training architecture: quantum_enhanced (existing) or custom (from-scratch transformer)"
+    )
+
+    parser.add_argument(
+        "--custom-max-seq-len",
+        type=int,
+        default=128,
+        help="Max sequence length for custom architecture"
+    )
+
+    parser.add_argument(
+        "--custom-d-model",
+        type=int,
+        default=256,
+        help="Model dimension for custom architecture"
+    )
+
+    parser.add_argument(
+        "--custom-n-heads",
+        type=int,
+        default=4,
+        help="Attention heads for custom architecture"
+    )
+
+    parser.add_argument(
+        "--custom-n-layers",
+        type=int,
+        default=4,
+        help="Transformer layers for custom architecture"
+    )
+
+    parser.add_argument(
+        "--custom-d-ff",
+        type=int,
+        default=1024,
+        help="Feed-forward hidden size for custom architecture"
+    )
+
+    parser.add_argument(
+        "--custom-vocab-size",
+        type=int,
+        default=8000,
+        help="Tokenizer vocab size for custom architecture"
+    )
+
+    parser.add_argument(
+        "--custom-min-freq",
+        type=int,
+        default=2,
+        help="Minimum token frequency for custom tokenizer"
+    )
+
+    parser.add_argument(
+        "--cpu",
+        action="store_true",
+        help="Force CPU mode (used by custom architecture)"
+    )
+
+    parser.add_argument(
         "--batch-size",
         type=int,
         default=8,
@@ -701,18 +771,61 @@ def main():
         dataset_path = Path(args.dataset)
         output_dir = Path(args.output_dir)
         
-        results = trainer.train_with_quantum_enhancement(
-            model=None,
-            dataset_path=dataset_path,
-            output_dir=output_dir,
-            epochs=args.epochs
-        )
-        
-        logger.info("\nTraining Summary:")
-        logger.info(f"  Status: {results['status']}")
-        logger.info(f"  Epochs: {results['epochs_completed']}")
-        logger.info(f"  Final Loss: {results['final_loss']:.4f}")
-        logger.info(f"  Quantum Executions: {results['quantum_metrics']['circuit_executions']}")
+        if args.architecture == "custom":
+            if not CUSTOM_ARCH_AVAILABLE:
+                logger.error("Custom architecture requested but module is unavailable")
+                return 1
+
+            custom_output = output_dir / "custom_architecture"
+            overrides = {
+                "epochs": args.epochs,
+                "batch_size": args.batch_size,
+                "max_seq_len": args.custom_max_seq_len,
+                "d_model": args.custom_d_model,
+                "n_heads": args.custom_n_heads,
+                "n_layers": args.custom_n_layers,
+                "d_ff": args.custom_d_ff,
+                "vocab_size": args.custom_vocab_size,
+                "min_freq": args.custom_min_freq,
+                "cpu": args.cpu,
+            }
+
+            checkpoint_path = run_custom_arch_training(
+                dataset=dataset_path,
+                output_dir=custom_output,
+                overrides=overrides,
+            )
+
+            summary = {
+                "status": "success",
+                "architecture": "custom",
+                "checkpoint": str(checkpoint_path),
+                "tokenizer": str(custom_output / "tokenizer.json"),
+                "metrics": str(custom_output / "metrics.json"),
+            }
+            (output_dir / "custom_training_summary.json").write_text(
+                json.dumps(summary, indent=2),
+                encoding="utf-8",
+            )
+
+            logger.info("\nTraining Summary:")
+            logger.info("  Architecture: custom")
+            logger.info("  Status: success")
+            logger.info(f"  Checkpoint: {checkpoint_path}")
+            logger.info(f"  Tokenizer: {custom_output / 'tokenizer.json'}")
+        else:
+            results = trainer.train_with_quantum_enhancement(
+                model=None,
+                dataset_path=dataset_path,
+                output_dir=output_dir,
+                epochs=args.epochs
+            )
+
+            logger.info("\nTraining Summary:")
+            logger.info(f"  Status: {results['status']}")
+            logger.info(f"  Epochs: {results['epochs_completed']}")
+            logger.info(f"  Final Loss: {results['final_loss']:.4f}")
+            logger.info(f"  Quantum Executions: {results['quantum_metrics']['circuit_executions']}")
     
     return 0
 

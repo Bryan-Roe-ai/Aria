@@ -35,7 +35,7 @@ class TrainingIntegration:
     
     def _get_autotrain_status(self) -> Dict[str, Any]:
         """Get AutoTrain orchestrator status"""
-        config_file = self.workspace_root / 'autotrain.yaml'
+        config_file = self.workspace_root / 'config' / 'training' / 'autotrain.yaml'
         status_file = self.output_dir / 'autotrain' / 'status.json'
         
         status = {
@@ -58,7 +58,7 @@ class TrainingIntegration:
     
     def _get_quantum_autorun_status(self) -> Dict[str, Any]:
         """Get Quantum AutoRun orchestrator status"""
-        config_file = self.workspace_root / 'quantum_autorun.yaml'
+        config_file = self.workspace_root / 'config' / 'quantum' / 'quantum_autorun.yaml'
         status_file = self.output_dir / 'quantum_autorun' / 'status.json'
         
         status = {

@@ -17,36 +17,47 @@ from sklearn.decomposition import PCA
 from sklearn.impute import SimpleImputer
 
 def load_preset_dataset(name: str):
-    """Load preset dataset from datasets/quantum/*.csv"""
-    base = Path(__file__).parent.parent / "datasets" / "quantum"
-    presets = {
-        "heart": base / "heart_disease.csv",
-        "ionosphere": base / "ionosphere.csv",
-        "sonar": base / "sonar.csv",
-        "banknote": base / "banknote.csv",
-    }
-    if name not in presets:
-        raise ValueError(f"Unknown preset '{name}'. Choose from {list(presets)}")
-    
-    path = presets[name]
-    if name == "heart":
-        df = pd.read_csv(path, na_values=["?"])
-        y = df.iloc[:, -1]
-        X = df.iloc[:, :-1]
-        if X.isnull().any().any():
-            imputer = SimpleImputer(strategy='median')
-            X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
-        y = (y > 0).astype(int).values
-        return X.values, y
-    else:
-        df = pd.read_csv(path, na_values=["?"])
+    """Load preset dataset from datasets/quantum/*.csv or auto-discover in datasets/"""
+    # Try using the shared quantum.src.dataset_loader first (auto-discovery)
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from quantum.src.dataset_loader import load_dataset
+        X, y, _ = load_dataset(name, return_feature_names=False)
+        return X, y
+    except (ImportError, ValueError):
+        # Fallback to local preset map
+        base = Path(__file__).parent.parent / "datasets" / "quantum"
+        presets = {
+            "heart": base / "heart_disease.csv",
+            "heart_disease": base / "heart_disease.csv",
+            "ionosphere": base / "ionosphere.csv",
+            "sonar": base / "sonar.csv",
+            "banknote": base / "banknote.csv",
+            "digits": base / "digits.csv",
+            "quantum_xor": base / "quantum_xor.csv",
+            "concentric_rings": base / "concentric_rings.csv",
+            "crescent_moons": base / "crescent_moons.csv",
+        }
+        if name not in presets:
+            raise ValueError(f"Unknown dataset '{name}'. Try: {list(presets.keys())}")
+        
+        path = presets[name]
+        if not path.exists():
+            raise FileNotFoundError(f"Dataset file not found: {path}")
+            
+        df = pd.read_csv(path, header=None, na_values=["?"])
         y = df.iloc[:, -1].values
         X = df.iloc[:, :-1]
+        
         if X.isnull().any().any():
             imputer = SimpleImputer(strategy='median')
             X = pd.DataFrame(imputer.fit_transform(X), columns=X.columns)
+        
+        # Ensure y is integer-encoded
         if not np.issubdtype(y.dtype, np.integer):
             vals, y = np.unique(y, return_inverse=True)
+        
         return X.values, y
 
 
@@ -231,12 +242,34 @@ def train_quantum_model(X_train, y_train, X_val, y_val, n_qubits=4, n_layers=2, 
 
 def main():
     parser = argparse.ArgumentParser(description="Train quantum circuit for specified duration")
-    parser.add_argument("--preset", type=str, default="heart", choices=["heart", "ionosphere", "sonar", "banknote"])
+    parser.add_argument("--preset", type=str, default="heart", 
+                        help="Dataset name: heart, ionosphere, sonar, banknote, digits, quantum_xor, concentric_rings, crescent_moons, or auto-discover by name")
     parser.add_argument("--n-qubits", type=int, default=4)
     parser.add_argument("--n-layers", type=int, default=2)
     parser.add_argument("--duration", type=int, default=45, help="Training duration in minutes")
     parser.add_argument("--learning-rate", type=float, default=0.01)
+    parser.add_argument("--list-datasets", action='store_true', help="List available datasets and exit")
     args = parser.parse_args()
+    
+    # Handle --list-datasets flag
+    if args.list_datasets:
+        print("\n=== Available Datasets ===\n")
+        print("Small (fast):")
+        print("  • heart, heart_disease (302 samples, 14 features)")
+        print("  • ionosphere (351 samples, 34 features)")
+        print("  • sonar (208 samples, 60 features)")
+        print("  • banknote (1,372 samples, 5 features)")
+        print("\nQuantum-friendly:")
+        print("  • quantum_xor (500 samples, 2 features)")
+        print("  • concentric_rings (600 samples, 2 features)")
+        print("  • crescent_moons (600 samples, 2 features)")
+        print("\nLarger:")
+        print("  • digits (1,797 samples, 64 features)")
+        print("  • letter_recognition (20,000 samples, 16 features)")
+        print("  • california_housing (20,640 samples, 8 features)")
+        print("  • mushroom (8,124 samples, 22 features)")
+        print("\nOr specify any dataset in datasets/quantum/ or datasets/massive_quantum/\n")
+        return
     
     print("="*70)
     print("  QUANTUM AI - TIMED TRAINING (PennyLane/NumPy)")

@@ -131,7 +131,7 @@ class RepoAutomation:
                 command=["python3", "scripts/quantum_autorun.py"],
                 auto_restart=False,
                 health_check_interval=600,
-                enabled=False,  # Will be enabled if quantum_autorun.yaml exists
+                enabled=False,  # Will be enabled if config/quantum/quantum_autorun.yaml exists
                 required_packages=[],  # Add azure quantum SDK here when environment ready
             ),
             "evaluation": ComponentConfig(
@@ -141,7 +141,7 @@ class RepoAutomation:
                 auto_restart=False,
                 health_check_interval=300,
                 dependencies=["training"],
-                enabled=False,  # Enabled if evaluation_autorun.yaml exists
+                enabled=False,  # Enabled if config/evaluation/evaluation_autorun.yaml exists
                 required_packages=["scikit-learn",
                                    "numpy", "matplotlib", "seaborn"],
             ),
@@ -180,8 +180,8 @@ class RepoAutomation:
     def _auto_enable_components(self):
         """Enable optional components based on presence of their config files"""
         config_checks = {
-            "quantum": REPO_ROOT / "quantum_autorun.yaml",
-            "evaluation": REPO_ROOT / "evaluation_autorun.yaml",
+            "quantum": REPO_ROOT / "config" / "quantum" / "quantum_autorun.yaml",
+            "evaluation": REPO_ROOT / "config" / "evaluation" / "evaluation_autorun.yaml",
         }
         for name, path in config_checks.items():
             if name in self.components and path.exists():
@@ -322,12 +322,12 @@ class RepoAutomation:
             )
 
             self.processes[name] = proc
-            
+
             # Wait with short polling interval instead of fixed sleep
             max_wait = 2.0
             check_interval = 0.2
             elapsed = 0
-            
+
             while elapsed < max_wait:
                 if self._is_component_running(name):
                     print(f"✅ {component.name} started (PID {proc.pid})")
@@ -602,7 +602,7 @@ class RepoAutomation:
                     ) and p.status() != psutil.STATUS_ZOMBIE
                 except Exception:
                     dynamic_running[name] = False
-        
+
         # Fallback: if PID not recorded, try discovering existing processes
         if psutil is not None:
             for name, component in self.components.items():
@@ -616,7 +616,7 @@ class RepoAutomation:
         # Prefer dynamic running info; fall back to status file content
         components_running = status.get(
             "components_running", {}) if status else {}
-        
+
         # Fallback: if PID not recorded, try discovering existing processes
         if psutil is not None:
             for name, component in self.components.items():
@@ -626,7 +626,7 @@ class RepoAutomation:
                         dynamic_running[name] = proc is not None
                     except Exception:
                         dynamic_running[name] = False
-        
+
         for name in self.components.keys():
             running = dynamic_running.get(
                 name, components_running.get(name, False))

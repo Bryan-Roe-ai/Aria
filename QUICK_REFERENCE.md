@@ -2,13 +2,19 @@
 
 ## 🚀 Common Commands
 
+### ⚡ Fast Validation (One Command)
+```bash
+# Full system health check (all infrastructure, configs, dependencies)
+python scripts/fast_validate.py --fail-on-errors
+```
+
 ### Development Server
-```powershell
+```bash
 func host start                                # Start Azure Functions locally
 ```
 
 ### Status Checks
-```powershell
+```bash
 # Full system status (includes telemetry, quantum, cosmos)
 curl http://localhost:7071/api/ai/status | jq
 
@@ -19,7 +25,7 @@ curl http://localhost:7071/api/ai/status | jq '.cosmos'
 ```
 
 ### Testing
-```powershell
+```bash
 # Run all tests
 pytest tests/
 
@@ -31,52 +37,50 @@ pytest tests/ --cov=shared --cov=quantum/src
 ```
 
 ### Quantum Environment Management
-```powershell
-cd quantum-ai
-
+```bash
 # Validate current environment
-python .\scripts\validate_qiskit_env.py
+python quantum/scripts/validate_qiskit_env.py
 
 # Preview Qiskit 1.x upgrade
-python .\scripts\upgrade_qiskit_to_1x.py --dry-run
+python quantum/scripts/upgrade_qiskit_to_1x.py --dry-run
 
 # Apply upgrade (creates backup)
-python .\scripts\upgrade_qiskit_to_1x.py --install
+python quantum/scripts/upgrade_qiskit_to_1x.py --install
 
 # Revert if needed
-python .\scripts\upgrade_qiskit_to_1x.py --revert
+python quantum/scripts/upgrade_qiskit_to_1x.py --revert
 ```
 
 ### Training Orchestrators
-```powershell
+```bash
 # AutoTrain (LoRA fine-tuning)
-python .\scripts\autotrain.py --dry-run        # Validate config
-python .\scripts\autotrain.py --list           # List all jobs
-python .\scripts\autotrain.py --job phi35_mixed_chat  # Run specific job
+python scripts/autotrain.py --dry-run --config config/training/autotrain.yaml
+python scripts/autotrain.py --list --config config/training/autotrain.yaml
+python scripts/autotrain.py --job phi35_mixed_chat --config config/training/autotrain.yaml
 
 # Quantum AutoRun
-python .\scripts\quantum_autorun.py --dry-run  # Validate config
-python .\scripts\quantum_autorun.py --list     # List all jobs
-python .\scripts\quantum_autorun.py --job heart_quick  # Run specific job
+python scripts/quantum_autorun.py --dry-run --config config/quantum/quantum_autorun.yaml
+python scripts/quantum_autorun.py --list --config config/quantum/quantum_autorun.yaml
+python scripts/quantum_autorun.py --job heart_quick --config config/quantum/quantum_autorun.yaml
 
 # Evaluation AutoRun
-python .\scripts\evaluation_autorun.py --dry-run  # Validate config
-python .\scripts\evaluation_autorun.py --list     # List all jobs
-python .\scripts\evaluation_autorun.py --job eval_smoke_test  # Run specific job
+python scripts/evaluation_autorun.py --dry-run --config config/evaluation/evaluation_autorun.yaml
+python scripts/evaluation_autorun.py --list --config config/evaluation/evaluation_autorun.yaml
+python scripts/evaluation_autorun.py --job eval_smoke_test --config config/evaluation/evaluation_autorun.yaml
 ```
 
 ### Chat Interaction
-```powershell
+```bash
 cd tools/talk-to-ai
 
 # Local mode (FREE, offline)
-python .\src\chat_cli.py --provider local --once "Hello"
+python src/chat_cli.py --provider local --once "Hello"
 
 # Azure OpenAI (requires env vars)
-python .\src\chat_cli.py --provider azure
+python src/chat_cli.py --provider azure
 
 # OpenAI
-python .\src\chat_cli.py --provider openai
+python src/chat_cli.py --provider openai
 ```
 
 ---
@@ -86,9 +90,9 @@ python .\src\chat_cli.py --provider openai
 | File | Purpose |
 |------|---------|
 | `local.settings.json` | Azure Functions local settings (API keys, connection strings) |
-| `autotrain.yaml` | LoRA training job definitions |
-| `quantum_autorun.yaml` | Quantum training job definitions |
-| `evaluation_autorun.yaml` | Model evaluation job definitions |
+| `config/training/autotrain.yaml` | LoRA training job definitions |
+| `config/quantum/quantum_autorun.yaml` | Quantum training job definitions |
+| `config/evaluation/evaluation_autorun.yaml` | Model evaluation job definitions |
 | `quantum/config/quantum_config.yaml` | Quantum backend settings |
 | `lora/lora.yaml` | LoRA hyperparameters |
 
@@ -111,37 +115,37 @@ python .\src\chat_cli.py --provider openai
 ## 🔑 Environment Variables
 
 ### Telemetry (Application Insights)
-```powershell
-$env:APPLICATIONINSIGHTS_CONNECTION_STRING = "InstrumentationKey=...;IngestionEndpoint=..."
+```bash
+export APPLICATIONINSIGHTS_CONNECTION_STRING="InstrumentationKey=...;IngestionEndpoint=..."
 ```
 
 ### Cosmos DB Persistence
-```powershell
-$env:QAI_ENABLE_COSMOS = "true"
-$env:COSMOS_ENDPOINT = "https://qai-cosmos.documents.azure.com:443/"
-$env:COSMOS_KEY = "your_primary_key_here"
-$env:QAI_COSMOS_DATABASE = "qai"
-$env:QAI_COSMOS_CONTAINER = "chat_sessions"
-$env:QAI_COSMOS_PERSIST_STRATEGY = "messages"  # or "sessions"
+```bash
+export QAI_ENABLE_COSMOS="true"
+export COSMOS_ENDPOINT="https://qai-cosmos.documents.azure.com:443/"
+export COSMOS_KEY="your_primary_key_here"
+export QAI_COSMOS_DATABASE="qai"
+export QAI_COSMOS_CONTAINER="chat_sessions"
+export QAI_COSMOS_PERSIST_STRATEGY="messages"  # or "sessions"
 ```
 
 ### Azure OpenAI
-```powershell
-$env:AZURE_OPENAI_API_KEY = "your_key"
-$env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"
-$env:AZURE_OPENAI_DEPLOYMENT = "gpt-4o-mini"
-$env:AZURE_OPENAI_API_VERSION = "2024-08-01-preview"
+```bash
+export AZURE_OPENAI_API_KEY="your_key"
+export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com/"
+export AZURE_OPENAI_DEPLOYMENT="gpt-4o-mini"
+export AZURE_OPENAI_API_VERSION="2024-08-01-preview"
 ```
 
 ### OpenAI
-```powershell
-$env:OPENAI_API_KEY = "sk-..."
-$env:OPENAI_MODEL = "gpt-4o-mini"  # optional
+```bash
+export OPENAI_API_KEY="sk-..."
+export OPENAI_MODEL="gpt-4o-mini"  # optional
 ```
 
 ### Azure Quantum
-```powershell
-$env:QAI_STATUS_CONNECT_AZURE_QUANTUM = "true"  # Enable backend probing in status endpoint
+```bash
+export QAI_STATUS_CONNECT_AZURE_QUANTUM="true"  # Enable backend probing in status endpoint
 ```
 
 ---
@@ -183,34 +187,35 @@ $env:QAI_STATUS_CONNECT_AZURE_QUANTUM = "true"  # Enable backend probing in stat
 ## 🐛 Troubleshooting Quick Fixes
 
 ### Functions won't start
-```powershell
+```bash
 # Reinstall dependencies
-.\venv\Scripts\python.exe -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 # Check port availability
-Test-NetConnection -ComputerName localhost -Port 7071
+lsof -i :7071  # On Linux/macOS
+netstat -tuln | grep 7071  # Alternative
 ```
 
 ### Quantum conflict detected
-```powershell
+```bash
 # Option 1: Ignore (if quantum endpoints unused)
 # Root venv conflict doesn't affect isolated quantum/venv
 
 # Option 2: Upgrade root venv
-cd quantum-ai
-python .\scripts\upgrade_qiskit_to_1x.py --install
+cd quantum
+python scripts/upgrade_qiskit_to_1x.py --install
 ```
 
 ### Tests not discovered
-```powershell
+```bash
 # Use full pytest path
-.\venv\Scripts\python.exe -m pytest tests/test_validate_qiskit_env.py -v
+python -m pytest tests/test_validate_qiskit_env.py -v
 ```
 
 ### Telemetry not appearing
-```powershell
+```bash
 # Verify connection string format
-echo $env:APPLICATIONINSIGHTS_CONNECTION_STRING
+echo "$APPLICATIONINSIGHTS_CONNECTION_STRING"
 # Should be: InstrumentationKey=...;IngestionEndpoint=https://...
 
 # Check status endpoint
@@ -218,7 +223,7 @@ curl http://localhost:7071/api/ai/status | jq '.telemetry.enabled'
 ```
 
 ### Cosmos writes failing
-```powershell
+```bash
 # Check firewall rules in Azure Portal
 # Ensure IP is allowlisted or "Allow from Azure Portal" enabled
 

@@ -5,7 +5,7 @@ Aggregates pre/post perplexity improvements for LoRA training variants and produ
 ranking outputs in JSON + Markdown.
 
 Inputs:
-  - autotrain.yaml (to discover jobs + save_dir paths)
+    - config/training/autotrain.yaml (to discover jobs + save_dir paths)
   - Each job's metrics.jsonl (written by MetricsLogger in training script)
 
 Outputs:
@@ -37,7 +37,7 @@ except Exception:
     yaml = None  # type: ignore
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-AUTOTRAIN_CFG = REPO_ROOT / "autotrain.yaml"
+AUTOTRAIN_CFG = REPO_ROOT / "config" / "training" / "autotrain.yaml"
 OUT_DIR = REPO_ROOT / "data_out" / "metrics_ranker"
 
 
@@ -66,7 +66,7 @@ class ModelMetrics:
 
 def read_yaml(path: Path) -> Dict[str, Any]:
     if yaml is None:
-        raise SystemExit("pyyaml not installed; cannot parse autotrain.yaml")
+        raise SystemExit("pyyaml not installed; cannot parse config/training/autotrain.yaml")
     with path.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 

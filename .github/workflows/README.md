@@ -26,7 +26,7 @@ This directory contains all GitHub Actions workflows for the Aria repository. Wo
 ### 🔬 Validation Workflows
 - **`auto-validation.yml`** - Orchestrator validation
   - Runs on: Changes to orchestrator configs/scripts, daily schedule
-  - Purpose: Validates `autotrain.yaml` and `quantum_autorun.yaml`
+  - Purpose: Validates orchestrator configs under `config/training/`, `config/quantum/`, and `config/evaluation/`
   - Duration: ~5-10 minutes
 
 ### ☁️ Cloud Workflows

@@ -4,7 +4,7 @@ A lightweight orchestrator to automate quantum training runs using `quantum/trai
 
 ## What it does
 
-- Reads jobs from `quantum_autorun.yaml`
+- Reads jobs from `config/quantum/quantum_autorun.yaml`
 - Builds commands for local simulator training OR Azure Quantum hardware submission
 - Supports dry-run validation without execution
 - Writes per-job run directories and aggregated status JSON
@@ -13,7 +13,7 @@ A lightweight orchestrator to automate quantum training runs using `quantum/trai
 ## Files
 
 - `scripts/quantum_autorun.py` – the orchestrator
-- `quantum_autorun.yaml` – declarative job definitions
+- `config/quantum/quantum_autorun.yaml` – declarative job definitions
 - Outputs under `data_out/quantum_autorun/`
   - `<job>/<timestamp>/stdout.log`
   - `<job>/last_run.json`
@@ -37,7 +37,7 @@ You can also use VS Code tasks:
 - Run: Quantum AutoRun (dry-run)
 - Run: Quantum AutoRun (all)
 
-## Config format (quantum_autorun.yaml)
+## Config format (config/quantum/quantum_autorun.yaml)
 
 ### Local simulator job (FREE)
 

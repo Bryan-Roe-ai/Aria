@@ -1,7 +1,7 @@
 # =============================================================================
 # Auto Validation - Orchestrator configuration validation
 # =============================================================================
-# Purpose: Validates autotrain.yaml and quantum_autorun.yaml configurations
+# Purpose: Validates orchestrator configs under config/* plus automation scripts
 # Triggers: Changes to YAML configs, training scripts, or daily schedule
 # Jobs:
 #   - dry-run: Validates orchestrator configs without execution
@@ -11,14 +11,17 @@ name: Auto Validation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev, develop, linux ]
     paths:
-      - 'autotrain.yaml'
-      - 'quantum_autorun.yaml'
+      - 'config/training/autotrain.yaml'
+      - 'config/quantum/quantum_autorun.yaml'
+      - 'config/evaluation/evaluation_autorun.yaml'
       - 'scripts/autotrain.py'
       - 'scripts/quantum_autorun.py'
+      - 'scripts/evaluation_autorun.py'
       - 'AI/**'
       - 'quantum/**'
+      - '.github/workflows/auto-validation.yml'
   schedule:
     - cron: '0 5 * * *'
   workflow_dispatch:

@@ -18,19 +18,44 @@ python .\scripts\download_datasets.py --category chat --dataset dolly
 ```
 datasets/
 ├── raw/              # Original downloaded data (untouched)
-├── processed/        # Cleaned and preprocessed data
-├── quantum/          # Quantum ML datasets (UCI, specialized)
-├── massive_quantum/  # Large OpenML/synthetic corpus (supports subfolders)
-├── chat/             # Chat/LLM fine-tuning datasets
-├── vision/           # Image/video datasets
-└── dataset_index.json  # Metadata and inventory
+├── quantum/          # Quantum ML datasets (38 CSVs, curated)
+│   ├── heart_disease.csv, ionosphere.csv, sonar.csv, banknote.csv, ...
+│   ├── digits.csv, california_housing.csv          (sklearn)
+│   ├── quantum_xor.csv, concentric_rings.csv       (quantum-friendly)
+│   ├── letter_recognition.csv, mushroom.csv         (UCI)
+│   └── ... (38 total)
+├── massive_quantum/  # Large corpus (~1,081 CSVs, organized into subfolders)
+│   ├── forex/              (98 CSVs)   FOREX currency pair time-series
+│   ├── synthetic/
+│   │   ├── blobs/          (107 CSVs)  Synthetic blob clusters
+│   │   ├── circles/        (82 CSVs)   Concentric circles
+│   │   ├── classification/ (100 CSVs)  Multi-class synthetic
+│   │   ├── gaussian/       (91 CSVs)   Gaussian mixtures
+│   │   └── moons/          (117 CSVs)  Moon-shaped clusters
+│   ├── medical/            (28 CSVs)   Health/biomed datasets
+│   ├── financial/          (47 CSVs)   Credit/banking/fintech
+│   ├── benchmarks/seeded/  (156 CSVs)  OpenML benchmarks (seed variants)
+│   ├── openml/             (30 CSVs)   Named OpenML datasets
+│   └── misc/               (225 CSVs)  Other uncategorized
+├── chat/             # Chat/LLM fine-tuning datasets (16 subfolders)
+│   ├── aria_persona/          (15 examples)  Aria identity/personality
+│   ├── aria_expanded/         (63 examples)  Extended Aria conversations
+│   ├── aria_movement/         (40 examples)  Aria character movement
+│   ├── aria_simple/           (28 examples)  Basic Aria responses
+│   ├── coding_instructions/   (8 examples)   Code generation training
+│   ├── dolly/                 Databricks Dolly 15k
+│   ├── openassistant/         OpenAssistant conversations
+│   ├── mixed_chat/            Mixed chat sources
+│   └── ... (16 total subfolders)
+└── dataset_index.json  # Metadata and inventory (54 entries)
 ```
 
 ### `massive_quantum` organization
 
-- Legacy flat CSV files remain valid in `datasets/massive_quantum/`
-- New OpenML downloads now default to `datasets/massive_quantum/openml/`
+- All 1,051 flat CSVs have been organized into category subfolders
+- Categories: forex, synthetic/{blobs,circles,classification,gaussian,moons}, medical, financial, benchmarks/seeded, openml, misc
 - Training/discovery scripts scan recursively, so both flat and nested layouts work
+- `dataset_loader.py` supports auto-discovery via recursive search
 
 ## Available Datasets
 
@@ -42,6 +67,15 @@ datasets/
 | Ionosphere | 351 | 34 | CSV | `quantum/ionosphere.csv` |
 | Sonar | 208 | 60 | CSV | `quantum/sonar.csv` |
 | Banknote | 1,372 | 5 | CSV | `quantum/banknote.csv` |
+| Digits | 1,797 | 64 | CSV | `quantum/digits.csv` |
+| California Housing | 20,640 | 8 | CSV | `quantum/california_housing.csv` |
+| Quantum XOR | 500 | 2 | CSV | `quantum/quantum_xor.csv` |
+| Concentric Rings | 600 | 2 | CSV | `quantum/concentric_rings.csv` |
+| Crescent Moons | 600 | 2 | CSV | `quantum/crescent_moons.csv` |
+| Entangled Features | 800 | 10 | CSV | `quantum/entangled_features.csv` |
+| Letter Recognition | 20,000 | 16 | CSV | `quantum/letter_recognition.csv` |
+| Mushroom | 8,124 | 22 | CSV | `quantum/mushroom.csv` |
+| Optical Digits | 3,823 | 64 | CSV | `quantum/optical_digits.csv` |
 
 **Built-in** (via scikit-learn - no download needed):
 - Iris (150 samples, 4 features)

@@ -17,6 +17,8 @@ try:
         QuantumFeatureEncoder,
         QuantumEnhancedLLMTrainer,
         TRANSFORMERS_AVAILABLE,
+        CUSTOM_ARCH_AVAILABLE,
+        run_custom_arch_training,
     )
     QUANTUM_LLM_AVAILABLE = True
 except ImportError as e:
@@ -267,6 +269,43 @@ class TestQuantumEnhancedLLMTrainer:
         # Check quantum metrics updated
         assert trainer.quantum_metrics["circuit_executions"] > 0
         assert len(trainer.training_history) == 1
+
+    @pytest.mark.skipif(not CUSTOM_ARCH_AVAILABLE, reason="Custom architecture module not available")
+    def test_custom_architecture_training_outputs_artifacts(self):
+        """Custom architecture wrapper should train and save checkpoint/tokenizer/metrics."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dataset_path = Path(tmpdir) / "train.json"
+            output_dir = Path(tmpdir) / "custom_output"
+
+            mock_data = [
+                {"messages": [{"role": "user", "content": "hello"}, {"role": "assistant", "content": "hi"}]},
+                {"messages": [{"role": "user", "content": "who are you"}, {"role": "assistant", "content": "i am aria"}]},
+                {"messages": [{"role": "user", "content": "help me"}, {"role": "assistant", "content": "i can help"}]},
+            ]
+
+            with open(dataset_path, "w") as f:
+                json.dump(mock_data, f)
+
+            checkpoint_path = run_custom_arch_training(
+                dataset=dataset_path,
+                output_dir=output_dir,
+                overrides={
+                    "epochs": 1,
+                    "batch_size": 2,
+                    "max_seq_len": 16,
+                    "d_model": 32,
+                    "n_heads": 4,
+                    "n_layers": 2,
+                    "d_ff": 64,
+                    "vocab_size": 128,
+                    "min_freq": 1,
+                    "cpu": True,
+                },
+            )
+
+            assert checkpoint_path.exists()
+            assert (output_dir / "tokenizer.json").exists()
+            assert (output_dir / "metrics.json").exists()
 
 
 @pytest.mark.integration

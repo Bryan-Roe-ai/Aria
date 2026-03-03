@@ -1,0 +1,42 @@
+[
+  {
+    "instruction": "Write a Python function to check if a number is prime.",
+    "input": "",
+    "output": "```python\ndef is_prime(n: int) -> bool:\n    if n < 2:\n        return False\n    if n < 4:\n        return True\n    if n % 2 == 0 or n % 3 == 0:\n        return False\n    i = 5\n    while i * i <= n:\n        if n % i == 0 or n % (i + 2) == 0:\n            return False\n        i += 6\n    return True\n```"
+  },
+  {
+    "instruction": "Implement a binary search in Python.",
+    "input": "",
+    "output": "```python\ndef binary_search(arr: list, target) -> int:\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```"
+  },
+  {
+    "instruction": "Write a Python class for a linked list.",
+    "input": "",
+    "output": "```python\nclass Node:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\nclass LinkedList:\n    def __init__(self):\n        self.head = None\n\n    def append(self, val):\n        if not self.head:\n            self.head = Node(val)\n            return\n        curr = self.head\n        while curr.next:\n            curr = curr.next\n        curr.next = Node(val)\n\n    def to_list(self):\n        result, curr = [], self.head\n        while curr:\n            result.append(curr.val)\n            curr = curr.next\n        return result\n```"
+  },
+  {
+    "instruction": "Create a REST API endpoint in Python using Flask.",
+    "input": "",
+    "output": "```python\nfrom flask import Flask, jsonify, request\n\napp = Flask(__name__)\nitems = []\n\n@app.route('/api/items', methods=['GET'])\ndef get_items():\n    return jsonify(items)\n\n@app.route('/api/items', methods=['POST'])\ndef add_item():\n    data = request.get_json()\n    items.append(data)\n    return jsonify(data), 201\n\nif __name__ == '__main__':\n    app.run(debug=True)\n```"
+  },
+  {
+    "instruction": "Write a Python decorator for timing function execution.",
+    "input": "",
+    "output": "```python\nimport time\nfrom functools import wraps\n\ndef timer(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        elapsed = time.perf_counter() - start\n        print(f'{func.__name__} took {elapsed:.4f}s')\n        return result\n    return wrapper\n\n@timer\ndef example():\n    time.sleep(0.5)\n    return 'done'\n```"
+  },
+  {
+    "instruction": "Write a Python async function to fetch multiple URLs.",
+    "input": "",
+    "output": "```python\nimport asyncio\nimport aiohttp\n\nasync def fetch_url(session, url):\n    async with session.get(url) as resp:\n        return await resp.text()\n\nasync def fetch_all(urls: list[str]) -> list[str]:\n    async with aiohttp.ClientSession() as session:\n        tasks = [fetch_url(session, url) for url in urls]\n        return await asyncio.gather(*tasks)\n\n# Usage: asyncio.run(fetch_all(['https://example.com']))\n```"
+  },
+  {
+    "instruction": "Implement a simple LRU cache in Python.",
+    "input": "",
+    "output": "```python\nfrom collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.cache = OrderedDict()\n        self.capacity = capacity\n\n    def get(self, key):\n        if key not in self.cache:\n            return -1\n        self.cache.move_to_end(key)\n        return self.cache[key]\n\n    def put(self, key, value):\n        if key in self.cache:\n            self.cache.move_to_end(key)\n        self.cache[key] = value\n        if len(self.cache) > self.capacity:\n            self.cache.popitem(last=False)\n```"
+  },
+  {
+    "instruction": "Write a Python context manager for database connections.",
+    "input": "",
+    "output": "```python\nfrom contextlib import contextmanager\nimport sqlite3\n\n@contextmanager\ndef db_connection(db_path: str):\n    conn = sqlite3.connect(db_path)\n    try:\n        yield conn\n        conn.commit()\n    except Exception:\n        conn.rollback()\n        raise\n    finally:\n        conn.close()\n\n# Usage:\n# with db_connection('app.db') as conn:\n#     conn.execute('SELECT * FROM users')\n```"
+  }
+]

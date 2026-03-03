@@ -8,7 +8,7 @@ applyTo: "quantum/**"
 - Prefer local simulation first (Qiskit Aer) before Azure hardware.
   - Validate with: `python .\\scripts\\quantum_autorun.py --dry-run`
   - Then: `python .\\scripts\\quantum_autorun.py --job azure_ionq_simulator`
-- Real QPU runs require an explicit cost gate: set `azure_confirm_cost: true` in `quantum_autorun.yaml` and start with ≤100 shots.
+- Real QPU runs require an explicit cost gate: set `azure_confirm_cost: true` in `config/quantum/quantum_autorun.yaml` and start with ≤100 shots.
 - MCP server tools (run: `python .\\quantum-ai\\quantum_mcp_server.py`):
   - `create_quantum_circuit`, `simulate_quantum_circuit`, `get_quantum_circuit_properties`
   - `connect_azure_quantum`, `list_quantum_backends`, `submit_quantum_job`, `estimate_quantum_cost`

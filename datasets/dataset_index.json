@@ -3,42 +3,42 @@
     "heart_disease": {
       "category": "quantum",
       "filename": "heart_disease.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\heart_disease.csv",
+      "path": "datasets/quantum/heart_disease.csv",
       "description": "Cleveland Heart Disease Dataset",
       "size": 18461
     },
     "ionosphere": {
       "category": "quantum",
       "filename": "ionosphere.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\ionosphere.csv",
+      "path": "datasets/quantum/ionosphere.csv",
       "description": "Ionosphere Radar Dataset",
       "size": 76467
     },
     "sonar": {
       "category": "quantum",
       "filename": "sonar.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\sonar.csv",
+      "path": "datasets/quantum/sonar.csv",
       "description": "Sonar Mines vs Rocks Dataset",
       "size": 87776
     },
     "banknote": {
       "category": "quantum",
       "filename": "banknote.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\banknote.csv",
+      "path": "datasets/quantum/banknote.csv",
       "description": "Banknote Authentication Dataset",
       "size": 46400
     },
     "dolly": {
       "category": "chat",
       "hf_name": "databricks/databricks-dolly-15k",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\dolly",
+      "path": "datasets/chat/dolly",
       "description": "Dolly 15k - High-quality instruction pairs",
       "license": "CC BY-SA 3.0 (Commercial OK)",
       "size_gb": 0.05
     },
     "app_repo": {
       "category": "chat",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\app_repo",
+      "path": "datasets/chat/app_repo",
       "description": "Internal repository corpus (code + docs) synthetic Q/A for model awareness",
       "license": "Internal use only (do not distribute externally)",
       "size_gb": 0.0,
@@ -48,7 +48,7 @@
     },
     "chat_logs": {
       "category": "chat",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\chat_logs",
+      "path": "datasets/chat/chat_logs",
       "description": "Extracted user-assistant interaction logs (local provider or cloud when enabled)",
       "license": "Internal user interaction data",
       "size_gb": 0.0,
@@ -58,7 +58,7 @@
     },
     "mixed_chat": {
       "category": "chat",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\chat\\mixed_chat",
+      "path": "datasets/chat/mixed_chat",
       "description": "Merged corpus: internal (app_repo + chat_logs) + selected public instruction datasets",
       "license": "Composite (internal + respective public licenses)",
       "size_gb": 0.0,
@@ -69,7 +69,7 @@
     "breast_cancer": {
       "category": "quantum",
       "filename": "breast_cancer.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\breast_cancer.csv",
+      "path": "datasets/quantum/breast_cancer.csv",
       "description": "Wisconsin Breast Cancer Diagnostic",
       "size": 124103,
       "features": 30,
@@ -82,7 +82,7 @@
     "diabetes": {
       "category": "quantum",
       "filename": "diabetes.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\diabetes.csv",
+      "path": "datasets/quantum/diabetes.csv",
       "description": "Pima Indians Diabetes",
       "size": 23278,
       "features": 8,
@@ -95,7 +95,7 @@
     "wine_red": {
       "category": "quantum",
       "filename": "wine_red.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\wine_red.csv",
+      "path": "datasets/quantum/wine_red.csv",
       "description": "Red Wine Quality",
       "size": 84199,
       "features": 11,
@@ -108,7 +108,7 @@
     "wine_white": {
       "category": "quantum",
       "filename": "wine_white.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\wine_white.csv",
+      "path": "datasets/quantum/wine_white.csv",
       "description": "White Wine Quality",
       "size": 264426,
       "features": 11,
@@ -121,7 +121,7 @@
     "glass": {
       "category": "quantum",
       "filename": "glass.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\glass.csv",
+      "path": "datasets/quantum/glass.csv",
       "description": "Glass Identification",
       "size": 11903,
       "features": 9,
@@ -134,7 +134,7 @@
     "iris": {
       "category": "quantum",
       "filename": "iris.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\iris.csv",
+      "path": "datasets/quantum/iris.csv",
       "description": "Iris Flower Species",
       "size": 4551,
       "features": 4,
@@ -147,7 +147,7 @@
     "wheat_seeds": {
       "category": "quantum",
       "filename": "wheat_seeds.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\wheat_seeds.csv",
+      "path": "datasets/quantum/wheat_seeds.csv",
       "description": "Wheat Seeds Classification",
       "size": 9300,
       "features": 7,
@@ -160,7 +160,7 @@
     "blood_transfusion": {
       "category": "quantum",
       "filename": "blood_transfusion.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\blood_transfusion.csv",
+      "path": "datasets/quantum/blood_transfusion.csv",
       "description": "Blood Transfusion Service Center",
       "size": 12843,
       "features": 4,
@@ -173,7 +173,7 @@
     "haberman": {
       "category": "quantum",
       "filename": "haberman.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\haberman.csv",
+      "path": "datasets/quantum/haberman.csv",
       "description": "Haberman Survival",
       "size": 3103,
       "features": 3,
@@ -186,7 +186,7 @@
     "magic_gamma": {
       "category": "quantum",
       "filename": "magic_gamma.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\magic_gamma.csv",
+      "path": "datasets/quantum/magic_gamma.csv",
       "description": "MAGIC Gamma Telescope",
       "size": 1477391,
       "features": 10,
@@ -199,7 +199,7 @@
     "balance_scale": {
       "category": "quantum",
       "filename": "balance_scale.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\balance_scale.csv",
+      "path": "datasets/quantum/balance_scale.csv",
       "description": "Balance Scale Weight & Distance",
       "size": 6875,
       "features": 4,
@@ -212,7 +212,7 @@
     "contraceptive": {
       "category": "quantum",
       "filename": "contraceptive.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\contraceptive.csv",
+      "path": "datasets/quantum/contraceptive.csv",
       "description": "Contraceptive Method Choice",
       "size": 32435,
       "features": 9,
@@ -225,7 +225,7 @@
     "dermatology": {
       "category": "quantum",
       "filename": "dermatology.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\dermatology.csv",
+      "path": "datasets/quantum/dermatology.csv",
       "description": "Dermatology Disease Classification",
       "size": 26330,
       "features": 34,
@@ -238,7 +238,7 @@
     "liver_disorders": {
       "category": "quantum",
       "filename": "liver_disorders.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\liver_disorders.csv",
+      "path": "datasets/quantum/liver_disorders.csv",
       "description": "Liver Disorders (BUPA)",
       "size": 7642,
       "features": 6,
@@ -251,7 +251,7 @@
     "optical_recognition": {
       "category": "quantum",
       "filename": "optical_recognition.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\optical_recognition.csv",
+      "path": "datasets/quantum/optical_recognition.csv",
       "description": "Optical Recognition of Handwritten Digits",
       "size": 567462,
       "features": 64,
@@ -264,7 +264,7 @@
     "parkinsons": {
       "category": "quantum",
       "filename": "parkinsons.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\parkinsons.csv",
+      "path": "datasets/quantum/parkinsons.csv",
       "description": "Parkinsons Disease Detection",
       "size": 34747,
       "features": 22,
@@ -277,7 +277,7 @@
     "pendigits": {
       "category": "quantum",
       "filename": "pendigits.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\pendigits.csv",
+      "path": "datasets/quantum/pendigits.csv",
       "description": "Pen-Based Recognition of Handwritten Digits",
       "size": 375386,
       "features": 16,
@@ -290,7 +290,7 @@
     "seeds": {
       "category": "quantum",
       "filename": "seeds.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\seeds.csv",
+      "path": "datasets/quantum/seeds.csv",
       "description": "Seeds (Wheat Varieties)",
       "size": 9510,
       "features": 7,
@@ -303,7 +303,7 @@
     "statlog_australian": {
       "category": "quantum",
       "filename": "statlog_australian.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\statlog_australian.csv",
+      "path": "datasets/quantum/statlog_australian.csv",
       "description": "StatLog Australian Credit Approval",
       "size": 30130,
       "features": 14,
@@ -316,7 +316,7 @@
     "statlog_heart": {
       "category": "quantum",
       "filename": "statlog_heart.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\statlog_heart.csv",
+      "path": "datasets/quantum/statlog_heart.csv",
       "description": "StatLog Heart Disease",
       "size": 16731,
       "features": 13,
@@ -329,7 +329,7 @@
     "thyroid": {
       "category": "quantum",
       "filename": "thyroid.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\thyroid.csv",
+      "path": "datasets/quantum/thyroid.csv",
       "description": "Thyroid Disease",
       "size": 5059,
       "features": 5,
@@ -342,7 +342,7 @@
     "wine_quality_combined": {
       "category": "quantum",
       "filename": "wine_quality_combined.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\wine_quality_combined.csv",
+      "path": "datasets/quantum/wine_quality_combined.csv",
       "description": "Wine Quality (Combined Red & White)",
       "size": 398743,
       "features": 12,
@@ -355,7 +355,7 @@
     "yeast": {
       "category": "quantum",
       "filename": "yeast.csv",
-      "path": "C:\\Users\\Bryan\\OneDrive\\AI\\datasets\\quantum\\yeast.csv",
+      "path": "datasets/quantum/yeast.csv",
       "description": "Yeast Protein Localization",
       "size": 63016,
       "features": 8,
@@ -372,6 +372,193 @@
       "description": "OpenAssistant Conversations - Multi-turn dialogue",
       "license": "Apache 2.0",
       "size_gb": 0.5
+    },
+    "california_housing": {
+      "category": "quantum",
+      "filename": "california_housing.csv",
+      "path": "datasets/quantum/california_housing.csv",
+      "description": "California Housing dataset",
+      "size": 1915802,
+      "features": 8,
+      "samples": 20640
+    },
+    "concentric_rings": {
+      "category": "quantum",
+      "filename": "concentric_rings.csv",
+      "path": "datasets/quantum/concentric_rings.csv",
+      "description": "Concentric Rings dataset",
+      "size": 26848,
+      "features": 2,
+      "samples": 600
+    },
+    "crescent_moons": {
+      "category": "quantum",
+      "filename": "crescent_moons.csv",
+      "path": "datasets/quantum/crescent_moons.csv",
+      "description": "Crescent Moons dataset",
+      "size": 26419,
+      "features": 2,
+      "samples": 600
+    },
+    "digits": {
+      "category": "quantum",
+      "filename": "digits.csv",
+      "path": "datasets/quantum/digits.csv",
+      "description": "Digits dataset",
+      "size": 500692,
+      "features": 64,
+      "samples": 1797
+    },
+    "ecoli": {
+      "category": "quantum",
+      "filename": "ecoli.csv",
+      "path": "datasets/quantum/ecoli.csv",
+      "description": "Ecoli dataset",
+      "size": 672,
+      "features": 0,
+      "samples": 335
+    },
+    "entangled_features": {
+      "category": "quantum",
+      "filename": "entangled_features.csv",
+      "path": "datasets/quantum/entangled_features.csv",
+      "description": "Entangled Features dataset",
+      "size": 159902,
+      "features": 10,
+      "samples": 800
+    },
+    "letter_recognition": {
+      "category": "quantum",
+      "filename": "letter_recognition.csv",
+      "path": "datasets/quantum/letter_recognition.csv",
+      "description": "Letter Recognition dataset",
+      "size": 732626,
+      "features": 16,
+      "samples": 20000
+    },
+    "mushroom": {
+      "category": "quantum",
+      "filename": "mushroom.csv",
+      "path": "datasets/quantum/mushroom.csv",
+      "description": "Mushroom dataset",
+      "size": 382129,
+      "features": 22,
+      "samples": 8124
+    },
+    "optical_digits": {
+      "category": "quantum",
+      "filename": "optical_digits.csv",
+      "path": "datasets/quantum/optical_digits.csv",
+      "description": "Optical Digits dataset",
+      "size": 568035,
+      "features": 64,
+      "samples": 3823
+    },
+    "quantum_xor": {
+      "category": "quantum",
+      "filename": "quantum_xor.csv",
+      "path": "datasets/quantum/quantum_xor.csv",
+      "description": "Quantum Xor dataset",
+      "size": 22146,
+      "features": 2,
+      "samples": 500
+    },
+    "vertebral_column": {
+      "category": "quantum",
+      "filename": "vertebral_column.csv",
+      "path": "datasets/quantum/vertebral_column.csv",
+      "description": "Vertebral Column dataset",
+      "size": 33251,
+      "features": 0,
+      "samples": 232
+    },
+    "anime_avatar": {
+      "category": "chat",
+      "path": "datasets/chat/anime_avatar",
+      "description": "Anime Avatar chat training set",
+      "size_gb": 0.0,
+      "examples": 0,
+      "status": "ready"
+    },
+    "app_repo_augmented": {
+      "category": "chat",
+      "path": "datasets/chat/app_repo_augmented",
+      "description": "App Repo Augmented chat training set",
+      "size_gb": 0.001,
+      "examples": 0,
+      "status": "ready"
+    },
+    "aria_expanded": {
+      "category": "chat",
+      "path": "datasets/chat/aria_expanded",
+      "description": "Aria Expanded chat training set",
+      "size_gb": 0.0,
+      "examples": 63,
+      "status": "ready"
+    },
+    "aria_movement": {
+      "category": "chat",
+      "path": "datasets/chat/aria_movement",
+      "description": "Aria Movement chat training set",
+      "size_gb": 0.0,
+      "examples": 40,
+      "status": "ready"
+    },
+    "aria_persona": {
+      "category": "chat",
+      "path": "datasets/chat/aria_persona",
+      "description": "Aria Persona chat training set",
+      "size_gb": 0.0,
+      "examples": 15,
+      "status": "ready"
+    },
+    "aria_simple": {
+      "category": "chat",
+      "path": "datasets/chat/aria_simple",
+      "description": "Aria Simple chat training set",
+      "size_gb": 0.0,
+      "examples": 28,
+      "status": "ready"
+    },
+    "auto_generated": {
+      "category": "chat",
+      "path": "datasets/chat/auto_generated",
+      "description": "Auto Generated chat training set",
+      "size_gb": 0.0,
+      "examples": 0,
+      "status": "ready"
+    },
+    "coding_instructions": {
+      "category": "chat",
+      "path": "datasets/chat/coding_instructions",
+      "description": "Coding Instructions chat training set",
+      "size_gb": 0.0,
+      "examples": 8,
+      "status": "ready"
+    },
+    "comprehensive": {
+      "category": "chat",
+      "path": "datasets/chat/comprehensive",
+      "description": "Comprehensive chat training set",
+      "size_gb": 0.0081,
+      "examples": 0,
+      "status": "ready"
+    },
+    "github_actions": {
+      "category": "chat",
+      "path": "datasets/chat/github_actions",
+      "description": "Github Actions chat training set",
+      "size_gb": 0.0,
+      "examples": 0,
+      "status": "ready"
+    },
+    "mega_synthetic": {
+      "category": "chat",
+      "path": "datasets/chat/mega_synthetic",
+      "description": "Mega Synthetic chat training set",
+      "size_gb": 0.0005,
+      "examples": 0,
+      "status": "ready"
     }
   },
   "metadata": {
@@ -394,5 +581,22 @@
     "vision": "datasets/vision/"
   },
   "last_updated": "2026-03-02T12:05:29.344862",
-  "instructions": "Run scripts/download_datasets.py to populate this index automatically"
+  "instructions": "Run scripts/download_datasets.py to populate this index automatically",
+  "massive_quantum_organization": {
+    "description": "massive_quantum/ has been reorganized into category subfolders",
+    "categories": {
+      "forex": "FOREX currency pair time-series",
+      "synthetic/blobs": "Synthetic blob cluster datasets",
+      "synthetic/circles": "Synthetic concentric circle datasets",
+      "synthetic/classification": "Synthetic classification datasets",
+      "synthetic/gaussian": "Synthetic Gaussian mixture datasets",
+      "synthetic/moons": "Synthetic moon-shaped datasets",
+      "medical": "Medical/health datasets",
+      "financial": "Financial/credit/banking datasets",
+      "benchmarks/seeded": "OpenML benchmark datasets with seed variants",
+      "openml": "Additional OpenML downloads",
+      "misc": "Other uncategorized datasets"
+    },
+    "note": "Training scripts scan massive_quantum/ recursively for CSV files"
+  }
 }

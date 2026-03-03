@@ -6,7 +6,7 @@
 
 ## Features
 
-- **Declarative config** – Define jobs once in `autotrain.yaml`; run repeatedly without boilerplate.
+- **Declarative config** – Define jobs once in `config/training/autotrain.yaml`; run repeatedly without boilerplate.
 - **Two runners** – Choose between the full HF stack (`train_lora.py`) or the streamlined local runner (`run_local_lora_training.py`).
 - **Dry-run mode** – Validate configs, check file paths, and build commands without executing expensive GPU work.
 - **Status tracking** – Every run writes JSON logs (`data_out/autotrain/<job>/last_run.json` and `data_out/autotrain/status.json`).
@@ -17,9 +17,9 @@
 
 ## Quick Start
 
-### 1. Define Jobs in `autotrain.yaml`
+### 1. Define Jobs in `config/training/autotrain.yaml`
 
-Edit the top-level `autotrain.yaml` to declare one or more fine-tuning jobs:
+Edit `config/training/autotrain.yaml` to declare one or more fine-tuning jobs:
 
 ```yaml
 version: 1
@@ -118,7 +118,7 @@ python .\scripts\autotrain.py
 python scripts/autotrain.py [OPTIONS]
 
 Options:
-  --config PATH      Path to autotrain.yaml (default: autotrain.yaml at repo root)
+  --config PATH      Path to autotrain.yaml (default: config/training/autotrain.yaml)
   --job NAME         Run only the named job
   --dry-run          Validate and print commands; do not execute
   --list             List configured jobs and exit (JSON)

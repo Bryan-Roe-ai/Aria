@@ -442,7 +442,34 @@ python -m venv venv
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Install development tooling (lint/format/type/pre-commit)
+pip install -r dev-requirements.txt
 ```
+
+#### Quality & Validation
+
+```powershell
+# Fast repo health validation
+python .\scripts\fast_validate.py --fail-on-errors
+
+# Unit tests
+python .\scripts\test_runner.py --unit
+
+# Run local pre-commit hooks
+pre-commit run --all-files
+```
+
+#### VS Code Tasks
+
+This repo includes preconfigured tasks in `.vscode/tasks.json` for common flows:
+
+- `func: host start`
+- `validate: fast`
+- `test: unit`
+- `Run: AutoTrain (dry-run)` / `Run: AutoTrain (all)`
+- `Run: Quantum AutoRun (dry-run)` / `Run: Quantum AutoRun (all)`
+- `Run: Evaluation AutoRun (dry-run)`
 
 #### Azure Login
 

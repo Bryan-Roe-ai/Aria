@@ -30,19 +30,36 @@ def load_dataset(
     if base_path is None:
         base_path = Path(__file__).parent.parent.parent / "datasets" / "quantum"
     
-    # Map dataset names to file paths
+    # Map dataset names to file paths (curated aliases)
     datasets_map = {
         "ionosphere": base_path / "ionosphere.csv",
         "sonar": base_path / "sonar.csv",
         "heart": base_path / "heart_disease.csv",
         "heart_disease": base_path / "heart_disease.csv",
         "banknote": base_path / "banknote.csv",
+        "digits": base_path / "digits.csv",
+        "california_housing": base_path / "california_housing.csv",
+        "quantum_xor": base_path / "quantum_xor.csv",
+        "concentric_rings": base_path / "concentric_rings.csv",
+        "crescent_moons": base_path / "crescent_moons.csv",
+        "entangled_features": base_path / "entangled_features.csv",
+        "letter_recognition": base_path / "letter_recognition.csv",
+        "mushroom": base_path / "mushroom.csv",
+        "optical_digits": base_path / "optical_digits.csv",
     }
     
     if name not in datasets_map:
-        raise ValueError(f"Unknown dataset: {name}. Available: {list(datasets_map.keys())}")
+        # Auto-discover: look for <name>.csv in quantum/ and massive_quantum/ recursively
+        datasets_root = base_path.parent
+        candidates = list(datasets_root.rglob(f"{name}.csv"))
+        if not candidates:
+            available = sorted(datasets_map.keys())
+            raise ValueError(f"Unknown dataset: {name}. Mapped: {available}. "
+                             f"Also searched recursively in {datasets_root} with no match.")
+        path = candidates[0]
+    else:
+        path = datasets_map[name]
     
-    path = datasets_map[name]
     if not path.exists():
         raise FileNotFoundError(f"Dataset file not found: {path}")
     

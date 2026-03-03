@@ -1,0 +1,34 @@
+[tool.black]
+line-length = 127
+target-version = ["py39"]
+extend-exclude = "(venv|venv_.*|__pycache__|\\.git|data_out|mount|__blobstorage__|__queuestorage__)"
+
+[tool.isort]
+profile = "black"
+line_length = 127
+skip_glob = [
+  "venv*",
+  "data_out*",
+  "mount*",
+  "__blobstorage__*",
+  "__queuestorage__*",
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+exclude = "(venv|venv_.*|data_out|mount)"
+
+[tool.flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = [
+  "venv",
+  "venv_*",
+  "__pycache__",
+  ".git",
+  "data_out",
+  "mount",
+  "__blobstorage__",
+  "__queuestorage__",
+]

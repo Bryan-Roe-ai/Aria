@@ -2,9 +2,9 @@ name: Code Quality
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, develop, linux ]
   pull_request:
-    branches: [ main, dev ]
+    branches: [ main, dev, develop, linux ]
   workflow_dispatch:
 
 jobs:
@@ -20,33 +20,35 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: |
+            requirements.txt
+            dev-requirements.txt
 
       - name: Install linting dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 black isort mypy
+          pip install -r requirements.txt
+          if [ -f dev-requirements.txt ]; then pip install -r dev-requirements.txt; fi
 
-      - name: Run flake8
+      - name: "Run flake8 (blocking: syntax and undefined names)"
         run: |
-          # Stop build on syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # Exit-zero treats all errors as warnings
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=venv,venv_*,__pycache__,.git,data_out,mount,__blobstorage__,__queuestorage__
-        continue-on-error: true
 
-      - name: Check code formatting with black
+      - name: "Run flake8 style report (blocking: E,W,F)"
         run: |
-          black --check --diff --exclude="(venv|venv_.*|__pycache__|\.git|data_out|mount|__blobstorage__|__queuestorage__)" .
-        continue-on-error: true
+          flake8 . --count --max-line-length=120 --select=E,W,F --statistics --exclude=venv,venv_*,__pycache__,.git,data_out,mount,__blobstorage__,__queuestorage__
 
-      - name: Check import sorting with isort
+      - name: Check code formatting with black (blocking)
         run: |
-          isort --check-only --diff --skip-glob="venv*" --skip-glob="data_out*" --skip-glob="mount*" .
-        continue-on-error: true
+          black --check --diff --line-length=120 --exclude="(venv|venv_.*|__pycache__|\.git|data_out|mount|__blobstorage__|__queuestorage__)" .
+
+      - name: Check import sorting with isort (blocking)
+        run: |
+          isort --check-only --diff --profile=black --line-length=120 --skip-glob="venv*" --skip-glob="data_out*" --skip-glob="mount*" .
 
       - name: Type check with mypy (optional)
         run: |
-          mypy --install-types --non-interactive --ignore-missing-imports --exclude="(venv|venv_.*|data_out|mount)" . || echo "MyPy check completed with warnings"
+          mypy --install-types --non-interactive --ignore-missing-imports --exclude="(venv|venv_.*|data_out|mount)" .
         continue-on-error: true
 
   security-check:
@@ -65,12 +67,19 @@ jobs:
       - name: Install safety
         run: |
           python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          if [ -f dev-requirements.txt ]; then pip install -r dev-requirements.txt; fi
           pip install safety
 
       - name: Check dependencies for vulnerabilities
         run: |
-          pip install -r requirements.txt
-          safety check --json || echo "Security check completed with warnings"
+          set +e
+          safety check --json > safety-report.json
+          SAFETY_EXIT=$?
+          if [ "$SAFETY_EXIT" -ne 0 ]; then
+            echo "Security check reported findings (advisory mode)."
+          fi
+          exit 0
         continue-on-error: true
 
       - name: Upload safety report

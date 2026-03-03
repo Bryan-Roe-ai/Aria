@@ -2,12 +2,11 @@ from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import yaml
 import threading
 import time
 from typing import List, Optional, Dict, Any
-from datetime import datetime
 import traceback
 import subprocess
 import signal
@@ -67,7 +66,7 @@ def _compute_training_progress():
       eta_seconds / eta_iso: estimated remaining time until all jobs finish (based on avg succeeded duration)
       average_job_duration_seconds: mean duration of succeeded jobs
     """
-    cfg_path = REPO_ROOT / "autotrain.yaml"
+    cfg_path = REPO_ROOT / "config" / "training" / "autotrain.yaml"
     try:
         cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
         configured_jobs = [j.get("name") for j in cfg.get("jobs", []) if j.get("name")]
@@ -123,7 +122,7 @@ def _compute_training_progress():
             running_log_path = rec.get("log")
         else:
             pending += 1
-        
+
         # Compute per-job ETA if running
         job_eta_sec = None
         if st in {"running", "retry_running"} and rec.get("start_time"):
@@ -137,7 +136,7 @@ def _compute_training_progress():
                     job_eta_sec = round(remaining, 1)
                 except Exception:
                     pass
-        
+
         enriched.append({
             "name": name,
             "status": st,
@@ -302,7 +301,7 @@ def retry_job(job_name: str):
             return jsonify({"error": "job_not_found"}), 404
 
         # Load job from config so we have full definition (dataset, save_dir, etc.)
-        cfg_path = REPO_ROOT / "autotrain.yaml"
+        cfg_path = REPO_ROOT / "config" / "training" / "autotrain.yaml"
         try:
             config_jobs = {j.name: j for j in load_jobs(cfg_path)}
         except Exception:
@@ -359,7 +358,7 @@ def retry_job(job_name: str):
 @app.route("/api/cancel_job/<job_name>", methods=["POST"])
 def cancel_job(job_name: str):
     """Cancel a running or retry_running job by terminating its process.
-    
+
     Concurrency rules:
       - Only jobs with status running or retry_running can be cancelled
       - Requires active PID tracking
@@ -370,22 +369,22 @@ def cancel_job(job_name: str):
         target_entry = _find_job_entry(status_obj, job_name)
         if target_entry is None:
             return jsonify({"error": "job_not_found"}), 404
-        
+
         st = target_entry.get("status")
         if st not in {"running", "retry_running"}:
             return jsonify({"error": "job_not_running", "status": st}), 400
-        
+
         pid = ACTIVE_JOB_PIDS.get(job_name)
         if pid is None:
             return jsonify({"error": "pid_not_tracked"}), 400
-        
+
         # Attempt to terminate process
         try:
             if os.name == 'nt':  # Windows
                 subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], check=False)
             else:
                 os.killpg(os.getpgid(pid), signal.SIGTERM)
-            
+
             # Update status to cancelled
             target_entry["status"] = "cancelled"
             target_entry["cancelled_time"] = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -396,15 +395,15 @@ def cancel_job(job_name: str):
                     target_entry["duration_sec"] = round(elapsed, 2)
                 except Exception:
                     pass
-            
+
             status_obj["generated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
             _write_status(status_obj)
-            
+
             # Remove from active tracking
             del ACTIVE_JOB_PIDS[job_name]
             if ACTIVE_RETRY == job_name:
                 ACTIVE_RETRY = None
-            
+
             return jsonify({"cancelled": True, "job": job_name, "pid": pid})
         except Exception as e:
             return jsonify({"error": "termination_failed", "detail": str(e)}), 500

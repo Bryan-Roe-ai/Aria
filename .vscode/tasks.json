@@ -1,0 +1,141 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pip install (functions)",
+      "type": "shell",
+      "command": "python",
+      "args": ["-m", "pip", "install", "-r", "requirements.txt"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "func: host start",
+      "type": "shell",
+      "command": "func",
+      "args": ["host", "start"],
+      "isBackground": true,
+      "dependsOn": ["pip install (functions)"],
+      "problemMatcher": "$func-python-watch"
+    },
+    {
+      "label": "validate: fast",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/fast_validate.py", "--fail-on-errors"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "test: unit",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/test_runner.py", "--unit"],
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: AutoTrain (dry-run)",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/autotrain.py", "--dry-run"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: AutoTrain (all)",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/autotrain.py"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: Quantum AutoRun (dry-run)",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/quantum_autorun.py", "--dry-run"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: Quantum AutoRun (all)",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/quantum_autorun.py"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: Evaluation AutoRun (dry-run)",
+      "type": "shell",
+      "command": "python",
+      "args": ["scripts/evaluation_autorun.py", "--dry-run"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run: Quantum AutoRun Full",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts/quantum_autorun.py",
+        "--config",
+        "config/quantum/quantum_autorun.yaml"
+      ],
+      "group": "build"
+    },
+    {
+      "label": "Run: Quantum AutoRun Job (heart_quick)",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts/quantum_autorun.py",
+        "--job",
+        "heart_quick",
+        "--config",
+        "config/quantum/quantum_autorun.yaml"
+      ],
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Run: Quantum AutoRun List Jobs",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts/quantum_autorun.py",
+        "--list",
+        "--config",
+        "config/quantum/quantum_autorun.yaml"
+      ],
+      "group": "build"
+    },
+    {
+      "label": "Run: Quantum Training (heart, 2 epochs)",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "quantum/train_custom_dataset.py",
+        "--preset",
+        "heart",
+        "--epochs",
+        "2",
+        "--batch-size",
+        "16",
+        "--n-qubits",
+        "4"
+      ],
+      "isBackground": false,
+      "group": "build"
+    },
+    {
+      "label": "Run: Quantum Training (embedded)",
+      "type": "shell",
+      "command": "/home/bryan/Aria/Aria/.venv/bin/python",
+      "args": ["/home/bryan/Aria/Aria/run_quantum_embedded.py"],
+      "isBackground": false,
+      "group": "build"
+    }
+  ]
+}
