@@ -119,3 +119,12 @@ Add one dated bullet for each material update (scope, conventions, or corrected 
   - `talk-to-ai*.instructions.md`
   - `lora*.instructions.md`
   - `chat-web.instructions.md`
+
+## 12) Copilot Metadata Indexes
+
+- **Starter matrix** (use-case → agent/prompt): `.github/STARTER_MATRIX.md`
+- Instruction index: `.github/instructions/README.md`
+- Prompt index: `.github/prompts/README.md`
+- Chatmode index: `.github/chatmodes/README.md`
+- Agent index: `.github/agents/README.md`
+- Metadata authoring guidance: `.github/instructions/copilot-metadata.instructions.md`

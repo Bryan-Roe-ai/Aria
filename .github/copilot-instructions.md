@@ -59,3 +59,12 @@ Aria is a multi-surface AI platform: interactive character UI, Azure Functions A
 ## Instruction Modules
 
 Use `.github/instructions/*.instructions.md` for path-specific rules (Functions, shared Python, quantum, talk-to-ai, LoRA, chat-web).
+
+## Copilot Metadata Assets
+
+- **Starter matrix** (use-case → agent/prompt): `.github/STARTER_MATRIX.md`
+- Instruction index: `.github/instructions/README.md`
+- Prompt library index: `.github/prompts/README.md`
+- Chatmode index: `.github/chatmodes/README.md`
+- Agent index: `.github/agents/README.md`
+- Metadata authoring rules: `.github/instructions/copilot-metadata.instructions.md`

@@ -115,7 +115,7 @@
 │ CONFIGURATION FILES                                                              │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
-  .github/workflows/        Workflow definitions (12 workflows)
+  .github/workflows/        Workflow definitions (13 workflows)
   .github/labeler.yml       Auto-labeling configuration
   .github/dependabot.yml    Dependency update configuration
   pytest.ini                Test configuration

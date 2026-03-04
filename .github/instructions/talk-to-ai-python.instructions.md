@@ -3,9 +3,10 @@ name: "Chat-CLI-Python"
 description: "Python-specific guidance for tools/talk-to-ai/"
 applyTo: "tools/talk-to-ai/src/**/*.py"
 ---
+
 # Chat CLI – Python files
 
-- Provider detection order (see `shared/chat_providers.py:detect_provider()`): Azure OpenAI → OpenAI → LoRA → Local.
+- Provider detection order (see `shared/chat_providers.py:detect_provider()`): LM Studio → Azure OpenAI → OpenAI → Local (with explicit modes for AGI/quantum/LoRA).
   - Azure requires ALL: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`.
 - Implement providers by subclassing `BaseChatProvider` and implementing `complete(messages, stream)`.
 - Streaming support: emit SSE lines (`data: {json}`) and `[DONE]` sentinel; clients must parse SSE correctly.

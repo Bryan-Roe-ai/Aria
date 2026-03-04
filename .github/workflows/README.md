@@ -5,12 +5,14 @@ This directory contains all GitHub Actions workflows for the Aria repository. Wo
 ## Workflow Organization
 
 ### 🔄 Continuous Integration (CI)
+
 - **`ci-pipeline.yml`** - Main CI pipeline
   - Runs on: Push/PR to main/dev, daily schedule
   - Purpose: Code validation, tests, daily training, model deployment
   - Duration: ~15-30 minutes
 
 ### ✅ Testing Workflows
+
 - **`aria-tests.yml`** - Comprehensive Aria testing
   - Runs on: Changes to `web/aria_web/` or Aria test files
   - Purpose: Multi-version (3.10-3.12), multi-browser E2E tests
@@ -24,12 +26,14 @@ This directory contains all GitHub Actions workflows for the Aria repository. Wo
   - Note: No path filtering, catches broader regressions
 
 ### 🔬 Validation Workflows
+
 - **`auto-validation.yml`** - Orchestrator validation
   - Runs on: Changes to orchestrator configs/scripts, daily schedule
   - Purpose: Validates orchestrator configs under `config/training/`, `config/quantum/`, and `config/evaluation/`
   - Duration: ~5-10 minutes
 
 ### ☁️ Cloud Workflows
+
 - **`azureml-train.yml`** - Azure ML training
   - Runs on: Manual trigger only
   - Purpose: Submit LoRA fine-tuning jobs to Azure ML
@@ -43,6 +47,7 @@ This directory contains all GitHub Actions workflows for the Aria repository. Wo
 ## Workflow Patterns
 
 ### Automatic Triggers
+
 ```yaml
 on:
   push:
@@ -54,6 +59,7 @@ on:
 ```
 
 ### Manual Triggers
+
 ```yaml
 on:
   workflow_dispatch:            # Allows manual execution via GitHub UI
@@ -62,6 +68,7 @@ on:
 ```
 
 ### Path Filtering
+
 ```yaml
 on:
   push:
@@ -73,6 +80,7 @@ on:
 ## Best Practices
 
 ### When to Use Each Workflow
+
 - **Local Development**: Run tests locally first with `pytest`
 - **PR Review**: `e2e-tests.yml` provides quick validation
 - **Aria Changes**: `aria-tests.yml` runs comprehensive tests automatically
@@ -81,11 +89,13 @@ on:
 - **Quantum**: Use `quantum-orchestration.yml` for quantum computing tasks
 
 ### Workflow Naming Convention
+
 - Use descriptive names that indicate purpose
 - Suffix with type: `-tests.yml`, `-validation.yml`, `-train.yml`
 - Group related workflows with consistent prefixes
 
 ### Adding New Workflows
+
 1. Choose appropriate trigger pattern (push/PR/schedule/manual)
 2. Add header comment block explaining purpose
 3. Use path filtering when possible to reduce unnecessary runs
@@ -96,22 +106,26 @@ on:
 ## Troubleshooting
 
 ### Workflow Not Running
+
 - Check branch filters match your target branch
 - Verify path filters include your changed files
 - Ensure required secrets are configured
 
 ### Workflow Failing
+
 - Check job logs in GitHub Actions tab
 - Download artifacts for detailed results
 - Run equivalent commands locally for debugging
 
 ### Reducing CI Time
+
 - Use path filtering to avoid unnecessary runs
 - Cache dependencies (pip, npm)
 - Run expensive jobs only on schedule or manual trigger
 - Parallelize independent jobs with `needs:` dependencies
 
 ## Resources
+
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Workflow Syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions)
 - [Repository Root README](../../README.md)

@@ -3,9 +3,10 @@ name: "Shared-Python"
 description: "Common infrastructure guidance for shared/**/*.py"
 applyTo: "shared/**/*.py"
 ---
+
 # Shared Infrastructure – Python files
 
-- Provider detection (`shared/chat_providers.py`): Azure OpenAI → OpenAI → LoRA → Local.
+- Provider detection (`shared/chat_providers.py`): LM Studio → Azure OpenAI → OpenAI → Local (with explicit modes for AGI/quantum/LoRA).
   - Azure requires: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`.
   - LoRA readiness: adapter dir must contain `adapter_config.json` and `adapter_model.safetensors`.
 - Memory & embeddings (`shared/chat_memory.py`): ensure consistent schema; avoid mutating immutable datasets.

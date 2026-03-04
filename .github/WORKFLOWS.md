@@ -5,7 +5,7 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 ## 📊 Workflow Status
 
 | Workflow | Status | Description |
-|----------|--------|-------------|
+| -------- | ------ | ----------- |
 | CI Pipeline | ![CI Pipeline](https://github.com/Bryan-Roe/Aria/actions/workflows/ci-pipeline.yml/badge.svg) | Main CI with validation, training, and deployment |
 | Code Quality | ![Code Quality](https://github.com/Bryan-Roe/Aria/actions/workflows/code-quality.yml/badge.svg) | Linting, formatting, and security checks |
 | CodeQL Security | ![CodeQL](https://github.com/Bryan-Roe/Aria/actions/workflows/codeql.yml/badge.svg) | Security vulnerability scanning |
@@ -22,9 +22,11 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 ### Core CI/CD Workflows
 
 #### 1. **CI Pipeline** (`ci-pipeline.yml`)
+
 **Triggers:** Push to main/dev, PRs to main, daily at 2 AM UTC
 
 **Jobs:**
+
 - **validate**: Runs orchestrator validation and tests
   - Validates all orchestrators with dry-run
   - Runs unit tests with coverage
@@ -34,9 +36,11 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 - **deploy**: Deploys best models with canary strategy
 
 #### 2. **Code Quality** (`code-quality.yml`) ⭐ NEW
+
 **Triggers:** Push to main/dev, PRs
 
 **Jobs:**
+
 - **lint**: Code linting and formatting checks
   - flake8 for syntax errors and code quality
   - black for code formatting
@@ -46,18 +50,22 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
   - safety check for known vulnerabilities
 
 #### 3. **CodeQL Security** (`codeql.yml`) ⭐ NEW
+
 **Triggers:** Push to main/dev, PRs to main, weekly on Monday
 
 **Jobs:**
+
 - **analyze**: Security vulnerability analysis
   - Scans Python and JavaScript code
   - Uses extended security queries
   - Reports to GitHub Security tab
 
 #### 4. **PR Checks** (`pr-checks.yml`) ⭐ NEW
+
 **Triggers:** Pull requests opened/updated
 
 **Jobs:**
+
 - **validate**: Quick validation checks
   - Validates YAML syntax
   - Runs fast_validate.py
@@ -69,25 +77,31 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 ### Testing Workflows
 
 #### 5. **Auto Validation** (`auto-validation.yml`)
+
 **Triggers:** Push to main (specific paths), daily at 5 AM UTC, manual
 
 **Jobs:**
+
 - **dry-run**: Validates orchestrators without execution
   - Runs auto_bootstrap.py
   - Validates autotrain and quantum_autorun
 
 #### 6. **E2E Tests** (`e2e-tests.yml`)
+
 **Triggers:** Push to main, PRs to main
 
 **Jobs:**
+
 - **integration**: Unit and integration tests
 - **e2e_playwright**: Playwright E2E tests
 - **containerized_chrome**: Pyppeteer E2E tests
 
 #### 7. **Aria Tests** (`aria-tests.yml`)
+
 **Triggers:** Push/PR (web/aria_web changes), manual
 
 **Jobs:**
+
 - **unit-integration-tests**: Tests across Python 3.10, 3.11, 3.12
 - **playwright-e2e**: Playwright E2E tests
 - **pyppeteer-e2e**: Pyppeteer E2E tests
@@ -97,25 +111,31 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 ### Specialized Workflows
 
 #### 8. **Quantum Orchestration** (`quantum-orchestration.yml`)
+
 **Triggers:** Push to main, manual
 
 **Jobs:**
+
 - **run-quantum**: Runs quantum computing workflows
   - Azure login with service principal
   - PowerShell orchestration scripts
 
 #### 9. **Azure ML Training** (`azureml-train.yml`)
+
 **Triggers:** Manual only
 
 **Jobs:**
+
 - **submit-job**: Submits LoRA training to Azure ML
   - Configurable compute target
   - Streams job output
 
 #### 10. **Release** (`release.yml`) ⭐ NEW
+
 **Triggers:** Version tags (v*.*.*), manual
 
 **Jobs:**
+
 - **create-release**: Creates GitHub releases
   - Generates changelog
   - Creates source archives
@@ -124,18 +144,22 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 ### Maintenance Workflows
 
 #### 11. **Stale Issues and PRs** (`stale.yml`) ⭐ NEW
+
 **Triggers:** Daily at midnight UTC, manual
 
 **Jobs:**
+
 - **stale**: Manages stale issues and PRs
   - Marks issues stale after 60 days
   - Marks PRs stale after 30 days
   - Auto-closes after warning period
 
 #### 12. **Workflow Validation** (`workflow-validation.yml`) ⭐ NEW
+
 **Triggers:** Changes to workflow files, push to main
 
 **Jobs:**
+
 - **validate-workflows**: Validates workflow syntax
   - YAML syntax checking
   - Structure validation
@@ -164,7 +188,7 @@ Add workflow status badges to any markdown file:
 
 ### Monitoring Workflow Runs
 
-- **All runs**: https://github.com/Bryan-Roe/Aria/actions
+- **All runs**: <https://github.com/Bryan-Roe/Aria/actions>
 - **Failed runs**: Filter by "Status: Failure"
 - **Scheduled runs**: Filter by "Event: schedule"
 
@@ -229,16 +253,19 @@ act pull_request
 ### Common Issues
 
 **Workflow not triggering:**
+
 - Check trigger conditions (branches, paths)
 - Verify workflow file syntax
 - Check if workflow is disabled
 
 **Tests failing:**
+
 - Check logs in Actions tab
 - Download test artifacts for detailed reports
 - Run tests locally to reproduce
 
 **Authentication errors:**
+
 - Verify secrets are configured
 - Check token permissions
 - Ensure service principal credentials are valid

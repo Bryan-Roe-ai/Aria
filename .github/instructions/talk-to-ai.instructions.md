@@ -3,9 +3,10 @@ name: "Chat-CLI-workspace"
 description: "Slim instructions for tools/talk-to-ai/"
 applyTo: "tools/talk-to-ai/**"
 ---
+
 # Chat CLI – workspace-specific guidance
 
-- Provider detection order (see `shared/chat_providers.py:detect_provider()`): Azure OpenAI → OpenAI → LoRA → Local.
+- Provider detection order (see `shared/chat_providers.py:detect_provider()`): LM Studio → Azure OpenAI → OpenAI → Local (with explicit modes for AGI/quantum/LoRA).
   - Azure requires ALL: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`.
 - CLI usage examples:
   - Local (no keys): `python .\\tools/talk-to-ai\\src\\chat_cli.py --provider local --once "Hello"`
