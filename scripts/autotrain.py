@@ -426,7 +426,7 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
         else:
             result["validated_type"] = "preflight"
 
-    t0 = time.time()
+    t0 = time.perf_counter()
     with log_path.open("w", encoding="utf-8") as logf:
         logf.write(f"$ {' '.join(str(x) for x in cmd)}\n\n")
         logf.flush()
@@ -449,7 +449,7 @@ def run_job(job: Job, dry_run: bool = False, job_index: int = 0, total_jobs: int
         except Exception:
             pass
 
-    duration = time.time() - t0
+    duration = time.perf_counter() - t0
     result["return_code"] = rc
     result["duration_sec"] = round(duration, 2)
     result["duration_human"] = f"{int(duration // 60)}m {int(duration % 60)}s"
@@ -568,7 +568,7 @@ def main() -> None:
 
     ensure_dirs(DATA_OUT)
     results: List[Dict[str, Any]] = []
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     for idx, j in enumerate(jobs):
         # Check if job was recently completed successfully and skip if --resume
@@ -626,7 +626,7 @@ def main() -> None:
 
         # Show estimated time remaining (after including this job's duration)
         if not args.dry_run and res.get("status") in {"succeeded", "failed"}:
-            elapsed = time.time() - start_time
+            elapsed = time.perf_counter() - start_time
             avg_per_job = elapsed / (idx + 1)
             remaining_jobs = len(jobs) - (idx + 1)
             eta_sec = avg_per_job * remaining_jobs

@@ -272,7 +272,7 @@ def run_job(job: EvalJob, dry_run: bool = False) -> Dict[str, Any]:
 
     # Execute evaluation
     env = os.environ.copy()
-    t0 = time.time()
+    t0 = time.perf_counter()
 
     with log_path.open("w", encoding="utf-8") as logf:
         logf.write(f"$ {' '.join(str(x) for x in cmd)}\n\n")
@@ -287,7 +287,7 @@ def run_job(job: EvalJob, dry_run: bool = False) -> Dict[str, Any]:
         )
         rc = proc.wait()
 
-    duration = time.time() - t0
+    duration = time.perf_counter() - t0
     result["return_code"] = rc
     result["duration_sec"] = round(duration, 2)
     result["status"] = "succeeded" if rc == 0 else "failed"

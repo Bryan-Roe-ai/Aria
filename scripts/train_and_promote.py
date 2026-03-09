@@ -65,9 +65,9 @@ def run_training(
     
     log(f"Training command: {' '.join(cmd)}")
     
-    t0 = time.time()
+    t0 = time.perf_counter()
     result = subprocess.run(cmd, cwd=str(REPO_ROOT), capture_output=True, text=True)
-    duration = time.time() - t0
+    duration = time.perf_counter() - t0
     
     if result.returncode == 0:
         log(f"Training succeeded in {duration:.1f}s", "SUCCESS")
@@ -109,9 +109,9 @@ def run_evaluation_and_promotion(
     if dry_run:
         cmd.append("--dry-run")
     
-    t0 = time.time()
+    t0 = time.perf_counter()
     result = subprocess.run(cmd, cwd=str(REPO_ROOT), capture_output=True, text=True)
-    duration = time.time() - t0
+    duration = time.perf_counter() - t0
     
     if result.returncode == 0:
         log(f"Evaluation succeeded in {duration:.1f}s", "SUCCESS")

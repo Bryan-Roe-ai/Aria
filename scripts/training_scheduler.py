@@ -133,9 +133,9 @@ class TrainingScheduler:
         for key, value in job.config.items():
             cmd.extend([f"--{key}", str(value)])
         
-        t0 = time.time()
+        t0 = time.perf_counter()
         result = subprocess.run(cmd, cwd=str(REPO_ROOT), capture_output=True, text=True)
-        duration = time.time() - t0
+        duration = time.perf_counter() - t0
         
         job.last_run = datetime.now().isoformat()
         job.runs_completed += 1

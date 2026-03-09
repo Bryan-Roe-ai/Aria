@@ -171,7 +171,7 @@ def run_pytest(suite: TestSuite, coverage: bool = False, verbose: int = 1) -> Te
         "--disable-warnings",
     ])
 
-    start = time.time()
+    start = time.perf_counter()
     result = TestResult(
         suite=suite.name,
         status="error",
@@ -189,7 +189,7 @@ def run_pytest(suite: TestSuite, coverage: bool = False, verbose: int = 1) -> Te
 
         result.exit_code = proc.returncode
         result.output = proc.stdout + "\n" + proc.stderr
-        result.duration_sec = time.time() - start
+        result.duration_sec = time.perf_counter() - start
 
         # Strip ANSI escape codes for easier parsing
         ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
@@ -241,7 +241,7 @@ def run_pytest(suite: TestSuite, coverage: bool = False, verbose: int = 1) -> Te
     except Exception as e:
         result.status = "error"
         result.output = f"Exception during test execution: {e}"
-        result.duration_sec = time.time() - start
+        result.duration_sec = time.perf_counter() - start
 
     # Summary
     status_symbols = {

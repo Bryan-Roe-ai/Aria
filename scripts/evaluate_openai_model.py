@@ -113,12 +113,12 @@ def run(dataset: Path, max_samples: int | None, metrics: List[str], deployment: 
 
     timings: List[float] = []
     for ex in data:
-        t0 = time.time()
+        t0 = time.perf_counter()
         if use_openai:
             p = call_openai_completion(ex, deployment)
         else:
             p = naive_predict(ex)
-        timings.append((time.time() - t0) * 1000.0)
+        timings.append((time.perf_counter() - t0) * 1000.0)
         preds.append(p)
         expects.append(ex.get("expected") or ex.get("label"))
 
