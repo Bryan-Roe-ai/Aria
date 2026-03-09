@@ -5,6 +5,10 @@
   "generation_seed": 99,
   "workflows_parsed": 13,
   "workflow_names": [
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
     "QAI CI Pipeline",
     "Workflow Validation",
     "Stale Issues and PRs",
@@ -20,4 +24,24 @@
     "Code Quality"
   ],
   "generation_date": "2026-03-03T15:22:21.455469"
+<<<<<<< Updated upstream
+=======
+=======
+    "Aria E2E Tests",
+    "Auto Validation",
+    "AzureML LoRA Train",
+    "QAI CI Pipeline",
+    "Code Quality",
+    "CodeQL Security Scanning",
+    "E2E + Integration Tests",
+    "Deploy to GitHub Pages",
+    "PR Checks",
+    "Quantum Automation",
+    "Release",
+    "Stale Issues and PRs",
+    "Workflow Validation"
+  ],
+  "generation_date": "2026-03-01T09:30:35.470305"
+>>>>>>> origin/sync/github-sync-20260307-085533
+>>>>>>> Stashed changes
 }
