@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server that exposes quantum computing and quantu
 
 ## Features
 
-The Quantum AI MCP server provides 8 powerful tools:
+The Quantum AI MCP server provides 12 powerful tools:
 
 ### Quantum Circuit Creation & Simulation
 
@@ -22,6 +22,16 @@ The Quantum AI MCP server provides 8 powerful tools:
 ### Quantum Machine Learning
 
 - **train_quantum_classifier** - Train hybrid quantum-classical ML models on standard datasets
+- **run_variational_circuit** - Execute the enhanced VQC with configurable encoding/entanglement
+
+### Quantum Algorithms & Visualization
+
+- **grover_search** - Run Grover's search algorithm and report success probability
+- **visualize_cached_circuit** - Render cached Qiskit circuits to PNG/text for quick inspection
+
+### Azure Quantum Test Harness
+
+- **azure_quantum_test_suite** - List Azure targets or run the lightweight validation suite (IonQ/Quantinuum/Rigetti)
 
 ## Installation
 
@@ -180,6 +190,42 @@ job = await session.call_tool(
 )
 ```
 
+### 4. Grover Search for Marked States
+
+```python
+grover = await session.call_tool(
+    "grover_search",
+    {
+        "n_qubits": 3,
+        "marked_states": [5],
+        "shots": 2000
+    }
+)
+```
+
+### 5. Execute Enhanced Variational Circuit
+
+```python
+vqc = await session.call_tool(
+    "run_variational_circuit",
+    {
+        "input_vector": [0.1, 0.2, -0.3, 0.4],
+        "encoding": "hybrid",
+        "entanglement": "pyramid",
+        "n_layers": 3
+    }
+)
+```
+
+### 6. Visualize a Cached Circuit
+
+```python
+viz = await session.call_tool(
+    "visualize_cached_circuit",
+    {"circuit_id": "<circuit-id>", "style": "mpl"}
+)
+```
+
 ## Tool Reference
 
 ### create_quantum_circuit
@@ -212,6 +258,51 @@ job = await session.call_tool(
 - `entanglement` (string, optional, default="linear") - "linear", "circular", or "full"
 
 **Returns:** Training metrics, final accuracy, and loss
+
+### run_variational_circuit
+
+**Parameters:**
+
+- `input_vector` (array, required) - Feature vector for the circuit
+- `n_qubits` (int, default=4) - Number of qubits
+- `n_layers` (int, default=3) - Variational layers
+- `encoding` (string, default="hybrid") - "angle", "amplitude", "iqp", "hybrid"
+- `entanglement` (string, default="pyramid") - "linear", "circular", "full", "pyramid", "alternating"
+- `use_data_reuploading` (bool, default=true) - Reupload data between layers
+- `shots` (int, optional) - Measurement shots (None for statevector)
+
+**Returns:** Pauli-Z expectations plus circuit config summary
+
+### grover_search
+
+**Parameters:**
+
+- `marked_states` (array, required) - Decimal states to mark (e.g., `[5]` for |101⟩)
+- `n_qubits` (int, default=3) - Number of qubits (search space 2^n)
+- `iterations` (int, optional) - Override Grover iterations (defaults to optimal)
+- `shots` (int, default=1000) - Measurement shots
+
+**Returns:** Success probability and top measured states
+
+### visualize_cached_circuit
+
+**Parameters:**
+
+- `circuit_id` (string, required) - ID from `create_quantum_circuit`
+- `style` (string, default="text") - "mpl", "text", or "latex"
+- `filename` (string, optional) - Override output filename
+
+**Returns:** Filesystem path to the saved visualization (PNG/TXT/TEX)
+
+### azure_quantum_test_suite
+
+**Parameters:**
+
+- `list_only` (bool, default=true) - Only list targets (no jobs submitted)
+- `target_name` (string, default="ionq.simulator") - Target when running tests
+- `shots` (int, default=100) - Shots per circuit when running tests
+
+**Returns:** Target list or per-circuit results summary
 
 ### connect_azure_quantum
 

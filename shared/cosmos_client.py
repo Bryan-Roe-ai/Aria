@@ -160,10 +160,101 @@ def record_chat_session(user_id: str, messages: list[Dict[str, Any]], provider: 
         logging.warning(f"[cosmos] Failed to upsert chat session: {e}")
         return False
 
+# ---------------- Worlds Container & Helpers -----------------
+_WORLDS_CONTAINER = None  # lazy-created container for aria worlds
+
+
+def worlds_container():
+    """Return (and lazily create) the dedicated worlds container.
+
+    Partition key: /theme_seed for high-cardinality and point lookups.
+    Container name configurable via COSMOS_WORLDS_CONTAINER (default: aria_worlds).
+    Gracefully returns None if Cosmos disabled or sdk missing.
+    """
+    global _WORLDS_CONTAINER
+    if not init():  # ensures base client init
+        return None
+    if CosmosClient is None:  # sdk missing
+        return None
+    if _WORLDS_CONTAINER is not None:
+        return _WORLDS_CONTAINER
+    try:
+        db = _CLIENT.get_database_client(os.getenv("COSMOS_DATABASE", "qai"))  # type: ignore
+        worlds_name = os.getenv("COSMOS_WORLDS_CONTAINER", "aria_worlds")
+        # Create if not exists with partition key /theme_seed
+        from azure.cosmos import PartitionKey  # type: ignore
+        _WORLDS_CONTAINER = db.create_container_if_not_exists(
+            id=worlds_name,
+            partition_key=PartitionKey(path="/theme_seed"),
+            offer_throughput=400,
+        )
+        return _WORLDS_CONTAINER
+    except Exception as e:
+        logging.warning(f"[cosmos] Failed to get/create worlds container: {e}")
+        return None
+
+
+def record_world(doc: Dict[str, Any]) -> bool:
+    """Upsert a world document into the dedicated worlds container.
+
+    Expected doc schema (minimum):
+      id: stable id (e.g., world-<theme>-<seed>)
+      theme_seed: <theme>_<seed>
+      theme, seed, objects, environment, createdUtc, generationMethod, objectCount
+    Additional metadata allowed. TTL may be applied externally at container level.
+    """
+    c = worlds_container()
+    if c is None:
+        return False
+    try:
+        c.upsert_item(doc)
+        return True
+    except Exception as e:
+        logging.warning(f"[cosmos] Failed to upsert world doc: {e}")
+        return False
+
+
+def get_world(theme: str, seed: Union[str, int]) -> Optional[Dict[str, Any]]:
+    """Fetch a single world by theme + seed. Returns None if not found or unavailable."""
+    c = worlds_container()
+    if c is None:
+        return None
+    try:
+        seed_str = str(seed)
+        theme_seed = f"{theme}_{seed_str}"
+        query = f"SELECT * FROM c WHERE c.theme_seed = '{theme_seed}'"
+        items = list(c.query_items(query=query, enable_cross_partition_query=True))
+        return items[0] if items else None
+    except Exception as e:
+        logging.warning(f"[cosmos] get_world error: {e}")
+        return None
+
+
+def list_worlds(limit: int = 100) -> list[Dict[str, Any]]:
+    """List world documents (lightweight metadata). Returns empty list if unavailable."""
+    c = worlds_container()
+    if c is None:
+        return []
+    try:
+        query = "SELECT c.id, c.theme, c.seed, c.objectCount, c.generationMethod, c.createdUtc FROM c"
+        items = []
+        for item in c.query_items(query=query, enable_cross_partition_query=True):
+            items.append(item)
+            if len(items) >= limit:
+                break
+        return items
+    except Exception as e:
+        logging.warning(f"[cosmos] list_worlds error: {e}")
+        return []
+
 __all__ = [
     "init",
     "record_chat_message",
     "record_chat_session",
     "container",
     "health",
+    "worlds_container",
+    "record_world",
+    "get_world",
+    "list_worlds",
 ]

@@ -6,7 +6,8 @@ from unittest.mock import patch
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "scripts"))
+if str(REPO_ROOT / "scripts" / "evaluation") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "scripts" / "evaluation"))
 
 from quantum_autorun import (  # type: ignore
     QJob,
@@ -101,7 +102,8 @@ class TestCommandBuilder:
         j = QJob(name="t", preset="heart", epochs=1, n_qubits=4)
         cmd = build_command(j)
         assert len(cmd) >= 2
-        assert cmd[0].endswith("python.exe") or cmd[0].endswith("python")
+        # Check for python executable (python, python.exe, python3, python3.14, etc.)
+        assert cmd[0].endswith("python.exe") or cmd[0].endswith("python") or "python3" in cmd[0]
         assert "train_custom_dataset.py" in cmd[1]
         assert "--preset" in cmd
         assert "heart" in cmd

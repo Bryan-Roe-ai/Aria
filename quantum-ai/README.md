@@ -9,6 +9,62 @@ A hybrid quantum-classical machine learning framework leveraging Azure Quantum f
 
 ---
 
+## 🆕 **New Quantum Circuit Tools**
+
+**Four powerful new capabilities for quantum computing:**
+
+### 1. **Grover's Search Algorithm** ([grover_circuit.py](src/grover_circuit.py))
+Quantum search algorithm finding marked items in O(√N) time:
+```python
+from src.grover_circuit import GroverCircuit
+
+grover = GroverCircuit(n_qubits=3, shots=1000)
+results = grover.search(marked_states=[5])  # Search for item 5 in 8-item database
+print(f"Success probability: {results['success_probability']:.1%}")
+grover.visualize_amplitudes(marked_states=[5])  # Amplitude amplification plot
+```
+
+### 2. **Enhanced Variational Circuits** ([enhanced_variational_circuit.py](src/enhanced_variational_circuit.py))
+Advanced VQC with multiple encoding strategies:
+```python
+from src.enhanced_variational_circuit import EnhancedVariationalCircuit
+import torch
+
+circuit = EnhancedVariationalCircuit(
+    n_qubits=4,
+    n_layers=3,
+    encoding="hybrid",  # Options: angle, amplitude, iqp, hybrid
+    entanglement="pyramid",  # Options: linear, circular, full, pyramid, alternating
+    use_data_reuploading=True
+)
+output = circuit(torch.randn(4))
+```
+
+### 3. **Circuit Visualization** ([circuit_visualizer.py](src/circuit_visualizer.py))
+Unified visualization for PennyLane and Qiskit circuits:
+```python
+from src.circuit_visualizer import CircuitVisualizer
+
+viz = CircuitVisualizer(output_dir="circuit_visualizations")
+viz.visualize_pennylane(qnode, sample_input=[0.5, 1.0, 0.3])
+viz.visualize_qiskit(qiskit_circuit, style="mpl")
+viz.export_html(circuit, title="My Circuit", filename="circuit.html")
+```
+
+### 4. **Azure Quantum Tester** ([azure_quantum_tester.py](src/azure_quantum_tester.py))
+Simplified Azure Quantum job submission:
+```python
+from src.azure_quantum_tester import AzureQuantumTester
+
+tester = AzureQuantumTester()
+tester.list_targets()  # Show available quantum hardware
+results = tester.run_test_suite(target_name='ionq.simulator', shots=100)
+```
+
+**🚀 Try all tools:** `python demo_quantum_circuits.py`
+
+---
+
 ## 📋 Quick Start
 
 ### 🎨 **NEW: Interactive Web Dashboard**
@@ -30,6 +86,96 @@ Then open **http://localhost:5000** for:
 **[Full Dashboard Guide →](./WEB_DASHBOARD_README.md)**
 
 ---
+
+### 🔐 Quick-Run: Fraud Detection API (Port 5050)
+
+Run the Flask API for the fraud/ionosphere demo on port 5050.
+
+```bash
+cd quantum-ai
+# Start on port 5050 (recommended to avoid conflicts)
+PORT=5050 python fraud_detection_api.py
+```
+
+Verify endpoints:
+
+```bash
+# Health
+curl -s http://localhost:5050/health | python -m json.tool
+
+# Single prediction (example features)
+curl -s -X POST http://localhost:5050/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [1.0, 2.0, 3.0, 4.0]}' | python -m json.tool
+
+# Model info
+curl -s http://localhost:5050/model_info | python -m json.tool
+```
+
+Notes:
+- Configure host/port via `HOST` and `PORT` env vars; defaults are `0.0.0.0:5001`.
+- If port 5000 is busy, use `PORT=5050` as shown above.
+- This uses Flask’s development server; for production, deploy behind a WSGI server (gunicorn/uvicorn).
+
+---
+
+### 🛡️ Production Start (Gunicorn on 5050)
+
+Minimal Gunicorn command:
+
+```bash
+pip install gunicorn
+cd quantum-ai
+gunicorn -w 2 -b 0.0.0.0:5050 fraud_detection_api:app
+# or
+# gunicorn -w 2 -b 0.0.0.0:5050 wsgi:app
+```
+
+Notes:
+- The entrypoint is `fraud_detection_api:app` (Flask app object).
+- Ensure the working directory is `quantum-ai` so model files in `results/` resolve.
+
+---
+
+### 🧩 systemd Unit (Production-style on 5050)
+
+Create `/etc/systemd/system/quantum-ai.service`:
+
+```ini
+[Unit]
+Description=Quantum AI Fraud Detection API (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/aria/quantum-ai
+ExecStart=/usr/bin/gunicorn -w 2 -b 0.0.0.0:5050 wsgi:app
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now quantum-ai
+sudo systemctl status quantum-ai
+```
+
+Tail logs:
+
+```bash
+sudo journalctl -u quantum-ai -f
+```
+
+If your code and model files live elsewhere, update `WorkingDirectory` accordingly.
 
 **New to this project?** Start here:
 

@@ -1,1 +1,0 @@
-{"messages": [{"role": "user", "content": "How does the local chat provider respond to a greeting?"}, {"role": "assistant", "content": "The local provider generates a concise heuristic reply; this synthetic example exists because no real logs were found."}], "hash": "fc25a50096b1833056a3c404", "source_file": "<fallback>"}

@@ -37,7 +37,7 @@ def test_model_info():
     print("TEST 2: Model Info")
     print("="*70)
     
-    response = requests.get(f"{BASE_URL}/api/model_info")
+    response = requests.get(f"{BASE_URL}/api/model_info", timeout=REQUEST_TIMEOUT)
     print(f"Status Code: {response.status_code}")
     print(f"Response: {json.dumps(response.json(), indent=2)}")
     
@@ -236,7 +236,7 @@ def main():
     
     # Check if API is running
     try:
-        response = requests.get(f"{BASE_URL}/api/health", timeout=5)
+        response = requests.get(f"{BASE_URL}/api/health", timeout=REQUEST_TIMEOUT)
         if response.status_code != 200:
             print("\n❌ API is not responding correctly")
             print("   Make sure the API is running:")
@@ -290,3 +290,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
