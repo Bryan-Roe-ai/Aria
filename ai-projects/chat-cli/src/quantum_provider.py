@@ -1,65 +1,173 @@
 """
-Quantum-Enhanced Chat Provider
-Uses quantum computing to enhance AI responses with quantum circuit analysis
+Quantum LLM Chat Provider
+Uses a trained quantum-enhanced language model for chat interactions
+Integrates real quantum circuits in the attention mechanism
 """
 import sys
 import logging
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator, Optional, List, Dict
+import json
 
-# Add quantum-ai to path
-quantum_path = Path(__file__).resolve().parent.parent.parent / "quantum-ai" / "src"
-if str(quantum_path) not in sys.path:
-    sys.path.insert(0, str(quantum_path))
+import torch
+import torch.nn.functional as F
+
+# Add quantum-ml to path
+repo_root = Path(__file__).resolve().parent.parent.parent.parent
+quantum_ml_path = repo_root / "ai-projects" / "quantum-ml"
+quantum_ml_src = quantum_ml_path / "src"
+for p in [str(quantum_ml_path), str(quantum_ml_src)]:
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
 try:
-    from quantum_classifier import QuantumClassifier
-    QUANTUM_AVAILABLE = True
-except ImportError:
-    QUANTUM_AVAILABLE = False
-    logging.warning("Quantum modules not available - falling back to classical mode")
+    from quantum_transformer import QuantumLLM, QUANTUM_AVAILABLE
+    QUANTUM_LLM_AVAILABLE = True
+except ImportError as e:
+    QUANTUM_LLM_AVAILABLE = False
+    logging.warning(f"QuantumLLM not available: {e}")
 
 from chat_providers import BaseChatProvider, ProviderChoice, RoleMessage
 
 logger = logging.getLogger(__name__)
 
 
-class QuantumChatProvider(BaseChatProvider):
+class QuantumLLMChatProvider(BaseChatProvider):
     """
-    A chat provider that enhances responses with quantum computing insights.
+    Chat provider using a trained quantum-enhanced language model.
     
-    Uses quantum circuits to analyze sentiment, classify intents, and provide
-    quantum-inspired responses.
+    Loads a checkpoint from training and uses the quantum LLM for text generation.
+    Quantum circuits are integrated in the attention mechanism.
     """
     
     def __init__(
         self,
-        model: str = "quantum-enhanced-local",
-        temperature: float = 0.7,
-        max_output_tokens: int = 1024,
+        model_path: str,
+        temperature: float = 0.8,
+        max_output_tokens: int = 200,
         **kwargs
     ):
         super().__init__()
-        self.model = model
+        self.model_path = Path(model_path)
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        # Initialize quantum classifier if available
-        self.quantum_classifier = None
-        if QUANTUM_AVAILABLE:
-            try:
-                self.quantum_classifier = QuantumClassifier()
-                logger.info("Quantum classifier initialized successfully")
-            except Exception as e:
-                logger.warning(f"Could not initialize quantum classifier: {e}")
+        # Load model
+        self.model = None
+        self.char_to_idx = {}
+        self.idx_to_char = {}
+        self.vocab_size = 0
+        
+        if not QUANTUM_LLM_AVAILABLE:
+            logger.error("QuantumLLM not available - cannot initialize provider")
+            raise ImportError("QuantumLLM not available")
+        
+        try:
+            self._load_model()
+            logger.info(f"Quantum LLM loaded from {self.model_path}")
+        except Exception as e:
+            logger.error(f"Failed to load quantum LLM: {e}")
+            raise
+    
+    def _load_model(self):
+        """Load the trained quantum LLM from checkpoint."""
+        checkpoint_path = self.model_path / "quantum_llm_checkpoint.pt"
+        
+        if not checkpoint_path.exists():
+            raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+        
+        logger.info(f"Loading checkpoint from {checkpoint_path}")
+        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        
+        # Extract config
+        self.vocab_size = checkpoint['vocab_size']
+        self.char_to_idx = checkpoint['char_to_idx']
+        self.idx_to_char = checkpoint['idx_to_char']
+        
+        # Create model
+        self.model = QuantumLLM(
+            vocab_size=self.vocab_size,
+            d_model=checkpoint['d_model'],
+            n_heads=checkpoint['n_heads'],
+            n_layers=checkpoint['n_layers'],
+            d_ffn=checkpoint['d_ffn'],
+            max_seq_length=checkpoint['max_seq_length'],
+            n_qubits=checkpoint['n_qubits'],
+            n_quantum_layers=2,
+            dropout=0.0,  # No dropout for inference
+            use_quantum=True
+        ).to(self.device)
+        
+        # Load weights
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.model.eval()
+        
+        logger.info(f"Model loaded: {self.vocab_size} vocab, "
+                   f"{checkpoint['n_qubits']} qubits, "
+                   f"{checkpoint['n_layers']} layers")
+    
+    def _encode_text(self, text: str) -> torch.Tensor:
+        """Encode text to token IDs."""
+        indices = [self.char_to_idx.get(c, 0) for c in text]
+        return torch.tensor(indices, dtype=torch.long, device=self.device)
+    
+    def _decode_tokens(self, tokens: torch.Tensor) -> str:
+        """Decode token IDs to text."""
+        indices = tokens.cpu().tolist()
+        chars = [self.idx_to_char.get(i, '') for i in indices]
+        return ''.join(chars)
+    
+    def _generate(self, prompt: str, max_tokens: int) -> str:
+        """Generate text using the quantum LLM."""
+        # Encode prompt
+        context = self._encode_text(prompt)
+        
+        # Limit context length
+        max_context = 128  # Adjust based on model's max_seq_length
+        if len(context) > max_context:
+            context = context[-max_context:]
+        
+        context = context.unsqueeze(0)  # Add batch dimension
+        
+        generated = []
+        
+        with torch.no_grad():
+            for _ in range(max_tokens):
+                # Forward pass
+                logits = self.model(context)  # [1, seq_len, vocab_size]
+                
+                # Get logits for last position
+                next_logits = logits[0, -1, :] / self.temperature
+                
+                # Sample next token
+                probs = F.softmax(next_logits, dim=-1)
+                next_token = torch.multinomial(probs, num_samples=1)
+                
+                # Append to context
+                context = torch.cat([context, next_token.unsqueeze(0)], dim=1)
+                
+                # Keep context window manageable
+                if context.size(1) > max_context:
+                    context = context[:, -max_context:]
+                
+                # Decode and collect
+                char = self.idx_to_char.get(next_token.item(), '')
+                generated.append(char)
+                
+                # Stop on newline after some content
+                if char == '\n' and len(generated) > 20:
+                    break
+        
+        return ''.join(generated)
     
     def complete(
         self, 
-        messages: list[RoleMessage], 
+        messages: List[RoleMessage], 
         stream: bool = False
     ) -> str | Iterator[str]:
         """
-        Generate a response using quantum-enhanced processing.
+        Generate a response using the quantum LLM.
         
         Args:
             messages: Conversation history
@@ -68,213 +176,80 @@ class QuantumChatProvider(BaseChatProvider):
         Returns:
             Response string or iterator of response chunks
         """
-        # Extract last user message
-        user_message = ""
-        for msg in reversed(messages):
-            if msg.get("role") == "user":
-                user_message = msg.get("content", "")
-                break
+        if not self.model:
+            error_msg = "Model not loaded"
+            logger.error(error_msg)
+            return error_msg if not stream else iter([error_msg])
         
-        # Analyze with quantum circuit if available
-        quantum_insight = ""
-        if self.quantum_classifier and QUANTUM_AVAILABLE:
-            try:
-                quantum_insight = self._quantum_analysis(user_message)
-            except Exception as e:
-                logger.warning(f"Quantum analysis failed: {e}")
+        # Build prompt from conversation
+        prompt_parts = []
+        for msg in messages[-5:]:  # Use last 5 messages for context
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            
+            if role == "user":
+                prompt_parts.append(f"User: {content}\n")
+            elif role == "assistant":
+                prompt_parts.append(f"Assistant: {content}\n")
+        
+        prompt_parts.append("Assistant: ")
+        prompt = ''.join(prompt_parts)
         
         # Generate response
-        response = self._generate_response(user_message, quantum_insight, messages)
-        
-        if stream:
-            return self._stream_response(response)
-        else:
-            return response
-    
-    def _quantum_analysis(self, text: str) -> str:
-        """
-        Perform quantum circuit analysis on the input text.
-        
-        Args:
-            text: Input text to analyze
-            
-        Returns:
-            Quantum insights about the text
-        """
-        # Simple sentiment analysis using quantum classifier
-        # Convert text to numeric features (simplified for demo)
-        import hashlib
-        hash_obj = hashlib.md5(text.encode())
-        hash_bytes = hash_obj.digest()[:8]  # Use first 8 bytes
-        
-        # Convert to features in range [0, 1]
-        features = [b / 255.0 for b in hash_bytes]
-        
-        # Pad or truncate to match quantum circuit size
-        n_qubits = self.quantum_classifier.n_qubits
-        if len(features) < n_qubits:
-            features.extend([0.0] * (n_qubits - len(features)))
-        else:
-            features = features[:n_qubits]
-        
-        # Run quantum circuit (simplified analysis)
         try:
-            import torch
-            import numpy as np
+            response = self._generate(prompt, self.max_output_tokens)
+            response = response.strip()
             
-            inputs = torch.tensor(features, dtype=torch.float32) * 2 * np.pi
-            # Create random weights for demo (in production, use trained weights)
-            weights = torch.randn(
-                self.quantum_classifier.n_layers,
-                n_qubits,
-                2,
-                dtype=torch.float32
-            ) * 0.1
+            # Add quantum indicator
+            response = f"🔬 [Quantum LLM] {response}"
             
-            # Get quantum circuit output
-            output = self.quantum_classifier.forward(inputs.unsqueeze(0), weights)
-            
-            # Interpret output
-            avg_value = float(output.mean())
-            if avg_value > 0.3:
-                sentiment = "positive"
-            elif avg_value < -0.3:
-                sentiment = "negative"
+            if stream:
+                return self._stream_response(response)
             else:
-                sentiment = "neutral"
-            
-            return f"[Quantum Analysis: {sentiment} sentiment detected, coherence: {abs(avg_value):.2f}]"
+                return response
+                
         except Exception as e:
-            logger.error(f"Quantum circuit execution failed: {e}")
-            return "[Quantum Analysis: unavailable]"
-    
-    def _generate_response(
-        self, 
-        user_message: str, 
-        quantum_insight: str,
-        messages: list[RoleMessage]
-    ) -> str:
-        """
-        Generate a response based on quantum analysis and conversation history.
-        
-        Args:
-            user_message: Current user message
-            quantum_insight: Quantum analysis results
-            messages: Full conversation history
-            
-        Returns:
-            Generated response
-        """
-        # Simple rule-based responses enhanced with quantum insights
-        message_lower = user_message.lower()
-        
-        # Quantum-specific queries
-        if "quantum" in message_lower:
-            if "how" in message_lower or "what" in message_lower:
-                return (
-                    f"🔬 {quantum_insight}\n\n"
-                    "I'm powered by quantum computing! I use variational quantum circuits "
-                    "to analyze your messages at a quantum level. This allows me to detect "
-                    "subtle patterns and sentiment through quantum superposition and entanglement.\n\n"
-                    "Would you like to learn more about quantum machine learning?"
-                )
-            elif "circuit" in message_lower:
-                return (
-                    f"🔬 {quantum_insight}\n\n"
-                    "My quantum circuits use parametrized rotation gates (RY, RZ) and "
-                    "CNOT gates for entanglement. Each layer processes your input through "
-                    "quantum superposition, enabling parallel exploration of solution spaces.\n\n"
-                    "The circuit has {self.quantum_classifier.n_qubits} qubits and "
-                    "{self.quantum_classifier.n_layers} layers!"
-                )
-        
-        # General queries with quantum enhancement
-        greetings = ["hello", "hi", "hey", "greetings"]
-        if any(g in message_lower for g in greetings):
-            return (
-                f"🔬 {quantum_insight}\n\n"
-                "Hello! I'm a quantum-enhanced AI assistant. I use real quantum computing "
-                "principles to analyze and respond to your messages. How can I help you today?"
-            )
-        
-        # Questions
-        if "?" in user_message:
-            if len(user_message.split()) < 5:
-                return (
-                    f"🔬 {quantum_insight}\n\n"
-                    "That's an interesting question! While I'm a simplified quantum-enhanced "
-                    "system, I'd be happy to discuss quantum computing, machine learning, "
-                    "or help with other topics. Could you provide more details?"
-                )
-            else:
-                return (
-                    f"🔬 {quantum_insight}\n\n"
-                    "Based on quantum analysis of your question, I detect you're seeking "
-                    "detailed information. I'm currently in demo mode, but I can discuss:\n"
-                    "• Quantum computing basics\n"
-                    "• Quantum machine learning\n"
-                    "• Variational quantum circuits\n"
-                    "• Azure Quantum integration\n\n"
-                    "What would you like to explore?"
-                )
-        
-        # Default response with quantum flavor
-        return (
-            f"🔬 {quantum_insight}\n\n"
-            "I've processed your message through my quantum circuit. As a quantum-enhanced AI, "
-            "I combine classical language understanding with quantum computing principles. "
-            "I'm still learning, but I can discuss quantum computing topics and provide "
-            "quantum-analyzed responses!\n\n"
-            "Try asking about quantum circuits, qubits, or superposition!"
-        )
+            error_msg = f"Generation failed: {e}"
+            logger.error(error_msg)
+            return error_msg if not stream else iter([error_msg])
     
     def _stream_response(self, response: str) -> Iterator[str]:
-        """
-        Stream a response word by word.
-        
-        Args:
-            response: Full response text
-            
-        Yields:
-            Response chunks
-        """
-        words = response.split()
-        for i, word in enumerate(words):
-            if i == 0:
-                yield word
-            else:
-                yield " " + word
-        yield "\n"
+        """Stream a response character by character."""
+        for char in response:
+            yield char
 
 
-def create_quantum_provider(
-    model: Optional[str] = None,
-    temperature: Optional[float] = None,
-    max_output_tokens: Optional[int] = None,
+def create_quantum_llm_provider(
+    model_path: str,
+    temperature: float = 0.8,
+    max_output_tokens: int = 200,
     **kwargs
-) -> tuple[QuantumChatProvider, ProviderChoice]:
+) -> tuple[QuantumLLMChatProvider, ProviderChoice]:
     """
-    Factory function to create a quantum chat provider.
+    Factory function to create a quantum LLM chat provider.
     
     Args:
-        model: Model identifier (optional)
-        temperature: Response randomness (optional)
-        max_output_tokens: Maximum tokens in response (optional)
-        **kwargs: Additional provider-specific arguments
+        model_path: Path to trained model directory
+        temperature: Sampling temperature
+        max_output_tokens: Maximum tokens to generate
+        **kwargs: Additional arguments
         
     Returns:
         Tuple of (provider instance, provider info)
     """
-    provider = QuantumChatProvider(
-        model=model or "quantum-enhanced-local",
-        temperature=temperature or 0.7,
-        max_output_tokens=max_output_tokens or 1024,
+    if not QUANTUM_LLM_AVAILABLE:
+        raise ImportError("QuantumLLM not available - cannot create provider")
+    
+    provider = QuantumLLMChatProvider(
+        model_path=model_path,
+        temperature=temperature,
+        max_output_tokens=max_output_tokens,
         **kwargs
     )
     
     info = ProviderChoice(
-        name="quantum",
-        model=provider.model,
+        name="quantum-llm",
+        model=f"quantum-llm ({Path(model_path).name})",
     )
     
     return provider, info

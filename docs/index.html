@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aria - Interactive AI Character Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.95;
+            text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .app-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .app-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .app-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .app-title {
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #667eea;
+        }
+
+        .app-description {
+            font-size: 1em;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .app-status {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .status-demo {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-live {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-local {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .features {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .features h2 {
+            font-size: 2em;
+            margin-bottom: 25px;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .features h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 12px 0;
+            font-size: 1.1em;
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
+
+        .features li:last-child {
+            border-bottom: none;
+        }
+
+        .features li::before {
+            content: "✓ ";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .feature-item-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .feature-item-desc {
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: underline;
+            margin: 0 10px;
+        }
+
+        .notice {
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 4px solid #ff9800;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .notice strong {
+            color: #ff9800;
+        }
+
+        .quick-access {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .quick-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .quick-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .search-box {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>👤 Aria</h1>
+            <p class="subtitle">Interactive AI Character Platform with Quantum ML Integration</p>
+        </header>
+
+        <div class="quick-access">
+            <a href="http://localhost:8080" class="quick-btn">🎭 Aria Live</a>
+            <a href="http://localhost:7071/api/chat-web" class="quick-btn">💬 Chat</a>
+            <a href="http://localhost:8000/hub.html" class="quick-btn">🛰️ QAI Hub</a>
+            <a href="http://localhost:5000" class="quick-btn">⚛️ Quantum</a>
+            <a href="http://localhost:7071/api/ai/status" class="quick-btn">❤️ Health</a>
+        </div>
+
+        <div class="notice">
+            <strong>📢 Demo Mode:</strong> These web applications are running in demonstration mode with mock data. 
+            For full functionality including AI chat, quantum computing, and real-time training, please run the applications locally. 
+            See the <a href="https://github.com/Bryan-Roe/Aria" target="_blank" style="color: #667eea;">GitHub repository</a> for setup instructions.
+        </div>
+
+        <div class="apps-grid">
+            <a href="aria/" class="app-card">
+                <div class="app-icon">🎭</div>
+                <div class="app-title">Aria Character</div>
+                <div class="app-description">
+                    Interactive 3D character with natural language commands, object interactions, 
+                    and emotion system. Move, wave, dance, pickup objects, and more!
+                </div>
+                <span class="app-status status-demo">Demo Mode</span>
+            </a>
+
+            <a href="chat/" class="app-card">
+                <div class="app-icon">💬</div>
+                <div class="app-title">AI Chat</div>
+                <div class="app-description">
+                    Multi-provider chat interface supporting Azure OpenAI, OpenAI, and local models. 
+                    Includes streaming responses and markdown rendering.
+                </div>
+                <span class="app-status status-demo">Demo Mode</span>
+            </a>
+
+            <a href="dashboard/" class="app-card">
+                <div class="app-icon">📊</div>
+                <div class="app-title">Training Dashboard</div>
+                <div class="app-description">
+                    Monitor LoRA fine-tuning, quantum ML experiments, and model evaluation. 
+                    Real-time metrics, progress tracking, and resource monitoring.
+                </div>
+                <span class="app-status status-demo">Demo Mode</span>
+            </a>
+
+            <a href="quantum/" class="app-card">
+                <div class="app-icon">⚛️</div>
+                <div class="app-title">Quantum ML</div>
+                <div class="app-description">
+                    Quantum-enhanced machine learning dashboard. Visualize quantum circuits,
+                    submit jobs to Azure Quantum, and track hybrid training.
+                </div>
+                <span class="app-status status-demo">Demo Mode</span>
+            </a>
+
+            <a href="../apps/store/index.html" class="app-card">
+                <div class="app-icon">🛍️</div>
+                <div class="app-title">AI Storefront</div>
+                <div class="app-description">
+                    Product and subscription storefront experience for Aria features,
+                    plans, and customer-facing web pages.
+                </div>
+                <span class="app-status status-local">Local Path</span>
+            </a>
+
+            <a href="../web/monetization/monetization-index.html" class="app-card">
+                <div class="app-icon">💳</div>
+                <div class="app-title">Monetization Portal</div>
+                <div class="app-description">
+                    Pricing, subscription management, referrals, and revenue-focused
+                    pages used by the monetization system.
+                </div>
+                <span class="app-status status-local">Local Path</span>
+            </a>
+
+            <a href="../apps/dashboard/hub.html" class="app-card">
+                <div class="app-icon">🛰️</div>
+                <div class="app-title">QAI Command Center</div>
+                <div class="app-description">
+                    Unified hub for orchestrators, training dashboards, monitoring,
+                    quick actions, and system-level controls.
+                </div>
+                <span class="app-status status-local">Local Path</span>
+            </a>
+        </div>
+
+        <div class="features">
+            <h2>🚀 Platform Features</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-item-title">🎭 Interactive Character</div>
+                    <div class="feature-item-desc">3D animated character with natural language control and object interaction</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">💬 Multi-Provider Chat</div>
+                    <div class="feature-item-desc">Azure OpenAI, OpenAI, LMStudio, and local models with auto-detection</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">🤖 LoRA Fine-Tuning</div>
+                    <div class="feature-item-desc">Phi-3.5 model fine-tuning with adaptive training orchestration</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">⚛️ Quantum ML</div>
+                    <div class="feature-item-desc">Hybrid quantum-classical machine learning with Azure Quantum</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">📊 Real-Time Monitoring</div>
+                    <div class="feature-item-desc">Live dashboards with GPU metrics, training progress, and alerts</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">🎯 Autonomous Training</div>
+                    <div class="feature-item-desc">Self-optimizing training cycles with adaptive epochs and auto-promotion</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">⚡ Azure Functions</div>
+                    <div class="feature-item-desc">Serverless API integration with streaming SSE and TTS endpoints</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">🎮 Physics System</div>
+                    <div class="feature-item-desc">Object interaction with trajectory physics and collision detection</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>🔧 Local Development</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-item-title">📦 Quick Setup</div>
+                    <div class="feature-item-desc">Clone from GitHub • Python 3.9+ • pip install requirements</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">🔑 API Keys</div>
+                    <div class="feature-item-desc">Azure OpenAI or OpenAI optional • Local mode needs no keys</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">🌐 Web Servers</div>
+                    <div class="feature-item-desc">aria_web/server.py (8080) • dashboard/serve.py (8000)</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">⚡ Azure Functions</div>
+                    <div class="feature-item-desc">'func host start' for local API testing on port 7071</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">⚛️ Quantum Dashboard</div>
+                    <div class="feature-item-desc">./quantum-ai/start_dashboard.sh for port 5000</div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-item-title">🎯 Full Capabilities</div>
+                    <div class="feature-item-desc">AI chat • Quantum computing • Training • Evaluation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>🌐 Website Directory (All In One)</h2>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search websites and services..." onkeyup="filterLinks()">
+            </div>
+            
+            <div style="margin-bottom: 30px;" id="demo-section">
+                <h3 style="color: #667eea; font-size: 1.5em; margin-bottom: 15px;">📺 Demo Sites (Static)</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <a href="aria/" style="color: #667eea; padding: 10px; background: #f5f5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">🎭 Aria Demo</a>
+                    <a href="chat/" style="color: #667eea; padding: 10px; background: #f5f5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">💬 Chat Demo</a>
+                    <a href="dashboard/" style="color: #667eea; padding: 10px; background: #f5f5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">📊 Dashboard Demo</a>
+                    <a href="quantum/" style="color: #667eea; padding: 10px; background: #f5f5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">⚛️ Quantum Demo</a>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;" id="local-servers-section">
+                <h3 style="color: #667eea; font-size: 1.5em; margin-bottom: 15px;">🖥️ Local Development Servers</h3>
+                <div style="display: grid; gap: 10px;">
+                    <a href="http://localhost:8080" class="url-link" data-port="8080" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>🎭 Aria Live UI</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:8080</span>
+                    </a>
+                    <a href="http://localhost:8080/auto-execute.html" class="url-link" data-port="8080" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>🎬 Aria Auto-Execute</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:8080</span>
+                    </a>
+                    <a href="http://localhost:7071/api/chat-web" class="url-link" data-port="7071" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>💬 Chat Web (Functions)</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:7071</span>
+                    </a>
+                    <a href="http://localhost:8000/hub.html" class="url-link" data-port="8000" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>🛰️ QAI Hub</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:8000</span>
+                    </a>
+                    <a href="http://localhost:8000/unified.html" class="url-link" data-port="8000" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>📊 Unified Dashboard</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:8000</span>
+                    </a>
+                    <a href="http://localhost:5000" class="url-link" data-port="5000" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>⚛️ Quantum Dashboard</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:5000</span>
+                    </a>
+                    <a href="http://localhost:8090" class="url-link" data-port="8090" style="color: #667eea; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s;" onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background='#f5f5f5'">
+                        <span>🤖 LLM Maker</span>
+                        <span style="font-size: 0.85em; opacity: 0.7;">localhost:8090</span>
+                    </a>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 30px;" id="local-files-section">
+                <h3 style="color: #667eea; font-size: 1.5em; margin-bottom: 15px;">📁 Local File Paths</h3>
+                <div style="display: grid; gap: 8px;">
+                    <a href="../apps/store/index.html" style="color: #667eea; padding: 10px; background: #fff3e0; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#ffe0b2'" onmouseout="this.style.background='#fff3e0'">🛍️ Storefront</a>
+                    <a href="../ai-projects/quantum-ml/web_ui/index.html" style="color: #667eea; padding: 10px; background: #fff3e0; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#ffe0b2'" onmouseout="this.style.background='#fff3e0'">⚛️ Quantum ML Web UI</a>
+                    <a href="../ai-projects/llm-maker/web_ui.html" style="color: #667eea; padding: 10px; background: #fff3e0; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#ffe0b2'" onmouseout="this.style.background='#fff3e0'">🤖 LLM Maker UI</a>
+                    <a href="../ai-projects/llm-maker/website_maker_ui.html" style="color: #667eea; padding: 10px; background: #fff3e0; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#ffe0b2'" onmouseout="this.style.background='#fff3e0'">🌐 Website Maker UI</a>
+                    <a href="../mount/static/index.html" style="color: #667eea; padding: 10px; background: #fff3e0; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#ffe0b2'" onmouseout="this.style.background='#fff3e0'">🔧 Mount Web UI</a>
+                </div>
+            </div>
+
+            <div id="monetization-section">
+                <h3 style="color: #667eea; font-size: 1.5em; margin-bottom: 15px;">💳 Monetization & Business</h3>
+                <div style="display: grid; gap: 8px;">
+                    <a href="../web/monetization/monetization-index.html" style="color: #667eea; padding: 10px; background: #f3e5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e1bee7'" onmouseout="this.style.background='#f3e5f5'">💳 Monetization Portal</a>
+                    <a href="../web/monetization/pricing.html" style="color: #667eea; padding: 10px; background: #f3e5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e1bee7'" onmouseout="this.style.background='#f3e5f5'">💰 Pricing Page</a>
+                    <a href="../web/monetization/my-subscription.html" style="color: #667eea; padding: 10px; background: #f3e5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e1bee7'" onmouseout="this.style.background='#f3e5f5'">📋 My Subscription</a>
+                    <a href="../web/monetization/admin_dashboard.html" style="color: #667eea; padding: 10px; background: #f3e5f5; border-radius: 8px; text-decoration: none; transition: background 0.3s;" onmouseover="this.style.background='#e1bee7'" onmouseout="this.style.background='#f3e5f5'">👨‍💼 Admin Dashboard</a>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Search and filter functionality
+            function filterLinks() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const sections = ['demo-section', 'local-servers-section', 'local-files-section', 'monetization-section'];
+                
+                sections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (!section) return;
+                    
+                    const links = section.getElementsByTagName('a');
+                    let visibleCount = 0;
+                    
+                    Array.from(links).forEach(link => {
+                        const text = link.textContent.toLowerCase();
+                        const href = link.getAttribute('href').toLowerCase();
+                        
+                        if (text.includes(searchTerm) || href.includes(searchTerm)) {
+                            link.style.display = '';
+                            visibleCount++;
+                        } else {
+                            link.style.display = 'none';
+                        }
+                    });
+                    
+                    // Hide section if no visible links
+                    section.style.display = visibleCount > 0 ? '' : 'none';
+                });
+            }
+
+            // Check if local servers are running (optional enhancement)
+            async function checkServerStatus(port) {
+                try {
+                    const response = await fetch(`http://localhost:${port}/`, { method: 'HEAD', mode: 'no-cors' });
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            // Add status indicators to localhost links
+            document.querySelectorAll('.url-link').forEach(link => {
+                const port = link.dataset.port;
+                if (port) {
+                    checkServerStatus(port).then(isUp => {
+                        const indicator = document.createElement('span');
+                        indicator.style.cssText = `
+                            width: 8px;
+                            height: 8px;
+                            border-radius: 50%;
+                            background: ${isUp ? '#4caf50' : '#ccc'};
+                            display: inline-block;
+                            margin-left: 8px;
+                        `;
+                        indicator.title = isUp ? 'Server running' : 'Server offline';
+                        link.appendChild(indicator);
+                    });
+                }
+            });
+        </script>
+
+        <footer>
+            <p>
+                <a href="https://github.com/Bryan-Roe/Aria" target="_blank">GitHub Repository</a> |
+                <a href="https://github.com/Bryan-Roe/Aria/blob/main/README.md" target="_blank">Documentation</a> |
+                <a href="https://github.com/Bryan-Roe/Aria/issues" target="_blank">Issues</a>
+            </p>
+            <p style="margin-top: 15px; opacity: 0.8;">
+                © 2026 Aria Project - Interactive AI Character Platform
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

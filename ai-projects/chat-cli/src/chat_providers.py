@@ -639,13 +639,22 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
     # Quantum config
     if provider_choice == "quantum":
         try:
-            from quantum_provider import create_quantum_provider
+            from quantum_provider import create_quantum_llm_provider
+            
+            # Quantum LLM requires model path
+            if not model_override:
+                raise RuntimeError(
+                    "Quantum LLM provider requires --model parameter with path to trained model.\n"
+                    "Example: --provider quantum --model data_out/quantum_llm_chat"
+                )
+            
             temperature_value = float(
-                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.8"))
             max_tokens_limit = int(
-                max_output_tokens) if max_output_tokens is not None else 1024
-            provider, info = create_quantum_provider(
-                model=model_override,
+                max_output_tokens) if max_output_tokens is not None else 200
+            
+            provider, info = create_quantum_llm_provider(
+                model_path=model_override,
                 temperature=temperature_value,
                 max_output_tokens=max_tokens_limit
             )
