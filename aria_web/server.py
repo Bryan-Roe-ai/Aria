@@ -32,6 +32,7 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger(__name__)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # Performance optimization: Pre-compiled patterns for keyword matching
 # Using sets for O(1) lookup instead of list scanning O(n)
 _JUMP_KEYWORDS = frozenset(['jump', 'leap', 'hop'])
@@ -63,6 +64,8 @@ def _keywords_in_cmd(keywords: frozenset, cmd: str) -> bool:
 
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 # Add project paths
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1"))
@@ -84,6 +87,7 @@ print("⚠️ Skipping AI model loading - using rule-based fallback for faster s
 
 # Pre-compiled keyword sets for O(1) lookup instead of O(n) any() calls
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 # Performance optimization: Pre-compiled keyword sets for fast command matching
 # These sets are used in generate_aria_position() and parse_with_fallback()
@@ -93,6 +97,8 @@ SAY_KEYWORDS = frozenset(['say', 'speak', 'tell', 'greet'])
 PICKUP_KEYWORDS = frozenset(['pick', 'get', 'grab', 'take'])
 >>>>>>> origin/copilot/identify-code-improvements-again
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 JUMP_KEYWORDS = frozenset(['jump', 'leap', 'hop'])
@@ -105,6 +111,7 @@ HIDE_KEYWORDS = frozenset(['hide', 'crouch', 'duck'])
 PRESENT_KEYWORDS = frozenset(['present', 'show', 'display'])
 THINK_KEYWORDS = frozenset(['think', 'wonder', 'ponder'])
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
 MOVE_KEYWORDS = frozenset(['go', 'move', 'walk', 'run'])
 SAY_KEYWORDS = frozenset(['say', 'speak', 'tell', 'greet'])
@@ -116,13 +123,21 @@ MOVE_KEYWORDS = frozenset(['go', 'move', 'walk', 'run'])
 SAY_KEYWORDS = frozenset(['say', 'speak', 'tell', 'greet'])
 PICKUP_KEYWORDS = frozenset(['pick', 'get', 'grab', 'take'])
 >>>>>>> Stashed changes
+=======
+MOVE_KEYWORDS = frozenset(['go', 'move', 'walk', 'run'])
+SAY_KEYWORDS = frozenset(['say', 'speak', 'tell', 'greet'])
+PICKUP_KEYWORDS = frozenset(['pick', 'get', 'grab', 'take'])
+>>>>>>> Stashed changes
 ARM_WAVE_KEYWORDS = frozenset(['wave', 'wiggle'])
 ARM_RAISE_KEYWORDS = frozenset(['raise', 'up', 'lift'])
 ARM_LOWER_KEYWORDS = frozenset(['lower', 'down'])
 ARM_FORWARD_KEYWORDS = frozenset(['forward', 'front'])
 ARM_BACK_KEYWORDS = frozenset(['back', 'backward', 'behind'])
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 LEFT_ARM_KEYWORDS = frozenset(['left arm', 'arm left', 'left hand'])
@@ -139,10 +154,13 @@ def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
     """Check if text contains any keyword from set. O(1) per keyword check."""
     return any(kw in text for kw in keywords)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 LIMB_KEYWORDS = frozenset(['left arm', 'arm left', 'left hand', 'right arm', 'arm right', 'right hand', 'left leg', 'leg left', 'right leg', 'leg right'])
 EMOTION_KEYWORDS = frozenset(['!', 'hello', 'hi'])
 >>>>>>> origin/copilot/identify-code-improvements-again
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -322,6 +340,7 @@ Rules:
         command_lower = command.lower()
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
         # Parse move commands
         if _contains_any_keyword(command_lower, MOVE_KEYWORDS):
@@ -329,6 +348,10 @@ Rules:
         # Parse move commands (using pre-compiled MOVE_KEYWORDS set)
         if any(word in command_lower for word in MOVE_KEYWORDS):
 >>>>>>> origin/copilot/identify-code-improvements-again
+=======
+        # Parse move commands
+        if _contains_any_keyword(command_lower, MOVE_KEYWORDS):
+>>>>>>> Stashed changes
 =======
         # Parse move commands
         if _contains_any_keyword(command_lower, MOVE_KEYWORDS):
@@ -348,6 +371,7 @@ Rules:
                                "x": 80, "y": 50}, "speed": "normal"})
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
         # Parse say commands
         if _contains_any_keyword(command_lower, SAY_KEYWORDS):
@@ -359,13 +383,22 @@ Rules:
         # Parse say commands
         if _contains_any_keyword(command_lower, SAY_KEYWORDS):
 >>>>>>> Stashed changes
+=======
+        # Parse say commands
+        if _contains_any_keyword(command_lower, SAY_KEYWORDS):
+>>>>>>> Stashed changes
             # Extract text after say/speak
             for trigger in ['say ', 'speak ', 'tell ', 'greet ']:
                 if trigger in command_lower:
                     text = command[command_lower.index(
                         trigger) + len(trigger):].strip(' "\'')
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     emotion = 'happy' if any(w in text.lower() for w in EMOTION_KEYWORDS) else 'neutral'
+=======
+                    emotion = 'happy' if any(w in text.lower() for w in [
+                                             '!', 'hello', 'hi']) else 'neutral'
+>>>>>>> Stashed changes
 =======
                     emotion = 'happy' if any(w in text.lower() for w in [
                                              '!', 'hello', 'hi']) else 'neutral'
@@ -375,6 +408,7 @@ Rules:
                     break
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         # Parse pickup commands (using pre-compiled PICKUP_KEYWORDS set)
         for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
 <<<<<<< main
@@ -382,6 +416,11 @@ Rules:
 =======
             if obj in command_lower and any(word in command_lower for word in PICKUP_KEYWORDS):
 >>>>>>> origin/copilot/identify-code-improvements-again
+=======
+        # Parse pickup commands
+        for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
+            if obj in command_lower and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
+>>>>>>> Stashed changes
 =======
         # Parse pickup commands
         for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
@@ -632,7 +671,10 @@ def determine_position_from_context(cmd: str) -> str:
                         return f'[aria:position:{max(10, obj_pos["x"] - 10)}:{obj_pos["y"] + 10}]'
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     # Action-based positioning (using pre-compiled keyword sets for O(1) lookup)
@@ -643,6 +685,7 @@ def determine_position_from_context(cmd: str) -> str:
     elif _contains_any_keyword(cmd, WAVE_KEYWORDS):
         return '[aria:position:30:70]'  # Front-left for greeting
     elif _contains_any_keyword(cmd, LOOK_KEYWORDS):
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
     # Action-based positioning (using pre-compiled keyword sets)
@@ -656,12 +699,17 @@ def determine_position_from_context(cmd: str) -> str:
 >>>>>>> origin/copilot/identify-code-improvements-again
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         # Look towards table
         if 'table' in cmd:
             return '[aria:position:40:60]'  # Position to see table
         return '[aria:position:20:40]'  # Left side for observing
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     elif _contains_any_keyword(cmd, SIT_KEYWORDS):
@@ -675,6 +723,7 @@ def determine_position_from_context(cmd: str) -> str:
         return '[aria:position:50:50]'  # Center to present
     elif _contains_any_keyword(cmd, THINK_KEYWORDS):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
     elif any(k in cmd for k in SIT_KEYWORDS):
         # Near table to sit
@@ -687,6 +736,8 @@ def determine_position_from_context(cmd: str) -> str:
         return '[aria:position:50:50]'  # Center to present
     elif any(k in cmd for k in THINK_KEYWORDS):
 >>>>>>> origin/copilot/identify-code-improvements-again
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         return '[aria:position:25:50]'  # Contemplative left position
@@ -752,7 +803,10 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append(auto_position)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     # Track if limb commands are detected to avoid movement conflicts
@@ -762,10 +816,13 @@ def generate_tags_fallback(command: str) -> List[str]:
                        _contains_any_keyword(cmd, LEFT_LEG_KEYWORDS) or
                        _contains_any_keyword(cmd, RIGHT_LEG_KEYWORDS))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
     # Track if limb commands are detected to avoid movement conflicts (using optimized checks)
     has_limb_command = any(k in cmd for k in LIMB_KEYWORDS)
 >>>>>>> origin/copilot/identify-code-improvements-again
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -832,7 +889,10 @@ def generate_tags_fallback(command: str) -> List[str]:
         tags.append(f'[aria:limb:{part}:{action}]')
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     # Helper maps (using pre-compiled keyword sets)
@@ -841,6 +901,7 @@ def generate_tags_fallback(command: str) -> List[str]:
     left_leg = _contains_any_keyword(cmd, LEFT_LEG_KEYWORDS)
     right_leg = _contains_any_keyword(cmd, RIGHT_LEG_KEYWORDS)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
     # Helper maps (using pre-compiled LIMB_KEYWORDS set)
     left_arm = 'left arm' in cmd or 'arm left' in cmd or 'left hand' in cmd
@@ -848,6 +909,8 @@ def generate_tags_fallback(command: str) -> List[str]:
     left_leg = 'left leg' in cmd or 'leg left' in cmd
     right_leg = 'right leg' in cmd or 'leg right' in cmd
 >>>>>>> origin/copilot/identify-code-improvements-again
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -861,7 +924,11 @@ def generate_tags_fallback(command: str) -> List[str]:
     angle_val = angle_match.group(1) if angle_match else None
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # Arm actions (using pre-compiled keyword sets)
+=======
+    # Arm actions
+>>>>>>> Stashed changes
 =======
     # Arm actions
 >>>>>>> Stashed changes
@@ -875,7 +942,10 @@ def generate_tags_fallback(command: str) -> List[str]:
         if not parts:
             parts = ['right_arm']
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         if _contains_any_keyword(cmd, ARM_WAVE_KEYWORDS):
@@ -891,6 +961,7 @@ def generate_tags_fallback(command: str) -> List[str]:
             for p in parts:
                 limb_tag(p, 'forward')
         elif _contains_any_keyword(cmd, ARM_BACK_KEYWORDS):
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
         if any(k in cmd for k in ARM_WAVE_KEYWORDS):
@@ -909,6 +980,8 @@ def generate_tags_fallback(command: str) -> List[str]:
 >>>>>>> origin/copilot/identify-code-improvements-again
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
             for p in parts:
                 limb_tag(p, 'back')
         elif angle_val is not None:
@@ -916,7 +989,11 @@ def generate_tags_fallback(command: str) -> List[str]:
                 limb_tag(p, angle_val)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     # Leg actions (using pre-compiled keyword sets)
+=======
+    # Leg actions
+>>>>>>> Stashed changes
 =======
     # Leg actions
 >>>>>>> Stashed changes
@@ -932,13 +1009,17 @@ def generate_tags_fallback(command: str) -> List[str]:
             for p in parts:
                 limb_tag(p, 'kick')
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< main
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
         elif _contains_any_keyword(cmd, ARM_FORWARD_KEYWORDS):
             for p in parts:
                 limb_tag(p, 'forward')
         elif _contains_any_keyword(cmd, ARM_BACK_KEYWORDS):
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 =======
         elif any(k in cmd for k in ARM_FORWARD_KEYWORDS):
@@ -50792,6 +50873,8 @@ def generate_tags_fallback(command: str) -> List[str]:
                 limb_tag(p, 'forward')
         elif _any_word_in_text(_ARM_BACK_KEYWORDS, cmd):
 >>>>>>> origin/copilot/identify-inefficient-code
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======

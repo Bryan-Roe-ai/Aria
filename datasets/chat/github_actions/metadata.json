@@ -6,6 +6,10 @@
   "workflows_parsed": 13,
   "workflow_names": [
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<< main
+>>>>>>> Stashed changes
 =======
 <<<<<<< main
 >>>>>>> Stashed changes
@@ -25,7 +29,10 @@
   ],
   "generation_date": "2026-03-03T15:22:21.455469"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
     "Aria E2E Tests",
     "Auto Validation",
@@ -43,5 +50,8 @@
   ],
   "generation_date": "2026-03-01T09:30:35.470305"
 >>>>>>> origin/sync/github-sync-20260307-085533
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
