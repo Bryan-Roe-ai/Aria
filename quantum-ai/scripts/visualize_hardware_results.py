@@ -106,7 +106,8 @@ def compute_entanglement_ratio(counts: Dict[str, int]) -> Optional[float]:
     # Only meaningful for 2-qubit bell state
     if not counts:
         return None
-    bit_lengths = {len(k) for k in counts.keys()}
+    # Performance optimization: Direct iteration instead of .keys()
+    bit_lengths = {len(k) for k in counts}
     if bit_lengths != {2}:
         return None
     total = sum(counts.values())

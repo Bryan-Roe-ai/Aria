@@ -554,8 +554,8 @@ def main():
     
     results = []
     
-    # Benchmark each dataset
-    for dataset_name in DATASETS.keys():
+    # Benchmark each dataset (optimized: direct iteration instead of .keys())
+    for dataset_name in DATASETS:
         try:
             result = benchmark_dataset(dataset_name)
             results.append(result)

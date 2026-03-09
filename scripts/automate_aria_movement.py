@@ -59,7 +59,8 @@ class AriaTrainingAutomation:
                     return False
                 
                 response = example['messages'][-1]['content'].lower()
-                for cmd in command_counts.keys():
+                # Performance optimization: Direct iteration instead of .keys()
+                for cmd in command_counts:
                     if f'[aria:{cmd}' in response or f'aria:{cmd}' in response:
                         command_counts[cmd] += 1
             

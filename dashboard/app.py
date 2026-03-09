@@ -85,7 +85,8 @@ def _compute_training_progress():
 
     status_map = {j.get("name"): j for j in jobs_status}
     # Include extra jobs from status not present in config (e.g., local_job)
-    extra_jobs = [name for name in status_map.keys() if name not in configured_jobs]
+    # Performance optimization: Direct iteration instead of .keys()
+    extra_jobs = [name for name in status_map if name not in configured_jobs]
     all_job_names = configured_jobs + extra_jobs
     enriched = []
     succeeded = failed = running = pending = validated = 0
