@@ -31,9 +31,14 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+try:
+    from .config_paths import resolve_existing_config_path
+except ImportError:
+    from config_paths import resolve_existing_config_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "ci_orchestrator"
@@ -51,7 +56,22 @@ class CIOrchestrator:
         self.repo_root = REPO_ROOT
         self.data_out = DATA_OUT
         self.data_out.mkdir(parents=True, exist_ok=True)
+        self.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         self.results: List[Dict[str, Any]] = []
+
+    def _resolved_config_paths(self) -> Dict[str, Optional[str]]:
+        """Resolve key orchestrator config paths for status metadata."""
+        config_keys = [
+            "autotrain",
+            "quantum_autorun",
+            "evaluation_autorun",
+            "master_orchestrator",
+        ]
+        resolved: Dict[str, Optional[str]] = {}
+        for key in config_keys:
+            selected = resolve_existing_config_path(self.repo_root, key)
+            resolved[key] = str(selected.relative_to(self.repo_root)) if selected else None
+        return resolved
     
     def validate_all_orchestrators(self) -> bool:
         """Run --dry-run on all orchestrators in parallel."""
@@ -78,6 +98,29 @@ class CIOrchestrator:
         print("\n[ci] Running Integration Tests")
         cmd = [sys.executable, "scripts/test_runner.py", "--integration"]
         return self._run_command("integration_tests", cmd, critical=False)
+
+    def run_integration_smoke(self) -> bool:
+        """Run fast cross-component integration smoke checks."""
+        print("\n[ci] Running Integration Smoke Checks")
+        cmd = [sys.executable, "scripts/integration_smoke.py"]
+        return self._run_command("integration_smoke", cmd)
+
+    def run_integration_contract_tests(self) -> bool:
+        """Run focused integration contract unit tests."""
+        print("\n[ci] Running Integration Contract Unit Tests")
+        cmd = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "tests/test_config_paths.py",
+            "tests/test_master_orchestrator_schedule.py",
+            "tests/test_status_schema.py",
+            "tests/test_integration_smoke_schema.py",
+            "tests/test_status_schema_fixtures.py",
+            "tests/test_integration_contract_gate_script.py",
+        ]
+        return self._run_command("integration_contract_tests", cmd)
     
     def validate_datasets(self) -> bool:
         """Validate dataset integrity."""
@@ -133,17 +176,20 @@ class CIOrchestrator:
                     })
         
         # List key configuration files
-        config_files = [
-            "autotrain.yaml",
-            "quantum_autorun.yaml",
-            "evaluation_autorun.yaml",
-            "master_orchestrator.yaml",
-            "local.settings.json",
-        ]
-        for cfg in config_files:
-            cfg_path = self.repo_root / cfg
-            if cfg_path.exists():
-                artifacts["configurations"].append(str(cfg))
+        config_candidates = {
+            "autotrain",
+            "quantum_autorun",
+            "evaluation_autorun",
+            "master_orchestrator",
+        }
+        for config_key in sorted(config_candidates):
+            selected = resolve_existing_config_path(self.repo_root, config_key)
+            if selected is not None:
+                artifacts["configurations"].append(str(selected.relative_to(self.repo_root)))
+
+        local_settings = self.repo_root / "local.settings.json"
+        if local_settings.exists():
+            artifacts["configurations"].append(str(local_settings.relative_to(self.repo_root)))
         
         # Save artifacts manifest
         manifest_file = self.data_out / "deployment_artifacts.json"
@@ -219,6 +265,8 @@ class CIOrchestrator:
         
         pipeline_steps = [
             ("Validate Orchestrators", self.validate_all_orchestrators),
+            ("Integration Smoke", self.run_integration_smoke),
+            ("Integration Contract Tests", self.run_integration_contract_tests),
             ("Unit Tests", self.run_unit_tests),
             ("Validate Datasets", self.validate_datasets),
             ("Code Quality", self.check_code_quality),
@@ -354,6 +402,9 @@ class CIOrchestrator:
         """Save CI results to disk."""
         summary = {
             "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "run_id": self.run_id,
+            "config_path": None,
+            "config_paths": self._resolved_config_paths(),
             "total_steps": len(self.results),
             "succeeded": sum(1 for r in self.results if r["status"] == "succeeded"),
             "failed": sum(1 for r in self.results if r["status"] == "failed"),
@@ -377,6 +428,8 @@ def main():
     ap.add_argument("--prepare-deployment", action="store_true", help="Prepare deployment artifacts")
     ap.add_argument("--ci-pipeline", action="store_true", help="Run full CI pipeline")
     ap.add_argument("--validate-azureml", action="store_true", help="Validate latest Azure ML job spec and schema")
+    ap.add_argument("--integration-smoke", action="store_true", help="Run fast integration smoke checks")
+    ap.add_argument("--integration-contract-tests", action="store_true", help="Run focused integration contract unit tests")
     args = ap.parse_args()
     
     ci = CIOrchestrator()
@@ -398,6 +451,16 @@ def main():
     
     if args.prepare_deployment:
         success = ci.prepare_deployment()
+        ci._save_results()
+        sys.exit(0 if success else 1)
+
+    if args.integration_smoke:
+        success = ci.run_integration_smoke()
+        ci._save_results()
+        sys.exit(0 if success else 1)
+
+    if args.integration_contract_tests:
+        success = ci.run_integration_contract_tests()
         ci._save_results()
         sys.exit(0 if success else 1)
     

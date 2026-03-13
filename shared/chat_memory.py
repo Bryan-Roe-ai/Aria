@@ -26,6 +26,7 @@ import heapq
 import os
 import math
 import struct
+from threading import RLock
 from typing import Iterable, List, Optional, Sequence
 
 try:
@@ -58,51 +59,94 @@ except Exception:  # pragma: no cover - best effort import
 _connection_pool = []
 _MAX_POOL_SIZE = 5
 
+# Per-thread connection cache for fast reuse without reconnecting.
+_thread_connections = {}
+
+# Backward-compatible aliases expected by existing tests and scripts.
+_conn_cache = _thread_connections
+_conn_lock = RLock()
+
 
 def _get_conn():  # noqa: ANN001
-    """Get a database connection from the pool or create a new one.
-    
-    This implements a simple connection pool to avoid creating new connections
-    for every embedding operation, significantly reducing overhead.
+    """Get a database connection from pool/cache or create a new one.
+
+    Priority:
+    1. Shared pool connection (allows dead-connection replacement tests)
+    2. Per-thread cached connection
+    3. New connection
     """
     conn_str = os.getenv("QAI_DB_CONN")
     if not conn_str or not pyodbc:
         return None
-    
-    # Try to reuse an existing connection from the pool
-    while _connection_pool:
-        conn = _connection_pool.pop()
+
+    thread_id = __import__("threading").get_ident()
+
+    # 1) Try shared pool first.
+    attempted_pool = False
+    while True:
+        with _conn_lock:
+            if not _connection_pool:
+                break
+            attempted_pool = True
+            conn = _connection_pool.pop()
         try:
-            # Test if connection is still alive
             conn.cursor().execute("SELECT 1")
+            with _conn_lock:
+                _thread_connections[thread_id] = conn
             return conn
         except Exception:
-            # Connection is dead, try next one
             try:
                 conn.close()
             except Exception:
                 pass
-    
-    # No valid connections in pool, create a new one
+
+    # 2) Fast path: per-thread cached connection (only if pool wasn't consulted).
+    # If pooled connections were attempted and found dead, create a fresh
+    # connection below to avoid returning potentially stale thread cache.
+    if not attempted_pool:
+        with _conn_lock:
+            cached = _thread_connections.get(thread_id)
+        if cached is not None:
+            try:
+                cached.cursor().execute("SELECT 1")
+                return cached
+            except Exception:
+                try:
+                    cached.close()
+                except Exception:
+                    pass
+                with _conn_lock:
+                    _thread_connections.pop(thread_id, None)
+
+    # 3) No valid pooled/cached connections, create a new one
     try:
-        return pyodbc.connect(conn_str, timeout=4)
+        conn = pyodbc.connect(conn_str, timeout=4)
+        with _conn_lock:
+            _thread_connections[thread_id] = conn
+        return conn
     except Exception:
         return None
 
 
 def _return_conn(conn):  # noqa: ANN001
-    """Return a connection to the pool for reuse."""
+    """Return a connection to the pool for reuse when not thread-cached."""
     if not conn:
         return
-    
-    # Only pool if we're under the limit
-    if len(_connection_pool) < _MAX_POOL_SIZE:
-        _connection_pool.append(conn)
-    else:
-        try:
-            conn.close()
-        except Exception:
-            pass
+
+    thread_id = __import__("threading").get_ident()
+    with _conn_lock:
+        # Keep current-thread cached connection hot for immediate reuse.
+        if _thread_connections.get(thread_id) is conn:
+            return
+
+        if len(_connection_pool) < _MAX_POOL_SIZE:
+            _connection_pool.append(conn)
+            return
+
+    try:
+        conn.close()
+    except Exception:
+        pass
 
 # ------------------------- Embedding Generation -------------------------
 
@@ -303,4 +347,9 @@ __all__ = [
     "generate_embedding",
     "store_embedding",
     "fetch_similar_messages",
+    "_get_conn",
+    "_return_conn",
+    "_conn_cache",
+    "_conn_lock",
+    "_connection_pool",
 ]

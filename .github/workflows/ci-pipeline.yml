@@ -43,6 +43,14 @@ jobs:
     - name: Run CI validation
       run: |
         python scripts/ci_orchestrator.py --validate-all
+
+    - name: Run integration smoke checks
+      run: |
+        python scripts/integration_smoke.py
+
+    - name: Run integration contract unit tests
+      run: |
+        python scripts/ci_orchestrator.py --integration-contract-tests
     
     - name: Run unit tests
       run: |
@@ -59,6 +67,7 @@ jobs:
         name: validation-results
         path: |
           data_out/ci_orchestrator/
+          data_out/integration_smoke/
           data_out/test_runner/
 
   train:

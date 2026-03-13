@@ -79,8 +79,35 @@ WALK_LEFT_KEYWORDS = frozenset(['walk left', 'go left', 'left'])
 WALK_RIGHT_KEYWORDS = frozenset(['walk right', 'go right', 'right'])
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
-    """Check if text contains any keyword from set. O(1) per keyword check."""
-    return any(kw in text for kw in keywords)
+    """Check if text contains any keyword from set."""
+    for kw in keywords:
+        if kw in text:
+            return True
+    return False
+
+
+def _any_word_in_text(words: frozenset, text: str) -> bool:
+    """Backward-compatible helper alias used by older tests."""
+    return _contains_any_keyword(text, words)
+
+
+def _keywords_in_cmd(words: frozenset, text: str) -> bool:
+    """Backward-compatible helper alias used by older tests."""
+    return _contains_any_keyword(text, words)
+
+
+# Legacy constant aliases expected by older modules/tests.
+_MOVE_KEYWORDS = MOVE_KEYWORDS
+_SAY_KEYWORDS = SAY_KEYWORDS
+_PICKUP_KEYWORDS = PICKUP_KEYWORDS
+_JUMP_KEYWORDS = JUMP_KEYWORDS
+_DANCE_KEYWORDS = DANCE_KEYWORDS
+_LIMB_KEYWORDS = frozenset(
+    set(LEFT_ARM_KEYWORDS)
+    | set(RIGHT_ARM_KEYWORDS)
+    | set(LEFT_LEG_KEYWORDS)
+    | set(RIGHT_LEG_KEYWORDS)
+)
 
 # Global stage state that AI can see
 stage_state = {
@@ -1312,6 +1339,11 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
         """Custom logging"""
         if 'favicon' not in args[0] if args else True:
             print(f"🌐 {args[0] if args else format}")
+
+
+# Backward-compatible module alias used by tests and older integrations:
+# `from server import server as aria_server`.
+server = sys.modules[__name__]
 
 
 def main():

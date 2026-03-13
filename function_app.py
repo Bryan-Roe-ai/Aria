@@ -7,6 +7,7 @@ import azure.functions as func
 import json
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 import subprocess
@@ -14,6 +15,9 @@ import importlib.util as _iu
 import time
 from typing import Optional
 from datetime import datetime
+
+# Pre-compiled word split regex used in token/word counting hot paths.
+_RE_WORD_SPLIT = re.compile(r"\S+")
 
 # Import defensive import helper
 from shared.import_helpers import safe_import, create_stub_function

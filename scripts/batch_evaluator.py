@@ -59,12 +59,16 @@ class EvaluationResult:
     """Result from evaluating a model."""
     model_id: str
     model_type: str
-    dataset: str
-    status: str  # succeeded, failed, timeout
-    duration: float
+    dataset: str = ""
+    status: str = "succeeded"  # succeeded, failed, timeout
+    duration: float = 0.0
     model_path: str = ""  # Path to the evaluated model
     metrics: Dict[str, float] = field(default_factory=dict)
     error: Optional[str] = None
+
+
+# Backward-compatible alias used by older tests and scripts.
+EvalResult = EvaluationResult
 
 
 class BatchEvaluator:
@@ -310,20 +314,28 @@ class BatchEvaluator:
         print(f"[batch_eval] Exported JSON to: {output_file}")
     
     def compare_models(self, model_ids: List[str]) -> Dict:
-        """Compare specific models side-by-side - optimized O(n+m) lookup."""
-        # Convert model_ids to set for O(1) membership testing
-        model_ids_set = set(model_ids)
-        # Single pass through results for O(n+m) complexity instead of O(n*m)
-        comparison = [r for r in self.results if r.model_id in model_ids_set]
-        """Compare specific models side-by-side using cached lookups."""
-        comparison = []
-        
-        # Use O(1) cache lookup instead of O(n) linear search
+        """Compare specific models side-by-side using fast lookups with fallback."""
+        comparison: List[EvaluationResult] = []
+
+        # Primary path: O(1) cache lookup.
         for model_id in model_ids:
             result = self._results_cache.get(model_id)
-            if result:
+            if result is not None:
                 comparison.append(result)
-        
+
+        # Fallback path for tests/callers that set `self.results` directly.
+        if len(comparison) != len(model_ids):
+            model_ids_set = set(model_ids)
+            seen = {r.model_id for r in comparison}
+            for result in self.results:
+                if result.model_id in model_ids_set and result.model_id not in seen:
+                    comparison.append(result)
+                    seen.add(result.model_id)
+
+            # Preserve requested ordering.
+            comparison_by_id = {r.model_id: r for r in comparison}
+            comparison = [comparison_by_id[mid] for mid in model_ids if mid in comparison_by_id]
+
         return {
             "models": [r.model_id for r in comparison],
             "comparison": [
@@ -332,10 +344,10 @@ class BatchEvaluator:
                     "model_type": r.model_type,
                     "status": r.status,
                     "duration": r.duration,
-                    "metrics": r.metrics
+                    "metrics": r.metrics,
                 }
                 for r in comparison
-            ]
+            ],
         }
     
     def promote_best_model(self, target_dir: Path | None = None, dry_run: bool = False) -> Dict:

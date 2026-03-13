@@ -55,6 +55,12 @@ _LM_STUDIO_CACHE_TTL_SECONDS = 30
 _lmstudio_cache = _lm_studio_availability_cache
 _LMSTUDIO_CACHE_TTL = _LM_STUDIO_CACHE_TTL_SECONDS
 
+# Thread-safe cache for Ollama availability checks
+_ollama_availability_cache: Dict[str, Any] = {
+    "available": None, "checked_at": 0.0, "url": None}
+_ollama_cache_lock = threading.RLock()
+_OLLAMA_CACHE_TTL_SECONDS = 30
+
 
 # {"role": "system|user|assistant", "content": "..."}
 RoleMessage = Dict[str, str]
@@ -337,48 +343,148 @@ class LoraLocalProvider(BaseChatProvider):
 class LocalEchoProvider(BaseChatProvider):
     """A simple offline provider that mimics a helpful assistant.
     Useful for smoke tests and environments without keys.
+    
+    This provider generates contextually aware responses without requiring
+    external API calls, making it ideal for testing, development, and
+    offline scenarios.
     """
 
     def __init__(self, seed: Optional[int] = None):
         self.rng = random.Random(seed)
+        self._response_templates = self._initialize_templates()
+
+    def _initialize_templates(self) -> Dict[str, List[str]]:
+        """Initialize response templates categorized by intent."""
+        return {
+            "greeting": [
+                "Hello! I'm here to help. What would you like to know?",
+                "Hi there! How can I assist you today?",
+                "Greetings! I'm ready to help with your questions.",
+            ],
+            "question": [
+                "That's an interesting question. Here's my take:",
+                "Let me help you with that:",
+                "Good question! Here's what I think:",
+                "Based on your question, here's my understanding:",
+            ],
+            "code": [
+                "For coding tasks, I'd suggest:",
+                "Here's a technical approach:",
+                "From a development perspective:",
+                "For this programming challenge:",
+            ],
+            "explanation": [
+                "Let me break this down:",
+                "Here's a clear explanation:",
+                "To explain this simply:",
+                "In other words:",
+            ],
+            "generic": [
+                "Here's a concise take:",
+                "Quick thoughts:",
+                "A few ideas:",
+                "My perspective:",
+                "Summary:",
+            ],
+        }
+
+    def _detect_intent(self, text: str) -> str:
+        """Detect the intent of the user message."""
+        lower_text = text.lower()
+        
+        # Check for greetings
+        if any(word in lower_text for word in ["hello", "hi", "hey", "greetings"]) and len(text) < 50:
+            return "greeting"
+        
+        # Check for coding-related queries
+        if any(word in lower_text for word in ["code", "function", "class", "debug", "program", "script", "algorithm"]):
+            return "code"
+        
+        # Check for explanation requests
+        if any(word in lower_text for word in ["explain", "what is", "what are", "how does", "describe", "tell me about"]):
+            return "explanation"
+        
+        # Check for questions
+        if any(word in lower_text for word in ["?", "how", "why", "when", "where", "who", "can you"]):
+            return "question"
+        
+        return "generic"
 
     def _craft_reply(self, messages: List[RoleMessage]) -> str:
+        """Generate a contextually appropriate response."""
         last_user = next((m["content"] for m in reversed(
             messages) if m.get("role") == "user"), "")
-        lead_ins = [
-            "Here's a concise take:",
-            "Quick thoughts:",
-            "A few ideas:",
-            "My perspective:",
-            "Summary:",
-        ]
+        
         closers = [
             "Does that help?",
             "Let me know if you want examples.",
             "We can refine this together.",
             "Happy to go deeper.",
+            "Would you like more details?",
+            "Feel free to ask follow-up questions.",
         ]
+        
         if not last_user.strip():
-            return "Hi! Ask me anything. I can brainstorm, summarize, or explain topics."
+            return "Hi! Ask me anything. I can brainstorm, summarize, explain topics, help with code, and more."
+        
+        # Detect intent and select appropriate template
+        intent = self._detect_intent(last_user)
+        templates = self._response_templates.get(intent, self._response_templates["generic"])
+        lead_in = self.rng.choice(templates)
+        
+        # Generate response based on query length and content
         hint = last_user.strip()
         if len(hint) > 300:
             hint = hint[:300] + "..."
-        reply = f"{self.rng.choice(lead_ins)} {self._rephrase(hint)} {self.rng.choice(closers)}"
-        return reply
+        
+        # Create a more contextual response
+        rephrased = self._rephrase(hint)
+        
+        # Add some variety to the response structure
+        if intent == "greeting":
+            return f"{lead_in}"
+        elif intent == "code":
+            return f"{lead_in} {rephrased} {self.rng.choice(closers)}"
+        elif len(hint) < 50:
+            # Short queries get direct responses
+            return f"{lead_in} {rephrased}"
+        else:
+            # Longer queries get fuller responses
+            return f"{lead_in} {rephrased} {self.rng.choice(closers)}"
 
     def _rephrase(self, text: str) -> str:
-        # Extremely lightweight rephrasing to feel less echo-y
+        """Generate a contextual rephrasing of the input text.
+        
+        This creates more natural responses by reformulating the user's
+        request in a conversational way.
+        """
+        # Context-aware rephrasing with better substitutions
         swaps = {
             "I need": "You're looking for",
             "I want": "You want",
             "How to": "Ways to",
+            "How do I": "To accomplish this,",
             "help": "support",
             "problem": "challenge",
             "issue": "question",
+            "fix": "resolve",
+            "error": "issue",
+            "explain": "understand",
+            "write": "create",
         }
-        for a, b in swaps.items():
-            text = text.replace(a, b)
-        return text
+        
+        result = text
+        for old, new in swaps.items():
+            # Case-insensitive replacement preserving original case pattern
+            if old in result:
+                result = result.replace(old, new)
+            elif old.lower() in result.lower():
+                # Find and replace preserving some context
+                idx = result.lower().find(old.lower())
+                if idx != -1:
+                    result = result[:idx] + new + result[idx+len(old):]
+        
+        return result
 
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         text = self._craft_reply(messages)
@@ -432,20 +538,142 @@ class LMStudioProvider(BaseChatProvider):
         self.model = model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
+        self.base_url = base_url
 
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
-        resp = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
-            stream=stream,
+        try:
+            resp = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_output_tokens,
+                stream=stream,
+            )
+            
+            if stream:
+                return self._handle_openai_streaming_response(resp)
+            else:
+                return self._handle_openai_non_streaming_response(resp)
+        except Exception as e:
+            # Provide helpful error messages for common issues
+            error_msg = str(e).lower()
+            
+            if "connection" in error_msg or "refused" in error_msg or "timeout" in error_msg:
+                suggestion = (
+                    f"❌ Cannot connect to LM Studio at {self.base_url}\n\n"
+                    f"Troubleshooting steps:\n"
+                    f"1. Make sure LM Studio is running\n"
+                    f"2. Check that the local server is started in LM Studio\n"
+                    f"3. Verify the server is running on {self.base_url}\n"
+                    f"4. Check your firewall settings\n\n"
+                    f"Set LMSTUDIO_BASE_URL environment variable if using a different address."
+                )
+                if stream:
+                    def gen_err() -> Generator[str, None, None]:
+                        yield suggestion
+                    return gen_err()
+                return suggestion
+            
+            if "model" in error_msg and ("not found" in error_msg or "does not exist" in error_msg):
+                suggestion = (
+                    f"❌ Model '{self.model}' not found in LM Studio.\n\n"
+                    f"Troubleshooting steps:\n"
+                    f"1. Check that a model is loaded in LM Studio\n"
+                    f"2. Use --model flag to specify the correct model name\n"
+                    f"3. Set LMSTUDIO_MODEL environment variable\n\n"
+                    f"The model name should match what's shown in LM Studio's server panel."
+                )
+                if stream:
+                    def gen_err() -> Generator[str, None, None]:
+                        yield suggestion
+                    return gen_err()
+                return suggestion
+            
+            # Re-raise unexpected errors
+            raise
+
+
+class OllamaProvider(BaseChatProvider):
+    """Provider for Ollama local server (compatible with OpenAI API).
+    
+    Ollama is a popular local LLM server that supports models like Llama, Mistral,
+    CodeLlama, and many others. It provides an OpenAI-compatible API.
+    
+    Default endpoint: http://127.0.0.1:11434/v1
+    Configure via OLLAMA_BASE_URL environment variable.
+    """
+
+    def __init__(self, base_url: str = "http://127.0.0.1:11434/v1", model: str = "llama2", temperature: float = 0.7, max_output_tokens: Optional[int] = None):
+        if OpenAI is None:
+            raise RuntimeError(
+                "openai package not installed. Install 'openai' to use this provider.")
+        self.client = OpenAI(
+            base_url=base_url,
+            api_key="ollama"  # Ollama doesn't require real key
         )
-        
-        if stream:
-            return self._handle_openai_streaming_response(resp)
-        else:
-            return self._handle_openai_non_streaming_response(resp)
+        self.model = model
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
+        self.base_url = base_url
+
+    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+        try:
+            resp = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_output_tokens,
+                stream=stream,
+            )
+            
+            if stream:
+                return self._handle_openai_streaming_response(resp)
+            else:
+                return self._handle_openai_non_streaming_response(resp)
+        except Exception as e:
+            # Provide helpful error messages for common Ollama issues
+            error_msg = str(e).lower()
+            
+            if "connection" in error_msg or "refused" in error_msg or "timeout" in error_msg:
+                suggestion = (
+                    f"❌ Cannot connect to Ollama at {self.base_url}\n\n"
+                    f"Troubleshooting steps:\n"
+                    f"1. Make sure Ollama is installed and running\n"
+                    f"   - Install: https://ollama.ai/download\n"
+                    f"   - Start: 'ollama serve' (or it may start automatically)\n"
+                    f"2. Verify Ollama is listening on {self.base_url}\n"
+                    f"3. Check your firewall settings\n\n"
+                    f"Set OLLAMA_BASE_URL environment variable if using a different address."
+                )
+                if stream:
+                    def gen_err() -> Generator[str, None, None]:
+                        yield suggestion
+                    return gen_err()
+                return suggestion
+            
+            if "model" in error_msg and ("not found" in error_msg or "does not exist" in error_msg or "not available" in error_msg):
+                suggestion = (
+                    f"❌ Model '{self.model}' not found in Ollama.\n\n"
+                    f"Troubleshooting steps:\n"
+                    f"1. Pull the model first:\n"
+                    f"   ollama pull {self.model}\n\n"
+                    f"2. List available models:\n"
+                    f"   ollama list\n\n"
+                    f"3. Popular models to try:\n"
+                    f"   - llama2:latest (7B general purpose)\n"
+                    f"   - codellama:latest (7B for coding)\n"
+                    f"   - mistral:latest (7B high quality)\n"
+                    f"   - llama3.2:latest (3B latest from Meta)\n\n"
+                    f"Use --model flag or set OLLAMA_MODEL environment variable."
+                )
+                if stream:
+                    def gen_err() -> Generator[str, None, None]:
+                        yield suggestion
+                    return gen_err()
+                return suggestion
+            
+            # Re-raise unexpected errors
+            raise
 
 
 class AzureOpenAIProvider(BaseChatProvider):
@@ -599,18 +827,77 @@ def _check_lm_studio_available(server_url: str) -> bool:
     return is_available
 
 
+def _check_ollama_available(server_url: str) -> bool:
+    """Check if Ollama server is available at the given URL.
+
+    Uses a thread-safe cache to avoid repeated HTTP requests within the TTL period.
+    The HTTP request is performed outside the lock to avoid blocking other threads.
+
+    Args:
+        server_url: Base URL for Ollama API (e.g., "http://127.0.0.1:11434/v1")
+
+    Returns:
+        True if Ollama is available, False otherwise.
+    """
+    # Check cache under lock
+    with _ollama_cache_lock:
+        current_time = time.time()
+        if (
+            _ollama_availability_cache["available"] is not None
+            and _ollama_availability_cache["url"] == server_url
+            and (current_time - _ollama_availability_cache["checked_at"]) < _OLLAMA_CACHE_TTL_SECONDS
+        ):
+            return _ollama_availability_cache["available"]
+
+    # Perform HTTP check outside lock to avoid blocking other threads
+    is_available = False
+    try:
+        import urllib.request
+        import urllib.error
+        # Remove trailing /v1 if present, then try /api/tags endpoint (Ollama-specific)
+        base_url = server_url.removesuffix("/v1")
+        # Ollama uses /api/tags to list models
+        tags_endpoint_url = base_url + "/api/tags"
+        request = urllib.request.Request(
+            tags_endpoint_url, headers={"User-Agent": "QAI"})
+        urllib.request.urlopen(request, timeout=1)
+        is_available = True
+    except Exception:
+        # Fallback: try OpenAI-compatible /v1/models endpoint
+        try:
+            import urllib.request
+            import urllib.error
+            base_url = server_url.removesuffix("/v1")
+            models_endpoint_url = base_url + "/v1/models"
+            request = urllib.request.Request(
+                models_endpoint_url, headers={"User-Agent": "QAI"})
+            urllib.request.urlopen(request, timeout=1)
+            is_available = True
+        except Exception:
+            is_available = False
+
+    # Update cache under lock
+    with _ollama_cache_lock:
+        _ollama_availability_cache["available"] = is_available
+        _ollama_availability_cache["checked_at"] = time.time()
+        _ollama_availability_cache["url"] = server_url
+
+    return is_available
+
+
 def detect_provider(explicit: Optional[str] = None, model_override: Optional[str] = None, temperature: Optional[float] = None, max_output_tokens: Optional[int] = None) -> tuple[BaseChatProvider, ProviderChoice]:
     """Detect the best provider based on environment variables.
 
     Priority:
       1) explicit selection if provided
       2) LM Studio if LMSTUDIO_BASE_URL is set
-      3) AGI if selected (advanced reasoning capabilities)
-      4) Quantum if selected
-      5) Azure if all required vars present
-      6) OpenAI if OPENAI_API_KEY is present
-      7) Local fallback
-      8) LoRA if provider is 'lora' and model_override is set
+      3) Ollama if OLLAMA_BASE_URL is set
+      4) AGI if selected (advanced reasoning capabilities)
+      5) Quantum if selected
+      6) Azure if all required vars present
+      7) OpenAI if OPENAI_API_KEY is present
+      8) Local fallback
+      9) LoRA if provider is 'lora' and model_override is set
     """
     provider_choice = (explicit or "auto").lower()
 
@@ -618,6 +905,11 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
     lm_studio_base_url = os.getenv(
         "LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
     lm_studio_model_name = os.getenv("LMSTUDIO_MODEL", "local-model")
+
+    # Ollama config
+    ollama_base_url = os.getenv(
+        "OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1")
+    ollama_model_name = os.getenv("OLLAMA_MODEL", "llama2")
 
     # AGI config - advanced reasoning capabilities
     if provider_choice == "agi":
@@ -697,6 +989,12 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
                                     temperature=temperature_setting, max_output_tokens=max_output_tokens)
         return provider, ProviderChoice(name="lmstudio", model=selected_model)
 
+    if provider_choice == "ollama":
+        selected_model = model_override or ollama_model_name
+        provider = OllamaProvider(base_url=ollama_base_url, model=selected_model,
+                                  temperature=temperature_setting, max_output_tokens=max_output_tokens)
+        return provider, ProviderChoice(name="ollama", model=selected_model)
+
     if provider_choice == "azure":
         if not (azure_openai_api_key and azure_openai_endpoint and (model_override or azure_openai_deployment)):
             raise RuntimeError(
@@ -726,6 +1024,13 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
         provider = LMStudioProvider(base_url=lm_studio_base_url, model=selected_model,
                                     temperature=temperature_setting, max_output_tokens=max_output_tokens)
         return provider, ProviderChoice(name="lmstudio", model=selected_model)
+
+    # Check for Ollama next
+    if _check_ollama_available(ollama_base_url):
+        selected_model = model_override or ollama_model_name
+        provider = OllamaProvider(base_url=ollama_base_url, model=selected_model,
+                                  temperature=temperature_setting, max_output_tokens=max_output_tokens)
+        return provider, ProviderChoice(name="ollama", model=selected_model)
 
     if azure_openai_api_key and azure_openai_endpoint and (model_override or azure_openai_deployment):
         selected_model = model_override or azure_openai_deployment
