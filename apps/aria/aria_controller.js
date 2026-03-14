@@ -231,12 +231,7 @@ function addChatMessage(role, text) {
         inner.appendChild(sender);
         inner.appendChild(bubble);
 
-        // For user messages align right
-        if (role === 'user') {
-            msgWrap.appendChild(inner);
-        } else {
-            msgWrap.appendChild(inner);
-        }
+        msgWrap.appendChild(inner);
 
         container.appendChild(msgWrap);
         container.scrollTop = container.scrollHeight;
@@ -1348,7 +1343,10 @@ function animate(className) {
         setTimeout(() => moveArm(ariaArmRight, -60, 150), 350);
         setTimeout(() => moveArm(ariaArmRight, -30, 150), 500);
         setTimeout(() => moveArm(ariaArmRight, -60, 150), 650);
-        setTimeout(() => resetLimbs(200), 800);
+        setTimeout(() => {
+            resetLimbs(200);
+            isPerformingAction = false;
+        }, 800);
     } else if (className === 'jumping') {
         console.log('Jumping animation triggered with leg bending');
         aria.classList.add(className);
@@ -1533,7 +1531,6 @@ function createEffect(type, intensity = 'normal') {
 
         // Add color variation for sparkle
         if (type === 'sparkle') {
-            const randomColor = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
             effect.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
         }
 
@@ -1628,40 +1625,12 @@ function randomCharacterEvolution() {
 }
 
 // Automatic character evolution disabled - keeping neutral human-like appearance
-let evolutionCountdown = 30;
-const timerDisplay = document.getElementById('evolutionTimer');
-
-// setInterval(randomCharacterEvolution, 30000); // Disabled
-
-// Countdown timer
-setInterval(() => {
-    evolutionCountdown--;
-    if (evolutionCountdown <= 0) {
-        evolutionCountdown = 30;
-    }
-    
-    // Update timer display
-    if (timerDisplay) {
-        timerDisplay.textContent = `⏰ Next evolution in: ${evolutionCountdown}s`;
-        if (evolutionCountdown <= 5) {
-            timerDisplay.style.color = '#e74c3c';
-            timerDisplay.style.animation = 'pulse 0.5s ease infinite';
-        } else {
-            timerDisplay.style.color = '#667eea';
-            timerDisplay.style.animation = 'none';
-        }
-    }
-    
-    if (evolutionCountdown <= 5 && evolutionCountdown > 0) {
-        log(`⏰ Character evolving in ${evolutionCountdown} seconds...`);
-    }
-}, 1000);
+// setInterval(randomCharacterEvolution, 30000);
 
 // Initialize
 log('🎨 Aria Visual System Ready!');
 log('🤖 AI Character Generation: ACTIVE');
 log('Type commands or use quick buttons');
-log('⏰ Auto-evolution every 30 seconds');
 
 // Object Interaction System
 // Helper: derive stage-relative percentage position from an element
