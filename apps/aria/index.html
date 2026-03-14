@@ -61,10 +61,17 @@
             transition: background var(--transition), color var(--transition);
         }
 
-        .container {
-            max-width: 1280px;
-            width: 100%;
+        /* Smooth page entrance */
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .container { max-width: 1280px; width: 100%; animation: fadeSlideIn 0.5s ease-out; }
+
+        /* Scroll shadow on control panel */
+        .control-panel { overflow-y: auto; max-height: 80vh; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; }
+        .control-panel::-webkit-scrollbar { width: 5px; }
+        .control-panel::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
         header {
             text-align: center;
@@ -1355,6 +1362,18 @@
             }
             h1 { font-size: 1.6em; }
             .stage { height: 350px; }
+            .control-panel { max-height: none; }
+            .object-controls { gap: 6px; }
+            .object-btn { padding: 6px 10px; font-size: 0.85em; }
+            body { padding: 8px 8px 60px; }
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.3em; }
+            .subtitle { font-size: 0.85em; }
+            .stage { height: 280px; }
+            .action-btn { font-size: 0.8em; padding: 6px 10px; }
+            .quick-actions h4 { font-size: 0.85em; }
         }
     </style>
 </head>
@@ -1367,6 +1386,7 @@
                 <a href="/auto-execute.html" class="nav-link">⚡ Auto-Execute</a>
                 <a href="../chat/" class="nav-link">💬 Chat</a>
                 <a href="../dashboard/" class="nav-link">📊 Dashboard</a>
+                <a href="../store/" class="nav-link">🛒 Store</a>
             </div>
             <div class="nav-links">
                 <div class="connection-status checking" id="connectionStatus">
@@ -1764,5 +1784,11 @@
             loadSubscriptionStatus();
         }
     </script>
+    <footer style="text-align:center;padding:20px 0 8px;color:var(--text-secondary);font-size:0.82em;opacity:0.7;">
+        <a href="../dashboard/" style="color:var(--text-secondary);text-decoration:underline">Dashboard</a> ·
+        <a href="../chat/" style="color:var(--text-secondary);text-decoration:underline">Chat</a> ·
+        <a href="../store/" style="color:var(--text-secondary);text-decoration:underline">Store</a>
+        <div style="margin-top:4px">Aria Interactive AI Character Platform</div>
+    </footer>
 </body>
 </html>

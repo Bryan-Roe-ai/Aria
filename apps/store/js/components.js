@@ -3,6 +3,13 @@
 
 function getNavbar(activePage) {
   return `
+  <div class="platform-nav" style="display:flex;gap:8px;padding:8px 16px;background:#1a1a2e;align-items:center;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <span style="color:rgba(255,255,255,0.4);font-size:0.75em;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;">Aria Platform</span>
+    <a href="../aria/" style="color:rgba(255,255,255,0.85);text-decoration:none;padding:4px 12px;border-radius:6px;font-size:0.82em;font-weight:500;background:rgba(255,255,255,0.06);transition:all 0.2s;">👤 Aria</a>
+    <a href="../chat/" style="color:rgba(255,255,255,0.85);text-decoration:none;padding:4px 12px;border-radius:6px;font-size:0.82em;font-weight:500;background:rgba(255,255,255,0.06);transition:all 0.2s;">💬 Chat</a>
+    <a href="../dashboard/" style="color:rgba(255,255,255,0.85);text-decoration:none;padding:4px 12px;border-radius:6px;font-size:0.82em;font-weight:500;background:rgba(255,255,255,0.06);transition:all 0.2s;">📊 Dashboard</a>
+    <a href="./" style="color:#fff;text-decoration:none;padding:4px 12px;border-radius:6px;font-size:0.82em;font-weight:500;background:rgba(102,126,234,0.35);transition:all 0.2s;">🛒 Store</a>
+  </div>
   <header class="header">
     <div class="container">
       <a href="index.html" class="logo">

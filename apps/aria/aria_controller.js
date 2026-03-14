@@ -2124,6 +2124,62 @@ log('👀 Idle animations enabled - watch for breathing and blinking!');
 startAutoBehaviors();
 log('✨ Auto-behaviors enabled - Aria will move and react on her own!');
 
+// === Eye tracking (follows mouse cursor) ===
+(function initEyeTracking() {
+    const eyes = document.querySelectorAll('.aria-eye');
+    if (!eyes.length || !stage) return;
+
+    document.addEventListener('mousemove', function(e) {
+        eyes.forEach(function(eye) {
+            const rect = eye.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+            const dist = Math.min(3, Math.hypot(e.clientX - cx, e.clientY - cy) / 50);
+            const dx = Math.cos(angle) * dist;
+            const dy = Math.sin(angle) * dist;
+            // Shift the eye's radial gradient to simulate looking
+            eye.style.backgroundPosition = `${50 + dx * 5}% ${50 + dy * 5}%`;
+        });
+    });
+
+    log('👁️ Eye tracking active — Aria follows your cursor!');
+})();
+
+// === Natural blink cycle ===
+(function initBlinkCycle() {
+    function doBlink() {
+        if (!ariaEyeLeft || !ariaEyeRight) return;
+        // Skip if performing action or mid-expression
+        if (isPerformingAction) return;
+        const origL = ariaEyeLeft.style.height;
+        const origR = ariaEyeRight.style.height;
+        ariaEyeLeft.style.transition = 'height 0.06s';
+        ariaEyeRight.style.transition = 'height 0.06s';
+        ariaEyeLeft.style.height = '1px';
+        ariaEyeRight.style.height = '1px';
+        setTimeout(function() {
+            ariaEyeLeft.style.height = origL || '';
+            ariaEyeRight.style.height = origR || '';
+            ariaEyeLeft.style.transition = '';
+            ariaEyeRight.style.transition = '';
+        }, 120);
+    }
+    // Natural blink interval: 3-6 seconds with occasional double-blink
+    function scheduleBlink() {
+        const delay = 3000 + Math.random() * 3000;
+        setTimeout(function() {
+            doBlink();
+            // 20% chance of a double-blink
+            if (Math.random() < 0.2) {
+                setTimeout(doBlink, 250);
+            }
+            scheduleBlink();
+        }, delay);
+    }
+    scheduleBlink();
+})();
+
 // Expose minimal testing helpers
 window.ariaTest = {
     limb: (part, actionOrAngle, duration) => handleLimbTag(part, typeof actionOrAngle === 'number' ? `${actionOrAngle},${duration||500}` : `${actionOrAngle||''}${duration?','+duration:''}`),
