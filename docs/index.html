@@ -3,824 +3,1588 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aria — Interactive AI Character Platform</title>
-    <meta name="description" content="Hybrid quantum-AI/ML platform with 3D animated character, multi-provider chat, autonomous learning, and real-time dashboards.">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👤</text></svg>">
+    <title>Aria - Interactive AI Character Platform</title>
+    <meta name="description" content="Public landing page for Aria: interactive character demos, multi-provider chat, training dashboards, quantum ML tools, and documentation.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23122033'/%3E%3Ccircle cx='50' cy='36' r='16' fill='%230f9d89'/%3E%3Cpath d='M24 78c5-14 18-22 26-22s21 8 26 22' stroke='%23f7f2e8' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* ===== Reset & Base ===== */
-        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-        :root{
-            --brand:#6366f1;--brand-light:#818cf8;--brand-dark:#4f46e5;
-            --accent:#f472b6;--accent-light:#f9a8d4;
-            --surface:rgba(255,255,255,.97);--surface-hover:rgba(255,255,255,1);
-            --text:#1e293b;--text-muted:#64748b;--text-faint:#94a3b8;
-            --radius:16px;--radius-sm:10px;
-            --shadow:0 4px 24px rgba(0,0,0,.08);--shadow-lg:0 12px 40px rgba(0,0,0,.12);
-            --transition:0.25s cubic-bezier(.4,0,.2,1);
-        }
-        html{scroll-behavior:smooth}
-        body{
-            font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-            background:#0f0b1e;
-            color:var(--text);
-            min-height:100vh;
-            overflow-x:hidden;
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --paper: #f7f2e8;
+            --paper-soft: #f2eadc;
+            --ink: #122033;
+            --ink-soft: #5f6874;
+            --panel: rgba(255, 255, 255, 0.76);
+            --panel-strong: rgba(255, 255, 255, 0.92);
+            --line: rgba(18, 32, 51, 0.12);
+            --shadow: 0 24px 64px rgba(18, 32, 51, 0.12);
+            --shadow-soft: 0 16px 36px rgba(18, 32, 51, 0.08);
+            --teal: #0f9d89;
+            --coral: #d95b43;
+            --gold: #d3a53e;
+            --slate: #22405c;
+            --radius-xl: 30px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --shell: 1220px;
+            --transition: 220ms cubic-bezier(0.22, 1, 0.36, 1);
         }
 
-        /* ===== Animated Background ===== */
-        .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-        .bg::before{
-            content:'';position:absolute;width:140%;height:140%;top:-20%;left:-20%;
-            background:conic-gradient(from 180deg at 50% 50%,#6366f1 0deg,#8b5cf6 72deg,#ec4899 144deg,#6366f1 216deg,#3b82f6 288deg,#6366f1 360deg);
-            animation:bgSpin 20s linear infinite;
-            filter:blur(80px);opacity:.35;
-        }
-        .bg::after{
-            content:'';position:absolute;inset:0;
-            background:radial-gradient(ellipse at 30% 20%,rgba(99,102,241,.2) 0%,transparent 50%),
-                        radial-gradient(ellipse at 70% 80%,rgba(236,72,153,.15) 0%,transparent 50%);
-        }
-        @keyframes bgSpin{to{transform:rotate(360deg)}}
+        html { scroll-behavior: smooth; }
 
-        /* ===== Floating particles ===== */
-        .particles{position:fixed;inset:0;z-index:0;pointer-events:none}
-        .particle{
-            position:absolute;border-radius:50%;
-            background:rgba(255,255,255,.08);
-            animation:float linear infinite;
-        }
-        @keyframes float{
-            0%{transform:translateY(100vh) scale(0);opacity:0}
-            10%{opacity:1}
-            90%{opacity:1}
-            100%{transform:translateY(-10vh) scale(1);opacity:0}
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Instrument Sans", system-ui, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(180deg, #fbf7ef 0%, #f7f2e8 56%, #efe5d6 100%);
+            overflow-x: hidden;
         }
 
-        /* ===== Layout ===== */
-        .page{position:relative;z-index:1}
-        .container{max-width:1280px;margin:0 auto;padding:0 24px}
-
-        /* ===== Nav ===== */
-        nav{
-            position:sticky;top:0;z-index:100;
-            backdrop-filter:blur(20px) saturate(1.8);
-            -webkit-backdrop-filter:blur(20px) saturate(1.8);
-            background:rgba(15,11,30,.7);
-            border-bottom:1px solid rgba(255,255,255,.06);
-        }
-        .nav-inner{
-            display:flex;align-items:center;justify-content:space-between;
-            padding:14px 0;max-width:1280px;margin:0 auto;padding-left:24px;padding-right:24px;
-        }
-        .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:1.2em}
-        .nav-links{display:flex;gap:8px;flex-wrap:wrap}
-        .nav-links a{
-            color:rgba(255,255,255,.7);text-decoration:none;font-size:.9em;font-weight:500;
-            padding:6px 14px;border-radius:8px;transition:var(--transition);
-        }
-        .nav-links a:hover{color:#fff;background:rgba(255,255,255,.1)}
-
-        /* ===== Hero ===== */
-        .hero{
-            text-align:center;padding:100px 0 80px;
-            color:#fff;
-        }
-        .hero-badge{
-            display:inline-flex;align-items:center;gap:6px;
-            background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
-            border-radius:100px;padding:6px 18px;font-size:.85em;
-            margin-bottom:24px;color:var(--accent-light);
-            backdrop-filter:blur(8px);
-        }
-        .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease infinite}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        .hero h1{
-            font-size:clamp(2.5em,6vw,4.5em);font-weight:800;
-            line-height:1.1;letter-spacing:-.02em;
-            background:linear-gradient(135deg,#fff 0%,#c7d2fe 40%,var(--accent-light) 100%);
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-            background-clip:text;
-        }
-        .hero p{
-            font-size:clamp(1em,2vw,1.35em);color:rgba(255,255,255,.65);
-            max-width:640px;margin:20px auto 0;line-height:1.6;
-        }
-        .hero-actions{
-            display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px;
-        }
-        .btn{
-            display:inline-flex;align-items:center;gap:8px;
-            padding:14px 28px;border-radius:12px;font-weight:600;font-size:1em;
-            text-decoration:none;transition:var(--transition);border:none;cursor:pointer;
-        }
-        .btn-primary{
-            background:linear-gradient(135deg,var(--brand) 0%,var(--accent) 100%);
-            color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.35);
-        }
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.45)}
-        .btn-outline{
-            background:rgba(255,255,255,.06);color:#fff;
-            border:1px solid rgba(255,255,255,.15);
-        }
-        .btn-outline:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25)}
-
-        /* ===== Stats row ===== */
-        .stats{
-            display:flex;gap:2px;justify-content:center;margin-top:48px;
-            background:rgba(255,255,255,.04);border-radius:var(--radius);overflow:hidden;
-            border:1px solid rgba(255,255,255,.06);max-width:720px;margin-left:auto;margin-right:auto;
-        }
-        .stat{flex:1;padding:20px;text-align:center}
-        .stat+.stat{border-left:1px solid rgba(255,255,255,.06)}
-        .stat-value{font-size:1.8em;font-weight:800;color:#fff}
-        .stat-label{font-size:.8em;color:rgba(255,255,255,.5);margin-top:4px}
-
-        /* ===== Section base ===== */
-        section{padding:80px 0}
-        .section-header{text-align:center;margin-bottom:48px;color:#fff}
-        .section-header h2{font-size:2.2em;font-weight:700;margin-bottom:8px}
-        .section-header p{color:rgba(255,255,255,.55);font-size:1.1em}
-
-        /* ===== App cards ===== */
-        .apps-grid{
-            display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;
-        }
-        .app-card{
-            background:var(--surface);border-radius:var(--radius);
-            padding:28px;text-decoration:none;color:var(--text);
-            box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.04);
-            transition:var(--transition);display:flex;flex-direction:column;
-            position:relative;overflow:hidden;
-        }
-        .app-card::before{
-            content:'';position:absolute;top:0;left:0;right:0;height:3px;
-            background:linear-gradient(90deg,var(--brand),var(--accent));
-            transform:scaleX(0);transform-origin:left;transition:var(--transition);
-        }
-        .app-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
-        .app-card:hover::before{transform:scaleX(1)}
-        .card-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-        .card-icon{
-            width:48px;height:48px;border-radius:12px;display:grid;place-items:center;
-            font-size:1.5em;flex-shrink:0;
-        }
-        .card-icon.aria{background:linear-gradient(135deg,#dbeafe,#ede9fe)}
-        .card-icon.chat{background:linear-gradient(135deg,#fce7f3,#ede9fe)}
-        .card-icon.dash{background:linear-gradient(135deg,#d1fae5,#dbeafe)}
-        .card-icon.quantum{background:linear-gradient(135deg,#ede9fe,#dbeafe)}
-        .card-icon.store{background:linear-gradient(135deg,#fef3c7,#fce7f3)}
-        .card-icon.money{background:linear-gradient(135deg,#f3e8ff,#fce7f3)}
-        .card-icon.hub{background:linear-gradient(135deg,#cffafe,#dbeafe)}
-        .card-title{font-size:1.25em;font-weight:700;color:var(--text)}
-        .card-desc{color:var(--text-muted);line-height:1.6;font-size:.95em;flex:1}
-        .card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
-        .tag{
-            font-size:.75em;font-weight:600;padding:4px 10px;border-radius:6px;
-        }
-        .tag-demo{background:#eff6ff;color:#3b82f6}
-        .tag-local{background:#fef3c7;color:#d97706}
-        .tag-live{background:#d1fae5;color:#059669}
-
-        /* ===== Feature grid ===== */
-        .features-grid{
-            display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;
-        }
-        .feat{
-            background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);
-            border-radius:var(--radius-sm);padding:24px;transition:var(--transition);
-            color:#fff;
-        }
-        .feat:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12);transform:translateY(-2px)}
-        .feat-icon{font-size:1.6em;margin-bottom:10px}
-        .feat-title{font-weight:700;margin-bottom:6px;font-size:1.05em}
-        .feat-desc{color:rgba(255,255,255,.55);font-size:.9em;line-height:1.5}
-
-        /* ===== Architecture diagram ===== */
-        .arch{
-            background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-            border-radius:var(--radius);padding:40px;color:#fff;
-        }
-        .arch h2{font-size:1.5em;font-weight:700;margin-bottom:24px;text-align:center}
-        .arch-layers{display:flex;flex-direction:column;gap:12px}
-        .arch-layer{
-            display:flex;align-items:center;gap:16px;
-            background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
-            border-radius:var(--radius-sm);padding:16px 20px;
-        }
-        .arch-layer-label{
-            font-weight:700;font-size:.8em;text-transform:uppercase;letter-spacing:.08em;
-            color:var(--brand-light);min-width:100px;flex-shrink:0;
-        }
-        .arch-items{display:flex;gap:8px;flex-wrap:wrap}
-        .arch-item{
-            background:rgba(255,255,255,.08);padding:6px 14px;border-radius:8px;
-            font-size:.85em;color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.06);
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background:
+                radial-gradient(circle at 12% 18%, rgba(15, 157, 137, 0.20), transparent 31%),
+                radial-gradient(circle at 88% 12%, rgba(217, 91, 67, 0.18), transparent 26%),
+                radial-gradient(circle at 50% 76%, rgba(211, 165, 62, 0.18), transparent 28%);
+            pointer-events: none;
         }
 
-        /* ===== API reference ===== */
-        .api-table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid rgba(255,255,255,.08)}
-        .api-table{width:100%;border-collapse:collapse;font-size:.9em;color:#fff}
-        .api-table th{
-            text-align:left;padding:12px 16px;
-            background:rgba(255,255,255,.06);font-weight:700;
-            border-bottom:1px solid rgba(255,255,255,.08);
-            color:var(--brand-light);font-size:.8em;text-transform:uppercase;letter-spacing:.06em;
-        }
-        .api-table td{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
-        .api-table tr:hover td{background:rgba(255,255,255,.03)}
-        .method{
-            display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75em;font-weight:700;
-            min-width:50px;text-align:center;
-        }
-        .method-get{background:rgba(34,197,94,.15);color:#22c55e}
-        .method-post{background:rgba(59,130,246,.15);color:#60a5fa}
-        .endpoint-path{font-family:'Cascadia Code','Fira Code',monospace;font-size:.85em;color:rgba(255,255,255,.85)}
-
-        /* ===== Directory / Website Listing ===== */
-        .dir-section{margin-bottom:32px}
-        .dir-section h3{
-            font-size:1.1em;font-weight:700;color:var(--brand-light);
-            margin-bottom:14px;display:flex;align-items:center;gap:8px;
-        }
-        .dir-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
-        .dir-link{
-            display:flex;align-items:center;justify-content:space-between;gap:8px;
-            padding:12px 16px;border-radius:var(--radius-sm);
-            text-decoration:none;font-size:.9em;font-weight:500;
-            transition:var(--transition);position:relative;
-        }
-        .dir-link .port{font-size:.78em;opacity:.5;font-family:monospace}
-        .dir-link .status-dot{
-            width:7px;height:7px;border-radius:50%;flex-shrink:0;
-            background:#475569;transition:background .3s;
-        }
-        .dir-link .status-dot.online{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5)}
-        .demo-link{color:var(--brand);background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.1)}
-        .demo-link:hover{background:rgba(99,102,241,.12)}
-        .server-link{color:#e2e8f0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
-        .server-link:hover{background:rgba(255,255,255,.08)}
-        .file-link{color:#fbbf24;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.1)}
-        .file-link:hover{background:rgba(251,191,36,.12)}
-        .biz-link{color:var(--accent-light);background:rgba(244,114,182,.06);border:1px solid rgba(244,114,182,.1)}
-        .biz-link:hover{background:rgba(244,114,182,.12)}
-
-        /* ===== Search ===== */
-        .search-wrap{
-            position:relative;margin-bottom:24px;
-        }
-        .search-wrap input{
-            width:100%;padding:14px 16px 14px 44px;
-            background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
-            border-radius:var(--radius-sm);color:#fff;font-size:1em;
-            transition:var(--transition);
-        }
-        .search-wrap input::placeholder{color:rgba(255,255,255,.35)}
-        .search-wrap input:focus{outline:none;border-color:var(--brand);background:rgba(255,255,255,.08)}
-        .search-wrap .search-icon{
-            position:absolute;left:14px;top:50%;transform:translateY(-50%);
-            color:rgba(255,255,255,.35);pointer-events:none;
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image:
+                linear-gradient(rgba(18, 32, 51, 0.032) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 32, 51, 0.032) 1px, transparent 1px);
+            background-size: 34px 34px;
+            mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), transparent 92%);
+            pointer-events: none;
         }
 
-        /* ===== Getting Started ===== */
-        .steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-        .step{
-            background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
-            border-radius:var(--radius-sm);padding:24px;color:#fff;text-align:center;
-        }
-        .step-num{
-            width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
-            background:linear-gradient(135deg,var(--brand),var(--accent));
-            font-weight:800;font-size:.9em;margin:0 auto 14px;
-        }
-        .step-title{font-weight:700;margin-bottom:6px}
-        .step-desc{color:rgba(255,255,255,.5);font-size:.88em;line-height:1.5}
-        code.cmd{
-            display:inline-block;background:rgba(0,0,0,.3);padding:2px 8px;border-radius:4px;
-            font-family:'Cascadia Code','Fira Code',monospace;font-size:.82em;color:#a5b4fc;
+        a { color: inherit; }
+
+        .shell {
+            width: min(var(--shell), calc(100vw - 32px));
+            margin: 0 auto;
         }
 
-        /* ===== Footer ===== */
-        footer{
-            border-top:1px solid rgba(255,255,255,.06);
-            padding:40px 0;text-align:center;color:rgba(255,255,255,.4);font-size:.9em;
+        .section {
+            padding: 44px 0 22px;
         }
-        footer a{color:rgba(255,255,255,.6);text-decoration:none;transition:var(--transition)}
-        footer a:hover{color:#fff}
-        .footer-links{display:flex;gap:24px;justify-content:center;margin-bottom:16px}
 
-        /* ===== Responsive ===== */
-        @media(max-width:768px){
-            .hero{padding:60px 0 40px}
-            section{padding:48px 0}
-            .stats{flex-direction:column}
-            .stat+.stat{border-left:none;border-top:1px solid rgba(255,255,255,.06)}
-            .nav-links{display:none}
-            .arch-layer{flex-direction:column;gap:8px}
-            .arch-layer-label{min-width:auto}
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(18px) saturate(1.4);
+            background: rgba(247, 242, 232, 0.78);
+            border-bottom: 1px solid rgba(18, 32, 51, 0.08);
+        }
+
+        .nav-shell {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 14px 0;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background:
+                radial-gradient(circle at 50% 34%, var(--teal) 0 11px, transparent 12px),
+                linear-gradient(180deg, var(--slate), #16283d);
+            position: relative;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+        }
+
+        .brand-mark::after {
+            content: "";
+            position: absolute;
+            left: 9px;
+            right: 9px;
+            bottom: 8px;
+            height: 11px;
+            border-radius: 999px 999px 8px 8px;
+            border: 3px solid rgba(247, 242, 232, 0.96);
+            border-top: 0;
+        }
+
+        .brand-copy {
+            display: grid;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .brand-copy strong {
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.08rem;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .brand-copy span {
+            font-size: 0.78rem;
+            color: var(--ink-soft);
+            white-space: nowrap;
+        }
+
+        .nav-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.55);
+            color: var(--ink);
+            cursor: pointer;
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .site-nav a {
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 999px;
+            color: var(--ink-soft);
+            font-size: 0.94rem;
+            transition: background var(--transition), color var(--transition), transform var(--transition);
+        }
+
+        .site-nav a:hover,
+        .site-nav a:focus-visible {
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--ink);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .hero {
+            padding: 42px 0 16px;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 16px;
+            font-size: 0.83rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--slate);
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 32px;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--teal), var(--coral));
+        }
+
+        .hero-copy,
+        .hero-panel,
+        .route-card,
+        .flow-card,
+        .search-panel,
+        .resource-group,
+        .terminal,
+        .run-copy,
+        .run-aside {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.62);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-copy {
+            padding: 34px;
+            border-radius: var(--radius-xl);
+        }
+
+        .hero-copy h1 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(3rem, 7vw, 5.3rem);
+            line-height: 0.96;
+            letter-spacing: -0.06em;
+            max-width: 11ch;
+        }
+
+        .hero-copy h1 span {
+            color: var(--coral);
+        }
+
+        .hero-text {
+            margin: 18px 0 0;
+            max-width: 56ch;
+            font-size: 1.07rem;
+            line-height: 1.7;
+            color: var(--ink-soft);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 50px;
+            padding: 0 20px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition), background var(--transition);
+        }
+
+        .button:hover,
+        .button:focus-visible {
+            transform: translateY(-2px);
+            outline: none;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--teal), #1bb6a4);
+            color: #f6fffd;
+            box-shadow: 0 14px 28px rgba(15, 157, 137, 0.24);
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.64);
+            border-color: rgba(18, 32, 51, 0.10);
+            color: var(--ink);
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .metric {
+            padding: 18px 16px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(18, 32, 51, 0.08);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .metric strong {
+            display: block;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+
+        .metric span {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.88rem;
+            color: var(--ink-soft);
+        }
+
+        .hero-panel {
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .panel-head strong,
+        .section-head h2,
+        .run-copy h2 {
+            display: block;
+            margin-top: 6px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(1.85rem, 4vw, 2.6rem);
+            line-height: 1.04;
+            letter-spacing: -0.05em;
+        }
+
+        .panel-head p,
+        .section-head p,
+        .run-copy p {
+            margin: 14px 0 0;
+            color: var(--ink-soft);
+            line-height: 1.7;
+        }
+
+        .pulse-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .pulse-card {
+            display: block;
+            min-height: 132px;
+            padding: 18px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(18, 32, 51, 0.08);
+            box-shadow: var(--shadow-soft);
+            transition: transform var(--transition), border-color var(--transition), background var(--transition);
+        }
+
+        .pulse-card:hover,
+        .pulse-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: rgba(18, 32, 51, 0.16);
+            background: var(--panel-strong);
+            outline: none;
+        }
+
+        .pulse-card span {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            background: rgba(15, 157, 137, 0.10);
+            color: var(--slate);
+        }
+
+        .pulse-card strong {
+            display: block;
+            margin-top: 14px;
+            font-size: 1.08rem;
+        }
+
+        .pulse-card p {
+            margin: 8px 0 0;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: var(--ink-soft);
+        }
+
+        .command-stack {
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            background: #122033;
+            color: #eef6ff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .command-stack h3,
+        .terminal-head strong {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.06rem;
+            letter-spacing: -0.03em;
+        }
+
+        .command-stack p,
+        .terminal-head p {
+            margin: 6px 0 0;
+            color: rgba(238, 246, 255, 0.72);
+            font-size: 0.9rem;
+        }
+
+        .command-line,
+        .terminal-line {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: start;
+            margin-top: 14px;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.87rem;
+        }
+
+        .command-line span,
+        .terminal-line span {
+            display: inline-grid;
+            place-items: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.10);
+            color: #9bcfca;
+            font-size: 0.75rem;
+        }
+
+        .command-line code,
+        .terminal-line code {
+            display: block;
+            padding: 11px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f7f6f1;
+            overflow-x: auto;
+        }
+
+        .section-head {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .route-grid,
+        .flow-grid,
+        .resource-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .route-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .route-card {
+            display: block;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .route-card:hover,
+        .route-card:focus-visible {
+            transform: translateY(-3px);
+            border-color: rgba(18, 32, 51, 0.14);
+            outline: none;
+        }
+
+        .route-card[data-tone="teal"] { border-top: 5px solid rgba(15, 157, 137, 0.86); }
+        .route-card[data-tone="coral"] { border-top: 5px solid rgba(217, 91, 67, 0.86); }
+        .route-card[data-tone="gold"] { border-top: 5px solid rgba(211, 165, 62, 0.92); }
+
+        .route-card span {
+            display: inline-flex;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: rgba(18, 32, 51, 0.06);
+            color: var(--ink-soft);
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.11em;
+        }
+
+        .route-card h3 {
+            margin: 16px 0 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.35rem;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+        }
+
+        .route-card p {
+            margin: 12px 0 0;
+            color: var(--ink-soft);
+            line-height: 1.66;
+            font-size: 0.95rem;
+        }
+
+        .route-card strong {
+            display: inline-flex;
+            margin-top: 18px;
+            font-size: 0.88rem;
+            color: var(--slate);
+        }
+
+        .flow-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .flow-card {
+            padding: 22px;
+            border-radius: var(--radius-lg);
+        }
+
+        .flow-step {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--coral), var(--gold));
+            color: #fffdf8;
+            font-family: "Space Grotesk", sans-serif;
+            font-weight: 700;
+        }
+
+        .flow-card h3 {
+            margin: 16px 0 0;
+            font-size: 1.08rem;
+        }
+
+        .flow-card p {
+            margin: 10px 0 0;
+            color: var(--ink-soft);
+            line-height: 1.68;
+            font-size: 0.94rem;
+        }
+
+        .search-panel {
+            padding: 22px;
+            border-radius: var(--radius-xl);
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-input {
+            width: 100%;
+            min-height: 56px;
+            padding: 0 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(18, 32, 51, 0.10);
+            background: rgba(255, 255, 255, 0.82);
+            font: inherit;
+            color: var(--ink);
+        }
+
+        .search-input:focus {
+            outline: 2px solid rgba(15, 157, 137, 0.22);
+            outline-offset: 1px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .legend-chip,
+        .resource-type,
+        .status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.10em;
+        }
+
+        .legend-chip {
+            background: rgba(18, 32, 51, 0.06);
+            color: var(--ink-soft);
+        }
+
+        .search-summary {
+            margin: 14px 0 0;
+            color: var(--ink-soft);
+            font-size: 0.94rem;
+        }
+
+        .resource-groups {
+            display: grid;
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .resource-group {
+            padding: 22px;
+            border-radius: var(--radius-xl);
+        }
+
+        .group-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .group-head h3 {
+            margin: 0;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 1.32rem;
+            letter-spacing: -0.04em;
+        }
+
+        .group-count {
+            color: var(--ink-soft);
+            font-size: 0.9rem;
+        }
+
+        .resource-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .resource-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 214px;
+            padding: 18px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(18, 32, 51, 0.08);
+            box-shadow: var(--shadow-soft);
+            transition: transform var(--transition), border-color var(--transition), background var(--transition);
+        }
+
+        .resource-card:hover,
+        .resource-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: rgba(18, 32, 51, 0.14);
+            background: var(--panel-strong);
+            outline: none;
+        }
+
+        .resource-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .resource-type.demo,
+        .legend-chip.demo { background: rgba(15, 157, 137, 0.10); color: var(--slate); }
+        .resource-type.docs,
+        .legend-chip.docs { background: rgba(211, 165, 62, 0.14); color: #77540d; }
+        .resource-type.business,
+        .legend-chip.business { background: rgba(217, 91, 67, 0.12); color: #8b3e2f; }
+        .resource-type.local,
+        .legend-chip.local { background: rgba(34, 64, 92, 0.10); color: var(--slate); }
+
+        .status-chip {
+            background: rgba(18, 32, 51, 0.06);
+            color: var(--ink-soft);
+        }
+
+        .status-chip.is-online {
+            background: rgba(15, 157, 137, 0.12);
+            color: var(--teal);
+        }
+
+        .status-chip.is-offline {
+            background: rgba(217, 91, 67, 0.10);
+            color: var(--coral);
+        }
+
+        .resource-card h4 {
+            margin: 0;
+            font-size: 1.08rem;
+            line-height: 1.2;
+        }
+
+        .resource-card p {
+            margin: 0;
+            color: var(--ink-soft);
+            line-height: 1.62;
+            font-size: 0.92rem;
+            flex: 1;
+        }
+
+        .resource-foot {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.78rem;
+            color: var(--ink-soft);
+            word-break: break-word;
+        }
+
+        .run-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .terminal {
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+        }
+
+        .terminal-head {
+            padding: 18px 20px;
+            background: #122033;
+            color: #eef6ff;
+        }
+
+        .terminal-body {
+            padding: 18px 20px 22px;
+            background: #18263a;
+        }
+
+        .run-copy,
+        .run-aside {
+            padding: 28px;
+            border-radius: var(--radius-xl);
+        }
+
+        .run-aside ul {
+            margin: 18px 0 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            gap: 12px;
+        }
+
+        .run-aside li {
+            padding: 16px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.70);
+            border: 1px solid rgba(18, 32, 51, 0.08);
+        }
+
+        .run-aside strong {
+            display: block;
+            font-size: 0.98rem;
+        }
+
+        .run-aside span {
+            display: block;
+            margin-top: 6px;
+            color: var(--ink-soft);
+            font-size: 0.9rem;
+            line-height: 1.58;
+        }
+
+        footer {
+            padding: 42px 0 52px;
+        }
+
+        .footer-shell {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(18, 32, 51, 0.12);
+        }
+
+        .footer-shell p {
+            margin: 0;
+            color: var(--ink-soft);
+            font-size: 0.92rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 999px;
+            color: var(--ink-soft);
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .footer-links a:hover,
+        .footer-links a:focus-visible {
+            background: rgba(255, 255, 255, 0.62);
+            color: var(--ink);
+            outline: none;
+        }
+
+        [data-reveal] {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1), transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        [data-reveal].is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        [hidden] { display: none !important; }
+
+        @media (max-width: 1100px) {
+            .route-grid,
+            .resource-grid,
+            .flow-grid,
+            .metric-row,
+            .pulse-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 920px) {
+            .hero-grid,
+            .run-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-copy h1 {
+                max-width: none;
+            }
+
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+
+            .legend {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .shell {
+                width: min(var(--shell), calc(100vw - 20px));
+            }
+
+            .nav-shell {
+                padding: 12px 0;
+            }
+
+            .nav-toggle {
+                display: inline-flex;
+            }
+
+            .site-nav {
+                position: absolute;
+                left: 10px;
+                right: 10px;
+                top: calc(100% + 8px);
+                padding: 10px;
+                border-radius: 22px;
+                background: rgba(247, 242, 232, 0.96);
+                border: 1px solid rgba(18, 32, 51, 0.10);
+                box-shadow: var(--shadow);
+                display: none;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .site-nav.open {
+                display: flex;
+            }
+
+            .site-nav a {
+                border-radius: 14px;
+            }
+
+            .hero,
+            .section {
+                padding-top: 28px;
+            }
+
+            .hero-copy,
+            .hero-panel,
+            .route-card,
+            .flow-card,
+            .search-panel,
+            .resource-group,
+            .run-copy,
+            .run-aside {
+                padding: 20px;
+            }
+
+            .hero-copy h1 {
+                font-size: clamp(2.5rem, 15vw, 4rem);
+            }
+
+            .route-grid,
+            .resource-grid,
+            .flow-grid,
+            .metric-row,
+            .pulse-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .group-head,
+            .footer-shell {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            [data-reveal] {
+                opacity: 1;
+                transform: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
-    <div class="particles" id="particles"></div>
+    <header class="site-header">
+        <div class="shell nav-shell">
+            <a class="brand" href="#top">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-copy">
+                    <strong>Aria</strong>
+                    <span>interactive AI character platform</span>
+                </span>
+            </a>
+            <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Toggle navigation">Menu</button>
+            <nav class="site-nav" id="site-nav">
+                <a href="#routes">Routes</a>
+                <a href="#model">Model</a>
+                <a href="#index">Index</a>
+                <a href="#run">Run Local</a>
+                <a href="documentation.html">Docs</a>
+                <a href="https://github.com/Bryan-Roe/Aria" target="_blank" rel="noreferrer">GitHub</a>
+            </nav>
+        </div>
+    </header>
 
-    <div class="page">
-        <!-- ===== Navigation ===== -->
-        <nav>
-            <div class="nav-inner">
-                <a href="#" class="nav-brand">👤 Aria</a>
-                <div class="nav-links">
-                    <a href="#apps">Apps</a>
-                    <a href="#features">Features</a>
-                    <a href="#architecture">Architecture</a>
-                    <a href="#api">API</a>
-                    <a href="#directory">Directory</a>
-                    <a href="#start">Get Started</a>
-                    <a href="https://github.com/Bryan-Roe/Aria" target="_blank">GitHub</a>
+    <main>
+        <section class="hero" id="top">
+            <div class="shell hero-grid">
+                <div class="hero-copy" data-reveal>
+                    <p class="eyebrow">Interactive AI character platform</p>
+                    <h1>One website for <span>characters, chat, training, and docs.</span></h1>
+                    <p class="hero-text">Aria is not a single demo page. It is a stack of public surfaces around an animated character system with natural-language actions, multi-provider chat, autonomous training, quantum ML experiments, and operational dashboards.</p>
+                    <div class="hero-actions">
+                        <a class="button button-primary" href="aria/">Launch Aria</a>
+                        <a class="button button-secondary" href="documentation.html">Read documentation</a>
+                    </div>
+                    <div class="metric-row">
+                        <div class="metric">
+                            <strong>35+</strong>
+                            <span>API routes across chat, vision, subscriptions, and quantum workflows</span>
+                        </div>
+                        <div class="metric">
+                            <strong>6</strong>
+                            <span>provider paths including Azure OpenAI, OpenAI, LMStudio, LoRA, and local fallback</span>
+                        </div>
+                        <div class="metric">
+                            <strong>30m</strong>
+                            <span>autonomous training cadence with self-healing orchestration</span>
+                        </div>
+                        <div class="metric">
+                            <strong>80+</strong>
+                            <span>guides, quick references, and architecture notes available in docs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="hero-panel" data-reveal>
+                    <div class="panel-head">
+                        <p class="eyebrow">System pulse</p>
+                        <strong>Choose the right entrypoint fast.</strong>
+                        <p>The public landing page should route a user in seconds, whether they want the character demo, streaming chat, dashboards, docs, or monetization surfaces.</p>
+                    </div>
+                    <div class="pulse-grid">
+                        <a class="pulse-card" href="aria/">
+                            <span>Character</span>
+                            <strong>Aria stage</strong>
+                            <p>Natural-language movement, gestures, object interaction, and world generation.</p>
+                        </a>
+                        <a class="pulse-card" href="chat/">
+                            <span>Chat</span>
+                            <strong>Streaming UI</strong>
+                            <p>Multi-provider chat surface with markdown, code rendering, and semantic memory hooks.</p>
+                        </a>
+                        <a class="pulse-card" href="dashboard/hub.html">
+                            <span>Ops</span>
+                            <strong>Command center</strong>
+                            <p>Dashboards for training status, automation control, system health, and analytics.</p>
+                        </a>
+                        <a class="pulse-card" href="quantum/">
+                            <span>Quantum</span>
+                            <strong>Hybrid ML lab</strong>
+                            <p>Quantum-classical workflows with simulators, Azure Quantum integration, and circuit views.</p>
+                        </a>
+                    </div>
+                    <div class="command-stack">
+                        <h3>Start locally</h3>
+                        <p>Three commands get the main web surfaces online.</p>
+                        <div class="command-line"><span>1</span><code>cd apps/aria &amp;&amp; python server.py</code></div>
+                        <div class="command-line"><span>2</span><code>func host start</code></div>
+                        <div class="command-line"><span>3</span><code>python scripts/fast_validate.py</code></div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section" id="routes">
+            <div class="shell">
+                <div class="section-head" data-reveal>
+                    <p class="eyebrow">Choose a route</p>
+                    <h2>Start from the surface that matches the job.</h2>
+                    <p>The old landing page listed almost everything equally. This route layer creates faster decisions for first-time visitors and repeat operators.</p>
+                </div>
+                <div class="route-grid">
+                    <a class="route-card" data-tone="teal" data-reveal href="aria/">
+                        <span>Experience</span>
+                        <h3>Aria Character</h3>
+                        <p>Open the interactive character stage for movement commands, gestures, object physics, and auto-execute action plans.</p>
+                        <strong>Open the main demo</strong>
+                    </a>
+                    <a class="route-card" data-tone="coral" data-reveal href="chat/">
+                        <span>Conversation</span>
+                        <h3>Streaming Chat</h3>
+                        <p>Use the chat interface for provider-backed responses, markdown rendering, code blocks, and backend diagnostics.</p>
+                        <strong>Enter the chat surface</strong>
+                    </a>
+                    <a class="route-card" data-tone="gold" data-reveal href="dashboard/hub.html">
+                        <span>Operations</span>
+                        <h3>QAI Command Center</h3>
+                        <p>Inspect orchestrators, model progress, monitoring pages, and system control surfaces from one hub.</p>
+                        <strong>View the dashboards</strong>
+                    </a>
+                    <a class="route-card" data-tone="teal" data-reveal href="quantum/">
+                        <span>Research</span>
+                        <h3>Quantum ML</h3>
+                        <p>Explore quantum-classical machine learning, circuit submissions, and hybrid workflow demos.</p>
+                        <strong>Open quantum tools</strong>
+                    </a>
+                    <a class="route-card" data-tone="coral" data-reveal href="documentation.html">
+                        <span>Reference</span>
+                        <h3>Documentation</h3>
+                        <p>Browse quick references, deployment guides, training notes, architecture decisions, and performance reports.</p>
+                        <strong>Read the docs</strong>
+                    </a>
+                    <a class="route-card" data-tone="gold" data-reveal href="monetization/monetization-index.html">
+                        <span>Business</span>
+                        <h3>Commerce and Plans</h3>
+                        <p>Navigate storefront, pricing, subscription management, referrals, and revenue analytics without hunting through the repo.</p>
+                        <strong>View business pages</strong>
+                    </a>
                 </div>
             </div>
-        </nav>
+        </section>
 
-        <!-- ===== Hero ===== -->
-        <div class="hero">
-            <div class="container">
-                <div class="hero-badge"><span class="dot"></span> Open Source AI Platform</div>
-                <h1>Meet Aria</h1>
-                <p>Interactive AI character platform with autonomous learning, quantum ML integration, multi-provider chat, and real-time 3D animations.</p>
-                <div class="hero-actions">
-                    <a href="aria/" class="btn btn-primary">Try Aria Demo</a>
-                    <a href="https://github.com/Bryan-Roe/Aria" target="_blank" class="btn btn-outline">View on GitHub</a>
+        <section class="section" id="model">
+            <div class="shell">
+                <div class="section-head" data-reveal>
+                    <p class="eyebrow">Operating model</p>
+                    <h2>How the web surface maps to the system underneath.</h2>
+                    <p>This gives visitors a mental model of the platform instead of forcing them to infer architecture from filenames.</p>
                 </div>
-                <div class="stats">
-                    <div class="stat"><div class="stat-value">35+</div><div class="stat-label">API Endpoints</div></div>
-                    <div class="stat"><div class="stat-value">6</div><div class="stat-label">AI Providers</div></div>
-                    <div class="stat"><div class="stat-value">8</div><div class="stat-label">Action Types</div></div>
-                    <div class="stat"><div class="stat-value">48</div><div class="stat-label">Test Suites</div></div>
+                <div class="flow-grid">
+                    <article class="flow-card" data-reveal>
+                        <div class="flow-step">01</div>
+                        <h3>Surface</h3>
+                        <p>Character pages, chat, dashboards, docs, quantum tools, and commerce pages are the visible front doors.</p>
+                    </article>
+                    <article class="flow-card" data-reveal>
+                        <div class="flow-step">02</div>
+                        <h3>API layer</h3>
+                        <p>Azure Functions, the Aria web server, and MCP tooling expose chat, speech, state, vision, and quantum endpoints.</p>
+                    </article>
+                    <article class="flow-card" data-reveal>
+                        <div class="flow-step">03</div>
+                        <h3>AI engines</h3>
+                        <p>Provider routing covers Azure OpenAI, OpenAI, LMStudio, LoRA adapters, AGI reasoning, and a zero-dependency local fallback.</p>
+                    </article>
+                    <article class="flow-card" data-reveal>
+                        <div class="flow-step">04</div>
+                        <h3>Training and infra</h3>
+                        <p>Autonomous training, dashboards, Cosmos or SQL persistence, telemetry, and Azure Quantum support long-running workflows.</p>
+                    </article>
                 </div>
+            </div>
+        </section>
+
+        <section class="section" id="index">
+            <div class="shell">
+                <div class="section-head" data-reveal>
+                    <p class="eyebrow">Surface index</p>
+                    <h2>Search every public page and localhost service.</h2>
+                    <p>The index keeps the old site directory value, but it is now grouped, filterable, and easier to scan on both desktop and mobile.</p>
+                </div>
+
+                <div class="search-panel" data-reveal>
+                    <div class="search-row">
+                        <input class="search-input" id="surface-search" type="search" placeholder="Search for aria, docs, localhost, pricing, analytics, auto execute, quantum..." aria-label="Search website surfaces">
+                        <div class="legend">
+                            <span class="legend-chip demo">Demo</span>
+                            <span class="legend-chip docs">Docs</span>
+                            <span class="legend-chip business">Business</span>
+                            <span class="legend-chip local">Local</span>
+                        </div>
+                    </div>
+                    <p class="search-summary" id="search-summary">Showing 34 surfaces across demos, docs, business pages, and localhost services.</p>
+                </div>
+
+                <div class="resource-groups">
+                    <section class="resource-group" data-group data-reveal>
+                        <div class="group-head">
+                            <h3>Experience surfaces</h3>
+                            <span class="group-count">7 pages</span>
+                        </div>
+                        <div class="resource-grid">
+                            <a class="resource-card" href="aria/" data-search="aria character demo movement actions gestures world generation stage">
+                                <div class="resource-top">
+                                    <span class="resource-type demo">Demo</span>
+                                </div>
+                                <h4>Aria Character</h4>
+                                <p>The main interactive character experience with animated stage controls and command parsing.</p>
+                                <span class="resource-foot">docs/aria/</span>
+                            </a>
+                            <a class="resource-card" href="aria/auto-execute.html" data-search="aria auto execute planner action sequences natural language workflow">
+                                <div class="resource-top">
+                                    <span class="resource-type demo">Demo</span>
+                                </div>
+                                <h4>Auto Execute</h4>
+                                <p>Preview and run multi-step action plans for the character with plan and execute modes.</p>
+                                <span class="resource-foot">docs/aria/auto-execute.html</span>
+                            </a>
+                            <a class="resource-card" href="chat/" data-search="chat streaming provider markdown code blocks backend demo">
+                                <div class="resource-top">
+                                    <span class="resource-type demo">Demo</span>
+                                </div>
+                                <h4>Chat Interface</h4>
+                                <p>Streaming chat UI with provider information, markdown rendering, and code highlighting.</p>
+                                <span class="resource-foot">docs/chat/</span>
+                            </a>
+                            <a class="resource-card" href="quantum/" data-search="quantum ml hybrid qiskit pennylane simulator demo">
+                                <div class="resource-top">
+                                    <span class="resource-type demo">Demo</span>
+                                </div>
+                                <h4>Quantum ML</h4>
+                                <p>Quantum-enhanced classification, circuit inspection, and training workflow entrypoint.</p>
+                                <span class="resource-foot">docs/quantum/</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/" data-search="dashboard training metrics monitor demo">
+                                <div class="resource-top">
+                                    <span class="resource-type demo">Demo</span>
+                                </div>
+                                <h4>Dashboard</h4>
+                                <p>High-level overview of the training and monitoring views available in the project.</p>
+                                <span class="resource-foot">docs/dashboard/</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/hub.html" data-search="hub command center orchestrators automation status">
+                                <div class="resource-top">
+                                    <span class="resource-type demo">Demo</span>
+                                </div>
+                                <h4>QAI Command Center</h4>
+                                <p>Unified hub for orchestration status, monitoring shortcuts, and automation control pages.</p>
+                                <span class="resource-foot">docs/dashboard/hub.html</span>
+                            </a>
+                            <a class="resource-card" href="documentation.html" data-search="docs documentation guides quickref training architecture performance">
+                                <div class="resource-top">
+                                    <span class="resource-type docs">Docs</span>
+                                </div>
+                                <h4>Documentation Hub</h4>
+                                <p>Searchable reference surface for guides, architecture notes, performance reports, and quick starts.</p>
+                                <span class="resource-foot">docs/documentation.html</span>
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="resource-group" data-group data-reveal>
+                        <div class="group-head">
+                            <h3>Operations and builders</h3>
+                            <span class="group-count">10 pages</span>
+                        </div>
+                        <div class="resource-grid">
+                            <a class="resource-card" href="dashboard/unified.html" data-search="unified dashboard live progress model monitor operations">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Unified Dashboard</h4>
+                                <p>Central operations view for metrics, session state, and running workflows.</p>
+                                <span class="resource-foot">docs/dashboard/unified.html</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/analytics.html" data-search="analytics dashboard training insights performance">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Analytics Dashboard</h4>
+                                <p>Performance snapshots, comparison tools, and trend-focused monitoring panels.</p>
+                                <span class="resource-foot">docs/dashboard/analytics.html</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/advanced.html" data-search="advanced dashboard deep controls tuning">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Advanced Dashboard</h4>
+                                <p>Extra controls and advanced monitoring views for training and experiments.</p>
+                                <span class="resource-foot">docs/dashboard/advanced.html</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/consolidated.html" data-search="consolidated dashboard all in one monitoring">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Consolidated Dashboard</h4>
+                                <p>Condensed control surface for operators who want several views in one place.</p>
+                                <span class="resource-foot">docs/dashboard/consolidated.html</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/enhanced.html" data-search="enhanced dashboard live data">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Enhanced Dashboard</h4>
+                                <p>Extended dashboard variant with upgraded panels and monitoring presentation.</p>
+                                <span class="resource-foot">docs/dashboard/enhanced.html</span>
+                            </a>
+                            <a class="resource-card" href="dashboard/templates/" data-search="automation dashboard templates generated tasks">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Automation Dashboard</h4>
+                                <p>Template-driven automation controls and generated dashboard components.</p>
+                                <span class="resource-foot">docs/dashboard/templates/</span>
+                            </a>
+                            <a class="resource-card" href="llm-maker/web_ui.html" data-search="llm maker ui prompt tool generation">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>LLM Maker UI</h4>
+                                <p>Tooling surface for model-powered generation workflows and prompt-driven utilities.</p>
+                                <span class="resource-foot">docs/llm-maker/web_ui.html</span>
+                            </a>
+                            <a class="resource-card" href="llm-maker/website_maker_ui.html" data-search="website maker builder ui generator">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Website Maker</h4>
+                                <p>Interface for website generation flows and template-assisted web output.</p>
+                                <span class="resource-foot">docs/llm-maker/website_maker_ui.html</span>
+                            </a>
+                            <a class="resource-card" href="mount/" data-search="mount control center utilities">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Mount Control</h4>
+                                <p>Supplementary control-center UI for supporting utilities and subsystem access.</p>
+                                <span class="resource-foot">docs/mount/</span>
+                            </a>
+                            <a class="resource-card" href="quantum/web_ui.html" data-search="quantum web ui circuits hybrid lab">
+                                <div class="resource-top"><span class="resource-type demo">Demo</span></div>
+                                <h4>Quantum Web UI</h4>
+                                <p>Alternate quantum workflow surface focused on circuit interaction and job flows.</p>
+                                <span class="resource-foot">docs/quantum/web_ui.html</span>
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="resource-group" data-group data-reveal>
+                        <div class="group-head">
+                            <h3>Business and subscriptions</h3>
+                            <span class="group-count">9 pages</span>
+                        </div>
+                        <div class="resource-grid">
+                            <a class="resource-card" href="store/" data-search="store storefront products plans ai features">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Storefront</h4>
+                                <p>Customer-facing store surface for products, features, and packaged offers.</p>
+                                <span class="resource-foot">docs/store/</span>
+                            </a>
+                            <a class="resource-card" href="monetization/monetization-index.html" data-search="monetization portal subscriptions revenue">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Monetization Portal</h4>
+                                <p>Primary monetization landing surface for tiers, analytics, and account actions.</p>
+                                <span class="resource-foot">docs/monetization/monetization-index.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/pricing.html" data-search="pricing plans tiers pro enterprise free">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Pricing</h4>
+                                <p>Plan comparison and commercial positioning for productized access.</p>
+                                <span class="resource-foot">docs/monetization/pricing.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/my-subscription.html" data-search="subscription account management tier status">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>My Subscription</h4>
+                                <p>Self-serve subscription status and management surface for active customers.</p>
+                                <span class="resource-foot">docs/monetization/my-subscription.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/admin_dashboard.html" data-search="admin dashboard business operator view">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Admin Dashboard</h4>
+                                <p>Administrative view for business metrics, subscriber state, and management workflows.</p>
+                                <span class="resource-foot">docs/monetization/admin_dashboard.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/analytics-dashboard.html" data-search="revenue analytics subscriptions chart business metrics">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Revenue Analytics</h4>
+                                <p>Commercial analytics, subscription performance views, and reporting panels.</p>
+                                <span class="resource-foot">docs/monetization/analytics-dashboard.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/referrals.html" data-search="referrals growth sharing promotion business">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Referrals</h4>
+                                <p>Referral program surface for growth loops, sharing, and incentive tracking.</p>
+                                <span class="resource-foot">docs/monetization/referrals.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/account.html" data-search="account billing profile business">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Account</h4>
+                                <p>Account-level settings, profile details, and billing-adjacent management actions.</p>
+                                <span class="resource-foot">docs/monetization/account.html</span>
+                            </a>
+                            <a class="resource-card" href="monetization/checkout.html" data-search="checkout payment purchase subscribe">
+                                <div class="resource-top"><span class="resource-type business">Business</span></div>
+                                <h4>Checkout</h4>
+                                <p>Conversion-focused checkout flow for plan upgrades and commercial transactions.</p>
+                                <span class="resource-foot">docs/monetization/checkout.html</span>
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="resource-group" data-group data-reveal>
+                        <div class="group-head">
+                            <h3>Local development services</h3>
+                            <span class="group-count">8 services</span>
+                        </div>
+                        <div class="resource-grid">
+                            <a class="resource-card" href="http://localhost:8080" target="_blank" rel="noreferrer" data-ping="http://localhost:8080/" data-search="localhost 8080 aria live ui server local">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>Aria Live UI</h4>
+                                <p>Full character server with live APIs and synchronized state on port 8080.</p>
+                                <span class="resource-foot">http://localhost:8080</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:8080/auto-execute.html" target="_blank" rel="noreferrer" data-ping="http://localhost:8080/auto-execute.html" data-search="localhost auto execute 8080 plan execute local">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>Aria Auto Execute</h4>
+                                <p>Local execution surface for multi-step action planning and real API-backed runs.</p>
+                                <span class="resource-foot">http://localhost:8080/auto-execute.html</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:7071/api/chat-web" target="_blank" rel="noreferrer" data-ping="http://localhost:7071/api/chat-web" data-search="localhost 7071 chat web functions local">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>Chat Web</h4>
+                                <p>Azure Functions-hosted chat page wired to the live API layer on port 7071.</p>
+                                <span class="resource-foot">http://localhost:7071/api/chat-web</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:7071/api/ai/status" target="_blank" rel="noreferrer" data-ping="http://localhost:7071/api/ai/status" data-search="localhost 7071 ai status health check diagnostics">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>Health Check</h4>
+                                <p>Provider and subsystem diagnostics, environment visibility, and service readiness check.</p>
+                                <span class="resource-foot">http://localhost:7071/api/ai/status</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:8000/hub.html" target="_blank" rel="noreferrer" data-ping="http://localhost:8000/hub.html" data-search="localhost 8000 hub qai command center">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>QAI Hub</h4>
+                                <p>Locally served operations hub for command-center workflows on port 8000.</p>
+                                <span class="resource-foot">http://localhost:8000/hub.html</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:8000/unified.html" target="_blank" rel="noreferrer" data-ping="http://localhost:8000/unified.html" data-search="localhost 8000 unified dashboard">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>Unified Dashboard</h4>
+                                <p>Local dashboard surface for live metrics, session history, and training monitoring.</p>
+                                <span class="resource-foot">http://localhost:8000/unified.html</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:5000" target="_blank" rel="noreferrer" data-ping="http://localhost:5000/" data-search="localhost 5000 quantum dashboard local">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>Quantum Dashboard</h4>
+                                <p>Local quantum interface for experiments, jobs, and monitoring on port 5000.</p>
+                                <span class="resource-foot">http://localhost:5000</span>
+                            </a>
+                            <a class="resource-card" href="http://localhost:8090" target="_blank" rel="noreferrer" data-ping="http://localhost:8090/" data-search="localhost 8090 llm maker local ui">
+                                <div class="resource-top">
+                                    <span class="resource-type local">Local</span>
+                                    <span class="status-chip">Checking</span>
+                                </div>
+                                <h4>LLM Maker</h4>
+                                <p>Local builder surface for tool and website generation workflows on port 8090.</p>
+                                <span class="resource-foot">http://localhost:8090</span>
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="run">
+            <div class="shell run-grid">
+                <div class="run-copy" data-reveal>
+                    <p class="eyebrow">Run the stack</p>
+                    <h2>Local startup should be obvious from the landing page.</h2>
+                    <p>The site now ends with a direct handoff into a practical startup sequence, so visitors can move from browsing to running services without opening multiple docs first.</p>
+                    <div class="run-aside">
+                        <ul>
+                            <li>
+                                <strong>Character server</strong>
+                                <span>Starts the interactive Aria web interface on port 8080 with stage state and character actions.</span>
+                            </li>
+                            <li>
+                                <strong>Azure Functions host</strong>
+                                <span>Brings chat, text-to-speech, status, subscription, and quantum endpoints online on port 7071.</span>
+                            </li>
+                            <li>
+                                <strong>Validation step</strong>
+                                <span>Runs a fast repo-wide health check for datasets, scripts, environments, and provider readiness.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="terminal" data-reveal>
+                    <div class="terminal-head">
+                        <strong>Quick start sequence</strong>
+                        <p>Commands lifted from the repo workflow so the landing page stays operationally useful.</p>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span>1</span><code>git clone https://github.com/Bryan-Roe/Aria.git</code></div>
+                        <div class="terminal-line"><span>2</span><code>cd Aria</code></div>
+                        <div class="terminal-line"><span>3</span><code>pip install -r requirements.txt</code></div>
+                        <div class="terminal-line"><span>4</span><code>cd apps/aria &amp;&amp; python server.py</code></div>
+                        <div class="terminal-line"><span>5</span><code>func host start</code></div>
+                        <div class="terminal-line"><span>6</span><code>python scripts/fast_validate.py</code></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="shell footer-shell">
+            <p>Aria ties together character interaction, provider-backed chat, autonomous training, quantum ML, and business tooling.</p>
+            <div class="footer-links">
+                <a href="#top">Top</a>
+                <a href="documentation.html">Docs</a>
+                <a href="aria/">Aria</a>
+                <a href="chat/">Chat</a>
+                <a href="dashboard/hub.html">Dashboards</a>
+                <a href="https://github.com/Bryan-Roe/Aria/issues" target="_blank" rel="noreferrer">Issues</a>
             </div>
         </div>
-
-        <!-- ===== Apps ===== -->
-        <section id="apps">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Applications</h2>
-                    <p>Interactive demos and production-ready interfaces</p>
-                </div>
-                <div class="apps-grid">
-                    <a href="aria/" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon aria">🎭</div>
-                            <div class="card-title">Aria Character</div>
-                        </div>
-                        <div class="card-desc">Interactive 3D character with natural language commands, object interactions, physics-based movement, and LLM-powered action sequences.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                    <a href="chat/" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon chat">💬</div>
-                            <div class="card-title">AI Chat</div>
-                        </div>
-                        <div class="card-desc">Multi-provider streaming chat with Azure OpenAI, OpenAI, LMStudio, and local models. Markdown rendering, code highlighting, and semantic memory.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                    <a href="quantum/" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon quantum">⚛️</div>
-                            <div class="card-title">Quantum ML</div>
-                        </div>
-                        <div class="card-desc">Quantum-enhanced machine learning dashboard. Visualize circuits, submit jobs to Azure Quantum, and track hybrid quantum-classical training.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                    <a href="dashboard/" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon dash">📊</div>
-                            <div class="card-title">Training Dashboard</div>
-                        </div>
-                        <div class="card-desc">Monitor LoRA fine-tuning, model evaluation, GPU utilization, and autonomous training cycles with real-time metrics.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                    <a href="store/" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon store">🛍️</div>
-                            <div class="card-title">AI Storefront</div>
-                        </div>
-                        <div class="card-desc">Product and subscription storefront for Aria features, plans, and customer-facing experiences.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                    <a href="monetization/monetization-index.html" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon money">💳</div>
-                            <div class="card-title">Monetization Portal</div>
-                        </div>
-                        <div class="card-desc">Pricing tiers, subscription management, referral system, and revenue analytics dashboard.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                    <a href="dashboard/hub.html" class="app-card">
-                        <div class="card-head">
-                            <div class="card-icon hub">🛰️</div>
-                            <div class="card-title">QAI Command Center</div>
-                        </div>
-                        <div class="card-desc">Unified hub for orchestrators, training dashboards, system monitoring, quick actions, and automation controls.</div>
-                        <div class="card-tags"><span class="tag tag-demo">Demo</span></div>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Features ===== -->
-        <section id="features">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Platform Capabilities</h2>
-                    <p>Everything you need for interactive AI character development</p>
-                </div>
-                <div class="features-grid">
-                    <div class="feat">
-                        <div class="feat-icon">🎭</div>
-                        <div class="feat-title">Interactive Character</div>
-                        <div class="feat-desc">3D CSS-animated avatar with smooth transitions, physics-based movement, and natural language command processing.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">🧠</div>
-                        <div class="feat-title">AGI Reasoning</div>
-                        <div class="feat-desc">Chain-of-thought reasoning, task decomposition, and self-reflection for autonomous decision-making.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">💬</div>
-                        <div class="feat-title">Multi-Provider Chat</div>
-                        <div class="feat-desc">Azure OpenAI, OpenAI, LMStudio, LoRA, and local fallback with automatic provider detection.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">🤖</div>
-                        <div class="feat-title">LoRA Fine-Tuning</div>
-                        <div class="feat-desc">Phi-3.5 model fine-tuning with adaptive epoch selection and automatic model promotion.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">⚛️</div>
-                        <div class="feat-title">Quantum ML</div>
-                        <div class="feat-desc">Hybrid quantum-classical machine learning with Qiskit, PennyLane, and Azure Quantum backends.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">🎯</div>
-                        <div class="feat-title">Autonomous Training</div>
-                        <div class="feat-desc">Self-optimizing 30-minute training cycles with dataset discovery, performance tracking, and degradation alerts.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">🌍</div>
-                        <div class="feat-title">World Generation</div>
-                        <div class="feat-desc">LLM-powered themed environment creation with objects, lighting, and interactive elements.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">⚡</div>
-                        <div class="feat-title">Azure Functions</div>
-                        <div class="feat-desc">35+ serverless API endpoints with SSE streaming, TTS synthesis, and vision inference.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">🎮</div>
-                        <div class="feat-title">Physics System</div>
-                        <div class="feat-desc">Object interaction with trajectory physics, collision detection, and throw mechanics.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">📊</div>
-                        <div class="feat-title">Real-Time Monitoring</div>
-                        <div class="feat-desc">Live dashboards with GPU metrics, training progress, performance analytics, and system health.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">🔒</div>
-                        <div class="feat-title">Subscription System</div>
-                        <div class="feat-desc">FREE / PRO / ENTERPRISE tiers with feature gating, usage tracking, Stripe integration, and referrals.</div>
-                    </div>
-                    <div class="feat">
-                        <div class="feat-icon">👁️</div>
-                        <div class="feat-title">Vision AI</div>
-                        <div class="feat-desc">Expression classification via TinyConvNet, image inference, and facial emotion detection.</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Architecture ===== -->
-        <section id="architecture">
-            <div class="container">
-                <div class="arch">
-                    <h2>System Architecture</h2>
-                    <div class="arch-layers">
-                        <div class="arch-layer">
-                            <div class="arch-layer-label">Frontend</div>
-                            <div class="arch-items">
-                                <div class="arch-item">Aria 3D Character</div>
-                                <div class="arch-item">Chat UI (SSE)</div>
-                                <div class="arch-item">Quantum Dashboard</div>
-                                <div class="arch-item">Training Monitor</div>
-                                <div class="arch-item">Storefront</div>
-                            </div>
-                        </div>
-                        <div class="arch-layer">
-                            <div class="arch-layer-label">API Layer</div>
-                            <div class="arch-items">
-                                <div class="arch-item">Azure Functions (35+ endpoints)</div>
-                                <div class="arch-item">Aria Web Server (port 8080)</div>
-                                <div class="arch-item">MCP Server</div>
-                            </div>
-                        </div>
-                        <div class="arch-layer">
-                            <div class="arch-layer-label">AI Engines</div>
-                            <div class="arch-items">
-                                <div class="arch-item">Azure OpenAI</div>
-                                <div class="arch-item">OpenAI</div>
-                                <div class="arch-item">LMStudio</div>
-                                <div class="arch-item">LoRA Adapters</div>
-                                <div class="arch-item">AGI Provider</div>
-                                <div class="arch-item">Local Fallback</div>
-                            </div>
-                        </div>
-                        <div class="arch-layer">
-                            <div class="arch-layer-label">ML Pipelines</div>
-                            <div class="arch-items">
-                                <div class="arch-item">Autonomous Training</div>
-                                <div class="arch-item">Quantum ML (Qiskit + PennyLane)</div>
-                                <div class="arch-item">LoRA Fine-Tuning</div>
-                                <div class="arch-item">Vision CNN</div>
-                                <div class="arch-item">Batch Evaluation</div>
-                            </div>
-                        </div>
-                        <div class="arch-layer">
-                            <div class="arch-layer-label">Data & Infra</div>
-                            <div class="arch-items">
-                                <div class="arch-item">Cosmos DB</div>
-                                <div class="arch-item">Azure SQL</div>
-                                <div class="arch-item">Embeddings / Memory</div>
-                                <div class="arch-item">App Insights</div>
-                                <div class="arch-item">Azure Quantum</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== API Reference ===== -->
-        <section id="api">
-            <div class="container">
-                <div class="section-header">
-                    <h2>API Reference</h2>
-                    <p>Core endpoints available via Azure Functions on port 7071</p>
-                </div>
-                <div class="api-table-wrap">
-                    <table class="api-table">
-                        <thead>
-                            <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/chat</td><td>Send chat messages, get AI response</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/chat/stream</td><td>SSE streaming chat responses</td></tr>
-                            <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/chat-web</td><td>Serve chat web interface</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/tts</td><td>Text-to-speech synthesis</td></tr>
-                            <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/ai/status</td><td>System health &amp; provider diagnostics</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/vision/infer</td><td>Image classification / expression detection</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/vision/batch-infer</td><td>Batch image inference</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/image/generate</td><td>AI image generation</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/quantum/classify</td><td>Quantum-enhanced classification</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/quantum/circuit</td><td>Submit quantum circuit job</td></tr>
-                            <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/quantum/info</td><td>Quantum backend capabilities</td></tr>
-                            <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/subscription/pricing</td><td>Pricing tiers &amp; features</td></tr>
-                            <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/subscription/status</td><td>Current subscription status</td></tr>
-                            <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/subscription/upgrade</td><td>Upgrade subscription tier</td></tr>
-                            <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/subscription/revenue</td><td>Revenue analytics</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div style="margin-top:16px">
-                    <h3 style="color:var(--brand-light);font-size:1em;margin-bottom:12px">Aria Character API (port 8080)</h3>
-                    <div class="api-table-wrap">
-                        <table class="api-table">
-                            <thead>
-                                <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
-                            </thead>
-                            <tbody>
-                                <tr><td><span class="method method-get">GET</span></td><td class="endpoint-path">/api/aria/state</td><td>Current stage state (position, objects, expressions)</td></tr>
-                                <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/aria/command</td><td>Process natural language commands</td></tr>
-                                <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/aria/execute</td><td>Auto-execute action sequences (plan / execute)</td></tr>
-                                <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/aria/object</td><td>Manage objects (add, update, remove)</td></tr>
-                                <tr><td><span class="method method-post">POST</span></td><td class="endpoint-path">/api/aria/world</td><td>LLM-powered themed world generation</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Website Directory ===== -->
-        <section id="directory">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Website Directory</h2>
-                    <p>All applications, servers, and local file paths in one place</p>
-                </div>
-
-                <div class="search-wrap">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Search websites and services..." onkeyup="filterLinks()">
-                </div>
-
-                <div class="dir-section" id="demo-section">
-                    <h3>📺 Demo Sites (Static)</h3>
-                    <div class="dir-grid">
-                        <a href="aria/" class="dir-link demo-link"><span>🎭 Aria Character</span></a>
-                        <a href="chat/" class="dir-link demo-link"><span>💬 Chat Interface</span></a>
-                        <a href="dashboard/" class="dir-link demo-link"><span>📊 Dashboard</span></a>
-                        <a href="quantum/" class="dir-link demo-link"><span>⚛️ Quantum ML</span></a>
-                        <a href="store/" class="dir-link demo-link"><span>🛍️ Store</span></a>
-                        <a href="aria/auto-execute.html" class="dir-link demo-link"><span>🎬 Auto-Execute</span></a>
-                        <a href="dashboard/hub.html" class="dir-link demo-link"><span>🛰️ Command Center</span></a>
-                        <a href="dashboard/unified.html" class="dir-link demo-link"><span>📈 Training Dashboard</span></a>
-                        <a href="dashboard/analytics.html" class="dir-link demo-link"><span>📊 Analytics</span></a>
-                        <a href="dashboard/advanced.html" class="dir-link demo-link"><span>⚙️ Advanced Dashboard</span></a>
-                        <a href="dashboard/consolidated.html" class="dir-link demo-link"><span>🎯 Consolidated Dashboard</span></a>
-                        <a href="dashboard/enhanced.html" class="dir-link demo-link"><span>🚀 Enhanced Dashboard</span></a>
-                        <a href="dashboard/templates/" class="dir-link demo-link"><span>📋 Automation Dashboard</span></a>
-                        <a href="monetization/monetization-index.html" class="dir-link demo-link"><span>💳 Monetization</span></a>
-                        <a href="llm-maker/web_ui.html" class="dir-link demo-link"><span>🤖 LLM Maker</span></a>
-                        <a href="mount/" class="dir-link demo-link"><span>🔧 Control Center</span></a>
-                        <a href="quantum/web_ui.html" class="dir-link demo-link"><span>⚛️ Quantum Web UI</span></a>
-                    </div>
-                </div>
-
-                <div class="dir-section" id="local-servers-section">
-                    <h3>🖥️ Local Development Servers</h3>
-                    <div class="dir-grid" style="grid-template-columns:1fr">
-                        <a href="http://localhost:8080" class="dir-link server-link url-link" data-port="8080">
-                            <span>🎭 Aria Live UI</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:8080</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:8080/auto-execute.html" class="dir-link server-link url-link" data-port="8080">
-                            <span>🎬 Aria Auto-Execute</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:8080</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:7071/api/chat-web" class="dir-link server-link url-link" data-port="7071">
-                            <span>💬 Chat Web (Functions)</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:7071</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:7071/api/ai/status" class="dir-link server-link url-link" data-port="7071">
-                            <span>❤️ Health Check</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:7071</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:8000/hub.html" class="dir-link server-link url-link" data-port="8000">
-                            <span>🛰️ QAI Hub</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:8000</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:8000/unified.html" class="dir-link server-link url-link" data-port="8000">
-                            <span>📊 Unified Dashboard</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:8000</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:5000" class="dir-link server-link url-link" data-port="5000">
-                            <span>⚛️ Quantum Dashboard</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:5000</span><span class="status-dot"></span></span>
-                        </a>
-                        <a href="http://localhost:8090" class="dir-link server-link url-link" data-port="8090">
-                            <span>🤖 LLM Maker</span>
-                            <span style="display:flex;align-items:center;gap:8px"><span class="port">:8090</span><span class="status-dot"></span></span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="dir-section" id="local-files-section">
-                    <h3>📁 More Web UIs</h3>
-                    <div class="dir-grid">
-                        <a href="store/" class="dir-link demo-link"><span>🛍️ Storefront</span></a>
-                        <a href="quantum/web_ui.html" class="dir-link demo-link"><span>⚛️ Quantum ML Web UI</span></a>
-                        <a href="llm-maker/web_ui.html" class="dir-link demo-link"><span>🤖 LLM Maker UI</span></a>
-                        <a href="llm-maker/website_maker_ui.html" class="dir-link demo-link"><span>🌐 Website Maker</span></a>
-                        <a href="mount/" class="dir-link demo-link"><span>🔧 Mount Web UI</span></a>
-                    </div>
-                </div>
-
-                <div class="dir-section" id="monetization-section">
-                    <h3>💳 Monetization &amp; Business</h3>
-                    <div class="dir-grid">
-                        <a href="monetization/monetization-index.html" class="dir-link demo-link"><span>💳 Monetization Portal</span></a>
-                        <a href="monetization/pricing.html" class="dir-link demo-link"><span>💰 Pricing Page</span></a>
-                        <a href="monetization/my-subscription.html" class="dir-link demo-link"><span>📋 My Subscription</span></a>
-                        <a href="monetization/admin_dashboard.html" class="dir-link demo-link"><span>👨‍💼 Admin Dashboard</span></a>
-                        <a href="monetization/referrals.html" class="dir-link demo-link"><span>🤝 Referrals</span></a>
-                        <a href="monetization/analytics-dashboard.html" class="dir-link demo-link"><span>📊 Analytics Dashboard</span></a>
-                        <a href="monetization/account.html" class="dir-link demo-link"><span>👤 Account</span></a>
-                        <a href="monetization/checkout.html" class="dir-link demo-link"><span>🛒 Checkout</span></a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Getting Started ===== -->
-        <section id="start">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Get Started</h2>
-                    <p>Up and running in minutes</p>
-                </div>
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-num">1</div>
-                        <div class="step-title">Clone</div>
-                        <div class="step-desc"><code class="cmd">git clone https://github.com/Bryan-Roe/Aria</code></div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">2</div>
-                        <div class="step-title">Install</div>
-                        <div class="step-desc"><code class="cmd">pip install -r requirements.txt</code><br>Python 3.9+ required</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">3</div>
-                        <div class="step-title">Configure</div>
-                        <div class="step-desc">Copy <code class="cmd">local.settings.json.example</code> and add API keys (optional — local mode needs none)</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">4</div>
-                        <div class="step-title">Launch Aria</div>
-                        <div class="step-desc"><code class="cmd">cd apps/aria && python server.py</code><br>Visit localhost:8080</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">5</div>
-                        <div class="step-title">Start APIs</div>
-                        <div class="step-desc"><code class="cmd">func host start</code><br>All endpoints on port 7071</div>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">6</div>
-                        <div class="step-title">Validate</div>
-                        <div class="step-desc"><code class="cmd">python scripts/fast_validate.py</code><br>Quick health check</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ===== Footer ===== -->
-        <footer>
-            <div class="container">
-                <div class="footer-links">
-                    <a href="https://github.com/Bryan-Roe/Aria" target="_blank">GitHub</a>
-                    <a href="https://github.com/Bryan-Roe/Aria/blob/main/README.md" target="_blank">Docs</a>
-                    <a href="https://github.com/Bryan-Roe/Aria/issues" target="_blank">Issues</a>
-                    <a href="https://github.com/Bryan-Roe/Aria/blob/main/SECURITY.md" target="_blank">Security</a>
-                </div>
-                <p>&copy; 2026 Aria &mdash; Interactive AI Character Platform</p>
-            </div>
-        </footer>
-    </div>
+    </footer>
 
     <script>
-        // ===== Floating particles =====
-        (function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 30; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                const size = Math.random() * 4 + 2;
-                p.style.cssText = `
-                    width:${size}px;height:${size}px;
-                    left:${Math.random()*100}%;
-                    animation-duration:${Math.random()*20+15}s;
-                    animation-delay:${Math.random()*20}s;
-                `;
-                container.appendChild(p);
-            }
-        })();
+        const navToggle = document.querySelector('.nav-toggle');
+        const siteNav = document.getElementById('site-nav');
+        const searchInput = document.getElementById('surface-search');
+        const searchSummary = document.getElementById('search-summary');
+        const resourceGroups = Array.from(document.querySelectorAll('[data-group]'));
 
-        // ===== Search / filter =====
-        function filterLinks() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            ['demo-section','local-servers-section','local-files-section','monetization-section'].forEach(id => {
-                const sec = document.getElementById(id);
-                if (!sec) return;
-                const links = sec.querySelectorAll('.dir-link');
-                let shown = 0;
-                links.forEach(link => {
-                    const match = link.textContent.toLowerCase().includes(term) ||
-                                  (link.getAttribute('href')||'').toLowerCase().includes(term);
-                    link.style.display = match ? '' : 'none';
-                    if (match) shown++;
-                });
-                sec.style.display = shown ? '' : 'none';
+        navToggle?.addEventListener('click', () => {
+            const isOpen = siteNav.classList.toggle('open');
+            navToggle.setAttribute('aria-expanded', String(isOpen));
+        });
+
+        siteNav.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => {
+                siteNav.classList.remove('open');
+                navToggle?.setAttribute('aria-expanded', 'false');
             });
+        });
+
+        function updateSearchSummary(term, visibleCount) {
+            if (!term) {
+                searchSummary.textContent = `Showing ${visibleCount} surfaces across demos, docs, business pages, and localhost services.`;
+                return;
+            }
+            searchSummary.textContent = `${visibleCount} result${visibleCount === 1 ? '' : 's'} for "${term}".`;
         }
 
-        // ===== Server status indicators =====
-        document.querySelectorAll('.url-link').forEach(link => {
-            const port = link.dataset.port;
-            if (!port) return;
-            fetch(`http://localhost:${port}/`, { method:'HEAD', mode:'no-cors' })
-                .then(() => { link.querySelector('.status-dot')?.classList.add('online'); })
-                .catch(() => {});
+        function applySurfaceFilter() {
+            const term = searchInput.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            resourceGroups.forEach((group) => {
+                let groupVisible = 0;
+                group.querySelectorAll('.resource-card').forEach((card) => {
+                    const haystack = `${card.dataset.search || ''} ${card.textContent}`.toLowerCase();
+                    const match = !term || haystack.includes(term);
+                    card.hidden = !match;
+                    if (match) {
+                        visibleCount += 1;
+                        groupVisible += 1;
+                    }
+                });
+                group.hidden = groupVisible === 0;
+            });
+
+            updateSearchSummary(term, visibleCount);
+        }
+
+        searchInput?.addEventListener('input', applySurfaceFilter);
+        applySurfaceFilter();
+
+        async function pingSurface(url) {
+            const controller = new AbortController();
+            const timeoutId = window.setTimeout(() => controller.abort(), 1800);
+            try {
+                await fetch(url, {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    cache: 'no-store',
+                    signal: controller.signal,
+                });
+                return true;
+            } catch (error) {
+                return false;
+            } finally {
+                window.clearTimeout(timeoutId);
+            }
+        }
+
+        document.querySelectorAll('[data-ping]').forEach(async (card) => {
+            const chip = card.querySelector('.status-chip');
+            const isOnline = await pingSurface(card.dataset.ping);
+            chip.textContent = isOnline ? 'Online' : 'Offline';
+            chip.classList.add(isOnline ? 'is-online' : 'is-offline');
         });
 
-        // ===== Smooth scroll for nav =====
-        document.querySelectorAll('a[href^="#"]').forEach(a => {
-            a.addEventListener('click', e => {
-                e.preventDefault();
-                const target = document.querySelector(a.getAttribute('href'));
-                if (target) target.scrollIntoView({ behavior:'smooth', block:'start' });
-            });
-        });
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const revealItems = document.querySelectorAll('[data-reveal]');
+
+        if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+            revealItems.forEach((item) => item.classList.add('is-visible'));
+        } else {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.18 });
+
+            revealItems.forEach((item) => observer.observe(item));
+        }
     </script>
 </body>
 </html>
