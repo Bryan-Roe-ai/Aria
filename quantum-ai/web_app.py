@@ -82,7 +82,7 @@ def _compat_load_checkpoint():
 
 
 # Keep the route path and endpoint name stable while swapping the handler logic
-# to use the legacy checkpoint root expected by callers of quantum-ai/web_app.py.
+# to use the legacy checkpoint root expected by callers of ai-projects/quantum-ml/web_app.py.
 _mod.app.view_functions["load_checkpoint"] = _compat_load_checkpoint
 
 # Re-export public symbols for compatibility.

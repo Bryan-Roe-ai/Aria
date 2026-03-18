@@ -9,15 +9,15 @@ Features:
 
 Usage examples (run from repo root or quantum-ai directory):
 
-    python quantum-ai/scripts/upgrade_qiskit_to_1x.py --dry-run
-    python quantum-ai/scripts/upgrade_qiskit_to_1x.py --install
-    python quantum-ai/scripts/upgrade_qiskit_to_1x.py --target-version 1.0.2 --ml-version 0.7.0 --install
-    python quantum-ai/scripts/upgrade_qiskit_to_1x.py --revert
+    python ai-projects/quantum-ml/scripts/upgrade_qiskit_to_1x.py --dry-run
+    python ai-projects/quantum-ml/scripts/upgrade_qiskit_to_1x.py --install
+    python ai-projects/quantum-ml/scripts/upgrade_qiskit_to_1x.py --target-version 1.0.2 --ml-version 0.7.0 --install
+    python ai-projects/quantum-ml/scripts/upgrade_qiskit_to_1x.py --revert
 
 Post-upgrade validation:
     1. Delete any stale interpreter caches.
-    2. Run: quantum-ai/venv/Scripts/python quantum-ai/scripts/validate_qiskit_env.py
-    3. Run a smoke test: quantum-ai/venv/Scripts/python quantum-ai/src/quantum_classifier.py
+    2. Run: ai-projects/quantum-ml/venv/Scripts/python ai-projects/quantum-ml/scripts/validate_qiskit_env.py
+    3. Run a smoke test: ai-projects/quantum-ml/venv/Scripts/python ai-projects/quantum-ml/src/quantum_classifier.py
 
 Caveats:
   * Qiskit 1.x reorganizes subpackages; some algorithms previously accessed via
@@ -28,6 +28,7 @@ Caveats:
 from __future__ import annotations
 import argparse
 import datetime as _dt
+from datetime import timezone
 import os
 import re
 import shutil

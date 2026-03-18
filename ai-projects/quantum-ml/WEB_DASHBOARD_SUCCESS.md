@@ -7,7 +7,7 @@ I've created a **beautiful, interactive web application** for training and visua
 ## 📁 Files Created
 
 ```
-quantum-ai/
+ai-projects/quantum-ml/
 ├── web_app.py                      # Flask backend with REST API
 ├── start_dashboard.sh              # One-command startup script
 ├── web-requirements.txt            # Python dependencies

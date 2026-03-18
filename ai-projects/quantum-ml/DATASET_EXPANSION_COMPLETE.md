@@ -146,15 +146,15 @@ python quantum-ai\quick_test_datasets.py
 ## 📁 File Locations
 
 ### **Scripts Created:**
-1. `quantum-ai/quick_test_datasets.py` - Rapid validation (1-epoch tests)
-2. `quantum-ai/dataset_architecture_analyzer.py` - Architecture recommendations
+1. `ai-projects/quantum-ml/quick_test_datasets.py` - Rapid validation (1-epoch tests)
+2. `ai-projects/quantum-ml/dataset_architecture_analyzer.py` - Architecture recommendations
 
 ### **Scripts Updated:**
-1. `quantum-ai/benchmark_all_datasets.py` - Now includes all 15 datasets
+1. `ai-projects/quantum-ml/benchmark_all_datasets.py` - Now includes all 15 datasets
 
 ### **Results:**
-1. `quantum-ai/results/quick_test_results.json` - Validation test results
-2. `quantum-ai/results/architecture_analysis.json` - Architecture recommendations
+1. `ai-projects/quantum-ml/results/quick_test_results.json` - Validation test results
+2. `ai-projects/quantum-ml/results/architecture_analysis.json` - Architecture recommendations
 
 ### **Datasets:**
 - All 15 CSVs in `datasets/quantum/`

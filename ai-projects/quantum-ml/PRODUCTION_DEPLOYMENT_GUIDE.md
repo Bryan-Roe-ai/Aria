@@ -160,7 +160,7 @@ python src/azure_ml_integration.py
 ## 📁 Project Structure
 
 ```
-quantum-ai/
+ai-projects/quantum-ml/
 ├── src/
 │   ├── quantum_classifier.py              # Original 4-qubit classifier
 │   ├── quantum_classifier_enhanced.py     # NEW: 8-qubit enhanced classifier

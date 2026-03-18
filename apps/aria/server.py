@@ -21,7 +21,7 @@ import logging
 _RE_JSON_BLOCK = re.compile(r'\[.*\]', re.DOTALL)
 _RE_ARIA_TAGS = re.compile(r'\[aria:[^\]]+\]')
 _RE_SAY_COMMAND = re.compile(
-    r"(?:\b(?:say|announce|shout|speak|tell)\b)(?:\s+(?:everyone|that|to))?[:\-\s]+(.+)", 
+    r"(?:\b(?:say|announce|shout|speak|tell)\b)(?:\s+(?:everyone|that|to))?[:\-\s]+(.+)",
     re.IGNORECASE
 )
 _RE_SANITIZE_BRACKETS = re.compile(r'\]')
@@ -73,11 +73,13 @@ LEFT_ARM_KEYWORDS = frozenset(['left arm', 'arm left', 'left hand'])
 RIGHT_ARM_KEYWORDS = frozenset(['right arm', 'arm right', 'right hand'])
 LEFT_LEG_KEYWORDS = frozenset(['left leg', 'leg left'])
 RIGHT_LEG_KEYWORDS = frozenset(['right leg', 'leg right'])
-SPARKLE_KEYWORDS = frozenset(['sparkle', 'sparkles', 'glitter', 'shimmer', 'shine'])
+SPARKLE_KEYWORDS = frozenset(
+    ['sparkle', 'sparkles', 'glitter', 'shimmer', 'shine'])
 GLOW_KEYWORDS = frozenset(['glow', 'glowing', 'radiate', 'illuminate'])
 HEARTS_KEYWORDS = frozenset(['hearts', 'heart', 'love'])
 WALK_LEFT_KEYWORDS = frozenset(['walk left', 'go left', 'left'])
 WALK_RIGHT_KEYWORDS = frozenset(['walk right', 'go right', 'right'])
+
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
     """Check if text contains any keyword from set."""
@@ -603,6 +605,7 @@ def generate_tags_ai(command: str) -> List[str]:
         return []
 
     try:
+        import torch
         from transformers import AutoTokenizer
         base_model = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
         tokenizer = AutoTokenizer.from_pretrained(base_model)
@@ -643,10 +646,10 @@ def generate_tags_fallback(command: str) -> List[str]:
 
     # Track if limb commands are detected to avoid movement conflicts
     # Using pre-compiled keyword sets for O(1) lookup
-    has_limb_command = (_contains_any_keyword(cmd, LEFT_ARM_KEYWORDS) or 
-                       _contains_any_keyword(cmd, RIGHT_ARM_KEYWORDS) or
-                       _contains_any_keyword(cmd, LEFT_LEG_KEYWORDS) or
-                       _contains_any_keyword(cmd, RIGHT_LEG_KEYWORDS))
+    has_limb_command = (_contains_any_keyword(cmd, LEFT_ARM_KEYWORDS) or
+                        _contains_any_keyword(cmd, RIGHT_ARM_KEYWORDS) or
+                        _contains_any_keyword(cmd, LEFT_LEG_KEYWORDS) or
+                        _contains_any_keyword(cmd, RIGHT_LEG_KEYWORDS))
 
     # Special: server-side "say" / announce detection (capture original text)
     try:
@@ -989,7 +992,8 @@ def execute_aria_action(action: dict) -> dict:
 
         elif action_type == 'gesture':
             gesture_type = action.get('gesture_type', 'wave')
-            valid_gestures = frozenset(['wave', 'thumbs_up', 'clap', 'shrug', 'bow', 'nod'])
+            valid_gestures = frozenset(
+                ['wave', 'thumbs_up', 'clap', 'shrug', 'bow', 'nod'])
 
             if gesture_type not in valid_gestures:
                 gesture_type = 'wave'  # Default fallback
@@ -1141,7 +1145,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         if isinstance(v, dict) and 'position' in v:
                             stage_state['objects'][k] = v
                     api_response = {'status': 'ok',
-                              'objects': stage_state['objects']}
+                                    'objects': stage_state['objects']}
                 elif 'object' in request_data and 'action' in request_data:
                     action = request_data['action']
                     obj = request_data['object']
@@ -1156,7 +1160,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         stage_state['objects'][obj_id] = {
                             'position': position, 'state': state}
                         api_response = {'status': 'added', 'id': obj_id,
-                                  'object': stage_state['objects'][obj_id]}
+                                        'object': stage_state['objects'][obj_id]}
                     elif action == 'update':
                         if obj_id not in stage_state['objects']:
                             stage_state['objects'][obj_id] = {}
@@ -1165,11 +1169,11 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         if 'state' in obj:
                             stage_state['objects'][obj_id]['state'] = obj['state']
                         api_response = {'status': 'updated', 'id': obj_id,
-                                  'object': stage_state['objects'][obj_id]}
+                                        'object': stage_state['objects'][obj_id]}
                     elif action == 'remove' or action == 'delete':
                         removed = stage_state['objects'].pop(obj_id, None)
                         api_response = {'status': 'removed',
-                                  'id': obj_id, 'object': removed}
+                                        'id': obj_id, 'object': removed}
                     else:
                         raise ValueError(
                             f'Unknown action: {action}. Supported: add, update, remove/delete.')
@@ -1248,7 +1252,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
-                self.wfile.write(json.dumps(api_response, indent=2).encode('utf-8'))
+                self.wfile.write(json.dumps(
+                    api_response, indent=2).encode('utf-8'))
 
                 print(f"✓ Execute API: {command} -> {len(actions)} actions" +
                       (f" (executed)" if auto_execute else " (plan only)"))

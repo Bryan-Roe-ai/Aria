@@ -1,4 +1,4 @@
-"""Unit tests for quantum-ai/web_app.py path traversal security fixes."""
+"""Unit tests for ai-projects/quantum-ml/web_app.py path traversal security fixes."""
 import importlib.util
 import sys
 from pathlib import Path
@@ -12,11 +12,11 @@ import pytest
 
 # Import the module under test
 REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "quantum-ai"))
+sys.path.insert(0, str(REPO_ROOT / "ai-projects" / "quantum-ml"))
 
 
-# Dynamically import web_app from quantum-ai/web_app.py (file lives in the quantum-ai/ dir)
-web_app_path = REPO_ROOT / "quantum-ai" / "web_app.py"
+# Dynamically import web_app from ai-projects/quantum-ml/web_app.py (file lives in the ai-projects/quantum-ml/ dir)
+web_app_path = REPO_ROOT / "ai-projects" / "quantum-ml" / "web_app.py"
 spec = importlib.util.spec_from_file_location("web_app", str(web_app_path))
 if spec is None:
     raise ImportError(f"Could not load spec for {web_app_path}")
@@ -174,7 +174,7 @@ class TestLoadCheckpointSecurity:
     def test_valid_checkpoint_path_returns_404_if_not_exists(self, client: Any):
         """Verify valid checkpoint path within directory returns 404 if file doesn't exist."""
         # Create checkpoints dir path
-        checkpoint_dir = REPO_ROOT / "quantum-ai" / "checkpoints"
+        checkpoint_dir = REPO_ROOT / "ai-projects" / "quantum-ml" / "checkpoints"
         valid_path = str(checkpoint_dir / "nonexistent_checkpoint.npz")
 
         response = client.post('/api/load_checkpoint',

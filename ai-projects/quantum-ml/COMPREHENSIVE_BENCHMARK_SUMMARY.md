@@ -386,7 +386,7 @@ Model performance varies by configuration:
 
 ### **Documentation**
 - Project README: `README.md`
-- Quantum AI Guide: `quantum-ai/README.md`
+- Quantum AI Guide: `ai-projects/quantum-ml/README.md`
 - Dataset Catalog: `AI_DATASETS_CATALOG.md`
 
 ---

@@ -44,8 +44,10 @@ STATUS_FILE = STATUS_DIR / "status.json"
 DATA_OUT = REPO_ROOT / "data_out"
 
 # Paths for helper scripts used by jobs
-TRAIN_SCRIPT = REPO_ROOT / "quantum-ai" / "train_custom_dataset.py"
-AZURE_SUBMIT_SCRIPT = REPO_ROOT / "quantum-ai" / "deploy_to_azure_quantum.py"
+TRAIN_SCRIPT = REPO_ROOT / "ai-projects" / \
+    "quantum-ml" / "train_custom_dataset.py"
+AZURE_SUBMIT_SCRIPT = REPO_ROOT / "ai-projects" / \
+    "quantum-ml" / "deploy_to_azure_quantum.py"
 
 # Known preset datasets
 PRESETS = ("heart", "ionosphere", "sonar", "banknote")

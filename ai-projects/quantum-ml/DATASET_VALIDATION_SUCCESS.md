@@ -144,13 +144,13 @@ Successfully validated **14 out of 15 datasets** with 1-epoch smoke tests, achie
 ## 📁 Files Modified
 
 ### **Scripts:**
-1. **quantum-ai/quick_test_datasets.py**
+1. **ai-projects/quantum-ml/quick_test_datasets.py**
    - Added dataset-specific loading strategies
    - Enhanced CSV parsing with encoding/delimiter detection
    - Improved error handling and reporting
    
 ### **Results:**
-1. **quantum-ai/results/quick_test_results.json**
+1. **ai-projects/quantum-ml/results/quick_test_results.json**
    - Complete validation results with metrics
    - Per-dataset status, accuracy, loss, timing
 
@@ -234,6 +234,6 @@ Based on 1-epoch results and historical data:
 ---
 
 **Report Generated:** November 16, 2025  
-**Test Framework:** quantum-ai/quick_test_datasets.py  
+**Test Framework:** ai-projects/quantum-ml/quick_test_datasets.py  
 **Architecture:** HybridQNN with PennyLane lightning.qubit  
 **Status:** ✅ Production Ready for Benchmarking

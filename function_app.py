@@ -1,6 +1,7 @@
 # =============================================================================
 # QAI Azure Functions Application
 # =============================================================================
+from shared.import_helpers import safe_import, create_stub_function
 from token_utils import prune_messages
 from chat_providers import detect_provider, RoleMessage
 import azure.functions as func
@@ -20,7 +21,6 @@ from datetime import datetime
 _RE_WORD_SPLIT = re.compile(r"\S+")
 
 # Import defensive import helper
-from shared.import_helpers import safe_import, create_stub_function
 
 # -----------------------------------------------------------------------------
 # Optional unified SQL engine health + pool metrics (multi-database support)
@@ -73,7 +73,8 @@ log_chat_message_safe = db_logging['log_chat_message_safe']
 # Chat memory functions with graceful degradation
 chat_memory_funcs = safe_import(
     'shared.chat_memory',
-    import_names=('generate_embedding', 'fetch_similar_messages', 'store_embedding'),
+    import_names=('generate_embedding',
+                  'fetch_similar_messages', 'store_embedding'),
     fallback_factory=lambda name: {
         'generate_embedding': lambda text: [],
         'fetch_similar_messages': lambda query_emb, top_k=5, session_id=None: [],
@@ -115,12 +116,14 @@ except Exception:  # pragma: no cover
             return json.load(f)
         return False
 
-# Add talk-to-ai to path so we can import chat_providers
-talk_to_ai_path = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "src"
+# Add chat-cli to path so we can import chat_providers
+talk_to_ai_path = Path(__file__).resolve().parent / \
+    "ai-projects" / "chat-cli" / "src"
 sys.path.insert(0, str(talk_to_ai_path))
 
-# Add quantum-ai to path
-quantum_ai_path = Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "src"
+# Add quantum-ml to path
+quantum_ai_path = Path(__file__).resolve().parent / \
+    "ai-projects" / "quantum-ml" / "src"
 sys.path.insert(0, str(quantum_ai_path))
 
 # Add scripts to path for vision inference
@@ -161,7 +164,8 @@ app = func.FunctionApp()
 def serve_chat_web(req: func.HttpRequest) -> func.HttpResponse:
     """Serve the chat web interface HTML"""
     try:
-        html_path = Path(__file__).resolve().parent / "apps" / "chat" / "index.html"
+        html_path = Path(__file__).resolve().parent / \
+            "apps" / "chat" / "index.html"
 
         if html_path.exists():
             with open(html_path, 'r', encoding='utf-8') as f:
@@ -348,7 +352,8 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         # Self-Learning: Log conversation for training
         # =============================
         try:
-            logs_dir = Path(__file__).resolve().parent / "talk-to-ai" / "logs"
+            logs_dir = Path(__file__).resolve().parent / \
+                "ai-projects" / "chat-cli" / "logs"
             logs_dir.mkdir(parents=True, exist_ok=True)
 
             # Create timestamped log file
@@ -622,12 +627,12 @@ MOVE_DISTANCE = 100  # pixels
 
 def parse_movement_commands(text: str) -> dict:
     """Parse movement commands from AI response text.
-    
+
     Uses pre-compiled frozensets for O(1) keyword matching.
-    
+
     Args:
         text: AI response text to parse
-        
+
     Returns:
         dict with 'commands' list, or empty dict if no commands found
     """
@@ -642,7 +647,8 @@ def parse_movement_commands(text: str) -> dict:
         commands.append(
             {'action': 'walk', 'direction': 'right', 'distance': WALK_DISTANCE})
     if any(cmd in lower_text for cmd in _WALK_UP):
-        commands.append({'action': 'walk', 'direction': 'up', 'distance': WALK_DISTANCE})
+        commands.append({'action': 'walk', 'direction': 'up',
+                        'distance': WALK_DISTANCE})
     if any(cmd in lower_text for cmd in _WALK_DOWN):
         commands.append(
             {'action': 'walk', 'direction': 'down', 'distance': WALK_DISTANCE})
@@ -654,7 +660,8 @@ def parse_movement_commands(text: str) -> dict:
         commands.append(
             {'action': 'move', 'direction': 'right', 'distance': MOVE_DISTANCE})
     if any(cmd in lower_text for cmd in _MOVE_UP):
-        commands.append({'action': 'move', 'direction': 'up', 'distance': MOVE_DISTANCE})
+        commands.append({'action': 'move', 'direction': 'up',
+                        'distance': MOVE_DISTANCE})
     if any(cmd in lower_text for cmd in _MOVE_DOWN):
         commands.append(
             {'action': 'move', 'direction': 'down', 'distance': MOVE_DISTANCE})
@@ -1292,7 +1299,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             try:
                 from quantum_ai.src.azure_quantum_integration import AzureQuantumIntegration  # type: ignore
                 cfg_path = Path(__file__).resolve().parent / \
-                    "quantum-ai" / "config" / "quantum_config.yaml"
+                    "ai-projects" / "quantum-ml" / "config" / "quantum_config.yaml"
                 if cfg_path.exists():
                     aq = AzureQuantumIntegration(str(cfg_path))
                     aq.connect()
@@ -2022,13 +2029,16 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
             layer_gates = [g for g in gates if g.get('layer') == layer]
             for gate in layer_gates:
                 if gate['type'] in ['RY', 'RZ']:
-                    viz_parts.append(f"  {gate['type']}({gate['parameter']}) on qubit {gate['qubit']}\n")
+                    viz_parts.append(
+                        f"  {gate['type']}({gate['parameter']}) on qubit {gate['qubit']}\n")
                 elif gate['type'] == 'CNOT':
-                    viz_parts.append(f"  CNOT: control={gate['control']}, target={gate['target']}\n")
+                    viz_parts.append(
+                        f"  CNOT: control={gate['control']}, target={gate['target']}\n")
                 elif gate['type'] == 'Measure':
-                    viz_parts.append(f"  Measure qubit {gate['qubit']} ({gate['observable']})\n")
+                    viz_parts.append(
+                        f"  Measure qubit {gate['qubit']} ({gate['observable']})\n")
             viz_parts.append("\n")
-        
+
         visualization = "".join(viz_parts)
 
         response_data = {
@@ -2057,6 +2067,180 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers()
+        )
+
+
+@app.route(route="quantum/llm", methods=["POST", "GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
+    """
+    Quantum LLM inference and training endpoint.
+
+    GET  /api/quantum/llm          → return model status and capabilities
+    POST /api/quantum/llm          → generate text or trigger a training cycle
+
+    POST body (generate):
+        {"action": "generate", "prompt": "Quantum computing", "max_tokens": 50}
+
+    POST body (train):
+        {"action": "train", "dataset_path": "datasets/chat/...", "epochs": 1}
+    """
+    logging.info('Quantum LLM endpoint invoked: %s', req.method)
+
+    try:
+        # Lazy import to avoid hard dependency at startup
+        quantum_ml_src = Path(__file__).resolve().parent / \
+            "ai-projects" / "quantum-ml" / "src"
+        scripts_dir = Path(__file__).resolve().parent / "scripts"
+        for p in [str(quantum_ml_src), str(scripts_dir)]:
+            if p not in sys.path:
+                sys.path.insert(0, p)
+
+        try:
+            from quantum_llm_trainer import QuantumEnhancedLLMTrainer, QUANTUM_AVAILABLE
+            trainer_available = True
+        except ImportError as ie:
+            trainer_available = False
+            QUANTUM_AVAILABLE = False
+            _trainer_import_err = str(ie)
+
+        if req.method == "GET":
+            return func.HttpResponse(
+                json.dumps({
+                    "available": trainer_available,
+                    "quantum_circuits": QUANTUM_AVAILABLE,
+                    "model": "QuantumLLM (hybrid quantum-classical transformer)",
+                    "capabilities": {
+                        "generate": trainer_available,
+                        "train": trainer_available,
+                        "n_qubits": 4,
+                        "backends": ["default.qubit", "lightning.qubit"],
+                    },
+                    "import_error": None if trainer_available else _trainer_import_err,
+                }),
+                status_code=200,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+
+        if not trainer_available:
+            return func.HttpResponse(
+                json.dumps(
+                    {"error": "Quantum LLM trainer not available", "details": _trainer_import_err}),
+                status_code=503,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+
+        try:
+            body = req.get_json() if req.get_body() else {}
+        except ValueError:
+            return func.HttpResponse(
+                json.dumps({"error": "Invalid JSON body"}),
+                status_code=400,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+
+        action = body.get("action", "generate")
+
+        if action == "generate":
+            prompt = str(body.get("prompt", "Quantum")).strip()[:256]
+            if not prompt:
+                prompt = "Quantum"
+            max_tokens = min(int(body.get("max_tokens", 50)), 200)
+
+            config = {"n_qubits": 4, "n_quantum_layers": 2,
+                      "d_model": 64, "max_seq_len": 32}
+            trainer = QuantumEnhancedLLMTrainer(config)
+
+            import torch
+            prompt_ids = torch.tensor(
+                [[ord(c) % trainer.model_config["vocab_size"]
+                  for c in prompt[:32]]],
+                dtype=torch.long,
+            )
+            generated = trainer.model.generate(
+                prompt_ids, max_new_tokens=max_tokens, temperature=0.8, top_k=20)
+            # Decode back to text using the simple char mapping
+            vocab_size = trainer.model_config["vocab_size"]
+            text = "".join(chr(t % 128) if 32 <= (t % 128) <
+                           127 else "?" for t in generated[0].tolist())
+
+            return func.HttpResponse(
+                json.dumps({
+                    "action": "generate",
+                    "prompt": prompt,
+                    "generated": text,
+                    "tokens": len(generated[0]),
+                    "quantum_available": QUANTUM_AVAILABLE,
+                }),
+                status_code=200,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+
+        elif action == "train":
+            repo_root = Path(__file__).resolve().parent
+            dataset_path = body.get("dataset_path", "datasets/chat")
+            dataset_path_obj = Path(dataset_path)
+            if not dataset_path_obj.is_absolute():
+                dataset_path_obj = (repo_root / dataset_path_obj)
+            dataset_path_obj = dataset_path_obj.resolve(strict=False)
+
+            # Basic path traversal protection: keep training datasets in-repo.
+            try:
+                dataset_path_obj.relative_to(repo_root.resolve())
+            except ValueError:
+                return func.HttpResponse(
+                    json.dumps({
+                        "error": "dataset_path must point to a location inside the repository"
+                    }),
+                    status_code=400,
+                    mimetype="application/json",
+                    headers=create_cors_response_headers(),
+                )
+
+            epochs = min(int(body.get("epochs", 1)), 5)
+            output_dir = repo_root / "data_out" / "quantum_llm_api"
+
+            config = {"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64}
+            trainer = QuantumEnhancedLLMTrainer(config)
+            results = trainer.train_with_quantum_enhancement(
+                dataset_path=dataset_path_obj,
+                output_dir=output_dir,
+                epochs=epochs,
+                model=None,
+            )
+
+            return func.HttpResponse(
+                json.dumps({
+                    "action": "train",
+                    "status": results["status"],
+                    "epochs_completed": results["epochs_completed"],
+                    "final_loss": results["final_loss"],
+                    "circuit_executions": results["quantum_metrics"]["circuit_executions"],
+                }),
+                status_code=200,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+
+        else:
+            return func.HttpResponse(
+                json.dumps(
+                    {"error": f"Unknown action: {action!r}. Use 'generate' or 'train'."}),
+                status_code=400,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+
+    except Exception as e:
+        logging.error(f'Quantum LLM error: {e}', exc_info=True)
+        return func.HttpResponse(
+            json.dumps({"error": f"Quantum LLM request failed: {str(e)}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
         )
 
 
@@ -2138,9 +2322,9 @@ def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
 def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get pricing information for all subscription tiers.
-    
+
     GET /api/subscription/pricing
-    
+
     Response: {
         "tiers": {
             "free": {...},
@@ -2150,14 +2334,14 @@ def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Pricing endpoint invoked')
-    
+
     try:
         from shared.subscription_manager import TIER_PRICING, TIER_FEATURES, TIER_LIMITS, SubscriptionTier
-        
+
         pricing_info = {
             "tiers": {}
         }
-        
+
         for tier in SubscriptionTier:
             pricing_info["tiers"][tier.value] = {
                 "name": tier.name,
@@ -2167,14 +2351,14 @@ def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
                 "features": {f.value: enabled for f, enabled in TIER_FEATURES[tier].items()},
                 "limits": TIER_LIMITS[tier]
             }
-        
+
         return func.HttpResponse(
             json.dumps(pricing_info),
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Pricing endpoint error: {str(e)}')
         return func.HttpResponse(
@@ -2189,9 +2373,9 @@ def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
 def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get subscription status for a user.
-    
+
     GET /api/subscription/status?user_id=<user_id>
-    
+
     Response: {
         "user_id": "...",
         "tier": "pro",
@@ -2201,7 +2385,7 @@ def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Subscription status endpoint invoked')
-    
+
     try:
         if not subscription_manager_available:
             return func.HttpResponse(
@@ -2210,23 +2394,24 @@ def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 headers=create_cors_response_headers()
             )
-        
+
         user_id = req.params.get('user_id', 'demo_user')
-        
+
         manager = get_subscription_manager()
         subscription = manager.get_subscription(user_id)
-        
+
         return func.HttpResponse(
             json.dumps(subscription.to_dict()),
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Subscription status error: {str(e)}')
         return func.HttpResponse(
-            json.dumps({"error": f"Failed to get subscription status: {str(e)}"}),
+            json.dumps(
+                {"error": f"Failed to get subscription status: {str(e)}"}),
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers()
@@ -2237,7 +2422,7 @@ def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
 def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
     """
     Upgrade a user's subscription.
-    
+
     POST /api/subscription/upgrade
     Body: {
         "user_id": "...",
@@ -2246,14 +2431,14 @@ def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
         "payment_method": "stripe",
         "stripe_subscription_id": "..."
     }
-    
+
     Response: {
         "success": true,
         "subscription": {...}
     }
     """
     logging.info('Subscription upgrade endpoint invoked')
-    
+
     try:
         if not subscription_manager_available:
             return func.HttpResponse(
@@ -2262,16 +2447,16 @@ def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 headers=create_cors_response_headers()
             )
-        
+
         body = json.loads(req.get_body().decode('utf-8'))
         user_id = body.get('user_id', 'demo_user')
         tier_str = body.get('tier', 'pro')
         duration_days = body.get('duration_days', 30)
         payment_method = body.get('payment_method')
         stripe_subscription_id = body.get('stripe_subscription_id')
-        
+
         tier = SubscriptionTier(tier_str)
-        
+
         manager = get_subscription_manager()
         subscription = manager.upgrade_subscription(
             user_id=user_id,
@@ -2280,7 +2465,7 @@ def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
             payment_method=payment_method,
             stripe_subscription_id=stripe_subscription_id
         )
-        
+
         return func.HttpResponse(
             json.dumps({
                 "success": True,
@@ -2290,7 +2475,7 @@ def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Subscription upgrade error: {str(e)}')
         return func.HttpResponse(
@@ -2305,9 +2490,9 @@ def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
 def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get revenue statistics and projections.
-    
+
     GET /api/subscription/revenue
-    
+
     Response: {
         "total_subscribers": 15,
         "active_subscribers": 15,
@@ -2317,7 +2502,7 @@ def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Revenue stats endpoint invoked')
-    
+
     try:
         if not subscription_manager_available:
             return func.HttpResponse(
@@ -2326,17 +2511,17 @@ def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 headers=create_cors_response_headers()
             )
-        
+
         manager = get_subscription_manager()
         stats = manager.get_revenue_stats()
-        
+
         return func.HttpResponse(
             json.dumps(stats),
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Revenue stats error: {str(e)}')
         return func.HttpResponse(
@@ -2351,14 +2536,14 @@ def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
 def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
     """
     Track resource usage for a user.
-    
+
     POST /api/subscription/usage
     Body: {
         "user_id": "...",
         "resource": "chat_messages" | "quantum_jobs" | "training_hours" | "api_requests" | "websites_created",
         "amount": 1
     }
-    
+
     Response: {
         "success": true,
         "allowed": true,
@@ -2366,7 +2551,7 @@ def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Usage tracking endpoint invoked')
-    
+
     try:
         if not subscription_manager_available:
             return func.HttpResponse(
@@ -2375,17 +2560,17 @@ def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 headers=create_cors_response_headers()
             )
-        
+
         body = json.loads(req.get_body().decode('utf-8'))
         user_id = body.get('user_id', 'demo_user')
         resource = body.get('resource', 'api_requests')
         amount = body.get('amount', 1)
-        
+
         manager = get_subscription_manager()
         allowed = manager.track_usage(user_id, resource, amount)
-        
+
         subscription = manager.get_subscription(user_id)
-        
+
         return func.HttpResponse(
             json.dumps({
                 "success": True,
@@ -2397,7 +2582,7 @@ def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Usage tracking error: {str(e)}')
         return func.HttpResponse(
@@ -2415,37 +2600,38 @@ def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
 def stripe_webhook(req: func.HttpRequest) -> func.HttpResponse:
     """
     Handle Stripe webhook events.
-    
+
     POST /api/webhook/stripe
     Headers: Stripe-Signature
     Body: Stripe event payload
-    
+
     Response: {
         "status": "success" | "error",
         "message": "..."
     }
     """
     logging.info('Stripe webhook endpoint invoked')
-    
+
     try:
         from shared.stripe_webhooks import get_webhook_handler
-        
+
         payload = req.get_body().decode('utf-8')
         signature = req.headers.get('Stripe-Signature', '')
         webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
-        
+
         handler = get_webhook_handler()
         result = handler.handle_webhook(payload, signature, webhook_secret)
-        
-        status_code = 200 if result["status"] in ["success", "ignored"] else 500
-        
+
+        status_code = 200 if result["status"] in [
+            "success", "ignored"] else 500
+
         return func.HttpResponse(
             json.dumps(result),
             status_code=status_code,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Stripe webhook error: {str(e)}')
         return func.HttpResponse(
@@ -2463,29 +2649,29 @@ def stripe_webhook(req: func.HttpRequest) -> func.HttpResponse:
 def test_notifications(req: func.HttpRequest) -> func.HttpResponse:
     """
     Test email notification system.
-    
+
     POST /api/notifications/test
     Body: {
         "email": "user@example.com",
         "type": "usage_warning" | "payment_succeeded" | "subscription_activated"
     }
-    
+
     Response: {
         "success": true,
         "message": "Notification sent"
     }
     """
     logging.info('Test notification endpoint invoked')
-    
+
     try:
         from shared.email_notifications import get_email_system
-        
+
         body = json.loads(req.get_body().decode('utf-8'))
         email = body.get('email', 'test@example.com')
         notification_type = body.get('type', 'usage_warning')
-        
+
         email_system = get_email_system()
-        
+
         # Send test notification based on type
         if notification_type == 'usage_warning':
             success = email_system.notify_usage_warning(
@@ -2509,12 +2695,13 @@ def test_notifications(req: func.HttpRequest) -> func.HttpResponse:
             )
         else:
             return func.HttpResponse(
-                json.dumps({"error": f"Unknown notification type: {notification_type}"}),
+                json.dumps(
+                    {"error": f"Unknown notification type: {notification_type}"}),
                 status_code=400,
                 mimetype="application/json",
                 headers=create_cors_response_headers()
             )
-        
+
         return func.HttpResponse(
             json.dumps({
                 "success": success,
@@ -2525,11 +2712,12 @@ def test_notifications(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Test notification error: {str(e)}')
         return func.HttpResponse(
-            json.dumps({"error": f"Failed to send test notification: {str(e)}"}),
+            json.dumps(
+                {"error": f"Failed to send test notification: {str(e)}"}),
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers()
@@ -2543,23 +2731,23 @@ def test_notifications(req: func.HttpRequest) -> func.HttpResponse:
 def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get email notification log.
-    
+
     GET /api/notifications/log?user_email=user@example.com
-    
+
     Response: {
         "notifications": [...]
     }
     """
     logging.info('Notifications log endpoint invoked')
-    
+
     try:
         from shared.email_notifications import get_email_system
-        
+
         user_email = req.params.get('user_email')
-        
+
         email_system = get_email_system()
         notifications = email_system.get_sent_emails(user_email)
-        
+
         return func.HttpResponse(
             json.dumps({
                 "notifications": notifications,
@@ -2569,11 +2757,12 @@ def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Notifications log error: {str(e)}')
         return func.HttpResponse(
-            json.dumps({"error": f"Failed to get notifications log: {str(e)}"}),
+            json.dumps(
+                {"error": f"Failed to get notifications log: {str(e)}"}),
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers()
@@ -2587,33 +2776,33 @@ def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
 def referral_code(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get or generate referral code for a user.
-    
+
     GET /api/referrals/code?user_id=...
     POST /api/referrals/code with {"user_id": "..."}
-    
+
     Response: {
         "referral_code": "ABC123DEF",
         "user_id": "..."
     }
     """
     logging.info('Referral code endpoint invoked')
-    
+
     try:
         from shared.referral_system import get_referral_system
-        
+
         if req.method == "GET":
             user_id = req.params.get('user_id', 'demo_user')
         else:
             body = json.loads(req.get_body().decode('utf-8'))
             user_id = body.get('user_id', 'demo_user')
-        
+
         referral_system = get_referral_system()
-        
+
         # Get existing or generate new code
         code = referral_system.get_referral_code(user_id)
         if not code:
             code = referral_system.generate_referral_code(user_id)
-        
+
         return func.HttpResponse(
             json.dumps({
                 "referral_code": code,
@@ -2623,7 +2812,7 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Referral code error: {str(e)}')
         return func.HttpResponse(
@@ -2638,9 +2827,9 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
 def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get referral statistics for a user.
-    
+
     GET /api/referrals/stats?user_id=...
-    
+
     Response: {
         "referral_code": "...",
         "referral_count": 5,
@@ -2651,22 +2840,22 @@ def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Referral stats endpoint invoked')
-    
+
     try:
         from shared.referral_system import get_referral_system
-        
+
         user_id = req.params.get('user_id', 'demo_user')
-        
+
         referral_system = get_referral_system()
         stats = referral_system.get_referral_stats(user_id)
-        
+
         return func.HttpResponse(
             json.dumps(stats),
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Referral stats error: {str(e)}')
         return func.HttpResponse(
@@ -2681,7 +2870,7 @@ def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
 def record_referral(req: func.HttpRequest) -> func.HttpResponse:
     """
     Record a new referral.
-    
+
     POST /api/referrals/record
     Body: {
         "referrer_code": "ABC123",
@@ -2689,7 +2878,7 @@ def record_referral(req: func.HttpRequest) -> func.HttpResponse:
         "tier": "pro",
         "subscription_value": 49.00
     }
-    
+
     Response: {
         "success": true,
         "commission": 9.80,
@@ -2697,16 +2886,16 @@ def record_referral(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Record referral endpoint invoked')
-    
+
     try:
         from shared.referral_system import get_referral_system
-        
+
         body = json.loads(req.get_body().decode('utf-8'))
         referrer_code = body.get('referrer_code')
         new_user_id = body.get('new_user_id')
         tier = body.get('tier')
         subscription_value = body.get('subscription_value')
-        
+
         if not all([referrer_code, new_user_id, tier, subscription_value]):
             return func.HttpResponse(
                 json.dumps({"error": "Missing required fields"}),
@@ -2714,7 +2903,7 @@ def record_referral(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 headers=create_cors_response_headers()
             )
-        
+
         referral_system = get_referral_system()
         result = referral_system.record_referral(
             referrer_code=referrer_code,
@@ -2722,14 +2911,14 @@ def record_referral(req: func.HttpRequest) -> func.HttpResponse:
             tier=tier,
             subscription_value=subscription_value
         )
-        
+
         return func.HttpResponse(
             json.dumps(result),
             status_code=200 if result.get('success') else 400,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Record referral error: {str(e)}')
         return func.HttpResponse(
@@ -2744,9 +2933,9 @@ def record_referral(req: func.HttpRequest) -> func.HttpResponse:
 def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get referral leaderboard.
-    
+
     GET /api/referrals/leaderboard?limit=10
-    
+
     Response: {
         "leaderboard": [
             {"rank": 1, "user_id": "...", "referral_count": 50, "total_commission": 500}
@@ -2754,22 +2943,22 @@ def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info('Referral leaderboard endpoint invoked')
-    
+
     try:
         from shared.referral_system import get_referral_system
-        
+
         limit = int(req.params.get('limit', '10'))
-        
+
         referral_system = get_referral_system()
         leaderboard = referral_system.get_leaderboard(limit)
-        
+
         return func.HttpResponse(
             json.dumps({"leaderboard": leaderboard}),
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-    
+
     except Exception as e:
         logging.error(f'Referral leaderboard error: {str(e)}')
         return func.HttpResponse(
@@ -2778,4 +2967,3 @@ def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers()
         )
-

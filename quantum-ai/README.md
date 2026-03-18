@@ -29,7 +29,7 @@ Tokens → Embedding + Positional Encoding
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path("quantum-ai/src").resolve()))
+sys.path.insert(0, str(Path("ai-projects/quantum-ml/src").resolve()))
 from quantum_code_llm import generate, train
 
 # Train on built-in Python code snippets
@@ -45,13 +45,13 @@ print(generate(model, tokenizer, "def factorial(n):"))
 ## Run Demo
 
 ```bash
-python quantum-ai/examples/quantum_code_llm_demo.py
+python ai-projects/quantum-ml/examples/quantum_code_llm_demo.py
 
 # Override settings via env vars
-QLCM_EPOCHS=10 QLCM_QUBITS=6 python quantum-ai/examples/quantum_code_llm_demo.py
+QLCM_EPOCHS=10 QLCM_QUBITS=6 python ai-projects/quantum-ml/examples/quantum_code_llm_demo.py
 
 # Force classical backend
-QLCM_BACKEND=classical python quantum-ai/examples/quantum_code_llm_demo.py
+QLCM_BACKEND=classical python ai-projects/quantum-ml/examples/quantum_code_llm_demo.py
 ```
 
 ## Config Reference
@@ -72,7 +72,7 @@ QLCM_BACKEND=classical python quantum-ai/examples/quantum_code_llm_demo.py
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path("quantum-ai/src").resolve()))
+sys.path.insert(0, str(Path("ai-projects/quantum-ml/src").resolve()))
 from quantum_code_llm import generate, train
 
 MY_CODE = [
@@ -90,7 +90,7 @@ print(generate(model, tok, "def greet("))
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path("quantum-ai/src").resolve()))
+sys.path.insert(0, str(Path("ai-projects/quantum-ml/src").resolve()))
 from quantum_code_llm import load_checkpoint, save_checkpoint
 
 checkpoint = Path("data_out/quantum_code_llm/checkpoint.pt")

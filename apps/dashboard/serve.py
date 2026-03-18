@@ -1,4 +1,5 @@
 """Simple HTTP server for training dashboard"""
+from gpu_monitor import get_gpu_info, get_gpu_processes, get_system_resources
 import http.server
 import socketserver
 import webbrowser
@@ -17,7 +18,6 @@ from collections import defaultdict
 
 # Import GPU monitoring
 sys.path.insert(0, str(Path(__file__).parent))
-from gpu_monitor import get_gpu_info, get_gpu_processes, get_system_resources
 
 PORT = 8000
 
@@ -25,53 +25,57 @@ PORT = 8000
 request_counts = defaultdict(list)
 MAX_REQUESTS_PER_MINUTE = 60
 
+
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
         """Enhanced request logging with timestamps"""
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         print(f"[{timestamp}] {self.command} {self.path} - {code}")
-    
+
     def check_rate_limit(self):
         """Simple rate limiting per IP"""
         client_ip = self.client_address[0]
         now = time.time()
-        
+
         # Clean old requests (older than 1 minute)
-        request_counts[client_ip] = [t for t in request_counts[client_ip] if now - t < 60]
-        
+        request_counts[client_ip] = [
+            t for t in request_counts[client_ip] if now - t < 60]
+
         # Check limit
         if len(request_counts[client_ip]) >= MAX_REQUESTS_PER_MINUTE:
             return False
-        
+
         request_counts[client_ip].append(now)
         return True
-    
+
     def do_GET(self):
         # Check rate limit
         if not self.check_rate_limit():
             self.send_error(429, "Too Many Requests")
             return
-        
+
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
-        
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
+
         # Redirect root to consolidated dashboard
         if self.path == '/' or self.path == '/index.html':
             self.send_response(302)
             self.send_header('Location', '/consolidated.html')
             self.end_headers()
             return
-        
+
         # API: Training status (no cache)
         if self.path == '/status':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            self.send_header(
+                'Cache-Control', 'no-cache, no-store, must-revalidate')
             self.send_header('Pragma', 'no-cache')
             self.send_header('Expires', '0')
             self.end_headers()
-            
+
             status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
             try:
                 with open(status_file, 'r') as f:
@@ -93,35 +97,35 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 }
                 self.wfile.write(json.dumps(error_data).encode())
             return
-        
+
         # API: Job progress
         if self.path.startswith('/api/job-progress/'):
             job_id = self.path.split('/')[-1]
             self.send_json_response(self.get_job_progress(job_id))
             return
-        
+
         # API: Job metrics
         if self.path.startswith('/api/job-metrics/'):
             job_id = self.path.split('/')[-1]
             self.send_json_response(self.get_job_metrics(job_id))
             return
-        
+
         # API: List available datasets
         elif self.path == '/api/datasets':
             self.send_json_response(self.get_datasets())
             return
-        
+
         # API: Profile dataset for hyperparameter recommendations
         elif self.path.startswith('/api/profile-dataset'):
             from urllib.parse import parse_qs, urlparse
             parsed = urlparse(self.path)
             query_params = parse_qs(parsed.query)
             dataset_name = query_params.get('dataset', [None])[0]
-            
+
             if not dataset_name:
                 self.send_json_response({"error": "Missing dataset parameter"})
                 return
-            
+
             # Find dataset path
             datasets = self.get_datasets()
             dataset_path = None
@@ -129,21 +133,23 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if ds.get('name') == dataset_name or ds.get('path', '').endswith(dataset_name):
                     dataset_path = Path(ds['path'])
                     break
-            
+
             if not dataset_path or not dataset_path.exists():
-                self.send_json_response({"error": f"Dataset not found: {dataset_name}"})
+                self.send_json_response(
+                    {"error": f"Dataset not found: {dataset_name}"})
                 return
-            
+
             # Run profiler script
             profiler_script = root_dir / 'scripts' / 'dataset_profiler.py'
             if not profiler_script.exists():
                 self.send_json_response({"error": "Profiler script not found"})
                 return
-            
+
             try:
                 import subprocess
                 result = subprocess.run(
-                    [sys.executable, str(profiler_script), str(dataset_path), '--recommend', '--quiet'],
+                    [sys.executable, str(profiler_script), str(
+                        dataset_path), '--recommend', '--quiet'],
                     capture_output=True,
                     text=True,
                     timeout=30
@@ -152,82 +158,85 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     profile_data = json.loads(result.stdout)
                     self.send_json_response(profile_data)
                 else:
-                    self.send_json_response({"error": f"Profiler failed: {result.stderr}"})
+                    self.send_json_response(
+                        {"error": f"Profiler failed: {result.stderr}"})
             except subprocess.TimeoutExpired:
-                self.send_json_response({"error": "Profiler timed out (30s limit)"})
+                self.send_json_response(
+                    {"error": "Profiler timed out (30s limit)"})
             except Exception as e:
                 self.send_json_response({"error": f"Profiler error: {str(e)}"})
             return
-        
+
         # API: List trained models
         elif self.path == '/api/models':
             self.send_json_response(self.get_models())
             return
-        
+
         # API: List training configs
         elif self.path == '/api/configs':
             self.send_json_response(self.get_configs())
             return
-        
+
         # API: Get job details
         elif self.path.startswith('/api/job/'):
             job_name = self.path.split('/')[-1]
             self.send_json_response(self.get_job_details(job_name))
             return
-        
+
         # API: Get training logs
         elif self.path.startswith('/api/logs/'):
             job_name = self.path.split('/')[-1]
             self.send_json_response(self.get_job_logs(job_name))
             return
-        
+
         # API: GPU monitoring
         elif self.path == '/api/gpu':
             self.send_json_response(get_gpu_info())
             return
-        
+
         # API: GPU processes
         elif self.path == '/api/gpu-processes':
             self.send_json_response({'processes': get_gpu_processes()})
             return
-        
+
         # API: System resources
         elif self.path == '/api/system':
             self.send_json_response(get_system_resources())
             return
-        
+
         # API: Training history/timeline
         elif self.path == '/api/history':
             self.send_json_response(self.get_training_history())
             return
-        
+
         # API: System health check
         elif self.path == '/api/health':
             self.send_json_response(self.get_system_health())
             return
-        
+
         # API: Quick stats summary
         elif self.path == '/api/stats':
             self.send_json_response(self.get_quick_stats())
             return
-        
+
         # API: Get active processes
         elif self.path == '/api/processes':
             self.send_json_response(self.get_active_processes())
             return
-        
+
         # API: Job queue status
         elif self.path == '/api/job-queue':
             self.send_json_response(self.get_job_queue_status())
             return
-        
+
         # Default file serving
         super().do_GET()
-    
+
     def do_POST(self):
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
-        
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
+
         # API: Start training
         if self.path == '/api/start-training':
             content_length = int(self.headers['Content-Length'])
@@ -236,21 +245,21 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             result = self.start_training(params)
             self.send_json_response(result)
             return
-        
+
         # API: Pause job
         if self.path.startswith('/api/job-control/') and self.path.endswith('/pause'):
             job_id = self.path.split('/')[-2]
             result = self.control_job(job_id, action='pause')
             self.send_json_response(result)
             return
-        
+
         # API: Stop job
         if self.path.startswith('/api/job-control/') and self.path.endswith('/stop'):
             job_id = self.path.split('/')[-2]
             result = self.control_job(job_id, action='stop')
             self.send_json_response(result)
             return
-        
+
         # API: Benchmark models
         if self.path == '/api/benchmark':
             content_length = int(self.headers['Content-Length'])
@@ -260,9 +269,9 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             results = self.run_benchmark(model_ids)
             self.send_json_response({'results': results})
             return
-        
+
         self.send_error(404)
-    
+
     def send_json_response(self, data):
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
@@ -272,33 +281,39 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def get_job_progress(self, job_id):
         """Return job progress information"""
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
         try:
             with open(status_file, 'r') as f:
                 data = json.load(f)
-            job = next((j for j in data.get('jobs', []) if j.get('name') == job_id), None)
+            job = next((j for j in data.get('jobs', [])
+                       if j.get('name') == job_id), None)
             if not job:
                 return {'error': 'Job not found', 'job_id': job_id}
-            
+
             metrics = job.get('metrics', {})
-            current_epoch = job.get('current_epoch') or metrics.get('current_epoch') or 0
-            total_epochs = job.get('epochs') or job.get('config', {}).get('epochs') or 0
+            current_epoch = job.get('current_epoch') or metrics.get(
+                'current_epoch') or 0
+            total_epochs = job.get('epochs') or job.get(
+                'config', {}).get('epochs') or 0
             post_loss = metrics.get('post_eval_loss')
             current_loss = metrics.get('current_loss', post_loss)
-            lr = job.get('config', {}).get('learning_rate') or metrics.get('learning_rate')
+            lr = job.get('config', {}).get(
+                'learning_rate') or metrics.get('learning_rate')
             steps_per_sec = metrics.get('steps_per_sec')
             status = job.get('status', 'unknown')
             duration = job.get('duration_sec')
-            
+
             # Progress percent
             progress_percent = job.get('progress_percent')
             if progress_percent is None:
                 try:
-                    progress_percent = round((current_epoch / total_epochs) * 100, 2) if total_epochs else 0
+                    progress_percent = round(
+                        (current_epoch / total_epochs) * 100, 2) if total_epochs else 0
                 except Exception:
                     progress_percent = 0
-            
+
             return {
                 'job_id': job_id,
                 'current_epoch': current_epoch,
@@ -315,7 +330,8 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def get_job_metrics(self, job_id):
         """Return arrays for charting training/validation loss"""
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
         steps = []
         train_loss = []
@@ -323,10 +339,11 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         try:
             with open(status_file, 'r') as f:
                 data = json.load(f)
-            job = next((j for j in data.get('jobs', []) if j.get('name') == job_id), None)
+            job = next((j for j in data.get('jobs', [])
+                       if j.get('name') == job_id), None)
             if not job:
                 return {'error': 'Job not found', 'job_id': job_id}
-            
+
             # Try metrics history
             history = job.get('metrics_history') or job.get('loss_history')
             if isinstance(history, list) and history:
@@ -343,14 +360,15 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     try:
                         with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
                             for i, line in enumerate(f):
-                                m = re.search(r'step\s*(\d+).*?train_loss=([0-9\.]+).*?eval_loss=([0-9\.]+)', line)
+                                m = re.search(
+                                    r'step\s*(\d+).*?train_loss=([0-9\.]+).*?eval_loss=([0-9\.]+)', line)
                                 if m:
                                     steps.append(int(m.group(1)))
                                     train_loss.append(float(m.group(2)))
                                     eval_loss.append(float(m.group(3)))
                     except Exception:
                         pass
-            
+
             return {
                 'job_id': job_id,
                 'steps': steps,
@@ -359,17 +377,18 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }
         except Exception as e:
             return {'error': str(e), 'job_id': job_id, 'steps': steps, 'train_loss': train_loss, 'eval_loss': eval_loss}
-    
+
     def get_datasets(self):
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         datasets_dir = root_dir / 'datasets' / 'chat'
         datasets = []
-        
+
         try:
             if not datasets_dir.exists():
                 return {'error': f'Datasets directory not found: {datasets_dir}', 'datasets': []}
-            
+
             for d in datasets_dir.iterdir():
                 if d.is_dir():
                     train_file = d / 'train.json'
@@ -378,11 +397,13 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         try:
                             # Count samples efficiently without loading entire file
                             # For JSON arrays, count top-level elements
-                            train_samples = self._count_json_samples(train_file)
+                            train_samples = self._count_json_samples(
+                                train_file)
                             test_samples = 0
                             if test_file.exists():
-                                test_samples = self._count_json_samples(test_file)
-                            
+                                test_samples = self._count_json_samples(
+                                    test_file)
+
                             datasets.append({
                                 'name': d.name,
                                 'path': str(d.relative_to(root_dir)),
@@ -390,18 +411,19 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                 'test_samples': test_samples
                             })
                         except Exception as e:
-                            print(f"Warning: Error processing {train_file}: {e}")
+                            print(
+                                f"Warning: Error processing {train_file}: {e}")
                             continue
         except Exception as e:
             import traceback
             traceback.print_exc()
             return {'error': str(e), 'datasets': []}
-        
+
         return {'datasets': datasets}
-    
+
     def _count_json_samples(self, file_path: Path) -> int:
         """Count samples in a JSON file efficiently.
-        
+
         For JSONL files: counts lines.
         For JSON arrays: counts top-level array elements.
         Falls back to loading full file if needed.
@@ -410,7 +432,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             with open(file_path, 'r', encoding='utf-8') as f:
                 first_char = f.read(1)
                 f.seek(0)
-                
+
                 if first_char == '[':
                     # JSON array - need to parse it
                     data = json.load(f)
@@ -430,13 +452,14 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return len(data) if isinstance(data, list) else 1
             except Exception:
                 return 0
-    
+
     def get_models(self):
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         models_dir = root_dir / 'data_out' / 'lora_training' / 'marathon'
         models = []
-        
+
         try:
             if models_dir.exists():
                 for model_dir in models_dir.iterdir():
@@ -453,27 +476,28 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                             })
         except Exception as e:
             return {'error': str(e), 'models': []}
-        
+
         return {'models': models}
-    
+
     def get_configs(self):
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         configs = []
-        
+
         try:
             for yaml_file in root_dir.glob('autotrain*.yaml'):
                 if 'autogen' not in yaml_file.name:
                     with open(yaml_file) as f:
                         config = yaml.safe_load(f)
-                    
+
                     jobs = config.get('jobs', [])
                     total_epochs = sum(j.get('epochs', 0) for j in jobs)
-                    
+
                     # Estimate time based on previous runs
                     estimated_minutes = len(jobs) * 3  # Rough estimate
-                    est_time = f"{estimated_minutes}m" if estimated_minutes < 60 else f"{estimated_minutes//60}h {estimated_minutes%60}m"
-                    
+                    est_time = f"{estimated_minutes}m" if estimated_minutes < 60 else f"{estimated_minutes//60}h {estimated_minutes % 60}m"
+
                     configs.append({
                         'name': yaml_file.stem,
                         'path': yaml_file.name,
@@ -482,45 +506,48 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         'estimated_time': est_time,
                         'modified': yaml_file.stat().st_mtime
                     })
-            
+
             # Sort by modification time
             configs.sort(key=lambda x: x.get('modified', 0), reverse=True)
         except Exception as e:
             return {'error': str(e), 'configs': []}
-        
+
         return {'configs': configs}
-    
+
     def get_job_details(self, job_name):
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
-        
+
         try:
             with open(status_file) as f:
                 data = json.load(f)
-            
+
             for job in data.get('jobs', []):
                 if job.get('name') == job_name:
                     # Add output directory contents if available
                     if 'output_dir' in job and job['output_dir']:
                         output_path = root_dir / job['output_dir']
                         if output_path.exists():
-                            job['output_files'] = [f.name for f in output_path.rglob('*') if f.is_file()]
+                            job['output_files'] = [
+                                f.name for f in output_path.rglob('*') if f.is_file()]
                     return {'job': job}
-            
+
             return {'error': 'Job not found'}
         except Exception as e:
             return {'error': str(e)}
-    
+
     def get_job_logs(self, job_name):
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
-        
+
         try:
             with open(status_file) as f:
                 data = json.load(f)
-            
+
             for job in data.get('jobs', []):
                 if job.get('name') == job_name and 'log' in job:
                     log_file = Path(job['log'])
@@ -533,31 +560,33 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                                 if len(lines) > 500:
                                     lines.pop(0)  # Keep only last 500
                             return {'logs': ''.join(lines)}
-            
+
             return {'logs': 'No logs available'}
         except Exception as e:
             return {'error': str(e), 'logs': ''}
-    
+
     def start_training(self, params):
         """Create and queue a new training job"""
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
-        
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
+
         try:
             # Accept both legacy and new parameter names
             job_name = params.get('job_name') or params.get('name')
             model = params.get('model') or 'microsoft/Phi-3.5-mini-instruct'
             dataset = params.get('dataset')
             epochs = params.get('epochs', 3)
-            max_samples = params.get('max_train_samples', params.get('max_samples', 1000))
+            max_samples = params.get(
+                'max_train_samples', params.get('max_samples', 1000))
             learning_rate = params.get('learning_rate', '2e-4')
             batch_size = params.get('batch_size', 4)
             lora_rank = params.get('lora_rank', 16)
             lora_alpha = params.get('lora_alpha', 32)
-            
+
             if not job_name or not dataset:
                 return {'success': False, 'error': 'Missing required parameters'}
-            
+
             # Create a custom config YAML
             config_data = {
                 'jobs': [{
@@ -575,12 +604,12 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     'device': 'auto'
                 }]
             }
-            
+
             # Save config
             config_file = root_dir / f'autotrain_custom_{job_name}.yaml'
             with open(config_file, 'w') as f:
                 yaml.dump(config_data, f)
-            
+
             # Launch training in background
             cmd = [
                 'python',
@@ -589,15 +618,16 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 str(config_file),
                 '--resume'
             ]
-            
+
             subprocess.Popen(
                 cmd,
                 cwd=str(root_dir),
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
-                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, 'CREATE_NO_WINDOW') else 0
+                creationflags=subprocess.CREATE_NO_WINDOW if hasattr(
+                    subprocess, 'CREATE_NO_WINDOW') else 0
             )
-            
+
             return {
                 'success': True,
                 'message': f'Training job {job_name} started',
@@ -611,7 +641,8 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def control_job(self, job_id, action='pause'):
         """Stub to control a job (pause/stop) via flag files"""
         try:
-            root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+            root_dir = getattr(self.__class__, 'root_dir',
+                               Path(__file__).parent.parent)
             control_dir = root_dir / 'data_out' / 'control'
             control_dir.mkdir(parents=True, exist_ok=True)
             flag_file = control_dir / f'{job_id}.{action}'
@@ -634,7 +665,8 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 speed_score = max(0, min(100, (1200 - inference_time) / 12))
                 memory_score = max(0, min(100, (2000 - memory_mb) / 20))
                 throughput_score = max(0, min(100, throughput / 3))
-                score = round((speed_score + memory_score + throughput_score) / 3, 2)
+                score = round(
+                    (speed_score + memory_score + throughput_score) / 3, 2)
                 results.append({
                     'model_id': mid,
                     'model_name': mid,
@@ -646,22 +678,23 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 results.append({'model_id': mid, 'error': str(e)})
         return results
-    
+
     def get_training_history(self):
         """Get historical training data for charts"""
         # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
         status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
-        
+
         try:
             with open(status_file) as f:
                 data = json.load(f)
-            
+
             history = {
                 'jobs': [],
                 'timeline': []
             }
-            
+
             for job in data.get('jobs', []):
                 if job.get('metrics'):
                     history['jobs'].append({
@@ -673,7 +706,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         'duration': job.get('duration_sec'),
                         'status': job.get('status')
                     })
-                
+
                 if job.get('start_time'):
                     history['timeline'].append({
                         'name': job['name'],
@@ -681,21 +714,22 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                         'duration': job.get('duration_sec', 0),
                         'status': job.get('status', 'unknown')
                     })
-            
+
             return history
         except Exception as e:
             return {'error': str(e), 'jobs': [], 'timeline': []}
-    
+
     def get_system_health(self):
         """Comprehensive system health check"""
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
-        
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
+
         health = {
             'status': 'healthy',
             'timestamp': datetime.now().isoformat(),
             'checks': {}
         }
-        
+
         try:
             # Check datasets directory
             datasets_dir = root_dir / 'datasets' / 'chat'
@@ -703,28 +737,28 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 'exists': datasets_dir.exists(),
                 'count': len(list(datasets_dir.glob('*/train.json'))) if datasets_dir.exists() else 0
             }
-            
+
             # Check output directory
             output_dir = root_dir / 'data_out'
             health['checks']['output'] = {
                 'exists': output_dir.exists(),
                 'writable': os.access(output_dir, os.W_OK) if output_dir.exists() else False
             }
-            
+
             # Check GPU availability
             gpu_info = get_gpu_info()
             health['checks']['gpu'] = {
                 'available': len(gpu_info.get('gpus', [])) > 0,
                 'count': len(gpu_info.get('gpus', []))
             }
-            
+
             # Check virtual environments
             health['checks']['venvs'] = {
-                'quantum_ai': (root_dir / 'quantum-ai' / 'venv').exists(),
-                'talk_to_ai': (root_dir / 'talk-to-ai' / 'venv').exists(),
+                'quantum_ai': (root_dir / 'ai-projects' / 'quantum-ml' / 'venv').exists(),
+                'talk_to_ai': (root_dir / 'ai-projects' / 'chat-cli' / 'venv').exists(),
                 'lora_training': (root_dir / 'AI' / 'microsoft_phi-silica-3.6_v1' / 'venv').exists()
             }
-            
+
             # Overall health
             all_checks = [
                 health['checks']['datasets']['exists'],
@@ -732,17 +766,18 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 any(health['checks']['venvs'].values())
             ]
             health['status'] = 'healthy' if all(all_checks) else 'degraded'
-            
+
         except Exception as e:
             health['status'] = 'error'
             health['error'] = str(e)
-        
+
         return health
-    
+
     def get_quick_stats(self):
         """Quick summary statistics"""
-        root_dir = getattr(self.__class__, 'root_dir', Path(__file__).parent.parent)
-        
+        root_dir = getattr(self.__class__, 'root_dir',
+                           Path(__file__).parent.parent)
+
         stats = {
             'training_jobs': 0,
             'datasets': 0,
@@ -750,7 +785,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             'gpu_usage': 0,
             'active_processes': 0
         }
-        
+
         try:
             # Training jobs
             status_file = root_dir / 'data_out' / 'autotrain' / 'status.json'
@@ -758,35 +793,38 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 with open(status_file) as f:
                     data = json.load(f)
                 stats['training_jobs'] = len(data.get('jobs', []))
-            
+
             # Datasets
             datasets_dir = root_dir / 'datasets' / 'chat'
             if datasets_dir.exists():
-                stats['datasets'] = len([d for d in datasets_dir.iterdir() if d.is_dir()])
-            
+                stats['datasets'] = len(
+                    [d for d in datasets_dir.iterdir() if d.is_dir()])
+
             # Models
             models_dir = root_dir / 'data_out' / 'lora_training' / 'marathon'
             if models_dir.exists():
-                stats['models'] = len([m for m in models_dir.iterdir() if m.is_dir()])
-            
+                stats['models'] = len(
+                    [m for m in models_dir.iterdir() if m.is_dir()])
+
             # GPU usage
             gpu_info = get_gpu_info()
             if gpu_info.get('gpus'):
-                stats['gpu_usage'] = gpu_info['gpus'][0].get('utilization_gpu', 0)
-            
+                stats['gpu_usage'] = gpu_info['gpus'][0].get(
+                    'utilization_gpu', 0)
+
             # Active processes
             processes = get_gpu_processes()
             stats['active_processes'] = len(processes)
-            
+
         except Exception as e:
             stats['error'] = str(e)
-        
+
         return stats
-    
+
     def get_active_processes(self):
         """Get active Python processes"""
         import psutil
-        
+
         processes = []
         try:
             for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info', 'cpu_percent']):
@@ -806,9 +844,9 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     pass
         except Exception as e:
             return {'error': str(e), 'processes': []}
-        
+
         return {'processes': processes, 'count': len(processes)}
-    
+
     def get_job_queue_status(self):
         """Get job queue status from job_queue.py"""
         try:
@@ -826,17 +864,18 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     'estimated_total_time': 0,
                     'message': 'Job queue not initialized'
                 }
-            
+
             with open(queue_file, 'r') as f:
                 queue_data = json.load(f)
-            
+
             jobs = queue_data.get('jobs', [])
-            
+
             # Single-pass aggregation to avoid multiple iterations (optimized)
-            status_counts = {'pending': 0, 'running': 0, 'completed': 0, 'failed': 0, 'blocked': 0, 'cancelled': 0}
+            status_counts = {'pending': 0, 'running': 0,
+                             'completed': 0, 'failed': 0, 'blocked': 0, 'cancelled': 0}
             queue_jobs = []
             estimated_total = 0
-            
+
             for job in jobs:
                 status = job.get('status')
                 if status in status_counts:
@@ -844,7 +883,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if status in {'pending', 'blocked'}:
                     queue_jobs.append(job)
                     estimated_total += job.get('estimated_duration', 0)
-            
+
             return {
                 'total_jobs': len(jobs),
                 'pending': status_counts['pending'],
@@ -859,25 +898,27 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             }
         except Exception as e:
             return {'error': str(e), 'total_jobs': 0}
-    
+
     def end_headers(self):
         # Enable CORS for local development
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
+        self.send_header(
+            'Cache-Control', 'no-store, no-cache, must-revalidate')
         super().end_headers()
+
 
 def main():
     # Store root directory before changing
     root_dir = Path(__file__).parent.parent
     dashboard_dir = Path(__file__).parent
-    
+
     # Change to dashboard directory for file serving
     import os
     os.chdir(dashboard_dir)
-    
+
     # Make root_dir available to handler
     MyHTTPRequestHandler.root_dir = root_dir
-    
+
     with socketserver.TCPServer(("", PORT), MyHTTPRequestHandler) as httpd:
         url = f"http://localhost:{PORT}"
         print(f"🚀 QAI Training Dashboard")
@@ -886,18 +927,19 @@ def main():
         print(f"Root directory: {root_dir}")
         print(f"Press Ctrl+C to stop")
         print(f"=" * 50)
-        
+
         # Open browser
         try:
             webbrowser.open(url)
         except:
             pass
-        
+
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             print("\n\n✅ Dashboard server stopped")
             sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

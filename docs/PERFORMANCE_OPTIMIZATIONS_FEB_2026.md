@@ -12,7 +12,7 @@ Five high-impact optimizations targeting hot paths in data processing, command p
 | `scripts/job_queue.py` | Set intersection for tag filtering | 5-50x | 3 |
 | `function_app.py` | Command pattern table | 5-20x | 30 |
 | `scripts/generate_evaluation_set.py` | Single-pass file reading | 2-3x | 35 |
-| `quantum-ai/web_app.py` | PennyLane autograd gradients | 10-100x | 40 |
+| `ai-projects/quantum-ml/web_app.py` | PennyLane autograd gradients | 10-100x | 40 |
 
 **Total estimated impact:** 24-175x cumulative speedup across affected code paths.
 
@@ -241,7 +241,7 @@ all_records = source_records_cache.get(str(src_path), [])
 
 ## 5. PennyLane Autograd for Gradient Computation
 
-**File:** `quantum-ai/web_app.py`  
+**File:** `ai-projects/quantum-ml/web_app.py`  
 **Lines:** 217-246  
 **Impact:** 10-100x speedup in quantum circuit training
 
@@ -342,7 +342,7 @@ These optimizations follow established patterns from the repository:
 
 4. **Library-native optimizations** (Memory: "best practices")
    - Use framework features (PennyLane autograd)
-   - Used in `quantum-ai/web_app.py`
+   - Used in `ai-projects/quantum-ml/web_app.py`
 
 ---
 
@@ -372,7 +372,7 @@ Additional optimizations identified but not yet implemented:
    - Opportunity: Pre-compile keyword sets as frozensets
    - Estimated impact: 2-10x speedup
 
-2. **quantum-ai/web_app.py** (lines 516-518)
+2. **ai-projects/quantum-ml/web_app.py** (lines 516-518)
    - Repeated list slicing in loops
    - Opportunity: Slice once, reuse
    - Estimated impact: 1.5-2x speedup

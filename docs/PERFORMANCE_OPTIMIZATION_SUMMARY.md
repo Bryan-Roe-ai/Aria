@@ -157,8 +157,8 @@ else:
 
 **Locations**: 6 files across codebase
 - `dashboard/app.py`
-- `quantum-ai/benchmark_all_datasets.py`
-- `quantum-ai/scripts/visualize_hardware_results.py`
+- `ai-projects/quantum-ml/benchmark_all_datasets.py`
+- `ai-projects/quantum-ml/scripts/visualize_hardware_results.py`
 - `scripts/automate_aria_movement.py`
 - `scripts/test_aria_dataset.py`
 

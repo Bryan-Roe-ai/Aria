@@ -439,7 +439,7 @@ def main():
     print("\n" + "="*70)
     print("  TEST SUITE COMPLETE")
     print("="*70)
-    print("\nResults saved to: quantum-ai/results/")
+    print("\nResults saved to: ai-projects/quantum-ml/results/")
     print("\nNext Steps:")
     print("  1. Analyze results in Azure Portal")
     print("  2. Compare simulator vs hardware performance")

@@ -1,3 +1,5 @@
+from shared.http_utils import validate_messages, create_cors_headers
+from chat_providers import detect_provider, RoleMessage
 import azure.functions as func
 import json
 import logging
@@ -5,16 +7,15 @@ import os
 import sys
 from pathlib import Path
 
-# Add talk-to-ai to path so we can import chat_providers
-talk_to_ai_path = Path(__file__).resolve().parent.parent / "talk-to-ai" / "src"
+# Add chat-cli to path so we can import chat_providers
+talk_to_ai_path = Path(__file__).resolve().parent.parent / \
+    "ai-projects" / "chat-cli" / "src"
 sys.path.insert(0, str(talk_to_ai_path))
 
 # Add repo root to path so we can import shared utilities as a package
 repo_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(repo_root))
 
-from chat_providers import detect_provider, RoleMessage
-from shared.http_utils import validate_messages, create_cors_headers
 
 app = func.FunctionApp()
 
@@ -23,7 +24,7 @@ app = func.FunctionApp()
 def chat(req: func.HttpRequest) -> func.HttpResponse:
     """
     HTTP endpoint for chat interactions.
-    
+
     POST /api/chat
     Body: {
         "messages": [{"role": "user|assistant|system", "content": "..."}],
@@ -31,7 +32,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         "model": "model-name" (optional),
         "stream": false (optional, streaming not implemented in HTTP yet)
     }
-    
+
     Response: {
         "response": "assistant's reply",
         "provider": "azure|openai|local",
@@ -49,7 +50,8 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
 
         # If LoRA provider selected without a model path, try default path
         if (provider_choice or '').lower() == 'lora' and not model_override:
-            default_adapter = Path(__file__).resolve().parent.parent / 'data_out' / 'lora_training' / 'lora_adapter'
+            default_adapter = Path(__file__).resolve(
+            ).parent.parent / 'data_out' / 'lora_training' / 'lora_adapter'
             if default_adapter.exists():
                 model_override = str(default_adapter)
             else:
@@ -62,7 +64,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=400,
                     mimetype="application/json"
                 )
-        
+
         if not messages:
             return func.HttpResponse(
                 json.dumps({"error": "No messages provided"}),
@@ -80,13 +82,14 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         # Get provider
-        provider, info = detect_provider(explicit=provider_choice, model_override=model_override)
-        
+        provider, info = detect_provider(
+            explicit=provider_choice, model_override=model_override)
+
         logging.info(f'Using provider: {info.name}, model: {info.model}')
 
         # Get completion (non-streaming for HTTP simplicity)
         result = provider.complete(messages, stream=False)
-        
+
         # If result is still a generator, consume it
         if hasattr(result, '__iter__') and not isinstance(result, str):
             result = ''.join(result)

@@ -6,9 +6,11 @@ import sys
 from pathlib import Path
 
 import pytest
-import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "quantum-ai" / "src"))
+torch = pytest.importorskip("torch")
+
+sys.path.insert(0, str(Path(__file__).resolve(
+).parents[1] / "quantum-ai" / "src"))
 
 from quantum_code_llm import (  # noqa: E402
     CodeTokenizer,
@@ -47,8 +49,10 @@ def test_tokenizer_round_trip() -> None:
 @pytest.mark.unit
 def test_forward_rejects_too_long_input(tiny_model: tuple[QuantumCodeLLM, CodeTokenizer]) -> None:
     model, tokenizer = tiny_model
-    token_ids = tokenizer.encode("def add(a,b): return a+b", add_bos=False, add_eos=False)
-    too_long = torch.tensor([token_ids + [tokenizer.EOS] * (model.config.max_seq_len + 1)], dtype=torch.long)
+    token_ids = tokenizer.encode(
+        "def add(a,b): return a+b", add_bos=False, add_eos=False)
+    too_long = torch.tensor(
+        [token_ids + [tokenizer.EOS] * (model.config.max_seq_len + 1)], dtype=torch.long)
 
     with pytest.raises(ValueError, match="exceeds max_seq_len"):
         model.forward(too_long)
@@ -65,7 +69,7 @@ def test_generate_parameter_validation(tiny_model: tuple[QuantumCodeLLM, CodeTok
     with pytest.raises(ValueError, match="top_k"):
         model.generate(prompt, top_k=-1)
 
-    with pytest.raises(ValueError, match="shape \(1, T\)"):
+    with pytest.raises(ValueError, match=r"shape \(1, T\)"):
         model.generate(prompt.repeat(2, 1))
 
     with pytest.raises(ValueError, match="temperature"):
@@ -80,7 +84,8 @@ def test_checkpoint_round_trip(tmp_path: Path, tiny_model: tuple[QuantumCodeLLM,
     model, tokenizer = tiny_model
     checkpoint_path = tmp_path / "quantum_code_llm.pt"
 
-    saved_path = save_checkpoint(model, tokenizer, checkpoint_path, extra={"run": "unit"})
+    saved_path = save_checkpoint(
+        model, tokenizer, checkpoint_path, extra={"run": "unit"})
     assert saved_path.exists()
 
     loaded_model, loaded_tokenizer, metadata = load_checkpoint(checkpoint_path)
@@ -99,7 +104,8 @@ def test_load_legacy_checkpoint_payload(tmp_path: Path, tiny_model: tuple[Quantu
     checkpoint_path = tmp_path / "legacy.pt"
 
     # Simulate the old payload shape used before save_checkpoint/load_checkpoint.
-    torch.save({"model_state": model.state_dict(), "config": model.config}, checkpoint_path)
+    torch.save({"model_state": model.state_dict(),
+               "config": model.config}, checkpoint_path)
 
     loaded_model, loaded_tokenizer, _ = load_checkpoint(
         checkpoint_path,

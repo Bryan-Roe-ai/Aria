@@ -215,8 +215,6 @@ class AriaAutomation:
             print("⚠️  Port 8080 already in use")
             # Try to find existing process using cached process list
             for proc in self._get_process_list():
-            # Try to find existing process (optimized: search keyword once outside loop)
-            for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
                 try:
                     cmdline = proc.info['cmdline']
                     if cmdline:

@@ -61,7 +61,7 @@ def setup_path(script_file: Optional[str] = None, *additional_paths: str) -> Pat
         repo_root = setup_path(__file__)
         
         # Add repo root and specific subdirectory
-        repo_root = setup_path(__file__, "quantum-ai/src")
+        repo_root = setup_path(__file__, "ai-projects/quantum-ml/src")
         
         # Then import from shared
         from shared.evaluation_utils import load_jsonl

@@ -7,6 +7,7 @@ without running a live server.
 """
 import json
 import sys
+import types
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 import pytest
@@ -41,6 +42,61 @@ def _mock_request(
         req.get_body.return_value = b""
 
     return req
+
+
+def _install_fake_quantum_trainer_module(
+    monkeypatch: pytest.MonkeyPatch,
+    capture: dict | None = None,
+    generate_tokens: list[int] | None = None,
+):
+    """Install a fake quantum_llm_trainer module for endpoint tests.
+
+    This keeps endpoint tests fast and deterministic without loading heavyweight
+    model dependencies.
+    """
+    import torch
+
+    module = types.ModuleType("quantum_llm_trainer")
+    module.QUANTUM_AVAILABLE = True
+
+    class _FakeModel:
+        def __init__(self, tokens: list[int]):
+            self._tokens = tokens
+
+        def generate(self, prompt_ids, max_new_tokens: int, temperature: float, top_k: int):
+            if capture is not None:
+                capture["generate_kwargs"] = {
+                    "max_new_tokens": max_new_tokens,
+                    "temperature": temperature,
+                    "top_k": top_k,
+                }
+                capture["prompt_shape"] = tuple(prompt_ids.shape)
+            return torch.tensor([self._tokens], dtype=torch.long)
+
+    class QuantumEnhancedLLMTrainer:
+        def __init__(self, config):
+            if capture is not None:
+                capture["init_config"] = dict(config)
+            self.model_config = {"vocab_size": 256}
+            self.model = _FakeModel(generate_tokens or [72, 105, 33])  # "Hi!"
+
+        def train_with_quantum_enhancement(self, dataset_path, output_dir, epochs, model=None):
+            if capture is not None:
+                capture["train_args"] = {
+                    "dataset_path": dataset_path,
+                    "output_dir": output_dir,
+                    "epochs": epochs,
+                    "model": model,
+                }
+            return {
+                "status": "success",
+                "epochs_completed": epochs,
+                "final_loss": 0.123,
+                "quantum_metrics": {"circuit_executions": 7},
+            }
+
+    module.QuantumEnhancedLLMTrainer = QuantumEnhancedLLMTrainer
+    monkeypatch.setitem(sys.modules, "quantum_llm_trainer", module)
 
 
 # ---------------------------------------------------------------------------
@@ -124,6 +180,112 @@ class TestPostValidation:
 
 
 # ===========================================================================
+# Quantum LLM endpoint tests — /api/quantum/llm
+# ===========================================================================
+class TestQuantumLlmEndpoint:
+    """Coverage for GET/POST branches of the quantum LLM endpoint."""
+
+    def test_quantum_llm_get(self, app_module):
+        req = _mock_request("GET")
+        resp = app_module.quantum_llm(req)
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert "available" in data
+        assert "capabilities" in data
+
+    def test_quantum_llm_post_invalid_json(self, app_module, monkeypatch):
+        _install_fake_quantum_trainer_module(monkeypatch)
+
+        req = MagicMock()
+        req.method = "POST"
+        req.params = {}
+        req.route_params = {}
+        req.get_body.return_value = b"{bad-json"
+        req.get_json.side_effect = ValueError("bad json")
+
+        resp = app_module.quantum_llm(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert data["error"] == "Invalid JSON body"
+
+    def test_quantum_llm_post_generate(self, app_module, monkeypatch):
+        capture: dict = {}
+        _install_fake_quantum_trainer_module(
+            monkeypatch,
+            capture=capture,
+            generate_tokens=[72, 105, 33],  # "Hi!"
+        )
+
+        req = _mock_request(
+            "POST",
+            body={
+                "action": "generate",
+                "prompt": "Hi",
+                "max_tokens": 3,
+            },
+        )
+        resp = app_module.quantum_llm(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["action"] == "generate"
+        assert data["tokens"] == 3
+        assert "generated" in data
+        assert capture["generate_kwargs"]["max_new_tokens"] == 3
+
+    def test_quantum_llm_post_train_rejects_external_path(self, app_module, monkeypatch):
+        _install_fake_quantum_trainer_module(monkeypatch)
+        req = _mock_request(
+            "POST",
+            body={
+                "action": "train",
+                "dataset_path": "/tmp/not-in-repo",
+                "epochs": 1,
+            },
+        )
+
+        resp = app_module.quantum_llm(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "dataset_path" in data["error"]
+
+    def test_quantum_llm_post_train_success_caps_epochs(self, app_module, monkeypatch):
+        capture: dict = {}
+        _install_fake_quantum_trainer_module(monkeypatch, capture=capture)
+
+        req = _mock_request(
+            "POST",
+            body={
+                "action": "train",
+                "dataset_path": "datasets/chat",
+                "epochs": 999,
+            },
+        )
+        resp = app_module.quantum_llm(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["action"] == "train"
+        assert data["status"] == "success"
+        assert data["epochs_completed"] == 5
+
+        train_args = capture["train_args"]
+        assert train_args["epochs"] == 5
+        assert train_args["dataset_path"].is_absolute()
+        assert str(train_args["output_dir"]).endswith(
+            "data_out/quantum_llm_api")
+
+    def test_quantum_llm_post_unknown_action(self, app_module, monkeypatch):
+        _install_fake_quantum_trainer_module(monkeypatch)
+        req = _mock_request("POST", body={"action": "mystery"})
+
+        resp = app_module.quantum_llm(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "Unknown action" in data["error"]
+
+
+# ===========================================================================
 # Request validator unit tests (shared/request_validator.py)
 # ===========================================================================
 class TestRequestValidator:
@@ -194,7 +356,8 @@ class TestRequestValidator:
         from shared.request_validator import validate_fields
 
         err = validate_fields(
-            {"messages": [{"role": "user", "content": "hi"}], "temperature": 0.7},
+            {"messages": [{"role": "user", "content": "hi"}],
+                "temperature": 0.7},
             {
                 "messages": {"type": list, "required": True, "min_length": 1},
                 "temperature": {"type": (int, float), "min": 0, "max": 2},

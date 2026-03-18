@@ -89,7 +89,7 @@ job = target.submit(program, ...)
 - **Device:** PennyLane default.qubit simulator
 
 ### Model File
-- **Path:** `quantum-ai/results/custom_model.pt`
+- **Path:** `ai-projects/quantum-ml/results/custom_model.pt`
 - **Size:** 473 parameters
 - **Status:** ✅ Ready for deployment
 

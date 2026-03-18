@@ -2,7 +2,7 @@
 Detects mixed installations of Qiskit 1.x and legacy (<1.0) components that cause ImportError.
 Run with the quantum-ai venv interpreter:
 
-    python quantum-ai/scripts/validate_qiskit_env.py
+    python ai-projects/quantum-ml/scripts/validate_qiskit_env.py
 
 Exit codes:
  0 - OK (single coherent Qiskit environment)

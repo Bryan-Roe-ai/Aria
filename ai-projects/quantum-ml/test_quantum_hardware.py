@@ -181,7 +181,7 @@ def main():
     
     print("\nNext Steps:")
     print("  1. Review results in Azure Portal:")
-    print(f"     https://portal.azure.com/#resource/subscriptions/a07fbd16-e722-446d-8efd-0681e85b725c/resourceGroups/rg-quantum-ai/providers/Microsoft.Quantum/Workspaces/quantum-ai-workspace")
+    print(f"     https://portal.azure.com/#resource/subscriptions/a07fbd16-e722-446d-8efd-0681e85b725c/resourceGroups/rg-ai-projects/quantum-ml/providers/Microsoft.Quantum/Workspaces/quantum-ai-workspace")
     print("\n  2. Train enhanced classifier with real quantum results")
     print("  3. Deploy to production quantum hardware (Quantinuum H1)")
     print("  4. Scale to larger datasets and problems")

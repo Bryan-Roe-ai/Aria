@@ -106,7 +106,7 @@ class BaseChatProvider:
     @staticmethod
     def _handle_openai_streaming_response(response) -> Generator[str, None, None]:
         """Extract content from OpenAI-style streaming response.
-        
+
         Common helper for OpenAI, LMStudio, and other OpenAI-compatible providers.
         Handles the standard streaming chunk format with resilient error handling.
         """
@@ -122,7 +122,7 @@ class BaseChatProvider:
     @staticmethod
     def _handle_openai_non_streaming_response(response) -> str:
         """Extract content from OpenAI-style non-streaming response.
-        
+
         Common helper for OpenAI, LMStudio, and other OpenAI-compatible providers.
         Handles the standard completion format with resilient error handling.
         """
@@ -343,7 +343,7 @@ class LoraLocalProvider(BaseChatProvider):
 class LocalEchoProvider(BaseChatProvider):
     """A simple offline provider that mimics a helpful assistant.
     Useful for smoke tests and environments without keys.
-    
+
     This provider generates contextually aware responses without requiring
     external API calls, making it ideal for testing, development, and
     offline scenarios.
@@ -391,30 +391,30 @@ class LocalEchoProvider(BaseChatProvider):
     def _detect_intent(self, text: str) -> str:
         """Detect the intent of the user message."""
         lower_text = text.lower()
-        
+
         # Check for greetings
         if any(word in lower_text for word in ["hello", "hi", "hey", "greetings"]) and len(text) < 50:
             return "greeting"
-        
+
         # Check for coding-related queries
         if any(word in lower_text for word in ["code", "function", "class", "debug", "program", "script", "algorithm"]):
             return "code"
-        
+
         # Check for explanation requests
         if any(word in lower_text for word in ["explain", "what is", "what are", "how does", "describe", "tell me about"]):
             return "explanation"
-        
+
         # Check for questions
         if any(word in lower_text for word in ["?", "how", "why", "when", "where", "who", "can you"]):
             return "question"
-        
+
         return "generic"
 
     def _craft_reply(self, messages: List[RoleMessage]) -> str:
         """Generate a contextually appropriate response."""
         last_user = next((m["content"] for m in reversed(
             messages) if m.get("role") == "user"), "")
-        
+
         closers = [
             "Does that help?",
             "Let me know if you want examples.",
@@ -423,23 +423,24 @@ class LocalEchoProvider(BaseChatProvider):
             "Would you like more details?",
             "Feel free to ask follow-up questions.",
         ]
-        
+
         if not last_user.strip():
             return "Hi! Ask me anything. I can brainstorm, summarize, explain topics, help with code, and more."
-        
+
         # Detect intent and select appropriate template
         intent = self._detect_intent(last_user)
-        templates = self._response_templates.get(intent, self._response_templates["generic"])
+        templates = self._response_templates.get(
+            intent, self._response_templates["generic"])
         lead_in = self.rng.choice(templates)
-        
+
         # Generate response based on query length and content
         hint = last_user.strip()
         if len(hint) > 300:
             hint = hint[:300] + "..."
-        
+
         # Create a more contextual response
         rephrased = self._rephrase(hint)
-        
+
         # Add some variety to the response structure
         if intent == "greeting":
             return f"{lead_in}"
@@ -454,7 +455,7 @@ class LocalEchoProvider(BaseChatProvider):
 
     def _rephrase(self, text: str) -> str:
         """Generate a contextual rephrasing of the input text.
-        
+
         This creates more natural responses by reformulating the user's
         request in a conversational way.
         """
@@ -472,7 +473,7 @@ class LocalEchoProvider(BaseChatProvider):
             "explain": "understand",
             "write": "create",
         }
-        
+
         result = text
         for old, new in swaps.items():
             # Case-insensitive replacement preserving original case pattern
@@ -483,7 +484,7 @@ class LocalEchoProvider(BaseChatProvider):
                 idx = result.lower().find(old.lower())
                 if idx != -1:
                     result = result[:idx] + new + result[idx+len(old):]
-        
+
         return result
 
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
@@ -517,7 +518,7 @@ class OpenAIProvider(BaseChatProvider):
             max_tokens=self.max_output_tokens,
             stream=stream,
         )
-        
+
         if stream:
             return self._handle_openai_streaming_response(resp)
         else:
@@ -549,7 +550,7 @@ class LMStudioProvider(BaseChatProvider):
                 max_tokens=self.max_output_tokens,
                 stream=stream,
             )
-            
+
             if stream:
                 return self._handle_openai_streaming_response(resp)
             else:
@@ -557,7 +558,7 @@ class LMStudioProvider(BaseChatProvider):
         except Exception as e:
             # Provide helpful error messages for common issues
             error_msg = str(e).lower()
-            
+
             if "connection" in error_msg or "refused" in error_msg or "timeout" in error_msg:
                 suggestion = (
                     f"❌ Cannot connect to LM Studio at {self.base_url}\n\n"
@@ -573,7 +574,7 @@ class LMStudioProvider(BaseChatProvider):
                         yield suggestion
                     return gen_err()
                 return suggestion
-            
+
             if "model" in error_msg and ("not found" in error_msg or "does not exist" in error_msg):
                 suggestion = (
                     f"❌ Model '{self.model}' not found in LM Studio.\n\n"
@@ -588,17 +589,17 @@ class LMStudioProvider(BaseChatProvider):
                         yield suggestion
                     return gen_err()
                 return suggestion
-            
+
             # Re-raise unexpected errors
             raise
 
 
 class OllamaProvider(BaseChatProvider):
     """Provider for Ollama local server (compatible with OpenAI API).
-    
+
     Ollama is a popular local LLM server that supports models like Llama, Mistral,
     CodeLlama, and many others. It provides an OpenAI-compatible API.
-    
+
     Default endpoint: http://127.0.0.1:11434/v1
     Configure via OLLAMA_BASE_URL environment variable.
     """
@@ -625,7 +626,7 @@ class OllamaProvider(BaseChatProvider):
                 max_tokens=self.max_output_tokens,
                 stream=stream,
             )
-            
+
             if stream:
                 return self._handle_openai_streaming_response(resp)
             else:
@@ -633,7 +634,7 @@ class OllamaProvider(BaseChatProvider):
         except Exception as e:
             # Provide helpful error messages for common Ollama issues
             error_msg = str(e).lower()
-            
+
             if "connection" in error_msg or "refused" in error_msg or "timeout" in error_msg:
                 suggestion = (
                     f"❌ Cannot connect to Ollama at {self.base_url}\n\n"
@@ -650,7 +651,7 @@ class OllamaProvider(BaseChatProvider):
                         yield suggestion
                     return gen_err()
                 return suggestion
-            
+
             if "model" in error_msg and ("not found" in error_msg or "does not exist" in error_msg or "not available" in error_msg):
                 suggestion = (
                     f"❌ Model '{self.model}' not found in Ollama.\n\n"
@@ -671,7 +672,7 @@ class OllamaProvider(BaseChatProvider):
                         yield suggestion
                     return gen_err()
                 return suggestion
-            
+
             # Re-raise unexpected errors
             raise
 
@@ -915,8 +916,10 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
     if provider_choice == "agi":
         try:
             from agi_provider import create_agi_provider
-            temperature_value = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
-            max_tokens_limit = int(max_output_tokens) if max_output_tokens is not None else 2048
+            temperature_value = float(
+                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+            max_tokens_limit = int(
+                max_output_tokens) if max_output_tokens is not None else 2048
             verbose = os.getenv("AGI_VERBOSE", "false").lower() == "true"
             provider, info = create_agi_provider(
                 model=model_override,
@@ -926,27 +929,34 @@ def detect_provider(explicit: Optional[str] = None, model_override: Optional[str
             )
             return provider, ProviderChoice(name=info.name, model=info.model)
         except ImportError as import_error:
-            raise RuntimeError(f"AGI provider selected but agi_provider module not available: {import_error}")
+            raise RuntimeError(
+                f"AGI provider selected but agi_provider module not available: {import_error}")
 
     # Quantum config
     if provider_choice == "quantum":
         try:
             from quantum_provider import create_quantum_llm_provider
-            
-            # Quantum LLM requires model path
-            if not model_override:
+
+            # Quantum model path may come from CLI override or environment.
+            selected_model_path = (
+                model_override
+                or os.getenv("QAI_QUANTUM_MODEL_PATH")
+                or os.getenv("QAI_QUANTUM_MODEL")
+            )
+            if not selected_model_path:
                 raise RuntimeError(
-                    "Quantum LLM provider requires --model parameter with path to trained model.\n"
-                    "Example: --provider quantum --model data_out/quantum_llm_chat"
+                    "Quantum LLM provider requires a model path. Provide --model or set "
+                    "QAI_QUANTUM_MODEL_PATH (or QAI_QUANTUM_MODEL).\n"
+                    "Example: --provider quantum --model data_out/quantum_llm_training"
                 )
-            
+
             temperature_value = float(
                 temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.8"))
             max_tokens_limit = int(
                 max_output_tokens) if max_output_tokens is not None else 200
-            
+
             provider, info = create_quantum_llm_provider(
-                model_path=model_override,
+                model_path=selected_model_path,
                 temperature=temperature_value,
                 max_output_tokens=max_tokens_limit
             )

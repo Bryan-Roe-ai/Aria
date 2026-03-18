@@ -21,9 +21,9 @@ from pathlib import Path
 from typing import Iterable
 import pytest
 
-# Add talk-to-ai/src to path
+# Add ai-projects/chat-cli/src to path
 repo_root = Path(__file__).resolve().parent.parent
-talk_to_ai_src = repo_root / "talk-to-ai" / "src"
+talk_to_ai_src = repo_root / "ai-projects" / "chat-cli" / "src"
 sys.path.insert(0, str(talk_to_ai_src))
 
 

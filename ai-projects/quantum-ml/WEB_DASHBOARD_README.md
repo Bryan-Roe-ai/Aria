@@ -176,7 +176,7 @@ All datasets automatically:
 ## 📁 File Structure
 
 ```
-quantum-ai/
+ai-projects/quantum-ml/
 ├── web_app.py                    # Flask backend
 ├── start_dashboard.sh            # Launch script
 ├── web-requirements.txt          # Python dependencies

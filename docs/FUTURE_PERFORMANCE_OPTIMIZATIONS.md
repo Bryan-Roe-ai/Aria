@@ -146,7 +146,7 @@ def _exists_cached(path: str) -> bool:
 
 ### 4. Batch Processing Optimization Opportunities
 
-#### 4.1 quantum-ai/src/quantum_classifier.py - Batch Processing
+#### 4.1 ai-projects/quantum-ml/src/quantum_classifier.py - Batch Processing
 **Location**: `quantum_classifier.py` - `forward()` method
 
 **Issue**: Sequential processing of batch items in quantum circuit execution.

@@ -115,7 +115,8 @@ def log_chat_message_safe(
 
 
 def _parse_quantum_summary() -> Dict[str, Any]:
-    summary_path = REPO_ROOT / "quantum-ai" / "results" / "custom_training_summary.json"
+    summary_path = REPO_ROOT / "ai-projects" / "quantum-ml" / \
+        "results" / "custom_training_summary.json"
     if not summary_path.exists():
         return {}
     try:
@@ -148,7 +149,8 @@ def log_quantum_run_safe(job, result: Dict[str, Any], dataset_name: str, log_pat
             "@StatusJsonPath=?, @ResultsJsonPath=?, @Status=?, @ErrorMessage=?, @RunId=@RunId OUTPUT; "
             "SELECT @RunId AS RunId;"
         )
-        backend = job.azure_backend if getattr(job, "mode", "") == "azure_hardware" else "qiskit_aer"
+        backend = job.azure_backend if getattr(
+            job, "mode", "") == "azure_hardware" else "qiskit_aer"
         params = [
             job.name,
             dataset_name,
@@ -161,7 +163,8 @@ def log_quantum_run_safe(job, result: Dict[str, Any], dataset_name: str, log_pat
             getattr(job, "batch_size", None) or 16,
             None,  # TrainAccuracy (not explicitly tracked)
             metrics.get("val_acc_last"),  # ValAccuracy
-            metrics.get("val_acc_best"),  # TestAccuracy (reuse best val acc as proxy)
+            # TestAccuracy (reuse best val acc as proxy)
+            metrics.get("val_acc_best"),
             metrics.get("train_loss_last"),  # TrainLoss
             metrics.get("val_loss_last"),  # ValLoss
             None,  # TestLoss
@@ -169,14 +172,16 @@ def log_quantum_run_safe(job, result: Dict[str, Any], dataset_name: str, log_pat
             result.get("duration_sec"),
             1 if getattr(job, "mode", "") == "azure_hardware" else 0,
             result.get("meta", {}).get("azure_job_id"),
-            job.azure_backend if getattr(job, "mode", "") == "azure_hardware" else None,
+            job.azure_backend if getattr(
+                job, "mode", "") == "azure_hardware" else None,
             None,  # EstimatedCostUSD (could be added later)
             None,  # CircuitDepth
             None,  # NumParameters
             str(Path(log_path).parent / "status.json"),
             log_path,
             result.get("status"),
-            None if result.get("status") == "succeeded" else "Non-zero return code",
+            None if result.get(
+                "status") == "succeeded" else "Non-zero return code",
         ]
         ok = _safe_exec(cursor, sql, params)
         run_id = None
@@ -210,7 +215,8 @@ def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: A
         return {"success": False, "skipped": True}
     try:
         cursor = conn.cursor()
-        cfg_path = Path(job.config) if getattr(job, "config", None) else REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "lora" / "lora.yaml"
+        cfg_path = Path(job.config) if getattr(job, "config", None) else REPO_ROOT / \
+            "AI" / "microsoft_phi-silica-3.6_v1" / "lora" / "lora.yaml"
         cfg = _load_yaml(cfg_path)
         # Extract values with fallbacks
         lora_rank = cfg.get("lora_rank", 8)  # Not present -> placeholder
@@ -218,7 +224,8 @@ def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: A
         lora_dropout = job.lora_dropout or cfg.get("lora_dropout", 0.1)
         sequence_len = cfg.get("finetune_train_seqlen", 512)
         learning_rate = job.learning_rate or cfg.get("learning_rate", 2e-4)
-        target_modules = cfg.get("lora_target_modules") or cfg.get("target_modules") or ["q_proj", "v_proj"]
+        target_modules = cfg.get("lora_target_modules") or cfg.get(
+            "target_modules") or ["q_proj", "v_proj"]
         dataset_path = job.dataset or cfg.get("finetune_dataset", "data")
         dataset_name = Path(str(dataset_path)).name
         sql = (
@@ -244,7 +251,8 @@ def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: A
             lora_alpha,
             lora_dropout,
             json.dumps(target_modules),
-            None,  # TrainLoss (available inside training script; could parse later)
+            # TrainLoss (available inside training script; could parse later)
+            None,
             None,  # EvalLoss
             None,  # TrainPerplexity
             None,  # EvalPerplexity
@@ -258,7 +266,8 @@ def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: A
             1,  # IsStreaming (default behavior)
             job.runner,
             result.get("status"),
-            None if result.get("status") == "succeeded" else "Non-zero return code",
+            None if result.get(
+                "status") == "succeeded" else "Non-zero return code",
         ]
         ok = _safe_exec(cursor, sql, params)
         run_id = None

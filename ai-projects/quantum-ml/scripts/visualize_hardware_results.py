@@ -7,7 +7,7 @@ Outputs:
 - Summary chart of entanglement ratio for all 2-qubit results
 - Azure job list charts: status distribution and provider x status stacked bar
 
-Charts saved to: quantum-ai/results/visualizations/
+Charts saved to: ai-projects/quantum-ml/results/visualizations/
 """
 from __future__ import annotations
 

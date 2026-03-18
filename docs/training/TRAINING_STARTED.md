@@ -27,13 +27,13 @@
   - Dataset: heart_disease.csv
   - Qubits: 4
   - Epochs: 50
-  - Output: `quantum-ai/results/`
+  - Output: `ai-projects/quantum-ml/results/`
   
 - **Ionosphere Classifier**
   - Dataset: ionosphere.csv
   - Qubits: 4
   - Epochs: 100
-  - Output: `quantum-ai/results/`
+  - Output: `ai-projects/quantum-ml/results/`
 
 ## Monitoring
 

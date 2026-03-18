@@ -2,7 +2,7 @@
 
 **Generated:** 2026-02-17  
 **Analysis Type:** Static code analysis for performance anti-patterns  
-**Scope:** Python codebase (scripts/, shared/, quantum-ai/, aria_web/, function_app.py)
+**Scope:** Python codebase (scripts/, shared/, ai-projects/quantum-ml/, aria_web/, function_app.py)
 
 ---
 
@@ -781,7 +781,7 @@ if any(pattern in file_path for pattern in _IGNORE_PATTERNS):
 
 ### 15. Command Line Parsing (quantum-ai files)
 
-**Location:** Multiple files in quantum-ai/  
+**Location:** Multiple files in ai-projects/quantum-ml/  
 **Severity:** Low  
 **Impact:** Low - Startup only
 

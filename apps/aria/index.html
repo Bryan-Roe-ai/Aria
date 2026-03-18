@@ -367,6 +367,16 @@
             animation: run-bounce 0.25s ease-in-out infinite !important;
         }
 
+        .aria-character.walking .aria-body {
+            animation: torso-sway 0.45s ease-in-out infinite;
+            transform-origin: 50% 12px;
+        }
+
+        .aria-character.running .aria-body {
+            animation: torso-sway-run 0.24s ease-in-out infinite;
+            transform-origin: 50% 12px;
+        }
+
         .aria-character.arrived {
             animation: arrival-bounce 0.9s cubic-bezier(.2, .9, .2, 1);
             filter: drop-shadow(0 18px 30px rgba(255, 215, 0, 0.25)) brightness(1.12);
@@ -453,6 +463,30 @@
 
             50% {
                 transform: translateX(-50%) translateY(-8px) scaleY(1.05);
+            }
+        }
+
+        @keyframes torso-sway {
+
+            0%,
+            100% {
+                transform: translateX(-50%) rotate(-1.6deg) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) rotate(1.6deg) translateY(-1px);
+            }
+        }
+
+        @keyframes torso-sway-run {
+
+            0%,
+            100% {
+                transform: translateX(-50%) rotate(-2.8deg) translateY(1px);
+            }
+
+            50% {
+                transform: translateX(-50%) rotate(2.8deg) translateY(-2px);
             }
         }
 
@@ -783,45 +817,59 @@
 
         /* Body - Soft casual top with natural draping */
         .aria-body {
-            width: 64px;
-            height: 78px;
-            background: linear-gradient(135deg, #5fa3ee 0%, #4a90e2 40%, #6db0f5 70%, #5a9fe5 100%);
-            border-radius: 46% 46% 30% 30% / 18% 18% 58% 58%;
+            width: 70px;
+            height: 84px;
+            background: linear-gradient(160deg, #73b5f7 0%, #4f97e7 38%, #3f86d6 100%);
+            border-radius: 48% 48% 32% 32% / 22% 22% 62% 62%;
             position: absolute;
-            top: 77px;
+            top: 74px;
             left: 50%;
             transform: translateX(-50%);
-            border: 2px solid rgba(60, 50, 45, 0.5);
+            border: 2px solid rgba(60, 50, 45, 0.48);
             z-index: 2;
-            box-shadow: inset -2px -3px 8px rgba(74, 144, 226, 0.3),
-                inset 2px 3px 10px rgba(255, 255, 255, 0.4),
-                0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: inset -3px -4px 10px rgba(52, 118, 190, 0.35),
+                inset 3px 4px 12px rgba(255, 255, 255, 0.34),
+                0 4px 12px rgba(0, 0, 0, 0.14);
             overflow: visible;
+        }
+
+        .aria-body::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 50px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 42%, rgba(0, 0, 0, 0.08) 100%);
+            border-radius: 12px;
+            opacity: 0.45;
+            pointer-events: none;
         }
 
         .aria-body::after {
             content: '';
             position: absolute;
             left: 50%;
-            bottom: -5px;
+            bottom: -6px;
             transform: translateX(-50%);
-            width: 34px;
-            height: 14px;
-            background: linear-gradient(180deg, #5a9fe5 0%, #4b8edc 100%);
-            border: 2px solid rgba(60, 50, 45, 0.42);
+            width: 40px;
+            height: 16px;
+            background: linear-gradient(180deg, #5da6eb 0%, #3f86d6 100%);
+            border: 2px solid rgba(60, 50, 45, 0.4);
             border-top: none;
-            border-radius: 0 0 14px 14px;
+            border-radius: 0 0 16px 16px;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
         }
 
         /* Shirt collar with subtle detail */
         .aria-bow {
             position: absolute;
-            top: 79px;
+            top: 77px;
             left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 8px;
+            width: 32px;
+            height: 9px;
             background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 50%, #f0f0f0 100%);
             border: 2px solid rgba(60, 50, 45, 0.4);
             border-radius: 4px;
@@ -851,13 +899,13 @@
         /* Neck - skin-tone bridge between head and shirt collar */
         .aria-neck {
             position: absolute;
-            top: 63px;
+            top: 62px;
             left: 50%;
             transform: translateX(-50%);
-            width: 22px;
-            height: 20px;
+            width: 24px;
+            height: 22px;
             background: linear-gradient(180deg, #f5d4b8 0%, #e8c4a8 65%, #ddb89a 100%);
-            border-radius: 6px 6px 4px 4px;
+            border-radius: 7px 7px 5px 5px;
             z-index: 3;
             border: 1.5px solid rgba(60, 50, 45, 0.3);
             border-top: none;
@@ -867,12 +915,12 @@
         /* Shoulders */
         .aria-shoulder {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 21px;
+            height: 21px;
             background: linear-gradient(135deg, #68aef6 0%, #4a90e2 55%, #5a9fe5 100%);
             border-radius: 50%;
             border: 2px solid rgba(60, 50, 45, 0.35);
-            top: 83px;
+            top: 81px;
             z-index: 3;
             display: block;
             box-shadow: inset -1px -1px 4px rgba(74, 144, 226, 0.25),
@@ -880,11 +928,11 @@
         }
 
         .aria-shoulder.left {
-            left: 38px;
+            left: 35px;
         }
 
         .aria-shoulder.right {
-            right: 38px;
+            right: 35px;
         }
 
         /* Upper Arms - Natural skin with subtle shading */
@@ -894,7 +942,7 @@
             background: linear-gradient(180deg, #fef5e7 0%, #f5d4b8 40%, #e8c4a8 100%);
             border-radius: 11px;
             position: absolute;
-            top: 84px;
+            top: 82px;
             border: 2px solid rgba(60, 50, 45, 0.4);
             z-index: 3;
             box-shadow: inset -1px -1px 4px rgba(232, 196, 168, 0.3),
@@ -906,12 +954,12 @@
         }
 
         .aria-upper-arm.left {
-            left: 38px;
+            left: 35px;
             transform: rotate(-10deg);
         }
 
         .aria-upper-arm.right {
-            right: 38px;
+            right: 35px;
             transform: rotate(10deg);
         }
 
@@ -1034,28 +1082,28 @@
             background: linear-gradient(180deg, #46688d 0%, #3d5a80 100%);
             border-radius: 50%;
             border: 2px solid rgba(60, 50, 45, 0.35);
-            top: 145px;
+            top: 150px;
             z-index: 1;
             display: block;
             box-shadow: inset 1px 1px 3px rgba(255, 255, 255, 0.15);
         }
 
         .aria-hip.left {
-            left: 53px;
+            left: 51px;
         }
 
         .aria-hip.right {
-            right: 53px;
+            right: 51px;
         }
 
         /* Upper Legs (Thighs) */
         .aria-upper-leg {
             width: 18px;
-            height: 34px;
+            height: 36px;
             background: linear-gradient(180deg, #3d5a80 0%, #4a6a90 100%);
             border-radius: 9px 9px 8px 8px;
             position: absolute;
-            top: 147px;
+            top: 152px;
             border: 2px solid rgba(60, 50, 45, 0.5);
             z-index: 1;
             transition: transform 0.3s ease;
@@ -1064,12 +1112,12 @@
         }
 
         .aria-upper-leg.left {
-            left: 53px;
+            left: 51px;
             transform: rotate(2deg);
         }
 
         .aria-upper-leg.right {
-            right: 53px;
+            right: 51px;
             transform: rotate(-2deg);
         }
 

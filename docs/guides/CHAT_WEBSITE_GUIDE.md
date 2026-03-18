@@ -40,7 +40,7 @@ Or run the startup script:
          ↓
 ┌─────────────────┐
 │  Chat Providers │
-│(talk-to-ai/src) │
+│(ai-projects/chat-cli/src) │
 └─────────────────┘
 ```
 
@@ -312,7 +312,7 @@ View logs in Azure Portal:
 ## 🆘 Support
 
 - Report issues in the main QAI repo
-- Check `talk-to-ai/README.md` for provider details
+- Check `ai-projects/chat-cli/README.md` for provider details
 - Review `.github/copilot-instructions.md` for architecture
 
 ## 🎉 Congratulations!

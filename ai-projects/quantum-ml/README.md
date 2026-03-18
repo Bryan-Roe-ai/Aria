@@ -416,7 +416,7 @@ python .\quantum-ai\scripts\visualize_hardware_results.py
 
 Outputs:
 
-- Per-run charts under `quantum-ai/results/visualizations/`:
+- Per-run charts under `ai-projects/quantum-ml/results/visualizations/`:
   - `<result>_bar.png` – top measurement states
   - `<result>_heatmap.png` – 2-qubit heatmap (Bell)
   - `entanglement_summary.png` – entanglement quality across Bell tests
@@ -427,7 +427,7 @@ Outputs:
 
 Notes:
 
-- Results JSON may be saved to either `quantum-ai/results/` or repo-root `results/` depending on where the test was launched; the visualizer scans both.
+- Results JSON may be saved to either `ai-projects/quantum-ml/results/` or repo-root `results/` depending on where the test was launched; the visualizer scans both.
 - Use `--optimized` with `run_hardware_tests.py` to also run and save the optimized circuit results.
 
 ### Using the MCP Server
@@ -459,7 +459,7 @@ See [MCP_SERVER_README.md](MCP_SERVER_README.md) for complete documentation.
 ## 📊 Project Structure
 
 ```text
-quantum-ai/
+ai-projects/quantum-ml/
 ├── src/
 │   ├── quantum_classifier.py      # Quantum classification models
 │   ├── hybrid_qnn.py               # Hybrid quantum-classical networks

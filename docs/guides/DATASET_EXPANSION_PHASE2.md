@@ -149,9 +149,9 @@ python .\scripts\expand_quantum_datasets.py --all
 4. `AI_DATASETS_CATALOG.md` - Comprehensive 29-dataset documentation with domain grouping
 
 ### Pending Updates 🔄
-5. `quantum-ai/quick_test_datasets.py` - Need to add 14 new datasets to smoke test
-6. `quantum-ai/benchmark_all_datasets.py` - Need to add 14 new datasets to DATASETS dict
-7. `quantum-ai/dataset_architecture_analyzer.py` - Need to re-run for all 29 datasets
+5. `ai-projects/quantum-ml/quick_test_datasets.py` - Need to add 14 new datasets to smoke test
+6. `ai-projects/quantum-ml/benchmark_all_datasets.py` - Need to add 14 new datasets to DATASETS dict
+7. `ai-projects/quantum-ml/dataset_architecture_analyzer.py` - Need to re-run for all 29 datasets
 
 ## 🚀 Next Steps (Priority Order)
 

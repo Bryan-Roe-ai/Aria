@@ -13,19 +13,19 @@ This document summarizes the code duplication refactoring completed on 2026-02-1
 
 ### 1. Consolidated Dataset Loading (190 lines eliminated)
 
-**Created**: `quantum-ai/src/dataset_loader.py`
+**Created**: `ai-projects/quantum-ml/src/dataset_loader.py`
 - Shared `load_dataset()` function with unified interface
 - Shared `preprocess_for_qubits()` function for dimensionality handling
 - Supports multiple datasets: ionosphere, sonar, heart_disease, banknote
 - Handles missing values, label encoding, and feature normalization
 
 **Updated Files**:
-- `quantum-ai/hyperparameter_optimization.py` - Now imports shared loader
-- `quantum-ai/hyperparameter_tuning.py` - Now imports shared loader
-- `quantum-ai/web_app.py` - Uses shared loader with fallback for testing
+- `ai-projects/quantum-ml/hyperparameter_optimization.py` - Now imports shared loader
+- `ai-projects/quantum-ml/hyperparameter_tuning.py` - Now imports shared loader
+- `ai-projects/quantum-ml/web_app.py` - Uses shared loader with fallback for testing
 
 **Preserved**:
-- `quantum-ai/benchmark_all_datasets.py` - Too specialized (27 datasets with unique handling)
+- `ai-projects/quantum-ml/benchmark_all_datasets.py` - Too specialized (27 datasets with unique handling)
 
 ### 2. Consolidated Evaluation Scripts
 
@@ -44,12 +44,12 @@ This document summarizes the code duplication refactoring completed on 2026-02-1
 
 ### 3. Documented Quantum AI Architecture Differences
 
-**AI/quantum-ai/** (Qiskit-based)
+**AI/ai-projects/quantum-ml/** (Qiskit-based)
 - Legacy implementation using Qiskit framework
 - Integrates with IBM Quantum
 - Alternative for Qiskit-specific workflows
 
-**quantum-ai/** (PennyLane-based) - PRIMARY
+**ai-projects/quantum-ml/** (PennyLane-based) - PRIMARY
 - Active development, production-ready
 - Uses PennyLane framework
 - Integrates with Azure Quantum
@@ -112,9 +112,9 @@ python scripts/evaluate_model.py --model MODEL_PATH --dataset DATASET_PATH
 ```
 
 ### Quantum AI Selection
-- **New projects**: Use `quantum-ai/` (PennyLane)
-- **Qiskit required**: Use `AI/quantum-ai/` (Qiskit)
-- **Not sure**: Use `quantum-ai/` (primary implementation)
+- **New projects**: Use `ai-projects/quantum-ml/` (PennyLane)
+- **Qiskit required**: Use `AI/ai-projects/quantum-ml/` (Qiskit)
+- **Not sure**: Use `ai-projects/quantum-ml/` (primary implementation)
 
 ### Hyperparameter Tuning
 - **Quick testing**: Use `hyperparameter_tuning.py`
@@ -136,16 +136,16 @@ Manual code review and validation performed.
 ## Files Changed
 
 ### Created
-- `quantum-ai/src/dataset_loader.py` (135 lines)
+- `ai-projects/quantum-ml/src/dataset_loader.py` (135 lines)
 
 ### Modified
-- `quantum-ai/hyperparameter_optimization.py`
-- `quantum-ai/hyperparameter_tuning.py`
-- `quantum-ai/web_app.py`
+- `ai-projects/quantum-ml/hyperparameter_optimization.py`
+- `ai-projects/quantum-ml/hyperparameter_tuning.py`
+- `ai-projects/quantum-ml/web_app.py`
 - `scripts/evaluate_model.py`
 - `scripts/evaluation_script.py`
-- `AI/quantum-ai/README.md`
-- `quantum-ai/README.md`
+- `AI/ai-projects/quantum-ml/README.md`
+- `ai-projects/quantum-ml/README.md`
 
 ### Total Impact
 - 7 files modified

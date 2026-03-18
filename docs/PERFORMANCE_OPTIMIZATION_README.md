@@ -183,8 +183,8 @@ for key in my_dict:
 ### Phase 2 Changes
 - `dashboard/serve.py` - File streaming
 - `dashboard/app.py` - Dict iteration
-- `quantum-ai/benchmark_all_datasets.py` - Dict iteration
-- `quantum-ai/scripts/visualize_hardware_results.py` - Dict iteration
+- `ai-projects/quantum-ml/benchmark_all_datasets.py` - Dict iteration
+- `ai-projects/quantum-ml/scripts/visualize_hardware_results.py` - Dict iteration
 - `scripts/automate_aria_movement.py` - Dict iteration
 - `scripts/test_aria_dataset.py` - Dict iteration
 

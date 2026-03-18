@@ -21,7 +21,7 @@ if str(src_path) not in sys.path:
 if not src_path.exists():
     print(f"Error: src/ directory not found at {src_path}")
     print(f"Please ensure the following directory structure exists:")
-    print(f"  quantum-ai/")
+    print(f"  ai-projects/quantum-ml/")
     print(f"    ├── quantum_mcp_server.py")
     print(f"    └── src/")
     print(f"        ├── quantum_classifier.py")

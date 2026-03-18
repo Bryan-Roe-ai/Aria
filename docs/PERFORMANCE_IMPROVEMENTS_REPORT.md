@@ -77,7 +77,7 @@ for x in window:
 ---
 
 #### 1.2 Set-Based Membership Checks
-**Files:** `quantum-ai/src/automate_quantum_job.py`, `scripts/job_queue.py` (3 locations), `scripts/master_orchestrator.py`
+**Files:** `ai-projects/quantum-ml/src/automate_quantum_job.py`, `scripts/job_queue.py` (3 locations), `scripts/master_orchestrator.py`
 
 **Problem:** O(n) list membership checks in hot paths
 ```python

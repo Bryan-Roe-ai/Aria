@@ -17,7 +17,18 @@ pytestmark = pytest.mark.skipif(
 )
 
 # Ensure an in-memory SQLite URL for isolated tests
-os.environ.setdefault("QAI_SQL_URL", "sqlite:///:memory:")
+os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
+
+
+@pytest.fixture(autouse=True)
+def _reset_sql_engine():
+    """Reset cached engine so tests pick up the in-memory URL."""
+    import shared.sql_engine as _eng
+    _eng._ENGINE = None
+    _eng._LAST_URL = None
+    yield
+    _eng._ENGINE = None
+    _eng._LAST_URL = None
 
 
 def test_sql_engine_health():

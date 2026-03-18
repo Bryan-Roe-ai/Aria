@@ -65,12 +65,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "\n\ttry:\n\t\tvers[m]=md.version(m)\n\texcept Exception:\n\t\tvers[m]=None;"
                 "print(json.dumps({'available':avail,'versions':vers}))"
             )
-            proc = subprocess.run([str(venv_python), "-c", code], capture_output=True, text=True, timeout=10)
+            proc = subprocess.run(
+                [str(venv_python), "-c", code], capture_output=True, text=True, timeout=10)
             if proc.returncode == 0:
                 data = json.loads(proc.stdout.strip() or "{}")
                 venv_info["packages"] = data
             else:
-                venv_info["error"] = proc.stderr.strip() or f"exit {proc.returncode}"
+                venv_info["error"] = proc.stderr.strip(
+                ) or f"exit {proc.returncode}"
         except Exception as e:  # noqa: BLE001
             venv_info["error"] = str(e)
 
@@ -85,9 +87,9 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "tokenizer_dir_exists": tokenizer_dir.exists(),
         "base_model": None,
         "inproc_ready": all(inproc_ml.values()),
-        "subprocess_ready": venv_info["exists"] and bool(venv_info.get("packages",{}).get("available",{}).get("torch"))
-            and bool(venv_info.get("packages",{}).get("available",{}).get("transformers"))
-            and bool(venv_info.get("packages",{}).get("available",{}).get("peft")),
+        "subprocess_ready": venv_info["exists"] and bool(venv_info.get("packages", {}).get("available", {}).get("torch"))
+        and bool(venv_info.get("packages", {}).get("available", {}).get("transformers"))
+        and bool(venv_info.get("packages", {}).get("available", {}).get("peft")),
     }
     if lora_info["adapter_config_exists"]:
         try:
@@ -129,7 +131,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             # Build Azure Quantum context and job list if metadata present
             try:
-                cfg_path = repo_root / "quantum-ai" / "config" / "quantum_config.yaml"
+                cfg_path = repo_root / "ai-projects" / \
+                    "quantum-ml" / "config" / "quantum_config.yaml"
                 azure_ctx = None
                 workspace_url = None
                 if cfg_path.exists():

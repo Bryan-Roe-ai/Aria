@@ -782,7 +782,7 @@ def load_checkpoint(
     if not path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {path}")
 
-    payload = torch.load(path, map_location=map_location)
+    payload = torch.load(path, map_location=map_location, weights_only=False)
     if "model_state" not in payload:
         raise ValueError(f"Invalid checkpoint payload: missing model_state in {path}")
 

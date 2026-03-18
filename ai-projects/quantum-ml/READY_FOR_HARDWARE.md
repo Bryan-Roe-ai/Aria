@@ -317,7 +317,7 @@ Status: JobStatus.COMPLETED
 ## 📁 Files Created for You
 
 ```text
-quantum-ai/
+ai-projects/quantum-ml/
 ├── test_azure_quantum.py           ← Main test script (run this!)
 ├── AZURE_SETUP_CHECKLIST.md        ← Step-by-step guide (start here!)
 ├── AZURE_QUANTUM_QUICKSTART.md     ← Quick reference

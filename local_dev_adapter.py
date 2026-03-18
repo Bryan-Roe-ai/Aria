@@ -29,8 +29,8 @@ repo_root = Path(__file__).resolve().parent
 # Make sure common src paths are on sys.path BEFORE importing function_app
 # function_app imports modules like token_utils at module-import time, so we
 # must ensure those directories are available.
-sys.path.insert(0, str(repo_root / "talk-to-ai" / "src"))
-sys.path.insert(0, str(repo_root / "quantum-ai" / "src"))
+sys.path.insert(0, str(repo_root / "ai-projects" / "chat-cli" / "src"))
+sys.path.insert(0, str(repo_root / "ai-projects" / "quantum-ml" / "src"))
 sys.path.insert(0, str(repo_root / "scripts"))
 sys.path.insert(0, str(repo_root))
 
