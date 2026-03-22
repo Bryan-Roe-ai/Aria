@@ -27,7 +27,8 @@ class TrainingAnalytics:
 
         try:
             with open(self.status_file, encoding="utf-8") as f:
-                return json.load(f)
+                parsed = json.load(f)
+                return parsed if isinstance(parsed, dict) else {}
         except json.JSONDecodeError:
             # Graceful fallback for partially-written/corrupted status files.
             return {}
