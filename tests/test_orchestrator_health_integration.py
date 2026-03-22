@@ -6,6 +6,7 @@ through the status endpoint for real-time monitoring.
 
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 import importlib.util
 import pytest
@@ -129,3 +130,18 @@ def test_orchestrator_health_endpoint_resilience(app_module):
     assert "orchestrator_health" in data
     # Should gracefully degrade to empty orchestrators dict
     assert isinstance(data["orchestrator_health"]["orchestrators"], dict)
+
+
+def test_orchestrator_health_last_checked_utc_z(app_module):
+    """Verify orchestrator_health.last_checked is UTC ISO-8601 ending in Z."""
+    req = MockRequest("GET")
+    resp = app_module.ai_status(req)
+    assert resp.status_code == 200
+
+    data = json.loads(resp.get_body())
+    last_checked = data["orchestrator_health"]["last_checked"]
+    assert isinstance(last_checked, str)
+    assert last_checked.endswith("Z")
+
+    # Parseability guard: convert trailing Z to +00:00 for fromisoformat.
+    datetime.fromisoformat(last_checked.replace("Z", "+00:00"))

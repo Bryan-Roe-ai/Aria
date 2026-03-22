@@ -5,6 +5,7 @@ Generates charts, trends, and insights
 
 import argparse
 import json
+import os
 import statistics
 import sys
 from datetime import datetime
@@ -410,4 +411,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except BrokenPipeError:
+        # Graceful exit when output is piped to commands like `head`.
+        # Redirect stdout to /dev/null to avoid interpreter flush errors.
+        try:
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, sys.stdout.fileno())
+        except Exception:
+            pass
+        sys.exit(0)
