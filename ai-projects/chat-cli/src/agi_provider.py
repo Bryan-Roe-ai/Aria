@@ -47,6 +47,30 @@ def _sanitize_for_logging(text: str, max_length: int = 200) -> str:
     return html.escape(out)
 
 
+def _infer_aria_movement_tag(query: str) -> Optional[str]:
+    """Infer the best matching Aria movement tag from a user query."""
+    query_lower = query.lower()
+    if "left" in query_lower:
+        return "[aria:walk:left]"
+    if "right" in query_lower:
+        return "[aria:walk:right]"
+    if "up" in query_lower:
+        return "[aria:walk:up]"
+    if "down" in query_lower:
+        return "[aria:walk:down]"
+    if "jump" in query_lower:
+        return "[aria:jump]"
+    if "wave" in query_lower:
+        return "[aria:wave]"
+    if "dance" in query_lower:
+        return "[aria:dance]"
+    if "spin" in query_lower:
+        return "[aria:spin]"
+    if any(word in query_lower for word in ["move", "walk", "go", "run"]):
+        return "[aria:idle]"
+    return None
+
+
 @dataclass
 class ReasoningStep:
     """Represents one reasoning step."""
@@ -131,7 +155,7 @@ class AGIProvider(BaseChatProvider):
 
     def _get_base_provider(self) -> BaseChatProvider:
         if self.base_provider is None:
-            provider, choice = detect_provider(explicit="local")
+            provider, choice = detect_provider(explicit="auto")
             self.base_provider = provider
             self._base_provider_choice = choice
         return self.base_provider
@@ -184,10 +208,15 @@ class AGIProvider(BaseChatProvider):
 
         # Complexity policy from repo instructions.
         complex_keywords = ("implement", "architect", "debug", "refactor")
-        if word_count < 10 and not any(k in query_lower for k in complex_keywords):
-            complexity = "simple"
-        elif word_count > 30 or any(k in query_lower for k in complex_keywords):
+        complex_phrases = ("step by step", "detailed", "comprehensive")
+        if (
+            word_count > 30
+            or any(k in query_lower for k in complex_keywords)
+            or any(p in query_lower for p in complex_phrases)
+        ):
             complexity = "complex"
+        elif word_count < 10 and not any(k in query_lower for k in complex_keywords):
+            complexity = "simple"
         else:
             complexity = "moderate"
 
@@ -210,8 +239,27 @@ class AGIProvider(BaseChatProvider):
             domain = "aria"
         elif any(w in query_lower for w in ["ai", "llm", "transformer", "lora", "training"]):
             domain = "ai"
-        elif any(w in query_lower for w in ["api", "database", "sql", "http", "endpoint", "code"]):
+        elif any(
+            w in query_lower
+            for w in [
+                "api",
+                "database",
+                "sql",
+                "http",
+                "endpoint",
+                "code",
+                "python",
+                "function",
+                "class",
+                "debug",
+                "refactor",
+                "implement",
+            ]
+        ):
             domain = "technical"
+
+        if intent == "movement" and domain == "general":
+            domain = "aria"
 
         return {
             "query": query,
@@ -267,7 +315,11 @@ class AGIProvider(BaseChatProvider):
 
     def _chain_of_thought(self, query: str, analysis: Dict[str, Any], messages: List[RoleMessage]) -> List[str]:
         _ = messages
-        thoughts = [f"Understanding: {analysis['summary']}"]
+        summary = analysis.get(
+            "summary",
+            f"{analysis.get('complexity', 'simple').capitalize()} {analysis.get('intent', 'general')} query about {analysis.get('domain', 'general')}",
+        )
+        thoughts = [f"Understanding: {summary}"]
         if analysis.get("domain") == "aria":
             thoughts.append(
                 "Aria context: include movement/action tags when appropriate.")
@@ -386,22 +438,22 @@ class AGIProvider(BaseChatProvider):
         domain = analysis.get("domain", "general")
 
         if intent == "movement" and domain == "aria":
-            q = query.lower()
-            if "left" in q:
+            tag = _infer_aria_movement_tag(query)
+            if tag == "[aria:walk:left]":
                 return "I'll move to the left! [aria:walk:left]"
-            if "right" in q:
+            if tag == "[aria:walk:right]":
                 return "Moving to the right! [aria:walk:right]"
-            if "up" in q:
+            if tag == "[aria:walk:up]":
                 return "Moving up! [aria:walk:up]"
-            if "down" in q:
+            if tag == "[aria:walk:down]":
                 return "Moving down! [aria:walk:down]"
-            if "jump" in q:
+            if tag == "[aria:jump]":
                 return "Here I go! [aria:jump]"
-            if "wave" in q:
+            if tag == "[aria:wave]":
                 return "Hello there! [aria:wave]"
-            if "dance" in q:
+            if tag == "[aria:dance]":
                 return "Time to dance! [aria:dance]"
-            if "spin" in q:
+            if tag == "[aria:spin]":
                 return "Spinning now! [aria:spin]"
             return "I'm ready to move! [aria:idle]"
 
@@ -429,19 +481,8 @@ class AGIProvider(BaseChatProvider):
             issues.append("response_too_long")
 
         if analysis.get("intent") == "movement" and analysis.get("domain") == "aria" and "[aria:" not in response:
-            q = query.lower()
-            tag = " [aria:idle]"
-            if "left" in q:
-                tag = " [aria:walk:left]"
-            elif "right" in q:
-                tag = " [aria:walk:right]"
-            elif "jump" in q:
-                tag = " [aria:jump]"
-            elif "wave" in q:
-                tag = " [aria:wave]"
-            elif "dance" in q:
-                tag = " [aria:dance]"
-            response += tag
+            tag = _infer_aria_movement_tag(query) or "[aria:idle]"
+            response += f" {tag}"
             issues.append("aria_tag_injected")
 
         if issues:
@@ -481,7 +522,7 @@ class AGIProvider(BaseChatProvider):
             time.sleep(delay)
 
     def set_goal(self, goal: str) -> None:
-        safe_goal = _sanitize_input(str(goal), max_length=200)
+        safe_goal = _sanitize_input(str(goal), max_length=200).strip()
         if not safe_goal:
             return
         if safe_goal not in self.context.goals:
@@ -512,12 +553,16 @@ def create_agi_provider(
     base_provider = None
     base_choice = None
 
-    if model:
-        try:
-            base_provider, base_choice = detect_provider(
-                explicit="local", model_override=model)
-        except Exception:
-            pass
+    try:
+        base_provider, base_choice = detect_provider(
+            explicit="auto",
+            model_override=model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
+    except Exception:
+        base_provider = None
+        base_choice = None
 
     provider = AGIProvider(
         base_provider=base_provider,

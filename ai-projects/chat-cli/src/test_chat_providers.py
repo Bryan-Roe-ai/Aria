@@ -1,4 +1,5 @@
 from __future__ import annotations
+import chat_providers
 
 import json
 import os
@@ -13,7 +14,6 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from chat_cli import save_conversation  # noqa: E402
-from chat_providers import LocalEchoProvider, detect_provider  # noqa: E402
 
 
 class ChatProviderTests(unittest.TestCase):
@@ -27,9 +27,9 @@ class ChatProviderTests(unittest.TestCase):
             "OPENAI_API_KEY": os.environ.pop("OPENAI_API_KEY", None),
         }
         try:
-            provider, info = detect_provider(
+            provider, info = chat_providers.detect_provider(
                 explicit="local", model_override="offline-test-model")
-            self.assertIsInstance(provider, LocalEchoProvider)
+            self.assertIsInstance(provider, chat_providers.LocalEchoProvider)
             self.assertEqual(info.name, "local")
             self.assertEqual(info.model, "offline-test-model")
         finally:
@@ -39,7 +39,7 @@ class ChatProviderTests(unittest.TestCase):
 
     def test_local_echo_includes_aria_movement_tags(self) -> None:
         """Offline mode should still emit actionable Aria movement tags."""
-        provider = LocalEchoProvider(seed=1)
+        provider = chat_providers.LocalEchoProvider(seed=1)
         messages = [
             {"role": "user", "content": "Please move right and then wave"}]
 
@@ -52,7 +52,7 @@ class ChatProviderTests(unittest.TestCase):
 
     def test_local_echo_question_mentions_live_provider(self) -> None:
         """Generic question in local mode should direct user to real providers."""
-        provider = LocalEchoProvider(seed=2)
+        provider = chat_providers.LocalEchoProvider(seed=2)
         messages = [
             {"role": "user", "content": "What is quantum entanglement?"}]
 

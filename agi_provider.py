@@ -18,7 +18,8 @@ _CANONICAL = (
     / "agi_provider.py"
 )
 
-_spec = importlib.util.spec_from_file_location("_canonical_agi_provider", _CANONICAL)
+_spec = importlib.util.spec_from_file_location(
+    "_canonical_agi_provider", _CANONICAL)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Unable to load canonical AGI provider: {_CANONICAL}")
 
@@ -36,6 +37,7 @@ MAX_GOALS = _mod.MAX_GOALS
 MAX_REASONING_CHAINS = _mod.MAX_REASONING_CHAINS
 _sanitize_input = _mod._sanitize_input
 _sanitize_for_logging = _mod._sanitize_for_logging
+_infer_aria_movement_tag = _mod._infer_aria_movement_tag
 
 __all__ = [
     "AGIProvider",
@@ -48,4 +50,5 @@ __all__ = [
     "MAX_REASONING_CHAINS",
     "_sanitize_input",
     "_sanitize_for_logging",
+    "_infer_aria_movement_tag",
 ]

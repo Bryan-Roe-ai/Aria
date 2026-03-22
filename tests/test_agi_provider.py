@@ -14,6 +14,7 @@ from agi_provider import (
     AGIProvider,
     AGIContext,
     ReasoningStep,
+    _infer_aria_movement_tag,
     create_agi_provider,
 )
 import sys
@@ -147,6 +148,15 @@ class TestReasoningStep:
         assert step.metadata["subtasks"] == ["task1", "task2"]
 
 
+class TestAGIHelpers:
+    """Tests for AGI helper utilities."""
+
+    def test_infer_aria_movement_tag_supports_vertical_and_spin(self):
+        assert _infer_aria_movement_tag("Move up") == "[aria:walk:up]"
+        assert _infer_aria_movement_tag("Go down") == "[aria:walk:down]"
+        assert _infer_aria_movement_tag("Spin around") == "[aria:spin]"
+
+
 class TestAGIProvider:
     """Tests for AGIProvider functionality."""
 
@@ -262,6 +272,16 @@ class TestAGIProvider:
         assert analysis["intent"] == "movement"
         assert analysis["domain"] == "aria"
 
+    def test_query_analysis_movement_defaults_to_aria_domain(self):
+        """Bare movement commands should still resolve to Aria domain."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        analysis = agi._analyze_query("Jump left")
+
+        assert analysis["intent"] == "movement"
+        assert analysis["domain"] == "aria"
+
     def test_query_analysis_coding_intent(self):
         """Test query analysis detects coding intent."""
         mock_provider = MockBaseProvider()
@@ -332,6 +352,27 @@ class TestAGIProvider:
         )
 
         assert "[aria:walk:left]" in response
+
+    def test_self_reflection_aria_spin(self):
+        """Test self-reflection adds Aria spin tag when needed."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        reasoning_chain = [
+            ReasoningStep(
+                step_type="analyze",
+                content="Movement request",
+                metadata={"intent": "movement", "domain": "aria"}
+            )
+        ]
+
+        response = agi._reflect_and_improve(
+            "Spin Aria around",
+            "Spinning now!",
+            reasoning_chain
+        )
+
+        assert "[aria:spin]" in response
 
     def test_goal_management(self):
         """Test setting and clearing goals."""
@@ -430,6 +471,23 @@ class TestCreateAGIProvider:
         assert isinstance(provider, AGIProvider)
         assert info.name == "agi"
         assert "agi" in info.model.lower()
+
+    def test_create_uses_auto_detected_base_provider(self, monkeypatch: pytest.MonkeyPatch):
+        """Factory should wrap the best available non-AGI provider."""
+        base = MockBaseProvider("auto wrapped")
+
+        def fake_detect_provider(explicit=None, model_override=None, temperature=None, max_output_tokens=None):
+            assert explicit == "auto"
+            return base, ProviderChoice(name="openai", model=model_override or "gpt-test")
+
+        monkeypatch.setitem(create_agi_provider.__globals__,
+                            "detect_provider", fake_detect_provider)
+
+        provider, info = create_agi_provider(model="gpt-4")
+
+        assert provider.base_provider is base
+        assert info.name == "agi"
+        assert info.model == "agi-openai-gpt-4"
 
     def test_create_with_options(self):
         """Test creating AGI provider with custom options."""
@@ -611,9 +669,8 @@ class TestAGISecurity:
         agi.set_goal("")
         agi.set_goal("   ")
 
-        # No goals should be added for empty input
-        # Empty string check passes, whitespace-only may be added
-        assert len(agi.context.goals) <= 1
+        # No goals should be added for empty or whitespace-only input
+        assert len(agi.context.goals) == 0
 
     def test_message_count_limit(self):
         """Test that message count is limited to prevent DoS."""

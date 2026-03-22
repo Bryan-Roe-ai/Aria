@@ -12,10 +12,25 @@ import requests
 import json
 import time
 from datetime import datetime
+import pytest
 
 BASE_URL = "http://localhost:8080"
 # Use timeout for all requests to prevent hanging
 REQUEST_TIMEOUT = 30  # seconds
+
+
+def _api_available() -> bool:
+    try:
+        response = requests.get(f"{BASE_URL}/api/health", timeout=2)
+        return response.ok
+    except requests.exceptions.RequestException:
+        return False
+
+
+pytestmark = pytest.mark.skipif(
+    not _api_available(),
+    reason="Quantum production API not running on localhost:8080",
+)
 
 def test_health():
     """Test health endpoint"""
