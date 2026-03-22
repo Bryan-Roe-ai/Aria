@@ -84,7 +84,7 @@ class ConfigValidator:
         r"(\*|[0-7]|[0-9]-[0-9]|[0-9],[0-9]|[*/0-9,-]+)$"  # dow
     )
 
-    def __init__(self, repo_root: Path = None):
+    def __init__(self, repo_root: Optional[Path] = None):
         self.repo_root = repo_root or Path(__file__).resolve().parents[1]
 
     def validate_file(self, config_path: Path) -> ValidationResult:
@@ -305,7 +305,7 @@ class ConfigValidator:
         orch_name: str,
         orchestrators: List[Dict[str, Any]],
         visited: Set[str],
-        rec_stack: Set[str] = None
+        rec_stack: Optional[Set[str]] = None
     ) -> bool:
         """Check if orchestrator has circular dependency."""
         if rec_stack is None:
@@ -383,13 +383,13 @@ class ConfigValidator:
                             severity="error"
                         ))
 
-    def validate_master(self, config_path: Path = None) -> ValidationResult:
+    def validate_master(self, config_path: Optional[Path] = None) -> ValidationResult:
         """Validate master_orchestrator.yaml specifically."""
         if config_path is None:
             config_path = self.repo_root / "config" / "master_orchestrator.yaml"
         return self.validate_file(config_path)
 
-    def validate_autonomous_training(self, config_path: Path = None) -> ValidationResult:
+    def validate_autonomous_training(self, config_path: Optional[Path] = None) -> ValidationResult:
         """Validate autonomous_training.yaml specifically."""
         if config_path is None:
             config_path = self.repo_root / "config" / "autonomous_training.yaml"
@@ -397,7 +397,7 @@ class ConfigValidator:
 
 
 def validate_configs_before_daemon(
-    repo_root: Path = None,
+    repo_root: Optional[Path] = None,
     exit_on_error: bool = True,
     verbose: bool = False
 ) -> Tuple[bool, List[ValidationResult]]:

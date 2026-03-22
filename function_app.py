@@ -15,7 +15,7 @@ import subprocess
 import importlib.util as _iu
 import time
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Pre-compiled word split regex used in token/word counting hot paths.
 _RE_WORD_SPLIT = re.compile(r"\S+")
@@ -1371,7 +1371,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "enabled": True,
             "orchestrators": {},
             "overall_status": "unknown",
-            "last_checked": datetime.utcnow().isoformat() + "Z",  # ISO 8601 UTC format
+            "last_checked": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "active_count": 0,
             "failed_count": 0,
         }
