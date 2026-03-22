@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import json
 import importlib.util
 from pathlib import Path
 
@@ -33,6 +34,25 @@ def test_resolve_checkpoint_path_prefers_best(tmp_path: Path) -> None:
     )
     provider.model_path = tmp_path
 
+    (tmp_path / "final_model.pt").write_bytes(b"x")
+    (tmp_path / "best_quantum_llm.pt").write_bytes(b"x")
+
+    resolved = provider._resolve_checkpoint_path()
+    assert resolved.name == "best_quantum_llm.pt"
+
+
+@pytest.mark.unit
+def test_resolve_checkpoint_path_uses_status_metadata_first(tmp_path: Path) -> None:
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(
+        quantum_provider.QuantumLLMChatProvider
+    )
+    provider.model_path = tmp_path
+
+    status_payload = {
+        "best_checkpoint_path": "best_quantum_llm.pt",
+        "checkpoint_path": "final_model.pt",
+    }
+    (tmp_path / "status.json").write_text(json.dumps(status_payload), encoding="utf-8")
     (tmp_path / "final_model.pt").write_bytes(b"x")
     (tmp_path / "best_quantum_llm.pt").write_bytes(b"x")
 

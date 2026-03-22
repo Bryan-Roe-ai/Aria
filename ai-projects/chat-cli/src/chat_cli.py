@@ -9,7 +9,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
 
-from colorama import Fore, Style, init as colorama_init
+try:
+    from colorama import Fore, Style, init as colorama_init
+except ImportError:  # pragma: no cover - exercised in dependency-light test envs
+    class _NoColor:
+        BLACK = RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = ""
+        RESET = RESET_ALL = BRIGHT = DIM = NORMAL = ""
+
+    Fore = Style = _NoColor()
+
+    def colorama_init(*args, **kwargs) -> None:
+        return None
 
 from chat_providers import detect_provider, RoleMessage
 

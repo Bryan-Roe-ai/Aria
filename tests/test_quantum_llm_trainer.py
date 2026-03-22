@@ -17,7 +17,8 @@ try:
     from quantum_llm_trainer import (
         QuantumAttentionOptimizer,
         QuantumFeatureEncoder,
-        QuantumEnhancedLLMTrainer
+        QuantumEnhancedLLMTrainer,
+        get_quantum_llm_status,
     )
     QUANTUM_LLM_AVAILABLE = True
 except (ImportError, OSError) as e:
@@ -162,6 +163,12 @@ class TestQuantumEnhancedLLMTrainer:
             assert output_dir.exists()
             results_file = output_dir / "quantum_training_results.json"
             assert results_file.exists()
+
+            status = get_quantum_llm_status(output_dir=output_dir)
+            assert status["status"] == "completed"
+            assert status["checkpoint_exists"] is True
+            assert status["inference_ready"] is True
+            assert status["checkpoint_path"].endswith("best_quantum_llm.pt")
 
     def test_load_dataset_json(self):
         """Test loading JSON dataset"""

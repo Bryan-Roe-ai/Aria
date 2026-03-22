@@ -93,9 +93,26 @@ def _install_fake_quantum_trainer_module(
                 "epochs_completed": epochs,
                 "final_loss": 0.123,
                 "quantum_metrics": {"circuit_executions": 7},
+                "checkpoint_path": "data_out/quantum_llm_api/best_quantum_llm.pt",
             }
 
+    def get_quantum_llm_status(*, status_file=None, output_dir=None):
+        if capture is not None:
+            capture["status_call"] = {
+                "status_file": status_file,
+                "output_dir": output_dir,
+            }
+        return {
+            "available": True,
+            "status": "completed",
+            "checkpoint_exists": True,
+            "checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
+            "status_file": "data_out/quantum_llm_training/status.json",
+            "inference_ready": True,
+        }
+
     module.QuantumEnhancedLLMTrainer = QuantumEnhancedLLMTrainer
+    module.get_quantum_llm_status = get_quantum_llm_status
     monkeypatch.setitem(sys.modules, "quantum_llm_trainer", module)
 
 
@@ -193,6 +210,18 @@ class TestQuantumLlmEndpoint:
         assert "available" in data
         assert "capabilities" in data
 
+    def test_quantum_llm_get_includes_readiness(self, app_module, monkeypatch):
+        capture: dict = {}
+        _install_fake_quantum_trainer_module(monkeypatch, capture=capture)
+
+        req = _mock_request("GET")
+        resp = app_module.quantum_llm(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["readiness"]["inference_ready"] is True
+        assert data["readiness"]["checkpoint_exists"] is True
+
     def test_quantum_llm_post_invalid_json(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
 
@@ -231,6 +260,7 @@ class TestQuantumLlmEndpoint:
         assert data["action"] == "generate"
         assert data["tokens"] == 3
         assert "generated" in data
+        assert data["readiness"]["inference_ready"] is True
         assert capture["generate_kwargs"]["max_new_tokens"] == 3
 
     def test_quantum_llm_post_train_rejects_external_path(self, app_module, monkeypatch):
@@ -268,6 +298,8 @@ class TestQuantumLlmEndpoint:
         assert data["action"] == "train"
         assert data["status"] == "success"
         assert data["epochs_completed"] == 5
+        assert data["checkpoint_path"].endswith("best_quantum_llm.pt")
+        assert data["readiness"]["inference_ready"] is True
 
         train_args = capture["train_args"]
         assert train_args["epochs"] == 5

@@ -1,12 +1,15 @@
 from __future__ import annotations
-import chat_providers
-
-import json
-import os
-import sys
-import tempfile
-import unittest
 from pathlib import Path
+import unittest
+import tempfile
+import sys
+import os
+import json
+import chat_providers
+import pytest
+
+pytest.importorskip("colorama")
+
 
 # Ensure this src folder is importable when tests run from repo root
 SRC_DIR = Path(__file__).resolve().parent

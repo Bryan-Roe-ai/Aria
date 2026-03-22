@@ -1250,6 +1250,11 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "enabled": False,
             "qiskit": None,
             "pennylane": None,
+            "llm_model_available": False,
+            "llm_checkpoint_path": None,
+            "inference_ready": False,
+            "status_file": None,
+            "trainer_status": "not_started",
             "azure_quantum": {
                 "workspace_connected": False,
                 "backends": [],
@@ -1267,6 +1272,21 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         try:
             import pennylane  # type: ignore
             quantum_info["pennylane"] = getattr(pennylane, "__version__", None)
+        except Exception:
+            pass
+        try:
+            from quantum_llm_trainer import get_quantum_llm_status  # type: ignore
+
+            quantum_llm_status = get_quantum_llm_status(
+                output_dir=repo_root / "data_out" / "quantum_llm_training"
+            )
+            quantum_info.update({
+                "llm_model_available": bool(quantum_llm_status.get("checkpoint_exists")),
+                "llm_checkpoint_path": quantum_llm_status.get("checkpoint_path"),
+                "inference_ready": bool(quantum_llm_status.get("inference_ready")),
+                "status_file": quantum_llm_status.get("status_file"),
+                "trainer_status": quantum_llm_status.get("status"),
+            })
         except Exception:
             pass
         # Conflict detection using validate script (import functions defensively)
@@ -2088,6 +2108,7 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         # Lazy import to avoid hard dependency at startup
+        repo_root = Path(__file__).resolve().parent
         quantum_ml_src = Path(__file__).resolve().parent / \
             "ai-projects" / "quantum-ml" / "src"
         scripts_dir = Path(__file__).resolve().parent / "scripts"
@@ -2096,14 +2117,21 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 sys.path.insert(0, p)
 
         try:
-            from quantum_llm_trainer import QuantumEnhancedLLMTrainer, QUANTUM_AVAILABLE
+            from quantum_llm_trainer import QuantumEnhancedLLMTrainer, QUANTUM_AVAILABLE, get_quantum_llm_status
             trainer_available = True
         except ImportError as ie:
             trainer_available = False
             QUANTUM_AVAILABLE = False
             _trainer_import_err = str(ie)
+            get_quantum_llm_status = None
 
         if req.method == "GET":
+            readiness = None
+            if trainer_available and get_quantum_llm_status is not None:
+                readiness = get_quantum_llm_status(
+                    output_dir=Path(__file__).resolve().parent /
+                    "data_out" / "quantum_llm_training"
+                )
             return func.HttpResponse(
                 json.dumps({
                     "available": trainer_available,
@@ -2115,6 +2143,7 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                         "n_qubits": 4,
                         "backends": ["default.qubit", "lightning.qubit"],
                     },
+                    "readiness": readiness,
                     "import_error": None if trainer_available else _trainer_import_err,
                 }),
                 status_code=200,
@@ -2173,6 +2202,9 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                     "generated": text,
                     "tokens": len(generated[0]),
                     "quantum_available": QUANTUM_AVAILABLE,
+                    "readiness": get_quantum_llm_status(
+                        output_dir=repo_root / "data_out" / "quantum_llm_training"
+                    ) if get_quantum_llm_status is not None else None,
                 }),
                 status_code=200,
                 mimetype="application/json",
@@ -2180,7 +2212,6 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         elif action == "train":
-            repo_root = Path(__file__).resolve().parent
             dataset_path = body.get("dataset_path", "datasets/chat")
             dataset_path_obj = Path(dataset_path)
             if not dataset_path_obj.is_absolute():
@@ -2219,6 +2250,10 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                     "epochs_completed": results["epochs_completed"],
                     "final_loss": results["final_loss"],
                     "circuit_executions": results["quantum_metrics"]["circuit_executions"],
+                    "checkpoint_path": results.get("checkpoint_path"),
+                    "readiness": get_quantum_llm_status(
+                        output_dir=output_dir
+                    ) if get_quantum_llm_status is not None else None,
                 }),
                 status_code=200,
                 mimetype="application/json",
