@@ -20,6 +20,16 @@
       "args": [
         "${workspaceFolder}/AI/microsoft_phi-silica-3.6_v1/mcp.py"
       ]
+    },
+    "mcp": {
+      "command": "python3",
+      "args": [
+        "ai-projects/quantum-ml/quantum_mcp_server.py"
+      ],
+      "env": {
+        "MCP_ENV": "development",
+        "PYTHONUNBUFFERED": "1"
+      }
     }
   }
 }

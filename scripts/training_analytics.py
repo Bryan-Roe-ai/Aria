@@ -118,6 +118,8 @@ class TrainingAnalytics:
         # Overview
         cycles = self.status.get("cycles_completed", 0)
         best_acc = self.status.get("best_accuracy", 0)
+        plateau_cycles = self.status.get("plateau_cycles", 0)
+        promotions = self.status.get("promotions", [])
         total_datasets = self.status.get("total_datasets_available")
         if total_datasets is None:
             total_datasets = len(self.status.get("dataset_inventory", {}))
@@ -127,6 +129,13 @@ class TrainingAnalytics:
         report.append(f"Total Cycles: {cycles}")
         report.append(f"Best Accuracy: {best_acc:.2%}")
         report.append(f"Total Datasets: {total_datasets}")
+        report.append(f"Plateau Cycles at Peak: {plateau_cycles}")
+        report.append(f"Promotions Completed: {len(promotions)}")
+        if promotions:
+            p = promotions[-1]
+            report.append(
+                f"Latest Promotion: v{p.get('version', '?')} at cycle {p.get('cycle', '?')} ({p.get('accuracy', 0):.2%})"
+            )
         report.append("")
 
         # Performance trend
@@ -204,6 +213,13 @@ class TrainingAnalytics:
         else:
             report.append("• Continue current training strategy")
             report.append("• Performance is improving steadily")
+
+        if plateau_cycles >= 5:
+            report.append(
+                "• Plateau stable for 5+ cycles — promotion cadence is active")
+        if promotions:
+            report.append(
+                "• Model promotion history available in status['promotions']")
 
         if best_acc >= 0.90:
             report.append("• Ready for production deployment")

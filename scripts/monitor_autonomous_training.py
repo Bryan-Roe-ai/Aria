@@ -35,7 +35,8 @@ class TrainingMonitor:
                  log_file: str = "data_out/autonomous_training.log"):
         self.status_file = Path(status_file)
         self.log_file = Path(log_file)
-        self.heartbeat_file = self.status_file.parent / "autonomous_training_heartbeat.json"
+        self.heartbeat_file = self.status_file.parent / \
+            "autonomous_training_heartbeat.json"
         self.last_status = None
         self.last_log_position = 0
 
@@ -182,17 +183,31 @@ class TrainingMonitor:
         next_eta = hb.get("next_cycle_eta")
 
         freshness = "unknown"
+        freshness_state = "stale"
         if ts:
             try:
                 hb_dt = datetime.fromisoformat(ts)
                 age = datetime.now() - hb_dt
                 freshness = f"{int(age.total_seconds())}s ago"
+                age_sec = age.total_seconds()
+                if age_sec <= 15:
+                    freshness_state = "fresh"
+                elif age_sec <= 60:
+                    freshness_state = "warming"
+                else:
+                    freshness_state = "stale"
             except Exception:
                 freshness = ts
 
+        freshness_label = {
+            "fresh": f"{Colors.OKGREEN}fresh{Colors.ENDC}",
+            "warming": f"{Colors.WARNING}aging{Colors.ENDC}",
+            "stale": f"{Colors.FAIL}stale{Colors.ENDC}",
+        }.get(freshness_state, freshness_state)
+
         print(f"  State: {state.upper()}")
         print(f"  PID: {pid}")
-        print(f"  Last Beat: {ts} ({freshness})")
+        print(f"  Last Beat: {ts} ({freshness}, {freshness_label})")
         if next_eta:
             print(f"  Next Cycle ETA: {next_eta}")
         print()
@@ -269,6 +284,17 @@ class TrainingMonitor:
                 trend = f"{Colors.WARNING}→ Stable{Colors.ENDC}"
 
             print(f"\n  Trend: {trend}")
+
+        plateau_cycles = status.get("plateau_cycles", 0)
+        promotions = status.get("promotions", [])
+        if plateau_cycles:
+            print(f"  Plateau Cycles at Peak: {plateau_cycles}")
+        if promotions:
+            latest = promotions[-1]
+            print(
+                f"  Promotions: {len(promotions)} "
+                f"(latest v{latest.get('version', '?')} @ cycle {latest.get('cycle', '?')})"
+            )
 
         print()
 
@@ -422,8 +448,12 @@ class TrainingMonitor:
         print(f"Cycles: {cycles}")
         print(f"Best Accuracy: {best_acc:.2%}")
         print(f"Datasets: {total}")
+        print(f"Plateau Cycles: {status.get('plateau_cycles', 0)}")
+        promotions = status.get('promotions', [])
+        print(f"Promotions: {len(promotions)}")
         if heartbeat:
-            print(f"Heartbeat: {heartbeat.get('state', 'unknown').upper()} @ {heartbeat.get('timestamp', '-')}")
+            print(
+                f"Heartbeat: {heartbeat.get('state', 'unknown').upper()} @ {heartbeat.get('timestamp', '-')}")
             if heartbeat.get('next_cycle_eta'):
                 print(f"Next Cycle ETA: {heartbeat.get('next_cycle_eta')}")
 

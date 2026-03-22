@@ -117,7 +117,6 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         # API: Profile dataset for hyperparameter recommendations
         elif self.path.startswith('/api/profile-dataset'):
-            from urllib.parse import parse_qs, urlparse
             parsed = urlparse(self.path)
             query_params = parse_qs(parsed.query)
             dataset_name = query_params.get('dataset', [None])[0]
