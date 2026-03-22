@@ -410,6 +410,55 @@ class LocalEchoProvider(BaseChatProvider):
 
         return "generic"
 
+    def _craft_autonomous_reply(self, messages: List[RoleMessage], last_user: str, turn_count: int) -> str:
+        """Generate more useful offline output for autonomous CLI loops."""
+        assistant_messages = [
+            m["content"] for m in messages if m.get("role") == "assistant"
+        ]
+        last_assistant = assistant_messages[-1] if assistant_messages else ""
+        user_topics = [
+            m["content"].strip()
+            for m in messages
+            if m.get("role") == "user" and m.get("content", "").strip()
+        ]
+        topic = user_topics[0][:120].rstrip(".,?!") if user_topics else "the current task"
+
+        if "message count exceeded limit" in last_assistant.lower():
+            return (
+                "Autonomous checkpoint:\n"
+                "1. The conversation is getting long, so summarize the objective in one sentence.\n"
+                "2. Keep only the latest constraints and the best next action.\n"
+                "3. Continue with one concrete step instead of repeating the same prompt."
+            )
+
+        sequence = [
+            (
+                f"Autonomous plan for '{topic}':\n\n"
+                "1. Define the concrete objective and success condition.\n"
+                "2. Inspect the current inputs, dependencies, or repo context.\n"
+                "3. Pick the smallest next action that creates evidence of progress."
+            ),
+            (
+                f"Autonomous next step for '{topic}':\n\n"
+                "- Gather one missing fact before changing direction.\n"
+                "- Write down the current assumption you are relying on.\n"
+                "- Execute a single focused action, then reassess."
+            ),
+            (
+                f"Autonomous review for '{topic}':\n\n"
+                "- What changed since the previous turn?\n"
+                "- What is still blocked or uncertain?\n"
+                "- What is the highest-value follow-up action right now?"
+            ),
+            (
+                f"Autonomous refinement for '{topic}':\n\n"
+                "1. Remove repetition.\n"
+                "2. Convert vague goals into one measurable outcome.\n"
+                "3. Continue with a concrete command, edit, or validation step."
+            ),
+        ]
+        return sequence[(turn_count - 1) % len(sequence)]
+
     def _craft_reply(self, messages: List[RoleMessage]) -> str:
         """Generate a contextually appropriate response.
 
@@ -432,6 +481,14 @@ class LocalEchoProvider(BaseChatProvider):
         intent = self._detect_intent(last_user)
         lower = last_user.lower()
         turn_count = sum(1 for m in messages if m.get("role") == "user")
+
+        if (
+            "start working autonomously" in lower
+            or "continue autonomously" in lower
+            or "without waiting for user input" in lower
+            or "choose the next useful step yourself" in lower
+        ):
+            return self._craft_autonomous_reply(messages, last_user, turn_count)
 
         # --- Greetings ---
         if intent == "greeting":

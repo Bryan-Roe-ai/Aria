@@ -361,6 +361,7 @@ class CodeAgent:
         self.repo = RepositoryContext()
         self.state: Optional[AgentState] = None
         self._total_tokens = 0
+        self._original_file_contents: Dict[str, Optional[str]] = {}
         self._init_logging()
 
     def _init_logging(self) -> None:
@@ -458,6 +459,37 @@ Respond with ONLY a list of file paths relative to repo root (one per line). No 
             return f"# File not found: {filepath}"
         return f"# File: {filepath}\n\n{content}"
 
+    def _snapshot_file(self, filepath: str) -> None:
+        """Capture the current file content once so rollbacks preserve user work."""
+        if filepath in self._original_file_contents:
+            return
+        full_path = self.repo.repo_root / filepath
+        if full_path.exists() and full_path.is_file():
+            self._original_file_contents[filepath] = full_path.read_text(
+                encoding="utf-8"
+            )
+        else:
+            self._original_file_contents[filepath] = None
+
+    def _restore_modified_files(self) -> bool:
+        """Restore only the files this agent changed, preserving unrelated edits."""
+        restored = False
+        for filepath, original_content in self._original_file_contents.items():
+            full_path = self.repo.repo_root / filepath
+            try:
+                if original_content is None:
+                    if full_path.exists():
+                        full_path.unlink()
+                else:
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(original_content, encoding="utf-8")
+                restored = True
+            except OSError as exc:
+                _LOGGER.error(f"Failed to restore {filepath}: {exc}")
+        if restored and self.state:
+            self.state.rollback_performed = True
+        return restored
+
     def implement_changes(self, task_description: str, files: List[str]) -> List[str]:
         """Use LLM to implement code changes in identified files."""
         modified = []
@@ -506,6 +538,8 @@ If no changes are needed for this file, return the original content unchanged.""
 
             try:
                 full_path = self.repo.repo_root / filepath
+                self._snapshot_file(filepath)
+                full_path.parent.mkdir(parents=True, exist_ok=True)
                 full_path.write_text(new_content, encoding="utf-8")
                 if self.state is not None:
                     self.state.mark_file_modified(filepath)
@@ -515,60 +549,6 @@ If no changes are needed for this file, return the original content unchanged.""
                 _LOGGER.error(f"Failed to write {filepath}: {e}")
 
         return modified
-
-    # ── Git rollback helpers ─────────────────────────────────────────────────
-
-    def _stash_changes(self) -> bool:
-        """Git-stash current working-tree changes for rollback safety."""
-        if not self.repo.git_available:
-            return False
-        try:
-            result = subprocess.run(
-                ["git", "stash", "push", "-u", "-m", "agent-pre-impl-stash"],
-                cwd=REPO_ROOT,
-                capture_output=True,
-                text=True,
-            )
-            # 'No local changes' means nothing to stash — that's fine
-            if "No local changes" in result.stdout:
-                return False  # nothing stashed
-            _LOGGER.info(f"Stashed changes: {result.stdout.strip()}")
-            return result.returncode == 0
-        except Exception as e:
-            _LOGGER.error(f"Stash failed: {e}")
-            return False
-
-    def _restore_stash(self) -> bool:
-        """Pop the stash to roll back to pre-implementation state."""
-        if not self.repo.git_available:
-            return False
-        try:
-            result = subprocess.run(
-                ["git", "stash", "pop"],
-                cwd=REPO_ROOT,
-                capture_output=True,
-                text=True,
-            )
-            _LOGGER.info(f"Restored stash (rollback): {result.stdout.strip()}")
-            if self.state:
-                self.state.rollback_performed = True
-            return result.returncode == 0
-        except Exception as e:
-            _LOGGER.error(f"Stash pop failed: {e}")
-            return False
-
-    def _drop_stash(self) -> None:
-        """Drop the safety stash after a successful task."""
-        if not self.repo.git_available:
-            return
-        try:
-            subprocess.run(
-                ["git", "stash", "drop"],
-                cwd=REPO_ROOT,
-                capture_output=True,
-            )
-        except Exception:
-            pass  # Non-critical
 
     def run_tests(self) -> Dict[str, Any]:
         """Run test suite to validate changes."""
@@ -637,16 +617,21 @@ If no changes are needed for this file, return the original content unchanged.""
             _LOGGER.error(f"Error running tests: {e}")
             return {"total": 0, "passed": 0, "failed": 0, "success": False, "error": str(e)}
 
-    def commit_changes(self, message: str) -> bool:
+    def commit_changes(self, message: str, files: Optional[List[str]] = None) -> bool:
         """Commit changes to git."""
         if not self.repo.git_available:
             _LOGGER.warning("Git not available, skipping commit")
             return False
 
+        files_to_stage = files or (self.state.files_modified if self.state else [])
+        if not files_to_stage:
+            _LOGGER.warning("No agent-modified files provided for commit")
+            return False
+
         try:
-            # Stage all changes
+            # Stage only files the agent modified to avoid scooping up user work.
             subprocess.run(
-                ["git", "add", "-A"],
+                ["git", "add", "--"] + files_to_stage,
                 cwd=REPO_ROOT,
                 check=True,
                 capture_output=True,
@@ -733,14 +718,12 @@ If no changes are needed for this file, return the original content unchanged.""
         # ── Phase 3: Implement ───────────────────────────────────────────────
         self.state.status = "implementing"
         self.state.save()
-        stashed = False
+        self._original_file_contents = {}
         if dry_run:
             _LOGGER.info("Dry-run mode: skipping file modifications")
             for f in files:
                 _LOGGER.info(f"  Would read/modify: {f}")
         else:
-            # Stash pre-existing working-tree changes so we can roll back cleanly
-            stashed = self._stash_changes()
             try:
                 self.implement_changes(task_description, files)
             except Exception as e:
@@ -773,23 +756,11 @@ If no changes are needed for this file, return the original content unchanged.""
         if not dry_run and not tests_passed and self.state.files_modified:
             _LOGGER.warning(
                 "Tests failed after implementation — rolling back changes")
-            # Revert modified files via git checkout
             try:
-                subprocess.run(
-                    ["git", "checkout", "--"] + self.state.files_modified,
-                    cwd=REPO_ROOT,
-                    capture_output=True,
-                    check=False,
-                )
-                self.state.rollback_performed = True
-                _LOGGER.info(
-                    "Rollback complete (git checkout on modified files)")
+                if self._restore_modified_files():
+                    _LOGGER.info("Rollback complete (restored original file snapshots)")
             except Exception as rb_err:
                 _LOGGER.error(f"Rollback failed: {rb_err}")
-            if stashed:
-                self._restore_stash()
-        elif stashed:
-            self._drop_stash()
 
         # ── Phase 5: Commit ──────────────────────────────────────────────────
         if (
@@ -800,7 +771,7 @@ If no changes are needed for this file, return the original content unchanged.""
         ):
             try:
                 commit_msg = f"agent/{task_id}: {task_description[:60]}"
-                self.commit_changes(commit_msg)
+                self.commit_changes(commit_msg, files=self.state.files_modified)
             except Exception as e:
                 self.state.add_error(f"Commit failed: {e}")
 

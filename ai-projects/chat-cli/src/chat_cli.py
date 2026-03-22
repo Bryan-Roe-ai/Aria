@@ -25,7 +25,7 @@ from chat_providers import detect_provider, RoleMessage
 
 
 def now_ts() -> str:
-    return datetime.now().strftime("%Y%m%d_%H%M%S")
+    return datetime.now().strftime("%Y%m%d_%H%M%S_%f")
 
 
 def provider_readiness_summary() -> str:
@@ -55,11 +55,19 @@ def provider_readiness_summary() -> str:
 
 def save_conversation(messages: List[RoleMessage], logs_dir: Path) -> Path:
     logs_dir.mkdir(parents=True, exist_ok=True)
-    path = logs_dir / f"chat_{now_ts()}.jsonl"
-    with path.open("w", encoding="utf-8") as f:
-        for m in messages:
-            f.write(json.dumps(m, ensure_ascii=False) + "\n")
-    return path
+    base_name = f"chat_{now_ts()}"
+    path = logs_dir / f"{base_name}.jsonl"
+    attempt = 1
+
+    while True:
+        try:
+            with path.open("x", encoding="utf-8") as f:
+                for m in messages:
+                    f.write(json.dumps(m, ensure_ascii=False) + "\n")
+            return path
+        except FileExistsError:
+            path = logs_dir / f"{base_name}_{attempt}.jsonl"
+            attempt += 1
 
 
 def print_system(msg: str) -> None:
@@ -78,6 +86,83 @@ def print_assistant_chunk(chunk: str) -> None:
 
 def print_assistant_done() -> None:
     print(Style.RESET_ALL)
+
+
+def format_provider_error(exc: Exception) -> str:
+    message = str(exc).strip() or exc.__class__.__name__
+    return f"[provider error: {message}]"
+
+
+def stream_assistant_reply(provider, messages: List[RoleMessage]) -> str:
+    print(Fore.GREEN + "assistant> " + Style.RESET_ALL, end="")
+    reply_accum = ""
+    try:
+        result = provider.complete(messages, stream=True)
+        if isinstance(result, str):
+            reply_accum = result
+            print_assistant_chunk(result)
+        else:
+            for chunk in result:
+                reply_accum += chunk
+                print_assistant_chunk(chunk)
+    except Exception as exc:
+        error_text = format_provider_error(exc)
+        if reply_accum and not reply_accum.endswith("\n"):
+            print_assistant_chunk("\n")
+            reply_accum += "\n"
+        print_assistant_chunk(error_text)
+        reply_accum += error_text
+    print_assistant_done()
+    return reply_accum
+
+
+def autonomous_chat(args: argparse.Namespace) -> int:
+    colorama_init()
+
+    system_prompt = args.system or os.getenv(
+        "SYSTEM_PROMPT",
+        "You are a concise, friendly assistant. Be helpful and brief by default.",
+    )
+    seed_prompt = args.auto_seed or os.getenv(
+        "AUTONOMOUS_CHAT_SEED",
+        "Start working autonomously on the most useful next step and keep driving the conversation without waiting for user input.",
+    )
+    followup_prompt = args.auto_followup or os.getenv(
+        "AUTONOMOUS_CHAT_FOLLOWUP",
+        "Continue autonomously. Build on the conversation so far, choose the next useful step yourself, and keep going without asking for user input.",
+    )
+    delay_seconds = max(0.0, args.auto_delay)
+
+    provider, info = detect_provider(
+        explicit=args.provider, model_override=args.model)
+
+    messages: List[RoleMessage] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+
+    print_system(f"Provider: {info.name} | Model: {info.model}")
+    print_system(
+        "Autonomous mode active. Press Ctrl+C to stop."
+    )
+
+    turn_count = 0
+    next_user_message = seed_prompt
+
+    try:
+        while args.max_turns is None or turn_count < args.max_turns:
+            turn_count += 1
+            print_user(f"auto[{turn_count}]> {next_user_message}")
+            messages.append({"role": "user", "content": next_user_message})
+            reply_accum = stream_assistant_reply(provider, messages)
+            messages.append({"role": "assistant", "content": reply_accum})
+            next_user_message = followup_prompt
+            if delay_seconds > 0:
+                time.sleep(delay_seconds)
+    except KeyboardInterrupt:
+        print()
+        return 0
+
+    return 0
 
 
 def interactive_chat(args: argparse.Namespace) -> int:
@@ -134,7 +219,7 @@ def interactive_chat(args: argparse.Namespace) -> int:
 
         if cmd == "/save":
             path = save_conversation(messages, logs_dir)
-            print_system(f"Saved to {path}")
+            print_system(f"Saved {len(messages)} message(s) to {path}")
             continue
 
         if cmd == "/history":
@@ -181,19 +266,7 @@ def interactive_chat(args: argparse.Namespace) -> int:
 
         messages.append({"role": "user", "content": user})
 
-        # Stream assistant reply
-        print(Fore.GREEN + "assistant> " + Style.RESET_ALL, end="")
-        reply_accum = ""
-        result = provider.complete(messages, stream=True)
-        if isinstance(result, str):
-            reply_accum = result
-            print_assistant_chunk(result)
-        else:
-            for chunk in result:
-                reply_accum += chunk
-                print_assistant_chunk(chunk)
-        print_assistant_done()
-
+        reply_accum = stream_assistant_reply(provider, messages)
         messages.append({"role": "assistant", "content": reply_accum})
 
 
@@ -217,18 +290,7 @@ def one_shot(args: argparse.Namespace) -> int:
     messages.append({"role": "user", "content": args.once})
 
     print_system(f"Provider: {info.name} | Model: {info.model}")
-    print(Fore.GREEN + "assistant> " + Style.RESET_ALL, end="")
-
-    reply_accum = ""
-    result = provider.complete(messages, stream=True)
-    if isinstance(result, str):
-        reply_accum = result
-        print_assistant_chunk(result)
-    else:
-        for chunk in result:
-            reply_accum += chunk
-            print_assistant_chunk(chunk)
-    print_assistant_done()
+    stream_assistant_reply(provider, messages)
 
     return 0
 
@@ -237,17 +299,39 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         description="Simple terminal chat app with local/OpenAI/Azure providers")
     p.add_argument("--provider", choices=["auto", "openai", "azure", "local", "lora", "agi", "quantum",
-                   "lmstudio", "ollama"], default="auto", help="Which provider to use (default: auto)")
+                    "lmstudio", "ollama"], default="auto", help="Which provider to use (default: auto)")
     p.add_argument("--system", type=str, help="Custom system prompt")
     p.add_argument("--model", type=str, help="Model/deployment name override")
     p.add_argument("--once", type=str, help="Send a single message then exit")
+    p.add_argument("--interactive", action="store_true",
+                   help="Use stdin-driven interactive chat instead of autonomous mode")
+    p.add_argument("--autonomous", action="store_true",
+                   help="Run unattended continuous chat without prompting for stdin")
+    p.add_argument("--auto-seed", type=str,
+                   help="Initial autonomous user message")
+    p.add_argument("--auto-followup", type=str,
+                   help="Autonomous follow-up message reused after each assistant turn")
+    p.add_argument("--auto-delay", type=float, default=0.0,
+                   help="Delay between autonomous turns in seconds (default: 0)")
+    p.add_argument("--max-turns", type=int,
+                   help="Maximum autonomous turns before exiting (default: run forever)")
     return p
+
+
+def should_run_autonomous(args: argparse.Namespace) -> bool:
+    if args.interactive:
+        return False
+    if args.autonomous:
+        return True
+    return not args.once
 
 
 def main(argv: List[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     if args.once:
         return one_shot(args)
+    if should_run_autonomous(args):
+        return autonomous_chat(args)
     return interactive_chat(args)
 
 

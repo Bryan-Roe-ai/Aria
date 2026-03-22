@@ -1,0 +1,105 @@
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = REPO_ROOT / "scripts"
+if str(SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_DIR))
+
+import autonomous_code_agent as aca  # noqa: E402
+
+
+def _configure_agent_repo(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(aca, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(aca, "DATA_OUT", tmp_path / "data_out")
+    monkeypatch.setattr(aca, "STATUS_FILE", tmp_path / "data_out" / "status.json")
+    aca._LOGGER.handlers.clear()
+
+
+def _make_state() -> aca.AgentState:
+    return aca.AgentState(
+        task_id="test-task",
+        task_description="test task",
+        status="implementing",
+        llm_type="echo",
+        files_modified=[],
+        tests_run=0,
+        tests_passed=0,
+        tests_failed=0,
+        reasoning="",
+        commits=[],
+        errors=[],
+        started_at="now",
+        updated_at="now",
+    )
+
+
+def test_restore_modified_files_preserves_user_content(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _configure_agent_repo(monkeypatch, tmp_path)
+    target = tmp_path / "sample.py"
+    target.write_text("print('user work')\n", encoding="utf-8")
+
+    agent = aca.CodeAgent(llm_type="echo")
+    agent.state = _make_state()
+    monkeypatch.setattr(agent, "_llm_query", lambda prompt, max_tokens=aca.MAX_TASK_TOKENS: "print('agent edit')\n")
+
+    modified = agent.implement_changes("update sample", ["sample.py"])
+
+    assert modified == ["sample.py"]
+    assert target.read_text(encoding="utf-8") == "print('agent edit')\n"
+
+    restored = agent._restore_modified_files()
+
+    assert restored is True
+    assert target.read_text(encoding="utf-8") == "print('user work')\n"
+
+
+def test_commit_changes_stages_only_agent_modified_files(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    _configure_agent_repo(monkeypatch, tmp_path)
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "agent@example.com"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Agent Test"], cwd=tmp_path, check=True, capture_output=True)
+
+    tracked = tmp_path / "tracked.py"
+    unrelated = tmp_path / "notes.txt"
+    tracked.write_text("print('base')\n", encoding="utf-8")
+    unrelated.write_text("original\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.py", "notes.txt"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "initial"], cwd=tmp_path, check=True, capture_output=True)
+
+    unrelated.write_text("user local change\n", encoding="utf-8")
+    tracked.write_text("print('agent change')\n", encoding="utf-8")
+
+    agent = aca.CodeAgent(llm_type="echo")
+    agent.state = _make_state()
+    agent.state.files_modified = ["tracked.py"]
+
+    committed = agent.commit_changes("agent commit", files=["tracked.py"])
+
+    assert committed is True
+
+    show = subprocess.run(
+        ["git", "show", "--name-only", "--pretty=format:", "HEAD"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    committed_files = {line.strip() for line in show.stdout.splitlines() if line.strip()}
+    assert committed_files == {"tracked.py"}
+
+    status = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert " M notes.txt" in status.stdout
+    assert "tracked.py" not in status.stdout

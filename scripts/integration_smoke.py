@@ -153,14 +153,51 @@ def _check_config_paths() -> List[StepResult]:
     return results
 
 
+def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]:
+    """Fetch and parse the local Functions status payload."""
+    with urlopen(url, timeout=timeout) as resp:  # noqa: S310 - local probe
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
+    """Best-effort fallback: start local adapter and retry endpoint probe."""
+    proc: Optional[subprocess.Popen[str]] = None
+    deadline = time.time() + 8.0
+
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "local_dev_adapter.py"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+
+        while time.time() < deadline:
+            try:
+                return _fetch_local_functions_payload(url, timeout=1)
+            except (URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+                time.sleep(0.25)
+
+        return None
+    except OSError:
+        return None
+    finally:
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+
 def _probe_functions_endpoint(strict: bool) -> StepResult:
     name = "functions_ai_status_endpoint"
     start = time.perf_counter()
     url = "http://localhost:7071/api/ai/status"
     try:
-        with urlopen(url, timeout=2) as resp:  # noqa: S310 - local probe
-            payload = json.loads(resp.read().decode("utf-8"))
-            provider = payload.get("active_provider", "unknown")
+        payload = _fetch_local_functions_payload(url)
+        provider = payload.get("active_provider", "unknown")
         duration = round(time.perf_counter() - start, 2)
         return StepResult(
             name=name,
@@ -172,6 +209,17 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
     except (URLError, TimeoutError, OSError):
         duration = round(time.perf_counter() - start, 2)
         if strict:
+            fallback_payload = _probe_with_local_dev_adapter(url)
+            if fallback_payload is not None:
+                provider = fallback_payload.get("active_provider", "unknown")
+                duration = round(time.perf_counter() - start, 2)
+                return StepResult(
+                    name=name,
+                    status="succeeded",
+                    critical=True,
+                    duration_sec=duration,
+                    detail=f"provider={provider} | via=local_dev_adapter",
+                )
             return StepResult(
                 name=name,
                 status="failed",

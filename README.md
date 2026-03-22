@@ -61,9 +61,16 @@ OPENAI_API_KEY=sk-... python ai-projects/chat-cli/src/chat_cli.py --provider ope
 
 # Azure OpenAI (requires all four env vars — see Configuration below)
 python ai-projects/chat-cli/src/chat_cli.py --provider azure
+
+# Continuous autonomous mode (default)
+python ai-projects/chat-cli/src/chat_cli.py --provider local
+
+# Manual interactive mode
+python ai-projects/chat-cli/src/chat_cli.py --provider local --interactive
 ```
 
 Interactive session commands: `/new`, `/save`, `/exit`.
+The default CLI now runs autonomously forever; use `--interactive` if you want stdin prompts back.
 
 ### 3 — Start the Azure Functions API host
 
