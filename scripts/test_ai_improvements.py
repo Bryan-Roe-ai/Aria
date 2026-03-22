@@ -12,8 +12,10 @@ if "pytest" in sys.modules:
     )
 
 # Add project paths
-sys.path.insert(0, str(Path(__file__).parent.parent / "ai-projects" / "quantum-ml" / "src"))
-sys.path.insert(0, str(Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent /
+                "ai-projects" / "quantum-ml" / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent /
+                "ai-projects" / "chat-cli" / "src"))
 
 
 def test_quantum_improvements():

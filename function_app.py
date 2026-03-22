@@ -1366,6 +1366,115 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception as _le:  # noqa: BLE001
             learning_info["error"] = str(_le)
 
+        # Orchestrator Health Aggregation
+        orchestrator_health = {
+            "enabled": True,
+            "orchestrators": {},
+            "overall_status": "unknown",
+            "last_checked": datetime.utcnow().isoformat() + "Z",  # ISO 8601 UTC format
+            "active_count": 0,
+            "failed_count": 0,
+        }
+        try:
+            data_out_dir = Path(__file__).resolve().parent / "data_out"
+
+            # Autonomous training (uses top-level status + heartbeat)
+            try:
+                autotrain_status_file = data_out_dir / "autonomous_training_status.json"
+                if autotrain_status_file.exists():
+                    with open(autotrain_status_file, "r") as f:
+                        at_status = json.load(f)
+                    heartbeat_file = data_out_dir / "autonomous_training_heartbeat.json"
+                    heartbeat_running = False
+                    if heartbeat_file.exists():
+                        try:
+                            with open(heartbeat_file, "r") as f:
+                                hb = json.load(f)
+                            heartbeat_running = hb.get(
+                                "state") == "completed" or hb.get("pid")
+                        except Exception:
+                            pass
+
+                    orchestrator_health["orchestrators"]["autonomous_training"] = {
+                        "name": "autonomous_training",
+                        "status": "ok" if at_status.get("cycles_completed", 0) > 0 else "idle",
+                        "cycles_completed": at_status.get("cycles_completed", 0),
+                        "best_accuracy": at_status.get("best_accuracy"),
+                        "last_updated": at_status.get("last_updated"),
+                        "heartbeat_running": heartbeat_running,
+                        "performance_trend": "improving" if len(at_status.get("performance_history", [])) > 1 and at_status["performance_history"][-1].get("accuracy", 0) > at_status["performance_history"][0].get("accuracy", 0) else "unknown",
+                    }
+                    if heartbeat_running:
+                        orchestrator_health["active_count"] += 1
+            except Exception as _ate:  # noqa: BLE001
+                orchestrator_health["orchestrators"]["autonomous_training"] = {
+                    "status": "error",
+                    "error": str(_ate),
+                }
+                orchestrator_health["failed_count"] += 1
+
+            # Standard orchestrators (autotrain, quantum_autorun, evaluation_autorun, etc.)
+            standard_names = ["autotrain", "quantum_autorun",
+                              "evaluation_autorun", "integration_smoke", "autonomous_agent"]
+            for name in standard_names:
+                try:
+                    status_file = data_out_dir / name / "status.json"
+                    if status_file.exists():
+                        with open(status_file, "r") as f:
+                            orch_status = json.load(f)
+
+                        # Normalize to common schema
+                        total = orch_status.get("total_jobs", 0)
+                        succeeded = orch_status.get("succeeded", 0)
+                        failed = orch_status.get("failed", 0)
+
+                        if total == 0:
+                            health_status = "idle"
+                        elif failed > 0:
+                            health_status = "degraded"
+                        else:
+                            health_status = "ok"
+
+                        orchestrator_health["orchestrators"][name] = {
+                            "name": name,
+                            "status": health_status,
+                            "total_jobs": total,
+                            "succeeded": succeeded,
+                            "failed": failed,
+                            "running": orch_status.get("running", 0),
+                            "last_updated": orch_status.get("last_updated", orch_status.get("generated_at")),
+                            "success_rate": (succeeded / total * 100) if total > 0 else 100.0,
+                        }
+
+                        if health_status == "ok":
+                            orchestrator_health["active_count"] += 1
+                        elif health_status == "degraded":
+                            orchestrator_health["failed_count"] += 1
+                except Exception as _ose:  # noqa: BLE001
+                    logging.debug(
+                        f"[ai_status] Orchestrator {name} health check failed: {_ose}")
+                    # Only track as failed if file exists but is malformed
+                    if (data_out_dir / name / "status.json").exists():
+                        orchestrator_health["orchestrators"][name] = {
+                            "status": "error",
+                            "error": str(_ose),
+                        }
+                        orchestrator_health["failed_count"] += 1
+
+            # Determine overall platform health
+            if orchestrator_health["failed_count"] > 0:
+                orchestrator_health["overall_status"] = "degraded"
+            elif orchestrator_health["active_count"] > 0:
+                orchestrator_health["overall_status"] = "healthy"
+            else:
+                orchestrator_health["overall_status"] = "idle"
+
+        except Exception as _oh:  # noqa: BLE001
+            logging.warning(
+                f"[ai_status] Orchestrator health aggregation failed: {_oh}")
+            orchestrator_health["overall_status"] = "error"
+            orchestrator_health["error"] = str(_oh)
+
         payload = {
             "active_provider": info.name,
             "model": info.model,
@@ -1382,6 +1491,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "telemetry": telemetry_info,
             "quantum": quantum_info,
             "self_learning": learning_info,
+            "orchestrator_health": orchestrator_health,
             "temperature": float(os.getenv("CHAT_TEMPERATURE", "0.7")),
             "server": {
                 "executable": sys.executable,

@@ -50,6 +50,8 @@ logger = logging.getLogger(__name__)
 # ----------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# Add shared dir for config_validator import
+sys.path.insert(0, str(REPO_ROOT / "shared"))
 DATA_OUT_ROOT = REPO_ROOT / "data_out"
 STATUS_FILE = DATA_OUT_ROOT / "autonomous_training_status.json"
 HEARTBEAT_FILE = DATA_OUT_ROOT / "autonomous_training_heartbeat.json"
@@ -588,6 +590,20 @@ def main() -> int:
     config_path = Path(args.config)
     if not config_path.is_absolute():
         config_path = REPO_ROOT / config_path
+
+    # Validate configuration before proceeding
+    try:
+        from shared.config_validator import ConfigValidator
+    except ImportError:
+        from config_validator import ConfigValidator
+
+    validator = ConfigValidator(REPO_ROOT)
+    result = validator.validate_autonomous_training(config_path)
+    if not result.valid:
+        logger.error("❌ Configuration validation failed:")
+        logger.error(result.report(verbose=True))
+        return 1
+
     config = load_config(config_path)
 
     return run_autonomously(

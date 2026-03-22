@@ -21,7 +21,7 @@ def _run_status_check(args: list[str] | None = None) -> tuple[int, str]:
     cmd = [sys.executable, str(SCRIPT_PATH)]
     if args:
         cmd.extend(args)
-    
+
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
     return result.returncode, result.stdout + result.stderr
 
@@ -55,7 +55,7 @@ def test_script_json_output() -> None:
     """Test JSON output format."""
     exit_code, output = _run_status_check(["--json"])
     assert exit_code == 0
-    
+
     # Should be valid JSON
     try:
         data = json.loads(output)
@@ -79,9 +79,10 @@ def test_script_with_output_dir(tmp_path: Path) -> None:
 @pytest.mark.unit
 def test_script_json_output_with_custom_dir(tmp_path: Path) -> None:
     """Test JSON output with custom directory."""
-    exit_code, output = _run_status_check(["--output", str(tmp_path), "--json"])
+    exit_code, output = _run_status_check(
+        ["--output", str(tmp_path), "--json"])
     assert exit_code == 0
-    
+
     try:
         data = json.loads(output)
         assert isinstance(data, dict)
@@ -109,7 +110,7 @@ def test_script_with_status_file(tmp_path: Path) -> None:
         "inference_ready": True,
     }
     status_file.write_text(json.dumps(test_status, indent=2), encoding="utf-8")
-    
+
     exit_code, output = _run_status_check(["--output", str(tmp_path)])
     assert exit_code == 0
     # Should display training progress
@@ -130,10 +131,11 @@ def test_script_json_with_status_file(tmp_path: Path) -> None:
         "best_loss": 0.200,
     }
     status_file.write_text(json.dumps(test_status, indent=2), encoding="utf-8")
-    
-    exit_code, output = _run_status_check(["--output", str(tmp_path), "--json"])
+
+    exit_code, output = _run_status_check(
+        ["--output", str(tmp_path), "--json"])
     assert exit_code == 0
-    
+
     data = json.loads(output)
     # Should reflect the status file data
     assert data["status"] == "running"
