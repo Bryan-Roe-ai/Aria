@@ -25,8 +25,15 @@ class TrainingAnalytics:
         if not self.status_file.exists():
             return {}
 
-        with open(self.status_file) as f:
-            return json.load(f)
+        try:
+            with open(self.status_file, encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            # Graceful fallback for partially-written/corrupted status files.
+            return {}
+        except OSError:
+            # Graceful fallback for transient file read issues.
+            return {}
 
     @staticmethod
     def _get_accuracy(perf: Dict) -> float:

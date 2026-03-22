@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -96,6 +97,37 @@ def test_training_analytics_missing_status_file_exits_zero() -> None:
     assert proc.returncode == 0
     assert "AUTONOMOUS TRAINING ANALYTICS REPORT" in proc.stdout
     assert "Total Cycles: 0" in proc.stdout
+
+
+@pytest.mark.unit
+def test_training_analytics_malformed_status_file_exits_zero() -> None:
+    repo_root = Path(__file__).resolve().parents[1]
+    script = repo_root / "scripts" / "training_analytics.py"
+
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
+        tmp.write("{ malformed json")
+        tmp_path = tmp.name
+
+    try:
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "--status-file",
+                tmp_path,
+                "--report",
+            ],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+        assert proc.returncode == 0
+        assert "AUTONOMOUS TRAINING ANALYTICS REPORT" in proc.stdout
+        assert "Total Cycles: 0" in proc.stdout
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
 
 
 @pytest.mark.unit
