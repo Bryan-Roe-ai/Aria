@@ -39,6 +39,33 @@ PLATEAU_VARIANCE = 0.005
 MAX_HISTORY_CYCLES = 500
 
 
+def compact_status(history_limit: int = MAX_HISTORY_CYCLES) -> dict:
+    """Compact status history and persist result.
+
+    Useful for maintenance on long-running environments where older status
+    files may have very large performance_history arrays.
+    """
+    if history_limit < 1:
+        raise ValueError("history_limit must be >= 1")
+
+    status = load_status()
+    history = status.get('performance_history', [])
+    before = len(history)
+    if before > history_limit:
+        status['performance_history'] = history[-history_limit:]
+    after = len(status.get('performance_history', []))
+
+    save_status(status)
+    result = {
+        'status_file': str(STATUS_FILE),
+        'history_limit': history_limit,
+        'before': before,
+        'after': after,
+        'compacted': before != after,
+    }
+    return result
+
+
 def load_status():
     """Load existing training status."""
     if STATUS_FILE.exists():
@@ -373,8 +400,17 @@ if __name__ == '__main__':
                         help='Seconds between cycles')
     parser.add_argument('--status', action='store_true',
                         help='Show current status and exit')
+    parser.add_argument('--compact-status', action='store_true',
+                        help='Compact performance_history in status and exit')
+    parser.add_argument('--history-limit', type=int, default=MAX_HISTORY_CYCLES,
+                        help='History limit used with --compact-status')
 
     args = parser.parse_args()
+
+    if args.compact_status:
+        result = compact_status(args.history_limit)
+        print(json.dumps(result, indent=2))
+        sys.exit(0)
 
     if args.status:
         status = load_status()

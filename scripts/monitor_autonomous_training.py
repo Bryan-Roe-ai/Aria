@@ -503,14 +503,16 @@ class TrainingMonitor:
             writer.writeheader()
 
             for i, perf in enumerate(status["performance_history"], start=1):
+                mean_acc = perf.get('mean_accuracy', perf.get('accuracy', 0))
+                max_acc = perf.get('max_accuracy', perf.get('accuracy', mean_acc))
                 writer.writerow({
                     'timestamp': perf.get('timestamp', ''),
-                    'cycle': i,
-                    'epochs': perf.get('epochs', 0),
-                    'mean_accuracy': perf.get('mean_accuracy', 0),
+                    'cycle': perf.get('cycle', i),
+                    'epochs': perf.get('epochs', ''),
+                    'mean_accuracy': mean_acc,
                     'median_accuracy': perf.get('median_accuracy', 0),
-                    'max_accuracy': perf.get('max_accuracy', 0),
-                    'successful_count': perf.get('successful_count', 0),
+                    'max_accuracy': max_acc,
+                    'successful_count': perf.get('successful_count', perf.get('datasets_trained', 0)),
                     'failed_count': perf.get('failed_count', 0),
                     'exceptional_models': perf.get('exceptional_models', 0),
                     'excellent_models': perf.get('excellent_models', 0)

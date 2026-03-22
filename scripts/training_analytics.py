@@ -74,12 +74,17 @@ class TrainingAnalytics:
         epoch_performance = {}
 
         for perf in history:
-            epochs = perf.get("epochs", 0)
+            epochs = perf.get("epochs")
+            if not epochs:
+                continue
             accuracy = self._get_accuracy(perf)
 
             if epochs not in epoch_performance:
                 epoch_performance[epochs] = []
             epoch_performance[epochs].append(accuracy)
+
+        if not epoch_performance:
+            return 100
 
         best_epochs = 100
         best_avg = 0.0
