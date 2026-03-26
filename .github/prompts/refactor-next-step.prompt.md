@@ -18,6 +18,11 @@ Given the current refactor stage, recommend the **single best next slash prompt*
 - Provide one concrete invocation string tailored to the user's context.
 - If inputs are incomplete, infer conservatively and state assumptions.
 
+### Non-goals unless explicitly requested
+- No executing the recommended command — recommend only.
+- No multi-step plans — one next step at a time.
+- No code changes or source file edits.
+
 ### Output format
 - **Optional next command**: one prompt only
 - **Why now**: 2-4 bullets

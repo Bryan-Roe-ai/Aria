@@ -18,6 +18,11 @@ Create a canonical index of all artifacts produced in a refactor workflow.
 - Mark missing-but-required artifacts.
 - Provide one best next command to close the biggest gap.
 
+### Non-goals unless explicitly requested
+- No renaming or relocating existing artifacts — index only.
+- No creating new artifacts outside of the established workflow steps.
+- No code changes or source file edits.
+
 ### Output format
 - **Artifact index table**: artifact, produced-by, status, location/reference, purpose
 - **Required missing artifacts**

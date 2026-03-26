@@ -21,6 +21,11 @@ Perform a strict final completion check for a refactor change set.
 - If NOT DONE, list exact missing artifacts or unresolved blockers.
 - If DONE, provide a concise final readiness statement and any residual watchpoints.
 
+### Non-goals unless explicitly requested
+- No automatic fix-ups or remediation — report completion status only.
+- No introducing new gate criteria beyond those defined in the gate profile.
+- No partial approvals — completed or not complete, no middle ground.
+
 ### Output format
 - **Verdict**: DONE | NOT DONE
 - **Gate status table**: gate, status, evidence

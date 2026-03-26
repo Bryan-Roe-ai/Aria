@@ -20,6 +20,11 @@ Audit the refactor prompt suite for consistency and suggest minimal corrective e
 - Propose minimal, concrete text edits (no unnecessary rewrites).
 - Classify findings by severity (blocker, warning, note).
 
+### Non-goals unless explicitly requested
+- No making prompt edits or rewrites — report findings only.
+- No redefining stage semantics — audit existing definitions only.
+- No flagging style preferences as structural blockers.
+
 ### Output format
 - **Audit summary**
 - **Consistency findings**: file, issue, severity, fix

@@ -23,6 +23,11 @@ Optional companion:
 - Keep wording accurate, concise, and confidence-calibrated.
 - Include operational caveats when relevant (rollback notes, feature flags, migration notes).
 
+### Non-goals unless explicitly requested
+- No marketing copy or unverified capability claims.
+- No including breaking changes not confirmed in the evidence log.
+- No modifying source code or test files.
+
 ### Output format
 - **Release note (customer-facing)**: short and plain-language
 - **Changelog entry (technical)**: concise bullet(s) with scope and evidence

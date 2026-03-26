@@ -23,6 +23,11 @@ Determine the minimum required refactor gates for this change before final merge
 - Distinguish mandatory gates vs recommended gates.
 - Provide one next command to start execution.
 
+### Non-goals unless explicitly requested
+- No code changes or implementation tasks — profile only.
+- No adding gates beyond what the stated risk level requires.
+- No approving waivers or overriding mandatory gate requirements.
+
 ### Output format
 - **Profile**: one category only
 - **Mandatory gates**

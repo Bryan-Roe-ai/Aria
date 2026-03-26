@@ -30,6 +30,11 @@ Optional companion:
 - Highlight risk areas and how they were mitigated.
 - Avoid fluff; prefer verifiable statements tied to evidence.
 
+### Non-goals unless explicitly requested
+- No modifying source code or test files.
+- No fabricating test results — summarize actual evidence only.
+- No including speculative improvements not yet implemented.
+
 ### Output format
 - **Title suggestion**: one-line PR title
 - **Why**: problem or maintenance goal

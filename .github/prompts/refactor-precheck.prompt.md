@@ -25,6 +25,11 @@ Suggested next step:
 - Highlight likely regression zones (state flow, branching logic, side effects, error paths).
 - Recommend a smallest-safe refactor slice and rollback strategy.
 
+### Non-goals unless explicitly requested
+- No code changes — produce planning assessment only.
+- No expanding refactor scope beyond what was requested.
+- No skipping identified regression hotspots to save time.
+
 ### Output format
 - **Scope understanding**: what will and will not be touched
 - **Must-preserve invariants**: explicit contract checklist

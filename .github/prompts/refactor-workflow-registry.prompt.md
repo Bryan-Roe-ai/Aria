@@ -19,6 +19,11 @@ Generate a canonical registry for the refactor prompt workflow.
 - Output gate taxonomy (mandatory-capable vs optional-supporting gates).
 - Flag deprecated or ambiguous terms and suggest replacements.
 
+### Non-goals unless explicitly requested
+- No adding experimental stages not yet agreed upon by the workflow owners.
+- No removing stages still referenced by other prompts in the suite.
+- No executing workflow steps — define and document only.
+
 ### Output format
 - **Canonical stages**
 - **Canonical commands** (grouped)

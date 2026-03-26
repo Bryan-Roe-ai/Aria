@@ -18,6 +18,11 @@ Determine whether a refactor is ready to merge and provide an evidence-based dec
 - If GO, list residual risks and post-merge watchpoints.
 - Tie each decision point to concrete evidence.
 
+### Non-goals unless explicitly requested
+- No auto-merging or executing the merge — gate assessment only.
+- No reopening closed blockers without new evidence.
+- No waiving mandatory evidence requirements for convenience.
+
 ### Output format
 - **Decision**: GO | NO-GO
 - **Rationale**: concise evidence-backed reasoning

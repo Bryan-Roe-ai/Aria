@@ -30,6 +30,11 @@ Suggested next step:
 - Prioritize findings by severity and confidence.
 - Propose minimal remediation steps for each high-priority issue.
 
+### Non-goals unless explicitly requested
+- No making code changes to fix discovered regressions — verify and report only.
+- No approving merge readiness without complete evidence for all required checks.
+- No suppressing or downgrading findings to achieve a passing result.
+
 ### Output format
 - **Verification summary**: pass/fail by area
 - **Contract parity table**: invariant, status, evidence

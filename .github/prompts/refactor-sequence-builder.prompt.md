@@ -18,6 +18,11 @@ Generate an end-to-end ordered slash-command sequence for the refactor workflow.
 - For each step, provide a compact command line and success checkpoint.
 - Mark optional branches explicitly without duplicating required path.
 
+### Non-goals unless explicitly requested
+- No executing the sequence steps — output the ordered plan only.
+- No skipping required gates based on estimated or assumed low risk.
+- No adding steps outside the approved refactor prompt suite.
+
 ### Output format
 - **Profile used**
 - **Required path** (ordered list of commands)

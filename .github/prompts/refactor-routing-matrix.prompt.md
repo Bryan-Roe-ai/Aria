@@ -21,6 +21,11 @@ Generate a normalized routing matrix for the refactor prompt suite.
 - Highlight asymmetric transitions where reverse/adjacent navigation is unexpectedly missing.
 - Recommend minimal edits to fix discovered routing gaps.
 
+### Non-goals unless explicitly requested
+- No recommending workflow changes or reordering established stages.
+- No including commands outside the established refactor prompt suite.
+- No executing transitions — produce the routing map only.
+
 ### Output format
 - **Routing matrix**: stage, next-command, transition-type, rationale
 - **Orphans/dead ends**

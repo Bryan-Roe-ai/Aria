@@ -19,6 +19,11 @@ Create a practical rollback plan for a refactor change set.
 - Include post-rollback verification checks.
 - Distinguish immediate rollback from follow-up remediation.
 
+### Non-goals unless explicitly requested
+- No executing the rollback — plan and document only.
+- No removing entries for partial-rollback options that may still be needed.
+- No overstating rollback safety without supporting evidence.
+
 ### Output format
 - **Rollback readiness summary**
 - **Triggers to rollback**

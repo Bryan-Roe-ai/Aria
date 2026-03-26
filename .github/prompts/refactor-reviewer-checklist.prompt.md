@@ -23,6 +23,11 @@ Optional companion:
 - Include expected evidence for each check (tests, logs, code locations, behavior observations).
 - Prioritize checks that protect externally visible behavior.
 
+### Non-goals unless explicitly requested
+- No conducting the review — produce the checklist only.
+- No prescribing approval or rejection decisions — flag issues, not verdicts.
+- No adding checks unrelated to the stated reviewer roles and risk surface.
+
 ### Output format
 - **Overview**: 1-2 lines on refactor risk profile
 - **Role-based checklist**:

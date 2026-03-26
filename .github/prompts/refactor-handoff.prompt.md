@@ -20,6 +20,11 @@ Create a handoff-ready refactor status package for another engineer (or for late
 - Provide exactly one recommended next command for continuation.
 - Keep it scannable and action-oriented.
 
+### Non-goals unless explicitly requested
+- No continuing the refactor — produce the handoff document only.
+- No speculative decisions not yet made during the current phase.
+- No resolving open blockers — document them for the next owner.
+
 ### Output format
 - **Current stage**
 - **Completed artifacts**

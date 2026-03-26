@@ -17,6 +17,11 @@ Given the user's current refactor state, output **exactly one best next slash co
 - Prefer the shortest viable command that still includes critical constraints.
 - If context is incomplete, infer conservatively and include minimal assumptions in the command text.
 
+### Non-goals unless explicitly requested
+- No multi-step plans or sequencing — produce one command only.
+- No code changes or edits to source files.
+- No executing the recommended command — output it for human use.
+
 ### Output format
 - **Single line only**: `/prompt-name concise arguments...`
 - **Optional next command**: one slash command

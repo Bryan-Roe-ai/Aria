@@ -19,6 +19,11 @@ Create a structured evidence log for a refactor change set.
 - Capture unresolved items with explicit owner/action where possible.
 - Keep format stable for handoff and merge decisions.
 
+### Non-goals unless explicitly requested
+- No modifying or backdating existing evidence entries.
+- No running new tests — document what has already been executed.
+- No speculative findings — only confirmed, reproducible observations.
+
 ### Output format
 - **Scope summary**
 - **Invariant checks**: invariant, status, evidence
