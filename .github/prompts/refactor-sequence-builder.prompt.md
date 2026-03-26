@@ -1,5 +1,5 @@
 ---
-description: "Use when you need a full ordered refactor command runbook from risk profile, constraints, and required gates."
+description: 'Use when you need a full ordered refactor command sequence or runbook from risk profile, constraints, and required gates.'
 name: "Refactor Sequence Builder"
 argument-hint: "Scope + profile + required gates + constraints (example: function_app.py + standard + verify + no DB changes)"
 agent: agent

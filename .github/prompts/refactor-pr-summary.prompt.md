@@ -1,7 +1,7 @@
 ---
 description: "Use when opening a refactor PR: generate a concise reviewer-friendly summary with parity evidence and test results."
 name: "Refactor PR Summary"
-argument-hint: "Scope + rationale + key unchanged contracts + validation results (example: function_app.py + extract SSE helper + /api/chat schema + all passed)"
+argument-hint: "Scope + rationale + key unchanged contracts + validation results (example: fn_app.py + SSE helper + /api/chat + passed)"
 agent: agent
 ---
 
@@ -21,7 +21,7 @@ Optional companion:
 ### Inputs
 - Selected diff, changed files, and commit context
 - User arguments describing scope and rationale
-- Known invariants/contract requirements (API shapes, routes, streaming/status behavior)
+- Known unchanged contracts and invariants (API shapes, routes, streaming/status behavior)
 - Validation outcomes (focused and broader checks)
 
 ### Required behavior

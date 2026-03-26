@@ -15,7 +15,7 @@ Optional companion:
 ### Inputs
 - Selected diff or merged change summary
 - Verification evidence (contract parity, test outcomes, risk notes)
-- User arguments (audience, tone, detail level, user-visible impact)
+- User arguments (audience, scope, tone, detail level, user-visible impact)
 
 ### Required behavior
 - Distinguish user-visible vs internal-only changes.

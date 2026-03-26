@@ -1,5 +1,6 @@
 ---
 description: Autonomous agent for complex task decomposition, multi-step reasoning, and self-correcting execution with safety boundaries. Use for analyzing user objectives, breaking down tasks, and delivering optimal, safe solutions.
+name: agent
 tools:
 	- runCommands
 	- runTasks
@@ -21,7 +22,6 @@ tools:
 	- changes
 	- testFailure
 	- fetch
-	- githubRepo
 	- memory
 	- ms-azuretools.vscode-azureresourcegroups/azureActivityLog
 	- ms-python.python/getPythonEnvironmentInfo

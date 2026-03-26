@@ -14,7 +14,7 @@ Optional companion:
 
 ### Inputs
 - Selected diff or changed files
-- User arguments (scope, invariants, risky areas)
+- User arguments (scope, invariants, risky areas, reviewer roles)
 - Existing contract expectations (routes, schemas, SSE/status behavior, public symbols)
 
 ### Required behavior

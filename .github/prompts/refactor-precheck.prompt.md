@@ -1,5 +1,5 @@
 ---
-description: "Use when planning a refactor: assess invariants, regression hotspots, and validation strategy before code changes."
+description: 'Use when planning a refactor pre-check: assess invariants, regression hotspots, and validation strategy before code changes.'
 name: "Refactor Precheck"
 argument-hint: "Target + intent + constraints (example: scope + goal + invariant)"
 agent: agent

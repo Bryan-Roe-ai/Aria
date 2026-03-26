@@ -33,6 +33,11 @@ except ImportError:
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"
+# Adapter startup can be slow in cold/containerized environments because
+# importing `function_app` initializes multiple subsystems. Keep this timeout
+# comfortably above typical observed startup (~13s) to avoid false negatives.
+LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC = 25.0
+LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC = 10.0
 
 
 @dataclass
@@ -111,7 +116,8 @@ def _check_config_paths() -> List[StepResult]:
         candidates = get_config_candidates(REPO_ROOT, config_key)
         canonical = canonical_config_path(REPO_ROOT, config_key)
         start = time.perf_counter()
-        found: Optional[Path] = next((p for p in candidates if p.exists()), None)
+        found: Optional[Path] = next(
+            (p for p in candidates if p.exists()), None)
         duration = round(time.perf_counter() - start, 2)
 
         if found is None:
@@ -162,7 +168,7 @@ def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]
 def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
     """Best-effort fallback: start local adapter and retry endpoint probe."""
     proc: Optional[subprocess.Popen[str]] = None
-    deadline = time.time() + 8.0
+    deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
 
     try:
         proc = subprocess.Popen(
@@ -175,7 +181,12 @@ def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
 
         while time.time() < deadline:
             try:
-                return _fetch_local_functions_payload(url, timeout=1)
+                remaining = max(1.0, deadline - time.time())
+                request_timeout = min(
+                    LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
+                    remaining,
+                )
+                return _fetch_local_functions_payload(url, timeout=request_timeout)
             except (URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
                 time.sleep(0.25)
 
@@ -255,7 +266,8 @@ def _resolved_config_paths() -> Dict[str, Optional[str]]:
     resolved: Dict[str, Optional[str]] = {}
     for key in config_keys:
         selected = resolve_existing_config_path(REPO_ROOT, key)
-        resolved[key] = str(selected.relative_to(REPO_ROOT)) if selected else None
+        resolved[key] = str(selected.relative_to(
+            REPO_ROOT)) if selected else None
     return resolved
 
 
@@ -304,7 +316,8 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")
-    failed_critical = [s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
+    failed_critical = [
+        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 
@@ -327,7 +340,8 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Run Aria integration smoke checks")
+    ap = argparse.ArgumentParser(
+        description="Run Aria integration smoke checks")
     ap.add_argument(
         "--strict-endpoints",
         action="store_true",

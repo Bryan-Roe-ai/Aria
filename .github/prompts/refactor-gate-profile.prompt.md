@@ -10,6 +10,7 @@ Determine the minimum required refactor gates for this change before final merge
 ### Inputs
 - Refactor scope and touched areas
 - Risk signals (public API touch, SSE/schema changes, provider logic changes, multi-file complexity)
+- Contract touchpoints (public routes, schemas, streaming contracts that must not change)
 - Constraints (no API changes, minimal diff, preserve fallback order, etc.)
 
 ### Required behavior

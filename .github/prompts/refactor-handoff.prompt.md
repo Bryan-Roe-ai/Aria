@@ -1,7 +1,7 @@
 ---
 description: "Use when handing off refactor work: produce a concise status package with decisions, evidence, blockers, and exact next command."
 name: "Refactor Handoff"
-argument-hint: "Current stage + completed artifacts + blocker + owner handoff context (example: verify + evidence-log + failing test + reassign to backend)"
+argument-hint: "Current stage + completed artifacts + blocker + owner handoff context (example: verify + ev-log + test fails + backend)"
 agent: agent
 ---
 
@@ -11,6 +11,7 @@ Create a handoff-ready refactor status package for another engineer (or for late
 - Current workflow stage and completed prompts
 - Artifacts produced (precheck notes, diff summary, verification outcomes, PR summary, release note draft)
 - Open blockers, assumptions, and unresolved risks
+- Owner handoff context (next owner, priority, escalation path)
 
 ### Required behavior
 - Capture what is done vs what remains, with no ambiguity.

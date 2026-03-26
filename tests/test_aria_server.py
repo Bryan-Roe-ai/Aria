@@ -1,11 +1,9 @@
-import importlib
 import re
 import importlib.util
 import sys
 from http import HTTPStatus
 from pathlib import Path
 
-# Add apps/aria to path for imports
 # Load apps/aria/server.py by absolute path to avoid cross-test module-name collisions
 # when other suites import a different `server` module first.
 _ARIA_SERVER_PATH = Path(__file__).parent.parent / \
@@ -234,6 +232,136 @@ def test_parse_with_fallback_temporal_separator_lastly():
             f"Expected pickup in lastly sequence but got {actions}"
         assert any(a.get('action') == 'move' and a.get('target') == {'x': 50, 'y': 85} for a in actions), \
             f"Expected bring-it move in lastly sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_first_second():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'first pick up cup second bring it here')
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in first/second sequence but got {actions}"
+        assert any(a.get('action') == 'move' and a.get('target') == {'x': 50, 'y': 85} for a in actions), \
+            f"Expected bring-it move in first/second sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_first_second_finally():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'first pick up cup second bring it here finally put it on table'
+        )
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in first/second/finally sequence but got {actions}"
+        assert any(a.get('action') == 'drop' and a.get('position') == {'x': 60, 'y': 35} for a in actions), \
+            f"Expected final table drop in first/second/finally sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_step_numbers():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'step 1 pick up cup step 2 bring it here step 3 put it on table'
+        )
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in step-number sequence but got {actions}"
+        assert any(a.get('action') == 'drop' and a.get('position') == {'x': 60, 'y': 35} for a in actions), \
+            f"Expected table drop in step-number sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_step_numbers_compact():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'step1 pick up cup step2 bring it here')
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in compact-step sequence but got {actions}"
+        assert any(a.get('action') == 'move' and a.get('target') == {'x': 50, 'y': 85} for a in actions), \
+            f"Expected bring-it move in compact-step sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_step_roman_numerals():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'step I pick up cup step II bring it here')
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in Roman step sequence but got {actions}"
+        assert any(a.get('action') == 'move' and a.get('target') == {'x': 50, 'y': 85} for a in actions), \
+            f"Expected bring-it move in Roman step sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_numbered_list_markers():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            '1) pick up cup 2) bring it here 3) put it on table')
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in numbered-list sequence but got {actions}"
+        assert any(a.get('action') == 'drop' and a.get('position') == {'x': 60, 'y': 35} for a in actions), \
+            f"Expected table drop in numbered-list sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_phase_numbers():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'phase 1 pick up cup phase 2 bring it here')
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in phase-number sequence but got {actions}"
+        assert any(a.get('action') == 'move' and a.get('target') == {'x': 50, 'y': 85} for a in actions), \
+            f"Expected bring-it move in phase-number sequence but got {actions}"
+    finally:
+        aria_server.stage_state['aria']['held_object'] = original_held
+
+
+def test_parse_with_fallback_temporal_separator_part_roman_numerals():
+    parser = aria_server.AriaActionParser()
+    original_held = aria_server.stage_state['aria'].get('held_object')
+    try:
+        aria_server.stage_state['aria']['held_object'] = None
+        actions = parser.parse_with_fallback(
+            'part I pick up cup part II put it on table')
+
+        assert any(a.get('action') == 'pickup' and a.get('object_id') == 'cup' for a in actions), \
+            f"Expected pickup in part-Roman sequence but got {actions}"
+        assert any(a.get('action') == 'drop' and a.get('position') == {'x': 60, 'y': 35} for a in actions), \
+            f"Expected table drop in part-Roman sequence but got {actions}"
     finally:
         aria_server.stage_state['aria']['held_object'] = original_held
 
