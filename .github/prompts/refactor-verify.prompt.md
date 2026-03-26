@@ -1,7 +1,7 @@
 ---
 description: "Use when validating a refactor: verify contract parity, detect regressions, and assess merge readiness."
 name: "Refactor Verify"
-argument-hint: "Refactor scope + expected unchanged behavior + required checks (example: function_app.py + SSE stable + unit+type check)"
+argument-hint: "Refactor scope + expected unchanged behavior + required checks (example: function_app.py + SSE stable + unit,type check)"
 agent: agent
 ---
 
