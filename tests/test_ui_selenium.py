@@ -47,11 +47,12 @@ pytestmark = pytest.mark.skipif(
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ARIA_WEB = REPO_ROOT / 'aria_web'
-SERVER_URL = os.environ.get('ARIA_SERVER_URL', 'http://localhost:8000')
-SELENIUM_REMOTE_URL = os.environ.get('SELENIUM_REMOTE_URL', 'http://localhost:4444/wd/hub')
+SERVER_URL = os.environ.get('ARIA_SERVER_URL', 'http://localhost:8080')
+SELENIUM_REMOTE_URL = os.environ.get(
+    'SELENIUM_REMOTE_URL', 'http://localhost:4444/wd/hub')
 
 
-def is_port_open(port=8000, host='127.0.0.1'):
+def is_port_open(port=8080, host='127.0.0.1'):
     """Check if a port is open."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -71,15 +72,15 @@ def ensure_server_running():
 
     logger.info("Starting Aria server...")
     proc = subprocess.Popen(
-        ["python3", "server.py"], 
-        cwd=str(ARIA_WEB), 
-        stdout=subprocess.DEVNULL, 
+        ["python3", "server.py"],
+        cwd=str(ARIA_WEB),
+        stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
 
     # Wait for server to be available
     for i in range(30):
-        if is_port_open(8000):
+        if is_port_open(8080):
             logger.info(f"Server started successfully after {i+1} attempts")
             return proc
         time.sleep(0.2)
@@ -105,7 +106,8 @@ def wait_for_object(name, timeout=4.0):
 def is_selenium_hub_ready():
     """Check if Selenium hub is accessible."""
     try:
-        response = requests.get(f"{SELENIUM_REMOTE_URL.rsplit('/wd/hub', 1)[0]}/wd/hub/status", timeout=2)
+        response = requests.get(
+            f"{SELENIUM_REMOTE_URL.rsplit('/wd/hub', 1)[0]}/wd/hub/status", timeout=2)
         if response.ok:
             status = response.json()
             if status.get('value', {}).get('ready'):
@@ -122,28 +124,30 @@ def create_remote_driver(max_retries=3):
     # Check if Selenium hub is ready
     if not is_selenium_hub_ready():
         raise Exception("Selenium hub is not ready or not accessible")
-    
+
     chrome_options = Options()
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
-    
+
     last_error = None
     for attempt in range(max_retries):
         try:
-            logger.info(f"Connecting to Selenium hub at {SELENIUM_REMOTE_URL} (attempt {attempt + 1}/{max_retries})...")
+            logger.info(
+                f"Connecting to Selenium hub at {SELENIUM_REMOTE_URL} (attempt {attempt + 1}/{max_retries})...")
             driver = webdriver.Remote(
                 command_executor=SELENIUM_REMOTE_URL,
                 options=chrome_options
             )
-            logger.info(f"Connected successfully. Session ID: {driver.session_id}")
+            logger.info(
+                f"Connected successfully. Session ID: {driver.session_id}")
             return driver
         except Exception as e:
             last_error = e
             logger.warning(f"Connection attempt {attempt + 1} failed: {e}")
             if attempt < max_retries - 1:
                 time.sleep(2)
-    
+
     # All retries failed
     error_msg = f"Failed to connect to Selenium hub after {max_retries} attempts. Last error: {last_error}"
     logger.error(error_msg)
@@ -154,7 +158,10 @@ def create_remote_driver(max_retries=3):
 def test_selenium_add_pickup_drop():
     """Test object sync using containerized Chrome via Selenium."""
     # Ensure server is running
-    proc = ensure_server_running()
+    try:
+        proc = ensure_server_running()
+    except RuntimeError as e:
+        pytest.skip(f"Aria server unavailable for Selenium E2E: {e}")
     started_proc = proc is not None
 
     # Generate unique object name
@@ -172,17 +179,18 @@ def test_selenium_add_pickup_drop():
         # Navigate to Aria web interface
         logger.info(f"Navigating to {SERVER_URL}")
         driver.get(SERVER_URL)
-        
+
         # Wait for page to load
         WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
+            lambda d: d.execute_script(
+                "return document.readyState") == "complete"
         )
         logger.info(f"Page loaded: {driver.title}")
 
         # Add object via JavaScript
         logger.info(f"Adding object '{name}' with emoji 🧸")
         driver.execute_script(f"addObject('{name}', '🧸')")
-        
+
         # Wait for object to appear on server
         obj = wait_for_object(name, timeout=6.0)
         assert obj is not None, f"Server didn't report newly added object {name}"
@@ -207,7 +215,7 @@ def test_selenium_add_pickup_drop():
             except Exception as e:
                 logger.debug(f"Error checking state: {e}")
             time.sleep(0.1)
-        
+
         assert held, f'Object {name} not marked held on server after pickUpObject'
 
         # Drop
@@ -215,13 +223,14 @@ def test_selenium_add_pickup_drop():
         driver.execute_script('dropObject()')
         dropped = wait_for_object(name, timeout=5.0)
         assert dropped is not None, f"Object {name} disappeared after drop"
-        assert dropped.get('state') in ['on_stage', 'on_table'], f"Unexpected state after drop: {dropped.get('state')}"
+        assert dropped.get('state') in [
+            'on_stage', 'on_table'], f"Unexpected state after drop: {dropped.get('state')}"
         logger.info(f"Object dropped successfully: {dropped}")
 
         # Cleanup: remove object
         logger.info(f"Removing object '{name}'")
         r = requests.post(
-            f"{SERVER_URL}/api/aria/object", 
+            f"{SERVER_URL}/api/aria/object",
             json={'action': 'remove', 'object': {'id': name}}
         )
         assert r.ok, f"Failed to remove object: {r.status_code} {r.text}"

@@ -24,11 +24,21 @@ os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
 def _reset_sql_engine():
     """Reset cached engine so tests pick up the in-memory URL."""
     import shared.sql_engine as _eng
+    import shared.sql_repository as _repo
     _eng._ENGINE = None
     _eng._LAST_URL = None
+    _repo._TABLE_CREATED = False
+    _repo._SQLITE_CONN = None
     yield
     _eng._ENGINE = None
     _eng._LAST_URL = None
+    _repo._TABLE_CREATED = False
+    if _repo._SQLITE_CONN is not None:
+        try:
+            _repo._SQLITE_CONN.close()
+        except Exception:
+            pass
+    _repo._SQLITE_CONN = None
 
 
 def test_sql_engine_health():

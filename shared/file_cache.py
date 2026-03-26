@@ -7,8 +7,8 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Dict, Any, Optional, Tuple
 from threading import Lock
+from typing import Any, Dict, Optional, Tuple
 
 # Cache structure: {path: (data, timestamp)}
 _file_cache: Dict[str, Tuple[Any, float]] = {}
@@ -18,12 +18,15 @@ _cache_lock = Lock()
 DEFAULT_TTL_SECONDS = 60
 
 
-def read_json_cached(file_path: str | Path, ttl_seconds: int = DEFAULT_TTL_SECONDS) -> Optional[Dict[str, Any]]:
+def read_json_cached(
+    file_path: str | Path,
+    ttl_seconds: float = DEFAULT_TTL_SECONDS,
+) -> Optional[Dict[str, Any]]:
     """Read JSON file with TTL-based caching.
 
     Args:
         file_path: Path to JSON file
-        ttl_seconds: Time-to-live for cache in seconds (default: 60)
+        ttl_seconds: Time-to-live for cache in seconds (supports fractional values; default: 60)
 
     Returns:
         Parsed JSON data as dict, or None if file doesn't exist or parse error
@@ -47,7 +50,7 @@ def read_json_cached(file_path: str | Path, ttl_seconds: int = DEFAULT_TTL_SECON
 
         # Cache miss or expired - read from file
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             _file_cache[path_str] = (data, now)
             return data

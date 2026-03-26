@@ -121,6 +121,16 @@ def test_execute_mode() -> None:
     result = execute_mode("Wave at the audience")
     assert result['status'] == 'success'
     assert 'results' in result
+    assert isinstance(result['results'], list)
+    assert len(result['results']) > 0
+    # Verify that at least one executed action reports a successful status
+    assert any(
+        isinstance(item, dict)
+        and 'result' in item
+        and isinstance(item['result'], dict)
+        and item['result'].get('status') == 'success'
+        for item in result['results']
+    )
 
 def run_tests():
     """Run comprehensive test suite"""

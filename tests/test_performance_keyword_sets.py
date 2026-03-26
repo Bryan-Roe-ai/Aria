@@ -4,18 +4,16 @@ from server import (
     JUMP_KEYWORDS,
     DANCE_KEYWORDS,
     WAVE_KEYWORDS,
-    determine_position_from_context
+    determine_position_from_context,
 )
-import pytest
 import time
+import pytest
 import sys
 from pathlib import Path
 
 # Add project paths for imports
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "apps" / "aria"))
-
-# Import the optimized functions
 
 
 class TestKeywordSetPerformance:

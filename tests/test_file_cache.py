@@ -54,22 +54,22 @@ class TestReadJsonCached:
     def test_cache_expires_after_ttl(self, tmp_path):
         p = tmp_path / "data.json"
         p.write_text('{"v": 1}', encoding="utf-8")
-        read_json_cached(p, ttl_seconds=1)
+        read_json_cached(p, ttl_seconds=0.1)
         # Update file after TTL expires
-        time.sleep(1.1)
+        time.sleep(0.15)
         p.write_text('{"v": 2}', encoding="utf-8")
-        result = read_json_cached(p, ttl_seconds=1)
+        result = read_json_cached(p, ttl_seconds=0.1)
         assert result == {"v": 2}
 
     def test_returns_stale_cache_on_io_error(self, tmp_path):
         """When a cached entry exists but the file is deleted, return stale data."""
         p = tmp_path / "data.json"
         p.write_text('{"stale": true}', encoding="utf-8")
-        read_json_cached(p, ttl_seconds=1)
+        read_json_cached(p, ttl_seconds=0.05)
         # TTL expires and file is deleted
-        time.sleep(1.1)
+        time.sleep(0.1)
         p.unlink()
-        result = read_json_cached(p, ttl_seconds=1)
+        result = read_json_cached(p, ttl_seconds=0.05)
         assert result == {"stale": True}
 
     def test_accepts_string_path(self, tmp_path):

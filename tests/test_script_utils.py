@@ -3,14 +3,14 @@
 Tests cover get_repo_root, setup_path, and get_data_out_dir.
 """
 from __future__ import annotations
-from shared.script_utils import get_data_out_dir, get_repo_root, setup_path
-
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from shared.script_utils import get_data_out_dir, get_repo_root, setup_path
+
+import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -34,6 +34,9 @@ class TestGetRepoRoot:
         assert root == tmp_path
 
     def test_returns_path_object(self):
+        """
+        Verifies that get_repo_root() returns an object of type Path.
+        """
         root = get_repo_root()
         assert isinstance(root, Path)
 
@@ -42,7 +45,7 @@ class TestGetRepoRoot:
         scripts_dir.mkdir()
         fake_script = scripts_dir / "my_script.py"
         fake_script.write_text("# script", encoding="utf-8")
-        root = get_repo_root(str(fake_script))
+        root = get_repo_root(fake_script)
         assert root == tmp_path
 
 
@@ -70,13 +73,17 @@ class TestSetupPath:
         count_after = sys.path.count(root_str)
         assert count_after == count_before
 
-    def test_adds_additional_paths(self, tmp_path):
+    def test_adds_additional_paths(self, tmp_path, monkeypatch):
         """Additional relative paths should appear in sys.path."""
-        # Create a directory that exists inside the actual repo root
-        root = get_repo_root()
-        existing_subdir = "shared"  # guaranteed to exist
-        result = setup_path(None, existing_subdir)
-        expected = str(root / existing_subdir)
+        # Use a temporary directory as a fake repo root to keep the test isolated
+        extras_dir = tmp_path / "extras"
+        extras_dir.mkdir()
+        monkeypatch.setattr("shared.script_utils.get_repo_root",
+                            lambda *args, **kwargs: tmp_path)
+        monkeypatch.setattr("shared.script_utils.get_repo_root",
+                            lambda *_args, **_kwargs: tmp_path)
+        result = setup_path(None, "extras")
+        expected = str(extras_dir)
         assert expected in sys.path
 
     def test_script_file_variant_returns_root(self, tmp_path):

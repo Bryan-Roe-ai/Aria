@@ -2,7 +2,7 @@
   "servers": {
     "quantum-ai": {
       "type": "stdio",
-      "command": "${workspaceFolder}/ai-projects/quantum-ml/venv/bin/python",
+      "command": "python3",
       "args": [
         "${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"
       ],
@@ -17,7 +17,7 @@
         "${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"
       ],
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}/shared"
+        "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
       }
     }
   }

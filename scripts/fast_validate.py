@@ -6,9 +6,43 @@ Optimized for speed over completeness
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+_CRITICAL_FAILURES: Dict[str, set[str]] = {
+    "Datasets": {"missing", "empty"},
+    "Scripts": {"missing_scripts"},
+    "Output Dirs": {"write_issues"},
+    "Configs": {"config_issues"},
+    "Dependencies": {"missing_deps"},
+}
+
+
+def is_critical_failure(check_name: str, status: str) -> bool:
+    """Return True when a check status should fail fast validation."""
+    return status in _CRITICAL_FAILURES.get(check_name, set())
+
+
+def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Build summary metadata for fast-validate checks."""
+    total = len(results)
+    ok_count = sum(1 for r in results if r.get("status") == "ok")
+    critical_failures = [
+        r
+        for r in results
+        if is_critical_failure(str(r.get("check", "")), str(r.get("status", "")))
+    ]
+    warning_count = total - ok_count - len(critical_failures)
+
+    return {
+        "total_checks": total,
+        "ok_count": ok_count,
+        "warning_count": warning_count,
+        "critical_failure_count": len(critical_failures),
+        "critical_failure_checks": [r.get("check") for r in critical_failures],
+    }
 
 
 def quick_check_datasets() -> Dict[str, Any]:
@@ -27,7 +61,7 @@ def quick_check_datasets() -> Dict[str, Any]:
     return {
         "status": "ok" if found > 0 else "empty",
         "categories_found": found,
-        "speed": "instant"
+        "speed": "instant",
     }
 
 
@@ -36,7 +70,7 @@ def quick_check_scripts() -> Dict[str, Any]:
     critical = [
         "autotrain.py",
         "scripts/test_runner.py",
-        "ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_lora.py"
+        "ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
     ]
     missing = []
     for script in critical:
@@ -46,7 +80,7 @@ def quick_check_scripts() -> Dict[str, Any]:
     return {
         "status": "ok" if not missing else "missing_scripts",
         "missing": missing,
-        "speed": "instant"
+        "speed": "instant",
     }
 
 
@@ -55,14 +89,14 @@ def quick_check_venv() -> Dict[str, Any]:
     venv_markers = [
         "venv/Scripts/python.exe",
         "venv/bin/python",
-        "ai-projects/quantum-ml/venv/Scripts/python.exe"
+        "ai-projects/quantum-ml/venv/Scripts/python.exe",
     ]
     found = sum(1 for m in venv_markers if (REPO_ROOT / m).exists())
 
     return {
         "status": "ok" if found > 0 else "no_venv",
         "venvs_found": found,
-        "speed": "instant"
+        "speed": "instant",
     }
 
 
@@ -82,7 +116,7 @@ def quick_check_outputs() -> Dict[str, Any]:
     return {
         "status": "ok" if not issues else "write_issues",
         "issues": issues,
-        "speed": "instant"
+        "speed": "instant",
     }
 
 
@@ -90,6 +124,7 @@ def quick_check_configs() -> Dict[str, Any]:
     """Verify critical YAML configs parse without error."""
     import importlib
     import importlib.util
+
     yaml_mod = importlib.import_module(
         "yaml") if importlib.util.find_spec("yaml") else None
 
@@ -190,10 +225,16 @@ def main() -> None:
         result = func()
         results.append({"check": name, **result})
 
-        status_icon = "✅" if result["status"] == "ok" else "❌"
+        critical_failure = is_critical_failure(name, result["status"])
+        if result["status"] == "ok":
+            status_icon = "✅"
+        elif critical_failure:
+            status_icon = "❌"
+        else:
+            status_icon = "⚠️"
         print(f"{status_icon} {name:15} - {result['status']}")
 
-        if result["status"] != "ok":
+        if critical_failure:
             all_ok = False
             for key in ["error", "missing", "issues"]:
                 if key in result and result[key]:
@@ -205,8 +246,13 @@ def main() -> None:
     output_path = REPO_ROOT / "data_out" / "fast_validate_results.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
+    summary = summarize_results(results)
     with open(output_path, "w", encoding="utf-8") as f:
-        json.dump({"checks": results, "all_ok": all_ok}, f, indent=2)
+        json.dump(
+            {"checks": results, "summary": summary, "all_ok": all_ok},
+            f,
+            indent=2,
+        )
 
     print(
         f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")

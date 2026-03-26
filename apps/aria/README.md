@@ -24,12 +24,14 @@ python server.py
 ## Architecture
 
 ### Frontend (`index.html` + `aria_controller.js`)
+
 - 3D CSS transforms for character positioning
 - Drag-and-drop object placement
 - Click waypoints for movement
 - Chat command processing
 
 ### Backend (`server.py`)
+
 - REST API for object management
 - Global `stage_state` dictionary
 - Tag generation for speech/movement commands
@@ -38,17 +40,19 @@ python server.py
 ## API Endpoints
 
 ### GET `/api/aria/state`
+
 Returns current stage state including character position and all objects.
 
 **Response:**
+
 ```json
 {
-  "position": {"x": 0, "y": 0, "z": 0},
+  "position": { "x": 0, "y": 0, "z": 0 },
   "objects": {
     "apple": {
       "id": "apple",
       "emoji": "🍎",
-      "position": {"x": 100, "y": 200, "z": 0},
+      "position": { "x": 100, "y": 200, "z": 0 },
       "state": "on_stage"
     }
   }
@@ -56,9 +60,11 @@ Returns current stage state including character position and all objects.
 ```
 
 ### GET `/api/aria/objects`
+
 Returns list of all objects on stage.
 
 **Response:**
+
 ```json
 {
   "objects": {
@@ -69,33 +75,37 @@ Returns list of all objects on stage.
 ```
 
 ### POST `/api/aria/object`
+
 Add, update, or remove an object.
 
 **Add Object:**
+
 ```json
 {
   "action": "add",
   "object": {
     "id": "apple",
     "emoji": "🍎",
-    "position": {"x": 100, "y": 200, "z": 0}
+    "position": { "x": 100, "y": 200, "z": 0 }
   }
 }
 ```
 
 **Update Object:**
+
 ```json
 {
   "action": "update",
   "object": {
     "id": "apple",
-    "position": {"x": 150, "y": 250, "z": 0},
+    "position": { "x": 150, "y": 250, "z": 0 },
     "state": "held"
   }
 }
 ```
 
 **Remove Object:**
+
 ```json
 {
   "action": "remove",
@@ -106,9 +116,11 @@ Add, update, or remove an object.
 ```
 
 ### POST `/api/aria/command`
+
 Process a chat command and return generated tags.
 
 **Request:**
+
 ```json
 {
   "command": "Say hello and move to center"
@@ -116,6 +128,7 @@ Process a chat command and return generated tags.
 ```
 
 **Response:**
+
 ```json
 {
   "tags": "[aria:say:hello][aria:position:center]"
@@ -123,18 +136,21 @@ Process a chat command and return generated tags.
 ```
 
 ### POST `/api/aria/world`
+
 Generate (or regenerate) a themed world layout using the LLM (if available) or a deterministic fallback.
 
 **Request:**
+
 ```json
 {
-  "theme": "forest",      // optional (default: "forest")
-  "count": 7,              // optional number of objects (default: 6)
-  "use_llm": true          // optional, force fallback if false
+  "theme": "forest", // optional (default: "forest")
+  "count": 7, // optional number of objects (default: 6)
+  "use_llm": true // optional, force fallback if false
 }
 ```
 
 **Successful Response:**
+
 ```json
 {
   "status": "success",
@@ -142,24 +158,36 @@ Generate (or regenerate) a themed world layout using the LLM (if available) or a
   "count": 6,
   "used_llm": true,
   "objects": {
-    "tree": {"id": "tree", "emoji": "🌲", "position": {"x": 42, "y": 33}, "state": "on_stage"},
-    "rock": {"id": "rock", "emoji": "🪨", "position": {"x": 55, "y": 61}, "state": "on_stage"}
+    "tree": {
+      "id": "tree",
+      "emoji": "🌲",
+      "position": { "x": 42, "y": 33 },
+      "state": "on_stage"
+    },
+    "rock": {
+      "id": "rock",
+      "emoji": "🪨",
+      "position": { "x": 55, "y": 61 },
+      "state": "on_stage"
+    }
   },
   "environment": {
     "theme": "forest",
     "generated_at": "2025-11-28T17:20:00Z",
-    "stage_bounds": {"width": 100, "height": 100}
+    "stage_bounds": { "width": 100, "height": 100 }
   }
 }
 ```
 
 **Notes:**
+
 - If the LLM response is malformed, the server automatically falls back to procedural generation.
 - Object IDs are sanitized (alphanumeric + underscore, max 30 chars).
 - Positions are guaranteed to lie within stage bounds (0–100).
 - Existing objects are replaced; Aria's position is preserved.
 
 **Example cURL:**
+
 ```bash
 curl -X POST http://localhost:8080/api/aria/world \
   -H 'Content-Type: application/json' \
@@ -257,11 +285,13 @@ aria_web/
 ## CI/CD
 
 GitHub Actions workflow (`.github/workflows/aria-tests.yml`) runs automatically on:
+
 - Push to `main` or `develop`
 - Pull requests
 - Changes to `aria_web/` or test files
 
 Workflow includes:
+
 - Unit & integration tests (Python 3.10, 3.11, 3.12)
 - Playwright E2E tests
 - Pyppeteer E2E tests
@@ -282,15 +312,18 @@ Workflow includes:
 ## Troubleshooting
 
 ### Server won't start
+
 - Check if port 8000 is already in use: `lsof -i :8000`
 - Try different port: `python server.py --port 8080`
 
 ### Objects not syncing
+
 - Check browser console for errors
 - Verify server is running: `curl http://localhost:8000/api/aria/state`
 - Check server logs for error messages
 
 ### Tests failing
+
 - Ensure server is not running during tests (tests auto-start server)
 - Check all dependencies are installed: `pip install -r requirements.txt`
 - See [TESTING.md](TESTING.md) for detailed troubleshooting
@@ -310,5 +343,5 @@ See main repository LICENSE file.
 ## Related Documentation
 
 - [TESTING.md](TESTING.md) - Comprehensive testing guide
-- [Main Project README](/workspaces/AI/README.md) - Overall project documentation
-- [GitHub Actions Workflow](/.github/workflows/aria-tests.yml) - CI/CD configuration
+- [Main Project README](../../README.md) - Overall project documentation
+- [GitHub Actions Workflow](../../.github/workflows/aria-tests.yml) - CI/CD configuration

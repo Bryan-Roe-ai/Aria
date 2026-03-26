@@ -21,12 +21,12 @@ Aria is a full-stack interactive AI character platform. She lives on a virtual 3
 
 The project is organized around four core areas:
 
-| Area | Folder | Description |
-|------|--------|-------------|
-| **Character interface** | `apps/aria/` | Animated 3D character stage with object interaction |
-| **Chat / AI backends** | `ai-projects/chat-cli/` | Multi-provider CLI and streaming chat API |
-| **Quantum ML** | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental) |
-| **Model fine-tuning** | `AI/` | LoRA fine-tuning for Aria's language understanding |
+| Area                    | Folder                    | Description                                         |
+| ----------------------- | ------------------------- | --------------------------------------------------- |
+| **Character interface** | `apps/aria/`              | Animated 3D character stage with object interaction |
+| **Chat / AI backends**  | `ai-projects/chat-cli/`   | Multi-provider CLI and streaming chat API           |
+| **Quantum ML**          | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental)    |
+| **Model fine-tuning**   | `AI/`                     | LoRA fine-tuning for Aria's language understanding  |
 
 Supporting infrastructure lives in `shared/`, `scripts/`, `config/`, and `function_app.py` (Azure Functions API layer).
 
@@ -108,25 +108,25 @@ The Aria character runs at `http://localhost:8080` (or the [GitHub Pages demo](h
 
 **Natural language commands (examples):**
 
-| Command | Effect |
-|---------|--------|
-| `move left` / `move right` | Walk to stage edge |
-| `wave` / `dance` / `jump` | Trigger gesture |
-| `pick up the ball` | Pick up a nearby object |
-| `throw the ball` | Throw held object with physics |
-| `say hello` | Aria speaks the text aloud via TTS |
+| Command                    | Effect                             |
+| -------------------------- | ---------------------------------- |
+| `move left` / `move right` | Walk to stage edge                 |
+| `wave` / `dance` / `jump`  | Trigger gesture                    |
+| `pick up the ball`         | Pick up a nearby object            |
+| `throw the ball`           | Throw held object with physics     |
+| `say hello`                | Aria speaks the text aloud via TTS |
 
 The auto-execute system parses complex multi-step requests ("walk to the table and pick up the apple") into a structured sequence of 8 core actions: `move`, `say`, `pickup`, `drop`, `throw`, `gesture`, `look`, `wait`.
 
 **Aria web server API (port 8080):**
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/aria/state` | Current stage state (position, objects, expressions) |
-| `POST` | `/api/aria/command` | Process a natural language command |
-| `POST` | `/api/aria/execute` | Auto-execute an action sequence |
-| `POST` | `/api/aria/object` | Add / update / remove an object |
-| `POST` | `/api/aria/world` | Generate a themed world via LLM |
+| Method | Path                | Description                                          |
+| ------ | ------------------- | ---------------------------------------------------- |
+| `GET`  | `/api/aria/state`   | Current stage state (position, objects, expressions) |
+| `POST` | `/api/aria/command` | Process a natural language command                   |
+| `POST` | `/api/aria/execute` | Auto-execute an action sequence                      |
+| `POST` | `/api/aria/object`  | Add / update / remove an object                      |
+| `POST` | `/api/aria/world`   | Generate a themed world via LLM                      |
 
 ---
 
@@ -282,28 +282,28 @@ Never commit secrets. All keys belong in environment variables or `local.setting
 
 **Optional services** (feature-flagged — safe to leave unset):
 
-| Service | How to enable |
-|---------|---------------|
-| SQL persistence | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL) |
-| Cosmos DB | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
-| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
-| Azure Speech TTS | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` |
-| Local TTS fallback | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent) |
+| Service              | How to enable                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| SQL persistence      | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL)                                          |
+| Cosmos DB            | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
+| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING`                                                           |
+| Azure Speech TTS     | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`                                                        |
+| Local TTS fallback   | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent)              |
 
 ---
 
 ## 📚 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [apps/aria/README.md](apps/aria/README.md) | Character stage API reference |
-| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md) | Quantum ML platform guide |
-| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md) | Chat CLI reference |
-| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md) | Tool maker guide |
-| [docs/aria/](docs/aria/) | Aria movement & training documentation |
-| [MONETIZATION_GUIDE.md](MONETIZATION_GUIDE.md) | Subscription and revenue system |
-| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference |
-| [QUANTUM_LLM_TRAINING.md](QUANTUM_LLM_TRAINING.md) | Quantum-LLM concurrent training |
+| Document                                                                     | Purpose                                |
+| ---------------------------------------------------------------------------- | -------------------------------------- |
+| [apps/aria/README.md](apps/aria/README.md)                                   | Character stage API reference          |
+| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md)         | Quantum ML platform guide              |
+| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md)             | Chat CLI reference                     |
+| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md)           | Tool maker guide                       |
+| [docs/aria/](docs/aria/)                                                     | Aria movement & training documentation |
+| [docs/guides/MONETIZATION_GUIDE.md](docs/guides/MONETIZATION_GUIDE.md)       | Subscription and revenue system        |
+| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference   |
+| [docs/guides/QUANTUM_LLM_TRAINING.md](docs/guides/QUANTUM_LLM_TRAINING.md)   | Quantum-LLM concurrent training        |
 
 ---
 

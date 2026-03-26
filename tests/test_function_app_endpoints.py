@@ -375,6 +375,18 @@ class TestRequestValidator:
         )
         assert err is not None
 
+    def test_chat_schema_accepts_quantum_provider(self):
+        from shared.request_validator import validate_fields, CHAT_SCHEMA
+
+        err = validate_fields(
+            {
+                "messages": [{"role": "user", "content": "hello"}],
+                "provider": "quantum",
+            },
+            CHAT_SCHEMA,
+        )
+        assert err is None
+
     def test_validate_min_length(self):
         from shared.request_validator import validate_fields
 

@@ -27,7 +27,7 @@ _RE_SAY_COMMAND = re.compile(
 _RE_SANITIZE_BRACKETS = re.compile(r'\]')
 _RE_COORDINATES = re.compile(r'(\d{1,3})%?.*?(\d{1,3})%?')
 _RE_COMMAND_SEPARATORS = re.compile(
-    r'\s*(?:,|;|\band then\b|\bthen\b|\band\b|\bafter that\b|\bafterwards\b|\bnext\b|\bfinally\b|\blastly\b|\bfirst\b|\bsecond\b|\bthird\b|\bfourth\b|\bstep\s*(?:\d+|[ivxlcdm]+)\b|\bphase\s*(?:\d+|[ivxlcdm]+)\b|\bpart\s*(?:\d+|[ivxlcdm]+)\b|(?<!\S)\d+[\)\.](?=\s))\s*',
+    r'(?:\s*(?:,|;|\||->|=>|→|\band then\b|\bthen\b|\band\b|\bafter that\b|\bafterwards\b|\bnext\b|\bfinally\b|\blastly\b|\bthen\s*:|\bnext\s*:|\bafterward\s*:|\bafterwards\s*:|\bfinally\s*:|\bfirst\b|\bsecond\b|\bthird\b|\bfourth\b|\bstep\s*(?:\d+|[ivxlcdm]+)\b|\bphase\s*(?:\d+|[ivxlcdm]+)\b|\bpart\s*(?:\d+|[ivxlcdm]+)\b|(?<!\S)\d+[\)\.](?=\s))\s*|\n+\s*(?:[-*•]\s*)?(?:\[[ xX]\]\s*)?)',
     re.IGNORECASE
 )
 _UNSET = object()

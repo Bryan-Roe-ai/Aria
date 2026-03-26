@@ -10,6 +10,7 @@ Marked with pytest.mark.integration — run via:
 from __future__ import annotations
 
 import json
+import socket
 import sys
 import threading
 import time
@@ -27,7 +28,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "apps" / "aria"))
 # Server fixture
 # ---------------------------------------------------------------------------
 
-_SERVER_PORT = 18580  # use a dedicated port to avoid conflicts
+
+def _get_free_loopback_port() -> int:
+    """Reserve and return a free loopback TCP port for the test server."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
 
 
 @pytest.fixture(scope="module")
@@ -51,23 +57,29 @@ def aria_server():
 
     from http.server import HTTPServer
 
-    httpd = HTTPServer(("127.0.0.1", _SERVER_PORT),
+    server_port = _get_free_loopback_port()
+    httpd = HTTPServer(("127.0.0.1", server_port),
                        aria_module.AriaRequestHandler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
 
     # Wait for server to be ready
-    base = f"http://127.0.0.1:{_SERVER_PORT}"
+    base = f"http://127.0.0.1:{server_port}"
     for _ in range(40):
         try:
             urllib.request.urlopen(f"{base}/api/aria/state", timeout=1)
             break
         except Exception:
             time.sleep(0.1)
+    else:
+        httpd.shutdown()
+        httpd.server_close()
+        raise RuntimeError(f"Aria test server failed to start on {base}")
 
     yield base
 
     httpd.shutdown()
+    httpd.server_close()
 
 
 # ---------------------------------------------------------------------------

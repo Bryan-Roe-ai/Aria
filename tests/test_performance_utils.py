@@ -4,6 +4,11 @@ Tests cover tail_file, tail_file_smart, stream_jsonl, batch_process,
 find_json_in_output, FileCache, timeit decorator, and memoize_with_ttl.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from shared.performance_utils import (
     FileCache,
     batch_process,
@@ -16,9 +21,7 @@ from shared.performance_utils import (
 )
 
 import json
-import sys
 import time
-from pathlib import Path
 from unittest.mock import patch
 import io
 

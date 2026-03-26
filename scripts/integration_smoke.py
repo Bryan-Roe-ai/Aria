@@ -220,6 +220,23 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
     except (URLError, TimeoutError, OSError):
         duration = round(time.perf_counter() - start, 2)
         if strict:
+            # First retry directly to absorb transient startup races.
+            for _ in range(2):
+                time.sleep(0.25)
+                try:
+                    payload = _fetch_local_functions_payload(url)
+                    provider = payload.get("active_provider", "unknown")
+                    duration = round(time.perf_counter() - start, 2)
+                    return StepResult(
+                        name=name,
+                        status="succeeded",
+                        critical=True,
+                        duration_sec=duration,
+                        detail=f"provider={provider} | via=direct_retry",
+                    )
+                except (URLError, TimeoutError, OSError):
+                    continue
+
             fallback_payload = _probe_with_local_dev_adapter(url)
             if fallback_payload is not None:
                 provider = fallback_payload.get("active_provider", "unknown")
@@ -231,13 +248,28 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
                     duration_sec=duration,
                     detail=f"provider={provider} | via=local_dev_adapter",
                 )
-            return StepResult(
-                name=name,
-                status="failed",
-                critical=True,
-                duration_sec=duration,
-                detail=f"endpoint_unreachable={url}",
-            )
+
+            # Final direct retry covers the case where adapter startup fails
+            # because another process is already bound to :7071.
+            try:
+                payload = _fetch_local_functions_payload(url)
+                provider = payload.get("active_provider", "unknown")
+                duration = round(time.perf_counter() - start, 2)
+                return StepResult(
+                    name=name,
+                    status="succeeded",
+                    critical=True,
+                    duration_sec=duration,
+                    detail=f"provider={provider} | via=final_direct_retry",
+                )
+            except (URLError, TimeoutError, OSError):
+                return StepResult(
+                    name=name,
+                    status="failed",
+                    critical=True,
+                    duration_sec=duration,
+                    detail=f"endpoint_unreachable={url}",
+                )
         return StepResult(
             name=name,
             status="skipped",

@@ -25,6 +25,13 @@ python ai-projects/quantum-ml/quantum_llm_quickstart.py --mode generate --model 
 # Validate system
 python ai-projects/quantum-ml/validate_quantum_llm.py --full
 
+# Chat with trained quantum LLM (CLI)
+python ai-projects/chat-cli/src/chat_cli.py --provider quantum --model data_out/quantum_llm_chat --once "Hello quantum"
+
+# Chat via API payload (when function host is running)
+# provider=quantum and model points to trained checkpoint directory
+# {"messages":[{"role":"user","content":"Hello"}],"provider":"quantum","model":"data_out/quantum_llm_chat"}
+
 # Compare old vs new
 python ai-projects/quantum-ml/quantum_llm_integration.py --mode compare
 
@@ -38,14 +45,14 @@ python ai-projects/quantum-ml/src/quantum_llm_monitor.py
 
 ## 📦 Components at a Glance
 
-| Component | What It Does | Import |
-|-----------|--------------|--------|
-| **advanced** | Cache, multi-scale attention, error mitigation | `from quantum_llm_advanced import *` |
-| **optimizer** | Circuit compilation, batch execution | `from quantum_circuit_optimizer import *` |
-| **trainer** | Curriculum learning, orchestration | `from quantum_llm_hybrid_trainer import *` |
-| **monitor** | Dashboard, alerts, profiling | `from quantum_llm_monitor import *` |
-| **integrated** | Complete system | `from quantum_llm_integrated import *` |
-| **datasets** | Tokenizer, data loading | `from quantum_llm_datasets import *` |
+| Component      | What It Does                                   | Import                                     |
+| -------------- | ---------------------------------------------- | ------------------------------------------ |
+| **advanced**   | Cache, multi-scale attention, error mitigation | `from quantum_llm_advanced import *`       |
+| **optimizer**  | Circuit compilation, batch execution           | `from quantum_circuit_optimizer import *`  |
+| **trainer**    | Curriculum learning, orchestration             | `from quantum_llm_hybrid_trainer import *` |
+| **monitor**    | Dashboard, alerts, profiling                   | `from quantum_llm_monitor import *`        |
+| **integrated** | Complete system                                | `from quantum_llm_integrated import *`     |
+| **datasets**   | Tokenizer, data loading                        | `from quantum_llm_datasets import *`       |
 
 ---
 
@@ -53,16 +60,16 @@ python ai-projects/quantum-ml/src/quantum_llm_monitor.py
 
 ```yaml
 # Essential settings
-vocab_size: 256                    # Character vocab
-d_model: 128                       # Model dimension
-n_qubits: 4                        # Qubits per layer
+vocab_size: 256 # Character vocab
+d_model: 128 # Model dimension
+n_qubits: 4 # Qubits per layer
 enable_multi_scale_attention: true # Use 2-6 qubits
-enable_circuit_caching: true       # 2-5x speedup
-enable_curriculum: true            # Stable training
-optimization_level: 2              # 0=none, 3=max
-batch_size: 16                     # Training batch
-learning_rate: 0.0001              # LR
-num_epochs: 10                     # Training epochs
+enable_circuit_caching: true # 2-5x speedup
+enable_curriculum: true # Stable training
+optimization_level: 2 # 0=none, 3=max
+batch_size: 16 # Training batch
+learning_rate: 0.0001 # LR
+num_epochs: 10 # Training epochs
 ```
 
 ---
@@ -70,6 +77,7 @@ num_epochs: 10                     # Training epochs
 ## 🔬 Advanced Features
 
 ### Multi-Scale Attention
+
 ```python
 from quantum_llm_advanced import MultiScaleQuantumAttention
 
@@ -81,6 +89,7 @@ attention = MultiScaleQuantumAttention(
 ```
 
 ### Circuit Caching
+
 ```python
 from quantum_llm_advanced import QuantumCircuitCache
 
@@ -90,6 +99,7 @@ cached_result = cache.get("circuit_key")
 ```
 
 ### Curriculum Training
+
 ```python
 from quantum_llm_hybrid_trainer import TrainingStage
 
@@ -101,6 +111,7 @@ stages = [
 ```
 
 ### Real-time Monitoring
+
 ```python
 from quantum_llm_monitor import TrainingDashboard
 
@@ -126,23 +137,27 @@ dashboard = TrainingDashboard(
 ## 🐛 Troubleshooting
 
 ### Import errors
+
 ```bash
 cd ai-projects/quantum-ml
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 ```
 
 ### Missing dependencies
+
 ```bash
 pip install torch pennylane pyyaml numpy
 ```
 
 ### Training instability
+
 - Enable curriculum learning
 - Reduce learning rate
 - Increase warmup epochs
 - Lower quantum ratio initially
 
 ### Slow training
+
 - Enable circuit caching
 - Increase optimization level
 - Reduce circuit depth
@@ -181,12 +196,14 @@ data_out/quantum_llm_quickstart/
 ## 💡 Common Workflows
 
 ### Quick Test
+
 ```bash
 python quantum_llm_quickstart.py --mode quick
 # Output: data_out/quantum_llm_quickstart/
 ```
 
 ### Research Experiment
+
 ```bash
 # 1. Copy config template
 cp config/quantum_llm_config_example.yaml config/my_experiment.yaml
@@ -202,6 +219,7 @@ python quantum_llm_quickstart.py --mode monitor --output-dir data_out/quantum_ll
 ```
 
 ### Production Training
+
 ```bash
 # With comprehensive monitoring
 python quantum_llm_quickstart.py --mode full \

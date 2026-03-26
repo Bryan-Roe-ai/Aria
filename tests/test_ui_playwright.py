@@ -32,7 +32,8 @@ def ensure_server_running():
         return None
 
     # start server using python in aria_web
-    proc = subprocess.Popen(["python3", "server.py"], cwd=str(ARIA_WEB), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(["python3", "server.py"], cwd=str(
+        ARIA_WEB), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # wait a short while for server to come up
     for _ in range(30):
@@ -63,7 +64,8 @@ def wait_for_object(name, timeout=4.0):
 @pytest.mark.playwright
 @pytest.mark.e2e
 @pytest.mark.skipif(
-    not os.getenv('CI') and not (shutil.which('chromium-browser') or shutil.which('chrome') or shutil.which('google-chrome')),
+    not os.getenv('CI') and not (shutil.which('chromium-browser')
+                                 or shutil.which('chrome') or shutil.which('google-chrome')),
     reason='Chromium/Chrome not available'
 )
 def test_client_add_pickup_and_drag_updates_server():
@@ -87,7 +89,8 @@ def test_client_add_pickup_and_drag_updates_server():
             assert 'Aria' in page.content()
 
             # Add object via client API
-            page.evaluate("(name, emoji) => addObject(name, emoji)", unique_name, '🧸')
+            page.evaluate("([name, emoji]) => addObject(name, emoji)", [
+                          unique_name, '🧸'])
 
             # wait for server to report it
             obj = wait_for_object(unique_name, timeout=5.0)
@@ -100,7 +103,8 @@ def test_client_add_pickup_and_drag_updates_server():
             deadline = time.time() + 4.0
             held_ok = False
             while time.time() < deadline:
-                resp = requests.get(SERVER_URL + '/api/aria/state', timeout=1.0)
+                resp = requests.get(
+                    SERVER_URL + '/api/aria/state', timeout=1.0)
                 if resp.ok and unique_name in resp.json().get('objects', {}):
                     st = resp.json()['objects'][unique_name].get('state')
                     if st == 'held':
@@ -112,10 +116,12 @@ def test_client_add_pickup_and_drag_updates_server():
             # Drop object and see where it lands
             page.evaluate("() => dropObject()")
             dropped = wait_for_object(unique_name, timeout=4.0)
-            assert dropped is not None and dropped.get('state') in ['on_stage', 'on_table'], 'Dropped state not persisted on server'
+            assert dropped is not None and dropped.get(
+                'state') in ['on_stage', 'on_table'], 'Dropped state not persisted on server'
 
             # Clean up: remove object via server API
-            r = requests.post(SERVER_URL + '/api/aria/object', json={'action': 'remove', 'object': {'id': unique_name}})
+            r = requests.post(SERVER_URL + '/api/aria/object',
+                              json={'action': 'remove', 'object': {'id': unique_name}})
             assert r.ok
 
             browser.close()

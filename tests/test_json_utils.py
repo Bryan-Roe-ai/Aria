@@ -3,6 +3,11 @@
 Tests cover load_json, save_json, load_jsonl, save_jsonl, and merge_json_files.
 """
 from __future__ import annotations
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from shared.json_utils import (
     load_json,
     load_jsonl,
@@ -12,13 +17,9 @@ from shared.json_utils import (
 )
 
 import json
-import sys
 import tempfile
-from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 # ---------------------------------------------------------------------------
