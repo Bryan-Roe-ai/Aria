@@ -1,5 +1,7 @@
 ---
 description: "Perform a comprehensive code review analyzing correctness, security, performance, conventions, and testing coverage for the Aria platform."
+name: "Code Review"
+argument-hint: "File or component scope + focus area (example: file path + focus: security | performance | correctness)"
 agent: agent
 ---
 

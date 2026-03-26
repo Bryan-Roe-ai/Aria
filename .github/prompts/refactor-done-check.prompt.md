@@ -1,7 +1,7 @@
 ---
 description: "Use when you are at the end of a refactor workflow: run a strict final done-check and report whether all required artifacts and gates are complete."
 name: "Refactor Done Check"
-argument-hint: "Scope + required gates + available artifacts"
+argument-hint: "Scope + required gates + available artifacts (example: function_app.py + verify, merge-gate + evidence-log, pr-summary)"
 agent: agent
 ---
 

@@ -1,7 +1,7 @@
 ---
 description: "Use when opening a refactor PR: generate a concise reviewer-friendly summary with parity evidence and test results."
 name: "Refactor PR Summary"
-argument-hint: "Scope + rationale + key unchanged contracts + validation results"
+argument-hint: "Scope + rationale + key unchanged contracts + validation results (example: function_app.py + extract SSE helper + /api/chat schema + all passed)"
 agent: agent
 ---
 

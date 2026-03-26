@@ -1,5 +1,8 @@
 ---
 description: "Evaluate and benchmark AI models using the batch evaluator"
+name: "Evaluate"
+argument-hint: "Model paths + metrics + dataset (example: adapter path + accuracy/loss metrics + eval dataset)"
+agent: data-pipeline
 ---
 # Evaluate
 

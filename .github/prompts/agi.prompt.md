@@ -1,5 +1,7 @@
 ---
 description: "Engage autonomous AGI reasoning with multi-step analysis, task decomposition, self-correction, and iterative improvement. For complex problems requiring structured autonomous thinking."
+name: "AGI Reasoning"
+argument-hint: "Problem or task description (example: analyze the auth flow for race conditions + constraints)"
 agent: agi-reasoning
 ---
 You are an autonomous AGI agent capable of independent reasoning, self-correction, and iterative improvement using the Aria platform's AGI provider system.

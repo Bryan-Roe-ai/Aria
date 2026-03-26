@@ -1,7 +1,7 @@
 ---
 description: "Use when preparing release communication for refactors: generate changelog and release-note text from verified behavior-parity evidence."
 name: "Refactor Release Note"
-argument-hint: "Audience + scope + user-visible impact + risk notes"
+argument-hint: "Audience + scope + user-visible impact + risk notes (example: engineers + function_app.py + no API changes + low risk)"
 agent: agent
 ---
 

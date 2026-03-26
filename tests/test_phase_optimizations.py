@@ -257,13 +257,13 @@ class TestDictionaryIterationOptimizations:
 
         # Method 1: Using .keys() (old way)
         start = time.perf_counter()
-        for _ in range(100):
+        for _ in range(500):
             result1 = [k for k in test_dict.keys() if k.startswith("key_5")]
         old_time = time.perf_counter() - start
 
         # Method 2: Direct iteration (optimized)
         start = time.perf_counter()
-        for _ in range(100):
+        for _ in range(500):
             result2 = [k for k in test_dict if k.startswith("key_5")]
         new_time = time.perf_counter() - start
 
@@ -273,8 +273,10 @@ class TestDictionaryIterationOptimizations:
         # Optimized should be slightly faster or equal
         print(
             f"\nOld (.keys()): {old_time:.4f}s, New (direct): {new_time:.4f}s")
-        # Allow for timing variance - main benefit is code cleanliness
-        assert new_time <= old_time * 1.5
+        # Allow for timing variance - main benefit is code cleanliness.
+        # Use a generous bound (3x) since both methods are O(n) and system
+        # scheduling noise can cause either to appear slower on a given run.
+        assert new_time <= old_time * 3.0
 
 
 class TestFileStreamingOptimizations:

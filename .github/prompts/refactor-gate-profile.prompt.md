@@ -1,7 +1,7 @@
 ---
 description: "Use when you are early in a refactor and need to decide required quality gates based on risk and contract surface (internal-only vs contract-affecting)."
 name: "Refactor Gate Profile"
-argument-hint: "Scope + risk signals + contract touchpoints"
+argument-hint: "Scope + risk signals + contract touchpoints (example: function_app.py + streaming refactor + /api/chat, /api/tts)"
 agent: agent
 ---
 

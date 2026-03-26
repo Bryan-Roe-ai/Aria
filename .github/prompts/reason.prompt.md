@@ -1,5 +1,7 @@
 ---
 description: "Reason through a problem using chain-of-thought analysis, task decomposition, and self-reflection. Produces structured reasoning with confidence scores and verification steps."
+name: "Reason"
+argument-hint: "Problem or question to analyze (example: decision + relevant context + constraints or trade-offs)"
 agent: agi-reasoning
 ---
 

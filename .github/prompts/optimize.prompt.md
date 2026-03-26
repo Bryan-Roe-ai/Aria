@@ -1,5 +1,8 @@
 ---
 description: "Analyze and optimize AI system performance"
+name: "Optimize"
+argument-hint: "Target component + bottleneck description (example: component name + observed issue + baseline metrics)"
+agent: agent
 ---
 # Optimize
 

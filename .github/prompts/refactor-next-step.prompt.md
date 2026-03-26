@@ -1,7 +1,7 @@
 ---
 description: "Use when unsure what to run next in the refactor workflow: recommends the next slash prompt and arguments."
 name: "Refactor Next Step"
-argument-hint: "Current stage + current artifact (gate-profile/precheck/safe/verify/evidence-log/artifact-index/pr-summary/reviewer-checklist/release-note/handoff/merge-gate/rollback-plan/sequence-builder/workflow-registry/workflow-audit/routing-matrix/command-cheatsheet/next-step/done-check) + blocker"
+argument-hint: "Current stage + current artifact (gate-profile/precheck/safe/verify/evidence-log/artifact-index/pr-summary/reviewer-checklist/release-note/handoff/merge-gate/rollback-plan/sequence-builder/workflow-registry/workflow-audit/routing-matrix/command-cheatsheet/next-step/done-check) + blocker (example: safe + gate-profile + none)"
 agent: agent
 ---
 

@@ -1,7 +1,7 @@
 ---
 description: "Use when you are preparing to merge a refactor PR and need an explicit go/no-go decision with evidence-backed blockers and required next action."
 name: "Refactor Merge Gate"
-argument-hint: "Scope + required invariants + validation evidence + open risks"
+argument-hint: "Scope + required invariants + validation evidence + open risks (example: function_app.py + SSE schema stable + evidence-log + none)"
 agent: agent
 ---
 

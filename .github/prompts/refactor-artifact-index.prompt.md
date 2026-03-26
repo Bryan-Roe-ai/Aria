@@ -1,7 +1,7 @@
 ---
 description: "Use when you need a canonical artifact index for refactor workflow outputs (what exists, where it lives, and which step produced it)."
 name: "Refactor Artifact Index"
-argument-hint: "Scope + completed steps + known artifacts"
+argument-hint: "Scope + completed steps + known artifacts (example: function_app.py + safe + evidence-log, gate-profile)"
 agent: agent
 ---
 

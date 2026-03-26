@@ -1,5 +1,7 @@
 ---
 description: "Control the Aria character — generate movement commands, action sequences, world themes, and object interactions using natural language."
+name: "Aria Command"
+argument-hint: "Natural language command (example: wave at me and say hello, then move left and pick up the ball)"
 agent: aria-character
 ---
 

@@ -1,7 +1,7 @@
 ---
 description: "Use when you need a canonical evidence log for refactors (invariants checked, tests run, findings, and residual risks) reusable across verify/merge/done steps."
 name: "Refactor Evidence Log"
-argument-hint: "Scope + invariants + checks run + outcomes"
+argument-hint: "Scope + invariants + checks run + outcomes (example: function_app.py + SSE schema + verify + all passed)"
 agent: agent
 ---
 

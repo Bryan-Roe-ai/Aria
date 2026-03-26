@@ -1,7 +1,7 @@
 ---
 description: "Use when you need one exact next command in the refactor workflow; outputs a single copy-ready slash command line."
 name: "Refactor Command Cheatsheet"
-argument-hint: "Current stage + blocker + desired outcome"
+argument-hint: "Current stage + blocker + desired outcome (example: safe + unclear next step + route to verify)"
 agent: agent
 ---
 

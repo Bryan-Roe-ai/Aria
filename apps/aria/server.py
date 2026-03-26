@@ -26,6 +26,9 @@ _RE_SAY_COMMAND = re.compile(
 )
 _RE_SANITIZE_BRACKETS = re.compile(r'\]')
 _RE_COORDINATES = re.compile(r'(\d{1,3})%?.*?(\d{1,3})%?')
+_RE_COMMAND_SEPARATORS = re.compile(
+    r'\s*(?:,|;|\band then\b|\bthen\b|\band\b|\bafter that\b|\bafterwards\b|\bnext\b|\bfinally\b|\blastly\b)\s*', re.IGNORECASE)
+_UNSET = object()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
@@ -79,6 +82,12 @@ GLOW_KEYWORDS = frozenset(['glow', 'glowing', 'radiate', 'illuminate'])
 HEARTS_KEYWORDS = frozenset(['hearts', 'heart', 'love'])
 WALK_LEFT_KEYWORDS = frozenset(['walk left', 'go left', 'left'])
 WALK_RIGHT_KEYWORDS = frozenset(['walk right', 'go right', 'right'])
+COME_HERE_KEYWORDS = frozenset(['come here', 'come to me', 'over here'])
+FOLLOW_ME_KEYWORDS = frozenset(['follow me', 'come with me'])
+BRING_ME_KEYWORDS = frozenset(['bring me', 'fetch', 'hand me'])
+BRING_IT_KEYWORDS = frozenset(['bring it', 'bring it here', 'bring it to me'])
+DROP_HERE_KEYWORDS = frozenset(
+    ['drop it here', 'put it here', 'place it here', 'set it down'])
 
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
@@ -282,10 +291,125 @@ Rules:
             logger.error(f"LLM parsing failed: {e}")
             raise
 
-    def parse_with_fallback(self, command: str) -> List[dict]:
+    def parse_with_fallback(self, command: str, _allow_split: bool = True, _planned_held_object=_UNSET) -> List[dict]:
         """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
         actions = []
         command_lower = command.lower()
+        known_objects = ['apple', 'book', 'cup', 'ball', 'flower']
+        planned_held_object = stage_state['aria'].get(
+            'held_object') if _planned_held_object is _UNSET else _planned_held_object
+
+        # Compound command handling (e.g., "pick up cup and bring it here then put it on table")
+        if _allow_split:
+            segments = [seg.strip()
+                        for seg in _RE_COMMAND_SEPARATORS.split(command)
+                        if seg and seg.strip()]
+            if len(segments) > 1:
+                combined_actions = []
+                current_planned_held = planned_held_object
+                for seg in segments:
+                    seg_actions = self.parse_with_fallback(
+                        seg,
+                        _allow_split=False,
+                        _planned_held_object=current_planned_held
+                    )
+                    combined_actions.extend(seg_actions)
+
+                    for action in seg_actions:
+                        action_type = action.get('action')
+                        if action_type == 'pickup':
+                            current_planned_held = action.get(
+                                'object_id', current_planned_held)
+                        elif action_type in ('drop', 'throw'):
+                            current_planned_held = None
+
+                # Remove redundant consecutive actions from repeated segments
+                deduped_actions = []
+                for action in combined_actions:
+                    if deduped_actions and action == deduped_actions[-1]:
+                        continue
+                    if (
+                        deduped_actions
+                        and action.get('action') == 'move'
+                        and deduped_actions[-1].get('action') == 'move'
+                        and action.get('target') == deduped_actions[-1].get('target')
+                    ):
+                        continue
+                    if (
+                        len(deduped_actions) >= 2
+                        and action.get('action') == 'move'
+                        and deduped_actions[-2].get('action') == 'move'
+                        and deduped_actions[-2].get('target') == action.get('target')
+                        and deduped_actions[-1].get('action') == 'gesture'
+                        and deduped_actions[-1].get('gesture_type') == 'nod'
+                    ):
+                        continue
+                    deduped_actions.append(action)
+
+                return deduped_actions
+
+        # Conversational movement commands
+        if _contains_any_keyword(command_lower, COME_HERE_KEYWORDS):
+            actions.append({"action": "move", "target": {
+                           "x": 50, "y": 85}, "speed": "normal"})
+
+        if _contains_any_keyword(command_lower, FOLLOW_ME_KEYWORDS):
+            actions.append({"action": "gesture", "gesture_type": "nod"})
+            actions.append({"action": "move", "target": {
+                           "x": 50, "y": 75}, "speed": "normal"})
+
+        # Conversational object delivery commands
+        if _contains_any_keyword(command_lower, BRING_ME_KEYWORDS):
+            for obj in known_objects:
+                if obj in command_lower and obj in stage_state['objects']:
+                    obj_pos = stage_state['objects'][obj]['position']
+                    actions.append(
+                        {"action": "move", "target": obj_pos, "speed": "normal"})
+                    actions.append({"action": "pickup", "object_id": obj})
+                    actions.append({"action": "move", "target": {
+                                   "x": 50, "y": 85}, "speed": "normal"})
+                    actions.append(
+                        {"action": "gesture", "gesture_type": "nod"})
+                    break
+
+        # Pronoun follow-up delivery command (e.g., "bring it here")
+        if _contains_any_keyword(command_lower, BRING_IT_KEYWORDS):
+            held_obj = planned_held_object
+            if held_obj:
+                actions.append({"action": "move", "target": {
+                               "x": 50, "y": 85}, "speed": "normal"})
+                actions.append(
+                    {"action": "gesture", "gesture_type": "nod"})
+            else:
+                actions.append({
+                    "action": "say",
+                    "text": "I need to pick something up first.",
+                    "emotion": "neutral"
+                })
+
+        # Conversational drop/place commands for currently held object
+        has_drop_intent = (
+            _contains_any_keyword(command_lower, DROP_HERE_KEYWORDS)
+            or ('drop' in command_lower and 'here' in command_lower)
+            or ('put' in command_lower and ('here' in command_lower or 'down' in command_lower or 'table' in command_lower))
+            or ('place' in command_lower and ('here' in command_lower or 'table' in command_lower))
+        )
+        if has_drop_intent:
+            held_obj = planned_held_object
+            if not held_obj:
+                actions.append({
+                    "action": "say",
+                    "text": "I'm not holding anything yet.",
+                    "emotion": "neutral"
+                })
+            else:
+                drop_target = {'x': 50, 'y': 85}
+                if 'table' in command_lower:
+                    table_pos = stage_state['environment']['table']['position']
+                    drop_target = {'x': table_pos['x'], 'y': 35}
+                actions.append(
+                    {"action": "move", "target": drop_target, "speed": "normal"})
+                actions.append({"action": "drop", "position": drop_target})
 
         # Parse move commands
         if _contains_any_keyword(command_lower, MOVE_KEYWORDS):
@@ -317,7 +441,7 @@ Rules:
                     break
 
         # Parse pickup commands
-        for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
+        for obj in known_objects:
             if obj in command_lower and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
                 # Move to object first
                 obj_pos = stage_state['objects'][obj]['position']
@@ -547,6 +671,23 @@ def determine_position_from_context(cmd: str) -> str:
     aria_pos = stage_state['aria']['position']
     objects = stage_state['objects']
     table_pos = stage_state['environment']['table']['position']
+
+    # Conversational movement intents
+    if _contains_any_keyword(cmd, COME_HERE_KEYWORDS):
+        # Front-center, closer to the viewer/user
+        return '[aria:position:50:85]'
+    if _contains_any_keyword(cmd, FOLLOW_ME_KEYWORDS):
+        # Slightly behind the front-center so movement is visible
+        return '[aria:position:50:75]'
+    if _contains_any_keyword(cmd, BRING_ME_KEYWORDS):
+        # For delivery-style commands, move to front-center
+        return '[aria:position:50:85]'
+    if _contains_any_keyword(cmd, BRING_IT_KEYWORDS):
+        # Pronoun follow-up delivery defaults to front-center
+        return '[aria:position:50:85]'
+    if _contains_any_keyword(cmd, DROP_HERE_KEYWORDS):
+        # Default drop target is in front of the user
+        return '[aria:position:50:85]'
 
     # Object interaction positioning - move near the object
     for obj_name in ['apple', 'book', 'cup', 'ball', 'flower', 'bear']:
@@ -1059,13 +1200,23 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         """Serve static files"""
         print(f"📥 GET request: {self.path}")
-        # API: return objects or full stage_state if requested
-        if self.path == '/api/aria/objects' or self.path == '/api/aria/state':
+        # API: return either full stage snapshot or object registry
+        if self.path == '/api/aria/state':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            payload = {'objects': stage_state.get(
-                'objects', {}), 'aria': stage_state.get('aria', {})}
+            payload = {
+                'aria': stage_state.get('aria', {}),
+                'objects': stage_state.get('objects', {}),
+                'environment': stage_state.get('environment', {})
+            }
+            self.wfile.write(json.dumps(payload).encode('utf-8'))
+            return
+        if self.path == '/api/aria/objects':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            payload = {'objects': stage_state.get('objects', {})}
             self.wfile.write(json.dumps(payload).encode('utf-8'))
             return
         if self.path == '/':
@@ -1340,8 +1491,13 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         """Custom logging"""
-        if 'favicon' not in args[0] if args else True:
-            print(f"🌐 {args[0] if args else format}")
+        try:
+            message = format % args if args else str(format)
+        except Exception:
+            message = str(format)
+
+        if 'favicon' not in message:
+            print(f"🌐 {message}")
 
 
 # Backward-compatible module alias used by tests and older integrations:

@@ -1,5 +1,7 @@
 ---
 description: "Plan and execute quantum computing workflows — circuit design, simulation, Azure Quantum submission, and cost-aware QPU execution."
+name: "Quantum Workflow"
+argument-hint: "Circuit spec + backend target (example: circuit description + local-sim | azure-sim | ionq + cost limit)"
 agent: qai-specialist
 ---
 

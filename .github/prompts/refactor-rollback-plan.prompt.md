@@ -1,7 +1,7 @@
 ---
 description: "Use when you need a concrete rollback/backout plan for a refactor, including triggers, actions, and verification after rollback."
 name: "Refactor Rollback Plan"
-argument-hint: "Scope + deployment context + risk triggers + rollback constraints"
+argument-hint: "Scope + deployment context + risk triggers + rollback constraints (example: function_app.py + Azure Functions + test failures + git revert only)"
 agent: agent
 ---
 

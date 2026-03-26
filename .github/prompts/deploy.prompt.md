@@ -1,5 +1,8 @@
 ---
 description: "Deploy and promote AI models and services"
+name: "Deploy"
+argument-hint: "Target + model or service details (example: adapter path + deployment target + version tag)"
+agent: platform-ops
 ---
 # Deploy
 

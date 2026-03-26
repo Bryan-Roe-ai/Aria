@@ -1,7 +1,7 @@
 ---
 description: "Use when handing off refactor work: produce a concise status package with decisions, evidence, blockers, and exact next command."
 name: "Refactor Handoff"
-argument-hint: "Current stage + completed artifacts + blocker + owner handoff context"
+argument-hint: "Current stage + completed artifacts + blocker + owner handoff context (example: verify + evidence-log + failing test + reassign to backend)"
 agent: agent
 ---
 

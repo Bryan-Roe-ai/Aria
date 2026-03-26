@@ -1,7 +1,7 @@
 ---
 description: "Use when you need to audit refactor prompt suite consistency (stages, allowed commands, and handoff links) and report minimal fixes."
 name: "Refactor Workflow Audit"
-argument-hint: "Prompt set scope + expected stages + strictness"
+argument-hint: "Prompt set scope + expected stages + strictness (example: refactor prompts + all 19 stages + strict)"
 agent: agent
 ---
 
