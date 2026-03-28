@@ -1,5 +1,8 @@
 ---
 description: "Multi-provider chat with memory injection and streaming"
+name: "Chat"
+argument-hint: "Message + optional provider and memory context (example: provider + message or question)"
+agent: chat-provider
 ---
 # Chat
 

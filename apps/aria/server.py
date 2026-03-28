@@ -6,15 +6,18 @@ Serves the HTML/JS frontend and provides API endpoint for command generation
 import random
 import math
 import sys
+import os
+import socket
 import hashlib
 from pathlib import Path
 import datetime
 from datetime import timezone
-from typing import List
+from typing import List, Optional, Tuple
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
 import re
 from urllib.parse import urlparse, parse_qs
+import urllib.request
 import logging
 
 # Pre-compile regex patterns for performance (avoid recompiling in loops)
@@ -26,6 +29,62 @@ _RE_SAY_COMMAND = re.compile(
 )
 _RE_SANITIZE_BRACKETS = re.compile(r'\]')
 _RE_COORDINATES = re.compile(r'(\d{1,3})%?.*?(\d{1,3})%?')
+_RE_COMMAND_SEPARATORS = re.compile(
+    r'(?:\s*(?:,|;|\||->|=>|→|\band then\b|\bthen\b|\band\b|\bafter that\b|\bafterwards\b|\bnext\b|\bfinally\b|\blastly\b|\bthen\s*:|\bnext\s*:|\bafterward\s*:|\bafterwards\s*:|\bfinally\s*:|\bfirst\b|\bsecond\b|\bthird\b|\bfourth\b|\bstep\s*(?:\d+|[ivxlcdm]+)\b|\bphase\s*(?:\d+|[ivxlcdm]+)\b|\bpart\s*(?:\d+|[ivxlcdm]+)\b|(?<!\S)\d+[\)\.](?=\s))\s*|\n+\s*(?:[-*•]\s*)?(?:\[[ xX]\]\s*)?)',
+    re.IGNORECASE
+)
+_UNSET = object()
+
+
+def _provider_response_to_text(raw) -> str:
+    """Normalize provider complete output to plain text."""
+    if raw is None:
+        return ""
+    if isinstance(raw, str):
+        return raw
+
+    if isinstance(raw, dict):
+        # OpenAI-like providers may return a dict with content field.
+        if 'content' in raw and isinstance(raw['content'], str):
+            return raw['content']
+
+        # Handle OpenAI response objects with choices list.
+        choices = raw.get('choices')
+        if isinstance(choices, list) and choices:
+            first = choices[0]
+            if isinstance(first, dict):
+                msg = first.get('message')
+                if isinstance(msg, dict):
+                    content = msg.get('content')
+                    if isinstance(content, str):
+                        return content
+                text = first.get('text')
+                if isinstance(text, str):
+                    return text
+            # Fallback for hybrid objects
+            content = getattr(first, 'content', None)
+            if isinstance(content, str):
+                return content
+
+        # Generic fallback conversion
+        try:
+            return json.dumps(raw)
+        except Exception:
+            return str(raw)
+
+    if hasattr(raw, 'get') and callable(raw.get):
+        try:
+            content = raw.get('content')
+            if isinstance(content, str):
+                return content
+        except Exception:
+            pass
+
+    try:
+        return str(raw)
+    except Exception:
+        return ""
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO,
@@ -79,6 +138,12 @@ GLOW_KEYWORDS = frozenset(['glow', 'glowing', 'radiate', 'illuminate'])
 HEARTS_KEYWORDS = frozenset(['hearts', 'heart', 'love'])
 WALK_LEFT_KEYWORDS = frozenset(['walk left', 'go left', 'left'])
 WALK_RIGHT_KEYWORDS = frozenset(['walk right', 'go right', 'right'])
+COME_HERE_KEYWORDS = frozenset(['come here', 'come to me', 'over here'])
+FOLLOW_ME_KEYWORDS = frozenset(['follow me', 'come with me'])
+BRING_ME_KEYWORDS = frozenset(['bring me', 'fetch', 'hand me'])
+BRING_IT_KEYWORDS = frozenset(['bring it', 'bring it here', 'bring it to me'])
+DROP_HERE_KEYWORDS = frozenset(
+    ['drop it here', 'put it here', 'place it here', 'set it down'])
 
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
@@ -186,6 +251,44 @@ class AriaActionParser:
         self.provider_choice = None
         self._initialize_provider()
 
+    @staticmethod
+    def _normalize_provider_alias(explicit: Optional[str]) -> Optional[str]:
+        """Normalize provider aliases to canonical detect_provider values."""
+        if explicit is None:
+            return None
+
+        normalized = str(explicit).strip().lower()
+        alias_map = {
+            'quantum-llm': 'quantum',
+            'quantum_llm': 'quantum',
+            'azure_openai': 'azure',
+        }
+        return alias_map.get(normalized, normalized)
+
+    def _resolve_provider_for_request(
+        self,
+        *,
+        explicit: Optional[str] = None,
+        model_override: Optional[str] = None,
+    ) -> Tuple[object | None, object | None]:
+        """Resolve provider for a specific request while preserving cached default."""
+        if not LLM_AVAILABLE:
+            return None, None
+
+        normalized_explicit = self._normalize_provider_alias(explicit)
+
+        # Fast path: use cached auto provider if no request-level override is set.
+        if normalized_explicit in (None, '', 'auto') and not model_override:
+            return self.provider, self.provider_choice
+
+        detected = detect_provider(
+            explicit=normalized_explicit or 'auto',
+            model_override=model_override,
+        )
+        if isinstance(detected, tuple) and len(detected) == 2:
+            return detected[0], detected[1]
+        return detected, None
+
     def _initialize_provider(self):
         """Initialize LLM provider if available, robust to tuple return values."""
         if not LLM_AVAILABLE:
@@ -193,19 +296,30 @@ class AriaActionParser:
             return
 
         try:
-            detected = detect_provider()
-            # detect_provider returns (provider_instance, ProviderChoice)
-            if isinstance(detected, tuple) and len(detected) == 2:
-                self.provider, self.provider_choice = detected
-            else:
-                # older style (just provider)
-                self.provider = detected
+            configured_explicit = os.getenv('ARIA_LLM_PROVIDER')
+            configured_model = os.getenv('ARIA_LLM_MODEL')
+
+            # Convenience: if ARIA_QUANTUM_MODEL_PATH is set and no provider is
+            # configured, default Aria LLM parsing to the quantum provider.
+            quantum_model_path = os.getenv('ARIA_QUANTUM_MODEL_PATH') or os.getenv(
+                'QAI_QUANTUM_MODEL_PATH'
+            )
+            if not configured_model and quantum_model_path:
+                configured_model = quantum_model_path
+            if not configured_explicit and configured_model == quantum_model_path and quantum_model_path:
+                configured_explicit = 'quantum'
+
+            self.provider, self.provider_choice = self._resolve_provider_for_request(
+                explicit=configured_explicit,
+                model_override=configured_model,
+            )
             provider_name = getattr(self.provider_choice, 'name', getattr(
                 self.provider, '__class__', type(self.provider)).__class__.__name__)
             logger.info(f"✓ Initialized LLM provider: {provider_name}")
         except Exception as e:
             logger.warning(f"Failed to initialize LLM provider: {e}")
             self.provider = None
+            self.provider_choice = None
 
     def _build_system_prompt(self) -> str:
         """Build system prompt with action schema and current state"""
@@ -240,9 +354,11 @@ Rules:
 4. Stage bounds: 0-100 for both x and y
 5. If command is unclear, choose most reasonable interpretation"""
 
-    def parse_with_llm(self, command: str) -> List[dict]:
+    def parse_with_llm(self, command: str, provider=None) -> List[dict]:
         """Parse command using LLM provider"""
-        if not self.provider:
+        active_provider = provider if provider is not None else self.provider
+
+        if not active_provider:
             raise ValueError("LLM provider not available")
 
         system_prompt = self._build_system_prompt()
@@ -252,10 +368,10 @@ Rules:
         ]
 
         try:
-            response = self.provider.complete(messages, stream=False)
+            response = active_provider.complete(messages, stream=False)
 
             # Extract JSON from response
-            content = response.get('content', '').strip()
+            content = _provider_response_to_text(response).strip()
 
             # Try to parse as JSON
             if content.startswith('['):
@@ -282,10 +398,125 @@ Rules:
             logger.error(f"LLM parsing failed: {e}")
             raise
 
-    def parse_with_fallback(self, command: str) -> List[dict]:
+    def parse_with_fallback(self, command: str, _allow_split: bool = True, _planned_held_object=_UNSET) -> List[dict]:
         """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
         actions = []
         command_lower = command.lower()
+        known_objects = ['apple', 'book', 'cup', 'ball', 'flower']
+        planned_held_object = stage_state['aria'].get(
+            'held_object') if _planned_held_object is _UNSET else _planned_held_object
+
+        # Compound command handling (e.g., "pick up cup and bring it here then put it on table")
+        if _allow_split:
+            segments = [seg.strip()
+                        for seg in _RE_COMMAND_SEPARATORS.split(command)
+                        if seg and seg.strip()]
+            if len(segments) > 1:
+                combined_actions = []
+                current_planned_held = planned_held_object
+                for seg in segments:
+                    seg_actions = self.parse_with_fallback(
+                        seg,
+                        _allow_split=False,
+                        _planned_held_object=current_planned_held
+                    )
+                    combined_actions.extend(seg_actions)
+
+                    for action in seg_actions:
+                        action_type = action.get('action')
+                        if action_type == 'pickup':
+                            current_planned_held = action.get(
+                                'object_id', current_planned_held)
+                        elif action_type in ('drop', 'throw'):
+                            current_planned_held = None
+
+                # Remove redundant consecutive actions from repeated segments
+                deduped_actions = []
+                for action in combined_actions:
+                    if deduped_actions and action == deduped_actions[-1]:
+                        continue
+                    if (
+                        deduped_actions
+                        and action.get('action') == 'move'
+                        and deduped_actions[-1].get('action') == 'move'
+                        and action.get('target') == deduped_actions[-1].get('target')
+                    ):
+                        continue
+                    if (
+                        len(deduped_actions) >= 2
+                        and action.get('action') == 'move'
+                        and deduped_actions[-2].get('action') == 'move'
+                        and deduped_actions[-2].get('target') == action.get('target')
+                        and deduped_actions[-1].get('action') == 'gesture'
+                        and deduped_actions[-1].get('gesture_type') == 'nod'
+                    ):
+                        continue
+                    deduped_actions.append(action)
+
+                return deduped_actions
+
+        # Conversational movement commands
+        if _contains_any_keyword(command_lower, COME_HERE_KEYWORDS):
+            actions.append({"action": "move", "target": {
+                           "x": 50, "y": 85}, "speed": "normal"})
+
+        if _contains_any_keyword(command_lower, FOLLOW_ME_KEYWORDS):
+            actions.append({"action": "gesture", "gesture_type": "nod"})
+            actions.append({"action": "move", "target": {
+                           "x": 50, "y": 75}, "speed": "normal"})
+
+        # Conversational object delivery commands
+        if _contains_any_keyword(command_lower, BRING_ME_KEYWORDS):
+            for obj in known_objects:
+                if obj in command_lower and obj in stage_state['objects']:
+                    obj_pos = stage_state['objects'][obj]['position']
+                    actions.append(
+                        {"action": "move", "target": obj_pos, "speed": "normal"})
+                    actions.append({"action": "pickup", "object_id": obj})
+                    actions.append({"action": "move", "target": {
+                                   "x": 50, "y": 85}, "speed": "normal"})
+                    actions.append(
+                        {"action": "gesture", "gesture_type": "nod"})
+                    break
+
+        # Pronoun follow-up delivery command (e.g., "bring it here")
+        if _contains_any_keyword(command_lower, BRING_IT_KEYWORDS):
+            held_obj = planned_held_object
+            if held_obj:
+                actions.append({"action": "move", "target": {
+                               "x": 50, "y": 85}, "speed": "normal"})
+                actions.append(
+                    {"action": "gesture", "gesture_type": "nod"})
+            else:
+                actions.append({
+                    "action": "say",
+                    "text": "I need to pick something up first.",
+                    "emotion": "neutral"
+                })
+
+        # Conversational drop/place commands for currently held object
+        has_drop_intent = (
+            _contains_any_keyword(command_lower, DROP_HERE_KEYWORDS)
+            or ('drop' in command_lower and 'here' in command_lower)
+            or ('put' in command_lower and ('here' in command_lower or 'down' in command_lower or 'table' in command_lower))
+            or ('place' in command_lower and ('here' in command_lower or 'table' in command_lower))
+        )
+        if has_drop_intent:
+            held_obj = planned_held_object
+            if not held_obj:
+                actions.append({
+                    "action": "say",
+                    "text": "I'm not holding anything yet.",
+                    "emotion": "neutral"
+                })
+            else:
+                drop_target = {'x': 50, 'y': 85}
+                if 'table' in command_lower:
+                    table_pos = stage_state['environment']['table']['position']
+                    drop_target = {'x': table_pos['x'], 'y': 35}
+                actions.append(
+                    {"action": "move", "target": drop_target, "speed": "normal"})
+                actions.append({"action": "drop", "position": drop_target})
 
         # Parse move commands
         if _contains_any_keyword(command_lower, MOVE_KEYWORDS):
@@ -317,7 +548,7 @@ Rules:
                     break
 
         # Parse pickup commands
-        for obj in ['apple', 'book', 'cup', 'ball', 'flower']:
+        for obj in known_objects:
             if obj in command_lower and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
                 # Move to object first
                 obj_pos = stage_state['objects'][obj]['position']
@@ -336,22 +567,40 @@ Rules:
 
         return actions
 
-    def parse(self, command: str, use_llm: bool = True) -> List[dict]:
+    def parse(
+        self,
+        command: str,
+        use_llm: bool = True,
+        provider_choice: Optional[str] = None,
+        model_override: Optional[str] = None,
+    ) -> List[dict]:
         """
         Parse command into structured actions
 
         Args:
             command: Natural language command
             use_llm: Try LLM first if available
+            provider_choice: Optional provider override (e.g. quantum, azure)
+            model_override: Optional model/path override for selected provider
 
         Returns:
             List of action dicts
         """
-        if use_llm and self.provider:
+        if use_llm:
             try:
-                actions = self.parse_with_llm(command)
+                request_provider, request_choice = self._resolve_provider_for_request(
+                    explicit=provider_choice,
+                    model_override=model_override,
+                )
+                if request_provider is None:
+                    raise ValueError("LLM provider not available")
+
+                actions = self.parse_with_llm(
+                    command, provider=request_provider)
+                used_provider_name = getattr(request_choice, 'name', None) or getattr(
+                    self.provider_choice, 'name', None) or self._normalize_provider_alias(provider_choice) or 'auto'
                 logger.info(
-                    f"✓ LLM parsed: {command} -> {len(actions)} actions")
+                    f"✓ LLM parsed via {used_provider_name}: {command} -> {len(actions)} actions")
                 return actions
             except Exception as e:
                 logger.warning(f"LLM parsing failed, using fallback: {e}")
@@ -457,27 +706,40 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
             {'role': 'user', 'content': user_prompt}
         ]
         raw = provider.complete(messages, stream=False)
-        raw_str = raw if isinstance(raw, str) else str(raw)
+        raw_str = _provider_response_to_text(raw).strip()
         # Strip code fences
         if '```' in raw_str:
-            m = re.search(r"```(?:json)?\n(.*?)(```)$",
+            m = re.search(r"```(?:json)?\n(.*?)(```)",
                           raw_str, flags=re.DOTALL)
             if m:
                 raw_str = m.group(1).strip()
-        # Extract first JSON object
-        obj_match = re.search(r"\{.*\}\s*$", raw_str, flags=re.DOTALL)
-        if obj_match:
-            raw_str = obj_match.group(0)
-        parsed_world_data = json.loads(raw_str)
+
+        # Parse JSON from the LLM response
+        try:
+            parsed_world_data = json.loads(raw_str)
+        except json.JSONDecodeError:
+            obj_match = re.search(r"\{.*\}\s*$", raw_str, flags=re.DOTALL)
+            if obj_match:
+                raw_str = obj_match.group(0)
+            parsed_world_data = json.loads(raw_str)
         # Basic validation
         objects = parsed_world_data.get('objects') or {}
         env = parsed_world_data.get('environment') or {}
-        # Sanitize
+
+        # Normalize object list/dict to id->object mapping
         sanitized_objects = {}
-        for key, val in list(objects.items())[:count]:
+        if isinstance(objects, dict):
+            object_items = list(objects.items())
+        elif isinstance(objects, list):
+            object_items = [(str(i), obj) for i, obj in enumerate(objects)]
+        else:
+            object_items = []
+
+        for key, val in object_items[:count]:
             if not isinstance(val, dict):
                 continue
-            oid = _sanitize_id(val.get('id') or key)
+            object_id = val.get('id') or val.get('name') or key
+            oid = _sanitize_id(object_id)
             pos = val.get('position', {})
             x = int(max(0, min(100, pos.get('x', random.randint(10, 90)))))
             y = int(max(0, min(100, pos.get('y', random.randint(20, 80)))))
@@ -547,6 +809,23 @@ def determine_position_from_context(cmd: str) -> str:
     aria_pos = stage_state['aria']['position']
     objects = stage_state['objects']
     table_pos = stage_state['environment']['table']['position']
+
+    # Conversational movement intents
+    if _contains_any_keyword(cmd, COME_HERE_KEYWORDS):
+        # Front-center, closer to the viewer/user
+        return '[aria:position:50:85]'
+    if _contains_any_keyword(cmd, FOLLOW_ME_KEYWORDS):
+        # Slightly behind the front-center so movement is visible
+        return '[aria:position:50:75]'
+    if _contains_any_keyword(cmd, BRING_ME_KEYWORDS):
+        # For delivery-style commands, move to front-center
+        return '[aria:position:50:85]'
+    if _contains_any_keyword(cmd, BRING_IT_KEYWORDS):
+        # Pronoun follow-up delivery defaults to front-center
+        return '[aria:position:50:85]'
+    if _contains_any_keyword(cmd, DROP_HERE_KEYWORDS):
+        # Default drop target is in front of the user
+        return '[aria:position:50:85]'
 
     # Object interaction positioning - move near the object
     for obj_name in ['apple', 'book', 'cup', 'ball', 'flower', 'bear']:
@@ -1043,6 +1322,71 @@ def execute_aria_action(action: dict) -> dict:
         return {'status': 'error', 'message': str(e)}
 
 
+def action_to_tags(action: dict) -> List[str]:
+    """Convert a structured action to Aria tag(s) without mutating stage state."""
+    action_type = action.get('action')
+    if not action_type:
+        return []
+
+    if action_type == 'move':
+        target = action.get('target')
+        if isinstance(target, dict) and 'x' in target and 'y' in target:
+            x = max(0, min(100, int(target['x'])))
+            y = max(0, min(100, int(target['y'])))
+            return [f'[aria:position:{x}:{y}]']
+        if isinstance(target, str):
+            return [f'[aria:move:to:{target}]']
+
+    if action_type == 'say':
+        text = str(action.get('text', ''))[:200]
+        emotion = str(action.get('emotion', 'neutral'))
+        tags = [f'[aria:say:{text}]'] if text else []
+        if emotion:
+            tags.append(f'[aria:expression:{emotion}]')
+        return tags
+
+    if action_type == 'pickup':
+        obj_id = action.get('object_id')
+        return [f'[aria:pickup:{obj_id}]'] if obj_id else []
+
+    if action_type == 'drop':
+        position = action.get('position')
+        tags = ['[aria:drop]']
+        if isinstance(position, dict) and 'x' in position and 'y' in position:
+            x = max(0, min(100, int(position['x'])))
+            y = max(0, min(100, int(position['y'])))
+            tags.append(f'[aria:position:{x}:{y}]')
+        return tags
+
+    if action_type == 'throw':
+        force = action.get('force', 'medium')
+        return [f'[aria:throw:{force}]']
+
+    if action_type == 'gesture':
+        gesture_type = action.get('gesture_type', 'wave')
+        return [f'[aria:gesture:{gesture_type}]']
+
+    if action_type == 'look':
+        target = action.get('target')
+        if isinstance(target, str):
+            return [f'[aria:look:{target}]']
+        return ['[aria:look]']
+
+    if action_type == 'wait':
+        duration = action.get('duration', 1.0)
+        return [f'[aria:wait:{duration}]']
+
+    return []
+
+
+def tags_from_actions(actions: List[dict]) -> List[str]:
+    """Flatten tags from a list of structured actions."""
+    tags: List[str] = []
+    for action in actions:
+        tags.extend(action_to_tags(action))
+    return tags
+
+
 class AriaRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         # Add CORS headers
@@ -1059,13 +1403,23 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         """Serve static files"""
         print(f"📥 GET request: {self.path}")
-        # API: return objects or full stage_state if requested
-        if self.path == '/api/aria/objects' or self.path == '/api/aria/state':
+        # API: return either full stage snapshot or object registry
+        if self.path == '/api/aria/state':
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            payload = {'objects': stage_state.get(
-                'objects', {}), 'aria': stage_state.get('aria', {})}
+            payload = {
+                'aria': stage_state.get('aria', {}),
+                'objects': stage_state.get('objects', {}),
+                'environment': stage_state.get('environment', {})
+            }
+            self.wfile.write(json.dumps(payload).encode('utf-8'))
+            return
+        if self.path == '/api/aria/objects':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            payload = {'objects': stage_state.get('objects', {})}
             self.wfile.write(json.dumps(payload).encode('utf-8'))
             return
         if self.path == '/':
@@ -1091,6 +1445,9 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
 
                 request_data = json.loads(post_data.decode('utf-8'))
                 command = request_data.get('command', '')
+                use_llm = bool(request_data.get('use_llm', True))
+                provider_choice = request_data.get('provider')
+                model_override = request_data.get('model')
 
                 # Update stage state if provided
                 if 'stage_state' in request_data:
@@ -1099,17 +1456,39 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 print(f"📝 Command received: {command}")
                 print(f"👁️  Stage context:\n{get_stage_context()}")
 
-                # Try AI first with full context, fallback to rules
-                tags = generate_tags_ai(command)
+                tags = []
+                actions = []
+
+                # Preferred path: parser-backed structured actions (supports
+                # provider/model overrides including quantum).
+                if use_llm:
+                    try:
+                        actions = action_parser.parse(
+                            command,
+                            use_llm=True,
+                            provider_choice=provider_choice,
+                            model_override=model_override,
+                        )
+                        tags = tags_from_actions(actions)
+                    except Exception as parse_err:
+                        logger.warning(
+                            f"/api/aria/command parser path failed, falling back: {parse_err}")
+
+                # Legacy fallback path: rule-based tag generation.
                 if not tags:
-                    tags = generate_tags_fallback(command)
+                    legacy_tags = generate_tags_ai(command)
+                    tags = legacy_tags if legacy_tags else generate_tags_fallback(
+                        command)
 
                 print(f"✨ Generated tags: {tags}")
 
                 response = {
                     'command': command,
                     'tags': tags,
-                    'model': 'ai' if (MODEL and tags) else 'fallback',
+                    'actions': actions if actions else None,
+                    'provider_requested': provider_choice or 'auto',
+                    'model_requested': model_override,
+                    'model': 'llm' if actions else ('ai' if (MODEL and tags) else 'fallback'),
                     'stage_context': get_stage_context(),
                     'stage_aware': True
                 }
@@ -1209,12 +1588,19 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 command = request_data.get('command', '')
                 auto_execute = request_data.get('auto_execute', False)
                 use_llm = request_data.get('use_llm', True)
+                provider_choice = request_data.get('provider')
+                model_override = request_data.get('model')
 
                 if not command:
                     raise ValueError('command is required')
 
                 # Parse command into actions
-                actions = action_parser.parse(command, use_llm=use_llm)
+                actions = action_parser.parse(
+                    command,
+                    use_llm=use_llm,
+                    provider_choice=provider_choice,
+                    model_override=model_override,
+                )
 
                 if not actions:
                     api_response = {
@@ -1242,6 +1628,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         'status': 'success',
                         'message': f'Parsed {len(actions)} actions' + (' and executed' if auto_execute else ' (plan only)'),
                         'command': command,
+                        'provider_requested': provider_choice or 'auto',
+                        'model_requested': model_override,
                         'actions': actions,
                         'executed': auto_execute,
                         'results': execution_results if auto_execute else None,
@@ -1285,11 +1673,27 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 theme = request_data.get('theme', 'forest')
                 count = int(request_data.get('count', 6))
                 use_llm = bool(request_data.get('use_llm', True))
+                provider_choice = request_data.get('provider')
+                model_override = request_data.get('model')
 
                 # Generate
-                if use_llm and action_parser.provider:
-                    world = generate_world_with_llm(
-                        theme, count, action_parser.provider)
+                if use_llm:
+                    try:
+                        world_provider, _ = action_parser._resolve_provider_for_request(
+                            explicit=provider_choice,
+                            model_override=model_override,
+                        )
+                    except Exception as provider_err:
+                        logger.warning(
+                            f"World generation provider resolution failed: {provider_err}")
+                        world_provider = None
+
+                    if world_provider:
+                        world = generate_world_with_llm(
+                            theme, count, world_provider)
+                    else:
+                        world = generate_world_fallback(theme, count)
+                        world['llm'] = False
                 else:
                     world = generate_world_fallback(theme, count)
                     world['llm'] = False
@@ -1313,6 +1717,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     'theme': theme,
                     'count': len(world['objects']),
                     'used_llm': world.get('llm', False),
+                    'provider_requested': provider_choice or 'auto',
+                    'model_requested': model_override,
                     'objects': world['objects'],
                     'environment': world['environment']
                 }
@@ -1340,8 +1746,13 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
 
     def log_message(self, format, *args):
         """Custom logging"""
-        if 'favicon' not in args[0] if args else True:
-            print(f"🌐 {args[0] if args else format}")
+        try:
+            message = format % args if args else str(format)
+        except Exception:
+            message = str(format)
+
+        if 'favicon' not in message:
+            print(f"🌐 {message}")
 
 
 # Backward-compatible module alias used by tests and older integrations:
@@ -1350,8 +1761,6 @@ server = sys.modules[__name__]
 
 
 def main():
-    import os
-
     # Change to aria_web directory
     web_dir = Path(__file__).parent
     os.chdir(web_dir)
@@ -1361,7 +1770,37 @@ def main():
     port = int(os.getenv('ARIA_PORT', '8080'))
     # Default to localhost for security; use environment variable to override if needed
     host = os.environ.get('ARIA_HOST', '127.0.0.1')
-    server = HTTPServer((host, port), AriaRequestHandler)
+
+    try:
+        server = HTTPServer((host, port), AriaRequestHandler)
+    except OSError as e:
+        # Graceful handling when a server is already bound to this port.
+        if getattr(e, 'errno', None) == 98:
+            state_url = f"http://{host}:{port}/api/aria/state"
+            try:
+                with urllib.request.urlopen(state_url, timeout=1.0) as resp:
+                    payload = json.loads(resp.read().decode('utf-8'))
+                if isinstance(payload, dict) and 'aria' in payload and 'objects' in payload:
+                    print(
+                        f"⚠️ Aria server already running at http://{host}:{port} (detected healthy /api/aria/state).")
+                    print("ℹ️ Reusing existing server; exiting this process cleanly.")
+                    return
+            except Exception:
+                pass
+
+            # If another service occupies the port, fall back to a free port.
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind((host, 0))
+                fallback_port = sock.getsockname()[1]
+
+            print(
+                f"⚠️ Port {port} is in use by another service; starting Aria on free port {fallback_port}.")
+            print(
+                f"💡 Set ARIA_PORT={fallback_port} (or another free port) to control startup port explicitly.")
+            port = fallback_port
+            server = HTTPServer((host, port), AriaRequestHandler)
+        else:
+            raise
 
     print("\n" + "=" * 70)
     print("🎨 Aria Visual Command System - Web Server")

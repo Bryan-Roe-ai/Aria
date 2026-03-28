@@ -18,7 +18,6 @@ import sys
 import os
 
 import logging
-from typing import Any
 
 # Transformers' TrainerCallback is optional at import time.
 try:  # pragma: no cover - optional dependency in some environments
@@ -34,7 +33,7 @@ except Exception:  # pragma: no cover - graceful fallback
     trace = None  # type: ignore
 
 
-class OpenTelemetryTrainerCallback(TrainerCallback):
+class _OpenTelemetryTrainerCallbackLite(TrainerCallback):
     """A robust, best-effort TrainerCallback that emits spans.
 
     This callback intentionally swallows exceptions so it never interferes

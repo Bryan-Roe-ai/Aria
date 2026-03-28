@@ -1,6 +1,7 @@
 """
 Tool Executor - Executes tools in a sandboxed environment
 """
+import importlib
 import logging
 import signal
 import sys
@@ -9,6 +10,17 @@ from typing import Any, Dict, Optional
 import traceback
 
 logger = logging.getLogger(__name__)
+
+ALLOWED_IMPORT_MODULES = {
+    'math',
+    'json',
+    're',
+    'datetime',
+    'collections',
+    'itertools',
+    'functools',
+    'typing',
+}
 
 # Try to import RestrictedPython if available
 try:
@@ -82,6 +94,7 @@ class ToolExecutor:
                 'tuple': tuple,
                 'type': type,
                 'zip': zip,
+                '__import__': self._safe_import,
                 # Safe modules
                 '__name__': '__main__',
                 '__doc__': None,
@@ -91,6 +104,13 @@ class ToolExecutor:
         # Add safe iteration support if RestrictedPython is available
         if HAS_RESTRICTED_PYTHON:
             self.safe_globals['_iter_unpack_sequence_'] = guarded_iter_unpack_sequence
+
+    def _safe_import(self, name, globals=None, locals=None, fromlist=(), level=0):
+        """Restrict imports to a small allowlist required by validated tools."""
+        root_name = name.split('.', 1)[0]
+        if root_name not in ALLOWED_IMPORT_MODULES:
+            raise ImportError(f"Import not allowed: {name}")
+        return importlib.import_module(name)
     
     @contextmanager
     def _timeout_context(self, seconds: int):
@@ -178,6 +198,7 @@ class ToolExecutor:
             try:
                 with self._timeout_context(self.timeout):
                     exec(compiled_code, exec_globals, exec_locals)
+                    exec_globals.update(exec_locals)
             except ExecutionTimeout as e:
                 return {
                     'success': False,

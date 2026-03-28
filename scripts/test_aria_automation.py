@@ -8,6 +8,13 @@ import sys
 import time
 from pathlib import Path
 
+if "pytest" in sys.modules:
+    import pytest
+
+    pytestmark = pytest.mark.skip(
+        reason="script-style automation smoke checks are environment-dependent"
+    )
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GREEN = '\033[92m'
 RED = '\033[91m'
@@ -44,7 +51,7 @@ def check_file_exists(path):
         return False
 
 
-def test_import(module_name):
+def check_import(module_name):
     """Test if Python module can be imported"""
     print_test(f"Importing {module_name}...")
     try:
@@ -64,7 +71,7 @@ def test_import(module_name):
         return False
 
 
-def test_script_help(script_path):
+def check_script_help(script_path):
     """Test if script shows help"""
     test_path = REPO_ROOT / script_path
     print_test(f"Testing {script_path} --help...")
@@ -146,12 +153,12 @@ def main():
 
     for module in modules_to_test:
         tests_total += 1
-        if test_import(module):
+        if check_import(module):
             tests_passed += 1
 
     # Test optional psutil
     print_test("Checking optional dependency: psutil...")
-    if test_import("psutil"):
+    if check_import("psutil"):
         print_pass("psutil available (recommended)")
     else:
         print_warn("psutil not available (will be installed on first run)")
@@ -160,7 +167,7 @@ def main():
     print(f"\n{BLUE}=== Script Tests ==={RESET}\n")
 
     tests_total += 1
-    if test_script_help("scripts/aria_automation.py"):
+    if check_script_help("scripts/aria_automation.py"):
         tests_passed += 1
 
     tests_total += 1

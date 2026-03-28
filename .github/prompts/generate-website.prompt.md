@@ -1,5 +1,8 @@
 ---
 description: "Generate a complete website using the LLM Maker WebsiteMaker"
+name: "Generate Website"
+argument-hint: "Site spec + purpose (example: site purpose + pages + style preferences + any required sections)"
+agent: llm-maker
 ---
 # Generate Website
 

@@ -340,7 +340,8 @@ class TestRuntimeValidationGuards:
 
     def test_circuit_properties_rejects_whitespace_circuit_id(self):
         mcp_server = self._import_server()
-        result = _run(mcp_server.circuit_properties_handler({"circuit_id": "   "}))
+        result = _run(mcp_server.circuit_properties_handler(
+            {"circuit_id": "   "}))
         assert "circuit_id is required" in result[0].text
 
     def test_submit_job_rejects_whitespace_backend_name(self):
@@ -358,7 +359,8 @@ class TestRuntimeValidationGuards:
         except (ImportError, SystemExit):
             pytest.skip("quantum_mcp_server dependencies not installed")
 
-        result = _run(simulate_circuit_handler({"circuit_id": "   ", "shots": 10}))
+        result = _run(simulate_circuit_handler(
+            {"circuit_id": "   ", "shots": 10}))
         assert "circuit_id is required" in result[0].text
 
     def test_train_classifier_rejects_invalid_bounds(self):

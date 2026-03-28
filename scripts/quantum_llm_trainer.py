@@ -39,6 +39,15 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "data_out" / "quantum_llm_training"
+DEFAULT_STATUS_FILE = DEFAULT_OUTPUT_DIR / "status.json"
+CHECKPOINT_FILENAMES = (
+    "best_quantum_llm.pt",
+    "quantum_llm_checkpoint.pt",
+    "final_model.pt",
+)
+
 # Add ai-projects/quantum-ml to path
 quantum_ml_path = Path(__file__).parent.parent / "ai-projects" / "quantum-ml"
 quantum_ml_src = quantum_ml_path / "src"
@@ -64,6 +73,155 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+
+def _resolve_repo_path(path_value: str | Path | None, *, default: Path) -> Path:
+    """Resolve repo-relative paths deterministically."""
+    if path_value is None:
+        return default
+
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path
+
+
+def _repo_relative_str(path_value: str | Path | None) -> str | None:
+    """Return a repo-relative string when possible to keep status JSON portable."""
+    if path_value is None:
+        return None
+
+    path = Path(path_value)
+    try:
+        return str(path.resolve().relative_to(REPO_ROOT.resolve()))
+    except Exception:
+        return str(path)
+
+
+def _normalise_checkpoint_reference(base_dir: Path, checkpoint_ref: str | Path | None) -> Path | None:
+    """Resolve a checkpoint path from status metadata or direct references."""
+    if not checkpoint_ref:
+        return None
+
+    candidate = Path(checkpoint_ref)
+    if not candidate.is_absolute():
+        direct_candidate = base_dir / candidate
+        if direct_candidate.exists():
+            candidate = direct_candidate
+        else:
+            candidate = REPO_ROOT / candidate
+    return candidate
+
+
+def get_quantum_llm_status(
+    *,
+    status_file: str | Path | None = None,
+    output_dir: str | Path | None = None,
+) -> Dict[str, Any]:
+    """Load Quantum LLM runtime status and checkpoint readiness metadata."""
+    resolved_output_dir = _resolve_repo_path(
+        output_dir, default=DEFAULT_OUTPUT_DIR)
+    resolved_status_file = _resolve_repo_path(
+        status_file,
+        default=resolved_output_dir / "status.json",
+    )
+
+    payload: Dict[str, Any] = {
+        "available": False,
+        "status": "not_started",
+        "output_dir": _repo_relative_str(resolved_output_dir),
+        "status_file": _repo_relative_str(resolved_status_file),
+        "checkpoint_path": None,
+        "best_checkpoint_path": None,
+        "checkpoint_exists": False,
+        "inference_ready": False,
+        "quantum_available": QUANTUM_AVAILABLE,
+        "epochs_completed": 0,
+        "best_loss": None,
+        "final_loss": None,
+        "last_updated": None,
+        "last_error": None,
+        "passive_mode": False,
+        "mode": None,
+    }
+
+    if resolved_status_file.exists():
+        try:
+            with open(resolved_status_file, "r", encoding="utf-8") as status_handle:
+                existing = json.load(status_handle)
+            if isinstance(existing, dict):
+                payload.update(existing)
+                payload["available"] = True
+        except Exception as exc:  # noqa: BLE001
+            payload.update({
+                "status": "error",
+                "available": False,
+                "last_error": f"Failed to read status file: {exc}",
+            })
+
+    checkpoint_ref = (
+        payload.get("best_checkpoint_path")
+        or payload.get("checkpoint_path")
+        or payload.get("last_checkpoint_path")
+    )
+    checkpoint_path = _normalise_checkpoint_reference(
+        resolved_output_dir, checkpoint_ref)
+    if checkpoint_path is None:
+        for checkpoint_name in CHECKPOINT_FILENAMES:
+            candidate = resolved_output_dir / checkpoint_name
+            if candidate.exists():
+                checkpoint_path = candidate
+                break
+
+    if checkpoint_path is not None:
+        payload["checkpoint_path"] = _repo_relative_str(checkpoint_path)
+        payload["checkpoint_exists"] = checkpoint_path.exists()
+        payload["inference_ready"] = bool(
+            checkpoint_path.exists() and payload.get("status") in {
+                "completed", "running", "idle"}
+        )
+
+    payload["status_file_exists"] = resolved_status_file.exists()
+    return payload
+
+
+def write_quantum_llm_status(
+    data: Dict[str, Any],
+    *,
+    status_file: str | Path | None = None,
+    output_dir: str | Path | None = None,
+) -> Dict[str, Any]:
+    """Persist Quantum LLM status metadata in a repo-consistent JSON artifact."""
+    resolved_output_dir = _resolve_repo_path(
+        output_dir, default=DEFAULT_OUTPUT_DIR)
+    resolved_status_file = _resolve_repo_path(
+        status_file,
+        default=resolved_output_dir / "status.json",
+    )
+    resolved_status_file.parent.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "output_dir": _repo_relative_str(resolved_output_dir),
+        "status_file": _repo_relative_str(resolved_status_file),
+        "last_updated": datetime.now().isoformat(),
+    }
+    payload.update(data)
+
+    for path_key in (
+        "dataset_path",
+        "checkpoint_path",
+        "best_checkpoint_path",
+        "last_checkpoint_path",
+        "results_file",
+        "last_cycle_output_dir",
+    ):
+        if payload.get(path_key):
+            payload[path_key] = _repo_relative_str(payload[path_key])
+
+    with open(resolved_status_file, "w", encoding="utf-8") as status_handle:
+        json.dump(payload, status_handle, indent=2)
+
+    return payload
 
 
 # ---------------------------------------------------------------------------
@@ -243,7 +401,8 @@ class QuantumAttentionOptimizer:
             processed = []
             for chunk in chunks:
                 chunk_len = chunk.shape[0]
-                padded = torch.zeros(q_dim, dtype=flat.dtype, device=flat.device)
+                padded = torch.zeros(
+                    q_dim, dtype=flat.dtype, device=flat.device)
                 padded[:chunk_len] = chunk
                 normed = padded / (padded.norm() + 1e-8)
                 out = self._quantum_layer(normed.unsqueeze(0)).squeeze(0)
@@ -282,6 +441,18 @@ class QuantumEnhancedLLMTrainer:
         self.config = config
         self.passive_mode = config.get("passive", False)
         self.interval = config.get("interval", 3600)
+        output_config = config.get("output", {}) if isinstance(
+            config.get("output"), dict) else {}
+        integration_config = config.get("autonomous_integration", {}) if isinstance(
+            config.get("autonomous_integration"), dict) else {}
+        self.default_output_dir = _resolve_repo_path(
+            output_config.get("save_dir") or config.get("output_dir"),
+            default=DEFAULT_OUTPUT_DIR,
+        )
+        self.status_file = _resolve_repo_path(
+            integration_config.get("status_file") or config.get("status_file"),
+            default=self.default_output_dir / "status.json",
+        )
 
         # Top-level attributes expected by tests and external callers
         self.quantum_backend = config.get("quantum_backend", "local")
@@ -366,6 +537,29 @@ class QuantumEnhancedLLMTrainer:
         logger.info(f"  Parameters: {n_params:,}")
         logger.info(f"  Quantum available: {QUANTUM_AVAILABLE}")
         logger.info(f"  Model config: {self.model_config}")
+
+    def _save_checkpoint(
+        self,
+        checkpoint_path: Path,
+        *,
+        epoch: int,
+        loss: float,
+        training_mode: str,
+    ) -> Path:
+        """Persist a Quantum LLM checkpoint with enough metadata for inference."""
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save({
+            "model_state_dict": self.model.state_dict(),
+            "optimizer_state_dict": self.optimizer.state_dict(),
+            "epoch": epoch,
+            "loss": loss,
+            "model_config": self.model_config,
+            "training_mode": training_mode,
+            "quantum_metrics": self.quantum_metrics,
+            "training_history": self.training_history,
+            "saved_at": datetime.now().isoformat(),
+        }, checkpoint_path)
+        return checkpoint_path
 
     # ------------------------------------------------------------------
     # Dataset loading
@@ -548,6 +742,9 @@ class QuantumEnhancedLLMTrainer:
 
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
+        status_file = output_dir / "status.json"
+        dataset_path = Path(dataset_path)
+        training_mode = "simulated" if model is None else "real"
 
         results = {
             "status": "success",
@@ -559,58 +756,166 @@ class QuantumEnhancedLLMTrainer:
         }
 
         best_loss = float("inf")
+        best_checkpoint_path: Path | None = None
+        final_checkpoint_path: Path | None = None
 
-        if model is None:
-            # Simulated quantum training path -- uses _train_epoch_with_quantum
-            # which applies the quantum attention optimizer each step.
-            dataset = self._load_dataset(dataset_path)
-            for epoch in range(epochs):
-                logger.info(
-                    f"\n--- Epoch {epoch + 1}/{epochs} (simulated) ---")
-                epoch_loss = self._train_epoch_with_quantum(
-                    None, dataset, epoch)
-                results["epochs_completed"] = epoch + 1
-                results["final_loss"] = epoch_loss
-                if epoch_loss < best_loss:
-                    best_loss = epoch_loss
-                logger.info(
-                    f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f}")
-        else:
-            # Real model training path -- builds DataLoader and runs full backprop
-            dataloader = self._make_dataloader(dataset_path)
-            logger.info(f"  Batches per epoch: {len(dataloader)}")
-            for epoch in range(epochs):
-                logger.info(f"\n--- Epoch {epoch + 1}/{epochs} ---")
-                epoch_loss = self._train_epoch(dataloader, epoch)
-                results["epochs_completed"] = epoch + 1
-                results["final_loss"] = epoch_loss
-                logger.info(
-                    f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f} | "
-                    f"LR: {self.optimizer.param_groups[0]['lr']:.6f}"
-                )
-                if epoch_loss < best_loss:
-                    best_loss = epoch_loss
-                    ckpt_path = output_dir / "best_quantum_llm.pt"
-                    torch.save({
-                        "model_state_dict": self.model.state_dict(),
-                        "optimizer_state_dict": self.optimizer.state_dict(),
-                        "epoch": epoch,
-                        "loss": epoch_loss,
-                        "model_config": self.model_config,
-                    }, ckpt_path)
-                    logger.info(f"  Saved best checkpoint: {ckpt_path}")
-            self._generate_sample(output_dir, dataloader.dataset)
+        write_quantum_llm_status({
+            "available": True,
+            "status": "running",
+            "mode": training_mode,
+            "passive_mode": self.passive_mode,
+            "dataset_path": dataset_path,
+            "epochs_requested": epochs,
+            "epochs_completed": 0,
+            "quantum_available": QUANTUM_AVAILABLE,
+            "best_loss": None,
+            "final_loss": None,
+            "last_error": None,
+            "training_history": self.training_history,
+            "quantum_metrics": self.quantum_metrics,
+            "started_at": results["started_at"],
+        }, status_file=status_file, output_dir=output_dir)
 
-        results["completed_at"] = datetime.now().isoformat()
-        results["best_loss"] = best_loss
+        try:
+            if model is None:
+                # Simulated quantum training path -- uses _train_epoch_with_quantum
+                # which applies the quantum attention optimizer each step.
+                dataset = self._load_dataset(dataset_path)
+                for epoch in range(epochs):
+                    logger.info(
+                        f"\n--- Epoch {epoch + 1}/{epochs} (simulated) ---")
+                    epoch_loss = self._train_epoch_with_quantum(
+                        None, dataset, epoch)
+                    results["epochs_completed"] = epoch + 1
+                    results["final_loss"] = epoch_loss
+                    if epoch_loss < best_loss:
+                        best_loss = epoch_loss
+                        best_checkpoint_path = self._save_checkpoint(
+                            output_dir / "best_quantum_llm.pt",
+                            epoch=epoch,
+                            loss=epoch_loss,
+                            training_mode=training_mode,
+                        )
+                    logger.info(
+                        f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f}")
+                    write_quantum_llm_status({
+                        "available": True,
+                        "status": "running",
+                        "mode": training_mode,
+                        "passive_mode": self.passive_mode,
+                        "dataset_path": dataset_path,
+                        "epochs_requested": epochs,
+                        "epochs_completed": results["epochs_completed"],
+                        "best_loss": None if best_loss == float("inf") else best_loss,
+                        "final_loss": epoch_loss,
+                        "best_checkpoint_path": best_checkpoint_path,
+                        "quantum_available": QUANTUM_AVAILABLE,
+                        "training_history": self.training_history,
+                        "quantum_metrics": self.quantum_metrics,
+                        "started_at": results["started_at"],
+                    }, status_file=status_file, output_dir=output_dir)
+            else:
+                # Real model training path -- builds DataLoader and runs full backprop
+                dataloader = self._make_dataloader(dataset_path)
+                logger.info(f"  Batches per epoch: {len(dataloader)}")
+                for epoch in range(epochs):
+                    logger.info(f"\n--- Epoch {epoch + 1}/{epochs} ---")
+                    epoch_loss = self._train_epoch(dataloader, epoch)
+                    results["epochs_completed"] = epoch + 1
+                    results["final_loss"] = epoch_loss
+                    logger.info(
+                        f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f} | "
+                        f"LR: {self.optimizer.param_groups[0]['lr']:.6f}"
+                    )
+                    if epoch_loss < best_loss:
+                        best_loss = epoch_loss
+                        best_checkpoint_path = self._save_checkpoint(
+                            output_dir / "best_quantum_llm.pt",
+                            epoch=epoch,
+                            loss=epoch_loss,
+                            training_mode=training_mode,
+                        )
+                        logger.info(
+                            f"  Saved best checkpoint: {best_checkpoint_path}")
+                    write_quantum_llm_status({
+                        "available": True,
+                        "status": "running",
+                        "mode": training_mode,
+                        "passive_mode": self.passive_mode,
+                        "dataset_path": dataset_path,
+                        "epochs_requested": epochs,
+                        "epochs_completed": results["epochs_completed"],
+                        "best_loss": None if best_loss == float("inf") else best_loss,
+                        "final_loss": epoch_loss,
+                        "best_checkpoint_path": best_checkpoint_path,
+                        "quantum_available": QUANTUM_AVAILABLE,
+                        "training_history": self.training_history,
+                        "quantum_metrics": self.quantum_metrics,
+                        "started_at": results["started_at"],
+                    }, status_file=status_file, output_dir=output_dir)
+                self._generate_sample(output_dir, dataloader.dataset)
 
-        # Save results JSON
-        results_file = output_dir / "quantum_training_results.json"
-        with open(results_file, "w") as f:
-            json.dump(results, f, indent=2)
-        logger.info(f"\nTraining complete! Results saved to: {results_file}")
+            final_checkpoint_path = self._save_checkpoint(
+                output_dir / "final_model.pt",
+                epoch=max(results["epochs_completed"] - 1, 0),
+                loss=float(results["final_loss"]),
+                training_mode=training_mode,
+            )
 
-        return results
+            results["completed_at"] = datetime.now().isoformat()
+            results["best_loss"] = best_loss
+            results["checkpoint_path"] = str(
+                best_checkpoint_path or final_checkpoint_path)
+
+            # Save results JSON
+            results_file = output_dir / "quantum_training_results.json"
+            with open(results_file, "w", encoding="utf-8") as f:
+                json.dump(results, f, indent=2)
+            logger.info(
+                f"\nTraining complete! Results saved to: {results_file}")
+
+            write_quantum_llm_status({
+                "available": True,
+                "status": "completed",
+                "mode": training_mode,
+                "passive_mode": self.passive_mode,
+                "dataset_path": dataset_path,
+                "epochs_requested": epochs,
+                "epochs_completed": results["epochs_completed"],
+                "best_loss": best_loss,
+                "final_loss": results["final_loss"],
+                "checkpoint_path": best_checkpoint_path or final_checkpoint_path,
+                "best_checkpoint_path": best_checkpoint_path or final_checkpoint_path,
+                "last_checkpoint_path": final_checkpoint_path,
+                "quantum_available": QUANTUM_AVAILABLE,
+                "training_history": self.training_history,
+                "quantum_metrics": self.quantum_metrics,
+                "results_file": results_file,
+                "started_at": results["started_at"],
+                "completed_at": results["completed_at"],
+            }, status_file=status_file, output_dir=output_dir)
+
+            return results
+        except Exception as exc:
+            write_quantum_llm_status({
+                "available": True,
+                "status": "failed",
+                "mode": training_mode,
+                "passive_mode": self.passive_mode,
+                "dataset_path": dataset_path,
+                "epochs_requested": epochs,
+                "epochs_completed": results["epochs_completed"],
+                "best_loss": None if best_loss == float("inf") else best_loss,
+                "final_loss": results["final_loss"],
+                "best_checkpoint_path": best_checkpoint_path,
+                "last_checkpoint_path": final_checkpoint_path,
+                "quantum_available": QUANTUM_AVAILABLE,
+                "training_history": self.training_history,
+                "quantum_metrics": self.quantum_metrics,
+                "started_at": results["started_at"],
+                "last_error": str(exc),
+            }, status_file=status_file, output_dir=output_dir)
+            raise
 
     def _load_dataset(self, dataset_path: Path) -> List[Dict[str, Any]]:
         """Load training dataset from JSONL or JSON format."""
@@ -721,12 +1026,35 @@ class QuantumEnhancedLLMTrainer:
         signal.signal(signal.SIGTERM, signal_handler)
 
         cycle_count = 0
+        write_quantum_llm_status({
+            "available": True,
+            "status": "idle",
+            "mode": "passive",
+            "passive_mode": True,
+            "current_cycle": cycle_count,
+            "last_error": None,
+            "quantum_available": QUANTUM_AVAILABLE,
+            "training_history": self.training_history,
+            "quantum_metrics": self.quantum_metrics,
+        }, status_file=self.status_file, output_dir=self.default_output_dir)
 
         while self.running:
             cycle_count += 1
             logger.info(f"\n=== Passive Training Cycle {cycle_count} ===")
 
             try:
+                write_quantum_llm_status({
+                    "available": True,
+                    "status": "running",
+                    "mode": "passive",
+                    "passive_mode": True,
+                    "current_cycle": cycle_count,
+                    "last_error": None,
+                    "quantum_available": QUANTUM_AVAILABLE,
+                    "training_history": self.training_history,
+                    "quantum_metrics": self.quantum_metrics,
+                }, status_file=self.status_file, output_dir=self.default_output_dir)
+
                 # Look for available datasets using combined glob pattern
                 datasets_dir = Path("datasets/chat")
                 if datasets_dir.exists():
@@ -759,16 +1087,68 @@ class QuantumEnhancedLLMTrainer:
                             f"Cycle {cycle_count} complete: "
                             f"Loss={results['final_loss']:.4f}"
                         )
+                        write_quantum_llm_status({
+                            "available": True,
+                            "status": "idle",
+                            "mode": "passive",
+                            "passive_mode": True,
+                            "current_cycle": cycle_count,
+                            "dataset_path": dataset_path,
+                            "epochs_completed": results.get("epochs_completed", 0),
+                            "best_loss": results.get("best_loss"),
+                            "final_loss": results.get("final_loss"),
+                            "checkpoint_path": results.get("checkpoint_path"),
+                            "best_checkpoint_path": results.get("checkpoint_path"),
+                            "last_cycle_output_dir": output_dir,
+                            "last_error": None,
+                            "quantum_available": QUANTUM_AVAILABLE,
+                            "training_history": self.training_history,
+                            "quantum_metrics": self.quantum_metrics,
+                            "completed_at": results.get("completed_at"),
+                        }, status_file=self.status_file, output_dir=self.default_output_dir)
                     else:
                         logger.warning(
                             "No datasets found for passive training")
+                        write_quantum_llm_status({
+                            "available": True,
+                            "status": "idle",
+                            "mode": "passive",
+                            "passive_mode": True,
+                            "current_cycle": cycle_count,
+                            "last_error": "No datasets found for passive training",
+                            "quantum_available": QUANTUM_AVAILABLE,
+                            "training_history": self.training_history,
+                            "quantum_metrics": self.quantum_metrics,
+                        }, status_file=self.status_file, output_dir=self.default_output_dir)
                 else:
                     logger.warning(
                         f"Datasets directory not found: {datasets_dir}")
+                    write_quantum_llm_status({
+                        "available": True,
+                        "status": "idle",
+                        "mode": "passive",
+                        "passive_mode": True,
+                        "current_cycle": cycle_count,
+                        "last_error": f"Datasets directory not found: {datasets_dir}",
+                        "quantum_available": QUANTUM_AVAILABLE,
+                        "training_history": self.training_history,
+                        "quantum_metrics": self.quantum_metrics,
+                    }, status_file=self.status_file, output_dir=self.default_output_dir)
 
             except Exception as e:
                 logger.error(
                     f"Error in passive training cycle: {e}", exc_info=True)
+                write_quantum_llm_status({
+                    "available": True,
+                    "status": "failed",
+                    "mode": "passive",
+                    "passive_mode": True,
+                    "current_cycle": cycle_count,
+                    "last_error": str(e),
+                    "quantum_available": QUANTUM_AVAILABLE,
+                    "training_history": self.training_history,
+                    "quantum_metrics": self.quantum_metrics,
+                }, status_file=self.status_file, output_dir=self.default_output_dir)
 
             if self.running:
                 if self.interval == 0:

@@ -1,6 +1,7 @@
 # Autonomous Code Agent System
 
 A local LLM-based agent that can autonomously work on repository tasks, including:
+
 - Planning work based on task descriptions
 - Identifying affected files
 - Running tests to validate changes
@@ -12,7 +13,8 @@ A local LLM-based agent that can autonomously work on repository tasks, includin
 
 Choose one of the following:
 
-**Option A: Ollama (Recommended - Simple)**
+#### Option A: Ollama (Recommended - Simple)
+
 ```bash
 # Download and install from https://ollama.ai
 # Or on macOS/Linux with Homebrew:
@@ -25,7 +27,8 @@ ollama serve
 ollama pull mistral  # or llama2, neural-chat, etc.
 ```
 
-**Option B: LM Studio**
+#### Option B: LM Studio
+
 ```bash
 # Download from https://lmstudio.ai
 # Launch the app and:
@@ -39,12 +42,14 @@ ollama pull mistral  # or llama2, neural-chat, etc.
 Set environment variables based on your choice:
 
 **For Ollama:**
+
 ```bash
 export OLLAMA_BASE_URL="http://127.0.0.1:11434"
 export OLLAMA_MODEL="mistral"  # or llama2, neural-chat, etc.
 ```
 
 **For LM Studio:**
+
 ```bash
 export LMSTUDIO_BASE_URL="http://127.0.0.1:1234/v1"
 export LMSTUDIO_MODEL="local-model"
@@ -92,7 +97,7 @@ The agent operates in 5 phases:
 
 ### Data Flow
 
-```
+```text
 Task Description
     ↓
 CodeAgent.execute_task()
@@ -129,7 +134,8 @@ LMSTUDIO_MODEL="local-model"
 
 ### Settings in Code
 
-Edit [autonomous_code_agent.py](./autonomous_code_agent.py):
+Edit [autonomous_code_agent.py](./scripts/autonomous_code_agent.py):
+
 - `MAX_FILE_SIZE`: Maximum file size to read (default: 100KB)
 - `MAX_CHANGES_PER_FILE`: Limit changes per file (default: 5)
 - `MAX_TASK_TOKENS`: Max tokens for planning (default: 2000)
@@ -138,9 +144,11 @@ Edit [autonomous_code_agent.py](./autonomous_code_agent.py):
 ## Status and Logs
 
 ### Status File
+
 Every task is saved to: `data_out/autonomous_agent/status.json`
 
 Example status:
+
 ```json
 {
   "task_id": "20260320_143022",
@@ -160,9 +168,11 @@ Example status:
 ```
 
 ### Logs
+
 Agent logs go to: `data_out/autonomous_agent/agent.log`
 
 View live logs:
+
 ```bash
 tail -f data_out/autonomous_agent/agent.log
 ```
@@ -170,6 +180,7 @@ tail -f data_out/autonomous_agent/agent.log
 ## Example Tasks
 
 ### 1. Fix a Failing Test
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Fix the test_submit_job_stale_allowlist_miss_refreshes_once test in test_quantum_mcp_server_security.py" \
@@ -178,6 +189,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 2. Improve Code Quality
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add docstrings and type hints to function_app.py" \
@@ -186,6 +198,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 3. Refactor Legacy Code
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Refactor chat_providers.py to use a factory pattern for provider creation" \
@@ -193,6 +206,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 4. Database Schema Changes
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add nullable birthday and phone_number columns to user table, update migrations" \
@@ -202,11 +216,13 @@ python scripts/autonomous_code_agent.py \
 ## Troubleshooting
 
 ### "Cannot connect to Ollama"
-```
+
+```text
 Error: Cannot connect to Ollama at http://127.0.0.1:11434
 ```
 
 **Solution:**
+
 ```bash
 # Check if Ollama is running
 ps aux | grep ollama
@@ -219,17 +235,20 @@ curl http://127.0.0.1:11434/api/tags
 ```
 
 ### "Cannot connect to LM Studio"
-```
+
+```text
 Error: Cannot connect to LM Studio at http://127.0.0.1:1234/v1
 ```
 
 **Solution:**
+
 1. Open LM Studio
 2. Go to "Developer" tab
 3. Select a model and click "Start Server"
 4. Verify port 1234 is shown
 
 ### Agent Getting Stuck
+
 ```bash
 # Kill the agent process
 pkill -f autonomous_code_agent
@@ -239,9 +258,11 @@ tail -f data_out/autonomous_agent/agent.log
 ```
 
 ### Out of Memory
+
 If the LLM server runs out of memory:
 
 **For Ollama:**
+
 ```bash
 # Stop Ollama
 killall ollama
@@ -251,12 +272,14 @@ OLLAMA_MAX_LOADED_MODELS=1 ollama serve
 ```
 
 **For LM Studio:**
+
 - Use Settings tab to reduce context window
 - Load smaller model
 
 ## Advanced Usage
 
 ### Batch Processing Tasks
+
 ```bash
 #!/bin/bash
 tasks=(
@@ -271,6 +294,7 @@ done
 ```
 
 ### Integration with CI/CD
+
 ```bash
 # In .github/workflows/auto-agent.yml
 - name: Run autonomous code agent
@@ -281,6 +305,7 @@ done
 ```
 
 ### Monitor Multiple Agents
+
 ```bash
 python scripts/autonomous_code_agent.py --task "task1" &
 python scripts/autonomous_code_agent.py --task "task2" &
@@ -307,24 +332,23 @@ watch -n 5 'cat data_out/autonomous_agent/status.json | python -m json.tool'
 
 ## Next Steps
 
-1. ✅ [Basic Agent](./autonomous_code_agent.py) — DONE
-2. [Advanced Capabilities](./autonomous_agent_tasks.py) — In progress
+1. ✅ [Basic Agent](./scripts/autonomous_code_agent.py) — DONE
+2. [Advanced Capabilities](./scripts/autonomous_agent_tasks.py) — In progress
    - Specific task types (refactoring, bug fixes, tests)
    - Multi-file coordinated changes
    - Rollback on test failure
-3. [Agent Learning](./autonomous_agent_learning.py) — Planned
+3. Agent Learning (planned module)
    - Track success/failure of task types
    - Learn which patterns work
    - Improve prompts based on feedback
-4. [Team Agents](./autonomous_agent_team.py) — Planned
+4. Team Agents (planned module)
    - Multiple agents coordinating work
    - Task distribution and prioritization
    - Conflict resolution
 
 ## See Also
 
-- [Chat Providers](../ai-projects/chat-cli/src/chat_providers.py) — LLM provider implementations
-- [Test Runner](./test_runner.py) — Validation infrastructure
-- [Repo Automation](./repo_automation.py) — Other orchestration examples
-- [AGI Provider](../agi_provider.py) — Advanced reasoning system
-
+- [Chat Providers](./ai-projects/chat-cli/src/chat_providers.py) — LLM provider implementations
+- [Test Runner](./scripts/test_runner.py) — Validation infrastructure
+- [Repo Automation](./scripts/repo_automation.py) — Other orchestration examples
+- [AGI Provider](./agi_provider.py) — Advanced reasoning system

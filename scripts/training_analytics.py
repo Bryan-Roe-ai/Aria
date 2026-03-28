@@ -5,6 +5,7 @@ Generates charts, trends, and insights
 
 import argparse
 import json
+import os
 import statistics
 import sys
 from datetime import datetime
@@ -24,8 +25,16 @@ class TrainingAnalytics:
         if not self.status_file.exists():
             return {}
 
-        with open(self.status_file) as f:
-            return json.load(f)
+        try:
+            with open(self.status_file, encoding="utf-8") as f:
+                parsed = json.load(f)
+                return parsed if isinstance(parsed, dict) else {}
+        except json.JSONDecodeError:
+            # Graceful fallback for partially-written/corrupted status files.
+            return {}
+        except OSError:
+            # Graceful fallback for transient file read issues.
+            return {}
 
     @staticmethod
     def _get_accuracy(perf: Dict) -> float:
@@ -74,12 +83,17 @@ class TrainingAnalytics:
         epoch_performance = {}
 
         for perf in history:
-            epochs = perf.get("epochs", 0)
+            epochs = perf.get("epochs")
+            if not epochs:
+                continue
             accuracy = self._get_accuracy(perf)
 
             if epochs not in epoch_performance:
                 epoch_performance[epochs] = []
             epoch_performance[epochs].append(accuracy)
+
+        if not epoch_performance:
+            return 100
 
         best_epochs = 100
         best_avg = 0.0
@@ -118,6 +132,8 @@ class TrainingAnalytics:
         # Overview
         cycles = self.status.get("cycles_completed", 0)
         best_acc = self.status.get("best_accuracy", 0)
+        plateau_cycles = self.status.get("plateau_cycles", 0)
+        promotions = self.status.get("promotions", [])
         total_datasets = self.status.get("total_datasets_available")
         if total_datasets is None:
             total_datasets = len(self.status.get("dataset_inventory", {}))
@@ -127,6 +143,13 @@ class TrainingAnalytics:
         report.append(f"Total Cycles: {cycles}")
         report.append(f"Best Accuracy: {best_acc:.2%}")
         report.append(f"Total Datasets: {total_datasets}")
+        report.append(f"Plateau Cycles at Peak: {plateau_cycles}")
+        report.append(f"Promotions Completed: {len(promotions)}")
+        if promotions:
+            p = promotions[-1]
+            report.append(
+                f"Latest Promotion: v{p.get('version', '?')} at cycle {p.get('cycle', '?')} ({p.get('accuracy', 0):.2%})"
+            )
         report.append("")
 
         # Performance trend
@@ -204,6 +227,13 @@ class TrainingAnalytics:
         else:
             report.append("• Continue current training strategy")
             report.append("• Performance is improving steadily")
+
+        if plateau_cycles >= 5:
+            report.append(
+                "• Plateau stable for 5+ cycles — promotion cadence is active")
+        if promotions:
+            report.append(
+                "• Model promotion history available in status['promotions']")
 
         if best_acc >= 0.90:
             report.append("• Ready for production deployment")
@@ -389,4 +419,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except BrokenPipeError:
+        # Graceful exit when output is piped to commands like `head`.
+        # Redirect stdout to /dev/null to avoid interpreter flush errors.
+        try:
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, sys.stdout.fileno())
+        except Exception:
+            pass
+        sys.exit(0)

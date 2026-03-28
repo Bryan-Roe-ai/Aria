@@ -410,82 +410,169 @@ class LocalEchoProvider(BaseChatProvider):
 
         return "generic"
 
-    def _craft_reply(self, messages: List[RoleMessage]) -> str:
-        """Generate a contextually appropriate response."""
-        last_user = next((m["content"] for m in reversed(
-            messages) if m.get("role") == "user"), "")
-
-        closers = [
-            "Does that help?",
-            "Let me know if you want examples.",
-            "We can refine this together.",
-            "Happy to go deeper.",
-            "Would you like more details?",
-            "Feel free to ask follow-up questions.",
+    def _craft_autonomous_reply(self, messages: List[RoleMessage], last_user: str, turn_count: int) -> str:
+        """Generate more useful offline output for autonomous CLI loops."""
+        assistant_messages = [
+            m["content"] for m in messages if m.get("role") == "assistant"
         ]
+        last_assistant = assistant_messages[-1] if assistant_messages else ""
+        user_topics = [
+            m["content"].strip()
+            for m in messages
+            if m.get("role") == "user" and m.get("content", "").strip()
+        ]
+        topic = user_topics[0][:120].rstrip(
+            ".,?!") if user_topics else "the current task"
 
-        if not last_user.strip():
-            return "Hi! Ask me anything. I can brainstorm, summarize, explain topics, help with code, and more."
+        if "message count exceeded limit" in last_assistant.lower():
+            return (
+                "Autonomous checkpoint:\n"
+                "1. The conversation is getting long, so summarize the objective in one sentence.\n"
+                "2. Keep only the latest constraints and the best next action.\n"
+                "3. Continue with one concrete step instead of repeating the same prompt."
+            )
 
-        # Detect intent and select appropriate template
-        intent = self._detect_intent(last_user)
-        templates = self._response_templates.get(
-            intent, self._response_templates["generic"])
-        lead_in = self.rng.choice(templates)
+        sequence = [
+            (
+                f"Autonomous plan for '{topic}':\n\n"
+                "1. Define the concrete objective and success condition.\n"
+                "2. Inspect the current inputs, dependencies, or repo context.\n"
+                "3. Pick the smallest next action that creates evidence of progress."
+            ),
+            (
+                f"Autonomous next step for '{topic}':\n\n"
+                "- Gather one missing fact before changing direction.\n"
+                "- Write down the current assumption you are relying on.\n"
+                "- Execute a single focused action, then reassess."
+            ),
+            (
+                f"Autonomous review for '{topic}':\n\n"
+                "- What changed since the previous turn?\n"
+                "- What is still blocked or uncertain?\n"
+                "- What is the highest-value follow-up action right now?"
+            ),
+            (
+                f"Autonomous refinement for '{topic}':\n\n"
+                "1. Remove repetition.\n"
+                "2. Convert vague goals into one measurable outcome.\n"
+                "3. Continue with a concrete command, edit, or validation step."
+            ),
+        ]
+        return sequence[(turn_count - 1) % len(sequence)]
 
-        # Generate response based on query length and content
-        hint = last_user.strip()
-        if len(hint) > 300:
-            hint = hint[:300] + "..."
+    def _craft_reply(self, messages: List[RoleMessage]) -> str:
+        """Generate a contextually appropriate response.
 
-        # Create a more contextual response
-        rephrased = self._rephrase(hint)
-
-        # Add some variety to the response structure
-        if intent == "greeting":
-            return f"{lead_in}"
-        elif intent == "code":
-            return f"{lead_in} {rephrased} {self.rng.choice(closers)}"
-        elif len(hint) < 50:
-            # Short queries get direct responses
-            return f"{lead_in} {rephrased}"
-        else:
-            # Longer queries get fuller responses
-            return f"{lead_in} {rephrased} {self.rng.choice(closers)}"
-
-    def _rephrase(self, text: str) -> str:
-        """Generate a contextual rephrasing of the input text.
-
-        This creates more natural responses by reformulating the user's
-        request in a conversational way.
+        The local echo provider has no real model, so responses are
+        rule-based — but they should at least be informative and
+        actionable rather than meaninglessly rephrasing the user's input.
         """
-        # Context-aware rephrasing with better substitutions
-        swaps = {
-            "I need": "You're looking for",
-            "I want": "You want",
-            "How to": "Ways to",
-            "How do I": "To accomplish this,",
-            "help": "support",
-            "problem": "challenge",
-            "issue": "question",
-            "fix": "resolve",
-            "error": "issue",
-            "explain": "understand",
-            "write": "create",
+        last_user = next(
+            (m["content"]
+             for m in reversed(messages) if m.get("role") == "user"), ""
+        ).strip()
+
+        if not last_user:
+            return (
+                "Hi! I'm running in offline mode (no API keys configured). "
+                "I can still help with Aria commands, answer simple questions, "
+                "or assist with code structure. What would you like to do?"
+            )
+
+        intent = self._detect_intent(last_user)
+        lower = last_user.lower()
+        turn_count = sum(1 for m in messages if m.get("role") == "user")
+
+        if (
+            "start working autonomously" in lower
+            or "continue autonomously" in lower
+            or "without waiting for user input" in lower
+            or "choose the next useful step yourself" in lower
+        ):
+            return self._craft_autonomous_reply(messages, last_user, turn_count)
+
+        # --- Greetings ---
+        if intent == "greeting":
+            greetings = [
+                "Hello! I'm running in local offline mode — no external model is active. "
+                "Try `--provider azure`, `--provider openai`, or `--provider lmstudio` for a full AI response.",
+                "Hi there! Offline mode is active. Set AZURE_OPENAI_API_KEY or OPENAI_API_KEY to enable a real AI provider.",
+                "Hey! Running without a live model right now. I can still help with Aria commands and simple tasks.",
+            ]
+            return self.rng.choice(greetings)
+
+        # --- Aria movement commands ---
+        aria_keywords = {
+            "left": "Moving Aria to the left. [aria:walk:left]",
+            "right": "Moving Aria to the right. [aria:walk:right]",
+            "jump": "Aria jumps! [aria:jump]",
+            "wave": "Aria waves hello! [aria:wave]",
+            "dance": "Aria starts dancing! [aria:dance]",
+            "idle": "Aria returns to idle. [aria:idle]",
         }
+        for keyword, response in aria_keywords.items():
+            if keyword in lower:
+                return response
 
-        result = text
-        for old, new in swaps.items():
-            # Case-insensitive replacement preserving original case pattern
-            if old in result:
-                result = result.replace(old, new)
-            elif old.lower() in result.lower():
-                # Find and replace preserving some context
-                idx = result.lower().find(old.lower())
-                if idx != -1:
-                    result = result[:idx] + new + result[idx+len(old):]
+        # --- Coding requests ---
+        if intent == "code":
+            topic = last_user[:80].rstrip(".,?!")
+            suggestions = [
+                f"For '{topic}', here's one approach:\n\n"
+                "1. Identify inputs, outputs, and edge cases first.\n"
+                "2. Write a minimal working version before optimising.\n"
+                "3. Add error handling for external calls (I/O, network, parsing).\n\n"
+                "Enable a real provider (e.g. `--provider openai`) for generated code.",
 
-        return result
+                f"Coding tip for '{topic}':\n\n"
+                "- Keep functions small and focused on one task.\n"
+                "- Use type hints for clarity and static analysis.\n"
+                "- Write a unit test for each edge case you can think of.\n\n"
+                "Connect a live model for actual code generation.",
+            ]
+            return self.rng.choice(suggestions)
+
+        # --- Explanation requests ---
+        if intent == "explanation":
+            topic = last_user[:80].rstrip(".,?!")
+            return (
+                f"I'm in offline mode, so I can't give a full explanation of '{topic}'. "
+                "Here's what I'd suggest:\n\n"
+                "1. Check the official docs or a trusted reference.\n"
+                "2. Ask again with `--provider azure` or `--provider openai` for a detailed answer.\n"
+                "3. Or try `--provider agi` for structured chain-of-thought reasoning."
+            )
+
+        # --- Questions ---
+        if intent == "question":
+            closers = [
+                "Switch to a live provider for a detailed answer.",
+                "Try `--provider openai` or `--provider azure` for a real response.",
+                "Use `--provider agi` for structured reasoning on complex questions.",
+            ]
+            return (
+                f"Good question! Unfortunately I'm in local echo mode and can't look things up. "
+                f"{self.rng.choice(closers)}"
+            )
+
+        # --- Multi-turn acknowledgement ---
+        if turn_count > 3:
+            follow_ups = [
+                "I'm still in offline mode — I can only give canned responses. "
+                "Configure a provider to continue this conversation meaningfully.",
+                "Thanks for staying in the conversation! A live provider would give you much better answers here.",
+            ]
+            return self.rng.choice(follow_ups)
+
+        # --- Generic fallback ---
+        generic = [
+            "I'm running in local fallback mode. "
+            "Set AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or start LM Studio / Ollama to enable full AI responses.",
+            "Offline mode active. I can process Aria commands but can't generate AI responses without a configured provider.",
+            "No live model detected. Run with `--provider lmstudio` (LM Studio running locally), "
+            "`--provider ollama`, `--provider openai`, or `--provider azure`.",
+        ]
+        return self.rng.choice(generic)
 
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         text = self._craft_reply(messages)
@@ -511,18 +598,76 @@ class OpenAIProvider(BaseChatProvider):
         self.max_output_tokens = max_output_tokens
 
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
-        resp = self.client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            temperature=self.temperature,
-            max_tokens=self.max_output_tokens,
-            stream=stream,
-        )
+        """Complete with OpenAI and handle quota/rate-limit errors gracefully.
+
+        Behaviour mirrors AzureOpenAIProvider:
+          - Quota/billing errors → friendly string or single-chunk generator.
+          - Transient 429 errors → small retry with back-off.
+          - Mid-stream errors → yielded friendly/error token instead of raising.
+        """
+        def _attempt_create(**kwargs):
+            max_retries = 3
+            base_backoff = 0.4
+            attempt = 0
+            while True:
+                try:
+                    return self.client.chat.completions.create(**kwargs)
+                except Exception as e:
+                    if is_quota_error(e):
+                        raise
+                    if is_transient_rate_error(e) and attempt < max_retries:
+                        sleep_time = base_backoff * (2 ** attempt)
+                        _LOGGER.info(
+                            "OpenAI rate-limit, retrying in %.2fs (attempt %d)",
+                            sleep_time,
+                            attempt + 1,
+                        )
+                        time.sleep(sleep_time)
+                        attempt += 1
+                        continue
+                    raise
+
+        try:
+            resp = _attempt_create(
+                model=self.model,
+                messages=messages,
+                temperature=self.temperature,
+                max_tokens=self.max_output_tokens,
+                stream=stream,
+            )
+        except Exception as e:
+            if is_quota_error(e):
+                friendly = format_quota_message(e, service_name="OpenAI")
+                if stream:
+                    def _gen_quota_err() -> Generator[str, None, None]:
+                        yield friendly
+
+                    return _gen_quota_err()
+                return friendly
+            raise
 
         if stream:
-            return self._handle_openai_streaming_response(resp)
+            def _gen() -> Generator[str, None, None]:
+                try:
+                    for chunk in resp:
+                        try:
+                            delta = chunk.choices[0].delta
+                            if delta and delta.content:
+                                yield delta.content
+                        except Exception:
+                            continue
+                except Exception as exc:
+                    if is_quota_error(exc):
+                        yield format_quota_message(exc, service_name="OpenAI")
+                    else:
+                        yield f"[OpenAI error: {str(exc)}]"
+
+            return _gen()
         else:
-            return self._handle_openai_non_streaming_response(resp)
+            try:
+                return resp.choices[0].message.content or ""
+            except Exception:
+                return ""
 
 
 class LMStudioProvider(BaseChatProvider):

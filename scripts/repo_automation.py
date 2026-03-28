@@ -31,6 +31,8 @@ except Exception:  # pragma: no cover - optional dependency
     psutil = None
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+# Add shared dir for config_validator import
+sys.path.insert(0, str(REPO_ROOT / "shared"))
 AUTOMATION_DIR = REPO_ROOT / "data_out" / "repo_automation"
 PID_FILE = AUTOMATION_DIR / "processes.json"
 STATUS_FILE = AUTOMATION_DIR / "status.json"
@@ -236,7 +238,8 @@ class RepoAutomation:
         resolved: Dict[str, Optional[str]] = {}
         for name, key in config_keys.items():
             path = resolve_existing_config_path(REPO_ROOT, key)
-            resolved[name] = str(path.relative_to(REPO_ROOT)) if path is not None else None
+            resolved[name] = str(path.relative_to(
+                REPO_ROOT)) if path is not None else None
         return resolved
 
     def _attach_existing_from_pidfile(self):
@@ -315,7 +318,8 @@ class RepoAutomation:
             started=self.start_time.strftime("%Y-%m-%dT%H:%M:%SZ"),
             config_path=None,
             config_paths=self._resolved_optional_config_paths(),
-            uptime_seconds=(datetime.now(timezone.utc) - self.start_time).total_seconds(),
+            uptime_seconds=(datetime.now(timezone.utc) -
+                            self.start_time).total_seconds(),
             components_running={
                 name: self._is_component_running(name)
                 for name in self.components.keys()
@@ -400,12 +404,12 @@ class RepoAutomation:
             )
 
             self.processes[name] = proc
-            
+
             # Wait with short polling interval instead of fixed sleep
             max_wait = 2.0
             check_interval = 0.2
             elapsed = 0
-            
+
             while elapsed < max_wait:
                 if self._is_component_running(name):
                     print(f"✅ {component.name} started (PID {proc.pid})")
@@ -683,7 +687,7 @@ class RepoAutomation:
                     ) and p.status() != psutil.STATUS_ZOMBIE
                 except Exception:
                     dynamic_running[name] = False
-        
+
         # Fallback: if PID not recorded, try discovering existing processes
         if psutil is not None:
             for name, component in self.components.items():
@@ -697,7 +701,7 @@ class RepoAutomation:
         # Prefer dynamic running info; fall back to status file content
         components_running = status.get(
             "components_running", {}) if status else {}
-        
+
         for name in self.components.keys():
             running = dynamic_running.get(
                 name, components_running.get(name, False))
@@ -778,8 +782,33 @@ Examples:
         "--components",
         help="Comma-separated list of components to start (aria,training,quantum,etc.)",
     )
+    parser.add_argument(
+        "--validate", action="store_true",
+        help="Validate all orchestrator configs before starting"
+    )
 
     args = parser.parse_args()
+
+    # Validate configurations if requested or before daemon start
+    if args.validate or args.start:
+        try:
+            from shared.config_validator import validate_configs_before_daemon
+        except ImportError:
+            from config_validator import validate_configs_before_daemon
+
+        print("\n🔍 Pre-flight validation...")
+        all_valid, results = validate_configs_before_daemon(
+            repo_root=REPO_ROOT,
+            exit_on_error=False,
+            verbose=False
+        )
+
+        if args.validate:
+            # Exit after validation if --validate flag was used
+            sys.exit(0 if all_valid else 1)
+
+        if not all_valid:
+            print("\n⚠️  Configuration issues detected. Proceeding anyway...")
 
     automation = RepoAutomation()
 

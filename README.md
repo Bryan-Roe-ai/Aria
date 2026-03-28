@@ -1,7 +1,5 @@
 # Aria — Interactive AI Character Platform
 
-<div align="center">
-
 [![CI Pipeline](https://github.com/Bryan-Roe/Aria/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/ci-pipeline.yml)
 [![Code Quality](https://github.com/Bryan-Roe/Aria/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/code-quality.yml)
 [![CodeQL](https://github.com/Bryan-Roe/Aria/actions/workflows/codeql.yml/badge.svg)](https://github.com/Bryan-Roe/Aria/actions/workflows/codeql.yml)
@@ -11,8 +9,6 @@
 
 [Live Demo](https://bryan-roe.github.io/Aria) · [Aria Web UI](apps/aria/) · [Quick Start](#-quick-start)
 
-</div>
-
 ---
 
 ## What is Aria?
@@ -21,12 +17,12 @@ Aria is a full-stack interactive AI character platform. She lives on a virtual 3
 
 The project is organized around four core areas:
 
-| Area | Folder | Description |
-|------|--------|-------------|
-| **Character interface** | `apps/aria/` | Animated 3D character stage with object interaction |
-| **Chat / AI backends** | `ai-projects/chat-cli/` | Multi-provider CLI and streaming chat API |
-| **Quantum ML** | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental) |
-| **Model fine-tuning** | `AI/` | LoRA fine-tuning for Aria's language understanding |
+| Area                    | Folder                    | Description                                         |
+| ----------------------- | ------------------------- | --------------------------------------------------- |
+| **Character interface** | `apps/aria/`              | Animated 3D character stage with object interaction |
+| **Chat / AI backends**  | `ai-projects/chat-cli/`   | Multi-provider CLI and streaming chat API           |
+| **Quantum ML**          | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental)    |
+| **Model fine-tuning**   | `AI/`                     | LoRA fine-tuning for Aria's language understanding  |
 
 Supporting infrastructure lives in `shared/`, `scripts/`, `config/`, and `function_app.py` (Azure Functions API layer).
 
@@ -61,9 +57,16 @@ OPENAI_API_KEY=sk-... python ai-projects/chat-cli/src/chat_cli.py --provider ope
 
 # Azure OpenAI (requires all four env vars — see Configuration below)
 python ai-projects/chat-cli/src/chat_cli.py --provider azure
+
+# Continuous autonomous mode (default)
+python ai-projects/chat-cli/src/chat_cli.py --provider local
+
+# Manual interactive mode
+python ai-projects/chat-cli/src/chat_cli.py --provider local --interactive
 ```
 
 Interactive session commands: `/new`, `/save`, `/exit`.
+The default CLI now runs autonomously forever; use `--interactive` if you want stdin prompts back.
 
 ### 3 — Start the Azure Functions API host
 
@@ -77,7 +80,7 @@ curl http://localhost:7071/api/ai/status | python -m json.tool   # health check
 
 ## 🏗️ Project Structure
 
-```
+```text
 apps/aria/          Animated character stage (HTML/CSS/JS + Python API server)
 apps/chat/          Browser-based streaming chat UI
 ai-projects/chat-cli/ Multi-provider chat CLI
@@ -101,25 +104,25 @@ The Aria character runs at `http://localhost:8080` (or the [GitHub Pages demo](h
 
 **Natural language commands (examples):**
 
-| Command | Effect |
-|---------|--------|
-| `move left` / `move right` | Walk to stage edge |
-| `wave` / `dance` / `jump` | Trigger gesture |
-| `pick up the ball` | Pick up a nearby object |
-| `throw the ball` | Throw held object with physics |
-| `say hello` | Aria speaks the text aloud via TTS |
+| Command                    | Effect                             |
+| -------------------------- | ---------------------------------- |
+| `move left` / `move right` | Walk to stage edge                 |
+| `wave` / `dance` / `jump`  | Trigger gesture                    |
+| `pick up the ball`         | Pick up a nearby object            |
+| `throw the ball`           | Throw held object with physics     |
+| `say hello`                | Aria speaks the text aloud via TTS |
 
 The auto-execute system parses complex multi-step requests ("walk to the table and pick up the apple") into a structured sequence of 8 core actions: `move`, `say`, `pickup`, `drop`, `throw`, `gesture`, `look`, `wait`.
 
 **Aria web server API (port 8080):**
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/api/aria/state` | Current stage state (position, objects, expressions) |
-| `POST` | `/api/aria/command` | Process a natural language command |
-| `POST` | `/api/aria/execute` | Auto-execute an action sequence |
-| `POST` | `/api/aria/object` | Add / update / remove an object |
-| `POST` | `/api/aria/world` | Generate a themed world via LLM |
+| Method | Path                | Description                                          |
+| ------ | ------------------- | ---------------------------------------------------- |
+| `GET`  | `/api/aria/state`   | Current stage state (position, objects, expressions) |
+| `POST` | `/api/aria/command` | Process a natural language command                   |
+| `POST` | `/api/aria/execute` | Auto-execute an action sequence                      |
+| `POST` | `/api/aria/object`  | Add / update / remove an object                      |
+| `POST` | `/api/aria/world`   | Generate a themed world via LLM                      |
 
 ---
 
@@ -127,7 +130,7 @@ The auto-execute system parses complex multi-step requests ("walk to the table a
 
 Provider auto-detection order:
 
-```
+```text
 LM Studio → Ollama → Azure OpenAI → OpenAI → Local (zero-dependency echo)
 ```
 
@@ -135,7 +138,7 @@ Pass `--provider` to override: `local`, `openai`, `azure`, `lmstudio`, `ollama`,
 
 **Azure OpenAI** — all four variables required:
 
-```
+```text
 AZURE_OPENAI_API_KEY
 AZURE_OPENAI_ENDPOINT
 AZURE_OPENAI_DEPLOYMENT
@@ -144,7 +147,7 @@ AZURE_OPENAI_API_VERSION
 
 **LoRA adapter** — adapter directory must contain:
 
-```
+```text
 adapter_config.json
 adapter_model.safetensors
 ```
@@ -211,6 +214,40 @@ cat data_out/autonomous_training_status.json | python -m json.tool
 tail -f data_out/autonomous_training.log
 ```
 
+## 👀 Watch Continuous Automation Loop
+
+If you are running the perpetual validation worker (`data_out/continuous_automation/loop.pid`) and watchdog (`watchdog.pid`), you can watch live status with:
+
+```bash
+# One-shot snapshot
+python scripts/watch_continuous_automation.py
+
+# Live dashboard view (refresh every 5 seconds)
+python scripts/watch_continuous_automation.py --watch --interval 5
+```
+
+This watcher shows process health, cycle start/end cadence, last integration-gate status, latest pytest summary, and the latest log tail from `data_out/continuous_automation/loop.log`.
+
+## 🤖 PID Auto-Edit Agent
+
+If you want a background agent that runs with a PID and automatically processes queued file-editing tasks:
+
+```bash
+# Start daemon
+python scripts/pid_auto_edit_agent.py start
+
+# Queue a task (safe default shown with echo + dry-run)
+python scripts/pid_auto_edit_agent.py enqueue --task "add docstrings to scripts/watch_continuous_automation.py" --llm-type echo --dry-run
+
+# Check status
+python scripts/pid_auto_edit_agent.py status
+
+# Stop daemon
+python scripts/pid_auto_edit_agent.py stop
+```
+
+Agent state is stored under `data_out/pid_auto_edit_agent/` (`agent.pid`, `queue.jsonl`, `done.jsonl`, `failed.jsonl`, `agent.log`).
+
 ---
 
 ## 🔧 LLM Tool Maker
@@ -275,28 +312,28 @@ Never commit secrets. All keys belong in environment variables or `local.setting
 
 **Optional services** (feature-flagged — safe to leave unset):
 
-| Service | How to enable |
-|---------|---------------|
-| SQL persistence | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL) |
-| Cosmos DB | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
-| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
-| Azure Speech TTS | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` |
-| Local TTS fallback | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent) |
+| Service              | How to enable                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| SQL persistence      | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL)                                          |
+| Cosmos DB            | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
+| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING`                                                           |
+| Azure Speech TTS     | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`                                                        |
+| Local TTS fallback   | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent)              |
 
 ---
 
 ## 📚 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [apps/aria/README.md](apps/aria/README.md) | Character stage API reference |
-| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md) | Quantum ML platform guide |
-| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md) | Chat CLI reference |
-| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md) | Tool maker guide |
-| [docs/aria/](docs/aria/) | Aria movement & training documentation |
-| [MONETIZATION_GUIDE.md](MONETIZATION_GUIDE.md) | Subscription and revenue system |
-| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference |
-| [QUANTUM_LLM_TRAINING.md](QUANTUM_LLM_TRAINING.md) | Quantum-LLM concurrent training |
+| Document                                                                     | Purpose                                |
+| ---------------------------------------------------------------------------- | -------------------------------------- |
+| [apps/aria/README.md](apps/aria/README.md)                                   | Character stage API reference          |
+| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md)         | Quantum ML platform guide              |
+| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md)             | Chat CLI reference                     |
+| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md)           | Tool maker guide                       |
+| [docs/aria/](docs/aria/)                                                     | Aria movement & training documentation |
+| [docs/guides/MONETIZATION_GUIDE.md](docs/guides/MONETIZATION_GUIDE.md)       | Subscription and revenue system        |
+| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference   |
+| [docs/guides/QUANTUM_LLM_TRAINING.md](docs/guides/QUANTUM_LLM_TRAINING.md)   | Quantum-LLM concurrent training        |
 
 ---
 

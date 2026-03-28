@@ -8,38 +8,91 @@ public sealed class GenerateDocumentationStep : KernelProcessStep<GeneratedDocum
     private GeneratedDocumentationState _state = new();
 
     private const string SystemPrompt =
-            """
-            Your job is to write high quality and engaging customer facing documentation for a new product from Contoso. You will be provide with information
-            about the product in the form of internal documentation, specs, and troubleshooting guides and you must use this information and
-            nothing else to generate the documentation. If suggestions are provided on the documentation you create, take the suggestions into account and
-            rewrite the documentation. Make sure the product sounds amazing.
-            """;
+        """
+        You are an expert technical writer for Contoso. Your job is to write high-quality, engaging,
+        customer-facing product documentation using ONLY the product information provided to you.
+
+        Always structure your documentation with these sections:
+        ## Overview
+        A compelling two-to-three sentence summary that excites the customer.
+
+        ## Key Features
+        A bulleted list of standout features with brief, benefit-focused descriptions.
+
+        ## Getting Started
+        Step-by-step instructions to set up and first use the product.
+
+        ## Troubleshooting
+        Common issues customers might encounter and clear solutions.
+
+        ## FAQ
+        Three to five frequently asked questions with concise answers.
+
+        Writing guidelines:
+        - Use an enthusiastic but professional tone.
+        - Lead with customer benefits, not technical specifications.
+        - Keep sentences short and scannable.
+        - Avoid jargon unless it is explained inline.
+        - Make the product sound amazing — customers should feel excited to use it.
+
+        If reviewer feedback is provided, incorporate every suggestion and rewrite the full document.
+        """;
 
     public override ValueTask ActivateAsync(KernelProcessStepState<GeneratedDocumentationState> state)
     {
         this._state = state.State!;
         this._state.ChatHistory ??= new ChatHistory(SystemPrompt);
-
         return base.ActivateAsync(state);
     }
 
+    /// <summary>Generate documentation from product info (initial generation).</summary>
     [KernelFunction]
-    public async Task<string?> GenerateDocumentationAsync(Kernel kernel, string productInfo)
+    public async Task<string> GenerateDocumentationAsync(Kernel kernel, string productInfo)
     {
-        // Add the new product info to the chat history
-        this._state.ChatHistory!.AddUserMessage($"Product Info:\n\n{productInfo}");
+        this._state.ChatHistory!.AddUserMessage(
+            $"Please generate customer-facing documentation for the following product:\n\n{productInfo}");
 
-        // Get a response from the LLM
-        IChatCompletionService chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
-        var generatedDocumentationResponse = await chatCompletionService.GetChatMessageContentAsync(this._state.ChatHistory!);
+        IChatCompletionService chatService = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent response = await chatService.GetChatMessageContentAsync(this._state.ChatHistory);
 
-        var documentationString = generatedDocumentationResponse.Content!.ToString();
+        string documentation = response.Content ?? string.Empty;
+        this._state.ChatHistory.AddAssistantMessage(documentation);
+        this._state.GenerationCount++;
+        return documentation;
+    }
 
-        return documentationString;
+    /// <summary>Regenerate documentation incorporating reviewer feedback.</summary>
+    [KernelFunction]
+    public async Task<string> RegenerateWithFeedbackAsync(Kernel kernel, string reviewFeedback, string originalDocumentation)
+    {
+        // Inject the original doc as assistant context if history is empty (e.g. after a cold restart)
+        if (!this._state.ChatHistory!.Any(m => m.Role == AuthorRole.Assistant))
+            this._state.ChatHistory.AddAssistantMessage(originalDocumentation);
+
+        this._state.ChatHistory.AddUserMessage(
+            $"""
+            A reviewer scored this documentation and provided the following feedback. Please rewrite the full documentation incorporating every suggestion:
+
+            Reviewer feedback:
+            {reviewFeedback}
+
+            Produce the complete revised document using the same structured format as before.
+            """);
+
+        IChatCompletionService chatService = kernel.GetRequiredService<IChatCompletionService>();
+        ChatMessageContent response = await chatService.GetChatMessageContentAsync(this._state.ChatHistory);
+
+        string revised = response.Content ?? string.Empty;
+        this._state.ChatHistory.AddAssistantMessage(revised);
+        this._state.GenerationCount++;
+        return revised;
     }
 }
 
 public class GeneratedDocumentationState
 {
     public ChatHistory? ChatHistory { get; set; }
+
+    /// <summary>How many times documentation has been generated or regenerated.</summary>
+    public int GenerationCount { get; set; } = 0;
 }

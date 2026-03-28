@@ -1,5 +1,8 @@
 ---
 description: "Generate a safe Python tool using the LLM Maker system"
+name: "Generate Tool"
+argument-hint: "Tool spec + safety requirements (example: function purpose + input/output types + allowed operations)"
+agent: llm-maker
 ---
 # Generate Tool
 

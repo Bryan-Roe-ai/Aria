@@ -1,5 +1,7 @@
 ---
 description: "Plan, execute, and monitor training runs — LoRA fine-tuning, dataset validation, performance analysis, and model deployment."
+name: "Train"
+argument-hint: "Training goal + dataset + model path (example: goal + dataset path + base model + adapter output path)"
 agent: autonomous-trainer
 ---
 

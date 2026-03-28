@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import sys
+import json
 import importlib.util
 from pathlib import Path
 
 import pytest
+
+torch = pytest.importorskip("torch")
 
 pytest.importorskip("torch", reason="torch is not installed")
 import torch  # noqa: E402
@@ -17,9 +20,11 @@ if str(CHAT_CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CHAT_CLI_SRC))
 
 _QP_PATH = CHAT_CLI_SRC / "quantum_provider.py"
-_spec = importlib.util.spec_from_file_location("_test_quantum_provider", _QP_PATH)
+_spec = importlib.util.spec_from_file_location(
+    "_test_quantum_provider", _QP_PATH)
 if _spec is None or _spec.loader is None:
-    raise ImportError(f"Unable to load quantum_provider module from {_QP_PATH}")
+    raise ImportError(
+        f"Unable to load quantum_provider module from {_QP_PATH}")
 quantum_provider = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(quantum_provider)
 
@@ -31,6 +36,25 @@ def test_resolve_checkpoint_path_prefers_best(tmp_path: Path) -> None:
     )
     provider.model_path = tmp_path
 
+    (tmp_path / "final_model.pt").write_bytes(b"x")
+    (tmp_path / "best_quantum_llm.pt").write_bytes(b"x")
+
+    resolved = provider._resolve_checkpoint_path()
+    assert resolved.name == "best_quantum_llm.pt"
+
+
+@pytest.mark.unit
+def test_resolve_checkpoint_path_uses_status_metadata_first(tmp_path: Path) -> None:
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(
+        quantum_provider.QuantumLLMChatProvider
+    )
+    provider.model_path = tmp_path
+
+    status_payload = {
+        "best_checkpoint_path": "best_quantum_llm.pt",
+        "checkpoint_path": "final_model.pt",
+    }
+    (tmp_path / "status.json").write_text(json.dumps(status_payload), encoding="utf-8")
     (tmp_path / "final_model.pt").write_bytes(b"x")
     (tmp_path / "best_quantum_llm.pt").write_bytes(b"x")
 
@@ -127,7 +151,8 @@ def test_decode_tokens_ascii_fallback_when_no_idx_map() -> None:
     )
     provider.idx_to_char = {}
 
-    out = provider._decode_tokens(torch.tensor([72, 10, 105], dtype=torch.long))
+    out = provider._decode_tokens(
+        torch.tensor([72, 10, 105], dtype=torch.long))
     assert out == "Hi"
 
 
@@ -170,6 +195,16 @@ def test_stream_response_preserves_text_in_nonempty_chunks() -> None:
 
 
 @pytest.mark.unit
+def test_stream_response_empty_text_yields_no_chunks() -> None:
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(
+        quantum_provider.QuantumLLMChatProvider
+    )
+
+    chunks = list(provider._stream_response(""))
+    assert chunks == []
+
+
+@pytest.mark.unit
 def test_create_quantum_llm_provider_returns_choice(monkeypatch: pytest.MonkeyPatch) -> None:
     class _DummyProvider:
         def __init__(self, model_path: str, temperature: float, max_output_tokens: int, **kwargs):
@@ -177,7 +212,8 @@ def test_create_quantum_llm_provider_returns_choice(monkeypatch: pytest.MonkeyPa
             self.temperature = temperature
             self.max_output_tokens = max_output_tokens
 
-    monkeypatch.setattr(quantum_provider, "QuantumLLMChatProvider", _DummyProvider)
+    monkeypatch.setattr(
+        quantum_provider, "QuantumLLMChatProvider", _DummyProvider)
     monkeypatch.setattr(quantum_provider, "QUANTUM_LLM_AVAILABLE", True)
 
     provider, info = quantum_provider.create_quantum_llm_provider(

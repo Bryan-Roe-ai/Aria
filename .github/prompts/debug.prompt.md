@@ -1,5 +1,7 @@
 ---
 description: "Debug and diagnose issues across the full Aria platform stack — from client JS through Python servers, Azure Functions, training pipelines, and quantum workflows."
+name: "Debug"
+argument-hint: "Issue description + affected component (example: symptom + stack trace or error + component name)"
 agent: full-stack-debugger
 ---
 

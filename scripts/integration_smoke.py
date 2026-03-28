@@ -33,6 +33,11 @@ except ImportError:
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"
+# Adapter startup can be slow in cold/containerized environments because
+# importing `function_app` initializes multiple subsystems. Keep this timeout
+# comfortably above typical observed startup (~13s) to avoid false negatives.
+LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC = 25.0
+LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC = 10.0
 
 
 @dataclass
@@ -111,7 +116,8 @@ def _check_config_paths() -> List[StepResult]:
         candidates = get_config_candidates(REPO_ROOT, config_key)
         canonical = canonical_config_path(REPO_ROOT, config_key)
         start = time.perf_counter()
-        found: Optional[Path] = next((p for p in candidates if p.exists()), None)
+        found: Optional[Path] = next(
+            (p for p in candidates if p.exists()), None)
         duration = round(time.perf_counter() - start, 2)
 
         if found is None:
@@ -153,14 +159,56 @@ def _check_config_paths() -> List[StepResult]:
     return results
 
 
+def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]:
+    """Fetch and parse the local Functions status payload."""
+    with urlopen(url, timeout=timeout) as resp:  # noqa: S310 - local probe
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
+    """Best-effort fallback: start local adapter and retry endpoint probe."""
+    proc: Optional[subprocess.Popen[str]] = None
+    deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
+
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "local_dev_adapter.py"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+
+        while time.time() < deadline:
+            try:
+                remaining = max(1.0, deadline - time.time())
+                request_timeout = min(
+                    LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
+                    remaining,
+                )
+                return _fetch_local_functions_payload(url, timeout=request_timeout)
+            except (URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+                time.sleep(0.25)
+
+        return None
+    except OSError:
+        return None
+    finally:
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+
 def _probe_functions_endpoint(strict: bool) -> StepResult:
     name = "functions_ai_status_endpoint"
     start = time.perf_counter()
     url = "http://localhost:7071/api/ai/status"
     try:
-        with urlopen(url, timeout=2) as resp:  # noqa: S310 - local probe
-            payload = json.loads(resp.read().decode("utf-8"))
-            provider = payload.get("active_provider", "unknown")
+        payload = _fetch_local_functions_payload(url)
+        provider = payload.get("active_provider", "unknown")
         duration = round(time.perf_counter() - start, 2)
         return StepResult(
             name=name,
@@ -172,13 +220,56 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
     except (URLError, TimeoutError, OSError):
         duration = round(time.perf_counter() - start, 2)
         if strict:
-            return StepResult(
-                name=name,
-                status="failed",
-                critical=True,
-                duration_sec=duration,
-                detail=f"endpoint_unreachable={url}",
-            )
+            # First retry directly to absorb transient startup races.
+            for _ in range(2):
+                time.sleep(0.25)
+                try:
+                    payload = _fetch_local_functions_payload(url)
+                    provider = payload.get("active_provider", "unknown")
+                    duration = round(time.perf_counter() - start, 2)
+                    return StepResult(
+                        name=name,
+                        status="succeeded",
+                        critical=True,
+                        duration_sec=duration,
+                        detail=f"provider={provider} | via=direct_retry",
+                    )
+                except (URLError, TimeoutError, OSError):
+                    continue
+
+            fallback_payload = _probe_with_local_dev_adapter(url)
+            if fallback_payload is not None:
+                provider = fallback_payload.get("active_provider", "unknown")
+                duration = round(time.perf_counter() - start, 2)
+                return StepResult(
+                    name=name,
+                    status="succeeded",
+                    critical=True,
+                    duration_sec=duration,
+                    detail=f"provider={provider} | via=local_dev_adapter",
+                )
+
+            # Final direct retry covers the case where adapter startup fails
+            # because another process is already bound to :7071.
+            try:
+                payload = _fetch_local_functions_payload(url)
+                provider = payload.get("active_provider", "unknown")
+                duration = round(time.perf_counter() - start, 2)
+                return StepResult(
+                    name=name,
+                    status="succeeded",
+                    critical=True,
+                    duration_sec=duration,
+                    detail=f"provider={provider} | via=final_direct_retry",
+                )
+            except (URLError, TimeoutError, OSError):
+                return StepResult(
+                    name=name,
+                    status="failed",
+                    critical=True,
+                    duration_sec=duration,
+                    detail=f"endpoint_unreachable={url}",
+                )
         return StepResult(
             name=name,
             status="skipped",
@@ -207,7 +298,8 @@ def _resolved_config_paths() -> Dict[str, Optional[str]]:
     resolved: Dict[str, Optional[str]] = {}
     for key in config_keys:
         selected = resolve_existing_config_path(REPO_ROOT, key)
-        resolved[key] = str(selected.relative_to(REPO_ROOT)) if selected else None
+        resolved[key] = str(selected.relative_to(
+            REPO_ROOT)) if selected else None
     return resolved
 
 
@@ -256,7 +348,8 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")
-    failed_critical = [s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
+    failed_critical = [
+        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 
@@ -279,7 +372,8 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Run Aria integration smoke checks")
+    ap = argparse.ArgumentParser(
+        description="Run Aria integration smoke checks")
     ap.add_argument(
         "--strict-endpoints",
         action="store_true",

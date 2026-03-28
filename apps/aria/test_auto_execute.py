@@ -3,12 +3,28 @@
 Test script for Aria Auto-Execute System
 Tests the new LLM-powered action generation and execution
 """
-import requests
 import json
 import sys
-from typing import Dict, List
+from typing import Dict
+
+import pytest
+import requests
 
 BASE_URL = "http://localhost:8080"
+
+
+def _aria_server_available() -> bool:
+    try:
+        response = requests.get(f"{BASE_URL}/api/aria/state", timeout=2)
+        return response.ok
+    except requests.exceptions.RequestException:
+        return False
+
+
+pytestmark = pytest.mark.skipif(
+    not _aria_server_available(),
+    reason="Aria server not running on localhost:8080",
+)
 
 def print_header(text: str):
     """Print formatted header"""
@@ -23,8 +39,8 @@ def print_result(success: bool, message: str):
     reset = "\033[0m"
     print(f"{color}{symbol}{reset} {message}")
 
-def test_plan_mode(command: str) -> Dict:
-    """Test plan mode (no execution)"""
+def plan_mode(command: str) -> Dict:
+    """Run plan mode (no execution)."""
     print(f"📋 Planning: '{command}'")
     
     response = requests.post(
@@ -47,8 +63,8 @@ def test_plan_mode(command: str) -> Dict:
     
     return data
 
-def test_execute_mode(command: str) -> Dict:
-    """Test execute mode"""
+def execute_mode(command: str) -> Dict:
+    """Run execute mode."""
     print(f"▶️  Executing: '{command}'")
     
     response = requests.post(
@@ -92,6 +108,30 @@ def print_state():
     print(f"   Held object: {aria['held_object'] or 'none'}")
     print(f"   Facing: {aria['facing']}")
 
+
+def test_plan_mode() -> None:
+    """Pytest-compatible smoke test for plan mode."""
+    result = plan_mode("Say hello world")
+    assert result['status'] == 'success'
+    assert 'actions' in result
+
+
+def test_execute_mode() -> None:
+    """Pytest-compatible smoke test for execute mode."""
+    result = execute_mode("Wave at the audience")
+    assert result['status'] == 'success'
+    assert 'results' in result
+    assert isinstance(result['results'], list)
+    assert len(result['results']) > 0
+    # Verify that at least one executed action reports a successful status
+    assert any(
+        isinstance(item, dict)
+        and 'result' in item
+        and isinstance(item['result'], dict)
+        and item['result'].get('status') == 'success'
+        for item in result['results']
+    )
+
 def run_tests():
     """Run comprehensive test suite"""
     
@@ -100,30 +140,30 @@ def run_tests():
     try:
         # Test 1: Simple say command
         print_header("Test 1: Simple Say Command")
-        test_plan_mode("Say hello world")
-        result = test_execute_mode("Say hello world")
+        plan_mode("Say hello world")
+        result = execute_mode("Say hello world")
         if result['status'] == 'success':
             print_result(True, "Say command executed successfully")
         
         # Test 2: Gesture command
         print_header("Test 2: Gesture Command")
-        test_plan_mode("Wave at the audience")
-        result = test_execute_mode("Wave at the audience")
+        plan_mode("Wave at the audience")
+        result = execute_mode("Wave at the audience")
         if result['status'] == 'success':
             print_result(True, "Gesture command executed successfully")
         
         # Test 3: Movement command
         print_header("Test 3: Movement Command")
-        test_plan_mode("Move to the center")
-        result = test_execute_mode("Move to the center")
+        plan_mode("Move to the center")
+        result = execute_mode("Move to the center")
         if result['status'] == 'success':
             print_result(True, "Movement command executed successfully")
         print_state()
         
         # Test 4: Multi-action sequence
         print_header("Test 4: Multi-Action Sequence")
-        test_plan_mode("Go to the table and pick up the apple")
-        result = test_execute_mode("Go to the table and pick up the apple")
+        plan_mode("Go to the table and pick up the apple")
+        result = execute_mode("Go to the table and pick up the apple")
         if result['status'] == 'success':
             print_result(True, "Multi-action sequence executed successfully")
         print_state()
@@ -131,8 +171,8 @@ def run_tests():
         # Test 5: Complex command
         print_header("Test 5: Complex Command with Multiple Actions")
         command = "Say welcome, wave, and move to the left"
-        test_plan_mode(command)
-        result = test_execute_mode(command)
+        plan_mode(command)
+        result = execute_mode(command)
         if result['status'] == 'success':
             print_result(True, "Complex command executed successfully")
         print_state()
@@ -140,7 +180,7 @@ def run_tests():
         # Test 6: Error handling (pickup without moving)
         print_header("Test 6: Error Handling (Distance Check)")
         print("Note: This should fail if Aria is too far from the book")
-        result = test_execute_mode("Pick up the book")
+        result = execute_mode("Pick up the book")
         if result['status'] == 'success' and result['results']:
             has_error = any(r['result']['status'] == 'error' for r in result['results'])
             if has_error:

@@ -263,6 +263,19 @@ def _normalize_backend_allowlist(backends: List[str]) -> set[str]:
     }
 
 
+def _backend_in_allowlist(normalized_backend: str, normalized_backends: set[str]) -> bool:
+    """Return True when backend is directly allowed or accepted via simulator aliases."""
+    if normalized_backend in normalized_backends:
+        return True
+
+    # Accept common simulator aliases (e.g., "simulator") when the workspace
+    # exposes a provider-qualified simulator backend such as "microsoft.simulator".
+    if _is_free_backend(normalized_backend) and normalized_backend == "simulator":
+        return any("simulator" in backend for backend in normalized_backends)
+
+    return False
+
+
 async def _validate_backend_against_allowlist(backend_name: str) -> Optional[str]:
     """Ensure a backend exists in the cached workspace allowlist, refreshing as needed."""
     loop = asyncio.get_event_loop()
@@ -290,7 +303,7 @@ async def _validate_backend_against_allowlist(backend_name: str) -> Optional[str
     normalized_backends = _normalize_backend_allowlist(known_backends)
     normalized_backend = _normalize_backend_name(backend_name)
     refresh_error = None
-    if normalized_backend not in normalized_backends and not did_refresh_allowlist:
+    if not _backend_in_allowlist(normalized_backend, normalized_backends) and not did_refresh_allowlist:
         # One-time recheck: backend inventories can change between cached refreshes.
         try:
             refreshed_backends = await loop.run_in_executor(
@@ -304,7 +317,7 @@ async def _validate_backend_against_allowlist(backend_name: str) -> Optional[str
         except Exception as e:
             refresh_error = str(e)
 
-    if normalized_backend not in normalized_backends:
+    if not _backend_in_allowlist(normalized_backend, normalized_backends):
         allowed_sample = ", ".join(sorted(normalized_backends)[:12])
         refresh_note = (
             f" Backend list refresh failed: {refresh_error}." if refresh_error else ""

@@ -139,7 +139,7 @@ def validate_request(
 
 CHAT_SCHEMA = {
     "messages": {"type": list, "required": True, "min_length": 1, "max_length": 500},
-    "provider": {"type": str, "allowed": ["auto", "azure_openai", "openai", "lmstudio", "lora", "local"]},
+    "provider": {"type": str, "allowed": ["auto", "azure", "azure_openai", "openai", "lmstudio", "ollama", "lora", "agi", "quantum", "local"]},
     "temperature": {"type": (int, float), "min": 0, "max": 2},
     "max_output_tokens": {"type": int, "min": 1, "max": 128000},
     "max_context_tokens": {"type": int, "min": 1, "max": 128000},

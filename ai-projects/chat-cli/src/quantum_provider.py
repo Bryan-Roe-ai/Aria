@@ -80,6 +80,31 @@ class QuantumLLMChatProvider(BaseChatProvider):
         if self.model_path.is_file():
             return self.model_path
 
+        status_file = self.model_path / "status.json"
+        if status_file.exists():
+            try:
+                import json
+
+                with open(status_file, "r", encoding="utf-8") as status_handle:
+                    status_payload = json.load(status_handle)
+
+                checkpoint_ref = (
+                    status_payload.get("best_checkpoint_path")
+                    or status_payload.get("checkpoint_path")
+                    or status_payload.get("last_checkpoint_path")
+                )
+                if checkpoint_ref:
+                    checkpoint_path = Path(checkpoint_ref)
+                    if not checkpoint_path.is_absolute():
+                        direct_candidate = self.model_path / checkpoint_path
+                        checkpoint_path = direct_candidate if direct_candidate.exists() else repo_root / \
+                            checkpoint_path
+                    if checkpoint_path.exists():
+                        return checkpoint_path
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "Failed to read Quantum LLM status metadata from %s: %s", status_file, exc)
+
         candidates = [
             self.model_path / "best_quantum_llm.pt",
             self.model_path / "quantum_llm_checkpoint.pt",

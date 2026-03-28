@@ -15,7 +15,7 @@ import subprocess
 import importlib.util as _iu
 import time
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Pre-compiled word split regex used in token/word counting hot paths.
 _RE_WORD_SPLIT = re.compile(r"\S+")
@@ -243,14 +243,14 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
     POST /api/chat
     Body: {
         "messages": [{"role": "user|assistant|system", "content": "..."}],
-        "provider": "auto|openai|azure|local" (optional),
+        "provider": "auto|openai|azure|lmstudio|ollama|agi|quantum|local" (optional),
         "model": "model-name" (optional),
         "stream": false (optional, streaming not implemented in HTTP yet)
     }
 
     Response: {
         "response": "assistant's reply",
-        "provider": "azure|openai|local",
+        "provider": "azure|openai|lmstudio|ollama|agi|quantum-llm|local",
         "model": "model-name"
     }
     """
@@ -706,6 +706,27 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 headers=create_cors_response_headers(),
             )
 
+        # =============================
+        # Memory Retrieval — mirrors /api/chat behavior
+        # =============================
+        stream_user_content = next(
+            (m['content'] for m in reversed(messages) if m.get('role') == 'user'), None)
+        stream_memory_messages: list[dict] = []
+        if stream_user_content:
+            try:
+                stream_embedding = generate_embedding(stream_user_content)
+                similar_msgs = fetch_similar_messages(
+                    stream_embedding, top_k=5, session_id=body.get('session_id'))
+                for idx, sm in enumerate(similar_msgs):
+                    stream_memory_messages.append({
+                        "role": "system",
+                        "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {sm.get('content')}"
+                    })
+            except Exception as _mem_err:  # noqa: BLE001
+                logging.warning(f"Stream memory retrieval failed: {_mem_err}")
+        if stream_memory_messages:
+            messages = stream_memory_messages + messages
+
         provider, info = detect_provider(
             explicit=provider_choice,
             model_override=model_override,
@@ -731,6 +752,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 pre = {
                     "provider": info.name,
                     "model": info.model,
+                    "memory_messages": len(stream_memory_messages),
                     "pruning": {
                         "original_tokens": stats.original_tokens,
                         "pruned_tokens": stats.pruned_tokens,
@@ -1250,6 +1272,11 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "enabled": False,
             "qiskit": None,
             "pennylane": None,
+            "llm_model_available": False,
+            "llm_checkpoint_path": None,
+            "inference_ready": False,
+            "status_file": None,
+            "trainer_status": "not_started",
             "azure_quantum": {
                 "workspace_connected": False,
                 "backends": [],
@@ -1267,6 +1294,21 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         try:
             import pennylane  # type: ignore
             quantum_info["pennylane"] = getattr(pennylane, "__version__", None)
+        except Exception:
+            pass
+        try:
+            from quantum_llm_trainer import get_quantum_llm_status  # type: ignore
+
+            quantum_llm_status = get_quantum_llm_status(
+                output_dir=repo_root / "data_out" / "quantum_llm_training"
+            )
+            quantum_info.update({
+                "llm_model_available": bool(quantum_llm_status.get("checkpoint_exists")),
+                "llm_checkpoint_path": quantum_llm_status.get("checkpoint_path"),
+                "inference_ready": bool(quantum_llm_status.get("inference_ready")),
+                "status_file": quantum_llm_status.get("status_file"),
+                "trainer_status": quantum_llm_status.get("status"),
+            })
         except Exception:
             pass
         # Conflict detection using validate script (import functions defensively)
@@ -1346,6 +1388,115 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception as _le:  # noqa: BLE001
             learning_info["error"] = str(_le)
 
+        # Orchestrator Health Aggregation
+        orchestrator_health = {
+            "enabled": True,
+            "orchestrators": {},
+            "overall_status": "unknown",
+            "last_checked": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            "active_count": 0,
+            "failed_count": 0,
+        }
+        try:
+            data_out_dir = Path(__file__).resolve().parent / "data_out"
+
+            # Autonomous training (uses top-level status + heartbeat)
+            try:
+                autotrain_status_file = data_out_dir / "autonomous_training_status.json"
+                if autotrain_status_file.exists():
+                    with open(autotrain_status_file, "r") as f:
+                        at_status = json.load(f)
+                    heartbeat_file = data_out_dir / "autonomous_training_heartbeat.json"
+                    heartbeat_running = False
+                    if heartbeat_file.exists():
+                        try:
+                            with open(heartbeat_file, "r") as f:
+                                hb = json.load(f)
+                            heartbeat_running = hb.get(
+                                "state") == "completed" or hb.get("pid")
+                        except Exception:
+                            pass
+
+                    orchestrator_health["orchestrators"]["autonomous_training"] = {
+                        "name": "autonomous_training",
+                        "status": "ok" if at_status.get("cycles_completed", 0) > 0 else "idle",
+                        "cycles_completed": at_status.get("cycles_completed", 0),
+                        "best_accuracy": at_status.get("best_accuracy"),
+                        "last_updated": at_status.get("last_updated"),
+                        "heartbeat_running": heartbeat_running,
+                        "performance_trend": "improving" if len(at_status.get("performance_history", [])) > 1 and at_status["performance_history"][-1].get("accuracy", 0) > at_status["performance_history"][0].get("accuracy", 0) else "unknown",
+                    }
+                    if heartbeat_running:
+                        orchestrator_health["active_count"] += 1
+            except Exception as _ate:  # noqa: BLE001
+                orchestrator_health["orchestrators"]["autonomous_training"] = {
+                    "status": "error",
+                    "error": str(_ate),
+                }
+                orchestrator_health["failed_count"] += 1
+
+            # Standard orchestrators (autotrain, quantum_autorun, evaluation_autorun, etc.)
+            standard_names = ["autotrain", "quantum_autorun",
+                              "evaluation_autorun", "integration_smoke", "autonomous_agent"]
+            for name in standard_names:
+                try:
+                    status_file = data_out_dir / name / "status.json"
+                    if status_file.exists():
+                        with open(status_file, "r") as f:
+                            orch_status = json.load(f)
+
+                        # Normalize to common schema
+                        total = orch_status.get("total_jobs", 0)
+                        succeeded = orch_status.get("succeeded", 0)
+                        failed = orch_status.get("failed", 0)
+
+                        if total == 0:
+                            health_status = "idle"
+                        elif failed > 0:
+                            health_status = "degraded"
+                        else:
+                            health_status = "ok"
+
+                        orchestrator_health["orchestrators"][name] = {
+                            "name": name,
+                            "status": health_status,
+                            "total_jobs": total,
+                            "succeeded": succeeded,
+                            "failed": failed,
+                            "running": orch_status.get("running", 0),
+                            "last_updated": orch_status.get("last_updated", orch_status.get("generated_at")),
+                            "success_rate": (succeeded / total * 100) if total > 0 else 100.0,
+                        }
+
+                        if health_status == "ok":
+                            orchestrator_health["active_count"] += 1
+                        elif health_status == "degraded":
+                            orchestrator_health["failed_count"] += 1
+                except Exception as _ose:  # noqa: BLE001
+                    logging.debug(
+                        f"[ai_status] Orchestrator {name} health check failed: {_ose}")
+                    # Only track as failed if file exists but is malformed
+                    if (data_out_dir / name / "status.json").exists():
+                        orchestrator_health["orchestrators"][name] = {
+                            "status": "error",
+                            "error": str(_ose),
+                        }
+                        orchestrator_health["failed_count"] += 1
+
+            # Determine overall platform health
+            if orchestrator_health["failed_count"] > 0:
+                orchestrator_health["overall_status"] = "degraded"
+            elif orchestrator_health["active_count"] > 0:
+                orchestrator_health["overall_status"] = "healthy"
+            else:
+                orchestrator_health["overall_status"] = "idle"
+
+        except Exception as _oh:  # noqa: BLE001
+            logging.warning(
+                f"[ai_status] Orchestrator health aggregation failed: {_oh}")
+            orchestrator_health["overall_status"] = "error"
+            orchestrator_health["error"] = str(_oh)
+
         payload = {
             "active_provider": info.name,
             "model": info.model,
@@ -1362,6 +1513,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "telemetry": telemetry_info,
             "quantum": quantum_info,
             "self_learning": learning_info,
+            "orchestrator_health": orchestrator_health,
             "temperature": float(os.getenv("CHAT_TEMPERATURE", "0.7")),
             "server": {
                 "executable": sys.executable,
@@ -2088,6 +2240,7 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         # Lazy import to avoid hard dependency at startup
+        repo_root = Path(__file__).resolve().parent
         quantum_ml_src = Path(__file__).resolve().parent / \
             "ai-projects" / "quantum-ml" / "src"
         scripts_dir = Path(__file__).resolve().parent / "scripts"
@@ -2096,14 +2249,21 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 sys.path.insert(0, p)
 
         try:
-            from quantum_llm_trainer import QuantumEnhancedLLMTrainer, QUANTUM_AVAILABLE
+            from quantum_llm_trainer import QuantumEnhancedLLMTrainer, QUANTUM_AVAILABLE, get_quantum_llm_status
             trainer_available = True
         except ImportError as ie:
             trainer_available = False
             QUANTUM_AVAILABLE = False
             _trainer_import_err = str(ie)
+            get_quantum_llm_status = None
 
         if req.method == "GET":
+            readiness = None
+            if trainer_available and get_quantum_llm_status is not None:
+                readiness = get_quantum_llm_status(
+                    output_dir=Path(__file__).resolve().parent /
+                    "data_out" / "quantum_llm_training"
+                )
             return func.HttpResponse(
                 json.dumps({
                     "available": trainer_available,
@@ -2115,6 +2275,7 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                         "n_qubits": 4,
                         "backends": ["default.qubit", "lightning.qubit"],
                     },
+                    "readiness": readiness,
                     "import_error": None if trainer_available else _trainer_import_err,
                 }),
                 status_code=200,
@@ -2173,6 +2334,9 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                     "generated": text,
                     "tokens": len(generated[0]),
                     "quantum_available": QUANTUM_AVAILABLE,
+                    "readiness": get_quantum_llm_status(
+                        output_dir=repo_root / "data_out" / "quantum_llm_training"
+                    ) if get_quantum_llm_status is not None else None,
                 }),
                 status_code=200,
                 mimetype="application/json",
@@ -2180,7 +2344,6 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
             )
 
         elif action == "train":
-            repo_root = Path(__file__).resolve().parent
             dataset_path = body.get("dataset_path", "datasets/chat")
             dataset_path_obj = Path(dataset_path)
             if not dataset_path_obj.is_absolute():
@@ -2219,6 +2382,10 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                     "epochs_completed": results["epochs_completed"],
                     "final_loss": results["final_loss"],
                     "circuit_executions": results["quantum_metrics"]["circuit_executions"],
+                    "checkpoint_path": results.get("checkpoint_path"),
+                    "readiness": get_quantum_llm_status(
+                        output_dir=output_dir
+                    ) if get_quantum_llm_status is not None else None,
                 }),
                 status_code=200,
                 mimetype="application/json",

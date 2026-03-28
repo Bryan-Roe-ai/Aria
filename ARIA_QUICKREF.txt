@@ -149,6 +149,37 @@
   server    → Web Interface Only (Development)
   training  → Background Training Only (Batch Processing)
 
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │ 🔬 QUANTUM LLM MONITORING                                                    │
+  └──────────────────────────────────────────────────────────────────────────────┘
+
+    Check Training Status (Human-Readable):
+      python3 scripts/quantum_llm_status_check.py
+
+    Check Status (JSON Output):
+      python3 scripts/quantum_llm_status_check.py --json
+
+    Watch Mode (Auto-Refresh Every 5s):
+      python3 scripts/quantum_llm_status_check.py --watch
+
+    Custom Output Directory:
+      python3 scripts/quantum_llm_status_check.py --output /path/to/training
+
+    Analyze Training Metrics:
+      python3 scripts/quantum_llm_metrics_analyzer.py
+
+    Export Metrics to CSV:
+      python3 scripts/quantum_llm_metrics_analyzer.py --export metrics.csv
+
+    Check Inference Readiness:
+      python3 scripts/quantum_llm_status_check.py --json | jq '.inference_ready'
+
+    View Full Status Details:
+      python3 scripts/quantum_llm_status_check.py --json | jq '.'
+
+    Monitor Training Progress:
+      watch -n 5 'python3 scripts/quantum_llm_status_check.py'
+
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ ✅ HEALTH CHECKS                                                             │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -157,6 +188,7 @@
     • Aria Server: curl http://localhost:8080
     • Backend API: curl http://localhost:7071/api/ai/status
     • Status File: cat data_out/aria_automation/status.json | jq
+      • Quantum LLM: python3 scripts/quantum_llm_status_check.py
 
   Process Check:
     ps aux | grep aria
@@ -177,7 +209,13 @@
   PID File:             data_out/aria_automation/processes.json
   Logs:                 data_out/aria_automation/*.log
 
+    Quantum LLM Status:         data_out/quantum_llm_training/status.json
+    Quantum Status Script:      scripts/quantum_llm_status_check.py
+    Quantum Metrics Script:     scripts/quantum_llm_metrics_analyzer.py
+    Quantum Trainer:            scripts/quantum_llm_trainer.py
+
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  Need Help? Check ARIA_AUTOMATION_GUIDE.md for detailed instructions        ║
-║  All tests passing ✅ • Ready for production deployment • v1.0.0            ║
+║  Quantum LLM Guide: docs/QUANTUM_LLM_STATUS_TRACKING.md                     ║
+║  All tests passing ✅ • Ready for production deployment • v1.0.1            ║
 ╚══════════════════════════════════════════════════════════════════════════════╝

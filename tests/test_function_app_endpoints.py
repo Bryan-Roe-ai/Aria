@@ -93,9 +93,26 @@ def _install_fake_quantum_trainer_module(
                 "epochs_completed": epochs,
                 "final_loss": 0.123,
                 "quantum_metrics": {"circuit_executions": 7},
+                "checkpoint_path": "data_out/quantum_llm_api/best_quantum_llm.pt",
             }
 
+    def get_quantum_llm_status(*, status_file=None, output_dir=None):
+        if capture is not None:
+            capture["status_call"] = {
+                "status_file": status_file,
+                "output_dir": output_dir,
+            }
+        return {
+            "available": True,
+            "status": "completed",
+            "checkpoint_exists": True,
+            "checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
+            "status_file": "data_out/quantum_llm_training/status.json",
+            "inference_ready": True,
+        }
+
     module.QuantumEnhancedLLMTrainer = QuantumEnhancedLLMTrainer
+    module.get_quantum_llm_status = get_quantum_llm_status
     monkeypatch.setitem(sys.modules, "quantum_llm_trainer", module)
 
 
@@ -172,6 +189,63 @@ class TestPostValidation:
         resp = app_module.chat_stream(req)
         assert resp.status_code == 400
 
+    def test_chat_stream_memory_injection(self, app_module, monkeypatch):
+        """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
+        import azure.functions as _af
+        import inspect
+
+        captured: dict = {"embedding": None,
+                          "session_id": None, "sse_body": b""}
+
+        def _fake_embedding(text: str):
+            captured["embedding"] = text
+            return [0.1, 0.2, 0.3]
+
+        def _fake_similar(query_emb, top_k=5, session_id=None):
+            captured["session_id"] = session_id
+            return [{"content": "Previous answer about widgets", "similarity": 0.88}]
+
+        # Patch func.HttpResponse inside function_app so streaming body (generator) is consumed
+        _real_HttpResponse = _af.HttpResponse
+
+        def _capturing_HttpResponse(body=None, **kwargs):
+            if body is not None and inspect.isgenerator(body):
+                consumed = b"".join(body)
+                captured["sse_body"] = consumed
+                return _real_HttpResponse(consumed, **kwargs)
+            return _real_HttpResponse(body, **kwargs)
+
+        monkeypatch.setattr(app_module.func, "HttpResponse",
+                            _capturing_HttpResponse)
+        monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
+        monkeypatch.setattr(
+            app_module, "fetch_similar_messages", _fake_similar)
+
+        req = _mock_request("POST", body={
+            "messages": [{"role": "user", "content": "How do I use widgets?"}],
+            "session_id": "test-session-789",
+        })
+        resp = app_module.chat_stream(req)
+        assert resp.status_code == 200
+
+        # Parse SSE body for the meta event
+        body_text = captured["sse_body"].decode("utf-8")
+        meta_data: dict | None = None
+        for line in body_text.splitlines():
+            if line.startswith("data:"):
+                try:
+                    obj = json.loads(line[5:].strip())
+                    if "memory_messages" in obj:
+                        meta_data = obj
+                        break
+                except json.JSONDecodeError:
+                    pass
+
+        assert meta_data is not None, "No meta event with memory_messages in SSE body"
+        assert meta_data["memory_messages"] == 1
+        assert captured["embedding"] == "How do I use widgets?"
+        assert captured["session_id"] == "test-session-789"
+
     def test_tts_no_text(self, app_module):
         """POST /api/tts with no text field → 400."""
         req = _mock_request("POST", body={})
@@ -192,6 +266,18 @@ class TestQuantumLlmEndpoint:
         data = json.loads(resp.get_body())
         assert "available" in data
         assert "capabilities" in data
+
+    def test_quantum_llm_get_includes_readiness(self, app_module, monkeypatch):
+        capture: dict = {}
+        _install_fake_quantum_trainer_module(monkeypatch, capture=capture)
+
+        req = _mock_request("GET")
+        resp = app_module.quantum_llm(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["readiness"]["inference_ready"] is True
+        assert data["readiness"]["checkpoint_exists"] is True
 
     def test_quantum_llm_post_invalid_json(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
@@ -231,6 +317,7 @@ class TestQuantumLlmEndpoint:
         assert data["action"] == "generate"
         assert data["tokens"] == 3
         assert "generated" in data
+        assert data["readiness"]["inference_ready"] is True
         assert capture["generate_kwargs"]["max_new_tokens"] == 3
 
     def test_quantum_llm_post_train_rejects_external_path(self, app_module, monkeypatch):
@@ -268,6 +355,8 @@ class TestQuantumLlmEndpoint:
         assert data["action"] == "train"
         assert data["status"] == "success"
         assert data["epochs_completed"] == 5
+        assert data["checkpoint_path"].endswith("best_quantum_llm.pt")
+        assert data["readiness"]["inference_ready"] is True
 
         train_args = capture["train_args"]
         assert train_args["epochs"] == 5
@@ -342,6 +431,18 @@ class TestRequestValidator:
             {"tier": {"type": str, "allowed": ["FREE", "PRO", "ENTERPRISE"]}},
         )
         assert err is not None
+
+    def test_chat_schema_accepts_quantum_provider(self):
+        from shared.request_validator import validate_fields, CHAT_SCHEMA
+
+        err = validate_fields(
+            {
+                "messages": [{"role": "user", "content": "hello"}],
+                "provider": "quantum",
+            },
+            CHAT_SCHEMA,
+        )
+        assert err is None
 
     def test_validate_min_length(self):
         from shared.request_validator import validate_fields
