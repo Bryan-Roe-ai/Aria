@@ -2,13 +2,13 @@
 
 This conftest ensures that the scripts package is importable during tests.
 """
-import sys
-import os
+
 import json
-import pytest
+import sys
 from pathlib import Path
 from unittest.mock import Mock
-from datetime import datetime
+
+import pytest
 
 # Add project root to Python path for importing scripts
 # Ensure websockets.client is attached to the websockets namespace.
@@ -48,9 +48,7 @@ def sample_json_data():
         "name": "test",
         "value": 123.45,
         "items": [1, 2, 3],
-        "nested": {
-            "key": "value"
-        }
+        "nested": {"key": "value"},
     }
 
 
@@ -61,7 +59,7 @@ def sample_chat_messages():
         {"role": "user", "content": "Hello"},
         {"role": "assistant", "content": "Hi there!"},
         {"role": "user", "content": "How are you?"},
-        {"role": "assistant", "content": "I'm doing well, thank you!"}
+        {"role": "assistant", "content": "I'm doing well, thank you!"},
     ]
 
 
@@ -84,18 +82,14 @@ def sample_training_config():
         "epochs": 10,
         "batch_size": 8,
         "learning_rate": 1e-4,
-        "max_seq_length": 512
+        "max_seq_length": 512,
     }
 
 
 @pytest.fixture
 def sample_aria_action():
     """Sample Aria action"""
-    return {
-        "action": "move",
-        "direction": "left",
-        "distance": 50
-    }
+    return {"action": "move", "direction": "left", "distance": 50}
 
 
 @pytest.fixture
@@ -106,11 +100,12 @@ def sample_aria_world_state():
         "holding": None,
         "expression": "neutral",
         "objects": [],
-        "world_theme": "default"
+        "world_theme": "default",
     }
 
 
 # ==================== HELPER FUNCTIONS ====================
+
 
 def assert_valid_json(json_str):
     """Assert that a string is valid JSON"""
@@ -135,6 +130,7 @@ def assert_valid_provider(provider_name):
 
 # ==================== PYTEST HOOKS ====================
 
+
 def pytest_configure(config):
     """Configure pytest with custom markers"""
     config.addinivalue_line(
@@ -143,12 +139,8 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "azure: marks tests that require Azure credentials"
     )
-    config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
-    )
+    config.addinivalue_line("markers", "integration: marks tests as integration tests")
     config.addinivalue_line(
         "markers", "quantum: marks tests that require quantum backends"
     )
-    config.addinivalue_line(
-        "markers", "gpu: marks tests that require GPU"
-    )
+    config.addinivalue_line("markers", "gpu: marks tests that require GPU")

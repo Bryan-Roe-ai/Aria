@@ -38,11 +38,7 @@ DATA_OUT = REPO_ROOT / "data_out" / "autotrain"
 STATUS_FILE = DATA_OUT / "status.json"
 
 HF_TRAIN_SCRIPT = (
-    REPO_ROOT
-    / "AI"
-    / "microsoft_phi-silica-3.6_v1"
-    / "scripts"
-    / "train_lora.py"
+    REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "scripts" / "train_lora.py"
 )
 
 
@@ -102,6 +98,7 @@ def load_jobs(path: Path) -> List[TrainJob]:
     data = load_config(path)
     jobs: List[TrainJob] = []
     for raw in data.get("jobs", []):
+
         def _get(k, default=None):
             return raw.get(k, default)
 
@@ -154,7 +151,8 @@ def validate_job(job: TrainJob) -> Dict[str, Any]:
 
     if job.runner == "hf" and not HF_TRAIN_SCRIPT.exists():
         missing.append(
-            f"train script not found: {HF_TRAIN_SCRIPT.relative_to(REPO_ROOT)}")
+            f"train script not found: {HF_TRAIN_SCRIPT.relative_to(REPO_ROOT)}"
+        )
 
     if job.config and not (REPO_ROOT / job.config).exists():
         missing.append(f"lora config not found: {job.config}")
@@ -238,14 +236,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         default=DEFAULT_CONFIG,
         help=f"Path to YAML config (default: {DEFAULT_CONFIG})",
     )
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Validate config only; do not execute")
-    parser.add_argument("--list", action="store_true",
-                        help="Print jobs as JSON and exit")
-    parser.add_argument("--run", action="store_true",
-                        help="Execute training jobs")
-    parser.add_argument("--job", metavar="NAME",
-                        help="Filter to a single job by name")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Validate config only; do not execute"
+    )
+    parser.add_argument(
+        "--list", action="store_true", help="Print jobs as JSON and exit"
+    )
+    parser.add_argument("--run", action="store_true", help="Execute training jobs")
+    parser.add_argument("--job", metavar="NAME", help="Filter to a single job by name")
 
     args = parser.parse_args(argv)
 
@@ -279,16 +277,17 @@ def main(argv: Optional[List[str]] = None) -> int:
         if validation["status"] != "ok":
             print(f"  [warn] {job.name}: missing {validation['missing']}")
         else:
-            print(
-                f"  [ok]   {job.name} (runner={job.runner}, epochs={job.epochs})")
+            print(f"  [ok]   {job.name} (runner={job.runner}, epochs={job.epochs})")
 
         if args.dry_run:
-            jobs_info.append({
-                "name": job.name,
-                "status": "ok",
-                "validation": validation,
-                "dry_run": True,
-            })
+            jobs_info.append(
+                {
+                    "name": job.name,
+                    "status": "ok",
+                    "validation": validation,
+                    "dry_run": True,
+                }
+            )
             continue
 
         if args.run:
@@ -297,7 +296,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             result = subprocess.run(cmd, cwd=str(REPO_ROOT))
             status = "ok" if result.returncode == 0 else "failed"
             jobs_info.append(
-                {"name": job.name, "status": status, "returncode": result.returncode})
+                {"name": job.name, "status": status, "returncode": result.returncode}
+            )
 
     status_payload = _build_status(jobs_info)
     _write_status(status_payload)

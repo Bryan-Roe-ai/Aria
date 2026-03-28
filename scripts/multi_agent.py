@@ -28,11 +28,11 @@ Tasks JSON format:
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import logging
 import sys
 import time
-import importlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -54,6 +54,7 @@ _LOGGER = logging.getLogger(__name__)
 @dataclass
 class AgentJob:
     """Single job definition for a multi-agent run."""
+
     task: str
     llm_type: str = "ollama"
     model: Optional[str] = None
@@ -64,6 +65,7 @@ class AgentJob:
 @dataclass
 class MultiAgentReport:
     """Aggregated results from a multi-agent run."""
+
     run_id: str
     started_at: str
     completed_at: str
@@ -135,13 +137,14 @@ def run_parallel(
     _start = time.monotonic()
 
     _LOGGER.info(
-        f"Multi-agent run {run_id}: {len(jobs)} tasks, "
-        f"max_workers={max_workers}"
+        f"Multi-agent run {run_id}: {len(jobs)} tasks, " f"max_workers={max_workers}"
     )
 
     completed_states: List[Any] = []
 
-    with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="agent") as pool:
+    with ThreadPoolExecutor(
+        max_workers=max_workers, thread_name_prefix="agent"
+    ) as pool:
         futures = {pool.submit(_run_single_job, job): job for job in jobs}
         for future in as_completed(futures):
             job = futures[future]
@@ -151,7 +154,11 @@ def run_parallel(
                 status_icon = "✓" if state.status == "complete" else "✗"
                 print(
                     f"  {status_icon} [{state.status:12s}] {job.task[:55]}"
-                    + (f" ({state.duration_seconds}s)" if state.duration_seconds else "")
+                    + (
+                        f" ({state.duration_seconds}s)"
+                        if state.duration_seconds
+                        else ""
+                    )
                 )
                 if verbose and state.errors:
                     for err in state.errors:
@@ -201,16 +208,24 @@ def _load_jobs_from_file(
     for item in raw:
         if isinstance(item, str):
             # Simple string form
-            jobs.append(AgentJob(task=item, llm_type=default_llm,
-                        dry_run=default_dry_run, skip_tests=default_skip_tests))
+            jobs.append(
+                AgentJob(
+                    task=item,
+                    llm_type=default_llm,
+                    dry_run=default_dry_run,
+                    skip_tests=default_skip_tests,
+                )
+            )
         elif isinstance(item, dict):
-            jobs.append(AgentJob(
-                task=item["task"],
-                llm_type=item.get("llm_type", default_llm),
-                model=item.get("model"),
-                dry_run=item.get("dry_run", default_dry_run),
-                skip_tests=item.get("skip_tests", default_skip_tests),
-            ))
+            jobs.append(
+                AgentJob(
+                    task=item["task"],
+                    llm_type=item.get("llm_type", default_llm),
+                    model=item.get("model"),
+                    dry_run=item.get("dry_run", default_dry_run),
+                    skip_tests=item.get("skip_tests", default_skip_tests),
+                )
+            )
         else:
             raise ValueError(f"Invalid task entry: {item!r}")
     return jobs
@@ -314,13 +329,15 @@ def main() -> None:
             sys.exit(1)
     elif args.tasks:
         for t in args.tasks:
-            jobs.append(AgentJob(
-                task=t,
-                llm_type=args.llm_type,
-                model=args.model,
-                dry_run=args.dry_run,
-                skip_tests=effective_skip_tests,
-            ))
+            jobs.append(
+                AgentJob(
+                    task=t,
+                    llm_type=args.llm_type,
+                    model=args.model,
+                    dry_run=args.dry_run,
+                    skip_tests=effective_skip_tests,
+                )
+            )
     else:
         parser.print_help()
         print("\nError: provide --task or --tasks-file")
@@ -332,7 +349,8 @@ def main() -> None:
 
     output_dir = Path(args.output_dir)
     print(
-        f"\nRunning {len(jobs)} task(s) with up to {args.workers} parallel worker(s)...")
+        f"\nRunning {len(jobs)} task(s) with up to {args.workers} parallel worker(s)..."
+    )
     if args.dry_run:
         print("  [DRY RUN — no files will be modified]\n")
     if effective_skip_tests:

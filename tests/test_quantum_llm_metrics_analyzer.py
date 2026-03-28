@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
-import json
 import sys
 from pathlib import Path
 
@@ -19,8 +18,7 @@ def _load():
     mod_name = "quantum_llm_metrics_analyzer"
     if mod_name in sys.modules:
         return sys.modules[mod_name]
-    path = Path(__file__).parent.parent / "scripts" / \
-        "quantum_llm_metrics_analyzer.py"
+    path = Path(__file__).parent.parent / "scripts" / "quantum_llm_metrics_analyzer.py"
     spec = importlib.util.spec_from_file_location(mod_name, path)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
@@ -35,6 +33,7 @@ qa = _load()
 # ---------------------------------------------------------------------------
 # load_status
 # ---------------------------------------------------------------------------
+
 
 class TestLoadStatus:
     def test_missing_file_returns_none(self, tmp_path: Path):
@@ -65,6 +64,7 @@ class TestLoadStatus:
 # ---------------------------------------------------------------------------
 # extract_metrics
 # ---------------------------------------------------------------------------
+
 
 class TestExtractMetrics:
     def test_all_fields_present(self):
@@ -97,8 +97,7 @@ class TestExtractMetrics:
         assert result["status"] is None
 
     def test_partial_status(self):
-        result = qa.extract_metrics(
-            {"status": "running", "epochs_completed": 3})
+        result = qa.extract_metrics({"status": "running", "epochs_completed": 3})
         assert result["status"] == "running"
         assert result["epochs_completed"] == 3
         assert result["best_loss"] is None
@@ -108,14 +107,22 @@ class TestExtractMetrics:
 
     def test_exact_keys(self):
         result = qa.extract_metrics({})
-        expected = {"timestamp", "status", "epochs_completed", "best_loss",
-                    "final_loss", "inference_ready", "checkpoint_exists"}
+        expected = {
+            "timestamp",
+            "status",
+            "epochs_completed",
+            "best_loss",
+            "final_loss",
+            "inference_ready",
+            "checkpoint_exists",
+        }
         assert set(result.keys()) == expected
 
 
 # ---------------------------------------------------------------------------
 # analyze_metrics
 # ---------------------------------------------------------------------------
+
 
 class TestAnalyzeMetrics:
     def test_empty_list_returns_empty_dict(self):
@@ -229,14 +236,27 @@ class TestAnalyzeMetrics:
 # format_analysis_report
 # ---------------------------------------------------------------------------
 
+
 class TestFormatAnalysisReport:
     def _make_full_analysis(self):
         return {
             "total_snapshots": 3,
             "inference_ready_count": 2,
             "checkpoint_count": 1,
-            "best_loss": {"min": 0.05, "max": 0.15, "mean": 0.10, "count": 3, "stdev": 0.05},
-            "final_loss": {"min": 0.06, "max": 0.18, "mean": 0.12, "count": 3, "stdev": 0.06},
+            "best_loss": {
+                "min": 0.05,
+                "max": 0.15,
+                "mean": 0.10,
+                "count": 3,
+                "stdev": 0.05,
+            },
+            "final_loss": {
+                "min": 0.06,
+                "max": 0.18,
+                "mean": 0.12,
+                "count": 3,
+                "stdev": 0.06,
+            },
             "epochs": {"current": 30, "max": 30, "mean": 20.0},
             "trend": {
                 "first_loss": 0.18,

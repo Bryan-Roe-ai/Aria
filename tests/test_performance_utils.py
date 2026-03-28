@@ -3,11 +3,17 @@
 Tests cover tail_file, tail_file_smart, stream_jsonl, batch_process,
 find_json_in_output, FileCache, timeit decorator, and memoize_with_ttl.
 """
+
 from __future__ import annotations
+
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import json
+import time
+
 
 from shared.performance_utils import (
     FileCache,
@@ -20,17 +26,10 @@ from shared.performance_utils import (
     timeit,
 )
 
-import io
-import json
-import time
-from unittest.mock import patch
-
-import pytest
-
-
 # ---------------------------------------------------------------------------
 # tail_file
 # ---------------------------------------------------------------------------
+
 
 class TestTailFile:
     def test_returns_last_n_lines(self, tmp_path):
@@ -68,6 +67,7 @@ class TestTailFile:
 # tail_file_smart
 # ---------------------------------------------------------------------------
 
+
 class TestTailFileSmart:
     def test_small_file(self, tmp_path):
         p = tmp_path / "small.log"
@@ -103,6 +103,7 @@ class TestTailFileSmart:
 # stream_jsonl
 # ---------------------------------------------------------------------------
 
+
 class TestStreamJsonl:
     def test_yields_all_records(self, tmp_path):
         p = tmp_path / "data.jsonl"
@@ -129,10 +130,8 @@ class TestStreamJsonl:
     def test_filter_fn(self, tmp_path):
         p = tmp_path / "data.jsonl"
         records = [{"id": i, "valid": i % 2 == 0} for i in range(6)]
-        p.write_text("\n".join(json.dumps(r)
-                     for r in records), encoding="utf-8")
-        results = list(stream_jsonl(
-            p, filter_fn=lambda r: bool(r.get("valid"))))
+        p.write_text("\n".join(json.dumps(r) for r in records), encoding="utf-8")
+        results = list(stream_jsonl(p, filter_fn=lambda r: bool(r.get("valid"))))
         assert all(r["valid"] for r in results)
         assert len(results) == 3  # ids 0, 2, 4
 
@@ -146,6 +145,7 @@ class TestStreamJsonl:
         gen = stream_jsonl(p)
         # Should be a generator / iterator, not a list
         import types
+
         assert isinstance(gen, types.GeneratorType)
 
 
@@ -153,11 +153,11 @@ class TestStreamJsonl:
 # batch_process
 # ---------------------------------------------------------------------------
 
+
 class TestBatchProcess:
     def test_processes_all_items(self):
         processed = []
-        batch_process(list(range(10)), batch_size=3,
-                      process_fn=processed.extend)
+        batch_process(list(range(10)), batch_size=3, process_fn=processed.extend)
         assert sorted(processed) == list(range(10))
 
     def test_batch_size_respected(self):
@@ -185,14 +185,15 @@ class TestBatchProcess:
 # find_json_in_output
 # ---------------------------------------------------------------------------
 
+
 class TestFindJsonInOutput:
     def test_finds_json_at_end(self):
-        output = "Starting...\nProcessing...\n{\"result\": 42}\nDone."
+        output = 'Starting...\nProcessing...\n{"result": 42}\nDone.'
         result = find_json_in_output(output)
         assert result == {"result": 42}
 
     def test_finds_json_with_key(self):
-        output = "{\"metrics\": {\"acc\": 0.9}}\n{\"other\": 1}"
+        output = '{"metrics": {"acc": 0.9}}\n{"other": 1}'
         result = find_json_in_output(output, key="metrics")
         assert result is not None
         assert "metrics" in result
@@ -208,7 +209,7 @@ class TestFindJsonInOutput:
         assert result is None
 
     def test_ignores_invalid_json_chunks(self):
-        output = "Start\n{not valid json}\n{\"valid\": true}"
+        output = 'Start\n{not valid json}\n{"valid": true}'
         result = find_json_in_output(output)
         assert result == {"valid": True}
 
@@ -227,6 +228,7 @@ class TestFindJsonInOutput:
 # ---------------------------------------------------------------------------
 # FileCache
 # ---------------------------------------------------------------------------
+
 
 class TestFileCache:
     def test_read_returns_file_content(self, tmp_path):
@@ -308,6 +310,7 @@ class TestFileCache:
 # timeit decorator
 # ---------------------------------------------------------------------------
 
+
 class TestTimeit:
     def test_returns_correct_result(self, capsys):
         @timeit
@@ -338,6 +341,7 @@ class TestTimeit:
 # ---------------------------------------------------------------------------
 # memoize_with_ttl
 # ---------------------------------------------------------------------------
+
 
 class TestMemoizeWithTtl:
     def test_caches_result(self):

@@ -18,7 +18,9 @@ from scripts.config_paths import (
 @pytest.mark.unit
 def test_known_keys_include_orchestrators() -> None:
     keys = set(known_config_keys())
-    assert {"master_orchestrator", "quantum_autorun", "evaluation_autorun"}.issubset(keys)
+    assert {"master_orchestrator", "quantum_autorun", "evaluation_autorun"}.issubset(
+        keys
+    )
 
 
 @pytest.mark.unit

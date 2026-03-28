@@ -1,15 +1,17 @@
 """Unit tests for scripts/system_health_check.py."""
+
 from __future__ import annotations
 
 import importlib.util
 import json
 from pathlib import Path
 
-
 # ─── module loader ────────────────────────────────────────────────────────────
+
 
 def _load():
     import sys
+
     path = Path(__file__).parent.parent / "scripts" / "system_health_check.py"
     mod_name = "system_health_check"
     # Return cached module if already loaded (avoids duplicate dataclass issues)
@@ -25,6 +27,7 @@ def _load():
 
 
 # ─── CheckResult model ────────────────────────────────────────────────────────
+
 
 class TestCheckResult:
     def setup_method(self):
@@ -73,10 +76,14 @@ class TestCheckResult:
 
     def test_sub_results_are_serialized(self):
         mod = self.mod
-        parent = mod.CheckResult("parent", "ok", sub=[
-            mod.CheckResult("child1", "ok"),
-            mod.CheckResult("child2", "warn", "something"),
-        ])
+        parent = mod.CheckResult(
+            "parent",
+            "ok",
+            sub=[
+                mod.CheckResult("child1", "ok"),
+                mod.CheckResult("child2", "warn", "something"),
+            ],
+        )
         d = parent.to_dict()
         assert len(d["sub"]) == 2
         assert d["sub"][0]["name"] == "child1"
@@ -84,6 +91,7 @@ class TestCheckResult:
 
 
 # ─── _ok / _warn / _fail helpers ─────────────────────────────────────────────
+
 
 class TestHelpers:
     def setup_method(self):
@@ -110,6 +118,7 @@ class TestHelpers:
 
 
 # ─── checks_to_json ───────────────────────────────────────────────────────────
+
 
 class TestChecksToJson:
     def setup_method(self):
@@ -184,6 +193,7 @@ class TestChecksToJson:
 
 # ─── run_all_checks ───────────────────────────────────────────────────────────
 
+
 class TestRunAllChecks:
     def setup_method(self):
         self.mod = _load()
@@ -206,8 +216,9 @@ class TestRunAllChecks:
         results = self.mod.run_all_checks()
         valid_statuses = {"ok", "warn", "fail"}
         for r in results:
-            assert r.status in valid_statuses, \
-                f"{r.name} has unexpected status: {r.status}"
+            assert (
+                r.status in valid_statuses
+            ), f"{r.name} has unexpected status: {r.status}"
 
     def test_python_check_present(self):
         results = self.mod.run_all_checks()

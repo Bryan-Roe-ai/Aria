@@ -52,9 +52,8 @@ def _scan_candidate_models() -> List[Dict[str, Any]]:
     for adapter_config in DATA_OUT.rglob("adapter_config.json"):
         adapter_dir = adapter_config.parent
         # Check safetensors or bin weights exist
-        has_weights = (
-            list(adapter_dir.glob("adapter_model.safetensors"))
-            or list(adapter_dir.glob("adapter_model.bin"))
+        has_weights = list(adapter_dir.glob("adapter_model.safetensors")) or list(
+            adapter_dir.glob("adapter_model.bin")
         )
         if not has_weights:
             continue
@@ -150,8 +149,11 @@ def cmd_deploy(args: argparse.Namespace) -> int:
         model = _select_best(candidates)
     else:
         # Try to match by name or path
-        match = [c for c in candidates if deploy_target in c["name"]
-                 or deploy_target in c["path"]]
+        match = [
+            c
+            for c in candidates
+            if deploy_target in c["name"] or deploy_target in c["path"]
+        ]
         model = match[0] if match else _select_best(candidates)
 
     if not model:
@@ -159,7 +161,8 @@ def cmd_deploy(args: argparse.Namespace) -> int:
         return 1
 
     print(
-        f"  Selected: {model['name']} (accuracy={model['accuracy']}, strategy={strategy})")
+        f"  Selected: {model['name']} (accuracy={model['accuracy']}, strategy={strategy})"
+    )
 
     src_path = Path(model["path"])
     dest_path = DEPLOYED_DIR / model["name"]
@@ -182,8 +185,7 @@ def cmd_deploy(args: argparse.Namespace) -> int:
     }
 
     # Update or append in registry
-    existing = [m for m in registry["models"]
-                if m.get("name") == model["name"]]
+    existing = [m for m in registry["models"] if m.get("name") == model["name"]]
     if existing:
         existing[0].update(entry)
     else:
@@ -191,10 +193,12 @@ def cmd_deploy(args: argparse.Namespace) -> int:
 
     if strategy == "full":
         registry["active_model"] = str(dest_path)
-        print(f"  ✓ Full deployment — active model updated")
+        print("  ✓ Full deployment — active model updated")
     elif strategy == "canary":
         registry["canary_model"] = str(dest_path)
-        print(f"  ✓ Canary deployment — canary model set (run with --strategy full to promote)")
+        print(
+            "  ✓ Canary deployment — canary model set (run with --strategy full to promote)"
+        )
     else:
         registry["active_model"] = str(dest_path)
 
@@ -206,19 +210,23 @@ def cmd_deploy(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Model deployer for Aria LoRA adapters")
+        description="Model deployer for Aria LoRA adapters"
+    )
     sub = parser.add_subparsers()
 
     # Top-level flags that match the ci-pipeline usage pattern:
     # python scripts/model_deployer.py --deploy best --strategy canary
-    parser.add_argument("--deploy", metavar="TARGET",
-                        help="Model to deploy: 'best' or a model name")
     parser.add_argument(
-        "--strategy", choices=["canary", "full"], default="canary", help="Deployment strategy")
-    parser.add_argument("--list", action="store_true",
-                        help="List candidate models")
-    parser.add_argument("--status", action="store_true",
-                        help="Print registry status")
+        "--deploy", metavar="TARGET", help="Model to deploy: 'best' or a model name"
+    )
+    parser.add_argument(
+        "--strategy",
+        choices=["canary", "full"],
+        default="canary",
+        help="Deployment strategy",
+    )
+    parser.add_argument("--list", action="store_true", help="List candidate models")
+    parser.add_argument("--status", action="store_true", help="Print registry status")
 
     args = parser.parse_args()
 

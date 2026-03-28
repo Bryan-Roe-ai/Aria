@@ -4,14 +4,18 @@ Aria Platform Autonomous Systems Dashboard
 Real-time monitoring of training orchestrators, quantum jobs, and AI services.
 """
 import sys
-from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Dict
+
+# Ensure repository root is on sys.path before importing local shared modules.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from shared.json_utils import load_status_json
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-DATA_OUT = REPO_ROOT / 'data_out'
+DATA_OUT = REPO_ROOT / "data_out"
 
 
 def load_json(path: Path) -> Dict[str, Any]:
@@ -20,10 +24,7 @@ def load_json(path: Path) -> Dict[str, Any]:
     if loaded.get("_status_file_error"):
         return {}
     # Keep backwards compatibility: this helper only returns user payload.
-    return {
-        k: v for k, v in loaded.items()
-        if not k.startswith("_status_file_")
-    }
+    return {k: v for k, v in loaded.items() if not k.startswith("_status_file_")}
 
 
 def format_time(iso_str: str | None) -> str:
@@ -40,14 +41,14 @@ def format_time(iso_str: str | None) -> str:
 def print_status_badge(status: str) -> str:
     """Get emoji badge for status."""
     badges = {
-        'completed': '✅',
-        'running': '🟢',
-        'paused': '⏸️',
-        'error': '❌',
-        'initializing': '⚙️',
-        'training': '🔄'
+        "completed": "✅",
+        "running": "🟢",
+        "paused": "⏸️",
+        "error": "❌",
+        "initializing": "⚙️",
+        "training": "🔄",
     }
-    return badges.get(status, '❓')
+    return badges.get(status, "❓")
 
 
 def print_header(title: str):
@@ -59,7 +60,7 @@ def print_header(title: str):
 
 def print_training_status():
     """Display autonomous training status."""
-    status_file = DATA_OUT / 'autonomous_training_status.json'
+    status_file = DATA_OUT / "autonomous_training_status.json"
     data = load_json(status_file)
 
     if not data:
@@ -68,7 +69,7 @@ def print_training_status():
         print("   $ python scripts/autonomous_training_demo.py --cycles 3 --interval 5")
         return
 
-    status = data.get('status', 'unknown')
+    status = data.get("status", "unknown")
     badge = print_status_badge(status)
 
     print(f"{badge} Status: {status.upper()}")
@@ -76,32 +77,31 @@ def print_training_status():
     print()
 
     # Metrics
-    cycles = data.get('cycles_completed', 0)
-    best_acc = data.get('best_accuracy', 0.0)
-    datasets = data.get('dataset_inventory', {})
+    cycles = data.get("cycles_completed", 0)
+    best_acc = data.get("best_accuracy", 0.0)
+    datasets = data.get("dataset_inventory", {})
 
-    print(f"📊 Metrics:")
+    print("📊 Metrics:")
     print(f"   Cycles Completed: {cycles}")
     print(f"   Best Accuracy: {best_acc:.2%}")
     print(f"   Datasets Found: {len(datasets)}")
 
     # Performance history
-    history = data.get('performance_history', [])
+    history = data.get("performance_history", [])
     if history:
-        print(f"\n📈 Performance Trend:")
+        print("\n📈 Performance Trend:")
         for h in history[-3:]:  # Show last 3
-            cycle = h.get('cycle', 0)
-            acc = h.get('accuracy', 0.0)
-            samples = h.get('samples_processed', 0)
-            print(
-                f"   Cycle {cycle}: {acc:.2%} accuracy ({samples:,} samples)")
+            cycle = h.get("cycle", 0)
+            acc = h.get("accuracy", 0.0)
+            samples = h.get("samples_processed", 0)
+            print(f"   Cycle {cycle}: {acc:.2%} accuracy ({samples:,} samples)")
 
     # Dataset inventory
     if datasets:
-        print(f"\n📁 Datasets Auto-Discovered:")
+        print("\n📁 Datasets Auto-Discovered:")
         for name, info in datasets.items():
-            count = info.get('count', 0)
-            paths = info.get('paths', [])
+            count = info.get("count", 0)
+            paths = info.get("paths", [])
             print(f"   {name}: {count} dataset(s)")
             for p in paths[:2]:  # Show first 2
                 print(f"      └─ {p}")
@@ -138,10 +138,16 @@ def print_quick_commands():
     commands = [
         ("Start Aria server", "cd apps/aria && python server.py", "8080"),
         ("Start Functions API", "func host start", "7071"),
-        ("Start async training",
-         "nohup python scripts/autonomous_training_demo.py --cycles 3 &", "bg"),
-        ("Start continuous mode",
-         "nohup python scripts/autonomous_training_demo.py --cycles 0 --interval 1800 &", "bg"),
+        (
+            "Start async training",
+            "nohup python scripts/autonomous_training_demo.py --cycles 3 &",
+            "bg",
+        ),
+        (
+            "Start continuous mode",
+            "nohup python scripts/autonomous_training_demo.py --cycles 0 --interval 1800 &",
+            "bg",
+        ),
         ("Monitor live logs", "tail -f data_out/autonomous_training.log", "live"),
         ("Check all status", "python scripts/monitor_autonomous_training.py", "api"),
         ("Quick health snapshot", "python scripts/fast_validate.py", "sys"),
@@ -157,7 +163,8 @@ def print_architecture():
     """Display system architecture."""
     print("🏗️  Aria Platform Architecture")
     print()
-    print("""
+    print(
+        """
    Frontend Layer:
    ├─ Aria Web UI (http://localhost:8080)
    │  └─ Interactive 3D character with voice/text I/O
@@ -196,7 +203,8 @@ def print_architecture():
    ├─ Logs: data_out/*/
    ├─ Config: config/
    └─ Monitoring: status.json files
-    """)
+    """
+    )
 
 
 def main():
@@ -218,7 +226,8 @@ def main():
     print_architecture()
 
     print_header("Next Steps")
-    print("""
+    print(
+        """
 1️⃣  START BACKEND SERVICES
    $ func host start                    # Start Azure Functions on port 7071
    $ cd apps/aria && python server.py   # Start Aria server on port 8080
@@ -242,17 +251,20 @@ def main():
    • AUTONOMOUS_TRAINING_REPORT.md — Detailed training analysis
    • ARIA_QUICKREF.txt — Quick reference guide
    • .github/copilot-instructions.md — Complete architecture docs
-   """)
+   """
+    )
 
     print("=" * 70 + "\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
-    if '--watch' in sys.argv:
+
+    if "--watch" in sys.argv:
         import time
+
         while True:
-            os.system('clear' if os.name != 'nt' else 'cls')
+            os.system("clear" if os.name != "nt" else "cls")
             main()
             print("\n⏱️  Refreshing every 5 seconds (Ctrl+C to stop)...\n")
             time.sleep(5)

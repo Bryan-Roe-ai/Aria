@@ -1,12 +1,13 @@
 """Unit tests for scripts/resource_monitor.py."""
+
 from __future__ import annotations
 
 import importlib.util
 import json
 from pathlib import Path
 
-
 # ─── module loader ────────────────────────────────────────────────────────────
+
 
 def _load():
     path = Path(__file__).parent.parent / "scripts" / "resource_monitor.py"
@@ -18,6 +19,7 @@ def _load():
 
 
 # ─── _level ───────────────────────────────────────────────────────────────────
+
 
 class TestLevel:
     def setup_method(self):
@@ -65,6 +67,7 @@ class TestLevel:
 
 # ─── _badge ───────────────────────────────────────────────────────────────────
 
+
 class TestBadge:
     def setup_method(self):
         self.mod = _load()
@@ -84,6 +87,7 @@ class TestBadge:
 
 
 # ─── _bar ─────────────────────────────────────────────────────────────────────
+
 
 class TestBar:
     def setup_method(self):
@@ -118,6 +122,7 @@ class TestBar:
 
 
 # ─── collect_snapshot ─────────────────────────────────────────────────────────
+
 
 class TestCollectSnapshot:
     def setup_method(self):
@@ -160,13 +165,19 @@ class TestCollectSnapshot:
 
 # ─── thresholds constant ──────────────────────────────────────────────────────
 
+
 class TestThresholds:
     def setup_method(self):
         self.mod = _load()
 
     def test_all_expected_keys_present(self):
-        keys = {"cpu_percent", "mem_percent", "disk_percent",
-                "gpu_mem_percent", "gpu_util"}
+        keys = {
+            "cpu_percent",
+            "mem_percent",
+            "disk_percent",
+            "gpu_mem_percent",
+            "gpu_util",
+        }
         assert keys == set(self.mod.THRESHOLDS.keys())
 
     def test_warn_less_than_crit_for_all(self):

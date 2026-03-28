@@ -5,15 +5,15 @@ Techniques to augment training data for improved model generalization
 
 import json
 import random
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Callable
 from dataclasses import dataclass
-import re
+from pathlib import Path
+from typing import Any, Dict, List
 
 
 @dataclass
 class AugmentationConfig:
     """Data augmentation configuration"""
+
     synonym_replacement_prob: float = 0.1
     random_insertion_prob: float = 0.1
     random_swap_prob: float = 0.1
@@ -32,10 +32,7 @@ class TextAugmenter:
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
     def augment_dataset(
-        self,
-        input_path: str,
-        output_path: str,
-        techniques: List[str] = None
+        self, input_path: str, output_path: str, techniques: List[str] = None
     ) -> Dict[str, Any]:
         """
         Augment entire dataset
@@ -48,7 +45,7 @@ class TextAugmenter:
         Returns:
             Statistics dictionary
         """
-        techniques = techniques or ['synonym', 'insertion', 'swap', 'deletion']
+        techniques = techniques or ["synonym", "insertion", "swap", "deletion"]
 
         print(f"Augmenting dataset: {input_path}")
         print(f"Techniques: {', '.join(techniques)}")
@@ -81,10 +78,10 @@ class TextAugmenter:
             "original_samples": original_count,
             "augmented_samples": len(augmented_samples),
             "augmentation_factor": len(augmented_samples) / original_count,
-            "techniques_used": techniques
+            "techniques_used": techniques,
         }
 
-        print(f"\n✓ Augmentation complete")
+        print("\n✓ Augmentation complete")
         print(f"  Original: {original_count:,}")
         print(f"  Augmented: {len(augmented_samples):,}")
         print(f"  Factor: {stats['augmentation_factor']:.1f}x")
@@ -95,19 +92,28 @@ class TextAugmenter:
         """Apply augmentation techniques to text"""
         words = text.split()
 
-        if 'synonym' in techniques and random.random() < self.config.synonym_replacement_prob:
+        if (
+            "synonym" in techniques
+            and random.random() < self.config.synonym_replacement_prob
+        ):
             words = self._synonym_replacement(words)
 
-        if 'insertion' in techniques and random.random() < self.config.random_insertion_prob:
+        if (
+            "insertion" in techniques
+            and random.random() < self.config.random_insertion_prob
+        ):
             words = self._random_insertion(words)
 
-        if 'swap' in techniques and random.random() < self.config.random_swap_prob:
+        if "swap" in techniques and random.random() < self.config.random_swap_prob:
             words = self._random_swap(words)
 
-        if 'deletion' in techniques and random.random() < self.config.random_deletion_prob:
+        if (
+            "deletion" in techniques
+            and random.random() < self.config.random_deletion_prob
+        ):
             words = self._random_deletion(words)
 
-        return ' '.join(words)
+        return " ".join(words)
 
     def _synonym_replacement(self, words: List[str], n: int = None) -> List[str]:
         """Replace n random words with synonyms"""
@@ -188,14 +194,14 @@ class TextAugmenter:
         """Get simple synonym (basic implementation)"""
         # Simple synonym dictionary (in production, use WordNet or BERT)
         synonyms = {
-            'good': ['great', 'excellent', 'fine', 'nice'],
-            'bad': ['poor', 'terrible', 'awful', 'horrible'],
-            'big': ['large', 'huge', 'enormous', 'massive'],
-            'small': ['tiny', 'little', 'mini', 'compact'],
-            'fast': ['quick', 'rapid', 'swift', 'speedy'],
-            'slow': ['sluggish', 'gradual', 'leisurely'],
-            'happy': ['joyful', 'cheerful', 'pleased', 'content'],
-            'sad': ['unhappy', 'sorrowful', 'depressed', 'melancholy']
+            "good": ["great", "excellent", "fine", "nice"],
+            "bad": ["poor", "terrible", "awful", "horrible"],
+            "big": ["large", "huge", "enormous", "massive"],
+            "small": ["tiny", "little", "mini", "compact"],
+            "fast": ["quick", "rapid", "swift", "speedy"],
+            "slow": ["sluggish", "gradual", "leisurely"],
+            "happy": ["joyful", "cheerful", "pleased", "content"],
+            "sad": ["unhappy", "sorrowful", "depressed", "melancholy"],
         }
 
         lower_word = word.lower()
@@ -211,7 +217,7 @@ class TextAugmenter:
     def _load_dataset(self, path: str) -> List[Dict[str, Any]]:
         """Load dataset from JSONL"""
         samples = []
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     samples.append(json.loads(line))
@@ -222,9 +228,9 @@ class TextAugmenter:
         output_path = Path(path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for sample in samples:
-                f.write(json.dumps(sample, ensure_ascii=False) + '\n')
+                f.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
     def _extract_text(self, sample: Dict[str, Any]) -> str:
         """Extract text from sample"""
@@ -243,7 +249,7 @@ class TextAugmenter:
             sample["text"] = new_text
         elif "instruction" in sample:
             # Split back into instruction and response (approximate)
-            parts = new_text.split('\n instruction', 1)
+            parts = new_text.split("\n instruction", 1)
             if len(parts) == 2:
                 sample["instruction"] = parts[0].strip()
                 sample["response"] = parts[1].strip()
@@ -257,17 +263,24 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Text Data Augmentation")
-    parser.add_argument("--input", type=str, required=True,
-                        help="Input dataset (JSONL)")
-    parser.add_argument("--output", type=str, required=True,
-                        help="Output dataset (JSONL)")
-    parser.add_argument("--techniques", nargs="+",
-                        default=['synonym', 'insertion', 'swap', 'deletion'],
-                        help="Augmentation techniques")
-    parser.add_argument("--num-aug", type=int, default=1,
-                        help="Number of augmentations per sample")
-    parser.add_argument("--prob", type=float, default=0.1,
-                        help="Probability for each technique")
+    parser.add_argument(
+        "--input", type=str, required=True, help="Input dataset (JSONL)"
+    )
+    parser.add_argument(
+        "--output", type=str, required=True, help="Output dataset (JSONL)"
+    )
+    parser.add_argument(
+        "--techniques",
+        nargs="+",
+        default=["synonym", "insertion", "swap", "deletion"],
+        help="Augmentation techniques",
+    )
+    parser.add_argument(
+        "--num-aug", type=int, default=1, help="Number of augmentations per sample"
+    )
+    parser.add_argument(
+        "--prob", type=float, default=0.1, help="Probability for each technique"
+    )
 
     args = parser.parse_args()
 
@@ -276,14 +289,12 @@ def main():
         random_insertion_prob=args.prob,
         random_swap_prob=args.prob,
         random_deletion_prob=args.prob,
-        num_augmentations_per_sample=args.num_aug
+        num_augmentations_per_sample=args.num_aug,
     )
 
     augmenter = TextAugmenter(config)
     stats = augmenter.augment_dataset(
-        args.input,
-        args.output,
-        techniques=args.techniques
+        args.input, args.output, techniques=args.techniques
     )
 
     print(f"\n✓ Augmented dataset saved to {args.output}")

@@ -10,6 +10,7 @@ Usage:
   python scripts/evaluate_model.py --model path/to/model --dataset path/to/data.jsonl --output results.json
   python scripts/evaluate_model.py --model path/to/model --dataset path/to/data.jsonl --metrics accuracy bleu
 """
+
 import sys
 from pathlib import Path
 
@@ -30,7 +31,6 @@ except ImportError:
     # no transformers/torch required
     import argparse
     import json
-    import re
     from collections import Counter
     from datetime import datetime, timezone
 
@@ -134,8 +134,12 @@ except ImportError:
 
     def main():
         ap = argparse.ArgumentParser(description="Evaluate a trained model.")
-        ap.add_argument("--model", required=True, help="Path to trained model or adapter")
-        ap.add_argument("--dataset", required=True, help="Path to evaluation dataset (JSONL/JSON)")
+        ap.add_argument(
+            "--model", required=True, help="Path to trained model or adapter"
+        )
+        ap.add_argument(
+            "--dataset", required=True, help="Path to evaluation dataset (JSONL/JSON)"
+        )
         ap.add_argument(
             "--metrics",
             nargs="+",
@@ -157,4 +161,3 @@ except ImportError:
 
 if __name__ == "__main__":
     main()
-

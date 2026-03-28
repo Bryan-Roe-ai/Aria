@@ -1,13 +1,14 @@
 """Unit tests for scripts/status_dashboard.py."""
+
 from __future__ import annotations
 
 import importlib.util
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-
 # ─── module loader ────────────────────────────────────────────────────────────
+
 
 def _load():
     path = Path(__file__).parent.parent / "scripts" / "status_dashboard.py"
@@ -19,6 +20,7 @@ def _load():
 
 
 # ─── _badge ───────────────────────────────────────────────────────────────────
+
 
 class TestBadge:
     def setup_method(self):
@@ -56,6 +58,7 @@ class TestBadge:
 
 
 # ─── _fmt_time ────────────────────────────────────────────────────────────────
+
 
 class TestFmtTime:
     def setup_method(self):
@@ -97,6 +100,7 @@ class TestFmtTime:
 
 
 # ─── _load ────────────────────────────────────────────────────────────────────
+
 
 class TestLoad:
     def setup_method(self):
@@ -140,22 +144,24 @@ class TestLoad:
 
     def test_load_with_meta_includes_helper_fields(self, tmp_path, monkeypatch):
         monkeypatch.setattr(self.mod, "DATA_OUT", tmp_path)
-        (tmp_path /
-         "meta.json").write_text('{"status": "ok"}', encoding="utf-8")
+        (tmp_path / "meta.json").write_text('{"status": "ok"}', encoding="utf-8")
         result = self.mod._load_with_meta("meta.json", max_age_seconds=3600)
         assert result["status"] == "ok"
         assert "_status_file_exists" in result
         assert "_status_file_error" in result
 
     def test_status_hint_for_stale_data(self):
-        hint = self.mod._status_hint({
-            "_status_file_error": None,
-            "_status_file_stale": True,
-        })
+        hint = self.mod._status_hint(
+            {
+                "_status_file_error": None,
+                "_status_file_stale": True,
+            }
+        )
         assert "stale" in hint
 
 
 # ─── export_dashboard ─────────────────────────────────────────────────────────
+
 
 class TestExportDashboard:
     def setup_method(self):
@@ -200,6 +206,7 @@ class TestExportDashboard:
 
 
 # ─── _row ─────────────────────────────────────────────────────────────────────
+
 
 class TestRow:
     def setup_method(self):

@@ -1,4 +1,5 @@
 """Cleanup query metrics utility with SQL injection prevention."""
+
 from __future__ import annotations
 
 import re

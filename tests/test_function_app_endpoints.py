@@ -5,11 +5,13 @@ Uses unittest.mock to mock Azure Functions HttpRequest objects
 and validates response shapes, status codes, and error handling
 without running a live server.
 """
+
 import json
 import sys
 import types
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 import pytest
 
 # Ensure project root on path
@@ -63,7 +65,9 @@ def _install_fake_quantum_trainer_module(
         def __init__(self, tokens: list[int]):
             self._tokens = tokens
 
-        def generate(self, prompt_ids, max_new_tokens: int, temperature: float, top_k: int):
+        def generate(
+            self, prompt_ids, max_new_tokens: int, temperature: float, top_k: int
+        ):
             if capture is not None:
                 capture["generate_kwargs"] = {
                     "max_new_tokens": max_new_tokens,
@@ -80,7 +84,9 @@ def _install_fake_quantum_trainer_module(
             self.model_config = {"vocab_size": 256}
             self.model = _FakeModel(generate_tokens or [72, 105, 33])  # "Hi!"
 
-        def train_with_quantum_enhancement(self, dataset_path, output_dir, epochs, model=None):
+        def train_with_quantum_enhancement(
+            self, dataset_path, output_dir, epochs, model=None
+        ):
             if capture is not None:
                 capture["train_args"] = {
                     "dataset_path": dataset_path,
@@ -124,6 +130,7 @@ def app_module():
     """Import function_app once; skip tests if it can't load."""
     try:
         import function_app
+
         return function_app
     except Exception as exc:
         pytest.skip(f"Cannot import function_app: {exc}")
@@ -143,7 +150,9 @@ class TestGetEndpoints:
         data = json.loads(resp.get_body())
         assert "provider" in data or "status" in data
 
-    def test_ai_status_uses_shared_status_loader_without_leaking_metadata(self, app_module, monkeypatch):
+    def test_ai_status_uses_shared_status_loader_without_leaking_metadata(
+        self, app_module, monkeypatch
+    ):
         """GET /api/ai/status should strip shared loader metadata from payloads."""
 
         def _fake_status(path, *_, **__):
@@ -195,8 +204,7 @@ class TestGetEndpoints:
         assert orch["autonomous_training"]["cycles_completed"] == 4
         assert orch["autotrain"]["status"] == "ok"
         assert not any(
-            key.startswith("_status_file_")
-            for key in orch["autonomous_training"]
+            key.startswith("_status_file_") for key in orch["autonomous_training"]
         )
 
     def test_chat_options(self, app_module):
@@ -247,11 +255,11 @@ class TestPostValidation:
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
-        import azure.functions as _af
         import inspect
 
-        captured: dict = {"embedding": None,
-                          "session_id": None, "sse_body": b""}
+        import azure.functions as _af
+
+        captured: dict = {"embedding": None, "session_id": None, "sse_body": b""}
 
         def _fake_embedding(text: str):
             captured["embedding"] = text
@@ -271,16 +279,17 @@ class TestPostValidation:
                 return _real_HttpResponse(consumed, **kwargs)
             return _real_HttpResponse(body, **kwargs)
 
-        monkeypatch.setattr(app_module.func, "HttpResponse",
-                            _capturing_HttpResponse)
+        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
-        monkeypatch.setattr(
-            app_module, "fetch_similar_messages", _fake_similar)
+        monkeypatch.setattr(app_module, "fetch_similar_messages", _fake_similar)
 
-        req = _mock_request("POST", body={
-            "messages": [{"role": "user", "content": "How do I use widgets?"}],
-            "session_id": "test-session-789",
-        })
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [{"role": "user", "content": "How do I use widgets?"}],
+                "session_id": "test-session-789",
+            },
+        )
         resp = app_module.chat_stream(req)
         assert resp.status_code == 200
 
@@ -376,7 +385,9 @@ class TestQuantumLlmEndpoint:
         assert data["readiness"]["inference_ready"] is True
         assert capture["generate_kwargs"]["max_new_tokens"] == 3
 
-    def test_quantum_llm_post_train_rejects_external_path(self, app_module, monkeypatch):
+    def test_quantum_llm_post_train_rejects_external_path(
+        self, app_module, monkeypatch
+    ):
         _install_fake_quantum_trainer_module(monkeypatch)
         req = _mock_request(
             "POST",
@@ -417,8 +428,7 @@ class TestQuantumLlmEndpoint:
         train_args = capture["train_args"]
         assert train_args["epochs"] == 5
         assert train_args["dataset_path"].is_absolute()
-        assert str(train_args["output_dir"]).endswith(
-            "data_out/quantum_llm_api")
+        assert str(train_args["output_dir"]).endswith("data_out/quantum_llm_api")
 
     def test_quantum_llm_post_unknown_action(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
@@ -489,7 +499,7 @@ class TestRequestValidator:
         assert err is not None
 
     def test_chat_schema_accepts_quantum_provider(self):
-        from shared.request_validator import validate_fields, CHAT_SCHEMA
+        from shared.request_validator import CHAT_SCHEMA, validate_fields
 
         err = validate_fields(
             {
@@ -513,8 +523,7 @@ class TestRequestValidator:
         from shared.request_validator import validate_fields
 
         err = validate_fields(
-            {"messages": [{"role": "user", "content": "hi"}],
-                "temperature": 0.7},
+            {"messages": [{"role": "user", "content": "hi"}], "temperature": 0.7},
             {
                 "messages": {"type": list, "required": True, "min_length": 1},
                 "temperature": {"type": (int, float), "min": 0, "max": 2},
@@ -523,12 +532,15 @@ class TestRequestValidator:
         assert err is None
 
     def test_full_validate_request(self):
-        from shared.request_validator import validate_request, CHAT_SCHEMA
+        from shared.request_validator import CHAT_SCHEMA, validate_request
 
-        req = _mock_request("POST", body={
-            "messages": [{"role": "user", "content": "hello"}],
-            "temperature": 0.5,
-        })
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [{"role": "user", "content": "hello"}],
+                "temperature": 0.5,
+            },
+        )
         body, err = validate_request(req, CHAT_SCHEMA)
         assert err is None
         assert body is not None

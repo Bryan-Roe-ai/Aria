@@ -11,29 +11,34 @@ Usage:
 """
 import argparse
 import json
-import os
 import sys
-import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
+
+# Ensure repository root is on sys.path before importing local shared modules.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from shared.json_utils import load_status_json
+
+DATA_OUT = REPO_ROOT / "data_out"
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_OUT = REPO_ROOT / "data_out"
 
 ORCHESTRATORS = [
-    ("Autonomous Training",  "autonomous_training_status.json", None),
-    ("Autotrain Jobs",       "autotrain/status.json",           None),
-    ("Quantum Autorun",      "quantum_autorun/status.json",     None),
-    ("Evaluation Autorun",   "evaluation_autorun/status.json",  None),
-    ("Master Orchestrator",  "master_orchestrator/status.json", None),
-    ("CI Orchestrator",      "ci_orchestrator/ci_results.json", None),
-    ("Integration Smoke",    "integration_smoke/status.json",   None),
-    ("Autonomous Agent",     "autonomous_agent/status.json",    None),
-    ("Repo Automation",      "repo_automation/status.json",     None),
-    ("Multi Agent",          "multi_agent/status.json",         None),
+    ("Autonomous Training", "autonomous_training_status.json", None),
+    ("Autotrain Jobs", "autotrain/status.json", None),
+    ("Quantum Autorun", "quantum_autorun/status.json", None),
+    ("Evaluation Autorun", "evaluation_autorun/status.json", None),
+    ("Master Orchestrator", "master_orchestrator/status.json", None),
+    ("CI Orchestrator", "ci_orchestrator/ci_results.json", None),
+    ("Integration Smoke", "integration_smoke/status.json", None),
+    ("Autonomous Agent", "autonomous_agent/status.json", None),
+    ("Repo Automation", "repo_automation/status.json", None),
+    ("Multi Agent", "multi_agent/status.json", None),
 ]
 
 # ─── helpers ────────────────────────────────────────────────────────────────
@@ -45,10 +50,7 @@ def _load(rel: str) -> Dict[str, Any]:
     if loaded.get("_status_file_error"):
         return {}
     # Strip helper metadata for dashboard consumers.
-    return {
-        k: v for k, v in loaded.items()
-        if not k.startswith("_status_file_")
-    }
+    return {k: v for k, v in loaded.items() if not k.startswith("_status_file_")}
 
 
 def _load_with_meta(rel: str, max_age_seconds: Optional[int] = None) -> Dict[str, Any]:
@@ -91,10 +93,16 @@ def _fmt_time(iso: Optional[str]) -> str:
 
 def _badge(status: str) -> str:
     return {
-        "ok": "✅", "completed": "✅", "success": "✅",
-        "running": "🟢", "training": "🔄", "initializing": "⚙️",
-        "paused": "⏸️", "skipped": "⏭️",
-        "failed": "❌", "error": "❌",
+        "ok": "✅",
+        "completed": "✅",
+        "success": "✅",
+        "running": "🟢",
+        "training": "🔄",
+        "initializing": "⚙️",
+        "paused": "⏸️",
+        "skipped": "⏭️",
+        "failed": "❌",
+        "error": "❌",
         "warning": "⚠️",
     }.get(str(status).lower(), "❓")
 
@@ -105,6 +113,7 @@ def _row(label: str, value: str, width: int = 30) -> str:
 
 # ─── section printers ────────────────────────────────────────────────────────
 
+
 def _print_orchestrator(name: str, rel_path: str) -> Dict[str, Any]:
     data_with_meta = _load_with_meta(rel_path, max_age_seconds=24 * 3600)
     data = _trim_status_meta(data_with_meta)
@@ -113,10 +122,10 @@ def _print_orchestrator(name: str, rel_path: str) -> Dict[str, Any]:
         return {"name": name, "status": "no_data"}
 
     # Generic fields
-    total = data.get("total_jobs",  data.get("cycles_completed", "?"))
-    ok = data.get("succeeded",   data.get("ok_count", "?"))
-    failed = data.get("failed",      data.get("critical_failure_count", 0))
-    running = data.get("running",     0)
+    total = data.get("total_jobs", data.get("cycles_completed", "?"))
+    ok = data.get("succeeded", data.get("ok_count", "?"))
+    failed = data.get("failed", data.get("critical_failure_count", 0))
+    running = data.get("running", 0)
     updated = data.get("last_updated", data.get("generated_at"))
 
     status_str = data.get("status", "ok" if failed == 0 else "error")
@@ -134,7 +143,13 @@ def _print_orchestrator(name: str, rel_path: str) -> Dict[str, Any]:
     line += f"  [{_fmt_time(updated)}]"
     line += _status_hint(data_with_meta)
     print(line)
-    return {"name": name, "status": status_str, "total": total, "ok": ok, "failed": failed}
+    return {
+        "name": name,
+        "status": status_str,
+        "total": total,
+        "ok": ok,
+        "failed": failed,
+    }
 
 
 def _print_training_detail():
@@ -159,17 +174,20 @@ def _print_services():
     print()
     services = [
         ("Azure Functions", "7071", "func host start"),
-        ("Aria Character",  "8080", "cd apps/aria && python server.py"),
-        ("Quantum MCP",     "stdio",
-         "python ai-projects/quantum-ml/quantum_mcp_server.py"),
-        ("LLM Maker MCP",  "stdio",
-         "python ai-projects/llm-maker/llm_maker_mcp_server.py"),
+        ("Aria Character", "8080", "cd apps/aria && python server.py"),
+        ("Quantum MCP", "stdio", "python ai-projects/quantum-ml/quantum_mcp_server.py"),
+        (
+            "LLM Maker MCP",
+            "stdio",
+            "python ai-projects/llm-maker/llm_maker_mcp_server.py",
+        ),
     ]
     for svc, port, cmd in services:
         # Quick port probe
         alive = "—"
         if port.isdigit():
             import socket
+
             try:
                 with socket.create_connection(("127.0.0.1", int(port)), timeout=0.3):
                     alive = "🟢 UP"
@@ -205,6 +223,7 @@ def print_dashboard() -> List[Dict[str, Any]]:
 
 # ─── export ──────────────────────────────────────────────────────────────────
 
+
 def export_dashboard(out_path: str):
     results = []
     for name, rel, _ in ORCHESTRATORS:
@@ -221,14 +240,20 @@ def export_dashboard(out_path: str):
 
 # ─── main ────────────────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Aria Status Dashboard")
-    parser.add_argument("--watch",  action="store_true",
-                        help="Auto-refresh every 10s")
-    parser.add_argument("--export", nargs="?", const="data_out/dashboard_export.json",
-                        metavar="FILE", help="Export status to JSON")
-    parser.add_argument("--interval", type=int, default=10,
-                        help="Refresh interval in seconds (--watch)")
+    parser.add_argument("--watch", action="store_true", help="Auto-refresh every 10s")
+    parser.add_argument(
+        "--export",
+        nargs="?",
+        const="data_out/dashboard_export.json",
+        metavar="FILE",
+        help="Export status to JSON",
+    )
+    parser.add_argument(
+        "--interval", type=int, default=10, help="Refresh interval in seconds (--watch)"
+    )
     args = parser.parse_args()
 
     if args.export:
@@ -240,8 +265,7 @@ def main():
             while True:
                 os.system("clear" if os.name != "nt" else "cls")
                 print_dashboard()
-                print(
-                    f"  ⏱  Refreshing every {args.interval}s  (Ctrl+C to stop)")
+                print(f"  ⏱  Refreshing every {args.interval}s  (Ctrl+C to stop)")
                 time.sleep(args.interval)
         except KeyboardInterrupt:
             print("\nDashboard stopped.")

@@ -73,9 +73,18 @@ def find_candidates(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Clean old artifacts from data_out/")
-    ap.add_argument("--apply", action="store_true", help="Actually delete (default: dry-run)")
-    ap.add_argument("--max-age", type=int, default=30, help="Max age in days (default: 30)")
-    ap.add_argument("--max-count", type=int, default=50, help="Max files per directory (default: 50)")
+    ap.add_argument(
+        "--apply", action="store_true", help="Actually delete (default: dry-run)"
+    )
+    ap.add_argument(
+        "--max-age", type=int, default=30, help="Max age in days (default: 30)"
+    )
+    ap.add_argument(
+        "--max-count",
+        type=int,
+        default=50,
+        help="Max files per directory (default: 50)",
+    )
     args = ap.parse_args()
 
     candidates = find_candidates(max_age_days=args.max_age, max_count=args.max_count)
@@ -96,7 +105,9 @@ def main() -> None:
             path.unlink()
 
     mb = total_bytes / (1024 * 1024)
-    print(f"\n{'Deleted' if args.apply else 'Would delete'}: {len(candidates)} files, {mb:.2f} MB")
+    print(
+        f"\n{'Deleted' if args.apply else 'Would delete'}: {len(candidates)} files, {mb:.2f} MB"
+    )
 
     # Write summary
     summary = {

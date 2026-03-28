@@ -9,10 +9,11 @@ Usage:
     # or after adding shared/ to sys.path:
     from token_utils import prune_messages
 """
+
 from __future__ import annotations
 
-import sys
 import importlib.util
+import sys
 from pathlib import Path
 
 # Load canonical token utils from current chat-cli location, with legacy fallback.
@@ -24,14 +25,13 @@ _canonical_candidates = [
 
 _canonical_path = next((p for p in _canonical_candidates if p.exists()), None)
 if _canonical_path is None:
-    raise FileNotFoundError(
-        "token_utils canonical file not found in known locations")
+    raise FileNotFoundError("token_utils canonical file not found in known locations")
 
 _spec = importlib.util.spec_from_file_location(
-    "_canonical_token_utils", _canonical_path)
+    "_canonical_token_utils", _canonical_path
+)
 if _spec is None or _spec.loader is None:
-    raise ImportError(
-        f"Unable to load canonical token utils: {_canonical_path}")
+    raise ImportError(f"Unable to load canonical token utils: {_canonical_path}")
 
 _canonical_module = importlib.util.module_from_spec(_spec)
 sys.modules[_spec.name] = _canonical_module

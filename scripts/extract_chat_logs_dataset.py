@@ -18,13 +18,15 @@ Usage (PowerShell):
   python .\\scripts\\extract_chat_logs_dataset.py --max-records 500
   python AI\\microsoft_phi-silica-3.6_v1\\scripts\\train_lora.py --dataset .\\datasets\\chat\\chat_logs --dry-run
 """
+
 from __future__ import annotations
+
 import argparse
-import json
 import hashlib
+import json
 import random
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 LOGS_DIR = Path("ai-projects/chat-cli/logs")
 OUTPUT_DIR = Path("datasets/chat/chat_logs")
@@ -68,9 +70,11 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
         for i in range(len(messages)):
             if messages[i].get("role") == "assistant":
                 start = max(0, i - context_window + 1)
-                window = messages[start: i + 1]
+                window = messages[start : i + 1]
                 # Must contain at least one user+assistant
-                if any(x.get("role") == "user" for x in window) and any(x.get("role") == "assistant" for x in window):
+                if any(x.get("role") == "user" for x in window) and any(
+                    x.get("role") == "assistant" for x in window
+                ):
                     windows.append({"messages": window})
 
     # Combine lists efficiently with extend
@@ -80,19 +84,26 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
 
 def hash_example(example: Dict) -> str:
     concat = "\n".join(
-        [f"{m.get('role', '')}: {m.get('content', '')[:400]}" for m in example.get("messages", [])])
+        [
+            f"{m.get('role', '')}: {m.get('content', '')[:400]}"
+            for m in example.get("messages", [])
+        ]
+    )
     return hashlib.sha256(concat.encode("utf-8")).hexdigest()[:24]
 
 
 def main():
-    ap = argparse.ArgumentParser(
-        description="Extract chat logs into training dataset")
-    ap.add_argument("--max-records", type=int, default=1000,
-                    help="Maximum examples to output")
-    ap.add_argument("--train-ratio", type=float,
-                    default=0.9, help="Train split ratio")
-    ap.add_argument("--context-window", type=int, default=6,
-                    help="Max messages in rolling window examples")
+    ap = argparse.ArgumentParser(description="Extract chat logs into training dataset")
+    ap.add_argument(
+        "--max-records", type=int, default=1000, help="Maximum examples to output"
+    )
+    ap.add_argument("--train-ratio", type=float, default=0.9, help="Train split ratio")
+    ap.add_argument(
+        "--context-window",
+        type=int,
+        default=6,
+        help="Max messages in rolling window examples",
+    )
     ap.add_argument("--seed", type=int, default=42, help="RNG seed")
     args = ap.parse_args()
 
@@ -109,8 +120,7 @@ def main():
         exs = build_examples(msgs, args.context_window)
         # Add metadata and hash in batch using list comprehension
         enriched_exs = [
-            {**e, "source_file": lf.name, "hash": hash_example(e)}
-            for e in exs
+            {**e, "source_file": lf.name, "hash": hash_example(e)} for e in exs
         ]
         all_examples.extend(enriched_exs)
 
@@ -127,14 +137,24 @@ def main():
         # Fallback synthetic example
         fallback = {
             "messages": [
-                {"role": "user", "content": "How does the local chat provider respond to a greeting?"},
-                {"role": "assistant", "content": "The local provider generates a concise heuristic reply; this synthetic example exists because no real logs were found."},
+                {
+                    "role": "user",
+                    "content": "How does the local chat provider respond to a greeting?",
+                },
+                {
+                    "role": "assistant",
+                    "content": "The local provider generates a concise heuristic reply; this synthetic example exists because no real logs were found.",
+                },
             ],
-            "hash": hash_example({"messages": [
-                {"role": "user", "content": "fallback"},
-                {"role": "assistant", "content": "fallback"},
-            ]}),
-            "source_file": "<fallback>"
+            "hash": hash_example(
+                {
+                    "messages": [
+                        {"role": "user", "content": "fallback"},
+                        {"role": "assistant", "content": "fallback"},
+                    ]
+                }
+            ),
+            "source_file": "<fallback>",
         }
         examples = [fallback]
 
@@ -153,8 +173,11 @@ def main():
     def write(path: Path, recs: List[Dict]):
         with path.open("w", encoding="utf-8") as f:
             for r in recs:
-                out = {"messages": r["messages"], "hash": r["hash"],
-                       "source_file": r.get("source_file")}
+                out = {
+                    "messages": r["messages"],
+                    "hash": r["hash"],
+                    "source_file": r.get("source_file"),
+                }
                 f.write(json.dumps(out, ensure_ascii=False) + "\n")
 
     write(OUTPUT_DIR / "train.json", train)

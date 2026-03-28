@@ -14,15 +14,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 import socket
 import subprocess
 import sys
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -32,7 +31,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 @dataclass
 class CheckResult:
     name: str
-    status: str       # ok | warn | fail
+    status: str  # ok | warn | fail
     detail: str = ""
     sub: List["CheckResult"] = field(default_factory=list)
 
@@ -60,6 +59,7 @@ def _fail(name: str, detail: str = "") -> CheckResult:
 
 # ─── checks ───────────────────────────────────────────────────────────────────
 
+
 def check_python() -> CheckResult:
     v = sys.version.split()[0]
     major, minor = sys.version_info[:2]
@@ -70,7 +70,7 @@ def check_python() -> CheckResult:
 
 def check_venvs() -> CheckResult:
     expected = [
-        ("Main venv",       REPO_ROOT / ".venv"),
+        ("Main venv", REPO_ROOT / ".venv"),
         ("Quantum-ML venv", REPO_ROOT / "ai-projects/quantum-ml/venv"),
     ]
     parent = CheckResult("Virtual environments", "ok")
@@ -82,14 +82,14 @@ def check_venvs() -> CheckResult:
             if parent.status == "ok":
                 parent.status = "warn"
         elif not py.exists() or py.stat().st_size == 0:
-            parent.sub.append(
-                _warn(label, f"python3 binary missing/empty — {py}"))
+            parent.sub.append(_warn(label, f"python3 binary missing/empty — {py}"))
             if parent.status == "ok":
                 parent.status = "warn"
         else:
             try:
                 ver = subprocess.check_output(
-                    [str(py), "--version"], text=True, timeout=5).strip()
+                    [str(py), "--version"], text=True, timeout=5
+                ).strip()
                 parent.sub.append(_ok(label, ver))
             except Exception as e:
                 parent.sub.append(_warn(label, f"python3 not executable: {e}"))
@@ -140,8 +140,7 @@ def check_data_out() -> CheckResult:
     for rel in required_dirs:
         p = REPO_ROOT / rel
         if not p.exists():
-            parent.sub.append(
-                _warn(rel, "missing — will be created on first run"))
+            parent.sub.append(_warn(rel, "missing — will be created on first run"))
             if parent.status == "ok":
                 parent.status = "warn"
         else:
@@ -176,11 +175,12 @@ def check_key_scripts() -> CheckResult:
             try:
                 result = subprocess.run(
                     [sys.executable, "-m", "py_compile", str(p)],
-                    capture_output=True, text=True, timeout=10
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
                 )
                 if result.returncode != 0:
-                    parent.sub.append(
-                        _warn(rel, f"syntax error: {result.stderr[:80]}"))
+                    parent.sub.append(_warn(rel, f"syntax error: {result.stderr[:80]}"))
                     if parent.status == "ok":
                         parent.status = "warn"
                 else:
@@ -195,15 +195,15 @@ def check_key_scripts() -> CheckResult:
 def check_python_deps() -> CheckResult:
     """Check critical Python packages are importable (via subprocess to avoid hang)."""
     packages = [
-        ("mcp",             "mcp",           False),
-        ("qiskit",          "qiskit",        False),
-        ("torch",           "torch",         True),
-        ("transformers",    "transformers",  True),
-        ("peft",            "peft",          True),
-        ("openai",          "openai",        False),
+        ("mcp", "mcp", False),
+        ("qiskit", "qiskit", False),
+        ("torch", "torch", True),
+        ("transformers", "transformers", True),
+        ("peft", "peft", True),
+        ("openai", "openai", False),
         ("azure-functions", "azure.functions", False),
-        ("pydantic",        "pydantic",      False),
-        ("psutil",          "psutil",        False),
+        ("pydantic", "pydantic", False),
+        ("psutil", "psutil", False),
         ("RestrictedPython", "RestrictedPython", False),
     ]
     parent = CheckResult("Python dependencies", "ok")
@@ -216,13 +216,14 @@ def check_python_deps() -> CheckResult:
         try:
             out = subprocess.check_output(
                 [sys.executable, "-c", script],
-                text=True, timeout=8, stderr=subprocess.DEVNULL,
+                text=True,
+                timeout=8,
+                stderr=subprocess.DEVNULL,
             ).strip()
             parent.sub.append(_ok(display, f"v{out}"))
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             if optional:
-                parent.sub.append(
-                    _warn(display, "not installed (optional ML lib)"))
+                parent.sub.append(_warn(display, "not installed (optional ML lib)"))
                 if parent.status == "ok":
                     parent.status = "warn"
             else:
@@ -235,10 +236,11 @@ def check_services() -> CheckResult:
     """Check if local services are reachable."""
     ports = [
         ("Azure Functions", 7071),
-        ("Aria Character",  8080),
+        ("Aria Character", 8080),
     ]
-    parent = CheckResult("Running services", "ok",
-                         "These are optional — start them as needed")
+    parent = CheckResult(
+        "Running services", "ok", "These are optional — start them as needed"
+    )
     for name, port in ports:
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.5):
@@ -256,22 +258,33 @@ def check_func_tools() -> CheckResult:
     if func:
         try:
             out = subprocess.check_output(
-                [func, "--version"], text=True, timeout=5).strip()
+                [func, "--version"], text=True, timeout=5
+            ).strip()
             return _ok("Azure Functions Core Tools", f"v{out} at {func}")
         except Exception:
-            return _warn("Azure Functions Core Tools", f"found at {func} but --version failed")
+            return _warn(
+                "Azure Functions Core Tools", f"found at {func} but --version failed"
+            )
     else:
-        return _warn("Azure Functions Core Tools",
-                     "func not found — use local_dev_adapter.py as fallback")
+        return _warn(
+            "Azure Functions Core Tools",
+            "func not found — use local_dev_adapter.py as fallback",
+        )
 
 
 def check_mcp_servers() -> CheckResult:
     """Check MCP server files and their python server imports."""
     servers = [
-        ("quantum-ai MCP",  "ai-projects/quantum-ml/quantum_mcp_server.py",
-         ["qiskit", "mcp.server"]),
-        ("llm-maker MCP",   "ai-projects/llm-maker/llm_maker_mcp_server.py",
-         ["mcp.server"]),
+        (
+            "quantum-ai MCP",
+            "ai-projects/quantum-ml/quantum_mcp_server.py",
+            ["qiskit", "mcp.server"],
+        ),
+        (
+            "llm-maker MCP",
+            "ai-projects/llm-maker/llm_maker_mcp_server.py",
+            ["mcp.server"],
+        ),
     ]
     parent = CheckResult("MCP servers", "ok")
     for name, rel, imports in servers:
@@ -283,14 +296,12 @@ def check_mcp_servers() -> CheckResult:
         missing = []
         for imp in imports:
             ret = subprocess.run(
-                [sys.executable, "-c", f"import {imp}"],
-                capture_output=True, timeout=8
+                [sys.executable, "-c", f"import {imp}"], capture_output=True, timeout=8
             )
             if ret.returncode != 0:
                 missing.append(imp)
         if missing:
-            parent.sub.append(
-                _fail(name, f"missing imports: {', '.join(missing)}"))
+            parent.sub.append(_fail(name, f"missing imports: {', '.join(missing)}"))
             parent.status = "fail"
         else:
             parent.sub.append(_ok(name, "file exists & imports ok"))
@@ -300,8 +311,7 @@ def check_mcp_servers() -> CheckResult:
         try:
             cfg = json.loads(mcp_cfg.read_text(encoding="utf-8"))
             count = len(cfg.get("servers", {}))
-            parent.sub.append(
-                _ok(".vscode/mcp.json", f"{count} servers configured"))
+            parent.sub.append(_ok(".vscode/mcp.json", f"{count} servers configured"))
         except Exception as e:
             parent.sub.append(_warn(".vscode/mcp.json", f"parse error: {e}"))
             if parent.status == "ok":
@@ -319,24 +329,34 @@ def check_local_settings() -> CheckResult:
     example = REPO_ROOT / "local.settings.json.example"
     if not p.exists():
         if example.exists():
-            return _warn("local.settings.json",
-                         "missing — copy local.settings.json.example and fill in values")
-        return _fail("local.settings.json", "missing (no example template found either)")
+            return _warn(
+                "local.settings.json",
+                "missing — copy local.settings.json.example and fill in values",
+            )
+        return _fail(
+            "local.settings.json", "missing (no example template found either)"
+        )
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         # Warn if it looks like keys are placeholder values
         vals = data.get("Values", {})
-        placeholders = [k for k, v in vals.items() if str(
-            v).startswith("<") and str(v).endswith(">")]
+        placeholders = [
+            k
+            for k, v in vals.items()
+            if str(v).startswith("<") and str(v).endswith(">")
+        ]
         if placeholders:
-            return _warn("local.settings.json",
-                         f"placeholder values: {', '.join(placeholders[:5])}")
+            return _warn(
+                "local.settings.json",
+                f"placeholder values: {', '.join(placeholders[:5])}",
+            )
         return _ok("local.settings.json", f"{len(vals)} env vars configured")
     except Exception as e:
         return _fail("local.settings.json", f"parse error: {e}")
 
 
 # ─── report ───────────────────────────────────────────────────────────────────
+
 
 def run_all_checks() -> List[CheckResult]:
     checks = [
@@ -388,10 +408,10 @@ def print_report(checks: List[CheckResult], quiet: bool = False):
         print()
 
     print(f"{'─'*65}")
-    summary_icon = "✅" if fails == 0 and warns == 0 else (
-        "⚠️ " if fails == 0 else "❌")
+    summary_icon = "✅" if fails == 0 and warns == 0 else ("⚠️ " if fails == 0 else "❌")
     print(
-        f"  {summary_icon} Summary: {ok}/{total} OK  {warns} warnings  {fails} failures")
+        f"  {summary_icon} Summary: {ok}/{total} OK  {warns} warnings  {fails} failures"
+    )
     print(f"{'═'*65}\n")
 
 
@@ -400,9 +420,9 @@ def checks_to_json(checks: List[CheckResult]) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "summary": {
             "total": len(checks),
-            "ok":    sum(1 for c in checks if c.status == "ok"),
-            "warn":  sum(1 for c in checks if c.status == "warn"),
-            "fail":  sum(1 for c in checks if c.status == "fail"),
+            "ok": sum(1 for c in checks if c.status == "ok"),
+            "warn": sum(1 for c in checks if c.status == "warn"),
+            "fail": sum(1 for c in checks if c.status == "fail"),
             "all_ok": all(c.status == "ok" for c in checks),
         },
         "checks": [c.to_dict() for c in checks],
@@ -411,13 +431,14 @@ def checks_to_json(checks: List[CheckResult]) -> dict:
 
 # ─── main ─────────────────────────────────────────────────────────────────────
 
+
 def main():
     parser = argparse.ArgumentParser(description="Aria System Health Check")
-    parser.add_argument("--json",  action="store_true", help="Output as JSON")
-    parser.add_argument("--quiet", action="store_true",
-                        help="Show warnings/failures only")
-    parser.add_argument("--export", metavar="FILE",
-                        help="Export JSON report to file")
+    parser.add_argument("--json", action="store_true", help="Output as JSON")
+    parser.add_argument(
+        "--quiet", action="store_true", help="Show warnings/failures only"
+    )
+    parser.add_argument("--export", metavar="FILE", help="Export JSON report to file")
     args = parser.parse_args()
 
     checks = run_all_checks()

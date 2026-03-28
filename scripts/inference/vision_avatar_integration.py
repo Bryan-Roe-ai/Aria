@@ -6,15 +6,15 @@ Usage:
         --images /path/to/images \\
         --output preds.json
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
-import numpy as np
 
 try:
     import torch
@@ -31,6 +31,7 @@ _IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".webp"}
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 class _ImageFileDataset(Dataset):
     """Dataset that loads all images found recursively under a directory."""
@@ -72,6 +73,7 @@ def _load_checkpoint(checkpoint_path: Path, device: "torch.device"):
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def run_inference(
     checkpoint: Path,
     images_dir: Path,
@@ -95,7 +97,10 @@ def run_inference(
 
     ds = _ImageFileDataset(images_dir, img_size=img_size)
     if len(ds) == 0:
-        print(f"[avatar_integration] WARNING: no images found under {images_dir}", file=sys.stderr)
+        print(
+            f"[avatar_integration] WARNING: no images found under {images_dir}",
+            file=sys.stderr,
+        )
         output_json.parent.mkdir(parents=True, exist_ok=True)
         results: dict[str, dict] = {}
         with open(output_json, "w", encoding="utf-8") as fh:
@@ -124,12 +129,20 @@ def run_inference(
             confs = probs.max(dim=1).values.cpu().tolist()
             all_scores = probs.cpu().tolist()
 
-            for path_str, pred_idx, conf, scores in zip(paths, preds, confs, all_scores):
+            for path_str, pred_idx, conf, scores in zip(
+                paths, preds, confs, all_scores
+            ):
                 entry: dict = {
-                    "predicted_label": classes[pred_idx] if pred_idx < len(classes) else str(pred_idx),
+                    "predicted_label": (
+                        classes[pred_idx] if pred_idx < len(classes) else str(pred_idx)
+                    ),
                     "predicted_index": pred_idx,
                     "confidence": conf,
-                    "scores": {classes[i]: float(s) for i, s in enumerate(scores) if i < len(classes)},
+                    "scores": {
+                        classes[i]: float(s)
+                        for i, s in enumerate(scores)
+                        if i < len(classes)
+                    },
                 }
                 results[path_str] = entry
 
@@ -152,8 +165,11 @@ def run_inference(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def main(args=None) -> int:
-    parser = argparse.ArgumentParser(description="Run vision model inference on an image directory")
+    parser = argparse.ArgumentParser(
+        description="Run vision model inference on an image directory"
+    )
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--images", required=True, help="Directory to scan for images")
     parser.add_argument("--output", default="data_out/avatar_preds.json")

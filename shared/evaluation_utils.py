@@ -1,4 +1,5 @@
 """Shared evaluation utilities for dataset loading and naive prediction."""
+
 from __future__ import annotations
 
 import json

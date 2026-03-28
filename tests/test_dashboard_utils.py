@@ -8,12 +8,11 @@ import json
 import sys
 from pathlib import Path
 
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # Module loader
 # ---------------------------------------------------------------------------
+
 
 def _load():
     mod_name = "dashboard_script"
@@ -41,6 +40,7 @@ print_status_badge = mod.print_status_badge
 # TestLoadJson
 # ---------------------------------------------------------------------------
 
+
 class TestLoadJson:
     def test_missing_file_returns_empty_dict(self, tmp_path):
         result = load_json(tmp_path / "no_such_file.json")
@@ -48,8 +48,7 @@ class TestLoadJson:
 
     def test_valid_json_loaded(self, tmp_path):
         p = tmp_path / "data.json"
-        p.write_text(json.dumps(
-            {"key": "value", "count": 42}), encoding="utf-8")
+        p.write_text(json.dumps({"key": "value", "count": 42}), encoding="utf-8")
         result = load_json(p)
         assert result["key"] == "value"
         assert result["count"] == 42
@@ -90,6 +89,7 @@ class TestLoadJson:
 # TestFormatTime
 # ---------------------------------------------------------------------------
 
+
 class TestFormatTime:
     def test_none_returns_na(self):
         assert format_time(None) == "N/A"
@@ -115,7 +115,7 @@ class TestFormatTime:
         parts = result.split(" ")
         assert len(parts) == 2
         assert len(parts[0]) == 10  # YYYY-MM-DD
-        assert len(parts[1]) == 8   # HH:MM:SS
+        assert len(parts[1]) == 8  # HH:MM:SS
 
     def test_date_only_iso_format(self):
         # Some parsers accept date-only ISO strings
@@ -127,6 +127,7 @@ class TestFormatTime:
 # ---------------------------------------------------------------------------
 # TestPrintStatusBadge
 # ---------------------------------------------------------------------------
+
 
 class TestPrintStatusBadge:
     def test_completed_badge(self):

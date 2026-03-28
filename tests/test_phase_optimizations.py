@@ -4,10 +4,11 @@ Tests for Phase 1 and Phase 2 performance optimizations.
 Validates that the optimizations maintain correct functionality
 while improving performance characteristics.
 """
+
 import sys
 import time
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -22,7 +23,7 @@ class TestAriaWebServerOptimizations:
 
     def test_any_word_in_text_performance(self):
         """Test that _any_word_in_text is faster than repeated any() calls."""
-        from aria_web.server import _any_word_in_text, _MOVE_KEYWORDS
+        from aria_web.server import _MOVE_KEYWORDS, _any_word_in_text
 
         # Test with various command strings
         test_commands = [
@@ -57,8 +58,11 @@ class TestAriaWebServerOptimizations:
     def test_keyword_sets_immutable(self):
         """Test that keyword sets are immutable frozensets."""
         from aria_web.server import (
-            _MOVE_KEYWORDS, _SAY_KEYWORDS, _PICKUP_KEYWORDS,
-            _JUMP_KEYWORDS, _DANCE_KEYWORDS
+            _DANCE_KEYWORDS,
+            _JUMP_KEYWORDS,
+            _MOVE_KEYWORDS,
+            _PICKUP_KEYWORDS,
+            _SAY_KEYWORDS,
         )
 
         # All should be frozensets (immutable)
@@ -70,7 +74,7 @@ class TestAriaWebServerOptimizations:
 
     def test_keyword_matching_correctness(self):
         """Test that keyword matching produces correct results."""
-        from aria_web.server import _any_word_in_text, _MOVE_KEYWORDS, _SAY_KEYWORDS
+        from aria_web.server import _MOVE_KEYWORDS, _SAY_KEYWORDS, _any_word_in_text
 
         # Should match
         assert _any_word_in_text(_MOVE_KEYWORDS, "move left")
@@ -97,7 +101,7 @@ class TestChatMemoryConnectionPooling:
         mock_conn.commit = MagicMock()
         mock_conn.close = MagicMock()
 
-        with patch('shared.chat_memory.pyodbc') as mock_pyodbc:
+        with patch("shared.chat_memory.pyodbc") as mock_pyodbc:
             mock_pyodbc.connect = MagicMock(return_value=mock_conn)
             yield mock_pyodbc, mock_conn
 
@@ -109,10 +113,10 @@ class TestChatMemoryConnectionPooling:
         import shared.chat_memory as cm
 
         # Reset pool
-        if hasattr(cm, '_connection_pool'):
+        if hasattr(cm, "_connection_pool"):
             cm._connection_pool.clear()
 
-        with patch.dict('os.environ', {'QAI_DB_CONN': 'test_connection_string'}):
+        with patch.dict("os.environ", {"QAI_DB_CONN": "test_connection_string"}):
             # First call creates connection
             conn1 = cm._get_conn()
             assert conn1 is not None
@@ -162,7 +166,7 @@ class TestChatMemoryConnectionPooling:
         # Add dead connection to pool
         cm._connection_pool.append(dead_conn)
 
-        with patch.dict('os.environ', {'QAI_DB_CONN': 'test_connection_string'}):
+        with patch.dict("os.environ", {"QAI_DB_CONN": "test_connection_string"}):
             # Try to get connection - should skip dead one and create new
             conn = cm._get_conn()
 
@@ -189,7 +193,7 @@ class TestBatchEvaluatorOptimizations:
                 model_type="test",
                 status="completed",
                 duration=10.0,
-                metrics={"accuracy": 0.8}
+                metrics={"accuracy": 0.8},
             )
             evaluator.results.append(result)
 
@@ -221,14 +225,14 @@ class TestBatchEvaluatorOptimizations:
             model_type="lora",
             status="completed",
             duration=15.5,
-            metrics={"accuracy": 0.95, "loss": 0.05}
+            metrics={"accuracy": 0.95, "loss": 0.05},
         )
         result2 = EvalResult(
             model_id="model_b",
             model_type="azure",
             status="completed",
             duration=10.2,
-            metrics={"accuracy": 0.92, "loss": 0.08}
+            metrics={"accuracy": 0.92, "loss": 0.08},
         )
 
         evaluator.results = [result1, result2]
@@ -271,8 +275,7 @@ class TestDictionaryIterationOptimizations:
         assert len(result1) == len(result2)
 
         # Optimized should be slightly faster or equal
-        print(
-            f"\nOld (.keys()): {old_time:.4f}s, New (direct): {new_time:.4f}s")
+        print(f"\nOld (.keys()): {old_time:.4f}s, New (direct): {new_time:.4f}s")
         # Allow for timing variance - main benefit is code cleanliness.
         # Use a generous bound (3x) since both methods are O(n) and system
         # scheduling noise can cause either to appear slower on a given run.
@@ -289,10 +292,10 @@ class TestFileStreamingOptimizations:
 
         # Write 10000 lines
         lines = [f"Line {i}: Some log content here\n" for i in range(10000)]
-        log_file.write_text(''.join(lines))
+        log_file.write_text("".join(lines))
 
         # Simulate the optimized reading (for files > 64KB)
-        with open(log_file, 'rb') as f:
+        with open(log_file, "rb") as f:
             f.seek(0, 2)  # End of file
             file_size = f.tell()
 
@@ -309,11 +312,11 @@ class TestFileStreamingOptimizations:
                 chunks.insert(0, chunk)
                 remaining -= read_size
 
-                decoded = b''.join(chunks).decode('utf-8', errors='ignore')
-                if decoded.count('\n') >= target_lines:
+                decoded = b"".join(chunks).decode("utf-8", errors="ignore")
+                if decoded.count("\n") >= target_lines:
                     break
 
-            decoded = b''.join(chunks).decode('utf-8', errors='ignore')
+            decoded = b"".join(chunks).decode("utf-8", errors="ignore")
             result_lines = decoded.splitlines(keepends=True)[-500:]
 
         # Should get last 500 lines

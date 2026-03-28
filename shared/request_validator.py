@@ -12,11 +12,11 @@ Usage:
     if err:
         return func.HttpResponse(json.dumps({"error": err}), status_code=400, ...)
 """
+
 from __future__ import annotations
 
 import json
 import logging
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -117,9 +117,7 @@ def validate_fields(body: dict, schema: dict[str, dict]) -> str | None:
     return None
 
 
-def validate_request(
-    req, schema: dict[str, dict]
-) -> tuple[dict | None, str | None]:
+def validate_request(req, schema: dict[str, dict]) -> tuple[dict | None, str | None]:
     """Full request validation: parse JSON + field checks.
 
     Returns (body, error). If error is not None, body may be None.
@@ -139,7 +137,21 @@ def validate_request(
 
 CHAT_SCHEMA = {
     "messages": {"type": list, "required": True, "min_length": 1, "max_length": 500},
-    "provider": {"type": str, "allowed": ["auto", "azure", "azure_openai", "openai", "lmstudio", "ollama", "lora", "agi", "quantum", "local"]},
+    "provider": {
+        "type": str,
+        "allowed": [
+            "auto",
+            "azure",
+            "azure_openai",
+            "openai",
+            "lmstudio",
+            "ollama",
+            "lora",
+            "agi",
+            "quantum",
+            "local",
+        ],
+    },
     "temperature": {"type": (int, float), "min": 0, "max": 2},
     "max_output_tokens": {"type": int, "min": 1, "max": 128000},
     "max_context_tokens": {"type": int, "min": 1, "max": 128000},

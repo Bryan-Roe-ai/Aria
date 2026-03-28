@@ -24,9 +24,17 @@ def test_run_smoke_summary_includes_run_and_config_metadata(
         )
 
     config_map = {
-        "master_orchestrator": smoke_module.REPO_ROOT / "config" / "master_orchestrator.yaml",
-        "quantum_autorun": smoke_module.REPO_ROOT / "config" / "quantum" / "quantum_autorun.yaml",
-        "evaluation_autorun": smoke_module.REPO_ROOT / "config" / "evaluation" / "evaluation_autorun.yaml",
+        "master_orchestrator": smoke_module.REPO_ROOT
+        / "config"
+        / "master_orchestrator.yaml",
+        "quantum_autorun": smoke_module.REPO_ROOT
+        / "config"
+        / "quantum"
+        / "quantum_autorun.yaml",
+        "evaluation_autorun": smoke_module.REPO_ROOT
+        / "config"
+        / "evaluation"
+        / "evaluation_autorun.yaml",
     }
 
     monkeypatch.setattr(
@@ -63,9 +71,18 @@ def test_run_smoke_summary_includes_run_and_config_metadata(
     summary = smoke_module.run_smoke(strict_endpoints=False)
 
     assert summary["config_path"] is None
-    assert summary["config_paths"]["master_orchestrator"] == "config/master_orchestrator.yaml"
-    assert summary["config_paths"]["quantum_autorun"] == "config/quantum/quantum_autorun.yaml"
-    assert summary["config_paths"]["evaluation_autorun"] == "config/evaluation/evaluation_autorun.yaml"
+    assert (
+        summary["config_paths"]["master_orchestrator"]
+        == "config/master_orchestrator.yaml"
+    )
+    assert (
+        summary["config_paths"]["quantum_autorun"]
+        == "config/quantum/quantum_autorun.yaml"
+    )
+    assert (
+        summary["config_paths"]["evaluation_autorun"]
+        == "config/evaluation/evaluation_autorun.yaml"
+    )
     assert re.match(r"^\d{8}T\d{6}Z$", summary["run_id"])
     assert summary["generated_at"].endswith("Z")
 
@@ -100,15 +117,16 @@ def test_probe_with_local_dev_adapter_allows_slow_ready_endpoint(
             raise TimeoutError("still warming up")
         return {"active_provider": "local"}
 
-    monkeypatch.setattr(smoke_module.subprocess, "Popen",
-                        lambda *args, **kwargs: DummyProc())
+    monkeypatch.setattr(
+        smoke_module.subprocess, "Popen", lambda *args, **kwargs: DummyProc()
+    )
     monkeypatch.setattr(smoke_module.time, "time", fake_time)
     monkeypatch.setattr(smoke_module.time, "sleep", fake_sleep)
-    monkeypatch.setattr(
-        smoke_module, "_fetch_local_functions_payload", fake_fetch)
+    monkeypatch.setattr(smoke_module, "_fetch_local_functions_payload", fake_fetch)
 
     payload = smoke_module._probe_with_local_dev_adapter(
-        "http://localhost:7071/api/ai/status")
+        "http://localhost:7071/api/ai/status"
+    )
 
     assert payload == {"active_provider": "local"}
     assert smoke_module.LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC > 8.5
@@ -139,15 +157,16 @@ def test_probe_with_local_dev_adapter_uses_long_request_timeout(
             raise TimeoutError("request timeout too short")
         return {"active_provider": "local"}
 
-    monkeypatch.setattr(smoke_module.subprocess, "Popen",
-                        lambda *args, **kwargs: DummyProc())
+    monkeypatch.setattr(
+        smoke_module.subprocess, "Popen", lambda *args, **kwargs: DummyProc()
+    )
     monkeypatch.setattr(smoke_module.time, "time", lambda: 100.0)
     monkeypatch.setattr(smoke_module.time, "sleep", lambda _seconds: None)
-    monkeypatch.setattr(
-        smoke_module, "_fetch_local_functions_payload", fake_fetch)
+    monkeypatch.setattr(smoke_module, "_fetch_local_functions_payload", fake_fetch)
 
     payload = smoke_module._probe_with_local_dev_adapter(
-        "http://localhost:7071/api/ai/status")
+        "http://localhost:7071/api/ai/status"
+    )
 
     assert payload == {"active_provider": "local"}
     assert observed_timeouts

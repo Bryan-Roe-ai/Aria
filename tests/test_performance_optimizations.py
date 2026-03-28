@@ -4,9 +4,9 @@ Tests for performance optimization improvements.
 These tests verify that the optimizations made to various modules
 maintain correct functionality while improving performance.
 """
+
 import json
 import sys
-import tempfile
 import time
 from collections import deque
 from pathlib import Path
@@ -124,26 +124,27 @@ class TestWebAppOptimizations:
         """Test that metrics history trimming uses dict comprehension."""
         # Simulate session metrics_history structure
         metrics_history = {
-            'epochs': list(range(1500)),
-            'train_loss': [0.5 - i * 0.0001 for i in range(1500)],
-            'val_loss': [0.6 - i * 0.0001 for i in range(1500)],
-            'val_accuracy': [0.5 + i * 0.0002 for i in range(1500)],
-            'timestamps': [i * 0.5 for i in range(1500)]
+            "epochs": list(range(1500)),
+            "train_loss": [0.5 - i * 0.0001 for i in range(1500)],
+            "val_loss": [0.6 - i * 0.0001 for i in range(1500)],
+            "val_accuracy": [0.5 + i * 0.0002 for i in range(1500)],
+            "timestamps": [i * 0.5 for i in range(1500)],
         }
 
         # Apply the optimized trimming pattern
-        if len(metrics_history['epochs']) > 1000:
-            metrics_history = {key: values[-1000:]
-                               for key, values in metrics_history.items()}
+        if len(metrics_history["epochs"]) > 1000:
+            metrics_history = {
+                key: values[-1000:] for key, values in metrics_history.items()
+            }
 
         # Verify trimming worked correctly
-        assert len(metrics_history['epochs']) == 1000
-        assert len(metrics_history['train_loss']) == 1000
-        assert len(metrics_history['val_accuracy']) == 1000
+        assert len(metrics_history["epochs"]) == 1000
+        assert len(metrics_history["train_loss"]) == 1000
+        assert len(metrics_history["val_accuracy"]) == 1000
 
         # Verify we kept the last 1000 entries
-        assert metrics_history['epochs'][0] == 500
-        assert metrics_history['epochs'][-1] == 1499
+        assert metrics_history["epochs"][0] == 500
+        assert metrics_history["epochs"][-1] == 1499
 
 
 class TestSqlEngineOptimizations:
@@ -178,7 +179,7 @@ class TestSqlEngineOptimizations:
             WHERE  id = 1
         """
         # Optimized normalization using split/join
-        normalized = ' '.join(sql.split())
+        normalized = " ".join(sql.split())
 
         assert normalized == "SELECT * FROM users WHERE id = 1"
 
@@ -191,17 +192,17 @@ class TestLineCountingOptimizations:
         test_file = tmp_path / "test.jsonl"
 
         # Create test file with known line count
-        lines = ['{"data": ' + str(i) + '}' for i in range(1000)]
-        test_file.write_text('\n'.join(lines) + '\n')
+        lines = ['{"data": ' + str(i) + "}" for i in range(1000)]
+        test_file.write_text("\n".join(lines) + "\n")
 
         # Count lines using optimized binary method
         line_count = 0
-        with open(test_file, 'rb') as f:
+        with open(test_file, "rb") as f:
             buf_size = 65536
             read_f = f.read
             buf = read_f(buf_size)
             while buf:
-                line_count += buf.count(b'\n')
+                line_count += buf.count(b"\n")
                 buf = read_f(buf_size)
 
         assert line_count == 1000
@@ -209,13 +210,13 @@ class TestLineCountingOptimizations:
     def test_binary_counting_empty_file(self, tmp_path):
         """Test binary line counting on empty file."""
         test_file = tmp_path / "empty.jsonl"
-        test_file.write_text('')
+        test_file.write_text("")
 
         line_count = 0
-        with open(test_file, 'rb') as f:
+        with open(test_file, "rb") as f:
             buf = f.read(65536)
             while buf:
-                line_count += buf.count(b'\n')
+                line_count += buf.count(b"\n")
                 buf = f.read(65536)
 
         assert line_count == 0
@@ -232,21 +233,21 @@ class TestBufferedWriteOptimizations:
         buffer = []
         buffer_size = 100
 
-        with open(output_file, 'w', encoding='utf-8', buffering=65536) as f:
+        with open(output_file, "w", encoding="utf-8", buffering=65536) as f:
             for i in range(250):
                 line = json.dumps({"id": i, "data": f"item_{i}"})
                 buffer.append(line)
 
                 if len(buffer) >= buffer_size:
-                    f.write('\n'.join(buffer) + '\n')
+                    f.write("\n".join(buffer) + "\n")
                     buffer.clear()
 
             # Write remaining items
             if buffer:
-                f.write('\n'.join(buffer) + '\n')
+                f.write("\n".join(buffer) + "\n")
 
         # Verify output
-        with open(output_file, 'r') as f:
+        with open(output_file, "r") as f:
             lines = [line for line in f if line.strip()]
 
         assert len(lines) == 250
@@ -264,6 +265,7 @@ class TestAggregationOptimizations:
 
     def test_single_pass_aggregation(self):
         """Test that single-pass aggregation works correctly."""
+
         # Simulate the EvaluationResult dataclass
         class MockResult:
             def __init__(self, model_id, status, duration, metrics):
@@ -306,13 +308,15 @@ class TestDatasetSampleCountingOptimizations:
         dataset_dir.mkdir()
 
         # Create train.jsonl with 50 lines
-        train_data = '\n'.join(
-            ['{"text": "sample ' + str(i) + '"}' for i in range(50)]) + '\n'
+        train_data = (
+            "\n".join(['{"text": "sample ' + str(i) + '"}' for i in range(50)]) + "\n"
+        )
         (dataset_dir / "train.jsonl").write_text(train_data)
 
         # Create test.jsonl with 10 lines
-        test_data = '\n'.join(
-            ['{"text": "test ' + str(i) + '"}' for i in range(10)]) + '\n'
+        test_data = (
+            "\n".join(['{"text": "test ' + str(i) + '"}' for i in range(10)]) + "\n"
+        )
         (dataset_dir / "test.jsonl").write_text(test_data)
 
         # Count using optimized method
@@ -326,7 +330,7 @@ class TestDatasetSampleCountingOptimizations:
                     read_f = fh.read
                     buf = read_f(buf_size)
                     while buf:
-                        count += buf.count(b'\n')
+                        count += buf.count(b"\n")
                         buf = read_f(buf_size)
                 if key == "train":
                     train += count
@@ -372,11 +376,11 @@ class TestJsonSampleCounting:
         data = [{"id": i} for i in range(100)]
         test_file.write_text(json.dumps(data))
 
-        with open(test_file, 'r', encoding='utf-8') as f:
+        with open(test_file, "r", encoding="utf-8") as f:
             first_char = f.read(1)
             f.seek(0)
 
-            if first_char == '[':
+            if first_char == "[":
                 loaded = json.load(f)
                 count = len(loaded) if isinstance(loaded, list) else 1
             else:
@@ -388,16 +392,16 @@ class TestJsonSampleCounting:
         """Test counting lines in a JSONL file."""
         test_file = tmp_path / "data.jsonl"
         lines = [json.dumps({"id": i}) for i in range(100)]
-        test_file.write_text('\n'.join(lines) + '\n')
+        test_file.write_text("\n".join(lines) + "\n")
 
-        with open(test_file, 'r', encoding='utf-8') as f:
+        with open(test_file, "r", encoding="utf-8") as f:
             first_char = f.read(1)
             f.seek(0)
 
-            if first_char == '[':
+            if first_char == "[":
                 loaded = json.load(f)
                 count = len(loaded) if isinstance(loaded, list) else 1
-            elif first_char == '{':
+            elif first_char == "{":
                 count = sum(1 for line in f if line.strip())
             else:
                 count = 0
@@ -411,19 +415,19 @@ class TestPruneMessagesOptimization:
     def test_prune_messages_complexity(self):
         """Test that prune_messages correctly prunes messages within budget."""
         import sys
-        sys.path.insert(0, 'ai-projects/chat-cli/src')
+
+        sys.path.insert(0, "ai-projects/chat-cli/src")
         from token_utils import prune_messages
 
         # Create many messages to test pruning
-        messages = [{'role': 'user', 'content': f'Message {i}' * 50}
-                    for i in range(30)]
+        messages = [{"role": "user", "content": f"Message {i}" * 50} for i in range(30)]
 
         result, stats, _ = prune_messages(
             messages=messages,
-            provider='openai',
-            model='gpt-4o-mini',
+            provider="openai",
+            model="gpt-4o-mini",
             max_context_tokens=2000,
-            reserve_output_tokens=500
+            reserve_output_tokens=500,
         )
 
         # Verify pruning happened correctly
@@ -434,18 +438,19 @@ class TestPruneMessagesOptimization:
     def test_prune_messages_no_pruning_needed(self):
         """Test prune_messages when all messages fit within budget."""
         import sys
-        sys.path.insert(0, 'ai-projects/chat-cli/src')
+
+        sys.path.insert(0, "ai-projects/chat-cli/src")
         from token_utils import prune_messages
 
         # Small number of short messages
-        messages = [{'role': 'user', 'content': 'Hi'}]
+        messages = [{"role": "user", "content": "Hi"}]
 
         result, stats, _ = prune_messages(
             messages=messages,
-            provider='openai',
-            model='gpt-4o-mini',
+            provider="openai",
+            model="gpt-4o-mini",
             max_context_tokens=10000,
-            reserve_output_tokens=500
+            reserve_output_tokens=500,
         )
 
         assert stats.removed_count == 0
@@ -458,30 +463,32 @@ class TestStringBuildOptimization:
     def test_build_prompt_uses_join(self):
         """Test that _build_prompt produces correct output with optimized join."""
         import sys
-        sys.path.insert(0, 'ai-projects/chat-cli/src')
+
+        sys.path.insert(0, "ai-projects/chat-cli/src")
         from lora_infer_bridge import _build_prompt
 
         messages = [
-            {'role': 'system', 'content': 'System prompt'},
-            {'role': 'user', 'content': 'User message'},
-            {'role': 'assistant', 'content': 'Assistant reply'},
+            {"role": "system", "content": "System prompt"},
+            {"role": "user", "content": "User message"},
+            {"role": "assistant", "content": "Assistant reply"},
         ]
 
         prompt = _build_prompt(messages)
 
-        assert '[SYSTEM] System prompt' in prompt
-        assert 'User: User message' in prompt
-        assert 'Assistant: Assistant reply' in prompt
-        assert prompt.endswith('Assistant: ')
+        assert "[SYSTEM] System prompt" in prompt
+        assert "User: User message" in prompt
+        assert "Assistant: Assistant reply" in prompt
+        assert prompt.endswith("Assistant: ")
 
     def test_build_prompt_empty_messages(self):
         """Test _build_prompt with empty messages."""
         import sys
-        sys.path.insert(0, 'ai-projects/chat-cli/src')
+
+        sys.path.insert(0, "ai-projects/chat-cli/src")
         from lora_infer_bridge import _build_prompt
 
         prompt = _build_prompt([])
-        assert prompt == 'Assistant: '
+        assert prompt == "Assistant: "
 
 
 class TestRegexCachingOptimization:
@@ -490,17 +497,19 @@ class TestRegexCachingOptimization:
     def test_ansi_escape_regex_cached(self):
         """Test that ANSI escape regex is compiled at module level."""
         import sys
-        sys.path.insert(0, 'shared')
-        from ai_runner import _ANSI_ESCAPE_RE
+
+        sys.path.insert(0, "shared")
         import re
+
+        from ai_runner import _ANSI_ESCAPE_RE
 
         # Verify it's a compiled pattern
         assert isinstance(_ANSI_ESCAPE_RE, re.Pattern)
 
         # Verify it works correctly
-        test_str = '\x1B[31mRed\x1B[0m'
-        clean = _ANSI_ESCAPE_RE.sub('', test_str)
-        assert clean == 'Red'
+        test_str = "\x1b[31mRed\x1b[0m"
+        clean = _ANSI_ESCAPE_RE.sub("", test_str)
+        assert clean == "Red"
 
 
 class TestHeapTopKOptimization:
@@ -511,14 +520,14 @@ class TestHeapTopKOptimization:
         import heapq
 
         # Simulate similarity scores
-        scored = [{'id': i, 'similarity': i * 0.01} for i in range(100)]
+        scored = [{"id": i, "similarity": i * 0.01} for i in range(100)]
 
         # Get top 5
-        top5 = heapq.nlargest(5, scored, key=lambda x: x['similarity'])
+        top5 = heapq.nlargest(5, scored, key=lambda x: x["similarity"])
 
         # Verify order (highest first)
-        assert top5[0]['id'] == 99
-        assert top5[4]['id'] == 95
+        assert top5[0]["id"] == 99
+        assert top5[4]["id"] == 95
 
         # Verify all 5 are present
         assert len(top5) == 5
@@ -529,22 +538,24 @@ class TestHashEmbeddingOptimization:
 
     def test_hash_embedding_normalized(self):
         """Test that hash embedding produces L2-normalized vectors."""
-        import sys
         import math
-        sys.path.insert(0, 'shared')
+        import sys
+
+        sys.path.insert(0, "shared")
         from chat_memory import _hash_embedding
 
         text = "Hello world test"
         embedding = _hash_embedding(text)
 
         # Check L2 norm is 1.0
-        norm = math.sqrt(sum(x*x for x in embedding))
+        norm = math.sqrt(sum(x * x for x in embedding))
         assert abs(norm - 1.0) < 1e-6
 
     def test_hash_embedding_empty_text(self):
         """Test hash embedding with empty text."""
         import sys
-        sys.path.insert(0, 'shared')
+
+        sys.path.insert(0, "shared")
         from chat_memory import _hash_embedding
 
         embedding = _hash_embedding("")
@@ -566,9 +577,8 @@ class TestCollectionOptimizations:
         ]
 
         # Old inefficient approach (for comparison)
-        old_result = (
-            any(x.get("role") == "user" for x in window) and
-            any(x.get("role") == "assistant" for x in window)
+        old_result = any(x.get("role") == "user" for x in window) and any(
+            x.get("role") == "assistant" for x in window
         )
 
         # New optimized approach
@@ -589,6 +599,7 @@ class TestCollectionOptimizations:
 
     def test_set_intersection_tag_filtering(self):
         """Test that tag filtering uses set intersection."""
+
         # Mock job objects
         class Job:
             def __init__(self, id, tags):
@@ -605,8 +616,7 @@ class TestCollectionOptimizations:
         filter_tags = ["python", "quantum"]
 
         # Old inefficient approach
-        old_result = [j for j in jobs if any(
-            tag in j.tags for tag in filter_tags)]
+        old_result = [j for j in jobs if any(tag in j.tags for tag in filter_tags)]
 
         # New optimized approach
         tags_set = set(filter_tags)
@@ -614,8 +624,7 @@ class TestCollectionOptimizations:
 
         # Both should produce same result
         assert len(old_result) == len(new_result) == 3
-        assert [j.id for j in old_result] == [
-            j.id for j in new_result] == [1, 3, 4]
+        assert [j.id for j in old_result] == [j.id for j in new_result] == [1, 3, 4]
 
 
 class TestCommandParsingOptimizations:
@@ -625,16 +634,24 @@ class TestCommandParsingOptimizations:
         """Test optimized movement command parsing."""
         # Define command patterns directly for testing
         _COMMAND_PATTERNS = (
-            (('[aria:walk:left]', 'walk left'), {
-             'action': 'walk', 'direction': 'left', 'distance': 200}),
-            (('[aria:walk:right]', 'walk right'), {
-             'action': 'walk', 'direction': 'right', 'distance': 200}),
-            (('[aria:move:right]', 'aria move right'), {
-             'action': 'move', 'direction': 'right', 'distance': 100}),
-            (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
-            (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
-            (('[aria:walk:up]', 'walk up'), {
-             'action': 'walk', 'direction': 'up', 'distance': 200}),
+            (
+                ("[aria:walk:left]", "walk left"),
+                {"action": "walk", "direction": "left", "distance": 200},
+            ),
+            (
+                ("[aria:walk:right]", "walk right"),
+                {"action": "walk", "direction": "right", "distance": 200},
+            ),
+            (
+                ("[aria:move:right]", "aria move right"),
+                {"action": "move", "direction": "right", "distance": 100},
+            ),
+            (("[aria:wave]", "aria wave"), {"action": "wave"}),
+            (("[aria:jump]", "aria jump"), {"action": "jump"}),
+            (
+                ("[aria:walk:up]", "walk up"),
+                {"action": "walk", "direction": "up", "distance": 200},
+            ),
         )
 
         def parse_movement_commands(text: str) -> dict:
@@ -644,14 +661,15 @@ class TestCommandParsingOptimizations:
             for patterns, command in _COMMAND_PATTERNS:
                 if any(pattern in lower_text for pattern in patterns):
                     commands.append(command)
-            return {'commands': commands} if commands else {}
+            return {"commands": commands} if commands else {}
 
         # Test various command patterns
         test_cases = [
-            ("walk left", [
-             {"action": "walk", "direction": "left", "distance": 200}]),
-            ("[aria:move:right]", [
-             {"action": "move", "direction": "right", "distance": 100}]),
+            ("walk left", [{"action": "walk", "direction": "left", "distance": 200}]),
+            (
+                "[aria:move:right]",
+                [{"action": "move", "direction": "right", "distance": 100}],
+            ),
             ("aria wave", [{"action": "wave"}]),
             ("no commands here", []),
         ]
@@ -667,17 +685,25 @@ class TestCommandParsingOptimizations:
         """Test that command parsing is efficient with pattern table."""
         # Define command patterns
         _COMMAND_PATTERNS = (
-            (('[aria:walk:left]', 'walk left'), {
-             'action': 'walk', 'direction': 'left', 'distance': 200}),
-            (('[aria:walk:right]', 'walk right'), {
-             'action': 'walk', 'direction': 'right', 'distance': 200}),
-            (('[aria:move:right]', 'aria move right'), {
-             'action': 'move', 'direction': 'right', 'distance': 100}),
-            (('[aria:move:left]', 'aria move left'), {
-             'action': 'move', 'direction': 'left', 'distance': 100}),
-            (('[aria:center]', 'go to center'), {'action': 'center'}),
-            (('[aria:wave]', 'aria wave'), {'action': 'wave'}),
-            (('[aria:jump]', 'aria jump'), {'action': 'jump'}),
+            (
+                ("[aria:walk:left]", "walk left"),
+                {"action": "walk", "direction": "left", "distance": 200},
+            ),
+            (
+                ("[aria:walk:right]", "walk right"),
+                {"action": "walk", "direction": "right", "distance": 200},
+            ),
+            (
+                ("[aria:move:right]", "aria move right"),
+                {"action": "move", "direction": "right", "distance": 100},
+            ),
+            (
+                ("[aria:move:left]", "aria move left"),
+                {"action": "move", "direction": "left", "distance": 100},
+            ),
+            (("[aria:center]", "go to center"), {"action": "center"}),
+            (("[aria:wave]", "aria wave"), {"action": "wave"}),
+            (("[aria:jump]", "aria jump"), {"action": "jump"}),
         )
 
         def parse_movement_commands(text: str) -> dict:
@@ -687,7 +713,7 @@ class TestCommandParsingOptimizations:
             for patterns, command in _COMMAND_PATTERNS:
                 if any(pattern in lower_text for pattern in patterns):
                     commands.append(command)
-            return {'commands': commands} if commands else {}
+            return {"commands": commands} if commands else {}
 
         # Test with text containing multiple commands
         text = "Please walk left, then aria move right, go to center, aria wave, and aria jump"
@@ -716,27 +742,40 @@ class TestFileReadingOptimizations:
 
         # Create sample records
         train_data = [
-            {"messages": [{"role": "user", "content": "Q1"},
-                          {"role": "assistant", "content": "A1"}]},
-            {"messages": [{"role": "user", "content": "Q2"},
-                          {"role": "assistant", "content": "A2"}]},
+            {
+                "messages": [
+                    {"role": "user", "content": "Q1"},
+                    {"role": "assistant", "content": "A1"},
+                ]
+            },
+            {
+                "messages": [
+                    {"role": "user", "content": "Q2"},
+                    {"role": "assistant", "content": "A2"},
+                ]
+            },
         ]
         test_data = [
-            {"messages": [{"role": "user", "content": "Q3"},
-                          {"role": "assistant", "content": "A3"}]},
+            {
+                "messages": [
+                    {"role": "user", "content": "Q3"},
+                    {"role": "assistant", "content": "A3"},
+                ]
+            },
         ]
 
-        with open(train_file, 'w') as f:
+        with open(train_file, "w") as f:
             for record in train_data:
-                f.write(json.dumps(record) + '\n')
+                f.write(json.dumps(record) + "\n")
 
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             for record in test_data:
-                f.write(json.dumps(record) + '\n')
+                f.write(json.dumps(record) + "\n")
 
         # Test the optimized function
         import sys
-        sys.path.insert(0, 'scripts')
+
+        sys.path.insert(0, "scripts")
         from generate_evaluation_set import collect_training_hashes_and_records
 
         hashes, records = collect_training_hashes_and_records(dataset_dir)

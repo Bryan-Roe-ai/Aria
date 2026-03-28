@@ -2,21 +2,22 @@
 Quantum AI MCP Server (Optimized)
 Exposes quantum computing and quantum machine learning capabilities via Model Context Protocol
 """
-from qiskit import QuantumCircuit
-import torch
-import numpy as np
+
 import asyncio
-import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import time
-from collections import OrderedDict
 
 # Add src directory to path before importing local modules
 import sys
+import time
+from collections import OrderedDict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import numpy as np
+from qiskit import QuantumCircuit
+
 src_path = Path(__file__).parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
@@ -24,47 +25,51 @@ if str(src_path) not in sys.path:
 # Verify src directory exists
 if not src_path.exists():
     print(f"Error: src/ directory not found at {src_path}")
-    print(f"Please ensure the following directory structure exists:")
-    print(f"  ai-projects/quantum-ml/")
-    print(f"    ├── quantum_mcp_server.py")
-    print(f"    └── src/")
-    print(f"        ├── quantum_classifier.py")
-    print(f"        └── azure_quantum_integration.py")
+    print("Please ensure the following directory structure exists:")
+    print("  ai-projects/quantum-ml/")
+    print("    ├── quantum_mcp_server.py")
+    print("    └── src/")
+    print("        ├── quantum_classifier.py")
+    print("        └── azure_quantum_integration.py")
     sys.exit(1)
 
 # Import MCP dependencies
 try:
     from mcp.server import Server
     from mcp.server.stdio import stdio_server
-    from mcp.types import Tool, TextContent
+    from mcp.types import TextContent, Tool
 except ImportError as e:
-    print(f"Error: MCP package not installed or incompatible version.")
-    print(f"\nTo install MCP dependencies, run:")
-    print(f"  pip install -r mcp-requirements.txt")
-    print(f"\nOr install directly:")
-    print(f"  pip install 'mcp>=0.9.0'")
-    print(f"\nIf you're using a virtual environment, ensure it's activated:")
-    print(f"  .\\venv\\Scripts\\Activate.ps1")
+    print("Error: MCP package not installed or incompatible version.")
+    print("\nTo install MCP dependencies, run:")
+    print("  pip install -r mcp-requirements.txt")
+    print("\nOr install directly:")
+    print("  pip install 'mcp>=0.9.0'")
+    print("\nIf you're using a virtual environment, ensure it's activated:")
+    print("  .\\venv\\Scripts\\Activate.ps1")
     print(f"\nDetails: {e}")
     sys.exit(1)
 
 # Import quantum modules
 try:
-    from quantum_classifier import QuantumClassifier, HybridQuantumClassifier, train_quantum_model
     from azure_quantum_integration import AzureQuantumIntegration, create_sample_circuit
+    from quantum_classifier import (
+        HybridQuantumClassifier,
+        QuantumClassifier,
+        train_quantum_model,
+    )
 except ImportError as e:
     print(f"Error: Could not import quantum modules from {src_path}/")
-    print(f"\nEnsure the following files exist:")
+    print("\nEnsure the following files exist:")
     print(f"  - {src_path / 'quantum_classifier.py'}")
     print(f"  - {src_path / 'azure_quantum_integration.py'}")
-    print(f"\nMissing files should contain:")
-    print(f"  quantum_classifier.py:")
-    print(f"    - class QuantumClassifier")
-    print(f"    - class HybridQuantumClassifier")
-    print(f"    - def train_quantum_model()")
-    print(f"  azure_quantum_integration.py:")
-    print(f"    - class AzureQuantumIntegration")
-    print(f"    - def create_sample_circuit()")
+    print("\nMissing files should contain:")
+    print("  quantum_classifier.py:")
+    print("    - class QuantumClassifier")
+    print("    - class HybridQuantumClassifier")
+    print("    - def train_quantum_model()")
+    print("  azure_quantum_integration.py:")
+    print("    - class AzureQuantumIntegration")
+    print("    - def create_sample_circuit()")
     print(f"\nDetails: {e}")
     sys.exit(1)
 
@@ -123,7 +128,8 @@ class CircuitCache:
         """Remove all expired entries"""
         current_time = time.time()
         expired = [
-            key for key, timestamp in self.timestamps.items()
+            key
+            for key, timestamp in self.timestamps.items()
             if current_time - timestamp > self.ttl_seconds
         ]
         for key in expired:
@@ -185,7 +191,8 @@ def _cleanup_cache_if_needed():
         expired_count = quantum_state["circuit_cache"].clear_expired()
         if expired_count > 0:
             logging.info(
-                f"[quantum_mcp] Cleaned {expired_count} expired circuits from cache")
+                f"[quantum_mcp] Cleaned {expired_count} expired circuits from cache"
+            )
         quantum_state["last_cache_cleanup"] = current_time
 
 
@@ -263,7 +270,9 @@ def _normalize_backend_allowlist(backends: List[str]) -> set[str]:
     }
 
 
-def _backend_in_allowlist(normalized_backend: str, normalized_backends: set[str]) -> bool:
+def _backend_in_allowlist(
+    normalized_backend: str, normalized_backends: set[str]
+) -> bool:
     """Return True when backend is directly allowed or accepted via simulator aliases."""
     if normalized_backend in normalized_backends:
         return True
@@ -303,7 +312,10 @@ async def _validate_backend_against_allowlist(backend_name: str) -> Optional[str
     normalized_backends = _normalize_backend_allowlist(known_backends)
     normalized_backend = _normalize_backend_name(backend_name)
     refresh_error = None
-    if not _backend_in_allowlist(normalized_backend, normalized_backends) and not did_refresh_allowlist:
+    if (
+        not _backend_in_allowlist(normalized_backend, normalized_backends)
+        and not did_refresh_allowlist
+    ):
         # One-time recheck: backend inventories can change between cached refreshes.
         try:
             refreshed_backends = await loop.run_in_executor(
@@ -312,8 +324,7 @@ async def _validate_backend_against_allowlist(backend_name: str) -> Optional[str
             )
             quantum_state["known_backends"] = list(refreshed_backends)
             quantum_state["known_backends_refreshed_at"] = time.time()
-            normalized_backends = _normalize_backend_allowlist(
-                refreshed_backends)
+            normalized_backends = _normalize_backend_allowlist(refreshed_backends)
         except Exception as e:
             refresh_error = str(e)
 
@@ -541,7 +552,9 @@ async def call_tool(name: str, arguments: Any) -> List[TextContent]:
         if arguments is None:
             arguments = {}
         if not isinstance(arguments, dict):
-            return [TextContent(type="text", text="Invalid arguments: expected an object")]
+            return [
+                TextContent(type="text", text="Invalid arguments: expected an object")
+            ]
 
         if name == "create_quantum_circuit":
             return await create_circuit_handler(arguments)
@@ -576,10 +589,23 @@ async def create_circuit_handler(args: Dict) -> List[TextContent]:
     circuit_type = args.get("circuit_type")
 
     # Runtime validation (do not rely only on tool schema).
-    if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or not (1 <= n_qubits <= 20):
-        return [TextContent(type="text", text="n_qubits must be an integer between 1 and 20")]
+    if (
+        isinstance(n_qubits, bool)
+        or not isinstance(n_qubits, int)
+        or not (1 <= n_qubits <= 20)
+    ):
+        return [
+            TextContent(
+                type="text", text="n_qubits must be an integer between 1 and 20"
+            )
+        ]
     if circuit_type not in {"entanglement", "ghz", "bell", "random", "custom"}:
-        return [TextContent(type="text", text="circuit_type must be one of: entanglement, ghz, bell, random, custom")]
+        return [
+            TextContent(
+                type="text",
+                text="circuit_type must be one of: entanglement, ghz, bell, random, custom",
+            )
+        ]
 
     # Offload circuit creation to thread pool for CPU-intensive operations
     loop = asyncio.get_event_loop()
@@ -591,18 +617,24 @@ async def create_circuit_handler(args: Dict) -> List[TextContent]:
                 _create_circuit_sync,
                 n_qubits,
                 circuit_type,
-                args.get("gates")
+                args.get("gates"),
             ),
-            timeout=30.0  # 30-second max for circuit creation
+            timeout=30.0,  # 30-second max for circuit creation
         )
     except asyncio.TimeoutError:
         return [TextContent(type="text", text="Circuit creation timed out after 30s")]
 
     if circuit is None:
-        return [TextContent(type="text", text="Invalid circuit type or missing gates for custom type")]
+        return [
+            TextContent(
+                type="text",
+                text="Invalid circuit type or missing gates for custom type",
+            )
+        ]
 
     # Generate circuit ID using SHA-256 (MD5 is weak for security)
     import hashlib
+
     circuit_id = hashlib.sha256(str(circuit).encode()).hexdigest()[:12]
 
     # Cache the circuit with TTL
@@ -615,16 +647,20 @@ async def create_circuit_handler(args: Dict) -> List[TextContent]:
         "depth": circuit.depth(),
         "gate_count": sum(circuit.count_ops().values()),
         "qasm": circuit.qasm(),
-        "diagram": str(circuit.draw(output='text')),
+        "diagram": str(circuit.draw(output="text")),
     }
 
-    return [TextContent(
-        type="text",
-        text=f"Created quantum circuit:\n\n```\n{result['diagram']}\n```\n\nCircuit ID: {circuit_id}\nDepth: {result['depth']}, Gates: {result['gate_count']}"
-    )]
+    return [
+        TextContent(
+            type="text",
+            text=f"Created quantum circuit:\n\n```\n{result['diagram']}\n```\n\nCircuit ID: {circuit_id}\nDepth: {result['depth']}, Gates: {result['gate_count']}",
+        )
+    ]
 
 
-def _create_circuit_sync(n_qubits: int, circuit_type: str, gates: Optional[List] = None) -> Optional[QuantumCircuit]:
+def _create_circuit_sync(
+    n_qubits: int, circuit_type: str, gates: Optional[List] = None
+) -> Optional[QuantumCircuit]:
     """Synchronous circuit creation (runs in thread pool)"""
     if circuit_type == "entanglement":
         return create_sample_circuit(n_qubits)
@@ -644,16 +680,17 @@ def _create_circuit_sync(n_qubits: int, circuit_type: str, gates: Optional[List]
     elif circuit_type == "random":
         circuit = QuantumCircuit(n_qubits, n_qubits)
         import random
+
         for _ in range(n_qubits * 2):
-            gate = random.choice(['h', 'x', 'y', 'z', 'rx', 'ry', 'rz'])
+            gate = random.choice(["h", "x", "y", "z", "rx", "ry", "rz"])
             qubit = random.randint(0, n_qubits - 1)
-            if gate == 'h':
+            if gate == "h":
                 circuit.h(qubit)
-            elif gate == 'x':
+            elif gate == "x":
                 circuit.x(qubit)
-            elif gate == 'y':
+            elif gate == "y":
                 circuit.y(qubit)
-            elif gate == 'z':
+            elif gate == "z":
                 circuit.z(qubit)
             else:
                 circuit.rx(np.pi / 4, qubit)
@@ -686,7 +723,9 @@ def _create_circuit_sync(n_qubits: int, circuit_type: str, gates: Optional[List]
                 if (
                     not isinstance(qubits, list)
                     or len(qubits) < 2
-                    or not all(isinstance(q, int) and 0 <= q < n_qubits for q in qubits[:2])
+                    or not all(
+                        isinstance(q, int) and 0 <= q < n_qubits for q in qubits[:2]
+                    )
                     or qubits[0] == qubits[1]
                 ):
                     continue
@@ -708,23 +747,35 @@ async def simulate_circuit_handler(args: Dict) -> List[TextContent]:
         return [TextContent(type="text", text="circuit_id is required")]
 
     # Validate shots to prevent DoS via excessively large simulation jobs.
-    if isinstance(shots, bool) or not isinstance(shots, int) or not (1 <= shots <= 8192):
-        return [TextContent(type="text", text="shots must be an integer between 1 and 8192")]
+    if (
+        isinstance(shots, bool)
+        or not isinstance(shots, int)
+        or not (1 <= shots <= 8192)
+    ):
+        return [
+            TextContent(type="text", text="shots must be an integer between 1 and 8192")
+        ]
 
     # Clean expired cache entries periodically
     quantum_state["circuit_cache"].clear_expired()
 
     circuit = quantum_state["circuit_cache"].get(circuit_id)
     if circuit is None:
-        return [TextContent(type="text", text=f"Circuit ID '{circuit_id}' not found or expired. Create a circuit first.")]
+        return [
+            TextContent(
+                type="text",
+                text=f"Circuit ID '{circuit_id}' not found or expired. Create a circuit first.",
+            )
+        ]
 
     # Offload simulation to thread pool (CPU-intensive)
     loop = asyncio.get_event_loop()
-    counts = await loop.run_in_executor(cpu_executor, _simulate_circuit_sync, circuit, shots)
+    counts = await loop.run_in_executor(
+        cpu_executor, _simulate_circuit_sync, circuit, shots
+    )
 
     # Format results
-    sorted_counts = dict(
-        sorted(counts.items(), key=lambda x: x[1], reverse=True))
+    sorted_counts = dict(sorted(counts.items(), key=lambda x: x[1], reverse=True))
     total_shots = sum(sorted_counts.values())
 
     result_text = f"Simulation results for circuit {circuit_id} ({shots} shots):\n\n"
@@ -741,6 +792,7 @@ async def simulate_circuit_handler(args: Dict) -> List[TextContent]:
 def _simulate_circuit_sync(circuit: QuantumCircuit, shots: int) -> Dict:
     """Synchronous circuit simulation (runs in process pool)"""
     from qiskit_aer import AerSimulator
+
     simulator = AerSimulator()
     job = simulator.run(circuit, shots=shots)
     result = job.result()
@@ -772,8 +824,13 @@ async def connect_azure_handler(args: Dict) -> List[TextContent]:
                     "resource_group": resource_group,
                     "workspace_name": workspace_name,
                 },
-                "quantum": {"provider": "ionq", "hardware": {"shots": 500, "optimization_level": 2}},
-                "ml": {"model": {"n_qubits": 4, "n_layers": 2, "entanglement": "linear"}},
+                "quantum": {
+                    "provider": "ionq",
+                    "hardware": {"shots": 500, "optimization_level": 2},
+                },
+                "ml": {
+                    "model": {"n_qubits": 4, "n_layers": 2, "entanglement": "linear"}
+                },
                 "logging": {"level": "INFO", "results_dir": "./results"},
             }
             quantum_state["config_cache"][config_key] = config
@@ -781,35 +838,40 @@ async def connect_azure_handler(args: Dict) -> List[TextContent]:
         # Offload Azure connection to thread pool (I/O bound)
         loop = asyncio.get_event_loop()
         azure_int = await loop.run_in_executor(
-            io_executor,
-            _connect_azure_sync,
-            quantum_state["config_cache"][config_key]
+            io_executor, _connect_azure_sync, quantum_state["config_cache"][config_key]
         )
         quantum_state["azure_integration"] = azure_int
         quantum_state["cumulative_cost_usd"] = 0.0
         quantum_state["known_backends"] = []
         quantum_state["known_backends_refreshed_at"] = 0.0
 
-        return [TextContent(
-            type="text",
-            text=f"✓ Connected to Azure Quantum workspace: {workspace_name}\nResource Group: {resource_group}\nCost budget reset: ${quantum_state['cumulative_cost_usd']:.2f}"
-        )]
+        return [
+            TextContent(
+                type="text",
+                text=f"✓ Connected to Azure Quantum workspace: {workspace_name}\nResource Group: {resource_group}\nCost budget reset: ${quantum_state['cumulative_cost_usd']:.2f}",
+            )
+        ]
 
     except Exception as e:
-        return [TextContent(type="text", text=f"Failed to connect to Azure Quantum: {str(e)}")]
+        return [
+            TextContent(
+                type="text", text=f"Failed to connect to Azure Quantum: {str(e)}"
+            )
+        ]
 
 
 def _connect_azure_sync(config: Dict) -> AzureQuantumIntegration:
     """Synchronous Azure connection (runs in thread pool)"""
-    import yaml
-    import tempfile
     import os
+    import tempfile
+
+    import yaml
 
     # Write config to a temp file; always clean it up regardless of success/failure
     # to prevent credentials lingering on disk.
-    fd, config_path = tempfile.mkstemp(suffix='.yaml')
+    fd, config_path = tempfile.mkstemp(suffix=".yaml")
     try:
-        with os.fdopen(fd, 'w') as f:
+        with os.fdopen(fd, "w") as f:
             yaml.safe_dump(config, f)
         azure_int = AzureQuantumIntegration(config_path=config_path)
         azure_int.connect()
@@ -824,19 +886,27 @@ def _connect_azure_sync(config: Dict) -> AzureQuantumIntegration:
 async def list_backends_handler(args: Dict) -> List[TextContent]:
     """List available quantum backends (optimized with async I/O)"""
     if quantum_state["azure_integration"] is None:
-        return [TextContent(type="text", text="Not connected to Azure Quantum. Use connect_azure_quantum first.")]
+        return [
+            TextContent(
+                type="text",
+                text="Not connected to Azure Quantum. Use connect_azure_quantum first.",
+            )
+        ]
 
     try:
         # Offload to thread pool
         loop = asyncio.get_event_loop()
         backends = await loop.run_in_executor(
-            io_executor,
-            quantum_state["azure_integration"].list_backends
+            io_executor, quantum_state["azure_integration"].list_backends
         )
         quantum_state["known_backends"] = list(backends)
         quantum_state["known_backends_refreshed_at"] = time.time()
         backend_list = "\n".join(f"  • {backend}" for backend in backends)
-        return [TextContent(type="text", text=f"Available quantum backends:\n\n{backend_list}")]
+        return [
+            TextContent(
+                type="text", text=f"Available quantum backends:\n\n{backend_list}"
+            )
+        ]
     except Exception as e:
         return [TextContent(type="text", text=f"Error listing backends: {str(e)}")]
 
@@ -854,15 +924,32 @@ async def submit_job_handler(args: Dict) -> List[TextContent]:
         return [TextContent(type="text", text="backend_name is required")]
     if not isinstance(confirm_cost, bool):
         return [TextContent(type="text", text="confirm_cost must be a boolean")]
-    if isinstance(shots, bool) or not isinstance(shots, int) or not (1 <= shots <= 10000):
-        return [TextContent(type="text", text="shots must be an integer between 1 and 10000")]
+    if (
+        isinstance(shots, bool)
+        or not isinstance(shots, int)
+        or not (1 <= shots <= 10000)
+    ):
+        return [
+            TextContent(
+                type="text", text="shots must be an integer between 1 and 10000"
+            )
+        ]
 
     if quantum_state["azure_integration"] is None:
-        return [TextContent(type="text", text="Not connected to Azure Quantum. Use connect_azure_quantum first.")]
+        return [
+            TextContent(
+                type="text",
+                text="Not connected to Azure Quantum. Use connect_azure_quantum first.",
+            )
+        ]
 
     circuit = quantum_state["circuit_cache"].get(circuit_id)
     if circuit is None:
-        return [TextContent(type="text", text=f"Circuit ID '{circuit_id}' not found or expired.")]
+        return [
+            TextContent(
+                type="text", text=f"Circuit ID '{circuit_id}' not found or expired."
+            )
+        ]
 
     allowlist_error = await _validate_backend_against_allowlist(backend_name)
     if allowlist_error:
@@ -873,11 +960,7 @@ async def submit_job_handler(args: Dict) -> List[TextContent]:
     # Cost-gating: estimate cost and validate against budget limits
     try:
         estimated_cost = await loop.run_in_executor(
-            io_executor,
-            _estimate_job_cost_sync,
-            circuit,
-            backend_name,
-            shots
+            io_executor, _estimate_job_cost_sync, circuit, backend_name, shots
         )
 
         if _requires_cost_confirmation(backend_name) and not confirm_cost:
@@ -898,14 +981,17 @@ async def submit_job_handler(args: Dict) -> List[TextContent]:
             return [
                 TextContent(
                     type="text",
-                    text=f"Cost limit exceeded: Estimated cost ${safeguarded_cost:.2f} exceeds max ${MAX_COST_PER_JOB_USD:.2f} per job. Reduce shots or use a simulator backend."
+                    text=f"Cost limit exceeded: Estimated cost ${safeguarded_cost:.2f} exceeds max ${MAX_COST_PER_JOB_USD:.2f} per job. Reduce shots or use a simulator backend.",
                 )
             ]
-        if quantum_state["cumulative_cost_usd"] + safeguarded_cost > MAX_CUMULATIVE_COST_PER_SESSION_USD:
+        if (
+            quantum_state["cumulative_cost_usd"] + safeguarded_cost
+            > MAX_CUMULATIVE_COST_PER_SESSION_USD
+        ):
             return [
                 TextContent(
                     type="text",
-                    text=f"Session budget exceeded: Current cost ${quantum_state['cumulative_cost_usd']:.2f} + this job ${safeguarded_cost:.2f} would exceed max ${MAX_CUMULATIVE_COST_PER_SESSION_USD:.2f} per session."
+                    text=f"Session budget exceeded: Current cost ${quantum_state['cumulative_cost_usd']:.2f} + this job ${safeguarded_cost:.2f} would exceed max ${MAX_CUMULATIVE_COST_PER_SESSION_USD:.2f} per session.",
                 )
             ]
 
@@ -916,13 +1002,15 @@ async def submit_job_handler(args: Dict) -> List[TextContent]:
             circuit,
             backend_name,
             shots,
-            f"mcp_{circuit_id}"
+            f"mcp_{circuit_id}",
         )
         quantum_state["cumulative_cost_usd"] += safeguarded_cost
-        return [TextContent(
-            type="text",
-            text=f"✓ Job submitted to Azure Quantum\nJob ID: {job.id()}\nBackend: {backend_name or 'default'}\nShots: {shots}\nEstimated Cost: ${safeguarded_cost:.2f}\nSession Total: ${quantum_state['cumulative_cost_usd']:.2f}\n\nNote: Job execution may take several minutes depending on queue."
-        )]
+        return [
+            TextContent(
+                type="text",
+                text=f"✓ Job submitted to Azure Quantum\nJob ID: {job.id()}\nBackend: {backend_name or 'default'}\nShots: {shots}\nEstimated Cost: ${safeguarded_cost:.2f}\nSession Total: ${quantum_state['cumulative_cost_usd']:.2f}\n\nNote: Job execution may take several minutes depending on queue.",
+            )
+        ]
     except Exception as e:
         return [TextContent(type="text", text=f"Error submitting job: {str(e)}")]
 
@@ -936,15 +1024,44 @@ async def train_classifier_handler(args: Dict) -> List[TextContent]:
     entanglement = args.get("entanglement", "linear")
 
     if dataset_name not in {"iris", "wine", "breast_cancer", "synthetic"}:
-        return [TextContent(type="text", text="dataset must be one of: iris, wine, breast_cancer, synthetic")]
-    if isinstance(n_qubits, bool) or not isinstance(n_qubits, int) or not (2 <= n_qubits <= 10):
-        return [TextContent(type="text", text="n_qubits must be an integer between 2 and 10")]
-    if isinstance(n_layers, bool) or not isinstance(n_layers, int) or not (1 <= n_layers <= 5):
-        return [TextContent(type="text", text="n_layers must be an integer between 1 and 5")]
-    if isinstance(epochs, bool) or not isinstance(epochs, int) or not (1 <= epochs <= 200):
-        return [TextContent(type="text", text="epochs must be an integer between 1 and 200")]
+        return [
+            TextContent(
+                type="text",
+                text="dataset must be one of: iris, wine, breast_cancer, synthetic",
+            )
+        ]
+    if (
+        isinstance(n_qubits, bool)
+        or not isinstance(n_qubits, int)
+        or not (2 <= n_qubits <= 10)
+    ):
+        return [
+            TextContent(
+                type="text", text="n_qubits must be an integer between 2 and 10"
+            )
+        ]
+    if (
+        isinstance(n_layers, bool)
+        or not isinstance(n_layers, int)
+        or not (1 <= n_layers <= 5)
+    ):
+        return [
+            TextContent(type="text", text="n_layers must be an integer between 1 and 5")
+        ]
+    if (
+        isinstance(epochs, bool)
+        or not isinstance(epochs, int)
+        or not (1 <= epochs <= 200)
+    ):
+        return [
+            TextContent(type="text", text="epochs must be an integer between 1 and 200")
+        ]
     if entanglement not in {"linear", "circular", "full"}:
-        return [TextContent(type="text", text="entanglement must be one of: linear, circular, full")]
+        return [
+            TextContent(
+                type="text", text="entanglement must be one of: linear, circular, full"
+            )
+        ]
 
     # Offload data loading and training to process pool
     loop = asyncio.get_event_loop()
@@ -955,19 +1072,27 @@ async def train_classifier_handler(args: Dict) -> List[TextContent]:
         n_qubits,
         n_layers,
         epochs,
-        entanglement
+        entanglement,
     )
 
     return [TextContent(type="text", text=result_text)]
 
 
-def _train_classifier_sync(dataset_name: str, n_qubits: int, n_layers: int, epochs: int, entanglement: str) -> str:
+def _train_classifier_sync(
+    dataset_name: str, n_qubits: int, n_layers: int, epochs: int, entanglement: str
+) -> str:
     """Synchronous training (runs in process pool)"""
-    from sklearn.datasets import load_iris, load_wine, load_breast_cancer, make_classification
+    import tempfile
+
+    import yaml
+    from sklearn.datasets import (
+        load_breast_cancer,
+        load_iris,
+        load_wine,
+        make_classification,
+    )
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import StandardScaler
-    import yaml
-    import tempfile
 
     # Load dataset
     if dataset_name == "iris":
@@ -981,7 +1106,8 @@ def _train_classifier_sync(dataset_name: str, n_qubits: int, n_layers: int, epoc
         X, y = data.data, data.target
     elif dataset_name == "synthetic":
         X, y = make_classification(
-            n_samples=200, n_features=4, n_classes=2, random_state=42)
+            n_samples=200, n_features=4, n_classes=2, random_state=42
+        )
     else:
         return f"Unknown dataset: {dataset_name}"
 
@@ -989,28 +1115,39 @@ def _train_classifier_sync(dataset_name: str, n_qubits: int, n_layers: int, epoc
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
     X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=0.2, random_state=42)
+        X, y, test_size=0.2, random_state=42
+    )
 
     try:
         # Create config
         config = {
             "quantum": {"simulator": {"backend": "qiskit_aer", "shots": 1024}},
             "ml": {
-                "model": {"n_qubits": n_qubits, "n_layers": n_layers, "entanglement": entanglement},
-                "training": {"epochs": epochs, "batch_size": 16, "learning_rate": 0.01, "validation_split": 0.2},
+                "model": {
+                    "n_qubits": n_qubits,
+                    "n_layers": n_layers,
+                    "entanglement": entanglement,
+                },
+                "training": {
+                    "epochs": epochs,
+                    "batch_size": 16,
+                    "learning_rate": 0.01,
+                    "validation_split": 0.2,
+                },
             },
         }
 
         import os
-        fd, config_path = tempfile.mkstemp(suffix='.yaml')
+
+        fd, config_path = tempfile.mkstemp(suffix=".yaml")
         try:
-            with os.fdopen(fd, 'w') as f:
+            with os.fdopen(fd, "w") as f:
                 yaml.safe_dump(config, f)
             qc = QuantumClassifier(config_path=config_path)
-            model = HybridQuantumClassifier(
-                input_dim=X.shape[1], quantum_classifier=qc)
+            model = HybridQuantumClassifier(input_dim=X.shape[1], quantum_classifier=qc)
             history = train_quantum_model(
-                model, X_train, y_train, X_val, y_val, config_path=config_path)
+                model, X_train, y_train, X_val, y_val, config_path=config_path
+            )
         finally:
             try:
                 os.unlink(config_path)
@@ -1053,15 +1190,27 @@ async def estimate_cost_handler(args: Dict) -> List[TextContent]:
         return [TextContent(type="text", text="circuit_id is required")]
     if backend_name is None:
         return [TextContent(type="text", text="backend_name is required")]
-    if isinstance(shots, bool) or not isinstance(shots, int) or not (1 <= shots <= 10000):
-        return [TextContent(type="text", text="shots must be an integer between 1 and 10000")]
+    if (
+        isinstance(shots, bool)
+        or not isinstance(shots, int)
+        or not (1 <= shots <= 10000)
+    ):
+        return [
+            TextContent(
+                type="text", text="shots must be an integer between 1 and 10000"
+            )
+        ]
 
     if quantum_state["azure_integration"] is None:
         return [TextContent(type="text", text="Not connected to Azure Quantum.")]
 
     circuit = quantum_state["circuit_cache"].get(circuit_id)
     if circuit is None:
-        return [TextContent(type="text", text=f"Circuit ID '{circuit_id}' not found or expired.")]
+        return [
+            TextContent(
+                type="text", text=f"Circuit ID '{circuit_id}' not found or expired."
+            )
+        ]
 
     allowlist_error = await _validate_backend_against_allowlist(backend_name)
     if allowlist_error:
@@ -1076,7 +1225,7 @@ async def estimate_cost_handler(args: Dict) -> List[TextContent]:
             quantum_state["azure_integration"].estimate_cost,
             circuit,
             backend_name,
-            shots
+            shots,
         )
 
         cost_info = f"""Cost Estimate for {backend_name}:
@@ -1108,7 +1257,11 @@ async def circuit_properties_handler(args: Dict) -> List[TextContent]:
 
     circuit = quantum_state["circuit_cache"].get(circuit_id)
     if circuit is None:
-        return [TextContent(type="text", text=f"Circuit ID '{circuit_id}' not found or expired.")]
+        return [
+            TextContent(
+                type="text", text=f"Circuit ID '{circuit_id}' not found or expired."
+            )
+        ]
 
     gate_counts = circuit.count_ops()
 

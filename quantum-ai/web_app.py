@@ -13,10 +13,7 @@ import sys
 from pathlib import Path
 
 _CANONICAL = (
-    Path(__file__).resolve().parents[1]
-    / "ai-projects"
-    / "quantum-ml"
-    / "web_app.py"
+    Path(__file__).resolve().parents[1] / "ai-projects" / "quantum-ml" / "web_app.py"
 )
 
 if not _CANONICAL.exists():
@@ -51,12 +48,26 @@ def _compat_load_checkpoint():
 
         if hasattr(resolved_path, "is_relative_to"):
             if not resolved_path.is_relative_to(allowed_dir):
-                return _mod.jsonify({"error": "Invalid checkpoint path: must be within checkpoints directory"}), 403
+                return (
+                    _mod.jsonify(
+                        {
+                            "error": "Invalid checkpoint path: must be within checkpoints directory"
+                        }
+                    ),
+                    403,
+                )
         else:
             try:
                 resolved_path.relative_to(allowed_dir)
             except ValueError:
-                return _mod.jsonify({"error": "Invalid checkpoint path: must be within checkpoints directory"}), 403
+                return (
+                    _mod.jsonify(
+                        {
+                            "error": "Invalid checkpoint path: must be within checkpoints directory"
+                        }
+                    ),
+                    403,
+                )
 
         if not resolved_path.exists():
             return _mod.jsonify({"error": "Checkpoint file not found"}), 404
@@ -64,9 +75,11 @@ def _compat_load_checkpoint():
         checkpoint = _mod.np.load(str(resolved_path), allow_pickle=True)
         weights = checkpoint["weights"]
         epoch = int(checkpoint["epoch"])
-        config = checkpoint["config"].item() if isinstance(
-            checkpoint["config"], _mod.np.ndarray
-        ) else checkpoint["config"]
+        config = (
+            checkpoint["config"].item()
+            if isinstance(checkpoint["config"], _mod.np.ndarray)
+            else checkpoint["config"]
+        )
 
         return _mod.jsonify(
             {

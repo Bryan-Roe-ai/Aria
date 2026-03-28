@@ -8,10 +8,8 @@ from types import SimpleNamespace
 
 
 def _load_train_module():
-    script_path = Path(__file__).parent.parent / \
-        "scripts" / "train_quantum_llm_chat.py"
-    spec = importlib.util.spec_from_file_location(
-        "train_quantum_llm_chat", script_path)
+    script_path = Path(__file__).parent.parent / "scripts" / "train_quantum_llm_chat.py"
+    spec = importlib.util.spec_from_file_location("train_quantum_llm_chat", script_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)

@@ -5,12 +5,11 @@ For ``backend='quantum'``, quantum circuit layers would replace (or augment) the
 feed-forward layers — requires ``pennylane`` or ``qiskit``.  The classical
 fallback is used transparently when quantum libraries are unavailable.
 """
+
 from __future__ import annotations
 
 import dataclasses
-import math
 import string
-import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -25,6 +24,7 @@ except ImportError as exc:
 # ---------------------------------------------------------------------------
 # Tokenizer
 # ---------------------------------------------------------------------------
+
 
 class CodeTokenizer:
     """Character-level tokenizer for source code.
@@ -94,22 +94,24 @@ class CodeTokenizer:
 # Configuration
 # ---------------------------------------------------------------------------
 
+
 @dataclasses.dataclass
 class QuantumCodeLLMConfig:
     """Hyper-parameters for :class:`QuantumCodeLLM`."""
 
-    vocab_size: int = 104        # matches CodeTokenizer().vocab_size
+    vocab_size: int = 104  # matches CodeTokenizer().vocab_size
     d_model: int = 256
     n_heads: int = 8
     n_layers: int = 6
-    n_qubits: int = 4            # used when backend != 'classical'
+    n_qubits: int = 4  # used when backend != 'classical'
     max_seq_len: int = 512
-    backend: str = "classical"   # 'classical' | 'quantum'
+    backend: str = "classical"  # 'classical' | 'quantum'
 
 
 # ---------------------------------------------------------------------------
 # Transformer building blocks
 # ---------------------------------------------------------------------------
+
 
 class _CausalSelfAttention(nn.Module):
     """Multi-head causal self-attention."""
@@ -163,6 +165,7 @@ class _TransformerBlock(nn.Module):
 # Main model
 # ---------------------------------------------------------------------------
 
+
 class QuantumCodeLLM(nn.Module):
     """GPT-style code language model with an optional quantum backend.
 
@@ -211,7 +214,9 @@ class QuantumCodeLLM(nn.Module):
             If sequence length exceeds ``config.max_seq_len``.
         """
         if tokens.dim() != 2:
-            raise ValueError(f"tokens must be 2-D (B, T), got shape {tuple(tokens.shape)}")
+            raise ValueError(
+                f"tokens must be 2-D (B, T), got shape {tuple(tokens.shape)}"
+            )
         _B, T = tokens.shape
         if T > self.config.max_seq_len:
             raise ValueError(
@@ -240,13 +245,9 @@ class QuantumCodeLLM(nn.Module):
             For invalid *temperature*, *top_k*, or *prompt* shape.
         """
         if temperature <= 0:
-            raise ValueError(
-                f"temperature must be > 0, got {temperature}"
-            )
+            raise ValueError(f"temperature must be > 0, got {temperature}")
         if top_k < 0:
-            raise ValueError(
-                f"top_k must be >= 0, got {top_k}"
-            )
+            raise ValueError(f"top_k must be >= 0, got {top_k}")
         if prompt.dim() != 2 or prompt.shape[0] != 1:
             raise ValueError(
                 f"prompt must have shape (1, T), got {tuple(prompt.shape)}"
@@ -271,6 +272,7 @@ class QuantumCodeLLM(nn.Module):
 # ---------------------------------------------------------------------------
 # Checkpoint helpers
 # ---------------------------------------------------------------------------
+
 
 def save_checkpoint(
     model: QuantumCodeLLM,
@@ -344,6 +346,7 @@ def load_checkpoint(
 # ---------------------------------------------------------------------------
 # Convenience generate function (string interface)
 # ---------------------------------------------------------------------------
+
 
 def generate(
     model: QuantumCodeLLM,

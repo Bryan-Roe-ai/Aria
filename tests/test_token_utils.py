@@ -1,21 +1,22 @@
 """Tests for shared/token_utils.py — token counting and message pruning re-export."""
+
 from __future__ import annotations
 
-import pytest
 from typing import List
 
+
 from shared.token_utils import (
-    RoleMessage,
     MODEL_CONTEXT_DEFAULTS,
     PruneStats,
+    RoleMessage,
     count_messages_tokens,
     prune_messages,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _msg(role: str, content: str) -> RoleMessage:
     return {"role": role, "content": content}
@@ -29,6 +30,7 @@ def _chat(*pairs: tuple[str, str]) -> List[RoleMessage]:
 # ---------------------------------------------------------------------------
 # Import / re-export sanity
 # ---------------------------------------------------------------------------
+
 
 class TestImports:
     def test_all_symbols_accessible(self):
@@ -50,6 +52,7 @@ class TestImports:
 # ---------------------------------------------------------------------------
 # count_messages_tokens
 # ---------------------------------------------------------------------------
+
 
 class TestCountMessagesTokens:
     def test_empty_messages(self):
@@ -78,7 +81,9 @@ class TestCountMessagesTokens:
     def test_with_system_prompt(self):
         msgs = _chat(("user", "question"))
         without_sys = count_messages_tokens(msgs, "local", None)
-        with_sys = count_messages_tokens(msgs, "local", None, system_prompt="You are helpful.")
+        with_sys = count_messages_tokens(
+            msgs, "local", None, system_prompt="You are helpful."
+        )
         assert with_sys > without_sys
 
     def test_multiple_messages(self):
@@ -96,10 +101,13 @@ class TestCountMessagesTokens:
 # prune_messages
 # ---------------------------------------------------------------------------
 
+
 class TestPruneMessages:
     def test_no_prune_needed(self):
         msgs = _chat(("user", "Hi"))
-        pruned, stats, sys_msg = prune_messages(msgs, "local", None, max_context_tokens=4096)
+        pruned, stats, sys_msg = prune_messages(
+            msgs, "local", None, max_context_tokens=4096
+        )
         assert len(pruned) >= 1
 
     def test_returns_three_tuple(self):
@@ -109,8 +117,10 @@ class TestPruneMessages:
 
     def test_prune_removes_oldest_messages(self):
         # Create many messages that would exceed a tiny context window
-        msgs = [_msg("user" if i % 2 == 0 else "assistant", f"message number {i} " * 20)
-                for i in range(20)]
+        msgs = [
+            _msg("user" if i % 2 == 0 else "assistant", f"message number {i} " * 20)
+            for i in range(20)
+        ]
         pruned, stats, _ = prune_messages(msgs, "local", None, max_context_tokens=200)
         # Should have removed some messages under tight constraint
         assert len(pruned) <= len(msgs)
@@ -127,7 +137,9 @@ class TestPruneMessages:
             _msg("user", "Hello"),
             _msg("assistant", "Hi there"),
         ]
-        pruned, stats, sys_msg = prune_messages(msgs, "local", None, max_context_tokens=4096)
+        pruned, stats, sys_msg = prune_messages(
+            msgs, "local", None, max_context_tokens=4096
+        )
         # System message may be extracted or kept inline depending on implementation
         # At minimum, the function should not error
         assert pruned is not None
@@ -138,7 +150,9 @@ class TestPruneMessages:
             ("assistant", "Response one"),
             ("user", "Message two"),
         )
-        pruned, stats, _ = prune_messages(msgs, "local", None, max_context_tokens=128000)
+        pruned, stats, _ = prune_messages(
+            msgs, "local", None, max_context_tokens=128000
+        )
         assert len(pruned) == len(msgs)
 
     def test_none_max_tokens_uses_default(self):

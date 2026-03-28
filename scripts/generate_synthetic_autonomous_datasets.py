@@ -16,19 +16,43 @@ OUT_ROOT = REPO_ROOT / "data_out" / "autonomous_datasets"
 
 SAMPLES = {
     "quantum": [
-        ("Explain superposition in one sentence.", "Superposition means a qubit can represent multiple states until measured."),
-        ("What is entanglement?", "Entanglement links qubits so the state of one is correlated with the state of another."),
-        ("When should I use a quantum simulator?", "Use a simulator first for fast debugging and deterministic iteration before running real hardware jobs."),
+        (
+            "Explain superposition in one sentence.",
+            "Superposition means a qubit can represent multiple states until measured.",
+        ),
+        (
+            "What is entanglement?",
+            "Entanglement links qubits so the state of one is correlated with the state of another.",
+        ),
+        (
+            "When should I use a quantum simulator?",
+            "Use a simulator first for fast debugging and deterministic iteration before running real hardware jobs.",
+        ),
     ],
     "aria_commands": [
-        ("Move left and wave.", "Sure — moving left now [aria:walk:left] and waving [aria:wave]."),
-        ("Jump then idle.", "Jumping now [aria:jump], then returning to idle [aria:idle]."),
+        (
+            "Move left and wave.",
+            "Sure — moving left now [aria:walk:left] and waving [aria:wave].",
+        ),
+        (
+            "Jump then idle.",
+            "Jumping now [aria:jump], then returning to idle [aria:idle].",
+        ),
         ("Dance for me.", "Absolutely! Starting dance animation [aria:dance]."),
     ],
     "python_help": [
-        ("How do I read JSON from a file in Python?", "Use json.load() with an open file handle in a with-statement for safe IO."),
-        ("Why use type hints?", "Type hints improve readability and enable static analysis tools to catch bugs earlier."),
-        ("How can I avoid KeyError?", "Use dict.get(key, default) or check key existence with 'in' before access."),
+        (
+            "How do I read JSON from a file in Python?",
+            "Use json.load() with an open file handle in a with-statement for safe IO.",
+        ),
+        (
+            "Why use type hints?",
+            "Type hints improve readability and enable static analysis tools to catch bugs earlier.",
+        ),
+        (
+            "How can I avoid KeyError?",
+            "Use dict.get(key, default) or check key existence with 'in' before access.",
+        ),
     ],
 }
 
@@ -59,9 +83,15 @@ def write_dataset(category: str, count: int) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate synthetic autonomous datasets")
-    parser.add_argument("--samples-per-category", type=int, default=20,
-                        help="Number of JSONL rows per category")
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic autonomous datasets"
+    )
+    parser.add_argument(
+        "--samples-per-category",
+        type=int,
+        default=20,
+        help="Number of JSONL rows per category",
+    )
     args = parser.parse_args()
 
     created = []

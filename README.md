@@ -199,31 +199,7 @@ python scripts/autotrain.py --dry-run
 Training datasets are in `datasets/chat/aria_movement/`, `aria_expanded/`, and `aria_simple/` (read-only).
 Outputs are written to `data_out/lora_training/`.
 
----
-
-## 🛠️ Development & Tests
-
-Local development helpers and test instructions.
-
-- Test watcher script: `scripts/test_watcher.py` — automatically re-runs tests on file changes. See `NEXT_STEPS.md` for usage and troubleshooting.
-
-- To run the full test suite once:
-
-```bash
-python3 -m pytest tests -q --maxfail=1 && echo FULL_PYTEST_OK
-```
-
-- Reproducible dev environment (recommended):
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements-dev.txt
-```
-
-If you'd like CI to run tests on PRs, see `.github/workflows/pr-tests.yml` in the repo.
-
----
+***
 
 ## 🤖 Autonomous Training
 
@@ -288,7 +264,27 @@ Security: no dangerous imports, no filesystem or network access, no `eval`/`exec
 
 ---
 
-## 🧪 Testing
+## 🧪 Testing & Development Workflow
+
+For contributors: see [`scripts/test_watcher.py`](scripts/test_watcher.py) for a lightweight test watcher that automatically re-runs tests on file changes. For more details and troubleshooting, refer to [`NEXT_STEPS.md`](NEXT_STEPS.md).
+
+- **Run the watcher:**
+
+  ```bash
+  python3 scripts/test_watcher.py
+  ```
+
+- **Run full test suite manually:**
+
+  ```bash
+  python3 -m pytest tests -q --maxfail=1
+  ```
+
+See `NEXT_STEPS.md` for more on dev setup, troubleshooting, and recommended next actions.
+
+---
+
+## 🤪 Testing
 
 ```bash
 # Fast unit tests (~0.5 s, no external services)
@@ -398,8 +394,33 @@ pre-commit install
 
 After installing, commits will run the `check-cli-sys-path` hook for changed files under `scripts/`.
 
+### Quick installer
+
+You can run the convenience script to install dev requirements and pre-commit hooks automatically:
+
+```bash
+./scripts/setup-dev.sh
+```
+
+The script will:
+
+- install `requirements-dev.txt` (if present) or at least `pre-commit`,
+- run `pre-commit install`, and
+- run `pre-commit run --all-files` (non-blocking; it will print any hook failures).
+
 ---
 
 ## 📄 License
 
 See individual project directories for license information.
+
+---
+
+## 🧹 Linting & Type Checking
+
+- **Lint:** Run `ruff .` to check code style and common errors.
+- **Type check:** Run `mypy .` to check for type errors.
+- **Autoformat:** Run `black .` and `isort .` for formatting and import sorting.
+- **Pre-commit:** Install hooks with `pre-commit install` to enforce checks before every commit.
+
+See `.pre-commit-config.yaml` and `pyproject.toml` for configuration details.

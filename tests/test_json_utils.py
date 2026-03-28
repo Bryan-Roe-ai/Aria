@@ -2,11 +2,17 @@
 
 Tests cover load_json, save_json, load_jsonl, save_jsonl, and merge_json_files.
 """
+
 from __future__ import annotations
+
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import json
+
+import pytest
 
 from shared.json_utils import (
     load_json,
@@ -16,15 +22,10 @@ from shared.json_utils import (
     save_jsonl,
 )
 
-import json
-import tempfile
-
-import pytest
-
-
 # ---------------------------------------------------------------------------
 # load_json
 # ---------------------------------------------------------------------------
+
 
 class TestLoadJson:
     def test_load_valid_dict(self, tmp_path):
@@ -35,7 +36,7 @@ class TestLoadJson:
 
     def test_load_valid_list(self, tmp_path):
         p = tmp_path / "data.json"
-        p.write_text('[1, 2, 3]', encoding="utf-8")
+        p.write_text("[1, 2, 3]", encoding="utf-8")
         result = load_json(p)
         assert result == [1, 2, 3]
 
@@ -50,8 +51,7 @@ class TestLoadJson:
             load_json(tmp_path / "missing.json")
 
     def test_missing_file_returns_default(self, tmp_path):
-        result = load_json(tmp_path / "missing.json",
-                           default={"fallback": True})
+        result = load_json(tmp_path / "missing.json", default={"fallback": True})
         assert result == {"fallback": True}
 
     def test_invalid_json_raises_without_default(self, tmp_path):
@@ -82,6 +82,7 @@ class TestLoadJson:
 # ---------------------------------------------------------------------------
 # save_json
 # ---------------------------------------------------------------------------
+
 
 class TestSaveJson:
     def test_save_dict(self, tmp_path):
@@ -131,6 +132,7 @@ class TestSaveJson:
 # load_jsonl
 # ---------------------------------------------------------------------------
 
+
 class TestLoadJsonl:
     def test_load_basic(self, tmp_path):
         p = tmp_path / "data.jsonl"
@@ -148,8 +150,9 @@ class TestLoadJsonl:
 
     def test_max_lines(self, tmp_path):
         p = tmp_path / "data.jsonl"
-        p.write_text("\n".join(json.dumps({"i": i})
-                     for i in range(10)) + "\n", encoding="utf-8")
+        p.write_text(
+            "\n".join(json.dumps({"i": i}) for i in range(10)) + "\n", encoding="utf-8"
+        )
         result = load_jsonl(p, max_lines=3)
         assert len(result) == 3
         assert result[-1] == {"i": 2}
@@ -174,6 +177,7 @@ class TestLoadJsonl:
 # ---------------------------------------------------------------------------
 # save_jsonl
 # ---------------------------------------------------------------------------
+
 
 class TestSaveJsonl:
     def test_save_basic(self, tmp_path):
@@ -220,6 +224,7 @@ class TestSaveJsonl:
 # ---------------------------------------------------------------------------
 # merge_json_files
 # ---------------------------------------------------------------------------
+
 
 class TestMergeJsonFiles:
     def test_extend_strategy_merges_lists(self, tmp_path):

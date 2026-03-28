@@ -2,20 +2,32 @@
 Advanced Analytics for Autonomous Training
 Generates charts, trends, and insights
 """
-
-from shared.json_utils import load_status_json
-import argparse
-import os
-import statistics
-import sys
 from datetime import datetime
+import statistics
 from pathlib import Path
-from typing import Dict, List, Tuple
+import sys
 
-# Ensure repository root is on sys.path before importing local shared modules.
+# Ensure repository root is on sys.path as early as possible so subprocess
+# invocations and test runners can import local packages reliably.
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+
+import argparse
+import os
+from typing import Dict, List, Tuple
+
+from shared.json_utils import load_status_json
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -296,65 +308,26 @@ class TrainingAnalytics:
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        html = f"""<!DOCTYPE html>
+        html = f"""<!doctype html>
 <html>
-<head>
-    <title>Autonomous Training Analytics Report</title>
-    <style>
-        body {{ font-family: 'Segoe UI', Arial, sans-serif; margin: 40px; background: #f5f5f5; }}
-        .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
-        h1 {{ color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }}
-        h2 {{ color: #34495e; margin-top: 30px; }}
-        .metric {{ display: inline-block; margin: 10px 20px; padding: 15px; background: #ecf0f1; border-radius: 5px; min-width: 200px; }}
-        .metric-label {{ font-size: 14px; color: #7f8c8d; }}
-        .metric-value {{ font-size: 28px; font-weight: bold; color: #2c3e50; }}
-        .good {{ color: #27ae60; }}
-        .warning {{ color: #f39c12; }}
-        .bad {{ color: #e74c3c; }}
-        table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }}
-        th {{ background: #3498db; color: white; }}
-        tr:hover {{ background: #f5f5f5; }}
-        .chart {{ margin: 20px 0; padding: 20px; background: #f9f9f9; border-radius: 5px; }}
-        .timestamp {{ color: #95a5a6; font-size: 14px; }}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🤖 Autonomous Training Analytics Report</h1>
-        <p class="timestamp">Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
-        
-        <h2>Key Metrics</h2>
-        <div class="metric">
-            <div class="metric-label">Cycles Completed</div>
-            <div class="metric-value">{self.status.get('cycles_completed', 0)}</div>
-        </div>
-        <div class="metric">
-            <div class="metric-label">Best Accuracy</div>
-            <div class="metric-value {'good' if self.status.get('best_accuracy', 0) >= 0.85 else 'warning' if self.status.get('best_accuracy', 0) >= 0.75 else 'bad'}">
-                {self.status.get('best_accuracy', 0):.2%}
-            </div>
-        </div>
-        <div class="metric">
-            <div class="metric-label">Total Datasets</div>
-            <div class="metric-value">{self.status.get('total_datasets_available', len(self.status.get('dataset_inventory', {})))}</div>
-        </div>
-        <div class="metric">
-            <div class="metric-label">Improvement Rate</div>
-            <div class="metric-value">{self.calculate_improvement_rate()*100:.3f}%</div>
-            <div class="metric-label">per cycle</div>
-        </div>
-        
-        <h2>Performance History</h2>
-        <table>
-            <tr>
-                <th>Cycle</th>
-                <th>Epochs</th>
-                <th>Mean Accuracy</th>
-                <th>Max Accuracy</th>
-                <th>Exceptional Models</th>
-                <th>Successful</th>
-            </tr>
+  <head>
+    <meta charset='utf-8'>
+    <title>Autonomous Training Report</title>
+    <style>body{{font-family:Segoe UI, Arial, sans-serif;padding:24px}}</style>
+  </head>
+  <body>
+    <h1>Autonomous Training Analytics Report</h1>
+    <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+    <h2>Overview</h2>
+    <ul>
+      <li>Cycles completed: {self.status.get('cycles_completed', 0)}</li>
+      <li>Best accuracy: {self.status.get('best_accuracy', 0):.2%}</li>
+      <li>Total datasets: {self.status.get('total_datasets_available', len(self.status.get('dataset_inventory', {})))}</li>
+    </ul>
+    <h2>Report</h2>
+    <pre>{self.generate_report()}</pre>
+  </body>
+</html>
 """
 
         history = self.status.get("performance_history", [])
@@ -424,8 +397,6 @@ if __name__ == "__main__":
     try:
         main()
     except BrokenPipeError:
-        # Graceful exit when output is piped to commands like `head`.
-        # Redirect stdout to /dev/null to avoid interpreter flush errors.
         try:
             devnull = os.open(os.devnull, os.O_WRONLY)
             os.dup2(devnull, sys.stdout.fileno())

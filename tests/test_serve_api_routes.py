@@ -13,8 +13,8 @@ import socket
 import sys
 import threading
 import time
-import urllib.request
 import urllib.parse
+import urllib.request
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -47,6 +47,7 @@ def _get(url: str, timeout: float = 5.0):
 # Fixture: running dashboard server
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(scope="module")
 def dashboard_server():
     """Start serve.py on an ephemeral port; yield base URL; stop after tests."""
@@ -60,10 +61,15 @@ def dashboard_server():
     # Patch vram_calculator import inside serve.py before exec_module
     gpu_mock = MagicMock()
     gpu_mock.get_gpu_info.return_value = {
-        "gpu_name": "TestGPU", "total_gb": 8.0, "free_gb": 6.0}
+        "gpu_name": "TestGPU",
+        "total_gb": 8.0,
+        "free_gb": 6.0,
+    }
     gpu_mock.get_gpu_processes.return_value = []
     gpu_mock.get_system_resources.return_value = {
-        "cpu_percent": 10.0, "ram_percent": 40.0}
+        "cpu_percent": 10.0,
+        "ram_percent": 40.0,
+    }
     vram_mock = MagicMock()
     vram_mock.calculate_safe_batch_size.return_value = {
         "available": True,
@@ -73,10 +79,13 @@ def dashboard_server():
         "safe_batch_size": 4,
         "total_estimated_gb": 2.5,
     }
-    patcher = patch.dict("sys.modules", {
-        "vram_calculator": vram_mock,
-        "gpu_monitor": gpu_mock,
-    })
+    patcher = patch.dict(
+        "sys.modules",
+        {
+            "vram_calculator": vram_mock,
+            "gpu_monitor": gpu_mock,
+        },
+    )
     patcher.start()
 
     spec.loader.exec_module(serve_mod)
@@ -110,6 +119,7 @@ def dashboard_server():
 # ---------------------------------------------------------------------------
 # /api/vram-info
 # ---------------------------------------------------------------------------
+
 
 class TestVramInfoEndpoint:
     def test_returns_200(self, dashboard_server):
@@ -145,9 +155,7 @@ class TestVramInfoEndpoint:
             "safe_batch_size": 1,
             "recommendation": "Use CPU training.",
         }
-        with patch.object(
-            serve_mod, "calculate_safe_batch_size", return_value=no_gpu
-        ):
+        with patch.object(serve_mod, "calculate_safe_batch_size", return_value=no_gpu):
             status, body = _get(f"{base}/api/vram-info?model=test&lora_rank=8")
         assert status == 200
         data = json.loads(body)
@@ -158,6 +166,7 @@ class TestVramInfoEndpoint:
 # ---------------------------------------------------------------------------
 # /api/status
 # ---------------------------------------------------------------------------
+
 
 class TestStatusEndpoint:
     def test_returns_200_or_404(self, dashboard_server):
@@ -177,6 +186,7 @@ class TestStatusEndpoint:
 # ---------------------------------------------------------------------------
 # Static file serving
 # ---------------------------------------------------------------------------
+
 
 class TestStaticServing:
     def test_root_returns_html(self, dashboard_server):

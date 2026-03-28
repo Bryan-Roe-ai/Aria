@@ -72,8 +72,7 @@ def get_quantum_llm_status_fast(*, output_dir: Path | None = None) -> dict[str, 
 
     if resolved_status_file.exists():
         try:
-            existing = json.loads(
-                resolved_status_file.read_text(encoding="utf-8"))
+            existing = json.loads(resolved_status_file.read_text(encoding="utf-8"))
             if isinstance(existing, dict):
                 payload.update(existing)
                 payload["available"] = True
@@ -95,8 +94,11 @@ def get_quantum_llm_status_fast(*, output_dir: Path | None = None) -> dict[str, 
     checkpoint_path: Path | None = None
     if checkpoint_ref:
         candidate = Path(str(checkpoint_ref))
-        checkpoint_path = candidate if candidate.is_absolute() else (
-            resolved_output_dir / candidate).resolve()
+        checkpoint_path = (
+            candidate
+            if candidate.is_absolute()
+            else (resolved_output_dir / candidate).resolve()
+        )
     else:
         for filename in CHECKPOINT_FILENAMES:
             candidate = resolved_output_dir / filename
@@ -118,12 +120,9 @@ def get_quantum_llm_status_fast(*, output_dir: Path | None = None) -> dict[str, 
 def format_status(status_data: dict[str, Any]) -> str:
     """Format status data as human-readable text."""
     lines: list[str] = []
-    lines.append(
-        "╔════════════════════════════════════════════════════════════════╗")
-    lines.append(
-        "║              QUANTUM LLM TRAINING STATUS                       ║")
-    lines.append(
-        "╚════════════════════════════════════════════════════════════════╝")
+    lines.append("╔════════════════════════════════════════════════════════════════╗")
+    lines.append("║              QUANTUM LLM TRAINING STATUS                       ║")
+    lines.append("╚════════════════════════════════════════════════════════════════╝")
     lines.append("")
 
     status = str(status_data.get("status", "unknown")).upper()
@@ -132,7 +131,8 @@ def format_status(status_data: dict[str, Any]) -> str:
 
     lines.append(f"Status:                  {available} {status}")
     lines.append(
-        f"Available:               {'✓' if status_data.get('available') else '✗'}")
+        f"Available:               {'✓' if status_data.get('available') else '✗'}"
+    )
     lines.append(f"Quantum Available:       {quantum_available}")
     lines.append("")
 
@@ -144,32 +144,30 @@ def format_status(status_data: dict[str, Any]) -> str:
         progress_bar = "█" * int(progress / 5) + "░" * (20 - int(progress / 5))
         lines.append("TRAINING PROGRESS")
         lines.append(
-            f"  Epochs:                  {completed}/{requested} [{progress_bar}] {progress:.0f}%")
-        lines.append(
-            f"  Current Loss:            {status_data.get('final_loss', '—')}")
-        lines.append(
-            f"  Best Loss:               {status_data.get('best_loss', '—')}")
+            f"  Epochs:                  {completed}/{requested} [{progress_bar}] {progress:.0f}%"
+        )
+        lines.append(f"  Current Loss:            {status_data.get('final_loss', '—')}")
+        lines.append(f"  Best Loss:               {status_data.get('best_loss', '—')}")
         lines.append("")
 
-    checkpoint_path = status_data.get(
-        "checkpoint_path") or status_data.get("best_checkpoint_path")
+    checkpoint_path = status_data.get("checkpoint_path") or status_data.get(
+        "best_checkpoint_path"
+    )
     if checkpoint_path:
         checkpoint_exists = status_data.get("checkpoint_exists", False)
         inference_ready = status_data.get("inference_ready", False)
         lines.append("CHECKPOINT")
         lines.append(f"  Path:                    {checkpoint_path}")
-        lines.append(
-            f"  Exists:                  {'✓' if checkpoint_exists else '✗'}")
-        lines.append(
-            f"  Inference Ready:         {'✓' if inference_ready else '✗'}")
+        lines.append(f"  Exists:                  {'✓' if checkpoint_exists else '✗'}")
+        lines.append(f"  Inference Ready:         {'✓' if inference_ready else '✗'}")
         lines.append("")
 
     if status_data.get("status_file"):
         lines.append("STATUS FILE")
+        lines.append(f"  Path:                    {status_data.get('status_file')}")
         lines.append(
-            f"  Path:                    {status_data.get('status_file')}")
-        lines.append(
-            f"  Exists:                  {'✓' if status_data.get('status_file_exists') else '✗'}")
+            f"  Exists:                  {'✓' if status_data.get('status_file_exists') else '✗'}"
+        )
         lines.append("")
 
     if status_data.get("last_error"):
@@ -182,17 +180,22 @@ def format_status(status_data: dict[str, Any]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Check and display Quantum LLM training status")
+        description="Check and display Quantum LLM training status"
+    )
     parser.add_argument(
         "--output",
         type=str,
         default=None,
         help="Output directory path (default: data_out/quantum_llm_training)",
     )
-    parser.add_argument("--json", action="store_true",
-                        help="Output as JSON (machine-readable)")
-    parser.add_argument("--watch", action="store_true",
-                        help="Auto-refresh every 5 seconds (Ctrl+C to stop)")
+    parser.add_argument(
+        "--json", action="store_true", help="Output as JSON (machine-readable)"
+    )
+    parser.add_argument(
+        "--watch",
+        action="store_true",
+        help="Auto-refresh every 5 seconds (Ctrl+C to stop)",
+    )
     args = parser.parse_args()
 
     output_dir = Path(args.output) if args.output else None
@@ -208,8 +211,7 @@ def main() -> int:
                     print(json.dumps(status, indent=2))
                 else:
                     print(format_status(status))
-                    print(
-                        f"\n[Auto-refresh #{iteration}] Press Ctrl+C to stop...")
+                    print(f"\n[Auto-refresh #{iteration}] Press Ctrl+C to stop...")
                 try:
                     time.sleep(5)
                 except KeyboardInterrupt:

@@ -1,20 +1,19 @@
 """Tests for shared/chat_memory.py — semantic memory with embedding fallback."""
+
 from __future__ import annotations
 
 import math
 import os
-import struct
-import pytest
 from unittest.mock import patch
 
 
 # We import the private helpers directly for unit-testing pure functions.
 import shared.chat_memory as cm
 
-
 # ---------------------------------------------------------------------------
 # _hash_embedding
 # ---------------------------------------------------------------------------
+
 
 class TestHashEmbedding:
     def test_returns_correct_dimension(self):
@@ -58,12 +57,17 @@ class TestHashEmbedding:
 # generate_embedding (tests the fallback path — no API configured)
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateEmbedding:
     def test_falls_back_to_hash_without_api_keys(self):
         # Remove relevant env vars to force hash fallback
         with patch.dict(os.environ, {}, clear=False):
-            for k in ("AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT",
-                      "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", "OPENAI_API_KEY"):
+            for k in (
+                "AZURE_OPENAI_API_KEY",
+                "AZURE_OPENAI_ENDPOINT",
+                "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
+                "OPENAI_API_KEY",
+            ):
                 os.environ.pop(k, None)
             vec = cm.generate_embedding("test text")
         assert isinstance(vec, list)
@@ -87,6 +91,7 @@ class TestGenerateEmbedding:
 # ---------------------------------------------------------------------------
 # _serialize_f32 / _deserialize_f32
 # ---------------------------------------------------------------------------
+
 
 class TestSerializeDeserialize:
     def test_round_trip(self):
@@ -124,6 +129,7 @@ class TestSerializeDeserialize:
 # _cosine
 # ---------------------------------------------------------------------------
 
+
 class TestCosine:
     def test_identical_vectors(self):
         v = [1.0, 0.0, 0.0]
@@ -147,6 +153,7 @@ class TestCosine:
 
     def test_range_minus_one_to_one(self):
         import random
+
         random.seed(42)
         for _ in range(20):
             a = [random.gauss(0, 1) for _ in range(10)]
@@ -164,6 +171,7 @@ class TestCosine:
 # ---------------------------------------------------------------------------
 # store_embedding (no DB path)
 # ---------------------------------------------------------------------------
+
 
 class TestStoreEmbedding:
     def test_returns_false_without_db(self):
@@ -184,6 +192,7 @@ class TestStoreEmbedding:
 # ---------------------------------------------------------------------------
 # fetch_similar_messages (no DB path)
 # ---------------------------------------------------------------------------
+
 
 class TestFetchSimilarMessages:
     def test_returns_empty_without_db(self):

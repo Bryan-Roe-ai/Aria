@@ -7,6 +7,7 @@ for specific providers (Rigetti, Quantinuum, IonQ) and compares results.
 Usage:
   python .\\quantum-ai\\scripts\\test_provider_gates.py [--backend <name>] [--shots <int>]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,8 +27,8 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 try:
     import numpy as np
     import yaml
-    from qiskit import QuantumCircuit, transpile
     from azure_quantum_integration import AzureQuantumIntegration
+    from qiskit import QuantumCircuit, transpile
 except ImportError as exc:  # pragma: no cover - environment dependent
     _OPTIONAL_IMPORT_ERROR = exc
 
@@ -35,7 +36,9 @@ if _OPTIONAL_IMPORT_ERROR is not None and "pytest" in sys.modules:
     import pytest
 
     pytest.skip(
-        f"Optional quantum dependencies unavailable: {_OPTIONAL_IMPORT_ERROR}", allow_module_level=True)
+        f"Optional quantum dependencies unavailable: {_OPTIONAL_IMPORT_ERROR}",
+        allow_module_level=True,
+    )
 
 
 CONFIG_PATH = REPO_ROOT / "config" / "quantum_config.yaml"
@@ -147,7 +150,9 @@ def create_ghz_rigetti_native(n_qubits: int = 4) -> QuantumCircuit:
     return qc
 
 
-def create_ghz_provider_native(n_qubits: int = 4, provider: str = "standard") -> QuantumCircuit:
+def create_ghz_provider_native(
+    n_qubits: int = 4, provider: str = "standard"
+) -> QuantumCircuit:
     """Factory for provider-specific GHZ circuit construction."""
     provider_key = provider.lower().strip()
     if provider_key == "quantinuum":
@@ -170,18 +175,24 @@ def compute_entropy(counts: dict[str, int]) -> float:
 
 def main() -> int:
     if _OPTIONAL_IMPORT_ERROR is not None:
-        print(
-            f"Missing optional quantum dependencies: {_OPTIONAL_IMPORT_ERROR}")
+        print(f"Missing optional quantum dependencies: {_OPTIONAL_IMPORT_ERROR}")
         return 1
 
     parser = argparse.ArgumentParser(
-        description="Test provider-specific gate decompositions")
-    parser.add_argument("--backend", type=str, default=None,
-                        help="Backend name (auto-detect if not specified)")
-    parser.add_argument("--shots", type=int, default=1000,
-                        help="Number of shots (default: 1000)")
-    parser.add_argument("--n-qubits", type=int, default=4,
-                        help="Number of qubits (default: 4)")
+        description="Test provider-specific gate decompositions"
+    )
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default=None,
+        help="Backend name (auto-detect if not specified)",
+    )
+    parser.add_argument(
+        "--shots", type=int, default=1000, help="Number of shots (default: 1000)"
+    )
+    parser.add_argument(
+        "--n-qubits", type=int, default=4, help="Number of qubits (default: 4)"
+    )
     parser.add_argument(
         "--pattern",
         choices=["standard", "quantinuum", "ionq", "rigetti", "all"],
@@ -192,7 +203,8 @@ def main() -> int:
 
     cfg = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
     results_dir = (
-        REPO_ROOT / Path(cfg["logging"]["results_dir"]).expanduser()).resolve()
+        REPO_ROOT / Path(cfg["logging"]["results_dir"]).expanduser()
+    ).resolve()
     results_dir.mkdir(parents=True, exist_ok=True)
 
     print("\n=== Provider-Specific Circuit Pattern Tests ===")
@@ -255,13 +267,13 @@ def main() -> int:
     for pattern_name, circuit_fn in patterns.items():
         print(f"Testing {pattern_name} pattern...")
         qc = circuit_fn(args.n_qubits)
-        print(
-            f"  Circuit depth: {qc.depth()}, gates: {sum(qc.count_ops().values())}")
+        print(f"  Circuit depth: {qc.depth()}, gates: {sum(qc.count_ops().values())}")
 
         try:
             job_name = f"ghz_{args.n_qubits}q_{pattern_name}_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}"
             job = azure.submit_circuit(
-                qc, backend_name=backend_name, shots=args.shots, job_name=job_name)
+                qc, backend_name=backend_name, shots=args.shots, job_name=job_name
+            )
             print(f"  Job submitted: {job.id()}")
             print("  Waiting for results...")
             result_data = azure.get_job_results(job)
@@ -289,13 +301,16 @@ def main() -> int:
                 },
             }
 
-            out_path = results_dir / \
-                f"pattern_{pattern_name}_{args.n_qubits}q_{backend_name.replace('.', '_')}_{ts}.json"
+            out_path = (
+                results_dir
+                / f"pattern_{pattern_name}_{args.n_qubits}q_{backend_name.replace('.', '_')}_{ts}.json"
+            )
             out_path.write_text(json.dumps(out, indent=2), encoding="utf-8")
 
             unique = len(counts)
             print(
-                f"  ✓ Results: {unique} unique states, entropy: {entropy:.3f}/{max_entropy:.3f}")
+                f"  ✓ Results: {unique} unique states, entropy: {entropy:.3f}/{max_entropy:.3f}"
+            )
             print(f"  Saved: {out_path.name}\n")
 
         except Exception as e:

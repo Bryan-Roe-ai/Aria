@@ -1,9 +1,9 @@
 """Tests for shared/db_logging.py — fault-tolerant DB logging wrappers."""
+
 from __future__ import annotations
 
 import json
 import os
-import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,10 +11,10 @@ import pytest
 
 import shared.db_logging as dbl
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _clear_warned():
     """Reset the module-level _WARNED flag between tests."""
@@ -24,6 +24,7 @@ def _clear_warned():
 # ---------------------------------------------------------------------------
 # _warn_once
 # ---------------------------------------------------------------------------
+
 
 class TestWarnOnce:
     def setup_method(self):
@@ -46,6 +47,7 @@ class TestWarnOnce:
 # _get_conn (no QAI_DB_CONN configured)
 # ---------------------------------------------------------------------------
 
+
 class TestGetConn:
     def test_returns_none_without_conn_str(self):
         with patch.dict(os.environ, {}, clear=False):
@@ -57,6 +59,7 @@ class TestGetConn:
 # ---------------------------------------------------------------------------
 # log_chat_message_safe (no DB)
 # ---------------------------------------------------------------------------
+
 
 class TestLogChatMessageSafe:
     def test_skipped_without_db(self):
@@ -76,8 +79,11 @@ class TestLogChatMessageSafe:
         with patch.dict(os.environ, {}, clear=False):
             os.environ.pop("QAI_DB_CONN", None)
             result = dbl.log_chat_message_safe(
-                session_id=None, provider="local", model=None,
-                role="assistant", content="Hi there",
+                session_id=None,
+                provider="local",
+                model=None,
+                role="assistant",
+                content="Hi there",
             )
         assert isinstance(result, dict)
 
@@ -85,6 +91,7 @@ class TestLogChatMessageSafe:
 # ---------------------------------------------------------------------------
 # log_quantum_run_safe (no DB)
 # ---------------------------------------------------------------------------
+
 
 class TestLogQuantumRunSafe:
     def test_skipped_without_db(self):
@@ -113,6 +120,7 @@ class TestLogQuantumRunSafe:
 # ---------------------------------------------------------------------------
 # _parse_quantum_summary
 # ---------------------------------------------------------------------------
+
 
 class TestParseQuantumSummary:
     def test_missing_file_returns_empty(self):

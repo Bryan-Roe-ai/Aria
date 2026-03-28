@@ -25,16 +25,17 @@ Caveats:
   * Pennylane-qiskit compatibility with 1.x may lag behind; verify any advanced
     hybrid workflows after upgrade.
 """
+
 from __future__ import annotations
+
 import argparse
 import datetime as _dt
-from datetime import timezone
-import os
 import re
 import shutil
 import subprocess
-from pathlib import Path
 import sys
+from datetime import timezone
+from pathlib import Path
 
 REQ_PATTERN_QISKIT = re.compile(r"^qiskit==.*$", re.IGNORECASE)
 REQ_PATTERN_QISKIT_AER = re.compile(r"^qiskit-aer==.*$", re.IGNORECASE)
@@ -98,9 +99,7 @@ def perform_install(venv_dir: Path, req_path: Path):
     subprocess.check_call([str(pip_exe), "-m", "pip", "install", "--upgrade", "pip"])
     subprocess.check_call([str(pip_exe), "-m", "pip", "install", "-r", str(req_path)])
     # Quick version report
-    code = (
-        "import qiskit, json; print(json.dumps({'qiskit': qiskit.__version__}))"
-    )
+    code = "import qiskit, json; print(json.dumps({'qiskit': qiskit.__version__}))"
     out = subprocess.check_output([str(pip_exe), "-c", code], text=True).strip()
     print(f"[install] Version check: {out}")
 
@@ -117,11 +116,29 @@ def revert(req_path: Path, req_dir: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="Upgrade Qiskit environment to 1.x")
-    parser.add_argument("--target-version", default=DEFAULT_TARGET, help="Target Qiskit 1.x version (default 1.0.2)")
-    parser.add_argument("--ml-version", default=DEFAULT_QML_VERSION, help="Target qiskit-machine-learning version (default 0.7.0)")
-    parser.add_argument("--dry-run", action="store_true", help="Show planned changes without writing")
-    parser.add_argument("--install", action="store_true", help="After updating requirements, recreate venv and install")
-    parser.add_argument("--revert", action="store_true", help="Revert requirements.txt from latest backup")
+    parser.add_argument(
+        "--target-version",
+        default=DEFAULT_TARGET,
+        help="Target Qiskit 1.x version (default 1.0.2)",
+    )
+    parser.add_argument(
+        "--ml-version",
+        default=DEFAULT_QML_VERSION,
+        help="Target qiskit-machine-learning version (default 0.7.0)",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show planned changes without writing"
+    )
+    parser.add_argument(
+        "--install",
+        action="store_true",
+        help="After updating requirements, recreate venv and install",
+    )
+    parser.add_argument(
+        "--revert",
+        action="store_true",
+        help="Revert requirements.txt from latest backup",
+    )
     args = parser.parse_args()
 
     quantum_root = Path(__file__).resolve().parents[1]
@@ -141,6 +158,7 @@ def main():
     current_version = None
     try:
         import qiskit  # type: ignore
+
         current_version = getattr(qiskit, "__version__", None)
     except Exception:
         pass

@@ -19,8 +19,7 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 _PT_PATH = SCRIPTS_DIR / "parallel_train.py"
-_spec = importlib.util.spec_from_file_location(
-    "_test_parallel_train", _PT_PATH)
+_spec = importlib.util.spec_from_file_location("_test_parallel_train", _PT_PATH)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Unable to load parallel_train module from {_PT_PATH}")
 parallel_train = importlib.util.module_from_spec(_spec)
@@ -44,13 +43,16 @@ def _job(name: str) -> dict:
 
 
 @pytest.mark.unit
-def test_run_all_parallel_cycles_devices_and_writes_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_all_parallel_cycles_devices_and_writes_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     config_path = _write_parallel_config(
         tmp_path,
         [_job("quantum-a"), _job("quantum-b"), _job("quantum-c")],
     )
     trainer = ParallelTrainer(
-        str(config_path), max_parallel=2, perform_evaluation=False)
+        str(config_path), max_parallel=2, perform_evaluation=False
+    )
     trainer.root = tmp_path
 
     seen_devices: dict[str, int] = {}
@@ -84,14 +86,20 @@ def test_run_all_parallel_cycles_devices_and_writes_status(tmp_path: Path, monke
     assert len(data["runs"]) == 1
     assert len(data["runs"][0]["jobs"]) == 3
     assert data["runs"][0]["job_ranking"][0]["name"] in {
-        "quantum-a", "quantum-b", "quantum-c"}
+        "quantum-a",
+        "quantum-b",
+        "quantum-c",
+    }
 
 
 @pytest.mark.unit
-def test_run_all_parallel_appends_status_history(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_all_parallel_appends_status_history(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     config_path = _write_parallel_config(tmp_path, [_job("quantum-next")])
     trainer = ParallelTrainer(
-        str(config_path), max_parallel=1, perform_evaluation=False)
+        str(config_path), max_parallel=1, perform_evaluation=False
+    )
     trainer.root = tmp_path
 
     status_dir = tmp_path / "data_out" / "parallel_training"

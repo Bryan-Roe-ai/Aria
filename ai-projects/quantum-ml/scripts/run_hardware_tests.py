@@ -5,6 +5,7 @@ Run Azure Quantum hardware tests non-interactively and save results.
 - Optionally runs optimized circuit test
 Results are saved to `quantum-ai/results/` via test_azure_quantum utilities.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,7 +25,9 @@ from test_azure_quantum import (
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Run Azure Quantum hardware tests non-interactively")
+    p = argparse.ArgumentParser(
+        description="Run Azure Quantum hardware tests non-interactively"
+    )
     p.add_argument(
         "--backend",
         default="ionq.simulator",
@@ -56,7 +59,9 @@ def main() -> int:
 
     print(f"Using backend: {args.backend}")
     if args.backend not in backends:
-        print("Warning: chosen backend not found in workspace backends. Proceeding anyway...\n")
+        print(
+            "Warning: chosen backend not found in workspace backends. Proceeding anyway...\n"
+        )
 
     # 2) Run Bell state unless skipped
     if not args.skip_bell:

@@ -1,13 +1,11 @@
 """Unit tests for scripts/watch_continuous_automation.py."""
+
 from __future__ import annotations
 
-import importlib.util
 import os
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
-import pytest
 
 
 # ─── module loader ────────────────────────────────────────────────────────────
@@ -22,10 +20,12 @@ def _load():
     if _SCRIPTS_DIR not in sys.path:
         sys.path.insert(0, _SCRIPTS_DIR)
     import importlib
+
     return importlib.import_module(_MODULE_NAME)
 
 
 # ─── _parse_iso ───────────────────────────────────────────────────────────────
+
 
 class TestParseIso:
     def setup_method(self):
@@ -58,6 +58,7 @@ class TestParseIso:
 
 
 # ─── _format_age ──────────────────────────────────────────────────────────────
+
 
 class TestFormatAge:
     def setup_method(self):
@@ -95,6 +96,7 @@ class TestFormatAge:
 
 # ─── _tail ────────────────────────────────────────────────────────────────────
 
+
 class TestTail:
     def setup_method(self):
         self.mod = _load()
@@ -125,6 +127,7 @@ class TestTail:
 
 
 # ─── _safe_read_lines ─────────────────────────────────────────────────────────
+
 
 class TestSafeReadLines:
     def setup_method(self):
@@ -158,6 +161,7 @@ class TestSafeReadLines:
 
 
 # ─── _analyze_loop_log ────────────────────────────────────────────────────────
+
 
 class TestAnalyzeLoopLog:
     def setup_method(self):
@@ -218,8 +222,7 @@ class TestAnalyzeLoopLog:
 
     def test_duplicate_start_markers_same_timestamp_deduped(self):
         ts = "2024-01-15T12:00:00"
-        lines = [self._start_line(ts), self._start_line(
-            ts), self._start_line(ts)]
+        lines = [self._start_line(ts), self._start_line(ts), self._start_line(ts)]
         result = self.mod._analyze_loop_log(lines)
         assert result["cycle_starts"] == 1
         assert result["duplicate_start_markers"] == 2
@@ -285,8 +288,7 @@ class TestAnalyzeLoopLog:
             self._start_line("2024-01-15T12:03:00"),
         ]
         result = self.mod._analyze_loop_log(lines)
-        assert result["last_start"] == self.mod._parse_iso(
-            "2024-01-15T12:05:00")
+        assert result["last_start"] == self.mod._parse_iso("2024-01-15T12:05:00")
 
     def test_mixed_log_full_scenario(self):
         lines = [
@@ -307,6 +309,7 @@ class TestAnalyzeLoopLog:
 
 
 # ─── _read_pid / _pid_running ─────────────────────────────────────────────────
+
 
 class TestReadPid:
     def setup_method(self):

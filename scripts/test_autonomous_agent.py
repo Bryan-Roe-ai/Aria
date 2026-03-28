@@ -5,8 +5,8 @@ Test the autonomous code agent with a simple dry-run.
 This script verifies the agent is working correctly without modifying the repo.
 """
 
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 if "pytest" in sys.modules:
@@ -33,9 +33,11 @@ def test_agent():
     cmd = [
         sys.executable,
         str(REPO_ROOT / "scripts" / "autonomous_code_agent.py"),
-        "--task", "Add comprehensive docstrings to the LocalLLMClient class",
+        "--task",
+        "Add comprehensive docstrings to the LocalLLMClient class",
         # Use echo mode for testing (doesn't require LLM running)
-        "--llm-type", "echo",
+        "--llm-type",
+        "echo",
         "--dry-run",
         "--skip-tests",
     ]

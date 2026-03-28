@@ -10,12 +10,12 @@ Usage:
     python scripts/vram_calculator.py --params-b 7.0 --lora-rank 16 --seq-len 512
     python scripts/vram_calculator.py --json
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import subprocess
-import sys
 from typing import Optional
 
 # ---------------------------------------------------------------------------
@@ -59,6 +59,7 @@ _BYTES_PER_PARAM = {"fp32": 4, "fp16": 2, "bf16": 2, "int8": 1, "int4": 0.5}
 # VRAM probing
 # ---------------------------------------------------------------------------
 
+
 def probe_vram() -> dict:
     """Probe GPU VRAM via torch (preferred) or nvidia-smi fallback.
 
@@ -69,15 +70,16 @@ def probe_vram() -> dict:
     # --- Try torch first ---
     try:
         import torch  # type: ignore[import]
+
         if torch.cuda.is_available():
             props = torch.cuda.get_device_properties(0)
             total_b = props.total_memory
             reserved_b = torch.cuda.memory_reserved(0)
             allocated_b = torch.cuda.memory_allocated(0)
             free_b = total_b - reserved_b
-            total_gb = total_b / 1024 ** 3
-            free_gb = free_b / 1024 ** 3
-            used_gb = allocated_b / 1024 ** 3
+            total_gb = total_b / 1024**3
+            free_gb = free_b / 1024**3
+            used_gb = allocated_b / 1024**3
             return {
                 "available": True,
                 "total_gb": round(total_gb, 2),
@@ -133,10 +135,11 @@ def probe_vram() -> dict:
 # Memory estimation helpers
 # ---------------------------------------------------------------------------
 
+
 def estimate_model_memory_gb(params_b: float, dtype: str = "fp16") -> float:
     """Convert billions of parameters to approximate GB of GPU memory."""
     bytes_per_param = _BYTES_PER_PARAM.get(dtype, 2)
-    return round(params_b * 1e9 * bytes_per_param / 1024 ** 3, 2)
+    return round(params_b * 1e9 * bytes_per_param / 1024**3, 2)
 
 
 def estimate_lora_overhead_gb(
@@ -144,7 +147,7 @@ def estimate_lora_overhead_gb(
 ) -> float:
     """Approximate LoRA adapter memory: rank × 2 × hidden_size × layers × fp16."""
     lora_params = lora_rank * 2 * hidden_size * num_layers
-    return round(lora_params * 2 / 1024 ** 3, 3)  # fp16 = 2 bytes
+    return round(lora_params * 2 / 1024**3, 3)  # fp16 = 2 bytes
 
 
 def estimate_activation_memory_gb(
@@ -152,12 +155,13 @@ def estimate_activation_memory_gb(
 ) -> float:
     """Rough activation memory: batch × seq × hidden × layers × fp16."""
     activation_bytes = batch_size * seq_len * hidden_size * num_layers * 2
-    return round(activation_bytes / 1024 ** 3, 3)
+    return round(activation_bytes / 1024**3, 3)
 
 
 # ---------------------------------------------------------------------------
 # Safe batch-size calculation
 # ---------------------------------------------------------------------------
+
 
 def _get_arch(model_name: str) -> tuple[int, int]:
     """Return (hidden_size, num_layers) for known model prefix or defaults."""
@@ -245,11 +249,8 @@ def calculate_safe_batch_size(
             f"GPU: {vram_info.get('gpu_name', 'Unknown')} — "
             f"{free_gb:.1f} GB free of {total_gb:.1f} GB ({free_pct}%)"
         )
-    reasoning.append(
-        f"Model ({params_b:.1f}B {dtype}): ~{model_mem_gb:.1f} GB"
-    )
-    reasoning.append(
-        f"LoRA overhead (rank={lora_rank}): ~{lora_mem_gb:.3f} GB")
+    reasoning.append(f"Model ({params_b:.1f}B {dtype}): ~{model_mem_gb:.1f} GB")
+    reasoning.append(f"LoRA overhead (rank={lora_rank}): ~{lora_mem_gb:.3f} GB")
     reasoning.append(
         f"Activations (bs={safe_batch}, seq={seq_len}): ~{activation_at_safe:.3f} GB"
     )
@@ -284,6 +285,7 @@ def calculate_safe_batch_size(
 # CLI
 # ---------------------------------------------------------------------------
 
+
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         description="VRAM-Aware Batch Size Calculator",
@@ -297,9 +299,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Override model parameter count in billions",
     )
-    p.add_argument(
-        "--lora-rank", type=int, default=16, help="LoRA rank (default: 16)"
-    )
+    p.add_argument("--lora-rank", type=int, default=16, help="LoRA rank (default: 16)")
     p.add_argument(
         "--seq-len",
         type=int,
@@ -346,7 +346,8 @@ def main(argv: list[str] | None = None) -> None:
     else:
         print("GPU:              Not available (CPU mode)")
     print(
-        f"\nModel:            {result.get('model_name') or '(unknown)'} ({result['params_b']:.1f}B params)")
+        f"\nModel:            {result.get('model_name') or '(unknown)'} ({result['params_b']:.1f}B params)"
+    )
     print(f"Precision:        {result['dtype']}")
     print(f"LoRA rank:        {result['lora_rank']}")
     print(f"Sequence length:  {result['seq_len']}")

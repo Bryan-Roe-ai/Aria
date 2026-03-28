@@ -39,7 +39,10 @@ DATA_OUT = REPO_ROOT / "data_out"
 SUITES = {
     "unit": {
         "description": "Fast unit tests (~0.5s)",
-        "pytest_args": ["-m", "not slow and not azure and not integration and not quantum and not gpu"],
+        "pytest_args": [
+            "-m",
+            "not slow and not azure and not integration and not quantum and not gpu",
+        ],
     },
     "integration": {
         "description": "Integration / external-service tests (~3s)",
@@ -187,7 +190,11 @@ def _watch_loop(suites: list[str], coverage: bool, verbose: int) -> None:
 
     while True:
         current = max(
-            (p.stat().st_mtime for p in REPO_ROOT.rglob("*.py") if "venv" not in str(p)),
+            (
+                p.stat().st_mtime
+                for p in REPO_ROOT.rglob("*.py")
+                if "venv" not in str(p)
+            ),
             default=0.0,
         )
         if current > last_mtime:
@@ -255,7 +262,12 @@ def main() -> None:
     ap.add_argument("--coverage", action="store_true", help="Enable coverage reporting")
     ap.add_argument("--watch", action="store_true", help="Re-run on file changes")
     ap.add_argument("--list-suites", action="store_true", help="List available suites")
-    ap.add_argument("--verbose", type=int, default=1, help="Verbosity (0=quiet, 1=normal, 2=verbose)")
+    ap.add_argument(
+        "--verbose",
+        type=int,
+        default=1,
+        help="Verbosity (0=quiet, 1=normal, 2=verbose)",
+    )
     args = ap.parse_args()
 
     if args.list_suites:

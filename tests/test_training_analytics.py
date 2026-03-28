@@ -6,9 +6,7 @@ these tests cover all class methods.
 
 import importlib.util
 import json
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -55,6 +53,7 @@ def _history(*mean_accuracies, epochs=50):
 # TestGetAccuracy
 # ---------------------------------------------------------------------------
 
+
 class TestGetAccuracy:
     def test_returns_mean_accuracy(self):
         assert TrainingAnalytics._get_accuracy({"mean_accuracy": 0.85}) == 0.85
@@ -77,14 +76,14 @@ class TestGetAccuracy:
 # TestLoadStatus
 # ---------------------------------------------------------------------------
 
+
 class TestLoadStatus:
     def test_missing_file_returns_empty_dict(self, tmp_path):
         ta = TrainingAnalytics(str(tmp_path / "no_such_file.json"))
         assert ta.status == {}
 
     def test_valid_json_dict_loaded(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"cycles_completed": 7, "best_accuracy": 0.85})
+        ta = _write_ta(tmp_path, {"cycles_completed": 7, "best_accuracy": 0.85})
         assert ta.status["cycles_completed"] == 7
         assert ta.status["best_accuracy"] == pytest.approx(0.85)
 
@@ -117,6 +116,7 @@ class TestLoadStatus:
 # TestCalculateImprovementRate
 # ---------------------------------------------------------------------------
 
+
 class TestCalculateImprovementRate:
     def test_no_history_returns_zero(self, tmp_path):
         ta = _write_ta(tmp_path, {})
@@ -133,7 +133,8 @@ class TestCalculateImprovementRate:
 
     def test_multiple_entries(self, tmp_path):
         ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.50, 0.60, 0.70, 0.80)})
+            tmp_path, {"performance_history": _history(0.50, 0.60, 0.70, 0.80)}
+        )
         # (0.80 - 0.50) / (4-1) = 0.10
         assert ta.calculate_improvement_rate() == pytest.approx(0.10)
 
@@ -142,8 +143,7 @@ class TestCalculateImprovementRate:
         assert ta.calculate_improvement_rate() == pytest.approx(-0.20)
 
     def test_flat_accuracy_returns_zero(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.75, 0.75, 0.75)})
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.75, 0.75, 0.75)})
         assert ta.calculate_improvement_rate() == pytest.approx(0.0)
 
     def test_uses_mean_accuracy_key(self, tmp_path):
@@ -160,6 +160,7 @@ class TestCalculateImprovementRate:
 # ---------------------------------------------------------------------------
 # TestPredictTargetAccuracy
 # ---------------------------------------------------------------------------
+
 
 class TestPredictTargetAccuracy:
     def test_no_history_returns_zero(self, tmp_path):
@@ -197,6 +198,7 @@ class TestPredictTargetAccuracy:
 # ---------------------------------------------------------------------------
 # TestIdentifyBestEpochCount
 # ---------------------------------------------------------------------------
+
 
 class TestIdentifyBestEpochCount:
     def test_empty_history_returns_100(self, tmp_path):
@@ -247,6 +249,7 @@ class TestIdentifyBestEpochCount:
 # TestDetectPlateau
 # ---------------------------------------------------------------------------
 
+
 class TestDetectPlateau:
     def test_not_enough_history_returns_false(self, tmp_path):
         ta = _write_ta(tmp_path, {"performance_history": _history(0.80, 0.82)})
@@ -257,38 +260,36 @@ class TestDetectPlateau:
         assert ta.detect_plateau() is False
 
     def test_identical_values_returns_true(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.80, 0.80, 0.80)})
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.80, 0.80, 0.80)})
         assert ta.detect_plateau(window=3) is True
 
     def test_high_variance_returns_false(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.60, 0.75, 0.90)})
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.60, 0.75, 0.90)})
         assert ta.detect_plateau(window=3) is False
 
     def test_tiny_variance_returns_true(self, tmp_path):
         # pvariance([0.8000, 0.8001, 0.8000]) ≈ 2.2e-9 < 0.0001
-        ta = _write_ta(tmp_path, {
-            "performance_history": _history(0.8000, 0.8001, 0.8000)
-        })
+        ta = _write_ta(
+            tmp_path, {"performance_history": _history(0.8000, 0.8001, 0.8000)}
+        )
         assert ta.detect_plateau(window=3) is True
 
     def test_window_uses_only_recent_entries(self, tmp_path):
         # Early entries vary wildly but last 3 are flat
-        ta = _write_ta(tmp_path, {
-            "performance_history": _history(0.10, 0.50, 0.80, 0.80, 0.80)
-        })
+        ta = _write_ta(
+            tmp_path, {"performance_history": _history(0.10, 0.50, 0.80, 0.80, 0.80)}
+        )
         assert ta.detect_plateau(window=3) is True
 
     def test_default_window_is_3(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.70, 0.80, 0.90)})
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.70, 0.80, 0.90)})
         assert ta.detect_plateau() is False
 
 
 # ---------------------------------------------------------------------------
 # TestGenerateReport
 # ---------------------------------------------------------------------------
+
 
 class TestGenerateReport:
     def test_empty_status_runs_without_error(self, tmp_path):
@@ -298,73 +299,92 @@ class TestGenerateReport:
         assert "OVERVIEW" in report
 
     def test_contains_cycle_count(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"cycles_completed": 42, "best_accuracy": 0.88})
+        ta = _write_ta(tmp_path, {"cycles_completed": 42, "best_accuracy": 0.88})
         assert "42" in ta.generate_report()
 
     def test_contains_best_accuracy(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"cycles_completed": 1, "best_accuracy": 0.88})
+        ta = _write_ta(tmp_path, {"cycles_completed": 1, "best_accuracy": 0.88})
         assert "88.00%" in ta.generate_report()
 
     def test_performance_trend_section_present_when_history(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "performance_history": _history(0.70, 0.80, 0.90),
-            "cycles_completed": 3,
-            "best_accuracy": 0.90,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "performance_history": _history(0.70, 0.80, 0.90),
+                "cycles_completed": 3,
+                "best_accuracy": 0.90,
+            },
+        )
         report = ta.generate_report()
         assert "PERFORMANCE TREND" in report
         assert "PREDICTIONS" in report
 
     def test_plateau_warning_shown(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "performance_history": _history(0.80, 0.80, 0.80),
-            "cycles_completed": 3,
-            "best_accuracy": 0.80,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "performance_history": _history(0.80, 0.80, 0.80),
+                "cycles_completed": 3,
+                "best_accuracy": 0.80,
+            },
+        )
         assert "PLATEAU DETECTED" in ta.generate_report()
 
     def test_improving_status_shown(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "performance_history": _history(0.60, 0.70, 0.80),
-            "cycles_completed": 3,
-            "best_accuracy": 0.80,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "performance_history": _history(0.60, 0.70, 0.80),
+                "cycles_completed": 3,
+                "best_accuracy": 0.80,
+            },
+        )
         assert "still improving" in ta.generate_report()
 
     def test_dataset_inventory_counted(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "dataset_inventory": {"chat": ["a", "b"], "quantum": ["c"]},
-            "cycles_completed": 0,
-            "best_accuracy": 0,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "dataset_inventory": {"chat": ["a", "b"], "quantum": ["c"]},
+                "cycles_completed": 0,
+                "best_accuracy": 0,
+            },
+        )
         # total_datasets_available not set → falls back to len(dataset_inventory)
         assert "Total Datasets: 2" in ta.generate_report()
 
     def test_total_datasets_available_overrides_inventory(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "total_datasets_available": 99,
-            "dataset_inventory": {"chat": ["a"]},
-            "cycles_completed": 0,
-            "best_accuracy": 0,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "total_datasets_available": 99,
+                "dataset_inventory": {"chat": ["a"]},
+                "cycles_completed": 0,
+                "best_accuracy": 0,
+            },
+        )
         assert "Total Datasets: 99" in ta.generate_report()
 
     def test_promotion_listed(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "promotions": [{"version": "3", "cycle": 10, "accuracy": 0.91}],
-            "cycles_completed": 10,
-            "best_accuracy": 0.91,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "promotions": [{"version": "3", "cycle": 10, "accuracy": 0.91}],
+                "cycles_completed": 10,
+                "best_accuracy": 0.91,
+            },
+        )
         assert "v3" in ta.generate_report()
 
     def test_ready_for_production_when_high_accuracy(self, tmp_path):
-        ta = _write_ta(tmp_path, {
-            "performance_history": _history(0.88, 0.91),
-            "cycles_completed": 2,
-            "best_accuracy": 0.91,
-        })
+        ta = _write_ta(
+            tmp_path,
+            {
+                "performance_history": _history(0.88, 0.91),
+                "cycles_completed": 2,
+                "best_accuracy": 0.91,
+            },
+        )
         assert "production" in ta.generate_report().lower()
 
 
@@ -372,19 +392,18 @@ class TestGenerateReport:
 # TestGenerateAsciiChart
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateAsciiChart:
     def test_no_data_returns_message(self, tmp_path):
         ta = _write_ta(tmp_path, {})
         assert ta.generate_ascii_chart() == "No data available"
 
     def test_all_equal_values_returns_message(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.80, 0.80, 0.80)})
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.80, 0.80, 0.80)})
         assert ta.generate_ascii_chart() == "All values are equal"
 
     def test_varying_values_returns_string(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.60, 0.70, 0.80)})
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.60, 0.70, 0.80)})
         chart = ta.generate_ascii_chart()
         assert isinstance(chart, str)
         assert len(chart) > 0

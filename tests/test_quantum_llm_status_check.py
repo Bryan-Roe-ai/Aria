@@ -5,12 +5,9 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
-from typing import Any
 
 import pytest
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "quantum_llm_status_check.py"
@@ -79,8 +76,7 @@ def test_script_with_output_dir(tmp_path: Path) -> None:
 @pytest.mark.unit
 def test_script_json_output_with_custom_dir(tmp_path: Path) -> None:
     """Test JSON output with custom directory."""
-    exit_code, output = _run_status_check(
-        ["--output", str(tmp_path), "--json"])
+    exit_code, output = _run_status_check(["--output", str(tmp_path), "--json"])
     assert exit_code == 0
 
     try:
@@ -132,8 +128,7 @@ def test_script_json_with_status_file(tmp_path: Path) -> None:
     }
     status_file.write_text(json.dumps(test_status, indent=2), encoding="utf-8")
 
-    exit_code, output = _run_status_check(
-        ["--output", str(tmp_path), "--json"])
+    exit_code, output = _run_status_check(["--output", str(tmp_path), "--json"])
     assert exit_code == 0
 
     data = json.loads(output)

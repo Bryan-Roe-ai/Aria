@@ -202,9 +202,9 @@ def test_integration():
     # Check master orchestrator integration
     master_config = REPO_ROOT / "config/master_orchestrator.yaml"
     if master_config.exists():
-        print(f"✅ Master orchestrator config exists")
+        print("✅ Master orchestrator config exists")
     else:
-        print(f"⚠️  Master orchestrator config not found (optional)")
+        print("⚠️  Master orchestrator config not found (optional)")
 
     # Check component scripts exist
     component_scripts = [

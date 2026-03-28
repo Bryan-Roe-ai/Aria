@@ -9,7 +9,6 @@ from pathlib import Path
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Module loader (registers in sys.modules so @dataclass works under Python 3.14)
 # ---------------------------------------------------------------------------
@@ -172,8 +171,7 @@ class TestJobQueueAddAndGet:
         assert queue.jobs[jid].priority == m.JobPriority.NORMAL
 
     def test_add_job_respects_priority(self, queue, m):
-        jid = queue.add_job(name="hi-job", config={},
-                            priority=m.JobPriority.HIGH)
+        jid = queue.add_job(name="hi-job", config={}, priority=m.JobPriority.HIGH)
         assert queue.jobs[jid].priority == m.JobPriority.HIGH
 
     def test_add_job_with_tags(self, queue, m):
@@ -203,8 +201,7 @@ class TestJobQueueAddAndGet:
         result = queue.get_next_job()
         assert result is None
         # The job should now be BLOCKED
-        blocked = [j for j in queue.jobs.values() if j.status ==
-                   m.JobStatus.BLOCKED]
+        blocked = [j for j in queue.jobs.values() if j.status == m.JobStatus.BLOCKED]
         assert len(blocked) == 1
 
 
@@ -229,7 +226,10 @@ class TestJobQueueLifecycle:
         assert queue.jobs[jid].completed_at is not None
 
     def test_complete_job_failure_increments_retry(self, queue, m):
-        jid = queue.add_job(name="j", config={}, )
+        jid = queue.add_job(
+            name="j",
+            config={},
+        )
         queue.start_job(jid)
         queue.complete_job(jid, success=False, error="boom")
         assert queue.jobs[jid].retry_count == 1
@@ -291,8 +291,14 @@ class TestJobQueueStatus:
     def test_get_queue_status_keys(self, queue, m):
         status = queue.get_queue_status()
         expected = {
-            "total_jobs", "pending", "running", "completed",
-            "failed", "blocked", "cancelled", "queue_length",
+            "total_jobs",
+            "pending",
+            "running",
+            "completed",
+            "failed",
+            "blocked",
+            "cancelled",
+            "queue_length",
             "estimated_total_time",
         }
         assert expected.issubset(set(status.keys()))
@@ -453,7 +459,6 @@ class TestCheckDependencies:
         assert queue.check_dependencies(job2) is False
 
     def test_unknown_dependency_returns_false(self, queue, m):
-        jid = queue.add_job(name="consumer", config={},
-                            dependencies=["ghost-id"])
+        jid = queue.add_job(name="consumer", config={}, dependencies=["ghost-id"])
         job = queue.jobs[jid]
         assert queue.check_dependencies(job) is False

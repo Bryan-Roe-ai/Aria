@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-
 # Add paths for imports
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CHAT_CLI_SRC = REPO_ROOT / "ai-projects" / "chat-cli" / "src"

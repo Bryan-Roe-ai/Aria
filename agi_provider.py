@@ -18,8 +18,7 @@ _CANONICAL = (
     / "agi_provider.py"
 )
 
-_spec = importlib.util.spec_from_file_location(
-    "_canonical_agi_provider", _CANONICAL)
+_spec = importlib.util.spec_from_file_location("_canonical_agi_provider", _CANONICAL)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Unable to load canonical AGI provider: {_CANONICAL}")
 

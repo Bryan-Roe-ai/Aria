@@ -4,7 +4,7 @@ This directory contains the GitHub Pages deployment of the Aria project web appl
 
 ## 🌐 Live Demo
 
-Visit the live demo at: https://bryan-roe.github.io/Aria
+Visit the live demo at: <https://bryan-roe.github.io/Aria>
 
 ## 📁 Structure
 
@@ -32,17 +32,20 @@ All web applications run in **demo mode** when hosted on GitHub Pages:
 For complete functionality with AI, quantum computing, and training:
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Bryan-Roe/Aria.git
    cd Aria
    ```
 
 2. **Install dependencies**
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. **Configure API keys** (optional)
+
    ```bash
    # For Azure OpenAI
    export AZURE_OPENAI_API_KEY="..."
@@ -54,6 +57,7 @@ For complete functionality with AI, quantum computing, and training:
    ```
 
 4. **Start services**
+
    ```bash
    # Aria web server
    cd aria_web && python server.py
@@ -77,6 +81,7 @@ GitHub Pages automatically deploys when changes are pushed to the main branch:
 ### Manual Deployment
 
 To manually trigger deployment:
+
 1. Go to the repository's Actions tab
 2. Select "Deploy to GitHub Pages" workflow
 3. Click "Run workflow"
@@ -86,6 +91,7 @@ To manually trigger deployment:
 ### Jekyll Configuration
 
 The `_config.yml` file contains Jekyll settings:
+
 - Site title and description
 - Theme selection
 - Build exclusions
@@ -100,6 +106,7 @@ const DEMO_MODE = true; // Set to false for local backend
 ```
 
 To test with local backend before deployment:
+
 1. Set `DEMO_MODE = false` in the JavaScript files
 2. Start local Python servers
 3. Test functionality
@@ -110,17 +117,20 @@ To test with local backend before deployment:
 To test the GitHub Pages site locally:
 
 1. **Install Jekyll**
+
    ```bash
    gem install jekyll bundler
    ```
 
 2. **Serve locally**
+
    ```bash
    cd docs
    jekyll serve
    ```
 
 3. **Open browser**
+
    ```
    http://localhost:4000
    ```
@@ -130,6 +140,7 @@ To test the GitHub Pages site locally:
 To add a new web application to GitHub Pages:
 
 1. **Create app directory**
+
    ```bash
    mkdir docs/myapp
    ```
@@ -144,6 +155,7 @@ To add a new web application to GitHub Pages:
    - Link to `/myapp/`
 
 4. **Test and commit**
+
    ```bash
    git add docs/myapp
    git commit -m "Add myapp to GitHub Pages"
@@ -213,9 +225,9 @@ from shared.json_utils import load_status_json
 
 ## 🔗 Links
 
-- **Repository**: https://github.com/Bryan-Roe/Aria
-- **Issues**: https://github.com/Bryan-Roe/Aria/issues
-- **Live Demo**: https://bryan-roe.github.io/Aria
+- **Repository**: <https://github.com/Bryan-Roe/Aria>
+- **Issues**: <https://github.com/Bryan-Roe/Aria/issues>
+- **Live Demo**: <https://bryan-roe.github.io/Aria>
 
 ## 📄 License
 

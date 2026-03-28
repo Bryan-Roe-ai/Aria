@@ -3,53 +3,56 @@ Real-time Monitoring Dashboard for Autonomous AI Training
 Provides live status, metrics, and alerts
 """
 
+import argparse
 import json
 import os
-import sys
-import time
 import subprocess
-from datetime import datetime, timedelta
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-import argparse
 
 # Color codes for terminal output
 
 
 class Colors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 
 class TrainingMonitor:
     """Monitor autonomous training in real-time"""
 
-    def __init__(self, status_file: str = "data_out/autonomous_training_status.json",
-                 log_file: str = "data_out/autonomous_training.log"):
+    def __init__(
+        self,
+        status_file: str = "data_out/autonomous_training_status.json",
+        log_file: str = "data_out/autonomous_training.log",
+    ):
         self.status_file = Path(status_file)
         self.log_file = Path(log_file)
-        self.heartbeat_file = self.status_file.parent / \
-            "autonomous_training_heartbeat.json"
+        self.heartbeat_file = (
+            self.status_file.parent / "autonomous_training_heartbeat.json"
+        )
         self.last_status = None
         self.last_log_position = 0
 
     def clear_screen(self):
         """Clear terminal screen"""
         try:
-            if os.name == 'nt':
-                subprocess.run(['cmd', '/c', 'cls'], check=False)
+            if os.name == "nt":
+                subprocess.run(["cmd", "/c", "cls"], check=False)
             else:
-                subprocess.run(['clear'], check=False)
+                subprocess.run(["clear"], check=False)
         except Exception:
             # If clearing fails, just print newlines
-            print('\n' * 50)
+            print("\n" * 50)
 
     def load_status(self) -> Optional[Dict]:
         """Load current status from file"""
@@ -80,7 +83,7 @@ class TrainingMonitor:
         try:
             # Stream log file with rolling buffer instead of loading entire file
             buffer = []
-            with open(self.log_file, 'r') as f:
+            with open(self.log_file, "r") as f:
                 for line in f:
                     buffer.append(line)
                     if len(buffer) > lines:
@@ -115,7 +118,8 @@ class TrainingMonitor:
         """Print dashboard header"""
         print(f"\n{Colors.BOLD}{Colors.HEADER}{'='*80}{Colors.ENDC}")
         print(
-            f"{Colors.BOLD}{Colors.HEADER}🤖 AUTONOMOUS AI TRAINING MONITOR{Colors.ENDC}")
+            f"{Colors.BOLD}{Colors.HEADER}🤖 AUTONOMOUS AI TRAINING MONITOR{Colors.ENDC}"
+        )
         print(f"{Colors.BOLD}{Colors.HEADER}{'='*80}{Colors.ENDC}\n")
         print(f"📊 Status File: {self.status_file}")
         print(f"📝 Log File: {self.log_file}")
@@ -128,12 +132,12 @@ class TrainingMonitor:
 
         if "error" in status:
             print(
-                f"{Colors.FAIL}❌ Error loading status: {status['error']}{Colors.ENDC}")
+                f"{Colors.FAIL}❌ Error loading status: {status['error']}{Colors.ENDC}"
+            )
             return
 
         # Basic info
-        started = status.get(
-            "started_at", status.get("last_updated", "Unknown"))
+        started = status.get("started_at", status.get("last_updated", "Unknown"))
         phase = status.get("current_phase", status.get("status", "unknown"))
         cycles = status.get("cycles_completed", 0)
 
@@ -146,7 +150,7 @@ class TrainingMonitor:
             "optimization": Colors.OKCYAN,
             "deployment": Colors.OKGREEN,
             "stopped": Colors.FAIL,
-            "error": Colors.FAIL
+            "error": Colors.FAIL,
         }
         phase_color = phase_colors.get(phase, Colors.ENDC)
 
@@ -162,8 +166,7 @@ class TrainingMonitor:
         if "last_cycle_completed_at" in status:
             last_cycle = status["last_cycle_completed_at"]
             duration = status.get("last_cycle_duration_seconds", 0)
-            print(
-                f"  Last Cycle: {last_cycle} ({self.format_duration(duration)})")
+            print(f"  Last Cycle: {last_cycle} ({self.format_duration(duration)})")
         elif status.get("last_updated"):
             print(f"  Last Cycle: {status.get('last_updated')}")
 
@@ -227,10 +230,10 @@ class TrainingMonitor:
 
         if inventory:
             for category, item in inventory.items():
-                count = item.get("count", 0) if isinstance(
-                    item, dict) else int(item)
+                count = item.get("count", 0) if isinstance(item, dict) else int(item)
                 print(
-                    f"  {category:20s}: {Colors.BOLD}{count:4d}{Colors.ENDC} datasets")
+                    f"  {category:20s}: {Colors.BOLD}{count:4d}{Colors.ENDC} datasets"
+                )
 
         print(f"\n  {Colors.BOLD}Total Available: {total}{Colors.ENDC}")
         print()
@@ -251,29 +254,28 @@ class TrainingMonitor:
         recent = history[-5:]
 
         print(
-            f"  {'Cycle':<8} {'Epochs':<8} {'Mean Acc':<12} {'Max Acc':<12} {'Models':<10}")
+            f"  {'Cycle':<8} {'Epochs':<8} {'Mean Acc':<12} {'Max Acc':<12} {'Models':<10}"
+        )
         print("  " + "─" * 70)
 
-        for i, perf in enumerate(recent, start=len(history)-len(recent)+1):
+        for i, perf in enumerate(recent, start=len(history) - len(recent) + 1):
             mean_acc = perf.get("mean_accuracy", perf.get("accuracy", 0))
             max_acc = perf.get("max_accuracy", perf.get("accuracy", mean_acc))
             epochs = perf.get("epochs", "-")
-            successful = perf.get("successful_count",
-                                  perf.get("datasets_trained", 0))
+            successful = perf.get("successful_count", perf.get("datasets_trained", 0))
             cycle_display = perf.get("cycle", i)
 
             mean_str = f"{mean_acc*100:.2f}%"
             max_str = f"{max_acc*100:.2f}%"
 
             print(
-                f"  #{cycle_display:<7} {str(epochs):<8} {mean_str:<12} {max_str:<12} {successful:<10}")
+                f"  #{cycle_display:<7} {str(epochs):<8} {mean_str:<12} {max_str:<12} {successful:<10}"
+            )
 
         # Trend analysis
         if len(history) >= 2:
-            prev_acc = history[-2].get("mean_accuracy",
-                                       history[-2].get("accuracy", 0))
-            curr_acc = history[-1].get("mean_accuracy",
-                                       history[-1].get("accuracy", 0))
+            prev_acc = history[-2].get("mean_accuracy", history[-2].get("accuracy", 0))
+            curr_acc = history[-1].get("mean_accuracy", history[-1].get("accuracy", 0))
             diff = curr_acc - prev_acc
 
             if diff > 0.01:
@@ -312,8 +314,7 @@ class TrainingMonitor:
                 task_type = task.get("type", "unknown")
                 started = task.get("started_at", "")
                 epochs = task.get("epochs", "")
-                print(
-                    f"    • {task_type} (epochs: {epochs}) - started {started}")
+                print(f"    • {task_type} (epochs: {epochs}) - started {started}")
         else:
             print(f"  {Colors.OKGREEN}No active tasks{Colors.ENDC}")
 
@@ -367,13 +368,12 @@ class TrainingMonitor:
         # Check for performance degradation
         history = status.get("performance_history", [])
         if len(history) >= 2:
-            prev = history[-2].get("mean_accuracy",
-                                   history[-2].get("accuracy", 0))
-            curr = history[-1].get("mean_accuracy",
-                                   history[-1].get("accuracy", 0))
+            prev = history[-2].get("mean_accuracy", history[-2].get("accuracy", 0))
+            curr = history[-1].get("mean_accuracy", history[-1].get("accuracy", 0))
             if curr < prev - 0.05:
                 alerts.append(
-                    ("WARNING", f"Performance degradation: {prev:.2%} → {curr:.2%}"))
+                    ("WARNING", f"Performance degradation: {prev:.2%} → {curr:.2%}")
+                )
 
         # Check dataset count
         total = status.get("total_datasets_available")
@@ -405,9 +405,11 @@ class TrainingMonitor:
 
         if status is None:
             print(
-                f"{Colors.WARNING}⚠️  Status file not found. Is the orchestrator running?{Colors.ENDC}")
+                f"{Colors.WARNING}⚠️  Status file not found. Is the orchestrator running?{Colors.ENDC}"
+            )
             print(
-                f"\nStart it with: python ./scripts/autonomous_training_demo.py --cycles 3 --interval 5")
+                "\nStart it with: python ./scripts/autonomous_training_demo.py --cycles 3 --interval 5"
+            )
             return
 
         self.print_overview(status)
@@ -419,7 +421,7 @@ class TrainingMonitor:
         self.print_recent_logs()
 
         print(f"{Colors.BOLD}{'─'*80}{Colors.ENDC}")
-        print(f"Press Ctrl+C to exit  |  Refreshing every 5 seconds...")
+        print("Press Ctrl+C to exit  |  Refreshing every 5 seconds...")
 
     def print_summary(self):
         """Print compact summary"""
@@ -442,32 +444,36 @@ class TrainingMonitor:
             )
 
         print(f"\n{'='*80}")
-        print(f"AUTONOMOUS TRAINING STATUS")
+        print("AUTONOMOUS TRAINING STATUS")
         print(f"{'='*80}")
         print(f"Phase: {phase.upper()}")
         print(f"Cycles: {cycles}")
         print(f"Best Accuracy: {best_acc:.2%}")
         print(f"Datasets: {total}")
         print(f"Plateau Cycles: {status.get('plateau_cycles', 0)}")
-        promotions = status.get('promotions', [])
+        promotions = status.get("promotions", [])
         print(f"Promotions: {len(promotions)}")
         if heartbeat:
             print(
-                f"Heartbeat: {heartbeat.get('state', 'unknown').upper()} @ {heartbeat.get('timestamp', '-')}")
-            if heartbeat.get('next_cycle_eta'):
+                f"Heartbeat: {heartbeat.get('state', 'unknown').upper()} @ {heartbeat.get('timestamp', '-')}"
+            )
+            if heartbeat.get("next_cycle_eta"):
                 print(f"Next Cycle ETA: {heartbeat.get('next_cycle_eta')}")
 
         history = status.get("performance_history", [])
         if history:
             latest = history[-1]
-            print(f"\nLatest Results:")
+            print("\nLatest Results:")
             print(f"  Epochs: {latest.get('epochs', '-')}")
             print(
-                f"  Mean Accuracy: {latest.get('mean_accuracy', latest.get('accuracy', 0)):.2%}")
+                f"  Mean Accuracy: {latest.get('mean_accuracy', latest.get('accuracy', 0)):.2%}"
+            )
             print(
-                f"  Max Accuracy: {latest.get('max_accuracy', latest.get('accuracy', 0)):.2%}")
+                f"  Max Accuracy: {latest.get('max_accuracy', latest.get('accuracy', 0)):.2%}"
+            )
             print(
-                f"  Successful: {latest.get('successful_count', latest.get('datasets_trained', 0))}")
+                f"  Successful: {latest.get('successful_count', latest.get('datasets_trained', 0))}"
+            )
             print(f"  Exceptional: {latest.get('exceptional_models', 0)}")
 
         print(f"{'='*80}\n")
@@ -494,48 +500,68 @@ class TrainingMonitor:
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=[
-                'timestamp', 'cycle', 'epochs', 'mean_accuracy', 'median_accuracy',
-                'max_accuracy', 'successful_count', 'failed_count',
-                'exceptional_models', 'excellent_models'
-            ])
+        with open(output_path, "w", newline="") as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "timestamp",
+                    "cycle",
+                    "epochs",
+                    "mean_accuracy",
+                    "median_accuracy",
+                    "max_accuracy",
+                    "successful_count",
+                    "failed_count",
+                    "exceptional_models",
+                    "excellent_models",
+                ],
+            )
             writer.writeheader()
 
             for i, perf in enumerate(status["performance_history"], start=1):
-                mean_acc = perf.get('mean_accuracy', perf.get('accuracy', 0))
-                max_acc = perf.get('max_accuracy', perf.get('accuracy', mean_acc))
-                writer.writerow({
-                    'timestamp': perf.get('timestamp', ''),
-                    'cycle': perf.get('cycle', i),
-                    'epochs': perf.get('epochs', ''),
-                    'mean_accuracy': mean_acc,
-                    'median_accuracy': perf.get('median_accuracy', 0),
-                    'max_accuracy': max_acc,
-                    'successful_count': perf.get('successful_count', perf.get('datasets_trained', 0)),
-                    'failed_count': perf.get('failed_count', 0),
-                    'exceptional_models': perf.get('exceptional_models', 0),
-                    'excellent_models': perf.get('excellent_models', 0)
-                })
+                mean_acc = perf.get("mean_accuracy", perf.get("accuracy", 0))
+                max_acc = perf.get("max_accuracy", perf.get("accuracy", mean_acc))
+                writer.writerow(
+                    {
+                        "timestamp": perf.get("timestamp", ""),
+                        "cycle": perf.get("cycle", i),
+                        "epochs": perf.get("epochs", ""),
+                        "mean_accuracy": mean_acc,
+                        "median_accuracy": perf.get("median_accuracy", 0),
+                        "max_accuracy": max_acc,
+                        "successful_count": perf.get(
+                            "successful_count", perf.get("datasets_trained", 0)
+                        ),
+                        "failed_count": perf.get("failed_count", 0),
+                        "exceptional_models": perf.get("exceptional_models", 0),
+                        "excellent_models": perf.get("excellent_models", 0),
+                    }
+                )
 
         print(f"{Colors.OKGREEN}✅ Metrics exported to {output_path}{Colors.ENDC}")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Monitor Autonomous AI Training")
-    parser.add_argument("--status-file", default="data_out/autonomous_training_status.json",
-                        help="Path to status file")
-    parser.add_argument("--log-file", default="data_out/autonomous_training.log",
-                        help="Path to log file")
-    parser.add_argument("--summary", action="store_true",
-                        help="Print summary and exit")
-    parser.add_argument("--export", metavar="FILE",
-                        help="Export metrics to CSV file")
-    parser.add_argument("--refresh", type=int, default=5,
-                        help="Refresh interval in seconds (default: 5)")
-    parser.add_argument("--once", action="store_true",
-                        help="Display once and exit")
+    parser = argparse.ArgumentParser(description="Monitor Autonomous AI Training")
+    parser.add_argument(
+        "--status-file",
+        default="data_out/autonomous_training_status.json",
+        help="Path to status file",
+    )
+    parser.add_argument(
+        "--log-file",
+        default="data_out/autonomous_training.log",
+        help="Path to log file",
+    )
+    parser.add_argument("--summary", action="store_true", help="Print summary and exit")
+    parser.add_argument("--export", metavar="FILE", help="Export metrics to CSV file")
+    parser.add_argument(
+        "--refresh",
+        type=int,
+        default=5,
+        help="Refresh interval in seconds (default: 5)",
+    )
+    parser.add_argument("--once", action="store_true", help="Display once and exit")
 
     args = parser.parse_args()
 

@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = REPO_ROOT / "scripts"
 if str(SCRIPTS_DIR) not in sys.path:
@@ -40,14 +39,20 @@ def _make_state() -> aca.AgentState:
     )
 
 
-def test_restore_modified_files_preserves_user_content(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_restore_modified_files_preserves_user_content(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     _configure_agent_repo(monkeypatch, tmp_path)
     target = tmp_path / "sample.py"
     target.write_text("print('user work')\n", encoding="utf-8")
 
     agent = aca.CodeAgent(llm_type="echo")
     agent.state = _make_state()
-    monkeypatch.setattr(agent, "_llm_query", lambda prompt, max_tokens=aca.MAX_TASK_TOKENS: "print('agent edit')\n")
+    monkeypatch.setattr(
+        agent,
+        "_llm_query",
+        lambda prompt, max_tokens=aca.MAX_TASK_TOKENS: "print('agent edit')\n",
+    )
 
     modified = agent.implement_changes("update sample", ["sample.py"])
 
@@ -60,18 +65,40 @@ def test_restore_modified_files_preserves_user_content(monkeypatch: pytest.Monke
     assert target.read_text(encoding="utf-8") == "print('user work')\n"
 
 
-def test_commit_changes_stages_only_agent_modified_files(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_commit_changes_stages_only_agent_modified_files(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     _configure_agent_repo(monkeypatch, tmp_path)
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "agent@example.com"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.name", "Agent Test"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "agent@example.com"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Agent Test"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
 
     tracked = tmp_path / "tracked.py"
     unrelated = tmp_path / "notes.txt"
     tracked.write_text("print('base')\n", encoding="utf-8")
     unrelated.write_text("original\n", encoding="utf-8")
-    subprocess.run(["git", "add", "tracked.py", "notes.txt"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "initial"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "add", "tracked.py", "notes.txt"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "initial"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
 
     unrelated.write_text("user local change\n", encoding="utf-8")
     tracked.write_text("print('agent change')\n", encoding="utf-8")
@@ -91,7 +118,9 @@ def test_commit_changes_stages_only_agent_modified_files(monkeypatch: pytest.Mon
         capture_output=True,
         text=True,
     )
-    committed_files = {line.strip() for line in show.stdout.splitlines() if line.strip()}
+    committed_files = {
+        line.strip() for line in show.stdout.splitlines() if line.strip()
+    }
     assert committed_files == {"tracked.py"}
 
     status = subprocess.run(
@@ -105,15 +134,34 @@ def test_commit_changes_stages_only_agent_modified_files(monkeypatch: pytest.Mon
     assert "tracked.py" not in status.stdout
 
 
-def test_commit_changes_uses_agent_repo_root_instead_of_global(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_commit_changes_uses_agent_repo_root_instead_of_global(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.email", "agent@example.com"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "config", "user.name", "Agent Test"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "agent@example.com"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Agent Test"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
 
     tracked = tmp_path / "tracked.py"
     tracked.write_text("print('base')\n", encoding="utf-8")
-    subprocess.run(["git", "add", "tracked.py"], cwd=tmp_path, check=True, capture_output=True)
-    subprocess.run(["git", "commit", "-m", "initial"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "add", "tracked.py"], cwd=tmp_path, check=True, capture_output=True
+    )
+    subprocess.run(
+        ["git", "commit", "-m", "initial"],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
     tracked.write_text("print('agent change')\n", encoding="utf-8")
 
     wrong_root = tmp_path / "wrong-root"
@@ -138,17 +186,20 @@ def test_commit_changes_uses_agent_repo_root_instead_of_global(monkeypatch: pyte
         capture_output=True,
         text=True,
     )
-    committed_files = {line.strip() for line in show.stdout.splitlines() if line.strip()}
+    committed_files = {
+        line.strip() for line in show.stdout.splitlines() if line.strip()
+    }
     assert committed_files == {"tracked.py"}
 
 
-def test_run_tests_uses_agent_repo_root_instead_of_global(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_run_tests_uses_agent_repo_root_instead_of_global(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
     test_runner = scripts_dir / "test_runner.py"
     test_runner.write_text(
-        "print('collected 1 items')\n"
-        "print('1 passed')\n",
+        "print('collected 1 items')\n" "print('1 passed')\n",
         encoding="utf-8",
     )
 

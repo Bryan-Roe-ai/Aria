@@ -5,10 +5,8 @@ Unit tests for scripts/monitor_autonomous_training.py — TrainingMonitor class.
 import importlib.util
 import json
 import sys
-from io import StringIO
 from pathlib import Path
 
-import pytest
 
 # ---------------------------------------------------------------------------
 # Module loader
@@ -19,8 +17,7 @@ def _load():
     mod_name = "monitor_autonomous_training"
     if mod_name in sys.modules:
         return sys.modules[mod_name]
-    path = Path(__file__).parent.parent / "scripts" / \
-        "monitor_autonomous_training.py"
+    path = Path(__file__).parent.parent / "scripts" / "monitor_autonomous_training.py"
     spec = importlib.util.spec_from_file_location(mod_name, path)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)
@@ -61,6 +58,7 @@ def _monitor(tmp_path, status=None, heartbeat=None, log_lines=None):
 # TestColors
 # ---------------------------------------------------------------------------
 
+
 class TestColors:
     def test_has_escape_codes(self):
         assert "\033[" in Colors.HEADER
@@ -75,14 +73,24 @@ class TestColors:
         assert Colors.BOLD == "\033[1m"
 
     def test_all_attributes_present(self):
-        for attr in ("HEADER", "OKBLUE", "OKCYAN", "OKGREEN",
-                     "WARNING", "FAIL", "ENDC", "BOLD", "UNDERLINE"):
+        for attr in (
+            "HEADER",
+            "OKBLUE",
+            "OKCYAN",
+            "OKGREEN",
+            "WARNING",
+            "FAIL",
+            "ENDC",
+            "BOLD",
+            "UNDERLINE",
+        ):
             assert hasattr(Colors, attr), f"Missing Colors.{attr}"
 
 
 # ---------------------------------------------------------------------------
 # TestFormatDuration
 # ---------------------------------------------------------------------------
+
 
 class TestFormatDuration:
     def test_under_60_seconds(self, tmp_path):
@@ -126,11 +134,13 @@ class TestFormatDuration:
 # TestFormatPercentage
 # ---------------------------------------------------------------------------
 
+
 class TestFormatPercentage:
     def _strip_colors(self, s: str) -> str:
         """Strip ANSI color codes."""
         import re
-        return re.sub(r'\033\[[0-9;]+m', '', s)
+
+        return re.sub(r"\033\[[0-9;]+m", "", s)
 
     def test_high_accuracy_green(self, tmp_path):
         m = _monitor(tmp_path)
@@ -186,6 +196,7 @@ class TestFormatPercentage:
 # TestLoadStatus
 # ---------------------------------------------------------------------------
 
+
 class TestLoadStatus:
     def test_missing_file_returns_none(self, tmp_path):
         m = _monitor(tmp_path)  # no status written
@@ -216,14 +227,14 @@ class TestLoadStatus:
 # TestLoadHeartbeat
 # ---------------------------------------------------------------------------
 
+
 class TestLoadHeartbeat:
     def test_missing_file_returns_none(self, tmp_path):
         m = _monitor(tmp_path)  # no heartbeat written
         assert m.load_heartbeat() is None
 
     def test_valid_heartbeat_loaded(self, tmp_path):
-        hb_data = {"state": "running", "pid": 1234,
-                   "timestamp": "2024-01-01T12:00:00"}
+        hb_data = {"state": "running", "pid": 1234, "timestamp": "2024-01-01T12:00:00"}
         m = _monitor(tmp_path, heartbeat=hb_data)
         result = m.load_heartbeat()
         assert result is not None
@@ -240,14 +251,18 @@ class TestLoadHeartbeat:
 # TestGetRecentLogs
 # ---------------------------------------------------------------------------
 
+
 class TestGetRecentLogs:
     def test_missing_file_returns_empty_list(self, tmp_path):
         m = _monitor(tmp_path)  # no log file
         assert m.get_recent_logs() == []
 
     def test_returns_log_lines(self, tmp_path):
-        lines = ["INFO: cycle 1 started",
-                 "INFO: cycle 1 done", "ERROR: something failed"]
+        lines = [
+            "INFO: cycle 1 started",
+            "INFO: cycle 1 done",
+            "ERROR: something failed",
+        ]
         m = _monitor(tmp_path, log_lines=lines)
         result = m.get_recent_logs(10)
         assert len(result) == 3
@@ -282,9 +297,11 @@ class TestGetRecentLogs:
 # TestPrintAlerts (verifies logic by capturing stdout)
 # ---------------------------------------------------------------------------
 
+
 class TestPrintAlerts:
     def _capture(self, m, status):
         import io
+
         buf = io.StringIO()
         orig = sys.stdout
         sys.stdout = buf
@@ -330,7 +347,9 @@ class TestPrintAlerts:
             ],
         }
         output = self._capture(m, status)
-        assert "degradation" in output.lower() or "85.00%" in output or "70.00%" in output
+        assert (
+            "degradation" in output.lower() or "85.00%" in output or "70.00%" in output
+        )
 
     def test_low_dataset_count_triggers_warning(self, tmp_path):
         m = _monitor(tmp_path)

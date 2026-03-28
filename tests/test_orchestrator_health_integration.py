@@ -4,8 +4,6 @@ Verifies that orchestrator status files are correctly aggregated and exposed
 through the status endpoint for real-time monitoring.
 """
 
-
-
 import importlib.util
 import json
 import sys
@@ -21,8 +19,7 @@ import pytest
 def app_module():
     """Dynamically import function_app for testing."""
     spec = importlib.util.spec_from_file_location(
-        "function_app",
-        Path(__file__).resolve().parents[1] / "function_app.py"
+        "function_app", Path(__file__).resolve().parents[1] / "function_app.py"
     )
     if spec is None or spec.loader is None:
         raise RuntimeError("Failed to load function_app module")
@@ -30,8 +27,6 @@ def app_module():
     sys.modules["function_app"] = module
     spec.loader.exec_module(module)
     return module
-
-
 
 
 class MockRequest:
@@ -65,7 +60,9 @@ def test_orchestrator_health_aggregates_autonomous_training(app_module: ModuleTy
     orchestrators = data["orchestrator_health"]["orchestrators"]
 
     # If status file exists, should be included
-    assert "autonomous_training" in orchestrators, "autonomous_training orchestrator missing despite status file present."
+    assert (
+        "autonomous_training" in orchestrators
+    ), "autonomous_training orchestrator missing despite status file present."
     orch = orchestrators["autonomous_training"]
     assert "status" in orch
     assert "cycles_completed" in orch or "error" in orch

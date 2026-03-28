@@ -1,12 +1,13 @@
 """
 Tool Registry - Manages tool lifecycle and storage
 """
+
 import json
 import logging
-from dataclasses import dataclass, asdict, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Tool:
     """Represents a generated tool"""
+
     id: str
     name: str
     description: str
@@ -58,9 +60,9 @@ class ToolRegistry:
         """Load tool index from disk"""
         if self.index_file.exists():
             try:
-                with open(self.index_file, 'r') as f:
+                with open(self.index_file, "r") as f:
                     index = json.load(f)
-                    for tool_data in index.get('tools', []):
+                    for tool_data in index.get("tools", []):
                         tool = Tool.from_dict(tool_data)
                         self._tools[tool.id] = tool
                 logger.info(f"Loaded {len(self._tools)} tools from registry")
@@ -72,12 +74,12 @@ class ToolRegistry:
         """Save tool index to disk"""
         try:
             index = {
-                'version': '1.0',
-                'tools': [tool.to_dict() for tool in self._tools.values()],
-                'count': len(self._tools),
-                'last_updated': datetime.now(timezone.utc).isoformat()
+                "version": "1.0",
+                "tools": [tool.to_dict() for tool in self._tools.values()],
+                "count": len(self._tools),
+                "last_updated": datetime.now(timezone.utc).isoformat(),
             }
-            with open(self.index_file, 'w') as f:
+            with open(self.index_file, "w") as f:
                 json.dump(index, f, indent=2)
             logger.debug(f"Saved {len(self._tools)} tools to registry")
         except Exception as e:
@@ -104,7 +106,7 @@ class ToolRegistry:
 
         # Save tool code to separate file
         tool_file = self.tools_dir / f"{tool.id}.py"
-        with open(tool_file, 'w') as f:
+        with open(tool_file, "w") as f:
             f.write(f"# Tool: {tool.name}\n")
             f.write(f"# ID: {tool.id}\n")
             f.write(f"# Created: {tool.created_at}\n\n")
@@ -208,8 +210,10 @@ class ToolRegistry:
         results = []
 
         for tool in self._tools.values():
-            if (query_lower in tool.name.lower() or
-                    query_lower in tool.description.lower()):
+            if (
+                query_lower in tool.name.lower()
+                or query_lower in tool.description.lower()
+            ):
                 results.append(tool)
 
         return results
@@ -225,13 +229,15 @@ class ToolRegistry:
         validated_count = sum(1 for t in self._tools.values() if t.validated)
 
         return {
-            'total_tools': len(self._tools),
-            'validated_tools': validated_count,
-            'total_executions': total_executions,
-            'most_used': max(
-                self._tools.values(),
-                key=lambda t: t.execution_count,
-                default=None
-            ).name if self._tools else None,
-            'registry_path': str(self.tools_dir)
+            "total_tools": len(self._tools),
+            "validated_tools": validated_count,
+            "total_executions": total_executions,
+            "most_used": (
+                max(
+                    self._tools.values(), key=lambda t: t.execution_count, default=None
+                ).name
+                if self._tools
+                else None
+            ),
+            "registry_path": str(self.tools_dir),
         }

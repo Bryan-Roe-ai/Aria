@@ -3,14 +3,20 @@ Quantum LLM Chat Provider
 Uses a trained quantum-enhanced language model for chat interactions
 Integrates real quantum circuits in the attention mechanism
 """
-from chat_providers import BaseChatProvider, ProviderChoice, RoleMessage  # type: ignore[attr-defined]
-import sys
+
 import logging
+import sys
 from pathlib import Path
-from typing import Iterator, Optional, List, Dict, Any
+from typing import Any, Dict, Iterator, List
 
 import torch
 import torch.nn.functional as F
+
+from chat_providers import (
+    BaseChatProvider,  # type: ignore[attr-defined]
+    ProviderChoice,
+    RoleMessage,
+)
 
 # Add quantum-ml to path
 repo_root = Path(__file__).resolve().parent.parent.parent.parent
@@ -21,7 +27,8 @@ for p in [str(quantum_ml_path), str(quantum_ml_src)]:
         sys.path.insert(0, p)
 
 try:
-    from quantum_transformer import QuantumLLM, QUANTUM_AVAILABLE
+    from quantum_transformer import QUANTUM_AVAILABLE, QuantumLLM
+
     QUANTUM_LLM_AVAILABLE = True
 except ImportError as e:
     QuantumLLM = None  # type: ignore[assignment]
@@ -46,14 +53,13 @@ class QuantumLLMChatProvider(BaseChatProvider):
         model_path: str,
         temperature: float = 0.8,
         max_output_tokens: int = 200,
-        **kwargs
+        **kwargs,
     ):
         super().__init__()
         self.model_path = Path(model_path)
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load model
         self.model = None
@@ -64,8 +70,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         self.max_seq_len = 128
 
         if not QUANTUM_LLM_AVAILABLE:
-            logger.error(
-                "QuantumLLM not available - cannot initialize provider")
+            logger.error("QuantumLLM not available - cannot initialize provider")
             raise ImportError("QuantumLLM not available")
 
         try:
@@ -97,13 +102,19 @@ class QuantumLLMChatProvider(BaseChatProvider):
                     checkpoint_path = Path(checkpoint_ref)
                     if not checkpoint_path.is_absolute():
                         direct_candidate = self.model_path / checkpoint_path
-                        checkpoint_path = direct_candidate if direct_candidate.exists() else repo_root / \
-                            checkpoint_path
+                        checkpoint_path = (
+                            direct_candidate
+                            if direct_candidate.exists()
+                            else repo_root / checkpoint_path
+                        )
                     if checkpoint_path.exists():
                         return checkpoint_path
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
-                    "Failed to read Quantum LLM status metadata from %s: %s", status_file, exc)
+                    "Failed to read Quantum LLM status metadata from %s: %s",
+                    status_file,
+                    exc,
+                )
 
         candidates = [
             self.model_path / "best_quantum_llm.pt",
@@ -125,16 +136,38 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         if isinstance(model_cfg, dict) and model_cfg:
             return {
-                "vocab_size": int(model_cfg.get("vocab_size", checkpoint.get("vocab_size", 256))),
+                "vocab_size": int(
+                    model_cfg.get("vocab_size", checkpoint.get("vocab_size", 256))
+                ),
                 "d_model": int(model_cfg.get("d_model", checkpoint.get("d_model", 64))),
                 "n_heads": int(model_cfg.get("n_heads", checkpoint.get("n_heads", 4))),
-                "n_transformer_layers": int(model_cfg.get("n_transformer_layers", model_cfg.get("n_layers", checkpoint.get("n_layers", 2)))),
-                "n_qubits": int(model_cfg.get("n_qubits", checkpoint.get("n_qubits", 4))),
-                "n_quantum_layers": int(model_cfg.get("n_quantum_layers", checkpoint.get("n_quantum_layers", 2))),
-                "max_seq_len": int(model_cfg.get("max_seq_len", model_cfg.get("max_seq_length", checkpoint.get("max_seq_length", 128)))),
+                "n_transformer_layers": int(
+                    model_cfg.get(
+                        "n_transformer_layers",
+                        model_cfg.get("n_layers", checkpoint.get("n_layers", 2)),
+                    )
+                ),
+                "n_qubits": int(
+                    model_cfg.get("n_qubits", checkpoint.get("n_qubits", 4))
+                ),
+                "n_quantum_layers": int(
+                    model_cfg.get(
+                        "n_quantum_layers", checkpoint.get("n_quantum_layers", 2)
+                    )
+                ),
+                "max_seq_len": int(
+                    model_cfg.get(
+                        "max_seq_len",
+                        model_cfg.get(
+                            "max_seq_length", checkpoint.get("max_seq_length", 128)
+                        ),
+                    )
+                ),
                 "entanglement": model_cfg.get("entanglement", "circular"),
                 "dropout": float(model_cfg.get("dropout", 0.0)),
-                "use_quantum_attention": bool(model_cfg.get("use_quantum_attention", True)),
+                "use_quantum_attention": bool(
+                    model_cfg.get("use_quantum_attention", True)
+                ),
                 "use_quantum_ffn": bool(model_cfg.get("use_quantum_ffn", True)),
                 "tie_embeddings": bool(model_cfg.get("tie_embeddings", True)),
             }
@@ -144,13 +177,19 @@ class QuantumLLMChatProvider(BaseChatProvider):
             "vocab_size": int(checkpoint.get("vocab_size", 256)),
             "d_model": int(checkpoint.get("d_model", 64)),
             "n_heads": int(checkpoint.get("n_heads", 4)),
-            "n_transformer_layers": int(checkpoint.get("n_layers", checkpoint.get("n_transformer_layers", 2))),
+            "n_transformer_layers": int(
+                checkpoint.get("n_layers", checkpoint.get("n_transformer_layers", 2))
+            ),
             "n_qubits": int(checkpoint.get("n_qubits", 4)),
             "n_quantum_layers": int(checkpoint.get("n_quantum_layers", 2)),
-            "max_seq_len": int(checkpoint.get("max_seq_length", checkpoint.get("max_seq_len", 128))),
+            "max_seq_len": int(
+                checkpoint.get("max_seq_length", checkpoint.get("max_seq_len", 128))
+            ),
             "entanglement": checkpoint.get("entanglement", "circular"),
             "dropout": float(checkpoint.get("dropout", 0.0)),
-            "use_quantum_attention": bool(checkpoint.get("use_quantum_attention", True)),
+            "use_quantum_attention": bool(
+                checkpoint.get("use_quantum_attention", True)
+            ),
             "use_quantum_ffn": bool(checkpoint.get("use_quantum_ffn", True)),
             "tie_embeddings": bool(checkpoint.get("tie_embeddings", True)),
         }
@@ -164,11 +203,11 @@ class QuantumLLMChatProvider(BaseChatProvider):
         logger.info(f"Loading checkpoint from {checkpoint_path}")
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
 
-        model_state_dict = checkpoint.get(
-            "model_state_dict") or checkpoint.get("state_dict")
+        model_state_dict = checkpoint.get("model_state_dict") or checkpoint.get(
+            "state_dict"
+        )
         if not isinstance(model_state_dict, dict):
-            raise KeyError(
-                "Checkpoint missing 'model_state_dict' or 'state_dict'.")
+            raise KeyError("Checkpoint missing 'model_state_dict' or 'state_dict'.")
 
         self.model_config = self._derive_model_config(checkpoint)
         self.vocab_size = int(self.model_config["vocab_size"])
@@ -234,8 +273,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         indices: List[int] = []
         for c in text:
             if self.char_to_idx:
-                indices.append(self.char_to_idx.get(
-                    c, ord(c) % self.vocab_size))
+                indices.append(self.char_to_idx.get(c, ord(c) % self.vocab_size))
             else:
                 indices.append(ord(c) % self.vocab_size)
         return torch.tensor(indices, dtype=torch.long, device=self.device)
@@ -255,7 +293,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
             # Fallback ASCII decode if tokenizer metadata isn't available.
             ascii_i = i % 128
             chars.append(chr(ascii_i) if 32 <= ascii_i < 127 else "")
-        return ''.join(chars)
+        return "".join(chars)
 
     def _generate(self, prompt: str, max_tokens: int) -> str:
         """Generate text using the quantum LLM."""
@@ -284,7 +322,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
                     top_k=20,
                 )
 
-            new_token_ids = generated_ids[0, context.size(1):]
+            new_token_ids = generated_ids[0, context.size(1) :]
             return self._decode_tokens(new_token_ids)
 
         generated = []
@@ -309,19 +347,17 @@ class QuantumLLMChatProvider(BaseChatProvider):
                     context = context[:, -max_context:]
 
                 # Decode and collect
-                char = self.idx_to_char.get(int(next_token.item()), '')
+                char = self.idx_to_char.get(int(next_token.item()), "")
                 generated.append(char)
 
                 # Stop on newline after some content
-                if char == '\n' and len(generated) > 20:
+                if char == "\n" and len(generated) > 20:
                     break
 
-        return ''.join(generated)
+        return "".join(generated)
 
     def complete(
-        self,
-        messages: List[RoleMessage],
-        stream: bool = False
+        self, messages: List[RoleMessage], stream: bool = False
     ) -> str | Iterator[str]:
         """
         Generate a response using the quantum LLM.
@@ -350,7 +386,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
                 prompt_parts.append(f"Assistant: {content}\n")
 
         prompt_parts.append("Assistant: ")
-        prompt = ''.join(prompt_parts)
+        prompt = "".join(prompt_parts)
 
         # Generate response
         try:
@@ -389,20 +425,17 @@ class QuantumLLMChatProvider(BaseChatProvider):
                 or (char.isspace() and len(buffer) >= 8)
             )
             if should_flush:
-                chunk = ''.join(buffer)
+                chunk = "".join(buffer)
                 if chunk:
                     yield chunk
                 buffer.clear()
 
         if buffer:
-            yield ''.join(buffer)
+            yield "".join(buffer)
 
 
 def create_quantum_llm_provider(
-    model_path: str,
-    temperature: float = 0.8,
-    max_output_tokens: int = 200,
-    **kwargs
+    model_path: str, temperature: float = 0.8, max_output_tokens: int = 200, **kwargs
 ) -> tuple[QuantumLLMChatProvider, ProviderChoice]:
     """
     Factory function to create a quantum LLM chat provider.
@@ -423,7 +456,7 @@ def create_quantum_llm_provider(
         model_path=model_path,
         temperature=temperature,
         max_output_tokens=max_output_tokens,
-        **kwargs
+        **kwargs,
     )
 
     info = ProviderChoice(

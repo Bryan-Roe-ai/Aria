@@ -4,7 +4,6 @@ validate_job, build_command, and _build_status.
 """
 
 import importlib.util
-import json
 import sys
 from pathlib import Path
 
@@ -44,6 +43,7 @@ _build_status = mod._build_status
 # ---------------------------------------------------------------------------
 # TestTrainJob
 # ---------------------------------------------------------------------------
+
 
 class TestTrainJob:
     def test_required_name(self):
@@ -102,6 +102,7 @@ class TestTrainJob:
 # TestLoadConfig
 # ---------------------------------------------------------------------------
 
+
 class TestLoadConfig:
     def test_missing_file_returns_empty_jobs(self, tmp_path):
         result = load_config(tmp_path / "nonexistent.yaml")
@@ -109,8 +110,7 @@ class TestLoadConfig:
 
     def test_valid_yaml_loaded(self, tmp_path):
         p = tmp_path / "cfg.yaml"
-        p.write_text("jobs:\n  - name: job1\n    runner: hf\n",
-                     encoding="utf-8")
+        p.write_text("jobs:\n  - name: job1\n    runner: hf\n", encoding="utf-8")
         result = load_config(p)
         assert "jobs" in result
         assert len(result["jobs"]) == 1
@@ -151,6 +151,7 @@ class TestLoadConfig:
 # TestLoadJobs
 # ---------------------------------------------------------------------------
 
+
 class TestLoadJobs:
     def test_empty_config_returns_empty_list(self, tmp_path):
         p = tmp_path / "empty.yaml"
@@ -183,8 +184,7 @@ class TestLoadJobs:
 
     def test_enabled_false(self, tmp_path):
         p = tmp_path / "cfg.yaml"
-        p.write_text("jobs:\n  - name: j\n    enabled: false\n",
-                     encoding="utf-8")
+        p.write_text("jobs:\n  - name: j\n    enabled: false\n", encoding="utf-8")
         jobs = load_jobs(p)
         assert jobs[0].enabled is False
 
@@ -208,6 +208,7 @@ class TestLoadJobs:
 # ---------------------------------------------------------------------------
 # TestValidateJob
 # ---------------------------------------------------------------------------
+
 
 class TestValidateJob:
     def test_no_dataset_is_missing(self):
@@ -278,6 +279,7 @@ class TestValidateJob:
 # TestBuildCommand
 # ---------------------------------------------------------------------------
 
+
 class TestBuildCommand:
     def test_local_runner_returns_local_script(self):
         job = TrainJob(name="j", runner="local")
@@ -332,8 +334,7 @@ class TestBuildCommand:
         assert "--dataset" not in cmd
 
     def test_hf_extra_args_appended(self):
-        job = TrainJob(name="j", runner="hf", extra_args=[
-                       "--fp16", "--no-cache"])
+        job = TrainJob(name="j", runner="hf", extra_args=["--fp16", "--no-cache"])
         cmd = build_command(job)
         assert "--fp16" in cmd
         assert "--no-cache" in cmd
@@ -359,6 +360,7 @@ class TestBuildCommand:
 # ---------------------------------------------------------------------------
 # TestBuildStatus
 # ---------------------------------------------------------------------------
+
 
 class TestBuildStatus:
     def test_empty_jobs_list(self):
@@ -386,8 +388,16 @@ class TestBuildStatus:
 
     def test_has_required_keys(self):
         result = _build_status([])
-        for key in ("generated_at", "total_jobs", "succeeded", "failed",
-                    "running", "avg_duration", "last_updated", "jobs"):
+        for key in (
+            "generated_at",
+            "total_jobs",
+            "succeeded",
+            "failed",
+            "running",
+            "avg_duration",
+            "last_updated",
+            "jobs",
+        ):
             assert key in result, f"Missing key: {key}"
 
     def test_running_is_zero(self):
@@ -408,5 +418,6 @@ class TestBuildStatus:
     def test_generated_at_is_iso_string(self):
         result = _build_status([])
         from datetime import datetime
+
         # Should parse without error
         datetime.fromisoformat(result["generated_at"])

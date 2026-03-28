@@ -16,12 +16,12 @@ import inspect
 import json
 import logging
 import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 # Add paths
 repo_root = Path(__file__).resolve().parent.parent
@@ -32,14 +32,13 @@ for p in [str(quantum_ml_path), str(quantum_ml_src)]:
         sys.path.insert(0, p)
 
 try:
-    from quantum_transformer import QuantumLLM, QUANTUM_AVAILABLE
+    from quantum_transformer import QUANTUM_AVAILABLE, QuantumLLM
 except ImportError as e:
     logging.error(f"Cannot import QuantumLLM: {e}")
     sys.exit(1)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ class SimpleCharDataset(Dataset):
         chars = sorted(set(text))
         self.vocab_size = len(chars) + 1  # +1 for padding
         self.char_to_idx = {c: i + 1 for i, c in enumerate(chars)}
-        self.char_to_idx['<PAD>'] = 0
+        self.char_to_idx["<PAD>"] = 0
         self.idx_to_char = {i: c for c, i in self.char_to_idx.items()}
 
         # Encode text
@@ -68,7 +67,7 @@ class SimpleCharDataset(Dataset):
         return max(0, len(self.data) - self.seq_len)
 
     def __getitem__(self, idx):
-        chunk = self.data[idx:idx + self.seq_len + 1]
+        chunk = self.data[idx : idx + self.seq_len + 1]
         x = torch.tensor(chunk[:-1], dtype=torch.long)
         y = torch.tensor(chunk[1:], dtype=torch.long)
         return x, y
@@ -76,7 +75,8 @@ class SimpleCharDataset(Dataset):
 
 def get_training_text():
     """Get sample training text about quantum computing and AI."""
-    return """
+    return (
+        """
 Quantum computing uses quantum mechanics to process information in fundamentally new ways.
 Unlike classical computers that use bits, quantum computers use qubits that can exist in superposition.
 This means a qubit can be both zero and one simultaneously, enabling parallel computation.
@@ -102,7 +102,9 @@ Quantum attention mechanisms can potentially discover patterns classical systems
 Research continues to explore the boundaries of what quantum computing can achieve.
 As quantum hardware improves, practical quantum machine learning applications will emerge.
 The combination of quantum physics and artificial intelligence opens exciting new possibilities.
-""" * 20  # Repeat for more training data
+"""
+        * 20
+    )  # Repeat for more training data
 
 
 def _build_quantum_llm(model_cls, args, vocab_size: int):
@@ -113,24 +115,24 @@ def _build_quantum_llm(model_cls, args, vocab_size: int):
     - n_layers (legacy)
     """
     init_params = inspect.signature(model_cls.__init__).parameters
-    if 'n_transformer_layers' in init_params:
-        layer_kwarg = 'n_transformer_layers'
-    elif 'n_layers' in init_params:
-        layer_kwarg = 'n_layers'
+    if "n_transformer_layers" in init_params:
+        layer_kwarg = "n_transformer_layers"
+    elif "n_layers" in init_params:
+        layer_kwarg = "n_layers"
     else:
         # Conservative default for modern implementation
-        layer_kwarg = 'n_transformer_layers'
+        layer_kwarg = "n_transformer_layers"
 
     model_kwargs = {
-        'vocab_size': vocab_size,
-        'd_model': args.d_model,
-        'n_heads': args.n_heads,
-        'max_seq_len': args.seq_len,
-        'n_qubits': args.n_qubits,
-        'n_quantum_layers': 2,
-        'dropout': 0.1,
-        'use_quantum_attention': True,
-        'use_quantum_ffn': True,
+        "vocab_size": vocab_size,
+        "d_model": args.d_model,
+        "n_heads": args.n_heads,
+        "max_seq_len": args.seq_len,
+        "n_qubits": args.n_qubits,
+        "n_quantum_layers": 2,
+        "dropout": 0.1,
+        "use_quantum_attention": True,
+        "use_quantum_ffn": True,
         layer_kwarg: args.n_layers,
     }
     return model_cls(**model_kwargs), layer_kwarg
@@ -139,7 +141,7 @@ def _build_quantum_llm(model_cls, args, vocab_size: int):
 def _write_json_atomic(path: Path, payload: dict):
     """Atomically write JSON content to avoid partial/truncated files."""
     tmp_path = path.with_suffix(path.suffix + ".tmp")
-    with open(tmp_path, 'w', encoding='utf-8') as f:
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
     tmp_path.replace(path)
 
@@ -153,7 +155,8 @@ def train_quantum_llm(args):
 
     if not QUANTUM_AVAILABLE:
         logger.error(
-            "Quantum layers not available. Install pennylane: pip install pennylane")
+            "Quantum layers not available. Install pennylane: pip install pennylane"
+        )
         return 1
 
     # Setup
@@ -172,10 +175,7 @@ def train_quantum_llm(args):
     logger.info(f"Dataset size: {len(dataset)} sequences")
 
     dataloader = DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=0
+        dataset, batch_size=args.batch_size, shuffle=True, num_workers=0
     )
 
     # Create model
@@ -202,8 +202,9 @@ def train_quantum_llm(args):
 
     max_batches = args.max_batches_per_epoch if args.max_batches_per_epoch > 0 else None
     total_batches = len(dataloader)
-    display_total_batches = min(
-        total_batches, max_batches) if max_batches else total_batches
+    display_total_batches = (
+        min(total_batches, max_batches) if max_batches else total_batches
+    )
 
     for epoch in range(args.epochs):
         total_loss = 0
@@ -221,10 +222,7 @@ def train_quantum_llm(args):
             logits = model(x)  # [batch, seq_len, vocab_size]
 
             # Compute loss
-            loss = criterion(
-                logits.view(-1, vocab_size),
-                y.view(-1)
-            )
+            loss = criterion(logits.view(-1, vocab_size), y.view(-1))
 
             # Backward pass
             loss.backward()
@@ -237,11 +235,13 @@ def train_quantum_llm(args):
             if (batch_idx + 1) % 10 == 0:
                 avg_loss = total_loss / n_batches
                 logger.info(
-                    f"  Epoch {epoch+1}/{args.epochs} | Batch {batch_idx+1}/{display_total_batches} | Loss: {avg_loss:.4f}")
+                    f"  Epoch {epoch+1}/{args.epochs} | Batch {batch_idx+1}/{display_total_batches} | Loss: {avg_loss:.4f}"
+                )
 
         avg_epoch_loss = total_loss / max(n_batches, 1)
         logger.info(
-            f"Epoch {epoch+1}/{args.epochs} completed | Avg Loss: {avg_epoch_loss:.4f}")
+            f"Epoch {epoch+1}/{args.epochs} completed | Avg Loss: {avg_epoch_loss:.4f}"
+        )
 
     # Save model
     output_dir = Path("data_out") / args.output
@@ -249,37 +249,40 @@ def train_quantum_llm(args):
 
     # Save model checkpoint
     checkpoint_path = output_dir / "quantum_llm_checkpoint.pt"
-    torch.save({
-        'model_state_dict': model.state_dict(),
-        'vocab_size': vocab_size,
-        'd_model': args.d_model,
-        'n_heads': args.n_heads,
-        'n_transformer_layers': args.n_layers,
-        'n_layers': args.n_layers,
-        'n_qubits': args.n_qubits,
-        'n_quantum_layers': 2,
-        'max_seq_len': args.seq_len,
-        'max_seq_length': args.seq_len,
-        'char_to_idx': dataset.char_to_idx,
-        'idx_to_char': dataset.idx_to_char,
-    }, checkpoint_path)
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "vocab_size": vocab_size,
+            "d_model": args.d_model,
+            "n_heads": args.n_heads,
+            "n_transformer_layers": args.n_layers,
+            "n_layers": args.n_layers,
+            "n_qubits": args.n_qubits,
+            "n_quantum_layers": 2,
+            "max_seq_len": args.seq_len,
+            "max_seq_length": args.seq_len,
+            "char_to_idx": dataset.char_to_idx,
+            "idx_to_char": dataset.idx_to_char,
+        },
+        checkpoint_path,
+    )
 
     logger.info(f"\nModel saved to: {checkpoint_path}")
 
     # Save config
     config_path = output_dir / "config.json"
     config = {
-        'vocab_size': vocab_size,
-        'd_model': args.d_model,
-        'n_heads': args.n_heads,
-        'n_transformer_layers': args.n_layers,
-        'n_layers': args.n_layers,
-        'n_qubits': args.n_qubits,
-        'n_quantum_layers': 2,
-        'max_seq_len': args.seq_len,
-        'max_seq_length': args.seq_len,
-        'trained_at': datetime.now().isoformat(),
-        'quantum_available': QUANTUM_AVAILABLE,
+        "vocab_size": vocab_size,
+        "d_model": args.d_model,
+        "n_heads": args.n_heads,
+        "n_transformer_layers": args.n_layers,
+        "n_layers": args.n_layers,
+        "n_qubits": args.n_qubits,
+        "n_quantum_layers": 2,
+        "max_seq_len": args.seq_len,
+        "max_seq_length": args.seq_len,
+        "trained_at": datetime.now().isoformat(),
+        "quantum_available": QUANTUM_AVAILABLE,
     }
 
     _write_json_atomic(config_path, config)
@@ -288,36 +291,44 @@ def train_quantum_llm(args):
     logger.info("\n" + "=" * 80)
     logger.info("TRAINING COMPLETE!")
     logger.info("=" * 80)
-    logger.info(f"\nTo chat with this model, run:")
+    logger.info("\nTo chat with this model, run:")
     logger.info(
-        f"  python ai-projects/chat-cli/src/chat_cli.py --provider quantum --model {output_dir}")
+        f"  python ai-projects/chat-cli/src/chat_cli.py --provider quantum --model {output_dir}"
+    )
 
     return 0
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Train a quantum-enhanced LLM for chat")
-    parser.add_argument('--epochs', type=int, default=3,
-                        help='Number of training epochs')
-    parser.add_argument('--batch-size', type=int, default=8, help='Batch size')
-    parser.add_argument('--seq-len', type=int, default=64,
-                        help='Sequence length')
-    parser.add_argument('--d-model', type=int, default=64,
-                        help='Model dimension')
-    parser.add_argument('--n-layers', type=int, default=2,
-                        help='Number of layers')
-    parser.add_argument('--n-heads', type=int, default=2,
-                        help='Number of attention heads')
-    parser.add_argument('--n-qubits', type=int, default=2,
-                        help='Number of qubits per quantum layer')
-    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
+        description="Train a quantum-enhanced LLM for chat"
+    )
     parser.add_argument(
-        '--output', type=str, default='quantum_llm_chat', help='Output directory name')
-    parser.add_argument('--quick', action='store_true',
-                        help='Quick training (2 epochs, small model)')
-    parser.add_argument('--max-batches-per-epoch', type=int, default=0,
-                        help='Optional cap on batches per epoch (0 = all batches)')
+        "--epochs", type=int, default=3, help="Number of training epochs"
+    )
+    parser.add_argument("--batch-size", type=int, default=8, help="Batch size")
+    parser.add_argument("--seq-len", type=int, default=64, help="Sequence length")
+    parser.add_argument("--d-model", type=int, default=64, help="Model dimension")
+    parser.add_argument("--n-layers", type=int, default=2, help="Number of layers")
+    parser.add_argument(
+        "--n-heads", type=int, default=2, help="Number of attention heads"
+    )
+    parser.add_argument(
+        "--n-qubits", type=int, default=2, help="Number of qubits per quantum layer"
+    )
+    parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
+    parser.add_argument(
+        "--output", type=str, default="quantum_llm_chat", help="Output directory name"
+    )
+    parser.add_argument(
+        "--quick", action="store_true", help="Quick training (2 epochs, small model)"
+    )
+    parser.add_argument(
+        "--max-batches-per-epoch",
+        type=int,
+        default=0,
+        help="Optional cap on batches per epoch (0 = all batches)",
+    )
 
     args = parser.parse_args()
 
@@ -330,8 +341,7 @@ def main():
         args.n_qubits = 2
         args.seq_len = 32
         args.max_batches_per_epoch = 20
-        logger.info(
-            "Quick mode enabled: using minimal settings for fast training")
+        logger.info("Quick mode enabled: using minimal settings for fast training")
 
     return train_quantum_llm(args)
 

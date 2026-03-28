@@ -63,7 +63,12 @@ def main() -> None:
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError:
-        _emit({"continue": True, "systemMessage": "Hook warning: could not parse hook payload JSON."})
+        _emit(
+            {
+                "continue": True,
+                "systemMessage": "Hook warning: could not parse hook payload JSON.",
+            }
+        )
         return
 
     event = _event_name(payload)

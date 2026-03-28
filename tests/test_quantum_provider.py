@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import sys
-import json
 import importlib.util
+import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -20,11 +20,9 @@ if str(CHAT_CLI_SRC) not in sys.path:
     sys.path.insert(0, str(CHAT_CLI_SRC))
 
 _QP_PATH = CHAT_CLI_SRC / "quantum_provider.py"
-_spec = importlib.util.spec_from_file_location(
-    "_test_quantum_provider", _QP_PATH)
+_spec = importlib.util.spec_from_file_location("_test_quantum_provider", _QP_PATH)
 if _spec is None or _spec.loader is None:
-    raise ImportError(
-        f"Unable to load quantum_provider module from {_QP_PATH}")
+    raise ImportError(f"Unable to load quantum_provider module from {_QP_PATH}")
 quantum_provider = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(quantum_provider)
 
@@ -151,15 +149,16 @@ def test_decode_tokens_ascii_fallback_when_no_idx_map() -> None:
     )
     provider.idx_to_char = {}
 
-    out = provider._decode_tokens(
-        torch.tensor([72, 10, 105], dtype=torch.long))
+    out = provider._decode_tokens(torch.tensor([72, 10, 105], dtype=torch.long))
     assert out == "Hi"
 
 
 @pytest.mark.unit
 def test_generate_prefers_model_generate() -> None:
     class _FakeModel:
-        def generate(self, context, max_new_tokens: int, temperature: float, top_k: int):
+        def generate(
+            self, context, max_new_tokens: int, temperature: float, top_k: int
+        ):
             # Preserve prompt tokens and append 'Hi'
             base = context[0].tolist()
             return torch.tensor([base + [72, 105]], dtype=torch.long)
@@ -190,7 +189,7 @@ def test_stream_response_preserves_text_in_nonempty_chunks() -> None:
 
     assert chunks
     assert all(chunks)
-    assert ''.join(chunks) == response
+    assert "".join(chunks) == response
     assert any(len(chunk) > 1 for chunk in chunks)
 
 
@@ -205,15 +204,18 @@ def test_stream_response_empty_text_yields_no_chunks() -> None:
 
 
 @pytest.mark.unit
-def test_create_quantum_llm_provider_returns_choice(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_create_quantum_llm_provider_returns_choice(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     class _DummyProvider:
-        def __init__(self, model_path: str, temperature: float, max_output_tokens: int, **kwargs):
+        def __init__(
+            self, model_path: str, temperature: float, max_output_tokens: int, **kwargs
+        ):
             self.model_path = model_path
             self.temperature = temperature
             self.max_output_tokens = max_output_tokens
 
-    monkeypatch.setattr(
-        quantum_provider, "QuantumLLMChatProvider", _DummyProvider)
+    monkeypatch.setattr(quantum_provider, "QuantumLLMChatProvider", _DummyProvider)
     monkeypatch.setattr(quantum_provider, "QUANTUM_LLM_AVAILABLE", True)
 
     provider, info = quantum_provider.create_quantum_llm_provider(
@@ -228,7 +230,9 @@ def test_create_quantum_llm_provider_returns_choice(monkeypatch: pytest.MonkeyPa
 
 
 @pytest.mark.unit
-def test_create_quantum_llm_provider_raises_when_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_create_quantum_llm_provider_raises_when_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(quantum_provider, "QUANTUM_LLM_AVAILABLE", False)
     with pytest.raises(ImportError, match="QuantumLLM not available"):
         quantum_provider.create_quantum_llm_provider("data_out/model")

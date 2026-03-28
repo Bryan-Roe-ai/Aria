@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -45,14 +44,14 @@ def analyze_metrics(metrics_list: list[dict[str, Any]]) -> dict[str, Any]:
 
     # Extract numeric values
     best_losses = [m["best_loss"] for m in metrics_list if m.get("best_loss")]
-    final_losses = [m["final_loss"]
-                    for m in metrics_list if m.get("final_loss")]
-    epochs = [m["epochs_completed"]
-              for m in metrics_list if m.get("epochs_completed")]
+    final_losses = [m["final_loss"] for m in metrics_list if m.get("final_loss")]
+    epochs = [m["epochs_completed"] for m in metrics_list if m.get("epochs_completed")]
 
     analysis = {
         "total_snapshots": len(metrics_list),
-        "inference_ready_count": sum(1 for m in metrics_list if m.get("inference_ready")),
+        "inference_ready_count": sum(
+            1 for m in metrics_list if m.get("inference_ready")
+        ),
         "checkpoint_count": sum(1 for m in metrics_list if m.get("checkpoint_exists")),
     }
 
@@ -89,7 +88,8 @@ def analyze_metrics(metrics_list: list[dict[str, Any]]) -> dict[str, Any]:
     if len(final_losses) >= 2:
         improvement = final_losses[0] - final_losses[-1]
         improvement_pct = (
-            improvement / final_losses[0] * 100) if final_losses[0] != 0 else 0
+            (improvement / final_losses[0] * 100) if final_losses[0] != 0 else 0
+        )
         analysis["trend"] = {
             "first_loss": final_losses[0],
             "latest_loss": final_losses[-1],
@@ -107,16 +107,14 @@ def format_analysis_report(analysis: dict[str, Any]) -> str:
     lines.append("Quantum LLM Training Metrics Analysis")
     lines.append("=" * 60)
 
-    lines.append(f"\n📊 Snapshot Summary:")
+    lines.append("\n📊 Snapshot Summary:")
     lines.append(f"  Total snapshots:    {analysis.get('total_snapshots', 0)}")
-    lines.append(
-        f"  Inference ready:    {analysis.get('inference_ready_count', 0)}")
-    lines.append(
-        f"  Checkpoints saved:  {analysis.get('checkpoint_count', 0)}")
+    lines.append(f"  Inference ready:    {analysis.get('inference_ready_count', 0)}")
+    lines.append(f"  Checkpoints saved:  {analysis.get('checkpoint_count', 0)}")
 
     if "best_loss" in analysis:
         bl = analysis["best_loss"]
-        lines.append(f"\n🎯 Best Loss:")
+        lines.append("\n🎯 Best Loss:")
         lines.append(f"  Minimum:  {bl.get('min', 'N/A'):.6f}")
         lines.append(f"  Maximum:  {bl.get('max', 'N/A'):.6f}")
         lines.append(f"  Average:  {bl.get('mean', 'N/A'):.6f}")
@@ -125,7 +123,7 @@ def format_analysis_report(analysis: dict[str, Any]) -> str:
 
     if "final_loss" in analysis:
         fl = analysis["final_loss"]
-        lines.append(f"\n📉 Final Loss:")
+        lines.append("\n📉 Final Loss:")
         lines.append(f"  Minimum:  {fl.get('min', 'N/A'):.6f}")
         lines.append(f"  Maximum:  {fl.get('max', 'N/A'):.6f}")
         lines.append(f"  Average:  {fl.get('mean', 'N/A'):.6f}")
@@ -134,21 +132,22 @@ def format_analysis_report(analysis: dict[str, Any]) -> str:
 
     if "epochs" in analysis:
         ep = analysis["epochs"]
-        lines.append(f"\n⏱️  Epoch Statistics:")
+        lines.append("\n⏱️  Epoch Statistics:")
         lines.append(f"  Current:  {ep.get('current', 0)}")
         lines.append(f"  Maximum:  {ep.get('max', 0)}")
         lines.append(f"  Average:  {ep.get('mean', 0):.1f}")
 
     if "trend" in analysis:
         tr = analysis["trend"]
-        lines.append(f"\n📈 Training Trend:")
+        lines.append("\n📈 Training Trend:")
         lines.append(f"  First loss:  {tr.get('first_loss', 'N/A'):.6f}")
         lines.append(f"  Latest loss: {tr.get('latest_loss', 'N/A'):.6f}")
         improvement = tr.get("improvement", 0)
         improvement_pct = tr.get("improvement_percentage", 0)
         emoji = "✓" if improvement > 0 else "✗"
         lines.append(
-            f"  {emoji} Improvement: {improvement:.6f} ({improvement_pct:.2f}%)")
+            f"  {emoji} Improvement: {improvement:.6f} ({improvement_pct:.2f}%)"
+        )
 
     lines.append("\n" + "=" * 60)
     return "\n".join(lines)
@@ -224,7 +223,8 @@ def main() -> None:
     if args.export:
         with open(args.export, "w", encoding="utf-8") as f:
             f.write(
-                "timestamp,status,epochs_completed,best_loss,final_loss,inference_ready\n")
+                "timestamp,status,epochs_completed,best_loss,final_loss,inference_ready\n"
+            )
             for m in metrics_list:
                 f.write(
                     f"{m.get('timestamp', '')},{m.get('status', '')},{m.get('epochs_completed', '')}"

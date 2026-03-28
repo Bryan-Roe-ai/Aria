@@ -2,20 +2,21 @@
 
 Tests cover get_repo_root, setup_path, and get_data_out_dir.
 """
+
 from __future__ import annotations
+
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 from shared.script_utils import get_data_out_dir, get_repo_root, setup_path
-
-import pytest
-
 
 # ---------------------------------------------------------------------------
 # get_repo_root
 # ---------------------------------------------------------------------------
+
 
 class TestGetRepoRoot:
     def test_without_script_file_returns_repo_root(self):
@@ -53,6 +54,7 @@ class TestGetRepoRoot:
 # setup_path
 # ---------------------------------------------------------------------------
 
+
 class TestSetupPath:
     def test_adds_repo_root_to_sys_path(self):
         root = setup_path()
@@ -78,10 +80,12 @@ class TestSetupPath:
         # Use a temporary directory as a fake repo root to keep the test isolated
         extras_dir = tmp_path / "extras"
         extras_dir.mkdir()
-        monkeypatch.setattr("shared.script_utils.get_repo_root",
-                            lambda *args, **kwargs: tmp_path)
-        monkeypatch.setattr("shared.script_utils.get_repo_root",
-                            lambda *_args, **_kwargs: tmp_path)
+        monkeypatch.setattr(
+            "shared.script_utils.get_repo_root", lambda *args, **kwargs: tmp_path
+        )
+        monkeypatch.setattr(
+            "shared.script_utils.get_repo_root", lambda *_args, **_kwargs: tmp_path
+        )
         result = setup_path(None, "extras")
         expected = str(extras_dir)
         assert expected in sys.path
@@ -99,6 +103,7 @@ class TestSetupPath:
 # ---------------------------------------------------------------------------
 # get_data_out_dir
 # ---------------------------------------------------------------------------
+
 
 class TestGetDataOutDir:
     def test_defaults_to_script_stem(self, tmp_path):

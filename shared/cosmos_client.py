@@ -13,10 +13,12 @@ Partition key strategy:
   /userId for chat sessions (high cardinality recommended)
   For quantum jobs, you may create a separate container with /jobGroup or HPK later.
 """
+
 from __future__ import annotations
-import os
+
 import logging
-from typing import Optional, Dict, Any, Union
+import os
+from typing import Any, Dict, Optional, Union
 
 try:
     from azure.cosmos import CosmosClient, PartitionKey  # type: ignore
@@ -44,11 +46,13 @@ def init() -> bool:
         return True
     if CosmosClient is None:
         logging.warning(
-            "[cosmos] azure-cosmos package not available; cannot initialize.")
+            "[cosmos] azure-cosmos package not available; cannot initialize."
+        )
         return False
     if not _settings_present():
         logging.warning(
-            "[cosmos] Missing required settings (COSMOS_ENDPOINT / COSMOS_KEY).")
+            "[cosmos] Missing required settings (COSMOS_ENDPOINT / COSMOS_KEY)."
+        )
         return False
 
     endpoint = os.getenv("COSMOS_ENDPOINT")
@@ -63,8 +67,7 @@ def init() -> bool:
         try:
             db = _CLIENT.create_database_if_not_exists(id=database_name)
         except Exception as e:
-            logging.error(
-                f"[cosmos] Failed creating database {database_name}: {e}")
+            logging.error(f"[cosmos] Failed creating database {database_name}: {e}")
             return False
         # Create container if not exists
         try:
@@ -74,11 +77,11 @@ def init() -> bool:
                 offer_throughput=400,
             )
         except Exception as e:
-            logging.error(
-                f"[cosmos] Failed creating container {container_name}: {e}")
+            logging.error(f"[cosmos] Failed creating container {container_name}: {e}")
             return False
         logging.info(
-            f"[cosmos] Initialized container {container_name} in database {database_name}.")
+            f"[cosmos] Initialized container {container_name} in database {database_name}."
+        )
         return True
     except Exception as e:
         logging.error(f"[cosmos] Initialization error: {e}")
@@ -120,7 +123,9 @@ def health() -> Dict[str, Any]:
     return status
 
 
-def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, model: str) -> bool:
+def record_chat_message(
+    user_id: str, message: Dict[str, Any], provider: str, model: str
+) -> bool:
     """Persist a single chat message. user_id may be 'anonymous' if not provided."""
     if not init():  # ensures initialization or early exit
         return False
@@ -129,6 +134,7 @@ def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, mo
         return False
     try:
         import uuid
+
         # Use UUID to prevent ID collisions (CRITICAL FIX: data loss prevention)
         doc_id = f"{user_id}-{uuid.uuid4().hex}"
         doc = {
@@ -138,7 +144,7 @@ def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, mo
             "content": message.get("content"),
             "provider": provider,
             "model": model,
-            "timestamp": message.get('timestamp'),  # Keep for querying
+            "timestamp": message.get("timestamp"),  # Keep for querying
         }
         c.upsert_item(doc)
         return True
@@ -147,7 +153,9 @@ def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, mo
         return False
 
 
-def record_chat_session(user_id: str, messages: list[Dict[str, Any]], provider: str, model: str) -> bool:
+def record_chat_session(
+    user_id: str, messages: list[Dict[str, Any]], provider: str, model: str
+) -> bool:
     """Persist entire chat session as one document (alternative strategy)."""
     if not init():
         return False
@@ -155,8 +163,9 @@ def record_chat_session(user_id: str, messages: list[Dict[str, Any]], provider: 
     if c is None:
         return False
     try:
-        import uuid
         import time
+        import uuid
+
         # Use UUID to prevent ID collisions
         doc_id = f"session-{user_id}-{uuid.uuid4().hex}"
         doc = {
@@ -195,10 +204,12 @@ def worlds_container():
         return _WORLDS_CONTAINER
     try:
         db = _CLIENT.get_database_client(
-            os.getenv("COSMOS_DATABASE", "qai"))  # type: ignore
+            os.getenv("COSMOS_DATABASE", "qai")
+        )  # type: ignore
         worlds_name = os.getenv("COSMOS_WORLDS_CONTAINER", "aria_worlds")
         # Create if not exists with partition key /theme_seed
         from azure.cosmos import PartitionKey  # type: ignore
+
         _WORLDS_CONTAINER = db.create_container_if_not_exists(
             id=worlds_name,
             partition_key=PartitionKey(path="/theme_seed"),
@@ -239,8 +250,7 @@ def get_world(theme: str, seed: Union[str, int]) -> Optional[Dict[str, Any]]:
         seed_str = str(seed)
         theme_seed = f"{theme}_{seed_str}"
         query = f"SELECT * FROM c WHERE c.theme_seed = '{theme_seed}'"
-        items = list(c.query_items(
-            query=query, enable_cross_partition_query=True))
+        items = list(c.query_items(query=query, enable_cross_partition_query=True))
         return items[0] if items else None
     except Exception as e:
         logging.warning(f"[cosmos] get_world error: {e}")

@@ -2,10 +2,12 @@
 Test Enhanced Quantum Classifier on Azure Quantum Hardware
 Simple working version for immediate deployment
 """
+
 import logging
-from typing import Optional
 import sys
 from pathlib import Path
+from typing import Optional
+
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 _OPTIONAL_IMPORT_ERROR: Optional[ImportError] = None
@@ -20,7 +22,9 @@ if _OPTIONAL_IMPORT_ERROR is not None and "pytest" in sys.modules:
     import pytest
 
     pytest.skip(
-        f"Optional quantum hardware dependencies unavailable: {_OPTIONAL_IMPORT_ERROR}", allow_module_level=True)
+        f"Optional quantum hardware dependencies unavailable: {_OPTIONAL_IMPORT_ERROR}",
+        allow_module_level=True,
+    )
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -68,13 +72,14 @@ def create_8qubit_classifier_circuit():
 def main():
     if _OPTIONAL_IMPORT_ERROR is not None:
         print(
-            f"Missing optional quantum hardware dependencies: {_OPTIONAL_IMPORT_ERROR}")
+            f"Missing optional quantum hardware dependencies: {_OPTIONAL_IMPORT_ERROR}"
+        )
         return 1
 
-    print("="*70)
+    print("=" * 70)
     print("  Azure Quantum Hardware Test")
     print("  Enhanced 8-Qubit Quantum Classifier")
-    print("="*70)
+    print("=" * 70)
 
     # Connect to workspace
     print("\n[1/4] Connecting to Azure Quantum...")
@@ -83,7 +88,7 @@ def main():
         subscription_id="a07fbd16-e722-446d-8efd-0681e85b725c",
         resource_group="rg-quantum-ai",
         name="quantum-ai-workspace",
-        location="eastus"
+        location="eastus",
     )
 
     print(f"✓ Connected to: {workspace.name}")
@@ -111,8 +116,7 @@ def main():
 
     try:
         target = workspace.get_targets("rigetti.sim.qvm")
-        job = target.submit(bell_circuit, shots=100,
-                            job_name="bell-state-test")
+        job = target.submit(bell_circuit, shots=100, job_name="bell-state-test")
 
         print(f"✓ Job submitted: {job.id}")
         print(f"  Status: {job.details.status}")
@@ -124,11 +128,11 @@ def main():
         print("\nMeasurement Counts:")
         for state, count in sorted(results.items()):
             percentage = (count / sum(results.values())) * 100
-            bar = '█' * int(percentage / 5)
+            bar = "█" * int(percentage / 5)
             print(f"  {state}: {count:3d} ({percentage:5.1f}%) {bar}")
 
         # Check entanglement quality
-        entangled = results.get('00', 0) + results.get('11', 0)
+        entangled = results.get("00", 0) + results.get("11", 0)
         total = sum(results.values())
         entanglement_ratio = (entangled / total) * 100
 
@@ -148,7 +152,7 @@ def main():
 
     circuit_8q = create_8qubit_classifier_circuit()
 
-    print(f"✓ 8-qubit circuit created")
+    print("✓ 8-qubit circuit created")
     print(f"  Qubits: {circuit_8q.num_qubits}")
     print(f"  Depth: {circuit_8q.depth()}")
     print(f"  Gates: {sum(circuit_8q.count_ops().values())}")
@@ -163,12 +167,13 @@ def main():
 
     proceed = input("\nSubmit 8-qubit circuit to simulator? (yes/no): ")
 
-    if proceed.lower() == 'yes':
+    if proceed.lower() == "yes":
         try:
             print("\nSubmitting to Rigetti QVM Simulator...")
             target = workspace.get_targets("rigetti.sim.qvm")
-            job = target.submit(circuit_8q, shots=100,
-                                job_name="8qubit-classifier-test")
+            job = target.submit(
+                circuit_8q, shots=100, job_name="8qubit-classifier-test"
+            )
 
             print(f"✓ Job submitted: {job.id}")
             print("  Waiting for results...")
@@ -178,25 +183,26 @@ def main():
             print("\n✓ 8-Qubit Results!")
             print("\nTop 10 Measurement States:")
 
-            sorted_results = sorted(
-                results.items(), key=lambda x: x[1], reverse=True)[:10]
+            sorted_results = sorted(results.items(), key=lambda x: x[1], reverse=True)[
+                :10
+            ]
             total = sum(results.values())
 
             for state, count in sorted_results:
                 percentage = (count / total) * 100
-                bar = '█' * int(percentage / 2)
+                bar = "█" * int(percentage / 2)
                 print(f"  {state}: {count:3d} ({percentage:5.2f}%) {bar}")
 
             print(f"\n✓ Total unique states: {len(results)}/256")
-            print(f"  Circuit complexity demonstrated successfully!")
+            print("  Circuit complexity demonstrated successfully!")
 
         except Exception as e:
             print(f"✗ 8-qubit test failed: {e}")
 
     # Summary
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("  Test Summary")
-    print("="*70)
+    print("=" * 70)
 
     print("\n✓ Azure Quantum workspace operational")
     print("✓ Quantum circuits compiled successfully")
@@ -204,14 +210,16 @@ def main():
 
     print("\nNext Steps:")
     print("  1. Review results in Azure Portal:")
-    print(f"     https://portal.azure.com/#resource/subscriptions/a07fbd16-e722-446d-8efd-0681e85b725c/resourceGroups/rg-ai-projects/quantum-ml/providers/Microsoft.Quantum/Workspaces/quantum-ai-workspace")
+    print(
+        "     https://portal.azure.com/#resource/subscriptions/a07fbd16-e722-446d-8efd-0681e85b725c/resourceGroups/rg-ai-projects/quantum-ml/providers/Microsoft.Quantum/Workspaces/quantum-ai-workspace"
+    )
     print("\n  2. Train enhanced classifier with real quantum results")
     print("  3. Deploy to production quantum hardware (Quantinuum H1)")
     print("  4. Scale to larger datasets and problems")
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("✓ Quantum hardware test completed!")
-    print("="*70)
+    print("=" * 70)
 
 
 if __name__ == "__main__":

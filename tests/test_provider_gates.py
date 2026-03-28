@@ -6,10 +6,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT_PATH = ROOT / "ai-projects" / "quantum-ml" / \
-    "scripts" / "test_provider_gates.py"
-_spec = importlib.util.spec_from_file_location(
-    "test_provider_gates", SCRIPT_PATH)
+SCRIPT_PATH = ROOT / "ai-projects" / "quantum-ml" / "scripts" / "test_provider_gates.py"
+_spec = importlib.util.spec_from_file_location("test_provider_gates", SCRIPT_PATH)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Could not import {SCRIPT_PATH}")
 gate_script = importlib.util.module_from_spec(_spec)

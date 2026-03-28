@@ -46,7 +46,7 @@ class TestGetResultDetailSecurity:
 
     def test_rejects_unicode_path_traversal(self, client: Any):
         """Verify unicode traversal attempts are rejected."""
-        response = client.get("/api/results/\u202Eetc/passwd")
+        response = client.get("/api/results/\u202eetc/passwd")
         assert response.status_code == 400
         data = json.loads(response.data)
         assert "Invalid filename" in data.get("error", "")
@@ -70,11 +70,12 @@ class TestGetResultDetailSecurity:
         content_type = response.headers.get("Content-Type", "")
         if "application/json" in content_type:
             data = json.loads(response.data)
-            error_msg = (data.get("error") or data.get("message") or "")
+            error_msg = data.get("error") or data.get("message") or ""
             assert "Invalid filename" not in error_msg
             if response.status_code == 404 and error_msg:
                 assert any(
-                    word in error_msg.lower() for word in ["not found", "missing", "no such"]
+                    word in error_msg.lower()
+                    for word in ["not found", "missing", "no such"]
                 )
         else:
             body_text = response.data.decode("utf-8", errors="ignore")
@@ -306,8 +307,7 @@ class TestSessionLimits:
                 self.end_time = end_time
 
         stale_sid = "stale"
-        fake_sessions = {stale_sid: _FakeSession(
-            "completed", time.time() - 100)}
+        fake_sessions = {stale_sid: _FakeSession("completed", time.time() - 100)}
 
         with (
             patch.object(web_app, "SESSION_TTL_SECONDS", 10),

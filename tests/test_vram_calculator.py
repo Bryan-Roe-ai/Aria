@@ -1,9 +1,14 @@
 """Tests for scripts/vram_calculator.py — GPU-aware batch size calculator."""
+
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pytest
 from vram_calculator import (
-    KNOWN_MODELS,
     _BYTES_PER_PARAM,
-    _MODEL_ARCH,
+    KNOWN_MODELS,
     _get_arch,
     calculate_safe_batch_size,
     estimate_activation_memory_gb,
@@ -11,10 +16,6 @@ from vram_calculator import (
     estimate_model_memory_gb,
     probe_vram,
 )
-
-import sys
-from pathlib import Path
-import pytest
 
 # Ensure scripts/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -56,6 +57,7 @@ _NO_GPU = {
 # estimate_model_memory_gb
 # ---------------------------------------------------------------------------
 
+
 class TestEstimateModelMemory:
     def test_fp16_1b_params(self):
         # 1B params × 2 bytes / 1e9 ≈ 1.86 GB
@@ -68,8 +70,9 @@ class TestEstimateModelMemory:
         assert fp32 == pytest.approx(fp16 * 2, rel=0.01)
 
     def test_int4_smaller_than_int8(self):
-        assert estimate_model_memory_gb(
-            7.0, "int4") < estimate_model_memory_gb(7.0, "int8")
+        assert estimate_model_memory_gb(7.0, "int4") < estimate_model_memory_gb(
+            7.0, "int8"
+        )
 
     def test_unknown_dtype_defaults(self):
         # _BYTES_PER_PARAM.get(unknown, 2) → fp16 behaviour
@@ -86,6 +89,7 @@ class TestEstimateModelMemory:
 # ---------------------------------------------------------------------------
 # estimate_lora_overhead_gb
 # ---------------------------------------------------------------------------
+
 
 class TestEstimateLoraOverhead:
     def test_positive(self):
@@ -107,6 +111,7 @@ class TestEstimateLoraOverhead:
 # estimate_activation_memory_gb
 # ---------------------------------------------------------------------------
 
+
 class TestEstimateActivationMemory:
     def test_scales_with_batch(self):
         bs1 = estimate_activation_memory_gb(1, 512, 2048, 22)
@@ -127,6 +132,7 @@ class TestEstimateActivationMemory:
 # _get_arch
 # ---------------------------------------------------------------------------
 
+
 class TestGetArch:
     def test_known_tinyllama(self):
         h, l = _get_arch("TinyLlama/TinyLlama-1.1B-Chat-v1.0")
@@ -144,6 +150,7 @@ class TestGetArch:
 # ---------------------------------------------------------------------------
 # calculate_safe_batch_size — no GPU
 # ---------------------------------------------------------------------------
+
 
 class TestCalculateSafeBatchNoGPU:
     def test_available_false(self):
@@ -172,6 +179,7 @@ class TestCalculateSafeBatchNoGPU:
 # ---------------------------------------------------------------------------
 # calculate_safe_batch_size — with GPU
 # ---------------------------------------------------------------------------
+
 
 class TestCalculateSafeBatchWithGPU:
     def test_available_true(self):
@@ -263,6 +271,7 @@ class TestCalculateSafeBatchWithGPU:
 # probe_vram — smoke test (may or may not have GPU)
 # ---------------------------------------------------------------------------
 
+
 class TestProbeVram:
     def test_returns_dict(self):
         result = probe_vram()
@@ -283,6 +292,7 @@ class TestProbeVram:
 # ---------------------------------------------------------------------------
 # KNOWN_MODELS / _BYTES_PER_PARAM constants
 # ---------------------------------------------------------------------------
+
 
 class TestConstants:
     def test_known_models_nonempty(self):

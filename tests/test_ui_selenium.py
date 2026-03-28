@@ -11,21 +11,22 @@ Requirements:
 
 Docker setup:
   docker run -d -p 4444:4444 -p 5900:5900 --shm-size=2g selenium/standalone-chrome:latest
-  
+
   VNC viewer (optional): Connect to localhost:5900 to watch tests run (password: secret)
 """
 
-import time
 import json
-import requests
+import logging
+import os
 import socket
 import subprocess
 import sys
+import time
 from pathlib import Path
 from urllib.parse import urlparse
+
 import pytest
-import os
-import logging
+import requests
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,35 +36,36 @@ try:
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
     from selenium.webdriver.common.by import By
-    from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
+
     SELENIUM_AVAILABLE = True
 except ImportError:
     SELENIUM_AVAILABLE = False
     logger.warning("Selenium not installed")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ARIA_WEB = REPO_ROOT / 'aria_web'
-ARIA_APPS = REPO_ROOT / 'apps' / 'aria'
-SERVER_URL = os.environ.get('ARIA_SERVER_URL', 'http://localhost:8080')
+ARIA_WEB = REPO_ROOT / "aria_web"
+ARIA_APPS = REPO_ROOT / "apps" / "aria"
+SERVER_URL = os.environ.get("ARIA_SERVER_URL", "http://localhost:8080")
 SELENIUM_REMOTE_URL = os.environ.get(
-    'SELENIUM_REMOTE_URL', 'http://localhost:4444/wd/hub')
+    "SELENIUM_REMOTE_URL", "http://localhost:4444/wd/hub"
+)
 
 
 def _is_local_host(hostname: str | None) -> bool:
     """Return True for localhost-style hostnames/IPs."""
-    return hostname in {'127.0.0.1', 'localhost', '::1'}
+    return hostname in {"127.0.0.1", "localhost", "::1"}
 
 
 def _resolve_server_cwd() -> Path:
     """Resolve the best directory containing server.py for Aria UI tests."""
-    if (ARIA_WEB / 'server.py').exists():
+    if (ARIA_WEB / "server.py").exists():
         return ARIA_WEB
-    if (ARIA_APPS / 'server.py').exists():
+    if (ARIA_APPS / "server.py").exists():
         return ARIA_APPS
     # Keep a clear failure mode if project layout changes unexpectedly.
-    raise RuntimeError(
-        f"Could not find Aria server.py under {ARIA_WEB} or {ARIA_APPS}")
+    raise RuntimeError(f"Could not find Aria server.py under {ARIA_WEB} or {ARIA_APPS}")
 
 
 def _selenium_status_url(remote_url: str) -> str:
@@ -76,9 +78,9 @@ def _selenium_status_url(remote_url: str) -> str:
     """
     parsed = urlparse(remote_url)
     base = f"{parsed.scheme or 'http'}://{parsed.netloc}"
-    path = (parsed.path or '').rstrip('/')
+    path = (parsed.path or "").rstrip("/")
 
-    if path.endswith('/wd/hub'):
+    if path.endswith("/wd/hub"):
         return f"{base}/wd/hub/status"
 
     # Default modern Selenium path.
@@ -90,7 +92,11 @@ def _selenium_status_urls(remote_url: str) -> list[str]:
     primary = _selenium_status_url(remote_url)
     parsed = urlparse(remote_url)
     base = f"{parsed.scheme or 'http'}://{parsed.netloc}"
-    secondary = f"{base}/wd/hub/status" if primary != f"{base}/wd/hub/status" else f"{base}/status"
+    secondary = (
+        f"{base}/wd/hub/status"
+        if primary != f"{base}/wd/hub/status"
+        else f"{base}/status"
+    )
     return [primary, secondary]
 
 
@@ -99,64 +105,72 @@ def _selenium_ready_from_payload(status: dict) -> bool:
     if not isinstance(status, dict):
         return False
 
-    value = status.get('value')
-    if isinstance(value, dict) and 'ready' in value:
-        return bool(value.get('ready'))
+    value = status.get("value")
+    if isinstance(value, dict) and "ready" in value:
+        return bool(value.get("ready"))
 
     # Fallback for alternate payloads that expose top-level ready.
-    if 'ready' in status:
-        return bool(status.get('ready'))
+    if "ready" in status:
+        return bool(status.get("ready"))
 
     return False
 
 
 def test_is_local_host_variants():
-    assert _is_local_host('localhost')
-    assert _is_local_host('127.0.0.1')
-    assert _is_local_host('::1')
-    assert not _is_local_host('example.com')
+    assert _is_local_host("localhost")
+    assert _is_local_host("127.0.0.1")
+    assert _is_local_host("::1")
+    assert not _is_local_host("example.com")
 
 
 def test_resolve_server_cwd_contains_server_script():
     cwd = _resolve_server_cwd()
-    assert (cwd / 'server.py').exists()
+    assert (cwd / "server.py").exists()
 
 
 def test_ensure_server_running_rejects_unhealthy_non_local(monkeypatch):
     module = sys.modules[__name__]
-    monkeypatch.setattr(module, 'SERVER_URL', 'http://example.com:8080')
-    monkeypatch.setattr(module, 'is_aria_api_healthy', lambda _url: False)
+    monkeypatch.setattr(module, "SERVER_URL", "http://example.com:8080")
+    monkeypatch.setattr(module, "is_aria_api_healthy", lambda _url: False)
 
-    with pytest.raises(RuntimeError, match='Configured ARIA_SERVER_URL is not healthy'):
+    with pytest.raises(RuntimeError, match="Configured ARIA_SERVER_URL is not healthy"):
         ensure_server_running()
 
 
 def test_selenium_status_url_with_wd_hub_path():
-    assert _selenium_status_url(
-        'http://localhost:4444/wd/hub') == 'http://localhost:4444/wd/hub/status'
-    assert _selenium_status_url(
-        'http://localhost:4444/wd/hub/') == 'http://localhost:4444/wd/hub/status'
+    assert (
+        _selenium_status_url("http://localhost:4444/wd/hub")
+        == "http://localhost:4444/wd/hub/status"
+    )
+    assert (
+        _selenium_status_url("http://localhost:4444/wd/hub/")
+        == "http://localhost:4444/wd/hub/status"
+    )
 
 
 def test_selenium_status_url_with_non_standard_path_uses_status_root():
-    assert _selenium_status_url(
-        'http://localhost:4444/session') == 'http://localhost:4444/status'
+    assert (
+        _selenium_status_url("http://localhost:4444/session")
+        == "http://localhost:4444/status"
+    )
 
 
 def test_selenium_status_urls_returns_primary_and_fallback():
-    urls = _selenium_status_urls('http://localhost:4444/session')
-    assert urls == ['http://localhost:4444/status',
-                    'http://localhost:4444/wd/hub/status']
+    urls = _selenium_status_urls("http://localhost:4444/session")
+    assert urls == [
+        "http://localhost:4444/status",
+        "http://localhost:4444/wd/hub/status",
+    ]
 
 
 def test_selenium_ready_from_payload_variants():
-    assert _selenium_ready_from_payload({'value': {'ready': True}})
-    assert _selenium_ready_from_payload({'ready': True})
-    assert not _selenium_ready_from_payload({'value': {'ready': False}})
-    assert not _selenium_ready_from_payload({'foo': 'bar'})
+    assert _selenium_ready_from_payload({"value": {"ready": True}})
+    assert _selenium_ready_from_payload({"ready": True})
+    assert not _selenium_ready_from_payload({"value": {"ready": False}})
+    assert not _selenium_ready_from_payload({"foo": "bar"})
 
 
-def is_port_open(port=8080, host='127.0.0.1'):
+def is_port_open(port=8080, host="127.0.0.1"):
     """Check if a port is open."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -168,7 +182,7 @@ def is_port_open(port=8080, host='127.0.0.1'):
         return False
 
 
-def _find_free_port(host='127.0.0.1'):
+def _find_free_port(host="127.0.0.1"):
     """Find a free TCP port on localhost."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
@@ -185,7 +199,7 @@ def is_aria_api_healthy(base_url: str) -> bool:
         if not r.ok:
             return False
         payload = r.json()
-        return isinstance(payload, dict) and 'aria' in payload and 'objects' in payload
+        return isinstance(payload, dict) and "aria" in payload and "objects" in payload
     except (requests.RequestException, ValueError, json.JSONDecodeError):
         return False
 
@@ -195,7 +209,7 @@ def ensure_server_running():
     global SERVER_URL
 
     parsed = urlparse(SERVER_URL)
-    configured_host = parsed.hostname or '127.0.0.1'
+    configured_host = parsed.hostname or "127.0.0.1"
     configured_port = parsed.port or 8080
 
     # Re-use configured URL whenever it is healthy.
@@ -206,24 +220,26 @@ def ensure_server_running():
     # If user points to a non-local endpoint and it's unhealthy, do not silently
     # start a local server on a different URL.
     if not _is_local_host(configured_host):
-        raise RuntimeError(
-            f"Configured ARIA_SERVER_URL is not healthy: {SERVER_URL}")
+        raise RuntimeError(f"Configured ARIA_SERVER_URL is not healthy: {SERVER_URL}")
 
     # If configured local port is occupied by another service, launch Aria on a free port.
-    target_port = configured_port if not is_port_open(
-        configured_port, configured_host) else _find_free_port()
+    target_port = (
+        configured_port
+        if not is_port_open(configured_port, configured_host)
+        else _find_free_port()
+    )
     target_url = f"http://127.0.0.1:{target_port}"
     server_cwd = _resolve_server_cwd()
 
     logger.info("Starting Aria server...")
     env = os.environ.copy()
-    env['ARIA_PORT'] = str(target_port)
+    env["ARIA_PORT"] = str(target_port)
     proc = subprocess.Popen(
         ["python3", "server.py"],
         cwd=str(server_cwd),
         env=env,
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        stderr=subprocess.DEVNULL,
     )
 
     # Wait for server to be available
@@ -235,7 +251,7 @@ def ensure_server_running():
         time.sleep(0.2)
 
     proc.kill()
-    raise RuntimeError('Failed to start Aria server')
+    raise RuntimeError("Failed to start Aria server")
 
 
 def wait_for_object(name, timeout=4.0):
@@ -244,8 +260,8 @@ def wait_for_object(name, timeout=4.0):
     while time.time() < deadline:
         try:
             r = requests.get(f"{SERVER_URL}/api/aria/state", timeout=1.0)
-            if r.ok and 'objects' in r.json() and name in r.json()['objects']:
-                return r.json()['objects'][name]
+            if r.ok and "objects" in r.json() and name in r.json()["objects"]:
+                return r.json()["objects"][name]
         except Exception as e:
             logger.debug(f"Waiting for object {name}: {e}")
         time.sleep(0.12)
@@ -262,11 +278,9 @@ def is_selenium_hub_ready():
                 if _selenium_ready_from_payload(status):
                     logger.info(f"Selenium hub is ready via {status_url}")
                     return True
-                logger.warning(
-                    f"Selenium hub not ready via {status_url}: {status}")
+                logger.warning(f"Selenium hub not ready via {status_url}: {status}")
         except Exception as e:
-            logger.warning(
-                f"Selenium hub not accessible via {status_url}: {e}")
+            logger.warning(f"Selenium hub not accessible via {status_url}: {e}")
     return False
 
 
@@ -277,21 +291,20 @@ def create_remote_driver(max_retries=3):
         raise Exception("Selenium hub is not ready or not accessible")
 
     chrome_options = Options()
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
 
     last_error = None
     for attempt in range(max_retries):
         try:
             logger.info(
-                f"Connecting to Selenium hub at {SELENIUM_REMOTE_URL} (attempt {attempt + 1}/{max_retries})...")
-            driver = webdriver.Remote(
-                command_executor=SELENIUM_REMOTE_URL,
-                options=chrome_options
+                f"Connecting to Selenium hub at {SELENIUM_REMOTE_URL} (attempt {attempt + 1}/{max_retries})..."
             )
-            logger.info(
-                f"Connected successfully. Session ID: {driver.session_id}")
+            driver = webdriver.Remote(
+                command_executor=SELENIUM_REMOTE_URL, options=chrome_options
+            )
+            logger.info(f"Connected successfully. Session ID: {driver.session_id}")
             return driver
         except Exception as e:
             last_error = e
@@ -334,8 +347,7 @@ def test_selenium_add_pickup_drop():
 
         # Wait for page to load
         WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script(
-                "return document.readyState") == "complete"
+            lambda d: d.execute_script("return document.readyState") == "complete"
         )
         logger.info(f"Page loaded: {driver.title}")
 
@@ -358,8 +370,8 @@ def test_selenium_add_pickup_drop():
         while time.time() < deadline:
             try:
                 r = requests.get(f"{SERVER_URL}/api/aria/state", timeout=1.0)
-                state = r.json().get('objects', {}).get(name, {}).get('state')
-                if state == 'held':
+                state = r.json().get("objects", {}).get(name, {}).get("state")
+                if state == "held":
                     held = True
                     logger.info(f"Object '{name}' is now held")
                     break
@@ -368,22 +380,24 @@ def test_selenium_add_pickup_drop():
                 logger.debug(f"Error checking state: {e}")
             time.sleep(0.1)
 
-        assert held, f'Object {name} not marked held on server after pickUpObject'
+        assert held, f"Object {name} not marked held on server after pickUpObject"
 
         # Drop
         logger.info(f"Dropping object '{name}'")
-        driver.execute_script('dropObject()')
+        driver.execute_script("dropObject()")
         dropped = wait_for_object(name, timeout=5.0)
         assert dropped is not None, f"Object {name} disappeared after drop"
-        assert dropped.get('state') in [
-            'on_stage', 'on_table'], f"Unexpected state after drop: {dropped.get('state')}"
+        assert dropped.get("state") in [
+            "on_stage",
+            "on_table",
+        ], f"Unexpected state after drop: {dropped.get('state')}"
         logger.info(f"Object dropped successfully: {dropped}")
 
         # Cleanup: remove object
         logger.info(f"Removing object '{name}'")
         r = requests.post(
             f"{SERVER_URL}/api/aria/object",
-            json={'action': 'remove', 'object': {'id': name}}
+            json={"action": "remove", "object": {"id": name}},
         )
         assert r.ok, f"Failed to remove object: {r.status_code} {r.text}"
         logger.info("Object removed successfully")

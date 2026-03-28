@@ -116,8 +116,7 @@ def _check_config_paths() -> List[StepResult]:
         candidates = get_config_candidates(REPO_ROOT, config_key)
         canonical = canonical_config_path(REPO_ROOT, config_key)
         start = time.perf_counter()
-        found: Optional[Path] = next(
-            (p for p in candidates if p.exists()), None)
+        found: Optional[Path] = next((p for p in candidates if p.exists()), None)
         duration = round(time.perf_counter() - start, 2)
 
         if found is None:
@@ -298,8 +297,7 @@ def _resolved_config_paths() -> Dict[str, Optional[str]]:
     resolved: Dict[str, Optional[str]] = {}
     for key in config_keys:
         selected = resolve_existing_config_path(REPO_ROOT, key)
-        resolved[key] = str(selected.relative_to(
-            REPO_ROOT)) if selected else None
+        resolved[key] = str(selected.relative_to(REPO_ROOT)) if selected else None
     return resolved
 
 
@@ -349,7 +347,8 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")
     failed_critical = [
-        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
+        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}
+    ]
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 
@@ -372,8 +371,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Run Aria integration smoke checks")
+    ap = argparse.ArgumentParser(description="Run Aria integration smoke checks")
     ap.add_argument(
         "--strict-endpoints",
         action="store_true",

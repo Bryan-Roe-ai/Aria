@@ -22,7 +22,7 @@ def check_status_file(output_dir: Path) -> tuple[bool, str]:
 
     try:
         status = json.loads(status_file.read_text(encoding="utf-8"))
-        return True, f"✓ Status file found and valid"
+        return True, "✓ Status file found and valid"
     except json.JSONDecodeError as e:
         return False, f"❌ Status file is malformed: {e}"
 
@@ -81,7 +81,10 @@ def check_loss_metrics(status: dict[str, Any]) -> tuple[bool, str]:
             return False, f"❌ Invalid final_loss: {final_loss}"
 
         if best_loss > final_loss * 10:  # Best loss is way worse than final
-            return True, f"⚠ Unexpected loss relationship (best={best_loss}, final={final_loss})"
+            return (
+                True,
+                f"⚠ Unexpected loss relationship (best={best_loss}, final={final_loss})",
+            )
 
     return True, f"✓ Loss metrics valid (best={best_loss:.6f})"
 
@@ -204,7 +207,9 @@ def run_health_check(output_dir: Path | None = None) -> int:
         print("✅ System Health: EXCELLENT - All checks passed")
         exit_code = 0
     elif all_ok and checkpoint_ok:
-        print("⚠️  System Health: GOOD - Ready for training, checkpoint validation pending")
+        print(
+            "⚠️  System Health: GOOD - Ready for training, checkpoint validation pending"
+        )
         exit_code = 0
     elif all_ok:
         print("⚠️  System Health: FAIR - Core system intact, some issues detected")
@@ -220,8 +225,7 @@ def run_health_check(output_dir: Path | None = None) -> int:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Check quantum LLM system health")
+    parser = argparse.ArgumentParser(description="Check quantum LLM system health")
     parser.add_argument(
         "--output",
         type=Path,

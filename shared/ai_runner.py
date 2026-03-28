@@ -10,16 +10,17 @@ Environment variables influencing behavior:
 
 The runner returns the raw assistant output as a string plus a metadata dict.
 """
+
 from __future__ import annotations
 
+import logging
+import os
+import re
 import subprocess
 import sys
-import os
-import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Tuple, Dict, Optional
-import re
+from typing import Dict, Optional, Tuple
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 CHAT_CLI = ROOT_DIR / "ai-projects" / "chat-cli" / "src" / "chat_cli.py"
@@ -52,8 +53,7 @@ def run_chat_once(
     provider = provider or os.getenv("DEFAULT_AI_PROVIDER", "local")
     system = system or os.getenv("SYSTEM_PROMPT")
 
-    cmd = [sys.executable, str(CHAT_CLI), "--provider",
-           provider, "--once", prompt]
+    cmd = [sys.executable, str(CHAT_CLI), "--provider", provider, "--once", prompt]
     if model:
         cmd.extend(["--model", model])
     if system:
@@ -76,7 +76,7 @@ def run_chat_once(
     marker = "assistant> "
     idx = output.rfind(marker)
     if idx != -1:
-        reply = output[idx + len(marker):].rstrip()
+        reply = output[idx + len(marker) :].rstrip()
 
     metadata = {"provider": provider}
     if model:

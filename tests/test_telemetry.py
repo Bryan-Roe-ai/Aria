@@ -1,11 +1,10 @@
 """Tests for shared/telemetry.py — Azure Monitor OpenTelemetry initialization."""
+
 from __future__ import annotations
 
-import importlib
-import sys
 import os
-import pytest
-from unittest.mock import patch, MagicMock
+import sys
+from unittest.mock import MagicMock, patch
 
 
 def _reload_telemetry():
@@ -13,6 +12,7 @@ def _reload_telemetry():
     if "shared.telemetry" in sys.modules:
         del sys.modules["shared.telemetry"]
     import shared.telemetry as tel
+
     return tel
 
 
@@ -43,12 +43,17 @@ class TestInitTelemetry:
         fake_azure = MagicMock()
         fake_azure.configure_azure_monitor = mock_configure
 
-        with patch.dict(os.environ, {"APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=fake-key"}):
+        with patch.dict(
+            os.environ,
+            {"APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=fake-key"},
+        ):
             with patch.dict(sys.modules, {"azure.monitor.opentelemetry": fake_azure}):
                 result = tel.init_telemetry()
 
         assert result is True
-        mock_configure.assert_called_once_with(connection_string="InstrumentationKey=fake-key")
+        mock_configure.assert_called_once_with(
+            connection_string="InstrumentationKey=fake-key"
+        )
 
     def test_is_enabled_reflects_state(self):
         tel = _reload_telemetry()

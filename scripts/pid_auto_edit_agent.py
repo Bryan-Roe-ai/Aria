@@ -202,8 +202,11 @@ def run_loop(interval: int = 5) -> int:
         task = QueueTask(
             task=task_text,
             llm_type=str(task_raw.get("llm_type", "echo") or "echo"),
-            model=(str(task_raw.get("model")) if task_raw.get(
-                "model") is not None else None),
+            model=(
+                str(task_raw.get("model"))
+                if task_raw.get("model") is not None
+                else None
+            ),
             dry_run=bool(task_raw.get("dry_run", False)),
             skip_tests=bool(task_raw.get("skip_tests", False)),
         )
@@ -354,13 +357,13 @@ def cmd_enqueue(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
-        description="PID-managed autonomous file-editing agent")
+    p = argparse.ArgumentParser(description="PID-managed autonomous file-editing agent")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_start = sub.add_parser("start", help="start daemon worker")
-    p_start.add_argument("--interval", type=int, default=5,
-                         help="idle poll interval seconds")
+    p_start.add_argument(
+        "--interval", type=int, default=5, help="idle poll interval seconds"
+    )
     p_start.set_defaults(func=cmd_start)
 
     p_stop = sub.add_parser("stop", help="stop daemon worker")
@@ -370,10 +373,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_status.set_defaults(func=cmd_status)
 
     p_enqueue = sub.add_parser("enqueue", help="enqueue edit task")
-    p_enqueue.add_argument("--task", required=True,
-                           help="task description for autonomous_code_agent")
-    p_enqueue.add_argument("--llm-type", default="echo",
-                           choices=["echo", "ollama", "lmstudio"])
+    p_enqueue.add_argument(
+        "--task", required=True, help="task description for autonomous_code_agent"
+    )
+    p_enqueue.add_argument(
+        "--llm-type", default="echo", choices=["echo", "ollama", "lmstudio"]
+    )
     p_enqueue.add_argument("--model", default=None)
     p_enqueue.add_argument("--dry-run", action="store_true")
     p_enqueue.add_argument("--skip-tests", action="store_true")

@@ -3,16 +3,18 @@
 Tests cover TTL-based caching, thread-safety, graceful degradation on I/O
 errors, and selective/full cache clearing.
 """
+
 from __future__ import annotations
-from shared.file_cache import clear_cache, read_json_cached, DEFAULT_TTL_SECONDS
 
 import json
 import sys
-import time
 import threading
+import time
 from pathlib import Path
 
 import pytest
+
+from shared.file_cache import DEFAULT_TTL_SECONDS, clear_cache, read_json_cached
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

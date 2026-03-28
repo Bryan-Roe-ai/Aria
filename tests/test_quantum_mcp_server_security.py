@@ -14,7 +14,6 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -32,6 +31,7 @@ if str(SRC_DIR) not in sys.path:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _run(coro):
     """Run a coroutine synchronously."""
     return asyncio.run(coro)
@@ -40,6 +40,7 @@ def _run(coro):
 # ---------------------------------------------------------------------------
 # shots bounds validation
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestSimulateCircuitHandlerShotsBounds:
@@ -84,6 +85,7 @@ class TestSimulateCircuitHandlerShotsBounds:
 # ---------------------------------------------------------------------------
 # Custom gate qubit bounds
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestCreateCircuitCustomGatesBounds:
@@ -159,6 +161,7 @@ class TestCreateCircuitCustomGatesBounds:
 # Temp file cleanup
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestTempFileCleanup:
     """Verify temp files are removed even when downstream calls raise."""
@@ -188,7 +191,10 @@ class TestTempFileCleanup:
                 "workspace_name": "ws",
                 "location": "eastus",
             },
-            "quantum": {"provider": "ionq", "hardware": {"shots": 500, "optimization_level": 2}},
+            "quantum": {
+                "provider": "ionq",
+                "hardware": {"shots": 500, "optimization_level": 2},
+            },
             "ml": {"model": {"n_qubits": 4, "n_layers": 2, "entanglement": "linear"}},
             "logging": {"level": "INFO", "results_dir": "./results"},
         }
@@ -206,8 +212,7 @@ class TestTempFileCleanup:
                 pass  # We only care about the file being cleaned up.
 
         for path in captured_paths:
-            assert not os.path.exists(
-                path), f"Temp file was not deleted: {path}"
+            assert not os.path.exists(path), f"Temp file was not deleted: {path}"
 
     def test_connect_azure_cleans_up_temp_file_on_failure(self):
         """On a connection error, the temp YAML must still be deleted."""
@@ -233,16 +238,17 @@ class TestTempFileCleanup:
         ):
             with pytest.raises(RuntimeError):
                 _connect_azure_sync(
-                    {"azure": {}, "quantum": {}, "ml": {}, "logging": {}})
+                    {"azure": {}, "quantum": {}, "ml": {}, "logging": {}}
+                )
 
         for path in captured_paths:
-            assert not os.path.exists(
-                path), f"Temp file leaked on failure: {path}"
+            assert not os.path.exists(path), f"Temp file leaked on failure: {path}"
 
 
 # ---------------------------------------------------------------------------
 # Additional runtime-validation guards
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestRuntimeValidationGuards:
@@ -257,16 +263,13 @@ class TestRuntimeValidationGuards:
 
     def test_call_tool_rejects_non_object_arguments(self):
         mcp_server = self._import_server()
-        result = _run(mcp_server.call_tool(
-            "list_quantum_backends", ["bad", "args"]))
+        result = _run(mcp_server.call_tool("list_quantum_backends", ["bad", "args"]))
         assert "expected an object" in result[0].text.lower()
 
     def test_create_circuit_rejects_boolean_qubit_count(self):
         mcp_server = self._import_server()
         result = _run(
-            mcp_server.create_circuit_handler(
-                {"n_qubits": True, "circuit_type": "ghz"}
-            )
+            mcp_server.create_circuit_handler({"n_qubits": True, "circuit_type": "ghz"})
         )
         assert "n_qubits" in result[0].text
 
@@ -340,8 +343,7 @@ class TestRuntimeValidationGuards:
 
     def test_circuit_properties_rejects_whitespace_circuit_id(self):
         mcp_server = self._import_server()
-        result = _run(mcp_server.circuit_properties_handler(
-            {"circuit_id": "   "}))
+        result = _run(mcp_server.circuit_properties_handler({"circuit_id": "   "}))
         assert "circuit_id is required" in result[0].text
 
     def test_submit_job_rejects_whitespace_backend_name(self):
@@ -359,8 +361,7 @@ class TestRuntimeValidationGuards:
         except (ImportError, SystemExit):
             pytest.skip("quantum_mcp_server dependencies not installed")
 
-        result = _run(simulate_circuit_handler(
-            {"circuit_id": "   ", "shots": 10}))
+        result = _run(simulate_circuit_handler({"circuit_id": "   ", "shots": 10}))
         assert "circuit_id is required" in result[0].text
 
     def test_train_classifier_rejects_invalid_bounds(self):
@@ -382,6 +383,7 @@ class TestRuntimeValidationGuards:
 # ---------------------------------------------------------------------------
 # Cost-gating enforcement
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestCostGatingEnforcement:
@@ -473,8 +475,7 @@ class TestCostGatingEnforcement:
                 )
             )
 
-        assert "cost" in result[0].text.lower(
-        ) or "limit" in result[0].text.lower()
+        assert "cost" in result[0].text.lower() or "limit" in result[0].text.lower()
         assert "exceed" in result[0].text.lower()
 
     def test_submit_job_rejects_cumulative_cost_limit(self):
@@ -485,8 +486,7 @@ class TestCostGatingEnforcement:
 
         # Pre-set cumulative cost to near-limit
         with (
-            patch.object(
-                mcp_server, "MAX_CUMULATIVE_COST_PER_SESSION_USD", 0.50),
+            patch.object(mcp_server, "MAX_CUMULATIVE_COST_PER_SESSION_USD", 0.50),
             patch.dict(
                 mcp_server.quantum_state,
                 {
@@ -510,8 +510,9 @@ class TestCostGatingEnforcement:
             )
 
             # Should reject due to cumulative cost
-            assert "budget" in result[0].text.lower(
-            ) or "exceed" in result[0].text.lower()
+            assert (
+                "budget" in result[0].text.lower() or "exceed" in result[0].text.lower()
+            )
 
     def test_submit_job_accepts_within_cost_limits(self):
         """Accepts job when within both per-job and cumulative limits."""
@@ -527,8 +528,7 @@ class TestCostGatingEnforcement:
 
         with (
             patch.object(mcp_server, "MAX_COST_PER_JOB_USD", 1.0),
-            patch.object(
-                mcp_server, "MAX_CUMULATIVE_COST_PER_SESSION_USD", 100.0),
+            patch.object(mcp_server, "MAX_CUMULATIVE_COST_PER_SESSION_USD", 100.0),
             patch.dict(
                 mcp_server.quantum_state,
                 {
@@ -550,8 +550,7 @@ class TestCostGatingEnforcement:
                 )
             )
 
-        assert "submitted" in result[0].text.lower(
-        ) or "job" in result[0].text.lower()
+        assert "submitted" in result[0].text.lower() or "job" in result[0].text.lower()
 
     def test_submit_job_requires_confirmation_for_paid_backend(self):
         """Paid backends should require explicit cost confirmation."""
@@ -596,7 +595,9 @@ class TestCostGatingEnforcement:
         qc.measure([0, 1], [0, 1])
 
         cost = mcp_server._estimate_job_cost_sync(qc, "mystery-qpu", 1000)
-        assert cost > 0.0, "Unknown paid-like backend should use a conservative nonzero rate"
+        assert (
+            cost > 0.0
+        ), "Unknown paid-like backend should use a conservative nonzero rate"
 
     def test_submit_job_rejects_backend_not_in_allowlist(self):
         """Submission must fail when backend is not in cached allowlist."""
@@ -636,8 +637,7 @@ class TestCostGatingEnforcement:
         fake_job = MagicMock()
         fake_job.id.return_value = "job_miss_refresh_1"
         fake_azure = MagicMock()
-        fake_azure.list_backends.return_value = [
-            "old.backend", "microsoft.simulator"]
+        fake_azure.list_backends.return_value = ["old.backend", "microsoft.simulator"]
         fake_azure.submit_circuit.return_value = fake_job
 
         with patch.dict(
@@ -697,7 +697,8 @@ class TestCostGatingEnforcement:
 
             assert "submitted" in result[0].text.lower()
             assert "microsoft.simulator" in [
-                b.lower() for b in mcp_server.quantum_state["known_backends"]]
+                b.lower() for b in mcp_server.quantum_state["known_backends"]
+            ]
 
     def test_submit_job_allowlist_refresh_error_is_reported(self):
         """When backend is missing and refresh fails, response should include refresh failure context."""
@@ -705,8 +706,7 @@ class TestCostGatingEnforcement:
         circuit_id, _ = self._make_circuit_in_cache()
 
         fake_azure = MagicMock()
-        fake_azure.list_backends.side_effect = RuntimeError(
-            "backend API unavailable")
+        fake_azure.list_backends.side_effect = RuntimeError("backend API unavailable")
 
         with patch.dict(
             mcp_server.quantum_state,
@@ -804,8 +804,7 @@ class TestCostGatingEnforcement:
         fake_job.id.return_value = "job_stale_1"
         fake_azure = MagicMock()
         # Return new list that differs from the stale one
-        fake_azure.list_backends.return_value = [
-            "ionq.updated", "microsoft.simulator"]
+        fake_azure.list_backends.return_value = ["ionq.updated", "microsoft.simulator"]
         fake_azure.submit_circuit.return_value = fake_job
 
         with patch.dict(
@@ -833,8 +832,10 @@ class TestCostGatingEnforcement:
             assert "submitted" in result[0].text.lower()
             # Cache should now hold the refreshed list, not the stale one
             assert "old.backend" not in [
-                b.lower() for b in mcp_server.quantum_state["known_backends"]]
+                b.lower() for b in mcp_server.quantum_state["known_backends"]
+            ]
             assert "microsoft.simulator" in [
-                b.lower() for b in mcp_server.quantum_state["known_backends"]]
+                b.lower() for b in mcp_server.quantum_state["known_backends"]
+            ]
             # Timestamp should be updated
             assert mcp_server.quantum_state["known_backends_refreshed_at"] > stale_ts

@@ -17,21 +17,21 @@ Usage:
 
 from __future__ import annotations
 
-import os
-import sys
+import argparse
+import importlib
 import json
-import subprocess
 import logging
+import os
+import subprocess
+import sys
 import time
 import traceback
-import importlib
-from dataclasses import dataclass, asdict
+import urllib.error
+import urllib.request
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Union
-import argparse
-import urllib.request
-import urllib.error
+from typing import Any, Dict, List, Optional, Union
 
 # Make sibling script modules importable (e.g., autonomous_agent_tasks.py)
 _SCRIPT_DIR = Path(__file__).parent
@@ -47,8 +47,7 @@ except Exception:
 _LOGGER = logging.getLogger(__name__)
 
 # Configuration
-DEFAULT_LM_STUDIO_URL = os.getenv(
-    "LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
+DEFAULT_LM_STUDIO_URL = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
 DEFAULT_LMSTUDIO_MODEL = os.getenv("LMSTUDIO_MODEL", "local-model")
 DEFAULT_OLLAMA_URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
 DEFAULT_OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
@@ -67,6 +66,7 @@ MIN_TEST_PASSING_RATE = 0.8  # 80% tests must pass
 @dataclass
 class AgentState:
     """Current state of the agent's work."""
+
     task_id: str
     task_description: str
     status: str  # planning, implementing, testing, complete, failed
@@ -119,8 +119,12 @@ class RepositoryContext:
     def _check_git_available(self) -> bool:
         """Check if git is available."""
         try:
-            subprocess.run(["git", "--version"],
-                           capture_output=True, check=True, cwd=self.repo_root)
+            subprocess.run(
+                ["git", "--version"],
+                capture_output=True,
+                check=True,
+                cwd=self.repo_root,
+            )
             return True
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
@@ -229,7 +233,11 @@ class EchoLLMClient:
         if "list" in prompt_lower and "file" in prompt_lower:
             # File identification call
             return "scripts/autonomous_code_agent.py\nscripts/autonomous_agent_tasks.py"
-        if "step" in prompt_lower or "plan" in prompt_lower or "analyze" in prompt_lower:
+        if (
+            "step" in prompt_lower
+            or "plan" in prompt_lower
+            or "analyze" in prompt_lower
+        ):
             # Planning call
             return (
                 "[Echo Plan]\n"
@@ -254,8 +262,7 @@ class LocalLLMClient:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.llm_type = llm_type
-        _LOGGER.info(
-            f"Initialized {llm_type} client: {base_url} model={model}")
+        _LOGGER.info(f"Initialized {llm_type} client: {base_url} model={model}")
 
     def query(self, prompt: str, max_tokens: int = 2000) -> str:
         """Query the local LLM."""
@@ -292,8 +299,7 @@ class LocalLLMClient:
                 result = json_module.loads(response.read().decode("utf-8"))
                 return result.get("response", "").strip()
         except urllib.error.URLError as e:
-            raise ConnectionError(
-                f"Cannot connect to Ollama at {self.base_url}: {e}")
+            raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}: {e}")
 
     def _query_lmstudio(self, prompt: str, max_tokens: int) -> str:
         """Query LM Studio API (OpenAI-compatible)."""
@@ -322,7 +328,8 @@ class LocalLLMClient:
                 return ""
         except urllib.error.URLError as e:
             raise ConnectionError(
-                f"Cannot connect to LM Studio at {self.base_url}: {e}")
+                f"Cannot connect to LM Studio at {self.base_url}: {e}"
+            )
 
     def is_available(self) -> bool:
         """Check if LLM is available."""
@@ -356,7 +363,8 @@ class CodeAgent:
             self.llm = EchoLLMClient(model=self.model or "echo")
         else:
             raise ValueError(
-                f"Unknown LLM type: {llm_type}. Choose: ollama, lmstudio, echo")
+                f"Unknown LLM type: {llm_type}. Choose: ollama, lmstudio, echo"
+            )
 
         self.repo = RepositoryContext()
         self.state: Optional[AgentState] = None
@@ -370,7 +378,8 @@ class CodeAgent:
         handler = logging.FileHandler(DATA_OUT / "agent.log")
         handler.setLevel(logging.DEBUG)
         formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         handler.setFormatter(formatter)
         _LOGGER.addHandler(handler)
         _LOGGER.setLevel(logging.DEBUG)
@@ -378,8 +387,7 @@ class CodeAgent:
     def _llm_query(self, prompt: str, max_tokens: int = MAX_TASK_TOKENS) -> str:
         """Query LLM and track token usage."""
         response = self.llm.query(prompt, max_tokens)
-        self._total_tokens += _estimate_tokens(prompt) + \
-            _estimate_tokens(response)
+        self._total_tokens += _estimate_tokens(prompt) + _estimate_tokens(response)
         if self.state:
             self.state.tokens_estimated = self._total_tokens
         return response
@@ -406,8 +414,8 @@ class CodeAgent:
         )
 
         prompt = (
-            f"{specialized_intro}\n\n" if specialized_intro else ""
-        ) + f"""You are an expert code agent working on a Python repository.
+            (f"{specialized_intro}\n\n" if specialized_intro else "")
+            + f"""You are an expert code agent working on a Python repository.
 
 Task: {task_description}
 {file_patterns_note}
@@ -417,6 +425,7 @@ Provide a concise action plan:
 3. Step-by-step implementation plan
 4. Validation approach
 5. Risk mitigation"""
+        )
 
         _LOGGER.info(f"Planning task [{task_category}]: {task_description}")
         reasoning = self._llm_query(prompt, max_tokens=MAX_TASK_TOKENS)
@@ -503,7 +512,8 @@ Respond with ONLY a list of file paths relative to repo root (one per line). No 
             truncated = content[:4000]
             suffix_note = (
                 f"\n# ... (truncated, {len(content)} bytes total)"
-                if len(content) > 4000 else ""
+                if len(content) > 4000
+                else ""
             )
 
             prompt = f"""Task: {task_description}
@@ -523,7 +533,8 @@ If no changes are needed for this file, return the original content unchanged.""
 
             if not new_content or len(new_content) < 20:
                 _LOGGER.warning(
-                    f"LLM returned empty/short response for {filepath}, skipping")
+                    f"LLM returned empty/short response for {filepath}, skipping"
+                )
                 continue
 
             # Remove accidental markdown fences if present
@@ -585,8 +596,9 @@ If no changes are needed for this file, return the original content unchanged.""
             )
             if collected_match:
                 collected = int(collected_match.group(1))
-                deselected = int(collected_match.group(
-                    2)) if collected_match.group(2) else 0
+                deselected = (
+                    int(collected_match.group(2)) if collected_match.group(2) else 0
+                )
                 total = max(0, collected - deselected)
 
             passed_match = re.search(r"(\d+)\s+passed", output)
@@ -613,10 +625,22 @@ If no changes are needed for this file, return the original content unchanged.""
 
         except subprocess.TimeoutExpired:
             _LOGGER.error("Tests timed out")
-            return {"total": 0, "passed": 0, "failed": 0, "success": False, "error": "timeout"}
+            return {
+                "total": 0,
+                "passed": 0,
+                "failed": 0,
+                "success": False,
+                "error": "timeout",
+            }
         except Exception as e:
             _LOGGER.error(f"Error running tests: {e}")
-            return {"total": 0, "passed": 0, "failed": 0, "success": False, "error": str(e)}
+            return {
+                "total": 0,
+                "passed": 0,
+                "failed": 0,
+                "success": False,
+                "error": str(e),
+            }
 
     def commit_changes(self, message: str, files: Optional[List[str]] = None) -> bool:
         """Commit changes to git."""
@@ -688,8 +712,7 @@ If no changes are needed for this file, return the original content unchanged.""
         )
         self._total_tokens = 0
 
-        _LOGGER.info(
-            f"Starting task {task_id} (dry_run={dry_run}): {task_description}")
+        _LOGGER.info(f"Starting task {task_id} (dry_run={dry_run}): {task_description}")
         self.state.save()
 
         # ── Phase 1: Plan ────────────────────────────────────────────────────
@@ -746,8 +769,7 @@ If no changes are needed for this file, return the original content unchanged.""
                 self.state.tests_passed = test_results.get("passed", 0)
                 self.state.tests_failed = test_results.get("failed", 0)
                 tests_passed = test_results.get("success", False)
-                _LOGGER.info(
-                    f"Tests: passed={tests_passed} results={test_results}")
+                _LOGGER.info(f"Tests: passed={tests_passed} results={test_results}")
                 if not tests_passed:
                     self.state.add_error("Validation tests failed")
             except Exception as e:
@@ -755,8 +777,7 @@ If no changes are needed for this file, return the original content unchanged.""
 
         # ── Rollback if tests failed ─────────────────────────────────────────
         if not dry_run and not tests_passed and self.state.files_modified:
-            _LOGGER.warning(
-                "Tests failed after implementation — rolling back changes")
+            _LOGGER.warning("Tests failed after implementation — rolling back changes")
             try:
                 if self._restore_modified_files():
                     _LOGGER.info("Rollback complete (restored original file snapshots)")
@@ -837,8 +858,7 @@ def main():
 
     # Check if LLM is available
     if not agent.llm.is_available():
-        print(
-            f"Error: {args.llm_type} LLM is not available at the configured URL")
+        print(f"Error: {args.llm_type} LLM is not available at the configured URL")
         if args.llm_type == "ollama":
             print("Configure: export OLLAMA_BASE_URL=http://127.0.0.1:11434")
             print("Or install Ollama from https://ollama.ai")

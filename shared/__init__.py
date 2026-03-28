@@ -9,13 +9,14 @@ Heavy or optional modules (cosmos, telemetry, db_logging, sql_engine) are NOT
 eagerly imported here — import them directly when needed so startup stays fast.
 """
 
+from shared.file_cache import DEFAULT_TTL_SECONDS, read_json_cached  # noqa: F401
+from shared.http_utils import validate_messages  # noqa: F401
+from shared.import_helpers import safe_import  # noqa: F401
+
 # --- Lightweight, no-external-dependency helpers ---
 from shared.json_utils import load_json  # noqa: F401
-from shared.http_utils import validate_messages  # noqa: F401
-from shared.file_cache import read_json_cached, DEFAULT_TTL_SECONDS  # noqa: F401
-from shared.script_utils import get_repo_root  # noqa: F401
-from shared.import_helpers import safe_import  # noqa: F401
 from shared.performance_utils import tail_file  # noqa: F401
+from shared.script_utils import get_repo_root  # noqa: F401
 
 __all__ = [
     # json_utils

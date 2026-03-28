@@ -13,7 +13,9 @@ chat_providers: Any = importlib.import_module("chat_providers")
 ProviderChoice = getattr(chat_providers, "ProviderChoice")
 
 
-def _install_fake_quantum_provider(monkeypatch: pytest.MonkeyPatch, captured: dict) -> None:
+def _install_fake_quantum_provider(
+    monkeypatch: pytest.MonkeyPatch, captured: dict
+) -> None:
     """Install a lightweight fake quantum_provider module for deterministic tests."""
     fake_module = types.ModuleType("quantum_provider")
 
@@ -27,14 +29,18 @@ def _install_fake_quantum_provider(monkeypatch: pytest.MonkeyPatch, captured: di
         captured["temperature"] = temperature
         captured["max_output_tokens"] = max_output_tokens
         captured["kwargs"] = kwargs
-        return object(), ProviderChoice(name="quantum-llm", model=f"quantum-llm ({model_path})")
+        return object(), ProviderChoice(
+            name="quantum-llm", model=f"quantum-llm ({model_path})"
+        )
 
     setattr(fake_module, "create_quantum_llm_provider", _fake_factory)
     monkeypatch.setitem(sys.modules, "quantum_provider", fake_module)
 
 
 @pytest.mark.unit
-def test_detect_provider_quantum_uses_model_override(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_detect_provider_quantum_uses_model_override(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict = {}
     _install_fake_quantum_provider(monkeypatch, captured)
 
@@ -53,7 +59,9 @@ def test_detect_provider_quantum_uses_model_override(monkeypatch: pytest.MonkeyP
 
 
 @pytest.mark.unit
-def test_detect_provider_quantum_uses_env_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_detect_provider_quantum_uses_env_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict = {}
     _install_fake_quantum_provider(monkeypatch, captured)
     monkeypatch.setenv("QAI_QUANTUM_MODEL_PATH", "data_out/quantum_llm_api")
@@ -69,7 +77,9 @@ def test_detect_provider_quantum_uses_env_fallback(monkeypatch: pytest.MonkeyPat
 
 
 @pytest.mark.unit
-def test_detect_provider_quantum_requires_model_path(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_detect_provider_quantum_requires_model_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     captured: dict = {}
     _install_fake_quantum_provider(monkeypatch, captured)
     monkeypatch.delenv("QAI_QUANTUM_MODEL_PATH", raising=False)

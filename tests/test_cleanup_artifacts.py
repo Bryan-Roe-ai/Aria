@@ -9,7 +9,6 @@ import sys
 import time
 from pathlib import Path
 
-import pytest
 
 # ---------------------------------------------------------------------------
 # Module loader
@@ -60,6 +59,7 @@ def _touch(path: Path, age_seconds: float = 0.0) -> Path:
 # _file_age_days
 # ---------------------------------------------------------------------------
 
+
 class TestFileAgeDays:
     def test_fresh_file_is_near_zero(self, tmp_path: Path):
         f = _touch(tmp_path / "fresh.json")
@@ -88,6 +88,7 @@ class TestFileAgeDays:
 # ---------------------------------------------------------------------------
 # find_candidates — structural / empty cases
 # ---------------------------------------------------------------------------
+
 
 class TestFindCandidatesEmpty:
     def test_empty_data_out_returns_empty_list(self, tmp_path: Path):
@@ -122,6 +123,7 @@ class TestFindCandidatesEmpty:
 # find_candidates — KEEP_FILES exclusion
 # ---------------------------------------------------------------------------
 
+
 class TestFindCandidatesKeepFiles:
     def test_status_json_always_kept(self, tmp_path: Path):
         dirpath = tmp_path / "autotrain"
@@ -148,6 +150,7 @@ class TestFindCandidatesKeepFiles:
 # ---------------------------------------------------------------------------
 # find_candidates — age-based policy
 # ---------------------------------------------------------------------------
+
 
 class TestFindCandidatesAge:
     def test_young_file_not_a_candidate(self, tmp_path: Path):
@@ -193,6 +196,7 @@ class TestFindCandidatesAge:
 # find_candidates — count-based policy
 # ---------------------------------------------------------------------------
 
+
 class TestFindCandidatesCount:
     def test_fewer_files_than_max_count_no_candidates(self, tmp_path: Path):
         dirpath = tmp_path / "autotrain"
@@ -235,6 +239,7 @@ class TestFindCandidatesCount:
 # find_candidates — file pattern matching
 # ---------------------------------------------------------------------------
 
+
 class TestFindCandidatesPatterns:
     def test_json_files_matched(self, tmp_path: Path):
         dirpath = tmp_path / "autotrain"
@@ -276,6 +281,7 @@ class TestFindCandidatesPatterns:
 # ---------------------------------------------------------------------------
 # find_candidates — multiple CLEANABLE dirs
 # ---------------------------------------------------------------------------
+
 
 class TestFindCandidatesMultipleDirs:
     def test_all_cleanable_dirs_scanned(self, tmp_path: Path):

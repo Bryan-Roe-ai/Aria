@@ -6,6 +6,7 @@ Usage:
         --dataset /path/to/dataset \\
         --out-dir data_out/vision_eval
 """
+
 from __future__ import annotations
 
 import argparse
@@ -24,12 +25,12 @@ except ImportError as exc:
     raise ImportError("PyTorch required: pip install torch") from exc
 
 # Re-use model and dataset from the training module
-from scripts.training.train_vision import FolderDataset, TinyConvNet, _load_image
-
+from scripts.training.train_vision import FolderDataset, TinyConvNet
 
 # ---------------------------------------------------------------------------
 # Core evaluation logic
 # ---------------------------------------------------------------------------
+
 
 def _load_checkpoint(checkpoint_path: Path, device: "torch.device"):
     """Load a TinyConvNet checkpoint and return (model, classes, img_size)."""
@@ -96,7 +97,9 @@ def evaluate(
     per_class: dict[str, dict] = {}
     for cls_idx, cls_name in enumerate(ds.classes):
         cls_total = sum(1 for l in all_labels if l == cls_idx)
-        cls_correct = sum(1 for p, l in zip(all_preds, all_labels) if l == cls_idx and p == l)
+        cls_correct = sum(
+            1 for p, l in zip(all_preds, all_labels) if l == cls_idx and p == l
+        )
         per_class[cls_name] = {
             "total": cls_total,
             "correct": cls_correct,
@@ -117,19 +120,31 @@ def evaluate(
     if show_examples > 0:
         examples = []
         for i in range(min(show_examples, total)):
-            examples.append({
-                "index": i,
-                "predicted": ds.classes[all_preds[i]] if all_preds[i] < len(ds.classes) else str(all_preds[i]),
-                "actual": ds.classes[all_labels[i]] if all_labels[i] < len(ds.classes) else str(all_labels[i]),
-                "confidence": all_confs[i],
-            })
+            examples.append(
+                {
+                    "index": i,
+                    "predicted": (
+                        ds.classes[all_preds[i]]
+                        if all_preds[i] < len(ds.classes)
+                        else str(all_preds[i])
+                    ),
+                    "actual": (
+                        ds.classes[all_labels[i]]
+                        if all_labels[i] < len(ds.classes)
+                        else str(all_labels[i])
+                    ),
+                    "confidence": all_confs[i],
+                }
+            )
         results["examples"] = examples
 
     out_dir.mkdir(parents=True, exist_ok=True)
     results_path = out_dir / "results.json"
     with open(results_path, "w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2)
-    print(f"[evaluate_vision] accuracy={accuracy:.3f} ({correct}/{total}) → {results_path}")
+    print(
+        f"[evaluate_vision] accuracy={accuracy:.3f} ({correct}/{total}) → {results_path}"
+    )
     return results
 
 
@@ -137,10 +152,15 @@ def evaluate(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def run_eval(args: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate a TinyConvNet checkpoint")
-    parser.add_argument("--checkpoint", required=True, help="Path to .pt checkpoint file")
-    parser.add_argument("--dataset", required=True, help="Path to dataset root directory")
+    parser.add_argument(
+        "--checkpoint", required=True, help="Path to .pt checkpoint file"
+    )
+    parser.add_argument(
+        "--dataset", required=True, help="Path to dataset root directory"
+    )
     parser.add_argument("--out-dir", default="data_out/vision_eval")
     parser.add_argument("--img-size", type=int, default=64)
     parser.add_argument("--batch-size", type=int, default=32)
@@ -152,10 +172,16 @@ def run_eval(args: Optional[List[str]] = None) -> int:
     dataset_path = Path(parsed.dataset)
 
     if not checkpoint_path.exists():
-        print(f"[evaluate_vision] ERROR: checkpoint not found: {checkpoint_path}", file=sys.stderr)
+        print(
+            f"[evaluate_vision] ERROR: checkpoint not found: {checkpoint_path}",
+            file=sys.stderr,
+        )
         return 1
     if not dataset_path.exists():
-        print(f"[evaluate_vision] ERROR: dataset not found: {dataset_path}", file=sys.stderr)
+        print(
+            f"[evaluate_vision] ERROR: dataset not found: {dataset_path}",
+            file=sys.stderr,
+        )
         return 1
 
     try:

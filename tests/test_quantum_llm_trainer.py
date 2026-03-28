@@ -1,11 +1,13 @@
 """
 Tests for Quantum-Enhanced LLM Training Module
 """
-import pytest
-import sys
-from pathlib import Path
-import tempfile
+
 import json
+import sys
+import tempfile
+from pathlib import Path
+
+import pytest
 
 torch = pytest.importorskip("torch")
 
@@ -16,15 +18,15 @@ sys.path.insert(0, str(scripts_path))
 try:
     from quantum_llm_trainer import (
         QuantumAttentionOptimizer,
-        QuantumFeatureEncoder,
         QuantumEnhancedLLMTrainer,
+        QuantumFeatureEncoder,
         get_quantum_llm_status,
     )
+
     QUANTUM_LLM_AVAILABLE = True
 except (ImportError, OSError) as e:
     QUANTUM_LLM_AVAILABLE = False
-    pytest.skip(
-        f"Quantum LLM trainer not available: {e}", allow_module_level=True)
+    pytest.skip(f"Quantum LLM trainer not available: {e}", allow_module_level=True)
 
 
 @pytest.mark.unit
@@ -54,12 +56,16 @@ class TestQuantumAttentionOptimizer:
         assert not torch.isnan(optimized).any()
         assert not torch.isinf(optimized).any()
 
-    def test_optimize_attention_weights_preserves_shape_when_quantum_output_is_shorter(self):
+    def test_optimize_attention_weights_preserves_shape_when_quantum_output_is_shorter(
+        self,
+    ):
         """Quantum output is per-qubit, so optimizer must resize it back to chunk length."""
 
         class _ShortQuantumLayer:
             def __call__(self, inputs):
-                return torch.tensor([[0.1, 0.2, 0.3, 0.4]], dtype=inputs.dtype, device=inputs.device)
+                return torch.tensor(
+                    [[0.1, 0.2, 0.3, 0.4]], dtype=inputs.dtype, device=inputs.device
+                )
 
         optimizer = QuantumAttentionOptimizer(n_qubits=4, n_layers=2)
         optimizer._quantum_layer = _ShortQuantumLayer()
@@ -108,7 +114,7 @@ class TestQuantumEnhancedLLMTrainer:
             "quantum_backend": "local",
             "n_qubits": 4,
             "n_quantum_layers": 2,
-            "passive": False
+            "passive": False,
         }
 
         trainer = QuantumEnhancedLLMTrainer(config)
@@ -124,7 +130,7 @@ class TestQuantumEnhancedLLMTrainer:
             "quantum_backend": "local",
             "n_qubits": 4,
             "n_quantum_layers": 2,
-            "passive": False
+            "passive": False,
         }
 
         trainer = QuantumEnhancedLLMTrainer(config)
@@ -136,21 +142,26 @@ class TestQuantumEnhancedLLMTrainer:
 
             # Create mock dataset
             mock_data = [
-                {"messages": [{"role": "user", "content": "Hello"}, {
-                    "role": "assistant", "content": "Hi!"}]},
-                {"messages": [{"role": "user", "content": "How are you?"}, {
-                    "role": "assistant", "content": "I'm good!"}]}
+                {
+                    "messages": [
+                        {"role": "user", "content": "Hello"},
+                        {"role": "assistant", "content": "Hi!"},
+                    ]
+                },
+                {
+                    "messages": [
+                        {"role": "user", "content": "How are you?"},
+                        {"role": "assistant", "content": "I'm good!"},
+                    ]
+                },
             ]
 
-            with open(dataset_path, 'w') as f:
+            with open(dataset_path, "w") as f:
                 json.dump(mock_data, f)
 
             # Run training
             results = trainer.train_with_quantum_enhancement(
-                model=None,
-                dataset_path=dataset_path,
-                output_dir=output_dir,
-                epochs=1
+                model=None, dataset_path=dataset_path, output_dir=output_dir, epochs=1
             )
 
             # Check results
@@ -172,23 +183,16 @@ class TestQuantumEnhancedLLMTrainer:
 
     def test_load_dataset_json(self):
         """Test loading JSON dataset"""
-        config = {
-            "quantum_backend": "local",
-            "n_qubits": 4,
-            "n_quantum_layers": 2
-        }
+        config = {"quantum_backend": "local", "n_qubits": 4, "n_quantum_layers": 2}
 
         trainer = QuantumEnhancedLLMTrainer(config)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dataset_path = Path(tmpdir) / "train.json"
 
-            mock_data = [
-                {"text": "Sample 1"},
-                {"text": "Sample 2"}
-            ]
+            mock_data = [{"text": "Sample 1"}, {"text": "Sample 2"}]
 
-            with open(dataset_path, 'w') as f:
+            with open(dataset_path, "w") as f:
                 json.dump(mock_data, f)
 
             dataset = trainer._load_dataset(dataset_path)
@@ -198,18 +202,14 @@ class TestQuantumEnhancedLLMTrainer:
 
     def test_load_dataset_jsonl(self):
         """Test loading JSONL dataset"""
-        config = {
-            "quantum_backend": "local",
-            "n_qubits": 4,
-            "n_quantum_layers": 2
-        }
+        config = {"quantum_backend": "local", "n_qubits": 4, "n_quantum_layers": 2}
 
         trainer = QuantumEnhancedLLMTrainer(config)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             dataset_path = Path(tmpdir) / "train.jsonl"
 
-            with open(dataset_path, 'w') as f:
+            with open(dataset_path, "w") as f:
                 f.write('{"text": "Sample 1"}\n')
                 f.write('{"text": "Sample 2"}\n')
 
@@ -220,20 +220,14 @@ class TestQuantumEnhancedLLMTrainer:
 
     def test_train_epoch_with_quantum(self):
         """Test training epoch with quantum enhancement"""
-        config = {
-            "quantum_backend": "local",
-            "n_qubits": 4,
-            "n_quantum_layers": 2
-        }
+        config = {"quantum_backend": "local", "n_qubits": 4, "n_quantum_layers": 2}
 
         trainer = QuantumEnhancedLLMTrainer(config)
 
         mock_dataset = [{"text": f"Sample {i}"} for i in range(100)]
 
         loss = trainer._train_epoch_with_quantum(
-            model=None,
-            dataset=mock_dataset,
-            epoch=0
+            model=None, dataset=mock_dataset, epoch=0
         )
 
         # Check loss is reasonable
@@ -256,7 +250,7 @@ class TestQuantumLLMIntegration:
             "quantum_backend": "local",
             "n_qubits": 4,
             "n_quantum_layers": 2,
-            "passive": False
+            "passive": False,
         }
 
         trainer = QuantumEnhancedLLMTrainer(config)
@@ -270,21 +264,18 @@ class TestQuantumLLMIntegration:
                 {
                     "messages": [
                         {"role": "user", "content": f"Question {i}"},
-                        {"role": "assistant", "content": f"Answer {i}"}
+                        {"role": "assistant", "content": f"Answer {i}"},
                     ]
                 }
                 for i in range(50)
             ]
 
-            with open(dataset_path, 'w') as f:
+            with open(dataset_path, "w") as f:
                 json.dump(mock_data, f)
 
             # Run full training
             results = trainer.train_with_quantum_enhancement(
-                model=None,
-                dataset_path=dataset_path,
-                output_dir=output_dir,
-                epochs=2
+                model=None, dataset_path=dataset_path, output_dir=output_dir, epochs=2
             )
 
             # Verify results

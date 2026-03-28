@@ -1,22 +1,22 @@
-import os
-import time
-import subprocess
 import json
-import requests
-import socket
-import pytest
+import os
 import shutil
-
+import socket
+import subprocess
+import time
 from pathlib import Path
+
+import pytest
+import requests
 
 pytest.importorskip("playwright", reason="playwright is not installed")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ARIA_WEB = REPO_ROOT / 'aria_web'
-SERVER_URL = 'http://127.0.0.1:8080'
+ARIA_WEB = REPO_ROOT / "aria_web"
+SERVER_URL = "http://127.0.0.1:8080"
 
 
-def is_port_open(port=8080, host='127.0.0.1'):
+def is_port_open(port=8080, host="127.0.0.1"):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.settimeout(0.4)
@@ -27,7 +27,7 @@ def is_port_open(port=8080, host='127.0.0.1'):
         return False
 
 
-def _find_free_port(host='127.0.0.1'):
+def _find_free_port(host="127.0.0.1"):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.bind((host, 0))
@@ -43,7 +43,7 @@ def is_aria_api_healthy(base_url: str) -> bool:
         if not r.ok:
             return False
         payload = r.json()
-        return isinstance(payload, dict) and 'aria' in payload and 'objects' in payload
+        return isinstance(payload, dict) and "aria" in payload and "objects" in payload
     except (requests.RequestException, ValueError, json.JSONDecodeError):
         return False
 
@@ -64,9 +64,14 @@ def ensure_server_running():
 
     # start server using python in aria_web
     env = os.environ.copy()
-    env['ARIA_PORT'] = str(target_port)
-    proc = subprocess.Popen(["python3", "server.py"], cwd=str(
-        ARIA_WEB), env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    env["ARIA_PORT"] = str(target_port)
+    proc = subprocess.Popen(
+        ["python3", "server.py"],
+        cwd=str(ARIA_WEB),
+        env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
     # wait a short while for server to come up
     for _ in range(30):
@@ -77,7 +82,7 @@ def ensure_server_running():
 
     # didn't start
     proc.kill()
-    raise RuntimeError('Failed to start aria_server on 8080')
+    raise RuntimeError("Failed to start aria_server on 8080")
 
 
 def wait_for_object(name, timeout=4.0):
@@ -87,8 +92,8 @@ def wait_for_object(name, timeout=4.0):
             r = requests.get(f"{SERVER_URL}/api/aria/state", timeout=1.0)
             if r.ok:
                 j = r.json()
-                if 'objects' in j and name in j['objects']:
-                    return j['objects'][name]
+                if "objects" in j and name in j["objects"]:
+                    return j["objects"][name]
         except Exception:
             pass
         time.sleep(0.12)
@@ -98,9 +103,13 @@ def wait_for_object(name, timeout=4.0):
 @pytest.mark.playwright
 @pytest.mark.e2e
 @pytest.mark.skipif(
-    not os.getenv('CI') and not (shutil.which('chromium-browser')
-                                 or shutil.which('chrome') or shutil.which('google-chrome')),
-    reason='Chromium/Chrome not available'
+    not os.getenv("CI")
+    and not (
+        shutil.which("chromium-browser")
+        or shutil.which("chrome")
+        or shutil.which("google-chrome")
+    ),
+    reason="Chromium/Chrome not available",
 )
 def test_client_add_pickup_and_drag_updates_server():
     """E2E: Launch browser, add object in-page, pick up and drop, and ensure server stage_state is updated."""
@@ -120,15 +129,18 @@ def test_client_add_pickup_and_drag_updates_server():
             page.goto(SERVER_URL)
 
             # make sure main page loads
-            assert 'Aria' in page.content()
+            assert "Aria" in page.content()
 
             # Add object via client API
-            page.evaluate("([name, emoji]) => addObject(name, emoji)", [
-                          unique_name, '🧸'])
+            page.evaluate(
+                "([name, emoji]) => addObject(name, emoji)", [unique_name, "🧸"]
+            )
 
             # wait for server to report it
             obj = wait_for_object(unique_name, timeout=5.0)
-            assert obj is not None, f"Server didn't report new object {unique_name}: {requests.get(SERVER_URL + '/api/aria/state').text}"
+            assert (
+                obj is not None
+            ), f"Server didn't report new object {unique_name}: {requests.get(SERVER_URL + '/api/aria/state').text}"
 
             # Now pick the object up using client function
             page.evaluate("(name) => pickUpObject(name)", unique_name)
@@ -137,11 +149,10 @@ def test_client_add_pickup_and_drag_updates_server():
             deadline = time.time() + 4.0
             held_ok = False
             while time.time() < deadline:
-                resp = requests.get(
-                    SERVER_URL + '/api/aria/state', timeout=1.0)
-                if resp.ok and unique_name in resp.json().get('objects', {}):
-                    st = resp.json()['objects'][unique_name].get('state')
-                    if st == 'held':
+                resp = requests.get(SERVER_URL + "/api/aria/state", timeout=1.0)
+                if resp.ok and unique_name in resp.json().get("objects", {}):
+                    st = resp.json()["objects"][unique_name].get("state")
+                    if st == "held":
                         held_ok = True
                         break
                 time.sleep(0.15)
@@ -150,12 +161,16 @@ def test_client_add_pickup_and_drag_updates_server():
             # Drop object and see where it lands
             page.evaluate("() => dropObject()")
             dropped = wait_for_object(unique_name, timeout=4.0)
-            assert dropped is not None and dropped.get(
-                'state') in ['on_stage', 'on_table'], 'Dropped state not persisted on server'
+            assert dropped is not None and dropped.get("state") in [
+                "on_stage",
+                "on_table",
+            ], "Dropped state not persisted on server"
 
             # Clean up: remove object via server API
-            r = requests.post(SERVER_URL + '/api/aria/object',
-                              json={'action': 'remove', 'object': {'id': unique_name}})
+            r = requests.post(
+                SERVER_URL + "/api/aria/object",
+                json={"action": "remove", "object": {"id": unique_name}},
+            )
             assert r.ok
 
             browser.close()

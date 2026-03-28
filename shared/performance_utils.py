@@ -5,13 +5,13 @@ Common performance-optimized patterns for the Aria codebase.
 Provides reusable functions that follow best practices.
 """
 
-from collections import deque
-from pathlib import Path
-from typing import List, Iterator, Optional, Callable, Any
-from functools import wraps, lru_cache
+import hashlib
 import json
 import time
-import hashlib
+from collections import deque
+from functools import wraps
+from pathlib import Path
+from typing import Any, Callable, Iterator, List, Optional
 
 
 def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
@@ -37,14 +37,15 @@ def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
         return []
 
     try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
             return list(deque(f, maxlen=max_lines))
     except Exception:
         return []
 
 
-def tail_file_smart(file_path: Path, max_lines: int = 20,
-                    small_file_threshold: int = 65536) -> List[str]:
+def tail_file_smart(
+    file_path: Path, max_lines: int = 20, small_file_threshold: int = 65536
+) -> List[str]:
     """
     Smart tail operation that adapts to file size.
 
@@ -96,8 +97,9 @@ def tail_file_smart(file_path: Path, max_lines: int = 20,
         return []
 
 
-def stream_jsonl(file_path: Path,
-                 filter_fn: Optional[Callable[[dict], bool]] = None) -> Iterator[dict]:
+def stream_jsonl(
+    file_path: Path, filter_fn: Optional[Callable[[dict], bool]] = None
+) -> Iterator[dict]:
     """
     Memory-efficient streaming of JSONL files.
 
@@ -125,7 +127,7 @@ def stream_jsonl(file_path: Path,
     if not file_path.exists():
         return
 
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -139,8 +141,9 @@ def stream_jsonl(file_path: Path,
                 continue
 
 
-def batch_process(items: List[Any], batch_size: int,
-                  process_fn: Callable[[List[Any]], None]) -> None:
+def batch_process(
+    items: List[Any], batch_size: int, process_fn: Callable[[List[Any]], None]
+) -> None:
     """
     Process items in batches to reduce memory pressure.
 
@@ -154,17 +157,21 @@ def batch_process(items: List[Any], batch_size: int,
         ...     with open('output.json', 'a') as f:
         ...         for item in batch:
         ...             f.write(json.dumps(item) + '\\n')
-        >>> 
+        >>>
         >>> large_dataset = load_data()
         >>> batch_process(large_dataset, batch_size=100, process_fn=save_batch)
     """
     for i in range(0, len(items), batch_size):
-        batch = items[i:i + batch_size]
+        batch = items[i : i + batch_size]
         process_fn(batch)
 
 
-def find_json_in_output(output: str, key: Optional[str] = None,
-                        search_from_end: bool = True, max_lines: int = 50) -> Optional[dict]:
+def find_json_in_output(
+    output: str,
+    key: Optional[str] = None,
+    search_from_end: bool = True,
+    max_lines: int = 50,
+) -> Optional[dict]:
     """
     Efficiently find JSON object in command output.
 
@@ -187,8 +194,11 @@ def find_json_in_output(output: str, key: Optional[str] = None,
         ...     print(f"Accuracy: {metrics['metrics']['accuracy']}")
     """
     # Split and optionally reverse for end-first search
-    lines = output.rsplit(
-        '\n', max_lines) if search_from_end else output.split('\n', max_lines)
+    lines = (
+        output.rsplit("\n", max_lines)
+        if search_from_end
+        else output.split("\n", max_lines)
+    )
     line_iter = reversed(lines) if search_from_end else lines
 
     for line in line_iter:
@@ -212,13 +222,13 @@ class FileCache:
 
     Example:
         >>> cache = FileCache(max_size_mb=10)
-        >>> 
+        >>>
         >>> # First read - from disk
         >>> data1 = cache.read(Path('config.yaml'))
-        >>> 
+        >>>
         >>> # Second read - from cache (fast)
         >>> data2 = cache.read(Path('config.yaml'))
-        >>> 
+        >>>
         >>> # Clear cache if needed
         >>> cache.clear()
     """
@@ -229,7 +239,7 @@ class FileCache:
         self.max_size_bytes = int(max_size_mb * 1024 * 1024)
         self.current_size = 0
 
-    def read(self, file_path: Path, encoding: str = 'utf-8') -> str:
+    def read(self, file_path: Path, encoding: str = "utf-8") -> str:
         """Read file from cache or disk."""
         if file_path in self._cache:
             return self._cache[file_path].decode(encoding)
@@ -278,10 +288,14 @@ class FileCache:
     def stats(self) -> dict:
         """Get cache statistics."""
         return {
-            'entries': len(self._cache),
-            'current_size_mb': self.current_size / (1024 * 1024),
-            'max_size_mb': self.max_size_bytes / (1024 * 1024),
-            'utilization': (self.current_size / self.max_size_bytes) * 100 if self.max_size_bytes > 0 else 0
+            "entries": len(self._cache),
+            "current_size_mb": self.current_size / (1024 * 1024),
+            "max_size_mb": self.max_size_bytes / (1024 * 1024),
+            "utilization": (
+                (self.current_size / self.max_size_bytes) * 100
+                if self.max_size_bytes > 0
+                else 0
+            ),
         }
 
 
@@ -297,10 +311,11 @@ def timeit(func: Callable) -> Callable:
         ... def expensive_operation():
         ...     # Do work
         ...     pass
-        >>> 
+        >>>
         >>> expensive_operation()
         # Output: expensive_operation took 1.23s
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         t0 = time.time()
@@ -308,6 +323,7 @@ def timeit(func: Callable) -> Callable:
         duration = time.time() - t0
         print(f"{func.__name__} took {duration:.2f}s")
         return result
+
     return wrapper
 
 
@@ -325,13 +341,14 @@ def memoize_with_ttl(ttl_seconds: float = 60.0):
         >>> @memoize_with_ttl(ttl_seconds=300)  # 5 minutes
         ... def fetch_config():
         ...     return load_expensive_config()
-        >>> 
+        >>>
         >>> # First call - reads from disk
         >>> config1 = fetch_config()
-        >>> 
+        >>>
         >>> # Second call within 5 min - returns cached
         >>> config2 = fetch_config()
     """
+
     def decorator(func: Callable) -> Callable:
         cache: dict = {}
         cache_times: dict = {}
@@ -357,21 +374,21 @@ def memoize_with_ttl(ttl_seconds: float = 60.0):
 
         # Add cache management methods
         wrapper.cache_clear = lambda: (cache.clear(), cache_times.clear())
-        wrapper.cache_info = lambda: {'size': len(cache), 'ttl': ttl_seconds}
+        wrapper.cache_info = lambda: {"size": len(cache), "ttl": ttl_seconds}
 
         return wrapper
+
     return decorator
 
 
 # Example usage and tests
 if __name__ == "__main__":
     import tempfile
-    import sys
 
     print("Performance Utilities - Example Usage\n")
 
     # Test tail_file
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.log') as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".log") as f:
         temp_path = Path(f.name)
         for i in range(100):
             f.write(f"Log line {i}\n")
@@ -382,13 +399,13 @@ if __name__ == "__main__":
         print(f"  {line.strip()}")
 
     # Test stream_jsonl
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.jsonl') as f:
+    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".jsonl") as f:
         temp_jsonl = Path(f.name)
         for i in range(10):
-            f.write(json.dumps({'id': i, 'valid': i % 2 == 0}) + '\n')
+            f.write(json.dumps({"id": i, "valid": i % 2 == 0}) + "\n")
 
     print("\n2. stream_jsonl() - Valid records only:")
-    for obj in stream_jsonl(temp_jsonl, filter_fn=lambda x: x.get('valid')):
+    for obj in stream_jsonl(temp_jsonl, filter_fn=lambda x: x.get("valid")):
         print(f"  ID: {obj['id']}")
 
     # Test find_json_in_output
@@ -400,7 +417,7 @@ if __name__ == "__main__":
     """
 
     print("\n3. find_json_in_output() - Extract metrics:")
-    metrics = find_json_in_output(output, key='metrics')
+    metrics = find_json_in_output(output, key="metrics")
     if metrics:
         print(f"  Found: {metrics}")
 

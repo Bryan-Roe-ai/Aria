@@ -1,17 +1,18 @@
 """Job Queue Management System for QAI Training"""
-import json
-import time
-import uuid
-from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Optional
-from dataclasses import dataclass, asdict
-from enum import Enum
+
 import heapq
+import json
+import uuid
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Dict, List, Optional
 
 
 class JobPriority(Enum):
     """Job priority levels"""
+
     LOW = 1
     NORMAL = 2
     HIGH = 3
@@ -20,6 +21,7 @@ class JobPriority(Enum):
 
 class JobStatus(Enum):
     """Job execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -31,6 +33,7 @@ class JobStatus(Enum):
 @dataclass
 class QueuedJob:
     """Represents a job in the queue"""
+
     id: str
     name: str
     config: Dict
@@ -75,26 +78,25 @@ class JobQueue:
         """Load queue from disk"""
         if self.queue_file.exists():
             try:
-                with open(self.queue_file, 'r') as f:
+                with open(self.queue_file, "r") as f:
                     data = json.load(f)
 
-                for job_data in data.get('jobs', []):
+                for job_data in data.get("jobs", []):
                     job = QueuedJob(
-                        id=job_data['id'],
-                        name=job_data['name'],
-                        config=job_data['config'],
-                        priority=JobPriority[job_data['priority']],
-                        status=JobStatus(job_data['status']),
-                        created_at=job_data['created_at'],
-                        started_at=job_data.get('started_at'),
-                        completed_at=job_data.get('completed_at'),
-                        dependencies=job_data.get('dependencies', []),
-                        tags=job_data.get('tags', []),
-                        estimated_duration=job_data.get(
-                            'estimated_duration', 0),
-                        retry_count=job_data.get('retry_count', 0),
-                        max_retries=job_data.get('max_retries', 3),
-                        error_message=job_data.get('error_message')
+                        id=job_data["id"],
+                        name=job_data["name"],
+                        config=job_data["config"],
+                        priority=JobPriority[job_data["priority"]],
+                        status=JobStatus(job_data["status"]),
+                        created_at=job_data["created_at"],
+                        started_at=job_data.get("started_at"),
+                        completed_at=job_data.get("completed_at"),
+                        dependencies=job_data.get("dependencies", []),
+                        tags=job_data.get("tags", []),
+                        estimated_duration=job_data.get("estimated_duration", 0),
+                        retry_count=job_data.get("retry_count", 0),
+                        max_retries=job_data.get("max_retries", 3),
+                        error_message=job_data.get("error_message"),
                     )
                     self.jobs[job.id] = job
 
@@ -109,16 +111,16 @@ class JobQueue:
         """Save queue to disk"""
         try:
             data = {
-                'jobs': [asdict(job) for job in self.jobs.values()],
-                'updated_at': datetime.now().isoformat()
+                "jobs": [asdict(job) for job in self.jobs.values()],
+                "updated_at": datetime.now().isoformat(),
             }
 
             # Convert enums to strings for JSON
-            for job_data in data['jobs']:
-                job_data['priority'] = job_data['priority'].name
-                job_data['status'] = job_data['status'].value
+            for job_data in data["jobs"]:
+                job_data["priority"] = job_data["priority"].name
+                job_data["status"] = job_data["status"].value
 
-            with open(self.queue_file, 'w') as f:
+            with open(self.queue_file, "w") as f:
                 json.dump(data, f, indent=2)
 
         except Exception as e:
@@ -131,7 +133,7 @@ class JobQueue:
         priority: JobPriority = JobPriority.NORMAL,
         dependencies: List[str] = None,
         tags: List[str] = None,
-        estimated_duration: int = 0
+        estimated_duration: int = 0,
     ) -> str:
         """Add a new job to the queue"""
         job_id = f"job_{uuid.uuid4().hex[:16]}"
@@ -145,7 +147,7 @@ class JobQueue:
             created_at=datetime.now().isoformat(),
             dependencies=dependencies or [],
             tags=tags or [],
-            estimated_duration=estimated_duration
+            estimated_duration=estimated_duration,
         )
 
         self.jobs[job_id] = job
@@ -220,7 +222,8 @@ class JobQueue:
                 job.error_message = error
                 heapq.heappush(self.priority_queue, job)
                 print(
-                    f"Retrying job {job_id} (attempt {job.retry_count + 1}/{job.max_retries})")
+                    f"Retrying job {job_id} (attempt {job.retry_count + 1}/{job.max_retries})"
+                )
             else:
                 job.status = JobStatus.FAILED
                 job.error_message = error
@@ -231,9 +234,11 @@ class JobQueue:
     def unblock_dependent_jobs(self, completed_job_id: str):
         """Unblock jobs that were waiting for this job"""
         for job in self.jobs.values():
-            if (job.status == JobStatus.BLOCKED and
-                completed_job_id in job.dependencies and
-                    self.check_dependencies(job)):
+            if (
+                job.status == JobStatus.BLOCKED
+                and completed_job_id in job.dependencies
+                and self.check_dependencies(job)
+            ):
 
                 job.status = JobStatus.PENDING
                 heapq.heappush(self.priority_queue, job)
@@ -241,8 +246,7 @@ class JobQueue:
 
     def cancel_job(self, job_id: str):
         """Cancel a pending or blocked job"""
-        CANCELLABLE_STATUSES = {JobStatus.PENDING,
-                                JobStatus.BLOCKED}  # O(1) set lookup
+        CANCELLABLE_STATUSES = {JobStatus.PENDING, JobStatus.BLOCKED}  # O(1) set lookup
         if job_id in self.jobs:
             job = self.jobs[job_id]
             if job.status in CANCELLABLE_STATUSES:
@@ -257,36 +261,36 @@ class JobQueue:
         # Single-pass aggregation for efficiency
         ACTIVE_STATUSES = {JobStatus.PENDING, JobStatus.BLOCKED}
         counts = {
-            'total_jobs': len(self.jobs),
-            'pending': 0,
-            'running': 0,
-            'completed': 0,
-            'failed': 0,
-            'blocked': 0,
-            'cancelled': 0,
-            'estimated_total_time': 0
+            "total_jobs": len(self.jobs),
+            "pending": 0,
+            "running": 0,
+            "completed": 0,
+            "failed": 0,
+            "blocked": 0,
+            "cancelled": 0,
+            "estimated_total_time": 0,
         }
 
         for job in self.jobs.values():
             # Count by status
             if job.status == JobStatus.PENDING:
-                counts['pending'] += 1
+                counts["pending"] += 1
             elif job.status == JobStatus.RUNNING:
-                counts['running'] += 1
+                counts["running"] += 1
             elif job.status == JobStatus.COMPLETED:
-                counts['completed'] += 1
+                counts["completed"] += 1
             elif job.status == JobStatus.FAILED:
-                counts['failed'] += 1
+                counts["failed"] += 1
             elif job.status == JobStatus.BLOCKED:
-                counts['blocked'] += 1
+                counts["blocked"] += 1
             elif job.status == JobStatus.CANCELLED:
-                counts['cancelled'] += 1
+                counts["cancelled"] += 1
 
             # Sum estimated time for active jobs
             if job.status in ACTIVE_STATUSES:
-                counts['estimated_total_time'] += job.estimated_duration
+                counts["estimated_total_time"] += job.estimated_duration
 
-        counts['queue_length'] = len(self.priority_queue)
+        counts["queue_length"] = len(self.priority_queue)
         return counts
 
     def get_job_details(self, job_id: str) -> Optional[Dict]:
@@ -294,24 +298,26 @@ class JobQueue:
         if job_id in self.jobs:
             job = self.jobs[job_id]
             return {
-                'id': job.id,
-                'name': job.name,
-                'config': job.config,
-                'priority': job.priority.name,
-                'status': job.status.value,
-                'created_at': job.created_at,
-                'started_at': job.started_at,
-                'completed_at': job.completed_at,
-                'dependencies': job.dependencies,
-                'tags': job.tags,
-                'estimated_duration': job.estimated_duration,
-                'retry_count': job.retry_count,
-                'max_retries': job.max_retries,
-                'error_message': job.error_message
+                "id": job.id,
+                "name": job.name,
+                "config": job.config,
+                "priority": job.priority.name,
+                "status": job.status.value,
+                "created_at": job.created_at,
+                "started_at": job.started_at,
+                "completed_at": job.completed_at,
+                "dependencies": job.dependencies,
+                "tags": job.tags,
+                "estimated_duration": job.estimated_duration,
+                "retry_count": job.retry_count,
+                "max_retries": job.max_retries,
+                "error_message": job.error_message,
             }
         return None
 
-    def list_jobs(self, status: Optional[JobStatus] = None, tags: List[str] = None) -> List[Dict]:
+    def list_jobs(
+        self, status: Optional[JobStatus] = None, tags: List[str] = None
+    ) -> List[Dict]:
         """List all jobs, optionally filtered by status or tags"""
         jobs = list(self.jobs.values())
 
@@ -327,10 +333,13 @@ class JobQueue:
 
     def clear_completed(self):
         """Remove completed and cancelled jobs from queue"""
-        REMOVABLE_STATUSES = {JobStatus.COMPLETED,
-                              JobStatus.CANCELLED}  # O(1) set lookup
+        REMOVABLE_STATUSES = {
+            JobStatus.COMPLETED,
+            JobStatus.CANCELLED,
+        }  # O(1) set lookup
         to_remove = [
-            job_id for job_id, job in self.jobs.items()
+            job_id
+            for job_id, job in self.jobs.items()
             if job.status in REMOVABLE_STATUSES
         ]
 
@@ -351,7 +360,7 @@ if __name__ == "__main__":
         config={"dataset": "mixed_chat", "action": "preprocess"},
         priority=JobPriority.HIGH,
         tags=["preprocessing"],
-        estimated_duration=300  # 5 minutes
+        estimated_duration=300,  # 5 minutes
     )
 
     job2 = queue.add_job(
@@ -360,7 +369,7 @@ if __name__ == "__main__":
         priority=JobPriority.NORMAL,
         dependencies=[job1],  # Depends on preprocessing
         tags=["training", "v1"],
-        estimated_duration=1800  # 30 minutes
+        estimated_duration=1800,  # 30 minutes
     )
 
     job3 = queue.add_job(
@@ -369,7 +378,7 @@ if __name__ == "__main__":
         priority=JobPriority.NORMAL,
         dependencies=[job2],  # Depends on training
         tags=["evaluation"],
-        estimated_duration=600  # 10 minutes
+        estimated_duration=600,  # 10 minutes
     )
 
     # Print queue status
@@ -382,4 +391,5 @@ if __name__ == "__main__":
     print("\nPending Jobs:")
     for job in queue.list_jobs(status=JobStatus.PENDING):
         print(
-            f"  - {job['name']} (priority: {job['priority']}, deps: {job['dependencies']})")
+            f"  - {job['name']} (priority: {job['priority']}, deps: {job['dependencies']})"
+        )

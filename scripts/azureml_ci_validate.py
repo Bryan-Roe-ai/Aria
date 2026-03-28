@@ -5,13 +5,13 @@ Validates AzureML job specs before submission, checking:
 - Azure CLI (az) availability
 - Job YAML spec files
 """
+
 from __future__ import annotations
 
 import os
 import shutil
 import subprocess
 from pathlib import Path
-from typing import Optional
 
 ROOT = str(Path(__file__).resolve().parents[1])
 

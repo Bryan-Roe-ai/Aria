@@ -19,7 +19,7 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
         # Should succeed with valid config
         assert result.returncode == 0
@@ -32,7 +32,7 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
         # Should exit with 0 if configs are valid
         assert result.returncode == 0
@@ -45,7 +45,7 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
         # Should succeed with valid config
         assert result.returncode == 0
@@ -62,7 +62,7 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
-            timeout=10
+            timeout=10,
         )
         # Should succeed (status doesn't trigger validation, but setup should work)
         assert result.returncode == 0 or "no status" in result.stdout.lower()

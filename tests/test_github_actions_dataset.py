@@ -1,9 +1,11 @@
 """Test GitHub Actions dataset generation and validation."""
+
 import json
-import pytest
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATASET_DIR = REPO_ROOT / "datasets" / "chat" / "github_actions"
@@ -30,19 +32,26 @@ def test_train_dataset_format():
 
     for i, sample in enumerate(samples):
         assert "messages" in sample, f"Sample {i} missing 'messages' field"
-        assert isinstance(sample["messages"],
-                          list), f"Sample {i} 'messages' is not a list"
-        assert len(sample["messages"]
-                   ) >= 2, f"Sample {i} needs at least 2 messages"
+        assert isinstance(
+            sample["messages"], list
+        ), f"Sample {i} 'messages' is not a list"
+        assert len(sample["messages"]) >= 2, f"Sample {i} needs at least 2 messages"
 
         # Check first message is from user
-        assert sample["messages"][0]["role"] == "user", f"Sample {i} first message should be from user"
-        assert "content" in sample["messages"][0], f"Sample {i} first message missing content"
+        assert (
+            sample["messages"][0]["role"] == "user"
+        ), f"Sample {i} first message should be from user"
+        assert (
+            "content" in sample["messages"][0]
+        ), f"Sample {i} first message missing content"
 
         # Check second message is from assistant
-        assert sample["messages"][1][
-            "role"] == "assistant", f"Sample {i} second message should be from assistant"
-        assert "content" in sample["messages"][1], f"Sample {i} second message missing content"
+        assert (
+            sample["messages"][1]["role"] == "assistant"
+        ), f"Sample {i} second message should be from assistant"
+        assert (
+            "content" in sample["messages"][1]
+        ), f"Sample {i} second message missing content"
 
 
 def test_test_dataset_format():
@@ -54,10 +63,10 @@ def test_test_dataset_format():
 
     for i, sample in enumerate(samples):
         assert "messages" in sample, f"Sample {i} missing 'messages' field"
-        assert isinstance(sample["messages"],
-                          list), f"Sample {i} 'messages' is not a list"
-        assert len(sample["messages"]
-                   ) >= 2, f"Sample {i} needs at least 2 messages"
+        assert isinstance(
+            sample["messages"], list
+        ), f"Sample {i} 'messages' is not a list"
+        assert len(sample["messages"]) >= 2, f"Sample {i} needs at least 2 messages"
 
 
 def test_metadata_content():
@@ -79,8 +88,9 @@ def test_metadata_content():
 
     assert metadata["train_records"] == train_count, "Metadata train count mismatch"
     assert metadata["test_records"] == test_count, "Metadata test count mismatch"
-    assert metadata["total_records"] == train_count + \
-        test_count, "Metadata total count mismatch"
+    assert (
+        metadata["total_records"] == train_count + test_count
+    ), "Metadata total count mismatch"
 
 
 def test_dataset_content_quality():
@@ -101,8 +111,16 @@ def test_dataset_content_quality():
 
         # Check for GitHub Actions related keywords in the dataset
         combined = (user_content + " " + assistant_content).lower()
-        github_keywords = ["workflow", "github", "action",
-                           "job", "step", "trigger", "ci", "cd"]
+        github_keywords = [
+            "workflow",
+            "github",
+            "action",
+            "job",
+            "step",
+            "trigger",
+            "ci",
+            "cd",
+        ]
         has_keyword = any(keyword in combined for keyword in github_keywords)
         assert has_keyword, f"Sample {i} doesn't appear to be about GitHub Actions"
 
@@ -118,14 +136,14 @@ def test_dataset_diversity():
             templates.add(sample["template"])
 
     # Should have at least 5 different templates
-    assert len(
-        templates) >= 5, f"Dataset should have diverse templates, found: {templates}"
+    assert (
+        len(templates) >= 5
+    ), f"Dataset should have diverse templates, found: {templates}"
 
 
 def test_generator_script_exists():
     """Test that the generator script exists and is executable."""
-    assert GENERATOR_SCRIPT.exists(
-    ), f"Generator script not found: {GENERATOR_SCRIPT}"
+    assert GENERATOR_SCRIPT.exists(), f"Generator script not found: {GENERATOR_SCRIPT}"
 
 
 @pytest.mark.slow
@@ -149,7 +167,7 @@ def test_dataset_regeneration(tmp_path):
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
-        timeout=30
+        timeout=30,
     )
 
     assert result.returncode == 0, f"Generator failed: {result.stderr}"

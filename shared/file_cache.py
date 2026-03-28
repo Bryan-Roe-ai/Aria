@@ -2,6 +2,7 @@
 
 Reduces I/O overhead for files that are read frequently but change infrequently.
 """
+
 from __future__ import annotations
 
 import json

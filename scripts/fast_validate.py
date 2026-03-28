@@ -125,8 +125,9 @@ def quick_check_configs() -> Dict[str, Any]:
     import importlib
     import importlib.util
 
-    yaml_mod = importlib.import_module(
-        "yaml") if importlib.util.find_spec("yaml") else None
+    yaml_mod = (
+        importlib.import_module("yaml") if importlib.util.find_spec("yaml") else None
+    )
 
     configs = [
         "config/autonomous_training.yaml",
@@ -254,8 +255,7 @@ def main() -> None:
             indent=2,
         )
 
-    print(
-        f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
+    print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
     sys.exit(0 if all_ok else 1)
 
 

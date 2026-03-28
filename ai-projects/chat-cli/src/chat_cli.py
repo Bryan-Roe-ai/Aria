@@ -7,11 +7,13 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 try:
-    from colorama import Fore, Style, init as colorama_init
+    from colorama import Fore, Style
+    from colorama import init as colorama_init
 except ImportError:  # pragma: no cover - exercised in dependency-light test envs
+
     class _NoColor:
         BLACK = RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = ""
         RESET = RESET_ALL = BRIGHT = DIM = NORMAL = ""
@@ -21,7 +23,8 @@ except ImportError:  # pragma: no cover - exercised in dependency-light test env
     def colorama_init(*args, **kwargs) -> None:
         return None
 
-from chat_providers import detect_provider, RoleMessage
+
+from chat_providers import RoleMessage, detect_provider
 
 
 def now_ts() -> str:
@@ -133,17 +136,14 @@ def autonomous_chat(args: argparse.Namespace) -> int:
     )
     delay_seconds = max(0.0, args.auto_delay)
 
-    provider, info = detect_provider(
-        explicit=args.provider, model_override=args.model)
+    provider, info = detect_provider(explicit=args.provider, model_override=args.model)
 
     messages: List[RoleMessage] = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
 
     print_system(f"Provider: {info.name} | Model: {info.model}")
-    print_system(
-        "Autonomous mode active. Press Ctrl+C to stop."
-    )
+    print_system("Autonomous mode active. Press Ctrl+C to stop.")
 
     turn_count = 0
     next_user_message = seed_prompt
@@ -174,8 +174,7 @@ def interactive_chat(args: argparse.Namespace) -> int:
     )
     logs_dir = Path(__file__).resolve().parent.parent / "logs"
 
-    provider, info = detect_provider(
-        explicit=args.provider, model_override=args.model)
+    provider, info = detect_provider(explicit=args.provider, model_override=args.model)
 
     messages: List[RoleMessage] = []
     if system_prompt:
@@ -183,7 +182,8 @@ def interactive_chat(args: argparse.Namespace) -> int:
 
     print_system(f"Provider: {info.name} | Model: {info.model}")
     print_system(
-        "Type your message. Commands: /help, /new, /save, /history, /model, /providers, /reasoning, /exit")
+        "Type your message. Commands: /help, /new, /save, /history, /model, /providers, /reasoning, /exit"
+    )
 
     while True:
         try:
@@ -278,7 +278,8 @@ def interactive_chat(args: argparse.Namespace) -> int:
                 )
             else:
                 print_system(
-                    "Reasoning summary is only available with the AGI provider (--provider agi).")
+                    "Reasoning summary is only available with the AGI provider (--provider agi)."
+                )
             continue
 
         if not user.strip():
@@ -301,8 +302,7 @@ def one_shot(args: argparse.Namespace) -> int:
         "You are a concise, friendly assistant.",
     )
 
-    provider, info = detect_provider(
-        explicit=args.provider, model_override=args.model)
+    provider, info = detect_provider(explicit=args.provider, model_override=args.model)
 
     messages: List[RoleMessage] = []
     if system_prompt:
@@ -317,24 +317,54 @@ def one_shot(args: argparse.Namespace) -> int:
 
 def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Simple terminal chat app with local/OpenAI/Azure providers")
-    p.add_argument("--provider", choices=["auto", "openai", "azure", "local", "lora", "agi", "quantum",
-                                          "lmstudio", "ollama"], default="auto", help="Which provider to use (default: auto)")
+        description="Simple terminal chat app with local/OpenAI/Azure providers"
+    )
+    p.add_argument(
+        "--provider",
+        choices=[
+            "auto",
+            "openai",
+            "azure",
+            "local",
+            "lora",
+            "agi",
+            "quantum",
+            "lmstudio",
+            "ollama",
+        ],
+        default="auto",
+        help="Which provider to use (default: auto)",
+    )
     p.add_argument("--system", type=str, help="Custom system prompt")
     p.add_argument("--model", type=str, help="Model/deployment name override")
     p.add_argument("--once", type=str, help="Send a single message then exit")
-    p.add_argument("--interactive", action="store_true",
-                   help="Use stdin-driven interactive chat instead of autonomous mode")
-    p.add_argument("--autonomous", action="store_true",
-                   help="Run unattended continuous chat without prompting for stdin")
-    p.add_argument("--auto-seed", type=str,
-                   help="Initial autonomous user message")
-    p.add_argument("--auto-followup", type=str,
-                   help="Autonomous follow-up message reused after each assistant turn")
-    p.add_argument("--auto-delay", type=float, default=0.0,
-                   help="Delay between autonomous turns in seconds (default: 0)")
-    p.add_argument("--max-turns", type=int,
-                   help="Maximum autonomous turns before exiting (default: run forever)")
+    p.add_argument(
+        "--interactive",
+        action="store_true",
+        help="Use stdin-driven interactive chat instead of autonomous mode",
+    )
+    p.add_argument(
+        "--autonomous",
+        action="store_true",
+        help="Run unattended continuous chat without prompting for stdin",
+    )
+    p.add_argument("--auto-seed", type=str, help="Initial autonomous user message")
+    p.add_argument(
+        "--auto-followup",
+        type=str,
+        help="Autonomous follow-up message reused after each assistant turn",
+    )
+    p.add_argument(
+        "--auto-delay",
+        type=float,
+        default=0.0,
+        help="Delay between autonomous turns in seconds (default: 0)",
+    )
+    p.add_argument(
+        "--max-turns",
+        type=int,
+        help="Maximum autonomous turns before exiting (default: run forever)",
+    )
     return p
 
 

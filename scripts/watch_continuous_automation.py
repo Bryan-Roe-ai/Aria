@@ -34,7 +34,8 @@ WATCHDOG_LOG_FILE = CONTINUOUS_DIR / "watchdog.log"
 CYCLE_START_RE = re.compile(r"^===\s+(?P<ts>[^=]+?)\s+cycle start\s+===")
 CYCLE_END_RE = re.compile(r"^===\s+(?P<ts>[^=]+?)\s+cycle end\s+===")
 PYTEST_PASS_RE = re.compile(
-    r"^(?P<count>\d+)\s+passed(?:,\s+(?P<skipped>\d+)\s+skipped)?")
+    r"^(?P<count>\d+)\s+passed(?:,\s+(?P<skipped>\d+)\s+skipped)?"
+)
 GATE_PASS_RE = re.compile(r"\[integration_contract_gate\]\s+passed")
 GATE_FAIL_RE = re.compile(r"\[integration_contract_gate\]\s+failed")
 
@@ -69,11 +70,18 @@ def _pid_running(pid: Optional[int]) -> bool:
 def _process_status(name: str, pid_file: Path) -> ProcessStatus:
     pid = _read_pid(pid_file)
     if pid is None:
-        return ProcessStatus(name=name, pid=None, running=False, detail=f"missing pid file ({pid_file.name})")
+        return ProcessStatus(
+            name=name,
+            pid=None,
+            running=False,
+            detail=f"missing pid file ({pid_file.name})",
+        )
     running = _pid_running(pid)
     if running:
         return ProcessStatus(name=name, pid=pid, running=True, detail="running")
-    return ProcessStatus(name=name, pid=pid, running=False, detail="stopped (stale pid)")
+    return ProcessStatus(
+        name=name, pid=pid, running=False, detail="stopped (stale pid)"
+    )
 
 
 def _safe_read_lines(path: Path, max_lines: int = 4000) -> list[str]:
@@ -161,7 +169,9 @@ def _analyze_loop_log(lines: list[str]) -> dict[str, object]:
         if pytest_match:
             skipped = pytest_match.group("skipped")
             if skipped:
-                last_pytest_summary = f"{pytest_match.group('count')} passed, {skipped} skipped"
+                last_pytest_summary = (
+                    f"{pytest_match.group('count')} passed, {skipped} skipped"
+                )
             else:
                 last_pytest_summary = f"{pytest_match.group('count')} passed"
 
@@ -223,9 +233,12 @@ def _print_snapshot(lines_to_show: int) -> None:
     print(fmt_proc(watchdog_status))
     dup_starts = analysis.get("duplicate_start_markers", 0)
     dup_ends = analysis.get("duplicate_end_markers", 0)
-    if isinstance(dup_starts, int) and isinstance(dup_ends, int) and (dup_starts > 0 or dup_ends > 0):
-        print(
-            f"⚠️  duplicate log markers detected: start+{dup_starts}, end+{dup_ends}")
+    if (
+        isinstance(dup_starts, int)
+        and isinstance(dup_ends, int)
+        and (dup_starts > 0 or dup_ends > 0)
+    ):
+        print(f"⚠️  duplicate log markers detected: start+{dup_starts}, end+{dup_ends}")
     else:
         print("🟢 duplicate log markers: none")
 
@@ -250,10 +263,8 @@ def _print_snapshot(lines_to_show: int) -> None:
     print(f"last pytest:       {analysis['last_pytest_summary'] or 'n/a'}")
 
     if LOOP_LOG_FILE.exists():
-        mtime = datetime.fromtimestamp(
-            LOOP_LOG_FILE.stat().st_mtime, tz=timezone.utc)
-        print(
-            f"loop.log updated:  {mtime.isoformat()} (age {_format_age(mtime)})")
+        mtime = datetime.fromtimestamp(LOOP_LOG_FILE.stat().st_mtime, tz=timezone.utc)
+        print(f"loop.log updated:  {mtime.isoformat()} (age {_format_age(mtime)})")
     else:
         print("loop.log updated:  n/a")
 
@@ -268,13 +279,23 @@ def _print_snapshot(lines_to_show: int) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Watch continuous automation loop activity")
-    parser.add_argument("--watch", action="store_true",
-                        help="continuously refresh view")
-    parser.add_argument("--interval", type=int, default=5,
-                        help="seconds between refreshes in --watch mode")
-    parser.add_argument("--lines", type=int, default=20,
-                        help="how many tail lines to show from loop.log")
+        description="Watch continuous automation loop activity"
+    )
+    parser.add_argument(
+        "--watch", action="store_true", help="continuously refresh view"
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=5,
+        help="seconds between refreshes in --watch mode",
+    )
+    parser.add_argument(
+        "--lines",
+        type=int,
+        default=20,
+        help="how many tail lines to show from loop.log",
+    )
     args = parser.parse_args()
 
     if args.watch:

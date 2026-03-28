@@ -17,12 +17,12 @@ Date: March 9, 2026
 """
 
 import importlib
+import json
 import logging
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Any
-import json
+from typing import Any, Dict
 
 # Add path for imports
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -37,7 +37,9 @@ class ComponentValidator:
         self.results = []
         self.start_time = time.time()
 
-    def validate_component(self, name: str, import_path: str, test_func=None) -> Dict[str, Any]:
+    def validate_component(
+        self, name: str, import_path: str, test_func=None
+    ) -> Dict[str, Any]:
         """Validate a single component."""
         result = {
             "component": name,
@@ -89,32 +91,32 @@ class ComponentValidator:
             {
                 "name": "Advanced Quantum Components",
                 "import_path": "src.quantum_llm_advanced",
-                "description": "Circuit caching, adaptive layers, multi-scale attention"
+                "description": "Circuit caching, adaptive layers, multi-scale attention",
             },
             {
                 "name": "Circuit Optimizer",
                 "import_path": "src.quantum_circuit_optimizer",
-                "description": "Circuit compilation, batch execution, scheduling"
+                "description": "Circuit compilation, batch execution, scheduling",
             },
             {
                 "name": "Hybrid Trainer",
                 "import_path": "src.quantum_llm_hybrid_trainer",
-                "description": "Curriculum learning, adaptive routing, orchestration"
+                "description": "Curriculum learning, adaptive routing, orchestration",
             },
             {
                 "name": "Training Monitor",
                 "import_path": "src.quantum_llm_monitor",
-                "description": "Real-time monitoring, metrics, dashboard"
+                "description": "Real-time monitoring, metrics, dashboard",
             },
             {
                 "name": "Integrated System",
                 "import_path": "src.quantum_llm_integrated",
-                "description": "Complete integrated quantum LLM system"
+                "description": "Complete integrated quantum LLM system",
             },
             {
                 "name": "Dataset Utilities",
                 "import_path": "src.quantum_llm_datasets",
-                "description": "Tokenization, data loading, augmentation"
+                "description": "Tokenization, data loading, augmentation",
             },
         ]
 
@@ -123,10 +125,7 @@ class ComponentValidator:
         for component in components:
             logger.info(f"Testing: {component['name']}")
             logger.info(f"  Description: {component['description']}")
-            self.validate_component(
-                component["name"],
-                component["import_path"]
-            )
+            self.validate_component(component["name"], component["import_path"])
             logger.info("")
 
         # Generate summary
@@ -189,6 +188,7 @@ def run_full_validation():
     logger.info("\n🧪 Test 1: Character Tokenizer")
     try:
         from src.quantum_llm_datasets import CharacterTokenizer
+
         tokenizer = CharacterTokenizer(vocab_size=256)
         text = "Hello Quantum"
         encoded = tokenizer.encode(text)
@@ -199,12 +199,14 @@ def run_full_validation():
     except Exception as e:
         logger.error(f"❌ Tokenizer test FAILED: {e}")
         functional_results.append(
-            {"test": "Tokenizer", "status": "❌ FAIL", "error": str(e)})
+            {"test": "Tokenizer", "status": "❌ FAIL", "error": str(e)}
+        )
 
     # Test 2: Dataset
     logger.info("\n🧪 Test 2: Text Dataset")
     try:
-        from src.quantum_llm_datasets import TextDataset, CharacterTokenizer
+        from src.quantum_llm_datasets import CharacterTokenizer, TextDataset
+
         tokenizer = CharacterTokenizer(vocab_size=256)
         dataset = TextDataset(
             texts=["Test text 1", "Test text 2"],
@@ -219,16 +221,19 @@ def run_full_validation():
     except Exception as e:
         logger.error(f"❌ Dataset test FAILED: {e}")
         functional_results.append(
-            {"test": "Dataset", "status": "❌ FAIL", "error": str(e)})
+            {"test": "Dataset", "status": "❌ FAIL", "error": str(e)}
+        )
 
     # Test 3: Circuit Cache
     logger.info("\n🧪 Test 3: Circuit Cache")
     try:
         from src.quantum_llm_advanced import QuantumCircuitCache
+
         cache = QuantumCircuitCache(cache_size=10)
 
         # Test caching
         import torch
+
         key = "test_key"
         value = torch.randn(4, 64)
 
@@ -245,12 +250,14 @@ def run_full_validation():
     except Exception as e:
         logger.error(f"❌ Circuit cache test FAILED: {e}")
         functional_results.append(
-            {"test": "CircuitCache", "status": "❌ FAIL", "error": str(e)})
+            {"test": "CircuitCache", "status": "❌ FAIL", "error": str(e)}
+        )
 
     # Test 4: Configuration
     logger.info("\n🧪 Test 4: Configuration System")
     try:
         from src.quantum_llm_integrated import QuantumLLMConfig
+
         config = QuantumLLMConfig()
 
         # Test default config
@@ -263,17 +270,22 @@ def run_full_validation():
         assert config["batch_size"] == 32, "Config update failed"
 
         logger.info("✅ Configuration test PASSED")
-        functional_results.append(
-            {"test": "Configuration", "status": "✅ PASS"})
+        functional_results.append({"test": "Configuration", "status": "✅ PASS"})
     except Exception as e:
         logger.error(f"❌ Configuration test FAILED: {e}")
         functional_results.append(
-            {"test": "Configuration", "status": "❌ FAIL", "error": str(e)})
+            {"test": "Configuration", "status": "❌ FAIL", "error": str(e)}
+        )
 
     # Test 5: Dashboard
     logger.info("\n🧪 Test 5: Training Dashboard")
     try:
-        from src.quantum_llm_monitor import TrainingDashboard, TrainingSnapshot, QuantumMetrics
+        from src.quantum_llm_monitor import (
+            QuantumMetrics,
+            TrainingDashboard,
+            TrainingSnapshot,
+        )
+
         dashboard = TrainingDashboard(
             output_dir=Path("data_out/test_dashboard"),
             update_interval=100,
@@ -281,6 +293,7 @@ def run_full_validation():
 
         # Test snapshot
         import torch
+
         snapshot = TrainingSnapshot(
             timestamp=time.time(),
             global_step=1,
@@ -304,7 +317,8 @@ def run_full_validation():
     except Exception as e:
         logger.error(f"❌ Dashboard test FAILED: {e}")
         functional_results.append(
-            {"test": "Dashboard", "status": "❌ FAIL", "error": str(e)})
+            {"test": "Dashboard", "status": "❌ FAIL", "error": str(e)}
+        )
 
     # Summarize functional tests
     logger.info("\n" + "=" * 80)
@@ -312,15 +326,13 @@ def run_full_validation():
     logger.info("=" * 80)
 
     total_functional = len(functional_results)
-    passed_functional = sum(
-        1 for r in functional_results if r["status"] == "✅ PASS")
+    passed_functional = sum(1 for r in functional_results if r["status"] == "✅ PASS")
 
     for result in functional_results:
         status_str = result["status"]
         logger.info(f"{status_str} {result['test']}")
 
-    logger.info(
-        f"\nFunctional Tests: {passed_functional}/{total_functional} passed")
+    logger.info(f"\nFunctional Tests: {passed_functional}/{total_functional} passed")
     logger.info("=" * 80)
 
     # Combined summary
@@ -332,7 +344,11 @@ def run_full_validation():
             "failed": total_functional - passed_functional,
             "results": functional_results,
         },
-        "overall_status": "✅ PASS" if (import_summary["failed"] == 0 and passed_functional == total_functional) else "❌ SOME FAILURES",
+        "overall_status": (
+            "✅ PASS"
+            if (import_summary["failed"] == 0 and passed_functional == total_functional)
+            else "❌ SOME FAILURES"
+        ),
     }
 
     return combined_summary
@@ -352,16 +368,14 @@ def generate_validation_report(summary: Dict[str, Any], output_path: Path):
     if "import_validation" in summary:
         import_val = summary["import_validation"]
         report_lines.append("\n## Import Validation\n")
-        report_lines.append(
-            f"- Total Components: {import_val['total_components']}")
+        report_lines.append(f"- Total Components: {import_val['total_components']}")
         report_lines.append(f"- Passed: {import_val['passed']}")
         report_lines.append(f"- Failed: {import_val['failed']}")
-        report_lines.append(
-            f"- Success Rate: {import_val['success_rate']:.1%}")
+        report_lines.append(f"- Success Rate: {import_val['success_rate']:.1%}")
         report_lines.append(f"- Total Time: {import_val['total_time']:.2f}s\n")
 
         report_lines.append("\n### Component Details\n")
-        for result in import_val['results']:
+        for result in import_val["results"]:
             status_emoji = "✅" if result["status"] == "✅ PASS" else "❌"
             report_lines.append(f"- {status_emoji} **{result['component']}**")
             if result.get("error"):
@@ -376,7 +390,7 @@ def generate_validation_report(summary: Dict[str, Any], output_path: Path):
         report_lines.append(f"- Failed: {func_tests['failed']}\n")
 
         report_lines.append("\n### Test Details\n")
-        for result in func_tests['results']:
+        for result in func_tests["results"]:
             status_emoji = "✅" if "✅" in result["status"] else "❌"
             report_lines.append(f"- {status_emoji} **{result['test']}**")
             if result.get("error"):
@@ -388,20 +402,23 @@ def generate_validation_report(summary: Dict[str, Any], output_path: Path):
 
     if summary.get("overall_status") == "✅ PASS":
         report_lines.append(
-            "✅ **All validations passed!** The quantum LLM system is ready to use.\n")
+            "✅ **All validations passed!** The quantum LLM system is ready to use.\n"
+        )
         report_lines.append("**Next Steps:**")
         report_lines.append(
-            "- Run quick start: `python quantum_llm_quickstart.py --mode quick`")
+            "- Run quick start: `python quantum_llm_quickstart.py --mode quick`"
+        )
         report_lines.append("- Review documentation: `QUANTUM_LLM_README.md`")
         report_lines.append(
-            "- Configure for your use case: `config/quantum_llm_config_example.yaml`")
+            "- Configure for your use case: `config/quantum_llm_config_example.yaml`"
+        )
     else:
-        report_lines.append(
-            "⚠️ **Some validations failed.** Review errors above.\n")
+        report_lines.append("⚠️ **Some validations failed.** Review errors above.\n")
         report_lines.append("**Troubleshooting:**")
         report_lines.append("- Check Python version (3.8+ required)")
         report_lines.append(
-            "- Install dependencies: `pip install torch pennylane pyyaml numpy`")
+            "- Install dependencies: `pip install torch pennylane pyyaml numpy`"
+        )
         report_lines.append("- Verify file paths and imports")
 
     report_lines.append("\n---\n")
@@ -409,7 +426,7 @@ def generate_validation_report(summary: Dict[str, Any], output_path: Path):
 
     # Write report
     report_text = "\n".join(report_lines)
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         f.write(report_text)
 
     logger.info(f"\n📄 Validation report saved: {output_path}")
@@ -420,24 +437,27 @@ def main():
     """Main entry point."""
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Quantum LLM Validation Suite")
-    parser.add_argument("--quick", action="store_true",
-                        help="Quick validation (imports only)")
-    parser.add_argument("--full", action="store_true",
-                        help="Full validation (imports + tests)")
-    parser.add_argument("--report-only", action="store_true",
-                        help="Generate report from last run")
+    parser = argparse.ArgumentParser(description="Quantum LLM Validation Suite")
     parser.add_argument(
-        "--output", type=str, default="data_out/quantum_llm_validation_report.md", help="Report output path")
+        "--quick", action="store_true", help="Quick validation (imports only)"
+    )
+    parser.add_argument(
+        "--full", action="store_true", help="Full validation (imports + tests)"
+    )
+    parser.add_argument(
+        "--report-only", action="store_true", help="Generate report from last run"
+    )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="data_out/quantum_llm_validation_report.md",
+        help="Report output path",
+    )
 
     args = parser.parse_args()
 
     # Setup logging
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(message)s'
-    )
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -457,8 +477,8 @@ def main():
     report_path = generate_validation_report(summary, output_path)
 
     # Also save JSON
-    json_path = output_path.with_suffix('.json')
-    with open(json_path, 'w') as f:
+    json_path = output_path.with_suffix(".json")
+    with open(json_path, "w") as f:
         json.dump(summary, f, indent=2)
     logger.info(f"📄 JSON report saved: {json_path}")
 
@@ -467,8 +487,7 @@ def main():
     if summary.get("overall_status") == "✅ PASS":
         logger.info("🎉 VALIDATION SUCCESSFUL - QUANTUM LLM SYSTEM READY!")
     else:
-        logger.info(
-            "⚠️  VALIDATION COMPLETED WITH SOME FAILURES - REVIEW REPORT")
+        logger.info("⚠️  VALIDATION COMPLETED WITH SOME FAILURES - REVIEW REPORT")
     logger.info("=" * 80)
 
 

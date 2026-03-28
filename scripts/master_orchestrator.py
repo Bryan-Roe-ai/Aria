@@ -26,16 +26,14 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
+import signal
 import subprocess
 import sys
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import signal
-import threading
 
 try:
     from .config_paths import resolve_config_path
@@ -52,9 +50,10 @@ try:
 except Exception:
     psutil = None  # Optional, for resource monitoring
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-# Add shared dir for config_validator import
-sys.path.insert(0, str(REPO_ROOT / "shared"))
+REPO_ROOT = Path(__file__).resolve().parent.parent
+# Ensure repository root is on sys.path before importing local shared modules.
+if str(REPO_ROOT / "shared") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "shared"))
 DATA_OUT = REPO_ROOT / "data_out" / "master_orchestrator"
 CONFIG_FILE = resolve_config_path(REPO_ROOT, "master_orchestrator")
 
@@ -136,7 +135,9 @@ class MasterOrchestrator:
     def _ensure_dirs(self):
         DATA_OUT.mkdir(parents=True, exist_ok=True)
 
-    def run_orchestrator(self, name: str, flags: Dict[str, Any] = None) -> Dict[str, Any]:
+    def run_orchestrator(
+        self, name: str, flags: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """Run a single orchestrator."""
         if name not in self.orchestrators:
             return {"status": "error", "message": f"Unknown orchestrator: {name}"}
@@ -152,7 +153,7 @@ class MasterOrchestrator:
                 if dep_orc.last_status != "succeeded":
                     return {
                         "status": "blocked",
-                        "message": f"Dependency not met: {dep} (status: {dep_orc.last_status})"
+                        "message": f"Dependency not met: {dep} (status: {dep_orc.last_status})",
                     }
 
         script_path = REPO_ROOT / orc.script
@@ -167,8 +168,7 @@ class MasterOrchestrator:
             if flags.get("dry_run"):
                 cmd.append("--dry-run")
             if "max_train_samples" in flags and flags["max_train_samples"] is not None:
-                cmd.extend(
-                    ["--max-train-samples", str(flags["max_train_samples"])])
+                cmd.extend(["--max-train-samples", str(flags["max_train_samples"])])
 
         print(f"[master] Running orchestrator: {name}")
         print(f"[master] Command: {' '.join(cmd)}")
@@ -193,7 +193,7 @@ class MasterOrchestrator:
                     cwd=str(REPO_ROOT),
                     stdout=logf,
                     stderr=subprocess.STDOUT,
-                    text=True
+                    text=True,
                 )
 
                 # Wait with timeout
@@ -229,10 +229,10 @@ class MasterOrchestrator:
         if not wf.enabled:
             return {"status": "skipped", "message": f"Workflow disabled: {name}"}
 
-        print(f"\n[master] ========================================")
+        print("\n[master] ========================================")
         print(f"[master] Starting workflow: {name}")
         print(f"[master] Orchestrators: {', '.join(wf.orchestrators)}")
-        print(f"[master] ========================================\n")
+        print("[master] ========================================\n")
 
         results = []
         all_succeeded = True
@@ -366,14 +366,14 @@ class MasterOrchestrator:
 
         while self.running:
             print(
-                f"[master] Health check at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                f"[master] Health check at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
 
             # Check scheduled workflows
             for wf_name, wf in self.workflows.items():
                 if wf.enabled and wf.trigger == "schedule" and wf.schedule:
                     if self._should_run_now(wf_name, wf.schedule):
-                        print(
-                            f"[master] Triggering scheduled workflow: {wf_name}")
+                        print(f"[master] Triggering scheduled workflow: {wf_name}")
                         self.run_workflow(wf_name)
 
             time.sleep(check_interval)
@@ -535,21 +535,21 @@ class MasterOrchestrator:
 
 def main():
     ap = argparse.ArgumentParser(description="Master Orchestrator")
-    ap.add_argument("--config", default=str(CONFIG_FILE),
-                    help="Config file path")
+    ap.add_argument("--config", default=str(CONFIG_FILE), help="Config file path")
     ap.add_argument("--workflow", help="Run a specific workflow")
     ap.add_argument("--orchestrator", help="Run a specific orchestrator")
-    ap.add_argument("--list-orchestrators", action="store_true",
-                    help="List all orchestrators")
-    ap.add_argument("--list-workflows", action="store_true",
-                    help="List all workflows")
-    ap.add_argument("--status", action="store_true",
-                    help="Show current status")
+    ap.add_argument(
+        "--list-orchestrators", action="store_true", help="List all orchestrators"
+    )
+    ap.add_argument("--list-workflows", action="store_true", help="List all workflows")
+    ap.add_argument("--status", action="store_true", help="Show current status")
     ap.add_argument("--daemon", action="store_true", help="Run in daemon mode")
-    ap.add_argument("--check-interval", type=int, default=60,
-                    help="Daemon check interval (seconds)")
-    ap.add_argument("--skip-validation", action="store_true",
-                    help="Skip config validation (unsafe)")
+    ap.add_argument(
+        "--check-interval", type=int, default=60, help="Daemon check interval (seconds)"
+    )
+    ap.add_argument(
+        "--skip-validation", action="store_true", help="Skip config validation (unsafe)"
+    )
     args = ap.parse_args()
 
     config_path = Path(args.config)
@@ -569,7 +569,7 @@ def main():
             validator = ConfigValidator(REPO_ROOT)
             result = validator.validate_file(config_path)
             if not result.valid:
-                print(f"\n❌ Configuration validation failed:")
+                print("\n❌ Configuration validation failed:")
                 print(result.report(verbose=True))
                 print("\nUse --skip-validation to bypass (not recommended).")
                 sys.exit(1)

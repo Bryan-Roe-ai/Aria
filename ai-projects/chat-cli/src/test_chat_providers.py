@@ -1,13 +1,16 @@
 from __future__ import annotations
-import pytest
-import chat_providers
+
 import json
-import tempfile
-import unittest.mock
-import unittest
-from pathlib import Path
-import sys
 import os
+import sys
+import tempfile
+import unittest
+import unittest.mock
+from pathlib import Path
+
+import pytest
+
+import chat_providers
 
 # Ensure the src directory is on sys.path BEFORE any local module imports so
 # that pytest running from the repo root finds the right chat_providers /
@@ -34,7 +37,8 @@ class ChatProviderTests(unittest.TestCase):
         }
         try:
             provider, info = chat_providers.detect_provider(
-                explicit="local", model_override="offline-test-model")
+                explicit="local", model_override="offline-test-model"
+            )
             self.assertIsInstance(provider, chat_providers.LocalEchoProvider)
             self.assertEqual(info.name, "local")
             self.assertEqual(info.model, "offline-test-model")
@@ -46,29 +50,32 @@ class ChatProviderTests(unittest.TestCase):
     def test_local_echo_includes_aria_movement_tags(self) -> None:
         """Offline mode should still emit actionable Aria movement tags."""
         provider = chat_providers.LocalEchoProvider(seed=1)
-        messages = [
-            {"role": "user", "content": "Please move right and then wave"}]
+        messages = [{"role": "user", "content": "Please move right and then wave"}]
 
         reply = provider.complete(messages, stream=False)
 
         self.assertIsInstance(reply, str)
         self.assertIn("[aria:", reply)
-        self.assertTrue(any(tag in reply for tag in [
-                        "[aria:walk:right]", "[aria:wave]"]))
+        self.assertTrue(
+            any(tag in reply for tag in ["[aria:walk:right]", "[aria:wave]"])
+        )
 
     def test_local_echo_question_mentions_live_provider(self) -> None:
         """Generic question in local mode should direct user to real providers."""
         provider = chat_providers.LocalEchoProvider(seed=2)
-        messages = [
-            {"role": "user", "content": "What is quantum entanglement?"}]
+        messages = [{"role": "user", "content": "What is quantum entanglement?"}]
 
         reply = provider.complete(messages, stream=False)
 
         self.assertIsInstance(reply, str)
         lowered = reply.lower()
         self.assertTrue("provider" in lowered or "offline" in lowered)
-        self.assertTrue(any(name in lowered for name in [
-                        "openai", "azure", "agi", "lm studio", "ollama"]))
+        self.assertTrue(
+            any(
+                name in lowered
+                for name in ["openai", "azure", "agi", "lm studio", "ollama"]
+            )
+        )
 
     def test_local_echo_autonomous_prompt_returns_actionable_plan(self) -> None:
         """Autonomous prompts should stay useful offline instead of repeating fallback warnings."""
@@ -85,8 +92,12 @@ class ChatProviderTests(unittest.TestCase):
         self.assertIsInstance(reply, str)
         lowered = reply.lower()
         self.assertIn("autonomous", lowered)
-        self.assertTrue(any(token in lowered for token in [
-                        "plan", "next step", "review", "objective"]))
+        self.assertTrue(
+            any(
+                token in lowered
+                for token in ["plan", "next step", "review", "objective"]
+            )
+        )
         self.assertNotIn("canned responses", lowered)
 
     def test_save_conversation_writes_jsonl(self) -> None:
@@ -112,17 +123,17 @@ class ChatProviderTests(unittest.TestCase):
         messages = [{"role": "user", "content": "Hello"}]
 
         with tempfile.TemporaryDirectory() as tmp_dir:
-            with unittest.mock.patch("chat_cli.now_ts", return_value="20250101_010203_000000"):
+            with unittest.mock.patch(
+                "chat_cli.now_ts", return_value="20250101_010203_000000"
+            ):
                 first_path = save_conversation(messages, Path(tmp_dir))
                 second_path = save_conversation(messages, Path(tmp_dir))
 
             self.assertTrue(first_path.exists())
             self.assertTrue(second_path.exists())
             self.assertNotEqual(first_path, second_path)
-            self.assertEqual(
-                first_path.name, "chat_20250101_010203_000000.jsonl")
-            self.assertEqual(second_path.name,
-                             "chat_20250101_010203_000000_1.jsonl")
+            self.assertEqual(first_path.name, "chat_20250101_010203_000000.jsonl")
+            self.assertEqual(second_path.name, "chat_20250101_010203_000000_1.jsonl")
             self.assertEqual(
                 first_path.read_text(encoding="utf-8"),
                 second_path.read_text(encoding="utf-8"),
@@ -134,13 +145,13 @@ class AGIMultiAgentTests(unittest.TestCase):
 
     def setUp(self) -> None:
         import agi_provider
+
         self.agi = agi_provider.AGIProvider(base_provider=None)
         self._registry = agi_provider._AGENT_REGISTRY
 
     def test_select_agent_quantum_domain(self) -> None:
         """Quantum domain + explanation intent should select quantum-specialist."""
-        analysis = {"intent": "explanation",
-                    "domain": "quantum", "confidence": 0.8}
+        analysis = {"intent": "explanation", "domain": "quantum", "confidence": 0.8}
         agent, score = self.agi._select_agent(analysis)
         self.assertEqual(agent, "quantum-specialist")
         self.assertGreater(score, 0.0)
@@ -154,16 +165,14 @@ class AGIMultiAgentTests(unittest.TestCase):
 
     def test_select_agent_coding_falls_to_code_specialist(self) -> None:
         """Technical domain + coding intent should select code-specialist."""
-        analysis = {"intent": "coding",
-                    "domain": "technical", "confidence": 0.7}
+        analysis = {"intent": "coding", "domain": "technical", "confidence": 0.7}
         agent, score = self.agi._select_agent(analysis)
         self.assertEqual(agent, "code-specialist")
         self.assertGreater(score, 0.0)
 
     def test_select_agent_unknown_returns_general(self) -> None:
         """Unrecognised domain/intent should fall back to 'general' with score 0."""
-        analysis = {"intent": "general",
-                    "domain": "general", "confidence": 0.5}
+        analysis = {"intent": "general", "domain": "general", "confidence": 0.5}
         agent, score = self.agi._select_agent(analysis)
         self.assertEqual(agent, "general")
         self.assertEqual(score, 0.0)
@@ -177,7 +186,8 @@ class AGIMultiAgentTests(unittest.TestCase):
         """If specialist provider is unavailable, dispatch should return None gracefully."""
         # 'quantum' provider will fail in this env — we just need no exception raised.
         result = self.agi._dispatch_to_agent(
-            "What is superposition?", "quantum-specialist",
+            "What is superposition?",
+            "quantum-specialist",
             {"intent": "explanation", "domain": "quantum"},
         )
         # Either None (unavailable) or a string (available) — must not raise.
@@ -204,13 +214,16 @@ class AGIMultiAgentTests(unittest.TestCase):
         """top_learned_patterns should reflect learned routing patterns, sorted by count."""
         self.agi._learn_from_routing(
             {"domain": "quantum", "intent": "explanation", "agent_score": 0.8},
-            "quantum-specialist")
+            "quantum-specialist",
+        )
         self.agi._learn_from_routing(
             {"domain": "quantum", "intent": "explanation", "agent_score": 0.8},
-            "quantum-specialist")
+            "quantum-specialist",
+        )
         self.agi._learn_from_routing(
             {"domain": "code", "intent": "coding", "agent_score": 0.7},
-            "code-specialist")
+            "code-specialist",
+        )
         summary = self.agi.get_reasoning_summary()
         top = summary["top_learned_patterns"]
         self.assertGreaterEqual(len(top), 2)
@@ -227,15 +240,20 @@ class AGIMultiAgentTests(unittest.TestCase):
             "confidence": 0.8,
             "selected_agent": "quantum-specialist",
         }
-        steps = self.agi._decompose_task(
-            "Write a Bell state circuit", analysis)
+        steps = self.agi._decompose_task("Write a Bell state circuit", analysis)
         # Should pull from quantum-specialist templates, not generic coding steps.
         self.assertTrue(any("quantum" in s.lower() for s in steps))
 
     def test_registry_has_required_agents(self) -> None:
         """All expected specialist agents should exist in the registry."""
-        expected = {"quantum-specialist", "code-specialist", "aria-character",
-                    "ai-specialist", "reasoning-specialist", "general"}
+        expected = {
+            "quantum-specialist",
+            "code-specialist",
+            "aria-character",
+            "ai-specialist",
+            "reasoning-specialist",
+            "general",
+        }
         self.assertTrue(expected.issubset(set(self._registry.keys())))
 
     def test_select_agent_reasoning_intent_routes_to_reasoning_specialist(self) -> None:
@@ -253,8 +271,12 @@ class AGIMultiAgentTests(unittest.TestCase):
 
     def test_learn_from_routing_stores_pattern(self) -> None:
         """_learn_from_routing should record domain+intent routing in learned_patterns."""
-        analysis = {"domain": "quantum", "intent": "explanation",
-                    "agent_score": 0.8, "selected_agent": "quantum-specialist"}
+        analysis = {
+            "domain": "quantum",
+            "intent": "explanation",
+            "agent_score": 0.8,
+            "selected_agent": "quantum-specialist",
+        }
         self.agi._learn_from_routing(analysis, "quantum-specialist")
         key = "routing_quantum_explanation"
         self.assertIn(key, self.agi.context.learned_patterns)
@@ -264,8 +286,7 @@ class AGIMultiAgentTests(unittest.TestCase):
 
     def test_learn_from_routing_increments_count(self) -> None:
         """Repeated calls with same domain+intent should increment the pattern count."""
-        analysis = {"domain": "technical",
-                    "intent": "coding", "agent_score": 0.7}
+        analysis = {"domain": "technical", "intent": "coding", "agent_score": 0.7}
         self.agi._learn_from_routing(analysis, "code-specialist")
         self.agi._learn_from_routing(analysis, "code-specialist")
         key = "routing_technical_coding"
@@ -273,16 +294,18 @@ class AGIMultiAgentTests(unittest.TestCase):
 
     def test_learn_from_routing_ignores_general(self) -> None:
         """General agent routing should NOT be stored as a pattern."""
-        analysis = {"domain": "general",
-                    "intent": "general", "agent_score": 0.0}
+        analysis = {"domain": "general", "intent": "general", "agent_score": 0.0}
         self.agi._learn_from_routing(analysis, "general")
-        self.assertNotIn("routing_general_general",
-                         self.agi.context.learned_patterns)
+        self.assertNotIn("routing_general_general", self.agi.context.learned_patterns)
 
     def test_select_agent_learned_pattern_boosts_score(self) -> None:
         """After routing to quantum-specialist for quantum+explanation, the next call should have a higher score."""
-        analysis = {"domain": "quantum", "intent": "explanation",
-                    "confidence": 0.8, "agent_score": 0.8}
+        analysis = {
+            "domain": "quantum",
+            "intent": "explanation",
+            "confidence": 0.8,
+            "agent_score": 0.8,
+        }
         # First call — no learned pattern yet.
         _, score_before = self.agi._select_agent(analysis)
         # Simulate the routing being learned.
@@ -294,16 +317,20 @@ class AGIMultiAgentTests(unittest.TestCase):
     def test_select_agent_decay_reduces_old_pattern_boost(self) -> None:
         """A pattern last observed 48 h ago should give a smaller boost than one just observed."""
         import time
-        analysis = {"domain": "quantum", "intent": "explanation",
-                    "confidence": 0.8, "agent_score": 0.8}
+
+        analysis = {
+            "domain": "quantum",
+            "intent": "explanation",
+            "confidence": 0.8,
+            "agent_score": 0.8,
+        }
         # Learn a fresh pattern.
         self.agi._learn_from_routing(analysis, "quantum-specialist")
         _, score_fresh = self.agi._select_agent(analysis)
 
         # Artificially age the pattern by 48 h.
         key = "routing_quantum_explanation"
-        self.agi.context.learned_patterns[key]["last_seen"] = time.time(
-        ) - 48 * 3600
+        self.agi.context.learned_patterns[key]["last_seen"] = time.time() - 48 * 3600
         _, score_old = self.agi._select_agent(analysis)
 
         # Stale pattern should yield a lower (or equal) score.

@@ -39,7 +39,7 @@ def _get_free_loopback_port() -> int:
 @pytest.fixture(scope="module")
 def aria_server():
     """Start the Aria server in a background thread for the test module."""
-    import importlib
+
     import server as aria_module
 
     # Reset global state for a clean test run
@@ -58,8 +58,7 @@ def aria_server():
     from http.server import HTTPServer
 
     server_port = _get_free_loopback_port()
-    httpd = HTTPServer(("127.0.0.1", server_port),
-                       aria_module.AriaRequestHandler)
+    httpd = HTTPServer(("127.0.0.1", server_port), aria_module.AriaRequestHandler)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
 

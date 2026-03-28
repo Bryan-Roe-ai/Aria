@@ -35,7 +35,7 @@ def _write_status(summary: dict) -> None:
 
 def check_python_version() -> dict:
     major, minor = sys.version_info[:2]
-    ok = (major == 3 and minor >= 10)
+    ok = major == 3 and minor >= 10
     return {
         "status": "ok" if ok else "warn",
         "python_version": f"{major}.{minor}.{sys.version_info[2]}",
@@ -47,8 +47,11 @@ def check_requirements() -> dict:
     req_file = REPO_ROOT / "requirements.txt"
     if not req_file.exists():
         return {"status": "missing", "detail": "requirements.txt not found"}
-    lines = [l.strip() for l in req_file.read_text().splitlines()
-             if l.strip() and not l.startswith("#")]
+    lines = [
+        l.strip()
+        for l in req_file.read_text().splitlines()
+        if l.strip() and not l.startswith("#")
+    ]
     return {"status": "ok", "requirement_count": len(lines)}
 
 
@@ -112,9 +115,13 @@ def run_orchestrator_dry_run(script: str, name: str) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Auto bootstrap — env and orchestrator validation")
-    parser.add_argument("--skip-orchestrators", action="store_true",
-                        help="Skip orchestrator dry-run steps")
+        description="Auto bootstrap — env and orchestrator validation"
+    )
+    parser.add_argument(
+        "--skip-orchestrators",
+        action="store_true",
+        help="Skip orchestrator dry-run steps",
+    )
     args = parser.parse_args()
 
     print("🚀 Auto Bootstrap — environment and orchestrator validation")
@@ -134,13 +141,16 @@ def main() -> int:
     if not args.skip_orchestrators:
         print("\n🔄 Running orchestrator dry-runs...")
         orchestrators["autotrain"] = run_orchestrator_dry_run(
-            "scripts/autotrain.py", "autotrain")
+            "scripts/autotrain.py", "autotrain"
+        )
         orchestrators["quantum_autorun"] = run_orchestrator_dry_run(
-            "scripts/quantum_autorun.py", "quantum_autorun")
+            "scripts/quantum_autorun.py", "quantum_autorun"
+        )
         for name, result in orchestrators.items():
             icon = "✓" if result.get("status") == "ok" else "⚠"
             print(
-                f"  {icon} {name}: {result.get('status')} ({result.get('elapsed_s', 'n/a')}s)")
+                f"  {icon} {name}: {result.get('status')} ({result.get('elapsed_s', 'n/a')}s)"
+            )
 
     critical_failed = any(
         v.get("status") not in ("ok", "warn", "skipped")

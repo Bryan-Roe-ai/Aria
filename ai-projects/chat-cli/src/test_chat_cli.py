@@ -8,7 +8,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-
 SRC_DIR = Path(__file__).resolve().parent
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
@@ -40,6 +39,7 @@ class _PartiallyFailingProvider:
         def gen():
             yield "partial reply"
             raise RuntimeError("stream interrupted")
+
         return gen()
 
 
@@ -47,18 +47,20 @@ class ChatCliTests(unittest.TestCase):
     def test_parser_accepts_autonomous_arguments(self) -> None:
         parser = chat_cli.build_arg_parser()
 
-        args = parser.parse_args([
-            "--interactive",
-            "--autonomous",
-            "--auto-seed",
-            "Start here",
-            "--auto-followup",
-            "Keep going",
-            "--auto-delay",
-            "0.5",
-            "--max-turns",
-            "3",
-        ])
+        args = parser.parse_args(
+            [
+                "--interactive",
+                "--autonomous",
+                "--auto-seed",
+                "Start here",
+                "--auto-followup",
+                "Keep going",
+                "--auto-delay",
+                "0.5",
+                "--max-turns",
+                "3",
+            ]
+        )
 
         self.assertTrue(args.interactive)
         self.assertTrue(args.autonomous)
@@ -81,9 +83,23 @@ class ChatCliTests(unittest.TestCase):
             max_turns=3,
         )
 
-        with patch.object(chat_cli, "detect_provider", return_value=(provider, SimpleNamespace(name="fake", model="fake-model"))), \
-                patch("builtins.input", side_effect=AssertionError("input() should not be called in autonomous mode")), \
-                redirect_stdout(io.StringIO()):
+        with (
+            patch.object(
+                chat_cli,
+                "detect_provider",
+                return_value=(
+                    provider,
+                    SimpleNamespace(name="fake", model="fake-model"),
+                ),
+            ),
+            patch(
+                "builtins.input",
+                side_effect=AssertionError(
+                    "input() should not be called in autonomous mode"
+                ),
+            ),
+            redirect_stdout(io.StringIO()),
+        ):
             exit_code = chat_cli.autonomous_chat(args)
 
         self.assertEqual(exit_code, 0)
@@ -93,35 +109,63 @@ class ChatCliTests(unittest.TestCase):
         )
 
     def test_main_dispatches_to_autonomous_mode(self) -> None:
-        with patch.object(chat_cli, "autonomous_chat", return_value=0) as autonomous_chat, \
-                patch.object(chat_cli, "interactive_chat", side_effect=AssertionError("interactive mode should not run")):
-            exit_code = chat_cli.main([
-                "--auto-seed",
-                "Start",
-                "--max-turns",
-                "1",
-            ])
+        with (
+            patch.object(
+                chat_cli, "autonomous_chat", return_value=0
+            ) as autonomous_chat,
+            patch.object(
+                chat_cli,
+                "interactive_chat",
+                side_effect=AssertionError("interactive mode should not run"),
+            ),
+        ):
+            exit_code = chat_cli.main(
+                [
+                    "--auto-seed",
+                    "Start",
+                    "--max-turns",
+                    "1",
+                ]
+            )
 
         self.assertEqual(exit_code, 0)
         autonomous_chat.assert_called_once()
 
     def test_main_defaults_to_autonomous_mode(self) -> None:
-        with patch.object(chat_cli, "autonomous_chat", return_value=0) as autonomous_chat, \
-                patch.object(chat_cli, "interactive_chat", side_effect=AssertionError("interactive mode should not run")):
+        with (
+            patch.object(
+                chat_cli, "autonomous_chat", return_value=0
+            ) as autonomous_chat,
+            patch.object(
+                chat_cli,
+                "interactive_chat",
+                side_effect=AssertionError("interactive mode should not run"),
+            ),
+        ):
             exit_code = chat_cli.main([])
 
         self.assertEqual(exit_code, 0)
         autonomous_chat.assert_called_once()
 
     def test_main_interactive_override_uses_interactive_mode(self) -> None:
-        with patch.object(chat_cli, "interactive_chat", return_value=0) as interactive_chat, \
-                patch.object(chat_cli, "autonomous_chat", side_effect=AssertionError("autonomous mode should not run")):
+        with (
+            patch.object(
+                chat_cli, "interactive_chat", return_value=0
+            ) as interactive_chat,
+            patch.object(
+                chat_cli,
+                "autonomous_chat",
+                side_effect=AssertionError("autonomous mode should not run"),
+            ),
+        ):
             exit_code = chat_cli.main(["--interactive"])
 
         self.assertEqual(exit_code, 0)
         interactive_chat.assert_called_once()
 
-    def test_stream_assistant_reply_returns_error_text_when_provider_raises(self) -> None:
+    def test_stream_assistant_reply_returns_error_text_when_provider_raises(
+        self,
+    ) -> None:
         with redirect_stdout(io.StringIO()):
             reply = chat_cli.stream_assistant_reply(
                 _FailingProvider(),
@@ -131,7 +175,9 @@ class ChatCliTests(unittest.TestCase):
         self.assertIn("[provider error:", reply)
         self.assertIn("LM Studio unavailable", reply)
 
-    def test_stream_assistant_reply_preserves_partial_output_on_stream_failure(self) -> None:
+    def test_stream_assistant_reply_preserves_partial_output_on_stream_failure(
+        self,
+    ) -> None:
         with redirect_stdout(io.StringIO()):
             reply = chat_cli.stream_assistant_reply(
                 _PartiallyFailingProvider(),
@@ -150,10 +196,21 @@ class ChatCliTests(unittest.TestCase):
             system="Stay concise.",
         )
 
-        with patch.object(chat_cli, "detect_provider", return_value=(provider, SimpleNamespace(name="fake", model="fake-model"))), \
-                patch.object(chat_cli, "save_conversation", return_value=Path("/tmp/chat.jsonl")) as save_conversation, \
-                patch("builtins.input", side_effect=["/save", "/exit"]), \
-                redirect_stdout(io.StringIO()) as stdout:
+        with (
+            patch.object(
+                chat_cli,
+                "detect_provider",
+                return_value=(
+                    provider,
+                    SimpleNamespace(name="fake", model="fake-model"),
+                ),
+            ),
+            patch.object(
+                chat_cli, "save_conversation", return_value=Path("/tmp/chat.jsonl")
+            ) as save_conversation,
+            patch("builtins.input", side_effect=["/save", "/exit"]),
+            redirect_stdout(io.StringIO()) as stdout,
+        ):
             exit_code = chat_cli.interactive_chat(args)
 
         self.assertEqual(exit_code, 0)

@@ -13,6 +13,7 @@ Usage:
         --batch-size 32 \\
         --out-dir data_out/vision_training
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,6 +35,7 @@ except ImportError as exc:
 # ---------------------------------------------------------------------------
 # Model definition — must stay in sync with scripts/vision_inference.py
 # ---------------------------------------------------------------------------
+
 
 class TinyConvNet(nn.Module):
     """Minimal CNN for expression/shape classification."""
@@ -58,6 +60,7 @@ class TinyConvNet(nn.Module):
 # ---------------------------------------------------------------------------
 # Dataset
 # ---------------------------------------------------------------------------
+
 
 class FolderDataset(Dataset):
     """Simple folder-based image dataset."""
@@ -87,9 +90,11 @@ class FolderDataset(Dataset):
 # Image I/O helpers
 # ---------------------------------------------------------------------------
 
+
 def _load_image(path: Path, size: int) -> np.ndarray:
     """Load image → float32 CHW array normalised to [0, 1]."""
     from PIL import Image as _Image  # type: ignore[import]
+
     img = _Image.open(path).convert("RGB").resize((size, size))
     arr = np.array(img, dtype=np.float32) / 255.0  # HWC
     return np.transpose(arr, (2, 0, 1))  # CHW
@@ -98,12 +103,14 @@ def _load_image(path: Path, size: int) -> np.ndarray:
 def _save_png(arr: np.ndarray, path: Path) -> None:
     """Save HxWxC uint8 array as PNG using Pillow."""
     from PIL import Image as _Image  # type: ignore[import]
+
     _Image.fromarray(arr).save(path)
 
 
 # ---------------------------------------------------------------------------
 # Synthetic dataset generator
 # ---------------------------------------------------------------------------
+
 
 def generate_toy_shapes_dataset(
     root: Path,
@@ -124,10 +131,12 @@ def generate_toy_shapes_dataset(
         cy, cx = h // 2, w // 2
         radius = min(h, w) // 4
         ys, xs = np.ogrid[:h, :w]
-        mask = (ys - cy) ** 2 + (xs - cx) ** 2 <= radius ** 2
+        mask = (ys - cy) ** 2 + (xs - cx) ** 2 <= radius**2
         img[mask] = 255
         noise = rng.integers(0, 30, img.shape, dtype=np.uint8)
-        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(np.uint8)
+        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(
+            np.uint8
+        )
         _save_png(img, root / "circle" / f"img_{i:04d}.png")
 
         # --- Square ---
@@ -135,13 +144,16 @@ def generate_toy_shapes_dataset(
         margin = max(2, min(h, w) // 4)
         img[margin : h - margin, margin : w - margin] = 255
         noise = rng.integers(0, 30, img.shape, dtype=np.uint8)
-        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(np.uint8)
+        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(
+            np.uint8
+        )
         _save_png(img, root / "square" / f"img_{i:04d}.png")
 
 
 # ---------------------------------------------------------------------------
 # Training loop
 # ---------------------------------------------------------------------------
+
 
 def _train_epoch(
     model: TinyConvNet,
@@ -156,7 +168,11 @@ def _train_epoch(
     total = 0
     for imgs, labels in loader:
         imgs = imgs.to(device)
-        labels = torch.tensor(labels, dtype=torch.long, device=device) if not isinstance(labels, torch.Tensor) else labels.to(device)
+        labels = (
+            torch.tensor(labels, dtype=torch.long, device=device)
+            if not isinstance(labels, torch.Tensor)
+            else labels.to(device)
+        )
         optimizer.zero_grad()
         logits = model(imgs)
         loss = criterion(logits, labels)
@@ -174,15 +190,20 @@ def _train_epoch(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+
 def main(args: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Train TinyConvNet vision classifier")
-    parser.add_argument("--dataset", required=True, help="Path to dataset root directory")
+    parser.add_argument(
+        "--dataset", required=True, help="Path to dataset root directory"
+    )
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--out-dir", default="data_out/vision_training")
     parser.add_argument("--img-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--dry-run", action="store_true", help="Validate only, skip training")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Validate only, skip training"
+    )
     parsed = parser.parse_args(args)
 
     out_dir = Path(parsed.out_dir)
@@ -190,7 +211,9 @@ def main(args: Optional[List[str]] = None) -> int:
 
     dataset_path = Path(parsed.dataset)
     if not dataset_path.exists():
-        print(f"[train_vision] ERROR: dataset not found: {dataset_path}", file=sys.stderr)
+        print(
+            f"[train_vision] ERROR: dataset not found: {dataset_path}", file=sys.stderr
+        )
         return 1
 
     ds = FolderDataset(dataset_path, img_size=parsed.img_size)
@@ -213,7 +236,9 @@ def main(args: Optional[List[str]] = None) -> int:
 
     for epoch in range(1, parsed.epochs + 1):
         loss, acc = _train_epoch(model, loader, optimizer, criterion, device)
-        print(f"[train_vision] epoch {epoch}/{parsed.epochs}  loss={loss:.4f}  acc={acc:.3f}")
+        print(
+            f"[train_vision] epoch {epoch}/{parsed.epochs}  loss={loss:.4f}  acc={acc:.3f}"
+        )
         ckpt_path = out_dir / f"vision_model_epoch{epoch:03d}.pt"
         torch.save(
             {

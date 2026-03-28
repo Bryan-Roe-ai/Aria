@@ -1,11 +1,29 @@
-from tests.test_orchestrator_health_integration import MockRequest, app_module
+from tests.test_orchestrator_health_integration import MockRequest
 
 
+import importlib.util
 import json
+import sys
+from pathlib import Path
 from types import ModuleType
 
 
-def test_orchestrator_health_in_status_endpoint(app_module: ModuleType) -> None:
+def _load_function_app() -> ModuleType:
+    spec = importlib.util.spec_from_file_location(
+        "function_app",
+        Path(__file__).resolve().parents[1] / "function_app.py",
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("Failed to load function_app module")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["function_app"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_orchestrator_health_in_status_endpoint() -> None:
+    """Verify /api/ai/status includes orchestrator_health section."""
+    app_module = _load_function_app()
     """Verify /api/ai/status includes orchestrator_health section."""
     req = MockRequest("GET")
     resp = app_module.ai_status(req)
