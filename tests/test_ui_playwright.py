@@ -9,6 +9,8 @@ import shutil
 
 from pathlib import Path
 
+pytest.importorskip("playwright", reason="playwright is not installed")
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ARIA_WEB = REPO_ROOT / 'aria_web'
 SERVER_URL = 'http://127.0.0.1:8080'

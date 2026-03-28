@@ -11,6 +11,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
+pytest.importorskip("torch", reason="torch is not installed")
+import torch  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CHAT_CLI_SRC = REPO_ROOT / "ai-projects" / "chat-cli" / "src"
