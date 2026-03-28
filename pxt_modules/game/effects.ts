@@ -28,7 +28,7 @@ namespace effects {
 
         /**
          * Change the given image with this effect
-         * @param input 
+         * @param input
          */
         change(input: Image) {
             this.effect(input, this.fastRandom);

@@ -17,7 +17,6 @@ from datetime import datetime
 from pathlib import Path
 
 from qiskit import QuantumCircuit
-
 # Local import
 from src.azure_quantum_integration import AzureQuantumIntegration
 

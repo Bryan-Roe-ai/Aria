@@ -82,7 +82,7 @@ class HyperparameterOptimizer {
     generateGridSearch() {
         const configs = [];
         const params = Object.keys(this.searchSpace);
-        
+
         // Generate all combinations (limited to maxTrials)
         const combinations = this.cartesianProduct(
             params.map(p => this.searchSpace[p].values || this.searchSpace[p].range)
@@ -102,12 +102,12 @@ class HyperparameterOptimizer {
      */
     generateRandomSearch() {
         const configs = [];
-        
+
         for (let i = 0; i < this.maxTrials; i++) {
             const config = {};
             Object.keys(this.searchSpace).forEach(param => {
                 const space = this.searchSpace[param];
-                
+
                 if (space.values) {
                     // Categorical: random choice
                     config[param] = space.values[Math.floor(Math.random() * space.values.length)];
@@ -115,7 +115,7 @@ class HyperparameterOptimizer {
                     // Continuous: random value in range
                     const [min, max] = space.range;
                     const scale = space.scale || 'linear';
-                    
+
                     if (scale === 'log') {
                         const logMin = Math.log(min);
                         const logMax = Math.log(max);
@@ -123,7 +123,7 @@ class HyperparameterOptimizer {
                     } else {
                         config[param] = min + Math.random() * (max - min);
                     }
-                    
+
                     // Round if integer type
                     if (space.type === 'int') {
                         config[param] = Math.round(config[param]);
@@ -160,7 +160,7 @@ class HyperparameterOptimizer {
     selectNextBayesianConfig() {
         // Generate candidate configs
         const candidates = this.generateRandomSearch().slice(0, 20);
-        
+
         // Score each candidate based on distance from previous trials
         let bestCandidate = candidates[0];
         let bestEI = -Infinity;
@@ -191,7 +191,7 @@ class HyperparameterOptimizer {
 
         // Exploration bonus: prefer configs far from existing trials
         const exploration = minDistance;
-        
+
         // Exploitation: prefer regions with good scores
         const exploitation = this.predictScore(config);
 
@@ -206,7 +206,7 @@ class HyperparameterOptimizer {
         Object.keys(config1).forEach(param => {
             const v1 = config1[param];
             const v2 = config2[param];
-            
+
             if (typeof v1 === 'number' && typeof v2 === 'number') {
                 const space = this.searchSpace[param];
                 const range = space.range ? space.range[1] - space.range[0] : 1;
@@ -302,14 +302,14 @@ class HyperparameterOptimizer {
      */
     async waitForCompletion(jobName, timeout = 3600000) {
         const startTime = Date.now();
-        
+
         while (Date.now() - startTime < timeout) {
             await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5 seconds
 
             try {
                 const response = await fetch('/status');
                 const data = await response.json();
-                
+
                 const job = data.jobs?.find(j => j.name === jobName);
                 if (job && job.status === 'completed') {
                     return job;
@@ -335,7 +335,7 @@ class HyperparameterOptimizer {
         // Check if no improvement in last N trials
         const recentTrials = this.trials.slice(-this.earlyStopping.patience);
         const recentBest = Math.max(...recentTrials.map(t => t.score));
-        
+
         const improvement = recentBest - this.bestScore;
         return improvement < this.earlyStopping.minDelta;
     }
@@ -408,7 +408,7 @@ class HyperparameterOptimizer {
                 const bestStr = Object.entries(this.bestConfig)
                     .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toFixed(4) : v}`)
                     .join(', ');
-                
+
                 bestEl.innerHTML = `
                     <div class="card">
                         <div class="card-header"><h4>🏆 Current Best Configuration</h4></div>
@@ -447,7 +447,7 @@ class HyperparameterOptimizer {
 
                     <h4>Trial Summary</h4>
                     <p>Completed ${this.trials.length} trials</p>
-                    
+
                     <div style="margin-top:20px;display:flex;gap:10px">
                         <button class="btn btn-primary" onclick="hyperOptimizer.applyBestConfig()">✨ Apply Best Config</button>
                         <button class="btn btn-secondary" onclick="hyperOptimizer.exportResults()">📥 Export Results</button>
@@ -487,7 +487,7 @@ class HyperparameterOptimizer {
         });
 
         if (typeof showToast === 'function') showToast('Best config applied to training form ✓', 'ok', 3500);
-        
+
         // Switch to training tab
         if (typeof switchTab === 'function') {
             switchTab('training');
@@ -525,7 +525,7 @@ class HyperparameterOptimizer {
         const canvas = document.createElement('canvas');
         canvas.id = 'hyperoptChart';
         canvas.style.height = '400px';
-        
+
         const container = document.getElementById('hyperoptContainer');
         if (container) {
             container.appendChild(canvas);
@@ -544,7 +544,7 @@ class HyperparameterOptimizer {
                     tension: 0.4
                 }, {
                     label: 'Best Score So Far',
-                    data: this.trials.map((t, idx) => 
+                    data: this.trials.map((t, idx) =>
                         Math.max(...this.trials.slice(0, idx + 1).map(tr => tr.score))
                     ),
                     borderColor: '#2dce89',
@@ -570,7 +570,7 @@ class HyperparameterOptimizer {
      */
     stopOptimization() {
 
-        
+
         this.maxTrials = this.currentTrial;
         if (typeof showToast === 'function') showToast('Optimization stopping after current trial', 'info', 4000);
     }
@@ -579,7 +579,7 @@ class HyperparameterOptimizer {
      * Helper: Cartesian product
      */
     cartesianProduct(arrays) {
-        return arrays.reduce((acc, array) => 
+        return arrays.reduce((acc, array) =>
             acc.flatMap(x => array.map(y => [...x, y])), [[]]
         );
     }

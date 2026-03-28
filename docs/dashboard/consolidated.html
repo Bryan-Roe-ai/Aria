@@ -23,7 +23,7 @@
             border-radius: 12px;
             overflow-x: auto;
         }
-        
+
         .tab-btn {
             padding: 12px 24px;
             background: var(--bg-secondary, #1e2028);
@@ -39,31 +39,31 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .tab-btn:hover {
             background: var(--accent-primary, #667eea);
             transform: translateY(-2px);
         }
-        
+
         .tab-btn.active {
             background: linear-gradient(135deg, #667eea, #764ba2);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
-        
+
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
             animation: fadeIn 0.3s;
         }
-        
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         /* Header */
         header {
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -73,19 +73,19 @@
             box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
             text-align: center;
         }
-        
+
         header h1 {
             color: white;
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-        
+
         .subtitle {
             color: rgba(255,255,255,0.9);
             font-size: 1.1em;
         }
-        
+
         /* Status Pills */
         .status-pills {
             display: flex;
@@ -94,7 +94,7 @@
             flex-wrap: wrap;
             margin-top: 15px;
         }
-        
+
         .status-pill {
             background: rgba(255,255,255,0.2);
             padding: 6px 16px;
@@ -106,7 +106,7 @@
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
-        
+
         .status-dot {
             width: 8px;
             height: 8px;
@@ -114,38 +114,38 @@
             background: #28a745;
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
             0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(40,167,69,0.8); }
             50% { opacity: 0.6; }
         }
-        
+
         /* Grid Layouts */
         .grid-2 {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 20px;
         }
-        
+
         .grid-3 {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
         }
-        
+
         .grid-4 {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
-        
+
         /* Chart Container */
         .chart-container {
             position: relative;
             height: 300px;
             margin-top: 15px;
         }
-        
+
         /* Form Enhancements */
         .form-row {
             display: grid;
@@ -153,13 +153,13 @@
             gap: 15px;
             margin-bottom: 15px;
         }
-        
+
         .advanced-section {
             margin-top: 20px;
             border-top: 2px solid var(--border-color, #333);
             padding-top: 20px;
         }
-        
+
         .collapsible-header {
             cursor: pointer;
             padding: 12px;
@@ -171,20 +171,20 @@
             margin-bottom: 15px;
             transition: background 0.3s;
         }
-        
+
         .collapsible-header:hover {
             background: var(--accent-primary, #667eea);
         }
-        
+
         .collapsible-content {
             display: none;
             padding: 15px 0;
         }
-        
+
         .collapsible-content.open {
             display: block;
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
@@ -213,7 +213,7 @@
                                     <h2 class="card-title">🎯 Hyperparameter Optimizer</h2>
                                 </div>
                                 <p style="margin-bottom:15px">Automated hyperparameter tuning with Bayesian optimization, grid search, and early stopping.</p>
-                
+
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label>Optimization Strategy</label>
@@ -228,14 +228,14 @@
                                         <input type="number" id="optimMaxTrials" value="10" min="3" max="50" title="Max Trials" placeholder="10">
                                     </div>
                                 </div>
-                
+
                                 <button class="btn btn-primary" onclick="startHyperparamOptimization()">
                                     🚀 Start Optimization
                                 </button>
                                 <button class="btn btn-secondary" onclick="configureSearchSpace()">
                                     ⚙️ Configure Search Space
                                 </button>
-                
+
                                 <div id="hyperoptContainer" style="margin-top:20px;display:none"></div>
                             </div>
                 <div class="status-pill">
@@ -334,7 +334,7 @@
                 <div class="card-header">
                     <h2 class="card-title">🚀 Start Training Job</h2>
                 </div>
-                
+
                 <form id="trainingForm" onsubmit="return startTraining(event);">
                     <!-- Basic Settings -->
                     <div class="form-row">
@@ -562,7 +562,7 @@
             await initDashboard();
             loadDatasets();
             refreshData();
-            
+
             // Start auto-refresh
             setInterval(refreshData, 5000);
         });
@@ -692,23 +692,23 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // Remove active from all buttons
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             // Show selected tab
             const tabEl = document.getElementById(`${tabName}-tab`);
             if (tabEl) tabEl.classList.add('active');
-            
+
             // Set active button
             const btnIndex = ['overview', 'training', 'analytics', 'history', 'tools'].indexOf(tabName);
             if (btnIndex >= 0) {
                 const btns = document.querySelectorAll('.tab-btn');
                 if (btns[btnIndex]) btns[btnIndex].classList.add('active');
             }
-            
+
             // Refresh data for specific tabs
             if (tabName === 'analytics') {
                 updateCharts();
@@ -717,7 +717,7 @@
             } else if (tabName === 'tools') {
                 updateAnomalyStatus();
             }
-            
+
             // Store tab preference
             localStorage.setItem('qai-active-tab', tabName);
         }
@@ -727,12 +727,12 @@
             try {
                 const response = await fetch('/api/datasets');
                 const data = await response.json();
-                
+
                 const selects = ['datasetSelect', 'profilerDataset'];
                 selects.forEach(id => {
                     const select = document.getElementById(id);
                     if (select && data.datasets) {
-                        select.innerHTML = data.datasets.map(ds => 
+                        select.innerHTML = data.datasets.map(ds =>
                             `<option value="${ds.path || ds.name}">${ds.name} (${ds.samples || 0} samples)</option>`
                         ).join('');
                     }
@@ -746,7 +746,7 @@
             try {
                 const response = await fetch('/status');
                 currentData = await response.json();
-                
+
                 updateOverview(currentData);
                 if (document.getElementById('analytics-tab').classList.contains('active')) {
                     updateCharts();
@@ -758,14 +758,14 @@
 
         function updateOverview(data) {
             if (!data || !data.jobs) return;
-            
+
             document.getElementById('totalJobs').textContent = data.jobs.length;
-            
+
             const avgLoss = data.jobs.length > 0
                 ? (data.jobs.reduce((sum, j) => sum + (j.post_loss || j.final_loss || 0), 0) / data.jobs.length).toFixed(3)
                 : '0.00';
             document.getElementById('avgLoss').textContent = avgLoss;
-            
+
             const bestJob = data.jobs.length > 0
                 ? data.jobs.reduce((best, j) => {
                     const loss = j.post_loss || j.final_loss || Infinity;
@@ -774,12 +774,12 @@
                 })
                 : null;
             document.getElementById('bestModel').textContent = bestJob ? (bestJob.name || 'Unknown') : 'N/A';
-            
+
             const totalTime = data.jobs.length > 0
                 ? Math.round(data.jobs.reduce((sum, j) => sum + (j.duration || 0), 0) / 3600)
                 : 0;
             document.getElementById('totalTime').textContent = totalTime + 'h';
-            
+
             updateRecentActivity(data);
             updateLossChart(data);
         }
@@ -787,12 +787,12 @@
         function updateRecentActivity(data) {
             const container = document.getElementById('recentActivity');
             if (!container || !data.jobs || data.jobs.length === 0) return;
-            
+
             const recent = data.jobs.slice(-5).reverse();
             container.innerHTML = recent.map(job => `
                 <div class="alert alert-info" style="margin-bottom:10px">
                     <strong>${job.name || 'Unknown'}</strong><br>
-                    <small>Loss: ${(job.post_loss || job.final_loss || 0).toFixed(4)} | 
+                    <small>Loss: ${(job.post_loss || job.final_loss || 0).toFixed(4)} |
                     Status: ${job.status || 'unknown'}</small>
                 </div>
             `).join('');
@@ -800,7 +800,7 @@
 
         function updateLossChart(data) {
             if (!charts.loss || !data.jobs) return;
-            
+
             charts.loss.data.labels = data.jobs.map((_, i) => `Job ${i + 1}`);
             charts.loss.data.datasets[0].data = data.jobs.map(j => j.post_loss || j.final_loss || 0);
             charts.loss.update();
@@ -808,7 +808,7 @@
 
         function updateCharts() {
             if (!currentData || !currentData.jobs) return;
-            
+
             // Update performance chart
             if (charts.performance) {
                 const top5 = currentData.jobs.slice(0, 5);
@@ -819,7 +819,7 @@
                 });
                 charts.performance.update();
             }
-            
+
             // Update time chart
             if (charts.time) {
                 const quick = currentData.jobs.filter(j => (j.duration || 0) < 600).length;
@@ -828,7 +828,7 @@
                 charts.time.data.datasets[0].data = [quick, medium, long];
                 charts.time.update();
             }
-            
+
             // Update comparison table
             updateComparisonTable();
         }
@@ -836,7 +836,7 @@
         function updateComparisonTable() {
             const tbody = document.querySelector('#comparisonTable tbody');
             if (!tbody || !currentData || !currentData.jobs || currentData.jobs.length === 0) return;
-            
+
             tbody.innerHTML = currentData.jobs.slice(0, 10).map(job => {
                 const finalLoss = job.post_loss || job.final_loss || 0;
                 const improvement = job.pre_loss && job.post_loss
@@ -844,7 +844,7 @@
                     : 'N/A';
                 const duration = job.duration ? Math.round(job.duration / 60) + ' min' : 'N/A';
                 const score = finalLoss > 0 ? (1 / finalLoss * 100).toFixed(2) : '0';
-                
+
                 return `
                     <tr>
                         <td>${job.name || 'Unknown'}</td>
@@ -861,7 +861,7 @@
         // Training Functions
         async function startTraining(event) {
             event.preventDefault();
-            
+
             const config = {
                 job_name: document.getElementById('jobName').value,
                 dataset: document.getElementById('datasetSelect').value,
@@ -873,14 +873,14 @@
                 lora_alpha: parseInt(document.getElementById('loraAlpha').value),
                 max_train_samples: parseInt(document.getElementById('maxTrainSamples').value)
             };
-            
+
             try {
                 const response = await fetch('/api/start-training', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(config)
                 });
-                
+
                 const result = await response.json();
                 showToast(result.message || 'Training started! ✓', 'ok', 4000);
 
@@ -893,12 +893,12 @@
                 if (sessionHistory) {
                     sessionHistory.startSession(config);
                 }
-                
+
                 refreshData();
             } catch (err) {
                  showToast('Failed to start training: ' + err.message, 'warn', 6000);
             }
-            
+
             return false;
         }
 
@@ -908,7 +908,7 @@
                 standard: { epochs: 3, batchSize: 4, maxTrainSamples: 1000 },
                 full: { epochs: 5, batchSize: 4, maxTrainSamples: -1 }
             };
-            
+
             const config = presets[preset];
             if (config) {
                 document.getElementById('epochs').value = config.epochs;
@@ -934,7 +934,7 @@
                 lora_rank: parseInt(document.getElementById('loraRank').value),
                 lora_alpha: parseInt(document.getElementById('loraAlpha').value)
             };
-            
+
             const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -952,13 +952,13 @@
         async function runDatasetProfiler() {
             const dataset = document.getElementById('profilerDataset').value;
             const resultsDiv = document.getElementById('profilerResults');
-            
+
             resultsDiv.innerHTML = '<div class="alert alert-info">Profiling dataset...</div>';
-            
+
             try {
                 const response = await fetch(`/api/profile-dataset?dataset=${encodeURIComponent(dataset)}`);
                 const data = await response.json();
-                
+
                 if (data.recommendations) {
                     resultsDiv.innerHTML = `
                         <div class="alert alert-success">
@@ -981,9 +981,9 @@
             const model = document.getElementById('vramModel').value;
             const rank = parseInt(document.getElementById('vramRank').value);
             const resultsDiv = document.getElementById('vramResults');
-            
+
             resultsDiv.innerHTML = '<div class="alert alert-info">Calculating VRAM requirements...</div>';
-            
+
             // Simulate API call (would need actual endpoint)
             setTimeout(() => {
                 resultsDiv.innerHTML = `
@@ -999,7 +999,7 @@
 
         function updateAnomalyStatus() {
             if (!anomalyDetector) return;
-            
+
             const stats = anomalyDetector.getStatistics();
             document.getElementById('anomalyCount').textContent = stats.total;
             document.getElementById('spikeCount').textContent = stats.spikes;
@@ -1010,19 +1010,19 @@
         // History Functions
         function updateHistoryView() {
             if (!sessionHistory) {
-                document.getElementById('historyContent').innerHTML = 
+                document.getElementById('historyContent').innerHTML =
                     '<p style="text-align:center;color:#888;padding:40px">Session history not available</p>';
                 return;
             }
-            
+
             const sessions = sessionHistory.getAllSessions();
             const container = document.getElementById('historyContent');
-            
+
             if (sessions.length === 0) {
                 container.innerHTML = '<p style="text-align:center;color:#888;padding:40px">No training history yet</p>';
                 return;
             }
-            
+
             container.innerHTML = `
                 <div style="overflow-x:auto">
                     <table>
@@ -1063,9 +1063,9 @@
 
         function exportHistory(format) {
             if (!sessionHistory) return;
-            
+
             let content, filename, type;
-            
+
             if (format === 'json') {
                 content = sessionHistory.exportToJSON();
                 filename = `history-${Date.now()}.json`;
@@ -1075,7 +1075,7 @@
                 filename = `history-${Date.now()}.csv`;
                 type = 'text/csv';
             }
-            
+
             const blob = new Blob([content], { type });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');

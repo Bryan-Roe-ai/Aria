@@ -4,9 +4,10 @@ Tool Validator - Validates generated code for safety
 
 import ast
 import logging
-from typing import Tuple, List, Optional
-import yaml
 from pathlib import Path
+from typing import List, Optional, Tuple
+
+import yaml
 
 logger = logging.getLogger(__name__)
 

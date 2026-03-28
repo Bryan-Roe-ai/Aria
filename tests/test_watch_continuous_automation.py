@@ -7,7 +7,6 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-
 # ─── module loader ────────────────────────────────────────────────────────────
 
 _MODULE_NAME = "watch_continuous_automation"

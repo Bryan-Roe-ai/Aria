@@ -22,15 +22,10 @@ try:
 
     try:
         from peft import LoraConfig, PeftModel, get_peft_model
-        from transformers import (
-            AutoModelForCausalLM,
-            AutoTokenizer,
-            DataCollatorForLanguageModeling,
-            EarlyStoppingCallback,
-            Trainer,
-            TrainerCallback,
-            TrainingArguments,
-        )
+        from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                                  DataCollatorForLanguageModeling,
+                                  EarlyStoppingCallback, Trainer,
+                                  TrainerCallback, TrainingArguments)
     except ImportError:
         raise SystemExit(
             "Transformers is required. Install with: pip install transformers"
@@ -892,7 +887,8 @@ def main():
         trainer.add_callback(PerplexityLoggingCallback(logger))
         # Add OpenTelemetry tracing callback if available and compatible
         try:
-            from otel_callback import OpenTelemetryTrainerCallback  # type: ignore
+            from otel_callback import \
+                OpenTelemetryTrainerCallback  # type: ignore
 
             if hasattr(OpenTelemetryTrainerCallback, "on_prediction_step"):
                 trainer.add_callback(OpenTelemetryTrainerCallback())

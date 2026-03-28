@@ -824,7 +824,7 @@
             container.innerHTML = recent.map(job => `
                 <div class="alert alert-info" style="margin-bottom:10px">
                     <strong>${job.name || 'Unknown'}</strong><br>
-                    <small>Loss: ${(job.post_loss || job.final_loss || 0).toFixed(4)} | 
+                    <small>Loss: ${(job.post_loss || job.final_loss || 0).toFixed(4)} |
                     Status: ${job.status || 'unknown'}</small>
                 </div>
             `).join('');

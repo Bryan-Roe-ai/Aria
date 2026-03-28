@@ -36,11 +36,9 @@ from pathlib import Path
 try:
     from sklearn.decomposition import PCA
     from sklearn.impute import SimpleImputer
-    from sklearn.metrics import (
-        confusion_matrix,
-        precision_recall_fscore_support,
-        roc_auc_score,
-    )
+    from sklearn.metrics import (confusion_matrix,
+                                 precision_recall_fscore_support,
+                                 roc_auc_score)
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import StandardScaler
 except Exception:  # pragma: no cover

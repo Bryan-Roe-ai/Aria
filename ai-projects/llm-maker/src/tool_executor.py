@@ -25,12 +25,9 @@ ALLOWED_IMPORT_MODULES = {
 # Try to import RestrictedPython if available
 try:
     from RestrictedPython import compile_restricted
-    from RestrictedPython.Guards import (
-        guarded_getattr,
-        guarded_getitem,
-        guarded_iter_unpack_sequence,
-        safe_builtins,
-    )
+    from RestrictedPython.Guards import (guarded_getattr, guarded_getitem,
+                                         guarded_iter_unpack_sequence,
+                                         safe_builtins)
 
     HAS_RESTRICTED_PYTHON = True
 except ImportError:

@@ -4,7 +4,7 @@ workflow:
     events:
       cloud_events:
         - type: input_message_received
-          data_schema: 
+          data_schema:
             type: string
   nodes:
     - id: GetProductInfoStep
@@ -88,4 +88,3 @@ workflow:
       then:
         - node: GenerateDocumentationStep
           function: RegenerateWithFeedbackAsync
-

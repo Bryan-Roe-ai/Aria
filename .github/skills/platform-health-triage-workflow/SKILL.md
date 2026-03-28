@@ -1,7 +1,7 @@
 ---
 name: platform-health-triage-workflow
 description: 'Triage platform health across API readiness, orchestrator status files, resource usage, and provider/DB dependencies. Use when services feel degraded, dashboards disagree, or you need a fast root-cause path for system incidents.'
-argument-hint: 'Describe the outage or degradation signal (endpoint, script, dashboard metric, or failing workflow).' 
+argument-hint: 'Describe the outage or degradation signal (endpoint, script, dashboard metric, or failing workflow).'
 ---
 
 # Platform Health Triage Workflow

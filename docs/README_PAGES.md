@@ -51,7 +51,7 @@ For complete functionality with AI, quantum computing, and training:
    export AZURE_OPENAI_API_KEY="..."
    export AZURE_OPENAI_ENDPOINT="..."
    export AZURE_OPENAI_DEPLOYMENT="..."
-   
+
    # For OpenAI
    export OPENAI_API_KEY="..."
    ```
@@ -61,10 +61,10 @@ For complete functionality with AI, quantum computing, and training:
    ```bash
    # Aria web server
    cd aria_web && python server.py
-   
+
    # Azure Functions (chat API)
    func start
-   
+
    # Dashboard
    cd dashboard && python app.py
    ```
@@ -180,7 +180,7 @@ Each app implements mock API responses in JavaScript:
 ```javascript
 async function mockApiCall(endpoint, options) {
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     if (endpoint === '/api/myendpoint') {
         return {
             ok: true,

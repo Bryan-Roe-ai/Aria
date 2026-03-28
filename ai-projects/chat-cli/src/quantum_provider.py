@@ -12,11 +12,8 @@ from typing import Any, Dict, Iterator, List
 import torch
 import torch.nn.functional as F
 
-from chat_providers import (
-    BaseChatProvider,  # type: ignore[attr-defined]
-    ProviderChoice,
-    RoleMessage,
-)
+from chat_providers import BaseChatProvider  # type: ignore[attr-defined]
+from chat_providers import ProviderChoice, RoleMessage
 
 # Add quantum-ml to path
 repo_root = Path(__file__).resolve().parent.parent.parent.parent

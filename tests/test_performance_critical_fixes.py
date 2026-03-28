@@ -19,7 +19,8 @@ sys.path.insert(0, str(REPO_ROOT / "aria_web"))
 
 def test_keywords_in_cmd_function():
     """Test the optimized _keywords_in_cmd helper function"""
-    from aria_web.server import _DANCE_KEYWORDS, _JUMP_KEYWORDS, _keywords_in_cmd
+    from aria_web.server import (_DANCE_KEYWORDS, _JUMP_KEYWORDS,
+                                 _keywords_in_cmd)
 
     # Test basic matching
     assert _keywords_in_cmd(_JUMP_KEYWORDS, "jump high")

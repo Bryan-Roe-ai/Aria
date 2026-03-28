@@ -19,17 +19,11 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 try:
-    from .config_paths import (
-        canonical_config_path,
-        get_config_candidates,
-        resolve_existing_config_path,
-    )
+    from .config_paths import (canonical_config_path, get_config_candidates,
+                               resolve_existing_config_path)
 except ImportError:
-    from config_paths import (
-        canonical_config_path,
-        get_config_candidates,
-        resolve_existing_config_path,
-    )
+    from config_paths import (canonical_config_path, get_config_candidates,
+                              resolve_existing_config_path)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"

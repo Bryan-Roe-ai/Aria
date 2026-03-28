@@ -2,7 +2,6 @@ import sys
 import time
 from pathlib import Path
 
-
 # Ensure package source is importable when tests run from repo root
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from tool_validator import ToolValidator

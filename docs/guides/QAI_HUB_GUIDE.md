@@ -724,6 +724,6 @@ Same as main QAI repository (see root LICENSE file).
 
 ---
 
-**Last Updated**: 2025-11-25  
-**Version**: 2.0  
+**Last Updated**: 2025-11-25
+**Version**: 2.0
 **Author**: QAI Development Team

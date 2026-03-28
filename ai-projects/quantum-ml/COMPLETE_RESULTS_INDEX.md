@@ -363,5 +363,5 @@ mcp-requirements.txt            # MCP server dependencies
 
 **End of Complete Results Index**
 
-*For quick commands and workflows, see [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)*  
+*For quick commands and workflows, see [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md)*
 *For detailed hardware findings, see [`PROVIDER_COMPARISON_RESULTS.md`](./PROVIDER_COMPARISON_RESULTS.md)*

@@ -2323,4 +2323,3 @@ window.ariaTest = {
     pose: (name) => applyPose(name)
 };
 window.simulateTags = (arr) => Array.isArray(arr) && executeTags(arr);
-

@@ -63,7 +63,7 @@ namespace particles {
 
         /**
          * Generate a particle at the position of the given anchor
-         * @param anchor 
+         * @param anchor
          */
         createParticle(anchor: ParticleAnchor): Particle {
             const p = new Particle();
@@ -79,9 +79,9 @@ namespace particles {
 
         /**
          * Draw the given particle at the given location
-         * @param particle 
-         * @param x 
-         * @param y 
+         * @param particle
+         * @param x
+         * @param y
          */
         drawParticle(particle: Particle, x: Fx8, y: Fx8) {
             screen.setPixel(Fx.toInt(x), Fx.toInt(y), 1);
@@ -201,7 +201,7 @@ namespace particles {
 
     /**
      * A factory for creating particles with the provided shapes fall down the screen.
-     * 
+     *
      * Any pixels assigned to 0xF (black) in the provided shape will be replaced with a
      * random color for each particle.
      */
@@ -221,7 +221,7 @@ namespace particles {
 
         /**
          * Add another possible shape for a particle to display as
-         * @param shape 
+         * @param shape
          */
         addShape(shape: Image) {
             if (shape) this.sources.push(shape);
@@ -279,7 +279,7 @@ namespace particles {
         protected galois: Math.FastRandom;
         protected minRadius: number;
         protected maxRadius: number;
-    
+
         constructor(radius: number) {
             super();
             initTrig();
@@ -382,7 +382,7 @@ namespace particles {
 
     export class AshFactory extends AreaFactory {
         private colors: ColorCount[];
-        
+
         constructor(anchor: ParticleAnchor, updateImage?: boolean, percentKept: number = 20) {
             super(anchor.width ? anchor.width : 8, anchor.height ? anchor.height >> 1 : 8, 300, 700);
 
@@ -454,7 +454,7 @@ namespace particles {
         yRange: number;
         protected galois: Math.FastRandom;
         protected states: Image[];
-    
+
         constructor(sprite: ParticleAnchor, minLifespan: number, maxLifespan: number) {
             super();
             initTrig();

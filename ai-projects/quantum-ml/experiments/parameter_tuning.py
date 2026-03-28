@@ -22,19 +22,13 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 try:
-    from src.quantum_classifier import (
-        HybridQuantumClassifier,
-        QuantumClassifier,
-        train_quantum_model,
-    )
+    from src.quantum_classifier import (HybridQuantumClassifier,
+                                        QuantumClassifier, train_quantum_model)
 except ModuleNotFoundError:
     # Fallback for environments without namespace package support
     sys.path.insert(0, str(project_root / "src"))
-    from quantum_classifier import (
-        HybridQuantumClassifier,  # type: ignore
-        QuantumClassifier,
-        train_quantum_model,
-    )
+    from quantum_classifier import HybridQuantumClassifier  # type: ignore
+    from quantum_classifier import QuantumClassifier, train_quantum_model
 
 # Results directory
 results_dir = Path(__file__).parent.parent / "results" / "experiments"

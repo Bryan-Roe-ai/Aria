@@ -30,23 +30,16 @@ if str(SRC_DIR) not in sys.path:
 
 # Import quantum LLM components
 try:
-    from src.quantum_llm_integrated import (
-        IntegratedQuantumLLM,
-        QuantumLLMConfig,
-        QuantumLLMSystem,
-    )
+    from src.quantum_llm_integrated import (IntegratedQuantumLLM,
+                                            QuantumLLMConfig, QuantumLLMSystem)
 
     INTEGRATED_AVAILABLE = True
 except ImportError:
     INTEGRATED_AVAILABLE = False
 
 try:
-    from src.quantum_llm_datasets import (
-        CharacterTokenizer,
-        DatasetBuilder,
-        TextDataset,
-        create_train_val_split,
-    )
+    from src.quantum_llm_datasets import (CharacterTokenizer, DatasetBuilder,
+                                          TextDataset, create_train_val_split)
 
     DATASETS_AVAILABLE = True
 except ImportError:

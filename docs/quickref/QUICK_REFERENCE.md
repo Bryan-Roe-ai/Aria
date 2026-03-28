@@ -113,13 +113,13 @@ Azure Backend: https://your-app.azurewebsites.net
 
 ## Key Features
 
-✨ Animated Aria character  
-💬 Real-time streaming chat  
-🔌 Multi-provider LLM support  
-📱 Responsive (desktop & mobile)  
-💾 Chat history persistence  
-⚙️ Provider selector  
-🌡️ Temperature control  
+✨ Animated Aria character
+💬 Real-time streaming chat
+🔌 Multi-provider LLM support
+📱 Responsive (desktop & mobile)
+💾 Chat history persistence
+⚙️ Provider selector
+🌡️ Temperature control
 🧪 Connection test button
 
 ## Documentation
@@ -166,5 +166,5 @@ curl -s http://localhost:7071/api/ai/status | python -m json.tool
 - 🎯 [Project Complete](../summaries/GITHUB_PAGES_SETUP_SUMMARY.md)
 - ✅ [Verify Setup](../../scripts/fast_validate.py)
 
-**Status**: ✅ Ready to Use  
+**Status**: ✅ Ready to Use
 **Last Updated**: January 23, 2026

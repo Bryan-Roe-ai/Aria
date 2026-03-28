@@ -30,7 +30,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.11']
-    
+
     steps:
     - uses: actions/checkout@v4
 
@@ -39,7 +39,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         extra-packages: 'pytest pytest-timeout pytest-cov'
-    
+
     - name: Run CI validation
       run: |
         python scripts/ci_orchestrator.py --validate-all
@@ -51,15 +51,15 @@ jobs:
     - name: Run integration contract unit tests
       run: |
         python scripts/ci_orchestrator.py --integration-contract-tests
-    
+
     - name: Run unit tests
       run: |
         python scripts/test_runner.py --unit --coverage
-    
+
     - name: Run integration tests
       run: |
         python scripts/test_runner.py --integration
-    
+
     - name: Generate summary
       if: always()
       run: |
@@ -88,13 +88,13 @@ jobs:
     needs: validate
     timeout-minutes: 60
     if: github.event_name == 'schedule'
-    
+
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup Python
       uses: ./.github/actions/setup-python-env
-    
+
     - name: Run training workflow
       run: python scripts/master_orchestrator.py --workflow daily_full_pipeline
 
@@ -108,7 +108,7 @@ jobs:
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
         fi
-    
+
     - name: Upload training results
       if: always()
       uses: actions/upload-artifact@v4
@@ -122,16 +122,16 @@ jobs:
     needs: train
     timeout-minutes: 15
     if: github.event_name == 'schedule'
-    
+
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup Python
       uses: ./.github/actions/setup-python-env
-    
+
     - name: Deploy best model
       run: python scripts/model_deployer.py --deploy best --strategy canary
-    
+
     - name: Upload deployment manifest
       uses: actions/upload-artifact@v4
       with:

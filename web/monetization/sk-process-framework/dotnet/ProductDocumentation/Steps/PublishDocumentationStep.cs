@@ -69,4 +69,3 @@ public sealed class PublishDocumentationStep : KernelProcessStep
         }
     }
 }
-

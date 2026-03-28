@@ -45,7 +45,7 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   1. aria       ✨ Aria Character (server + training)
-  2. training   🎓 LoRA Training Pipelines  
+  2. training   🎓 LoRA Training Pipelines
   3. quantum    ⚛️  Quantum Computing Workflows
   4. evaluation 📊 Model Evaluation System
   5. datasets   📦 Auto Dataset Discovery

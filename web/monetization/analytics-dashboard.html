@@ -342,7 +342,7 @@
         // Revenue Over Time Chart
         function initRevenueChart() {
             const ctx = document.getElementById('revenueChart').getContext('2d');
-            
+
             const data = {
                 labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
                 datasets: [{
@@ -392,7 +392,7 @@
         // Subscribers by Tier Chart
         function initTierChart() {
             const ctx = document.getElementById('tierChart').getContext('2d');
-            
+
             const data = {
                 labels: ['Free', 'Pro', 'Enterprise'],
                 datasets: [{
@@ -424,7 +424,7 @@
         // Revenue by Tier Chart
         function initRevenueByTierChart() {
             const ctx = document.getElementById('revenueByTierChart').getContext('2d');
-            
+
             const data = {
                 labels: ['Pro', 'Enterprise'],
                 datasets: [{
@@ -465,7 +465,7 @@
         // Usage Analytics Chart
         function initUsageChart() {
             const ctx = document.getElementById('usageChart').getContext('2d');
-            
+
             const data = {
                 labels: ['Chat Messages', 'Quantum Jobs', 'Training Hours', 'API Requests', 'Websites'],
                 datasets: [{
@@ -507,7 +507,7 @@
         // Populate top subscribers table
         function populateSubscribersTable() {
             const tbody = document.getElementById('subscribersBody');
-            
+
             const subscribers = [
                 { rank: 1, userId: 'ent_user_1', tier: 'Enterprise', mrr: 199, ltv: 2388, status: 'Active' },
                 { rank: 2, userId: 'ent_user_2', tier: 'Enterprise', mrr: 199, ltv: 2388, status: 'Active' },

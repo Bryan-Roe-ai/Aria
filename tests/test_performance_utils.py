@@ -14,17 +14,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import json
 import time
 
-
-from shared.performance_utils import (
-    FileCache,
-    batch_process,
-    find_json_in_output,
-    memoize_with_ttl,
-    stream_jsonl,
-    tail_file,
-    tail_file_smart,
-    timeit,
-)
+from shared.performance_utils import (FileCache, batch_process,
+                                      find_json_in_output, memoize_with_ttl,
+                                      stream_jsonl, tail_file, tail_file_smart,
+                                      timeit)
 
 # ---------------------------------------------------------------------------
 # tail_file

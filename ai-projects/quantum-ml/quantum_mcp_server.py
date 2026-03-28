@@ -6,7 +6,6 @@ Exposes quantum computing and quantum machine learning capabilities via Model Co
 import asyncio
 import logging
 import re
-
 # Add src directory to path before importing local modules
 import sys
 import time
@@ -51,12 +50,10 @@ except ImportError as e:
 
 # Import quantum modules
 try:
-    from azure_quantum_integration import AzureQuantumIntegration, create_sample_circuit
-    from quantum_classifier import (
-        HybridQuantumClassifier,
-        QuantumClassifier,
-        train_quantum_model,
-    )
+    from azure_quantum_integration import (AzureQuantumIntegration,
+                                           create_sample_circuit)
+    from quantum_classifier import (HybridQuantumClassifier, QuantumClassifier,
+                                    train_quantum_model)
 except ImportError as e:
     print(f"Error: Could not import quantum modules from {src_path}/")
     print("\nEnsure the following files exist:")
@@ -1085,12 +1082,8 @@ def _train_classifier_sync(
     import tempfile
 
     import yaml
-    from sklearn.datasets import (
-        load_breast_cancer,
-        load_iris,
-        load_wine,
-        make_classification,
-    )
+    from sklearn.datasets import (load_breast_cancer, load_iris, load_wine,
+                                  make_classification)
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import StandardScaler
 
@@ -1169,7 +1162,7 @@ Architecture:
 Results:
   - Final Validation Accuracy: {final_acc:.2%}
   - Final Validation Loss: {final_loss:.4f}
-  
+
 Training History:
   - Best Accuracy: {max(history['val_acc']):.2%}
   - Best Loss: {min(history['val_loss']):.4f}

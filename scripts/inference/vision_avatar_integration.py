@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 from typing import Dict
 
-
 try:
     import torch
     import torch.nn as nn

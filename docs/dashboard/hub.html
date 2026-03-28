@@ -10,7 +10,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -35,12 +35,12 @@
         body.dark-mode .btn-primary {
             background: linear-gradient(135deg,#2563eb 0%, #1d4ed8 100%) !important;
         }
-        
+
         .container {
             max-width: 1600px;
             margin: 0 auto;
         }
-        
+
         header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 20px;
@@ -51,7 +51,7 @@
             text-align: center;
             position: relative;
         }
-        
+
         h1 {
             color: #fff;
             font-size: 3.5em;
@@ -59,13 +59,13 @@
             text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
             letter-spacing: 2px;
         }
-        
+
         .subtitle {
             color: rgba(255,255,255,0.95);
             font-size: 1.3em;
             margin-bottom: 25px;
         }
-        
+
         .system-status {
             display: flex;
             gap: 15px;
@@ -73,7 +73,7 @@
             flex-wrap: wrap;
             margin-top: 25px;
         }
-        
+
         .status-badge {
             background: rgba(255,255,255,0.15);
             padding: 10px 20px;
@@ -86,12 +86,12 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.2);
         }
-        
+
         .status-badge.online {
             background: rgba(40, 167, 69, 0.25);
             border: 1px solid rgba(40, 167, 69, 0.5);
         }
-        
+
         .status-dot {
             width: 12px;
             height: 12px;
@@ -100,19 +100,19 @@
             animation: pulse-dot 2s infinite;
             box-shadow: 0 0 10px rgba(40, 167, 69, 0.8);
         }
-        
+
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.6; transform: scale(1.1); }
         }
-        
+
         .systems-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 30px;
             margin-bottom: 40px;
         }
-        
+
         .system-card {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -126,7 +126,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .system-card::before {
             content: '';
             position: absolute;
@@ -138,63 +138,63 @@
             transform: scaleX(0);
             transition: transform 0.4s ease;
         }
-        
+
         .system-card:hover::before {
             transform: scaleX(1);
         }
-        
+
         .system-card:hover {
             transform: translateY(-12px) scale(1.02);
             box-shadow: 0 15px 60px rgba(102, 126, 234, 0.5);
             border-color: rgba(102, 126, 234, 0.6);
             background: rgba(255,255,255,0.08);
         }
-        
+
         .system-icon {
             font-size: 3.5em;
             margin-bottom: 20px;
             display: block;
             text-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-        
+
         .system-title {
             font-size: 1.8em;
             font-weight: 600;
             color: #fff;
             margin-bottom: 12px;
         }
-        
+
         .system-description {
             color: rgba(255,255,255,0.7);
             line-height: 1.6;
             margin-bottom: 20px;
             font-size: 0.95em;
         }
-        
+
         .system-features {
             list-style: none;
             margin-bottom: 20px;
         }
-        
+
         .system-features li {
             padding: 6px 0;
             color: rgba(255,255,255,0.8);
             font-size: 0.9em;
         }
-        
+
         .system-features li::before {
             content: '✓';
             color: #28a745;
             font-weight: bold;
             margin-right: 10px;
         }
-        
+
         .system-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 12px 24px;
             border: none;
@@ -207,29 +207,29 @@
             display: inline-block;
             text-align: center;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
-        
+
         .btn-secondary {
             background: rgba(255,255,255,0.1);
             color: white;
             border: 1px solid rgba(255,255,255,0.2);
         }
-        
+
         .btn-secondary:hover {
             background: rgba(255,255,255,0.15);
             border-color: rgba(255,255,255,0.3);
         }
-        
+
         .quick-actions {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -239,7 +239,7 @@
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
-        
+
         .quick-actions h2 {
             color: #fff;
             font-size: 2em;
@@ -295,13 +295,13 @@
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .actions-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
         }
-        
+
         .action-btn {
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
@@ -312,23 +312,23 @@
             transition: all 0.3s ease;
             color: white;
         }
-        
+
         .action-btn:hover {
             background: rgba(255,255,255,0.12);
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
-        
+
         .action-icon {
             font-size: 2.5em;
             margin-bottom: 10px;
         }
-        
+
         .action-label {
             font-size: 1.1em;
             font-weight: 500;
         }
-        
+
         .stats-bar {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.1);
@@ -341,11 +341,11 @@
             -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
         }
-        
+
         .stat-item {
             text-align: center;
         }
-        
+
         .stat-value {
             font-size: 3em;
             font-weight: bold;
@@ -354,7 +354,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .stat-label {
             color: rgba(255,255,255,0.7);
             font-size: 1em;
@@ -362,14 +362,14 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-        
+
         footer {
             text-align: center;
             padding: 30px;
             color: rgba(255,255,255,0.5);
             margin-top: 40px;
         }
-        
+
         .toast {
             position: fixed;
             bottom: 30px;
@@ -383,7 +383,7 @@
             animation: slideIn 0.4s ease;
             z-index: 1000;
         }
-        
+
         @keyframes slideIn {
             from {
                 transform: translateX(400px);
@@ -827,7 +827,7 @@
                 if (gpuData.gpus && gpuData.gpus.length > 0) {
                     const util = gpuData.gpus[0].utilization_gpu;
                     document.getElementById('gpuUtil').textContent = util + '%';
-                    
+
                     // Color code GPU usage
                     const gpuStat = document.getElementById('gpuUtil');
                     if (util > 80) {
@@ -876,12 +876,12 @@
                 window.location.href = handler;
             }
         }
-        
+
         async function showJobQueue() {
             try {
                 const response = await fetch('/api/job-queue');
                 const data = await response.json();
-                
+
                 const modal = document.createElement('div');
                 modal.style.cssText = `
                     position: fixed;
@@ -898,7 +898,7 @@
                     overflow-y: auto;
                     color: #333;
                 `;
-                
+
                 modal.innerHTML = `
                     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                         <h2 style="margin: 0; color: #667eea;">📋 Job Queue Status</h2>
@@ -922,7 +922,7 @@
                         Total: ${data.total_jobs || 0} jobs | Estimated time: ${Math.round((data.estimated_total_time || 0) / 60)} min
                     </div>
                 `;
-                
+
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -933,10 +933,10 @@
                     background: rgba(0,0,0,0.7);
                     z-index: 9999;
                 `;
-                
+
                 document.body.appendChild(overlay);
                 document.body.appendChild(modal);
-                
+
                 document.getElementById('closeQueueBtn').onclick = () => {
                     modal.remove();
                     overlay.remove();
@@ -945,7 +945,7 @@
                     modal.remove();
                     overlay.remove();
                 };
-                
+
             } catch (error) {
                 console.error('Error loading job queue:', error);
                 showToast('Job queue unavailable. Start with: python scripts/job_queue.py', 'warning');
@@ -1018,7 +1018,7 @@
             showToast('Dark mode ' + (isDark ? 'enabled':'disabled'));
         }
         applyDarkModePreferenceHub();
-        
+
         // Desktop notification system
         let notificationsEnabled = false;
         try {
@@ -1027,7 +1027,7 @@
                 notificationsEnabled = true;
             }
         } catch(e) { /* ignore */ }
-        
+
         function initNotifications() {
             if ("Notification" in window) {
                 if (Notification.permission === "granted") {
@@ -1037,7 +1037,7 @@
                 }
             }
         }
-        
+
         function updateNotificationUI() {
             const icon = document.getElementById('notificationIcon');
             const text = document.getElementById('notificationText');
@@ -1049,18 +1049,18 @@
                 text.textContent = 'Notifications Off';
             }
         }
-        
+
         async function toggleNotifications() {
             if (!("Notification" in window)) {
                 showToast("Desktop notifications not supported in this browser");
                 return;
             }
-            
+
             if (Notification.permission === "denied") {
                 showToast("Notifications are blocked. Please enable them in your browser settings.");
                 return;
             }
-            
+
             if (Notification.permission === "default") {
                 const permission = await Notification.requestPermission();
                 notificationsEnabled = (permission === "granted");
@@ -1068,7 +1068,7 @@
             } else if (Notification.permission === "granted") {
                 notificationsEnabled = !notificationsEnabled;
                 try { localStorage.setItem('qai_notifications_enabled', notificationsEnabled ? 'true':'false'); } catch(e){}
-                
+
                 if (notificationsEnabled) {
                     new Notification("🔔 QAI Notifications Enabled", {
                         body: "You'll receive alerts for training events",
@@ -1076,11 +1076,11 @@
                     });
                 }
             }
-            
+
             updateNotificationUI();
             showToast(notificationsEnabled ? "Notifications enabled!" : "Notifications disabled");
         }
-        
+
         // Initialize on load
         initNotifications();
 
@@ -1088,7 +1088,7 @@
             try {
                 const response = await fetch('/api/history');
                 const data = await response.json();
-                
+
                 if (data.error) {
                     showToast('No training history available yet');
                     return;
@@ -1140,10 +1140,10 @@
                 html += '</tr>';
 
                 jobs.forEach(job => {
-                    const improvement = job.pre_loss && job.post_loss 
+                    const improvement = job.pre_loss && job.post_loss
                         ? ((job.pre_loss - job.post_loss) / job.pre_loss * 100).toFixed(1)
                         : 'N/A';
-                    
+
                     html += '<tr>';
                     html += `<td style="padding: 10px; border: 1px solid #ddd;">${job.name}</td>`;
                     html += `<td style="padding: 10px; border: 1px solid #ddd;">${Math.round(job.duration / 60)}m</td>`;
@@ -1226,7 +1226,7 @@
                 const response = await fetch('/status');
                 const data = await response.json();
                 const runningJobs = (data.jobs || []).filter(j => j.status === 'running');
-                
+
                 if (runningJobs.length > 0) {
                     // Show subtle indicator
                     document.title = `(${runningJobs.length}) QAI Hub - Training Active`;

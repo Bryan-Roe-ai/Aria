@@ -174,7 +174,7 @@ def print_architecture():
    │
    └─ Dashboard (http://localhost:7071/api/dashboard)
       └─ Monitoring & analytics hub
-    
+
    API Gateway:
    └─ Azure Functions (http://localhost:7071)
       ├─ /api/chat          → Multi-provider LLM
@@ -182,7 +182,7 @@ def print_architecture():
       ├─ /api/tts           → Speech synthesis
       ├─ /api/quantum/*     → Quantum workflows
       └─ /api/aria/*        → Character control
-    
+
    Training Pipeline:
    ├─ Autonomous Orchestrator
    │  ├─ Dataset discovery
@@ -197,7 +197,7 @@ def print_architecture():
    │
    └─ Batch Evaluation
       └─ Model comparison & ranking
-    
+
    Infrastructure:
    ├─ Storage: datasets/, deployed_models/
    ├─ Logs: data_out/*/
@@ -231,22 +231,22 @@ def main():
 1️⃣  START BACKEND SERVICES
    $ func host start                    # Start Azure Functions on port 7071
    $ cd apps/aria && python server.py   # Start Aria server on port 8080
-   
+
 2️⃣  MONITOR AUTONOMOUS TRAINING
    $ tail -f data_out/autonomous_training.log
     $ python scripts/monitor_autonomous_training.py
-   
+
 3️⃣  INTERACT WITH SERVICES
    • Chat: curl http://localhost:7071/api/chat -d '{"text":"hello"}'
    • Status: curl http://localhost:7071/api/ai/status | jq
    • Aria: Open http://localhost:8080 in browser
-   
+
 4️⃣  SCALE PRODUCTION
    • Deploy to Azure Functions
    • Configure GPU resource pools
    • Enable continuous learning (config/autonomous_training.yaml)
    • Set up monitoring alerts
-   
+
 📚 Full Documentation:
    • AUTONOMOUS_TRAINING_REPORT.md — Detailed training analysis
    • ARIA_QUICKREF.txt — Quick reference guide

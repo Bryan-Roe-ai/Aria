@@ -1,7 +1,7 @@
 /**
  * Training Anomaly Detection System
  * Monitors training metrics for anomalies and triggers alerts
- * 
+ *
  * Features:
  * - Loss spike detection (>20% increase between epochs)
  * - Divergence detection (loss > threshold)
@@ -26,7 +26,7 @@ class TrainingAnomalyDetector {
         this.isMonitoring = false;
         this.intervalId = null;
     }
-    
+
     /**
      * Add a new loss value to history
      */
@@ -37,26 +37,26 @@ class TrainingAnomalyDetector {
             jobName,
             timestamp: Date.now()
         });
-        
+
         // Keep only recent history (last 100 epochs)
         if (this.lossHistory.length > 100) {
             this.lossHistory.shift();
         }
-        
+
         // Check for anomalies
         this.detectAnomalies();
     }
-    
+
     /**
      * Detect anomalies in loss progression
      */
     detectAnomalies() {
         if (this.lossHistory.length < 2) return;
-        
+
         const recent = this.lossHistory.slice(-10); // Last 10 epochs
         const current = recent[recent.length - 1];
         const previous = recent[recent.length - 2];
-        
+
         // 1. SPIKE DETECTION: >20% increase from previous epoch
         if (previous && current.loss > previous.loss * (1 + this.config.spikeThreshold)) {
             const increase = ((current.loss - previous.loss) / previous.loss * 100).toFixed(1);
@@ -69,7 +69,7 @@ class TrainingAnomalyDetector {
                 recommendation: 'Check for data quality issues or reduce learning rate'
             });
         }
-        
+
         // 2. DIVERGENCE DETECTION: Loss > threshold
         if (current.loss > this.config.divergenceThreshold) {
             this.reportAnomaly('divergence', {
@@ -81,14 +81,14 @@ class TrainingAnomalyDetector {
                 recommendation: 'Training likely unstable. Reduce learning rate significantly or restart with different hyperparameters'
             });
         }
-        
+
         // 3. STAGNATION DETECTION: No improvement for N epochs
         if (recent.length >= this.config.stagnationEpochs) {
             const lastN = recent.slice(-this.config.stagnationEpochs);
             const minLoss = Math.min(...lastN.map(h => h.loss));
             const maxLoss = Math.max(...lastN.map(h => h.loss));
             const variation = maxLoss - minLoss;
-            
+
             // If variation is very small (< 0.001), consider it stagnant
             if (variation < 0.001) {
                 this.reportAnomaly('stagnation', {
@@ -102,49 +102,49 @@ class TrainingAnomalyDetector {
             }
         }
     }
-    
+
     /**
      * Report an anomaly
      */
     reportAnomaly(id, anomaly) {
         // Check if this anomaly was already reported recently (debounce)
-        const recentDuplicate = this.anomalies.find(a => 
-            a.type === anomaly.type && 
+        const recentDuplicate = this.anomalies.find(a =>
+            a.type === anomaly.type &&
             a.jobName === anomaly.jobName &&
             (Date.now() - a.timestamp < 30000) // Within 30 seconds
         );
-        
+
         if (recentDuplicate) return;
-        
+
         // Add timestamp
         anomaly.timestamp = Date.now();
         anomaly.id = `${id}-${anomaly.timestamp}`;
-        
+
         // Store anomaly
         this.anomalies.push(anomaly);
-        
+
         // Trigger notification
         if (this.config.enableNotifications) {
             this.sendNotification(anomaly);
         }
-        
+
         // Trigger callback if provided
         if (this.config.onAnomaly) {
             this.config.onAnomaly(anomaly);
         }
-        
+
         // Auto-pause if enabled and severity is error
         if (this.config.enableAutoPause && anomaly.severity === 'error') {
             this.pauseTraining(anomaly);
         }
     }
-    
+
     /**
      * Send desktop notification
      */
     sendNotification(anomaly) {
         if (!('Notification' in window)) return;
-        
+
         if (Notification.permission === 'granted') {
             new Notification(`⚠️ ${anomaly.type}`, {
                 body: anomaly.message,
@@ -161,7 +161,7 @@ class TrainingAnomalyDetector {
             });
         }
     }
-    
+
     /**
      * Pause training (if supported)
      */
@@ -173,19 +173,19 @@ class TrainingAnomalyDetector {
             this.config.onPause(anomaly);
         }
     }
-    
+
     /**
      * Start monitoring training data from API
      */
     startMonitoring(statusUrl = '/status') {
         if (this.isMonitoring) return;
-        
+
         this.isMonitoring = true;
         this.intervalId = setInterval(async () => {
             try {
                 const response = await fetch(statusUrl);
                 const data = await response.json();
-                
+
                 // Extract loss from latest job
                 if (data.jobs && data.jobs.length > 0) {
                     const latestJob = data.jobs[data.jobs.length - 1];
@@ -202,7 +202,7 @@ class TrainingAnomalyDetector {
             }
         }, this.config.checkInterval);
     }
-    
+
     /**
      * Stop monitoring
      */
@@ -213,21 +213,21 @@ class TrainingAnomalyDetector {
         }
         this.isMonitoring = false;
     }
-    
+
     /**
      * Get recent anomalies
      */
     getRecentAnomalies(count = 10) {
         return this.anomalies.slice(-count);
     }
-    
+
     /**
      * Clear anomaly history
      */
     clearAnomalies() {
         this.anomalies = [];
     }
-    
+
     /**
      * Get anomaly statistics
      */

@@ -10,15 +10,9 @@ from typing import Any, Optional
 try:
     from azure.ai.ml import Input, MLClient, Output, command
     from azure.ai.ml.constants import AssetTypes
-    from azure.ai.ml.entities import (
-        AmlCompute,
-        CodeConfiguration,
-        Data,
-        Environment,
-        ManagedOnlineDeployment,
-        ManagedOnlineEndpoint,
-        Model,
-    )
+    from azure.ai.ml.entities import (AmlCompute, CodeConfiguration, Data,
+                                      Environment, ManagedOnlineDeployment,
+                                      ManagedOnlineEndpoint, Model)
     from azure.identity import AzureCliCredential, DefaultAzureCredential
 
     AZURE_ML_AVAILABLE = True

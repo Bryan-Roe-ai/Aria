@@ -188,6 +188,6 @@ traces | where message has "slow query" | extend sql = extract(@"sql=(.{1,120})"
 
 ---
 
-**Full Documentation**: [DATABASE_SQL_SETUP.md](../database/DATABASE_SQL_SETUP.md) | [AZURE_MONITOR_SQL_SETUP.md](../database/AZURE_MONITOR_SQL_SETUP.md)  
-**Implementation Details**: [SQL_INTEGRATION_COMPLETE.md](../database/SQL_INTEGRATION_COMPLETE.md)  
+**Full Documentation**: [DATABASE_SQL_SETUP.md](../database/DATABASE_SQL_SETUP.md) | [AZURE_MONITOR_SQL_SETUP.md](../database/AZURE_MONITOR_SQL_SETUP.md)
+**Implementation Details**: [SQL_INTEGRATION_COMPLETE.md](../database/SQL_INTEGRATION_COMPLETE.md)
 **Tests**: `.\venv\Scripts\python.exe -m pytest tests\test_sql_integration.py -v`

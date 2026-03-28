@@ -588,16 +588,16 @@ def main():
 Examples:
   # Start full automation (recommended)
   python scripts/aria_automation.py --mode full
-  
+
   # Server only (no training)
   python scripts/aria_automation.py --mode server
-  
+
   # Single training run
   python scripts/aria_automation.py --mode training --once
-  
+
   # Check status
   python scripts/aria_automation.py --status
-  
+
   # Stop all
   python scripts/aria_automation.py --stop
         """,

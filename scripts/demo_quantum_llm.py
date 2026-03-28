@@ -134,7 +134,7 @@ def demonstrate_quantum_llm_integration():
     │   └── Save results and metrics
     ├── 7. Run optimization (hyperparameter tuning)
     └── 8. Deploy if ready
-    
+
     Quantum Enhancement Features:
     - Attention weight optimization via quantum circuits
     - Quantum feature encoding for richer representations
@@ -154,17 +154,17 @@ def demonstrate_quantum_llm_integration():
       --quantum-backend local \\
       --n-qubits 4 \\
       --epochs 3
-    
+
     # Passive Training (continuous background)
     python scripts/quantum_llm_trainer.py \\
       --passive \\
       --interval 3600 \\
       --config config/quantum_llm_config.yaml
-    
+
     # Integrated with Autonomous Orchestrator
     python scripts/autonomous_training_orchestrator.py
     # (Quantum LLM training runs automatically every 60 minutes)
-    
+
     # Full Repository Automation
     python scripts/repo_automation.py --start
     # (Includes quantum LLM training in the full automation suite)
@@ -180,22 +180,22 @@ def demonstrate_quantum_llm_integration():
        - Exponential feature space (2^n for n qubits)
        - Novel attention optimization patterns
        - Quantum interference for better feature correlations
-    
+
     2. Passive Learning:
        - Continuous background training without manual intervention
        - Automatic dataset discovery and selection
        - Resource-aware execution
-    
+
     3. Integration:
        - Seamless integration with existing autonomous training
        - No disruption to classical training workflows
        - Fallback to classical methods if quantum unavailable
-    
+
     4. Cost Management:
        - Free local quantum simulation for development
        - Free Azure Quantum simulators for validation
        - Paid QPU access with explicit cost confirmation
-    
+
     5. Monitoring:
        - Track quantum circuit executions
        - Monitor quantum advantage ratio

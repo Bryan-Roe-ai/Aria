@@ -107,7 +107,8 @@ def test_subscription_manager():
     try:
         # Import the subscription manager
         sys.path.insert(0, "shared")
-        from subscription_manager import SubscriptionTier, get_subscription_manager
+        from subscription_manager import (SubscriptionTier,
+                                          get_subscription_manager)
 
         # Create manager instance
         manager = get_subscription_manager()
@@ -140,7 +141,8 @@ def generate_demo_data():
 
     try:
         sys.path.insert(0, "shared")
-        from subscription_manager import SubscriptionTier, get_subscription_manager
+        from subscription_manager import (SubscriptionTier,
+                                          get_subscription_manager)
 
         manager = get_subscription_manager()
 

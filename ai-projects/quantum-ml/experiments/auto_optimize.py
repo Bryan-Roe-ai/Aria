@@ -22,7 +22,6 @@ sys.path.insert(0, str(parent_dir))
 
 import torch.nn as nn
 import torch.optim as optim
-
 # Import from src package
 from src.quantum_classifier import QuantumClassifier
 

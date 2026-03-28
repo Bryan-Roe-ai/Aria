@@ -358,7 +358,7 @@
             <div class="card">
                 <h2>Current Plan</h2>
                 <div id="tier-badge" class="tier-badge tier-free">Free Tier</div>
-                
+
                 <div class="info-row">
                     <span class="info-label">Status</span>
                     <span class="info-value" id="sub-status">Active</span>
@@ -387,7 +387,7 @@
             <div class="card">
                 <h2>Usage Statistics</h2>
                 <p style="color: #666; margin-bottom: 20px;">Current billing period usage</p>
-                
+
                 <div class="usage-section" id="usage-stats">
                     <div class="usage-item">
                         <div class="usage-header">
@@ -548,7 +548,7 @@
             // Update subscription info
             document.getElementById('monthly-cost').textContent = '$' + data.price;
             document.getElementById('sub-status').textContent = data.is_active ? 'Active ✓' : 'Inactive';
-            
+
             if (data.tier !== 'free') {
                 document.getElementById('billing-cycle').textContent = 'Monthly';
                 const nextDate = new Date();
@@ -580,13 +580,13 @@
                 const current = usage[item.key] || 0;
                 const limit = limits[item.key];
                 const percentage = limit > 0 ? (current / limit) * 100 : 0;
-                
+
                 let progressClass = '';
                 if (percentage >= 90) progressClass = 'danger';
                 else if (percentage >= 75) progressClass = 'warning';
 
-                const statsText = limit === -1 ? 'Unlimited' : 
-                                 limit === 0 ? 'Not Available' : 
+                const statsText = limit === -1 ? 'Unlimited' :
+                                 limit === 0 ? 'Not Available' :
                                  `${current} / ${limit}`;
 
                 const div = document.createElement('div');
@@ -634,11 +634,11 @@
                     const icon = enabled ? '✓' : '✗';
                     const iconClass = enabled ? 'feature-enabled' : 'feature-disabled';
                     let featureName = featureNames[key];
-                    
+
                     if (key === 'basic_chat' || key === 'aria_character') {
                         featureName += limits[tier] || '';
                     }
-                    
+
                     li.innerHTML = `<span class="feature-icon ${iconClass}">${icon}</span> ${featureName}`;
                     list.appendChild(li);
                 }

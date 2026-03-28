@@ -11,14 +11,9 @@ torch = pytest.importorskip("torch")
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "quantum-ai" / "src"))
 
-from quantum_code_llm import (
-    CodeTokenizer,
-    QuantumCodeLLM,  # noqa: E402
-    QuantumCodeLLMConfig,
-    generate,
-    load_checkpoint,
-    save_checkpoint,
-)
+from quantum_code_llm import QuantumCodeLLM  # noqa: E402
+from quantum_code_llm import (CodeTokenizer, QuantumCodeLLMConfig, generate,
+                              load_checkpoint, save_checkpoint)
 
 
 @pytest.fixture

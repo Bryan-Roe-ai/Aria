@@ -5,7 +5,6 @@ Reviews and explains the quantum AI training results
 
 from pathlib import Path
 
-
 results_dir = Path(__file__).parent.parent / "results"
 
 print("=" * 70)

@@ -126,7 +126,7 @@ llm_training:
   model_name: "microsoft/phi-2"
   learning_rate: 0.0001
   batch_size: 4
-  
+
   lora:
     enabled: true
     r: 8

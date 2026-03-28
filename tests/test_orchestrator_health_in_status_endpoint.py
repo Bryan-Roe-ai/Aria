@@ -1,11 +1,10 @@
-from tests.test_orchestrator_health_integration import MockRequest
-
-
 import importlib.util
 import json
 import sys
 from pathlib import Path
 from types import ModuleType
+
+from tests.test_orchestrator_health_integration import MockRequest
 
 
 def _load_function_app() -> ModuleType:
@@ -32,14 +31,21 @@ def test_orchestrator_health_in_status_endpoint() -> None:
     data = json.loads(resp.get_body())
 
     # Verify orchestrator_health section exists
-    assert "orchestrator_health" in data, "orchestrator_health section missing from /api/ai/status"
+    assert (
+        "orchestrator_health" in data
+    ), "orchestrator_health section missing from /api/ai/status"
 
     # Verify required fields
     orchestrator_health = data["orchestrator_health"]
     assert orchestrator_health["enabled"] is True
     assert isinstance(orchestrator_health["orchestrators"], dict)
     assert orchestrator_health["overall_status"] in [
-        "healthy", "degraded", "idle", "error", "unknown"]
+        "healthy",
+        "degraded",
+        "idle",
+        "error",
+        "unknown",
+    ]
     assert "last_checked" in orchestrator_health
     assert isinstance(orchestrator_health["active_count"], int)
     assert isinstance(orchestrator_health["failed_count"], int)

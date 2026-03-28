@@ -8,13 +8,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT / "scripts" / "evaluation") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts" / "evaluation"))
 
-from quantum_autorun import (
-    QJob,
-    build_command,
-    load_jobs,  # type: ignore
-    read_yaml,
-    validate_job,
-)
+from quantum_autorun import load_jobs  # type: ignore
+from quantum_autorun import QJob, build_command, read_yaml, validate_job
 
 
 class TestQJobDataclass:

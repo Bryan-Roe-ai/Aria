@@ -270,16 +270,16 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
-    
+
     "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=abc-123;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/",
-    
+
     "QAI_ENABLE_COSMOS": "true",
     "COSMOS_ENDPOINT": "https://qai-cosmos.documents.azure.com:443/",
     "COSMOS_KEY": "your_primary_key_here",
     "COSMOS_DATABASE": "qai",
     "COSMOS_CONTAINER": "chat_sessions",
     "QAI_COSMOS_PERSIST_STRATEGY": "messages",
-    
+
     "AZURE_OPENAI_API_KEY": "your_azure_openai_key",
     "AZURE_OPENAI_ENDPOINT": "https://your-resource.openai.azure.com/",
     "AZURE_OPENAI_DEPLOYMENT": "gpt-4o-mini",

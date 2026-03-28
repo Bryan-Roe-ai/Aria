@@ -146,7 +146,7 @@ ml:
   model:
     use_residual: true        # Enable residual connections
     use_batch_norm: true      # Enable batch normalization
-  
+
   training:
     use_scheduler: true       # Enable LR scheduling
     gradient_clip_val: 1.0    # Gradient clipping threshold
@@ -175,7 +175,7 @@ provider = LoraLocalProvider(
    ```powershell
    # Old model
    python ai-projects/quantum-ml/train_custom_dataset.py --preset heart --epochs 50
-   
+
    # New model (automatically uses improvements)
    python ai-projects/quantum-ml/train_custom_dataset.py --preset heart --epochs 50
    ```

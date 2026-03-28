@@ -21,13 +21,9 @@ from pathlib import Path
 try:
     from azure.ai.ml import MLClient
     from azure.ai.ml.constants import AssetTypes
-    from azure.ai.ml.entities import (
-        CodeConfiguration,
-        Environment,
-        ManagedOnlineDeployment,
-        ManagedOnlineEndpoint,
-        Model,
-    )
+    from azure.ai.ml.entities import (CodeConfiguration, Environment,
+                                      ManagedOnlineDeployment,
+                                      ManagedOnlineEndpoint, Model)
     from azure.identity import AzureCliCredential, DefaultAzureCredential
 except Exception:
     raise SystemExit("Install Azure ML SDK: pip install azure-ai-ml azure-identity")

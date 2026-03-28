@@ -63,7 +63,7 @@ if not sub.check_limit('quantum_jobs'):
 sub.increment_usage('quantum_jobs')
 ```
 
-**Critical order**: `has_feature()` → `check_limit()` → work → `increment_usage()`.  
+**Critical order**: `has_feature()` → `check_limit()` → work → `increment_usage()`.
 Never increment usage before confirming the limit check passes.
 
 ### Step 3 — ENTERPRISE Exemption
@@ -84,7 +84,7 @@ Do not swap these — clients and monitoring tools distinguish them for billing 
 ```bash
 cat data_out/subscriptions/subscriptions.json | python -m json.tool
 ```
-Subscription data lives in `data_out/subscriptions/subscriptions.json` — never in `datasets/`.  
+Subscription data lives in `data_out/subscriptions/subscriptions.json` — never in `datasets/`.
 Check fields: `tier`, `usage_counts`, `active`, `reset_date`.
 
 ### Step 6 — Monthly Reset

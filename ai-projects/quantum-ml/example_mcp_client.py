@@ -14,12 +14,9 @@ from mcp.client.stdio import stdio_client
 # Optional: Azure AI for chat with tools
 try:
     from azure.ai.inference import ChatCompletionsClient  # type: ignore
-    from azure.ai.inference.models import (
-        AssistantMessage,  # type: ignore
-        SystemMessage,
-        ToolMessage,
-        UserMessage,
-    )
+    from azure.ai.inference.models import AssistantMessage  # type: ignore
+    from azure.ai.inference.models import (SystemMessage, ToolMessage,
+                                           UserMessage)
     from azure.core.credentials import AzureKeyCredential  # type: ignore
 
     HAS_AZURE_AI = True

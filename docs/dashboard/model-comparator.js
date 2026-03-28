@@ -19,7 +19,7 @@ class ModelComparator {
             if (typeof showToast === 'function') showToast('Maximum 4 models can be compared at once', 'warn', 4000);
             return;
         }
-        
+
         this.selectedModels.push(modelId);
         this.updateComparisonView();
     }
@@ -54,10 +54,10 @@ class ModelComparator {
 
         // Fetch model details
         const models = await this.fetchModelDetails(this.selectedModels);
-        
+
         // Render comparison table
         container.innerHTML = this.renderComparisonTable(models);
-        
+
         // Update comparison chart
         this.updateComparisonChart(models);
     }
@@ -69,9 +69,9 @@ class ModelComparator {
         try {
             const response = await fetch('/status');
             const data = await response.json();
-            
+
             if (!data.jobs) return [];
-            
+
             return modelIds.map(id => {
                 const job = data.jobs.find(j => j.id === id || j.name === id);
                 return job || { id, name: 'Unknown', error: 'Not found' };
@@ -124,7 +124,7 @@ class ModelComparator {
         });
 
         html += '</tbody></table>';
-        
+
         html += '<div style="margin-top:20px;display:flex;gap:10px">';
         html += '<button class="btn btn-primary" onclick="modelComparator.exportComparison()">📥 Export Comparison</button>';
         html += '<button class="btn btn-secondary" onclick="modelComparator.benchmarkSelected()">⚡ Run Benchmark</button>';
@@ -206,7 +206,7 @@ class ModelComparator {
      */
     async exportComparison() {
         const models = await this.fetchModelDetails(this.selectedModels);
-        
+
         const format = prompt('Export format: json or csv?', 'json');
         if (!format || !['json', 'csv'].includes(format.toLowerCase())) return;
 
@@ -229,7 +229,7 @@ class ModelComparator {
                 m.learning_rate || '',
                 m.lora_rank || ''
             ]);
-            
+
             content = [headers, ...rows].map(row => row.join(',')).join('\n');
             filename = `comparison-${Date.now()}.csv`;
             type = 'text/csv';
@@ -309,7 +309,7 @@ class ModelComparator {
         const speedScore = result.inference_time ? Math.min(100, (100 / result.inference_time) * 100) : 0;
         const memoryScore = result.memory_mb ? Math.min(100, (2000 / result.memory_mb) * 100) : 0;
         const throughputScore = result.throughput ? Math.min(100, result.throughput) : 0;
-        
+
         return Math.round((speedScore + memoryScore + throughputScore) / 3);
     }
 
@@ -320,7 +320,7 @@ class ModelComparator {
         try {
             const response = await fetch('/status');
             const data = await response.json();
-            
+
             if (!data.jobs || data.jobs.length === 0) {
                 return '<p style="text-align:center;color:#888">No jobs available for leaderboard</p>';
             }

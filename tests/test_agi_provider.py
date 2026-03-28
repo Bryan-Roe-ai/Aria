@@ -16,13 +16,8 @@ from typing import Iterable
 
 import pytest
 
-from agi_provider import (
-    AGIContext,
-    AGIProvider,
-    ReasoningStep,
-    _infer_aria_movement_tag,
-    create_agi_provider,
-)
+from agi_provider import (AGIContext, AGIProvider, ReasoningStep,
+                          _infer_aria_movement_tag, create_agi_provider)
 from chat_providers import BaseChatProvider, ProviderChoice, RoleMessage
 
 # Add ai-projects/chat-cli/src to path

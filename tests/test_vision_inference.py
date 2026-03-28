@@ -8,7 +8,6 @@ from __future__ import annotations
 import base64
 import importlib.util
 import io
-
 # Ensure repository root is on the path so 'scripts' is importable as a package
 import sys
 from pathlib import Path

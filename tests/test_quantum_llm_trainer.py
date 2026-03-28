@@ -16,12 +16,10 @@ scripts_path = Path(__file__).parent.parent / "scripts"
 sys.path.insert(0, str(scripts_path))
 
 try:
-    from quantum_llm_trainer import (
-        QuantumAttentionOptimizer,
-        QuantumEnhancedLLMTrainer,
-        QuantumFeatureEncoder,
-        get_quantum_llm_status,
-    )
+    from quantum_llm_trainer import (QuantumAttentionOptimizer,
+                                     QuantumEnhancedLLMTrainer,
+                                     QuantumFeatureEncoder,
+                                     get_quantum_llm_status)
 
     QUANTUM_LLM_AVAILABLE = True
 except (ImportError, OSError) as e:

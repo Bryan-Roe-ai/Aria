@@ -98,7 +98,7 @@ ARIA_ACTIONS = {
 ```python
 class AriaActionParser:
     """LLM-powered action parser for automatic command execution"""
-    
+
     def parse(command: str, use_llm: bool = True) -> List[dict]:
         """Parse command into structured actions"""
         # Try LLM first if available
@@ -306,13 +306,13 @@ stage_state = {
 ```python
 def test_action_parser():
     parser = AriaActionParser()
-    
+
     # Test LLM parsing (if available)
     actions = parser.parse("Walk to the apple and pick it up", use_llm=True)
     assert len(actions) == 2
     assert actions[0]['action'] == 'move'
     assert actions[1]['action'] == 'pickup'
-    
+
     # Test fallback parsing
     actions = parser.parse("Say hello", use_llm=False)
     assert len(actions) == 1

@@ -18,7 +18,8 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 try:
     import numpy as np
-    from azure_quantum_integration import AzureQuantumIntegration, create_sample_circuit
+    from azure_quantum_integration import (AzureQuantumIntegration,
+                                           create_sample_circuit)
     from qiskit import QuantumCircuit
 except ImportError as exc:  # pragma: no cover - environment dependent
     _OPTIONAL_IMPORT_ERROR = exc

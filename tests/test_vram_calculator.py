@@ -6,16 +6,11 @@ import sys
 from pathlib import Path
 
 import pytest
-from vram_calculator import (
-    _BYTES_PER_PARAM,
-    KNOWN_MODELS,
-    _get_arch,
-    calculate_safe_batch_size,
-    estimate_activation_memory_gb,
-    estimate_lora_overhead_gb,
-    estimate_model_memory_gb,
-    probe_vram,
-)
+from vram_calculator import (_BYTES_PER_PARAM, KNOWN_MODELS, _get_arch,
+                             calculate_safe_batch_size,
+                             estimate_activation_memory_gb,
+                             estimate_lora_overhead_gb,
+                             estimate_model_memory_gb, probe_vram)
 
 # Ensure scripts/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))

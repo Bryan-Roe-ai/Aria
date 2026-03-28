@@ -270,7 +270,7 @@
             <h1>🤖 Aria Auto-Execute</h1>
             <p>LLM-Powered Automatic Action Generation & Execution</p>
         </div>
-        
+
         <div class="content">
             <div class="examples">
                 <h4>📝 Example Commands (click to use):</h4>
@@ -283,14 +283,14 @@
                     <li onclick="setCommand('Throw the ball toward the right side of the stage')">Throw the ball toward the right side of the stage</li>
                 </ul>
             </div>
-            
+
             <div class="control-panel">
                 <div class="input-group">
                     <label for="command">Command:</label>
-                    <input type="text" id="command" placeholder="Type a natural language command for Aria..." 
+                    <input type="text" id="command" placeholder="Type a natural language command for Aria..."
                            value="Walk to the table and pick up the apple">
                 </div>
-                
+
                 <div class="checkbox-group">
                     <label>
                         <input type="checkbox" id="use-llm" checked>
@@ -301,19 +301,19 @@
                         Show updated state
                     </label>
                 </div>
-                
+
                 <div class="button-group">
                     <button class="btn-plan" onclick="planActions()">📋 Plan Actions Only</button>
                     <button class="btn-execute" onclick="executeActions()">▶️ Execute Actions</button>
                     <button class="btn-clear" onclick="clearResults()">🗑️ Clear</button>
                 </div>
             </div>
-            
+
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p>Processing command...</p>
             </div>
-            
+
             <div class="results" id="results"></div>
         </div>
     </div>
@@ -339,7 +339,7 @@
             const command = document.getElementById('command').value.trim();
             const useLlm = document.getElementById('use-llm').checked;
             const showState = document.getElementById('show-state').checked;
-            
+
             if (!command) {
                 var el = document.getElementById('command');
                 el.focus();
@@ -350,7 +350,7 @@
 
             const loading = document.getElementById('loading');
             const results = document.getElementById('results');
-            
+
             loading.classList.add('active');
             results.innerHTML = '';
 
@@ -406,7 +406,7 @@
                     <div class="section">
                         <h3>🎯 Planned Actions</h3>
                 `;
-                
+
                 data.actions.forEach((action, index) => {
                     html += `
                         <div class="action-card">
@@ -415,7 +415,7 @@
                         </div>
                     `;
                 });
-                
+
                 html += `</div>`;
             }
 
@@ -425,7 +425,7 @@
                     <div class="section">
                         <h3>✅ Execution Results</h3>
                 `;
-                
+
                 data.results.forEach((result, index) => {
                     const status = result.result.status;
                     html += `
@@ -443,7 +443,7 @@
                         </div>
                     `;
                 });
-                
+
                 html += `</div>`;
             }
 

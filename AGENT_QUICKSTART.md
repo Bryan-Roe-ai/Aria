@@ -6,17 +6,17 @@ A **local LLM-based code agent** that autonomously works on repository tasks usi
 
 Instead of:
 ```
-1. Issue description  
-2. Manual code review  
-3. Edit files  
-4. Run tests  
-5. Commit  
-6. Create PR  
+1. Issue description
+2. Manual code review
+3. Edit files
+4. Run tests
+5. Commit
+6. Create PR
 ```
 
 With the autonomous agent:
 ```
-python scripts/autonomous_code_agent.py --task "Your task"  
+python scripts/autonomous_code_agent.py --task "Your task"
 ```
 
 The agent handles: planning, file identification, implementation, testing, and committing.
@@ -92,7 +92,7 @@ tail -f data_out/autonomous_agent/agent.log
 Uses local LLM to understand task and create structured plan
 ```
 Input: "Fix the auth system to handle JWT tokens"
-Output: 
+Output:
   - Goal: Implement JWT authentication
   - Files: shared/auth.py, tests/test_auth.py, function_app.py
   - Steps: [1. Add JWT parsing, 2. Add token validation, 3. Add tests, ...]
@@ -259,15 +259,15 @@ MIN_TEST_PASSING_RATE = 0.8          # 80% tests must pass
 
 ## Features
 
-✅ **Autonomous Planning** - LLM understands task and creates plan  
-✅ **Smart File ID** - Identifies relevant files without hardcoding  
-✅ **Safety Validated** - Tests must pass before committing  
-✅ **Git Integration** - Automatic commits with meaningful messages  
-✅ **Dry-Run Mode** - Analyze without modifying files  
-✅ **Local Only** - No cloud API calls needed  
-✅ **Task Categories** - Specialized prompts for bug fixes, features, tests, etc.  
-✅ **Progress Tracking** - JSON status updates and detailed logs  
-✅ **Error Recovery** - Graceful handling of failures  
+✅ **Autonomous Planning** - LLM understands task and creates plan
+✅ **Smart File ID** - Identifies relevant files without hardcoding
+✅ **Safety Validated** - Tests must pass before committing
+✅ **Git Integration** - Automatic commits with meaningful messages
+✅ **Dry-Run Mode** - Analyze without modifying files
+✅ **Local Only** - No cloud API calls needed
+✅ **Task Categories** - Specialized prompts for bug fixes, features, tests, etc.
+✅ **Progress Tracking** - JSON status updates and detailed logs
+✅ **Error Recovery** - Graceful handling of failures
 
 ## Supported Task Types
 
@@ -431,22 +431,22 @@ from shared.json_utils import load_status_json
 
 ## FAQ
 
-**Q: Can I use cloud LLMs like GPT-4?**  
+**Q: Can I use cloud LLMs like GPT-4?**
 A: Current version is local-only for privacy. Cloud support planned for Phase 3.
 
-**Q: What if my local LLM runs out of memory?**  
+**Q: What if my local LLM runs out of memory?**
 A: Use a smaller model (mistral recommended) or reduce context window.
 
-**Q: Can multiple agents work simultaneously?**  
+**Q: Can multiple agents work simultaneously?**
 A: Yes, each agent gets its own task ID and status file. They don't interfere.
 
-**Q: How do I stop an agent?**  
+**Q: How do I stop an agent?**
 A: `pkill -f autonomous_code_agent` or interrupt with Ctrl+C.
 
-**Q: Can agent commit directly to main branch?**  
+**Q: Can agent commit directly to main branch?**
 A: Yes, by default. Protect main branch in GitHub settings for safety.
 
-**Q: Is my code safe?**  
+**Q: Is my code safe?**
 A: Changes are validated by tests before committing. Review the plan before running.
 
 ---

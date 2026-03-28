@@ -219,15 +219,15 @@ class EmailNotificationSystem:
                 """,
                 "body_text": """
                     Welcome to Aria {tier}!
-                    
+
                     Your subscription has been activated successfully.
-                    
+
                     Plan: {tier}
                     Price: ${price}/month
                     Date: {date}
-                    
+
                     View your dashboard: {dashboard_url}
-                    
+
                     Thank you for choosing Aria!
                 """,
             },
@@ -242,12 +242,12 @@ class EmailNotificationSystem:
                 """,
                 "body_text": """
                     Usage Alert
-                    
+
                     You've used {percentage}% of your {resource} limit.
-                    
+
                     Current usage: {current} / {limit}
                     Remaining: {remaining}
-                    
+
                     Consider upgrading: {upgrade_url}
                 """,
             },
@@ -262,12 +262,12 @@ class EmailNotificationSystem:
                 """,
                 "body_text": """
                     Urgent Usage Alert
-                    
+
                     You've used {percentage}% of your {resource} limit!
-                    
+
                     Current usage: {current} / {limit}
                     Remaining: {remaining}
-                    
+
                     Action needed: Upgrade now to avoid service interruption.
                     {upgrade_url}
                 """,
@@ -282,11 +282,11 @@ class EmailNotificationSystem:
                 """,
                 "body_text": """
                     Usage Limit Reached
-                    
+
                     You've reached your {resource} limit of {limit}.
-                    
+
                     Your limit will reset on {reset_date}.
-                    
+
                     To continue, upgrade your plan: {upgrade_url}
                 """,
             },
@@ -302,14 +302,14 @@ class EmailNotificationSystem:
                 """,
                 "body_text": """
                     Payment Successful
-                    
+
                     We've received your payment of ${amount}.
-                    
+
                     Invoice: #{invoice_id}
                     Date: {date}
-                    
+
                     View invoice: {invoice_url}
-                    
+
                     Thank you for your business!
                 """,
             },
@@ -324,12 +324,12 @@ class EmailNotificationSystem:
                 """,
                 "body_text": """
                     Payment Failed - Action Required
-                    
+
                     We were unable to process your payment of ${amount}.
-                    
+
                     Reason: {reason}
                     Date: {date}
-                    
+
                     Please update your payment method: {billing_url}
                 """,
             },

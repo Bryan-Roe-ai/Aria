@@ -18,18 +18,18 @@ namespace texteffects {
                 return null;
         }
     }
- 
+
     //% fixedInstances
     export class TextEffect {
         public getState: (index?: number, state?: TextEffectState) => TextEffectState;
-    
+
         constructor(getState: (index?: number, state?: TextEffectState) => TextEffectState) {
             this.getState = getState;
         }
     }
 
     //% fixedInstance whenUsed
-    export const shake = new TextEffect(() => { 
+    export const shake = new TextEffect(() => {
         return { xOffset: (Math.random() * 2 - 1),
                  yOffset: (Math.random() * 2 - 1) }
     });
@@ -83,7 +83,7 @@ namespace texteffects {
 
         updateState() {
             if (!this._effect) return;
-    
+
             let i = 0;
             while (i < this._str.length) {
                 this._state[i] = this._effect.getState(i, (i < this._state.length ? this._state[i] : null));

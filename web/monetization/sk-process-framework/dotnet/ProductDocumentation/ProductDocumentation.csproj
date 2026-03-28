@@ -10,5 +10,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SemanticKernel.Process.Core" Version="1.51.0-alpha" />
   </ItemGroup>
-  
+
 </Project>

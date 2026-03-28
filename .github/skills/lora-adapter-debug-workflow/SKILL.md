@@ -40,7 +40,7 @@ Each dataset must be at `datasets/chat/<name>/{train.json,test.json}` with `mess
 
 ### Step 3 — Check Adapter Readiness
 Adapter directories under `data_out/lora_training/<job>/lora_adapter/` must contain **both**:
-- `adapter_config.json`  
+- `adapter_config.json`
 - `adapter_model.safetensors`
 
 If either is missing, the training job did not complete — check `data_out/lora_training/<job>/status.json` for error fields.
@@ -49,7 +49,7 @@ If either is missing, the training job did not complete — check `data_out/lora
 ```bash
 cat data_out/lora_training/<job>/status.json | python -m json.tool
 ```
-Key fields: `succeeded`, `failed`, `last_error`, `epochs_completed`, `best_accuracy`.  
+Key fields: `succeeded`, `failed`, `last_error`, `epochs_completed`, `best_accuracy`.
 Ranking metrics: `perplexity_improvement`, `diversity_avg` (aka `distinct_diversity`), `combined_improvement`.
 
 ### Step 5 — Test Inference With Adapter
@@ -70,7 +70,7 @@ python scripts/automated_training_pipeline.py --models tinyllama --quick
 Uses TinyLlama to verify the pipeline end-to-end without GPU. Confirms dataset loading, LoRA attachment, and adapter output shape.
 
 ### Step 8 — Config Precedence Reminder
-`YAML base` < `CLI flags` < `per-job YAML overrides` < `env vars`  
+`YAML base` < `CLI flags` < `per-job YAML overrides` < `env vars`
 When debugging config-not-applied issues, check in reverse order starting with env vars.
 
 ## Quality Checks

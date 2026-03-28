@@ -90,11 +90,8 @@ try:
 except Exception:  # pragma: no cover - if shared not on path
     log_chat_message_safe = None  # type: ignore
 try:
-    from shared.chat_memory import (
-        fetch_similar_messages,
-        generate_embedding,
-        store_embedding,
-    )
+    from shared.chat_memory import (fetch_similar_messages, generate_embedding,
+                                    store_embedding)
 except Exception:
     # Provide graceful degradations so endpoint still works
     def generate_embedding(text: str):  # type: ignore
@@ -136,7 +133,8 @@ sys.path.insert(0, str(scripts_path))
 # Subscription Manager (optional)
 # -----------------------------------------------------------------------------
 try:  # pragma: no cover - defensive import
-    from shared.subscription_manager import SubscriptionTier, get_subscription_manager
+    from shared.subscription_manager import (SubscriptionTier,
+                                             get_subscription_manager)
 
     subscription_manager_available = True
 except Exception as _sub_err:  # noqa: BLE001
@@ -1515,9 +1513,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
 
         # Telemetry status
         try:
-            from shared.telemetry import (
-                is_enabled as _telemetry_is_enabled,
-            )  # type: ignore
+            from shared.telemetry import \
+                is_enabled as _telemetry_is_enabled  # type: ignore
 
             telemetry_info = {"enabled": _telemetry_is_enabled()}
         except Exception:
@@ -1555,7 +1552,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception:
             pass
         try:
-            from quantum_llm_trainer import get_quantum_llm_status  # type: ignore
+            from quantum_llm_trainer import \
+                get_quantum_llm_status  # type: ignore
 
             quantum_llm_status = get_quantum_llm_status(
                 output_dir=repo_root / "data_out" / "quantum_llm_training"
@@ -1575,9 +1573,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             pass
         # Conflict detection using validate script (import functions defensively)
         try:
-            from quantum_ai.scripts.validate_qiskit_env import (
-                detect_conflict,
-            )  # type: ignore
+            from quantum_ai.scripts.validate_qiskit_env import \
+                detect_conflict  # type: ignore
         except Exception:
             # Fallback manual conflict heuristic
             def detect_conflict(versions):
@@ -1608,9 +1605,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         if os.getenv("QAI_STATUS_CONNECT_AZURE_QUANTUM", "false").lower() == "true":
             quantum_info["azure_quantum"]["attempted"] = True
             try:
-                from quantum_ai.src.azure_quantum_integration import (
-                    AzureQuantumIntegration,
-                )  # type: ignore
+                from quantum_ai.src.azure_quantum_integration import \
+                    AzureQuantumIntegration  # type: ignore
 
                 cfg_path = (
                     Path(__file__).resolve().parent
@@ -2273,7 +2269,8 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
             # Detect Azure/OpenAI quota/premium allowance errors and provide
             # a clearer fallback message for users.
             try:
-                from shared.azure_utils import format_quota_message, is_quota_error
+                from shared.azure_utils import (format_quota_message,
+                                                is_quota_error)
             except Exception:
                 is_quota_error = None
                 format_quota_message = None
@@ -2630,11 +2627,9 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 sys.path.insert(0, p)
 
         try:
-            from quantum_llm_trainer import (
-                QUANTUM_AVAILABLE,
-                QuantumEnhancedLLMTrainer,
-                get_quantum_llm_status,
-            )
+            from quantum_llm_trainer import (QUANTUM_AVAILABLE,
+                                             QuantumEnhancedLLMTrainer,
+                                             get_quantum_llm_status)
 
             trainer_available = True
         except ImportError as ie:
@@ -2935,12 +2930,9 @@ def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Pricing endpoint invoked")
 
     try:
-        from shared.subscription_manager import (
-            TIER_FEATURES,
-            TIER_LIMITS,
-            TIER_PRICING,
-            SubscriptionTier,
-        )
+        from shared.subscription_manager import (TIER_FEATURES, TIER_LIMITS,
+                                                 TIER_PRICING,
+                                                 SubscriptionTier)
 
         pricing_info = {"tiers": {}}
 

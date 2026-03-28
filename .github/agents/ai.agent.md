@@ -15,8 +15,7 @@ tools:
 	- read/readNotebookCellOutput
 	- azure-mcp/search
 	- vscode/extensions
-	- vscode/getProjectSetupInfo
-	- vscode/installExtension
+
 	- vscode/newWorkspace
 	- vscode/runCommand
 	- todo

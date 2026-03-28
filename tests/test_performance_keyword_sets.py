@@ -7,13 +7,8 @@ The `apps/aria` directory is added to sys.path by tests/conftest.py, so
 import time
 
 import pytest
-from server import (
-    DANCE_KEYWORDS,
-    JUMP_KEYWORDS,
-    WAVE_KEYWORDS,
-    _contains_any_keyword,
-    determine_position_from_context,
-)
+from server import (DANCE_KEYWORDS, JUMP_KEYWORDS, WAVE_KEYWORDS,
+                    _contains_any_keyword, determine_position_from_context)
 
 
 class TestKeywordSetPerformance:
@@ -91,7 +86,8 @@ class TestConnectionPooling:
     def test_connection_pool_import(self):
         """Verify connection pooling functions exist."""
         try:
-            from shared.chat_memory import _connection_pool, _get_conn, _return_conn
+            from shared.chat_memory import (_connection_pool, _get_conn,
+                                            _return_conn)
 
             assert callable(_get_conn)
             assert callable(_return_conn)
@@ -103,7 +99,8 @@ class TestConnectionPooling:
         """Test that connection pooling works correctly."""
         pytest.importorskip("pyodbc")
 
-        from shared.chat_memory import _connection_pool, _get_conn, _return_conn
+        from shared.chat_memory import (_connection_pool, _get_conn,
+                                        _return_conn)
 
         # Clear pool
         _connection_pool.clear()

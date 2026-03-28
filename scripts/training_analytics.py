@@ -2,10 +2,11 @@
 Advanced Analytics for Autonomous Training
 Generates charts, trends, and insights
 """
-from datetime import datetime
+
 import statistics
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 
 # Ensure repository root is on sys.path as early as possible so subprocess
 # invocations and test runners can import local packages reliably.
@@ -20,19 +21,6 @@ from typing import Dict, List, Tuple
 from shared.json_utils import load_status_json
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class TrainingAnalytics:
     """Analyze training performance and generate insights"""
 
@@ -45,10 +33,7 @@ class TrainingAnalytics:
         loaded = load_status_json(self.status_file)
         if loaded.get("_status_file_error"):
             return {}
-        return {
-            k: v for k, v in loaded.items()
-            if not k.startswith("_status_file_")
-        }
+        return {k: v for k, v in loaded.items() if not k.startswith("_status_file_")}
 
     @staticmethod
     def _get_accuracy(perf: Dict) -> float:
@@ -139,9 +124,9 @@ class TrainingAnalytics:
         """Generate comprehensive analytics report"""
         report = []
         improvement_rate = 0.0
-        report.append("\n" + "="*80)
+        report.append("\n" + "=" * 80)
         report.append("AUTONOMOUS TRAINING ANALYTICS REPORT")
-        report.append("="*80 + "\n")
+        report.append("=" * 80 + "\n")
 
         # Overview
         cycles = self.status.get("cycles_completed", 0)
@@ -179,11 +164,11 @@ class TrainingAnalytics:
             report.append(f"Initial Accuracy: {first:.2%}")
             report.append(f"Current Accuracy: {last:.2%}")
             report.append(
-                f"Total Improvement: {improvement:.2%} (+{improvement*100:.2f} percentage points)")
+                f"Total Improvement: {improvement:.2%} (+{improvement*100:.2f} percentage points)"
+            )
 
             improvement_rate = self.calculate_improvement_rate()
-            report.append(
-                f"Improvement Rate: {improvement_rate*100:.3f}% per cycle")
+            report.append(f"Improvement Rate: {improvement_rate*100:.3f}% per cycle")
             report.append("")
 
             # Predictions
@@ -193,8 +178,7 @@ class TrainingAnalytics:
             for target in [0.80, 0.85, 0.90, 0.95]:
                 cycles_needed = self.predict_target_accuracy(target)
                 if cycles_needed > 0:
-                    report.append(
-                        f"Cycles to reach {target:.0%}: ~{cycles_needed}")
+                    report.append(f"Cycles to reach {target:.0%}: ~{cycles_needed}")
             report.append("")
 
         # Epoch analysis
@@ -206,7 +190,8 @@ class TrainingAnalytics:
         plateau = self.detect_plateau()
         if plateau:
             report.append(
-                "Status: ⚠️  PLATEAU DETECTED - Consider increasing epochs or tuning hyperparameters")
+                "Status: ⚠️  PLATEAU DETECTED - Consider increasing epochs or tuning hyperparameters"
+            )
         else:
             report.append("Status: ✅ Model is still improving")
         report.append("")
@@ -222,9 +207,11 @@ class TrainingAnalytics:
             report.append("-" * 80)
             denom = successful if successful > 0 else 1
             report.append(
-                f"Exceptional (≥95%): {exceptional} ({exceptional/denom*100:.1f}%)")
+                f"Exceptional (≥95%): {exceptional} ({exceptional/denom*100:.1f}%)"
+            )
             report.append(
-                f"Excellent (85-95%): {excellent} ({excellent/denom*100:.1f}%)")
+                f"Excellent (85-95%): {excellent} ({excellent/denom*100:.1f}%)"
+            )
             report.append(f"Total Successful: {successful}")
             report.append("")
 
@@ -244,16 +231,16 @@ class TrainingAnalytics:
 
         if plateau_cycles >= 5:
             report.append(
-                "• Plateau stable for 5+ cycles — promotion cadence is active")
+                "• Plateau stable for 5+ cycles — promotion cadence is active"
+            )
         if promotions:
-            report.append(
-                "• Model promotion history available in status['promotions']")
+            report.append("• Model promotion history available in status['promotions']")
 
         if best_acc >= 0.90:
             report.append("• Ready for production deployment")
             report.append("• Enable auto_deploy_best in config")
 
-        report.append("\n" + "="*80 + "\n")
+        report.append("\n" + "=" * 80 + "\n")
 
         return "\n".join(report)
 
@@ -297,8 +284,7 @@ class TrainingAnalytics:
             chart.append("            │" + "".join(chars))
 
         chart.append(f"Min: {min_val:.2%}  └" + "─" * len(scaled))
-        chart.append(
-            f"             Cycle: 1{' ' * (len(scaled) - 5)}{len(scaled)}")
+        chart.append(f"             Cycle: 1{' ' * (len(scaled) - 5)}{len(scaled)}")
         chart.append("")
 
         return "\n".join(chart)
@@ -332,8 +318,8 @@ class TrainingAnalytics:
 
         history = self.status.get("performance_history", [])
         for i, perf in enumerate(history, start=1):
-            row_mean = perf.get('mean_accuracy', perf.get('accuracy', 0))
-            row_max = perf.get('max_accuracy', perf.get('accuracy', row_mean))
+            row_mean = perf.get("mean_accuracy", perf.get("accuracy", 0))
+            row_max = perf.get("max_accuracy", perf.get("accuracy", row_mean))
             html += f"""
             <tr>
                 <td>#{i}</td>
@@ -347,7 +333,7 @@ class TrainingAnalytics:
 
         html += f"""
         </table>
-        
+
         <h2>Analysis & Recommendations</h2>
         <div class="chart">
             <pre>{self.generate_report()}</pre>
@@ -357,25 +343,27 @@ class TrainingAnalytics:
 </html>
 """
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write(html)
 
         print(f"✅ HTML report exported to {output_path}")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Autonomous Training Analytics")
-    parser.add_argument("--status-file", default="data_out/autonomous_training_status.json",
-                        help="Path to status file")
-    parser.add_argument("--report", action="store_true",
-                        help="Generate text report")
-    parser.add_argument("--chart", action="store_true",
-                        help="Display ASCII chart")
-    parser.add_argument("--html", metavar="FILE",
-                        help="Export HTML report")
-    parser.add_argument("--metric", default="mean_accuracy",
-                        help="Metric to chart (default: mean_accuracy)")
+    parser = argparse.ArgumentParser(description="Autonomous Training Analytics")
+    parser.add_argument(
+        "--status-file",
+        default="data_out/autonomous_training_status.json",
+        help="Path to status file",
+    )
+    parser.add_argument("--report", action="store_true", help="Generate text report")
+    parser.add_argument("--chart", action="store_true", help="Display ASCII chart")
+    parser.add_argument("--html", metavar="FILE", help="Export HTML report")
+    parser.add_argument(
+        "--metric",
+        default="mean_accuracy",
+        help="Metric to chart (default: mean_accuracy)",
+    )
 
     args = parser.parse_args()
 

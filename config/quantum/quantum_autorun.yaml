@@ -34,7 +34,7 @@ jobs:
   # === AZURE QUANTUM JOBS (MAY INCUR COSTS) ===
   # IMPORTANT: Set azure_confirm_cost: true to acknowledge hardware costs
   # Use simulators (*.simulator) for free Azure testing
-  
+
   - name: azure_quantinuum_simulator
     mode: azure_hardware
     azure_backend: quantinuum.sim.h2-1sc  # FREE: Quantinuum cloud simulator

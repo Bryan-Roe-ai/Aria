@@ -114,7 +114,7 @@ For each requested model ID, the code performs a linear search through all resul
 ```python
 def compare_models(self, model_ids: List[str]) -> Dict:
     comparison = []
-    
+
     for model_id in model_ids:
         result = next((r for r in self.results if r.model_id == model_id), None)
         if result:
@@ -127,7 +127,7 @@ def compare_models(self, model_ids: List[str]) -> Dict:
 def compare_models(self, model_ids: List[str]) -> Dict:
     # Build index for O(1) lookups
     results_by_id = {r.model_id: r for r in self.results}
-    
+
     comparison = []
     for model_id in model_ids:
         result = results_by_id.get(model_id)
@@ -300,7 +300,7 @@ except ImportError:
 def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
     if not a or not b or len(a) != len(b):
         return 0.0
-    
+
     if _HAS_NUMPY:
         a_arr = np.asarray(a, dtype=np.float32)
         b_arr = np.asarray(b, dtype=np.float32)
@@ -310,7 +310,7 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
         if na == 0.0 or nb == 0.0:
             return 0.0
         return float(dot / (na * nb))
-    
+
     # Fallback to pure Python
     dot = sum(x * y for x, y in zip(a, b))
     na = math.sqrt(sum(x * x for x in a))
@@ -358,7 +358,7 @@ def _get_embedding_client(provider: str) -> Any:
     """Get or create a cached embedding client."""
     if provider in _embedding_clients:
         return _embedding_clients[provider]
-    
+
     if provider == "azure":
         az_key = os.getenv("AZURE_OPENAI_API_KEY")
         az_ep = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -394,7 +394,7 @@ Reads entire file into memory with `f.readlines()` which is inefficient for larg
 def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
     with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()  # LOADS ENTIRE FILE INTO MEMORY
-    
+
     for i, line in enumerate(lines, 1):
         # ... validate line
 ```
@@ -446,14 +446,14 @@ def _check_lmstudio_available(url: str) -> bool:
     now = time.time()
     if _lmstudio_cache["available"] is not None and (now - _lmstudio_cache["checked_at"]) < _LMSTUDIO_CACHE_TTL:
         return _lmstudio_cache["available"]
-    
+
     try:
         req = urllib.request.Request(url.replace("/v1", "") + "/v1/models", headers={"User-Agent": "QAI"})
         urllib.request.urlopen(req, timeout=1)
         _lmstudio_cache["available"] = True
     except Exception:
         _lmstudio_cache["available"] = False
-    
+
     _lmstudio_cache["checked_at"] = now
     return _lmstudio_cache["available"]
 ```
@@ -477,12 +477,12 @@ Processes batch items sequentially in a Python loop, which is slow for quantum c
 def forward(self, inputs: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
     batch_size = inputs.shape[0]
     outputs = torch.empty(batch_size, self.n_qubits, dtype=torch.float32)
-    
+
     for i, inp in enumerate(inputs):  # SEQUENTIAL LOOP
         result = self.qnode(inp, weights)
         # ... convert result
         outputs[i] = result
-    
+
     return outputs
 ```
 

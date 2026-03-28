@@ -1,6 +1,6 @@
 # Azure Quantum Provider Comparison Results
 
-**Date:** 2025-11-01  
+**Date:** 2025-11-01
 **Tests:** Provider-specific gate pattern validation + Variational MPS comparison
 
 ---
@@ -56,7 +56,7 @@ Depth: 5, Gates: 8
 | 0000  | 1000  | 100.0%     |
 | 1111  | 0     | 0.0%       |
 
-**Entropy:** 0.000 / 4.000 (0.0%)  
+**Entropy:** 0.000 / 4.000 (0.0%)
 **Status:** ❌ **Collapsed to ground state**
 
 ---
@@ -78,7 +78,7 @@ Depth: 10, Gates: 16
 | 0000  | 1000  | 100.0%     |
 | 1111  | 0     | 0.0%       |
 
-**Entropy:** 0.000 / 4.000 (0.0%)  
+**Entropy:** 0.000 / 4.000 (0.0%)
 **Status:** ❌ **Collapsed despite native gates**
 
 ---
@@ -91,7 +91,7 @@ Pattern: H + CX (IonQ standard)
 Depth: 5, Gates: 8
 ```
 
-**Results:** Identical to Test 1  
+**Results:** Identical to Test 1
 **Status:** ❌ **Collapsed**
 
 ---
@@ -104,7 +104,7 @@ Pattern: RX + RZ + CZ (Rigetti native)
 Depth: 16, Gates: 28
 ```
 
-**Results:** Identical to Test 1  
+**Results:** Identical to Test 1
 **Status:** ❌ **Collapsed**
 
 ---
@@ -123,7 +123,7 @@ Depth: 5, Gates: 8
 | 0000  | ~500  | 50.0%      |
 | 1111  | ~500  | 50.0%      |
 
-**Entropy:** 0.999 / 4.000 (24.9%)  
+**Entropy:** 0.999 / 4.000 (24.9%)
 **Status:** ✅ **Perfect GHZ state**
 
 ---
@@ -403,7 +403,7 @@ Structure:
 
 ---
 
-**Report Generated:** 2025-11-01 06:58 UTC  
-**Total Tests:** 7 (5 pattern + 1 hardware variational + 1 MPS)  
-**Total Shots:** 7000  
+**Report Generated:** 2025-11-01 06:58 UTC
+**Total Tests:** 7 (5 pattern + 1 hardware variational + 1 MPS)
+**Total Shots:** 7000
 **Success Rate:** 71% (5/7 succeeded; 2 hardware tests on Quantinuum collapsed)

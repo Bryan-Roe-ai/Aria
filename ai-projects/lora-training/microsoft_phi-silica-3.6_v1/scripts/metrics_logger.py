@@ -18,11 +18,11 @@ except Exception:
 
 try:
     from opentelemetry import trace  # type: ignore
-    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
-        OTLPSpanExporter,
-    )  # type: ignore
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import \
+        OTLPSpanExporter  # type: ignore
     from opentelemetry.sdk.trace import TracerProvider  # type: ignore
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore
+    from opentelemetry.sdk.trace.export import \
+        BatchSpanProcessor  # type: ignore
 except Exception:
     trace = None  # type: ignore
     TracerProvider = OTLPSpanExporter = BatchSpanProcessor = None  # type: ignore

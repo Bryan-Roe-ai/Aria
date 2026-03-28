@@ -14,13 +14,8 @@ import json
 
 import pytest
 
-from shared.json_utils import (
-    load_json,
-    load_jsonl,
-    merge_json_files,
-    save_json,
-    save_jsonl,
-)
+from shared.json_utils import (load_json, load_jsonl, merge_json_files,
+                               save_json, save_jsonl)
 
 # ---------------------------------------------------------------------------
 # load_json

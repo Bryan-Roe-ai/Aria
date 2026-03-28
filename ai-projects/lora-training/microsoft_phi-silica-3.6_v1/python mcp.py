@@ -11,12 +11,8 @@ from contextlib import AsyncExitStack
 from typing import Dict
 
 from azure.ai.inference import ChatCompletionsClient
-from azure.ai.inference.models import (
-    AssistantMessage,
-    TextContentItem,
-    ToolMessage,
-    UserMessage,
-)
+from azure.ai.inference.models import (AssistantMessage, TextContentItem,
+                                       ToolMessage, UserMessage)
 from azure.core.credentials import AzureKeyCredential
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.sse import sse_client

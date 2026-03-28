@@ -14,18 +14,12 @@ from typing import Any, Dict, List, Optional, Protocol
 
 try:
     # When running tests that inject src/ into sys.path
-    from utils.json_utils import (
-        INGREDIENT_EXTRACTION_SCHEMA,
-        RECIPE_SEARCH_SCHEMA,
-        parse_and_validate,
-    )
+    from utils.json_utils import (INGREDIENT_EXTRACTION_SCHEMA,
+                                  RECIPE_SEARCH_SCHEMA, parse_and_validate)
 except ImportError:  # pragma: no cover
     # Fallback for package-style execution (not typical here but defensive)
-    from ..utils.json_utils import (
-        INGREDIENT_EXTRACTION_SCHEMA,
-        RECIPE_SEARCH_SCHEMA,
-        parse_and_validate,
-    )
+    from ..utils.json_utils import (INGREDIENT_EXTRACTION_SCHEMA,
+                                    RECIPE_SEARCH_SCHEMA, parse_and_validate)
 
 
 class ProviderProtocol(Protocol):  # Structural typing for providers

@@ -99,7 +99,7 @@ class LiveProgressTracker {
         this.updateProgressBars(data);
         this.updateMetrics(data);
         this.updateETA(data);
-        
+
         this.callbacks.onUpdate(data);
     }
 
@@ -182,7 +182,7 @@ class LiveProgressTracker {
         if (progress > 0 && progress < 100) {
             const totalEstimated = elapsed / (progress / 100);
             const remaining = totalEstimated - elapsed;
-            
+
             etaEl.textContent = this.formatTime(remaining);
         } else {
             etaEl.textContent = 'Calculating...';
@@ -252,12 +252,12 @@ class LiveProgressTracker {
             if (!response.ok) return;
 
             const data = await response.json();
-            
+
             // Update chart data
             this.liveChart.data.labels = data.steps || [];
             this.liveChart.data.datasets[0].data = data.train_loss || [];
             this.liveChart.data.datasets[1].data = data.eval_loss || [];
-            
+
             this.liveChart.update('none'); // Update without animation for smoothness
         } catch (err) {
             console.error('[LiveProgress] Chart update error:', err);
@@ -383,7 +383,7 @@ class LiveProgressTracker {
             const response = await fetch(`/api/job-control/${this.activeJobId}/pause`, {
                 method: 'POST'
             });
-            
+
             if (response.ok) {
                  if (typeof showToast === 'function') showToast('Training paused ✓', 'ok', 3000);
             }
@@ -404,7 +404,7 @@ class LiveProgressTracker {
             const response = await fetch(`/api/job-control/${this.activeJobId}/stop`, {
                 method: 'POST'
             });
-            
+
             if (response.ok) {
                 this.stopTracking();
                 if (typeof showToast === 'function') showToast('Training stopped', 'ok', 3000);

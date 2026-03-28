@@ -38,11 +38,8 @@ RESULTS_DIR = PROJECT_ROOT / "results" / "datasets"
 SRC_DIR = PROJECT_ROOT / "src"
 sys.path.insert(0, str(SRC_DIR))
 
-from quantum_classifier import (
-    HybridQuantumClassifier,  # type: ignore
-    QuantumClassifier,
-    train_quantum_model,
-)
+from quantum_classifier import HybridQuantumClassifier  # type: ignore
+from quantum_classifier import QuantumClassifier, train_quantum_model
 
 
 def load_dataset_from_csv(name: str, path: Path) -> tuple[np.ndarray, np.ndarray]:

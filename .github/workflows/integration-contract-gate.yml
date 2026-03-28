@@ -65,7 +65,7 @@ jobs:
       - name: Run contract gate (standard)
         if: steps.mode.outputs.strict == 'false'
         run: bash ./scripts/integration_contract_gate.sh
-        
+
       - name: Run contract gate (strict)
         if: steps.mode.outputs.strict == 'true'
         run: bash ./scripts/integration_contract_gate.sh --strict-endpoints

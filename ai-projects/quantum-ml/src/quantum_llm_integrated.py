@@ -27,13 +27,11 @@ from torch.utils.data import DataLoader, Dataset
 
 # Import all quantum LLM components
 try:
-    from quantum_llm_advanced import (
-        AdaptiveQuantumLayer,
-        MultiScaleQuantumAttention,
-        QuantumCircuitCache,
-        QuantumErrorMitigation,
-        QuantumPromptTuning,
-    )
+    from quantum_llm_advanced import (AdaptiveQuantumLayer,
+                                      MultiScaleQuantumAttention,
+                                      QuantumCircuitCache,
+                                      QuantumErrorMitigation,
+                                      QuantumPromptTuning)
 
     ADVANCED_AVAILABLE = True
 except ImportError:
@@ -41,13 +39,11 @@ except ImportError:
     logging.warning("Advanced quantum components not available")
 
 try:
-    from quantum_circuit_optimizer import (
-        AdaptiveCircuitScheduler,
-        BatchCircuitExecutor,
-        CircuitCompiler,
-        OptimizationStrategy,
-        QuantumClassicalPartitioner,
-    )
+    from quantum_circuit_optimizer import (AdaptiveCircuitScheduler,
+                                           BatchCircuitExecutor,
+                                           CircuitCompiler,
+                                           OptimizationStrategy,
+                                           QuantumClassicalPartitioner)
 
     OPTIMIZER_AVAILABLE = True
 except ImportError:
@@ -55,12 +51,10 @@ except ImportError:
     logging.warning("Circuit optimizer not available")
 
 try:
-    from quantum_llm_hybrid_trainer import (
-        AdaptiveQuantumRouter,
-        CurriculumScheduler,
-        HybridTrainingOrchestrator,
-        TrainingStage,
-    )
+    from quantum_llm_hybrid_trainer import (AdaptiveQuantumRouter,
+                                            CurriculumScheduler,
+                                            HybridTrainingOrchestrator,
+                                            TrainingStage)
 
     TRAINER_AVAILABLE = True
 except ImportError:
@@ -68,12 +62,8 @@ except ImportError:
     logging.warning("Hybrid trainer not available")
 
 try:
-    from quantum_llm_monitor import (
-        QuantumMetrics,
-        TrainingDashboard,
-        TrainingSnapshot,
-        VisualizationExporter,
-    )
+    from quantum_llm_monitor import (QuantumMetrics, TrainingDashboard,
+                                     TrainingSnapshot, VisualizationExporter)
 
     MONITOR_AVAILABLE = True
 except ImportError:

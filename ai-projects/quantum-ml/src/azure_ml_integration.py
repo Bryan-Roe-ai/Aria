@@ -7,10 +7,10 @@ import logging
 from pathlib import Path
 from typing import Any, Dict
 
-
 # Azure ML imports (install with: pip install azureml-sdk)
 try:
-    from azureml.core import Environment, Experiment, ScriptRunConfig, Workspace
+    from azureml.core import (Environment, Experiment, ScriptRunConfig,
+                              Workspace)
     from azureml.core.compute import AmlCompute, ComputeTarget
     from azureml.core.model import Model
     from azureml.core.runconfig import RunConfiguration
@@ -324,42 +324,42 @@ def main():
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--learning_rate', type=float, default=0.01)
     parser.add_argument('--output_dir', type=str, default='./outputs')
-    
+
     args = parser.parse_args()
-    
+
     print(f"Training Enhanced Quantum Classifier")
     print(f"  Dataset: {args.dataset}")
     print(f"  Qubits: {args.n_qubits}")
     print(f"  Layers: {args.n_layers}")
     print(f"  Epochs: {args.epochs}")
-    
+
     # Load dataset
     if args.dataset == 'moons':
         X, y = make_moons(n_samples=400, noise=0.1, random_state=42)
     elif args.dataset == 'wine':
         data = load_wine()
         X, y = data.data, (data.target == 0).astype(int)
-    
+
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
-    
+
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_val = scaler.transform(X_val)
-    
+
     # Create model
     model = HybridEnhancedClassifier(
         input_dim=X_train.shape[1],
         n_qubits=args.n_qubits,
         n_layers=args.n_layers
     )
-    
+
     # Train
     history = train_enhanced_model(
         model, X_train, y_train, X_val, y_val,
         epochs=args.epochs,
         learning_rate=args.learning_rate
     )
-    
+
     # Save model
     Path(args.output_dir).mkdir(exist_ok=True)
     torch.save({
@@ -367,7 +367,7 @@ def main():
         'history': history,
         'scaler': scaler
     }, f"{args.output_dir}/quantum_model.pt")
-    
+
     print(f"\\nFinal Accuracy: {history['val_acc'][-1]:.4f}")
     print(f"Model saved to: {args.output_dir}")
 
@@ -399,13 +399,13 @@ from quantum_classifier_enhanced import HybridEnhancedClassifier
 def init():
     """Initialize the model"""
     global model, scaler
-    
+
     # Load model
     checkpoint = torch.load('quantum_model.pt', weights_only=True)
     model = HybridEnhancedClassifier(input_dim=2, n_qubits=8, n_layers=4)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
-    
+
     scaler = checkpoint.get('scaler', None)
     print("Model loaded successfully")
 
@@ -414,22 +414,22 @@ def run(raw_data):
     try:
         data = json.loads(raw_data)
         X = np.array(data['data'])
-        
+
         # Scale if scaler available
         if scaler:
             X = scaler.transform(X)
-        
+
         # Predict
         with torch.no_grad():
             X_tensor = torch.FloatTensor(X)
             predictions = model(X_tensor)
             predictions = predictions.cpu().numpy()
-        
+
         return json.dumps({
             'predictions': predictions.tolist(),
             'status': 'success'
         })
-    
+
     except Exception as e:
         return json.dumps({
             'error': str(e),
@@ -462,33 +462,33 @@ if __name__ == "__main__":
     print(
         """
     from azure_ml_integration import QuantumAzureMLDeployment
-    
+
     # Initialize
     deployer = QuantumAzureMLDeployment()
-    
+
     # Connect to workspace
     workspace = deployer.connect_workspace(
         subscription_id='your-subscription-id',
         resource_group='rg-quantum-ai',
         workspace_name='quantum-ai-ml-workspace'
     )
-    
+
     # Create compute cluster
     compute = deployer.create_compute_cluster()
-    
+
     # Submit training job
     run = deployer.submit_training_job(
         script_path='train_azure_ml.py',
         experiment_name='quantum-8qubit',
         arguments={'n_qubits': 8, 'epochs': 100}
     )
-    
+
     # Register model
     model = deployer.register_model(
         model_path='outputs/quantum_model.pt',
         model_name='quantum-classifier-8q'
     )
-    
+
     # Deploy inference endpoint
     service = deployer.deploy_inference_endpoint(
         model_name='quantum-classifier-8q',

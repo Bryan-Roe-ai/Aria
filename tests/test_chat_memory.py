@@ -6,7 +6,6 @@ import math
 import os
 from unittest.mock import patch
 
-
 # We import the private helpers directly for unit-testing pure functions.
 import shared.chat_memory as cm
 

@@ -49,7 +49,8 @@ class TestSimulateCircuitHandlerShotsBounds:
     def _make_circuit_in_cache(self):
         """Import mcp server with minimal stubs and pre-populate the cache."""
         try:
-            from quantum_mcp_server import quantum_state, simulate_circuit_handler
+            from quantum_mcp_server import (quantum_state,
+                                            simulate_circuit_handler)
         except (ImportError, SystemExit):
             pytest.skip("quantum_mcp_server dependencies not installed")
 

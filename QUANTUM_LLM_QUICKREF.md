@@ -253,5 +253,5 @@ python -c "from quantum_llm_integrated import QuantumLLMConfig; c=QuantumLLMConf
 
 ---
 
-**Last Updated:** March 9, 2026  
+**Last Updated:** March 9, 2026
 **Version:** 1.0.0

@@ -11,13 +11,9 @@ from pathlib import Path
 # Add shared to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from shared.http_utils import (
-    create_cors_headers,
-    create_no_cache_headers,
-    serve_static_file,
-    validate_messages,
-    validate_provider_choice,
-)
+from shared.http_utils import (create_cors_headers, create_no_cache_headers,
+                               serve_static_file, validate_messages,
+                               validate_provider_choice)
 
 
 def test_validate_messages_success():

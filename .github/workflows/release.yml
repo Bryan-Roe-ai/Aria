@@ -52,7 +52,7 @@ jobs:
         run: |
           # Get previous tag
           PREV_TAG=$(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
-          
+
           if [ -z "$PREV_TAG" ]; then
             echo "First release - no previous tag found"
             git log --pretty=format:"- %s (%h)" > CHANGELOG.md
@@ -60,7 +60,7 @@ jobs:
             echo "Changes since $PREV_TAG:" > CHANGELOG.md
             git log $PREV_TAG..HEAD --pretty=format:"- %s (%h)" >> CHANGELOG.md
           fi
-          
+
           cat CHANGELOG.md
 
       - name: Create GitHub Release
@@ -77,10 +77,10 @@ jobs:
         run: |
           # Create release artifacts directory
           mkdir -p release-artifacts
-          
+
           # Create a source tarball
           git archive --format=tar.gz --prefix=aria-${{ steps.version.outputs.version_number }}/ HEAD > release-artifacts/aria-${{ steps.version.outputs.version_number }}.tar.gz
-          
+
           # Create a zip archive
           git archive --format=zip --prefix=aria-${{ steps.version.outputs.version_number }}/ HEAD > release-artifacts/aria-${{ steps.version.outputs.version_number }}.zip
 

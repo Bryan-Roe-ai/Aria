@@ -62,7 +62,7 @@ namespace control {
             control.onEvent(ev.eid, ev.vid, handler);
         else // or wait
             control.waitForEvent(ev.eid, ev.vid);
-    }    
+    }
 }
 
 /**

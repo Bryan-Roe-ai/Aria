@@ -13,11 +13,8 @@ from typing import Any, Dict, Generator, Iterable, List, Optional
 
 # Helpers for Azure quota/rate-limit detection
 try:  # shared package may not be importable in all contexts (tests add paths)
-    from shared.azure_utils import (
-        format_quota_message,
-        is_quota_error,
-        is_transient_rate_error,
-    )
+    from shared.azure_utils import (format_quota_message, is_quota_error,
+                                    is_transient_rate_error)
 except Exception:  # pragma: no cover - best-effort import
     # Provide fallbacks if shared module isn't available in runtime/test harness
     def is_quota_error(e: Any) -> bool:
@@ -339,7 +336,8 @@ class LoraLocalProvider(BaseChatProvider):
         """
         try:
             import torch as _torch  # type: ignore
-            from transformers import AutoModelForCausalLM as _AM  # type: ignore
+            from transformers import \
+                AutoModelForCausalLM as _AM  # type: ignore
             from transformers import AutoTokenizer as _AT
 
             try:

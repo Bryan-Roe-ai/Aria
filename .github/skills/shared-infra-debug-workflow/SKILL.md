@@ -87,18 +87,18 @@ Telemetry (`shared/telemetry.py`) uses Application Insights. Failures are **non-
 ```bash
 echo $APPLICATIONINSIGHTS_CONNECTION_STRING
 ```
-If empty or malformed, telemetry silently degrades. This is expected in local dev.  
+If empty or malformed, telemetry silently degrades. This is expected in local dev.
 For production: verify `InstrumentationKey=` or `ConnectionString=` format.
 
 ### Step 6 — Provider Detection Audit
-Config precedence (in order of priority): `env vars` > `per-job YAML` > `CLI flags` > `base YAML`  
+Config precedence (in order of priority): `env vars` > `per-job YAML` > `CLI flags` > `base YAML`
 Required env vars for Azure OpenAI (all 4 must be set):
 - `AZURE_OPENAI_API_KEY`
 - `AZURE_OPENAI_ENDPOINT`
 - `AZURE_OPENAI_DEPLOYMENT`
 - `AZURE_OPENAI_API_VERSION`
 
-Check `/api/ai/status` → `active_provider` field to confirm which provider was selected.  
+Check `/api/ai/status` → `active_provider` field to confirm which provider was selected.
 Fallback order: Azure OpenAI → OpenAI → LMStudio → Local.
 
 ### Step 7 — Run Unit Tests

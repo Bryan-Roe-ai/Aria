@@ -139,7 +139,7 @@ Run 24/7 to continuously improve models:
 python .\scripts\autonomous_training_orchestrator.py
 
 # Terminal 2: Monitor status
-while ($true) { 
+while ($true) {
     python .\scripts\autonomous_training_orchestrator.py --status
     Start-Sleep -Seconds 300
 }

@@ -502,22 +502,22 @@ body {
     body {
         padding: 10px;
     }
-    
+
     .header {
         flex-direction: column;
         gap: 16px;
         text-align: center;
     }
-    
+
     .tabs {
         flex-wrap: nowrap;
         overflow-x: auto;
     }
-    
+
     .grid-2 {
         grid-template-columns: 1fr;
     }
-    
+
     .quick-actions {
         grid-template-columns: 1fr;
     }

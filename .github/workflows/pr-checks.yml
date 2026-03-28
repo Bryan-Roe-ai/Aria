@@ -28,7 +28,7 @@ jobs:
           import yaml
           from pathlib import Path
           import sys
-          
+
           failed = False
           for yml_file in Path('.github/workflows').glob('*.yml'):
               try:
@@ -38,7 +38,7 @@ jobs:
               except Exception as e:
                   print(f'✗ {yml_file}: {e}')
                   failed = True
-          
+
           sys.exit(1 if failed else 0)
           "
 
@@ -69,15 +69,15 @@ jobs:
         run: |
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
-          
+
           ADDITIONS=$(git diff $BASE_SHA...$HEAD_SHA --numstat | awk '{sum+=$1} END {print sum}')
           DELETIONS=$(git diff $BASE_SHA...$HEAD_SHA --numstat | awk '{sum+=$2} END {print sum}')
           FILES_CHANGED=$(git diff $BASE_SHA...$HEAD_SHA --name-only | wc -l)
-          
+
           echo "Files changed: $FILES_CHANGED"
           echo "Lines added: $ADDITIONS"
           echo "Lines deleted: $DELETIONS"
-          
+
           # Warn if PR is very large
           if [ $FILES_CHANGED -gt 50 ] || [ $ADDITIONS -gt 1000 ]; then
             echo "⚠️ Warning: This is a large PR. Consider breaking it into smaller PRs for easier review."

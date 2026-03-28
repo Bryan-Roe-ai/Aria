@@ -330,10 +330,8 @@ class ParallelTrainer:
         if self.generate_samples > 0:
             try:
                 from peft import PeftModel  # type: ignore
-                from transformers import (
-                    AutoModelForCausalLM,  # type: ignore
-                    AutoTokenizer,
-                )
+                from transformers import AutoModelForCausalLM  # type: ignore
+                from transformers import AutoTokenizer
 
                 base_model_id = job.get("hf_model_id")
                 adapter_dir = save_dir / "lora_adapter"

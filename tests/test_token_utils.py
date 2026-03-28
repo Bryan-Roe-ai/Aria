@@ -4,14 +4,9 @@ from __future__ import annotations
 
 from typing import List
 
-
-from shared.token_utils import (
-    MODEL_CONTEXT_DEFAULTS,
-    PruneStats,
-    RoleMessage,
-    count_messages_tokens,
-    prune_messages,
-)
+from shared.token_utils import (MODEL_CONTEXT_DEFAULTS, PruneStats,
+                                RoleMessage, count_messages_tokens,
+                                prune_messages)
 
 # ---------------------------------------------------------------------------
 # Helpers

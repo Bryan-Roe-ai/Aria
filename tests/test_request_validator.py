@@ -7,15 +7,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from shared.request_validator import (
-    CHAT_SCHEMA,
-    QUANTUM_JOB_SCHEMA,
-    TTS_SCHEMA,
-    ValidationError,
-    parse_json_body,
-    validate_fields,
-    validate_request,
-)
+from shared.request_validator import (CHAT_SCHEMA, QUANTUM_JOB_SCHEMA,
+                                      TTS_SCHEMA, ValidationError,
+                                      parse_json_body, validate_fields,
+                                      validate_request)
 
 # ---------------------------------------------------------------------------
 # Helpers

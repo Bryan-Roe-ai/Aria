@@ -5,8 +5,8 @@ namespace pins {
 
 class CodalSPIProxy {
 private:
-    DevicePin* mosi; 
-    DevicePin* miso; 
+    DevicePin* mosi;
+    DevicePin* miso;
     DevicePin* sck;
     CODAL_SPI spi;
 public:
@@ -17,7 +17,7 @@ public:
         : mosi(_mosi)
         , miso(_miso)
         , sck(_sck)
-        , spi(*_mosi, *_miso, *_sck) 
+        , spi(*_mosi, *_miso, *_sck)
         , next(NULL)
     {
     }
@@ -27,7 +27,7 @@ public:
         : mosi(_mosi)
         , miso(_miso)
         , sck(_sck)
-        , spi(*_mosi, *_miso, *_sck, _cs) 
+        , spi(*_mosi, *_miso, *_sck, _cs)
         , next(NULL)
     {
     }

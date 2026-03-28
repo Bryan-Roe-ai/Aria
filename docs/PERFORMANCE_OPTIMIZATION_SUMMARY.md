@@ -80,7 +80,7 @@ def _get_conn():
                 conn.close()
             except Exception:
                 pass
-    
+
     # Create new connection
     return pyodbc.connect(conn_str, timeout=4)
 
@@ -331,7 +331,7 @@ To monitor the impact of these optimizations:
    ```bash
    # Profile aria web server
    python -m cProfile -o profile.stats aria_web/server.py
-   
+
    # Analyze with snakeviz
    snakeviz profile.stats
    ```

@@ -280,11 +280,8 @@ def run_full_validation():
     # Test 5: Dashboard
     logger.info("\n🧪 Test 5: Training Dashboard")
     try:
-        from src.quantum_llm_monitor import (
-            QuantumMetrics,
-            TrainingDashboard,
-            TrainingSnapshot,
-        )
+        from src.quantum_llm_monitor import (QuantumMetrics, TrainingDashboard,
+                                             TrainingSnapshot)
 
         dashboard = TrainingDashboard(
             output_dir=Path("data_out/test_dashboard"),

@@ -58,7 +58,7 @@ EOF
 # Setup Ollama
 setup_ollama() {
     echo -e "${YELLOW}Setting up Ollama...${NC}"
-    
+
     if command -v ollama &> /dev/null; then
         echo -e "${GREEN}✓ Ollama is installed${NC}"
         echo ""
@@ -78,7 +78,7 @@ setup_ollama() {
         echo "  brew install ollama"
         echo ""
     fi
-    
+
     exit 0
 }
 
@@ -105,13 +105,13 @@ setup_lmstudio() {
 # Check LLM availability
 check_llm() {
     echo -e "${YELLOW}Checking $LLM_TYPE availability...${NC}"
-    
+
     if [ "$LLM_TYPE" = "ollama" ]; then
         URL="http://127.0.0.1:11434/api/tags"
     else
         URL="http://127.0.0.1:1234/v1/models"
     fi
-    
+
     if curl -s "$URL" > /dev/null 2>&1; then
         echo -e "${GREEN}✓ $LLM_TYPE is available${NC}"
         curl -s "$URL" | head -20

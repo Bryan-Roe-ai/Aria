@@ -349,10 +349,8 @@ def run_quantum_llm_training(status: Dict[str, Any], config: Dict[str, Any]) -> 
 
     try:
         sys.path.insert(0, str(REPO_ROOT / "scripts"))
-        from quantum_llm_trainer import (
-            QuantumEnhancedLLMTrainer,
-            get_quantum_llm_status,
-        )
+        from quantum_llm_trainer import (QuantumEnhancedLLMTrainer,
+                                         get_quantum_llm_status)
 
         trainer_config: Dict[str, Any] = {
             "quantum_backend": qcfg.get("backend", "local"),

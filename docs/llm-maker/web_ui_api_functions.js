@@ -64,7 +64,7 @@ async function loadTools() {
     try {
         const response = await fetch(`${API_BASE}/api/tools`);
         const data = await response.json();
-        
+
         tools = data.tools || [];
         updateStats(data.stats);
         renderTools();
@@ -100,7 +100,7 @@ async function deleteTool(toolId) {
         });
 
         const result = await response.json();
-        
+
         if (result.success) {
             loadTools();
             return true;

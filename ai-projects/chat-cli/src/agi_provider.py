@@ -17,12 +17,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, Generator, Iterable, List, Optional
 
-from chat_providers import (
-    BaseChatProvider,
-    ProviderChoice,
-    RoleMessage,
-    detect_provider,
-)
+from chat_providers import (BaseChatProvider, ProviderChoice, RoleMessage,
+                            detect_provider)
 
 _logger = logging.getLogger(__name__)
 

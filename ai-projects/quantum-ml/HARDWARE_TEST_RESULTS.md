@@ -1,6 +1,6 @@
 # Azure Quantum Hardware Test Results
 
-**Date:** October 31, 2025  
+**Date:** October 31, 2025
 
 ## Test Summary
 
@@ -171,7 +171,7 @@ Generated charts available in `ai-projects/quantum-ml/results/visualizations/`:
 
 **Files:**
 - Submission script: `ai-projects/quantum-ml/scripts/submit_small_stabilizer.py`
-- Results JSON: 
+- Results JSON:
   - `ai-projects/quantum-ml/results/azure_ghz_4q_results_20251101_063833.json` (rigetti)
   - `ai-projects/quantum-ml/results/azure_ghz_6q_results_20251101_064210.json` (rigetti 6q)
   - `ai-projects/quantum-ml/results/azure_ghz_4q_results_20251101_064243.json` (quantinuum)

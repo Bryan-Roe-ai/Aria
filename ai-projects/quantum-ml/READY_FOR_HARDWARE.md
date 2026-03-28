@@ -428,8 +428,8 @@ code AZURE_SETUP_CHECKLIST.md
 python test_azure_quantum.py
 ```
 
-**Total time:** 15-20 minutes  
-**Cost (with free simulator):** $0.00  
+**Total time:** 15-20 minutes
+**Cost (with free simulator):** $0.00
 **Excitement level:** 🚀🚀🚀
 
 ---
@@ -460,12 +460,12 @@ python test_azure_quantum.py
 
 Everything is prepared for you to test your optimized quantum AI on real quantum hardware:
 
-✅ Optimized configuration (90% accuracy)  
-✅ Test scripts created  
-✅ Step-by-step guides written  
-✅ Azure templates ready  
-✅ Integration code complete  
-✅ Documentation comprehensive  
+✅ Optimized configuration (90% accuracy)
+✅ Test scripts created
+✅ Step-by-step guides written
+✅ Azure templates ready
+✅ Integration code complete
+✅ Documentation comprehensive
 
 **All that's left is deployment!**
 

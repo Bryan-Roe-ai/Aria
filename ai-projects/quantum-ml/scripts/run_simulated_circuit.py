@@ -19,7 +19,8 @@ import numpy as np
 import yaml
 from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
-from qiskit_aer.noise import NoiseModel, amplitude_damping_error, depolarizing_error
+from qiskit_aer.noise import (NoiseModel, amplitude_damping_error,
+                              depolarizing_error)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = REPO_ROOT / "config" / "quantum_config.yaml"

@@ -226,7 +226,8 @@ def get_ai_status_response() -> Tuple[Response, int]:
     if req is None or not hasattr(req, "get_body"):
         # Use shim's HttpRequest if available in sys.modules
         try:
-            from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
+            from azure.functions import \
+                HttpRequest as ShimHttpRequest  # type: ignore
 
             fake_req = ShimHttpRequest(method="GET", url="/api/ai/status")
         except Exception:

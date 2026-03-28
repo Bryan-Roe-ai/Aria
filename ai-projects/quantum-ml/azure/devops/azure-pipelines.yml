@@ -25,6 +25,6 @@ stages:
           # pwsh -File "$(Build.SourcesDirectory)/ai-projects/quantum-ml/azure/quantum_full_logicapp_orchestration.ps1" -LogicAppUrl "$(LOGIC_APP_URL)"
     - task: PublishBuildArtifacts@1
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)' 
+        PathtoPublish: '$(Build.SourcesDirectory)'
         ArtifactName: 'repo'
         publishLocation: 'Container'

@@ -57,13 +57,9 @@ class TestAriaWebServerOptimizations:
 
     def test_keyword_sets_immutable(self):
         """Test that keyword sets are immutable frozensets."""
-        from aria_web.server import (
-            _DANCE_KEYWORDS,
-            _JUMP_KEYWORDS,
-            _MOVE_KEYWORDS,
-            _PICKUP_KEYWORDS,
-            _SAY_KEYWORDS,
-        )
+        from aria_web.server import (_DANCE_KEYWORDS, _JUMP_KEYWORDS,
+                                     _MOVE_KEYWORDS, _PICKUP_KEYWORDS,
+                                     _SAY_KEYWORDS)
 
         # All should be frozensets (immutable)
         assert isinstance(_MOVE_KEYWORDS, frozenset)
@@ -74,7 +70,8 @@ class TestAriaWebServerOptimizations:
 
     def test_keyword_matching_correctness(self):
         """Test that keyword matching produces correct results."""
-        from aria_web.server import _MOVE_KEYWORDS, _SAY_KEYWORDS, _any_word_in_text
+        from aria_web.server import (_MOVE_KEYWORDS, _SAY_KEYWORDS,
+                                     _any_word_in_text)
 
         # Should match
         assert _any_word_in_text(_MOVE_KEYWORDS, "move left")

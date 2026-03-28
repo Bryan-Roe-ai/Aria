@@ -17,19 +17,11 @@ except ImportError:
 
 try:
     import torch
-    from peft import (
-        LoraConfig,
-        PeftModel,
-        get_peft_model,
-        prepare_model_for_kbit_training,
-    )
-    from transformers import (
-        AutoModelForCausalLM,
-        AutoTokenizer,
-        DataCollatorForLanguageModeling,
-        Trainer,
-        TrainingArguments,
-    )
+    from peft import (LoraConfig, PeftModel, get_peft_model,
+                      prepare_model_for_kbit_training)
+    from transformers import (AutoModelForCausalLM, AutoTokenizer,
+                              DataCollatorForLanguageModeling, Trainer,
+                              TrainingArguments)
 
     from datasets import load_dataset
 except ImportError as e:

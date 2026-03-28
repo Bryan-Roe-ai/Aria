@@ -9,14 +9,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "aria_web"))
 
 # Import the optimized functions
-from server import (
-    DANCE_KEYWORDS,
-    JUMP_KEYWORDS,
-    LOOK_KEYWORDS,
-    WAVE_KEYWORDS,
-    _contains_any_keyword,
-    determine_position_from_context,
-)
+from server import (DANCE_KEYWORDS, JUMP_KEYWORDS, LOOK_KEYWORDS,
+                    WAVE_KEYWORDS, _contains_any_keyword,
+                    determine_position_from_context)
 
 
 def test_basic_functionality():
@@ -112,7 +107,8 @@ def test_connection_pooling():
     print("\nTesting connection pooling...")
 
     try:
-        from shared.chat_memory import _connection_pool, _get_conn, _return_conn
+        from shared.chat_memory import (_connection_pool, _get_conn,
+                                        _return_conn)
 
         assert callable(_get_conn), "Failed: _get_conn not callable"
         assert callable(_return_conn), "Failed: _return_conn not callable"

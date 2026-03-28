@@ -19,7 +19,8 @@ def test_aria_keyword_sets():
     """Test that keyword sets are properly defined."""
     print("Testing Aria web server keyword sets...")
     try:
-        from aria_web.server import _MOVE_KEYWORDS, _SAY_KEYWORDS, _any_word_in_text
+        from aria_web.server import (_MOVE_KEYWORDS, _SAY_KEYWORDS,
+                                     _any_word_in_text)
 
         # Check they're frozensets
         assert isinstance(_MOVE_KEYWORDS, frozenset), "Keywords should be frozensets"

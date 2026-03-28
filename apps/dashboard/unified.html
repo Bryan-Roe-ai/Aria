@@ -3162,7 +3162,7 @@
                 let tableHtml = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 style="margin: 0; color: #667eea;">📊 Model Comparison</h2>
-                        <button onclick="document.getElementById('compareModal').remove(); document.getElementById('compareOverlay').remove();" 
+                        <button onclick="document.getElementById('compareModal').remove(); document.getElementById('compareOverlay').remove();"
                                 style="background: #f87171; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
                             Close
                         </button>
@@ -3201,8 +3201,8 @@
                     </table>
                     <div style="margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px; font-size: 0.9em; color: #666;">
                         <strong>Performance Score:</strong> Calculated as (1/perplexity × 100). Higher is better.<br>
-                        <span style="color: #10b981;">●</span> Excellent (>80) 
-                        <span style="color: #f59e0b;">●</span> Good (50-80) 
+                        <span style="color: #10b981;">●</span> Excellent (>80)
+                        <span style="color: #f59e0b;">●</span> Good (50-80)
                         <span style="color: #ef4444;">●</span> Needs Work (<50)
                     </div>
                 `;
@@ -3361,13 +3361,13 @@
             let html = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2 style="margin: 0; color: #667eea;">📋 Configuration Templates</h2>
-                    <button onclick="this.parentElement.parentElement.parentElement.remove(); document.getElementById('templatesOverlay').remove();" 
+                    <button onclick="this.parentElement.parentElement.parentElement.remove(); document.getElementById('templatesOverlay').remove();"
                             style="background: #f87171; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
                         Close
                     </button>
                 </div>
                 <div style="margin-bottom: 20px;">
-                    <button onclick="saveConfigTemplate()" 
+                    <button onclick="saveConfigTemplate()"
                             style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600;">
                         💾 Save Current Config as Template
                     </button>
@@ -3384,7 +3384,7 @@
                                 <div style="font-weight: 600; color: #333; margin-bottom: 5px;">${t.name}</div>
                                 <div style="font-size: 0.85em; color: #666;">${t.description}</div>
                             </div>
-                            <button onclick="loadConfigTemplate('${key}'); document.getElementById('templatesModal').remove(); document.getElementById('templatesOverlay').remove();" 
+                            <button onclick="loadConfigTemplate('${key}'); document.getElementById('templatesModal').remove(); document.getElementById('templatesOverlay').remove();"
                                     style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
                                 Load
                             </button>
@@ -3408,11 +3408,11 @@
                                     <div style="font-size: 0.75em; color: #999;">Created: ${new Date(t.created).toLocaleDateString()}</div>
                                 </div>
                                 <div>
-                                    <button onclick="loadConfigTemplate('${key}'); document.getElementById('templatesModal').remove(); document.getElementById('templatesOverlay').remove();" 
+                                    <button onclick="loadConfigTemplate('${key}'); document.getElementById('templatesModal').remove(); document.getElementById('templatesOverlay').remove();"
                                             style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 5px;">
                                         Load
                                     </button>
-                                    <button onclick="deleteTemplate('${key}')" 
+                                    <button onclick="deleteTemplate('${key}')"
                                             style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer;">
                                         🗑️
                                     </button>

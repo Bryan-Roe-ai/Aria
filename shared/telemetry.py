@@ -30,7 +30,8 @@ def init_telemetry() -> bool:
 
     try:
         # Azure Monitor OpenTelemetry configuration.
-        from azure.monitor.opentelemetry import configure_azure_monitor  # type: ignore
+        from azure.monitor.opentelemetry import \
+            configure_azure_monitor  # type: ignore
 
         configure_azure_monitor(connection_string=conn)
         _INITIALIZED = True

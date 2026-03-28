@@ -6,13 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts.config_paths import (
-    canonical_config_path,
-    get_config_candidates,
-    known_config_keys,
-    resolve_config_path,
-    resolve_existing_config_path,
-)
+from scripts.config_paths import (canonical_config_path, get_config_candidates,
+                                  known_config_keys, resolve_config_path,
+                                  resolve_existing_config_path)
 
 
 @pytest.mark.unit

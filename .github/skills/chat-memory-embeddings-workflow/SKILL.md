@@ -28,7 +28,7 @@ Trigger phrases:
 ### Step 1 — Check Embedding Provider Chain
 The priority order is:
 1. **Azure OpenAI** — checks 3 endpoint variants for the embedding API
-2. **OpenAI** — standard embedding API  
+2. **OpenAI** — standard embedding API
 3. **Local hash fallback** — deterministic, fixed 256-dim, L2-normalized (offline, zero-dependency)
 
 Diagnose which tier is active:

@@ -494,7 +494,7 @@ Get-PSDrive C | Select-Object Used,Free
    # Quantum AI
    cd quantum-ai
    python .\train_custom_dataset.py
-   
+
    # Phi-3.6 Fine-tuning
    cd AI\microsoft_phi-silica-3.6_v1
    python .\scripts\train_lora.py --dataset ..\..\datasets\chat\dolly15k

@@ -7,7 +7,6 @@ Compares old patterns vs new optimized patterns.
 """
 
 import json
-
 # Add shared to path
 import sys
 import tempfile
