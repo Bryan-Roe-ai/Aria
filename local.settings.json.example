@@ -21,10 +21,13 @@
     "OLLAMA_MODEL": "llama3.2",
 
     "# Optional: LM Studio local AI - https://lmstudio.ai - enable local server in the app": "",
+    "# Optional: LM Studio token auth (required if your LM Studio server has API authentication enabled)": "",
+    "LM_API_TOKEN": "",
+    "LMSTUDIO_API_KEY": "",
     "LMSTUDIO_BASE_URL": "",
     "LMSTUDIO_MODEL": "local-model",
 
-    "# Optional local fallback for TTS. Set to ""true"" to allow server-side local synthesis when Azure Speech is not configured": "",
+    "# Optional local fallback for TTS. Set to true to allow server-side local synthesis when Azure Speech is not configured": "",
     "QAI_ENABLE_LOCAL_TTS": "true"
   }
 }

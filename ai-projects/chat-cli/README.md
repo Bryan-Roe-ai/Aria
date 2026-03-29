@@ -101,11 +101,17 @@ Required environment variables (defaults shown):
 - `LMSTUDIO_BASE_URL` (default `http://127.0.0.1:1234/v1`)
 - `LMSTUDIO_MODEL` (default `local-model`)
 
+Optional authentication variables (for LM Studio servers with API token enabled):
+
+- `LM_API_TOKEN` (preferred)
+- `LMSTUDIO_API_KEY` (legacy compatibility)
+
 Example:
 
 ```powershell
 $env:LMSTUDIO_BASE_URL = "http://127.0.0.1:1234/v1"
 $env:LMSTUDIO_MODEL = "qwen2.5-coder-7b-instruct"
+$env:LM_API_TOKEN = "<your-lmstudio-token>"   # only if your LM Studio server requires auth
 python .\ai-projects\chat-cli\src\chat_cli.py --provider lmstudio
 ```
 
