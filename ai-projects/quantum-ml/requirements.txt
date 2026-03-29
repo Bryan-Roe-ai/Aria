@@ -9,9 +9,11 @@ qiskit-aer>=0.12.0,<0.13.0
 
 # Quantum Machine Learning
 pennylane>=0.39.0,<1.0.0
-## Pennylane-Qiskit adapter may depend on qiskit-terra APIs. If incompatibility
-## arises with Qiskit 1.x, pin below 0.35 or switch to pennylane-braket / other backends.
-pennylane-qiskit>=0.39.0,<1.0.0
+## Pennylane-Qiskit adapter is optional.
+## It currently conflicts with secure torch baselines because recent torch
+## versions require sympy>=1.13.1 while pennylane-qiskit 0.39.x requires
+## sympy<1.13. Install this adapter only in a dedicated environment when needed.
+# pennylane-qiskit>=0.39.0,<0.40.0
 torch>=2.8.0,<3.0.0
 numpy>=1.26.4,<2.0.0
 scipy>=1.14.0,<2.0.0
@@ -34,7 +36,7 @@ pyyaml>=6.0.0,<7.0.0
 jupyter>=1.1.0,<2.0.0
 ipykernel>=6.25.0,<7.0.0
 pytest>=8.0.0,<9.0.0
-black>=24.0.0,<25.0.0
+black>=26.3.1,<27.0.0
 
 # Model Context Protocol (MCP) Server
 mcp>=1.0.0

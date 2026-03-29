@@ -13,7 +13,10 @@ azure-ai-agentserver-core==1.0.0b16
 azure-ai-agentserver-agentframework==1.0.0b16
 
 # ── Azure Identity (DefaultAzureCredential) ───────────────────────────────
-azure-identity==1.21.0
+# Keep compatible with:
+# - agent-framework-core (>=1,<2)
+# - azure-ai-agentserver-core (>=1.25.1)
+azure-identity>=1.25.1,<2.0.0
 
 # ── Utilities ─────────────────────────────────────────────────────────────
 python-dotenv>=1.0.0   # loads .env file
