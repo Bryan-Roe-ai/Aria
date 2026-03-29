@@ -73,14 +73,19 @@ def _make_cache_data(
 # SessionStart with fresh cache and high vuln count → inject context
 # ---------------------------------------------------------------------------
 
+
 class TestSessionStartInjectsContext:
-    def test_injects_context_when_cache_has_critical_vulns(self, monkeypatch, capsys, tmp_path):
+    def test_injects_context_when_cache_has_critical_vulns(
+        self, monkeypatch, capsys, tmp_path
+    ):
         module = _load_module()
         cache_file = tmp_path / "advisory_cache.json"
         cache_file.write_text(json.dumps(_make_cache_data(critical=4, high=13)))
         monkeypatch.setattr(module, "CACHE_FILE", cache_file)
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         code, out, err = _run_main(module, {}, monkeypatch, capsys)
         assert code == 0
@@ -90,7 +95,9 @@ class TestSessionStartInjectsContext:
     def test_context_mentions_critical_count(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         _, out, _ = _run_main(module, {}, monkeypatch, capsys)
         assert "CRITICAL" in out or "critical" in out.lower()
@@ -98,7 +105,9 @@ class TestSessionStartInjectsContext:
     def test_context_mentions_high_count(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         _, out, _ = _run_main(module, {}, monkeypatch, capsys)
         assert "HIGH" in out or "high" in out.lower()
@@ -106,7 +115,9 @@ class TestSessionStartInjectsContext:
     def test_context_mentions_pip_audit_command(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         _, out, _ = _run_main(module, {}, monkeypatch, capsys)
         assert "pip-audit" in out
@@ -114,7 +125,9 @@ class TestSessionStartInjectsContext:
     def test_context_mentions_override(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         _, out, _ = _run_main(module, {}, monkeypatch, capsys)
         assert "ARIA_SKIP_DEPENDABOT_GATE" in out
@@ -122,7 +135,9 @@ class TestSessionStartInjectsContext:
     def test_context_lists_sample_vuln(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         _, out, _ = _run_main(module, {}, monkeypatch, capsys)
         assert "somelib" in out or "PYSEC" in out
@@ -132,11 +147,14 @@ class TestSessionStartInjectsContext:
 # SessionStart but below threshold → silent
 # ---------------------------------------------------------------------------
 
+
 class TestSessionStartBelowThreshold:
     def test_silent_when_zero_vulns(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(total=0, critical=0, high=0))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(total=0, critical=0, high=0)
+        )
 
         code, out, err = _run_main(module, {}, monkeypatch, capsys)
         assert code == 0
@@ -147,7 +165,9 @@ class TestSessionStartBelowThreshold:
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
         # HIGH_THRESHOLD is 5; 3 high vulns should not trigger
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(total=3, critical=0, high=3))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(total=3, critical=0, high=3)
+        )
 
         code, out, err = _run_main(module, {}, monkeypatch, capsys)
         assert code == 0
@@ -157,6 +177,7 @@ class TestSessionStartBelowThreshold:
 # ---------------------------------------------------------------------------
 # No cache + pip-audit not available → hint message
 # ---------------------------------------------------------------------------
+
 
 class TestNoCachePipAuditUnavailable:
     def test_hint_when_pip_audit_not_installed(self, monkeypatch, capsys):
@@ -174,6 +195,7 @@ class TestNoCachePipAuditUnavailable:
 # No cache + pip-audit available → run audit and cache result
 # ---------------------------------------------------------------------------
 
+
 class TestNoCachePipAuditAvailable:
     def test_runs_audit_and_caches_when_no_cache(self, monkeypatch, capsys, tmp_path):
         module = _load_module()
@@ -183,7 +205,9 @@ class TestNoCachePipAuditAvailable:
         monkeypatch.setattr(module, "_cache_valid", lambda: False)
         monkeypatch.setattr(module, "_pip_audit_available", lambda: True)
         monkeypatch.setattr(module, "_run_audit", lambda: audit_result)
-        monkeypatch.setattr(module, "_write_cache", lambda d: cache_write_calls.append(d))
+        monkeypatch.setattr(
+            module, "_write_cache", lambda d: cache_write_calls.append(d)
+        )
         monkeypatch.setattr(module, "_read_cache", lambda: audit_result)
 
         code, out, _ = _run_main(module, {}, monkeypatch, capsys)
@@ -209,26 +233,27 @@ class TestNoCachePipAuditAvailable:
 # Environment override
 # ---------------------------------------------------------------------------
 
+
 class TestEnvOverride:
     def test_skip_env_suppresses_everything(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=20))
-
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, skip_env="1"
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=20)
         )
+
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, skip_env="1")
         assert code == 0
         assert out == ""
 
     def test_skip_env_zero_does_not_suppress(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=20))
-
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, skip_env="0"
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=20)
         )
+
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, skip_env="0")
         assert code == 0
         assert "Vulnerability Advisory" in out
 
@@ -237,33 +262,36 @@ class TestEnvOverride:
 # Non-SessionStart events → silent
 # ---------------------------------------------------------------------------
 
+
 class TestNonSessionStartEvents:
     def test_silent_on_pre_tool_use(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
-
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, event="PreToolUse"
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
         )
+
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, event="PreToolUse")
         assert code == 0
         assert out == ""
 
     def test_silent_on_stop(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
-
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, event="Stop"
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
         )
+
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, event="Stop")
         assert code == 0
         assert out == ""
 
     def test_silent_on_user_prompt_submit(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=4, high=13))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
 
         code, out, err = _run_main(
             module, {}, monkeypatch, capsys, event="UserPromptSubmit"
@@ -272,16 +300,60 @@ class TestNonSessionStartEvents:
         assert out == ""
 
 
+class TestEventNameResolution:
+    def test_uses_hook_event_name_env_when_copilot_env_missing(
+        self, monkeypatch, capsys
+    ):
+        module = _load_module()
+        monkeypatch.delenv("COPILOT_HOOK_EVENT", raising=False)
+        monkeypatch.setenv("hook_event_name", "SessionStart")
+        monkeypatch.setattr(module, "_cache_valid", lambda: True)
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
+        monkeypatch.setattr(sys, "stdin", io.StringIO("{}"))
+
+        try:
+            module.main()
+        except SystemExit as exc:
+            out = capsys.readouterr().out
+            assert exc.code == 0
+            assert "Vulnerability Advisory" in out
+
+    def test_uses_payload_event_when_env_is_missing(self, monkeypatch, capsys):
+        module = _load_module()
+        monkeypatch.delenv("COPILOT_HOOK_EVENT", raising=False)
+        monkeypatch.delenv("hook_event_name", raising=False)
+        monkeypatch.delenv("HOOK_EVENT_NAME", raising=False)
+        monkeypatch.setattr(module, "_cache_valid", lambda: True)
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=4, high=13)
+        )
+
+        code, out, _ = _run_main(
+            module,
+            {"event": "SessionStart"},
+            monkeypatch,
+            capsys,
+            event="",
+        )
+        assert code == 0
+        assert "Vulnerability Advisory" in out
+
+
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestEdgeCases:
     def test_empty_stdin_exits_cleanly(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setenv("COPILOT_HOOK_EVENT", "SessionStart")
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(total=0, critical=0, high=0))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(total=0, critical=0, high=0)
+        )
         monkeypatch.setattr(sys, "stdin", io.StringIO(""))
         try:
             module.main()
@@ -292,7 +364,9 @@ class TestEdgeCases:
         module = _load_module()
         monkeypatch.setenv("COPILOT_HOOK_EVENT", "SessionStart")
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(total=0, critical=0, high=0))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(total=0, critical=0, high=0)
+        )
         monkeypatch.setattr(sys, "stdin", io.StringIO("{bad json}"))
         try:
             module.main()
@@ -303,7 +377,9 @@ class TestEdgeCases:
         """This hook must never block — exit 0 always."""
         module = _load_module()
         monkeypatch.setattr(module, "_cache_valid", lambda: True)
-        monkeypatch.setattr(module, "_read_cache", lambda: _make_cache_data(critical=99, high=99))
+        monkeypatch.setattr(
+            module, "_read_cache", lambda: _make_cache_data(critical=99, high=99)
+        )
 
         code, _, _ = _run_main(module, {}, monkeypatch, capsys)
         assert code == 0
@@ -312,6 +388,7 @@ class TestEdgeCases:
 # ---------------------------------------------------------------------------
 # Helper unit tests
 # ---------------------------------------------------------------------------
+
 
 class TestHelpers:
     def test_format_context_with_critical(self):
@@ -337,6 +414,7 @@ class TestHelpers:
         # Fake an old mtime
         old_time = time.time() - (10 * 3600)  # 10 hours old
         import os
+
         os.utime(cache_file, (old_time, old_time))
         monkeypatch.setattr(module, "CACHE_FILE", cache_file)
         assert not module._cache_valid()

@@ -46,17 +46,30 @@ REQUIREMENTS_FILES = [
 
 # Inject context when critical + high vulnerabilities exceed these thresholds.
 CRITICAL_THRESHOLD = 1  # any critical trips the gate
-HIGH_THRESHOLD = 5       # more than 5 high vulns triggers context injection
+HIGH_THRESHOLD = 5  # more than 5 high vulns triggers context injection
 
-PIP_AUDIT_TIMEOUT = 30   # seconds
+PIP_AUDIT_TIMEOUT = 30  # seconds
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _event_name() -> str:
-    return os.environ.get("COPILOT_HOOK_EVENT", "SessionStart")
+
+def _event_name(payload: dict[str, Any] | None = None) -> str:
+    """Resolve hook event name from known env/payload keys.
+
+    Supports both legacy and newer key shapes seen in hook payload pipelines.
+    """
+    payload = payload or {}
+    return (
+        os.environ.get("COPILOT_HOOK_EVENT")
+        or os.environ.get("hook_event_name")
+        or os.environ.get("HOOK_EVENT_NAME")
+        or payload.get("hook_event_name")
+        or payload.get("event")
+        or "SessionStart"
+    )
 
 
 def _allowed_by_env() -> bool:
@@ -140,7 +153,6 @@ def _audit_file(req_file: str) -> list[dict[str, Any]]:
 
 def _severity(vuln: dict[str, Any]) -> str:
     """Best-effort severity extraction from a pip-audit vulnerability record."""
-    fix = vuln.get("fix_versions", [])
     aliases = vuln.get("aliases", [])
     # pip_audit doesn't always carry severity; use alias naming as heuristic.
     # Fall back to "unknown".
@@ -198,7 +210,9 @@ def _format_context(data: dict[str, Any]) -> str:
         f"    {total} known vulnerabilities across {len(files)} requirements file(s).",
     ]
     if critical > 0:
-        lines.append(f"    ⛔ {critical} CRITICAL — address before modifying any requirements files.")
+        lines.append(
+            f"    ⛔ {critical} CRITICAL — address before modifying any requirements files."
+        )
     if high > 0:
         lines.append(f"    ⚠️  {high} HIGH — review when updating dependencies.")
 
@@ -206,7 +220,9 @@ def _format_context(data: dict[str, Any]) -> str:
         lines.append("    Sample affected packages:")
         for v in sample:
             fix = ", ".join(v.get("fix_versions", [])) or "no fix"
-            lines.append(f"      • {v['package']} {v['version']} ({v['id']}) → fix: {fix}")
+            lines.append(
+                f"      • {v['package']} {v['version']} ({v['id']}) → fix: {fix}"
+            )
 
     lines += [
         "",
@@ -220,6 +236,7 @@ def _format_context(data: dict[str, Any]) -> str:
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> None:
     raw = sys.stdin.read().strip()
     payload: dict[str, Any] = {}
@@ -232,7 +249,7 @@ def main() -> None:
     if _allowed_by_env():
         sys.exit(0)
 
-    event = _event_name()
+    event = _event_name(payload)
     if event != "SessionStart":
         sys.exit(0)
 
@@ -256,7 +273,9 @@ def main() -> None:
     critical = data.get("critical", 0)
     high = data.get("high", 0)
 
-    should_inject = total > 0 and (critical >= CRITICAL_THRESHOLD or high >= HIGH_THRESHOLD)
+    should_inject = total > 0 and (
+        critical >= CRITICAL_THRESHOLD or high >= HIGH_THRESHOLD
+    )
     if should_inject:
         print(_format_context(data))
 
