@@ -8,7 +8,7 @@
     "OLLAMA_BASE_URL": "http://127.0.0.1:11434/v1",
     "OLLAMA_MODEL": "tinyllama",
     "LMSTUDIO_BASE_URL": "http://192.168.1.153:1234/v1",
-    "LMSTUDIO_MODEL": "nvidia/nemotron-3-nano-4b",
+    "LMSTUDIO_MODEL": "openai/gpt-oss-120b",
     "CHAT_TEMPERATURE": "0.7",
     "CHAT_MAX_TOKENS": "2048",
     "QAI_ENABLE_LOCAL_TTS": "true",

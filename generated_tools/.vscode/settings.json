@@ -1,0 +1,11 @@
+{
+    "workbench.startupEditor": "readme",
+    "python.testing.pytestArgs": [
+        ".",
+        "--cache-mode=session"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    "python.testing.autoTestDiscoverOnSavePattern": "**/*.{py,jsonl}"
+}

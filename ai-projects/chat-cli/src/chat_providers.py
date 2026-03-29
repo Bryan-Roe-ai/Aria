@@ -48,10 +48,13 @@ _LOGGER = logging.getLogger(__name__)
 
 try:
     # openai>=1.0
-    from openai import AzureOpenAI, OpenAI  # type: ignore
+    from openai import AzureOpenAI, NotGiven, OpenAI  # type: ignore
+
+    _OPENAI_NOT_GIVEN = NotGiven()
 except Exception:  # pragma: no cover - optional at runtime
     OpenAI = None  # type: ignore
     AzureOpenAI = None  # type: ignore
+    _OPENAI_NOT_GIVEN = None  # type: ignore
 
 
 # Thread-safe cache for LM Studio availability checks
@@ -853,11 +856,18 @@ class LMStudioProvider(BaseChatProvider):
     ) -> Iterable[str] | str:
         try:
             normalized_messages = self._normalize_messages_for_api(messages)
+            # Use NOT_GIVEN (omit key entirely) when no limit is set — LM Studio
+            # interprets "max_tokens": null as 0 and produces empty/truncated output.
+            max_tokens_param = (
+                self.max_output_tokens
+                if self.max_output_tokens is not None
+                else _OPENAI_NOT_GIVEN
+            )
             resp = self.client.chat.completions.create(
                 model=self.model,
                 messages=normalized_messages,
                 temperature=self.temperature,
-                max_tokens=self.max_output_tokens,
+                max_tokens=max_tokens_param,
                 stream=stream,
             )
 

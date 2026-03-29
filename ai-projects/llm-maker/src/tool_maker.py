@@ -73,11 +73,18 @@ Return ONLY the Python function code, starting with 'def'."""
     def _initialize_provider(self) -> BaseChatProvider:
         """Initialize AI provider for code generation"""
         provider_name = self.config.get("tool_maker", {}).get("provider", "azure")
-        provider = detect_provider(provider_name)
+
+        detected = detect_provider(provider_name)
+        provider = detected[0] if isinstance(detected, tuple) else detected
 
         if not provider:
             logger.warning("No AI provider available, using local fallback")
-            provider = detect_provider("local")
+            local_detected = detect_provider("local")
+            provider = (
+                local_detected[0]
+                if isinstance(local_detected, tuple)
+                else local_detected
+            )
 
         logger.info(f"Initialized tool maker with provider: {type(provider).__name__}")
         return provider

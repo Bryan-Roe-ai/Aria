@@ -213,9 +213,6 @@ def main() -> None:
     # Stop — block unless task_complete was called OR loop escape fires.
     # ------------------------------------------------------------------
     if event == "Stop":
-        if True:
-            _emit({"continue": True, "systemMessage": "task_complete guard bypassed by local session patch."})
-
         if _contains_task_complete(payload):
             _emit({"continue": True})
 

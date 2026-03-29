@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — Aria Studio Web</title>
+  <meta name="description" content="Contact the Aria Studio Web team." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header" role="banner">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Aria Studio Web home">
+        <span class="brand-mark" aria-hidden="true">◉</span>
+        <span>Aria Studio Web</span>
+      </a>
+
+      <button id="menuToggle" class="menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primaryNav">☰</button>
+
+      <nav id="primaryNav" class="primary-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="contact.html" aria-current="page">Contact</a>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="section">
+    <div class="container">
+      <h1>Contact</h1>
+      <p>Tell us about your project and we’ll follow up with a practical implementation path.</p>
+
+      <form id="contactForm" class="contact-form" novalidate aria-label="Project contact form">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" autocomplete="name" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" required />
+
+        <label for="message">Project goals</label>
+        <textarea id="message" name="message" rows="6" required></textarea>
+
+        <button class="btn btn-primary" type="submit">Send</button>
+      </form>
+
+      <p id="formStatus" aria-live="polite" class="result"></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <p>© <span id="year"></span> Aria Studio Web</p>
+      <nav aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

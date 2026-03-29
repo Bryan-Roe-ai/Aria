@@ -2,6 +2,7 @@
 # QAI Azure Functions Application
 # =============================================================================
 import importlib.util as _iu
+import hashlib
 import json
 import logging
 import os
@@ -342,6 +343,37 @@ def _sanitize_chat_messages(messages) -> list[dict]:
     return sanitized
 
 
+def _resolve_session_id(payload: dict, req: func.HttpRequest) -> str:
+    """Resolve a stable non-empty session id for memory isolation.
+
+    Priority:
+    1) Explicit JSON body `session_id`
+    2) Header `x-session-id`
+    3) Deterministic anonymous fingerprint from request metadata
+    """
+    body_session = (payload or {}).get("session_id")
+    if body_session is not None:
+        body_session_text = str(body_session).strip()
+        if body_session_text:
+            return body_session_text
+
+    header_session = (req.headers.get("x-session-id") or "").strip()
+    if header_session:
+        return header_session
+
+    anon_seed_parts = [
+        (req.headers.get("x-forwarded-for") or "").strip().lower(),
+        (req.headers.get("x-client-ip") or "").strip().lower(),
+        (req.headers.get("user-agent") or "").strip().lower(),
+    ]
+    anon_seed = "|".join(part for part in anon_seed_parts if part)
+    if not anon_seed:
+        anon_seed = f"ephemeral|pid={os.getpid()}|ns={time.time_ns()}"
+
+    anon_hash = hashlib.sha256(anon_seed.encode("utf-8")).hexdigest()[:16]
+    return f"anon-{anon_hash}"
+
+
 def _detect_provider_with_runtime_fallback(
     *,
     explicit: str | None = None,
@@ -410,8 +442,8 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         # Parse request
         req_body = req.get_json()
         messages = _sanitize_chat_messages(req_body.get("messages", []))
-        # Optional client-provided session identifier
-        session_id = req_body.get("session_id")
+        # Resolve session identifier (never None) to preserve memory isolation.
+        session_id = _resolve_session_id(req_body, req)
         provider_choice = req_body.get("provider", os.getenv("QAI_PROVIDER", "auto"))
         model_override = req_body.get("model", os.getenv("QAI_LORA_MODEL"))
         temperature = req_body.get("temperature")
@@ -933,6 +965,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
     try:
         body = req.get_json()
         messages = _sanitize_chat_messages(body.get("messages", []))
+        stream_session_id = _resolve_session_id(body, req)
         provider_choice = body.get("provider", "auto")
         model_override = body.get("model")
         temperature = body.get("temperature")
@@ -956,7 +989,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
             try:
                 stream_embedding = generate_embedding(stream_user_content)
                 similar_msgs = fetch_similar_messages(
-                    stream_embedding, top_k=5, session_id=body.get("session_id")
+                    stream_embedding, top_k=5, session_id=stream_session_id
                 )
                 for idx, sm in enumerate(similar_msgs):
                     memory_content = sm.get("content")

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Aria Studio Web</title>
+  <meta name="description" content="Learn about Aria Studio Web and the mission behind interactive AI character experiences." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <header class="site-header" role="banner">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Aria Studio Web home">
+        <span class="brand-mark" aria-hidden="true">◉</span>
+        <span>Aria Studio Web</span>
+      </a>
+
+      <button id="menuToggle" class="menu-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primaryNav">☰</button>
+
+      <nav id="primaryNav" class="primary-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="about.html" aria-current="page">About</a>
+        <a href="contact.html">Contact</a>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="section">
+    <div class="container prose">
+      <h1>About Aria Studio Web</h1>
+      <p>
+        Aria Studio Web exists to help teams prototype and launch AI-driven character experiences faster—
+        from conversational interactions to animated, stateful scenes.
+      </p>
+
+      <h2>Who it’s for</h2>
+      <ul>
+        <li>Product teams building interactive copilots</li>
+        <li>Educators creating engaging AI learning environments</li>
+        <li>Developers integrating actions, chat, and world simulation</li>
+      </ul>
+
+      <h2>Our principles</h2>
+      <ol>
+        <li><strong>Safety first</strong> — dry-runs, explicit confirmations, and policy hooks.</li>
+        <li><strong>Composable architecture</strong> — modular APIs, provider routing, and optional persistence.</li>
+        <li><strong>Human-centered UX</strong> — accessibility and clear feedback loops.</li>
+      </ol>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <p>© <span id="year"></span> Aria Studio Web</p>
+      <nav aria-label="Footer">
+        <a href="index.html">Home</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
