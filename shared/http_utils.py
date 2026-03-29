@@ -11,6 +11,46 @@ from typing import Any, Dict, Optional, Tuple
 _LOGGER = logging.getLogger(__name__)
 
 
+def _is_text_like_block_type(block_type: Any) -> bool:
+    """Return True for text block types used by OpenAI-compatible APIs."""
+    if not isinstance(block_type, str):
+        return False
+    normalized = block_type.strip().lower()
+    return normalized == "text" or normalized.endswith("_text")
+
+
+def _has_non_whitespace_text_content(content: Any) -> bool:
+    """Return True when content includes valid, non-whitespace text.
+
+    Supports plain string content and OpenAI-style block content lists.
+    Non-text blocks are ignored for this specific validation check.
+    """
+    if isinstance(content, str):
+        return bool(content.strip())
+
+    if isinstance(content, list):
+        has_text_block = False
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            if not _is_text_like_block_type(block.get("type")):
+                continue
+            has_text_block = True
+            block_text = block.get("text")
+            if isinstance(block_text, str) and block_text.strip():
+                return True
+        # If there were text blocks but none had non-whitespace text, reject.
+        if has_text_block:
+            return False
+        # For block-based content with no text blocks, treat as valid (e.g. image-only).
+        return True
+
+    if content is None:
+        return False
+
+    return bool(str(content).strip())
+
+
 def validate_messages(messages: Any) -> Tuple[bool, Optional[str]]:
     """Validate chat messages format.
 
@@ -40,6 +80,12 @@ def validate_messages(messages: Any) -> Tuple[bool, Optional[str]]:
 
         if "content" not in msg:
             return False, f"Message {idx} missing 'content' field"
+
+        if not _has_non_whitespace_text_content(msg.get("content")):
+            return False, (
+                f"Message {idx} has empty or whitespace-only content. "
+                "Text content must contain non-whitespace text."
+            )
 
         # Validate role is one of the expected values
         valid_roles = {"user", "assistant", "system"}

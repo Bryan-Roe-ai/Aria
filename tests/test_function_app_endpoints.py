@@ -259,11 +259,196 @@ class TestPostValidation:
         resp = app_module.chat(req)
         assert resp.status_code in (400, 500)
 
+    def test_chat_whitespace_only_message(self, app_module):
+        """POST /api/chat with whitespace-only content should return 400."""
+        req = _mock_request(
+            "POST",
+            body={"messages": [{"role": "user", "content": "   \n\t  "}]},
+        )
+        resp = app_module.chat(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
+
+    def test_chat_whitespace_only_text_block_message(self, app_module):
+        """POST /api/chat with whitespace-only text block content should return 400."""
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "   "},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": "https://example.com/img.png"},
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+        resp = app_module.chat(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
+
+    def test_chat_whitespace_only_input_text_block_message(self, app_module):
+        """POST /api/chat with whitespace-only input_text block content should return 400."""
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "input_text", "text": "   \n\t  "},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": "https://example.com/img.png"},
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+        resp = app_module.chat(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
+
+    def test_chat_drops_compaction_placeholder_before_provider_call(
+        self, app_module, monkeypatch
+    ):
+        """Synthetic compaction placeholders should not be forwarded to providers."""
+
+        captured: dict = {}
+
+        class _FakeProvider:
+            def complete(self, messages, stream=False):
+                captured["messages"] = messages
+                return "Recovered reply"
+
+        monkeypatch.setattr(
+            app_module,
+            "detect_provider",
+            lambda **kwargs: (
+                _FakeProvider(),
+                types.SimpleNamespace(name="local", model="test-model"),
+            ),
+        )
+        monkeypatch.setattr(app_module, "generate_embedding", lambda text: [])
+        monkeypatch.setattr(
+            app_module,
+            "fetch_similar_messages",
+            lambda query_emb, top_k=5, session_id=None: [],
+        )
+        monkeypatch.setattr(app_module, "log_chat_message_safe", None)
+        monkeypatch.setattr(app_module, "cosmos_client", None)
+
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [
+                    {"role": "assistant", "content": "Compacted conversation"},
+                    {"role": "user", "content": "Continue with the fix"},
+                ]
+            },
+        )
+
+        resp = app_module.chat(req)
+
+        assert resp.status_code == 200
+        assert captured["messages"] == [
+            {"role": "user", "content": "Continue with the fix"}
+        ]
+
+    def test_chat_only_compaction_placeholder_messages_return_validation_error(
+        self, app_module
+    ):
+        """Placeholder-only histories should be rejected like other empty input."""
+
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [
+                    {"role": "assistant", "content": "Compacted conversation"},
+                    {"role": "assistant", "content": "\nCompacted conversation\n"},
+                ]
+            },
+        )
+
+        resp = app_module.chat(req)
+
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
+
     def test_chat_stream_empty_messages(self, app_module):
         """POST /api/chat/stream with empty messages → 400."""
         req = _mock_request("POST", body={"messages": []})
         resp = app_module.chat_stream(req)
         assert resp.status_code == 400
+
+    def test_chat_stream_whitespace_only_message(self, app_module):
+        """POST /api/chat/stream with whitespace-only content should return 400."""
+        req = _mock_request(
+            "POST",
+            body={"messages": [{"role": "user", "content": "   "}]},
+        )
+        resp = app_module.chat_stream(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
+
+    def test_chat_stream_whitespace_only_text_block_message(self, app_module):
+        """POST /api/chat/stream with whitespace-only text block content should return 400."""
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "\n\t  "},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": "https://example.com/img.png"},
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+        resp = app_module.chat_stream(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
+
+    def test_chat_stream_whitespace_only_input_text_block_message(self, app_module):
+        """POST /api/chat/stream with whitespace-only input_text blocks should return 400."""
+        req = _mock_request(
+            "POST",
+            body={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "input_text", "text": "  \n  "},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": "https://example.com/img.png"},
+                            },
+                        ],
+                    }
+                ]
+            },
+        )
+        resp = app_module.chat_stream(req)
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert "validation error" in data["error"].lower()
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""

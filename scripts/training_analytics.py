@@ -3,10 +3,13 @@ Advanced Analytics for Autonomous Training
 Generates charts, trends, and insights
 """
 
+import argparse
+import os
 import statistics
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Dict
 
 # Ensure repository root is on sys.path as early as possible so subprocess
 # invocations and test runners can import local packages reliably.
@@ -14,11 +17,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-import argparse
-import os
-from typing import Dict, List, Tuple
-
-from shared.json_utils import load_status_json
+from shared.json_utils import load_status_json  # noqa: E402
 
 
 class TrainingAnalytics:
@@ -147,7 +146,10 @@ class TrainingAnalytics:
         if promotions:
             p = promotions[-1]
             report.append(
-                f"Latest Promotion: v{p.get('version', '?')} at cycle {p.get('cycle', '?')} ({p.get('accuracy', 0):.2%})"
+                (
+                    f"Latest Promotion: v{p.get('version', '?')} at cycle "
+                    f"{p.get('cycle', '?')} ({p.get('accuracy', 0):.2%})"
+                )
             )
         report.append("")
 
@@ -308,7 +310,10 @@ class TrainingAnalytics:
     <ul>
       <li>Cycles completed: {self.status.get('cycles_completed', 0)}</li>
       <li>Best accuracy: {self.status.get('best_accuracy', 0):.2%}</li>
-      <li>Total datasets: {self.status.get('total_datasets_available', len(self.status.get('dataset_inventory', {})))}</li>
+            <li>Total datasets: {self.status.get(
+                    'total_datasets_available',
+                    len(self.status.get('dataset_inventory', {})),
+            )}</li>
     </ul>
     <h2>Report</h2>
     <pre>{self.generate_report()}</pre>
@@ -369,16 +374,21 @@ def main():
 
     analytics = TrainingAnalytics(args.status_file)
 
-    if args.report:
-        print(analytics.generate_report())
-    elif args.chart:
-        print(analytics.generate_ascii_chart(args.metric))
-    elif args.html:
-        analytics.export_html_report(args.html)
-    else:
-        # Default: show report and chart
-        print(analytics.generate_report())
-        print(analytics.generate_ascii_chart())
+    try:
+        if args.report:
+            print(analytics.generate_report())
+        elif args.chart:
+            print(analytics.generate_ascii_chart(args.metric))
+        elif args.html:
+            analytics.export_html_report(args.html)
+        else:
+            # Default: show report and chart
+            print(analytics.generate_report())
+            print(analytics.generate_ascii_chart())
+    except BrokenPipeError:
+        # Handle broken pipe when output is piped to commands like head
+        _squelch_stdout_after_broken_pipe()
+        return
 
 
 def _squelch_stdout_after_broken_pipe() -> None:

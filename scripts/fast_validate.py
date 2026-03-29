@@ -85,11 +85,16 @@ def quick_check_scripts() -> Dict[str, Any]:
 
 
 def quick_check_venv() -> Dict[str, Any]:
-    """Check Python venv exists without inspecting packages."""
+    """Check Python virtual environments exist without inspecting packages."""
     venv_markers = [
+        ".venv/Scripts/python.exe",
+        ".venv/bin/python",
         "venv/Scripts/python.exe",
         "venv/bin/python",
         "ai-projects/quantum-ml/venv/Scripts/python.exe",
+        "ai-projects/quantum-ml/venv/bin/python",
+        "ai-projects/chat-cli/venv/Scripts/python.exe",
+        "ai-projects/chat-cli/venv/bin/python",
     ]
     found = sum(1 for m in venv_markers if (REPO_ROOT / m).exists())
 
@@ -180,6 +185,48 @@ def quick_check_providers() -> Dict[str, Any]:
     }
 
 
+def _find_project_python() -> Path | None:
+    """Return a likely project Python executable path, preferring local venvs."""
+    import os
+
+    if os.name == "nt":
+        candidates = [
+            REPO_ROOT / ".venv" / "Scripts" / "python.exe",
+            REPO_ROOT / "venv" / "Scripts" / "python.exe",
+            REPO_ROOT / ".venv" / "bin" / "python",
+            REPO_ROOT / "venv" / "bin" / "python",
+        ]
+    else:
+        candidates = [
+            REPO_ROOT / ".venv" / "bin" / "python",
+            REPO_ROOT / "venv" / "bin" / "python",
+            REPO_ROOT / ".venv" / "Scripts" / "python.exe",
+            REPO_ROOT / "venv" / "Scripts" / "python.exe",
+        ]
+
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file() and os.access(candidate, os.X_OK):
+            return candidate
+    return None
+
+
+def _spec_exists_in_python(module_name: str, python_exe: Path) -> bool:
+    """Check module availability in a specific interpreter without importing it here."""
+    import subprocess
+
+    cmd = [
+        str(python_exe),
+        "-c",
+        (
+            "import importlib.util,sys; "
+            "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"
+        ),
+        module_name,
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+    return proc.returncode == 0
+
+
 def quick_check_dependencies() -> Dict[str, Any]:
     """Verify key Python packages are importable (no heavy loads)."""
     import importlib.util
@@ -187,21 +234,36 @@ def quick_check_dependencies() -> Dict[str, Any]:
     packages = ["pytest", "yaml", "flask", "azure.functions"]
     present = []
     missing = []
+    project_python = _find_project_python()
+
     for pkg in packages:
         try:
-            if importlib.util.find_spec(pkg):
-                present.append(pkg)
-            else:
-                missing.append(pkg)
+            available_here = bool(importlib.util.find_spec(pkg))
         except ModuleNotFoundError:
+            available_here = False
+
+        available_in_project_venv = False
+        if not available_here and project_python is not None:
+            try:
+                available_in_project_venv = _spec_exists_in_python(pkg, project_python)
+            except Exception:
+                available_in_project_venv = False
+
+        if available_here or available_in_project_venv:
+            present.append(pkg)
+        else:
             missing.append(pkg)
 
-    return {
+    details: Dict[str, Any] = {
         "status": "ok" if not missing else "missing_deps",
         "present": present,
         "missing": missing,
         "speed": "instant",
     }
+    if project_python is not None:
+        details["project_python"] = str(project_python.relative_to(REPO_ROOT))
+
+    return details
 
 
 def main() -> None:

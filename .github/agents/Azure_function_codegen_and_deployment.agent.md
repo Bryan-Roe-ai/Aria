@@ -6,6 +6,12 @@ tools: ["search/changes","edit","vscode/extensions","web/fetch","vscode/getProje
 
 # Azure Functions Code Generation and Deployment
 
+## Return-to-Agent Contract
+
+This specialist mode is temporary. After completing the Azure Functions codegen/deployment portion of the task, return a concise handoff to the primary `agent` that includes changes made, resources/files affected, blockers or rollout risks, and the recommended next step.
+
+Do not retain control after the scoped work is finished; hand back to `agent` for orchestration and final reporting.
+
 Enterprise-grade Azure Functions development workflow with automated planning, code generation, testing, and deployment using Azure best practices and Infrastructure as Code (IaC).
 
 ## Core Workflow

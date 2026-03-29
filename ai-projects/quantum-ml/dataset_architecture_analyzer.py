@@ -197,9 +197,7 @@ def analyze_dataset(dataset_name):
         else:
             df = pd.read_csv(dataset_path, na_values=["?", "NA", "", "NaN"])
     except Exception as e:
-        raise ValueError(f"Failed to load {dataset_name}: {str(e)}")
-
-    # Basic statistics
+        raise ValueError(f"Failed to load {dataset_name}: {str(e)}") from e
     n_samples = len(df)
     n_features = df.shape[1] - 1  # Exclude target
 

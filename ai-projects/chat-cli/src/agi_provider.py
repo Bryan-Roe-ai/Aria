@@ -97,6 +97,18 @@ _AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
         ],
         "description": "Deep reasoning and explanation using AGI chain-of-thought",
     },
+    "lmstudio-specialist": {
+        "domains": [],
+        "intents": ["explanation", "question", "coding", "creation"],
+        "provider": "lmstudio",
+        "confidence_boost": 0.05,
+        "subtask_templates": [
+            "Understand the query: identify key concepts and requirements",
+            "Formulate response: structure thoughts logically and clearly",
+            "Review: ensure accuracy, completeness, and helpful presentation",
+        ],
+        "description": "Local LM Studio inference for general-purpose reasoning and Q&A",
+    },
     "general": {
         "domains": [],
         "intents": [],
@@ -494,7 +506,21 @@ class AGIProvider(BaseChatProvider):
             return None  # let AGI handle it directly
 
         try:
-            specialist, _ = detect_provider(explicit=provider_name)
+            specialist, choice = detect_provider(explicit=provider_name)
+            if choice.name != provider_name:
+                _logger.debug(
+                    "Agent dispatch skipped for %s: requested provider=%s resolved to %s",
+                    agent_name,
+                    provider_name,
+                    choice.name,
+                )
+                return None
+            # Validate query is non-empty before constructing message
+            if not query or not str(query).strip():
+                _logger.warning(
+                    "Agent dispatch to %s: empty query provided", agent_name
+                )
+                return None
             messages = [{"role": "user", "content": query}]
             result = specialist.complete(messages, stream=False)
             response = result if isinstance(result, str) else "".join(result)
@@ -819,7 +845,6 @@ class AGIProvider(BaseChatProvider):
         Each pattern entry records a ``last_seen`` Unix timestamp so that
         `_select_agent` can apply time-decay to older observations.
         """
-        import time
 
         if agent_used == "general":
             return

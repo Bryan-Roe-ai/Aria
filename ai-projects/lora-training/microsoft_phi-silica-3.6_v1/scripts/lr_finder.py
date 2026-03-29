@@ -77,7 +77,8 @@ class LearningRateFinder:
         beta = smooth_f
 
         # Create LR schedule
-        lr_lambda = lambda x: np.exp(x * np.log(end_lr / start_lr) / (num_iter - 1))
+        def lr_lambda(x: float) -> float:
+            return float(np.exp(x * np.log(end_lr / start_lr) / (num_iter - 1)))
 
         # Run test
         data_iterator = iter(train_loader)

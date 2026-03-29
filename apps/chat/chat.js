@@ -26,6 +26,27 @@ let temperature = 0.7;
 let maxOutputTokens = 1024;
 let systemPrompt = '';
 let activeAbortController = null;
+const COMPACTION_PLACEHOLDER_LINES = new Set([
+    'compacted conversation',
+    'conversation compacted'
+]);
+
+function isSyntheticCompactionPlaceholder(content) {
+    if (typeof content !== 'string') return false;
+    const normalizedLines = content
+        .split(/\r?\n/)
+        .map(line => line.trim().toLowerCase())
+        .filter(Boolean);
+    return normalizedLines.length > 0 && normalizedLines.every(line => COMPACTION_PLACEHOLDER_LINES.has(line));
+}
+
+function sanitizeConversationMessages(items) {
+    return (items || []).filter(msg => {
+        if (!msg || typeof msg !== 'object') return false;
+        if (typeof msg.content !== 'string') return true;
+        return !isSyntheticCompactionPlaceholder(msg.content);
+    });
+}
 
 // DOM elements
 const chatMessages = document.getElementById('chatMessages');
@@ -312,9 +333,9 @@ async function sendMessage() {
 
 async function oneShotResponse(typingIndicator) {
     // Prepare messages with system prompt if provided
-    const apiMessages = systemPrompt ?
+    const apiMessages = sanitizeConversationMessages(systemPrompt ?
         [{ role: 'system', content: systemPrompt }, ...messages] :
-        messages;
+        messages);
 
     console.log('Sending non-streaming request to:', API_BASE);
     console.log('Request body:', { messages: apiMessages, temperature, max_tokens: maxOutputTokens });
@@ -348,7 +369,9 @@ async function oneShotResponse(typingIndicator) {
     console.log('Assistant message:', assistantMessage);
 
     addMessage('assistant', assistantMessage, true);
-    messages.push({ role: 'assistant', content: assistantMessage });
+    if (!isSyntheticCompactionPlaceholder(assistantMessage)) {
+        messages.push({ role: 'assistant', content: assistantMessage });
+    }
     updateMessageCount();
     if (data.provider && data.model) {
         providerInfo.textContent = `${data.provider.toUpperCase()} - ${data.model}`;
@@ -376,9 +399,9 @@ async function streamResponse(typingIndicator) {
     activeAbortController = new AbortController();
 
     // Prepare messages with system prompt if provided
-    const apiMessages = systemPrompt ?
+    const apiMessages = sanitizeConversationMessages(systemPrompt ?
         [{ role: 'system', content: systemPrompt }, ...messages] :
-        messages;
+        messages);
 
     console.log('Sending streaming request to:', STREAM_API);
     console.log('Request body:', { messages: apiMessages, temperature, max_tokens: maxOutputTokens, stream: true });
@@ -441,7 +464,9 @@ async function streamResponse(typingIndicator) {
         }
 
         // Push to messages history
-        messages.push({ role: 'assistant', content: fullText });
+        if (!isSyntheticCompactionPlaceholder(fullText)) {
+            messages.push({ role: 'assistant', content: fullText });
+        }
         updateMessageCount();
         retryCount = 0;
         updateStatus('Ready');
@@ -812,7 +837,7 @@ function updateStatus(text) {
 
 function saveToStorage() {
     try {
-        localStorage.setItem('chatMessages', JSON.stringify(messages));
+        localStorage.setItem('chatMessages', JSON.stringify(sanitizeConversationMessages(messages)));
         localStorage.setItem('chatStream', streamEnabled ? '1' : '0');
         localStorage.setItem('chatTemp', String(temperature));
         localStorage.setItem('chatMaxTokens', String(maxOutputTokens));
@@ -839,7 +864,7 @@ function loadFromStorage() {
         }
 
         if (saved) {
-            messages = JSON.parse(saved);
+            messages = sanitizeConversationMessages(JSON.parse(saved));
             // Restore messages to UI
             messages.forEach(msg => {
                 if (msg.role !== 'system') {

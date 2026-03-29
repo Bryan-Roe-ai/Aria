@@ -39,11 +39,18 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Ensure scripts dir is on path
-sys.path.insert(0, str(Path(__file__).parent))
+# Ensure repo root and scripts dir are on path before importing local modules
+_REPO_ROOT_BOOTSTRAP = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT_BOOTSTRAP) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT_BOOTSTRAP))
+if str(_REPO_ROOT_BOOTSTRAP / "scripts") not in sys.path:
+    sys.path.insert(1, str(_REPO_ROOT_BOOTSTRAP / "scripts"))
+
+_consensus_mod = importlib.import_module("shared.consensus_engine")
+consensus_from_task_results = _consensus_mod.consensus_from_task_results
 _agent_mod = importlib.import_module("autonomous_code_agent")
-AgentState = getattr(_agent_mod, "AgentState")
-CodeAgent = getattr(_agent_mod, "CodeAgent")
+AgentState = _agent_mod.AgentState
+CodeAgent = _agent_mod.CodeAgent
 
 REPO_ROOT = Path(__file__).parent.parent
 DATA_OUT = REPO_ROOT / "data_out" / "multi_agent"
@@ -58,6 +65,7 @@ class AgentJob:
     task: str
     llm_type: str = "ollama"
     model: Optional[str] = None
+    files: Optional[List[str]] = None
     dry_run: bool = False
     skip_tests: bool = False
 
@@ -77,6 +85,7 @@ class MultiAgentReport:
     total_files_modified: int
     total_tokens_estimated: int
     total_duration_seconds: float
+    consensus: Dict[str, Any]
     tasks: List[Dict[str, Any]]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -101,6 +110,7 @@ def _run_single_job(job: AgentJob) -> Any:
         agent = CodeAgent(llm_type=job.llm_type, model=job.model)
         state = agent.execute_task(
             job.task,
+            forced_files=job.files,
             dry_run=job.dry_run,
             skip_tests=job.skip_tests,
         )
@@ -175,6 +185,13 @@ def run_parallel(
     total_files = sum(len(s.files_modified) for s in completed_states)
     total_tokens = sum(s.tokens_estimated for s in completed_states)
 
+    consensus = consensus_from_task_results(
+        {
+            f"task_{idx + 1}": {"status": state.status}
+            for idx, state in enumerate(completed_states)
+        }
+    )
+
     report = MultiAgentReport(
         run_id=run_id,
         started_at=started_at,
@@ -187,6 +204,15 @@ def run_parallel(
         total_files_modified=total_files,
         total_tokens_estimated=total_tokens,
         total_duration_seconds=total_duration,
+        consensus={
+            "reached": consensus.reached,
+            "winner": consensus.winner,
+            "winner_ratio": round(consensus.winner_ratio, 4),
+            "reason": consensus.reason,
+            "support_count": consensus.support_count,
+            "vote_count": consensus.vote_count,
+            "scores": consensus.scores,
+        },
         tasks=[s.to_dict() for s in completed_states],
     )
 
@@ -222,8 +248,11 @@ def _load_jobs_from_file(
                     task=item["task"],
                     llm_type=item.get("llm_type", default_llm),
                     model=item.get("model"),
-                    dry_run=item.get("dry_run", default_dry_run),
-                    skip_tests=item.get("skip_tests", default_skip_tests),
+                    files=item.get("files"),
+                    # CLI flags act as hard overrides: if CLI says True, always True
+                    dry_run=default_dry_run or item.get("dry_run", False),
+                    skip_tests=default_skip_tests or item.get(
+                        "skip_tests", False),
                 )
             )
         else:
@@ -245,6 +274,13 @@ def _print_summary(report: MultiAgentReport) -> None:
     print(f"  Files modified  : {report.total_files_modified}")
     print(f"  ~Tokens used    : {report.total_tokens_estimated}")
     print(f"  Wall-clock time : {report.total_duration_seconds}s")
+    print(
+        "  Consensus       : "
+        f"reached={report.consensus.get('reached')} "
+        f"winner={report.consensus.get('winner')} "
+        f"ratio={report.consensus.get('winner_ratio')} "
+        f"reason={report.consensus.get('reason')}"
+    )
     print("=" * width + "\n")
 
 

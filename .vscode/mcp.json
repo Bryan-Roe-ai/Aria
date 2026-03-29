@@ -19,6 +19,13 @@
       "env": {
         "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
       }
+    },
+    "task-complete": {
+      "type": "stdio",
+      "command": "python3",
+      "args": [
+        "${workspaceFolder}/scripts/task_complete_mcp_server.py"
+      ]
     }
   }
 }

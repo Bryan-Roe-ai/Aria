@@ -82,6 +82,82 @@ def test_validate_messages_invalid_role():
     print("✓ Invalid role fails validation")
 
 
+def test_validate_messages_whitespace_only_content():
+    """Test that whitespace-only string content fails validation."""
+    messages = [{"role": "user", "content": "   \n\t  "}]
+
+    is_valid, error = validate_messages(messages)
+
+    assert is_valid is False
+    assert "whitespace" in error.lower() or "empty" in error.lower()
+    print("✓ Whitespace-only content fails validation")
+
+
+def test_validate_messages_block_content_whitespace_text_fails():
+    """Text blocks with only whitespace should fail validation."""
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "   "},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "https://example.com/img.png"},
+                },
+            ],
+        }
+    ]
+
+    is_valid, error = validate_messages(messages)
+
+    assert is_valid is False
+    assert "whitespace" in error.lower() or "empty" in error.lower()
+    print("✓ Whitespace-only text block content fails validation")
+
+
+def test_validate_messages_block_content_whitespace_input_text_fails():
+    """input_text blocks with only whitespace should fail validation."""
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "   \n  "},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "https://example.com/img.png"},
+                },
+            ],
+        }
+    ]
+
+    is_valid, error = validate_messages(messages)
+
+    assert is_valid is False
+    assert "whitespace" in error.lower() or "empty" in error.lower()
+    print("✓ Whitespace-only input_text block content fails validation")
+
+
+def test_validate_messages_block_content_image_only_passes():
+    """Non-text block-only content should pass (e.g., image-only messages)."""
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "https://example.com/img.png"},
+                }
+            ],
+        }
+    ]
+
+    is_valid, error = validate_messages(messages)
+
+    assert is_valid is True
+    assert error is None
+    print("✓ Image-only block content passes validation")
+
+
 def test_create_cors_headers():
     """Test CORS headers creation."""
     headers = create_cors_headers()

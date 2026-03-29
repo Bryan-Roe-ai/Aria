@@ -218,8 +218,6 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         # API: VRAM-aware batch size calculator
         elif self.path.startswith("/api/vram-info"):
-            from urllib.parse import parse_qs, urlparse
-
             qs = parse_qs(urlparse(self.path).query)
 
             def _qs(key, default=""):

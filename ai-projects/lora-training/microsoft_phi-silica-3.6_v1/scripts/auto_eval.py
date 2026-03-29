@@ -66,7 +66,7 @@ class AutomaticEvaluator:
         self,
         model_path: str,
         test_dataset: str,
-        metrics: List[str] = ["perplexity", "inference_time"],
+        metrics: List[str] | None = None,
         num_samples: int = 100,
     ) -> EvaluationMetrics:
         """
@@ -122,7 +122,7 @@ class AutomaticEvaluator:
             except Exception as e:
                 raise RuntimeError(
                     f"Failed to load LoRA adapter from {adapter_dir}: {e}"
-                )
+                ) from e
         else:
             model = AutoModelForCausalLM.from_pretrained(
                 model_path,
@@ -181,8 +181,10 @@ class AutomaticEvaluator:
             try:
                 dataset = load_dataset(str(dataset_path), split=f"test[:{num_samples}]")
                 return list(dataset)
-            except:
-                raise ValueError(f"Unsupported dataset format: {dataset_path}")
+            except Exception:
+                raise ValueError(
+                    f"Unsupported dataset format: {dataset_path}"
+                ) from None
 
     def _compute_perplexity(
         self,

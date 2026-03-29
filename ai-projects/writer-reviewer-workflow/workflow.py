@@ -55,12 +55,12 @@ def build_workflow():
     Returns:
         An agent_framework Workflow (writer -> reviewer, both yield output).
     """
-    endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT", "").strip()
+    endpoint = os.environ.get("AZURE_AI_PROJECT_ENDPOINT", "").strip()
     model = os.environ.get("FOUNDRY_MODEL_DEPLOYMENT_NAME", "").strip()
 
     if not endpoint:
         raise ValueError(
-            "FOUNDRY_PROJECT_ENDPOINT is not set. "
+            "AZURE_AI_PROJECT_ENDPOINT is not set. "
             "Add it to your .env file or environment variables."
         )
     if not model:
@@ -75,7 +75,7 @@ def build_workflow():
     # registered at the client level, so sharing a single client would
     # overwrite the previous agent's name.
     writer = AzureAIClient(
-        endpoint=endpoint,
+        project_endpoint=endpoint,
         credential=credential,
     ).as_agent(
         name="Writer",
@@ -84,7 +84,7 @@ def build_workflow():
     )
 
     reviewer = AzureAIClient(
-        endpoint=endpoint,
+        project_endpoint=endpoint,
         credential=credential,
     ).as_agent(
         name="Reviewer",

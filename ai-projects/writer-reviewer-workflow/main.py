@@ -25,17 +25,21 @@ Usage
 
 import argparse
 import asyncio
-import os
 import sys
+from pathlib import Path
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional for lightweight prototype usage
 
-# Load .env BEFORE importing workflow so env vars are available to workflow.py.
-# override=True ensures .env values work even when the process already has
-# environment variables set (important for containerised / deployed environments).
+    def load_dotenv(*_args, **_kwargs):
+        return False
+
+
+# Load .env eagerly so both the Foundry workflow and local prototype mode can
+# read environment configuration consistently.
 load_dotenv(override=True)
 
-from workflow import build_workflow  # noqa: E402  (must follow load_dotenv)
 
 # ---------------------------------------------------------------------------
 # HTTP server mode
@@ -44,6 +48,8 @@ from workflow import build_workflow  # noqa: E402  (must follow load_dotenv)
 
 def run_server() -> None:
     """Start the HTTP server via azure-ai-agentserver-agentframework."""
+    from workflow import build_workflow
+
     try:
         from azure.ai.agentserver.agentframework import from_agent_framework
     except ImportError as exc:
@@ -72,6 +78,7 @@ def run_server() -> None:
 async def run_cli(prompt: str) -> None:
     """Run a single-turn through the workflow and stream output to stdout."""
     from agent_framework import AgentResponseUpdate, Message
+    from workflow import build_workflow
 
     workflow = build_workflow()
 
@@ -95,6 +102,46 @@ async def run_cli(prompt: str) -> None:
 
     print("\n" + "=" * 60)
     print("\nWorkflow complete.")
+
+
+def run_prototype_monitor(
+    watch_dir: str,
+    output_dir: str,
+    *,
+    run_once: bool,
+    poll_interval: float,
+    max_iterations: int | None,
+    run_generated_tests: bool,
+) -> None:
+    """Run the local folder-monitor prototype workflow."""
+    from prototype_workflow import FolderMonitorWorkflow
+
+    workflow = FolderMonitorWorkflow(
+        watch_dir=watch_dir,
+        output_dir=output_dir,
+        run_generated_tests=run_generated_tests,
+    )
+
+    print("Starting prototype code-generation workflow")
+    print(f"  watch_dir: {Path(watch_dir).resolve()}")
+    print(f"  output_dir: {Path(output_dir).resolve()}")
+    print(f"  run_generated_tests: {run_generated_tests}")
+
+    if run_once:
+        results = workflow.run_once()
+        print(f"Processed {len(results)} request(s).")
+        for result in results:
+            print(
+                f"- {result.processed_path.name}: module={result.module_path.name}, "
+                f"test={result.test_path.name}"
+            )
+        return
+
+    processed_count = workflow.watch(
+        poll_interval=poll_interval,
+        max_iterations=max_iterations,
+    )
+    print(f"Prototype watcher stopped after processing {processed_count} request(s).")
 
 
 # ---------------------------------------------------------------------------
@@ -124,9 +171,57 @@ def main() -> None:
         default="Write a short blog post about the benefits of morning walks.",
         help="The user prompt to use in CLI mode (ignored in server mode)",
     )
+    parser.add_argument(
+        "--prototype-monitor",
+        action="store_true",
+        help="Run the local folder-monitor prototype that generates code and pytest tests",
+    )
+    parser.add_argument(
+        "--prototype-run-once",
+        action="store_true",
+        help="Process the current watch folder once and exit",
+    )
+    parser.add_argument(
+        "--prototype-watch-dir",
+        type=str,
+        default="prototype_specs/inbox",
+        help="Directory to watch for JSON code-generation requests",
+    )
+    parser.add_argument(
+        "--prototype-output-dir",
+        type=str,
+        default="prototype_specs/generated",
+        help="Directory where generated code/tests/reports are written",
+    )
+    parser.add_argument(
+        "--prototype-poll-interval",
+        type=float,
+        default=2.0,
+        help="Seconds to sleep between prototype watch iterations",
+    )
+    parser.add_argument(
+        "--prototype-max-iterations",
+        type=int,
+        default=None,
+        help="Optional cap on prototype polling iterations",
+    )
+    parser.add_argument(
+        "--prototype-run-generated-tests",
+        action="store_true",
+        help="Run pytest against each generated test file before archiving the request",
+    )
     args = parser.parse_args()
 
-    if args.cli:
+    if args.prototype_monitor:
+        run_prototype_monitor(
+            watch_dir=args.prototype_watch_dir,
+            output_dir=args.prototype_output_dir,
+            run_once=args.prototype_run_once,
+            poll_interval=args.prototype_poll_interval,
+            max_iterations=args.prototype_max_iterations,
+            run_generated_tests=args.prototype_run_generated_tests,
+        )
+    elif args.cli:
         asyncio.run(run_cli(args.prompt))
     else:
         # Default: HTTP server mode

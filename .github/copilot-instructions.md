@@ -320,7 +320,7 @@ Available agents in `.github/agents/`:
 | `vision-ai.agent.md` | Expression/emotion classification |
 | `data-pipeline.agent.md` | Batch evaluation, dataset management |
 
-**Chat Modes** (`.github/chatmodes/` → migrated to `.github/agents/`):
+**Mode equivalents now live in `.github/agents/`**:
 - `AI_model_training.agent.md` — End-to-end LoRA training, evaluation, and model promotion
 - `Aria_character_development.agent.md` — Interactive character commands, actions, world generation
 - `Quantum_ML_development.agent.md` — Quantum circuits, simulation, Azure Quantum pipelines

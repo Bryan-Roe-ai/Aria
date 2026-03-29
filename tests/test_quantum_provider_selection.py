@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 
 chat_providers: Any = importlib.import_module("chat_providers")
-ProviderChoice = getattr(chat_providers, "ProviderChoice")
+ProviderChoice = chat_providers.ProviderChoice
 
 
 def _install_fake_quantum_provider(
@@ -33,7 +33,7 @@ def _install_fake_quantum_provider(
             name="quantum-llm", model=f"quantum-llm ({model_path})"
         )
 
-    setattr(fake_module, "create_quantum_llm_provider", _fake_factory)
+    fake_module.create_quantum_llm_provider = _fake_factory
     monkeypatch.setitem(sys.modules, "quantum_provider", fake_module)
 
 

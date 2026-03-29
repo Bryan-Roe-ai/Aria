@@ -586,7 +586,8 @@ class TestCollectionOptimizations:
         new_result = "user" in roles and "assistant" in roles
 
         # Both should produce same result
-        assert old_result == new_result == True
+        assert old_result == new_result
+        assert old_result is True
 
     def test_single_pass_empty_window(self):
         """Test single-pass role checking with empty window."""
@@ -595,7 +596,7 @@ class TestCollectionOptimizations:
         roles = {x.get("role") for x in window}
         result = "user" in roles and "assistant" in roles
 
-        assert result == False
+        assert not result
 
     def test_set_intersection_tag_filtering(self):
         """Test that tag filtering uses set intersection."""

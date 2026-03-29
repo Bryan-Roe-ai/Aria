@@ -5,7 +5,7 @@ A multi-agent workflow built with **Microsoft Agent Framework** (Python) where a
 
 ## How It Works
 
-```
+```text
 User request
      │
      ▼
@@ -61,7 +61,7 @@ pip install -r requirements.txt
 Edit `.env`:
 
 ```env
-FOUNDRY_PROJECT_ENDPOINT=https://AI-1424-resource.services.ai.azure.com/api/projects/AI-1424
+AZURE_AI_PROJECT_ENDPOINT=https://AI-1424-resource.services.ai.azure.com/api/projects/AI-1424
 FOUNDRY_MODEL_DEPLOYMENT_NAME=<your-deployment-name>
 ```
 
@@ -84,6 +84,45 @@ message and the workflow streams the Writer → Reviewer collaboration back.
 python main.py --cli --prompt "Write a short post about the benefits of reading."
 ```
 
+### Prototype monitor mode (local, no model calls)
+
+This repository also includes an **operational prototype** for Python-based
+automation that monitors a folder, generates Python code dynamically, and emits
+matching pytest tests.
+
+1. Copy or create a JSON request file in `prototype_specs/inbox/`.
+2. Run the monitor once or keep it polling.
+3. Generated modules, tests, and reports appear under `prototype_specs/generated/`.
+
+```bash
+# One-shot processing of the inbox
+python main.py --prototype-monitor --prototype-run-once --prototype-run-generated-tests
+
+# Continuous polling every 2 seconds
+python main.py --prototype-monitor --prototype-run-generated-tests
+```
+
+Example request format:
+
+```json
+{
+  "module_name": "math_helpers",
+  "function_name": "add_numbers",
+  "description": "Add two integers and return the sum.",
+  "arguments": [
+    {"name": "left", "type": "int"},
+    {"name": "right", "type": "int"}
+  ],
+  "return_type": "int",
+  "expression": "left + right",
+  "examples": [
+    {"inputs": {"left": 2, "right": 3}, "output": 5}
+  ]
+}
+```
+
+A ready-to-copy sample lives at `prototype_specs/examples/add_numbers.json`.
+
 ## Debugging with VS Code + AI Toolkit Agent Inspector
 
 1. Open this folder in VS Code.
@@ -96,16 +135,20 @@ python main.py --cli --prompt "Write a short post about the benefits of reading.
 
 ## Project Structure
 
-```
+```text
 writer-reviewer-workflow/
-├── main.py           # Entry point (HTTP server + CLI modes)
-├── workflow.py       # Workflow definition (Writer & Reviewer agents)
-├── .env              # Environment config (not committed)
-├── requirements.txt  # Pinned dependencies
+├── main.py              # Entry point (Foundry modes + local prototype mode)
+├── workflow.py          # Workflow definition (Writer & Reviewer agents)
+├── prototype_workflow.py# Folder monitor that generates Python code + pytest tests
+├── prototype_specs/
+│   └── examples/
+│       └── add_numbers.json
+├── .env                 # Environment config (not committed)
+├── requirements.txt     # Pinned dependencies
 ├── README.md
 └── .vscode/
-    ├── launch.json   # VS Code debugger configurations
-    └── tasks.json    # VS Code task runner configurations
+    ├── launch.json      # VS Code debugger configurations
+    └── tasks.json       # VS Code task runner configurations
 ```
 
 ## Notes

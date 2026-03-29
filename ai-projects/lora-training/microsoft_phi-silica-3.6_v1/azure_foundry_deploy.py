@@ -26,7 +26,9 @@ try:
                                       ManagedOnlineEndpoint, Model)
     from azure.identity import AzureCliCredential, DefaultAzureCredential
 except Exception:
-    raise SystemExit("Install Azure ML SDK: pip install azure-ai-ml azure-identity")
+    raise SystemExit(
+        "Install Azure ML SDK: pip install azure-ai-ml azure-identity"
+    ) from None
 
 
 def get_credential():

@@ -13,7 +13,7 @@ from typing import Dict, List
 try:
     import yaml
 except ImportError:
-    raise SystemExit("Install pyyaml: pip install pyyaml")
+    raise SystemExit("Install pyyaml: pip install pyyaml") from None
 
 try:
     import torch
@@ -27,7 +27,7 @@ try:
 except ImportError as e:
     raise SystemExit(
         f"Missing training dependencies: {e}\nInstall with: pip install -r requirements.txt"
-    )
+    ) from e
 
 
 @dataclass

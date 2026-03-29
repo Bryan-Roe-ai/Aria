@@ -15,7 +15,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 try:
     import yaml
 except ImportError:
-    raise SystemExit("pyyaml required for config validation: pip install pyyaml")
+    raise SystemExit(
+        "pyyaml required for config validation: pip install pyyaml"
+    ) from None
 
 
 @dataclass

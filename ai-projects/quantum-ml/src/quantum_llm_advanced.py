@@ -463,7 +463,7 @@ class QuantumErrorMitigation(nn.Module):
         self,
         quantum_layer: nn.Module,
         x: torch.Tensor,
-        noise_scales: List[float] = [1.0, 1.5, 2.0],
+        noise_scales: List[float] | None = None,
     ) -> torch.Tensor:
         """
         Zero-noise extrapolation by running circuits at multiple noise levels.

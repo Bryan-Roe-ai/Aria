@@ -39,10 +39,10 @@ class DocumentStore:
         self.documents.extend(documents)
         print(f"Added {len(documents)} documents. Total: {len(self.documents)}")
 
-    def load_from_directory(
-        self, directory: str, extensions: List[str] = [".txt", ".md", ".json"]
-    ):
+    def load_from_directory(self, directory: str, extensions: List[str] | None = None):
         """Load all documents from directory"""
+        if extensions is None:
+            extensions = [".txt", ".md", ".json"]
         dir_path = Path(directory)
         loaded = 0
 

@@ -47,7 +47,7 @@ def test_keyword_sets_are_frozen():
     # Frozensets are immutable
     try:
         _JUMP_KEYWORDS.add("new_keyword")
-        assert False, "Should have raised AttributeError"
+        raise AssertionError("Should have raised AttributeError")
     except AttributeError:
         pass  # Expected
 

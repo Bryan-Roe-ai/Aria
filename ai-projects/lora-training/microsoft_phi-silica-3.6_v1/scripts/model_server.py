@@ -274,7 +274,7 @@ async def generate_text(request: GenerationRequest):
         return GenerationResponse(**result)
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.post("/batch")
@@ -293,7 +293,7 @@ async def batch_generate(request: BatchRequest):
         return {"results": results, "count": len(results)}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 @app.get("/models")

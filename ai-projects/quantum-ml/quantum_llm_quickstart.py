@@ -14,38 +14,165 @@ Author: Quantum AI Workspace
 Date: March 9, 2026
 """
 
+from __future__ import annotations
+
 import argparse
 import logging
 import sys
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
-import torch
+# Lazily initialized runtime dependencies. This keeps `--help` fast and avoids
+# importing heavy ML modules unless an execution mode actually needs them.
+torch = None  # type: ignore[assignment]
+TORCH_AVAILABLE: Optional[bool] = None
+TORCH_IMPORT_ERROR: Optional[Exception] = None
+
+# Placeholders for lazily imported runtime classes/functions. These are updated
+# by `_load_runtime_dependencies()` before any training/generation path uses
+# them, while still allowing `--help` and monitor mode to avoid heavy imports.
+IntegratedQuantumLLM: Any = None
+QuantumLLMConfig: Any = None
+QuantumLLMSystem: Any = None
+CharacterTokenizer: Any = None
+DatasetBuilder: Any = None
+TextDataset: Any = None
+create_train_val_split: Any = None
 
 # Ensure src modules are importable when running from repository root.
 SRC_DIR = Path(__file__).resolve().parent / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-# Import quantum LLM components
-try:
-    from src.quantum_llm_integrated import (IntegratedQuantumLLM,
-                                            QuantumLLMConfig, QuantumLLMSystem)
+# Lazily imported quantum LLM components.
+INTEGRATED_AVAILABLE: Optional[bool] = None
+DATASETS_AVAILABLE: Optional[bool] = None
+INTEGRATED_IMPORT_ERROR: Optional[Exception] = None
+DATASETS_IMPORT_ERROR: Optional[Exception] = None
 
-    INTEGRATED_AVAILABLE = True
-except ImportError:
-    INTEGRATED_AVAILABLE = False
 
-try:
-    from src.quantum_llm_datasets import (CharacterTokenizer, DatasetBuilder,
-                                          TextDataset, create_train_val_split)
+def _load_runtime_dependencies(
+    *, load_torch: bool = True, load_integrated: bool = True, load_datasets: bool = True
+) -> None:
+    """Load heavy runtime dependencies on-demand."""
+    global torch
+    global TORCH_AVAILABLE, TORCH_IMPORT_ERROR
+    global INTEGRATED_AVAILABLE, INTEGRATED_IMPORT_ERROR
+    global DATASETS_AVAILABLE, DATASETS_IMPORT_ERROR
 
-    DATASETS_AVAILABLE = True
-except ImportError:
-    DATASETS_AVAILABLE = False
+    if load_torch and TORCH_AVAILABLE is None:
+        try:
+            import torch as _torch
+
+            torch = _torch  # type: ignore[assignment]
+            TORCH_AVAILABLE = True
+            TORCH_IMPORT_ERROR = None
+        except ModuleNotFoundError as exc:
+            torch = None  # type: ignore[assignment]
+            TORCH_AVAILABLE = False
+            TORCH_IMPORT_ERROR = exc
+
+    if load_integrated and INTEGRATED_AVAILABLE is None:
+        try:
+            from src.quantum_llm_integrated import (IntegratedQuantumLLM,
+                                                    QuantumLLMConfig,
+                                                    QuantumLLMSystem)
+
+            globals().update(
+                {
+                    "IntegratedQuantumLLM": IntegratedQuantumLLM,
+                    "QuantumLLMConfig": QuantumLLMConfig,
+                    "QuantumLLMSystem": QuantumLLMSystem,
+                }
+            )
+            INTEGRATED_AVAILABLE = True
+            INTEGRATED_IMPORT_ERROR = None
+        except ImportError as exc:
+            INTEGRATED_AVAILABLE = False
+            INTEGRATED_IMPORT_ERROR = exc
+
+    if load_datasets and DATASETS_AVAILABLE is None:
+        try:
+            from src.quantum_llm_datasets import (CharacterTokenizer,
+                                                  DatasetBuilder, TextDataset,
+                                                  create_train_val_split)
+
+            globals().update(
+                {
+                    "CharacterTokenizer": CharacterTokenizer,
+                    "DatasetBuilder": DatasetBuilder,
+                    "TextDataset": TextDataset,
+                    "create_train_val_split": create_train_val_split,
+                }
+            )
+            DATASETS_AVAILABLE = True
+            DATASETS_IMPORT_ERROR = None
+        except ImportError as exc:
+            DATASETS_AVAILABLE = False
+            DATASETS_IMPORT_ERROR = exc
+
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_QUANTUM_QUICKSTART_OUTPUT_DIR = Path("data_out/quantum_llm_quickstart")
+DEFAULT_QUANTUM_FULL_OUTPUT_DIR = Path("data_out/quantum_llm_full")
+
+
+def _resolve_generate_model_path(
+    model_path: Optional[str], output_dir: Optional[str]
+) -> Optional[Path]:
+    """Resolve model path for generate mode.
+
+    Priority:
+      1) Explicit --model path (must exist)
+      2) Auto-detected checkpoints under --output-dir (or default dirs)
+
+    Returns:
+      Path to a discovered model checkpoint, or None if not found.
+    """
+    if model_path:
+        explicit_path = Path(model_path).expanduser()
+        return explicit_path if explicit_path.exists() else None
+
+    candidate_roots: list[Path] = []
+    if output_dir:
+        candidate_roots.append(Path(output_dir))
+
+    candidate_roots.extend(
+        [DEFAULT_QUANTUM_QUICKSTART_OUTPUT_DIR, DEFAULT_QUANTUM_FULL_OUTPUT_DIR]
+    )
+
+    candidate_relative_paths = [
+        Path("final_model.pt"),
+        Path("model.pt"),
+        Path("best_model.pt"),
+        Path("training") / "final_model.pt",
+    ]
+
+    for root in candidate_roots:
+        for rel in candidate_relative_paths:
+            candidate = root / rel
+            if candidate.exists():
+                return candidate
+
+    return None
+
+
+def _ensure_torch_available(context: str) -> bool:
+    """Ensure torch is available before running training/inference paths."""
+    _load_runtime_dependencies(
+        load_torch=True, load_integrated=False, load_datasets=False
+    )
+
+    if TORCH_AVAILABLE:
+        return True
+
+    logger.error("❌ PyTorch is required for %s mode", context)
+    if TORCH_IMPORT_ERROR is not None:
+        logger.error("   Import error: %s", TORCH_IMPORT_ERROR)
+    logger.error("   Install dependency: pip install torch")
+    return False
 
 
 def quick_start_example():
@@ -55,6 +182,9 @@ def quick_start_example():
     logger.info("=" * 80)
     logger.info("QUANTUM LLM QUICK START")
     logger.info("=" * 80)
+
+    if not _ensure_torch_available("quick"):
+        return
 
     if not INTEGRATED_AVAILABLE or not DATASETS_AVAILABLE:
         logger.error("Required components not available")
@@ -124,7 +254,7 @@ def quick_start_example():
     )
 
     start_time = time.time()
-    report = system.train(train_dataset, val_dataset)
+    system.train(train_dataset, val_dataset)
     training_time = time.time() - start_time
 
     # Step 6: Results
@@ -136,7 +266,7 @@ def quick_start_example():
 
     # Step 7: Generate report
     logger.info("Step 7: Generating final report...")
-    final_report = system.generate_report()
+    system.generate_report()
 
     logger.info("✅ Quick start complete!")
     logger.info(f"📁 Check results in: {system.output_dir}")
@@ -151,6 +281,9 @@ def full_training_example(config_path: Optional[Path] = None):
     logger.info("=" * 80)
     logger.info("QUANTUM LLM FULL TRAINING")
     logger.info("=" * 80)
+
+    if not _ensure_torch_available("full"):
+        return
 
     if not INTEGRATED_AVAILABLE or not DATASETS_AVAILABLE:
         logger.error("Required components not available")
@@ -235,10 +368,10 @@ def full_training_example(config_path: Optional[Path] = None):
 
     # Train
     logger.info("Starting full training pipeline...")
-    report = system.train(train_dataset, val_dataset)
+    system.train(train_dataset, val_dataset)
 
     # Generate comprehensive report
-    final_report = system.generate_report()
+    system.generate_report()
 
     logger.info("✅ Full training complete!")
     logger.info(f"📁 Results: {system.output_dir}")
@@ -306,6 +439,9 @@ def generate_text(
     logger.info("=" * 80)
     logger.info("QUANTUM LLM TEXT GENERATION")
     logger.info("=" * 80)
+
+    if not _ensure_torch_available("generate"):
+        return
 
     if not INTEGRATED_AVAILABLE:
         logger.error("Integrated components not available")
@@ -375,8 +511,16 @@ def main():
         help="Execution mode",
     )
     parser.add_argument("--config", type=str, help="Path to configuration YAML")
-    parser.add_argument("--output-dir", type=str, help="Output directory to monitor")
-    parser.add_argument("--model", type=str, help="Path to trained model")
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        help="Output directory to monitor (and auto-discover model checkpoints for generate mode)",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        help="Path to trained model (optional in generate mode if checkpoint auto-discovery succeeds)",
+    )
     parser.add_argument("--prompt", type=str, default="Hello", help="Generation prompt")
     parser.add_argument(
         "--max-length", type=int, default=100, help="Max generation length"
@@ -390,16 +534,28 @@ def main():
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    # Check dependencies
-    if not INTEGRATED_AVAILABLE:
-        logger.error("❌ Integrated components not available")
-        logger.error("   Make sure quantum_llm_integrated.py is importable")
-        return
+    # Check dependencies by mode. Monitoring can run without model dependencies.
+    if args.mode in {"quick", "full", "generate"}:
+        if not _ensure_torch_available(args.mode):
+            return
 
-    if not DATASETS_AVAILABLE:
-        logger.error("❌ Dataset utilities not available")
-        logger.error("   Make sure quantum_llm_datasets.py is importable")
-        return
+        _load_runtime_dependencies(
+            load_torch=True, load_integrated=True, load_datasets=True
+        )
+
+        if not INTEGRATED_AVAILABLE:
+            logger.error("❌ Integrated components not available")
+            logger.error("   Make sure quantum_llm_integrated.py is importable")
+            if INTEGRATED_IMPORT_ERROR is not None:
+                logger.error("   Import error: %s", INTEGRATED_IMPORT_ERROR)
+            return
+
+        if not DATASETS_AVAILABLE:
+            logger.error("❌ Dataset utilities not available")
+            logger.error("   Make sure quantum_llm_datasets.py is importable")
+            if DATASETS_IMPORT_ERROR is not None:
+                logger.error("   Import error: %s", DATASETS_IMPORT_ERROR)
+            return
 
     # Execute requested mode
     if args.mode == "quick":
@@ -418,15 +574,30 @@ def main():
         monitor_training(output_dir)
 
     elif args.mode == "generate":
-        if not args.model:
-            logger.error("--model required for generate mode")
+        if args.max_length <= 0:
+            logger.error("--max-length must be > 0")
             return
+
+        resolved_model_path = _resolve_generate_model_path(args.model, args.output_dir)
+        if resolved_model_path is None:
+            logger.error("No model checkpoint found for generate mode")
+            logger.error(
+                "Provide --model <path> or ensure one of these files exists under --output-dir (or defaults): "
+                "final_model.pt, model.pt, best_model.pt, training/final_model.pt"
+            )
+            logger.error(
+                "Tip: run quick training first: python quantum_llm_quickstart.py --mode quick"
+            )
+            return
+
+        if not args.model:
+            logger.info(f"Auto-selected model checkpoint: {resolved_model_path}")
 
         # Need tokenizer
         tokenizer = CharacterTokenizer(vocab_size=256)
 
         generate_text(
-            model_path=Path(args.model),
+            model_path=resolved_model_path,
             tokenizer=tokenizer,
             prompt=args.prompt,
             max_length=args.max_length,

@@ -22,7 +22,7 @@ except ImportError:
         spec.loader.exec_module(notification_system)
         NotificationManager = notification_system.NotificationManager
     else:
-        raise ImportError(f"Could not load spec or loader for {notif_path}")
+        raise ImportError(f"Could not load spec or loader for {notif_path}") from None
 
 
 class TestNotificationManagerSecurity:

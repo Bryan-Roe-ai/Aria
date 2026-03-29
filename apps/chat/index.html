@@ -3151,6 +3151,37 @@
 
             // AI Chat functionality
             var conversationHistory = [];
+            var COMPACTION_PLACEHOLDER_LINES = {
+                'compacted conversation': true,
+                'conversation compacted': true
+            };
+
+            function isSyntheticCompactionPlaceholder(content) {
+                if (typeof content !== 'string') return false;
+                var normalizedLines = content
+                    .split(/\r?\n/)
+                    .map(function (line) { return line.trim().toLowerCase(); })
+                    .filter(Boolean);
+                return normalizedLines.length > 0 && normalizedLines.every(function (line) {
+                    return !!COMPACTION_PLACEHOLDER_LINES[line];
+                });
+            }
+
+            function sanitizeConversationHistory(items) {
+                return (items || []).filter(function (msg) {
+                    if (!msg || typeof msg !== 'object') return false;
+                    if (typeof msg.content !== 'string') return true;
+                    return !isSyntheticCompactionPlaceholder(msg.content);
+                });
+            }
+
+            function pushConversationMessage(role, content) {
+                if (typeof content === 'string' && isSyntheticCompactionPlaceholder(content)) {
+                    return false;
+                }
+                conversationHistory.push({ role: role, content: content });
+                return true;
+            }
 
             // ---- Browser LLM (client-side) ----
             // Commands:
@@ -3297,7 +3328,7 @@
 
             async function generateBrowserReply(userText) {
                 var generator = await ensureBrowserLLMLoaded();
-                var recent = (conversationHistory || []).slice(-6).map(function (m) {
+                var recent = sanitizeConversationHistory(conversationHistory).slice(-6).map(function (m) {
                     return (m.role === 'assistant' ? 'Assistant: ' : 'User: ') + (m.content || '');
                 }).join('\n');
 
@@ -4124,6 +4155,7 @@
                     var reader = resp.body.getReader();
                     var decoder = new TextDecoder('utf-8');
                     var buf = '';
+                    var doneEmitted = false;
 
                     function processBlock(block) {
                         if (!block) return;
@@ -4151,6 +4183,7 @@
                                 }
                             } catch (e) { console.error('Movement parse error:', e); }
                         } else if (event === 'done') {
+                            doneEmitted = true;
                             handlers.onDone && handlers.onDone();
                         } else if (event === 'error') {
                             try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
@@ -4174,7 +4207,7 @@
                     // Process any leftover
                     if (buf && buf.trim().length) processBlock(buf.trim());
                     // completed stream
-                    handlers.onDone && handlers.onDone();
+                    if (!doneEmitted) handlers.onDone && handlers.onDone();
                 } catch (e) {
                     if (e && e.name === 'AbortError') {
                         handlers.onError && handlers.onError({ error: 'aborted' });
@@ -4202,14 +4235,14 @@
             cancelSpeak();
             addMessage('user', message);
             messageInput.value = '';
-            conversationHistory.push({ role: 'user', content: message });
+            pushConversationMessage('user', message);
 
             if (browserLLMState.enabled) {
                 try {
                     updateProviderLabel('Browser LLM (local)');
                     var localReply = await generateBrowserReply(message);
                     addMessage('assistant', localReply);
-                    conversationHistory.push({ role: 'assistant', content: localReply });
+                    pushConversationMessage('assistant', localReply);
                     if (ariaSettings.autoSpeak) {
                         try { speakWithLipSync(localReply).catch(function () { }); } catch (e) { }
                     }
@@ -4228,7 +4261,7 @@
                     var assistantEl = addMessage('assistant', '', false); // create placeholder without mirroring
                     var contentDiv = assistantEl.querySelector('.message-content');
                     var replyAccum = '';
-                    var streamHandle = streamChat(conversationHistory, {
+                    var streamHandle = streamChat(sanitizeConversationHistory(conversationHistory), {
                         onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
                         onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; chatMessages.scrollTop = chatMessages.scrollHeight; } catch (e) { } },
                         onToken: function (tok) {
@@ -4249,7 +4282,7 @@
                             try {
                                 // finalize
                                 addBubbleMessage('assistant', replyAccum);
-                                conversationHistory.push({ role: 'assistant', content: replyAccum });
+                                pushConversationMessage('assistant', replyAccum);
                                 // speak if auto-speak enabled
                                 if (ariaSettings.autoSpeak) {
                                     try { speakWithLipSync(replyAccum).catch(function () { }); } catch (e) { }
@@ -4272,7 +4305,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            messages: conversationHistory,
+                            messages: sanitizeConversationHistory(conversationHistory),
                             stream: false
                         })
                     });
@@ -4280,7 +4313,7 @@
                     var data = await response.json();
                     var reply = data.choices?.[0]?.message?.content || data.response || '';
                     addMessage('assistant', reply);
-                    conversationHistory.push({ role: 'assistant', content: reply });
+                    pushConversationMessage('assistant', reply);
                     // speak with lip-sync if enabled, otherwise give the mouth a brief tail
                     if (ariaSettings.autoSpeak) {
                         try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
@@ -4298,7 +4331,7 @@
                         updateProviderLabel('Browser LLM fallback');
                         var fallbackReply = await generateBrowserReply(message);
                         addMessage('assistant', fallbackReply);
-                        conversationHistory.push({ role: 'assistant', content: fallbackReply });
+                        pushConversationMessage('assistant', fallbackReply);
                         if (ariaSettings.autoSpeak) {
                             try { speakWithLipSync(fallbackReply).catch(function () { }); } catch (se) { }
                         }
@@ -4990,7 +5023,7 @@
             cancelSpeak();
             // add to main chat history & UI (main addMessage will mirror to compact bubble)
             addMessage('user', txt);
-            conversationHistory.push({ role: 'user', content: txt });
+            pushConversationMessage('user', txt);
             bubbleInput.value = '';
 
             if (browserLLMState.enabled) {
@@ -4998,7 +5031,7 @@
                     updateProviderLabel('Browser LLM (local)');
                     var bubbleLocalReply = await generateBrowserReply(txt);
                     addMessage('assistant', bubbleLocalReply);
-                    conversationHistory.push({ role: 'assistant', content: bubbleLocalReply });
+                    pushConversationMessage('assistant', bubbleLocalReply);
                     addBubbleMessage('assistant', bubbleLocalReply);
                     if (ariaSettings.autoSpeak) {
                         try { speakWithLipSync(bubbleLocalReply).catch(function () { }); } catch (e) { }
@@ -5019,7 +5052,7 @@
                     var assistantEl = addMessage('assistant', '', false);
                     var contentDiv = assistantEl.querySelector('.message-content');
                     var replyAccum = '';
-                    streamChat(conversationHistory, {
+                    streamChat(sanitizeConversationHistory(conversationHistory), {
                         onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
                         onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; scrollBubbleToBottom(); } catch (e) { } },
                         onToken: function (tok) {
@@ -5039,7 +5072,7 @@
                             try {
                                 var reply = replyAccum || '...';
                                 addMessage('assistant', reply);
-                                conversationHistory.push({ role: 'assistant', content: reply });
+                                pushConversationMessage('assistant', reply);
                                 addBubbleMessage('assistant', reply);
                                 providerInfo.textContent = 'Connected';
                                 if (ariaSettings.autoSpeak) { try { speakWithLipSync(reply).catch(function () { }); } catch (e) { } } else { stopMouthTalking(350); }
@@ -5052,12 +5085,12 @@
                     startMouthTalking();
                     var response = await fetch('/api/chat', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: conversationHistory, stream: false })
+                        body: JSON.stringify({ messages: sanitizeConversationHistory(conversationHistory), stream: false })
                     });
                     var data = await response.json();
                     var reply = data.choices?.[0]?.message?.content || '...';
                     addMessage('assistant', reply);
-                    conversationHistory.push({ role: 'assistant', content: reply });
+                    pushConversationMessage('assistant', reply);
                     providerInfo.textContent = data.provider || 'Connected';
                     // speak with lip-sync if enabled
                     if (ariaSettings.autoSpeak) {
@@ -5073,7 +5106,7 @@
                         updateProviderLabel('Browser LLM fallback');
                         var bubbleFallbackReply = await generateBrowserReply(txt);
                         addMessage('assistant', bubbleFallbackReply);
-                        conversationHistory.push({ role: 'assistant', content: bubbleFallbackReply });
+                        pushConversationMessage('assistant', bubbleFallbackReply);
                         addBubbleMessage('assistant', bubbleFallbackReply);
                         if (ariaSettings.autoSpeak) {
                             try { speakWithLipSync(bubbleFallbackReply).catch(function () { }); } catch (e) { }

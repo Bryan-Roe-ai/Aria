@@ -43,7 +43,7 @@ except ImportError:
 try:
     import yaml
 except Exception:
-    raise SystemExit("pyyaml is required. Install with: pip install pyyaml")
+    raise SystemExit("pyyaml is required. Install with: pip install pyyaml") from None
 
 try:
     import psutil

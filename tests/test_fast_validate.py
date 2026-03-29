@@ -85,3 +85,42 @@ def test_summarize_results_no_critical_failures():
     assert summary["warning_count"] == 2
     assert summary["critical_failure_count"] == 0
     assert summary["critical_failure_checks"] == []
+
+
+def test_quick_check_venv_detects_dot_venv(tmp_path, monkeypatch):
+    mod = _load_fast_validate_module()
+
+    (tmp_path / ".venv" / "bin").mkdir(parents=True)
+    (tmp_path / ".venv" / "bin" / "python").write_text("#!/usr/bin/env python\n")
+
+    monkeypatch.setattr(mod, "REPO_ROOT", tmp_path)
+
+    result = mod.quick_check_venv()
+
+    assert result["status"] == "ok"
+    assert result["venvs_found"] >= 1
+
+
+def test_quick_check_dependencies_falls_back_to_project_venv(monkeypatch):
+    mod = _load_fast_validate_module()
+
+    class _FakeImportlibUtil:
+        @staticmethod
+        def find_spec(name: str):
+            # Simulate missing only in current interpreter
+            return None
+
+    fake_venv_python = mod.REPO_ROOT / ".venv" / "bin" / "python"
+    monkeypatch.setattr(mod, "_find_project_python", lambda: fake_venv_python)
+    monkeypatch.setattr(mod, "_spec_exists_in_python", lambda _pkg, _py: True)
+
+    # Patch importlib.util used inside quick_check_dependencies
+    import importlib as _importlib
+
+    monkeypatch.setattr(_importlib, "util", _FakeImportlibUtil)
+
+    result = mod.quick_check_dependencies()
+
+    assert result["status"] == "ok"
+    assert set(result["missing"]) == set()
+    assert "project_python" in result

@@ -8,13 +8,12 @@ for different types of work the agent can perform.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional, List, Dict, Any
 from enum import Enum
-from typing import Any, Dict, List, Optional
 
 
 class TaskCategory(Enum):
     """Types of tasks the agent can handle."""
-
     BUG_FIX = "bug_fix"
     FEATURE = "feature"
     REFACTOR = "refactor"
@@ -28,7 +27,6 @@ class TaskCategory(Enum):
 @dataclass
 class TaskDefinition:
     """Definition of a specialized task."""
-
     category: TaskCategory
     title: str
     description: str
@@ -328,13 +326,9 @@ def detect_task_category(task_description: str) -> TaskCategory:
         return TaskCategory.BUG_FIX
     elif any(word in task_lower for word in ["security", "secure", "vulnerability"]):
         return TaskCategory.SECURITY
-    elif any(
-        word in task_lower for word in ["performance", "optimize", "fast", "speed"]
-    ):
+    elif any(word in task_lower for word in ["performance", "optimize", "fast", "speed"]):
         return TaskCategory.PERFORMANCE
-    elif any(
-        word in task_lower for word in ["test", "coverage", "unit test", "assertion"]
-    ):
+    elif any(word in task_lower for word in ["test", "coverage", "unit test", "assertion"]):
         return TaskCategory.TEST
     elif any(word in task_lower for word in ["document", "doc", "readme", "comment"]):
         return TaskCategory.DOCUMENTATION
@@ -390,8 +384,8 @@ if __name__ == "__main__":
     print(f"Category: {guidance['category']}")
     print(f"Risk Level: {guidance['risk_level']}")
     print(f"Complexity: {guidance['estimated_complexity']}")
-    print("\nSuccess Criteria:")
-    for criteria in guidance["success_criteria"]:
+    print(f"\nSuccess Criteria:")
+    for criteria in guidance['success_criteria']:
         print(f"  ✓ {criteria}")
 
     print("\n" + "=" * 60 + "\n")

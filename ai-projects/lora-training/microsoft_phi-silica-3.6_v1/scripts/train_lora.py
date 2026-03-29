@@ -9,15 +9,15 @@ from typing import Any, Dict, Iterable, List
 try:
     import yaml  # type: ignore
 except Exception:
-    raise SystemExit("pyyaml is required. Install with: pip install pyyaml")
-
-# Optional imports for real training
+    raise SystemExit("pyyaml is required. Install with: pip install pyyaml") from None
 try:
     # Optional: install torch if missing
     try:
         import torch  # pip install torch  # type: ignore[reportMissingImports]
     except ImportError:
-        raise SystemExit("PyTorch is required. Install with: pip install torch")
+        raise SystemExit(
+            "PyTorch is required. Install with: pip install torch"
+        ) from None
     from datasets import load_dataset  # type: ignore[import]
 
     try:
@@ -29,7 +29,7 @@ try:
     except ImportError:
         raise SystemExit(
             "Transformers is required. Install with: pip install transformers"
-        )
+        ) from None
 except Exception as e:
     # Provide visibility into which dependency import failed
     import traceback

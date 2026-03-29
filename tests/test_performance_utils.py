@@ -383,7 +383,7 @@ class TestMemoizeWithTtl:
             return "value"
 
         compute()
-        getattr(compute, "cache_clear")()
+        compute.cache_clear()
         compute()
         assert call_count[0] == 2
 
@@ -393,7 +393,7 @@ class TestMemoizeWithTtl:
             return 1
 
         compute()
-        info = getattr(compute, "cache_info")()
+        info = compute.cache_info()
         assert info["size"] == 1
         assert info["ttl"] == 30
 

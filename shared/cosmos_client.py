@@ -135,13 +135,21 @@ def record_chat_message(
     try:
         import uuid
 
+        # Validate content is non-empty before storing (vulnerability fix)
+        content = message.get("content", "")
+        if not content or not str(content).strip():
+            logging.warning(
+                f"[cosmos] Skipping empty message content for user {user_id}"
+            )
+            return False
+
         # Use UUID to prevent ID collisions (CRITICAL FIX: data loss prevention)
         doc_id = f"{user_id}-{uuid.uuid4().hex}"
         doc = {
             "id": doc_id,
             "userId": user_id,
             "role": message.get("role"),
-            "content": message.get("content"),
+            "content": content,
             "provider": provider,
             "model": model,
             "timestamp": message.get("timestamp"),  # Keep for querying

@@ -598,25 +598,26 @@ class QuantumEnhancedLLMTrainer:
 
             elif dataset_path.suffix == ".json":
                 with open(dataset_path) as f:
-                    data = json.load(f)
-                if isinstance(data, list):
-                    for record in data:
-                        if isinstance(record, dict):
-                            for key in (
-                                "text",
-                                "content",
-                                "message",
-                                "input",
-                                "output",
-                            ):
-                                if key in record:
-                                    text_parts.append(str(record[key]))
-                        elif isinstance(record, str):
-                            text_parts.append(record)
-                elif isinstance(data, dict):
-                    for key in ("text", "content", "message", "input", "output"):
-                        if key in data:
-                            text_parts.append(str(data[key]))
+                    try:
+                        data = json.load(f)
+                        records = data if isinstance(data, list) else [data]
+                    except json.JSONDecodeError:
+                        # File may be JSONL-formatted despite .json extension
+                        f.seek(0)
+                        records = [json.loads(ln) for ln in f if ln.strip()]
+                for record in records:
+                    if isinstance(record, dict):
+                        for key in (
+                            "text",
+                            "content",
+                            "message",
+                            "input",
+                            "output",
+                        ):
+                            if key in record:
+                                text_parts.append(str(record[key]))
+                    elif isinstance(record, str):
+                        text_parts.append(record)
 
         elif dataset_path.is_dir():
             for pattern in ["*.txt", "*.json", "*.jsonl"]:
@@ -968,11 +969,13 @@ class QuantumEnhancedLLMTrainer:
                             dataset.append(json.loads(line))
             elif dataset_path.suffix == ".json":
                 with open(dataset_path) as f:
-                    data = json.load(f)
-                    if isinstance(data, list):
-                        dataset = data
-                    else:
-                        dataset = [data]
+                    try:
+                        data = json.load(f)
+                        dataset = data if isinstance(data, list) else [data]
+                    except json.JSONDecodeError:
+                        # File may be JSONL-formatted despite .json extension
+                        f.seek(0)
+                        dataset = [json.loads(ln) for ln in f if ln.strip()]
         elif dataset_path.is_dir():
             # Look for train files using glob for efficiency
             train_files = list(dataset_path.glob("train.json")) + list(

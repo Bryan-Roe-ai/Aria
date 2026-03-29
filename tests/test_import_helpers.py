@@ -82,7 +82,7 @@ def test_create_stub_function():
     result = stub()
 
     assert isinstance(result, dict)
-    assert result["enabled"] == False
+    assert not result["enabled"]
     assert result["error"] == "my_func_unavailable"
     assert stub.__name__ == "my_func"
     print("✓ create_stub_function creates proper stub")
@@ -97,7 +97,7 @@ def test_create_stub_function_with_args():
     result2 = stub(x=1, y=2)
     result3 = stub(1, 2, z=3)
 
-    assert all(r["enabled"] == False for r in [result1, result2, result3])
+    assert all(not r["enabled"] for r in [result1, result2, result3])
     print("✓ Stub function accepts arbitrary arguments")
 
 
@@ -133,9 +133,9 @@ def test_safe_import_real_world_pattern():
     health_result = sql_health()
     stats_result = engine_stats()
 
-    assert health_result["enabled"] == False
+    assert not health_result["enabled"]
     assert "sql_health_unavailable" in health_result["error"]
-    assert stats_result["enabled"] == False
+    assert not stats_result["enabled"]
     assert "engine_stats_unavailable" in stats_result["error"]
 
     print("✓ Real-world pattern from function_app.py works correctly")

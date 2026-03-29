@@ -82,6 +82,81 @@ _OLLAMA_CACHE_TTL_SECONDS = 30
 RoleMessage = Dict[str, str]
 
 
+def _is_text_like_content_block_type(block_type: Any) -> bool:
+    """Return True for OpenAI-compatible text block type variants."""
+    if not isinstance(block_type, str):
+        return False
+    normalized = block_type.strip().lower()
+    return normalized == "text" or normalized.endswith("_text")
+
+
+def _normalize_message_content_for_openai_api(content: Any) -> Any:
+    """Normalize message content before sending it to OpenAI-compatible APIs.
+
+    This trims plain-text messages and removes whitespace-only text blocks from
+    block-based content, while preserving non-text blocks such as image_url.
+    Returns None when no meaningful content remains.
+    """
+    if isinstance(content, str):
+        normalized = content.strip()
+        return normalized or None
+
+    if isinstance(content, list):
+        normalized_blocks: list[dict[str, Any]] = []
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+
+            if not _is_text_like_content_block_type(block.get("type")):
+                normalized_blocks.append(block)
+                continue
+
+            text_value = block.get("text")
+            if not isinstance(text_value, str):
+                continue
+
+            normalized_text = text_value.strip()
+            if not normalized_text:
+                continue
+
+            normalized_block = dict(block)
+            normalized_block["text"] = normalized_text
+            normalized_blocks.append(normalized_block)
+
+        return normalized_blocks or None
+
+    if content is None:
+        return None
+
+    normalized = str(content).strip()
+    return normalized or None
+
+
+def _normalize_messages_for_openai_api(
+    messages: List[dict[str, Any]]
+) -> List[dict[str, Any]]:
+    """Drop empty messages and sanitize content for OpenAI-compatible APIs."""
+    normalized_messages: list[dict[str, Any]] = []
+    for msg in messages:
+        if not isinstance(msg, dict):
+            continue
+
+        normalized_content = _normalize_message_content_for_openai_api(
+            msg.get("content")
+        )
+        if normalized_content is None:
+            continue
+
+        normalized_message = dict(msg)
+        normalized_message["content"] = normalized_content
+        normalized_messages.append(normalized_message)
+
+    if not normalized_messages:
+        raise ValueError("No non-empty message content provided")
+
+    return normalized_messages
+
+
 def _check_lmstudio_available(url: str) -> bool:
     """Backward-compatible alias for the newer `_check_lm_studio_available` function.
 
@@ -122,6 +197,13 @@ class BaseChatProvider:
         self, messages: List[RoleMessage], stream: bool = True
     ) -> Iterable[str] | str:
         raise NotImplementedError
+
+    @staticmethod
+    def _normalize_messages_for_api(
+        messages: List[dict[str, Any]]
+    ) -> List[dict[str, Any]]:
+        """Sanitize messages before forwarding them to external providers."""
+        return _normalize_messages_for_openai_api(messages)
 
     @staticmethod
     def _handle_openai_streaming_response(response) -> Generator[str, None, None]:
@@ -675,6 +757,8 @@ class OpenAIProvider(BaseChatProvider):
           - Mid-stream errors → yielded friendly/error token instead of raising.
         """
 
+        normalized_messages = self._normalize_messages_for_api(messages)
+
         def _attempt_create(**kwargs):
             max_retries = 3
             base_backoff = 0.4
@@ -700,7 +784,7 @@ class OpenAIProvider(BaseChatProvider):
         try:
             resp = _attempt_create(
                 model=self.model,
-                messages=messages,
+                messages=normalized_messages,
                 temperature=self.temperature,
                 max_tokens=self.max_output_tokens,
                 stream=stream,
@@ -768,9 +852,10 @@ class LMStudioProvider(BaseChatProvider):
         self, messages: List[RoleMessage], stream: bool = True
     ) -> Iterable[str] | str:
         try:
+            normalized_messages = self._normalize_messages_for_api(messages)
             resp = self.client.chat.completions.create(
                 model=self.model,
-                messages=messages,
+                messages=normalized_messages,
                 temperature=self.temperature,
                 max_tokens=self.max_output_tokens,
                 stream=stream,
@@ -862,9 +947,10 @@ class OllamaProvider(BaseChatProvider):
         self, messages: List[RoleMessage], stream: bool = True
     ) -> Iterable[str] | str:
         try:
+            normalized_messages = self._normalize_messages_for_api(messages)
             resp = self.client.chat.completions.create(
                 model=self.model,
-                messages=messages,
+                messages=normalized_messages,
                 temperature=self.temperature,
                 max_tokens=self.max_output_tokens,
                 stream=stream,
@@ -969,6 +1055,8 @@ class AzureOpenAIProvider(BaseChatProvider):
         Returns either a string (non-stream) or a generator yielding string chunks.
         """
 
+        normalized_messages = self._normalize_messages_for_api(messages)
+
         # Internal helper: attempt the SDK call with small retry/backoff for
         # transient rate-limit style errors. If we detect a quota/premium error
         # we return the exception directly for caller to handle.
@@ -1003,7 +1091,7 @@ class AzureOpenAIProvider(BaseChatProvider):
         try:
             resp = _attempt_create(
                 model=self.deployment,  # In Azure, 'model' is your deployment name
-                messages=messages,
+                messages=normalized_messages,
                 temperature=self.temperature,
                 max_tokens=self.max_output_tokens,
                 stream=stream,
@@ -1219,14 +1307,12 @@ def detect_provider(
         except ImportError as import_error:
             raise RuntimeError(
                 f"AGI provider selected but agi_provider module not available: {import_error}"
-            )
+            ) from import_error
 
-    # Quantum config
     if provider_choice == "quantum":
         try:
             from quantum_provider import create_quantum_llm_provider
 
-            # Quantum model path may come from CLI override or environment.
             selected_model_path = (
                 model_override
                 or os.getenv("QAI_QUANTUM_MODEL_PATH")
@@ -1257,9 +1343,8 @@ def detect_provider(
         except ImportError as import_error:
             raise RuntimeError(
                 f"Quantum provider selected but quantum_provider module not available: {import_error}"
-            )
+            ) from import_error
 
-    # LoRA config
     if provider_choice == "lora":
         if not model_override:
             raise RuntimeError("LoRA provider selected but model path not provided.")

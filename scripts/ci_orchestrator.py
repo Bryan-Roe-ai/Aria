@@ -129,6 +129,7 @@ class CIOrchestrator:
             "tests/test_integration_smoke_schema.py",
             "tests/test_status_schema_fixtures.py",
             "tests/test_integration_contract_gate_script.py",
+            "tests/test_agent_mode_delegation_contracts.py",
         ]
         return self._run_command("integration_contract_tests", cmd)
 

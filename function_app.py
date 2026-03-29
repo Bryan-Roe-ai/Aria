@@ -232,6 +232,153 @@ def serve_chat_js(req: func.HttpRequest) -> func.HttpResponse:
 # =============================================================================
 
 
+def _extract_text_content(content) -> str:
+    """Extract user-visible text from a message content payload.
+
+    Supports both plain string content and OpenAI-style content blocks.
+    """
+    if isinstance(content, str):
+        return content.strip()
+
+    def _is_text_like_block_type(block_type: object) -> bool:
+        if not isinstance(block_type, str):
+            return False
+        normalized = block_type.strip().lower()
+        return normalized == "text" or normalized.endswith("_text")
+
+    if isinstance(content, list):
+        parts: list[str] = []
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            if not _is_text_like_block_type(block.get("type")):
+                continue
+            text_value = block.get("text")
+            if isinstance(text_value, str):
+                trimmed = text_value.strip()
+                if trimmed:
+                    parts.append(trimmed)
+        return "\n".join(parts).strip()
+    if content is None:
+        return ""
+    return str(content).strip()
+
+
+def _is_compaction_placeholder_message(content: str) -> bool:
+    """Return True for synthetic chat-compaction placeholder messages.
+
+    Some chat clients or upstream conversation-compaction layers can inject
+    assistant placeholders such as ``Compacted conversation`` into history.
+    Those markers are not useful prompt content and can cause later turns to
+    orbit around the placeholder instead of the real user request.
+    """
+    if not isinstance(content, str):
+        return False
+
+    normalized_lines = [
+        line.strip().lower() for line in content.splitlines() if line.strip()
+    ]
+    if not normalized_lines:
+        return False
+
+    placeholder_lines = {
+        "compacted conversation",
+        "conversation compacted",
+    }
+    return all(line in placeholder_lines for line in normalized_lines)
+
+
+def _sanitize_chat_messages(messages) -> list[dict]:
+    """Normalize incoming chat messages and reject empty content.
+
+    This prevents upstream provider 400s like:
+    "messages: text content blocks must contain non-whitespace text".
+    """
+    if not isinstance(messages, list) or not messages:
+        raise ValueError("No messages provided")
+
+    sanitized: list[dict] = []
+    for idx, msg in enumerate(messages):
+        if not isinstance(msg, dict) or "role" not in msg or "content" not in msg:
+            raise ValueError(
+                f"Invalid message format at index {idx}. Expected {{role, content}}"
+            )
+
+        content = msg.get("content")
+        normalized_content = None
+
+        if isinstance(content, str):
+            text_content = content.strip()
+            if text_content:
+                normalized_content = text_content
+        elif isinstance(content, list):
+            # Current chat/token pipeline is text-centric; normalize block payloads
+            # to plain text to avoid downstream `.strip()` failures.
+            text_content = _extract_text_content(content)
+            if text_content:
+                normalized_content = text_content
+        elif content is not None:
+            text_content = str(content).strip()
+            if text_content:
+                normalized_content = text_content
+
+        if normalized_content is None:
+            continue
+
+        if _is_compaction_placeholder_message(normalized_content):
+            logging.info(
+                "Dropping synthetic compaction placeholder from chat history at index %d",
+                idx,
+            )
+            continue
+
+        msg_copy = dict(msg)
+        msg_copy["content"] = normalized_content
+        sanitized.append(msg_copy)
+
+    if not sanitized:
+        raise ValueError("No non-empty message content provided")
+
+    return sanitized
+
+
+def _detect_provider_with_runtime_fallback(
+    *,
+    explicit: str | None = None,
+    model_override: str | None = None,
+    temperature: float | None = None,
+    max_output_tokens: int | None = None,
+):
+    """Detect provider with graceful runtime fallback to local echo.
+
+    In constrained test/runtime environments the optional ``openai`` package may
+    be unavailable while env vars still point to OpenAI/Azure/LMStudio/Ollama.
+    In those cases, degrade to ``local`` provider instead of returning HTTP 500
+    from status/chat endpoints.
+    """
+
+    try:
+        return detect_provider(
+            explicit=explicit,
+            model_override=model_override,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
+    except RuntimeError as provider_error:
+        error_text = str(provider_error).lower()
+        if "openai package not installed" not in error_text:
+            raise
+
+        logging.warning(
+            "Provider detection failed due to missing optional openai package; "
+            "falling back to local provider. explicit=%s model_override=%s error=%s",
+            explicit,
+            model_override,
+            provider_error,
+        )
+        return detect_provider(explicit="local", model_override="local-echo")
+
+
 @app.route(route="chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def chat(req: func.HttpRequest) -> func.HttpResponse:
     """
@@ -262,7 +409,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             span_ctx.__enter__()
         # Parse request
         req_body = req.get_json()
-        messages = req_body.get("messages", [])
+        messages = _sanitize_chat_messages(req_body.get("messages", []))
         # Optional client-provided session identifier
         session_id = req_body.get("session_id")
         provider_choice = req_body.get("provider", os.getenv("QAI_PROVIDER", "auto"))
@@ -272,31 +419,16 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         max_context_tokens = req_body.get("max_context_tokens")
         system_prompt = req_body.get("system_prompt")
 
-        if not messages:
-            return func.HttpResponse(
-                json.dumps({"error": "No messages provided"}),
-                status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-
-        # Validate messages format
-        for msg in messages:
-            if not isinstance(msg, dict) or "role" not in msg or "content" not in msg:
-                return func.HttpResponse(
-                    json.dumps(
-                        {"error": "Invalid message format. Expected {role, content}"}
-                    ),
-                    status_code=400,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-
         # =============================
         # Memory Retrieval (SQL-backed)
         # =============================
         user_message_content = next(
-            (m["content"] for m in reversed(messages) if m.get("role") == "user"), None
+            (
+                _extract_text_content(m.get("content"))
+                for m in reversed(messages)
+                if m.get("role") == "user"
+            ),
+            None,
         )
         memory_messages: list[dict] = []
         user_embedding = None
@@ -308,12 +440,15 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                 )
                 for idx, sm in enumerate(similar):
                     # Inject prior memory as system messages (helps provider summarize past context)
-                    memory_messages.append(
-                        {
-                            "role": "system",
-                            "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {sm.get('content')}",
-                        }
-                    )
+                    memory_content = sm.get("content")
+                    # Validate non-empty
+                    if memory_content and str(memory_content).strip():
+                        memory_messages.append(
+                            {
+                                "role": "system",
+                                "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {memory_content}",
+                            }
+                        )
             except Exception as mem_err:  # noqa: BLE001
                 logging.warning(f"Memory retrieval failed: {mem_err}")
 
@@ -322,7 +457,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             messages = memory_messages + messages
 
         # Get provider (with overrides) AFTER memory injection so pruning sees augmented context
-        provider, info = detect_provider(
+        provider, info = _detect_provider_with_runtime_fallback(
             explicit=provider_choice,
             model_override=model_override,
             temperature=temperature,
@@ -418,7 +553,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                         except Exception as se:  # noqa: BLE001
                             logging.warning(f"Store embedding failed: {se}")
                 # Log assistant message
-                assistant_log = log_chat_message_safe(
+                log_chat_message_safe(
                     session_id=session_id,
                     provider=info.name,
                     model=info.model,
@@ -797,7 +932,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Chat stream function invoked")
     try:
         body = req.get_json()
-        messages = body.get("messages", [])
+        messages = _sanitize_chat_messages(body.get("messages", []))
         provider_choice = body.get("provider", "auto")
         model_override = body.get("model")
         temperature = body.get("temperature")
@@ -805,19 +940,16 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
         max_context_tokens = body.get("max_context_tokens")
         system_prompt = body.get("system_prompt")
 
-        if not messages:
-            return func.HttpResponse(
-                json.dumps({"error": "No messages provided"}),
-                status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-
         # =============================
         # Memory Retrieval — mirrors /api/chat behavior
         # =============================
         stream_user_content = next(
-            (m["content"] for m in reversed(messages) if m.get("role") == "user"), None
+            (
+                _extract_text_content(m.get("content"))
+                for m in reversed(messages)
+                if m.get("role") == "user"
+            ),
+            None,
         )
         stream_memory_messages: list[dict] = []
         if stream_user_content:
@@ -827,18 +959,21 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                     stream_embedding, top_k=5, session_id=body.get("session_id")
                 )
                 for idx, sm in enumerate(similar_msgs):
-                    stream_memory_messages.append(
-                        {
-                            "role": "system",
-                            "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {sm.get('content')}",
-                        }
-                    )
+                    memory_content = sm.get("content")
+                    # Validate non-empty
+                    if memory_content and str(memory_content).strip():
+                        stream_memory_messages.append(
+                            {
+                                "role": "system",
+                                "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {memory_content}",
+                            }
+                        )
             except Exception as _mem_err:  # noqa: BLE001
                 logging.warning(f"Stream memory retrieval failed: {_mem_err}")
         if stream_memory_messages:
             messages = stream_memory_messages + messages
 
-        provider, info = detect_provider(
+        provider, info = _detect_provider_with_runtime_fallback(
             explicit=provider_choice,
             model_override=model_override,
             temperature=temperature,
@@ -975,6 +1110,14 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
             headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
         )
 
+    except ValueError as ve:
+        logging.error(f"chat/stream validation error: {ve}")
+        return func.HttpResponse(
+            json.dumps({"error": f"Validation error: {str(ve)}"}),
+            status_code=400,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
     except Exception as e:  # noqa: BLE001
         logging.error(f"chat/stream error: {e}")
         return func.HttpResponse(
@@ -1009,8 +1152,8 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
         # Optional voice/rate/pitch params
         voice = body.get("voice")
         rate = float(body.get("rate") or 1.0)
-        pitch = float(body.get("pitch") or 1.0)
-        out_format = (body.get("format") or "wav").lower()
+        _pitch = float(body.get("pitch") or 1.0)
+        _out_format = (body.get("format") or "wav").lower()
 
         # Prefer Azure Speech if configured
         az_key = (
@@ -1033,7 +1176,10 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                     return func.HttpResponse(
                         json.dumps(
                             {
-                                "error": "Azure Speech SDK not available on server (install azure-cognitiveservices-speech)"
+                                "error": (
+                                    "Azure Speech SDK not available on server "
+                                    "(install azure-cognitiveservices-speech)"
+                                )
                             }
                         ),
                         status_code=500,
@@ -1315,7 +1461,13 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
             json.dumps(
                 {
                     "error": "No remote TTS provider configured and no local fallback available.",
-                    "help": "Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION to enable Azure speech, or install pyttsx3 or gTTS and set QAI_ENABLE_LOCAL_TTS=true in local.settings.json/.env to enable local fallback. See local.settings.json.example and .env.example in the repo for templates.",
+                    "help": (
+                        "Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION to enable "
+                        "Azure speech, or install pyttsx3 or gTTS and set "
+                        "QAI_ENABLE_LOCAL_TTS=true in local.settings.json/.env "
+                        "to enable local fallback. See local.settings.json.example "
+                        "and .env.example in the repo for templates."
+                    ),
                 }
             ),
             status_code=501,
@@ -1402,6 +1554,37 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "OPENAI_MODEL": bool(os.getenv("OPENAI_MODEL")),
         }
 
+        # Local AI provider config (Ollama + LM Studio)
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1")
+        lmstudio_base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
+        try:
+            from chat_providers import (  # type: ignore
+                _check_lm_studio_available, _check_ollama_available)
+
+            ollama_reachable = _check_ollama_available(ollama_base_url)
+            lmstudio_reachable = _check_lm_studio_available(lmstudio_base_url)
+        except Exception:
+            ollama_reachable = False
+            lmstudio_reachable = False
+        local_providers_env = {
+            "ollama": {
+                "base_url": ollama_base_url,
+                "model": os.getenv("OLLAMA_MODEL", "llama3.2"),
+                "reachable": ollama_reachable,
+                "OLLAMA_BASE_URL_set": bool(os.getenv("OLLAMA_BASE_URL")),
+                "OLLAMA_MODEL_set": bool(os.getenv("OLLAMA_MODEL")),
+                "install_hint": "https://ollama.ai — run: ollama serve && ollama pull llama3.2",
+            },
+            "lmstudio": {
+                "base_url": lmstudio_base_url,
+                "model": os.getenv("LMSTUDIO_MODEL", "local-model"),
+                "reachable": lmstudio_reachable,
+                "LMSTUDIO_BASE_URL_set": bool(os.getenv("LMSTUDIO_BASE_URL")),
+                "LMSTUDIO_MODEL_set": bool(os.getenv("LMSTUDIO_MODEL")),
+                "install_hint": "https://lmstudio.ai — open app and enable Local Server",
+            },
+        }
+
         # ML availability in-process
         inproc_ml = {
             "torch": _iu.find_spec("torch") is not None,
@@ -1478,7 +1661,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 pass
 
         # Detect active provider
-        provider, info = detect_provider(explicit="auto")
+        provider, info = _detect_provider_with_runtime_fallback(
+            explicit="auto")
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()
@@ -1503,7 +1687,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 if pool_info.get("saturation_alert"):
                     sql_info["alert"] = pool_info["saturation_alert"]
                 if pool_info.get("slow_queries_1min", 0) > 10:
-                    freq_alert = f"{pool_info['slow_queries_1min']} slow queries in last 60s (threshold={pool_info.get('slow_query_threshold_ms')}ms)"
+                    freq_alert = (
+                        f"{pool_info['slow_queries_1min']} slow queries in last 60s "
+                        f"(threshold={pool_info.get('slow_query_threshold_ms')}ms)"
+                    )
                     sql_info["slow_query_alert"] = freq_alert
                     logging.warning(f"[ai_status] {freq_alert}")
             except Exception as _ps:  # noqa: BLE001
@@ -1578,7 +1765,6 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception:
             # Fallback manual conflict heuristic
             def detect_conflict(versions):
-                groups = {"legacy": []}
                 if (
                     versions.get("qiskit")
                     and str(versions.get("qiskit")).startswith("1.")
@@ -1819,6 +2005,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 "azure_openai": azure_env,
                 "openai": openai_env,
                 "local_fallback": True,
+                "local_providers": local_providers_env,
             },
             "ml_inprocess": inproc_ml,
             "lora": lora_info,
@@ -2275,21 +2462,40 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
                 is_quota_error = None
                 format_quota_message = None
 
-            placeholder_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-                <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <rect width="512" height="512" fill="url(#grad)"/>
-                <text x="256" y="220" font-size="120" text-anchor="middle" fill="white">✨</text>
-                <text x="256" y="300" font-size="32" text-anchor="middle" fill="white" font-weight="bold">Aria</text>
-                <text x="256" y="340" font-size="20" text-anchor="middle" fill="rgba(255,255,255,0.9)">AI Assistant</text>
-                <text x="256" y="380" font-size="16" text-anchor="middle" fill="rgba(255,255,255,0.7)">Image generation unavailable</text>
-                <text x="256" y="410" font-size="14" text-anchor="middle" fill="rgba(255,255,255,0.6)">{openai_error.__class__.__name__}</text>
-            </svg>"""
+            placeholder_svg = "\n".join(
+                [
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">',
+                    "    <defs>",
+                    '        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">',
+                    '            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />',
+                    '            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />',
+                    '            <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />',
+                    "        </linearGradient>",
+                    "    </defs>",
+                    '    <rect width="512" height="512" fill="url(#grad)"/>',
+                    '    <text x="256" y="220" font-size="120" text-anchor="middle" fill="white">✨</text>',
+                    (
+                        '    <text x="256" y="300" font-size="32" '
+                        'text-anchor="middle" fill="white" font-weight="bold">'
+                        "Aria</text>"
+                    ),
+                    (
+                        '    <text x="256" y="340" font-size="20" '
+                        'text-anchor="middle" fill="rgba(255,255,255,0.9)">'
+                        "AI Assistant</text>"
+                    ),
+                    (
+                        '    <text x="256" y="380" font-size="16" '
+                        'text-anchor="middle" fill="rgba(255,255,255,0.7)">'
+                        "Image generation unavailable</text>"
+                    ),
+                    (
+                        '    <text x="256" y="410" font-size="14" text-anchor="middle" '
+                        f'fill="rgba(255,255,255,0.6)">{openai_error.__class__.__name__}</text>'
+                    ),
+                    "</svg>",
+                ]
+            )
 
             import base64
 
@@ -2725,7 +2931,6 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 prompt_ids, max_new_tokens=max_tokens, temperature=0.8, top_k=20
             )
             # Decode back to text using the simple char mapping
-            vocab_size = trainer.model_config["vocab_size"]
             generated_row = generated[0]
             tokens = (
                 generated_row.tolist()
@@ -2855,8 +3060,8 @@ def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
     try:
         # Check if quantum modules are available
         try:
-            import pennylane as qml
-            from quantum_classifier import QuantumClassifier
+            import pennylane  # noqa: F401
+            import quantum_classifier  # noqa: F401
 
             quantum_available = True
 

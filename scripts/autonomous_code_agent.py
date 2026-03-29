@@ -59,7 +59,14 @@ STATUS_FILE = DATA_OUT / "status.json"
 # Safety constraints
 MAX_FILE_SIZE = 100_000  # bytes
 MAX_CHANGES_PER_FILE = 5
-MAX_TASK_TOKENS = 2000
+MAX_TASK_TOKENS = int(os.getenv("QAI_AGENT_MAX_TASK_TOKENS", "2000"))
+MAX_PROMPT_FILE_CHARS = int(os.getenv("QAI_AGENT_MAX_FILE_CHARS", "4000"))
+GIT_STATUS_TIMEOUT_SECONDS = float(
+    os.getenv("QAI_AGENT_GIT_STATUS_TIMEOUT_SECONDS", "3")
+)
+CAPTURE_UNCOMMITTED_CHANGES = os.getenv(
+    "QAI_AGENT_CAPTURE_UNCOMMITTED_CHANGES", ""
+).strip().lower() in {"1", "true", "yes", "on"}
 MIN_TEST_PASSING_RATE = 0.8  # 80% tests must pass
 
 
@@ -149,6 +156,8 @@ class RepositoryContext:
         """Get list of uncommitted changes."""
         if not self.git_available:
             return []
+        if not CAPTURE_UNCOMMITTED_CHANGES:
+            return []
         try:
             result = subprocess.run(
                 ["git", "status", "--short"],
@@ -156,8 +165,15 @@ class RepositoryContext:
                 text=True,
                 cwd=self.repo_root,
                 check=True,
+                timeout=GIT_STATUS_TIMEOUT_SECONDS,
             )
             return result.stdout.strip().split("\n") if result.stdout.strip() else []
+        except subprocess.TimeoutExpired:
+            _LOGGER.warning(
+                "Timed out collecting git status after %.1fs; continuing without uncommitted change snapshot",
+                GIT_STATUS_TIMEOUT_SECONDS,
+            )
+            return []
         except subprocess.CalledProcessError:
             return []
 
@@ -206,8 +222,11 @@ class RepositoryContext:
                 text=True,
                 cwd=self.repo_root,
                 check=True,
+                timeout=GIT_STATUS_TIMEOUT_SECONDS,
             )
             return result.stdout[:500]  # Truncate
+        except subprocess.TimeoutExpired:
+            return "git status timed out"
         except subprocess.CalledProcessError:
             return "Unable to get git status"
 
@@ -262,7 +281,13 @@ class LocalLLMClient:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.llm_type = llm_type
-        _LOGGER.info(f"Initialized {llm_type} client: {base_url} model={model}")
+        self.request_timeout_seconds = int(
+            os.getenv("QAI_LOCAL_LLM_TIMEOUT_SECONDS", "180")
+        )
+        _LOGGER.info(
+            f"Initialized {llm_type} client: {base_url} model={model} "
+            f"timeout={self.request_timeout_seconds}s"
+        )
 
     def query(self, prompt: str, max_tokens: int = 2000) -> str:
         """Query the local LLM."""
@@ -295,11 +320,15 @@ class LocalLLMClient:
                 data=json_module.dumps(data).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(
+                req, timeout=self.request_timeout_seconds
+            ) as response:
                 result = json_module.loads(response.read().decode("utf-8"))
                 return result.get("response", "").strip()
         except urllib.error.URLError as e:
-            raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}: {e}")
+            raise ConnectionError(
+                f"Cannot connect to Ollama at {self.base_url}: {e}"
+            ) from e
 
     def _query_lmstudio(self, prompt: str, max_tokens: int) -> str:
         """Query LM Studio API (OpenAI-compatible)."""
@@ -320,7 +349,9 @@ class LocalLLMClient:
                 data=json_module.dumps(data).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(
+                req, timeout=self.request_timeout_seconds
+            ) as response:
                 result = json_module.loads(response.read().decode("utf-8"))
                 choices = result.get("choices", [])
                 if choices:
@@ -329,7 +360,7 @@ class LocalLLMClient:
         except urllib.error.URLError as e:
             raise ConnectionError(
                 f"Cannot connect to LM Studio at {self.base_url}: {e}"
-            )
+            ) from e
 
     def is_available(self) -> bool:
         """Check if LLM is available."""
@@ -414,18 +445,9 @@ class CodeAgent:
         )
 
         prompt = (
-            (f"{specialized_intro}\n\n" if specialized_intro else "")
-            + f"""You are an expert code agent working on a Python repository.
-
-Task: {task_description}
-{file_patterns_note}
-Provide a concise action plan:
-1. Main goal
-2. Key files to modify
-3. Step-by-step implementation plan
-4. Validation approach
-5. Risk mitigation"""
-        )
+            f"{specialized_intro}\n\n" if specialized_intro else ""
+        ) + f"""Python repo task: {task_description}
+{file_patterns_note}Return a short 3-step plan and key risk only."""
 
         _LOGGER.info(f"Planning task [{task_category}]: {task_description}")
         reasoning = self._llm_query(prompt, max_tokens=MAX_TASK_TOKENS)
@@ -509,24 +531,18 @@ Respond with ONLY a list of file paths relative to repo root (one per line). No 
                 continue
 
             # Limit content sent to LLM to avoid token overflow
-            truncated = content[:4000]
+            truncated = content[:MAX_PROMPT_FILE_CHARS]
             suffix_note = (
                 f"\n# ... (truncated, {len(content)} bytes total)"
-                if len(content) > 4000
-                else ""
+                if len(content) > MAX_PROMPT_FILE_CHARS else ""
             )
 
             prompt = f"""Task: {task_description}
-
 File: {filepath}
-Current content:
-```
-{truncated}{suffix_note}
-```
+Update this Python file and return ONLY the full updated file content.
+No markdown fences. No explanation.
 
-Provide the COMPLETE updated file content implementing the task changes.
-Return ONLY the file content — no explanation, no markdown fences, no commentary.
-If no changes are needed for this file, return the original content unchanged."""
+{truncated}{suffix_note}"""
 
             _LOGGER.info(f"Requesting LLM changes for {filepath}")
             new_content = self._llm_query(prompt, max_tokens=MAX_TASK_TOKENS)
@@ -687,6 +703,7 @@ If no changes are needed for this file, return the original content unchanged.""
     def execute_task(
         self,
         task_description: str,
+        forced_files: Optional[List[str]] = None,
         dry_run: bool = False,
         skip_tests: bool = False,
     ) -> AgentState:
@@ -712,7 +729,9 @@ If no changes are needed for this file, return the original content unchanged.""
         )
         self._total_tokens = 0
 
-        _LOGGER.info(f"Starting task {task_id} (dry_run={dry_run}): {task_description}")
+        _LOGGER.info(
+            f"Starting task {task_id} (dry_run={dry_run}): {task_description}"
+        )
         self.state.save()
 
         # ── Phase 1: Plan ────────────────────────────────────────────────────
@@ -730,7 +749,14 @@ If no changes are needed for this file, return the original content unchanged.""
 
         # ── Phase 2: Identify files ──────────────────────────────────────────
         try:
-            files = self.identify_files(task_description)
+            if forced_files:
+                files = [f for f in forced_files if self.repo.file_exists(f)]
+                _LOGGER.info(
+                    "Using forced files from task spec: "
+                    f"{files} (requested={forced_files})"
+                )
+            else:
+                files = self.identify_files(task_description)
             _LOGGER.info(f"Identified files: {files}")
         except Exception as e:
             self.state.add_error(f"File identification failed: {e}")
@@ -769,7 +795,9 @@ If no changes are needed for this file, return the original content unchanged.""
                 self.state.tests_passed = test_results.get("passed", 0)
                 self.state.tests_failed = test_results.get("failed", 0)
                 tests_passed = test_results.get("success", False)
-                _LOGGER.info(f"Tests: passed={tests_passed} results={test_results}")
+                _LOGGER.info(
+                    f"Tests: passed={tests_passed} results={test_results}"
+                )
                 if not tests_passed:
                     self.state.add_error("Validation tests failed")
             except Exception as e:
@@ -777,7 +805,8 @@ If no changes are needed for this file, return the original content unchanged.""
 
         # ── Rollback if tests failed ─────────────────────────────────────────
         if not dry_run and not tests_passed and self.state.files_modified:
-            _LOGGER.warning("Tests failed after implementation — rolling back changes")
+            _LOGGER.warning(
+                "Tests failed after implementation — rolling back changes")
             try:
                 if self._restore_modified_files():
                     _LOGGER.info("Rollback complete (restored original file snapshots)")
@@ -858,7 +887,8 @@ def main():
 
     # Check if LLM is available
     if not agent.llm.is_available():
-        print(f"Error: {args.llm_type} LLM is not available at the configured URL")
+        print(
+            f"Error: {args.llm_type} LLM is not available at the configured URL")
         if args.llm_type == "ollama":
             print("Configure: export OLLAMA_BASE_URL=http://127.0.0.1:11434")
             print("Or install Ollama from https://ollama.ai")

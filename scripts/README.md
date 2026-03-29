@@ -52,7 +52,42 @@ bash ./scripts/integration_contract_gate.sh
 
 # One-command local gate (VS Code task label)
 # integration:contract-gate
+
+# Automate the repeated local fix/validate loop (one-shot)
+python .\scripts\repo_health_automation.py --once --strict-endpoints
+
+# Same automation, but also run full pytest smoke
+python .\scripts\repo_health_automation.py --once --strict-endpoints --full-pytest
+
+# Continuous unattended loop every 5 minutes
+python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpoints
+
+# Shell wrapper (friendlier command UX)
+./scripts/start_repo_health_automation.sh once --strict
+./scripts/start_repo_health_automation.sh watch --strict --interval 300
+./scripts/start_repo_health_automation.sh status
+
+# VS Code task labels:
+# - repo-health:once-strict
+# - repo-health:once-strict-full-pytest
+# - repo-health:watch-strict
 ```
+
+#### `repo_health_automation.py`
+
+**Purpose:** Automate repeated repo-health cycles (pre-commit + integration contract gate + optional full pytest) so fix/validation can run unattended.
+
+**Key options:**
+
+- `--once` / `--watch` — run one cycle or continuous loop
+- `--strict-endpoints` — run integration gate in strict endpoint mode
+- `--full-pytest` — include `pytest tests -q --maxfail=1 --tb=short`
+- `--auto-fix-ruff` — run `ruff check --fix` on changed `.py` files before checks
+- `--continue-on-fail` — continue all steps even after a failed step
+
+**Status output:**
+
+- `data_out/repo_health_automation/status.json`
 
 ### Quantum Operations
 

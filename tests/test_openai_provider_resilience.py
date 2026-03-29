@@ -151,6 +151,102 @@ def test_openai_non_transient_error_propagates(monkeypatch: pytest.MonkeyPatch) 
         provider.complete([{"role": "user", "content": "hi"}], stream=False)
 
 
+@pytest.mark.unit
+def test_openai_sanitizes_whitespace_only_text_blocks_before_sdk_call(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Whitespace-only text blocks should be removed before calling the SDK."""
+    _patch_quota_helpers(
+        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
+    )
+
+    fake_client = unittest.mock.MagicMock()
+    mock_resp = unittest.mock.MagicMock()
+    mock_resp.choices[0].message.content = "ok"
+    fake_client.chat.completions.create.return_value = mock_resp
+
+    provider = _make_openai_provider(monkeypatch, fake_client)
+    result = provider.complete(
+        [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "   \n\t  "},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": "https://example.com/img.png"},
+                    },
+                    {"type": "text", "text": " keep this "},
+                ],
+            }
+        ],
+        stream=False,
+    )
+
+    assert result == "ok"
+    call_kwargs = fake_client.chat.completions.create.call_args[1]
+    assert call_kwargs["messages"] == [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "https://example.com/img.png"},
+                },
+                {"type": "text", "text": "keep this"},
+            ],
+        }
+    ]
+
+
+@pytest.mark.unit
+def test_openai_sanitizes_whitespace_only_input_text_blocks_before_sdk_call(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Whitespace-only input_text blocks should be removed before SDK call."""
+    _patch_quota_helpers(
+        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
+    )
+
+    fake_client = unittest.mock.MagicMock()
+    mock_resp = unittest.mock.MagicMock()
+    mock_resp.choices[0].message.content = "ok"
+    fake_client.chat.completions.create.return_value = mock_resp
+
+    provider = _make_openai_provider(monkeypatch, fake_client)
+    result = provider.complete(
+        [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": "   \n\t  "},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": "https://example.com/img.png"},
+                    },
+                    {"type": "input_text", "text": " keep this too "},
+                ],
+            }
+        ],
+        stream=False,
+    )
+
+    assert result == "ok"
+    call_kwargs = fake_client.chat.completions.create.call_args[1]
+    assert call_kwargs["messages"] == [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "https://example.com/img.png"},
+                },
+                {"type": "input_text", "text": "keep this too"},
+            ],
+        }
+    ]
+
+
 # ---------------------------------------------------------------------------
 # Mid-stream error handling
 # ---------------------------------------------------------------------------
