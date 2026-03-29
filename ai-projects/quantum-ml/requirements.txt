@@ -12,7 +12,7 @@ pennylane>=0.39.0,<1.0.0
 ## Pennylane-Qiskit adapter may depend on qiskit-terra APIs. If incompatibility
 ## arises with Qiskit 1.x, pin below 0.35 or switch to pennylane-braket / other backends.
 pennylane-qiskit>=0.39.0,<1.0.0
-torch>=2.5.0,<3.0.0
+torch>=2.8.0,<3.0.0
 numpy>=1.26.4,<2.0.0
 scipy>=1.14.0,<2.0.0
 qiskit-machine-learning>=0.6.0,<0.7.0  # Compatible with Qiskit 0.46.x
