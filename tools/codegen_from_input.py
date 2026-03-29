@@ -42,15 +42,23 @@ class ImplementationInput:
     def from_dict(cls, data: dict[str, Any]) -> "ImplementationInput":
         return cls(
             goal=str(data.get("goal", "")).strip(),
-            target_paths=[str(p).strip() for p in data.get("target_paths", []) if str(p).strip()],
+            target_paths=[
+                str(p).strip() for p in data.get("target_paths", []) if str(p).strip()
+            ],
             language=str(data.get("language", "")).strip(),
-            constraints=[str(c).strip() for c in data.get("constraints", []) if str(c).strip()],
+            constraints=[
+                str(c).strip() for c in data.get("constraints", []) if str(c).strip()
+            ],
             api_contract=str(data.get("api_contract", "")).strip(),
             acceptance_criteria=[
-                str(a).strip() for a in data.get("acceptance_criteria", []) if str(a).strip()
+                str(a).strip()
+                for a in data.get("acceptance_criteria", [])
+                if str(a).strip()
             ],
             validation_commands=[
-                str(v).strip() for v in data.get("validation_commands", []) if str(v).strip()
+                str(v).strip()
+                for v in data.get("validation_commands", [])
+                if str(v).strip()
             ],
             notes=str(data.get("notes", "")).strip(),
         )
@@ -63,9 +71,13 @@ class ImplementationInput:
         if not self.language:
             raise ValueError("Missing required field: language")
         if not self.acceptance_criteria:
-            raise ValueError("Missing required field: acceptance_criteria (non-empty list)")
+            raise ValueError(
+                "Missing required field: acceptance_criteria (non-empty list)"
+            )
         if not self.validation_commands:
-            raise ValueError("Missing required field: validation_commands (non-empty list)")
+            raise ValueError(
+                "Missing required field: validation_commands (non-empty list)"
+            )
 
 
 HEADER_LINE = "#" * 78
@@ -129,7 +141,7 @@ def {fn_name}(payload: dict[str, Any] | None = None) -> dict[str, Any]:
 
 def _js_template(spec: ImplementationInput, target: Path) -> str:
     fn_name = _sanitize_identifier(target.stem, fallback="generatedHandler")
-    return f'''/**
+    return f"""/**
  * Auto-generated scaffold for: {target}
  * Goal: {spec.goal}
  * API Contract: {spec.api_contract or "(none specified)"}
@@ -145,12 +157,12 @@ export function {fn_name}(payload = {{}}) {{
     receivedKeys: Object.keys(payload).sort(),
   }};
 }}
-'''
+"""
 
 
 def _ts_template(spec: ImplementationInput, target: Path) -> str:
     fn_name = _sanitize_identifier(target.stem, fallback="generatedHandler")
-    return f'''/**
+    return f"""/**
  * Auto-generated scaffold for: {target}
  * Goal: {spec.goal}
  * API Contract: {spec.api_contract or "(none specified)"}
@@ -173,11 +185,11 @@ export function {fn_name}(payload: Record<string, unknown> = {{}}): GeneratedRes
     receivedKeys: Object.keys(payload).sort(),
   }};
 }}
-'''
+"""
 
 
 def _html_template(spec: ImplementationInput, target: Path) -> str:
-    return f'''<!doctype html>
+    return f"""<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -193,11 +205,11 @@ def _html_template(spec: ImplementationInput, target: Path) -> str:
     </main>
   </body>
 </html>
-'''
+"""
 
 
 def _css_template(spec: ImplementationInput, target: Path) -> str:
-    return f'''/* Auto-generated scaffold for: {target}
+    return f"""/* Auto-generated scaffold for: {target}
  * Goal: {spec.goal}
  * Generated at: {_now_iso()}
  */
@@ -213,7 +225,7 @@ body {{
 }}
 
 /* TODO: add styles required by acceptance criteria */
-'''
+"""
 
 
 def _md_template(spec: ImplementationInput, target: Path) -> str:
@@ -221,7 +233,7 @@ def _md_template(spec: ImplementationInput, target: Path) -> str:
     acceptance = "\n".join(f"- [ ] {a}" for a in spec.acceptance_criteria)
     validation = "\n".join(f"- `{v}`" for v in spec.validation_commands)
 
-    return f'''# {target.stem}
+    return f"""# {target.stem}
 
 ## Goal
 {spec.goal}
@@ -239,7 +251,7 @@ def _md_template(spec: ImplementationInput, target: Path) -> str:
 {validation}
 
 _Generated at {_now_iso()}_
-'''
+"""
 
 
 def render_template(spec: ImplementationInput, target: Path) -> str:
@@ -326,13 +338,13 @@ def write_report(
         *[f"- `{p}`" for p in spec.target_paths],
         "",
         "## Created",
-        *( [f"- `{p}`" for p in created] if created else ["- (none)"] ),
+        *([f"- `{p}`" for p in created] if created else ["- (none)"]),
         "",
         "## Skipped",
-        *( [f"- {p}" for p in skipped] if skipped else ["- (none)"] ),
+        *([f"- {p}" for p in skipped] if skipped else ["- (none)"]),
         "",
         "## Preview",
-        *( [f"- {p}" for p in previews] if previews else ["- (none)"] ),
+        *([f"- {p}" for p in previews] if previews else ["- (none)"]),
         "",
         "## Validation Commands",
         *[f"- `{v}`" for v in spec.validation_commands],
@@ -343,10 +355,20 @@ def write_report(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate scaffold code from implementation_input JSON")
-    parser.add_argument("--input", default="implementation_input.json", help="Path to implementation input JSON")
-    parser.add_argument("--out-root", default=".", help="Workspace root where target_paths are resolved")
-    parser.add_argument("--dry-run", action="store_true", help="Preview files without writing")
+    parser = argparse.ArgumentParser(
+        description="Generate scaffold code from implementation_input JSON"
+    )
+    parser.add_argument(
+        "--input",
+        default="implementation_input.json",
+        help="Path to implementation input JSON",
+    )
+    parser.add_argument(
+        "--out-root", default=".", help="Workspace root where target_paths are resolved"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview files without writing"
+    )
     parser.add_argument("--force", action="store_true", help="Overwrite existing files")
     return parser.parse_args()
 

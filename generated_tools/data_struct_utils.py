@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from typing import Any, Iterable
 
-
 MISSING = object()
 
 
-def deep_get(data: dict[str, Any], path: str, default: Any = None, sep: str = ".") -> Any:
+def deep_get(
+    data: dict[str, Any], path: str, default: Any = None, sep: str = "."
+) -> Any:
     """Safely retrieve a nested value from a dictionary using a separator path.
 
     Args:
@@ -35,7 +36,9 @@ def deep_get(data: dict[str, Any], path: str, default: Any = None, sep: str = ".
     return current
 
 
-def flatten_dict(data: dict[str, Any], parent_key: str = "", sep: str = ".") -> dict[str, Any]:
+def flatten_dict(
+    data: dict[str, Any], parent_key: str = "", sep: str = "."
+) -> dict[str, Any]:
     """Flatten a nested dictionary into path-key form.
 
     Args:
@@ -128,7 +131,9 @@ def unique_by_key(records: Iterable[dict[str, Any]], key: str) -> list[dict[str,
     return result
 
 
-def rekey_dict(data: dict[str, Any], mapping: dict[str, str], keep_unmapped: bool = True) -> dict[str, Any]:
+def rekey_dict(
+    data: dict[str, Any], mapping: dict[str, str], keep_unmapped: bool = True
+) -> dict[str, Any]:
     """Rename dictionary keys according to mapping.
 
     Args:

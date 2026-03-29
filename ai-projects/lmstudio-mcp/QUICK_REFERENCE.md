@@ -129,7 +129,7 @@ Added **4 new files** for AI agent integration:
 
 1. **Chat CLI** — `--provider lmstudio` flag
 2. **AGI Provider** — Auto-routing to LM Studio
-3. **Custom Agents** — `LMStudioAgentClient` 
+3. **Custom Agents** — `LMStudioAgentClient`
 4. **Function App** — New endpoints
 5. **Agent Registry** — `register_lmstudio_agent()`
 

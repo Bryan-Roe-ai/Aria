@@ -445,9 +445,10 @@ class CodeAgent:
         )
 
         prompt = (
-            f"{specialized_intro}\n\n" if specialized_intro else ""
-        ) + f"""Python repo task: {task_description}
+            (f"{specialized_intro}\n\n" if specialized_intro else "")
+            + f"""Python repo task: {task_description}
 {file_patterns_note}Return a short 3-step plan and key risk only."""
+        )
 
         _LOGGER.info(f"Planning task [{task_category}]: {task_description}")
         reasoning = self._llm_query(prompt, max_tokens=MAX_TASK_TOKENS)
@@ -534,7 +535,8 @@ Respond with ONLY a list of file paths relative to repo root (one per line). No 
             truncated = content[:MAX_PROMPT_FILE_CHARS]
             suffix_note = (
                 f"\n# ... (truncated, {len(content)} bytes total)"
-                if len(content) > MAX_PROMPT_FILE_CHARS else ""
+                if len(content) > MAX_PROMPT_FILE_CHARS
+                else ""
             )
 
             prompt = f"""Task: {task_description}
@@ -729,9 +731,7 @@ No markdown fences. No explanation.
         )
         self._total_tokens = 0
 
-        _LOGGER.info(
-            f"Starting task {task_id} (dry_run={dry_run}): {task_description}"
-        )
+        _LOGGER.info(f"Starting task {task_id} (dry_run={dry_run}): {task_description}")
         self.state.save()
 
         # ── Phase 1: Plan ────────────────────────────────────────────────────
@@ -795,9 +795,7 @@ No markdown fences. No explanation.
                 self.state.tests_passed = test_results.get("passed", 0)
                 self.state.tests_failed = test_results.get("failed", 0)
                 tests_passed = test_results.get("success", False)
-                _LOGGER.info(
-                    f"Tests: passed={tests_passed} results={test_results}"
-                )
+                _LOGGER.info(f"Tests: passed={tests_passed} results={test_results}")
                 if not tests_passed:
                     self.state.add_error("Validation tests failed")
             except Exception as e:
@@ -805,8 +803,7 @@ No markdown fences. No explanation.
 
         # ── Rollback if tests failed ─────────────────────────────────────────
         if not dry_run and not tests_passed and self.state.files_modified:
-            _LOGGER.warning(
-                "Tests failed after implementation — rolling back changes")
+            _LOGGER.warning("Tests failed after implementation — rolling back changes")
             try:
                 if self._restore_modified_files():
                     _LOGGER.info("Rollback complete (restored original file snapshots)")
@@ -887,8 +884,7 @@ def main():
 
     # Check if LLM is available
     if not agent.llm.is_available():
-        print(
-            f"Error: {args.llm_type} LLM is not available at the configured URL")
+        print(f"Error: {args.llm_type} LLM is not available at the configured URL")
         if args.llm_type == "ollama":
             print("Configure: export OLLAMA_BASE_URL=http://127.0.0.1:11434")
             print("Or install Ollama from https://ollama.ai")

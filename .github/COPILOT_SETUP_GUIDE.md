@@ -103,7 +103,7 @@ Key Copilot-related settings:
 {
   // Copilot Chat Agent Configuration
   "chat.agent.maxRequests": 200,
-  
+
   // Python Analysis for Code Intelligence
   "python.analysis.extraPaths": [
     "./ai-projects/llm-maker/src",
@@ -112,7 +112,7 @@ Key Copilot-related settings:
     "./ai-projects/quantum-ml/src"
   ],
   "python.analysis.autoImportCompletions": true,
-  
+
   // MCP Server Sampling (Model routing)
   "chat.mcp.serverSampling": {
     "Aria/.vscode/mcp.json: phi-model-server": {
@@ -124,7 +124,7 @@ Key Copilot-related settings:
       ]
     }
   },
-  
+
   // Testing Configuration for Copilot-aware test discovery
   "python.testing.pytestEnabled": true,
   "python.testing.pytestArgs": ["-v", "--tb=short", "--no-header"]

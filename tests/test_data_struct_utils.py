@@ -7,15 +7,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from generated_tools.data_struct_utils import (
-    coalesce,
-    deep_get,
-    deep_merge,
-    flatten_dict,
-    rekey_dict,
-    unflatten_dict,
-    unique_by_key,
-)
+from generated_tools.data_struct_utils import (coalesce, deep_get, deep_merge,
+                                               flatten_dict, rekey_dict,
+                                               unflatten_dict, unique_by_key)
 
 
 class TestDeepGet:

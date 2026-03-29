@@ -307,11 +307,11 @@ async def main():
         base_url="http://127.0.0.1:1234/v1",
         model="mistral-7b"
     )
-    
+
     # List models
     models = await client.list_models()
     print(f"Available: {models['available_models']}")
-    
+
     # Send chat message
     result = await client.chat_completion(
         messages=[

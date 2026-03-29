@@ -19,11 +19,9 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from lmstudio_agent_integration import (
-    LMStudioAgentClient,
-    get_lmstudio_agent_client,
-    get_lmstudio_agent_info,
-)
+from lmstudio_agent_integration import (LMStudioAgentClient,
+                                        get_lmstudio_agent_client,
+                                        get_lmstudio_agent_info)
 
 _logger = logging.getLogger(__name__)
 
@@ -35,15 +33,15 @@ _logger = logging.getLogger(__name__)
 def get_lmstudio_agent_registry_entry() -> Dict[str, Any]:
     """
     Get the LM Studio agent entry for the AGI provider's agent registry.
-    
+
     This can be added to _AGENT_REGISTRY in agi_provider.py like:
-    
+
     Example:
         from lmstudio_agi_integration import get_lmstudio_agent_registry_entry
-        
+
         registry = _AGENT_REGISTRY.copy()
         registry["lmstudio-local"] = get_lmstudio_agent_registry_entry()
-    
+
     Returns:
         dict: Agent registry entry with LM Studio metadata
     """
@@ -65,7 +63,7 @@ def get_lmstudio_agent_registry_entry() -> Dict[str, Any]:
 class AGILMStudioRouter:
     """
     Routes AGI provider queries to LM Studio when appropriate.
-    
+
     Uses query analysis results to determine if LM Studio should handle the task,
     and manages fallback to other providers if LM Studio is unavailable.
     """
@@ -73,7 +71,7 @@ class AGILMStudioRouter:
     def __init__(self, fallback_provider: Optional[str] = "agi"):
         """
         Initialize the router.
-        
+
         Args:
             fallback_provider: Provider to use if LM Studio fails (default: "agi")
         """
@@ -85,7 +83,7 @@ class AGILMStudioRouter:
     async def ensure_healthy(self) -> bool:
         """
         Check LM Studio health and cache the result.
-        
+
         Returns:
             bool: True if LM Studio is healthy and available
         """
@@ -110,34 +108,34 @@ class AGILMStudioRouter:
     def should_use_lmstudio(self, query_analysis: Dict[str, Any]) -> bool:
         """
         Determine if LM Studio should handle this query based on analysis.
-        
+
         LM Studio is preferred for:
         - Technical/coding domains
         - Explicit "local" or "offline" requests
         - Privacy-focused queries
-        
+
         Args:
             query_analysis: Output from AGI provider's _analyze_query()
-            
+
         Returns:
             bool: True if LM Studio should handle this query
         """
         domain = query_analysis.get("domain", "").lower()
         intent = query_analysis.get("intent", "").lower()
         query = query_analysis.get("query", "").lower()
-        
+
         # Explicit requests for local/offline
         if any(term in query for term in ["local", "offline", "lmstudio", "private"]):
             return True
-        
+
         # Technical domains are good matches
         if domain in ["technical", "coding", "ai"]:
             return True
-        
+
         # Coding and creation intents work well
         if intent in ["coding", "creation"]:
             return True
-        
+
         return False
 
     async def route_query(
@@ -148,12 +146,12 @@ class AGILMStudioRouter:
     ) -> Optional[str]:
         """
         Route a query to LM Studio if appropriate.
-        
+
         Args:
             query: The user's query text
             messages: Conversation history
             query_analysis: Query analysis from AGI provider
-            
+
         Returns:
             str: Response from LM Studio, or None if should use fallback
         """
@@ -199,23 +197,23 @@ async def complete_with_lmstudio_routing(
 ) -> str:
     """
     Complete a query using AGI provider with LM Studio routing.
-    
+
     This function wraps AGI provider completion and routes to LM Studio when
     appropriate, providing a fallback mechanism.
-    
+
     Args:
         agi_provider: An AGIProvider instance
         messages: Message history
         stream: Whether to stream the response
         prefer_lmstudio: Force LM Studio if available
-        
+
     Returns:
         str: The response from LM Studio or fallback provider
-        
+
     Example:
         from agi_provider import AGIProvider
         from lmstudio_agi_integration import complete_with_lmstudio_routing
-        
+
         agi = AGIProvider()
         response = await complete_with_lmstudio_routing(
             agi,
@@ -262,17 +260,17 @@ async def decompose_task_with_lmstudio(
 ) -> List[Dict[str, str]]:
     """
     Decompose a complex task into subtasks, using LM Studio if available.
-    
+
     This demonstrates multi-agent task decomposition where LM Studio
     participates in breaking down complex requests.
-    
+
     Args:
         task: The complex task to decompose
         domain: The task domain (technical, coding, ai, etc.)
-        
+
     Returns:
         list: Subtasks with reasoning
-        
+
     Example:
         subtasks = await decompose_task_with_lmstudio(
             "Build a neural network for image classification",
@@ -311,6 +309,7 @@ Return only valid JSON."""
         try:
             # Extract JSON from response
             import re
+
             json_match = re.search(r"\[.*\]", response, re.DOTALL)
             if json_match:
                 subtasks = json.loads(json_match.group())
@@ -336,17 +335,17 @@ async def reason_with_lmstudio_chain_of_thought(
 ) -> Dict[str, Any]:
     """
     Generate a chain-of-thought reasoning using LM Studio.
-    
+
     Demonstrates how LM Studio can participate in multi-step reasoning
     similar to the AGI provider's reasoning chains.
-    
+
     Args:
         query: The query to reason about
         depth: Number of reasoning steps (1-5)
-        
+
     Returns:
         dict: Reasoning chain with steps and conclusion
-        
+
     Example:
         reasoning = await reason_with_lmstudio_chain_of_thought(
             "Why is deep learning effective for NLP?",
@@ -383,13 +382,12 @@ Be concise but thorough. Return only valid JSON."""
             {"role": "user", "content": reasoning_prompt},
         ]
 
-        response = await client.complete(
-            messages, temperature=0.3, max_tokens=2048
-        )
+        response = await client.complete(messages, temperature=0.3, max_tokens=2048)
 
         # Parse reasoning
         try:
             import re
+
             json_match = re.search(r"\{.*\}", response, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())
@@ -534,7 +532,9 @@ async def example_router_decision_logic() -> None:
         should_use = router.should_use_lmstudio(test["analysis"])
         decision = "✓ Use LM Studio" if should_use else "✗ Use fallback"
         print(f"  {test['name']}")
-        print(f"    Domain: {test['analysis']['domain']}, Intent: {test['analysis']['intent']}")
+        print(
+            f"    Domain: {test['analysis']['domain']}, Intent: {test['analysis']['intent']}"
+        )
         print(f"    Decision: {decision}\n")
 
 
@@ -562,4 +562,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\nError: {e}")
         import traceback
+
         traceback.print_exc()

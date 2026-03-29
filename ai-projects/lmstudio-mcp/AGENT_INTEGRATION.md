@@ -114,15 +114,15 @@ from lmstudio_agent_integration import get_lmstudio_agent_client
 
 async def main():
     client = get_lmstudio_agent_client()
-    
+
     # Check health
     healthy = await client.check_health()
     print(f"Server healthy: {healthy}")
-    
+
     # List models
     models = await client.list_models()
     print(f"Models: {models}")
-    
+
     # Send message
     response = await client.complete(
         messages=[
@@ -166,7 +166,7 @@ import asyncio
 
 async def multi_agent_workflow():
     client = get_lmstudio_agent_client()
-    
+
     # Agent 1: Technical Explanation
     tech_response = await client.complete(
         messages=[
@@ -175,7 +175,7 @@ async def multi_agent_workflow():
         ],
         temperature=0.3  # Deterministic
     )
-    
+
     # Agent 2: Simplification
     simple_response = await client.complete(
         messages=[
@@ -184,7 +184,7 @@ async def multi_agent_workflow():
         ],
         temperature=0.5
     )
-    
+
     print("Technical:", tech_response)
     print("Simplified:", simple_response)
 
@@ -199,10 +199,10 @@ import asyncio
 
 async def compare_models():
     client = get_lmstudio_agent_client()
-    
+
     # Get available models
     models = await client.list_models()
-    
+
     # Compare responses from different models
     for model in models:
         response = await client.complete(
@@ -267,13 +267,13 @@ import asyncio
 async def chat(req: func.HttpRequest) -> func.HttpResponse:
     body = req.get_json()
     provider = body.get("provider", "auto")
-    
+
     if provider == "lmstudio":
         client = get_lmstudio_agent_client()
-        
+
         messages = body.get("messages", [])
         response = await client.complete(messages)
-        
+
         return func.HttpResponse(
             json.dumps({"response": response}),
             status_code=200

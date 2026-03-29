@@ -698,4 +698,3 @@ Design using these components:
 ---
 
 **Happy customizing! Remember to validate configurations before publishing.**
-

@@ -55,12 +55,13 @@ Need to add:
       raise error or return None
 """
 
+
 # Check if this helper exists:
 def _check_lmstudio_available():
     """Check if LM Studio server is running and accessible."""
     import os
     import urllib.request
-    
+
     base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
     try:
         request = urllib.request.Request(f"{base_url}/models")
@@ -68,6 +69,7 @@ def _check_lmstudio_available():
             return resp.status == 200
     except Exception:
         return False
+
 
 # ============================================================================
 # VERIFICATION: Agent Scoring & Dispatch Flow
@@ -79,7 +81,7 @@ def _check_lmstudio_available():
 #    - Matching logic: domain match +0.5, intent match +0.3
 #    - Confidence boost applied if any match found
 #
-# 2. _dispatch_to_agent() [agi_provider.py:481]  
+# 2. _dispatch_to_agent() [agi_provider.py:481]
 #    - Already calls detect_provider(explicit=agent_provider)
 #    - Will work once detect_provider handles "lmstudio"
 #

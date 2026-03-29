@@ -1661,8 +1661,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 pass
 
         # Detect active provider
-        provider, info = _detect_provider_with_runtime_fallback(
-            explicit="auto")
+        provider, info = _detect_provider_with_runtime_fallback(explicit="auto")
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()

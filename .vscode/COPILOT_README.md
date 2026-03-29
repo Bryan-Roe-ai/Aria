@@ -90,4 +90,3 @@ curl http://localhost:7071/api/ai/status | jq
 ---
 
 **Ready to build with Copilot? Open Chat with Ctrl+Shift+I and type `@ai help me get started with Aria`. 🎉**
-

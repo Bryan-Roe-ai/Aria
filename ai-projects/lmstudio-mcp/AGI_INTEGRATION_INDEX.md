@@ -4,11 +4,11 @@
 
 **Complete integration** of LM Studio MCP Server with Aria's AGI (Artificial General Intelligence) Provider, enabling:
 
-✅ **Multi-agent routing** — Route queries to LM Studio when suitable  
-✅ **Task decomposition** — Break complex tasks into subtasks  
-✅ **Chain-of-thought reasoning** — Multi-step reasoning analysis  
-✅ **Automatic fallback** — Graceful degradation if LM Studio unavailable  
-✅ **Smart routing** — Analyze intent/domain to make routing decisions  
+✅ **Multi-agent routing** — Route queries to LM Studio when suitable
+✅ **Task decomposition** — Break complex tasks into subtasks
+✅ **Chain-of-thought reasoning** — Multi-step reasoning analysis
+✅ **Automatic fallback** — Graceful degradation if LM Studio unavailable
+✅ **Smart routing** — Analyze intent/domain to make routing decisions
 
 ---
 

@@ -16,6 +16,7 @@ __license__ = "MIT"
 
 try:
     from lmstudio_mcp_server import LMStudioClient, get_client
+
     __all__ = ["LMStudioClient", "get_client"]
 except ImportError:
     __all__ = []

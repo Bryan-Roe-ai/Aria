@@ -148,7 +148,7 @@ fi
 if [[ "$RUN_TEST" == true ]]; then
     print_info "Running tests before starting server..."
     echo ""
-    
+
     if python3 "$SCRIPT_DIR/test_lmstudio_mcp.py"; then
         print_info "Tests passed! Starting server..."
         echo ""

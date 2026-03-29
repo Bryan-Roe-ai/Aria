@@ -17,11 +17,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 try:
     from lmstudio_agi_integration import (
-        decompose_task_with_lmstudio,
-        reason_with_lmstudio_chain_of_thought,
-        AGILMStudioRouter,
-        complete_with_lmstudio_routing,
-    )
+        AGILMStudioRouter, complete_with_lmstudio_routing,
+        decompose_task_with_lmstudio, reason_with_lmstudio_chain_of_thought)
 except ImportError as e:
     print(f"Error importing integration: {e}")
     sys.exit(1)
@@ -37,7 +34,7 @@ def print_section(title):
 async def example_1_basic_routing():
     """
     Example 1: Basic LM Studio Routing
-    
+
     Shows how the router analyzes queries and decides when to use LM Studio.
     """
     print_section("Example 1: Basic LM Studio Routing")
@@ -92,14 +89,16 @@ async def example_1_basic_routing():
 
         print(f"Query: {test['name']}")
         print(f"  Text: {test['query']}")
-        print(f"  Domain: {test['analysis']['domain']:12} Intent: {test['analysis']['intent']}")
+        print(
+            f"  Domain: {test['analysis']['domain']:12} Intent: {test['analysis']['intent']}"
+        )
         print(f"  Decision: {decision}\n")
 
 
 async def example_2_query_analysis():
     """
     Example 2: Query Analysis & Classification
-    
+
     Shows how AGI provider analyzes queries to determine domain and intent.
     """
     print_section("Example 2: Query Classification")
@@ -140,7 +139,7 @@ async def example_2_query_analysis():
 async def example_3_task_decomposition():
     """
     Example 3: Task Decomposition
-    
+
     Shows how complex tasks are broken into subtasks.
     """
     print_section("Example 3: Task Decomposition")
@@ -178,7 +177,7 @@ async def example_3_task_decomposition():
 async def example_4_reasoning_chain():
     """
     Example 4: Chain-of-Thought Reasoning
-    
+
     Shows multi-step reasoning analysis.
     """
     print_section("Example 4: Chain-of-Thought Reasoning")
@@ -207,7 +206,9 @@ async def example_4_reasoning_chain():
         print(f"    {conclusion}...\n")
 
     except Exception as e:
-        print(f"Note: Could not generate reasoning (LM Studio may not be running): {e}\n")
+        print(
+            f"Note: Could not generate reasoning (LM Studio may not be running): {e}\n"
+        )
         print("Example reasoning would be:")
         print("  Step 1 - Problem: Gradients vanish as they backpropagate")
         print("  Step 2 - Why: Multiplication by small numbers causes decay")
@@ -217,7 +218,7 @@ async def example_4_reasoning_chain():
 async def example_5_multi_agent_workflow():
     """
     Example 5: Multi-Agent Workflow
-    
+
     Shows how different agents handle different aspects of a task.
     """
     print_section("Example 5: Multi-Agent Workflow")
@@ -267,7 +268,7 @@ async def example_5_multi_agent_workflow():
 async def example_6_fallback_behavior():
     """
     Example 6: Fallback Behavior
-    
+
     Shows what happens when LM Studio is unavailable.
     """
     print_section("Example 6: Fallback & Resilience")
@@ -306,7 +307,7 @@ async def example_6_fallback_behavior():
 async def example_7_configuration():
     """
     Example 7: Configuration & Tuning
-    
+
     Shows how to configure LM Studio + AGI integration.
     """
     print_section("Example 7: Configuration & Tuning")
@@ -394,5 +395,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\nError: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

@@ -235,11 +235,11 @@ section h2 {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .hero-content h1 {
         font-size: 2rem;
     }
-    
+
     section h2 {
         font-size: 2rem;
     }

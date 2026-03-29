@@ -19,20 +19,20 @@ from lmstudio_mcp_server import LMStudioClient
 
 async def main():
     """Test LM Studio MCP server."""
-    
+
     # Get configuration from environment
     base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
     model = os.getenv("LMSTUDIO_MODEL", "local-model")
-    
+
     print("=" * 60)
     print("LM Studio MCP Server Test")
     print("=" * 60)
     print(f"\n📍 Server URL: {base_url}")
     print(f"🤖 Default Model: {model}\n")
-    
+
     # Create client
     client = LMStudioClient(base_url=base_url, model=model)
-    
+
     # Test 1: Check connection
     print("Test 1: Connection Check")
     print("-" * 60)
@@ -46,12 +46,12 @@ async def main():
         print("  2. Check that the local server is enabled")
         print(f"  3. Verify the URL: {base_url}")
         return
-    
+
     # Test 2: List models
     print("\nTest 2: List Available Models")
     print("-" * 60)
     models_result = await client.list_models()
-    
+
     if models_result["success"]:
         models = models_result["available_models"]
         print(f"✅ Found {len(models)} model(s):")
@@ -60,31 +60,26 @@ async def main():
     else:
         print(f"❌ Failed to list models: {models_result['error']}")
         return
-    
+
     # Test 3: Simple chat completion
     print("\nTest 3: Chat Completion")
     print("-" * 60)
-    
+
     test_messages = [
         {
             "role": "system",
-            "content": "You are a helpful assistant. Keep responses brief."
+            "content": "You are a helpful assistant. Keep responses brief.",
         },
-        {
-            "role": "user",
-            "content": "What is 2 + 2? Answer in one sentence."
-        }
+        {"role": "user", "content": "What is 2 + 2? Answer in one sentence."},
     ]
-    
+
     print("Sending message to LM Studio...")
     print(f"Prompt: {test_messages[-1]['content']}\n")
-    
+
     result = await client.chat_completion(
-        messages=test_messages,
-        temperature=0.5,
-        max_tokens=256
+        messages=test_messages, temperature=0.5, max_tokens=256
     )
-    
+
     if result["success"]:
         print("✅ Chat completion successful:")
         print(f"\nResponse:\n{result['message']}")
@@ -97,12 +92,12 @@ async def main():
             print(f"  • Total: {usage.get('total_tokens', 'N/A')}")
     else:
         print(f"❌ Chat completion failed: {result['error']}")
-    
+
     # Test 4: Server status
     print("\nTest 4: Server Status")
     print("-" * 60)
     status_result = await client.get_server_status()
-    
+
     if status_result["success"]:
         print("✅ Server Status:")
         print(f"  • Status: {status_result['status']}")
@@ -110,7 +105,7 @@ async def main():
         print(f"  • Current model: {status_result['current_model']}")
     else:
         print(f"❌ Failed to get status: {status_result['error']}")
-    
+
     # Summary
     print("\n" + "=" * 60)
     print("✅ All tests completed!")
@@ -130,5 +125,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

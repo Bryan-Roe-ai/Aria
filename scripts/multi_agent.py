@@ -251,8 +251,7 @@ def _load_jobs_from_file(
                     files=item.get("files"),
                     # CLI flags act as hard overrides: if CLI says True, always True
                     dry_run=default_dry_run or item.get("dry_run", False),
-                    skip_tests=default_skip_tests or item.get(
-                        "skip_tests", False),
+                    skip_tests=default_skip_tests or item.get("skip_tests", False),
                 )
             )
         else:

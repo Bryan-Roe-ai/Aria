@@ -27,12 +27,12 @@ def print_section(title):
 def check_imports():
     """Check if all required modules can be imported."""
     print_section("1. Checking Imports")
-    
+
     checks = {
         "lmstudio_mcp_server": "Core MCP server",
         "lmstudio_agent_integration": "Agent integration",
     }
-    
+
     all_ok = True
     for module_name, description in checks.items():
         try:
@@ -41,41 +41,41 @@ def check_imports():
         except ImportError as e:
             print(f"  ❌ {module_name:40} {str(e)[:40]}")
             all_ok = False
-    
+
     return all_ok
 
 
 def check_configuration():
     """Check environment configuration."""
     print_section("2. Checking Configuration")
-    
+
     config = {
         "LMSTUDIO_BASE_URL": os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1"),
         "LMSTUDIO_MODEL": os.getenv("LMSTUDIO_MODEL", "local-model"),
         "LMSTUDIO_TEMPERATURE": os.getenv("LMSTUDIO_TEMPERATURE", "0.7"),
         "LMSTUDIO_MAX_TOKENS": os.getenv("LMSTUDIO_MAX_TOKENS", "2048"),
     }
-    
+
     for key, value in config.items():
         status = "✅ Set" if os.getenv(key) else "ℹ️  Default"
         print(f"  {status:12} {key:30} = {value}")
-    
+
     return config
 
 
 async def check_server_connection():
     """Check if LM Studio server is reachable."""
     print_section("3. Checking Server Connection")
-    
+
     try:
         from lmstudio_mcp_server import LMStudioClient
-        
+
         client = LMStudioClient()
         connected = await client.check_connection()
-        
+
         if connected:
             print(f"  ✅ Connected to LM Studio at {client.base_url}")
-            
+
             # List models
             models_result = await client.list_models()
             if models_result.get("success"):
@@ -93,7 +93,7 @@ async def check_server_connection():
             print(f"  ❌ Cannot connect to LM Studio at {client.base_url}")
             print(f"     Ensure LM Studio is running and server is enabled")
             return False
-            
+
     except Exception as e:
         print(f"  ❌ Error: {e}")
         return False
@@ -102,12 +102,12 @@ async def check_server_connection():
 def check_agent_registration():
     """Check agent registry integration."""
     print_section("4. Checking Agent Integration")
-    
+
     try:
         from lmstudio_agent_integration import get_lmstudio_agent_info
-        
+
         info = get_lmstudio_agent_info()
-        
+
         print(f"  ✅ LM Studio Agent Available")
         print(f"")
         print(f"  Agent Name:     {info.get('name')}")
@@ -117,12 +117,12 @@ def check_agent_registration():
         print(f"  Description:    {info.get('description')}")
         print(f"")
         print(f"  Capabilities:")
-        for cap, enabled in info.get('capabilities', {}).items():
+        for cap, enabled in info.get("capabilities", {}).items():
             status = "✅" if enabled else "⚠️"
             print(f"    {status} {cap}")
-        
+
         return True
-        
+
     except Exception as e:
         print(f"  ❌ Error: {e}")
         return False
@@ -131,20 +131,20 @@ def check_agent_registration():
 async def check_direct_usage():
     """Check if agent client can be used directly."""
     print_section("5. Testing Direct Agent Client")
-    
+
     try:
         from lmstudio_agent_integration import get_lmstudio_agent_client
-        
+
         client = get_lmstudio_agent_client()
         print(f"  ✅ Created agent client")
-        
+
         # List models
         try:
             models = await client.list_models()
             print(f"  ✅ Listed models: {len(models)} available")
         except Exception as e:
             print(f"  ⚠️  Could not list models: {e}")
-        
+
         # Send test message
         try:
             response = await client.complete(
@@ -167,7 +167,7 @@ async def check_direct_usage():
         except Exception as e:
             print(f"  ❌ Test message failed: {e}")
             return False
-            
+
     except Exception as e:
         print(f"  ❌ Error: {e}")
         return False
@@ -176,7 +176,7 @@ async def check_direct_usage():
 def check_integration_files():
     """Check that all integration files exist."""
     print_section("6. Checking Integration Files")
-    
+
     files = {
         "lmstudio_mcp_server.py": "Core MCP server",
         "lmstudio_agent_integration.py": "Agent integration",
@@ -185,10 +185,10 @@ def check_integration_files():
         "README.md": "Full documentation",
         "CONFIG_EXAMPLES.md": "Configuration examples",
     }
-    
+
     script_dir = Path(__file__).parent
     all_exist = True
-    
+
     for filename, description in files.items():
         filepath = script_dir / filename
         if filepath.exists():
@@ -197,45 +197,45 @@ def check_integration_files():
         else:
             print(f"  ❌ {filename:40} MISSING")
             all_exist = False
-    
+
     return all_exist
 
 
 async def main():
     """Run all checks."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("  LM Studio Agent Integration Verification")
-    print("="*70)
-    
+    print("=" * 70)
+
     results = {
         "imports": check_imports(),
         "configuration": check_configuration() is not None,
         "agent_registration": check_agent_registration(),
         "integration_files": check_integration_files(),
     }
-    
+
     # Async checks
     print_section("Running Async Checks...")
     server_ok = await check_server_connection()
     results["server_connection"] = server_ok
-    
+
     usage_ok = await check_direct_usage()
     results["direct_usage"] = usage_ok
-    
+
     # Summary
     print_section("Summary")
-    
+
     passed = sum(1 for v in results.values() if v)
     total = len(results)
-    
+
     print(f"  Checks Passed: {passed}/{total}\n")
-    
+
     for check_name, result in results.items():
         status = "✅" if result else "❌"
         print(f"    {status} {check_name.replace('_', ' ').title()}")
-    
+
     print()
-    
+
     if passed == total:
         print("  ✅ All checks passed! Integration is ready to use.")
         print()
@@ -268,5 +268,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

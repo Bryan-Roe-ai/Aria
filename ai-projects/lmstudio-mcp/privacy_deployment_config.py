@@ -9,12 +9,12 @@ LM Studio + AGI Provider while maintaining regulatory compliance.
 import json
 import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class PrivacyDeploymentConfig:
     """Configuration schema for privacy-first deployments."""
-    
+
     @staticmethod
     def get_healthcare_config() -> Dict[str, Any]:
         """HIPAA-compliant configuration."""
@@ -30,7 +30,7 @@ class PrivacyDeploymentConfig:
             "delete_after_processing": True,
             "secure_wipe": True,
         }
-    
+
     @staticmethod
     def get_financial_config() -> Dict[str, Any]:
         """PCI-DSS-compliant configuration."""
@@ -46,7 +46,7 @@ class PrivacyDeploymentConfig:
             "delete_after_processing": True,
             "secure_wipe": True,
         }
-    
+
     @staticmethod
     def list_presets() -> Dict[str, str]:
         """List available presets."""
@@ -59,17 +59,17 @@ class PrivacyDeploymentConfig:
 
 def main():
     """Generate privacy configurations."""
-    
-    print("\n" + "="*70)
+
+    print("\n" + "=" * 70)
     print("Privacy-First AI Deployment Configuration")
-    print("="*70 + "\n")
-    
+    print("=" * 70 + "\n")
+
     presets = PrivacyDeploymentConfig.list_presets()
     print("Available Presets:\n")
     for name, desc in presets.items():
         print(f"  • {name:15} - {desc}")
     print()
-    
+
     print("Configuration generated successfully!")
     print()
 

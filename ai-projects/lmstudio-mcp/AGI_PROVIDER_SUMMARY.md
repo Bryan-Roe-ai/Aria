@@ -260,12 +260,12 @@ agi = AGIProvider(
     enable_chain_of_thought=True,
     enable_self_reflection=True,
     enable_task_decomposition=True,
-    
+
     # Reasoning parameters
     reasoning_depth=3,
     temperature=0.7,
     max_output_tokens=2048,
-    
+
     # Verbosity
     verbose=True,
 )
@@ -320,7 +320,7 @@ entry = get_lmstudio_agent_registry_entry()
 ### Example 1: Basic Routing
 Shows routing decisions for different query types
 
-### Example 2: Query Classification  
+### Example 2: Query Classification
 Shows how queries are analyzed and classified by domain
 
 ### Example 3: Task Decomposition
@@ -450,7 +450,7 @@ router = AGILMStudioRouter()
 
 **Optimization Tips**:
 - ↓ LMSTUDIO_MAX_TOKENS for faster responses
-- ↓ reasoning_depth for simpler routing decisions  
+- ↓ reasoning_depth for simpler routing decisions
 - Cache routing decisions in production
 - Monitor health check latency
 

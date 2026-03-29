@@ -38,7 +38,7 @@ elif explicit == "lmstudio":
   - Line 108: Where lmstudio-specialist was added
   - Line 412: _select_agent() method - scores agents
   - Line 481: _dispatch_to_agent() - calls detect_provider(explicit=agent["provider"])
-  
+
 - chat_providers.py
   - Line 829: LMStudioProvider class definition (already implemented)
   - Line 1257: detect_provider() function - NEEDS UPDATE
@@ -47,7 +47,7 @@ elif explicit == "lmstudio":
 ## INTEGRATION FLOW (AFTER CHANGES COMPLETE)
 1. User query → _analyze_query() determines intent/domain
 2. _select_agent() scores all agents including "lmstudio-specialist"
-3. Best agent selected (if LM Studio specialist matches best)  
+3. Best agent selected (if LM Studio specialist matches best)
 4. _dispatch_to_agent("lmstudio-specialist") called
 5. detect_provider(explicit="lmstudio") is called
 6. Returns LMStudioProvider instance (with CHANGE 2 in place)

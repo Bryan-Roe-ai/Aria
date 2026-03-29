@@ -279,19 +279,19 @@ export LMSTUDIO_MAX_TOKENS=2048
 agi = AGIProvider(
     # Base provider (LM Studio or other)
     base_provider=None,  # Auto-detect
-    
+
     # Reasoning features
     enable_chain_of_thought=True,
     enable_self_reflection=True,
     enable_task_decomposition=True,
-    
+
     # Reasoning depth (1-5)
     reasoning_depth=3,
-    
+
     # Output control
     temperature=0.7,
     max_output_tokens=2048,
-    
+
     # Verbosity
     verbose=False,
 )
@@ -409,7 +409,7 @@ subtasks = await decompose_task_with_lmstudio(
 # Route each subtask appropriately
 for subtask in subtasks:
     print(f"\nSubtask: {subtask['task']}")
-    
+
     # Get reasoning from LM Studio
     reasoning = await reason_with_lmstudio_chain_of_thought(
         subtask['task'],
@@ -438,7 +438,7 @@ queries = [
 for query in queries:
     analysis = agi._analyze_query(query)
     use_lmstudio = router.should_use_lmstudio(analysis)
-    
+
     print(f"\nQuery: {query}")
     print(f"  Domain: {analysis['domain']}")
     print(f"  Intent: {analysis['intent']}")

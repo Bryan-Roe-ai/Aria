@@ -9,7 +9,7 @@ WHAT'S COMPLETE:
 
 WHAT'S REMAINING:
 ✗ Update detect_provider() in chat_providers.py to handle explicit="lmstudio"
-  File: /workspaces/Aria/ai-projects/chat-cli/src/chat_providers.py  
+  File: /workspaces/Aria/ai-projects/chat-cli/src/chat_providers.py
   Function: detect_provider() at line 1257
   Action: Add elif case for explicit=="lmstudio"
 

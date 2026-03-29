@@ -92,7 +92,7 @@ from lmstudio_agent_integration import get_lmstudio_agent_client
 
 async def main():
     client = get_lmstudio_agent_client()
-    
+
     response = await client.complete(
         messages=[
             {"role": "system", "content": "You are helpful."},

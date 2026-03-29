@@ -6,8 +6,8 @@ This script helps you get the LM Studio MCP server up and running quickly.
 """
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -37,9 +37,10 @@ def check_python():
 def check_lmstudio():
     """Check if LM Studio is running."""
     try:
-        import httpx
         import asyncio
-        
+
+        import httpx
+
         async def check():
             async with httpx.AsyncClient(timeout=5) as client:
                 try:
@@ -47,7 +48,7 @@ def check_lmstudio():
                     return response.status_code == 200
                 except Exception:
                     return False
-        
+
         result = asyncio.run(check())
         if result:
             print("✅ LM Studio is running on localhost:1234")
@@ -67,17 +68,16 @@ def install_dependencies():
     """Install required dependencies."""
     script_dir = Path(__file__).parent
     requirements_file = script_dir / "mcp-requirements.txt"
-    
+
     if not requirements_file.exists():
         print(f"❌ {requirements_file} not found")
         return False
-    
+
     print(f"Installing dependencies from {requirements_file}...")
     try:
-        subprocess.check_call([
-            sys.executable, "-m", "pip", "install", 
-            "-r", str(requirements_file), "-q"
-        ])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-r", str(requirements_file), "-q"]
+        )
         print("✅ Dependencies installed")
         return True
     except subprocess.CalledProcessError:
@@ -89,11 +89,11 @@ def run_tests():
     """Run the test suite."""
     script_dir = Path(__file__).parent
     test_file = script_dir / "test_lmstudio_mcp.py"
-    
+
     if not test_file.exists():
         print(f"❌ {test_file} not found")
         return False
-    
+
     print(f"Running tests from {test_file}...")
     try:
         subprocess.check_call([sys.executable, str(test_file)])
@@ -106,30 +106,30 @@ def run_tests():
 def show_next_steps():
     """Show next steps for the user."""
     script_dir = Path(__file__).parent
-    
+
     print_header("What's Next?")
-    
+
     print("1️⃣  Run the MCP Server:")
     print(f"   cd {script_dir}")
     print("   python lmstudio_mcp_server.py")
     print()
-    
+
     print("2️⃣  Or use the startup script:")
     print(f"   {script_dir}/run.sh")
     print(f"   {script_dir}/run.sh --test")
     print(f"   {script_dir}/run.sh --model mistral-7b")
     print()
-    
+
     print("3️⃣  Configure environment variables:")
     print("   export LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1")
     print("   export LMSTUDIO_MODEL=mistral-7b")
     print("   python lmstudio_mcp_server.py")
     print()
-    
+
     print("4️⃣  Use with MCP client (e.g., GitHub Copilot):")
     print("   Point your MCP client to the stdio channel of this process")
     print()
-    
+
     print("5️⃣  Reference Documentation:")
     print(f"   • README.md - Full documentation")
     print(f"   • CONFIG_EXAMPLES.md - Configuration examples")
@@ -140,38 +140,38 @@ def show_next_steps():
 def main():
     """Run the quick start wizard."""
     print_header("LM Studio MCP Server - Quick Start Wizard")
-    
+
     # Step 1: Check Python
     print_step(1, "Check Python Installation")
     if not check_python():
         return False
     print()
-    
+
     # Step 2: Check LM Studio
     print_step(2, "Check LM Studio Connection")
     lmstudio_status = check_lmstudio()
     if lmstudio_status is False:
         print("⚠️  Process continuing, but LM Studio needs to be running")
     print()
-    
+
     # Step 3: Install Dependencies
     print_step(3, "Install Dependencies")
     if not install_dependencies():
         return False
     print()
-    
+
     # Step 4: Run Tests
     print_step(4, "Run Tests")
     if not run_tests():
         print("❌ Tests failed, but you can still try running the server")
     print()
-    
+
     # Show next steps
     show_next_steps()
-    
+
     print_header("✅ Quick Start Complete!")
     print("You're ready to use the LM Studio MCP Server!\n")
-    
+
     return True
 
 
@@ -185,5 +185,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

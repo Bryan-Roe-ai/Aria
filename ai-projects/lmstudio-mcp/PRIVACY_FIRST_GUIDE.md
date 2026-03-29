@@ -183,7 +183,7 @@ if compliance['compliant']:
     print("✓ All processing stayed local")
 else:
     print("✗ Cloud processing detected!")
-    
+
 # Review audit log for compliance
 # Located at: data_out/privacy_audit.jsonl
 ```
@@ -493,7 +493,7 @@ def secure_delete(file_path):
         length = f.seek(0, 2)
         f.seek(0)
         f.write(os.urandom(length))
-    
+
     os.remove(file_path)
 
 secure_delete("sensitive_data.txt")
@@ -528,10 +528,10 @@ def check_network_requests(log_data):
 def analyze_audit_log():
     with open("data_out/privacy_audit.jsonl") as f:
         entries = [json.loads(line) for line in f]
-    
+
     # Check for unusual patterns
     cloud_actions = [e for e in entries if "cloud" in e.get("agent", "")]
-    
+
     if cloud_actions:
         alert(
             f"Security Alert: {len(cloud_actions)} cloud actions detected!",

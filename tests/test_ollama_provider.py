@@ -26,8 +26,8 @@ _CHAT_SRC = Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src"
 if str(_CHAT_SRC) not in sys.path:
     sys.path.insert(0, str(_CHAT_SRC))
 
-from chat_providers import (_OLLAMA_CACHE_TTL_SECONDS,  # noqa: E402
-                            OllamaProvider, _check_ollama_available,
+from chat_providers import _OLLAMA_CACHE_TTL_SECONDS  # noqa: E402
+from chat_providers import (OllamaProvider, _check_ollama_available,
                             _ollama_availability_cache, _ollama_cache_lock,
                             detect_provider)
 

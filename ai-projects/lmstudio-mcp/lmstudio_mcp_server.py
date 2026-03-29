@@ -294,9 +294,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 return [
                     TextContent(
                         type="text",
-                        text=json.dumps(
-                            {"error": "No messages provided"}, indent=2
-                        ),
+                        text=json.dumps({"error": "No messages provided"}, indent=2),
                     )
                 ]
 
@@ -358,12 +356,8 @@ async def main():
         models = await client.list_models()
         logger.info(f"✓ Available models: {models.get('available_models', [])}")
     else:
-        logger.warning(
-            f"⚠ Could not connect to LM Studio at {client.base_url}"
-        )
-        logger.info(
-            "Make sure LM Studio is running and the local server is enabled."
-        )
+        logger.warning(f"⚠ Could not connect to LM Studio at {client.base_url}")
+        logger.info("Make sure LM Studio is running and the local server is enabled.")
 
     # Start MCP server
     async with stdio_server() as (read_stream, write_stream):

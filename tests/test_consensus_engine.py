@@ -5,12 +5,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from shared.consensus_engine import (
-    ConsensusConfig,
-    Vote,
-    compute_consensus,
-    consensus_from_task_results,
-)
+from shared.consensus_engine import (ConsensusConfig, Vote, compute_consensus,
+                                     consensus_from_task_results)
 
 
 def test_compute_consensus_majority_reached() -> None:

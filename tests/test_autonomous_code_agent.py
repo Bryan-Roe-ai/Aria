@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -234,7 +234,8 @@ def test_repository_context_tolerates_git_status_timeout(
             return SimpleNamespace(stdout="main\n")
         if cmd[:3] == ["git", "status", "--short"]:
             raise subprocess.TimeoutExpired(
-                cmd=cmd, timeout=kwargs.get("timeout", 0.01))
+                cmd=cmd, timeout=kwargs.get("timeout", 0.01)
+            )
         raise AssertionError(f"Unexpected command: {cmd}")
 
     monkeypatch.setattr(subprocess, "run", _run)
@@ -261,8 +262,7 @@ def test_repository_context_skips_uncommitted_scan_by_default(
         if cmd[:4] == ["git", "rev-parse", "--abbrev-ref", "HEAD"]:
             return SimpleNamespace(stdout="main\n")
         if cmd[:3] == ["git", "status", "--short"]:
-            raise AssertionError(
-                "git status --short should be skipped by default")
+            raise AssertionError("git status --short should be skipped by default")
         raise AssertionError(f"Unexpected command: {cmd}")
 
     monkeypatch.setattr(subprocess, "run", _run)
@@ -289,7 +289,8 @@ def test_execute_task_uses_forced_files_without_identify_phase(
 
     def _identify_files(_: str) -> list[str]:
         raise AssertionError(
-            "identify_files should not be called when forced_files is provided")
+            "identify_files should not be called when forced_files is provided"
+        )
 
     monkeypatch.setattr(agent, "identify_files", _identify_files)
 
@@ -305,8 +306,7 @@ def test_execute_task_uses_forced_files_without_identify_phase(
         "run_tests",
         lambda: {"success": True, "total": 1, "passed": 1, "failed": 0},
     )
-    monkeypatch.setattr(agent, "commit_changes",
-                        lambda message, files=None: True)
+    monkeypatch.setattr(agent, "commit_changes", lambda message, files=None: True)
 
     state = agent.execute_task(
         "update only the requested file",

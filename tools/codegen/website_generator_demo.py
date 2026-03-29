@@ -7,12 +7,11 @@ Aria Platform Code Generation System
 import sys
 from pathlib import Path
 
-
 # ============================================================================
 # EXAMPLE 1: GENERATED PORTFOLIO WEBSITE
 # ============================================================================
 
-PORTFOLIO_INDEX_HTML = '''<!DOCTYPE html>
+PORTFOLIO_INDEX_HTML = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -103,9 +102,9 @@ PORTFOLIO_INDEX_HTML = '''<!DOCTYPE html>
 
     <script src="script.js"></script>
 </body>
-</html>'''
+</html>"""
 
-PORTFOLIO_CSS = '''* {
+PORTFOLIO_CSS = """* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -342,18 +341,18 @@ section h2 {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     .hero-content h1 {
         font-size: 2rem;
     }
-    
+
     section h2 {
         font-size: 2rem;
     }
 }
-'''
+"""
 
-PORTFOLIO_JS = '''// Smooth scrolling for navigation links
+PORTFOLIO_JS = """// Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -387,14 +386,14 @@ window.addEventListener('scroll', function() {
 });
 
 console.log('Website loaded successfully!');
-'''
+"""
 
 
 # ============================================================================
 # EXAMPLE 2: GENERATED LANDING PAGE
 # ============================================================================
 
-LANDING_HTML_SNIPPET = '''<!DOCTYPE html>
+LANDING_HTML_SNIPPET = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -453,14 +452,14 @@ LANDING_HTML_SNIPPET = '''<!DOCTYPE html>
         <p>&copy; 2026 ProductName. All rights reserved.</p>
     </footer>
 </body>
-</html>'''
+</html>"""
 
 
 # ============================================================================
 # EXAMPLE 3: GENERATED BLOG
 # ============================================================================
 
-BLOG_HTML_SNIPPET = '''<!DOCTYPE html>
+BLOG_HTML_SNIPPET = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -485,7 +484,7 @@ BLOG_HTML_SNIPPET = '''<!DOCTYPE html>
                 <p>A comprehensive guide for beginners...</p>
                 <a href="/post1.html" class="read-more">Read More →</a>
             </article>
-            
+
             <article class="blog-card">
                 <img src="post2.jpg" alt="Post 2">
                 <h2>Advanced JavaScript Patterns</h2>
@@ -500,79 +499,83 @@ BLOG_HTML_SNIPPET = '''<!DOCTYPE html>
         <p>&copy; 2026 Tech Blog. All rights reserved.</p>
     </footer>
 </body>
-</html>'''
+</html>"""
 
 
 def demo_portfolio_generation():
     """Demo: Generate portfolio website"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("DEMO 1: PORTFOLIO WEBSITE GENERATION")
-    print("="*70)
-    
+    print("=" * 70)
+
     print("\n📝 REQUEST:")
-    print("  @llm-maker Build a professional portfolio website with home, about, work, and contact pages")
-    
+    print(
+        "  @llm-maker Build a professional portfolio website with home, about, work, and contact pages"
+    )
+
     print("\n📦 GENERATED FILES:")
     files = {
-        'index.html': len(PORTFOLIO_INDEX_HTML),
-        'style.css': len(PORTFOLIO_CSS),
-        'script.js': len(PORTFOLIO_JS)
+        "index.html": len(PORTFOLIO_INDEX_HTML),
+        "style.css": len(PORTFOLIO_CSS),
+        "script.js": len(PORTFOLIO_JS),
     }
-    
+
     total_bytes = sum(files.values())
-    
+
     for filename, size in files.items():
         print(f"  ✓ {filename:20} ({size:>6} bytes)")
-    
+
     print(f"\n  Total Size: {total_bytes} bytes")
-    
+
     print("\n📄 SAMPLE CODE (index.html):")
     print("-" * 70)
     print(PORTFOLIO_INDEX_HTML[:600] + "...")
-    
+
     print("\n🎨 FEATURES INCLUDED:")
     features = [
-        'Sticky navigation menu',
-        'Hero section with CTA',
-        'About section with skills grid',
-        'Portfolio grid with hover effects',
-        'Contact form with validation',
-        'Smooth scrolling',
-        'Responsive design',
-        'Modern gradient styling',
-        'Animations'
+        "Sticky navigation menu",
+        "Hero section with CTA",
+        "About section with skills grid",
+        "Portfolio grid with hover effects",
+        "Contact form with validation",
+        "Smooth scrolling",
+        "Responsive design",
+        "Modern gradient styling",
+        "Animations",
     ]
-    
+
     for feature in features:
         print(f"  ✓ {feature}")
 
 
 def demo_landing_page():
     """Demo: Generate landing page"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("DEMO 2: LANDING PAGE GENERATION")
-    print("="*70)
-    
+    print("=" * 70)
+
     print("\n📝 REQUEST:")
-    print("  @llm-maker Build a SaaS landing page with hero, features, pricing, and FAQ")
-    
+    print(
+        "  @llm-maker Build a SaaS landing page with hero, features, pricing, and FAQ"
+    )
+
     print("\n📦 GENERATED STRUCTURE:")
     sections = [
-        'Navigation bar with logo',
-        'Hero section with headline and CTA',
-        'Features section with 3+ feature cards',
-        'Pricing table with 3 tiers',
-        'FAQ accordion section',
-        'Footer with links'
+        "Navigation bar with logo",
+        "Hero section with headline and CTA",
+        "Features section with 3+ feature cards",
+        "Pricing table with 3 tiers",
+        "FAQ accordion section",
+        "Footer with links",
     ]
-    
+
     for section in sections:
         print(f"  ✓ {section}")
-    
+
     print("\n📄 SAMPLE HTML:")
     print("-" * 70)
     print(LANDING_HTML_SNIPPET[:500] + "...")
-    
+
     print("\n💡 CUSTOMIZATION READY:")
     print("  • Text: Easy to change all copy and headlines")
     print("  • Colors: Modify CSS gradient and color variables")
@@ -582,79 +585,79 @@ def demo_landing_page():
 
 def demo_blog():
     """Demo: Generate blog"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("DEMO 3: BLOG WEBSITE GENERATION")
-    print("="*70)
-    
+    print("=" * 70)
+
     print("\n📝 REQUEST:")
     print("  @llm-maker Create a tech blog with posts, archives, and dark mode")
-    
+
     print("\n📦 GENERATED PAGES:")
     pages = [
-        'index.html - Blog post listing',
-        'post.html - Individual post template',
-        'archive.html - Posts by date/category',
-        'about.html - Blog author info',
-        'style.css - Responsive styling + dark mode toggle'
+        "index.html - Blog post listing",
+        "post.html - Individual post template",
+        "archive.html - Posts by date/category",
+        "about.html - Blog author info",
+        "style.css - Responsive styling + dark mode toggle",
     ]
-    
+
     for page in pages:
         print(f"  ✓ {page}")
-    
+
     print("\n📄 SAMPLE CODE:")
     print("-" * 70)
     print(BLOG_HTML_SNIPPET[:400] + "...")
-    
+
     print("\n✨ FEATURES:")
     features = [
-        'Blog post grid layout',
-        'Search functionality',
-        'Category filtering',
-        'Dark mode toggle',
-        'Social sharing buttons',
-        'Comments section',
-        'Related posts',
-        'Reading time estimate'
+        "Blog post grid layout",
+        "Search functionality",
+        "Category filtering",
+        "Dark mode toggle",
+        "Social sharing buttons",
+        "Comments section",
+        "Related posts",
+        "Reading time estimate",
     ]
-    
+
     for feature in features:
         print(f"  ✓ {feature}")
 
 
 def show_generation_types():
     """Show all website types that can be generated"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("WEBSITE TYPES YOU CAN GENERATE")
-    print("="*70)
-    
+    print("=" * 70)
+
     types = {
-        'Portfolio': {
-            'perfect_for': 'Designers, developers, freelancers, creatives',
-            'includes': 'Hero, portfolio grid, about, testimonials, contact',
-            'pages': '4-6'
+        "Portfolio": {
+            "perfect_for": "Designers, developers, freelancers, creatives",
+            "includes": "Hero, portfolio grid, about, testimonials, contact",
+            "pages": "4-6",
         },
-        'Landing Page': {
-            'perfect_for': 'SaaS products, startups, services',
-            'includes': 'Hero, features, pricing, FAQ, testimonials, CTA',
-            'pages': '1 + modal pages'
+        "Landing Page": {
+            "perfect_for": "SaaS products, startups, services",
+            "includes": "Hero, features, pricing, FAQ, testimonials, CTA",
+            "pages": "1 + modal pages",
         },
-        'Blog': {
-            'perfect_for': 'Writers, journalists, tech blogs, news',
-            'includes': 'Post listing, archives, categories, search, dark mode',
-            'pages': '4+'
+        "Blog": {
+            "perfect_for": "Writers, journalists, tech blogs, news",
+            "includes": "Post listing, archives, categories, search, dark mode",
+            "pages": "4+",
         },
-        'Documentation': {
-            'perfect_for': 'APIs, libraries, frameworks, tools',
-            'includes': 'Getting started, API reference, examples, search',
-            'pages': '5+'
+        "Documentation": {
+            "perfect_for": "APIs, libraries, frameworks, tools",
+            "includes": "Getting started, API reference, examples, search",
+            "pages": "5+",
         },
-        'E-Commerce': {
-            'perfect_for': 'Stores, shops, marketplaces',
-            'includes': 'Product catalog, cart, checkout, reviews, search',
-            'pages': '6+'
-        }
+        "E-Commerce": {
+            "perfect_for": "Stores, shops, marketplaces",
+            "includes": "Product catalog, cart, checkout, reviews, search",
+            "pages": "6+",
+        },
     }
-    
+
     for site_type, info in types.items():
         print(f"\n{site_type}")
         print(f"  Best for: {info['perfect_for']}")
@@ -664,18 +667,18 @@ def show_generation_types():
 
 def show_generation_commands():
     """Show all generation commands"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("GENERATION COMMANDS - COPY & PASTE READY")
-    print("="*70)
-    
+    print("=" * 70)
+
     commands = {
-        'Portfolio': '@llm-maker Build a professional portfolio website showcasing 12 projects with beautiful grid layout and contact form',
-        'Blog': '@llm-maker Create a tech blog with dark mode, post categories, archives, and social sharing buttons',
-        'Landing': '@llm-maker Build a modern SaaS landing page with hero section, feature list, pricing table, testimonials, and FAQ',
-        'Documentation': '@llm-maker Generate API documentation website with quick start guide, code examples, and API reference table',
-        'E-Commerce': '@llm-maker Create an e-commerce store with product catalog, shopping cart, checkout, and customer reviews'
+        "Portfolio": "@llm-maker Build a professional portfolio website showcasing 12 projects with beautiful grid layout and contact form",
+        "Blog": "@llm-maker Create a tech blog with dark mode, post categories, archives, and social sharing buttons",
+        "Landing": "@llm-maker Build a modern SaaS landing page with hero section, feature list, pricing table, testimonials, and FAQ",
+        "Documentation": "@llm-maker Generate API documentation website with quick start guide, code examples, and API reference table",
+        "E-Commerce": "@llm-maker Create an e-commerce store with product catalog, shopping cart, checkout, and customer reviews",
     }
-    
+
     for site_type, command in commands.items():
         print(f"\n{site_type}:")
         print(f"  {command}")
@@ -683,33 +686,33 @@ def show_generation_commands():
 
 def show_deployment_guide():
     """Show how to deploy generated sites"""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("DEPLOYMENT OPTIONS FOR GENERATED WEBSITES")
-    print("="*70)
-    
+    print("=" * 70)
+
     options = {
-        'GitHub Pages': {
-            'cost': 'Free',
-            'time': '< 5 minutes',
-            'benefits': 'Connected to Git, automatic deployments, custom domain'
+        "GitHub Pages": {
+            "cost": "Free",
+            "time": "< 5 minutes",
+            "benefits": "Connected to Git, automatic deployments, custom domain",
         },
-        'Netlify': {
-            'cost': 'Free (with paid tiers)',
-            'time': '< 5 minutes',
-            'benefits': 'Drag & drop, auto-deploys, form handling, analytics'
+        "Netlify": {
+            "cost": "Free (with paid tiers)",
+            "time": "< 5 minutes",
+            "benefits": "Drag & drop, auto-deploys, form handling, analytics",
         },
-        'Vercel': {
-            'cost': 'Free (with paid tiers)',
-            'time': '< 5 minutes',
-            'benefits': 'Optimized for static sites, analytics, serverless functions'
+        "Vercel": {
+            "cost": "Free (with paid tiers)",
+            "time": "< 5 minutes",
+            "benefits": "Optimized for static sites, analytics, serverless functions",
         },
-        'AWS S3': {
-            'cost': 'Pay per GB',
-            'time': '< 10 minutes',
-            'benefits': 'Scalable, CDN available, very cheap for small sites'
-        }
+        "AWS S3": {
+            "cost": "Pay per GB",
+            "time": "< 10 minutes",
+            "benefits": "Scalable, CDN available, very cheap for small sites",
+        },
     }
-    
+
     for platform, details in options.items():
         print(f"\n{platform}")
         print(f"  Cost: {details['cost']}")
@@ -719,38 +722,38 @@ def show_deployment_guide():
 
 def main():
     """Run website generator demos"""
-    print("\n╔" + "="*68 + "╗")
+    print("\n╔" + "=" * 68 + "╗")
     print("║  WEBSITE GENERATOR - Aria Code Generation System              ║")
     print("║  Create Professional Websites in Seconds                      ║")
-    print("╚" + "="*68 + "╝")
-    
+    print("╚" + "=" * 68 + "╝")
+
     demo_portfolio_generation()
     demo_landing_page()
     demo_blog()
     show_generation_types()
     show_generation_commands()
     show_deployment_guide()
-    
-    print("\n" + "="*70)
+
+    print("\n" + "=" * 70)
     print("READY TO GENERATE YOUR WEBSITE?")
-    print("="*70)
-    
+    print("=" * 70)
+
     print("\n🚀 OPTION 1: Copilot Chat (Fastest)")
     print("   Press Ctrl+Shift+I")
     print("   Copy a command from above and paste it")
-    
+
     print("\n🚀 OPTION 2: View Generator Guide")
     print("   python3 website_generator_guide.py")
-    
+
     print("\n🚀 OPTION 3: Interactive Menu")
     print("   python3 code_generation_quickstart.py")
-    
-    print("\n" + "="*70)
+
+    print("\n" + "=" * 70)
     print("✨ START BUILDING NOW! ✨")
-    print("="*70 + "\n")
+    print("=" * 70 + "\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
@@ -759,5 +762,6 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"\nError: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

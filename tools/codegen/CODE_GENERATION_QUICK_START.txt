@@ -30,7 +30,7 @@ Press `Ctrl+Shift+I` and type:
 
 ### ✅ Websites
 - Portfolio sites
-- Blog templates  
+- Blog templates
 - Landing pages
 - Documentation sites
 - E-commerce sites
@@ -50,7 +50,7 @@ Press `Ctrl+Shift+I` and type:
 @llm-maker Generate a function that validates email addresses using regex patterns
 ```
 
-### Generate CSV Parser  
+### Generate CSV Parser
 ```
 @llm-maker Generate a function that parses CSV lines handling quoted fields
 ```
@@ -252,7 +252,7 @@ portfolio, blog, landing, documentation, ecommerce
 ```
 @llm-maker Generate validators for:
 - Email addresses
-- Phone numbers  
+- Phone numbers
 - Password strength
 - Credit card numbers
 - URLs
@@ -262,7 +262,7 @@ portfolio, blog, landing, documentation, ecommerce
 ```
 @llm-maker Create a minimalist blog website with:
 - Homepage listing recent posts
-- Individual post pages  
+- Individual post pages
 - About the author section
 - Contact form
 - Dark mode support
