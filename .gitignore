@@ -185,3 +185,5 @@ config/autogen/
 autotrain_testtoken.yaml
 autotrain_autogen_*.yaml
 .push-worktrees/
+extensions/lmstudio-provider/node_modules/
+extensions/lmstudio-provider/*.vsix
