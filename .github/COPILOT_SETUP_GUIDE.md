@@ -156,16 +156,6 @@ The MCP (Model Context Protocol) configuration connects Copilot to specialized s
         "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
       }
     },
-    "lmstudio": {
-      "description": "Bridge Copilot MCP tool calls to a local LM Studio OpenAI-compatible server",
-      "type": "stdio",
-      "command": "python3",
-      "args": ["${workspaceFolder}/scripts/lmstudio_mcp_server.py"],
-      "env": {
-        "LMSTUDIO_BASE_URL": "${env:LMSTUDIO_BASE_URL}",
-        "LMSTUDIO_MODEL": "${env:LMSTUDIO_MODEL}"
-      }
-    },
     "task-complete": {
       "description": "Task completion tracking and artifact management",
       "type": "stdio",
@@ -177,39 +167,10 @@ The MCP (Model Context Protocol) configuration connects Copilot to specialized s
 ```
 
 **How MCP Servers Work**:
-
 - Copilot Chat automatically discovers and loads these servers
 - Each server exposes domain-specific tools and capabilities
 - Tools appear in Copilot Chat's tool suggestions
 - Use `@mcp-server-name` to route requests to specific servers
-
-### LM Studio with Copilot
-
-In this workspace, the supported way to use LM Studio **with GitHub Copilot** is via the `lmstudio` MCP server.
-
-What this enables:
-
-- `lmstudio_status` — check whether LM Studio is reachable
-- `lmstudio_list_models` — inspect the local models currently exposed by LM Studio
-- `lmstudio_chat` — send a one-shot prompt through LM Studio and return the result to Copilot Chat
-
-Required environment:
-
-```bash
-export LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
-export LMSTUDIO_MODEL=nvidia/nemotron-3-nano-4b
-```
-
-Example Copilot prompts:
-
-- `Use the lmstudio MCP server to check local model status.`
-- `Call lmstudio_list_models and tell me which local models are available.`
-- `Call lmstudio_chat with prompt "Summarize this repository".`
-
-Important limitation:
-
-- Copilot's primary conversation model remains GitHub-hosted.
-- LM Studio is exposed as a local tool provider through MCP, not as a replacement backend for Copilot Chat itself.
 
 ## Custom Agents
 

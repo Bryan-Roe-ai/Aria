@@ -1,4 +1,0 @@
-python-dotenv
-pytest
-pytest-xdist
-pytest-agent-evals>=0.0.1b260129

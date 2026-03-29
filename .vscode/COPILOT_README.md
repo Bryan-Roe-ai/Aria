@@ -54,38 +54,7 @@ Ask Copilot to use these specialized servers:
 
 - **`@quantum-ai`** — Quantum circuit design & simulation
 - **`@llm-maker`** — Safe code & website generation
-- **`@lmstudio`** — Local LM Studio bridge for status, models, and one-shot prompts
 - **`@task-complete`** — Task tracking
-
-### LM Studio with Copilot
-
-This workspace includes `scripts/lmstudio_mcp_server.py`, registered in `.vscode/mcp.json` as `lmstudio`.
-
-What works:
-
-- Copilot can call LM Studio as an MCP tool server
-- Copilot can check LM Studio health, list models, and send a one-shot prompt
-
-What does not change:
-
-- GitHub Copilot Chat still uses GitHub-hosted models for the main assistant conversation
-- LM Studio is available through MCP tools, not as a full replacement backend for Copilot itself
-
-LM Studio endpoint (configured in `.vscode/mcp.json`):
-
-```
-http://192.168.1.153:1234/v1
-```
-
-Currently loaded models: `nvidia/nemotron-3-nano-4b`, `openai/gpt-oss-120b`,
-`mistralai/devstral-small-2-2512`, `mistralai/magistral-small-2509`,
-`mistralai/ministral-3-14b-reasoning`, `google/gemma-3-4b`
-
-Example prompts:
-
-- `Use the lmstudio MCP server to verify connectivity.`
-- `Call lmstudio_list_models and show the results.`
-- `Call lmstudio_chat with prompt "Explain this codebase" and model "mistralai/devstral-small-2-2512".`
 
 ## Quick Commands
 

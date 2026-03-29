@@ -20,17 +20,6 @@
         "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
       }
     },
-    "lmstudio": {
-      "type": "stdio",
-      "command": "python3",
-      "args": [
-        "${workspaceFolder}/scripts/lmstudio_mcp_server.py"
-      ],
-      "env": {
-        "LMSTUDIO_BASE_URL": "http://192.168.1.153:1234/v1",
-        "LMSTUDIO_MODEL": "nvidia/nemotron-3-nano-4b"
-      }
-    },
     "task-complete": {
       "type": "stdio",
       "command": "python3",

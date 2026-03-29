@@ -1,7 +1,6 @@
 {
-    "name": "Aria Star Keeper",
-    "version": "1.0.0",
-    "description": "A MakeCode Arcade space shooter. Move with D-pad, shoot with A, collect gems. Reach 500 pts to win!",
+    "name": "Untitled",
+    "version": "0.0.0",
     "files": [
         "main.ts"
     ],
