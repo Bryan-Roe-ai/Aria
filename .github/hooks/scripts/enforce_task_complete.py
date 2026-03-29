@@ -189,32 +189,6 @@ def main() -> None:
 
     try:
         payload = json.loads(raw)
-        # Debug: log raw payload to file so we can inspect it
-        import pathlib, datetime
-        log_dir = pathlib.Path("/tmp/hook_debug")
-        log_dir.mkdir(exist_ok=True)
-        ts = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
-        (log_dir / f"payload_{ts}.json").write_text(raw)
-        # Load transcript file if present and inject into payload for analysis
-        _tpath = payload.get("transcript_path")
-        if _tpath:
-            try:
-                _tfile = pathlib.Path(_tpath)
-                if _tfile.exists():
-                    _transcript_msgs = []
-                    for _tline in _tfile.read_text().splitlines():
-                        try:
-                            _tobj = json.loads(_tline)
-                            _tdata = _tobj.get("data", {})
-                            _tcontent = _tdata.get("content", "")
-                            if _tcontent:
-                                _transcript_msgs.append({"content": _tcontent})
-                        except Exception:
-                            pass
-                    if _transcript_msgs:
-                        payload.setdefault("messages", []).extend(_transcript_msgs)
-            except Exception:
-                pass
     except json.JSONDecodeError:
         _emit(
             {
@@ -271,7 +245,10 @@ def main() -> None:
                 scope_preview = ", ".join(scope_drift[:2])
                 if len(scope_drift) > 2:
                     scope_preview += ", ..."
-                scope_suffix = f" | scope warning: unfinished items may be drifting from the active request -> {scope_preview}"
+                scope_suffix = (
+                    " | scope warning: unfinished items may be drifting"
+                    f" from the active request -> {scope_preview}"
+                )
             _emit(
                 {
                     "continue": False,
@@ -305,18 +282,6 @@ def main() -> None:
                         "task_complete guard bypassed by explicit env override "
                         f"({_ALLOW_STOP_OVERRIDE_ENV}=true)."
                     ),
-                }
-            )
-
-        # Flag-file override: if /tmp/task_complete.flag exists, allow stop
-        import pathlib as _pathlib
-        _flag = _pathlib.Path("/tmp/task_complete.flag")
-        if _flag.exists():
-            _flag.unlink(missing_ok=True)  # consume once
-            _emit(
-                {
-                    "continue": True,
-                    "systemMessage": "task_complete guard: flag-file override consumed, allowing stop.",
                 }
             )
 
