@@ -18,6 +18,7 @@
     "about.html",
     "contact.html",
     "style.css",
-    "script.js"
+    "script.js",
+    "metadata.json"
   ]
 }

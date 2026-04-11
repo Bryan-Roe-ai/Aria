@@ -39,6 +39,11 @@ jobs:
           functions-path: functions
           require-http-route: 'true'
 
+      - name: Validate generated site bundles contract
+        uses: ./.github/actions/validate-site-bundles
+        with:
+          strict-metadata: 'true'
+
       - name: Check for common issues
         run: |
           echo "Checking for common workflow issues..."

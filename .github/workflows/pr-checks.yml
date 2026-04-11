@@ -22,27 +22,11 @@ jobs:
         with:
           extra-packages: 'pyyaml'
 
-      - name: Validate YAML files
-        run: |
-          python -c "
-          import yaml
-          from pathlib import Path
-          import sys
-
-          failed = False
-          workflow_dir = Path('.github/workflows')
-          files = sorted(set(workflow_dir.glob('*.yml')) | set(workflow_dir.glob('*.yaml')))
-          for yml_file in files:
-            try:
-              with open(yml_file) as f:
-                yaml.safe_load(f)
-              print(f'✓ {yml_file}')
-            except Exception as e:
-              print(f'✗ {yml_file}: {e}')
-              failed = True
-
-          sys.exit(1 if failed else 0)
-          "
+      - name: Validate workflow YAML files
+        uses: ./.github/actions/validate-workflow-yaml
+        with:
+          workflows-path: .github/workflows
+          require-jobs: 'true'
 
       - name: Check for common issues
         run: |

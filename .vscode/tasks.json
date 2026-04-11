@@ -50,6 +50,16 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "validate:site-bundles-strict",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"python3 scripts/validate_site_bundles.py --strict-metadata"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "Run Gradio AI Chat app",
 			"type": "shell",
 			"command": "${command:python.interpreterPath}",

@@ -33,6 +33,18 @@ python3 -m http.server 8089
 # open http://localhost:8089/generated_sites/
 ```
 
+## Validation
+
+Run the generated-sites contract checks locally:
+
+```bash
+# Default (legacy-compatible)
+python3 scripts/validate_site_bundles.py
+
+# Strict mode (matches CI)
+python3 scripts/validate_site_bundles.py --strict-metadata
+```
+
 ## Maintenance checklist
 
 - Keep `metadata.json` in sync with page/features.

@@ -29,7 +29,9 @@ jobs:
           else pip install pytest; fi
 
       - name: Run llm-maker tests
-        run: |
-          python -m pytest ai-projects/llm-maker/tests -q --maxfail=1
+        uses: ./.github/actions/run-pytest-suite
+        with:
+          test-path: ai-projects/llm-maker/tests
+          extra-args: --maxfail=1 -q
         env:
           CI: true

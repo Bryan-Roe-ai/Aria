@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Validate generated_sites bundle contract.
 
-Contract per bundle directory:
+Default contract per bundle directory:
 - index.html
 - style.css
 - script.js
+
+Strict mode additionally requires:
 - metadata.json
 
 metadata.json required keys:
@@ -20,7 +22,7 @@ import json
 import sys
 from pathlib import Path
 
-REQUIRED_FILES = {"index.html", "style.css", "script.js", "metadata.json"}
+REQUIRED_FILES = {"index.html", "style.css", "script.js"}
 REQUIRED_METADATA_KEYS = {
     "name": str,
     "pages": list,
@@ -33,7 +35,7 @@ def _is_bundle_dir(path: Path) -> bool:
     return path.is_dir() and not path.name.startswith(".")
 
 
-def validate_bundle(bundle_dir: Path) -> list[str]:
+def validate_bundle(bundle_dir: Path, *, strict_metadata: bool = False) -> list[str]:
     errors: list[str] = []
 
     present_files = {p.name for p in bundle_dir.iterdir() if p.is_file()}
@@ -43,6 +45,8 @@ def validate_bundle(bundle_dir: Path) -> list[str]:
 
     metadata_path = bundle_dir / "metadata.json"
     if not metadata_path.exists():
+        if strict_metadata:
+            errors.append("missing required file: metadata.json")
         return errors
 
     try:
@@ -66,7 +70,11 @@ def validate_bundle(bundle_dir: Path) -> list[str]:
 
     files_list = metadata.get("files")
     if isinstance(files_list, list):
-        missing_in_files = sorted(REQUIRED_FILES - set(str(x) for x in files_list))
+        files_set = set(str(x) for x in files_list)
+        required_meta_entries = set(REQUIRED_FILES)
+        if strict_metadata:
+            required_meta_entries.add("metadata.json")
+        missing_in_files = sorted(required_meta_entries - files_set)
         if missing_in_files:
             errors.append(
                 f"metadata.files missing required entries: {', '.join(missing_in_files)}"
@@ -76,6 +84,7 @@ def validate_bundle(bundle_dir: Path) -> list[str]:
 
 
 def main() -> int:
+    strict_metadata = "--strict-metadata" in sys.argv
     repo_root = Path(__file__).resolve().parents[1]
     bundles_root = repo_root / "generated_sites"
 
@@ -93,7 +102,7 @@ def main() -> int:
 
     print(f"Validating {total} generated site bundle(s)...")
     for bundle in bundle_dirs:
-        errors = validate_bundle(bundle)
+        errors = validate_bundle(bundle, strict_metadata=strict_metadata)
         if errors:
             failed += 1
             print(f"❌ {bundle.name}")

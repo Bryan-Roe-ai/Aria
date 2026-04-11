@@ -62,13 +62,20 @@ jobs:
             echo "mode_label=standard (PR)" >> $GITHUB_OUTPUT
           fi
 
+      - name: Validate generated site bundles (strict)
+        uses: ./.github/actions/validate-site-bundles
+        with:
+          strict-metadata: 'true'
+
       - name: Run contract gate (standard)
         if: steps.mode.outputs.strict == 'false'
-        run: bash ./scripts/integration_contract_gate.sh
+        uses: ./.github/actions/run-integration-contract-gate
 
       - name: Run contract gate (strict)
         if: steps.mode.outputs.strict == 'true'
-        run: bash ./scripts/integration_contract_gate.sh --strict-endpoints
+        uses: ./.github/actions/run-integration-contract-gate
+        with:
+          strict-endpoints: 'true'
 
       - name: Upload contract results
         if: always()
