@@ -22,34 +22,76 @@
 			"problemMatcher": []
 		},
 		{
-			"label": "repo-health:once-strict",
-			"type": "shell",
-			"command": "bash",
-			"args": [
-				"-lc",
-				"./scripts/start_repo_health_automation.sh once --strict"
-			],
-			"problemMatcher": []
+			"label": "Validate writer-reviewer debug prerequisites",
+			"type": "aitk",
+			"command": "debug-check-prerequisites",
+			"args": {
+				"portOccupancy": [
+					5679,
+					8088
+				]
+			}
 		},
 		{
-			"label": "repo-health:once-strict-full-pytest",
+			"label": "Run writer-reviewer HTTP server",
 			"type": "shell",
-			"command": "bash",
-			"args": [
-				"-lc",
-				"./scripts/start_repo_health_automation.sh once --strict --full-pytest"
+			"command": "${command:python.interpreterPath} -m debugpy --listen 127.0.0.1:5679 -m agentdev run ai-projects/writer-reviewer-workflow/main.py --verbose --port 8088",
+			"isBackground": true,
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"dependsOn": [
+				"Validate writer-reviewer debug prerequisites"
 			],
-			"problemMatcher": []
+			"problemMatcher": {
+				"pattern": [
+					{
+						"regexp": "^.*$",
+						"file": 0,
+						"location": 1,
+						"message": 2
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": ".*",
+					"endsPattern": "Application startup complete|running on|Started server process"
+				}
+			}
 		},
 		{
-			"label": "repo-health:watch-strict",
+			"label": "Open writer-reviewer Agent Inspector",
 			"type": "shell",
-			"command": "bash",
-			"args": [
-				"-lc",
-				"./scripts/start_repo_health_automation.sh watch --strict --interval 300"
-			],
+			"command": "echo '${input:openWriterReviewerInspector}'",
+			"presentation": {
+				"reveal": "never"
+			},
+			"dependsOn": [
+				"Run writer-reviewer HTTP server"
+			]
+		},
+		{
+			"label": "Terminate All Tasks",
+			"type": "shell",
+			"command": "echo ${input:terminate}",
 			"problemMatcher": []
+		}
+	],
+	"inputs": [
+		{
+			"id": "openWriterReviewerInspector",
+			"type": "command",
+			"command": "ai-mlstudio.openTestTool",
+			"args": {
+				"triggeredFrom": "tasks",
+				"port": 8088
+			}
+		},
+		{
+			"id": "terminate",
+			"type": "command",
+			"command": "workbench.action.tasks.terminate",
+			"args": "terminateAll"
 		}
 	]
 }

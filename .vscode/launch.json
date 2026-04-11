@@ -13,6 +13,18 @@
             "jinja": true
         },
         {
+            "name": "Debug Writer-Reviewer Workflow HTTP Server",
+            "type": "debugpy",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5679
+            },
+            "preLaunchTask": "Open writer-reviewer Agent Inspector",
+            "internalConsoleOptions": "neverOpen",
+            "postDebugTask": "Terminate All Tasks"
+        },
+        {
             "name": "Attach to Python Functions",
             "type": "debugpy",
             "request": "attach",

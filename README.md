@@ -17,12 +17,12 @@ Aria is a full-stack interactive AI character platform. She lives on a virtual 3
 
 The project is organized around four core areas:
 
-| Area                    | Folder                    | Description                                         |
-| ----------------------- | ------------------------- | --------------------------------------------------- |
-| **Character interface** | `apps/aria/`              | Animated 3D character stage with object interaction |
-| **Chat / AI backends**  | `ai-projects/chat-cli/`   | Multi-provider CLI and streaming chat API           |
-| **Quantum ML**          | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental)    |
-| **Model fine-tuning**   | `AI/`                     | LoRA fine-tuning for Aria's language understanding  |
+| Area | Folder | Description |
+| --- | --- | --- |
+| **Character interface** | `apps/aria/` | Animated 3D character stage with object interaction |
+| **Chat / AI backends** | `ai-projects/chat-cli/` | Multi-provider CLI and streaming chat API |
+| **Quantum ML** | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental) |
+| **Model fine-tuning** | `AI/` | LoRA fine-tuning for Aria's language understanding |
 
 Supporting infrastructure lives in `shared/`, `scripts/`, `config/`, and `function_app.py` (Azure Functions API layer).
 
@@ -57,16 +57,9 @@ OPENAI_API_KEY=sk-... python ai-projects/chat-cli/src/chat_cli.py --provider ope
 
 # Azure OpenAI (requires all four env vars — see Configuration below)
 python ai-projects/chat-cli/src/chat_cli.py --provider azure
-
-# Continuous autonomous mode (default)
-python ai-projects/chat-cli/src/chat_cli.py --provider local
-
-# Manual interactive mode
-python ai-projects/chat-cli/src/chat_cli.py --provider local --interactive
 ```
 
 Interactive session commands: `/new`, `/save`, `/exit`.
-The default CLI now runs autonomously forever; use `--interactive` if you want stdin prompts back.
 
 ### 3 — Start the Azure Functions API host
 
@@ -80,7 +73,7 @@ curl http://localhost:7071/api/ai/status | python -m json.tool   # health check
 
 ## 🏗️ Project Structure
 
-```text
+```
 apps/aria/          Animated character stage (HTML/CSS/JS + Python API server)
 apps/chat/          Browser-based streaming chat UI
 ai-projects/chat-cli/ Multi-provider chat CLI
@@ -104,25 +97,25 @@ The Aria character runs at `http://localhost:8080` (or the [GitHub Pages demo](h
 
 **Natural language commands (examples):**
 
-| Command                    | Effect                             |
-| -------------------------- | ---------------------------------- |
-| `move left` / `move right` | Walk to stage edge                 |
-| `wave` / `dance` / `jump`  | Trigger gesture                    |
-| `pick up the ball`         | Pick up a nearby object            |
-| `throw the ball`           | Throw held object with physics     |
-| `say hello`                | Aria speaks the text aloud via TTS |
+| Command | Effect |
+| --- | --- |
+| `move left` / `move right` | Walk to stage edge |
+| `wave` / `dance` / `jump` | Trigger gesture |
+| `pick up the ball` | Pick up a nearby object |
+| `throw the ball` | Throw held object with physics |
+| `say hello` | Aria speaks the text aloud via TTS |
 
 The auto-execute system parses complex multi-step requests ("walk to the table and pick up the apple") into a structured sequence of 8 core actions: `move`, `say`, `pickup`, `drop`, `throw`, `gesture`, `look`, `wait`.
 
 **Aria web server API (port 8080):**
 
-| Method | Path                | Description                                          |
-| ------ | ------------------- | ---------------------------------------------------- |
-| `GET`  | `/api/aria/state`   | Current stage state (position, objects, expressions) |
-| `POST` | `/api/aria/command` | Process a natural language command                   |
-| `POST` | `/api/aria/execute` | Auto-execute an action sequence                      |
-| `POST` | `/api/aria/object`  | Add / update / remove an object                      |
-| `POST` | `/api/aria/world`   | Generate a themed world via LLM                      |
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/aria/state` | Current stage state (position, objects, expressions) |
+| `POST` | `/api/aria/command` | Process a natural language command |
+| `POST` | `/api/aria/execute` | Auto-execute an action sequence |
+| `POST` | `/api/aria/object` | Add / update / remove an object |
+| `POST` | `/api/aria/world` | Generate a themed world via LLM |
 
 ---
 
@@ -130,7 +123,7 @@ The auto-execute system parses complex multi-step requests ("walk to the table a
 
 Provider auto-detection order:
 
-```text
+```
 LM Studio → Ollama → Azure OpenAI → OpenAI → Local (zero-dependency echo)
 ```
 
@@ -138,7 +131,7 @@ Pass `--provider` to override: `local`, `openai`, `azure`, `lmstudio`, `ollama`,
 
 **Azure OpenAI** — all four variables required:
 
-```text
+```
 AZURE_OPENAI_API_KEY
 AZURE_OPENAI_ENDPOINT
 AZURE_OPENAI_DEPLOYMENT
@@ -147,7 +140,7 @@ AZURE_OPENAI_API_VERSION
 
 **LoRA adapter** — adapter directory must contain:
 
-```text
+```
 adapter_config.json
 adapter_model.safetensors
 ```
@@ -199,7 +192,7 @@ python scripts/autotrain.py --dry-run
 Training datasets are in `datasets/chat/aria_movement/`, `aria_expanded/`, and `aria_simple/` (read-only).
 Outputs are written to `data_out/lora_training/`.
 
-***
+---
 
 ## 🤖 Autonomous Training
 
@@ -213,40 +206,6 @@ nohup python scripts/autonomous_training_orchestrator.py > data_out/autonomous_t
 cat data_out/autonomous_training_status.json | python -m json.tool
 tail -f data_out/autonomous_training.log
 ```
-
-## 👀 Watch Continuous Automation Loop
-
-If you are running the perpetual validation worker (`data_out/continuous_automation/loop.pid`) and watchdog (`watchdog.pid`), you can watch live status with:
-
-```bash
-# One-shot snapshot
-python scripts/watch_continuous_automation.py
-
-# Live dashboard view (refresh every 5 seconds)
-python scripts/watch_continuous_automation.py --watch --interval 5
-```
-
-This watcher shows process health, cycle start/end cadence, last integration-gate status, latest pytest summary, and the latest log tail from `data_out/continuous_automation/loop.log`.
-
-## 🤖 PID Auto-Edit Agent
-
-If you want a background agent that runs with a PID and automatically processes queued file-editing tasks:
-
-```bash
-# Start daemon
-python scripts/pid_auto_edit_agent.py start
-
-# Queue a task (safe default shown with echo + dry-run)
-python scripts/pid_auto_edit_agent.py enqueue --task "add docstrings to scripts/watch_continuous_automation.py" --llm-type echo --dry-run
-
-# Check status
-python scripts/pid_auto_edit_agent.py status
-
-# Stop daemon
-python scripts/pid_auto_edit_agent.py stop
-```
-
-Agent state is stored under `data_out/pid_auto_edit_agent/` (`agent.pid`, `queue.jsonl`, `done.jsonl`, `failed.jsonl`, `agent.log`).
 
 ---
 
@@ -264,27 +223,7 @@ Security: no dangerous imports, no filesystem or network access, no `eval`/`exec
 
 ---
 
-## 🧪 Testing & Development Workflow
-
-For contributors: see [`scripts/test_watcher.py`](scripts/test_watcher.py) for a lightweight test watcher that automatically re-runs tests on file changes. For more details and troubleshooting, refer to [`NEXT_STEPS.md`](NEXT_STEPS.md).
-
-- **Run the watcher:**
-
-  ```bash
-  python3 scripts/test_watcher.py
-  ```
-
-- **Run full test suite manually:**
-
-  ```bash
-  python3 -m pytest tests -q --maxfail=1
-  ```
-
-See `NEXT_STEPS.md` for more on dev setup, troubleshooting, and recommended next actions.
-
----
-
-## 🤪 Testing
+## 🧪 Testing
 
 ```bash
 # Fast unit tests (~0.5 s, no external services)
@@ -332,28 +271,28 @@ Never commit secrets. All keys belong in environment variables or `local.setting
 
 **Optional services** (feature-flagged — safe to leave unset):
 
-| Service              | How to enable                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------------- |
-| SQL persistence      | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL)                                          |
-| Cosmos DB            | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
-| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING`                                                           |
-| Azure Speech TTS     | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`                                                        |
-| Local TTS fallback   | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent)              |
+| Service | How to enable |
+| --- | --- |
+| SQL persistence | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL) |
+| Cosmos DB | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
+| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
+| Azure Speech TTS | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` |
+| Local TTS fallback | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent) |
 
 ---
 
 ## 📚 Documentation
 
-| Document                                                                     | Purpose                                |
-| ---------------------------------------------------------------------------- | -------------------------------------- |
-| [apps/aria/README.md](apps/aria/README.md)                                   | Character stage API reference          |
-| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md)         | Quantum ML platform guide              |
-| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md)             | Chat CLI reference                     |
-| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md)           | Tool maker guide                       |
-| [docs/aria/](docs/aria/)                                                     | Aria movement & training documentation |
-| [docs/guides/MONETIZATION_GUIDE.md](docs/guides/MONETIZATION_GUIDE.md)       | Subscription and revenue system        |
-| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference   |
-| [docs/guides/QUANTUM_LLM_TRAINING.md](docs/guides/QUANTUM_LLM_TRAINING.md)   | Quantum-LLM concurrent training        |
+| Document | Purpose |
+| --- | --- |
+| [apps/aria/README.md](apps/aria/README.md) | Character stage API reference |
+| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md) | Quantum ML platform guide |
+| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md) | Chat CLI reference |
+| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md) | Tool maker guide |
+| [docs/aria/](docs/aria/) | Aria movement & training documentation |
+| [MONETIZATION_GUIDE.md](MONETIZATION_GUIDE.md) | Subscription and revenue system |
+| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference |
+| [QUANTUM_LLM_TRAINING.md](QUANTUM_LLM_TRAINING.md) | Quantum-LLM concurrent training |
 
 ---
 
@@ -363,64 +302,74 @@ Never commit secrets. All keys belong in environment variables or `local.setting
 - All output files go under `data_out/` (git-ignored). Never modify files under `datasets/`.
 - Always run `--dry-run` on orchestrators before executing GPU or QPU workloads.
 
-### Note on CLI scripts
-
-When adding or changing Python CLI scripts that may be executed directly (for example via `python scripts/foo.py` or invoked in subprocesses), ensure the repository root is added to `sys.path` before importing local packages. This avoids ModuleNotFoundError when the script is run as a subprocess or from other working directories.
-
-Recommended pattern:
-
-```python
-from pathlib import Path
-import sys
-
-REPO_ROOT = Path(__file__).resolve().parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-# Now safe to import local packages, e.g.:
-from shared.json_utils import load_status_json
-```
-
-This pattern is used in `scripts/training_analytics.py` to ensure reliable behaviour when invoked from tests, CI, or shell pipelines.
-
-### Enable pre-commit hook
-
-We ship a `.pre-commit-config.yaml` and a local hook that checks CLI scripts. To enable locally:
-
-```bash
-pip install pre-commit
-pre-commit install
-```
-
-After installing, commits will run the `check-cli-sys-path` hook for changed files under `scripts/`.
-
-### Quick installer
-
-You can run the convenience script to install dev requirements and pre-commit hooks automatically:
-
-```bash
-./scripts/setup-dev.sh
-```
-
-The script will:
-
-- install `requirements-dev.txt` (if present) or at least `pre-commit`,
-- run `pre-commit install`, and
-- run `pre-commit run --all-files` (non-blocking; it will print any hook failures).
-
 ---
 
 ## 📄 License
 
 See individual project directories for license information.
 
----
+## PLAN (pseudocode)
 
-## 🧹 Linting & Type Checking
+## 1) Validate OPENAI_API_KEY
 
-- **Lint:** Run `ruff .` to check code style and common errors.
-- **Type check:** Run `mypy .` to check for type errors.
-- **Autoformat:** Run `black .` and `isort .` for formatting and import sorting.
-- **Pre-commit:** Install hooks with `pre-commit install` to enforce checks before every commit.
+## 2) Read prompt from CLI args or stdin
 
-See `.pre-commit-config.yaml` and `pyproject.toml` for configuration details.
+## 3) Call OpenAI Responses API
+
+## 4) Extract text safely from response.output_text with fallback parsing
+
+## 5) Print final text; fail gracefully on errors
+
+import os
+import sys
+from openai import OpenAI
+
+MODEL = "gpt-4o-mini"
+SYSTEM_PROMPT = "You are a concise AI coding assistant. Return practical code-focused responses."
+
+def _extract_text(resp) -> str:
+    if getattr(resp, "output_text", None):
+        return resp.output_text.strip()
+
+    parts = []
+    for item in getattr(resp, "output", []) or []:
+        for content in getattr(item, "content", []) or []:
+            if getattr(content, "type", "") == "output_text":
+                text = getattr(content, "text", "")
+                if text:
+                    parts.append(text)
+    return "\n".join(parts).strip()
+
+def ask_ai(client: OpenAI, prompt: str) -> str:
+    resp = client.responses.create(
+        model=MODEL,
+        input=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.2,
+    )
+    return _extract_text(resp)
+
+def main() -> None:
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("Missing OPENAI_API_KEY environment variable.")
+
+    prompt = " ".join(sys.argv[1:]).strip()
+    if not prompt:
+        prompt = input("Prompt: ").strip()
+    if not prompt:
+        raise ValueError("Prompt cannot be empty.")
+
+    client = OpenAI(api_key=api_key)
+
+    try:
+        output = ask_ai(client, prompt)
+        print(output or "(No text returned.)")
+    except Exception as exc:
+        print(f"AI request failed: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+if **name** == "**main**":
+    main()
