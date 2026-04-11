@@ -14,10 +14,21 @@ from pathlib import Path
 
 import azure.functions as func
 
-from chat_providers import detect_provider
+# Import AI projects via centralized registry (replaced scattered sys.path manipulation)
+from shared.core.module_registry import AIProjectsRegistry
 from shared.import_helpers import create_stub_function, safe_import
 from shared.json_utils import load_status_json
-from token_utils import prune_messages
+
+# Initialize registry and get chat providers API
+_ai_registry = AIProjectsRegistry()
+try:
+    _chat_cli_api = _ai_registry.chat_cli()
+    detect_provider = _chat_cli_api.detect_provider
+    prune_messages = _chat_cli_api.token_utils.prune_messages
+except Exception as _registry_err:
+    logging.warning(f"[startup] AI projects registry failed: {_registry_err}")
+    detect_provider = None
+    prune_messages = None
 
 # Pre-compiled word split regex used in token/word counting hot paths.
 _RE_WORD_SPLIT = re.compile(r"\S+")
@@ -117,17 +128,10 @@ except Exception:  # pragma: no cover
         return False
 
 
-# Add chat-cli to path so we can import chat_providers
-talk_to_ai_path = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "src"
-sys.path.insert(0, str(talk_to_ai_path))
-
-# Add quantum-ml to path
-quantum_ai_path = Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "src"
-sys.path.insert(0, str(quantum_ai_path))
-
-# Add scripts to path for vision inference
+# Add scripts to path for vision inference (kept for legacy support)
 scripts_path = Path(__file__).resolve().parent / "scripts"
-sys.path.insert(0, str(scripts_path))
+if str(scripts_path) not in sys.path:
+    sys.path.insert(0, str(scripts_path))
 
 # -----------------------------------------------------------------------------
 # Subscription Manager (optional)
