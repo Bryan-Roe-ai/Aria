@@ -27,48 +27,17 @@ jobs:
           install-requirements: 'false'
           extra-packages: 'pyyaml jsonschema'
 
-      - name: Validate YAML syntax
-        run: |
-          python -c "
-          import yaml
-          import sys
-          from pathlib import Path
+      - name: Validate workflow YAML structure
+        uses: ./.github/actions/validate-workflow-yaml
+        with:
+          workflows-path: .github/workflows
+          require-jobs: 'true'
 
-          failed = []
-          workflows_dir = Path('.github/workflows')
-
-          print('Validating workflow files...')
-            workflow_files = sorted(set(workflows_dir.glob('*.yml')) | set(workflows_dir.glob('*.yaml')))
-            for yml_file in workflow_files:
-              try:
-                  with open(yml_file) as f:
-                      content = yaml.safe_load(f)
-                if not isinstance(content, dict):
-                  raise ValueError('Top-level YAML node must be a mapping')
-
-                # NOTE: In YAML 1.1, unquoted `on:` may be parsed as boolean True by PyYAML.
-                has_on_key = ('on' in content) or (True in content)
-
-                  print(f'✓ {yml_file.name}')
-
-                  # Basic structure validation
-                  if 'name' not in content:
-                      print(f'  ⚠️  Warning: Missing name field')
-                    if not has_on_key:
-                      print(f'  ⚠️  Warning: Missing on field')
-                  if 'jobs' not in content:
-                      print(f'  ⚠️  Warning: Missing jobs field')
-
-              except Exception as e:
-                  print(f'✗ {yml_file.name}: {e}')
-                  failed.append(str(yml_file))
-
-          if failed:
-              print(f'\n❌ {len(failed)} workflow(s) failed validation')
-              sys.exit(1)
-          else:
-              print(f'\n✅ All workflows validated successfully')
-          "
+      - name: Validate Azure Function bindings
+        uses: ./.github/actions/validate-function-bindings
+        with:
+          functions-path: functions
+          require-http-route: 'true'
 
       - name: Check for common issues
         run: |

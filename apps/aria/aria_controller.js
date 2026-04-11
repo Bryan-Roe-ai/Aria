@@ -869,6 +869,70 @@ function executeLocalCommand(command) {
         executed = true;
     }
 
+    // Rich gestures (mirrors server allowlist gestures)
+    if (cmd.includes('thumbs up') || cmd.includes('thumbsup')) {
+        performGesture('thumbs_up');
+        executed = true;
+    }
+    if (cmd.includes('clap')) {
+        performGesture('clap');
+        executed = true;
+    }
+    if (cmd.includes('shrug')) {
+        performGesture('shrug');
+        executed = true;
+    }
+    if (cmd.includes('bow')) {
+        performGesture('bow');
+        executed = true;
+    }
+    if (cmd.includes('nod')) {
+        performGesture('nod');
+        executed = true;
+    }
+
+    // Pose commands
+    if (cmd.includes('sit')) {
+        applyPose('sit');
+        executed = true;
+    }
+    if (cmd.includes('stand')) {
+        applyPose('stand');
+        executed = true;
+    }
+    if (cmd.includes('crouch')) {
+        applyPose('crouch');
+        executed = true;
+    }
+    if (cmd.includes('lie down') || cmd.includes('lay down') || cmd.includes('lie ')) {
+        applyPose('lie');
+        executed = true;
+    }
+
+    // Looking/facing helpers
+    if (cmd.includes('look left')) {
+        handleLookTag('left');
+        executed = true;
+    }
+    if (cmd.includes('look right')) {
+        handleLookTag('right');
+        executed = true;
+    }
+    if (cmd.includes('look up')) {
+        handleLookTag('up');
+        executed = true;
+    }
+    if (cmd.includes('look down')) {
+        handleLookTag('down');
+        executed = true;
+    }
+
+    if (cmd === 'wait' || cmd.startsWith('wait ')) {
+        const secondsMatch = cmd.match(/wait\s+([0-9]+(?:\.[0-9]+)?)/);
+        performWait(secondsMatch ? secondsMatch[1] : '1');
+        executed = true;
+    }
+
     // Effects - with intensity detection
     let effectIntensity = 'normal';
     if (cmd.includes('light') || cmd.includes('subtle') || cmd.includes('gentle')) {
@@ -953,7 +1017,7 @@ function executeTags(tags) {
                     animate(getAnimationClass(action));
                     break;
                 case 'gesture':
-                    animate('waving');
+                    performGesture(action, param);
                     break;
                 case 'move':
                     move(action, param || 'normal');
@@ -1017,9 +1081,158 @@ function executeTags(tags) {
                         addChatMessage('aria', String(spoken));
                     }
                     break;
+                case 'look':
+                    handleLookTag(action, param);
+                    break;
+                case 'facing':
+                    handleFacingTag(action, param);
+                    break;
+                case 'wait':
+                    performWait(action, param);
+                    break;
             }
         }, index * 500); // Stagger multiple commands
     });
+}
+
+function parseDurationMs(raw, fallbackMs = 700) {
+    if (raw == null) return fallbackMs;
+    const str = String(raw).trim().toLowerCase();
+    const parsed = parseFloat(str.replace(/[^0-9.]/g, ''));
+    if (!Number.isFinite(parsed)) return fallbackMs;
+    // "2" means seconds for user-friendliness, while "800ms" stays ms.
+    const isMs = str.includes('ms');
+    const ms = isMs ? parsed : parsed * 1000;
+    return Math.max(150, Math.min(10000, Math.round(ms)));
+}
+
+function performGesture(gestureRaw, paramRaw) {
+    const gesture = String(gestureRaw || '').toLowerCase().replace(/[-\s]/g, '_');
+    const duration = parseDurationMs(paramRaw, 700);
+    isPerformingAction = true;
+
+    switch (gesture) {
+        case 'wave':
+            animate('waving');
+            return;
+        case 'thumbs_up':
+        case 'thumbsup':
+            showFeedback('👍 THUMBS UP!');
+            moveArm(ariaArmRight, -95, Math.round(duration * 0.45));
+            setTimeout(() => moveArm(ariaArmRight, -70, Math.round(duration * 0.2)), Math.round(duration * 0.45));
+            setTimeout(() => resetLimbs(Math.round(duration * 0.35)), Math.round(duration * 0.65));
+            break;
+        case 'clap':
+            showFeedback('👏 CLAP!');
+            moveArm(ariaArmLeft, -30, Math.round(duration * 0.22));
+            moveArm(ariaArmRight, 30, Math.round(duration * 0.22));
+            setTimeout(() => {
+                moveArm(ariaArmLeft, -75, Math.round(duration * 0.18));
+                moveArm(ariaArmRight, 75, Math.round(duration * 0.18));
+                createEffect('sparkle', 'light');
+            }, Math.round(duration * 0.24));
+            setTimeout(() => {
+                moveArm(ariaArmLeft, -20, Math.round(duration * 0.2));
+                moveArm(ariaArmRight, 20, Math.round(duration * 0.2));
+            }, Math.round(duration * 0.52));
+            setTimeout(() => resetLimbs(Math.round(duration * 0.25)), Math.round(duration * 0.75));
+            break;
+        case 'bow':
+            showFeedback('🙇 BOW!');
+            if (ariaBody) ariaBody.style.transition = `transform ${Math.round(duration * 0.45)}ms ease`;
+            if (ariaHead) ariaHead.style.transition = `transform ${Math.round(duration * 0.45)}ms ease`;
+            if (ariaBody) ariaBody.style.transform = 'scaleY(0.92)';
+            if (ariaHead) ariaHead.style.transform = 'translateX(-50%) translateY(6px) rotate(8deg)';
+            setTimeout(() => {
+                if (ariaBody) ariaBody.style.transform = '';
+                if (ariaHead) ariaHead.style.transform = 'translateX(-50%)';
+            }, Math.round(duration * 0.55));
+            break;
+        case 'nod':
+            showFeedback('🙂 NOD');
+            if (ariaHead) ariaHead.style.transition = `transform ${Math.round(duration * 0.2)}ms ease`;
+            if (ariaHead) ariaHead.style.transform = 'translateX(-50%) rotate(10deg)';
+            setTimeout(() => { if (ariaHead) ariaHead.style.transform = 'translateX(-50%) rotate(-6deg)'; }, Math.round(duration * 0.24));
+            setTimeout(() => { if (ariaHead) ariaHead.style.transform = 'translateX(-50%) rotate(8deg)'; }, Math.round(duration * 0.45));
+            setTimeout(() => { if (ariaHead) ariaHead.style.transform = 'translateX(-50%)'; }, Math.round(duration * 0.68));
+            break;
+        case 'shrug':
+            showFeedback('🤷 SHRUG');
+            moveArm(ariaArmLeft, -35, Math.round(duration * 0.4));
+            moveArm(ariaArmRight, -35, Math.round(duration * 0.4));
+            if (ariaHead) ariaHead.style.transition = `transform ${Math.round(duration * 0.35)}ms ease`;
+            if (ariaHead) ariaHead.style.transform = 'translateX(-50%) rotate(6deg)';
+            setTimeout(() => {
+                resetLimbs(Math.round(duration * 0.35));
+                if (ariaHead) ariaHead.style.transform = 'translateX(-50%)';
+            }, Math.round(duration * 0.5));
+            break;
+        default:
+            // Unknown gesture fallback: preserve compatibility with a friendly wave.
+            animate('waving');
+            return;
+    }
+
+    setTimeout(() => {
+        isPerformingAction = false;
+    }, Math.max(250, duration));
+}
+
+function handleLookTag(directionRaw, paramRaw) {
+    const direction = String(directionRaw || '').toLowerCase();
+    const duration = parseDurationMs(paramRaw, 650);
+    if (!ariaHead) return;
+
+    isPerformingAction = true;
+    ariaHead.style.transition = `transform ${Math.round(duration * 0.35)}ms ease`;
+    switch (direction) {
+        case 'left':
+            ariaHead.style.transform = 'translateX(-50%) rotate(-10deg)';
+            break;
+        case 'right':
+            ariaHead.style.transform = 'translateX(-50%) rotate(10deg)';
+            break;
+        case 'up':
+            ariaHead.style.transform = 'translateX(-50%) translateY(-5px)';
+            break;
+        case 'down':
+            ariaHead.style.transform = 'translateX(-50%) translateY(5px)';
+            break;
+        default:
+            ariaHead.style.transform = 'translateX(-50%)';
+            break;
+    }
+
+    setTimeout(() => {
+        ariaHead.style.transform = 'translateX(-50%)';
+        isPerformingAction = false;
+    }, Math.round(duration * 0.75));
+}
+
+function handleFacingTag(directionRaw, paramRaw) {
+    const direction = String(directionRaw || '').toLowerCase();
+    const duration = parseDurationMs(paramRaw, 750);
+    const currentScale = characterState.size || 1.0;
+    aria.style.transition = `transform ${Math.round(duration * 0.45)}ms ease`;
+
+    if (direction === 'left') {
+        aria.style.transform = `translateX(-50%) scale(${currentScale}) rotateY(180deg)`;
+    } else if (direction === 'right' || direction === 'front' || direction === 'forward') {
+        aria.style.transform = `translateX(-50%) scale(${currentScale}) rotateY(0deg)`;
+    } else {
+        // Unknown direction -> no-op, keep current orientation.
+        return;
+    }
+}
+
+function performWait(actionRaw, paramRaw) {
+    const raw = paramRaw || actionRaw || '1';
+    const duration = parseDurationMs(raw, 1000);
+    isPerformingAction = true;
+    showFeedback(`⏳ WAIT ${Math.round(duration / 100) / 10}s`);
+    setTimeout(() => {
+        isPerformingAction = false;
+    }, duration);
 }
 
 // ── Eyebrow expression helper ────────────────────────────────────────────────
