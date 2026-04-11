@@ -33,6 +33,11 @@ jobs:
           workflows-path: .github/workflows
           require-jobs: 'true'
 
+      - name: Validate local composite actions
+        uses: ./.github/actions/validate-composite-actions
+        with:
+          script-path: scripts/validate_composite_actions.py
+
       - name: Validate Azure Function bindings
         uses: ./.github/actions/validate-function-bindings
         with:
@@ -66,21 +71,9 @@ jobs:
           echo "✅ Common issues check completed"
 
       - name: Validate action references
-        run: |
-          echo "Validating action references..."
-
-          # Extract all uses: lines and check format
-          grep -r "uses:" .github/workflows/ | while read -r line; do
-            action=$(echo "$line" | sed -n "s/.*uses: *\([^ ]*\).*/\1/p")
-            if [ -n "$action" ]; then
-              # Check if action reference has version
-              if [[ "$action" != *"@"* ]] && [[ "$action" != "./"* ]]; then
-                echo "⚠️  Warning: Action without version: $action"
-              fi
-            fi
-          done || true
-
-          echo "✅ Action reference validation completed"
+        uses: ./.github/actions/validate-action-references
+        with:
+          workflows-path: .github/workflows
 
   test-workflows:
     name: Test Workflow Execution

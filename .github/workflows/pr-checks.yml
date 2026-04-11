@@ -28,21 +28,21 @@ jobs:
           workflows-path: .github/workflows
           require-jobs: 'true'
 
-      - name: Check for common issues
-        run: |
-          echo "Checking for TODO/FIXME markers in modified files..."
-          CHANGED_FILES="$(git diff origin/${{ github.base_ref }}...HEAD --name-only)"
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "No modified files found in diff range"
-            exit 0
-          fi
+      - name: Validate Azure Function bindings
+        uses: ./.github/actions/validate-function-bindings
+        with:
+          functions-path: functions
+          require-http-route: 'true'
 
-          # Scan only changed files, safely handling spaces and empty input.
-          echo "$CHANGED_FILES" | while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            [ -f "$file" ] || continue
-            grep -nE "TODO|FIXME" "$file" || true
-          done
+      - name: Validate generated site bundles (strict)
+        uses: ./.github/actions/validate-site-bundles
+        with:
+          strict-metadata: 'true'
+
+      - name: Check for TODO/FIXME in changed files
+        uses: ./.github/actions/scan-todo-fixme
+        with:
+          base-ref: ${{ github.base_ref }}
         continue-on-error: true
 
       - name: Fast validation
