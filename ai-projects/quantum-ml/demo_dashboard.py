@@ -23,7 +23,7 @@ try:
         print(f"   ✅ Server is running! Found {len(datasets)} datasets.")
     else:
         print(f"   ❌ Server returned error: {response.status_code}")
-        exit(1)
+        sys.exit(1)
 except requests.exceptions.ConnectionError:
     print("   ❌ Server not running! Start with: ./start_dashboard.sh")
     exit(1)
