@@ -67,9 +67,8 @@ class TestGenerateReferralCode:
     def test_different_users_different_codes(self, referral_system):
         code1 = referral_system.generate_referral_code("user1")
         code2 = referral_system.generate_referral_code("user2")
-        # They might match in the prefix but the hex part differs; check not same
-        # (this can theoretically collide but extremely unlikely)
-        assert isinstance(code1, str) and isinstance(code2, str)
+        # The hex suffix is randomly generated; codes should be distinct
+        assert code1 != code2
 
 
 # ---------------------------------------------------------------------------

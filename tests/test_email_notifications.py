@@ -185,7 +185,7 @@ class TestNotifyUsageWarning:
         result = email_system.notify_usage_warning("u@e.com", "chat_messages", 90.0, 90, 100)
         assert result is True
         subject = email_system.sent_emails[0]["subject"]
-        assert "Urgent" in subject or "%" in subject
+        assert "Urgent" in subject
 
     def test_warning_below_90_uses_regular_template(self, email_system):
         email_system.notify_usage_warning("u@e.com", "chat_messages", 85.0, 85, 100)
