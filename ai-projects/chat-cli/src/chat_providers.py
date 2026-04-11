@@ -975,7 +975,7 @@ class OllamaProvider(BaseChatProvider):
     def __init__(
         self,
         base_url: str = "http://127.0.0.1:11434/v1",
-        model: str = "llama2",
+        model: str = "llama3.2",
         temperature: float = 0.7,
         max_output_tokens: Optional[int] = None,
     ):
@@ -1339,7 +1339,7 @@ def detect_provider(
 
     # Ollama config
     ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1")
-    ollama_model_name = os.getenv("OLLAMA_MODEL", "llama2")
+    ollama_model_name = os.getenv("OLLAMA_MODEL", "llama3.2")
 
     # AGI config - advanced reasoning capabilities
     if provider_choice == "agi":

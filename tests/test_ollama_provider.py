@@ -70,7 +70,7 @@ def test_ollama_provider_defaults():
         mock_openai_cls.return_value = MagicMock()
         p = OllamaProvider()
     assert p.base_url == "http://127.0.0.1:11434/v1"
-    assert p.model == "llama2"
+    assert p.model == "llama3.2"
     assert p.temperature == 0.7
 
 
@@ -346,7 +346,7 @@ def test_detect_provider_explicit_ollama_default_model(monkeypatch):
 
     assert choice.name == "ollama"
     # Default model from the provider definition
-    assert choice.model == "llama2"
+    assert choice.model == "llama3.2"
 
 
 # ---------------------------------------------------------------------------
