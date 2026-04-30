@@ -105,9 +105,11 @@ class TestQuantumSampler:
         """With blend_factor=0, result should be drawn from pure classical softmax."""
         s = self._make_sampler()
         logits = [5.0, 0.0, 0.0, 0.0]  # strongly favours index 0
+        # With a fixed seed and strongly biased logits, index 0 must always win
         results = [s.sample(logits, blend_factor=0.0, seed=i) for i in range(20)]
-        # Index 0 should win most of the time
-        assert results.count(0) >= 15
+        # With logit[0] = 5.0 vs rest = 0.0, softmax gives P(0) ≈ 0.9994
+        # Index 0 must win at least 90% of the time
+        assert results.count(0) >= 18
 
 
 # ===========================================================================

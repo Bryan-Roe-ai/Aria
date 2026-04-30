@@ -46,12 +46,13 @@ def _classical_amplitude_transform(
         return embedding.copy()
     state = embedding / norm
 
-    # Construct a parameterized unitary (Hadamard + RY rotations)
+    # Construct a rotation matrix: apply RY-like rotations using cos/sin
     n_params = min(len(params), dim)
     angles = np.resize(params, dim) * np.pi
 
-    # Build a circulant-style rotation matrix from params
-    rot = np.diag(np.exp(1j * angles)).real  # real diagonal rotation
+    # Diagonal RY-style rotation: cos(θ) on amplitude, sin(θ) as phase shift
+    # (approximate classical analogue of single-qubit RY rotations)
+    rot = np.diag(np.cos(angles))  # real rotation via cosine
 
     # Apply and project back
     transformed = rot @ state

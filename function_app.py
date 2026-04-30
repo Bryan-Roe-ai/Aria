@@ -3885,9 +3885,11 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
                 headers=create_cors_response_headers(),
             )
 
-        # Honour per-request max_tokens (within cap)
+        # Honour per-request max_tokens (within cap) — use a local override dict
+        # instead of mutating the shared pipeline config to avoid race conditions.
+        gen_kwargs = {}
         if max_tokens is not None:
-            pipeline.config.max_tokens = min(int(max_tokens), pipeline.config.max_tokens_cap)
+            gen_kwargs["max_tokens"] = min(int(max_tokens), pipeline.config.max_tokens_cap)
 
         import asyncio  # noqa: PLC0415 (already imported at module level but guard)
 

@@ -3008,12 +3008,14 @@
             // Apply saved preference
             applyQuantumMode(quantumMode);
 
-            // Expose toggle via provider select: if "quantum-llm" is chosen, enable quantum mode
+            // Expose toggle via provider select: enable/disable quantum mode based on selection
             var providerSel = document.getElementById('providerSelect');
             if (providerSel) {
                 providerSel.addEventListener('change', function () {
                     if (providerSel.value === 'quantum-llm') {
                         applyQuantumMode(true);
+                    } else {
+                        applyQuantumMode(false);
                     }
                 });
             }

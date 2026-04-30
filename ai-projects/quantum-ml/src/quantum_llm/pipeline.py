@@ -39,8 +39,19 @@ def _resolve_detect_provider():
         from pathlib import Path
         import sys
 
-        repo_root = Path(__file__).resolve().parents[5]
+        # Walk up to find the repo root (sentinel: pyproject.toml or .git)
+        current = Path(__file__).resolve()
+        repo_root = None
+        for parent in current.parents:
+            if (parent / "pyproject.toml").exists() or (parent / ".git").exists():
+                repo_root = parent
+                break
+        if repo_root is None:
+            return None
+
         chat_src = repo_root / "ai-projects" / "chat-cli" / "src"
+        if not chat_src.exists():
+            return None
         if str(chat_src) not in sys.path:
             sys.path.insert(0, str(chat_src))
 
@@ -233,9 +244,14 @@ class QuantumLLMPipeline:
         # LLM call (blocking — run in thread)
         def _call():
             result = llm_provider.complete(messages, stream=False)
-            if hasattr(result, "__iter__") and not isinstance(result, str):
-                return "".join(result)
-            return str(result)
+            if isinstance(result, str):
+                return result
+            if isinstance(result, bytes):
+                return result.decode("utf-8", errors="replace")
+            try:
+                return "".join(str(chunk) for chunk in result)
+            except Exception:
+                return str(result)
 
         if self.config.use_thread:
             raw_response = await asyncio.to_thread(_call)

@@ -43,8 +43,13 @@ class QuantumLLMConfig:
     @classmethod
     def from_env(cls) -> "QuantumLLMConfig":
         """Build config from environment variables."""
+        # The `type: ignore[arg-type]` is suppressed because `os.getenv` returns
+        # `str | None`; we validate and fall back to "auto" if the value is invalid.
+        raw_backend = os.getenv("QUANTUM_LLM_BACKEND", "auto")
+        valid_backends = {"auto", "qiskit", "pennylane", "classical"}
+        backend_val = raw_backend if raw_backend in valid_backends else "auto"
         return cls(
-            backend=os.getenv("QUANTUM_LLM_BACKEND", "auto"),  # type: ignore[arg-type]
+            backend=backend_val,  # type: ignore[arg-type]
             num_qubits=int(os.getenv("QUANTUM_LLM_QUBITS", "4")),
             shots=int(os.getenv("QUANTUM_LLM_SHOTS", "512")),
             num_layers=int(os.getenv("QUANTUM_LLM_LAYERS", "2")),

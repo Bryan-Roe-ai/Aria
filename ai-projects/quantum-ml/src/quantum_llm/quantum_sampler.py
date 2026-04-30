@@ -94,19 +94,24 @@ def _classical_variational_probs(
             op = np.kron(op, ry if j == q else np.eye(2, dtype=complex))
         state = op @ state
 
-    # Apply CNOT entanglement (simulate as a swap of probability amplitudes)
+    # Apply CNOT entanglement (correct 2-qubit gate embedding)
     for q in range(num_qubits - 1):
-        # CNOT between qubits q and q+1 — full tensor embedding
-        cnot = np.eye(4, dtype=complex)
-        cnot[[2, 3]] = cnot[[3, 2]]
+        # CNOT between qubits q and q+1 — build full operator via tensor products
+        # Format: I ⊗ ... ⊗ I ⊗ CNOT(q,q+1) ⊗ I ⊗ ... ⊗ I
+        cnot2 = np.eye(4, dtype=complex)
+        cnot2[[2, 3]] = cnot2[[3, 2]]
+
+        # Build operator: I for qubits < q, CNOT2 for q and q+1, I for qubits > q+1
+        before_dims = q          # number of qubits before the CNOT pair
+        after_dims = num_qubits - q - 2  # number of qubits after the CNOT pair
+
         op = np.eye(1, dtype=complex)
-        for j in range(num_qubits):
-            if j == q:
-                op = np.kron(op, cnot)
-            elif j == q + 1:
-                continue  # already embedded
-            else:
-                op = np.kron(op, np.eye(2, dtype=complex))
+        for _ in range(before_dims):
+            op = np.kron(op, np.eye(2, dtype=complex))
+        op = np.kron(op, cnot2)
+        for _ in range(after_dims):
+            op = np.kron(op, np.eye(2, dtype=complex))
+
         if op.shape == (dim, dim):
             state = op @ state
 
