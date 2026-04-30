@@ -994,10 +994,38 @@
                 transform: none;
             }
         }
+
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .skip-link:focus {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: auto;
+            height: auto;
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: var(--ink);
+            color: var(--paper);
+            font-weight: 700;
+            font-size: 0.94rem;
+            text-decoration: none;
+            z-index: 9999;
+            outline: 2px solid var(--teal);
+            outline-offset: 2px;
+        }
     </style>
     <link rel="stylesheet" href="global-upgrade.css">
 </head>
 <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
         <div class="shell nav-shell">
             <a class="brand" href="#top">
@@ -1014,12 +1042,12 @@
                 <a href="#index">Index</a>
                 <a href="#run">Run Local</a>
                 <a href="documentation.html">Docs</a>
-                <a href="https://github.com/Bryan-Roe/Aria" target="_blank" rel="noreferrer">GitHub</a>
+                <a class="button button-primary" style="font-size:0.88rem;min-height:38px;padding:0 14px;" href="https://github.com/Bryan-Roe/Aria" target="_blank" rel="noreferrer">★ Star on GitHub</a>
             </nav>
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="hero" id="top">
             <div class="shell hero-grid">
                 <div class="hero-copy" data-reveal>
@@ -1516,7 +1544,7 @@
 
     <footer>
         <div class="shell footer-shell">
-            <p>Aria ties together character interaction, provider-backed chat, autonomous training, quantum ML, and business tooling.</p>
+            <p>Aria ties together character interaction, provider-backed chat, autonomous training, quantum ML, and business tooling. &copy; <span id="footer-year">2026</span> Bryan Roe.</p>
             <div class="footer-links">
                 <a href="#top">Top</a>
                 <a href="documentation.html">Docs</a>
@@ -1524,6 +1552,7 @@
                 <a href="chat/">Chat</a>
                 <a href="dashboard/hub.html">Dashboards</a>
                 <a href="https://github.com/Bryan-Roe/Aria/issues" target="_blank" rel="noreferrer">Issues</a>
+                <a href="https://github.com/Bryan-Roe/Aria" target="_blank" rel="noreferrer">GitHub</a>
             </div>
         </div>
     </footer>
@@ -1657,6 +1686,12 @@
 
         updateLegendState();
         applySurfaceFilter();
+
+        // Keep footer year current
+        const footerYear = document.getElementById('footer-year');
+        if (footerYear) {
+            footerYear.textContent = String(new Date().getFullYear());
+        }
 
         async function pingSurface(url) {
             const controller = new AbortController();
