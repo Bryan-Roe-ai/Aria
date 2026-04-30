@@ -1,13 +1,15 @@
 """
 Planner Agent
-Generates task plans from goals using memory context and LLM-style reasoning.
+Generates task plans from goals using memory context and LLM-driven reasoning.
 """
 
 from typing import Dict, Any, List
 from core.agent import BaseAgent
 from core.task import Task
 from core.memory.store import MemoryStore
+from core.llm.client import LLMClient
 import uuid
+import json
 
 
 class PlannerAgent(BaseAgent):
@@ -15,6 +17,7 @@ class PlannerAgent(BaseAgent):
 
     def __init__(self, memory: MemoryStore):
         self.memory = memory
+        self.llm = LLMClient()
 
     def can_handle(self, task: Task) -> bool:
         return task.type in {"plan", "goal", "decompose"}
@@ -40,50 +43,58 @@ class PlannerAgent(BaseAgent):
         }
 
     def _create_plan(self, goal: str, history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """
-        LLM-style planning layer (currently deterministic scaffold,
-        designed for later model integration).
-        """
-
         if not goal:
             return [{"error": "No goal provided"}]
 
         context_summary = self._summarize_history(history)
 
-        # Simulated structured reasoning output
-        # Future: replace with real LLM JSON schema response
-        plan = [
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a planning engine. Output ONLY valid JSON list of tasks."
+            },
+            {
+                "role": "user",
+                "content": f"""
+Goal:
+{goal}
+
+Context:
+{context_summary}
+
+Return a JSON list of tasks in this format:
+[{{"type": "llm|tool|train", "payload": {{...}}}}]
+"""
+            }
+        ]
+
+        raw = self.llm.complete(messages)
+
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                return self._attach_ids(parsed)
+        except Exception:
+            pass
+
+        # fallback
+        return [
             {
                 "id": str(uuid.uuid4()),
                 "type": "llm",
-                "payload": {
-                    "prompt": f"Goal: {goal}\nContext: {context_summary}\n\nProduce solution step output"
-                },
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "type": "tool",
-                "payload": {
-                    "tool": "evaluate_output",
-                    "args": {"mode": "auto"},
-                },
-            },
-            {
-                "id": str(uuid.uuid4()),
-                "type": "train",
-                "payload": {
-                    "signal": "auto_improve",
-                },
-            },
+                "payload": {"prompt": goal},
+            }
         ]
 
-        return plan
+    def _attach_ids(self, steps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        out = []
+        for s in steps:
+            s["id"] = str(uuid.uuid4())
+            out.append(s)
+        return out
 
     def _summarize_history(self, history: List[Dict[str, Any]]) -> str:
         if not history:
             return "No prior context"
 
-        last_events = history[-5:]
-        return " | ".join(
-            f"{e.get('type', 'event')}" for e in last_events
-        )
+        return " | ".join(e.get("type", "event") for e in history[-5:])
