@@ -43,6 +43,7 @@ create_agi_provider(reasoning_depth=3, enable_chain_of_thought=True, enable_self
 - Always `--dry-run` orchestrators before expensive operations
 - Read-only `datasets/`, write-only `data_out/`
 - Test: `python scripts/test_runner.py --unit`
+- Do not expose hidden chain-of-thought in responses; reasoning steps are internal only
 
 **Success Criteria:**
 - Solution is correct, complete, and verified
