@@ -63,20 +63,21 @@ jobs:
           fetch-depth: 0
 
       - name: Check PR size
+        id: size
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          BASE_SHA=${{ github.event.pull_request.base.sha }}
-          HEAD_SHA=${{ github.event.pull_request.head.sha }}
-
-          ADDITIONS=$(git diff $BASE_SHA...$HEAD_SHA --numstat | awk '{sum+=$1} END {print sum}')
-          DELETIONS=$(git diff $BASE_SHA...$HEAD_SHA --numstat | awk '{sum+=$2} END {print sum}')
-          FILES_CHANGED=$(git diff $BASE_SHA...$HEAD_SHA --name-only | wc -l)
+          ADDITIONS=$(git diff "$BASE_SHA"..."$HEAD_SHA" --numstat | awk '{sum+=$1} END {print sum}')
+          DELETIONS=$(git diff "$BASE_SHA"..."$HEAD_SHA" --numstat | awk '{sum+=$2} END {print sum}')
+          FILES_CHANGED=$(git diff "$BASE_SHA"..."$HEAD_SHA" --name-only | wc -l)
 
           echo "Files changed: $FILES_CHANGED"
           echo "Lines added: $ADDITIONS"
           echo "Lines deleted: $DELETIONS"
 
           # Warn if PR is very large
-          if [ $FILES_CHANGED -gt 50 ] || [ $ADDITIONS -gt 1000 ]; then
+          if [ "$FILES_CHANGED" -gt 50 ] || [ "$ADDITIONS" -gt 1000 ]; then
             echo "⚠️ Warning: This is a large PR. Consider breaking it into smaller PRs for easier review."
             echo "pr_size=large" >> $GITHUB_OUTPUT
           else
@@ -95,7 +96,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Label PR based on files changed
-        uses: actions/labeler@v5
+        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b  # v6
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           configuration-path: .github/labeler.yml
