@@ -308,7 +308,7 @@ Available agents in `.github/agents/`:
 |-------|---------|
 | `ai.agent.md` | Primary autonomous agent — task decomposition, multi-step execution |
 | `my-agent.agent.md` | QAI specialist — quantum-AI/ML development |
-| `agi-reasoning.agent.md` | Chain-of-thought reasoning, self-reflection |
+| `agi-reasoning.agent.md` | Structured reasoning with internal chain-of-thought, self-reflection |
 | `aria-character.agent.md` | Interactive character commands, animations |
 | `autonomous-trainer.agent.md` | LoRA training lifecycle, model promotion |
 | `full-stack-debugger.agent.md` | Cross-stack issue diagnosis |
@@ -330,7 +330,7 @@ Available agents in `.github/agents/`:
 - `Azure_Static_Web_App.agent.md` — Static web app deployment patterns
 
 **Prompts** (`.github/prompts/`):
-- `agi.prompt.md` — AGI reasoning with chain-of-thought
+- `agi.prompt.md` — Autonomous long-running work with internal reasoning (hidden chain-of-thought)
 - `reason.prompt.md` — Structured analysis
 - `debug.prompt.md` — Systematic diagnostic protocol
 - `review.prompt.md` — Code review (correctness, security, performance)
