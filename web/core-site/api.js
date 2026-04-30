@@ -1,3 +1,5 @@
+import { executeTool } from "./tools.js";
+
 async function sendToAI(message, context = {}) {
   const res = await fetch("/api/chat", {
     method: "POST",
@@ -6,7 +8,8 @@ async function sendToAI(message, context = {}) {
     },
     body: JSON.stringify({
       message,
-      context
+      context,
+      toolMode: true
     })
   });
 
@@ -18,16 +21,15 @@ async function sendToAI(message, context = {}) {
 }
 
 async function runCommandOrAI(input) {
-  // lightweight hybrid layer:
-  // 1. detect explicit commands
-  // 2. otherwise fallback to AI
-
   const trimmed = input.trim();
 
   if (trimmed.startsWith("/")) {
+    const [cmd, ...args] = trimmed.slice(1).split(" ");
+    const result = await executeTool(cmd, { args });
+
     return {
-      type: "command",
-      output: `Command received: ${trimmed}`
+      type: "tool",
+      output: result
     };
   }
 
@@ -35,7 +37,8 @@ async function runCommandOrAI(input) {
 
   return {
     type: "ai",
-    output: ai.response || ai
+    output: ai.response || ai,
+    tools: ai.tools || []
   };
 }
 
