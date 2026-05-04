@@ -73,8 +73,7 @@ many of the following as you can:
 | Initial acknowledgement           | Within **3 business days**               |
 | Triage and severity assessment    | Within **7 business days**               |
 | Status updates                    | At least every **7 days** until resolved |
-| Fix and coordinated disclosure    | Typically within **90 days** (may vary   |
-|                                   | with severity and complexity)            |
+| Fix and coordinated disclosure    | Typically within **90 days**; may vary by severity |
 
 If we need more information to reproduce the issue, we will reach out via the
 private advisory thread.  We will notify you before any public disclosure.
