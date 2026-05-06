@@ -145,7 +145,11 @@ def _validated_remote_url(path_or_url: str) -> str:
 
     allowed_hosts = {h.strip().lower() for h in os.environ.get("LORA_MANIFEST_ALLOWED_HOSTS", "").split(",") if h.strip()}
     host = parsed.hostname.lower()
-    if allowed_hosts and host not in allowed_hosts:
+    if not allowed_hosts:
+        raise ValueError(
+            "Remote manifest URLs are disabled unless LORA_MANIFEST_ALLOWED_HOSTS is set"
+        )
+    if host not in allowed_hosts:
         raise ValueError(f"Remote manifest host {host!r} is not in LORA_MANIFEST_ALLOWED_HOSTS")
 
     try:
