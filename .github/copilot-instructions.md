@@ -331,7 +331,7 @@ Available agents in `.github/agents/`:
 
 **Prompts** (`.github/prompts/`):
 - `agi.prompt.md` — Autonomous AGI reasoning with multi-step analysis and self-correction (chain-of-thought is internal, not exposed in output)
-- `reason.prompt.md` — Structured analysis with concise, user-visible reasoning summaries (chain-of-thought remains internal)
+- `reason.prompt.md` — Structured analysis with step-by-step, user-visible reasoning
 - `debug.prompt.md` — Systematic diagnostic protocol
 - `review.prompt.md` — Code review (correctness, security, performance)
 - `aria-command.prompt.md` — Natural language → Aria actions
