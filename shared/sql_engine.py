@@ -57,13 +57,24 @@ _SLOW_QUERY_CACHE_MAX_SIZE = 1000  # Maximum entries to prevent unbounded growth
 
 
 class _FallbackSQLiteDialect:
-    """Minimal dialect shim for sqlite fallback mode."""
+    """Minimal SQLAlchemy-dialect-like shim used by fallback engine.
+
+    Consumers in this repo only read ``engine.dialect.name`` to branch
+    behavior, so this shim intentionally exposes just the ``name`` attribute.
+    """
 
     name = "sqlite"
 
 
 class _FallbackSQLiteEngine:
-    """Minimal engine-like object used when SQLAlchemy is unavailable."""
+    """Minimal SQLAlchemy-engine-like shim for no-SQLAlchemy environments.
+
+    This object intentionally only provides the attributes accessed by current
+    call sites:
+      - ``url`` for status output
+      - ``dialect.name`` for vendor checks
+      - ``pool`` (set to ``None``) so pool-stat code degrades gracefully
+    """
 
     def __init__(self, url: str) -> None:
         self.url = url
