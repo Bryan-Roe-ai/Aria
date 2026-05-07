@@ -355,18 +355,13 @@ class HyperparameterOptimizer {
                 </div>
                 <div style="padding:20px">
                     <div class="alert alert-info">
-                        <span id="hyperoptStatusText"></span>
+                        Running ${this.strategy} optimization with ${this.maxTrials} trials...
                     </div>
                     <div id="trialsProgress"></div>
                     <div id="currentBest" style="margin-top:20px"></div>
                 </div>
             </div>
         `;
-
-        const statusText = container.querySelector('#hyperoptStatusText');
-        if (statusText) {
-            statusText.textContent = `Running ${this.strategy} optimization with ${this.maxTrials} trials...`;
-        }
 
         container.style.display = 'block';
     }
@@ -544,7 +539,7 @@ class HyperparameterOptimizer {
                 datasets: [{
                     label: 'Trial Score',
                     data: this.trials.map(t => t.score),
-                    borderColor: '#667eea',
+                    borderColor: '#0f9d89',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
                     tension: 0.4
                 }, {

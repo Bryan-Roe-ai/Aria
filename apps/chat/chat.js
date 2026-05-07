@@ -760,26 +760,13 @@ async function handleImageUpload(event) {
         uploadedImage = file.name;
 
         // Show preview
-        visionPreview.textContent = '';
-
-        const previewImg = document.createElement('img');
-        previewImg.src = e.target.result;
-        previewImg.alt = 'Preview';
-
-        const previewInfo = document.createElement('div');
-        previewInfo.className = 'vision-preview-info';
-
-        const fileNameSpan = document.createElement('span');
-        fileNameSpan.textContent = file.name;
-
-        const clearButton = document.createElement('button');
-        clearButton.id = 'visionClearButton';
-        clearButton.textContent = '✕';
-
-        previewInfo.appendChild(fileNameSpan);
-        previewInfo.appendChild(clearButton);
-        visionPreview.appendChild(previewImg);
-        visionPreview.appendChild(previewInfo);
+        visionPreview.innerHTML = `
+            <img src="${e.target.result}" alt="Preview">
+            <div class="vision-preview-info">
+                <span>${file.name}</span>
+                <button id="visionClearButton">✕</button>
+            </div>
+        `;
         visionPreview.style.display = 'block';
 
         // Re-attach clear button listener
