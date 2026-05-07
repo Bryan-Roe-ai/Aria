@@ -63,7 +63,7 @@ class _FallbackSQLiteDialect:
     behavior, so this shim intentionally exposes just the ``name`` attribute.
     """
 
-    name = "sqlite"
+    name: str = "sqlite"
 
 
 class _FallbackSQLiteEngine:
@@ -77,9 +77,9 @@ class _FallbackSQLiteEngine:
     """
 
     def __init__(self, url: str) -> None:
-        self.url = url
-        self.dialect = _FallbackSQLiteDialect()
-        self.pool = None
+        self.url: str = url
+        self.dialect: _FallbackSQLiteDialect = _FallbackSQLiteDialect()
+        self.pool: None = None
 
 
 def _prune_recent_slow_queries() -> None:
