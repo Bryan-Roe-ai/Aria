@@ -70,6 +70,11 @@ class TestQuantumLLMConfig:
         cfg = QuantumLLMConfig.from_env()
         assert cfg.backend == "qiskit"
 
+    def test_from_env_invalid_backend_falls_back_to_auto(self, monkeypatch):
+        monkeypatch.setenv("QUANTUM_LLM_BACKEND", "invalid-backend")
+        cfg = QuantumLLMConfig.from_env()
+        assert cfg.backend == "auto"
+
     def test_from_env_invalid_numeric_values_fallback(self, monkeypatch):
         monkeypatch.setenv("QUANTUM_LLM_QUBITS", "abc")
         monkeypatch.setenv("QUANTUM_LLM_SHOTS", "NaN")
@@ -83,8 +88,7 @@ class TestQuantumLLMConfig:
         assert cfg.num_layers == 2
         assert cfg.temperature == 0.7
 
-    def test_from_env_normalizes_ranges(self, monkeypatch):
-        monkeypatch.setenv("QUANTUM_LLM_BACKEND", "invalid-backend")
+    def test_from_env_clamps_numeric_values_to_valid_ranges(self, monkeypatch):
         monkeypatch.setenv("QUANTUM_LLM_QUBITS", "0")
         monkeypatch.setenv("QUANTUM_LLM_SHOTS", "-1")
         monkeypatch.setenv("QUANTUM_LLM_LAYERS", "0")
@@ -96,7 +100,6 @@ class TestQuantumLLMConfig:
 
         cfg = QuantumLLMConfig.from_env()
 
-        assert cfg.backend == "auto"
         assert cfg.num_qubits == 1
         assert cfg.shots == 1
         assert cfg.num_layers == 1
@@ -104,6 +107,30 @@ class TestQuantumLLMConfig:
         assert cfg.temperature_blend == 1.0
         assert cfg.temperature == 0.0
         assert cfg.max_tokens == 128
+
+    def test_direct_constructor_coerces_invalid_types(self):
+        cfg = QuantumLLMConfig(
+            backend="invalid",
+            num_qubits="bad",  # type: ignore[arg-type]
+            shots="oops",  # type: ignore[arg-type]
+            num_layers="bad",  # type: ignore[arg-type]
+            top_k="bad",  # type: ignore[arg-type]
+            temperature_blend="bad",  # type: ignore[arg-type]
+            temperature="bad",  # type: ignore[arg-type]
+            max_tokens="bad",  # type: ignore[arg-type]
+            max_tokens_cap="bad",  # type: ignore[arg-type]
+            max_prompt_chars="bad",  # type: ignore[arg-type]
+        )
+        assert cfg.backend == "auto"
+        assert cfg.num_qubits == 4
+        assert cfg.shots == 512
+        assert cfg.num_layers == 2
+        assert cfg.top_k == 10
+        assert cfg.temperature_blend == 0.3
+        assert cfg.temperature == 0.7
+        assert cfg.max_tokens == 512
+        assert cfg.max_tokens_cap == 2048
+        assert cfg.max_prompt_chars == 8000
 
 
 # ===========================================================================

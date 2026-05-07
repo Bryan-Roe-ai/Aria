@@ -33,6 +33,30 @@ def _read_float_env(name: str, default: float) -> float:
         return default
 
 
+def _read_backend_env(name: str, default: str = "auto") -> str:
+    """Return validated backend env var value or fallback."""
+    raw = (os.getenv(name, default) or default).strip()
+    valid_backends = {"auto", "qiskit", "pennylane", "classical"}
+    return raw if raw in valid_backends else default
+
+
+def _coerce_int(value: object, default: int, minimum: int = 1) -> int:
+    """Convert value to int with safe default and lower bound."""
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        parsed = default
+    return max(minimum, parsed)
+
+
+def _coerce_float(value: object, default: float) -> float:
+    """Convert value to float with safe default."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
 @dataclass
 class QuantumLLMConfig:
     """Settings for QuantumLLMPipeline and its sub-components."""
@@ -68,17 +92,21 @@ class QuantumLLMConfig:
         if self.backend not in valid_backends:
             self.backend = "auto"
 
-        self.num_qubits = max(1, int(self.num_qubits))
-        self.shots = max(1, int(self.shots))
-        self.num_layers = max(1, int(self.num_layers))
-        self.top_k = max(1, int(self.top_k))
+        self.num_qubits = _coerce_int(self.num_qubits, default=4, minimum=1)
+        self.shots = _coerce_int(self.shots, default=512, minimum=1)
+        self.num_layers = _coerce_int(self.num_layers, default=2, minimum=1)
+        self.top_k = _coerce_int(self.top_k, default=10, minimum=1)
 
-        self.temperature_blend = min(1.0, max(0.0, float(self.temperature_blend)))
-        self.temperature = max(0.0, float(self.temperature))
+        self.temperature_blend = min(
+            1.0, max(0.0, _coerce_float(self.temperature_blend, default=0.3))
+        )
+        self.temperature = max(0.0, _coerce_float(self.temperature, default=0.7))
 
-        self.max_prompt_chars = max(1, int(self.max_prompt_chars))
-        self.max_tokens_cap = max(1, int(self.max_tokens_cap))
-        self.max_tokens = max(1, int(self.max_tokens))
+        self.max_prompt_chars = _coerce_int(
+            self.max_prompt_chars, default=8000, minimum=1
+        )
+        self.max_tokens_cap = _coerce_int(self.max_tokens_cap, default=2048, minimum=1)
+        self.max_tokens = _coerce_int(self.max_tokens, default=512, minimum=1)
         self.max_tokens = min(self.max_tokens, self.max_tokens_cap)
 
         self.provider = (self.provider or "auto").strip()
@@ -87,7 +115,7 @@ class QuantumLLMConfig:
     def from_env(cls) -> "QuantumLLMConfig":
         """Build config from environment variables."""
         return cls(
-            backend=os.getenv("QUANTUM_LLM_BACKEND", "auto"),
+            backend=_read_backend_env("QUANTUM_LLM_BACKEND", "auto"),
             num_qubits=_read_int_env("QUANTUM_LLM_QUBITS", 4),
             shots=_read_int_env("QUANTUM_LLM_SHOTS", 512),
             num_layers=_read_int_env("QUANTUM_LLM_LAYERS", 2),
