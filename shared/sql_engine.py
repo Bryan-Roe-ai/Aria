@@ -56,6 +56,21 @@ _recent_slow_queries: deque[tuple[float, float]] = deque()  # (timestamp, durati
 _SLOW_QUERY_CACHE_MAX_SIZE = 1000  # Maximum entries to prevent unbounded growth
 
 
+class _FallbackSQLiteDialect:
+    """Minimal dialect shim for sqlite fallback mode."""
+
+    name = "sqlite"
+
+
+class _FallbackSQLiteEngine:
+    """Minimal engine-like object used when SQLAlchemy is unavailable."""
+
+    def __init__(self, url: str) -> None:
+        self.url = url
+        self.dialect = _FallbackSQLiteDialect()
+        self.pool = None
+
+
 def _prune_recent_slow_queries() -> None:
     """Remove slow query entries older than 60 seconds.
 
@@ -175,12 +190,12 @@ def get_engine():  # noqa: ANN001
         return None
     if not _SQLALCHEMY_AVAILABLE:
         # Fallback: no SQLAlchemy installed
-        # Return None to allow sqlite3 fallback in calling code
         # Only SQLite URLs are supported in fallback mode
         if str(url).startswith("sqlite"):
-            _ENGINE = None
+            if _ENGINE is None or _LAST_URL != url:
+                _ENGINE = _FallbackSQLiteEngine(url)
             _LAST_URL = url
-            return None
+            return _ENGINE
         # Unsupported vendor without SQLAlchemy
         return None
     if _ENGINE is None or _LAST_URL != url:
@@ -269,18 +284,6 @@ def engine_stats() -> Dict[str, Any]:
         "slow_queries_1min": 0,
         "slow_query_threshold_ms": resolve_slow_query_threshold(),
     }
-    if not _SQLALCHEMY_AVAILABLE:
-        # Minimal stats for fallback
-        stats.update(
-            {
-                "type": "DirectSQLite",
-                "vendor": "sqlite",
-                "status": "ok",
-            }
-        )
-        _prune_recent_slow_queries()
-        stats["slow_queries_1min"] = len(_recent_slow_queries)
-        return stats
     if pool:
         for attr in ["size", "checkedout", "overflow"]:
             stats[attr] = _safe_call(pool, attr)
