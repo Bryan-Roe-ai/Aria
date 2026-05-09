@@ -24,11 +24,13 @@ from __future__ import annotations
 
 import hashlib
 import heapq
+import logging
 import math
 import os
+import queue
 import struct
-from threading import RLock
-from typing import List, Optional, Sequence
+import threading
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 try:
     import pyodbc  # type: ignore
@@ -69,98 +71,210 @@ except Exception:  # pragma: no cover - best effort import
 
 # ------------------------- DB Helpers with Connection Pooling -------------------------
 
-# Connection pool for embedding operations (reduces connection overhead)
-_connection_pool = []
-_MAX_POOL_SIZE = 5
+_logger = logging.getLogger(__name__)
 
-# Per-thread connection cache for fast reuse without reconnecting.
-_thread_connections = {}
+_DEFAULT_MAX_POOL_SIZE = 5
+MAX_POOL_SIZE = max(
+    1,
+    int(os.getenv("QAI_DB_POOL_SIZE", os.getenv("QAI_CHAT_MEMORY_POOL_SIZE", _DEFAULT_MAX_POOL_SIZE))),
+)
 
-# Backward-compatible aliases expected by existing tests and scripts.
-_conn_cache = _thread_connections
-_conn_lock = RLock()
+_conn_lock = threading.RLock()
+_thread_local = threading.local()
+_thread_connections: Dict[int, Any] = {}
 
 
-def _get_conn():  # noqa: ANN001
-    """Get a database connection from pool/cache or create a new one.
+class ConnectionPool:
+    """Thread-safe LIFO connection pool with thread-local fast-path caching."""
 
-    Priority:
-    1. Shared pool connection (allows dead-connection replacement tests)
-    2. Per-thread cached connection
-    3. New connection
-    """
-    conn_str = os.getenv("QAI_DB_CONN")
-    if not conn_str or not pyodbc:
-        return None
+    def __init__(self, max_size: int = MAX_POOL_SIZE) -> None:
+        self._max_size = max_size
+        self._pool: "queue.LifoQueue[Any]" = queue.LifoQueue(maxsize=max_size)
 
-    thread_id = __import__("threading").get_ident()
-
-    # 1) Try shared pool first.
-    attempted_pool = False
-    while True:
-        with _conn_lock:
-            if not _connection_pool:
-                break
-            attempted_pool = True
-            conn = _connection_pool.pop()
+    @staticmethod
+    def _close_quietly(conn: Any) -> None:
         try:
-            conn.cursor().execute("SELECT 1")
-            with _conn_lock:
-                _thread_connections[thread_id] = conn
-            return conn
+            conn.close()
         except Exception:
+            pass
+
+    @staticmethod
+    def _is_alive(conn: Any) -> bool:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
             try:
-                conn.close()
+                cursor.fetchone()
             except Exception:
                 pass
-
-    # 2) Fast path: per-thread cached connection (only if pool wasn't consulted).
-    # If pooled connections were attempted and found dead, create a fresh
-    # connection below to avoid returning potentially stale thread cache.
-    if not attempted_pool:
-        with _conn_lock:
-            cached = _thread_connections.get(thread_id)
-        if cached is not None:
             try:
-                cached.cursor().execute("SELECT 1")
-                return cached
+                cursor.close()
             except Exception:
-                try:
-                    cached.close()
-                except Exception:
-                    pass
-                with _conn_lock:
-                    _thread_connections.pop(thread_id, None)
+                pass
+            return True
+        except Exception:
+            return False
 
-    # 3) No valid pooled/cached connections, create a new one
-    try:
-        conn = pyodbc.connect(conn_str, timeout=4)
-        with _conn_lock:
-            _thread_connections[thread_id] = conn
-        return conn
-    except Exception:
+    def _create_conn(self) -> Optional[Any]:
+        conn_str = os.getenv("QAI_DB_CONN")
+        if not conn_str or not pyodbc:
+            return None
+        try:
+            return pyodbc.connect(conn_str, timeout=4)
+        except Exception:
+            return None
+
+    def acquire(self) -> Optional[Any]:
+        """Get a live connection from thread cache, pool, or a new connect."""
+        thread_id = threading.get_ident()
+
+        cached = getattr(_thread_local, "conn", None)
+        if cached is not None:
+            if self._is_alive(cached):
+                with _conn_lock:
+                    _thread_connections[thread_id] = cached
+                return cached
+            self._close_quietly(cached)
+            _thread_local.conn = None
+            with _conn_lock:
+                _thread_connections.pop(thread_id, None)
+
+        while True:
+            try:
+                pooled = self._pool.get_nowait()
+            except queue.Empty:
+                break
+            if self._is_alive(pooled):
+                _thread_local.conn = pooled
+                with _conn_lock:
+                    _thread_connections[thread_id] = pooled
+                return pooled
+            self._close_quietly(pooled)
+
+        created = self._create_conn()
+        if created is not None and self._is_alive(created):
+            _thread_local.conn = created
+            with _conn_lock:
+                _thread_connections[thread_id] = created
+            return created
+        if created is not None:
+            self._close_quietly(created)
         return None
 
-
-def _return_conn(conn):  # noqa: ANN001
-    """Return a connection to the pool for reuse when not thread-cached."""
-    if not conn:
-        return
-
-    thread_id = __import__("threading").get_ident()
-    with _conn_lock:
-        # Keep current-thread cached connection hot for immediate reuse.
-        if _thread_connections.get(thread_id) is conn:
+    def release(self, conn: Any) -> None:
+        """Return connection to pool; close if pool is full."""
+        if not conn:
             return
-
-        if len(_connection_pool) < _MAX_POOL_SIZE:
-            _connection_pool.append(conn)
+        thread_id = threading.get_ident()
+        if getattr(_thread_local, "conn", None) is conn:
+            with _conn_lock:
+                _thread_connections[thread_id] = conn
             return
+        with _conn_lock:
+            _thread_connections.pop(thread_id, None)
+        try:
+            self._pool.put_nowait(conn)
+        except queue.Full:
+            self._close_quietly(conn)
 
-    try:
-        conn.close()
-    except Exception:
-        pass
+    def close_all(self) -> None:
+        """Close all pooled and thread-cached connections."""
+        while True:
+            try:
+                conn = self._pool.get_nowait()
+            except queue.Empty:
+                break
+            self._close_quietly(conn)
+        with _conn_lock:
+            for thread_id, conn in list(_thread_connections.items()):
+                self._close_quietly(conn)
+                _thread_connections.pop(thread_id, None)
+        current_cached = getattr(_thread_local, "conn", None)
+        if current_cached is not None:
+            self._close_quietly(current_cached)
+            _thread_local.conn = None
+
+    def pool_size(self) -> int:
+        return self._pool.qsize()
+
+    def pool_snapshot(self) -> List[Any]:
+        items: List[Any] = []
+        while True:
+            try:
+                items.append(self._pool.get_nowait())
+            except queue.Empty:
+                break
+        for item in items:
+            try:
+                self._pool.put_nowait(item)
+            except queue.Full:
+                self._close_quietly(item)
+        return list(items)
+
+    def add_to_pool(self, conn: Any) -> None:
+        if not conn:
+            return
+        try:
+            self._pool.put_nowait(conn)
+        except queue.Full:
+            self._close_quietly(conn)
+
+    def pop_from_pool(self) -> Any:
+        return self._pool.get_nowait()
+
+
+class _ConnectionPoolView(list):
+    """Backward-compatible list-like view over the internal connection pool."""
+
+    def __init__(self, pool: ConnectionPool) -> None:
+        self._pool = pool
+
+    def clear(self) -> None:
+        while True:
+            try:
+                conn = self._pool.pop_from_pool()
+            except queue.Empty:
+                break
+            self._pool._close_quietly(conn)
+
+    def append(self, conn: Any) -> None:
+        self._pool.add_to_pool(conn)
+
+    def pop(self, index: int = -1) -> Any:
+        if index not in (-1, 0):
+            raise IndexError("pool view only supports pop() or pop(-1)")
+        return self._pool.pop_from_pool()
+
+    def __len__(self) -> int:
+        return self._pool.pool_size()
+
+    def __iter__(self):
+        return iter(self._pool.pool_snapshot())
+
+    def __getitem__(self, index: int) -> Any:
+        return self._pool.pool_snapshot()[index]
+
+
+_POOL = ConnectionPool(MAX_POOL_SIZE)
+
+# Backward-compatible aliases expected by existing imports/scripts.
+_conn_cache = _thread_connections
+_connection_pool = _ConnectionPoolView(_POOL)
+
+
+def _get_conn() -> Optional[Any]:
+    """Return a live DB connection from thread cache, pool, or new connect."""
+    return _POOL.acquire()
+
+
+def _return_conn(conn: Any) -> None:
+    """Return a connection to the pool or close it when pool is full."""
+    _POOL.release(conn)
+
+
+def close_all_connections() -> None:
+    """Close all pooled and thread-local connections for clean shutdown."""
+    _POOL.close_all()
 
 
 # ------------------------- Embedding Generation -------------------------
@@ -248,31 +362,61 @@ def _serialize_f32(vec: Sequence[float]) -> bytes:
     return struct.pack(f"<{len(vec)}f", *[float(v) for v in vec])
 
 
+def store_embeddings_batch(embeddings: List[Tuple[str, Sequence[float], str]]) -> int:
+    """Store embeddings with one executemany() call and one transaction commit.
+
+    Args:
+        embeddings: Tuples of ``(message_id, embedding, model)``.
+
+    Returns:
+        int: Number of inserted rows.
+    """
+    if not embeddings:
+        return 0
+    conn = _get_conn()
+    if not conn:
+        return 0
+    inserted = 0
+    try:
+        values: List[Tuple[str, str, int, bytes]] = []
+        for message_id, embedding, model in embeddings:
+            if not message_id or not embedding:
+                continue
+            values.append(
+                (
+                    message_id,
+                    model or "unknown-model",
+                    len(embedding),
+                    _serialize_f32(embedding),
+                )
+            )
+        if not values:
+            return 0
+        cursor = conn.cursor()
+        cursor.executemany(
+            "INSERT INTO dbo.ChatMessageEmbeddings (MessageId, EmbeddingModel, EmbeddingDim, EmbeddingVector) VALUES (?,?,?,?)",
+            values,
+        )
+        conn.commit()
+        inserted = len(values)
+        return inserted
+    except Exception:
+        _logger.exception("Failed storing embeddings batch (size=%d)", len(embeddings))
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return 0
+    finally:
+        _return_conn(conn)
+
+
 def store_embedding(
     message_id: Optional[str], embedding: Sequence[float], model: str
 ) -> bool:  # noqa: ANN001
     if not message_id or not embedding:
         return False
-    conn = _get_conn()
-    if not conn:
-        return False
-    try:
-        cursor = conn.cursor()
-        blob = _serialize_f32(embedding)
-        cursor.execute(
-            "INSERT INTO dbo.ChatMessageEmbeddings (MessageId, EmbeddingModel, EmbeddingDim, EmbeddingVector) VALUES (?,?,?,?)",
-            message_id,
-            model or "unknown-model",
-            len(embedding),
-            blob,
-        )
-        conn.commit()
-        return True
-    except Exception:
-        return False
-    finally:
-        # Return connection to pool instead of closing
-        _return_conn(conn)
+    return store_embeddings_batch([(message_id, embedding, model)]) == 1
 
 
 # ------------------------- Similarity Search -------------------------
@@ -360,6 +504,7 @@ def fetch_similar_messages(
         # This is more efficient when top_k << len(scored)
         return heapq.nlargest(top_k, scored, key=lambda x: x["similarity"])
     except Exception:
+        _logger.exception("Failed fetching similar messages")
         return []
     finally:
         # Return connection to pool instead of closing
@@ -369,7 +514,9 @@ def fetch_similar_messages(
 __all__ = [
     "generate_embedding",
     "store_embedding",
+    "store_embeddings_batch",
     "fetch_similar_messages",
+    "close_all_connections",
     "_get_conn",
     "_return_conn",
     "_conn_cache",
