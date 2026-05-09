@@ -7,7 +7,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 
 class TrainingIntegration:
@@ -189,9 +189,9 @@ class TrainingIntegration:
             datasets_root = (self.workspace_root / "datasets").resolve()
 
             # Build allowed absolute paths from list_datasets() results
-            allowed_paths: set = set()
+            allowed_paths: Set[Path] = set()
             for name in available_datasets.get("quantum", []):
-                allowed_paths.add((datasets_root / "quantum" / name).with_suffix(".csv"))
+                allowed_paths.add(datasets_root / "quantum" / f"{name}.csv")
             for name in available_datasets.get("chat", []):
                 allowed_paths.add(datasets_root / "chat" / name)
             for name in available_datasets.get("vision", []):
