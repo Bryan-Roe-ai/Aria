@@ -1,5 +1,5 @@
 ---
-description: "Reason through a problem using visible chain-of-thought analysis, task decomposition, and self-reflection. Every reasoning step is shown explicitly in the response."
+description: "Reason through a problem with visible chain-of-thought analysis, task decomposition, and self-reflection. Shows reasoning steps to the user, including confidence scores and verification. Use when the user wants to see the reasoning process, not just the final answer."
 name: "Reason"
 argument-hint: "Problem or question to analyze (example: decision + relevant context + constraints or trade-offs)"
 agent: visible-reasoning
