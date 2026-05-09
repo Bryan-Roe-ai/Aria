@@ -186,11 +186,28 @@ class TrainingIntegration:
         """Run LoRA training directly"""
         try:
             available_datasets = await self.list_datasets()
-            allowed_datasets = set()
-            for names in available_datasets.values():
-                allowed_datasets.update(names)
+            datasets_root = (self.workspace_root / "datasets").resolve()
 
-            if dataset not in allowed_datasets:
+            # Build allowed absolute paths from list_datasets() results
+            allowed_paths: set = set()
+            for name in available_datasets.get("quantum", []):
+                allowed_paths.add((datasets_root / "quantum" / name).with_suffix(".csv"))
+            for name in available_datasets.get("chat", []):
+                allowed_paths.add(datasets_root / "chat" / name)
+            for name in available_datasets.get("vision", []):
+                allowed_paths.add(datasets_root / "vision" / name)
+
+            # Resolve the provided dataset path relative to phi_path (subprocess cwd)
+            resolved_dataset = (self.phi_path / dataset).resolve()
+
+            # Path-traversal guard: resolved path must be within datasets_root
+            try:
+                resolved_dataset.relative_to(datasets_root)
+            except ValueError:
+                return {"success": False, "error": "Invalid dataset"}
+
+            # Must match an explicitly allowed path derived from list_datasets()
+            if resolved_dataset not in allowed_paths:
                 return {"success": False, "error": "Invalid dataset"}
 
             train_script = self.phi_path / "scripts" / "train_lora.py"
