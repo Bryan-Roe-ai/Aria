@@ -65,8 +65,6 @@ jobs:
         include:
           - language: actions
             build-mode: none
-          - language: c-cpp
-            build-mode: autobuild
           - language: csharp
             build-mode: none
           - language: javascript-typescript
