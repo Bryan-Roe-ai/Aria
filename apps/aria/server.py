@@ -1787,7 +1787,10 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             if exec_result.get("tags"):
                                 all_tags.extend(exec_result["tags"])
                     else:
-                        logger.info("Dry-run plan mode for command '%s': %s", command_for_log, actions)
+                        actions_for_log = json.dumps(actions, ensure_ascii=False, separators=(",", ":"))
+                        actions_for_log = re.sub(r"[\r\n]+", " ", actions_for_log)
+                        actions_for_log = re.sub(r"[\x00-\x1f\x7f]", "", actions_for_log)
+                        logger.info("Dry-run plan mode for command '%s': %s", command_for_log, actions_for_log)
 
                     api_response = {
                         "status": "success",
