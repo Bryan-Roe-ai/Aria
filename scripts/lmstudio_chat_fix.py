@@ -124,6 +124,21 @@ def chat(
     return content
 
 
+def _resolve_and_validate_fix_path(raw_path: str) -> pathlib.Path:
+    base_dir = pathlib.Path.cwd().resolve()
+    candidate = pathlib.Path(raw_path)
+    if not candidate.is_absolute():
+        candidate = base_dir / candidate
+    candidate = candidate.resolve()
+
+    try:
+        candidate.relative_to(base_dir)
+    except ValueError as exc:
+        raise ValueError(f"--fix-file must be within the current working directory: {base_dir}") from exc
+
+    return candidate
+
+
 def fix_file(
     file_path: pathlib.Path,
     instruction: str,
@@ -219,8 +234,13 @@ def main() -> int:
         if not args.instruction:
             print("--instruction is required when using --fix-file", file=sys.stderr)
             return 2
+        try:
+            safe_fix_path = _resolve_and_validate_fix_path(args.fix_file)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
         output = fix_file(
-            file_path=pathlib.Path(args.fix_file),
+            file_path=safe_fix_path,
             instruction=args.instruction,
             base_url=args.base_url,
             model=args.model,
