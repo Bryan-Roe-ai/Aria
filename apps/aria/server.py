@@ -1743,6 +1743,9 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 if not isinstance(auto_execute, bool):
                     raise ValueError("auto_execute must be a boolean")
 
+                # Sanitize user input before logging to prevent log injection.
+                command_for_log = command.replace("\r", "").replace("\n", "")
+
                 # Parse command into actions
                 actions = action_parser.parse(
                     command,
@@ -1778,7 +1781,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             if exec_result.get("tags"):
                                 all_tags.extend(exec_result["tags"])
                     else:
-                        logger.info("Dry-run plan mode for command '%s': %s", command, actions)
+                        logger.info("Dry-run plan mode for command '%s': %s", command_for_log, actions)
 
                     api_response = {
                         "status": "success",
