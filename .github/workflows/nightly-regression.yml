@@ -31,6 +31,9 @@ concurrency:
   group: nightly-regression
   cancel-in-progress: false  # Never cancel a nightly run mid-flight
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # Opt into Node.js 24 for JS actions ahead of June 2026 forced migration
+
 jobs:
   full-test-suite:
     name: Full Test Suite
