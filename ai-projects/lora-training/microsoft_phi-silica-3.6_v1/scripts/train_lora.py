@@ -178,7 +178,17 @@ def _read_text_source(path_or_url: str) -> Iterable[str]:
         import urllib.request
 
         safe_url = _validated_remote_url(path_or_url)
-        with urllib.request.urlopen(safe_url) as resp:  # nosec B310
+        timeout_value = os.environ.get("LORA_MANIFEST_TIMEOUT_SECONDS", "30")
+        try:
+            manifest_timeout = float(timeout_value)
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid LORA_MANIFEST_TIMEOUT_SECONDS value {timeout_value!r}; expected a positive number"
+            ) from e
+        if manifest_timeout <= 0:
+            raise ValueError("LORA_MANIFEST_TIMEOUT_SECONDS must be greater than 0")
+
+        with urllib.request.urlopen(safe_url, timeout=manifest_timeout) as resp:  # nosec B310
             for line in resp.read().decode("utf-8").splitlines():
                 yield line
     else:
