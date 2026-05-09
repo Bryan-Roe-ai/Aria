@@ -47,7 +47,7 @@ jobs:
           if [ ! -f data_out/autonomous_training_status.json ]; then
             echo "No training status found — running 1 seed cycle to bootstrap data..."
             python scripts/autonomous_training_orchestrator.py \
-              --cycles 1 --interval 0 --skip-quantum 2>&1 || echo "Seed training failed (likely missing dependencies or invalid config), workflow will proceed with empty data..."
+              --cycles 1 --interval 0 --skip-quantum 2>&1 || echo "Seed training failed — workflow will proceed with no data (fresh checkout or missing dependencies)."
           else
             echo "Existing training status found, skipping seed."
           fi
@@ -167,7 +167,7 @@ jobs:
 
       - name: Open degradation issue
         if: steps.status.outputs.degraded == 'true' || github.event.inputs.open-issue == 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7.1.0
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
