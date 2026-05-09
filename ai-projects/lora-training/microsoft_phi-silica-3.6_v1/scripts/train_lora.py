@@ -133,21 +133,8 @@ def make_hf_dataset_from_files(
     return ds
 
 
-def _is_http_url(value: str) -> bool:
-    lower = value.lower()
-    return lower.startswith("http://") or lower.startswith("https://")
-
-
-def _validate_manifest_source(path_or_url: str, allow_remote_manifest: bool) -> None:
-    if _is_http_url(path_or_url) and not allow_remote_manifest:
-        raise ValueError(
-            "Remote manifest URLs are disabled by default for security: "
-            f"{path_or_url!r}. Use --allow-remote-manifest to enable."
-        )
-
-
 def _read_text_source(path_or_url: str) -> Iterable[str]:
-    if _is_http_url(path_or_url):
+    if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
         import urllib.request
 
         with urllib.request.urlopen(path_or_url) as resp:  # nosec B310
@@ -302,11 +289,6 @@ def main():
         help="Override finetune_test_batch_size from config",
     )
     ap.add_argument("--seed", type=int, default=None, help="Override seed from config")
-    ap.add_argument(
-        "--allow-remote-manifest",
-        action="store_true",
-        help="Allow loading train/eval manifests from http(s) URLs. By default, --train-manifest and --eval-manifest only accept local paths unless this flag is provided.",
-    )
     args = ap.parse_args()
 
     # Initialize tracing (best-effort). This allows the optional
@@ -372,14 +354,8 @@ def main():
     eval_manifest = getattr(args, "eval_manifest", None)
     if train_manifest or eval_manifest:
         if train_manifest:
-            _validate_manifest_source(
-                train_manifest, getattr(args, "allow_remote_manifest", False)
-            )
             train_files = parse_manifest(train_manifest)
         if eval_manifest:
-            _validate_manifest_source(
-                eval_manifest, getattr(args, "allow_remote_manifest", False)
-            )
             eval_files = parse_manifest(eval_manifest)
         if not train_files:
             raise RuntimeError("No train files found from manifest")
