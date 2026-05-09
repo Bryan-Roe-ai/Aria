@@ -53,10 +53,15 @@ jobs:
       - name: "Summary"
         if: always()
         run: |
-          echo "## 🔗 Broken Links Check" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Scanned markdown and docs links with [Lychee](https://github.com/lycheeverse/lychee-action)." >> $GITHUB_STEP_SUMMARY
-          # Output summary; lychee-action auto uploads as artifact if any broken links are found
+          # Safely write the step summary in a single redirection to avoid multiple appends (ShellCheck SC2129)
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "## 🔗 Broken Links Check"
+              echo ""
+              echo "Scanned markdown and docs links with [Lychee](https://github.com/lycheeverse/lychee-action)."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          # Note: lychee-action auto uploads artifacts if it finds broken links
 
       - name: "Show Failures"
         if: failure()
