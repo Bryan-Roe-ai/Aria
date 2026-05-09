@@ -83,6 +83,24 @@ def resolve_path(p: str) -> Path:
     return Path(p).expanduser()
 
 
+def resolve_config_path(config_arg: str) -> Path:
+    # Restrict config loading to the project's configs directory.
+    # This prevents path traversal / arbitrary file reads from untrusted CLI input.
+    config_root = (Path(__file__).resolve().parents[1] / "configs").resolve()
+    candidate = Path(config_arg).expanduser().resolve()
+    try:
+        candidate.relative_to(config_root)
+    except ValueError as e:
+        raise SystemExit(
+            f"Invalid --config path '{config_arg}'. Must be within '{config_root}'."
+        ) from e
+
+    if not candidate.exists() or not candidate.is_file():
+        raise SystemExit(f"Config file not found or not a file: '{candidate}'")
+
+    return candidate
+
+
 def iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
     with path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -338,7 +356,7 @@ def main():
     except Exception as _e:
         print(f"[tracing] init skipped in train_lora: {_e}")
 
-    cfg_raw = read_yaml(Path(args.config))
+    cfg_raw = read_yaml(resolve_config_path(args.config))
     cfg = Config(
         model=cfg_raw.get("model") or "Phi-3.6-mini-instruct",
         finetune_dataset=cfg_raw.get("finetune_dataset") or str(Path(args.dataset)),
