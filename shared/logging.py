@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from datetime import datetime, timezone
+
+from shared.config import get_settings
 
 
 class JsonFormatter(logging.Formatter):
@@ -31,7 +32,7 @@ def configure_json_logging(level: int | None = None) -> None:
 
     resolved_level = level
     if resolved_level is None:
-        resolved_level = logging.DEBUG if os.getenv("QAI_DEBUG", "").lower() in {"1", "true", "yes"} else logging.INFO
+        resolved_level = logging.DEBUG if get_settings().debug else logging.INFO
 
     handler = logging.StreamHandler()
     handler.setFormatter(JsonFormatter())

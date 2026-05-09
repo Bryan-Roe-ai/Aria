@@ -1524,7 +1524,8 @@ def health(req: func.HttpRequest) -> func.HttpResponse:
     try:
         info = detect_provider(None)
         active_provider = getattr(info, "name", "unknown")
-    except Exception:  # noqa: BLE001
+    except (TypeError, ValueError, AttributeError, RuntimeError) as exc:
+        logging.debug("health provider detection failed: %s", exc)
         active_provider = "unknown"
 
     payload = {

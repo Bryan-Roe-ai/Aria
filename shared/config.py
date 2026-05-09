@@ -10,7 +10,7 @@ try:
     from pydantic_settings import BaseSettings, SettingsConfigDict
 
     _PYDANTIC_AVAILABLE = True
-except Exception:  # pragma: no cover - optional dependency fallback
+except ImportError:  # pragma: no cover - optional dependency fallback
     _PYDANTIC_AVAILABLE = False
 
     def Field(default=None, alias=None, **kwargs):
@@ -69,8 +69,11 @@ class AppSettings(BaseSettings):
     key_vault_url: str | None = Field(default=None, alias="AZURE_KEY_VAULT_URL")
     key_vault_enabled: bool = Field(default=False, alias="QAI_ENABLE_KEY_VAULT")
 
-    @model_validator(mode="after")
-    def _validate_provider_priority(self) -> AppSettings:
+    def _normalize_concurrency(self) -> AppSettings:
+        self.max_concurrency = max(1, min(64, int(self.max_concurrency)))
+        return self
+
+    def _normalize_provider_priority(self) -> AppSettings:
         allowed = {"azure", "openai", "lmstudio", "local"}
         ordered = [item.strip().lower() for item in self.provider_priority.split(",") if item.strip()]
         if not ordered:
@@ -79,6 +82,12 @@ class AppSettings(BaseSettings):
         if invalid:
             raise ValueError(f"Invalid QAI_PROVIDER_PRIORITY value(s): {invalid}")
         self.provider_priority = ",".join(ordered)
+        return self
+
+    @model_validator(mode="after")
+    def _validate_provider_priority(self) -> AppSettings:
+        self._normalize_provider_priority()
+        self._normalize_concurrency()
         return self
 
     def provider_chain(self) -> list[str]:
@@ -103,6 +112,7 @@ class AppSettings(BaseSettings):
         return providers
 
     def summary(self) -> dict[str, Any]:
+        # Intentionally excludes secret values (API keys, tokens, connection strings).
         return {
             "environment": self.environment,
             "debug": self.debug,
@@ -117,8 +127,7 @@ class AppSettings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> AppSettings:
     settings = AppSettings()
-    if _PYDANTIC_AVAILABLE:
-        return settings
-    # Best-effort validation parity when pydantic isn't installed.
-    settings._validate_provider_priority()
+    if not _PYDANTIC_AVAILABLE:
+        settings._normalize_provider_priority()
+        settings._normalize_concurrency()
     return settings

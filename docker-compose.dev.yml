@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   aria-web:
     build:
@@ -20,4 +18,3 @@ services:
     environment:
       QAI_ENV: development
       QAI_DEBUG: "false"
-
