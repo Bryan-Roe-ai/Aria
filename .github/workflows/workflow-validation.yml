@@ -1,5 +1,8 @@
 name: Workflow Validation
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     paths:
@@ -11,6 +14,9 @@ on:
       - '.github/workflows/**'
       - '.github/actions/**'
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validate-workflows:
