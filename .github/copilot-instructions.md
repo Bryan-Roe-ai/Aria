@@ -316,7 +316,7 @@ Available agents in `.github/agents/`:
 |-------|---------|
 | `ai.agent.md` | Primary autonomous agent — task decomposition, multi-step execution |
 | `my-agent.agent.md` | QAI specialist — quantum-AI/ML development |
-| `agi-reasoning.agent.md` | Internal chain-of-thought reasoning, self-reflection (final answer only, reasoning hidden) |
+| `agi-reasoning.agent.md` | Chain-of-thought reasoning, self-reflection; when paired with `agi.prompt.md`, output is final-answer-only with hidden reasoning |
 | `visible-reasoning.agent.md` | Visible step-by-step reasoning — every chain-of-thought step shown explicitly in the response |
 | `aria-character.agent.md` | Interactive character commands, animations |
 | `autonomous-trainer.agent.md` | LoRA training lifecycle, model promotion |
