@@ -97,6 +97,22 @@ def resolve_path(p: str) -> Path:
     return Path(p).expanduser()
 
 
+def resolve_path_safe(p: str, base_dir: Path) -> Path:
+    candidate = Path(p).expanduser()
+    if not candidate.is_absolute():
+        candidate = (base_dir / candidate).resolve(strict=False)
+    else:
+        candidate = candidate.resolve(strict=False)
+    base_resolved = base_dir.resolve(strict=False)
+    try:
+        candidate.relative_to(base_resolved)
+    except ValueError as e:
+        raise ValueError(
+            f"Dataset path must be within {base_resolved}, got: {candidate}"
+        ) from e
+    return candidate
+
+
 def iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
     with path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -381,9 +397,8 @@ def main():
             # Fallback: use a small subset of train for eval
             eval_files = train_files[:1]
     else:
-        dataset_path = (
-            Path(args.dataset) if args.dataset else resolve_path(cfg.finetune_dataset)
-        )
+        dataset_value = args.dataset if args.dataset else str(resolve_path(cfg.finetune_dataset))
+        dataset_path = resolve_path_safe(dataset_value, Path.cwd())
         if dataset_path.is_file():
             # Allow direct file usage (.json or .jsonl)
             if dataset_path.suffix.lower() in (".json", ".jsonl"):
