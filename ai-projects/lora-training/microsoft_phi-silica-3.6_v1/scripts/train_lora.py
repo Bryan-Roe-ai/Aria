@@ -1,13 +1,13 @@
 import argparse
-import ipaddress
 import json
 import math
 import os
+import ipaddress
 import socket
+from urllib.parse import urlparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
-from urllib.parse import urlparse
 
 try:
     import yaml  # type: ignore
@@ -80,35 +80,7 @@ def read_yaml(yaml_path: Path) -> Dict[str, Any]:
 
 def resolve_path(p: str) -> Path:
     # allow tokens like mount/<run_id>/dataset to be overridden by --dataset
-    # Normalize and constrain to the current working directory to prevent
-    # uncontrolled path traversal from user-provided CLI/config values.
-    safe_root = Path.cwd().resolve()
-    candidate = Path(p).expanduser().resolve()
-    try:
-        candidate.relative_to(safe_root)
-    except ValueError as e:
-        raise ValueError(
-            f"Dataset path must be inside project directory '{safe_root}': {candidate}"
-        ) from e
-    return candidate
-
-
-def resolve_config_path(config_arg: str) -> Path:
-    # Restrict config loading to the project's configs directory.
-    # This prevents path traversal / arbitrary file reads from untrusted CLI input.
-    config_root = (Path(__file__).resolve().parents[1] / "configs").resolve()
-    candidate = Path(config_arg).expanduser().resolve()
-    try:
-        candidate.relative_to(config_root)
-    except ValueError as e:
-        raise SystemExit(
-            f"Invalid --config path '{config_arg}'. Must be within '{config_root}'."
-        ) from e
-
-    if not candidate.exists() or not candidate.is_file():
-        raise SystemExit(f"Config file not found or not a file: '{candidate}'")
-
-    return candidate
+    return Path(p).expanduser()
 
 
 def iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
@@ -164,43 +136,44 @@ def make_hf_dataset_from_files(
     return ds
 
 
-def _is_public_ip(ip_text: str) -> bool:
-    try:
-        ip = ipaddress.ip_address(ip_text)
-    except ValueError:
-        return False
-    return not (
-        ip.is_private
-        or ip.is_loopback
-        or ip.is_link_local
-        or ip.is_multicast
-        or ip.is_reserved
-        or ip.is_unspecified
-    )
-
-
-def _validate_remote_url(url: str) -> str:
-    parsed = urlparse(url)
+def _validated_remote_url(path_or_url: str) -> str:
+    parsed = urlparse(path_or_url)
     if parsed.scheme not in ("http", "https"):
-        raise ValueError("Only http/https URLs are allowed for manifests")
+        raise ValueError(f"Unsupported URL scheme for manifest source: {parsed.scheme!r}")
     if not parsed.hostname:
-        raise ValueError("Manifest URL must include a valid hostname")
-    try:
-        addrinfo = socket.getaddrinfo(parsed.hostname, parsed.port or None, type=socket.SOCK_STREAM)
-    except socket.gaierror as e:
-        raise ValueError(f"Unable to resolve manifest host: {parsed.hostname}") from e
+        raise ValueError("Remote manifest URL must include a hostname")
 
-    resolved_ips = {ai[4][0] for ai in addrinfo}
-    if not resolved_ips or not all(_is_public_ip(ip) for ip in resolved_ips):
-        raise ValueError("Manifest URL resolves to non-public network address")
-    return url
+    allowed_hosts = {h.strip().lower() for h in os.environ.get("LORA_MANIFEST_ALLOWED_HOSTS", "").split(",") if h.strip()}
+    host = parsed.hostname.lower()
+    if allowed_hosts and host not in allowed_hosts:
+        raise ValueError(f"Remote manifest host {host!r} is not in LORA_MANIFEST_ALLOWED_HOSTS")
+
+    try:
+        addrinfos = socket.getaddrinfo(parsed.hostname, parsed.port or (443 if parsed.scheme == "https" else 80), type=socket.SOCK_STREAM)
+    except socket.gaierror as e:
+        raise ValueError(f"Could not resolve remote manifest host {parsed.hostname!r}: {e}") from e
+
+    for ai in addrinfos:
+        ip_str = ai[4][0]
+        ip_obj = ipaddress.ip_address(ip_str)
+        if (
+            ip_obj.is_private
+            or ip_obj.is_loopback
+            or ip_obj.is_link_local
+            or ip_obj.is_reserved
+            or ip_obj.is_multicast
+            or ip_obj.is_unspecified
+        ):
+            raise ValueError(f"Remote manifest host resolves to disallowed address: {ip_str}")
+
+    return path_or_url
 
 
 def _read_text_source(path_or_url: str) -> Iterable[str]:
     if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
         import urllib.request
 
-        safe_url = _validate_remote_url(path_or_url)
+        safe_url = _validated_remote_url(path_or_url)
         with urllib.request.urlopen(safe_url) as resp:  # nosec B310
             for line in resp.read().decode("utf-8").splitlines():
                 yield line
@@ -220,7 +193,7 @@ def parse_manifest(path_or_url: str) -> List[str]:
         if path_or_url.startswith("http://") or path_or_url.startswith("https://"):
             import urllib.request
 
-            safe_url = _validate_remote_url(path_or_url)
+            safe_url = _validated_remote_url(path_or_url)
             with urllib.request.urlopen(safe_url) as resp:  # nosec B310
                 obj = _json.loads(resp.read().decode("utf-8"))
         else:
@@ -366,7 +339,7 @@ def main():
     except Exception as _e:
         print(f"[tracing] init skipped in train_lora: {_e}")
 
-    cfg_raw = read_yaml(resolve_config_path(args.config))
+    cfg_raw = read_yaml(Path(args.config))
     cfg = Config(
         model=cfg_raw.get("model") or "Phi-3.6-mini-instruct",
         finetune_dataset=cfg_raw.get("finetune_dataset") or str(Path(args.dataset)),
@@ -429,7 +402,7 @@ def main():
             eval_files = train_files[:1]
     else:
         dataset_path = (
-            resolve_path(args.dataset) if args.dataset else resolve_path(cfg.finetune_dataset)
+            Path(args.dataset) if args.dataset else resolve_path(cfg.finetune_dataset)
         )
         if dataset_path.is_file():
             # Allow direct file usage (.json or .jsonl)
@@ -864,6 +837,9 @@ def main():
     is_streaming = is_iterable_dataset(train_ds)
     # Remove 'messages' column so only tokenized output is kept
     # Note: IterableDataset.map() has limited parameter support compared to Dataset.map()
+    is_streaming = (
+        hasattr(train_ds, "__class__") and "Iterable" in train_ds.__class__.__name__
+    )
 
     map_kwargs_train = {
         "batched": True,
