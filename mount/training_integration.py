@@ -188,14 +188,16 @@ class TrainingIntegration:
             available_datasets = await self.list_datasets()
             datasets_root = (self.workspace_root / "datasets").resolve()
 
-            # Build allowed absolute paths from list_datasets() results
+            # Build allowed absolute paths from list_datasets() results.
+            # Resolve every entry so symlinks are normalised consistently with
+            # the resolved_dataset comparison below.
             allowed_paths: Set[Path] = set()
             for name in available_datasets.get("quantum", []):
-                allowed_paths.add(datasets_root / "quantum" / f"{name}.csv")
+                allowed_paths.add((datasets_root / "quantum" / f"{name}.csv").resolve())
             for name in available_datasets.get("chat", []):
-                allowed_paths.add(datasets_root / "chat" / name)
+                allowed_paths.add((datasets_root / "chat" / name).resolve())
             for name in available_datasets.get("vision", []):
-                allowed_paths.add(datasets_root / "vision" / name)
+                allowed_paths.add((datasets_root / "vision" / name).resolve())
 
             # Resolve the provided dataset path relative to phi_path (subprocess cwd)
             resolved_dataset = (self.phi_path / dataset).resolve()
@@ -213,11 +215,13 @@ class TrainingIntegration:
             train_script = self.phi_path / "scripts" / "train_lora.py"
             config_file = self.phi_path / "lora" / "lora.yaml"
 
+            # Use the validated resolved path as the --dataset argument so the
+            # raw (potentially untrusted) input string never reaches subprocess.
             cmd = [
                 sys.executable,
                 str(train_script),
                 "--dataset",
-                dataset,
+                str(resolved_dataset),
                 "--config",
                 str(config_file),
                 "--max-train-samples",
