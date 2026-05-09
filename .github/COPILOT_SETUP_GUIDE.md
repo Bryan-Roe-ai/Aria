@@ -382,7 +382,7 @@ Aria includes **20+ specialized prompts** in `.github/prompts/` that guide Copil
 
 | Prompt | Purpose |
 |--------|---------|
-| `agi.prompt.md` | Autonomous long-running work with internal reasoning |
+| `agi.prompt.md` | Autonomous long-running work with internal reasoning (chain-of-thought is hidden) |
 | `debug.prompt.md` | Systematic debugging protocol |
 | `reason.prompt.md` | Structured analysis & planning |
 | `review.prompt.md` | Security, performance, correctness review |
