@@ -80,17 +80,27 @@ def ensure_server_running():
     raise RuntimeError("Failed to start aria server")
 
 
-def wait_for_object(name, timeout=4.0):
+def wait_for_object(name, timeout=4.0, predicate=None):
+    """Wait until object `name` exists (and optionally `predicate(obj)` is True).
+
+    Returns the most recently observed object dict (which may not satisfy the
+    predicate if the timeout was reached), or None if the object was never seen.
+    """
     deadline = time.time() + timeout
+    last = None
     while time.time() < deadline:
         try:
             r = requests.get(f"{SERVER_URL}/api/aria/state", timeout=1.0)
-            if r.ok and "objects" in r.json() and name in r.json()["objects"]:
-                return r.json()["objects"][name]
+            if r.ok:
+                obj = r.json().get("objects", {}).get(name)
+                if obj is not None:
+                    last = obj
+                    if predicate is None or predicate(obj):
+                        return obj
         except Exception:
             pass
         time.sleep(0.12)
-    return None
+    return last
 
 
 @pytest.mark.pyppeteer
@@ -160,11 +170,20 @@ def test_pyppeteer_add_pickup_drop():
 
             # Drop
             await page.evaluate("() => dropObject()")
-            dropped = wait_for_object(name, timeout=5.0)
-            assert dropped is not None and dropped.get("state") in [
-                "on_stage",
-                "on_table",
-            ]
+
+            # Poll for the state transition away from 'held'. wait_for_object
+            # alone is insufficient here because the object already exists in
+            # 'held' state and would otherwise return immediately with stale data.
+            dropped_states = ("on_stage", "on_table")
+            dropped = wait_for_object(
+                name,
+                timeout=5.0,
+                predicate=lambda o: o.get("state") in dropped_states,
+            )
+            assert dropped is not None and dropped.get("state") in dropped_states, (
+                f"Object not dropped to stage/table on server after dropObject(); "
+                f"last observed state={dropped}"
+            )
 
             # Cleanup
             r = requests.post(
