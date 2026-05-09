@@ -133,37 +133,39 @@ jobs:
 
       - name: Generate step summary
         run: |
-          echo "## 📊 Weekly Training Health Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Report date:** $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 📊 Weekly Training Health Report"
+            echo ""
+            echo "**Report date:** $(date -u +'%Y-%m-%d %H:%M UTC')"
+            echo ""
 
-          # Overall health badge
-          if [ "${{ steps.status.outputs.degraded }}" == "true" ]; then
-            echo "### ⚠️ Health Status: DEGRADED" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ steps.status.outputs.no_data }}" == "true" ]; then
-            echo "### ℹ️ Health Status: No Training Data" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "### ✅ Health Status: Healthy" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
+            # Overall health badge
+            if [ "${{ steps.status.outputs.degraded }}" = "true" ]; then
+              echo "### ⚠️ Health Status: DEGRADED"
+            elif [ "${{ steps.status.outputs.no_data }}" = "true" ]; then
+              echo "### ℹ️ Health Status: No Training Data"
+            else
+              echo "### ✅ Health Status: Healthy"
+            fi
+            echo ""
 
-          echo "### Autonomous Training" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Cycles completed | ${{ steps.status.outputs.cycles }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Best accuracy | ${{ steps.status.outputs.best_acc }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Recent trend | ${{ steps.status.outputs.trend }} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Autonomous Training"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Cycles completed | ${{ steps.status.outputs.cycles }} |"
+            echo "| Best accuracy | ${{ steps.status.outputs.best_acc }} |"
+            echo "| Recent trend | ${{ steps.status.outputs.trend }} |"
+            echo ""
 
-          echo "### CI Orchestrator" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Total jobs | ${{ steps.status.outputs.ci_total }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Succeeded | ${{ steps.status.outputs.ci_succeeded }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Failed | ${{ steps.status.outputs.ci_failed }} |" >> $GITHUB_STEP_SUMMARY
+            echo "### CI Orchestrator"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Total jobs | ${{ steps.status.outputs.ci_total }} |"
+            echo "| Succeeded | ${{ steps.status.outputs.ci_succeeded }} |"
+            echo "| Failed | ${{ steps.status.outputs.ci_failed }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Open degradation issue
         if: steps.status.outputs.degraded == 'true' || github.event.inputs.open-issue == 'true'

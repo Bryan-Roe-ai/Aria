@@ -15,9 +15,6 @@ on:
       - '.github/actions/**'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   validate-workflows:
     name: Validate Workflow Syntax
