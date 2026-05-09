@@ -23,6 +23,13 @@ from typing import List, Optional, Tuple
 
 # Pre-compile regex patterns for performance (avoid recompiling in loops)
 _RE_JSON_BLOCK = re.compile(r"\[.*\]", re.DOTALL)
+
+
+def _sanitize_for_log(value: str) -> str:
+    """Sanitize potentially untrusted text for safe plain-text logging."""
+    sanitized = value.replace("\r", "").replace("\n", " ")
+    sanitized = re.sub(r"[\x00-\x1f\x7f]", "", sanitized)
+    return sanitized
 _RE_ARIA_TAGS = re.compile(r"\[aria:[^\]]+\]")
 _RE_SAY_COMMAND = re.compile(
     r"(?:\b(?:say|announce|shout|speak|tell)\b)(?:\s+(?:everyone|that|to))?[:\-\s]+(.+)",
@@ -1772,8 +1779,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
 
                     if auto_execute:
                         actions_for_log = json.dumps(actions, ensure_ascii=False, separators=(",", ":"))
-                        actions_for_log = re.sub(r"[\r\n]+", " ", actions_for_log)
-                        actions_for_log = re.sub(r"[\x00-\x1f\x7f]", "", actions_for_log)
+                        actions_for_log = _sanitize_for_log(actions_for_log)
                         logger.info("Executing validated action sequence: %s", actions_for_log)
                         for action in actions:
                             exec_result = execute_aria_action(action)
