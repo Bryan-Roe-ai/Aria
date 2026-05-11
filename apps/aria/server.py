@@ -26,14 +26,9 @@ _RE_JSON_BLOCK = re.compile(r"\[.*\]", re.DOTALL)
 
 
 def _sanitize_for_log(value: str) -> str:
-    """Return a log-safe single-line representation of user-controlled text."""
+    """Sanitize potentially untrusted text for safe plain-text logging."""
     if not isinstance(value, str):
         value = str(value)
-    return value.replace("\r", "").replace("\n", "")
-
-
-def _sanitize_for_log(value: str) -> str:
-    """Sanitize potentially untrusted text for safe plain-text logging."""
     sanitized = value.replace("\r", "").replace("\n", " ")
     sanitized = re.sub(r"[\x00-\x1f\x7f]", "", sanitized)
     return sanitized
