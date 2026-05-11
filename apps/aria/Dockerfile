@@ -1,16 +1,48 @@
-FROM python:3.12-slim
+# =============================================================================
+# Aria Web Server — Dockerfile
+# =============================================================================
+# Builds the standalone Aria web UI and API server.
+#
+# Build:
+#   docker build -f apps/aria/Dockerfile -t aria-server:local .
+#   (run from repo root so the build context includes shared/ etc.)
+#
+# Run:
+#   docker run -p 8080:8080 aria-server:local
+# =============================================================================
+
+FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    ARIA_PORT=8080
 
 WORKDIR /app
-COPY requirements.txt /app/requirements.txt
-RUN python -m pip install --no-cache-dir -r /app/requirements.txt
 
-COPY . /app
-RUN addgroup --system non-root \
-    && adduser --system --ingroup non-root --home /app non-root \
-    && chown -R non-root:non-root /app
+# Install OS-level dependencies (keep the image slim)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy only the files needed to install Python dependencies first
+# (layer-cache friendly — rebuilds only when deps change)
+COPY requirements.txt ./
+
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Copy application source
+COPY shared/ ./shared/
+COPY apps/aria/ ./apps/aria/
+
+# Expose the HTTP port
 EXPOSE 8080
-USER non-root
+
+# Health check — polls the Aria state endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:${ARIA_PORT}/api/aria/state')" \
+    || exit 1
+
+# Run the Aria web server
 CMD ["python", "apps/aria/server.py"]
