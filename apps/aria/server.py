@@ -684,8 +684,9 @@ Rules:
                     or self._normalize_provider_alias(provider_choice)
                     or "auto"
                 )
+                safe_provider_name = _sanitize_for_log(str(used_provider_name))
                 safe_command = _sanitize_for_log(command)
-                logger.info(f"✓ LLM parsed via {used_provider_name}: {safe_command} -> {len(actions)} actions")
+                logger.info(f"✓ LLM parsed via {safe_provider_name}: {safe_command} -> {len(actions)} actions")
                 return actions
             except Exception as e:
                 logger.warning(f"LLM parsing failed, using fallback: {e}")
