@@ -238,7 +238,10 @@ class TrainingIntegration:
             dataset_norm = _normalize_dataset_name(dataset)
 
             if not _is_safe_dataset_name(dataset):
-                logger.warning("train_lora: rejected unsafe dataset name: %s", dataset)
+                dataset_for_log = dataset.replace("\r", "").replace("\n", "")
+                logger.warning(
+                    "train_lora: rejected unsafe dataset name: %s", dataset_for_log
+                )
                 return _error_response(
                     "invalid_dataset",
                     "Dataset name contains disallowed characters or path traversal tokens.",
