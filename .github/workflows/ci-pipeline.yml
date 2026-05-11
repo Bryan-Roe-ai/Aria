@@ -122,7 +122,9 @@ jobs:
     - name: Generate training summary
       if: always()
       run: |
-        echo "## Training Results" >> "$GITHUB_STEP_SUMMARY"
+        {
+          echo "## Training Results"
+        } >> "$GITHUB_STEP_SUMMARY"
         if [ -f data_out/master_orchestrator/status.json ]; then
           {
             echo '```json'
