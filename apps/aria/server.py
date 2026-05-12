@@ -26,14 +26,9 @@ _RE_JSON_BLOCK = re.compile(r"\[.*\]", re.DOTALL)
 
 
 def _sanitize_for_log(value: str) -> str:
-    """Return a log-safe single-line representation of user-controlled text."""
+    """Sanitize potentially untrusted text for safe plain-text logging."""
     if not isinstance(value, str):
         value = str(value)
-    return value.replace("\r", "").replace("\n", "")
-
-
-def _sanitize_for_log(value: str) -> str:
-    """Sanitize potentially untrusted text for safe plain-text logging."""
     sanitized = value.replace("\r", "").replace("\n", " ")
     sanitized = re.sub(r"[\x00-\x1f\x7f]", "", sanitized)
     return sanitized
@@ -684,8 +679,9 @@ Rules:
                     or self._normalize_provider_alias(provider_choice)
                     or "auto"
                 )
+                safe_provider_name = _sanitize_for_log(str(used_provider_name))
                 safe_command = _sanitize_for_log(command)
-                logger.info(f"✓ LLM parsed via {used_provider_name}: {safe_command} -> {len(actions)} actions")
+                logger.info(f"✓ LLM parsed via {safe_provider_name}: {safe_command} -> {len(actions)} actions")
                 return actions
             except Exception as e:
                 logger.warning(f"LLM parsing failed, using fallback: {e}")
@@ -1797,8 +1793,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                                 all_tags.extend(exec_result["tags"])
                     else:
                         actions_for_log = json.dumps(actions, ensure_ascii=False, separators=(",", ":"))
-                        actions_for_log = re.sub(r"[\r\n]+", " ", actions_for_log)
-                        actions_for_log = re.sub(r"[\x00-\x1f\x7f]", "", actions_for_log)
+                        actions_for_log = _sanitize_for_log(actions_for_log)
                         logger.info("Dry-run plan mode for command '%s': %s", command_for_log, actions_for_log)
 
                     api_response = {
@@ -1909,7 +1904,11 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
-                logger.info(f"✓ World generated (theme={safe_theme_for_log}, llm={response['used_llm']}, count={response['count']})")
+                safe_used_llm_for_log = str(bool(response.get("used_llm", False)))
+                safe_count_for_log = str(int(response.get("count", 0)))
+                logger.info(
+                    f"✓ World generated (theme={safe_theme_for_log}, llm={safe_used_llm_for_log}, count={safe_count_for_log})"
+                )
                 return
             except Exception as e:
                 logger.error(f"World generation error: {e}")
