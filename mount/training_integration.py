@@ -38,6 +38,26 @@ def _error_response(code: str, message: str) -> Dict[str, Any]:
     """Return a consistent error payload."""
     return {"success": False, "error": code, "message": message}
 
+_DATASET_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def _normalize_dataset_name(name: str) -> str:
+    return name.strip().lower()
+
+
+def _is_safe_dataset_name(name: str) -> bool:
+    name_norm = name.strip()
+    if any(token in name_norm for token in ("/", "\\", "..")):
+        return False
+    return bool(_DATASET_NAME_PATTERN.fullmatch(name_norm))
+
+
+def _error_response(code: str, message: str, **extra: Any) -> Dict[str, Any]:
+    response: Dict[str, Any] = {"success": False, "error": code, "message": message}
+    if extra:
+        response.update(extra)
+    return response
+
 
 class TrainingIntegration:
     """Integration layer for training operations"""
