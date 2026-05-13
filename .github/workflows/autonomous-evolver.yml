@@ -66,8 +66,10 @@ jobs:
 
           const fitness = Math.random() * 100;
           const stability = Math.random() * 100;
-          const fitnessThreshold = Number(process.env.FITNESS_THRESHOLD || 60);
-          const stabilityThreshold = Number(process.env.STABILITY_THRESHOLD || 70);
+          const parsedFitnessThreshold = Number(process.env.FITNESS_THRESHOLD);
+          const parsedStabilityThreshold = Number(process.env.STABILITY_THRESHOLD);
+          const fitnessThreshold = Number.isFinite(parsedFitnessThreshold) ? parsedFitnessThreshold : 60;
+          const stabilityThreshold = Number.isFinite(parsedStabilityThreshold) ? parsedStabilityThreshold : 70;
           const forceEvolution = (process.env.FORCE_EVOLUTION || 'false').toLowerCase() === 'true';
           const telemetryConclusion = process.env.TELEMETRY_CONCLUSION || 'n/a';
 
@@ -133,8 +135,7 @@ jobs:
             } catch (error) {
               const details = {
                 message: error?.message || String(error),
-                status: error?.status || null,
-                response: error?.response?.data || null
+                status: error?.status || null
               };
               core.setFailed(`Failed to dispatch aria-evolution-triggered event to ${owner}/${repo}: ${JSON.stringify(details)}`);
             }

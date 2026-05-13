@@ -58,7 +58,7 @@ jobs:
           github.event.label.name == 'auto-merge'
         ) ||
         (
-          contains(fromJSON('["opened","synchronize","reopened","ready_for_review"]'), github.event.action) &&
+          github.event.action != 'unlabeled' &&
           contains(github.event.pull_request.labels.*.name, 'auto-merge')
         )
       )
