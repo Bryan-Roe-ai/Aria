@@ -130,7 +130,8 @@ jobs:
               });
               core.info('repository_dispatch aria-evolution-triggered sent successfully.');
             } catch (error) {
-              core.setFailed(`Failed to dispatch aria-evolution-triggered event: ${error.message}`);
+              const details = (error && (error.stack || error.message)) || String(error);
+              core.setFailed(`Failed to dispatch aria-evolution-triggered event to ${owner}/${repo}: ${details}`);
             }
         env:
           FITNESS: ${{ steps.evaluate.outputs.fitness }}
