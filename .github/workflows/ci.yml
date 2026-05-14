@@ -101,10 +101,15 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Install dependencies
+      - name: Upgrade pip and install type-check deps (use constraints if present)
         run: |
-          python -m pip install --upgrade pip mypy pydantic pydantic-settings
-          if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install mypy pydantic pydantic-settings
+          if [[ -f constraints.txt && -f requirements.txt ]]; then
+            pip install -r requirements.txt -c constraints.txt
+          elif [[ -f requirements.txt ]]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Run mypy on shared/
         run: mypy shared/ --ignore-missing-imports --no-error-summary || true
@@ -132,12 +137,17 @@ jobs:
             requirements.txt
             pyproject.toml
 
-      - name: Install dependencies
+      - name: Upgrade pip and install dependencies (use constraints if present)
         run: |
-          python -m pip install --upgrade pip
-          if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
+          python -m pip install --upgrade pip setuptools wheel
+          if [[ -f constraints.txt && -f requirements.txt ]]; then
+            pip install -r requirements.txt -c constraints.txt
+          elif [[ -f requirements.txt ]]; then
+            pip install -r requirements.txt
+          fi
           if [[ -f requirements-dev.txt ]]; then pip install -r requirements-dev.txt; fi
           python -m pip install pydantic pydantic-settings tenacity
+          pip check
 
       - name: Run unit tests
         run: |
