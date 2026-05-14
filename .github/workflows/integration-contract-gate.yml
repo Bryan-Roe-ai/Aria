@@ -130,6 +130,11 @@ jobs:
         with:
           script-path: scripts/validate_composite_actions.py
 
+      - name: Setup Node.js (needed for azure functions core tools install)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: Start local Functions host (for endpoint checks)
         id: start-func
         if: runner.os == 'Linux'
