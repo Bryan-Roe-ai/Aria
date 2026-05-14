@@ -39,7 +39,10 @@ _RE_SAY_COMMAND = re.compile(
 )
 _RE_SANITIZE_BRACKETS = re.compile(r"\]")
 _RE_COORDINATES = re.compile(r"(\d{1,3})%?.*?(\d{1,3})%?")
-_RE_WAIT_DURATION = re.compile(r"\b(?:wait|pause|hold)\s+(\d+(?:\.\d+)?)\s*(?:s|sec|secs|second|seconds)?\b")
+_RE_WAIT_DURATION = re.compile(
+    r"\b(?:wait|pause|hold)\s+(\d+(?:\.\d+)?)\s*(?:s|sec|secs|second|seconds)?\b",
+    re.IGNORECASE,
+)
 _RE_COMMAND_SEPARATORS = re.compile(
     r"(?:\s*(?:,|;|\||->|=>|→|\band then\b|\bthen\b|\band\b|\bafter that\b|\bafterwards\b|\bnext\b|\bfinally\b|\blastly\b|\bthen\s*:|\bnext\s*:|\bafterward\s*:|\bafterwards\s*:|\bfinally\s*:|\bfirst\b|\bsecond\b|\bthird\b|\bfourth\b|\bstep\s*(?:\d+|[ivxlcdm]+)\b|\bphase\s*(?:\d+|[ivxlcdm]+)\b|\bpart\s*(?:\d+|[ivxlcdm]+)\b|(?<!\S)\d+[\)\.](?=\s))\s*|\n+\s*(?:[-*•]\s*)?(?:\[[ xX]\]\s*)?)",
     re.IGNORECASE,
@@ -91,14 +94,13 @@ def _provider_response_to_text(raw) -> str:
         except Exception:
             pass
 
-        try:
-            return str(raw)
-        except Exception:
-            return ""
-
+    try:
+        return str(raw)
+    except Exception:
+        return ""
 
 def _coerce_and_clamp_position(position, fallback: Optional[dict] = None) -> Optional[dict]:
-    """Convert x/y to bounded numeric coordinates, or return fallback on invalid input."""
+    """Clamp x/y coordinates to [0,100] and return floats (e.g. {"x":150.0,"y":-10.0} -> {"x":100.0,"y":0.0}); else return fallback."""
     if not isinstance(position, dict):
         return fallback
     if "x" not in position or "y" not in position:
@@ -181,6 +183,9 @@ BRING_ME_KEYWORDS = frozenset(["bring me", "fetch", "hand me"])
 BRING_IT_KEYWORDS = frozenset(["bring it", "bring it here", "bring it to me"])
 DROP_HERE_KEYWORDS = frozenset(["drop it here", "put it here", "place it here", "set it down"])
 VALID_GESTURES = frozenset(["wave", "thumbs_up", "clap", "shrug", "bow", "nod"])
+PICKUP_X_OFFSET = -10
+PICKUP_Y_OFFSET = 5
+PICKUP_DISTANCE_THRESHOLD = 30
 
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
@@ -688,6 +693,7 @@ Rules:
             not pickup_added
             and _contains_any_keyword(command_lower, PICKUP_KEYWORDS)
             and "it" in command_lower
+            and referenced_object is not None
             and referenced_object in stage_state["objects"]
         ):
             obj_pos = stage_state["objects"][referenced_object]["position"]
@@ -1403,9 +1409,10 @@ def execute_aria_action(action: dict) -> dict:
         if action_type == "move":
             target = action.get("target")
             if isinstance(target, dict) and "x" in target and "y" in target:
-                target = _coerce_and_clamp_position(target)
-                if target is None:
-                    target = stage_state["aria"]["position"]
+                original_target = target
+                target = _coerce_and_clamp_position(target, fallback=stage_state["aria"]["position"])
+                if target == stage_state["aria"]["position"] and original_target != stage_state["aria"]["position"]:
+                    logger.warning("Invalid move target coerced to current position: %s", _sanitize_for_log(str(original_target)))
                 stage_state["aria"]["position"] = target
                 return {
                     "status": "success",
@@ -1415,8 +1422,8 @@ def execute_aria_action(action: dict) -> dict:
             elif isinstance(target, str) and target in stage_state["objects"]:
                 # Move to object
                 obj_pos = stage_state["objects"][target]["position"]
-                x = max(0, min(100, obj_pos["x"] - 10))
-                y = max(0, min(100, obj_pos["y"] + 5))
+                x = max(0, min(100, obj_pos["x"] + PICKUP_X_OFFSET))
+                y = max(0, min(100, obj_pos["y"] + PICKUP_Y_OFFSET))
                 stage_state["aria"]["position"] = {
                     "x": x,
                     "y": y,
@@ -1455,23 +1462,29 @@ def execute_aria_action(action: dict) -> dict:
             obj_pos = stage_state["objects"][obj_id]["position"]
             distance = ((aria_pos["x"] - obj_pos["x"]) ** 2 + (aria_pos["y"] - obj_pos["y"]) ** 2) ** 0.5
 
-            if distance > 30:
+            if distance > PICKUP_DISTANCE_THRESHOLD:
                 auto_target = _coerce_and_clamp_position(
-                    {"x": obj_pos["x"] - 10, "y": obj_pos["y"] + 5},
+                    {
+                        "x": obj_pos["x"] + PICKUP_X_OFFSET,
+                        "y": obj_pos["y"] + PICKUP_Y_OFFSET,
+                    },
                     fallback=stage_state["aria"]["position"],
                 )
                 stage_state["aria"]["position"] = auto_target
 
             stage_state["aria"]["held_object"] = obj_id
             stage_state["objects"][obj_id]["state"] = "held"
+            pickup_message = (
+                f"Auto-moved closer and picked up {obj_id}"
+                if distance > PICKUP_DISTANCE_THRESHOLD
+                else f"Picked up {obj_id}"
+            )
             return {
                 "status": "success",
-                "message": (
-                    f"Auto-moved closer and picked up {obj_id}" if distance > 30 else f"Picked up {obj_id}"
-                ),
+                "message": pickup_message,
                 "tags": (
                     [f"[aria:pickup:{obj_id}]", "[aria:limb:right_arm:grab]"]
-                    if distance <= 30
+                    if distance <= PICKUP_DISTANCE_THRESHOLD
                     else [
                         f"[aria:position:{auto_target['x']}:{auto_target['y']}]",
                         f"[aria:pickup:{obj_id}]",

@@ -950,17 +950,34 @@ def test_parse_with_fallback_pickup_and_bring_it_same_segment():
     parser = aria_server.AriaActionParser()
 
     actions = parser.parse_with_fallback("walk to cup and pick it up and bring it here")
+    action_types = [a.get("action") for a in actions]
 
     assert any(
         a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
     ), f"Expected pickup action in same-segment bring-it command but got {actions}"
     assert any(
-        a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
+        a.get("action") == "move"
+        and isinstance(a.get("target"), dict)
+        and float(a["target"].get("x")) == 50.0
+        and float(a["target"].get("y")) == 85.0
+        for a in actions
     ), f"Expected delivery move action in same-segment bring-it command but got {actions}"
     assert not any(
         a.get("action") == "say" and "pick something up first" in a.get("text", "").lower()
         for a in actions
     ), f"Did not expect fallback failure say action but got {actions}"
+    assert "pickup" in action_types, f"Expected pickup in action chain but got {actions}"
+    assert action_types.count("move") >= 2, f"Expected move-to-cup and move-to-delivery actions but got {actions}"
+    first_pickup_index = action_types.index("pickup")
+    first_delivery_move_index = next(
+        i
+        for i, action in enumerate(actions)
+        if action.get("action") == "move"
+        and isinstance(action.get("target"), dict)
+        and float(action["target"].get("x")) == 50.0
+        and float(action["target"].get("y")) == 85.0
+    )
+    assert first_pickup_index < first_delivery_move_index, f"Expected pickup before delivery move but got {actions}"
 
 
 def test_execute_pickup_auto_moves_when_object_is_far():
