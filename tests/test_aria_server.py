@@ -925,3 +925,60 @@ def test_parse_falls_back_when_provider_resolution_fails(monkeypatch):
         a.get("action") == "gesture" and a.get("gesture_type") == "wave"
         for a in actions
     ), f"Expected fallback parser action but got {actions}"
+
+
+def test_parse_with_fallback_supports_look_throw_and_wait_actions():
+    parser = aria_server.AriaActionParser()
+
+    look_actions = parser.parse_with_fallback("look at the cup")
+    assert any(
+        a.get("action") == "look" and a.get("target") == "cup" for a in look_actions
+    ), f"Expected look-at-cup action but got {look_actions}"
+
+    throw_actions = parser.parse_with_fallback("throw the ball")
+    assert any(
+        a.get("action") == "throw" for a in throw_actions
+    ), f"Expected throw action but got {throw_actions}"
+
+    wait_actions = parser.parse_with_fallback("wave then wait 2 seconds")
+    assert any(
+        a.get("action") == "wait" and a.get("duration") == 2.0 for a in wait_actions
+    ), f"Expected wait action with duration but got {wait_actions}"
+
+
+def test_parse_with_fallback_pickup_and_bring_it_same_segment():
+    parser = aria_server.AriaActionParser()
+
+    actions = parser.parse_with_fallback("walk to cup and pick it up and bring it here")
+
+    assert any(
+        a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
+    ), f"Expected pickup action in same-segment bring-it command but got {actions}"
+    assert any(
+        a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
+    ), f"Expected delivery move action in same-segment bring-it command but got {actions}"
+    assert not any(
+        a.get("action") == "say" and "pick something up first" in a.get("text", "").lower()
+        for a in actions
+    ), f"Did not expect fallback failure say action but got {actions}"
+
+
+def test_execute_pickup_auto_moves_when_object_is_far():
+    original_position = dict(aria_server.stage_state["aria"]["position"])
+    original_held = aria_server.stage_state["aria"]["held_object"]
+    original_book = dict(aria_server.stage_state["objects"]["book"])
+    try:
+        aria_server.stage_state["aria"]["position"] = {"x": 0, "y": 0}
+        aria_server.stage_state["aria"]["held_object"] = None
+        aria_server.stage_state["objects"]["book"]["state"] = "on_table"
+        aria_server.stage_state["objects"]["book"]["position"] = {"x": 48, "y": 35}
+
+        result = aria_server.execute_aria_action({"action": "pickup", "object_id": "book"})
+
+        assert result["status"] == "success"
+        assert "picked up book" in result["message"].lower()
+        assert aria_server.stage_state["aria"]["held_object"] == "book"
+    finally:
+        aria_server.stage_state["aria"]["position"] = original_position
+        aria_server.stage_state["aria"]["held_object"] = original_held
+        aria_server.stage_state["objects"]["book"] = original_book

@@ -39,6 +39,7 @@ _RE_SAY_COMMAND = re.compile(
 )
 _RE_SANITIZE_BRACKETS = re.compile(r"\]")
 _RE_COORDINATES = re.compile(r"(\d{1,3})%?.*?(\d{1,3})%?")
+_RE_WAIT_DURATION = re.compile(r"\b(?:wait|pause|hold)\s+(\d+(?:\.\d+)?)\s*(?:s|sec|secs|second|seconds)?\b")
 _RE_COMMAND_SEPARATORS = re.compile(
     r"(?:\s*(?:,|;|\||->|=>|→|\band then\b|\bthen\b|\band\b|\bafter that\b|\bafterwards\b|\bnext\b|\bfinally\b|\blastly\b|\bthen\s*:|\bnext\s*:|\bafterward\s*:|\bafterwards\s*:|\bfinally\s*:|\bfirst\b|\bsecond\b|\bthird\b|\bfourth\b|\bstep\s*(?:\d+|[ivxlcdm]+)\b|\bphase\s*(?:\d+|[ivxlcdm]+)\b|\bpart\s*(?:\d+|[ivxlcdm]+)\b|(?<!\S)\d+[\)\.](?=\s))\s*|\n+\s*(?:[-*•]\s*)?(?:\[[ xX]\]\s*)?)",
     re.IGNORECASE,
@@ -90,10 +91,24 @@ def _provider_response_to_text(raw) -> str:
         except Exception:
             pass
 
+        try:
+            return str(raw)
+        except Exception:
+            return ""
+
+
+def _coerce_and_clamp_position(position, fallback: Optional[dict] = None) -> Optional[dict]:
+    """Convert x/y to bounded numeric coordinates, or return fallback on invalid input."""
+    if not isinstance(position, dict):
+        return fallback
+    if "x" not in position or "y" not in position:
+        return fallback
     try:
-        return str(raw)
-    except Exception:
-        return ""
+        x = float(position["x"])
+        y = float(position["y"])
+    except (TypeError, ValueError):
+        return fallback
+    return {"x": max(0, min(100, x)), "y": max(0, min(100, y))}
 
 
 # Configure logging
@@ -563,6 +578,11 @@ Rules:
         # Pronoun follow-up delivery command (e.g., "bring it here")
         if _contains_any_keyword(command_lower, BRING_IT_KEYWORDS):
             held_obj = planned_held_object
+            if not held_obj and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
+                for obj in known_objects:
+                    if obj in command_lower:
+                        held_obj = obj
+                        break
             if held_obj:
                 actions.append({"action": "move", "target": {"x": 50, "y": 85}, "speed": "normal"})
                 actions.append({"action": "gesture", "gesture_type": "nod"})
@@ -633,6 +653,49 @@ Rules:
                 actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
                 actions.append({"action": "pickup", "object_id": obj})
                 break
+
+        # Parse throw commands
+        if "throw" in command_lower:
+            target = {"x": 70, "y": 40}
+            if "left" in command_lower:
+                target = {"x": 20, "y": 40}
+            elif "right" in command_lower:
+                target = {"x": 80, "y": 40}
+            elif "here" in command_lower:
+                target = {"x": 50, "y": 85}
+
+            if "it" in command_lower:
+                actions.append({"action": "throw", "target": target, "force": "medium"})
+            else:
+                for obj in known_objects:
+                    if obj in command_lower and obj in stage_state["objects"]:
+                        obj_pos = stage_state["objects"][obj]["position"]
+                        actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
+                        actions.append({"action": "pickup", "object_id": obj})
+                        actions.append({"action": "throw", "target": target, "force": "medium"})
+                        break
+
+        # Parse look commands
+        if _contains_any_keyword(command_lower, LOOK_KEYWORDS):
+            for obj in known_objects:
+                if obj in command_lower and obj in stage_state["objects"]:
+                    actions.append({"action": "look", "target": obj})
+                    break
+            else:
+                if "left" in command_lower:
+                    actions.append({"action": "look", "target": {"x": 0, "y": 50}})
+                elif "right" in command_lower:
+                    actions.append({"action": "look", "target": {"x": 100, "y": 50}})
+                else:
+                    table_pos = stage_state["environment"]["table"]["position"]
+                    actions.append({"action": "look", "target": table_pos})
+
+        # Parse wait commands
+        wait_match = _RE_WAIT_DURATION.search(command_lower)
+        if wait_match:
+            actions.append({"action": "wait", "duration": float(wait_match.group(1))})
+        elif "wait" in command_lower or "pause" in command_lower or "hold on" in command_lower:
+            actions.append({"action": "wait", "duration": 1.0})
 
         # Parse gesture commands
         gestures = ["wave", "thumbs_up", "clap", "shrug", "bow", "nod"]
@@ -1300,11 +1363,9 @@ def execute_aria_action(action: dict) -> dict:
         if action_type == "move":
             target = action.get("target")
             if isinstance(target, dict) and "x" in target and "y" in target:
-                # Clamp position to stage bounds (0-100)
-                target = {
-                    "x": max(0, min(100, target["x"])),
-                    "y": max(0, min(100, target["y"])),
-                }
+                target = _coerce_and_clamp_position(target)
+                if target is None:
+                    target = stage_state["aria"]["position"]
                 stage_state["aria"]["position"] = target
                 return {
                     "status": "success",
@@ -1314,15 +1375,22 @@ def execute_aria_action(action: dict) -> dict:
             elif isinstance(target, str) and target in stage_state["objects"]:
                 # Move to object
                 obj_pos = stage_state["objects"][target]["position"]
+                x = max(0, min(100, obj_pos["x"] - 10))
+                y = max(0, min(100, obj_pos["y"] + 5))
                 stage_state["aria"]["position"] = {
-                    "x": obj_pos["x"] - 10,
-                    "y": obj_pos["y"] + 5,
+                    "x": x,
+                    "y": y,
                 }
                 return {
                     "status": "success",
                     "message": f"Moved to {target}",
-                    "tags": [f'[aria:position:{obj_pos["x"] - 10}:{obj_pos["y"] + 5}]'],
+                    "tags": [f"[aria:position:{x}:{y}]"],
                 }
+            return {
+                "status": "success",
+                "message": "No valid move target provided; staying in place",
+                "tags": [],
+            }
 
         elif action_type == "say":
             text = str(action.get("text", ""))[:200]  # Cap at 200 chars
@@ -1348,17 +1416,28 @@ def execute_aria_action(action: dict) -> dict:
             distance = ((aria_pos["x"] - obj_pos["x"]) ** 2 + (aria_pos["y"] - obj_pos["y"]) ** 2) ** 0.5
 
             if distance > 30:
-                return {
-                    "status": "error",
-                    "message": f"Too far from {obj_id}. Move closer first.",
-                }
+                auto_target = _coerce_and_clamp_position(
+                    {"x": obj_pos["x"] - 10, "y": obj_pos["y"] + 5},
+                    fallback=stage_state["aria"]["position"],
+                )
+                stage_state["aria"]["position"] = auto_target
 
             stage_state["aria"]["held_object"] = obj_id
             stage_state["objects"][obj_id]["state"] = "held"
             return {
                 "status": "success",
-                "message": f"Picked up {obj_id}",
-                "tags": [f"[aria:pickup:{obj_id}]", "[aria:limb:right_arm:grab]"],
+                "message": (
+                    f"Auto-moved closer and picked up {obj_id}" if distance > 30 else f"Picked up {obj_id}"
+                ),
+                "tags": (
+                    [f"[aria:pickup:{obj_id}]", "[aria:limb:right_arm:grab]"]
+                    if distance <= 30
+                    else [
+                        f"[aria:position:{auto_target['x']}:{auto_target['y']}]",
+                        f"[aria:pickup:{obj_id}]",
+                        "[aria:limb:right_arm:grab]",
+                    ]
+                ),
             }
 
         elif action_type == "drop":
@@ -1366,7 +1445,10 @@ def execute_aria_action(action: dict) -> dict:
                 return {"status": "error", "message": "Not holding anything"}
 
             obj_id = stage_state["aria"]["held_object"]
-            position = action.get("position", stage_state["aria"]["position"])
+            position = _coerce_and_clamp_position(
+                action.get("position", stage_state["aria"]["position"]),
+                fallback=stage_state["aria"]["position"],
+            )
 
             stage_state["objects"][obj_id]["position"] = position
             stage_state["objects"][obj_id]["state"] = "dropped"
@@ -1383,7 +1465,7 @@ def execute_aria_action(action: dict) -> dict:
                 return {"status": "error", "message": "Not holding anything"}
 
             obj_id = stage_state["aria"]["held_object"]
-            target = action.get("target", {"x": 70, "y": 40})
+            target = _coerce_and_clamp_position(action.get("target", {"x": 70, "y": 40}), fallback={"x": 70, "y": 40})
             force = action.get("force", "medium")
 
             stage_state["objects"][obj_id]["position"] = target
