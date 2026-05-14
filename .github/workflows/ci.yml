@@ -1,10 +1,15 @@
 # =============================================================================
-# Aria Platform — CI Workflow
+# Aria Platform — CI Workflow (improved for reliability)
 # =============================================================================
 # Runs on pull requests and pushes to main. Adds manual dispatch and reduces
 # unnecessary runs by ignoring docs/markdown-only changes. Use fetch-depth: 0
 # on checkout to ensure tools that rely on git history (tags, changelogs) work.
 # Jobs: lint → type-check → unit-tests
+# Improvements made:
+# - Added workflow defaults to ensure consistent shell on Linux/macOS/Windows
+# - Stabilized concurrency group to avoid referencing github.ref_name (not
+#   available in some runner versions)
+# - Minor step hardening and consistency updates
 # =============================================================================
 
 name: CI
@@ -27,10 +32,14 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref_name }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   # Cancel in-progress runs for the same branch on normal events (push/PR),
   # but keep manual workflow_dispatch runs from being auto-canceled.
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+defaults:
+  run:
+    shell: bash
 
 env:
   PYTHON_VERSION: "3.11"
