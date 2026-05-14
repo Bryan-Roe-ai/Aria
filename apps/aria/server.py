@@ -495,7 +495,13 @@ Rules:
             logger.error(f"LLM parsing failed: {e}")
             raise
 
-    def parse_with_fallback(self, command: str, _allow_split: bool = True, _planned_held_object=_UNSET) -> List[dict]:
+    def parse_with_fallback(
+        self,
+        command: str,
+        _allow_split: bool = True,
+        _planned_held_object=_UNSET,
+        _referenced_object=_UNSET,
+    ) -> List[dict]:
         """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
         actions = []
         command_lower = command.lower()
@@ -503,6 +509,7 @@ Rules:
         planned_held_object = (
             stage_state["aria"].get("held_object") if _planned_held_object is _UNSET else _planned_held_object
         )
+        referenced_object = None if _referenced_object is _UNSET else _referenced_object
 
         # Compound command handling (e.g., "pick up cup and bring it here then put it on table")
         if _allow_split:
@@ -510,18 +517,27 @@ Rules:
             if len(segments) > 1:
                 combined_actions = []
                 current_planned_held = planned_held_object
+                current_referenced_object = referenced_object
                 for seg in segments:
+                    seg_lower = seg.lower()
+                    for obj in known_objects:
+                        if obj in seg_lower:
+                            current_referenced_object = obj
+                            break
                     seg_actions = self.parse_with_fallback(
                         seg,
                         _allow_split=False,
                         _planned_held_object=current_planned_held,
+                        _referenced_object=current_referenced_object,
                     )
                     combined_actions.extend(seg_actions)
 
                     for action in seg_actions:
                         action_type = action.get("action")
                         if action_type == "pickup":
-                            current_planned_held = action.get("object_id", current_planned_held)
+                            picked_obj = action.get("object_id", current_planned_held)
+                            current_planned_held = picked_obj
+                            current_referenced_object = picked_obj
                         elif action_type in ("drop", "throw"):
                             current_planned_held = None
 
@@ -579,10 +595,12 @@ Rules:
         if _contains_any_keyword(command_lower, BRING_IT_KEYWORDS):
             held_obj = planned_held_object
             if not held_obj and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
-                for obj in known_objects:
-                    if obj in command_lower:
-                        held_obj = obj
-                        break
+                held_obj = referenced_object
+                if not held_obj:
+                    for obj in known_objects:
+                        if obj in command_lower:
+                            held_obj = obj
+                            break
             if held_obj:
                 actions.append({"action": "move", "target": {"x": 50, "y": 85}, "speed": "normal"})
                 actions.append({"action": "gesture", "gesture_type": "nod"})
@@ -634,6 +652,17 @@ Rules:
                 actions.append({"action": "move", "target": {"x": 20, "y": 50}, "speed": "normal"})
             elif "right" in command_lower:
                 actions.append({"action": "move", "target": {"x": 80, "y": 50}, "speed": "normal"})
+            else:
+                for obj in known_objects:
+                    if obj in command_lower and obj in stage_state["objects"]:
+                        actions.append(
+                            {
+                                "action": "move",
+                                "target": stage_state["objects"][obj]["position"],
+                                "speed": "normal",
+                            }
+                        )
+                        break
 
         # Parse say commands
         if _contains_any_keyword(command_lower, SAY_KEYWORDS):
@@ -646,13 +675,24 @@ Rules:
                     break
 
         # Parse pickup commands
+        pickup_added = False
         for obj in known_objects:
             if obj in command_lower and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
                 # Move to object first
                 obj_pos = stage_state["objects"][obj]["position"]
                 actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
                 actions.append({"action": "pickup", "object_id": obj})
+                pickup_added = True
                 break
+        if (
+            not pickup_added
+            and _contains_any_keyword(command_lower, PICKUP_KEYWORDS)
+            and "it" in command_lower
+            and referenced_object in stage_state["objects"]
+        ):
+            obj_pos = stage_state["objects"][referenced_object]["position"]
+            actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
+            actions.append({"action": "pickup", "object_id": referenced_object})
 
         # Parse throw commands
         if "throw" in command_lower:
