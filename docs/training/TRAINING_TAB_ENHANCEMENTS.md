@@ -156,14 +156,14 @@ resetForm()             // Reset to defaults
 ### Estimation Algorithms
 
 #### Time Estimate
-```
+```text
 steps_per_epoch = ceil(samples / batch_size)
 total_steps = steps_per_epoch × epochs
 estimated_minutes = ceil((total_steps × 0.5) / 60)
 ```
 
 #### VRAM Estimate
-```
+```text
 base_vram = 3.5 GB (base model)
 lora_vram = (rank / 8) × 0.5 GB
 total_vram = base_vram + lora_vram
@@ -203,7 +203,7 @@ total_vram = base_vram + lora_vram
 8. Click **🚀 Start Training**
 
 ### Configuration Workflow
-```
+```text
 Create config → Save as JSON → Share/backup
                 ↓
 Load config → Modify → Train → Evaluate
