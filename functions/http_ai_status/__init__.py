@@ -106,6 +106,27 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         provider, info = detect_provider(explicit="auto")
+        local_resolution = {
+            "requested_provider": "local",
+            "resolved_provider": None,
+            "resolved_model": None,
+            "provider_class": None,
+            "runtime_backed": False,
+            "error": None,
+        }
+        try:
+            local_provider, local_info = detect_provider(explicit="local")
+            local_resolution.update(
+                {
+                    "resolved_provider": local_info.name,
+                    "resolved_model": local_info.model,
+                    "provider_class": local_provider.__class__.__name__,
+                    "runtime_backed": local_info.name in ("lmstudio", "ollama"),
+                }
+            )
+        except Exception as local_err:  # noqa: BLE001
+            local_resolution["error"] = str(local_err)
+
         temperature = os.getenv("CHAT_TEMPERATURE", "0.7")
         # Known endpoints and assets
         chat_web_html = (repo_root / "chat-web" / "index.html").exists()
@@ -202,6 +223,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         payload = {
             "active_provider": info.name,
             "model": info.model,
+            "local_resolution": local_resolution,
             "env": {
                 "azure_openai": azure_env,
                 "openai": openai_env,

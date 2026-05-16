@@ -316,7 +316,8 @@ class LoraLocalProvider(BaseChatProvider):
 
         adapter_config_path = self.adapter_dir / "adapter_config.json"
         if not adapter_config_path.exists():
-            raise RuntimeError(f"adapter_config.json not found in {self.adapter_dir}")
+            raise RuntimeError(
+                f"adapter_config.json not found in {self.adapter_dir}")
         with open(adapter_config_path, "r", encoding="utf-8") as f:
             adapter_cfg = _json.load(f)
         base_model_id = adapter_cfg.get(
@@ -371,7 +372,7 @@ class LoraLocalProvider(BaseChatProvider):
                 eos_token_id=self.tokenizer.eos_token_id,
             )
         response = self.tokenizer.decode(
-            output[0][inputs["input_ids"].shape[-1] :], skip_special_tokens=True
+            output[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True
         )
         if not stream:
             return response
@@ -385,8 +386,10 @@ class LoraLocalProvider(BaseChatProvider):
 
     def _complete_via_subprocess(self, messages: List[RoleMessage]) -> str:
         if not self.bridge_python:
-            raise RuntimeError("Subprocess bridge not configured for LoRA provider.")
-        bridge_script = Path(__file__).resolve().parent / "lora_infer_bridge.py"
+            raise RuntimeError(
+                "Subprocess bridge not configured for LoRA provider.")
+        bridge_script = Path(__file__).resolve().parent / \
+            "lora_infer_bridge.py"
         if not bridge_script.exists():
             raise RuntimeError(f"Bridge script not found at {bridge_script}")
         payload = {
@@ -408,7 +411,8 @@ class LoraLocalProvider(BaseChatProvider):
         if proc.returncode != 0:
             stderr = proc.stderr.decode("utf-8", errors="ignore")
             stdout = proc.stdout.decode("utf-8", errors="ignore")
-            msg = stderr.strip() or stdout.strip() or f"exit code {proc.returncode}"
+            msg = stderr.strip() or stdout.strip(
+            ) or f"exit code {proc.returncode}"
             # Truncate very long errors but keep start and end
             if len(msg) > 1000:
                 msg = msg[:500] + "\n...\n" + msg[-500:]
@@ -532,7 +536,8 @@ class LocalEchoProvider(BaseChatProvider):
 
         # Check for greetings
         if (
-            any(word in lower_text for word in ["hello", "hi", "hey", "greetings"])
+            any(word in lower_text for word in [
+                "hello", "hi", "hey", "greetings"])
             and len(text) < 50
         ):
             return "greeting"
@@ -589,7 +594,8 @@ class LocalEchoProvider(BaseChatProvider):
             if m.get("role") == "user" and m.get("content", "").strip()
         ]
         topic = (
-            user_topics[0][:120].rstrip(".,?!") if user_topics else "the current task"
+            user_topics[0][:120].rstrip(
+                ".,?!") if user_topics else "the current task"
         )
 
         if "message count exceeded limit" in last_assistant.lower():
@@ -636,7 +642,8 @@ class LocalEchoProvider(BaseChatProvider):
         actionable rather than meaninglessly rephrasing the user's input.
         """
         last_user = next(
-            (m["content"] for m in reversed(messages) if m.get("role") == "user"), ""
+            (m["content"]
+             for m in reversed(messages) if m.get("role") == "user"), ""
         ).strip()
 
         if not last_user:
@@ -1329,22 +1336,18 @@ def detect_provider(
 ) -> tuple[BaseChatProvider, ProviderChoice]:
     """Detect the best provider based on environment variables.
 
-    Priority:
-      1) explicit selection if provided
-      2) LM Studio if LMSTUDIO_BASE_URL is set
-      3) Ollama if OLLAMA_BASE_URL is set
-      4) AGI if selected (advanced reasoning capabilities)
-      5) Quantum if selected
-      6) Azure if all required vars present
-      7) OpenAI if OPENAI_API_KEY is present
-      8) Local fallback
-      9) LoRA if provider is 'lora' and model_override is set
+        Behavior summary:
+            - Explicit mode: uses the requested provider (including AGI/Quantum/LoRA).
+            - Explicit 'local': prefers local runtimes (LM Studio, then Ollama),
+                then falls back to LocalEchoProvider.
+            - Auto mode order: LM Studio -> Ollama -> Azure OpenAI -> OpenAI -> local.
     """
     provider_choice = (explicit or "auto").lower()
     provider_choice = _PROVIDER_ALIASES.get(provider_choice, provider_choice)
 
     # LM Studio config
-    lm_studio_base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
+    lm_studio_base_url = os.getenv(
+        "LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
     lm_studio_model_name = os.getenv("LMSTUDIO_MODEL", "local-model")
 
     # Ollama config
@@ -1384,9 +1387,11 @@ def detect_provider(
             )
             # Recompute settings (import may have failed before they were set).
             temperature_value = float(
-                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7")
+                temperature if temperature is not None else os.getenv(
+                    "CHAT_TEMPERATURE", "0.7")
             )
-            max_tokens_limit = int(max_output_tokens) if max_output_tokens is not None else 2048
+            max_tokens_limit = int(
+                max_output_tokens) if max_output_tokens is not None else 2048
             try:
                 from local_agi_provider import LocalAGIProvider
 
@@ -1439,7 +1444,8 @@ def detect_provider(
 
     if provider_choice == "lora":
         if not model_override:
-            raise RuntimeError("LoRA provider selected but model path not provided.")
+            raise RuntimeError(
+                "LoRA provider selected but model path not provided.")
         temperature_value = float(
             temperature
             if temperature is not None
@@ -1468,7 +1474,8 @@ def detect_provider(
     openai_model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
     temperature_setting = float(
-        temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7")
+        temperature if temperature is not None else os.getenv(
+            "CHAT_TEMPERATURE", "0.7")
     )
 
     # Resolve based on explicit choice first
@@ -1514,7 +1521,8 @@ def detect_provider(
 
     if provider_choice == "openai":
         if not openai_api_key:
-            raise RuntimeError("OpenAI selected but OPENAI_API_KEY is not set.")
+            raise RuntimeError(
+                "OpenAI selected but OPENAI_API_KEY is not set.")
         selected_model = model_override or openai_model_name
         provider = OpenAIProvider(
             model=selected_model,
@@ -1525,6 +1533,28 @@ def detect_provider(
         return provider, ProviderChoice(name="openai", model=selected_model)
 
     if provider_choice == "local":
+        # "local" should prefer actual local-LLM runtimes first, then degrade
+        # to the deterministic local echo provider when no runtime is available.
+        if _check_lm_studio_available(lm_studio_base_url):
+            selected_model = model_override or lm_studio_model_name
+            provider = LMStudioProvider(
+                base_url=lm_studio_base_url,
+                model=selected_model,
+                temperature=temperature_setting,
+                max_output_tokens=max_output_tokens,
+            )
+            return provider, ProviderChoice(name="lmstudio", model=selected_model)
+
+        if _check_ollama_available(ollama_base_url):
+            selected_model = model_override or ollama_model_name
+            provider = OllamaProvider(
+                base_url=ollama_base_url,
+                model=selected_model,
+                temperature=temperature_setting,
+                max_output_tokens=max_output_tokens,
+            )
+            return provider, ProviderChoice(name="ollama", model=selected_model)
+
         selected_model = model_override or "local-echo"
         provider = LocalEchoProvider()
         return provider, ProviderChoice(name="local", model=selected_model)
