@@ -87,6 +87,16 @@ jobs:
             python -m pip install pytest
           fi
 
+      - name: Install dependencies (lmstudio-provider)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -f extensions/lmstudio-provider/package.json ]]; then
+            npm ci --prefix ./extensions/lmstudio-provider
+          else
+            echo "::notice::No package.json at extensions/lmstudio-provider; skipping npm ci"
+          fi
+
       - name: Cache pre-commit hooks
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809  # v4.2.0
         with:
@@ -95,7 +105,7 @@ jobs:
           restore-keys: |
             pre-commit-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-
 
-      - name: Run pre-commit (changed files only)
+      - name: Run pre-commit
         shell: bash
         run: |
           set -euo pipefail
@@ -103,19 +113,7 @@ jobs:
             echo "::notice::pre-commit not installed; skipping"
             exit 0
           fi
-          # Run only on files changed in this PR/push to avoid blocking CI on
-          # pre-existing lint violations in the repository. Once `ruff check .`
-          # reports zero violations this guard can be replaced with
-          # `pre-commit run --all-files`.
-          BASE_SHA="${{ github.event.pull_request.base.sha || github.event.before }}"
-          HEAD_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
-          if [[ -n "${BASE_SHA}" && "${BASE_SHA}" != "0000000000000000000000000000000000000000" ]] \
-              && git cat-file -e "${BASE_SHA}" 2>/dev/null; then
-            pre-commit run --show-diff-on-failure --color=always \
-              --from-ref "${BASE_SHA}" --to-ref "${HEAD_SHA}"
-          else
-            echo "::notice::Base ref not available locally; skipping pre-commit to avoid blocking on existing violations."
-          fi
+          pre-commit run --all-files --show-diff-on-failure --color=always
 
       - name: Run tests
         uses: ./.github/actions/run-pytest-suite
