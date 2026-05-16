@@ -104,12 +104,12 @@ jobs:
 
             # Inline basic yamllint config: prefer warnings for long lines
             yamllint -c <(cat <<'YAML'
-extends: default
-rules:
-  line-length:
-    max: 140
-    level: warning
-YAML
+          extends: default
+          rules:
+            line-length:
+              max: 140
+              level: warning
+          YAML
             ) "${yaml_files[@]}" || true
           else
             echo "No YAML files found under .github to lint."
@@ -211,16 +211,16 @@ YAML
             echo "RECOMMENDATION: add a .github/copilot.yml to control Copilot settings for this repo." >> "$REPORT"
             cat >> "$REPORT" <<'YAML'
 
-Example minimal .github/copilot.yml:
-# Opt-in per-repo Copilot configuration. Adjust to your repo needs.
+          Example minimal .github/copilot.yml:
+          # Opt-in per-repo Copilot configuration. Adjust to your repo needs.
 
-copilot:
-  code-suggestions: enabled
-  chat: enabled
-  file-exclusions:
-    - path: "data/"
-    - path: "models/"
-YAML
+          copilot:
+            code-suggestions: enabled
+            chat: enabled
+            file-exclusions:
+              - path: "data/"
+              - path: "models/"
+          YAML
           fi
 
           # Export report location as a step output via GITHUB_OUTPUT (preferred)
