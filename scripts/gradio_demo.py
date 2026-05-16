@@ -23,8 +23,8 @@ try:
 except Exception:
     fcntl = None
 
-# Module-level flag to cancel streaming responses
-CANCEL_STREAM = False
+# Request-scoped cancellation tokens are stored in a Gradio State (request_tokens) instead of a module-global flag.
+# See respond() and cancel_stream() implementations for details.
 
 
 # Simple theme CSS snippets (injected into the page)
@@ -439,22 +439,40 @@ with gr.Blocks() as demo:
         hist_state = gr.State(initial_hist_state)
 
         suggestions_state = gr.State([])
+        request_tokens = gr.State({"latest": None, "tokens": {}})
 
         # ------------------------------------------------------------------
         # Actions / Callbacks
         # ------------------------------------------------------------------
-        def respond(user_message, chat_history, hist_state, use_model, provider_choice, model_override_val, temperature_val, max_output_tokens_val, lang, persona_val, autosave, max_history, session_name):
+        def respond(user_message, chat_history, hist_state, use_model, provider_choice, model_override_val, temperature_val, max_output_tokens_val, lang, persona_val, autosave, max_history, session_name, request_tokens=None):
             """Respond and stream updates. Returns (chat_history, cleared_input, hist_state, provider_info, status)."""
             chat_history = chat_history or []
             hist_state = hist_state or []
             if not user_message or not str(user_message).strip():
+                if request_tokens:
+                    return chat_history, "", hist_state, "", "Idle", request_tokens
                 return chat_history, "", hist_state, "", "Idle"
 
             user_message = str(user_message).strip()
             user_ts = timestamp_now()
-            # reset cancel flag for this request
-            global CANCEL_STREAM
-            CANCEL_STREAM = False
+            # Create a request-scoped cancellation token only when request_tokens state is provided
+            token_event = None
+            token_id = None
+            if request_tokens is not None:
+                token_event = threading.Event()
+                token_id = str(time.time())
+                # request_tokens is a gr.State dict like {"latest": id, "tokens": {id: Event}}
+                try:
+                    req_tokens = request_tokens or {"latest": None, "tokens": {}}
+                    tokens_map = req_tokens.get("tokens", {})
+                    tokens_map[token_id] = token_event
+                    req_tokens["tokens"] = tokens_map
+                    req_tokens["latest"] = token_id
+                    request_tokens = req_tokens
+                except Exception:
+                    # fallback: no cancel support for this request
+                    token_event = None
+                    token_id = None
 
             # Build provider-friendly history
             messages = []
@@ -490,6 +508,8 @@ with gr.Blocks() as demo:
                         save_conversation_json(hist_state, session_name or "session")
                     except Exception:
                         pass
+                if request_tokens:
+                    return chat_history, "", hist_state, provider_display, "Idle", request_tokens
                 return chat_history, "", hist_state, provider_display, "Idle"
 
             # Try using repo providers if available
@@ -529,6 +549,8 @@ with gr.Blocks() as demo:
                         save_conversation_json(hist_state, session_name or "session")
                     except Exception:
                         pass
+                if request_tokens:
+                    return chat_history, "", hist_state, provider_display, "Idle", request_tokens
                 return chat_history, "", hist_state, provider_display, "Idle"
 
             # Initial UI placeholder and streaming status
@@ -537,7 +559,10 @@ with gr.Blocks() as demo:
             chat_history = chat_history + [(display_user, display_assistant)]
 
             # Yield initial state (client will show 'Streaming...')
-            yield chat_history, "", hist_state, provider_display, "Streaming..."
+            if request_tokens:
+                yield chat_history, "", hist_state, provider_display, "Streaming...", request_tokens
+            else:
+                yield chat_history, "", hist_state, provider_display, "Streaming..."
 
             partial = ""
             try:
@@ -545,7 +570,7 @@ with gr.Blocks() as demo:
                 if hasattr(stream_resp, "__iter__") and not isinstance(stream_resp, str):
                     for chunk in stream_resp:
                         # allow external cancel
-                        if CANCEL_STREAM:
+                        if token_event is not None and token_event.is_set():
                             partial += "\n\n[Cancelled]"
                             display_assistant = f"{partial}\n\n[{timestamp_now()}]"
                             chat_history[-1] = (display_user, display_assistant)
@@ -564,13 +589,26 @@ with gr.Blocks() as demo:
                                         pass
                             except Exception:
                                 pass
-                            yield chat_history, "", hist_state, provider_display, "Cancelled"
+                            # cleanup token
+                            try:
+                                if token_id and isinstance(request_tokens, dict):
+                                    request_tokens.get("tokens", {}).pop(token_id, None)
+                                    request_tokens["latest"] = None
+                            except Exception:
+                                pass
+                            if request_tokens:
+                                yield chat_history, "", hist_state, provider_display, "Cancelled", request_tokens
+                            else:
+                                yield chat_history, "", hist_state, provider_display, "Cancelled"
                             break
                         chunk_text = str(chunk) if chunk is not None else ""
                         partial += chunk_text
                         display_assistant = f"{partial}\n\n[{timestamp_now()}]"
                         chat_history[-1] = (display_user, display_assistant)
-                        yield chat_history, "", hist_state, provider_display, "Streaming..."
+                        if request_tokens:
+                            yield chat_history, "", hist_state, provider_display, "Streaming...", request_tokens
+                        else:
+                            yield chat_history, "", hist_state, provider_display, "Streaming..."
                 else:
                     partial = str(stream_resp)
             except Exception as e:
@@ -583,6 +621,9 @@ with gr.Blocks() as demo:
                         save_conversation_json(hist_state, session_name or "session")
                     except Exception:
                         pass
+                if request_tokens:
+                    yield chat_history, "", hist_state, provider_display, "Idle", request_tokens
+                    return
                 yield chat_history, "", hist_state, provider_display, "Idle"
                 return
 
@@ -604,29 +645,47 @@ with gr.Blocks() as demo:
                     save_conversation_json(hist_state, session_name or "session")
                 except Exception:
                     pass
+            if request_tokens:
+                yield chat_history, "", hist_state, provider_display, "Idle", request_tokens
+                return
             yield chat_history, "", hist_state, provider_display, "Idle"
             return
 
         # Wire send button and Enter key (submit)
         send_btn.click(
             respond,
-            inputs=[user_input, chatbot, hist_state, use_model, provider_select, model_override, temperature, max_output_tokens, language, persona, autosave, max_history, session_name],
-            outputs=[chatbot, user_input, hist_state, provider_info, status],
+            inputs=[user_input, chatbot, hist_state, use_model, provider_select, model_override, temperature, max_output_tokens, language, persona, autosave, max_history, session_name, request_tokens],
+            outputs=[chatbot, user_input, hist_state, provider_info, status, request_tokens],
             queue=True,
         )
         user_input.submit(
             respond,
-            inputs=[user_input, chatbot, hist_state, use_model, provider_select, model_override, temperature, max_output_tokens, language, persona, autosave, max_history, session_name],
-            outputs=[chatbot, user_input, hist_state, provider_info, status],
+            inputs=[user_input, chatbot, hist_state, use_model, provider_select, model_override, temperature, max_output_tokens, language, persona, autosave, max_history, session_name, request_tokens],
+            outputs=[chatbot, user_input, hist_state, provider_info, status, request_tokens],
             queue=True,
         )
 
-        def cancel_stream():
-            global CANCEL_STREAM
-            CANCEL_STREAM = True
-            return "Cancelled"
+        def cancel_stream(request_tokens):
+            """Cancel the latest active streaming request if present."""
+            try:
+                if request_tokens and isinstance(request_tokens, dict):
+                    lid = request_tokens.get("latest")
+                    if lid:
+                        tok = request_tokens.get("tokens", {}).get(lid)
+                        if tok:
+                            try:
+                                tok.set()
+                            except Exception:
+                                pass
+                            # cleanup
+                            request_tokens.get("tokens", {}).pop(lid, None)
+                            request_tokens["latest"] = None
+                            return "Cancelled"
+            except Exception:
+                pass
+            return "No active stream"
 
-        cancel_btn.click(cancel_stream, outputs=[status])
+        cancel_btn.click(cancel_stream, inputs=[request_tokens], outputs=[status, request_tokens])
 
         def apply_persona(preset, persona_field):
             if not preset:
