@@ -62,6 +62,13 @@ def _normalize_provider_priority(value: object) -> List[str]:
     return ["azure", "openai", "lmstudio", "local"]
 
 
+def _provider_priority_field():
+    return Field(
+        default_factory=lambda: ["azure", "openai", "lmstudio", "local"],
+        alias="QAI_PROVIDER_PRIORITY",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Settings definition
 # ---------------------------------------------------------------------------
@@ -103,15 +110,9 @@ if _PYDANTIC_AVAILABLE:
         # Provider selection
         # ------------------------------------------------------------------
         if _NoDecode is not None:
-            provider_priority: Annotated[List[str], _NoDecode] = Field(  # type: ignore[valid-type]
-                default_factory=lambda: ["azure", "openai", "lmstudio", "local"],
-                alias="QAI_PROVIDER_PRIORITY",
-            )
+            provider_priority: Annotated[List[str], _NoDecode] = _provider_priority_field()  # type: ignore[valid-type]
         else:
-            provider_priority: List[str] = Field(
-                default_factory=lambda: ["azure", "openai", "lmstudio", "local"],
-                alias="QAI_PROVIDER_PRIORITY",
-            )
+            provider_priority: List[str] = _provider_priority_field()
 
         # ------------------------------------------------------------------
         # Database
@@ -269,8 +270,8 @@ else:
             )
             self.openai_api_key = os.environ.get("OPENAI_API_KEY")
             self.lmstudio_base_url = os.environ.get("LMSTUDIO_BASE_URL")
-            self.provider_priority = os.environ.get(
-                "QAI_PROVIDER_PRIORITY", "azure,openai,lmstudio,local"
+            self.provider_priority = _normalize_provider_priority(
+                os.environ.get("QAI_PROVIDER_PRIORITY", "azure,openai,lmstudio,local")
             )
             self.db_connection_string = os.environ.get("QAI_DB_CONN")
             self.sql_pool_size = int(os.environ.get("QAI_SQL_POOL_SIZE", "10"))
