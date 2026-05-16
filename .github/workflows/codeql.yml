@@ -229,7 +229,7 @@ paths-ignore:
 
 # Do NOT add `paths:` — leaving it unset means "scan everything not
 # explicitly ignored", which maximizes coverage.
-YAML
+
             echo "Wrote default .github/codeql/codeql-config.yml"
           else
             echo "Using committed .github/codeql/codeql-config.yml"
