@@ -135,9 +135,7 @@ class MasterOrchestrator:
     def _ensure_dirs(self):
         DATA_OUT.mkdir(parents=True, exist_ok=True)
 
-    def run_orchestrator(
-        self, name: str, flags: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+    def run_orchestrator(self, name: str, flags: Dict[str, Any] = None) -> Dict[str, Any]:
         """Run a single orchestrator."""
         if name not in self.orchestrators:
             return {"status": "error", "message": f"Unknown orchestrator: {name}"}
@@ -365,9 +363,7 @@ class MasterOrchestrator:
         signal.signal(signal.SIGTERM, signal_handler)
 
         while self.running:
-            print(
-                f"[master] Health check at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            )
+            print(f"[master] Health check at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
             # Check scheduled workflows
             for wf_name, wf in self.workflows.items():
@@ -538,18 +534,12 @@ def main():
     ap.add_argument("--config", default=str(CONFIG_FILE), help="Config file path")
     ap.add_argument("--workflow", help="Run a specific workflow")
     ap.add_argument("--orchestrator", help="Run a specific orchestrator")
-    ap.add_argument(
-        "--list-orchestrators", action="store_true", help="List all orchestrators"
-    )
+    ap.add_argument("--list-orchestrators", action="store_true", help="List all orchestrators")
     ap.add_argument("--list-workflows", action="store_true", help="List all workflows")
     ap.add_argument("--status", action="store_true", help="Show current status")
     ap.add_argument("--daemon", action="store_true", help="Run in daemon mode")
-    ap.add_argument(
-        "--check-interval", type=int, default=60, help="Daemon check interval (seconds)"
-    )
-    ap.add_argument(
-        "--skip-validation", action="store_true", help="Skip config validation (unsafe)"
-    )
+    ap.add_argument("--check-interval", type=int, default=60, help="Daemon check interval (seconds)")
+    ap.add_argument("--skip-validation", action="store_true", help="Skip config validation (unsafe)")
     args = ap.parse_args()
 
     config_path = Path(args.config)

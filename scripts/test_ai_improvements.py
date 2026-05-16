@@ -8,17 +8,11 @@ from pathlib import Path
 if "pytest" in sys.modules:
     import pytest
 
-    pytestmark = pytest.mark.skip(
-        reason="script-style improvement demo is environment-dependent"
-    )
+    pytestmark = pytest.mark.skip(reason="script-style improvement demo is environment-dependent")
 
 # Add project paths
-sys.path.insert(
-    0, str(Path(__file__).parent.parent / "ai-projects" / "quantum-ml" / "src")
-)
-sys.path.insert(
-    0, str(Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src")
-)
+sys.path.insert(0, str(Path(__file__).parent.parent / "ai-projects" / "quantum-ml" / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src"))
 
 
 def test_quantum_improvements():
@@ -134,12 +128,7 @@ def test_training_improvements():
         # Import the improved function
         sys.path.insert(
             0,
-            str(
-                Path(__file__).parent.parent
-                / "AI"
-                / "microsoft_phi-silica-3.6_v1"
-                / "scripts"
-            ),
+            str(Path(__file__).parent.parent / "AI" / "microsoft_phi-silica-3.6_v1" / "scripts"),
         )
         from train_lora import build_text_from_messages
 

@@ -62,9 +62,7 @@ def run_chat_once(
     logging.info("Running chat CLI: %s", " ".join(cmd))
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     if proc.returncode != 0:
-        raise RuntimeError(
-            f"chat_cli failed (exit {proc.returncode}): {proc.stderr.strip() or 'no stderr'}"
-        )
+        raise RuntimeError(f"chat_cli failed (exit {proc.returncode}): {proc.stderr.strip() or 'no stderr'}")
 
     raw_output = proc.stdout
 

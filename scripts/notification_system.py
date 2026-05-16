@@ -21,9 +21,7 @@ class NotificationManager:
                 self.toaster = ToastNotifier()
                 return True
             except ImportError:
-                print(
-                    "Warning: win10toast not installed. Install with: pip install win10toast"
-                )
+                print("Warning: win10toast not installed. Install with: pip install win10toast")
                 return False
         elif self.system == "Darwin":  # macOS
             return True  # Uses osascript
@@ -31,9 +29,7 @@ class NotificationManager:
             return True  # Uses notify-send
         return False
 
-    def send_notification(
-        self, title: str, message: str, icon: str = "info", duration: int = 10
-    ):
+    def send_notification(self, title: str, message: str, icon: str = "info", duration: int = 10):
         """Send cross-platform desktop notification"""
         if not self.enabled:
             print(f"[Notification] {title}: {message}")
@@ -68,30 +64,16 @@ class NotificationManager:
         """Send macOS notification using osascript"""
         # For AppleScript strings, we need to escape backslashes and double quotes
         # Also replace newlines (\n and \r) with spaces to prevent script injection
-        safe_title = (
-            title.replace("\\", "\\\\")
-            .replace('"', '\\"')
-            .replace("\n", " ")
-            .replace("\r", " ")
-        )
-        safe_message = (
-            message.replace("\\", "\\\\")
-            .replace('"', '\\"')
-            .replace("\n", " ")
-            .replace("\r", " ")
-        )
+        safe_title = title.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ").replace("\r", " ")
+        safe_message = message.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ").replace("\r", " ")
 
         script = f'display notification "{safe_message}" with title "{safe_title}"'
         try:
             # Using subprocess with list arguments prevents shell injection
             # The script is passed as a single argument to osascript -e
-            result = subprocess.run(
-                ["osascript", "-e", script], capture_output=True, text=True, timeout=5
-            )
+            result = subprocess.run(["osascript", "-e", script], capture_output=True, text=True, timeout=5)
             if result.returncode != 0:
-                print(
-                    f"macOS notification warning: osascript returned {result.returncode}, stderr: {result.stderr}"
-                )
+                print(f"macOS notification warning: osascript returned {result.returncode}, stderr: {result.stderr}")
         except subprocess.TimeoutExpired:
             print("macOS notification error: osascript timed out")
         except FileNotFoundError:
@@ -119,9 +101,7 @@ class NotificationManager:
                 timeout=5,
             )
             if result.returncode != 0:
-                print(
-                    f"Linux notification warning: notify-send returned {result.returncode}, stderr: {result.stderr}"
-                )
+                print(f"Linux notification warning: notify-send returned {result.returncode}, stderr: {result.stderr}")
         except subprocess.TimeoutExpired:
             print("Linux notification error: notify-send timed out")
         except FileNotFoundError:
@@ -216,7 +196,7 @@ class TrainingNotifier:
                 continue
 
             try:
-                with open(status_file, "r") as f:
+                with open(status_file) as f:
                     status = json.load(f)
 
                 if not job_started and status.get("status") == "running":
@@ -234,23 +214,16 @@ class TrainingNotifier:
                         current_loss,
                     )
 
-                if (
-                    current_epoch > 0
-                    and current_epoch % self.milestones["epoch_interval"] == 0
-                ):
+                if current_epoch > 0 and current_epoch % self.milestones["epoch_interval"] == 0:
                     if current_epoch != last_epoch:
-                        self.notifier.notify_milestone(
-                            job_name, f"Epoch {current_epoch} complete", current_loss
-                        )
+                        self.notifier.notify_milestone(job_name, f"Epoch {current_epoch} complete", current_loss)
                         last_epoch = current_epoch
 
                 # Check if completed
                 if status.get("status") == "completed":
                     duration_min = status.get("duration_sec", 0) // 60
                     final_loss = status.get("final_loss", 0)
-                    self.notifier.notify_job_completed(
-                        job_name, duration_min, final_loss
-                    )
+                    self.notifier.notify_job_completed(job_name, duration_min, final_loss)
                     break
 
                 elif status.get("status") == "failed":
@@ -271,9 +244,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="QAI Notification System")
     parser.add_argument("--test", action="store_true", help="Send test notification")
     parser.add_argument("--monitor", help="Monitor job status file")
-    parser.add_argument(
-        "--job-name", default="Test Job", help="Job name for monitoring"
-    )
+    parser.add_argument("--job-name", default="Test Job", help="Job name for monitoring")
 
     args = parser.parse_args()
 

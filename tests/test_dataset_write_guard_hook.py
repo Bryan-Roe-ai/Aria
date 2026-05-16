@@ -16,13 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "dataset_write_guard.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "dataset_write_guard.py"
 
 
 def _run_hook(payload: str | dict, *, event: str) -> subprocess.CompletedProcess[str]:

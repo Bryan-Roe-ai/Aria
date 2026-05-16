@@ -11,7 +11,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "shared"))
 
 from config_validator import ValidationError  # noqa: E402
-from config_validator import ConfigValidator, ValidationResult
+from config_validator import (
+    ConfigValidator,
+    ValidationResult,
+)
 
 
 class TestConfigValidator:
@@ -25,17 +28,13 @@ class TestConfigValidator:
     def test_valid_master_orchestrator(self, validator):
         """Test validation of master_orchestrator.yaml."""
         result = validator.validate_master()
-        assert (
-            result.valid
-        ), f"Master config should be valid: {result.report(verbose=True)}"
+        assert result.valid, f"Master config should be valid: {result.report(verbose=True)}"
         assert not result.errors
 
     def test_valid_autonomous_training(self, validator):
         """Test validation of autonomous_training.yaml."""
         result = validator.validate_autonomous_training()
-        assert (
-            result.valid
-        ), f"Autonomous training config should be valid: {result.report(verbose=True)}"
+        assert result.valid, f"Autonomous training config should be valid: {result.report(verbose=True)}"
         assert not result.errors
 
     def test_missing_file(self, validator):
@@ -68,10 +67,7 @@ class TestConfigValidator:
         try:
             result = validator.validate_file(temp_path)
             assert not result.valid
-            assert any(
-                e.rule == "required_field" and "name" in e.message
-                for e in result.errors
-            )
+            assert any(e.rule == "required_field" and "name" in e.message for e in result.errors)
         finally:
             temp_path.unlink()
 
@@ -85,19 +81,14 @@ class TestConfigValidator:
         try:
             result = validator.validate_file(temp_path)
             assert not result.valid
-            assert any(
-                e.rule == "required_field" and "script" in e.message
-                for e in result.errors
-            )
+            assert any(e.rule == "required_field" and "script" in e.message for e in result.errors)
         finally:
             temp_path.unlink()
 
     def test_script_not_found(self, validator):
         """Test validation detects non-existent script."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                "orchestrators:\n  - name: test\n    script: /nonexistent/test.py\n    enabled: true\n"
-            )
+            f.write("orchestrators:\n  - name: test\n    script: /nonexistent/test.py\n    enabled: true\n")
             f.flush()
             temp_path = Path(f.name)
 
@@ -245,10 +236,7 @@ workflows:
         try:
             result = validator.validate_file(temp_path)
             assert not result.valid
-            assert any(
-                e.rule == "field_type" and "priority" in e.message
-                for e in result.errors
-            )
+            assert any(e.rule == "field_type" and "priority" in e.message for e in result.errors)
         finally:
             temp_path.unlink()
 
@@ -271,9 +259,7 @@ class TestConfigValidatorIntegration:
         from config_validator import validate_configs_before_daemon
 
         # Should not exit (exit_on_error=False)
-        all_valid, results = validate_configs_before_daemon(
-            repo_root=REPO_ROOT, exit_on_error=False, verbose=False
-        )
+        all_valid, results = validate_configs_before_daemon(repo_root=REPO_ROOT, exit_on_error=False, verbose=False)
 
         assert len(results) >= 2  # At least master + autonomous_training
         # Current configs should be valid

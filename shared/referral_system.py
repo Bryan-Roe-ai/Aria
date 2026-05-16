@@ -152,9 +152,7 @@ class ReferralSystem:
         data = self.referrals_data[user_id]
 
         # Calculate active referrals
-        active_referrals = [
-            r for r in data.get("referrals", []) if r["status"] == "active"
-        ]
+        active_referrals = [r for r in data.get("referrals", []) if r["status"] == "active"]
 
         # Next milestone
         next_milestone = None
@@ -300,7 +298,7 @@ class ReferralSystem:
         """Load referrals from file"""
         if self.referrals_file.exists():
             try:
-                with open(self.referrals_file, "r") as f:
+                with open(self.referrals_file) as f:
                     return json.load(f)
             except Exception as e:
                 logger.error(f"Failed to load referrals: {str(e)}")

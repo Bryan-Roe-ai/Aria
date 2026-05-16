@@ -136,13 +136,9 @@ def discover_datasets():
             return
         for category_dir in root.iterdir():
             if category_dir.is_dir():
-                files = list(category_dir.glob("**/train.json")) + list(
-                    category_dir.glob("**/train.jsonl")
-                )
+                files = list(category_dir.glob("**/train.json")) + list(category_dir.glob("**/train.jsonl"))
                 if files:
-                    key = (
-                        f"{prefix}{category_dir.name}" if prefix else category_dir.name
-                    )
+                    key = f"{prefix}{category_dir.name}" if prefix else category_dir.name
                     inventory[key] = {
                         "count": len(files),
                         "paths": [str(f.relative_to(REPO_ROOT)) for f in files],
@@ -163,9 +159,7 @@ def _accuracy_cap(dataset_count: int) -> float:
     return min(base + bonus, 0.995)
 
 
-def simulate_training_cycle(
-    cycle_num, accuracy_baseline=0.65, plateau_cycles=0
-) -> dict:
+def simulate_training_cycle(cycle_num, accuracy_baseline=0.65, plateau_cycles=0) -> dict:
     """Simulate a training cycle with performance metrics.
 
     After the plateau sets in, slight variance is added so the accuracy
@@ -188,9 +182,7 @@ def simulate_training_cycle(
     cap = _accuracy_cap(n_cats)
 
     # Growth phase: standard sigmoid-like ramp toward cap
-    cycle_accuracy = (
-        accuracy_baseline + (cycle_num * 0.02) + (0.05 * (1 - (cycle_num * 0.1)))
-    )
+    cycle_accuracy = accuracy_baseline + (cycle_num * 0.02) + (0.05 * (1 - (cycle_num * 0.1)))
     cycle_accuracy = min(cycle_accuracy, cap)
 
     # Post-plateau: add realistic noise so it isn't frozen
@@ -277,17 +269,13 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
             save_heartbeat("training", current_cycle=cycle_num + 1)
 
             # Run training cycle (pass plateau_cycles for noise injection)
-            result = simulate_training_cycle(
-                cycle_num + 1, plateau_cycles=status["plateau_cycles"]
-            )
+            result = simulate_training_cycle(cycle_num + 1, plateau_cycles=status["plateau_cycles"])
 
             # Update status
             status["cycles_completed"] = cycle_num + 1
             status["performance_history"].append(result)
             if len(status["performance_history"]) > MAX_HISTORY_CYCLES:
-                status["performance_history"] = status["performance_history"][
-                    -MAX_HISTORY_CYCLES:
-                ]
+                status["performance_history"] = status["performance_history"][-MAX_HISTORY_CYCLES:]
 
             prev_best = status["best_accuracy"]
             if result["accuracy"] > status["best_accuracy"]:
@@ -303,13 +291,8 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
                 )
 
             # Auto-promotion: stable at peak for N cycles → deploy
-            if (
-                status["plateau_cycles"] > 0
-                and status["plateau_cycles"] % PLATEAU_PROMOTION_CYCLES == 0
-            ):
-                logger.info(
-                    f"📦 Plateau reached {status['plateau_cycles']} stable cycles — promoting model..."
-                )
+            if status["plateau_cycles"] > 0 and status["plateau_cycles"] % PLATEAU_PROMOTION_CYCLES == 0:
+                logger.info(f"📦 Plateau reached {status['plateau_cycles']} stable cycles — promoting model...")
                 promote_model(status)
                 promotion_record = {
                     "version": len(status["promotions"]) + 1,
@@ -329,9 +312,7 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
             if not infinite_mode and end_cycle is not None and cycle_num >= end_cycle:
                 status["next_cycle_eta"] = None
             else:
-                status["next_cycle_eta"] = (
-                    datetime.now() + timedelta(seconds=cycle_interval_sec)
-                ).isoformat()
+                status["next_cycle_eta"] = (datetime.now() + timedelta(seconds=cycle_interval_sec)).isoformat()
             save_status(status)
             save_heartbeat(
                 "running",
@@ -364,9 +345,7 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
             # Print performance history
             logger.info("\n📊 Performance History:")
             for h in status["performance_history"][-20:]:
-                logger.info(
-                    f"  Cycle {h['cycle']}: accuracy={h['accuracy']:.4f}, samples={h['samples_processed']}"
-                )
+                logger.info(f"  Cycle {h['cycle']}: accuracy={h['accuracy']:.4f}, samples={h['samples_processed']}")
 
             return 0
 
@@ -385,9 +364,7 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
         status["error"] = str(e)
         status["next_cycle_eta"] = None
         save_status(status)
-        save_heartbeat(
-            "error", current_cycle=status.get("cycles_completed", 0), error=str(e)
-        )
+        save_heartbeat("error", current_cycle=status.get("cycles_completed", 0), error=str(e))
         return 1
 
 
@@ -395,15 +372,9 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Autonomous training orchestrator")
-    parser.add_argument(
-        "--cycles", type=int, default=3, help="Number of training cycles (0 = infinite)"
-    )
-    parser.add_argument(
-        "--interval", type=int, default=10, help="Seconds between cycles"
-    )
-    parser.add_argument(
-        "--status", action="store_true", help="Show current status and exit"
-    )
+    parser.add_argument("--cycles", type=int, default=3, help="Number of training cycles (0 = infinite)")
+    parser.add_argument("--interval", type=int, default=10, help="Seconds between cycles")
+    parser.add_argument("--status", action="store_true", help="Show current status and exit")
     parser.add_argument(
         "--compact-status",
         action="store_true",

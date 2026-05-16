@@ -32,7 +32,7 @@ from scripts.training.train_vision import FolderDataset, TinyConvNet
 # ---------------------------------------------------------------------------
 
 
-def _load_checkpoint(checkpoint_path: Path, device: "torch.device"):
+def _load_checkpoint(checkpoint_path: Path, device: torch.device):
     """Load a TinyConvNet checkpoint and return (model, classes, img_size)."""
     ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
 
@@ -62,7 +62,7 @@ def evaluate(
     img_size: int = 64,
     batch_size: int = 32,
     show_examples: int = 0,
-    device: Optional["torch.device"] = None,
+    device: Optional[torch.device] = None,
 ) -> dict:
     """Run evaluation and write results.json; returns the results dict."""
     if device is None:
@@ -97,9 +97,7 @@ def evaluate(
     per_class: dict[str, dict] = {}
     for cls_idx, cls_name in enumerate(ds.classes):
         cls_total = sum(1 for l in all_labels if l == cls_idx)
-        cls_correct = sum(
-            1 for p, l in zip(all_preds, all_labels) if l == cls_idx and p == l
-        )
+        cls_correct = sum(1 for p, l in zip(all_preds, all_labels) if l == cls_idx and p == l)
         per_class[cls_name] = {
             "total": cls_total,
             "correct": cls_correct,
@@ -123,16 +121,8 @@ def evaluate(
             examples.append(
                 {
                     "index": i,
-                    "predicted": (
-                        ds.classes[all_preds[i]]
-                        if all_preds[i] < len(ds.classes)
-                        else str(all_preds[i])
-                    ),
-                    "actual": (
-                        ds.classes[all_labels[i]]
-                        if all_labels[i] < len(ds.classes)
-                        else str(all_labels[i])
-                    ),
+                    "predicted": (ds.classes[all_preds[i]] if all_preds[i] < len(ds.classes) else str(all_preds[i])),
+                    "actual": (ds.classes[all_labels[i]] if all_labels[i] < len(ds.classes) else str(all_labels[i])),
                     "confidence": all_confs[i],
                 }
             )
@@ -142,9 +132,7 @@ def evaluate(
     results_path = out_dir / "results.json"
     with open(results_path, "w", encoding="utf-8") as fh:
         json.dump(results, fh, indent=2)
-    print(
-        f"[evaluate_vision] accuracy={accuracy:.3f} ({correct}/{total}) → {results_path}"
-    )
+    print(f"[evaluate_vision] accuracy={accuracy:.3f} ({correct}/{total}) → {results_path}")
     return results
 
 
@@ -155,12 +143,8 @@ def evaluate(
 
 def run_eval(args: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate a TinyConvNet checkpoint")
-    parser.add_argument(
-        "--checkpoint", required=True, help="Path to .pt checkpoint file"
-    )
-    parser.add_argument(
-        "--dataset", required=True, help="Path to dataset root directory"
-    )
+    parser.add_argument("--checkpoint", required=True, help="Path to .pt checkpoint file")
+    parser.add_argument("--dataset", required=True, help="Path to dataset root directory")
     parser.add_argument("--out-dir", default="data_out/vision_eval")
     parser.add_argument("--img-size", type=int, default=64)
     parser.add_argument("--batch-size", type=int, default=32)

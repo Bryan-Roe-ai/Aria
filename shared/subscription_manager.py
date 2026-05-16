@@ -247,7 +247,7 @@ class SubscriptionManager:
         try:
             subscription_file = self.storage_path / "subscriptions.json"
             if subscription_file.exists():
-                with open(subscription_file, "r") as f:
+                with open(subscription_file) as f:
                     data = json.load(f)
                     for user_id, sub_data in data.items():
                         tier = SubscriptionTier(sub_data.get("tier", "free"))
@@ -255,25 +255,17 @@ class SubscriptionManager:
                             user_id=user_id,
                             tier=tier,
                             start_date=(
-                                datetime.fromisoformat(sub_data["start_date"])
-                                if sub_data.get("start_date")
-                                else None
+                                datetime.fromisoformat(sub_data["start_date"]) if sub_data.get("start_date") else None
                             ),
                             end_date=(
-                                datetime.fromisoformat(sub_data["end_date"])
-                                if sub_data.get("end_date")
-                                else None
+                                datetime.fromisoformat(sub_data["end_date"]) if sub_data.get("end_date") else None
                             ),
                             payment_method=sub_data.get("payment_method"),
-                            stripe_subscription_id=sub_data.get(
-                                "stripe_subscription_id"
-                            ),
+                            stripe_subscription_id=sub_data.get("stripe_subscription_id"),
                         )
                         sub.usage = sub_data.get("usage", sub.usage)
                         if sub_data.get("usage_reset_date"):
-                            sub.usage_reset_date = datetime.fromisoformat(
-                                sub_data["usage_reset_date"]
-                            )
+                            sub.usage_reset_date = datetime.fromisoformat(sub_data["usage_reset_date"])
                         self.subscriptions[user_id] = sub
         except Exception as e:
             logger.error(f"Failed to load subscriptions: {e}")
@@ -282,9 +274,7 @@ class SubscriptionManager:
         """Save subscriptions to storage"""
         try:
             subscription_file = self.storage_path / "subscriptions.json"
-            data = {
-                user_id: sub.to_dict() for user_id, sub in self.subscriptions.items()
-            }
+            data = {user_id: sub.to_dict() for user_id, sub in self.subscriptions.items()}
             with open(subscription_file, "w") as f:
                 json.dump(data, f, indent=2)
         except Exception as e:

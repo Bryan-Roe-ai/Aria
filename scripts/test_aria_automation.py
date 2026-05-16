@@ -10,9 +10,7 @@ from pathlib import Path
 if "pytest" in sys.modules:
     import pytest
 
-    pytestmark = pytest.mark.skip(
-        reason="script-style automation smoke checks are environment-dependent"
-    )
+    pytestmark = pytest.mark.skip(reason="script-style automation smoke checks are environment-dependent")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GREEN = "\033[92m"
@@ -81,9 +79,7 @@ def check_script_help(script_path):
             timeout=5,
             text=True,
         )
-        if result.returncode == 0 and (
-            "usage" in result.stdout.lower() or "help" in result.stdout.lower()
-        ):
+        if result.returncode == 0 and ("usage" in result.stdout.lower() or "help" in result.stdout.lower()):
             print_pass(f"{script_path} help works")
             return True
         else:
@@ -184,9 +180,7 @@ def main():
             tests_total += 1
             tests_passed += 1
         else:
-            print_warn(
-                "start_aria.sh not executable (run: chmod +x scripts/start_aria.sh)"
-            )
+            print_warn("start_aria.sh not executable (run: chmod +x scripts/start_aria.sh)")
             tests_total += 1
 
     # Summary

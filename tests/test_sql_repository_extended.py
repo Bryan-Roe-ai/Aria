@@ -123,8 +123,10 @@ def test_ensure_table_returns_false_when_no_engine_and_sqlalchemy():
     """When engine unavailable and SQLAlchemy present, returns False."""
     import shared.sql_repository as repo
 
-    with patch("shared.sql_repository.get_engine", return_value=None), \
-         patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True):
+    with (
+        patch("shared.sql_repository.get_engine", return_value=None),
+        patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True),
+    ):
         repo._TABLE_CREATED = False
         result = repo._ensure_table()
         assert result is False
@@ -175,6 +177,7 @@ def test_delete_value_nonexistent_key_returns_true():
     os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
     # Table must exist first
     from shared.sql_repository import _ensure_table
+
     _ensure_table()
     result = delete_value("absolutely_not_there")
     assert result is True
@@ -213,10 +216,13 @@ def test_put_value_returns_false_when_no_engine():
     os.environ.pop("QAI_SQL_URL", None)
     os.environ.pop("QAI_DB_CONN", None)
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = False
 
-    with patch("shared.sql_repository.get_engine", return_value=None), \
-         patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True):
+    with (
+        patch("shared.sql_repository.get_engine", return_value=None),
+        patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True),
+    ):
         result = put_value("k", "v")
         assert result is False
 
@@ -227,10 +233,13 @@ def test_get_value_returns_none_when_no_engine():
     os.environ.pop("QAI_SQL_URL", None)
     os.environ.pop("QAI_DB_CONN", None)
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = False
 
-    with patch("shared.sql_repository.get_engine", return_value=None), \
-         patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True):
+    with (
+        patch("shared.sql_repository.get_engine", return_value=None),
+        patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True),
+    ):
         assert get_value("k") is None
 
 
@@ -240,10 +249,13 @@ def test_delete_value_returns_false_when_no_engine():
     os.environ.pop("QAI_SQL_URL", None)
     os.environ.pop("QAI_DB_CONN", None)
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = False
 
-    with patch("shared.sql_repository.get_engine", return_value=None), \
-         patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True):
+    with (
+        patch("shared.sql_repository.get_engine", return_value=None),
+        patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True),
+    ):
         assert delete_value("k") is False
 
 
@@ -253,10 +265,13 @@ def test_list_values_returns_empty_when_no_engine():
     os.environ.pop("QAI_SQL_URL", None)
     os.environ.pop("QAI_DB_CONN", None)
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = False
 
-    with patch("shared.sql_repository.get_engine", return_value=None), \
-         patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True):
+    with (
+        patch("shared.sql_repository.get_engine", return_value=None),
+        patch("shared.sql_repository._SQLALCHEMY_AVAILABLE", True),
+    ):
         assert list_values() == []
 
 
@@ -271,6 +286,7 @@ def test_put_value_handles_db_error_gracefully():
 
     os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = True  # skip _ensure_table
 
     mock_engine = MagicMock()
@@ -288,6 +304,7 @@ def test_get_value_handles_db_error_gracefully():
 
     os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = True
 
     mock_engine = MagicMock()
@@ -305,6 +322,7 @@ def test_delete_value_handles_db_error_gracefully():
 
     os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = True
 
     mock_engine = MagicMock()
@@ -322,6 +340,7 @@ def test_list_values_handles_db_error_gracefully():
 
     os.environ["QAI_SQL_URL"] = "sqlite:///:memory:"
     import shared.sql_repository as repo
+
     repo._TABLE_CREATED = True
 
     mock_engine = MagicMock()

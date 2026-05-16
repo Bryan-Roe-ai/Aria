@@ -26,9 +26,7 @@ if str(REPO_ROOT) not in sys.path:
 from shared.evaluation_utils import load_labels_from_dataset
 
 
-def load_model_predictions(
-    model_path: Path, max_samples: Optional[int] = None
-) -> List[Any]:
+def load_model_predictions(model_path: Path, max_samples: Optional[int] = None) -> List[Any]:
     if not model_path.exists():
         raise FileNotFoundError(model_path)
     with model_path.open("r", encoding="utf-8") as f:
@@ -109,17 +107,13 @@ def run(
             "summary": summary,
             "predictions": [{"pred": p, "expected": t} for p, t in zip(y_pred, y_true)],
         }
-        (save_dir / "results.json").write_text(
-            json.dumps(out, indent=2), encoding="utf-8"
-        )
+        (save_dir / "results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     return summary
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(
-        description="Evaluate lightweight quantum model artifacts"
-    )
+    ap = argparse.ArgumentParser(description="Evaluate lightweight quantum model artifacts")
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--model", required=True)
     ap.add_argument("--max-samples", type=int, default=None)

@@ -22,7 +22,7 @@ class BackupManager:
     def load_manifest(self):
         """Load backup manifest"""
         if self.manifest_file.exists():
-            with open(self.manifest_file, "r") as f:
+            with open(self.manifest_file) as f:
                 self.manifest = json.load(f)
         else:
             self.manifest = {"backups": [], "last_backup": None}
@@ -102,9 +102,7 @@ class BackupManager:
             if models_src.exists():
                 models_dst = backup_path / "models"
                 models_dst.mkdir(parents=True, exist_ok=True)
-                self._copy_directory(
-                    models_src, models_dst, backup_info, previous_checksums, incremental
-                )
+                self._copy_directory(models_src, models_dst, backup_info, previous_checksums, incremental)
                 print("  ✓ Backed up models")
 
         # Backup configs
@@ -124,9 +122,7 @@ class BackupManager:
                     dst = configs_dst / config_file
                     dst.parent.mkdir(parents=True, exist_ok=True)
                     # Use unified copy/link logic for incremental detection
-                    self._copy_or_link(
-                        config_path, dst, backup_info, previous_checksums, incremental
-                    )
+                    self._copy_or_link(config_path, dst, backup_info, previous_checksums, incremental)
 
             print("  ✓ Backed up configs")
 
@@ -157,9 +153,7 @@ class BackupManager:
                     rel_path = json_file.relative_to(logs_src)
                     dst = logs_dst / rel_path
                     dst.parent.mkdir(parents=True, exist_ok=True)
-                    self._copy_or_link(
-                        json_file, dst, backup_info, previous_checksums, incremental
-                    )
+                    self._copy_or_link(json_file, dst, backup_info, previous_checksums, incremental)
 
                 print("  ✓ Backed up logs")
 
@@ -220,9 +214,7 @@ class BackupManager:
                 rel_path = item.relative_to(src)
                 dst_path = dst / rel_path
                 dst_path.parent.mkdir(parents=True, exist_ok=True)
-                self._copy_or_link(
-                    item, dst_path, backup_info, previous_checksums, incremental
-                )
+                self._copy_or_link(item, dst_path, backup_info, previous_checksums, incremental)
 
     def _copy_or_link(
         self,
@@ -245,9 +237,7 @@ class BackupManager:
                 shutil.copy2(src_file, dst_path)  # Fallback
         else:
             shutil.copy2(src_file, dst_path)
-        backup_info["files"].append(
-            {"path": file_path_str, "checksum": checksum, "unchanged": unchanged}
-        )
+        backup_info["files"].append({"path": file_path_str, "checksum": checksum, "unchanged": unchanged})
         size = src_file.stat().st_size
         backup_info["size_bytes"] += size
         if unchanged:
@@ -316,18 +306,11 @@ class BackupManager:
                 for member in tar.getmembers():
                     member_path = (target_path / member.name).resolve()
                     # Ensure extraction stays within target directory
-                    if (
-                        not str(member_path).startswith(str(target_path) + os.sep)
-                        and member_path != target_path
-                    ):
-                        raise ValueError(
-                            f"Attempted path traversal in tarfile: {member.name}"
-                        )
+                    if not str(member_path).startswith(str(target_path) + os.sep) and member_path != target_path:
+                        raise ValueError(f"Attempted path traversal in tarfile: {member.name}")
                     safe_members.append(member)
                 # Extract only validated members
-                tar.extractall(
-                    target_dir, members=safe_members
-                )  # nosec B202 - members validated above
+                tar.extractall(target_dir, members=safe_members)  # nosec B202 - members validated above
 
             print(f"✅ Backup restored to: {target_dir}")
         else:
@@ -371,15 +354,11 @@ class BackupManager:
     def cleanup_old_backups(self, keep_count: int = 5):
         """Keep only the most recent N backups"""
         if len(self.manifest["backups"]) <= keep_count:
-            print(
-                f"Only {len(self.manifest['backups'])} backups exist, no cleanup needed"
-            )
+            print(f"Only {len(self.manifest['backups'])} backups exist, no cleanup needed")
             return
 
         # Sort by timestamp
-        sorted_backups = sorted(
-            self.manifest["backups"], key=lambda x: x["timestamp"], reverse=True
-        )
+        sorted_backups = sorted(self.manifest["backups"], key=lambda x: x["timestamp"], reverse=True)
 
         # Delete old backups
         to_delete = sorted_backups[keep_count:]
@@ -406,9 +385,7 @@ if __name__ == "__main__":
     parser.add_argument("--name", help="Backup name (for restore/delete)")
     parser.add_argument("--no-models", action="store_true", help="Exclude models")
     parser.add_argument("--no-configs", action="store_true", help="Exclude configs")
-    parser.add_argument(
-        "--include-datasets", action="store_true", help="Include datasets (large)"
-    )
+    parser.add_argument("--include-datasets", action="store_true", help="Include datasets (large)")
     parser.add_argument("--no-logs", action="store_true", help="Exclude logs")
     parser.add_argument("--no-compress", action="store_true", help="Skip compression")
     parser.add_argument("--description", default="", help="Backup description")
@@ -417,12 +394,8 @@ if __name__ == "__main__":
         action="store_true",
         help="Perform incremental backup (hardlink unchanged files)",
     )
-    parser.add_argument(
-        "--target-dir", default=".", help="Target directory for restore"
-    )
-    parser.add_argument(
-        "--keep", type=int, default=5, help="Number of backups to keep (cleanup)"
-    )
+    parser.add_argument("--target-dir", default=".", help="Target directory for restore")
+    parser.add_argument("--keep", type=int, default=5, help="Number of backups to keep (cleanup)")
 
     args = parser.parse_args()
 
@@ -442,9 +415,7 @@ if __name__ == "__main__":
         print(
             f"📁 Files: {len(backup_info['files'])} (changed: {backup_info['changed_files']}, unchanged: {backup_info['unchanged_files']})"
         )
-        print(
-            f"💾 Size: {backup_info.get('compressed_size', backup_info['size_bytes']) / 1024 / 1024:.2f} MB"
-        )
+        print(f"💾 Size: {backup_info.get('compressed_size', backup_info['size_bytes']) / 1024 / 1024:.2f} MB")
 
     elif args.action == "list":
         backups = manager.list_backups()
@@ -454,9 +425,7 @@ if __name__ == "__main__":
             print(f"\n📋 Available Backups ({len(backups)}):\n")
             for backup in reversed(backups):
                 size = backup.get("compressed_size", backup["size_bytes"]) / 1024 / 1024
-                timestamp = datetime.fromisoformat(backup["timestamp"]).strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                )
+                timestamp = datetime.fromisoformat(backup["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")
                 print(f"  {backup['name']}")
                 print(f"    Time: {timestamp}")
                 print(f"    Size: {size:.2f} MB")

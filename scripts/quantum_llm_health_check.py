@@ -207,9 +207,7 @@ def run_health_check(output_dir: Path | None = None) -> int:
         print("✅ System Health: EXCELLENT - All checks passed")
         exit_code = 0
     elif all_ok and checkpoint_ok:
-        print(
-            "⚠️  System Health: GOOD - Ready for training, checkpoint validation pending"
-        )
+        print("⚠️  System Health: GOOD - Ready for training, checkpoint validation pending")
         exit_code = 0
     elif all_ok:
         print("⚠️  System Health: FAIR - Core system intact, some issues detected")

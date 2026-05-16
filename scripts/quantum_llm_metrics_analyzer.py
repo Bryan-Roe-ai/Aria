@@ -49,9 +49,7 @@ def analyze_metrics(metrics_list: list[dict[str, Any]]) -> dict[str, Any]:
 
     analysis = {
         "total_snapshots": len(metrics_list),
-        "inference_ready_count": sum(
-            1 for m in metrics_list if m.get("inference_ready")
-        ),
+        "inference_ready_count": sum(1 for m in metrics_list if m.get("inference_ready")),
         "checkpoint_count": sum(1 for m in metrics_list if m.get("checkpoint_exists")),
     }
 
@@ -87,9 +85,7 @@ def analyze_metrics(metrics_list: list[dict[str, Any]]) -> dict[str, Any]:
     # Trend analysis
     if len(final_losses) >= 2:
         improvement = final_losses[0] - final_losses[-1]
-        improvement_pct = (
-            (improvement / final_losses[0] * 100) if final_losses[0] != 0 else 0
-        )
+        improvement_pct = (improvement / final_losses[0] * 100) if final_losses[0] != 0 else 0
         analysis["trend"] = {
             "first_loss": final_losses[0],
             "latest_loss": final_losses[-1],
@@ -145,9 +141,7 @@ def format_analysis_report(analysis: dict[str, Any]) -> str:
         improvement = tr.get("improvement", 0)
         improvement_pct = tr.get("improvement_percentage", 0)
         emoji = "✓" if improvement > 0 else "✗"
-        lines.append(
-            f"  {emoji} Improvement: {improvement:.6f} ({improvement_pct:.2f}%)"
-        )
+        lines.append(f"  {emoji} Improvement: {improvement:.6f} ({improvement_pct:.2f}%)")
 
     lines.append("\n" + "=" * 60)
     return "\n".join(lines)
@@ -155,9 +149,7 @@ def format_analysis_report(analysis: dict[str, Any]) -> str:
 
 def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(
-        description="Analyze quantum LLM training metrics history"
-    )
+    parser = argparse.ArgumentParser(description="Analyze quantum LLM training metrics history")
     parser.add_argument(
         "--output",
         type=Path,
@@ -222,9 +214,7 @@ def main() -> None:
     # Export to CSV if requested
     if args.export:
         with open(args.export, "w", encoding="utf-8") as f:
-            f.write(
-                "timestamp,status,epochs_completed,best_loss,final_loss,inference_ready\n"
-            )
+            f.write("timestamp,status,epochs_completed,best_loss,final_loss,inference_ready\n")
             for m in metrics_list:
                 f.write(
                     f"{m.get('timestamp', '')},{m.get('status', '')},{m.get('epochs_completed', '')}"

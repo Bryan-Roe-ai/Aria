@@ -3,8 +3,9 @@
 import importlib.util
 import json
 import sys
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 import pytest
 
@@ -73,10 +74,7 @@ class TestGetResultDetailSecurity:
             error_msg = data.get("error") or data.get("message") or ""
             assert "Invalid filename" not in error_msg
             if response.status_code == 404 and error_msg:
-                assert any(
-                    word in error_msg.lower()
-                    for word in ["not found", "missing", "no such"]
-                )
+                assert any(word in error_msg.lower() for word in ["not found", "missing", "no such"])
         else:
             body_text = response.data.decode("utf-8", errors="ignore")
             assert "Invalid filename" not in body_text
@@ -145,9 +143,7 @@ class TestLoadCheckpointSecurity:
 
     def test_rejects_missing_checkpoint_path(self, client: Any):
         """Verify missing checkpoint path is rejected."""
-        response = client.post(
-            "/api/load_checkpoint", json={}, content_type="application/json"
-        )
+        response = client.post("/api/load_checkpoint", json={}, content_type="application/json")
         assert response.status_code == 400
         data = json.loads(response.data)
         assert "No checkpoint path provided" in data.get("error", "")
@@ -267,10 +263,7 @@ class TestSessionLimits:
             )
         assert resp.status_code == 429
         body = json.loads(resp.data)
-        assert (
-            "active" in body.get("error", "").lower()
-            or "session" in body.get("error", "").lower()
-        )
+        assert "active" in body.get("error", "").lower() or "session" in body.get("error", "").lower()
 
     def test_rejects_at_total_session_cap(self, client: Any) -> None:
         """Returns 429 when the total sessions dict is at MAX_TOTAL_SESSIONS."""

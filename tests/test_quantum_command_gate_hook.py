@@ -8,13 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "quantum_command_gate.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "quantum_command_gate.py"
 
 
 def _run_hook(payload: dict, *, event: str, block_mode: bool = False) -> subprocess.CompletedProcess[str]:

@@ -18,13 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "dry_run_reminder.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "dry_run_reminder.py"
 
 
 def _run_hook(
@@ -140,9 +134,7 @@ class TestPreToolUseBlock:
             "toolName": "run_in_terminal",
             "command": "python3 scripts/autonomous_training_orchestrator.py",
         }
-        result = _run_hook(
-            payload, event="PreToolUse", extra_env={"ARIA_DRYRUN_BLOCK": "true"}
-        )
+        result = _run_hook(payload, event="PreToolUse", extra_env={"ARIA_DRYRUN_BLOCK": "true"})
         assert result.returncode == 1
         assert "BLOCKED" in result.stderr
 
@@ -151,9 +143,7 @@ class TestPreToolUseBlock:
             "toolName": "run_in_terminal",
             "command": "python3 scripts/autotrain.py",
         }
-        result = _run_hook(
-            payload, event="PreToolUse", extra_env={"ARIA_DRYRUN_BLOCK": "true"}
-        )
+        result = _run_hook(payload, event="PreToolUse", extra_env={"ARIA_DRYRUN_BLOCK": "true"})
         assert result.returncode == 1
         # Message should be on stderr, not stdout
         assert result.stdout == ""

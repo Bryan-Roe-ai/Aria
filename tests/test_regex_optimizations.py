@@ -152,23 +152,18 @@ class TestFunctionAppOptimizations:
         # Should have exactly 1 import at the top level
         # (There might be other imports like 'import requests', so check carefully)
         lines_with_import_re = [
-            line
-            for line in content.split("\n")
-            if "import re" in line and not line.strip().startswith("#")
+            line for line in content.split("\n") if "import re" in line and not line.strip().startswith("#")
         ]
 
         # Filter for actual 're' imports (not 'requests', 'requirements', etc.)
         actual_re_imports = [
             line
             for line in lines_with_import_re
-            if "import re" in line
-            and ("import re\n" in (line + "\n") or "import re " in line)
+            if "import re" in line and ("import re\n" in (line + "\n") or "import re " in line)
         ]
 
         # We expect exactly one import at the top level
-        assert (
-            len(actual_re_imports) >= 1
-        ), "re module should be imported at module level"
+        assert len(actual_re_imports) >= 1, "re module should be imported at module level"
 
 
 class TestEmailNotificationsOptimizations:
@@ -232,9 +227,7 @@ class TestCookingAIOptimizations:
     def test_quantity_pattern_is_compiled(self):
         """Test that quantity extraction pattern is pre-compiled."""
         repo_root = Path(__file__).resolve().parents[1]
-        cooking_ai_path = str(
-            repo_root / "ai-projects" / "cooking-ai" / "src" / "providers"
-        )
+        cooking_ai_path = str(repo_root / "ai-projects" / "cooking-ai" / "src" / "providers")
         if cooking_ai_path not in sys.path:
             sys.path.insert(0, cooking_ai_path)
 
@@ -290,9 +283,7 @@ class TestPerformanceBenchmark:
 
         # Micro-benchmarks are noisy across CI/dev containers and Python versions.
         # Guard only against catastrophic regressions while preserving signal.
-        assert (
-            speedup >= 0.25
-        ), f"Compiled regex benchmark regressed unexpectedly, got {speedup:.2f}x"
+        assert speedup >= 0.25, f"Compiled regex benchmark regressed unexpectedly, got {speedup:.2f}x"
 
     def test_pattern_cache_stability(self):
         """Test that compiled patterns remain stable across calls."""

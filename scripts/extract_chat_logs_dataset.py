@@ -72,9 +72,7 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
                 start = max(0, i - context_window + 1)
                 window = messages[start : i + 1]
                 # Must contain at least one user+assistant
-                if any(x.get("role") == "user" for x in window) and any(
-                    x.get("role") == "assistant" for x in window
-                ):
+                if any(x.get("role") == "user" for x in window) and any(x.get("role") == "assistant" for x in window):
                     windows.append({"messages": window})
 
     # Combine lists efficiently with extend
@@ -83,20 +81,13 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
 
 
 def hash_example(example: Dict) -> str:
-    concat = "\n".join(
-        [
-            f"{m.get('role', '')}: {m.get('content', '')[:400]}"
-            for m in example.get("messages", [])
-        ]
-    )
+    concat = "\n".join([f"{m.get('role', '')}: {m.get('content', '')[:400]}" for m in example.get("messages", [])])
     return hashlib.sha256(concat.encode("utf-8")).hexdigest()[:24]
 
 
 def main():
     ap = argparse.ArgumentParser(description="Extract chat logs into training dataset")
-    ap.add_argument(
-        "--max-records", type=int, default=1000, help="Maximum examples to output"
-    )
+    ap.add_argument("--max-records", type=int, default=1000, help="Maximum examples to output")
     ap.add_argument("--train-ratio", type=float, default=0.9, help="Train split ratio")
     ap.add_argument(
         "--context-window",
@@ -119,9 +110,7 @@ def main():
             continue
         exs = build_examples(msgs, args.context_window)
         # Add metadata and hash in batch using list comprehension
-        enriched_exs = [
-            {**e, "source_file": lf.name, "hash": hash_example(e)} for e in exs
-        ]
+        enriched_exs = [{**e, "source_file": lf.name, "hash": hash_example(e)} for e in exs]
         all_examples.extend(enriched_exs)
 
     # Deduplicate by hash - keeps first occurrence (Python 3.7+ dict is ordered)

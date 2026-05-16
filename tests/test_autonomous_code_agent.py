@@ -40,9 +40,7 @@ def _make_state() -> aca.AgentState:
     )
 
 
-def test_restore_modified_files_preserves_user_content(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_restore_modified_files_preserves_user_content(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _configure_agent_repo(monkeypatch, tmp_path)
     target = tmp_path / "sample.py"
     target.write_text("print('user work')\n", encoding="utf-8")
@@ -66,9 +64,7 @@ def test_restore_modified_files_preserves_user_content(
     assert target.read_text(encoding="utf-8") == "print('user work')\n"
 
 
-def test_commit_changes_stages_only_agent_modified_files(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_commit_changes_stages_only_agent_modified_files(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _configure_agent_repo(monkeypatch, tmp_path)
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
     subprocess.run(
@@ -119,9 +115,7 @@ def test_commit_changes_stages_only_agent_modified_files(
         capture_output=True,
         text=True,
     )
-    committed_files = {
-        line.strip() for line in show.stdout.splitlines() if line.strip()
-    }
+    committed_files = {line.strip() for line in show.stdout.splitlines() if line.strip()}
     assert committed_files == {"tracked.py"}
 
     status = subprocess.run(
@@ -135,9 +129,7 @@ def test_commit_changes_stages_only_agent_modified_files(
     assert "tracked.py" not in status.stdout
 
 
-def test_commit_changes_uses_agent_repo_root_instead_of_global(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_commit_changes_uses_agent_repo_root_instead_of_global(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
     subprocess.run(
         ["git", "config", "user.email", "agent@example.com"],
@@ -154,9 +146,7 @@ def test_commit_changes_uses_agent_repo_root_instead_of_global(
 
     tracked = tmp_path / "tracked.py"
     tracked.write_text("print('base')\n", encoding="utf-8")
-    subprocess.run(
-        ["git", "add", "tracked.py"], cwd=tmp_path, check=True, capture_output=True
-    )
+    subprocess.run(["git", "add", "tracked.py"], cwd=tmp_path, check=True, capture_output=True)
     subprocess.run(
         ["git", "commit", "-m", "initial"],
         cwd=tmp_path,
@@ -187,15 +177,11 @@ def test_commit_changes_uses_agent_repo_root_instead_of_global(
         capture_output=True,
         text=True,
     )
-    committed_files = {
-        line.strip() for line in show.stdout.splitlines() if line.strip()
-    }
+    committed_files = {line.strip() for line in show.stdout.splitlines() if line.strip()}
     assert committed_files == {"tracked.py"}
 
 
-def test_run_tests_uses_agent_repo_root_instead_of_global(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_run_tests_uses_agent_repo_root_instead_of_global(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
     test_runner = scripts_dir / "test_runner.py"
@@ -221,9 +207,7 @@ def test_run_tests_uses_agent_repo_root_instead_of_global(
     assert results["failed"] == 0
 
 
-def test_repository_context_tolerates_git_status_timeout(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_repository_context_tolerates_git_status_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(aca, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(aca, "GIT_STATUS_TIMEOUT_SECONDS", 0.01)
 
@@ -233,9 +217,7 @@ def test_repository_context_tolerates_git_status_timeout(
         if cmd[:4] == ["git", "rev-parse", "--abbrev-ref", "HEAD"]:
             return SimpleNamespace(stdout="main\n")
         if cmd[:3] == ["git", "status", "--short"]:
-            raise subprocess.TimeoutExpired(
-                cmd=cmd, timeout=kwargs.get("timeout", 0.01)
-            )
+            raise subprocess.TimeoutExpired(cmd=cmd, timeout=kwargs.get("timeout", 0.01))
         raise AssertionError(f"Unexpected command: {cmd}")
 
     monkeypatch.setattr(subprocess, "run", _run)
@@ -247,9 +229,7 @@ def test_repository_context_tolerates_git_status_timeout(
     assert repo.uncommitted_changes == []
 
 
-def test_repository_context_skips_uncommitted_scan_by_default(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_repository_context_skips_uncommitted_scan_by_default(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(aca, "REPO_ROOT", tmp_path)
     monkeypatch.setattr(aca, "CAPTURE_UNCOMMITTED_CHANGES", False)
 
@@ -275,9 +255,7 @@ def test_repository_context_skips_uncommitted_scan_by_default(
     assert ["git", "status", "--short"] not in calls
 
 
-def test_execute_task_uses_forced_files_without_identify_phase(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> None:
+def test_execute_task_uses_forced_files_without_identify_phase(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     _configure_agent_repo(monkeypatch, tmp_path)
     target = tmp_path / "existing.py"
     target.write_text("print('hello')\n", encoding="utf-8")
@@ -288,9 +266,7 @@ def test_execute_task_uses_forced_files_without_identify_phase(
     monkeypatch.setattr(agent, "plan_task", lambda task: "short plan")
 
     def _identify_files(_: str) -> list[str]:
-        raise AssertionError(
-            "identify_files should not be called when forced_files is provided"
-        )
+        raise AssertionError("identify_files should not be called when forced_files is provided")
 
     monkeypatch.setattr(agent, "identify_files", _identify_files)
 

@@ -41,9 +41,7 @@ def _file_age_days(path: Path) -> float:
     return (time.time() - path.stat().st_mtime) / 86400
 
 
-def find_candidates(
-    max_age_days: int = 30, max_count: int = 50
-) -> list[tuple[Path, str]]:
+def find_candidates(max_age_days: int = 30, max_count: int = 50) -> list[tuple[Path, str]]:
     """Return (path, reason) tuples for files eligible for deletion."""
     candidates: list[tuple[Path, str]] = []
 
@@ -73,12 +71,8 @@ def find_candidates(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Clean old artifacts from data_out/")
-    ap.add_argument(
-        "--apply", action="store_true", help="Actually delete (default: dry-run)"
-    )
-    ap.add_argument(
-        "--max-age", type=int, default=30, help="Max age in days (default: 30)"
-    )
+    ap.add_argument("--apply", action="store_true", help="Actually delete (default: dry-run)")
+    ap.add_argument("--max-age", type=int, default=30, help="Max age in days (default: 30)")
     ap.add_argument(
         "--max-count",
         type=int,
@@ -105,9 +99,7 @@ def main() -> None:
             path.unlink()
 
     mb = total_bytes / (1024 * 1024)
-    print(
-        f"\n{'Deleted' if args.apply else 'Would delete'}: {len(candidates)} files, {mb:.2f} MB"
-    )
+    print(f"\n{'Deleted' if args.apply else 'Would delete'}: {len(candidates)} files, {mb:.2f} MB")
 
     # Write summary
     summary = {

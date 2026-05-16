@@ -23,6 +23,4 @@ def test_job_yaml_schema_basic():
     env = data["environment"]
     for key in ["image", "conda_file", "name"]:
         assert key in env, f"Environment missing {key}"
-    assert (
-        data.get("resources", {}).get("instance_count") == 1
-    ), "Instance count should be 1"
+    assert data.get("resources", {}).get("instance_count") == 1, "Instance count should be 1"

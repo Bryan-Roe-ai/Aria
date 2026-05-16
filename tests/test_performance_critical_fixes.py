@@ -19,8 +19,7 @@ sys.path.insert(0, str(REPO_ROOT / "aria_web"))
 
 def test_keywords_in_cmd_function():
     """Test the optimized _keywords_in_cmd helper function"""
-    from aria_web.server import (_DANCE_KEYWORDS, _JUMP_KEYWORDS,
-                                 _keywords_in_cmd)
+    from aria_web.server import _DANCE_KEYWORDS, _JUMP_KEYWORDS, _keywords_in_cmd
 
     # Test basic matching
     assert _keywords_in_cmd(_JUMP_KEYWORDS, "jump high")
@@ -69,17 +68,13 @@ def test_determine_position_performance():
     start = time.time()
     for cmd, expected in test_commands:
         result = determine_position_from_context(cmd)
-        assert (
-            result == expected
-        ), f"Command '{cmd}' returned {result}, expected {expected}"
+        assert result == expected, f"Command '{cmd}' returned {result}, expected {expected}"
     elapsed = time.time() - start
 
     # All 4 commands should complete in under 10ms
     assert elapsed < 0.01, f"Position determination too slow: {elapsed*1000:.2f}ms"
 
-    print(
-        f"✓ test_determine_position_performance passed ({elapsed*1000:.2f}ms for 4 commands)"
-    )
+    print(f"✓ test_determine_position_performance passed ({elapsed*1000:.2f}ms for 4 commands)")
 
 
 def test_parse_command_performance():
@@ -102,13 +97,9 @@ def test_parse_command_performance():
     elapsed = time.time() - start
 
     # 50 command parses should complete in under 50ms
-    assert (
-        elapsed < 0.05
-    ), f"Command parsing too slow: {elapsed*1000:.2f}ms for 50 parses"
+    assert elapsed < 0.05, f"Command parsing too slow: {elapsed*1000:.2f}ms for 50 parses"
 
-    print(
-        f"✓ test_parse_command_performance passed ({elapsed*1000:.2f}ms for 50 parses)"
-    )
+    print(f"✓ test_parse_command_performance passed ({elapsed*1000:.2f}ms for 50 parses)")
 
 
 @patch("shared.chat_memory.pyodbc")
@@ -213,9 +204,7 @@ def test_connection_pooling_speedup(mock_getenv, mock_pyodbc):
     assert elapsed < 0.15, f"Connection pooling not effective: {elapsed*1000:.2f}ms"
     assert mock_pyodbc.connect.call_count == 1, "Should only create 1 connection"
 
-    print(
-        f"✓ test_connection_pooling_speedup passed (10 operations in {elapsed*1000:.2f}ms)"
-    )
+    print(f"✓ test_connection_pooling_speedup passed (10 operations in {elapsed*1000:.2f}ms)")
 
 
 def test_keyword_matching_benchmark():
@@ -234,9 +223,7 @@ def test_keyword_matching_benchmark():
     # Should complete 10k iterations in under 20ms (CI runners can be noisy).
     assert elapsed < 0.02, f"Too slow: {elapsed*1000:.2f}ms for 10k iterations"
 
-    print(
-        f"✓ test_keyword_matching_benchmark passed (10k iterations in {elapsed*1000:.2f}ms)"
-    )
+    print(f"✓ test_keyword_matching_benchmark passed (10k iterations in {elapsed*1000:.2f}ms)")
 
 
 def run_all_tests():

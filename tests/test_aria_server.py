@@ -8,9 +8,7 @@ from pathlib import Path
 # Load apps/aria/server.py by absolute path to avoid cross-test module-name collisions
 # when other suites import a different `server` module first.
 _ARIA_SERVER_PATH = Path(__file__).parent.parent / "apps" / "aria" / "server.py"
-_ARIA_SERVER_SPEC = importlib.util.spec_from_file_location(
-    "aria_server_under_test", _ARIA_SERVER_PATH
-)
+_ARIA_SERVER_SPEC = importlib.util.spec_from_file_location("aria_server_under_test", _ARIA_SERVER_PATH)
 assert _ARIA_SERVER_SPEC is not None and _ARIA_SERVER_SPEC.loader is not None
 aria_server = importlib.util.module_from_spec(_ARIA_SERVER_SPEC)
 sys.modules[_ARIA_SERVER_SPEC.name] = aria_server
@@ -32,9 +30,7 @@ def test_determine_position_for_pickup():
 
 def test_generate_tags_fallback_add_object():
     tags = aria_server.generate_tags_fallback("add a bear to the scene")
-    assert any(
-        "[aria:interact:add" in t for t in tags
-    ), "Expected an interact:add tag for spawn/add commands"
+    assert any("[aria:interact:add" in t for t in tags), "Expected an interact:add tag for spawn/add commands"
 
 
 def test_validate_action_sequence_rejects_invalid_coordinates():
@@ -69,8 +65,7 @@ def test_parse_with_fallback_follow_me_adds_nod_and_move():
         a.get("action") == "gesture" and a.get("gesture_type") == "nod" for a in actions
     ), f"Expected nod gesture for 'follow me' but got {actions}"
     assert any(
-        a.get("action") == "move" and a.get("target") == {"x": 50, "y": 75}
-        for a in actions
+        a.get("action") == "move" and a.get("target") == {"x": 50, "y": 75} for a in actions
     ), f"Expected move action for 'follow me' but got {actions}"
 
 
@@ -91,8 +86,7 @@ def test_parse_with_fallback_bring_me_object_sequence():
         a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
     ), f"Expected pickup-cup action but got {actions}"
     assert any(
-        a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-        for a in actions
+        a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
     ), f"Expected delivery move action but got {actions}"
 
 
@@ -109,12 +103,10 @@ def test_parse_with_fallback_bring_it_when_holding():
         actions = parser.parse_with_fallback("bring it here")
 
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected delivery move action for bring-it but got {actions}"
         assert any(
-            a.get("action") == "gesture" and a.get("gesture_type") == "nod"
-            for a in actions
+            a.get("action") == "gesture" and a.get("gesture_type") == "nod" for a in actions
         ), f"Expected nod gesture for bring-it but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -128,9 +120,7 @@ def test_parse_with_fallback_bring_it_when_not_holding():
         actions = parser.parse_with_fallback("bring it here")
 
         assert any(
-            a.get("action") == "say"
-            and "pick something up first" in a.get("text", "").lower()
-            for a in actions
+            a.get("action") == "say" and "pick something up first" in a.get("text", "").lower() for a in actions
         ), f"Expected explanatory say action for bring-it but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -149,12 +139,10 @@ def test_parse_with_fallback_drop_here_when_holding():
         actions = parser.parse_with_fallback("drop it here")
 
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected move-to-drop-target action but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 50, "y": 85} for a in actions
         ), f"Expected drop action at front-center but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -168,9 +156,7 @@ def test_parse_with_fallback_drop_here_when_not_holding():
         actions = parser.parse_with_fallback("put it here")
 
         assert any(
-            a.get("action") == "say"
-            and "not holding anything" in a.get("text", "").lower()
-            for a in actions
+            a.get("action") == "say" and "not holding anything" in a.get("text", "").lower() for a in actions
         ), f"Expected explanatory say action but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -181,20 +167,16 @@ def test_parse_with_fallback_compound_pickup_bring_drop_table():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup and bring it here then put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup and bring it here then put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup action for cup but got {actions}"
         assert any(
-            a.get("action") == "gesture" and a.get("gesture_type") == "nod"
-            for a in actions
+            a.get("action") == "gesture" and a.get("gesture_type") == "nod" for a in actions
         ), f"Expected nod gesture in compound flow but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected drop-on-table action but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -207,9 +189,7 @@ def test_parse_with_fallback_compound_without_object_has_guidance():
         aria_server.stage_state["aria"]["held_object"] = None
         actions = parser.parse_with_fallback("bring it here, then drop it here")
         say_actions = [a for a in actions if a.get("action") == "say"]
-        assert (
-            len(say_actions) >= 1
-        ), f"Expected at least one guidance say action but got {actions}"
+        assert len(say_actions) >= 1, f"Expected at least one guidance say action but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
 
@@ -239,8 +219,7 @@ def test_parse_with_fallback_temporal_separator_after_that():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in after-that sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in after-that sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -257,8 +236,7 @@ def test_parse_with_fallback_temporal_separator_finally():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in finally sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in finally sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -275,8 +253,7 @@ def test_parse_with_fallback_temporal_separator_lastly():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in lastly sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in lastly sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -293,8 +270,7 @@ def test_parse_with_fallback_temporal_separator_first_second():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in first/second sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in first/second sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -305,16 +281,13 @@ def test_parse_with_fallback_temporal_separator_first_second_finally():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "first pick up cup second bring it here finally put it on table"
-        )
+        actions = parser.parse_with_fallback("first pick up cup second bring it here finally put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in first/second/finally sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected final table drop in first/second/finally sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -325,16 +298,13 @@ def test_parse_with_fallback_temporal_separator_step_numbers():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "step 1 pick up cup step 2 bring it here step 3 put it on table"
-        )
+        actions = parser.parse_with_fallback("step 1 pick up cup step 2 bring it here step 3 put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in step-number sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in step-number sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -351,8 +321,7 @@ def test_parse_with_fallback_temporal_separator_step_numbers_compact():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in compact-step sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in compact-step sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -369,8 +338,7 @@ def test_parse_with_fallback_temporal_separator_step_roman_numerals():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in Roman step sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in Roman step sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -381,16 +349,13 @@ def test_parse_with_fallback_temporal_separator_numbered_list_markers():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "1) pick up cup 2) bring it here 3) put it on table"
-        )
+        actions = parser.parse_with_fallback("1) pick up cup 2) bring it here 3) put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in numbered-list sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in numbered-list sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -401,16 +366,13 @@ def test_parse_with_fallback_temporal_separator_phase_numbers():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "phase 1 pick up cup phase 2 bring it here"
-        )
+        actions = parser.parse_with_fallback("phase 1 pick up cup phase 2 bring it here")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in phase-number sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in phase-number sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -421,16 +383,13 @@ def test_parse_with_fallback_temporal_separator_part_roman_numerals():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "part I pick up cup part II put it on table"
-        )
+        actions = parser.parse_with_fallback("part I pick up cup part II put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in part-Roman sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in part-Roman sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -441,16 +400,13 @@ def test_parse_with_fallback_temporal_separator_ascii_arrow_flow():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup -> bring it here => put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup -> bring it here => put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in ASCII arrow sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in ASCII arrow sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -467,8 +423,7 @@ def test_parse_with_fallback_temporal_separator_unicode_arrow_flow():
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in Unicode arrow sequence but got {actions}"
         assert any(
-            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-            for a in actions
+            a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85} for a in actions
         ), f"Expected bring-it move in Unicode arrow sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -479,16 +434,13 @@ def test_parse_with_fallback_temporal_separator_newline_bullets():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup\n- bring it here\n- put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup\n- bring it here\n- put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in newline-bullet sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in newline-bullet sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -499,16 +451,13 @@ def test_parse_with_fallback_temporal_separator_then_next_labels():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup then: bring it here next: put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup then: bring it here next: put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in then/next-label sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in then/next-label sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -519,16 +468,13 @@ def test_parse_with_fallback_temporal_separator_afterward_finally_labels():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup afterward: bring it here finally: put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup afterward: bring it here finally: put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in afterward/finally-label sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in afterward/finally-label sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -539,16 +485,13 @@ def test_parse_with_fallback_temporal_separator_newline_checkbox_bullets():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup\n- [ ] bring it here\n- [x] put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup\n- [ ] bring it here\n- [x] put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in checkbox-bullet sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in checkbox-bullet sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -559,16 +502,13 @@ def test_parse_with_fallback_temporal_separator_pipe_chain():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup | bring it here | put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup | bring it here | put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in pipe-chain sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in pipe-chain sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -579,16 +519,13 @@ def test_parse_with_fallback_temporal_separator_mixed_pipe_and_arrows():
     original_held = aria_server.stage_state["aria"].get("held_object")
     try:
         aria_server.stage_state["aria"]["held_object"] = None
-        actions = parser.parse_with_fallback(
-            "pick up cup | bring it here -> put it on table"
-        )
+        actions = parser.parse_with_fallback("pick up cup | bring it here -> put it on table")
 
         assert any(
             a.get("action") == "pickup" and a.get("object_id") == "cup" for a in actions
         ), f"Expected pickup in mixed pipe/arrow sequence but got {actions}"
         assert any(
-            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35}
-            for a in actions
+            a.get("action") == "drop" and a.get("position") == {"x": 60, "y": 35} for a in actions
         ), f"Expected table drop in mixed pipe/arrow sequence but got {actions}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -601,20 +538,10 @@ def test_parse_with_fallback_compound_dedup_repeated_segment():
         aria_server.stage_state["aria"]["held_object"] = "book"
         actions = parser.parse_with_fallback("bring it here then bring it here")
 
-        front_moves = [
-            a
-            for a in actions
-            if a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}
-        ]
-        nods = [
-            a
-            for a in actions
-            if a.get("action") == "gesture" and a.get("gesture_type") == "nod"
-        ]
+        front_moves = [a for a in actions if a.get("action") == "move" and a.get("target") == {"x": 50, "y": 85}]
+        nods = [a for a in actions if a.get("action") == "gesture" and a.get("gesture_type") == "nod"]
 
-        assert (
-            len(front_moves) == 1
-        ), f"Expected one deduped front-center move but got {front_moves}"
+        assert len(front_moves) == 1, f"Expected one deduped front-center move but got {front_moves}"
         assert len(nods) == 1, f"Expected one deduped nod gesture but got {nods}"
     finally:
         aria_server.stage_state["aria"]["held_object"] = original_held
@@ -694,9 +621,7 @@ def test_generate_world_with_llm_accepts_object_list_in_response():
 def test_sparkle_effect_basic():
     """Test basic sparkle command detection"""
     tags = aria_server.generate_tags_fallback("sparkle")
-    assert any(
-        "[aria:effect:sparkle" in t for t in tags
-    ), f"Expected sparkle effect tag in {tags}"
+    assert any("[aria:effect:sparkle" in t for t in tags), f"Expected sparkle effect tag in {tags}"
 
 
 def test_sparkle_effect_with_synonyms():
@@ -751,9 +676,7 @@ def test_sparkle_intensity_heavy():
 def test_glow_effect_basic():
     """Test glow effect detection"""
     tags = aria_server.generate_tags_fallback("glow")
-    assert any(
-        "[aria:effect:glow" in t for t in tags
-    ), f"Expected glow effect tag in {tags}"
+    assert any("[aria:effect:glow" in t for t in tags), f"Expected glow effect tag in {tags}"
 
 
 def test_glow_effect_synonyms():
@@ -769,9 +692,7 @@ def test_glow_effect_synonyms():
 def test_hearts_effect_basic():
     """Test hearts effect detection"""
     tags = aria_server.generate_tags_fallback("hearts")
-    assert any(
-        "[aria:effect:hearts" in t for t in tags
-    ), f"Expected hearts effect tag in {tags}"
+    assert any("[aria:effect:hearts" in t for t in tags), f"Expected hearts effect tag in {tags}"
 
 
 def test_hearts_effect_synonyms():
@@ -787,32 +708,20 @@ def test_hearts_effect_synonyms():
 def test_combined_dance_and_sparkle():
     """Test combined commands like 'dance with sparkles'"""
     tags = aria_server.generate_tags_fallback("dance with sparkles")
-    assert any(
-        "dance" in t.lower() or "animate" in t.lower() for t in tags
-    ), f"Expected dance/animate tag in {tags}"
-    assert any(
-        "[aria:effect:sparkle" in t for t in tags
-    ), f"Expected sparkle effect tag in {tags}"
+    assert any("dance" in t.lower() or "animate" in t.lower() for t in tags), f"Expected dance/animate tag in {tags}"
+    assert any("[aria:effect:sparkle" in t for t in tags), f"Expected sparkle effect tag in {tags}"
 
 
 def test_keyword_frozensets_defined():
     """Test that effect keyword frozensets are defined"""
-    assert hasattr(
-        aria_server, "SPARKLE_KEYWORDS"
-    ), "SPARKLE_KEYWORDS should be defined"
+    assert hasattr(aria_server, "SPARKLE_KEYWORDS"), "SPARKLE_KEYWORDS should be defined"
     assert hasattr(aria_server, "GLOW_KEYWORDS"), "GLOW_KEYWORDS should be defined"
     assert hasattr(aria_server, "HEARTS_KEYWORDS"), "HEARTS_KEYWORDS should be defined"
 
     # Verify they are frozensets
-    assert isinstance(
-        aria_server.SPARKLE_KEYWORDS, frozenset
-    ), "SPARKLE_KEYWORDS should be a frozenset"
-    assert isinstance(
-        aria_server.GLOW_KEYWORDS, frozenset
-    ), "GLOW_KEYWORDS should be a frozenset"
-    assert isinstance(
-        aria_server.HEARTS_KEYWORDS, frozenset
-    ), "HEARTS_KEYWORDS should be a frozenset"
+    assert isinstance(aria_server.SPARKLE_KEYWORDS, frozenset), "SPARKLE_KEYWORDS should be a frozenset"
+    assert isinstance(aria_server.GLOW_KEYWORDS, frozenset), "GLOW_KEYWORDS should be a frozenset"
+    assert isinstance(aria_server.HEARTS_KEYWORDS, frozenset), "HEARTS_KEYWORDS should be a frozenset"
 
     # Verify they contain expected keywords
     assert "sparkle" in aria_server.SPARKLE_KEYWORDS
@@ -826,9 +735,7 @@ def test_effect_intensity_mutually_exclusive():
     # When both keywords are present, 'light' takes precedence due to if-elif order
     tags = aria_server.generate_tags_fallback("light but intense sparkle")
     sparkle_tags = [t for t in tags if "[aria:effect:sparkle" in t]
-    assert (
-        len(sparkle_tags) == 1
-    ), f"Expected exactly one sparkle tag but got {sparkle_tags}"
+    assert len(sparkle_tags) == 1, f"Expected exactly one sparkle tag but got {sparkle_tags}"
     # Light should be applied due to if-elif order (light is checked first)
     assert (
         "[aria:effect:sparkle:light]" in sparkle_tags[0]
@@ -836,14 +743,10 @@ def test_effect_intensity_mutually_exclusive():
 
 
 def test_action_to_tags_move_position_and_say() -> None:
-    move_tags = aria_server.action_to_tags(
-        {"action": "move", "target": {"x": 42, "y": 73}}
-    )
+    move_tags = aria_server.action_to_tags({"action": "move", "target": {"x": 42, "y": 73}})
     assert move_tags == ["[aria:position:42:73]"]
 
-    say_tags = aria_server.action_to_tags(
-        {"action": "say", "text": "Hello", "emotion": "happy"}
-    )
+    say_tags = aria_server.action_to_tags({"action": "say", "text": "Hello", "emotion": "happy"})
     assert "[aria:say:Hello]" in say_tags
     assert "[aria:expression:happy]" in say_tags
 
@@ -870,8 +773,7 @@ def test_parse_use_llm_false_bypasses_provider_resolution(monkeypatch) -> None:
     actions = parser.parse("wave", use_llm=False)
 
     assert any(
-        a.get("action") == "gesture" and a.get("gesture_type") == "wave"
-        for a in actions
+        a.get("action") == "gesture" and a.get("gesture_type") == "wave" for a in actions
     ), f"Expected fallback gesture action when use_llm=False but got {actions}"
 
 
@@ -922,8 +824,7 @@ def test_parse_falls_back_when_provider_resolution_fails(monkeypatch):
     )
 
     assert any(
-        a.get("action") == "gesture" and a.get("gesture_type") == "wave"
-        for a in actions
+        a.get("action") == "gesture" and a.get("gesture_type") == "wave" for a in actions
     ), f"Expected fallback parser action but got {actions}"
 
 

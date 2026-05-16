@@ -39,9 +39,7 @@ DEFAULT_CONFIG = resolve_config_path(REPO_ROOT, "autotrain")
 DATA_OUT = REPO_ROOT / "data_out" / "autotrain"
 STATUS_FILE = DATA_OUT / "status.json"
 
-HF_TRAIN_SCRIPT = (
-    REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "scripts" / "train_lora.py"
-)
+HF_TRAIN_SCRIPT = REPO_ROOT / "AI" / "microsoft_phi-silica-3.6_v1" / "scripts" / "train_lora.py"
 
 
 # ---------------------------------------------------------------------------
@@ -277,9 +275,7 @@ def validate_job(job: TrainJob) -> Dict[str, Any]:
 
     if job.runner == "hf":
         if not HF_TRAIN_SCRIPT.exists():
-            missing.append(
-                f"train script not found: {HF_TRAIN_SCRIPT.relative_to(REPO_ROOT)}"
-            )
+            missing.append(f"train script not found: {HF_TRAIN_SCRIPT.relative_to(REPO_ROOT)}")
 
     if job.config:
         config_path = REPO_ROOT / job.config
@@ -371,9 +367,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         default=DEFAULT_CONFIG,
         help=f"Path to YAML config (default: {DEFAULT_CONFIG})",
     )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Validate config only; do not execute"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Validate config only; do not execute")
     parser.add_argument("--list", action="store_true", help="Print jobs as JSON and exit")
     parser.add_argument("--run", action="store_true", help="Execute training jobs")
     parser.add_argument("--job", metavar="NAME", help="Filter to a single job by name")
@@ -436,9 +430,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 check=False,
             )
         except OSError as e:
-            jobs_info.append(
-                {"name": job.name, "status": "failed", "error": str(e), "returncode": None}
-            )
+            jobs_info.append({"name": job.name, "status": "failed", "error": str(e), "returncode": None})
             continue
 
         status = "ok" if result.returncode == 0 else "failed"

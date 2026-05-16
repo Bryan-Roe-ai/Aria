@@ -51,11 +51,11 @@ def read_json_cached(
 
         # Cache miss or expired - read from file
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 data = json.load(f)
             _file_cache[path_str] = (data, now)
             return data
-        except (FileNotFoundError, json.JSONDecodeError, IOError):
+        except (OSError, FileNotFoundError, json.JSONDecodeError):
             # On error, return stale cache snapshot if available (graceful degradation)
             if stale_data is not None:
                 return stale_data

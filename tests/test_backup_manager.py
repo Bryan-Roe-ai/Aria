@@ -6,16 +6,12 @@ from scripts.backup_manager import BackupManager
 
 
 def create_dummy_structure(root: Path):
-    (root / "data_out" / "lora_training" / "lora_adapter").mkdir(
-        parents=True, exist_ok=True
-    )
+    (root / "data_out" / "lora_training" / "lora_adapter").mkdir(parents=True, exist_ok=True)
     (root / "data_out" / "autotrain").mkdir(parents=True, exist_ok=True)
     (root / "datasets" / "chat").mkdir(parents=True, exist_ok=True)
 
     # Dummy model file
-    model_file = (
-        root / "data_out" / "lora_training" / "lora_adapter" / "adapter_config.json"
-    )
+    model_file = root / "data_out" / "lora_training" / "lora_adapter" / "adapter_config.json"
     model_file.write_text('{"model":"dummy","version":1}')
 
     # Dummy log file
@@ -39,9 +35,7 @@ def test_basic_backup(tmp_path: Path):
     try:
         create_dummy_structure(Path("."))
         manager = BackupManager()
-        info = manager.create_backup(
-            include_datasets=False, compress=False, incremental=False
-        )
+        info = manager.create_backup(include_datasets=False, compress=False, incremental=False)
         assert info["name"].startswith("qai_backup_")
         assert info["changed_files"] > 0
         assert info["unchanged_files"] == 0
@@ -59,23 +53,15 @@ def test_incremental_backup(tmp_path: Path):
     try:
         create_dummy_structure(Path("."))
         manager = BackupManager()
-        first = manager.create_backup(
-            include_datasets=False, compress=False, incremental=False
-        )
+        first = manager.create_backup(include_datasets=False, compress=False, incremental=False)
         # Second backup without changes should mark files unchanged
-        second = manager.create_backup(
-            include_datasets=False, compress=False, incremental=True
-        )
+        second = manager.create_backup(include_datasets=False, compress=False, incremental=True)
         assert second["incremental"] is True
         assert second["unchanged_files"] > 0  # All files unchanged
         assert second["changed_files"] == 0
         # Modify one file
-        Path("data_out/lora_training/lora_adapter/adapter_config.json").write_text(
-            '{"model":"dummy","version":2}'
-        )
-        third = manager.create_backup(
-            include_datasets=False, compress=False, incremental=True
-        )
+        Path("data_out/lora_training/lora_adapter/adapter_config.json").write_text('{"model":"dummy","version":2}')
+        third = manager.create_backup(include_datasets=False, compress=False, incremental=True)
         assert third["changed_files"] >= 1
         assert third["unchanged_files"] > 0
     finally:

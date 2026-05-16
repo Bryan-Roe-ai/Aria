@@ -19,11 +19,7 @@ import tempfile
 from pathlib import Path
 
 HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "lora_adapter_completeness_guard.py"
+    Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "lora_adapter_completeness_guard.py"
 )
 
 

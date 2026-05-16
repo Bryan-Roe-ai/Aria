@@ -190,11 +190,7 @@ def _watch_loop(suites: list[str], coverage: bool, verbose: int) -> None:
 
     while True:
         current = max(
-            (
-                p.stat().st_mtime
-                for p in REPO_ROOT.rglob("*.py")
-                if "venv" not in str(p)
-            ),
+            (p.stat().st_mtime for p in REPO_ROOT.rglob("*.py") if "venv" not in str(p)),
             default=0.0,
         )
         if current > last_mtime:

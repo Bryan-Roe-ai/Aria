@@ -70,9 +70,7 @@ class CIOrchestrator:
         resolved: Dict[str, Optional[str]] = {}
         for key in config_keys:
             selected = resolve_existing_config_path(self.repo_root, key)
-            resolved[key] = (
-                str(selected.relative_to(self.repo_root)) if selected else None
-            )
+            resolved[key] = str(selected.relative_to(self.repo_root)) if selected else None
         return resolved
 
     def validate_all_orchestrators(self) -> bool:
@@ -82,9 +80,7 @@ class CIOrchestrator:
         print("[ci] ========================================\n")
 
         jobs = [
-            ValidationJob(
-                "autotrain", [sys.executable, "scripts/autotrain.py", "--dry-run"]
-            ),
+            ValidationJob("autotrain", [sys.executable, "scripts/autotrain.py", "--dry-run"]),
             ValidationJob(
                 "quantum_autorun",
                 [sys.executable, "scripts/quantum_autorun.py", "--dry-run"],
@@ -179,19 +175,12 @@ class CIOrchestrator:
         lora_dir = self.repo_root / "data_out" / "lora_training"
         if lora_dir.exists():
             for adapter_dir in lora_dir.iterdir():
-                if (
-                    adapter_dir.is_dir()
-                    and (adapter_dir / "adapter_config.json").exists()
-                ):
+                if adapter_dir.is_dir() and (adapter_dir / "adapter_config.json").exists():
                     artifacts["models"].append(
                         {
                             "type": "lora",
                             "path": str(adapter_dir.relative_to(self.repo_root)),
-                            "size_mb": sum(
-                                f.stat().st_size
-                                for f in adapter_dir.rglob("*")
-                                if f.is_file()
-                            )
+                            "size_mb": sum(f.stat().st_size for f in adapter_dir.rglob("*") if f.is_file())
                             / (1024 * 1024),
                         }
                     )
@@ -206,15 +195,11 @@ class CIOrchestrator:
         for config_key in sorted(config_candidates):
             selected = resolve_existing_config_path(self.repo_root, config_key)
             if selected is not None:
-                artifacts["configurations"].append(
-                    str(selected.relative_to(self.repo_root))
-                )
+                artifacts["configurations"].append(str(selected.relative_to(self.repo_root)))
 
         local_settings = self.repo_root / "local.settings.json"
         if local_settings.exists():
-            artifacts["configurations"].append(
-                str(local_settings.relative_to(self.repo_root))
-            )
+            artifacts["configurations"].append(str(local_settings.relative_to(self.repo_root)))
 
         # Save artifacts manifest
         manifest_file = self.data_out / "deployment_artifacts.json"
@@ -248,9 +233,7 @@ class CIOrchestrator:
                 }
             )
             return True
-        job_specs = sorted(
-            aml_dir.glob("job_*.yaml"), key=lambda p: p.stat().st_mtime, reverse=True
-        )
+        job_specs = sorted(aml_dir.glob("job_*.yaml"), key=lambda p: p.stat().st_mtime, reverse=True)
         if not job_specs:
             self.results.append(
                 {
@@ -263,9 +246,7 @@ class CIOrchestrator:
         latest = job_specs[0]
         # Check az CLI presence
         try:
-            az_check = subprocess.run(
-                ["az", "version"], capture_output=True, text=True, timeout=30
-            )
+            az_check = subprocess.run(["az", "version"], capture_output=True, text=True, timeout=30)
         except Exception as e:
             self.results.append(
                 {
@@ -320,9 +301,7 @@ class CIOrchestrator:
             )
             return False
         except Exception as e:
-            self.results.append(
-                {"name": "azureml_validate", "status": "error", "message": str(e)}
-            )
+            self.results.append({"name": "azureml_validate", "status": "error", "message": str(e)})
             return False
 
     def run_ci_pipeline(self) -> bool:
@@ -362,9 +341,7 @@ class CIOrchestrator:
         all_passed = True
 
         with ThreadPoolExecutor(max_workers=len(jobs)) as executor:
-            futures = {
-                executor.submit(self._run_validation_job, job): job for job in jobs
-            }
+            futures = {executor.submit(self._run_validation_job, job): job for job in jobs}
 
             for future in as_completed(futures):
                 job = futures[future]
@@ -498,16 +475,10 @@ class CIOrchestrator:
 
 def main():
     ap = argparse.ArgumentParser(description="CI/CD Orchestrator")
-    ap.add_argument(
-        "--validate-all", action="store_true", help="Validate all orchestrators"
-    )
-    ap.add_argument(
-        "--quick-test", action="store_true", help="Run quick tests (unit only)"
-    )
+    ap.add_argument("--validate-all", action="store_true", help="Validate all orchestrators")
+    ap.add_argument("--quick-test", action="store_true", help="Run quick tests (unit only)")
     ap.add_argument("--full-test", action="store_true", help="Run all tests")
-    ap.add_argument(
-        "--prepare-deployment", action="store_true", help="Prepare deployment artifacts"
-    )
+    ap.add_argument("--prepare-deployment", action="store_true", help="Prepare deployment artifacts")
     ap.add_argument("--ci-pipeline", action="store_true", help="Run full CI pipeline")
     ap.add_argument(
         "--validate-azureml",

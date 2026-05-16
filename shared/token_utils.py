@@ -27,9 +27,7 @@ _canonical_path = next((p for p in _canonical_candidates if p.exists()), None)
 if _canonical_path is None:
     raise FileNotFoundError("token_utils canonical file not found in known locations")
 
-_spec = importlib.util.spec_from_file_location(
-    "_canonical_token_utils", _canonical_path
-)
+_spec = importlib.util.spec_from_file_location("_canonical_token_utils", _canonical_path)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Unable to load canonical token utils: {_canonical_path}")
 

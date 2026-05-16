@@ -109,9 +109,7 @@ def generate_workflow_overview_qa(workflow: WorkflowInfo) -> tuple[str, str]:
         assistant_parts.append(f"- Contains {len(workflow.jobs)} job(s): {job_desc}")
 
     if workflow.uses_actions:
-        assistant_parts.append(
-            f"- Uses {len(workflow.uses_actions)} different GitHub Actions"
-        )
+        assistant_parts.append(f"- Uses {len(workflow.uses_actions)} different GitHub Actions")
 
     # Add purpose based on name/jobs
     purpose_hints = {
@@ -125,12 +123,8 @@ def generate_workflow_overview_qa(workflow: WorkflowInfo) -> tuple[str, str]:
     }
 
     for keyword, purpose in purpose_hints.items():
-        if keyword in workflow.name.lower() or any(
-            keyword in job.lower() for job in workflow.jobs
-        ):
-            assistant_parts.append(
-                f"\nThis workflow is primarily focused on {purpose}."
-            )
+        if keyword in workflow.name.lower() or any(keyword in job.lower() for job in workflow.jobs):
+            assistant_parts.append(f"\nThis workflow is primarily focused on {purpose}.")
             break
 
     return user, "\n".join(assistant_parts)
@@ -216,9 +210,7 @@ def generate_actions_used_qa(workflow: WorkflowInfo) -> tuple[str, str]:
     if not workflow.uses_actions:
         return user, "This workflow doesn't use any external GitHub Actions."
 
-    assistant_parts = [
-        f"The workflow uses {len(workflow.uses_actions)} different actions:\n"
-    ]
+    assistant_parts = [f"The workflow uses {len(workflow.uses_actions)} different actions:\n"]
 
     action_descriptions = {
         "actions/checkout": "Checks out the repository code",
@@ -234,9 +226,7 @@ def generate_actions_used_qa(workflow: WorkflowInfo) -> tuple[str, str]:
     for action in sorted(workflow.uses_actions):
         # Extract action name without version
         action_name = action.split("@")[0] if "@" in action else action
-        description = action_descriptions.get(
-            action_name, f"Performs {action_name} functionality"
-        )
+        description = action_descriptions.get(action_name, f"Performs {action_name} functionality")
         assistant_parts.append(f"- **{action}**: {description}")
 
     return user, "\n".join(assistant_parts)
@@ -244,9 +234,7 @@ def generate_actions_used_qa(workflow: WorkflowInfo) -> tuple[str, str]:
 
 def generate_best_practices_qa(workflow: WorkflowInfo) -> tuple[str, str]:
     """Generate Q&A about best practices in the workflow"""
-    user = (
-        f"What are the best practices demonstrated in the '{workflow.name}' workflow?"
-    )
+    user = f"What are the best practices demonstrated in the '{workflow.name}' workflow?"
 
     practices = []
 
@@ -269,9 +257,7 @@ def generate_best_practices_qa(workflow: WorkflowInfo) -> tuple[str, str]:
     # Check for conditional execution
     for job_name, job_config in jobs_config.items():
         if "if" in job_config:
-            practices.append(
-                "- Uses conditional job execution to optimize resource usage"
-            )
+            practices.append("- Uses conditional job execution to optimize resource usage")
             break
 
     if "schedule" in workflow.triggers:
@@ -283,20 +269,13 @@ def generate_best_practices_qa(workflow: WorkflowInfo) -> tuple[str, str]:
     # Check for matrix strategy
     for job_name, job_config in jobs_config.items():
         if "strategy" in job_config and "matrix" in job_config["strategy"]:
-            practices.append(
-                "- Uses matrix strategy for testing across multiple configurations"
-            )
+            practices.append("- Uses matrix strategy for testing across multiple configurations")
             break
 
     if not practices:
-        practices.append(
-            "- Follows standard GitHub Actions structure with jobs and steps"
-        )
+        practices.append("- Follows standard GitHub Actions structure with jobs and steps")
 
-    assistant = (
-        f"The '{workflow.name}' workflow demonstrates several best practices:\n\n"
-        + "\n".join(practices)
-    )
+    assistant = f"The '{workflow.name}' workflow demonstrates several best practices:\n\n" + "\n".join(practices)
     return user, assistant
 
 
@@ -491,9 +470,7 @@ def generate_general_qa_pairs() -> List[Dict[str, Any]]:
     return general_qa
 
 
-def build_records(
-    workflows: List[WorkflowInfo], max_records: int, seed: int
-) -> List[Dict[str, Any]]:
+def build_records(workflows: List[WorkflowInfo], max_records: int, seed: int) -> List[Dict[str, Any]]:
     """Build Q&A records from workflows"""
     random.seed(seed)
     records: List[Dict[str, Any]] = []
@@ -516,11 +493,9 @@ def build_records(
                 template_func = PROMPT_TEMPLATES[template_key]
                 user_prompt, assistant_answer = template_func(workflow)
 
-                h = hashlib.sha256(
-                    (workflow.name + template_key + assistant_answer[:100]).encode(
-                        "utf-8"
-                    )
-                ).hexdigest()[:16]
+                h = hashlib.sha256((workflow.name + template_key + assistant_answer[:100]).encode("utf-8")).hexdigest()[
+                    :16
+                ]
                 rec = {
                     "messages": [
                         {"role": "user", "content": user_prompt},
@@ -533,9 +508,7 @@ def build_records(
                 }
                 records.append(rec)
             except Exception as e:
-                print(
-                    f"Warning: Could not generate {template_key} for {workflow.name}: {e}"
-                )
+                print(f"Warning: Could not generate {template_key} for {workflow.name}: {e}")
 
         if len(records) >= max_records:
             break
@@ -557,9 +530,7 @@ def main():
         default=".github/workflows",
         help="Directory containing workflow files",
     )
-    ap.add_argument(
-        "--output-dir", default=str(DEFAULT_OUTPUT), help="Output dataset directory"
-    )
+    ap.add_argument("--output-dir", default=str(DEFAULT_OUTPUT), help="Output dataset directory")
     ap.add_argument(
         "--max-records",
         type=int,

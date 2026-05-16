@@ -7,7 +7,6 @@ import threading
 import time
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from pathlib import Path
 
 
 class OllamaCompatibleHandler(BaseHTTPRequestHandler):
@@ -56,9 +55,7 @@ class OllamaCompatibleHandler(BaseHTTPRequestHandler):
             response = {
                 "model": model,
                 "created_at": datetime.now().isoformat(),
-                "response": (
-                    f"Response to: {prompt[:50]}..." if prompt else "Model ready"
-                ),
+                "response": (f"Response to: {prompt[:50]}..." if prompt else "Model ready"),
                 "done": True,
                 "total_duration": 1000000000,
                 "load_duration": 0,

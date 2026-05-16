@@ -45,14 +45,10 @@ def init() -> bool:
     if _CLIENT is not None:
         return True
     if CosmosClient is None:
-        logging.warning(
-            "[cosmos] azure-cosmos package not available; cannot initialize."
-        )
+        logging.warning("[cosmos] azure-cosmos package not available; cannot initialize.")
         return False
     if not _settings_present():
-        logging.warning(
-            "[cosmos] Missing required settings (COSMOS_ENDPOINT / COSMOS_KEY)."
-        )
+        logging.warning("[cosmos] Missing required settings (COSMOS_ENDPOINT / COSMOS_KEY).")
         return False
 
     endpoint = os.getenv("COSMOS_ENDPOINT")
@@ -79,9 +75,7 @@ def init() -> bool:
         except Exception as e:
             logging.error(f"[cosmos] Failed creating container {container_name}: {e}")
             return False
-        logging.info(
-            f"[cosmos] Initialized container {container_name} in database {database_name}."
-        )
+        logging.info(f"[cosmos] Initialized container {container_name} in database {database_name}.")
         return True
     except Exception as e:
         logging.error(f"[cosmos] Initialization error: {e}")
@@ -123,9 +117,7 @@ def health() -> Dict[str, Any]:
     return status
 
 
-def record_chat_message(
-    user_id: str, message: Dict[str, Any], provider: str, model: str
-) -> bool:
+def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, model: str) -> bool:
     """Persist a single chat message. user_id may be 'anonymous' if not provided."""
     if not init():  # ensures initialization or early exit
         return False
@@ -138,9 +130,7 @@ def record_chat_message(
         # Validate content is non-empty before storing (vulnerability fix)
         content = message.get("content", "")
         if not content or not str(content).strip():
-            logging.warning(
-                f"[cosmos] Skipping empty message content for user {user_id}"
-            )
+            logging.warning(f"[cosmos] Skipping empty message content for user {user_id}")
             return False
 
         # Use UUID to prevent ID collisions (CRITICAL FIX: data loss prevention)
@@ -161,9 +151,7 @@ def record_chat_message(
         return False
 
 
-def record_chat_session(
-    user_id: str, messages: list[Dict[str, Any]], provider: str, model: str
-) -> bool:
+def record_chat_session(user_id: str, messages: list[Dict[str, Any]], provider: str, model: str) -> bool:
     """Persist entire chat session as one document (alternative strategy)."""
     if not init():
         return False
@@ -211,9 +199,7 @@ def worlds_container():
     if _WORLDS_CONTAINER is not None:
         return _WORLDS_CONTAINER
     try:
-        db = _CLIENT.get_database_client(
-            os.getenv("COSMOS_DATABASE", "qai")
-        )  # type: ignore
+        db = _CLIENT.get_database_client(os.getenv("COSMOS_DATABASE", "qai"))  # type: ignore
         worlds_name = os.getenv("COSMOS_WORLDS_CONTAINER", "aria_worlds")
         # Create if not exists with partition key /theme_seed
         from azure.cosmos import PartitionKey  # type: ignore

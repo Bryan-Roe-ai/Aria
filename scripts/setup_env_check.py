@@ -11,7 +11,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 # Color codes for terminal output
 GREEN = "\033[92m"
@@ -24,13 +24,9 @@ BOLD = "\033[1m"
 
 def print_section(title: str) -> None:
     """Print a section header."""
-    print(
-        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}"
-    )
+    print(f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
-    print(
-        f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}"
-    )
+    print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
 
 
 def print_ok(msg: str) -> None:
@@ -68,14 +64,10 @@ def check_python_environment() -> bool:
         return False
 
     # Check if in virtual environment
-    if hasattr(sys, "real_prefix") or (
-        hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
-    ):
+    if hasattr(sys, "real_prefix") or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix):
         print_ok("Virtual environment detected")
     else:
-        print_warning(
-            "Not running in a virtual environment (recommended for isolation)"
-        )
+        print_warning("Not running in a virtual environment (recommended for isolation)")
 
     return True
 
@@ -108,9 +100,7 @@ def check_environment_files() -> bool:
             with open(local_settings) as f:
                 settings = json.load(f)
                 values = settings.get("Values", {})
-                print_ok(
-                    f"local.settings.json exists ({len(values)} settings configured)"
-                )
+                print_ok(f"local.settings.json exists ({len(values)} settings configured)")
                 if "OLLAMA_BASE_URL" in values:
                     print_ok("Ollama configured in local.settings.json")
         except json.JSONDecodeError as e:
@@ -172,7 +162,7 @@ def check_local_services() -> bool:
             request = urllib.request.Request(url, headers={"User-Agent": "setup-check"})
             with urllib.request.urlopen(request, timeout=1) as response:
                 print_ok(f"{name} is running on port {port}")
-        except Exception as e:
+        except Exception:
             print_warning(f"{name} not accessible on port {port} (not running)")
 
     return True
@@ -235,9 +225,7 @@ def check_databases() -> bool:
         else:
             print_warning(f"SQLite directory will be created: {db_path}")
     else:
-        print_info(
-            f"Custom database: {db_conn.split('://')[0] if '://' in db_conn else 'unknown'}"
-        )
+        print_info(f"Custom database: {db_conn.split('://')[0] if '://' in db_conn else 'unknown'}")
 
     return True
 
@@ -327,9 +315,7 @@ def check_azure_functions() -> bool:
     print_section("Azure Functions")
 
     try:
-        result = subprocess.run(
-            ["func", "--version"], capture_output=True, text=True, timeout=5
-        )
+        result = subprocess.run(["func", "--version"], capture_output=True, text=True, timeout=5)
         if result.returncode == 0:
             version = result.stdout.strip()
             print_ok(f"Azure Functions CLI installed (version {version})")
@@ -351,7 +337,7 @@ def check_test_suite() -> bool:
     pytest_ini = repo_root / "pytest.ini"
 
     if pytest_ini.exists():
-        print_ok(f"pytest.ini configured")
+        print_ok("pytest.ini configured")
     else:
         print_warning("pytest.ini not found")
 

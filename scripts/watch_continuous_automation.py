@@ -19,10 +19,11 @@ import argparse
 import os
 import re
 import time
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CONTINUOUS_DIR = REPO_ROOT / "data_out" / "continuous_automation"
@@ -33,9 +34,7 @@ WATCHDOG_LOG_FILE = CONTINUOUS_DIR / "watchdog.log"
 
 CYCLE_START_RE = re.compile(r"^===\s+(?P<ts>[^=]+?)\s+cycle start\s+===")
 CYCLE_END_RE = re.compile(r"^===\s+(?P<ts>[^=]+?)\s+cycle end\s+===")
-PYTEST_PASS_RE = re.compile(
-    r"^(?P<count>\d+)\s+passed(?:,\s+(?P<skipped>\d+)\s+skipped)?"
-)
+PYTEST_PASS_RE = re.compile(r"^(?P<count>\d+)\s+passed(?:,\s+(?P<skipped>\d+)\s+skipped)?")
 GATE_PASS_RE = re.compile(r"\[integration_contract_gate\]\s+passed")
 GATE_FAIL_RE = re.compile(r"\[integration_contract_gate\]\s+failed")
 
@@ -79,9 +78,7 @@ def _process_status(name: str, pid_file: Path) -> ProcessStatus:
     running = _pid_running(pid)
     if running:
         return ProcessStatus(name=name, pid=pid, running=True, detail="running")
-    return ProcessStatus(
-        name=name, pid=pid, running=False, detail="stopped (stale pid)"
-    )
+    return ProcessStatus(name=name, pid=pid, running=False, detail="stopped (stale pid)")
 
 
 def _safe_read_lines(path: Path, max_lines: int = 4000) -> list[str]:
@@ -169,9 +166,7 @@ def _analyze_loop_log(lines: list[str]) -> dict[str, object]:
         if pytest_match:
             skipped = pytest_match.group("skipped")
             if skipped:
-                last_pytest_summary = (
-                    f"{pytest_match.group('count')} passed, {skipped} skipped"
-                )
+                last_pytest_summary = f"{pytest_match.group('count')} passed, {skipped} skipped"
             else:
                 last_pytest_summary = f"{pytest_match.group('count')} passed"
 
@@ -233,11 +228,7 @@ def _print_snapshot(lines_to_show: int) -> None:
     print(fmt_proc(watchdog_status))
     dup_starts = analysis.get("duplicate_start_markers", 0)
     dup_ends = analysis.get("duplicate_end_markers", 0)
-    if (
-        isinstance(dup_starts, int)
-        and isinstance(dup_ends, int)
-        and (dup_starts > 0 or dup_ends > 0)
-    ):
+    if isinstance(dup_starts, int) and isinstance(dup_ends, int) and (dup_starts > 0 or dup_ends > 0):
         print(f"⚠️  duplicate log markers detected: start+{dup_starts}, end+{dup_ends}")
     else:
         print("🟢 duplicate log markers: none")
@@ -249,16 +240,8 @@ def _print_snapshot(lines_to_show: int) -> None:
         f"ends={analysis['cycle_ends']} "
         f"in_progress={'yes' if analysis['in_progress'] else 'no'}"
     )
-    print(
-        "last cycle start: "
-        f"{last_start_dt or 'n/a'} "
-        f"(age {_format_age(last_start_dt)})"
-    )
-    print(
-        "last cycle end:   "
-        f"{last_end_dt or 'n/a'} "
-        f"(age {_format_age(last_end_dt)})"
-    )
+    print("last cycle start: " f"{last_start_dt or 'n/a'} " f"(age {_format_age(last_start_dt)})")
+    print("last cycle end:   " f"{last_end_dt or 'n/a'} " f"(age {_format_age(last_end_dt)})")
     print(f"last gate status:  {analysis['last_gate_status']}")
     print(f"last pytest:       {analysis['last_pytest_summary'] or 'n/a'}")
 
@@ -278,12 +261,8 @@ def _print_snapshot(lines_to_show: int) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Watch continuous automation loop activity"
-    )
-    parser.add_argument(
-        "--watch", action="store_true", help="continuously refresh view"
-    )
+    parser = argparse.ArgumentParser(description="Watch continuous automation loop activity")
+    parser.add_argument("--watch", action="store_true", help="continuously refresh view")
     parser.add_argument(
         "--interval",
         type=int,

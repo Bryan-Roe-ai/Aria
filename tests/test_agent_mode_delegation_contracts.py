@@ -36,9 +36,7 @@ def _extract_agent_name(path: Path) -> str | None:
     return None
 
 
-def _extract_bullets_between(
-    text: str, start_header: str, end_header: str
-) -> list[str]:
+def _extract_bullets_between(text: str, start_header: str, end_header: str) -> list[str]:
     """Extract bullet lines in a markdown section bounded by headers."""
     try:
         start = text.index(start_header)
@@ -104,9 +102,7 @@ def test_routing_rule_targets_resolve_to_existing_agent_names() -> None:
     targets = _extract_backtick_targets(bullets)
     assert targets, "Expected routing rule bullets with explicit targets"
 
-    available = {
-        n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n
-    }
+    available = {n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n}
     missing = sorted({t for t in targets if t not in available})
     assert not missing, f"Routing targets not found in agent names: {missing}"
 
@@ -124,9 +120,7 @@ def test_primary_agent_declares_alias_mapping_lines() -> None:
 
 @pytest.mark.unit
 def test_alias_targets_resolve_to_existing_agent_names() -> None:
-    available = {
-        n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n
-    }
+    available = {n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n}
 
     # Canonical alias targets
     for target in {
@@ -157,13 +151,10 @@ def test_alias_sources_exist_as_alternate_mode_agent_names() -> None:
             sources.append(matches[0])
 
     assert sources, "Expected alias source entries in alias section"
-    available = {
-        n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n
-    }
+    available = {n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n}
     missing_sources = sorted({s for s in sources if s not in available})
     assert not missing_sources, (
-        "Alias source names should map to existing alternate-mode agent names: "
-        f"{missing_sources}"
+        "Alias source names should map to existing alternate-mode agent names: " f"{missing_sources}"
     )
 
 
@@ -197,9 +188,7 @@ def test_primary_task_execution_pattern_orders_delegate_before_return() -> None:
 
 @pytest.mark.unit
 def test_all_specialists_define_return_to_agent_contract() -> None:
-    specialist_files = [
-        p for p in AGENTS_DIR.glob("*.agent.md") if p.name != "ai.agent.md"
-    ]
+    specialist_files = [p for p in AGENTS_DIR.glob("*.agent.md") if p.name != "ai.agent.md"]
     assert specialist_files, "Expected specialist agent files to exist"
 
     missing = []
@@ -213,17 +202,13 @@ def test_all_specialists_define_return_to_agent_contract() -> None:
 
 @pytest.mark.unit
 def test_specialist_contracts_mark_temporary_and_return_to_primary() -> None:
-    specialist_files = [
-        p for p in AGENTS_DIR.glob("*.agent.md") if p.name != "ai.agent.md"
-    ]
+    specialist_files = [p for p in AGENTS_DIR.glob("*.agent.md") if p.name != "ai.agent.md"]
 
     bad = []
     for path in specialist_files:
         text = _read(path)
         has_temporary = "temporary" in text.lower()
-        has_handoff = (
-            "hand back to `agent`" in text.lower() or "primary `agent`" in text
-        )
+        has_handoff = "hand back to `agent`" in text.lower() or "primary `agent`" in text
         if not (has_temporary and has_handoff):
             bad.append(path.name)
 
@@ -234,9 +219,7 @@ def test_specialist_contracts_mark_temporary_and_return_to_primary() -> None:
 def test_legacy_chatmode_directory_is_not_present() -> None:
     """Chat modes were migrated to .github/agents; keep legacy dir removed."""
     legacy_dir = REPO_ROOT / ".github" / "chatmodes"
-    assert (
-        not legacy_dir.exists()
-    ), "Legacy .github/chatmodes directory should remain removed after migration."
+    assert not legacy_dir.exists(), "Legacy .github/chatmodes directory should remain removed after migration."
 
 
 @pytest.mark.unit

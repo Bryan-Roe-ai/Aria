@@ -65,9 +65,7 @@ def test_azure_openai_sanitizes_whitespace_only_text_blocks_before_sdk_call() ->
 
 
 @pytest.mark.unit
-def test_azure_openai_sanitizes_whitespace_only_input_text_blocks_before_sdk_call() -> (
-    None
-):
+def test_azure_openai_sanitizes_whitespace_only_input_text_blocks_before_sdk_call() -> None:
     """Whitespace-only input_text blocks should be removed before Azure SDK invocation."""
     fake_client = unittest.mock.MagicMock()
     mock_resp = unittest.mock.MagicMock()

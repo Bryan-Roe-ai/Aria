@@ -152,7 +152,7 @@ class AriaAutomation:
             return {}
 
         try:
-            with open(PID_FILE, "r") as f:
+            with open(PID_FILE) as f:
                 return json.load(f)
         except Exception as e:
             print(f"⚠️  Could not load PIDs: {e}")
@@ -255,9 +255,7 @@ class AriaAutomation:
 
             while elapsed < max_wait:
                 if self._check_port(8080):
-                    print(
-                        f"✅ Aria server started on http://localhost:8080 (PID {proc.pid})"
-                    )
+                    print(f"✅ Aria server started on http://localhost:8080 (PID {proc.pid})")
                     self.processes["aria_server"] = ProcessInfo(
                         name="aria_server",
                         pid=proc.pid,
@@ -296,15 +294,11 @@ class AriaAutomation:
 
         try:
             # Check if func is available
-            result = subprocess.run(
-                ["func", "--version"], capture_output=True, text=True, timeout=5
-            )
+            result = subprocess.run(["func", "--version"], capture_output=True, text=True, timeout=5)
 
             if result.returncode != 0:
                 print("⚠️  Azure Functions Core Tools not installed")
-                print(
-                    "   Install from: https://docs.microsoft.com/azure/azure-functions/functions-run-local"
-                )
+                print("   Install from: https://docs.microsoft.com/azure/azure-functions/functions-run-local")
                 return False
 
             # Start Functions host
@@ -321,9 +315,7 @@ class AriaAutomation:
             for i in range(15):
                 time.sleep(1)
                 if self._check_port(7071):
-                    print(
-                        f"✅ Functions backend started on http://localhost:7071 (PID {proc.pid})"
-                    )
+                    print(f"✅ Functions backend started on http://localhost:7071 (PID {proc.pid})")
                     self.processes["functions_backend"] = ProcessInfo(
                         name="functions_backend",
                         pid=proc.pid,
@@ -357,9 +349,7 @@ class AriaAutomation:
             script = REPO_ROOT / "scripts" / "aria_quick_train.py"
 
             if not script.exists():
-                print(
-                    "⚠️  aria_quick_train.py not found, using automate_aria_movement.py"
-                )
+                print("⚠️  aria_quick_train.py not found, using automate_aria_movement.py")
                 script = REPO_ROOT / "scripts" / "automate_aria_movement.py"
 
             cmd = [sys.executable, str(script)]
@@ -544,7 +534,7 @@ class AriaAutomation:
             return
 
         try:
-            with open(STATUS_FILE, "r") as f:
+            with open(STATUS_FILE) as f:
                 status = json.load(f)
 
             print("\n" + "=" * 80)
@@ -555,15 +545,9 @@ class AriaAutomation:
             print(f"Uptime: {timedelta(seconds=int(status['uptime_seconds']))}")
             print(f"Training Cycles: {status['training_cycles']}")
             print("\nComponents:")
-            print(
-                f"  - Aria Server: {'✅ Running' if status['server_running'] else '❌ Stopped'}"
-            )
-            print(
-                f"  - Functions Backend: {'✅ Running' if status['backend_running'] else '❌ Stopped'}"
-            )
-            print(
-                f"  - Training: {'✅ Active' if status['training_active'] else '❌ Inactive'}"
-            )
+            print(f"  - Aria Server: {'✅ Running' if status['server_running'] else '❌ Stopped'}")
+            print(f"  - Functions Backend: {'✅ Running' if status['backend_running'] else '❌ Stopped'}")
+            print(f"  - Training: {'✅ Active' if status['training_active'] else '❌ Inactive'}")
 
             if status["errors"]:
                 print(f"\nRecent Errors ({len(status['errors'])}):")
@@ -614,12 +598,8 @@ Examples:
         action="store_true",
         help="Run training once and exit (only applies to training mode)",
     )
-    parser.add_argument(
-        "--status", action="store_true", help="Show current automation status"
-    )
-    parser.add_argument(
-        "--stop", action="store_true", help="Stop all Aria automation processes"
-    )
+    parser.add_argument("--status", action="store_true", help="Show current automation status")
+    parser.add_argument("--stop", action="store_true", help="Stop all Aria automation processes")
 
     args = parser.parse_args()
 

@@ -54,9 +54,7 @@ DATA_OUT = REPO_ROOT / "data_out"
 
 # Paths for helper scripts used by jobs
 TRAIN_SCRIPT = REPO_ROOT / "ai-projects" / "quantum-ml" / "train_custom_dataset.py"
-AZURE_SUBMIT_SCRIPT = (
-    REPO_ROOT / "ai-projects" / "quantum-ml" / "deploy_to_azure_quantum.py"
-)
+AZURE_SUBMIT_SCRIPT = REPO_ROOT / "ai-projects" / "quantum-ml" / "deploy_to_azure_quantum.py"
 
 # Known preset datasets
 PRESETS = ("heart", "ionosphere", "sonar", "banknote")
@@ -258,11 +256,7 @@ def validate_job(job: QJob) -> Dict[str, Any]:
             missing.append(str(AZURE_SUBMIT_SCRIPT.name))
 
         # QPU requires explicit cost confirmation
-        if (
-            job.azure_backend
-            and ".qpu" in str(job.azure_backend)
-            and not job.azure_confirm_cost
-        ):
+        if job.azure_backend and ".qpu" in str(job.azure_backend) and not job.azure_confirm_cost:
             missing.append("azure_confirm_cost")
 
     status = "ok" if not missing else "missing"
@@ -366,16 +360,10 @@ def write_status(jobs: List[Dict[str, Any]]) -> None:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Quantum AutoRun Orchestrator")
-    parser.add_argument(
-        "--config", type=str, default=str(DEFAULT_CONFIG), help="Path to YAML config"
-    )
+    parser.add_argument("--config", type=str, default=str(DEFAULT_CONFIG), help="Path to YAML config")
     parser.add_argument("--list", action="store_true", help="List jobs as JSON")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Validate config and write status.json"
-    )
-    parser.add_argument(
-        "--job", type=str, default=None, help="Filter to a specific job by name"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Validate config and write status.json")
+    parser.add_argument("--job", type=str, default=None, help="Filter to a specific job by name")
     args = parser.parse_args(argv)
 
     cfg_path = Path(args.config)

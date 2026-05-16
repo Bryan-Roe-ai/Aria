@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import os
-import re
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 import shared.ai_runner as ai_runner
-
 
 # ---------------------------------------------------------------------------
 # Module-level constants
@@ -30,7 +28,7 @@ class TestModuleConstants:
     def test_ansi_escape_regex_compiled(self):
         assert ai_runner._ANSI_ESCAPE_RE is not None
         # Verify it strips a known ANSI code
-        result = ai_runner._ANSI_ESCAPE_RE.sub("", "\x1B[31mRed\x1B[0m")
+        result = ai_runner._ANSI_ESCAPE_RE.sub("", "\x1b[31mRed\x1b[0m")
         assert result == "Red"
 
 
@@ -118,7 +116,7 @@ class TestRunChatOnceSuccess:
         assert reply == "Just some output"
 
     def test_strips_ansi_codes(self):
-        mock_result = self._make_mock_result("\x1B[31massistant> Red text\x1B[0m\n")
+        mock_result = self._make_mock_result("\x1b[31massistant> Red text\x1b[0m\n")
 
         with patch.object(ai_runner, "CHAT_CLI", Path("/fake/chat_cli.py")):
             with patch("shared.ai_runner.CHAT_CLI") as mock_cli_path:
@@ -127,7 +125,7 @@ class TestRunChatOnceSuccess:
                     with patch.dict(os.environ, {"WRITE_AI_RUN_LOG": "0"}):
                         reply, _ = ai_runner.run_chat_once("Hi")
 
-        assert "\x1B" not in reply
+        assert "\x1b" not in reply
 
     def test_metadata_contains_provider(self):
         mock_result = self._make_mock_result("assistant> Hi\n")

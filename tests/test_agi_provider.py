@@ -11,13 +11,12 @@ Tests cover:
 """
 
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import pytest
 
-from agi_provider import (AGIContext, AGIProvider, ReasoningStep,
-                          _infer_aria_movement_tag, create_agi_provider)
+from agi_provider import AGIContext, AGIProvider, ReasoningStep, _infer_aria_movement_tag, create_agi_provider
 from chat_providers import BaseChatProvider, ProviderChoice, RoleMessage
 
 # Add ai-projects/chat-cli/src to path
@@ -34,9 +33,7 @@ class MockBaseProvider(BaseChatProvider):
         self.call_count = 0
         self.last_messages = None
 
-    def complete(
-        self, messages: list[RoleMessage], stream: bool = True
-    ) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         self.call_count += 1
         self.last_messages = messages
         if stream:
@@ -109,9 +106,7 @@ class TestAGIContext:
         """Test extracting relevant context for a query."""
         ctx = AGIContext()
         ctx.add_message({"role": "user", "content": "What is quantum computing?"})
-        ctx.add_message(
-            {"role": "assistant", "content": "Quantum computing uses qubits..."}
-        )
+        ctx.add_message({"role": "assistant", "content": "Quantum computing uses qubits..."})
         ctx.goals = ["Learn about quantum"]
 
         context = ctx.get_relevant_context("Tell me more")
@@ -310,9 +305,7 @@ class TestAGIProvider:
         subtasks = agi._decompose_task("Write a sorting algorithm", analysis)
 
         assert len(subtasks) > 0
-        assert any(
-            "requirement" in s.lower() or "understand" in s.lower() for s in subtasks
-        )
+        assert any("requirement" in s.lower() or "understand" in s.lower() for s in subtasks)
 
     def test_chain_of_thought(self):
         """Test chain-of-thought reasoning generation."""
@@ -340,9 +333,7 @@ class TestAGIProvider:
             )
         ]
 
-        response = agi._reflect_and_improve(
-            "Move Aria left", "I'll move to the left!", reasoning_chain
-        )
+        response = agi._reflect_and_improve("Move Aria left", "I'll move to the left!", reasoning_chain)
 
         assert "[aria:walk:left]" in response
 
@@ -359,9 +350,7 @@ class TestAGIProvider:
             )
         ]
 
-        response = agi._reflect_and_improve(
-            "Spin Aria around", "Spinning now!", reasoning_chain
-        )
+        response = agi._reflect_and_improve("Spin Aria around", "Spinning now!", reasoning_chain)
 
         assert "[aria:spin]" in response
 
@@ -399,9 +388,7 @@ class TestAGIProvider:
 
         # Add some state
         agi.set_goal("Test goal")
-        agi.context.add_reasoning_chain(
-            [ReasoningStep(step_type="analyze", content="Test")]
-        )
+        agi.context.add_reasoning_chain([ReasoningStep(step_type="analyze", content="Test")])
 
         summary = agi.get_reasoning_summary()
 
@@ -462,23 +449,15 @@ class TestCreateAGIProvider:
         assert info.name == "agi"
         assert "agi" in info.model.lower()
 
-    def test_create_uses_auto_detected_base_provider(
-        self, monkeypatch: pytest.MonkeyPatch
-    ):
+    def test_create_uses_auto_detected_base_provider(self, monkeypatch: pytest.MonkeyPatch):
         """Factory should wrap the best available non-AGI provider."""
         base = MockBaseProvider("auto wrapped")
 
-        def fake_detect_provider(
-            explicit=None, model_override=None, temperature=None, max_output_tokens=None
-        ):
+        def fake_detect_provider(explicit=None, model_override=None, temperature=None, max_output_tokens=None):
             assert explicit == "auto"
-            return base, ProviderChoice(
-                name="openai", model=model_override or "gpt-test"
-            )
+            return base, ProviderChoice(name="openai", model=model_override or "gpt-test")
 
-        monkeypatch.setitem(
-            create_agi_provider.__globals__, "detect_provider", fake_detect_provider
-        )
+        monkeypatch.setitem(create_agi_provider.__globals__, "detect_provider", fake_detect_provider)
 
         provider, info = create_agi_provider(model="gpt-4")
 
@@ -488,9 +467,7 @@ class TestCreateAGIProvider:
 
     def test_create_with_options(self):
         """Test creating AGI provider with custom options."""
-        provider, info = create_agi_provider(
-            temperature=0.5, max_output_tokens=1024, verbose=True
-        )
+        provider, info = create_agi_provider(temperature=0.5, max_output_tokens=1024, verbose=True)
 
         assert provider.temperature == 0.5
         assert provider.max_output_tokens == 1024
@@ -538,9 +515,7 @@ def test_agi_smoke():
     mock_provider = MockBaseProvider(response="Smoke test passed")
     agi = AGIProvider(base_provider=mock_provider)
 
-    result = agi.complete(
-        [{"role": "user", "content": "What is 2 plus 2?"}], stream=False
-    )
+    result = agi.complete([{"role": "user", "content": "What is 2 plus 2?"}], stream=False)
 
     assert len(result) > 0
     assert mock_provider.call_count == 1
@@ -674,10 +649,7 @@ class TestAGISecurity:
         agi = AGIProvider(base_provider=mock_provider)
 
         # Create more messages than the limit
-        messages = [
-            {"role": "user", "content": f"Message {i}"}
-            for i in range(MAX_HISTORY_SIZE + 10)
-        ]
+        messages = [{"role": "user", "content": f"Message {i}"} for i in range(MAX_HISTORY_SIZE + 10)]
 
         # Should complete without error
         result = agi.complete(messages, stream=False)

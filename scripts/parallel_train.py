@@ -52,18 +52,14 @@ class ParallelTrainer:
         self.min_train_samples = min_train_samples
         self.generate_samples = generate_samples
         self.root = Path(__file__).parent.parent
-        self.venv_python = (
-            self.root / "AI/microsoft_phi-silica-3.6_v1/venv/Scripts/python.exe"
-        )
-        self.train_script = (
-            self.root / "AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py"
-        )
+        self.venv_python = self.root / "AI/microsoft_phi-silica-3.6_v1/venv/Scripts/python.exe"
+        self.train_script = self.root / "AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py"
         self.perform_evaluation = perform_evaluation
         self.cleanup = cleanup
         self.ranking_metric = ranking_metric
 
         # Load config
-        with open(self.config_path, "r", encoding="utf-8") as f:
+        with open(self.config_path, encoding="utf-8") as f:
             self.config = yaml.safe_load(f) or {}
 
         self.jobs = self.config.get("jobs", [])
@@ -158,11 +154,7 @@ class ParallelTrainer:
             print(f"[{job_name}] Warning: failed counting dataset samples: {ds_err}")
 
         # Safety guard: skip if insufficient train samples
-        if (
-            self.min_train_samples is not None
-            and train_count is not None
-            and train_count < self.min_train_samples
-        ):
+        if self.min_train_samples is not None and train_count is not None and train_count < self.min_train_samples:
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
             result = {
@@ -179,9 +171,7 @@ class ParallelTrainer:
                 "dataset_train_samples": train_count,
                 "dataset_test_samples": test_count,
             }
-            print(
-                f"[{job_name}] ⚠ Skipping training: train_samples={train_count} < {self.min_train_samples}"
-            )
+            print(f"[{job_name}] ⚠ Skipping training: train_samples={train_count} < {self.min_train_samples}")
             return result
 
         # Build command for actual training with validated arguments
@@ -229,12 +219,7 @@ class ParallelTrainer:
             cmd.append("--no-stream")
 
         # Create output directory
-        output_dir = (
-            self.root
-            / "data_out/parallel_training"
-            / job_name
-            / start_time.strftime("%Y%m%dT%H%M%SZ")
-        )
+        output_dir = self.root / "data_out/parallel_training" / job_name / start_time.strftime("%Y%m%dT%H%M%SZ")
         output_dir.mkdir(parents=True, exist_ok=True)
 
         log_file = output_dir / "stdout.log"
@@ -269,9 +254,7 @@ class ParallelTrainer:
                 "dataset_test_samples": test_count,
             }
 
-            print(
-                f"[{job_name}] {'✓' if returncode == 0 else '✗'} Completed in {duration:.1f}s"
-            )
+            print(f"[{job_name}] {'✓' if returncode == 0 else '✗'} Completed in {duration:.1f}s")
 
             # Post-training evaluation (only if succeeded)
             if returncode == 0:
@@ -305,9 +288,7 @@ class ParallelTrainer:
 
         return result
 
-    def _perform_evaluation(
-        self, job: Dict[str, Any], result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+    def _perform_evaluation(self, job: Dict[str, Any], result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Quick evaluation: parse metrics.jsonl & generate sample outputs.
 
         Returns evaluation dict or None if unavailable.
@@ -330,14 +311,10 @@ class ParallelTrainer:
                         phase = rec.get("phase")
                         if phase == "pre":
                             pre_loss = rec.get("eval_loss")
-                            pre_ppl = rec.get("eval_perplexity") or (
-                                math.e ** rec.get("eval_loss", 0)
-                            )
+                            pre_ppl = rec.get("eval_perplexity") or (math.e ** rec.get("eval_loss", 0))
                         elif phase == "post":
                             post_loss = rec.get("eval_loss")
-                            post_ppl = rec.get("eval_perplexity") or (
-                                math.e ** rec.get("eval_loss", 0)
-                            )
+                            post_ppl = rec.get("eval_perplexity") or (math.e ** rec.get("eval_loss", 0))
                         # Early exit once we have both phases
                         if pre_ppl is not None and post_ppl is not None:
                             break
@@ -365,14 +342,14 @@ class ParallelTrainer:
             try:
                 from peft import PeftModel  # type: ignore
                 from transformers import AutoModelForCausalLM  # type: ignore
-                from transformers import AutoTokenizer
+                from transformers import (
+                    AutoTokenizer,
+                )
 
                 base_model_id = job.get("hf_model_id")
                 adapter_dir = save_dir / "lora_adapter"
                 if adapter_dir.exists():
-                    tokenizer = AutoTokenizer.from_pretrained(
-                        base_model_id, use_fast=True
-                    )
+                    tokenizer = AutoTokenizer.from_pretrained(base_model_id, use_fast=True)
                     if tokenizer.pad_token is None:
                         tokenizer.pad_token = tokenizer.eos_token
                     base_model = AutoModelForCausalLM.from_pretrained(base_model_id)
@@ -391,16 +368,12 @@ class ParallelTrainer:
                                     temperature=0.8,
                                     top_p=0.9,
                                 )
-                            gen_text = tokenizer.decode(
-                                output_ids[0], skip_special_tokens=True
-                            )
+                            gen_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
                             samples.append({"prompt": p, "response": gen_text})
                         except Exception as gen_err:
                             samples.append({"prompt": p, "error": str(gen_err)})
                 else:
-                    eval_info["generation_note"] = (
-                        "adapter_dir_missing; skipping sample generation"
-                    )
+                    eval_info["generation_note"] = "adapter_dir_missing; skipping sample generation"
             except Exception as g_err:
                 eval_info["generation_error"] = f"generation_failed: {g_err}"
         if samples:
@@ -431,22 +404,14 @@ class ParallelTrainer:
 
             responses = [s.get("response", "") for s in samples]
             diversity = _distinct_1_2(responses)
-            avg_len = (
-                sum(len(r.split()) for r in responses) / len(responses)
-                if responses
-                else 0.0
-            )
-            echo_scores = [
-                _echo_ratio(s["prompt"], s.get("response", "")) for s in samples
-            ]
+            avg_len = sum(len(r.split()) for r in responses) / len(responses) if responses else 0.0
+            echo_scores = [_echo_ratio(s["prompt"], s.get("response", "")) for s in samples]
             eval_info["samples"] = samples
             eval_info["diversity"] = {
                 "distinct_1": diversity["distinct_1"],
                 "distinct_2": diversity["distinct_2"],
                 "avg_response_tokens": avg_len,
-                "avg_echo_ratio": (
-                    sum(echo_scores) / len(echo_scores) if echo_scores else 0.0
-                ),
+                "avg_echo_ratio": (sum(echo_scores) / len(echo_scores) if echo_scores else 0.0),
             }
         return eval_info or None
 
@@ -489,57 +454,32 @@ class ParallelTrainer:
             diversity = ev.get("diversity") or {}
             d1 = diversity.get("distinct_1")
             d2 = diversity.get("distinct_2")
-            diversity_avg = (
-                (d1 + d2) / 2 if (d1 is not None and d2 is not None) else None
-            )
+            diversity_avg = (d1 + d2) / 2 if (d1 is not None and d2 is not None) else None
             # Skip jobs without post perplexity for metrics relying on perplexity
             if (
-                self.ranking_metric
-                in ("perplexity_improvement", "post_perplexity", "combined_improvement")
+                self.ranking_metric in ("perplexity_improvement", "post_perplexity", "combined_improvement")
                 and post_ppl is None
             ):
                 continue
-            if (
-                self.ranking_metric == "perplexity_improvement"
-                and pre_ppl is not None
-                and post_ppl is not None
-            ):
-                ppl_improvement = (
-                    (pre_ppl - post_ppl) / pre_ppl if pre_ppl and pre_ppl > 0 else 0.0
-                )
+            if self.ranking_metric == "perplexity_improvement" and pre_ppl is not None and post_ppl is not None:
+                ppl_improvement = (pre_ppl - post_ppl) / pre_ppl if pre_ppl and pre_ppl > 0 else 0.0
                 score = ppl_improvement
             elif self.ranking_metric == "post_perplexity" and post_ppl is not None:
-                ppl_improvement = (
-                    (pre_ppl - post_ppl) / pre_ppl
-                    if (pre_ppl and post_ppl and pre_ppl > 0)
-                    else None
-                )
+                ppl_improvement = (pre_ppl - post_ppl) / pre_ppl if (pre_ppl and post_ppl and pre_ppl > 0) else None
                 score = -post_ppl  # lower is better
             elif self.ranking_metric in ("diversity_avg", "distinct_diversity"):
                 if diversity_avg is None:
                     # Cannot rank this job on diversity; skip it
                     continue
-                ppl_improvement = (
-                    (pre_ppl - post_ppl) / pre_ppl
-                    if (pre_ppl and post_ppl and pre_ppl > 0)
-                    else None
-                )
+                ppl_improvement = (pre_ppl - post_ppl) / pre_ppl if (pre_ppl and post_ppl and pre_ppl > 0) else None
                 score = diversity_avg
             elif self.ranking_metric == "combined_improvement":
-                ppl_improvement = (
-                    (pre_ppl - post_ppl) / pre_ppl
-                    if (pre_ppl and post_ppl and pre_ppl > 0)
-                    else 0.0
-                )
+                ppl_improvement = (pre_ppl - post_ppl) / pre_ppl if (pre_ppl and post_ppl and pre_ppl > 0) else 0.0
                 div_component = diversity_avg if diversity_avg is not None else 0.0
                 score = 0.7 * ppl_improvement + 0.3 * div_component
             else:
                 # Fallback to post perplexity if unknown metric
-                ppl_improvement = (
-                    (pre_ppl - post_ppl) / pre_ppl
-                    if (pre_ppl and post_ppl and pre_ppl > 0)
-                    else None
-                )
+                ppl_improvement = (pre_ppl - post_ppl) / pre_ppl if (pre_ppl and post_ppl and pre_ppl > 0) else None
                 score = -post_ppl if post_ppl is not None else 0.0
             ranked.append(
                 {
@@ -574,9 +514,7 @@ class ParallelTrainer:
             print(f"No jobs match filter: {job_filter}")
             return
 
-        print(
-            f"Running {len(filtered_jobs)} jobs with max {self.max_parallel} parallel"
-        )
+        print(f"Running {len(filtered_jobs)} jobs with max {self.max_parallel} parallel")
 
         # Create semaphore for concurrency control
         semaphore = asyncio.Semaphore(self.max_parallel)
@@ -586,10 +524,7 @@ class ParallelTrainer:
                 return await self.run_job(job, device_id)
 
         # Assign device IDs cyclically
-        tasks = [
-            run_with_semaphore(job, i % self.max_parallel)
-            for i, job in enumerate(filtered_jobs)
-        ]
+        tasks = [run_with_semaphore(job, i % self.max_parallel) for i, job in enumerate(filtered_jobs)]
 
         # Run all tasks
         start_time = datetime.now()
@@ -600,14 +535,10 @@ class ParallelTrainer:
         status_file = self.root / "data_out/parallel_training/status.json"
         status_file.parent.mkdir(parents=True, exist_ok=True)
         agg_train = sum(
-            r.get("dataset_train_samples") or 0
-            for r in self.results
-            if r.get("dataset_train_samples") is not None
+            r.get("dataset_train_samples") or 0 for r in self.results if r.get("dataset_train_samples") is not None
         )
         agg_test = sum(
-            r.get("dataset_test_samples") or 0
-            for r in self.results
-            if r.get("dataset_test_samples") is not None
+            r.get("dataset_test_samples") or 0 for r in self.results if r.get("dataset_test_samples") is not None
         )
 
         run_entry = {
@@ -649,12 +580,8 @@ class ParallelTrainer:
             "last_updated": end_time.isoformat(),
         }
         try:
-            new_status["cumulative_train_samples"] = (
-                sum((r.get("aggregate_train_samples") or 0) for r in runs) or None
-            )
-            new_status["cumulative_test_samples"] = (
-                sum((r.get("aggregate_test_samples") or 0) for r in runs) or None
-            )
+            new_status["cumulative_train_samples"] = sum((r.get("aggregate_train_samples") or 0) for r in runs) or None
+            new_status["cumulative_test_samples"] = sum((r.get("aggregate_test_samples") or 0) for r in runs) or None
         except Exception:
             pass
         with status_file.open("w", encoding="utf-8") as f:
@@ -694,9 +621,7 @@ class ParallelTrainer:
         if failed > 0:
             print("\nFailed Jobs:")
             for r in failed_jobs:
-                print(
-                    f"  - {r['name']}: {r.get('error', 'return code ' + str(r.get('return_code')))}"
-                )
+                print(f"  - {r['name']}: {r.get('error', 'return code ' + str(r.get('return_code')))}")
         if skipped > 0:
             print("\nSkipped Jobs:")
             for r in skipped_jobs:
@@ -706,17 +631,13 @@ class ParallelTrainer:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Parallel training launcher with historical status & evaluation"
-    )
+    parser = argparse.ArgumentParser(description="Parallel training launcher with historical status & evaluation")
     parser.add_argument(
         "--config",
         default="autotrain_fast.yaml",
         help="Training config YAML (default: autotrain_fast.yaml)",
     )
-    parser.add_argument(
-        "--max-parallel", type=int, default=3, help="Max concurrent jobs (default: 3)"
-    )
+    parser.add_argument("--max-parallel", type=int, default=3, help="Max concurrent jobs (default: 3)")
     parser.add_argument(
         "--filter",
         default="*",
@@ -783,16 +704,12 @@ def main():
     asyncio.run(trainer.run_all_parallel(args.filter))
 
     # Determine exit status (skipped jobs are not failures)
-    failures = [
-        r for r in trainer.results if r.get("status") not in ("succeeded", "skipped")
-    ]
+    failures = [r for r in trainer.results if r.get("status") not in ("succeeded", "skipped")]
     if failures:
         print("\n[parallel_train] One or more jobs failed. Exiting with code 1.")
         sys.exit(1)
     else:
-        print(
-            "\n[parallel_train] All jobs completed (including skips). Exiting with code 0."
-        )
+        print("\n[parallel_train] All jobs completed (including skips). Exiting with code 0.")
         sys.exit(0)
 
 

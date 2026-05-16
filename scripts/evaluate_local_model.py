@@ -128,9 +128,7 @@ def run_evaluation(
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(
-        description="Evaluate a local model (lightweight, offline)"
-    )
+    ap = argparse.ArgumentParser(description="Evaluate a local model (lightweight, offline)")
     ap.add_argument("--dataset", required=True, help="Path to dataset (json/jsonl/csv)")
     ap.add_argument(
         "--max-samples",
@@ -138,9 +136,7 @@ def parse_args():
         default=None,
         help="Limit number of evaluation samples",
     )
-    ap.add_argument(
-        "--metric", dest="metrics", action="append", help="Metric to compute (repeat)"
-    )
+    ap.add_argument("--metric", dest="metrics", action="append", help="Metric to compute (repeat)")
     ap.add_argument("--output-format", default="json", choices=["json", "text"])
     ap.add_argument("--save-dir", help="Directory to save results", default=None)
     return ap.parse_args()

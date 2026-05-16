@@ -20,9 +20,7 @@ class StripeWebhookHandler:
         self.webhook_log.parent.mkdir(parents=True, exist_ok=True)
         self.processed_events = set()
 
-    def handle_webhook(
-        self, payload: str, signature: str, webhook_secret: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def handle_webhook(self, payload: str, signature: str, webhook_secret: Optional[str] = None) -> Dict[str, Any]:
         """
         Handle incoming Stripe webhook
 
@@ -95,9 +93,7 @@ class StripeWebhookHandler:
         plan_id = subscription.get("plan", {}).get("id")
         amount = subscription.get("plan", {}).get("amount", 0) / 100
 
-        logger.info(
-            f"Subscription created: {subscription_id} for customer {customer_id}"
-        )
+        logger.info(f"Subscription created: {subscription_id} for customer {customer_id}")
 
         # Update subscription in database
         from shared.subscription_manager import get_subscription_manager
@@ -306,7 +302,7 @@ class StripeWebhookHandler:
             # Load existing log
             log_data = []
             if self.webhook_log.exists():
-                with open(self.webhook_log, "r") as f:
+                with open(self.webhook_log) as f:
                     log_data = json.load(f)
 
             # Append new event

@@ -132,9 +132,7 @@ class TestCalculateImprovementRate:
         assert ta.calculate_improvement_rate() == pytest.approx(0.20)
 
     def test_multiple_entries(self, tmp_path):
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.50, 0.60, 0.70, 0.80)}
-        )
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.50, 0.60, 0.70, 0.80)})
         # (0.80 - 0.50) / (4-1) = 0.10
         assert ta.calculate_improvement_rate() == pytest.approx(0.10)
 
@@ -269,16 +267,12 @@ class TestDetectPlateau:
 
     def test_tiny_variance_returns_true(self, tmp_path):
         # pvariance([0.8000, 0.8001, 0.8000]) ≈ 2.2e-9 < 0.0001
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.8000, 0.8001, 0.8000)}
-        )
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.8000, 0.8001, 0.8000)})
         assert ta.detect_plateau(window=3) is True
 
     def test_window_uses_only_recent_entries(self, tmp_path):
         # Early entries vary wildly but last 3 are flat
-        ta = _write_ta(
-            tmp_path, {"performance_history": _history(0.10, 0.50, 0.80, 0.80, 0.80)}
-        )
+        ta = _write_ta(tmp_path, {"performance_history": _history(0.10, 0.50, 0.80, 0.80, 0.80)})
         assert ta.detect_plateau(window=3) is True
 
     def test_default_window_is_3(self, tmp_path):

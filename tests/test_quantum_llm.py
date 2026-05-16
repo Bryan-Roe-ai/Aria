@@ -10,30 +10,22 @@ from __future__ import annotations
 import asyncio
 import sys
 from pathlib import Path
-from typing import List
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
 
 # Ensure the quantum_llm package is importable
-_QUANTUM_LLM_SRC = (
-    Path(__file__).resolve().parents[1]
-    / "ai-projects"
-    / "quantum-ml"
-    / "src"
-)
+_QUANTUM_LLM_SRC = Path(__file__).resolve().parents[1] / "ai-projects" / "quantum-ml" / "src"
 if str(_QUANTUM_LLM_SRC) not in sys.path:
     sys.path.insert(0, str(_QUANTUM_LLM_SRC))
 
 from quantum_llm import (  # noqa: E402
+    QuantumEmbeddingTransformer,
     QuantumLLMConfig,
     QuantumLLMPipeline,
-    QuantumEmbeddingTransformer,
     QuantumRouter,
     QuantumSampler,
 )
-
 
 # ===========================================================================
 # Config tests
@@ -186,9 +178,7 @@ class TestQuantumSampler:
 
 class TestQuantumEmbeddingTransformer:
     def _make_transformer(self, **kwargs) -> QuantumEmbeddingTransformer:
-        return QuantumEmbeddingTransformer(
-            backend="classical", num_qubits=4, num_layers=1, seed=42, **kwargs
-        )
+        return QuantumEmbeddingTransformer(backend="classical", num_qubits=4, num_layers=1, seed=42, **kwargs)
 
     def test_transform_preserves_shape(self):
         t = self._make_transformer()
@@ -401,9 +391,7 @@ class TestPipelineIntegration:
             use_thread=False,
         )
         pipeline = QuantumLLMPipeline(config=cfg)
-        pipeline._get_provider = lambda prompt, provider=None: _MockProvider(
-            "The answer to everything is quantum."
-        )
+        pipeline._get_provider = lambda prompt, provider=None: _MockProvider("The answer to everything is quantum.")
 
         r1 = asyncio.run(pipeline.generate("What is the answer?", seed=42))
         r2 = asyncio.run(pipeline.generate("What is the answer?", seed=42))

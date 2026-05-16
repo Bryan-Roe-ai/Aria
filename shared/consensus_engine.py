@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 _SUCCESS_STATUSES = {"success", "complete", "completed", "ok", "passed"}
 
@@ -125,11 +126,7 @@ def compute_consensus(
         )
 
     # Check for ties at top score within tolerance.
-    tied = [
-        choice
-        for choice, score in ranking
-        if abs(score - winner_score) <= cfg.tie_tolerance
-    ]
+    tied = [choice for choice, score in ranking if abs(score - winner_score) <= cfg.tie_tolerance]
     if len(tied) > 1:
         return ConsensusResult(
             reached=False,

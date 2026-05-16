@@ -18,13 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "scope_drift_guard.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "scope_drift_guard.py"
 
 _DRIFT_PHRASES = [
     "also fix the tests while you're at it",

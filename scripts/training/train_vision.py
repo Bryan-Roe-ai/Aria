@@ -53,7 +53,7 @@ class TinyConvNet(nn.Module):
             nn.Linear(32, num_classes),
         )
 
-    def forward(self, x: "torch.Tensor") -> "torch.Tensor":
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
 
 
@@ -134,9 +134,7 @@ def generate_toy_shapes_dataset(
         mask = (ys - cy) ** 2 + (xs - cx) ** 2 <= radius**2
         img[mask] = 255
         noise = rng.integers(0, 30, img.shape, dtype=np.uint8)
-        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(
-            np.uint8
-        )
+        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(np.uint8)
         _save_png(img, root / "circle" / f"img_{i:04d}.png")
 
         # --- Square ---
@@ -144,9 +142,7 @@ def generate_toy_shapes_dataset(
         margin = max(2, min(h, w) // 4)
         img[margin : h - margin, margin : w - margin] = 255
         noise = rng.integers(0, 30, img.shape, dtype=np.uint8)
-        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(
-            np.uint8
-        )
+        img = np.clip(img.astype(np.int32) + noise.astype(np.int32), 0, 255).astype(np.uint8)
         _save_png(img, root / "square" / f"img_{i:04d}.png")
 
 
@@ -158,9 +154,9 @@ def generate_toy_shapes_dataset(
 def _train_epoch(
     model: TinyConvNet,
     loader: DataLoader,
-    optimizer: "torch.optim.Optimizer",
-    criterion: "nn.Module",
-    device: "torch.device",
+    optimizer: torch.optim.Optimizer,
+    criterion: nn.Module,
+    device: torch.device,
 ) -> tuple[float, float]:
     model.train()
     total_loss = 0.0
@@ -193,17 +189,13 @@ def _train_epoch(
 
 def main(args: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Train TinyConvNet vision classifier")
-    parser.add_argument(
-        "--dataset", required=True, help="Path to dataset root directory"
-    )
+    parser.add_argument("--dataset", required=True, help="Path to dataset root directory")
     parser.add_argument("--epochs", type=int, default=5)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--out-dir", default="data_out/vision_training")
     parser.add_argument("--img-size", type=int, default=64)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Validate only, skip training"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Validate only, skip training")
     parsed = parser.parse_args(args)
 
     out_dir = Path(parsed.out_dir)
@@ -211,9 +203,7 @@ def main(args: Optional[List[str]] = None) -> int:
 
     dataset_path = Path(parsed.dataset)
     if not dataset_path.exists():
-        print(
-            f"[train_vision] ERROR: dataset not found: {dataset_path}", file=sys.stderr
-        )
+        print(f"[train_vision] ERROR: dataset not found: {dataset_path}", file=sys.stderr)
         return 1
 
     ds = FolderDataset(dataset_path, img_size=parsed.img_size)
@@ -222,10 +212,7 @@ def main(args: Optional[List[str]] = None) -> int:
         return 1
 
     if parsed.dry_run:
-        print(
-            f"[train_vision] dry-run OK — {len(ds)} images, "
-            f"{len(ds.classes)} classes: {ds.classes}"
-        )
+        print(f"[train_vision] dry-run OK — {len(ds)} images, " f"{len(ds.classes)} classes: {ds.classes}")
         return 0
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -236,9 +223,7 @@ def main(args: Optional[List[str]] = None) -> int:
 
     for epoch in range(1, parsed.epochs + 1):
         loss, acc = _train_epoch(model, loader, optimizer, criterion, device)
-        print(
-            f"[train_vision] epoch {epoch}/{parsed.epochs}  loss={loss:.4f}  acc={acc:.3f}"
-        )
+        print(f"[train_vision] epoch {epoch}/{parsed.epochs}  loss={loss:.4f}  acc={acc:.3f}")
         ckpt_path = out_dir / f"vision_model_epoch{epoch:03d}.pt"
         torch.save(
             {

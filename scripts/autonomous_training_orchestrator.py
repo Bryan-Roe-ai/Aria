@@ -145,7 +145,7 @@ def _run_training_cycle_with_retry(cycle_num: int, plateau_cycles: int) -> Dict[
 
 def load_config(config_path: Path = CONFIG_FILE) -> Dict[str, Any]:
     if config_path.exists():
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
             if isinstance(data, dict):
                 return data
@@ -154,7 +154,7 @@ def load_config(config_path: Path = CONFIG_FILE) -> Dict[str, Any]:
 
 def load_status() -> Dict[str, Any]:
     if STATUS_FILE.exists():
-        with open(STATUS_FILE, "r", encoding="utf-8") as f:
+        with open(STATUS_FILE, encoding="utf-8") as f:
             status = json.load(f)
         history = status.get("performance_history", [])
         if len(history) > MAX_HISTORY_CYCLES:
@@ -408,7 +408,7 @@ def run_quantum_llm_training(status: Dict[str, Any], config: Dict[str, Any]) -> 
 
         config_file = _resolve_repo_path(qcfg.get("config_file"), REPO_ROOT / "config" / "quantum_llm_config.yaml")
         if config_file.exists():
-            with open(config_file, "r", encoding="utf-8") as f:
+            with open(config_file, encoding="utf-8") as f:
                 file_cfg = yaml.safe_load(f) or {}
             if isinstance(file_cfg, dict):
                 trainer_config.update(file_cfg)

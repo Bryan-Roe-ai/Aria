@@ -18,12 +18,8 @@ def test_best_model_selection():
         if ranking_metric in ("perplexity_improvement", "combined_improvement"):
             if ranking_metric == "combined_improvement":
                 for m in filtered:
-                    m["combined_improvement"] = 0.7 * (improvement(m) or 0.0) + 0.3 * (
-                        diversity(m) or 0.0
-                    )
-                filtered = [
-                    m for m in filtered if m.get("combined_improvement") is not None
-                ]
+                    m["combined_improvement"] = 0.7 * (improvement(m) or 0.0) + 0.3 * (diversity(m) or 0.0)
+                filtered = [m for m in filtered if m.get("combined_improvement") is not None]
 
                 def key(x):
                     return x.get("combined_improvement")

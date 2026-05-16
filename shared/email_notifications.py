@@ -97,9 +97,7 @@ class EmailNotificationSystem:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
             return False
 
-    def send_template_email(
-        self, to_email: str, template: EmailTemplate, context: Dict[str, Any]
-    ) -> bool:
+    def send_template_email(self, to_email: str, template: EmailTemplate, context: Dict[str, Any]) -> bool:
         """
         Send an email using a template
 
@@ -118,9 +116,7 @@ class EmailNotificationSystem:
 
         return self.send_email(to_email, subject, body_html, body_text)
 
-    def notify_subscription_activated(
-        self, user_email: str, tier: str, price: float
-    ) -> bool:
+    def notify_subscription_activated(self, user_email: str, tier: str, price: float) -> bool:
         """Notify user that subscription is activated"""
         context = {
             "tier": tier,
@@ -128,9 +124,7 @@ class EmailNotificationSystem:
             "date": datetime.now().strftime("%B %d, %Y"),
             "dashboard_url": "https://aria-platform.com/my-subscription.html",
         }
-        return self.send_template_email(
-            user_email, EmailTemplate.SUBSCRIPTION_ACTIVATED, context
-        )
+        return self.send_template_email(user_email, EmailTemplate.SUBSCRIPTION_ACTIVATED, context)
 
     def notify_usage_warning(
         self,
@@ -141,11 +135,7 @@ class EmailNotificationSystem:
         limit: int,
     ) -> bool:
         """Notify user about approaching usage limits"""
-        template = (
-            EmailTemplate.USAGE_WARNING_90
-            if percentage >= 90
-            else EmailTemplate.USAGE_WARNING_80
-        )
+        template = EmailTemplate.USAGE_WARNING_90 if percentage >= 90 else EmailTemplate.USAGE_WARNING_80
 
         context = {
             "resource": resource,
@@ -158,9 +148,7 @@ class EmailNotificationSystem:
 
         return self.send_template_email(user_email, template, context)
 
-    def notify_usage_limit_reached(
-        self, user_email: str, resource: str, limit: int
-    ) -> bool:
+    def notify_usage_limit_reached(self, user_email: str, resource: str, limit: int) -> bool:
         """Notify user that usage limit has been reached"""
         context = {
             "resource": resource,
@@ -169,13 +157,9 @@ class EmailNotificationSystem:
             "reset_date": self._get_next_reset_date(),
         }
 
-        return self.send_template_email(
-            user_email, EmailTemplate.USAGE_LIMIT_REACHED, context
-        )
+        return self.send_template_email(user_email, EmailTemplate.USAGE_LIMIT_REACHED, context)
 
-    def notify_payment_succeeded(
-        self, user_email: str, amount: float, invoice_id: str
-    ) -> bool:
+    def notify_payment_succeeded(self, user_email: str, amount: float, invoice_id: str) -> bool:
         """Notify user of successful payment"""
         context = {
             "amount": amount,
@@ -184,13 +168,9 @@ class EmailNotificationSystem:
             "invoice_url": f"https://aria-platform.com/invoices/{invoice_id}",
         }
 
-        return self.send_template_email(
-            user_email, EmailTemplate.PAYMENT_SUCCEEDED, context
-        )
+        return self.send_template_email(user_email, EmailTemplate.PAYMENT_SUCCEEDED, context)
 
-    def notify_payment_failed(
-        self, user_email: str, amount: float, reason: str
-    ) -> bool:
+    def notify_payment_failed(self, user_email: str, amount: float, reason: str) -> bool:
         """Notify user of failed payment"""
         context = {
             "amount": amount,
@@ -199,9 +179,7 @@ class EmailNotificationSystem:
             "billing_url": "https://aria-platform.com/account.html",
         }
 
-        return self.send_template_email(
-            user_email, EmailTemplate.PAYMENT_FAILED, context
-        )
+        return self.send_template_email(user_email, EmailTemplate.PAYMENT_FAILED, context)
 
     def _get_template(self, template: EmailTemplate) -> Dict[str, str]:
         """Get email template data"""
@@ -370,7 +348,7 @@ class EmailNotificationSystem:
             # Load existing log
             log_data = []
             if self.notification_log.exists():
-                with open(self.notification_log, "r") as f:
+                with open(self.notification_log) as f:
                     log_data = json.load(f)
 
             # Append new notification

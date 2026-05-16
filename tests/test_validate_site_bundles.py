@@ -4,7 +4,6 @@ import json
 
 from scripts.validate_site_bundles import validate_bundle
 
-
 REQUIRED_BASE_FILES = {
     "index.html": "<html></html>",
     "style.css": "body{}",

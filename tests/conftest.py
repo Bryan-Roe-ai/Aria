@@ -133,14 +133,8 @@ def assert_valid_provider(provider_name):
 
 def pytest_configure(config):
     """Configure pytest with custom markers"""
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
-    )
-    config.addinivalue_line(
-        "markers", "azure: marks tests that require Azure credentials"
-    )
+    config.addinivalue_line("markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')")
+    config.addinivalue_line("markers", "azure: marks tests that require Azure credentials")
     config.addinivalue_line("markers", "integration: marks tests as integration tests")
-    config.addinivalue_line(
-        "markers", "quantum: marks tests that require quantum backends"
-    )
+    config.addinivalue_line("markers", "quantum: marks tests that require quantum backends")
     config.addinivalue_line("markers", "gpu: marks tests that require GPU")

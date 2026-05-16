@@ -64,9 +64,7 @@ def validate_bundle(bundle_dir: Path, *, strict_metadata: bool = False) -> list[
             errors.append(f"metadata missing key: {key}")
             continue
         if not isinstance(metadata[key], expected_type):
-            errors.append(
-                f"metadata key '{key}' must be {expected_type.__name__}, got {type(metadata[key]).__name__}"
-            )
+            errors.append(f"metadata key '{key}' must be {expected_type.__name__}, got {type(metadata[key]).__name__}")
 
     files_list = metadata.get("files")
     if isinstance(files_list, list):
@@ -76,9 +74,7 @@ def validate_bundle(bundle_dir: Path, *, strict_metadata: bool = False) -> list[
             required_meta_entries.add("metadata.json")
         missing_in_files = sorted(required_meta_entries - files_set)
         if missing_in_files:
-            errors.append(
-                f"metadata.files missing required entries: {', '.join(missing_in_files)}"
-            )
+            errors.append(f"metadata.files missing required entries: {', '.join(missing_in_files)}")
 
     return errors
 

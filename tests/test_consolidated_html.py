@@ -84,8 +84,7 @@ class TestHyperparamCardPlacement:
 
         # The hyperopt container should come AFTER the GPU ready pill
         assert card_pos > gpu_ready_pos, (
-            "hyperoptContainer appears before/inside the status-pills header block; "
-            "it should be in the Tools tab"
+            "hyperoptContainer appears before/inside the status-pills header block; " "it should be in the Tools tab"
         )
 
     def test_card_near_anomaly_detector(self, html_text):
@@ -94,9 +93,7 @@ class TestHyperparamCardPlacement:
         hyperopt_pos = html_text.find("Hyperparameter Optimizer")
         assert anomaly_pos != -1, "Anomaly Detector card not found"
         assert hyperopt_pos != -1, "Hyperparameter Optimizer card not found"
-        assert (
-            hyperopt_pos > anomaly_pos
-        ), "Hyperparameter Optimizer card should come after Anomaly Detector"
+        assert hyperopt_pos > anomaly_pos, "Hyperparameter Optimizer card should come after Anomaly Detector"
         # They should be reasonably close (within 2000 chars)
         assert (
             hyperopt_pos - anomaly_pos < 2000
@@ -135,8 +132,7 @@ class TestJsFunctionScope:
             pattern = re.compile(rf"^        function {fname}\(", re.MULTILINE)
             matches = pattern.findall(html_text)
             assert len(matches) >= 1, (
-                f"function {fname} not found at top-level script scope "
-                "(expected 8-space indent)"
+                f"function {fname} not found at top-level script scope " "(expected 8-space indent)"
             )
 
     def test_loadconfig_closes_before_hyperopt(self, html_lines):
@@ -144,21 +140,13 @@ class TestJsFunctionScope:
         loadconfig_start = None
         startoptim_line = None
         for i, line in enumerate(html_lines):
-            if (
-                re.match(r"\s+function loadConfig\(\)", line)
-                and loadconfig_start is None
-            ):
+            if re.match(r"\s+function loadConfig\(\)", line) and loadconfig_start is None:
                 loadconfig_start = i
-            if (
-                "function startHyperparamOptimization(" in line
-                and startoptim_line is None
-            ):
+            if "function startHyperparamOptimization(" in line and startoptim_line is None:
                 startoptim_line = i
 
         assert loadconfig_start is not None, "function loadConfig() not found"
-        assert (
-            startoptim_line is not None
-        ), "function startHyperparamOptimization() not found"
+        assert startoptim_line is not None, "function startHyperparamOptimization() not found"
 
         # Between loadconfig_start and startoptim_line, there must be a closing brace
         # at 8-space indent (closes loadConfig) before the new function declaration.
@@ -183,14 +171,10 @@ class TestVramCalculatorImpl:
         ), "runVRAMCalculator must call fetch('/api/vram-info') — not simulate"
 
     def test_no_simulate_comment(self, html_text):
-        assert (
-            "Simulate API call" not in html_text
-        ), "Simulation comment still present — VRAM calculator not updated"
+        assert "Simulate API call" not in html_text, "Simulation comment still present — VRAM calculator not updated"
 
     def test_uses_safe_batch_size_key(self, html_text):
-        assert (
-            "safe_batch_size" in html_text
-        ), "VRAM calculator should use 'safe_batch_size' from API response"
+        assert "safe_batch_size" in html_text, "VRAM calculator should use 'safe_batch_size' from API response"
 
     def test_handles_no_gpu(self, html_text):
         """There should be error/warning handling for the no-GPU response path."""
@@ -212,11 +196,7 @@ class TestKeyboardShortcuts:
         tab_map_match = re.search(r"tabMap\s*=\s*\{([^}]+)\}", html_text)
         assert tab_map_match, "tabMap not found in keyboard shortcut code"
         entries = re.findall(r"'\d'", tab_map_match.group(1))
-        assert (
-            len(entries) == 5
-        ), f"Expected 5 digit keys in tabMap, found {len(entries)}"
+        assert len(entries) == 5, f"Expected 5 digit keys in tabMap, found {len(entries)}"
 
     def test_switches_to_tools_tab(self, html_text):
-        assert (
-            "'tools'" in html_text or '"tools"' in html_text
-        ), "Keyboard shortcut tabMap should include 'tools' tab"
+        assert "'tools'" in html_text or '"tools"' in html_text, "Keyboard shortcut tabMap should include 'tools' tab"

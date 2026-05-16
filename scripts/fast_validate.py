@@ -30,11 +30,7 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Build summary metadata for fast-validate checks."""
     total = len(results)
     ok_count = sum(1 for r in results if r.get("status") == "ok")
-    critical_failures = [
-        r
-        for r in results
-        if is_critical_failure(str(r.get("check", "")), str(r.get("status", "")))
-    ]
+    critical_failures = [r for r in results if is_critical_failure(str(r.get("check", "")), str(r.get("status", "")))]
     warning_count = total - ok_count - len(critical_failures)
 
     return {
@@ -131,9 +127,7 @@ def quick_check_configs() -> Dict[str, Any]:
     import importlib
     import importlib.util
 
-    yaml_mod = (
-        importlib.import_module("yaml") if importlib.util.find_spec("yaml") else None
-    )
+    yaml_mod = importlib.import_module("yaml") if importlib.util.find_spec("yaml") else None
 
     configs = [
         "config/autonomous_training.yaml",
@@ -147,7 +141,7 @@ def quick_check_configs() -> Dict[str, Any]:
             continue
         if yaml_mod:
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     yaml_mod.safe_load(f)
             except Exception as exc:
                 issues.append(f"parse error in {cfg}: {exc}")
@@ -274,10 +268,7 @@ def _spec_exists_in_python(module_name: str, python_exe: Path) -> bool:
     cmd = [
         str(python_exe),
         "-c",
-        (
-            "import importlib.util,sys; "
-            "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"
-        ),
+        ("import importlib.util,sys; " "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"),
         module_name,
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5)

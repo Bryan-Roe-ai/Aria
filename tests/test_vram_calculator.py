@@ -6,11 +6,16 @@ import sys
 from pathlib import Path
 
 import pytest
-from vram_calculator import (_BYTES_PER_PARAM, KNOWN_MODELS, _get_arch,
-                             calculate_safe_batch_size,
-                             estimate_activation_memory_gb,
-                             estimate_lora_overhead_gb,
-                             estimate_model_memory_gb, probe_vram)
+from vram_calculator import (
+    _BYTES_PER_PARAM,
+    KNOWN_MODELS,
+    _get_arch,
+    calculate_safe_batch_size,
+    estimate_activation_memory_gb,
+    estimate_lora_overhead_gb,
+    estimate_model_memory_gb,
+    probe_vram,
+)
 
 # Ensure scripts/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -65,9 +70,7 @@ class TestEstimateModelMemory:
         assert fp32 == pytest.approx(fp16 * 2, rel=0.01)
 
     def test_int4_smaller_than_int8(self):
-        assert estimate_model_memory_gb(7.0, "int4") < estimate_model_memory_gb(
-            7.0, "int8"
-        )
+        assert estimate_model_memory_gb(7.0, "int4") < estimate_model_memory_gb(7.0, "int8")
 
     def test_unknown_dtype_defaults(self):
         # _BYTES_PER_PARAM.get(unknown, 2) → fp16 behaviour

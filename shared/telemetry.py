@@ -23,24 +23,19 @@ def init_telemetry() -> bool:
 
     conn = os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
     if not conn:
-        logging.info(
-            "[telemetry] No Application Insights connection string; telemetry disabled."
-        )
+        logging.info("[telemetry] No Application Insights connection string; telemetry disabled.")
         return False
 
     try:
         # Azure Monitor OpenTelemetry configuration.
-        from azure.monitor.opentelemetry import \
-            configure_azure_monitor  # type: ignore
+        from azure.monitor.opentelemetry import configure_azure_monitor  # type: ignore
 
         configure_azure_monitor(connection_string=conn)
         _INITIALIZED = True
         logging.info("[telemetry] Azure Monitor OpenTelemetry configured.")
         return True
     except Exception as e:  # pragma: no cover - defensive
-        logging.warning(
-            f"[telemetry] Failed to initialize Azure Monitor instrumentation: {e}"
-        )
+        logging.warning(f"[telemetry] Failed to initialize Azure Monitor instrumentation: {e}")
         return False
 
 

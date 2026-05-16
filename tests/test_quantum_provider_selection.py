@@ -13,9 +13,7 @@ chat_providers: Any = importlib.import_module("chat_providers")
 ProviderChoice = chat_providers.ProviderChoice
 
 
-def _install_fake_quantum_provider(
-    monkeypatch: pytest.MonkeyPatch, captured: dict
-) -> None:
+def _install_fake_quantum_provider(monkeypatch: pytest.MonkeyPatch, captured: dict) -> None:
     """Install a lightweight fake quantum_provider module for deterministic tests."""
     fake_module = types.ModuleType("quantum_provider")
 
@@ -29,9 +27,7 @@ def _install_fake_quantum_provider(
         captured["temperature"] = temperature
         captured["max_output_tokens"] = max_output_tokens
         captured["kwargs"] = kwargs
-        return object(), ProviderChoice(
-            name="quantum-llm", model=f"quantum-llm ({model_path})"
-        )
+        return object(), ProviderChoice(name="quantum-llm", model=f"quantum-llm ({model_path})")
 
     fake_module.create_quantum_llm_provider = _fake_factory
     monkeypatch.setitem(sys.modules, "quantum_provider", fake_module)

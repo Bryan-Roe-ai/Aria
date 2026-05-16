@@ -163,9 +163,7 @@ class TestParseQuantumSummary:
     def test_handles_missing_metrics_key(self, tmp_path):
         summary_dir = tmp_path / "ai-projects" / "quantum-ml" / "results"
         summary_dir.mkdir(parents=True)
-        (summary_dir / "custom_training_summary.json").write_text(
-            json.dumps({"other_key": 1})
-        )
+        (summary_dir / "custom_training_summary.json").write_text(json.dumps({"other_key": 1}))
         with patch.object(dbl, "REPO_ROOT", tmp_path):
             result = dbl._parse_quantum_summary()
         # No 'metrics' key → all values will be None (from .get())
@@ -278,4 +276,3 @@ class TestLogLoraRunSafe:
             )
         assert result["success"] is False
         assert result.get("skipped") is True
-

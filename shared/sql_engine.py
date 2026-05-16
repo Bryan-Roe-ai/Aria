@@ -313,9 +313,7 @@ def engine_stats() -> Dict[str, Any]:
                 stats["saturation_alert"] = (
                     f"Pool {saturation_percentage:.1f}% saturated ({checked_out_connections}/{pool_size})"
                 )
-                logging.warning(
-                    f"[sql_engine] {stats['saturation_alert']} vendor={stats['vendor']}"
-                )
+                logging.warning(f"[sql_engine] {stats['saturation_alert']} vendor={stats['vendor']}")
 
     # Slow query frequency
     _prune_recent_slow_queries()
@@ -348,9 +346,7 @@ def quick_query(sql: str, **kwargs) -> list[dict]:  # noqa: ANN001
             with engine.connect() as connection:
                 query_result = connection.execute(text(sql))
                 column_names = query_result.keys()
-                result_rows = [
-                    dict(zip(column_names, row)) for row in query_result.fetchall()
-                ]
+                result_rows = [dict(zip(column_names, row)) for row in query_result.fetchall()]
         except Exception as execution_error:  # noqa: BLE001
             logging.warning(f"[sql_engine] quick_query failed: {execution_error}")
             return []
@@ -362,18 +358,14 @@ def quick_query(sql: str, **kwargs) -> list[dict]:  # noqa: ANN001
             with sqlite3.connect(":memory:") as connection:
                 cursor = connection.execute(sql)
                 # SQLite cursor.description provides columns
-                column_names = [
-                    description[0] for description in (cursor.description or [])
-                ]
+                column_names = [description[0] for description in (cursor.description or [])]
                 data = cursor.fetchall()
                 if column_names:
                     result_rows = [dict(zip(column_names, row)) for row in data]
                 else:
                     result_rows = []
         except Exception as execution_error:  # noqa: BLE001
-            logging.warning(
-                f"[sql_engine] quick_query fallback failed: {execution_error}"
-            )
+            logging.warning(f"[sql_engine] quick_query fallback failed: {execution_error}")
             return []
     execution_duration_ms = (time.perf_counter() - start_time) * 1000.0
     slow_query_threshold_ms = resolve_slow_query_threshold()

@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 from shared.referral_system import ReferralSystem, get_referral_system
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

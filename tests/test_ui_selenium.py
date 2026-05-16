@@ -48,9 +48,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 ARIA_WEB = REPO_ROOT / "aria_web"
 ARIA_APPS = REPO_ROOT / "apps" / "aria"
 SERVER_URL = os.environ.get("ARIA_SERVER_URL", "http://localhost:8080")
-SELENIUM_REMOTE_URL = os.environ.get(
-    "SELENIUM_REMOTE_URL", "http://localhost:4444/wd/hub"
-)
+SELENIUM_REMOTE_URL = os.environ.get("SELENIUM_REMOTE_URL", "http://localhost:4444/wd/hub")
 
 
 def _is_local_host(hostname: str | None) -> bool:
@@ -92,11 +90,7 @@ def _selenium_status_urls(remote_url: str) -> list[str]:
     primary = _selenium_status_url(remote_url)
     parsed = urlparse(remote_url)
     base = f"{parsed.scheme or 'http'}://{parsed.netloc}"
-    secondary = (
-        f"{base}/wd/hub/status"
-        if primary != f"{base}/wd/hub/status"
-        else f"{base}/status"
-    )
+    secondary = f"{base}/wd/hub/status" if primary != f"{base}/wd/hub/status" else f"{base}/status"
     return [primary, secondary]
 
 
@@ -138,21 +132,12 @@ def test_ensure_server_running_rejects_unhealthy_non_local(monkeypatch):
 
 
 def test_selenium_status_url_with_wd_hub_path():
-    assert (
-        _selenium_status_url("http://localhost:4444/wd/hub")
-        == "http://localhost:4444/wd/hub/status"
-    )
-    assert (
-        _selenium_status_url("http://localhost:4444/wd/hub/")
-        == "http://localhost:4444/wd/hub/status"
-    )
+    assert _selenium_status_url("http://localhost:4444/wd/hub") == "http://localhost:4444/wd/hub/status"
+    assert _selenium_status_url("http://localhost:4444/wd/hub/") == "http://localhost:4444/wd/hub/status"
 
 
 def test_selenium_status_url_with_non_standard_path_uses_status_root():
-    assert (
-        _selenium_status_url("http://localhost:4444/session")
-        == "http://localhost:4444/status"
-    )
+    assert _selenium_status_url("http://localhost:4444/session") == "http://localhost:4444/status"
 
 
 def test_selenium_status_urls_returns_primary_and_fallback():
@@ -223,11 +208,7 @@ def ensure_server_running():
         raise RuntimeError(f"Configured ARIA_SERVER_URL is not healthy: {SERVER_URL}")
 
     # If configured local port is occupied by another service, launch Aria on a free port.
-    target_port = (
-        configured_port
-        if not is_port_open(configured_port, configured_host)
-        else _find_free_port()
-    )
+    target_port = configured_port if not is_port_open(configured_port, configured_host) else _find_free_port()
     target_url = f"http://127.0.0.1:{target_port}"
     server_cwd = _resolve_server_cwd()
 
@@ -298,12 +279,8 @@ def create_remote_driver(max_retries=3):
     last_error = None
     for attempt in range(max_retries):
         try:
-            logger.info(
-                f"Connecting to Selenium hub at {SELENIUM_REMOTE_URL} (attempt {attempt + 1}/{max_retries})..."
-            )
-            driver = webdriver.Remote(
-                command_executor=SELENIUM_REMOTE_URL, options=chrome_options
-            )
+            logger.info(f"Connecting to Selenium hub at {SELENIUM_REMOTE_URL} (attempt {attempt + 1}/{max_retries})...")
+            driver = webdriver.Remote(command_executor=SELENIUM_REMOTE_URL, options=chrome_options)
             logger.info(f"Connected successfully. Session ID: {driver.session_id}")
             return driver
         except Exception as e:
@@ -346,9 +323,7 @@ def test_selenium_add_pickup_drop():
         driver.get(SERVER_URL)
 
         # Wait for page to load
-        WebDriverWait(driver, 10).until(
-            lambda d: d.execute_script("return document.readyState") == "complete"
-        )
+        WebDriverWait(driver, 10).until(lambda d: d.execute_script("return document.readyState") == "complete")
         logger.info(f"Page loaded: {driver.title}")
 
         # Add object via JavaScript

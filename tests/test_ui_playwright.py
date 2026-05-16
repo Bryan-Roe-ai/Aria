@@ -104,11 +104,7 @@ def wait_for_object(name, timeout=4.0):
 @pytest.mark.e2e
 @pytest.mark.skipif(
     not os.getenv("CI")
-    and not (
-        shutil.which("chromium-browser")
-        or shutil.which("chrome")
-        or shutil.which("google-chrome")
-    ),
+    and not (shutil.which("chromium-browser") or shutil.which("chrome") or shutil.which("google-chrome")),
     reason="Chromium/Chrome not available",
 )
 def test_client_add_pickup_and_drag_updates_server():
@@ -132,9 +128,7 @@ def test_client_add_pickup_and_drag_updates_server():
             assert "Aria" in page.content()
 
             # Add object via client API
-            page.evaluate(
-                "([name, emoji]) => addObject(name, emoji)", [unique_name, "🧸"]
-            )
+            page.evaluate("([name, emoji]) => addObject(name, emoji)", [unique_name, "🧸"])
 
             # wait for server to report it
             obj = wait_for_object(unique_name, timeout=5.0)

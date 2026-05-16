@@ -29,9 +29,7 @@ _spec.loader.exec_module(quantum_provider)
 
 @pytest.mark.unit
 def test_resolve_checkpoint_path_prefers_best(tmp_path: Path) -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
     provider.model_path = tmp_path
 
     (tmp_path / "final_model.pt").write_bytes(b"x")
@@ -43,9 +41,7 @@ def test_resolve_checkpoint_path_prefers_best(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_resolve_checkpoint_path_uses_status_metadata_first(tmp_path: Path) -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
     provider.model_path = tmp_path
 
     status_payload = {
@@ -65,9 +61,7 @@ def test_resolve_checkpoint_path_accepts_direct_file(tmp_path: Path) -> None:
     checkpoint = tmp_path / "some_model.pt"
     checkpoint.write_bytes(b"x")
 
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
     provider.model_path = checkpoint
 
     resolved = provider._resolve_checkpoint_path()
@@ -76,9 +70,7 @@ def test_resolve_checkpoint_path_accepts_direct_file(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_derive_model_config_modern_schema() -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
 
     cfg = provider._derive_model_config(
         {
@@ -108,9 +100,7 @@ def test_derive_model_config_modern_schema() -> None:
 
 @pytest.mark.unit
 def test_derive_model_config_legacy_schema() -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
 
     cfg = provider._derive_model_config(
         {
@@ -131,9 +121,7 @@ def test_derive_model_config_legacy_schema() -> None:
 
 @pytest.mark.unit
 def test_encode_text_uses_char_map_then_ord_fallback() -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
     provider.device = torch.device("cpu")
     provider.vocab_size = 256
     provider.char_to_idx = {"A": 7}
@@ -144,9 +132,7 @@ def test_encode_text_uses_char_map_then_ord_fallback() -> None:
 
 @pytest.mark.unit
 def test_decode_tokens_ascii_fallback_when_no_idx_map() -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
     provider.idx_to_char = {}
 
     out = provider._decode_tokens(torch.tensor([72, 10, 105], dtype=torch.long))
@@ -156,16 +142,12 @@ def test_decode_tokens_ascii_fallback_when_no_idx_map() -> None:
 @pytest.mark.unit
 def test_generate_prefers_model_generate() -> None:
     class _FakeModel:
-        def generate(
-            self, context, max_new_tokens: int, temperature: float, top_k: int
-        ):
+        def generate(self, context, max_new_tokens: int, temperature: float, top_k: int):
             # Preserve prompt tokens and append 'Hi'
             base = context[0].tolist()
             return torch.tensor([base + [72, 105]], dtype=torch.long)
 
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
     provider.model = _FakeModel()
     provider.temperature = 0.8
     provider.max_seq_len = 128
@@ -180,9 +162,7 @@ def test_generate_prefers_model_generate() -> None:
 
 @pytest.mark.unit
 def test_stream_response_preserves_text_in_nonempty_chunks() -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
 
     response = "🔬 [Quantum LLM] hello world\nnext line"
     chunks = list(provider._stream_response(response))
@@ -195,9 +175,7 @@ def test_stream_response_preserves_text_in_nonempty_chunks() -> None:
 
 @pytest.mark.unit
 def test_stream_response_empty_text_yields_no_chunks() -> None:
-    provider = quantum_provider.QuantumLLMChatProvider.__new__(
-        quantum_provider.QuantumLLMChatProvider
-    )
+    provider = quantum_provider.QuantumLLMChatProvider.__new__(quantum_provider.QuantumLLMChatProvider)
 
     chunks = list(provider._stream_response(""))
     assert chunks == []
@@ -208,9 +186,7 @@ def test_create_quantum_llm_provider_returns_choice(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     class _DummyProvider:
-        def __init__(
-            self, model_path: str, temperature: float, max_output_tokens: int, **kwargs
-        ):
+        def __init__(self, model_path: str, temperature: float, max_output_tokens: int, **kwargs):
             self.model_path = model_path
             self.temperature = temperature
             self.max_output_tokens = max_output_tokens

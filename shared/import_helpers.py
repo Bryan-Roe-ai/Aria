@@ -84,9 +84,7 @@ def safe_import(
         return result
 
 
-def create_stub_function(
-    name: str, error_key: str = "error"
-) -> Callable[..., Dict[str, Any]]:
+def create_stub_function(name: str, error_key: str = "error") -> Callable[..., Dict[str, Any]]:
     """Create a stub function that returns a dict indicating unavailability.
 
     Args:

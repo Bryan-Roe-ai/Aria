@@ -129,9 +129,7 @@ class TestNotificationManagerSecurity:
         """Verify timeout is set and handled properly for Linux."""
         manager = NotificationManager()
         with patch("subprocess.run") as mock_run:
-            mock_run.side_effect = subprocess.TimeoutExpired(
-                cmd="notify-send", timeout=5
-            )
+            mock_run.side_effect = subprocess.TimeoutExpired(cmd="notify-send", timeout=5)
             # Should not raise - error is printed instead
             manager._send_linux("Test", "Message", "info")
 

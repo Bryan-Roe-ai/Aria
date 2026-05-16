@@ -39,9 +39,7 @@ def test_orchestrator_health_in_status_endpoint() -> None:
     data = json.loads(resp.get_body())
 
     # Verify orchestrator_health section exists
-    assert (
-        "orchestrator_health" in data
-    ), "orchestrator_health section missing from /api/ai/status"
+    assert "orchestrator_health" in data, "orchestrator_health section missing from /api/ai/status"
 
     # Verify required fields
     orchestrator_health = data["orchestrator_health"]

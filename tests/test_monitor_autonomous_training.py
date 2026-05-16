@@ -346,9 +346,7 @@ class TestPrintAlerts:
             ],
         }
         output = self._capture(m, status)
-        assert (
-            "degradation" in output.lower() or "85.00%" in output or "70.00%" in output
-        )
+        assert "degradation" in output.lower() or "85.00%" in output or "70.00%" in output
 
     def test_low_dataset_count_triggers_warning(self, tmp_path):
         m = _monitor(tmp_path)

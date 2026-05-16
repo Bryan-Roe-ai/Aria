@@ -35,9 +35,7 @@ except Exception:
     HAS_OPENAI = False
 
 
-def call_openai_completion(
-    example: Dict[str, Any], deployment: str | None = None
-) -> str:
+def call_openai_completion(example: Dict[str, Any], deployment: str | None = None) -> str:
     # Minimal safe wrapper; default to naive_predict when API unavailable
     if not HAS_OPENAI or not os.getenv("OPENAI_API_KEY"):
         return naive_predict(example)
@@ -48,10 +46,7 @@ def call_openai_completion(
     else:
         msgs = example.get("messages") or []
         # join user messages
-        prompt = (
-            " ".join([m.get("content", "") for m in msgs if m.get("role") == "user"])
-            or ""
-        )
+        prompt = " ".join([m.get("content", "") for m in msgs if m.get("role") == "user"]) or ""
 
     if not prompt:
         return naive_predict(example)
@@ -68,9 +63,7 @@ def call_openai_completion(
             return resp.choices[0].message.content.strip()
         else:
             # best-effort fallback when only older API present
-            resp = openai.Completion.create(
-                model="text-davinci-003", prompt=prompt, max_tokens=200, temperature=0.0
-            )
+            resp = openai.Completion.create(model="text-davinci-003", prompt=prompt, max_tokens=200, temperature=0.0)
             return str(resp.choices[0].text).strip()
     except Exception:
         # When the API call fails, fall back (useful for CI)
@@ -104,9 +97,7 @@ def run(
 
     summary: Dict[str, Any] = {"samples": len(preds)}
     if "response_time" in metrics:
-        summary["response_time_ms"] = (
-            round(sum(timings) / len(timings), 3) if timings else 0.0
-        )
+        summary["response_time_ms"] = round(sum(timings) / len(timings), 3) if timings else 0.0
     if "accuracy" in metrics:
         summary.update(compute_metrics(preds, expects))
 
@@ -116,17 +107,13 @@ def run(
             "summary": summary,
             "predictions": [{"pred": p, "expected": e} for p, e in zip(preds, expects)],
         }
-        (save_dir / "results.json").write_text(
-            json.dumps(out, indent=2), encoding="utf-8"
-        )
+        (save_dir / "results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     return summary
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(
-        description="Evaluate via OpenAI API (with local fallback for CI)"
-    )
+    ap = argparse.ArgumentParser(description="Evaluate via OpenAI API (with local fallback for CI)")
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--max-samples", type=int, default=None)
     ap.add_argument("--metric", action="append", dest="metrics")

@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import logging
 import os
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 import shared.cosmos_client as cosmos
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -223,9 +219,7 @@ class TestRecordChatMessage:
         cosmos._CONTAINER = MagicMock()
 
         with patch.object(cosmos, "init", return_value=True):
-            result = cosmos.record_chat_message(
-                "user1", {"content": ""}, "local", "model"
-            )
+            result = cosmos.record_chat_message("user1", {"content": ""}, "local", "model")
         assert result is False
 
     def test_returns_false_with_whitespace_only_content(self):
@@ -233,9 +227,7 @@ class TestRecordChatMessage:
         cosmos._CONTAINER = MagicMock()
 
         with patch.object(cosmos, "init", return_value=True):
-            result = cosmos.record_chat_message(
-                "user1", {"content": "   "}, "local", "model"
-            )
+            result = cosmos.record_chat_message("user1", {"content": "   "}, "local", "model")
         assert result is False
 
     def test_returns_true_on_success(self):
@@ -267,9 +259,7 @@ class TestRecordChatMessage:
 
         with patch.object(cosmos, "init", return_value=True):
             with patch.object(cosmos, "container", return_value=mock_container):
-                result = cosmos.record_chat_message(
-                    "user1", {"content": "hello"}, "local", "model"
-                )
+                result = cosmos.record_chat_message("user1", {"content": "hello"}, "local", "model")
         assert result is False
 
     def test_doc_id_is_unique_per_call(self):
@@ -278,6 +268,7 @@ class TestRecordChatMessage:
         cosmos._CONTAINER = mock_container
 
         ids = []
+
         def capture_upsert(doc):
             ids.append(doc["id"])
 
