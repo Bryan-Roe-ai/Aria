@@ -174,18 +174,12 @@ def _collect_gpu() -> List[Dict[str, Any]]:
                 {
                     "index": int(parts[0]),
                     "name": parts[1],
-                    "gpu_util": (
-                        float(parts[2]) if parts[2] not in ("[N/A]", "N/A") else 0
-                    ),
+                    "gpu_util": (float(parts[2]) if parts[2] not in ("[N/A]", "N/A") else 0),
                     "mem_used_mb": mem_used,
                     "mem_total_mb": mem_total,
                     "gpu_mem_percent": mem_pct,
-                    "temp_c": (
-                        float(parts[5]) if parts[5] not in ("[N/A]", "N/A") else None
-                    ),
-                    "power_w": (
-                        float(parts[6]) if parts[6] not in ("[N/A]", "N/A") else None
-                    ),
+                    "temp_c": (float(parts[5]) if parts[5] not in ("[N/A]", "N/A") else None),
+                    "power_w": (float(parts[6]) if parts[6] not in ("[N/A]", "N/A") else None),
                 }
             )
         return gpus
@@ -203,11 +197,7 @@ def _collect_gpu() -> List[Dict[str, Any]]:
             props = torch.cuda.get_device_properties(i)
             mem_used_bytes = torch.cuda.memory_allocated(i)
             mem_total_bytes = props.total_memory
-            pct = (
-                round(mem_used_bytes / mem_total_bytes * 100, 1)
-                if mem_total_bytes
-                else 0
-            )
+            pct = round(mem_used_bytes / mem_total_bytes * 100, 1) if mem_total_bytes else 0
             gpus.append(
                 {
                     "index": i,
@@ -266,9 +256,7 @@ def print_snapshot(snap: Dict[str, Any]):
     cores = cm.get("cpu_count", "?")
     print(f"\n  CPU  {badge}  {_bar(cpu_pct)}   load: {la1}/{la5}  cores: {cores}")
     if lvl != "ok":
-        alerts.append(
-            f"CPU {lvl.upper()}: {cpu_pct}% (threshold: {THRESHOLDS['cpu_percent'][lvl]}%)"
-        )
+        alerts.append(f"CPU {lvl.upper()}: {cpu_pct}% (threshold: {THRESHOLDS['cpu_percent'][lvl]}%)")
 
     # Memory
     mem_pct = cm.get("mem_percent", 0.0)
@@ -281,9 +269,7 @@ def print_snapshot(snap: Dict[str, Any]):
     if cm.get("swap_total_gb", 0):
         print(f"  SWAP     {_bar(swap_pct)}   {swap_used:.1f} GB used")
     if lvl != "ok":
-        alerts.append(
-            f"Memory {lvl.upper()}: {mem_pct}% (threshold: {THRESHOLDS['mem_percent'][lvl]}%)"
-        )
+        alerts.append(f"Memory {lvl.upper()}: {mem_pct}% (threshold: {THRESHOLDS['mem_percent'][lvl]}%)")
 
     # Disks
     if disks:
@@ -296,13 +282,9 @@ def print_snapshot(snap: Dict[str, Any]):
             tot = d.get("total_gb", 0)
             lvl = _level("disk_percent", pct)
             mark = " ◀ repo" if repo_root.startswith(mp) else ""
-            print(
-                f"  {mp:<16} {_badge(lvl)}  {_bar(pct)}   {used:.0f}/{tot:.0f} GB{mark}"
-            )
+            print(f"  {mp:<16} {_badge(lvl)}  {_bar(pct)}   {used:.0f}/{tot:.0f} GB{mark}")
             if lvl != "ok":
-                alerts.append(
-                    f"Disk {mp} {lvl.upper()}: {pct}% (threshold: {THRESHOLDS['disk_percent'][lvl]}%)"
-                )
+                alerts.append(f"Disk {mp} {lvl.upper()}: {pct}% (threshold: {THRESHOLDS['disk_percent'][lvl]}%)")
 
     # GPUs
     if gpus:
@@ -323,9 +305,7 @@ def print_snapshot(snap: Dict[str, Any]):
             )
             for lvl, key in [(lvl_util, "gpu_util"), (lvl_mem, "gpu_mem_percent")]:
                 if lvl != "ok":
-                    alerts.append(
-                        f"GPU[{g['index']}] {key} {lvl.upper()}: (threshold: {THRESHOLDS[key][lvl]}%)"
-                    )
+                    alerts.append(f"GPU[{g['index']}] {key} {lvl.upper()}: (threshold: {THRESHOLDS[key][lvl]}%)")
     else:
         print("\n  GPU: none detected")
 
@@ -346,13 +326,9 @@ def print_snapshot(snap: Dict[str, Any]):
 
 def main():
     parser = argparse.ArgumentParser(description="Aria Resource Monitor")
-    parser.add_argument(
-        "--snapshot", action="store_true", help="One-shot snapshot (default)"
-    )
+    parser.add_argument("--snapshot", action="store_true", help="One-shot snapshot (default)")
     parser.add_argument("--watch", action="store_true", help="Continuous monitoring")
-    parser.add_argument(
-        "--interval", type=int, default=5, help="Refresh interval in seconds"
-    )
+    parser.add_argument("--interval", type=int, default=5, help="Refresh interval in seconds")
     parser.add_argument(
         "--export",
         nargs="?",
@@ -360,9 +336,7 @@ def main():
         metavar="FILE",
         help="Export snapshot to JSON",
     )
-    parser.add_argument(
-        "--thresholds", action="store_true", help="Show alert thresholds"
-    )
+    parser.add_argument("--thresholds", action="store_true", help="Show alert thresholds")
     args = parser.parse_args()
 
     if args.thresholds:

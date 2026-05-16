@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -13,7 +11,6 @@ from shared.email_notifications import (
     EmailTemplate,
     get_email_system,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -43,10 +40,18 @@ def email_system(tmp_path):
 class TestEmailTemplateEnum:
     def test_all_templates_defined(self):
         expected = [
-            "WELCOME", "SUBSCRIPTION_ACTIVATED", "SUBSCRIPTION_CANCELLED",
-            "SUBSCRIPTION_EXPIRED", "USAGE_WARNING_80", "USAGE_WARNING_90",
-            "USAGE_LIMIT_REACHED", "PAYMENT_SUCCEEDED", "PAYMENT_FAILED",
-            "INVOICE_GENERATED", "TRIAL_ENDING", "UPGRADE_REMINDER",
+            "WELCOME",
+            "SUBSCRIPTION_ACTIVATED",
+            "SUBSCRIPTION_CANCELLED",
+            "SUBSCRIPTION_EXPIRED",
+            "USAGE_WARNING_80",
+            "USAGE_WARNING_90",
+            "USAGE_LIMIT_REACHED",
+            "PAYMENT_SUCCEEDED",
+            "PAYMENT_FAILED",
+            "INVOICE_GENERATED",
+            "TRIAL_ENDING",
+            "UPGRADE_REMINDER",
         ]
         names = [t.name for t in EmailTemplate]
         for e in expected:
@@ -60,9 +65,7 @@ class TestEmailTemplateEnum:
 
 class TestSendEmail:
     def test_send_email_returns_true(self, email_system):
-        result = email_system.send_email(
-            "user@example.com", "Test Subject", "<p>Hello</p>"
-        )
+        result = email_system.send_email("user@example.com", "Test Subject", "<p>Hello</p>")
         assert result is True
 
     def test_email_added_to_sent_emails(self, email_system):
@@ -126,8 +129,7 @@ class TestSendTemplateEmail:
         result = email_system.send_template_email(
             "u@e.com",
             EmailTemplate.SUBSCRIPTION_ACTIVATED,
-            {"tier": "PRO", "price": 49, "date": "January 1, 2025",
-             "dashboard_url": "https://example.com"},
+            {"tier": "PRO", "price": 49, "date": "January 1, 2025", "dashboard_url": "https://example.com"},
         )
         assert result is True
         record = email_system.sent_emails[0]
@@ -137,9 +139,14 @@ class TestSendTemplateEmail:
         result = email_system.send_template_email(
             "u@e.com",
             EmailTemplate.USAGE_WARNING_80,
-            {"resource": "chat_messages", "percentage": 80,
-             "current": 80, "limit": 100, "remaining": 20,
-             "upgrade_url": "https://example.com/pricing"},
+            {
+                "resource": "chat_messages",
+                "percentage": 80,
+                "current": 80,
+                "limit": 100,
+                "remaining": 20,
+                "upgrade_url": "https://example.com/pricing",
+            },
         )
         assert result is True
 

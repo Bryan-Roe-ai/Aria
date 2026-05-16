@@ -43,16 +43,12 @@ def _job(name: str) -> dict:
 
 
 @pytest.mark.unit
-def test_run_all_parallel_cycles_devices_and_writes_status(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_all_parallel_cycles_devices_and_writes_status(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     config_path = _write_parallel_config(
         tmp_path,
         [_job("quantum-a"), _job("quantum-b"), _job("quantum-c")],
     )
-    trainer = ParallelTrainer(
-        str(config_path), max_parallel=2, perform_evaluation=False
-    )
+    trainer = ParallelTrainer(str(config_path), max_parallel=2, perform_evaluation=False)
     trainer.root = tmp_path
 
     seen_devices: dict[str, int] = {}
@@ -93,13 +89,9 @@ def test_run_all_parallel_cycles_devices_and_writes_status(
 
 
 @pytest.mark.unit
-def test_run_all_parallel_appends_status_history(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_run_all_parallel_appends_status_history(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     config_path = _write_parallel_config(tmp_path, [_job("quantum-next")])
-    trainer = ParallelTrainer(
-        str(config_path), max_parallel=1, perform_evaluation=False
-    )
+    trainer = ParallelTrainer(str(config_path), max_parallel=1, perform_evaluation=False)
     trainer.root = tmp_path
 
     status_dir = tmp_path / "data_out" / "parallel_training"

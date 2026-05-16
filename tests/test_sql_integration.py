@@ -57,8 +57,7 @@ def test_sql_engine_health():
 
 
 def test_sql_repository_crud():
-    from shared.sql_repository import (delete_value, get_value, list_values,
-                                       put_value)
+    from shared.sql_repository import delete_value, get_value, list_values, put_value
 
     assert put_value("alpha", "one") is True
     assert get_value("alpha") == "one"

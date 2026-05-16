@@ -33,7 +33,7 @@ class CheckResult:
     name: str
     status: str  # ok | warn | fail
     detail: str = ""
-    sub: List["CheckResult"] = field(default_factory=list)
+    sub: List[CheckResult] = field(default_factory=list)
 
     @property
     def icon(self) -> str:
@@ -87,9 +87,7 @@ def check_venvs() -> CheckResult:
                 parent.status = "warn"
         else:
             try:
-                ver = subprocess.check_output(
-                    [str(py), "--version"], text=True, timeout=5
-                ).strip()
+                ver = subprocess.check_output([str(py), "--version"], text=True, timeout=5).strip()
                 parent.sub.append(_ok(label, ver))
             except Exception as e:
                 parent.sub.append(_warn(label, f"python3 not executable: {e}"))
@@ -208,11 +206,7 @@ def check_python_deps() -> CheckResult:
     ]
     parent = CheckResult("Python dependencies", "ok")
     for display, import_name, optional in packages:
-        script = (
-            f"import {import_name}; "
-            f"v = getattr({import_name.split('.')[0]}, '__version__', '?'); "
-            f"print(v)"
-        )
+        script = f"import {import_name}; " f"v = getattr({import_name.split('.')[0]}, '__version__', '?'); " f"print(v)"
         try:
             out = subprocess.check_output(
                 [sys.executable, "-c", script],
@@ -238,9 +232,7 @@ def check_services() -> CheckResult:
         ("Azure Functions", 7071),
         ("Aria Character", 8080),
     ]
-    parent = CheckResult(
-        "Running services", "ok", "These are optional — start them as needed"
-    )
+    parent = CheckResult("Running services", "ok", "These are optional — start them as needed")
     for name, port in ports:
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.5):
@@ -257,14 +249,10 @@ def check_func_tools() -> CheckResult:
     func = shutil.which("func")
     if func:
         try:
-            out = subprocess.check_output(
-                [func, "--version"], text=True, timeout=5
-            ).strip()
+            out = subprocess.check_output([func, "--version"], text=True, timeout=5).strip()
             return _ok("Azure Functions Core Tools", f"v{out} at {func}")
         except Exception:
-            return _warn(
-                "Azure Functions Core Tools", f"found at {func} but --version failed"
-            )
+            return _warn("Azure Functions Core Tools", f"found at {func} but --version failed")
     else:
         return _warn(
             "Azure Functions Core Tools",
@@ -295,9 +283,7 @@ def check_mcp_servers() -> CheckResult:
             continue
         missing = []
         for imp in imports:
-            ret = subprocess.run(
-                [sys.executable, "-c", f"import {imp}"], capture_output=True, timeout=8
-            )
+            ret = subprocess.run([sys.executable, "-c", f"import {imp}"], capture_output=True, timeout=8)
             if ret.returncode != 0:
                 missing.append(imp)
         if missing:
@@ -333,18 +319,12 @@ def check_local_settings() -> CheckResult:
                 "local.settings.json",
                 "missing — copy local.settings.json.example and fill in values",
             )
-        return _fail(
-            "local.settings.json", "missing (no example template found either)"
-        )
+        return _fail("local.settings.json", "missing (no example template found either)")
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         # Warn if it looks like keys are placeholder values
         vals = data.get("Values", {})
-        placeholders = [
-            k
-            for k, v in vals.items()
-            if str(v).startswith("<") and str(v).endswith(">")
-        ]
+        placeholders = [k for k, v in vals.items() if str(v).startswith("<") and str(v).endswith(">")]
         if placeholders:
             return _warn(
                 "local.settings.json",
@@ -409,9 +389,7 @@ def print_report(checks: List[CheckResult], quiet: bool = False):
 
     print(f"{'─'*65}")
     summary_icon = "✅" if fails == 0 and warns == 0 else ("⚠️ " if fails == 0 else "❌")
-    print(
-        f"  {summary_icon} Summary: {ok}/{total} OK  {warns} warnings  {fails} failures"
-    )
+    print(f"  {summary_icon} Summary: {ok}/{total} OK  {warns} warnings  {fails} failures")
     print(f"{'═'*65}\n")
 
 
@@ -435,9 +413,7 @@ def checks_to_json(checks: List[CheckResult]) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Aria System Health Check")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
-    parser.add_argument(
-        "--quiet", action="store_true", help="Show warnings/failures only"
-    )
+    parser.add_argument("--quiet", action="store_true", help="Show warnings/failures only")
     parser.add_argument("--export", metavar="FILE", help="Export JSON report to file")
     args = parser.parse_args()
 

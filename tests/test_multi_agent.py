@@ -110,9 +110,7 @@ def test_run_single_job_passes_forced_files(monkeypatch) -> None:
             captured["llm_type"] = llm_type
             captured["model"] = model
 
-        def execute_task(
-            self, task, forced_files=None, dry_run=False, skip_tests=False
-        ):
+        def execute_task(self, task, forced_files=None, dry_run=False, skip_tests=False):
             captured["task"] = task
             captured["forced_files"] = forced_files
             captured["dry_run"] = dry_run
@@ -146,9 +144,7 @@ def test_run_single_job_passes_forced_files(monkeypatch) -> None:
 def test_run_parallel_counts_complete_states_as_success(monkeypatch) -> None:
     mod = _load_multi_agent_module()
 
-    monkeypatch.setattr(
-        mod, "_run_single_job", lambda job: _fake_state(status="complete")
-    )
+    monkeypatch.setattr(mod, "_run_single_job", lambda job: _fake_state(status="complete"))
 
     report = mod.run_parallel(
         [mod.AgentJob(task="Task A", llm_type="echo")],

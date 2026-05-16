@@ -8,13 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-HOOK_PATH = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "no_verify_bypass_guard.py"
-)
+HOOK_PATH = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "no_verify_bypass_guard.py"
 
 
 def _load_module():
@@ -216,9 +210,7 @@ class TestUserPromptSubmit:
     def test_warns_on_prompt_containing_no_verify(self, monkeypatch, capsys):
         module = _load_module()
         payload = {"userMessage": "run git commit --no-verify -m 'fix ci'"}
-        code, out, err = _run_main(
-            module, payload, monkeypatch, capsys, event="UserPromptSubmit"
-        )
+        code, out, err = _run_main(module, payload, monkeypatch, capsys, event="UserPromptSubmit")
         assert code == 0  # non-blocking
         assert "Warning" in out or "warning" in out.lower()
         assert "--no-verify" in out
@@ -226,9 +218,7 @@ class TestUserPromptSubmit:
     def test_no_warn_on_clean_prompt(self, monkeypatch, capsys):
         module = _load_module()
         payload = {"userMessage": "commit the staged changes with a good message"}
-        code, out, err = _run_main(
-            module, payload, monkeypatch, capsys, event="UserPromptSubmit"
-        )
+        code, out, err = _run_main(module, payload, monkeypatch, capsys, event="UserPromptSubmit")
         assert code == 0
         assert out == ""
         assert err == ""
@@ -236,9 +226,7 @@ class TestUserPromptSubmit:
     def test_warn_mentions_override(self, monkeypatch, capsys):
         module = _load_module()
         payload = {"userMessage": "git commit --no-verify is the only way"}
-        code, out, err = _run_main(
-            module, payload, monkeypatch, capsys, event="UserPromptSubmit"
-        )
+        code, out, err = _run_main(module, payload, monkeypatch, capsys, event="UserPromptSubmit")
         assert code == 0
         assert "ARIA_ALLOW_NO_VERIFY" in out
 
@@ -255,9 +243,7 @@ class TestPostToolUse:
             "toolName": "run_in_terminal",
             "command": "git commit --no-verify -m 'slipped through'",
         }
-        code, out, err = _run_main(
-            module, payload, monkeypatch, capsys, event="PostToolUse"
-        )
+        code, out, err = _run_main(module, payload, monkeypatch, capsys, event="PostToolUse")
         assert code == 0  # non-blocking audit
         assert "Audit" in err or "manually" in err
 
@@ -267,9 +253,7 @@ class TestPostToolUse:
             "toolName": "run_in_terminal",
             "command": "git commit -m 'clean'",
         }
-        code, out, err = _run_main(
-            module, payload, monkeypatch, capsys, event="PostToolUse"
-        )
+        code, out, err = _run_main(module, payload, monkeypatch, capsys, event="PostToolUse")
         assert code == 0
         assert err == ""
 

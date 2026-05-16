@@ -72,9 +72,7 @@ def print_error(text: str):
     print(f"{RED}✗ {text}{RESET}")
 
 
-def run_command(
-    cmd: List[str], cwd: Path = REPO_ROOT, timeout_seconds: int = 120
-) -> Tuple[int, str, str]:
+def run_command(cmd: List[str], cwd: Path = REPO_ROOT, timeout_seconds: int = 120) -> Tuple[int, str, str]:
     """Run a command and return (exit_code, stdout, stderr)."""
     try:
         result = subprocess.run(
@@ -154,9 +152,7 @@ def check_linting() -> bool:
     )
 
     if code == 5:  # ruff not installed
-        print_warning(
-            "ruff not installed, skipping linting (install with: pip install ruff)"
-        )
+        print_warning("ruff not installed, skipping linting (install with: pip install ruff)")
         return True
 
     if code == 0:
@@ -188,9 +184,7 @@ def check_security() -> bool:
     ]
 
     py_files = list(REPO_ROOT.glob("**/*.py"))
-    py_files = [
-        f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)
-    ]
+    py_files = [f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)]
 
     for py_file in py_files[:50]:  # Limit to first 50 files for speed
         try:
@@ -198,10 +192,7 @@ def check_security() -> bool:
             for pattern, desc in secret_patterns:
                 if re.search(pattern, content, re.IGNORECASE):
                     # Exclude test files and env templates
-                    if (
-                        "test_" not in py_file.name
-                        and "example" not in py_file.name.lower()
-                    ):
+                    if "test_" not in py_file.name and "example" not in py_file.name.lower():
                         issues.append(f"{py_file.name}: {desc}")
         except Exception:
             continue
@@ -243,10 +234,7 @@ def check_git_hygiene() -> bool:
         full_path = REPO_ROOT / file_path
 
         # Check for unwanted files
-        if any(
-            pattern in file_path
-            for pattern in ["__pycache__", ".pyc", "venv/", ".venv/", "__azurite_db"]
-        ):
+        if any(pattern in file_path for pattern in ["__pycache__", ".pyc", "venv/", ".venv/", "__azurite_db"]):
             issues.append(f"Unwanted file: {file_path}")
 
         # Check file size (warn if >10MB)

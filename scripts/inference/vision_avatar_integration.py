@@ -37,9 +37,7 @@ class _ImageFileDataset(Dataset):
 
     def __init__(self, root: Path, img_size: int = 64) -> None:
         self.img_size = img_size
-        self.paths: list[Path] = [
-            p for p in sorted(root.rglob("*")) if p.suffix.lower() in _IMAGE_EXTS
-        ]
+        self.paths: list[Path] = [p for p in sorted(root.rglob("*")) if p.suffix.lower() in _IMAGE_EXTS]
 
     def __len__(self) -> int:
         return len(self.paths)
@@ -49,7 +47,7 @@ class _ImageFileDataset(Dataset):
         return torch.tensor(arr, dtype=torch.float32), str(self.paths[idx])
 
 
-def _load_checkpoint(checkpoint_path: Path, device: "torch.device"):
+def _load_checkpoint(checkpoint_path: Path, device: torch.device):
     """Return (model, classes)."""
     ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
     if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
@@ -128,20 +126,12 @@ def run_inference(
             confs = probs.max(dim=1).values.cpu().tolist()
             all_scores = probs.cpu().tolist()
 
-            for path_str, pred_idx, conf, scores in zip(
-                paths, preds, confs, all_scores
-            ):
+            for path_str, pred_idx, conf, scores in zip(paths, preds, confs, all_scores):
                 entry: dict = {
-                    "predicted_label": (
-                        classes[pred_idx] if pred_idx < len(classes) else str(pred_idx)
-                    ),
+                    "predicted_label": (classes[pred_idx] if pred_idx < len(classes) else str(pred_idx)),
                     "predicted_index": pred_idx,
                     "confidence": conf,
-                    "scores": {
-                        classes[i]: float(s)
-                        for i, s in enumerate(scores)
-                        if i < len(classes)
-                    },
+                    "scores": {classes[i]: float(s) for i, s in enumerate(scores) if i < len(classes)},
                 }
                 results[path_str] = entry
 
@@ -166,9 +156,7 @@ def run_inference(
 
 
 def main(args=None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Run vision model inference on an image directory"
-    )
+    parser = argparse.ArgumentParser(description="Run vision model inference on an image directory")
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--images", required=True, help="Directory to scan for images")
     parser.add_argument("--output", default="data_out/avatar_preds.json")

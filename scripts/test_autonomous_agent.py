@@ -12,9 +12,7 @@ from pathlib import Path
 if "pytest" in sys.modules:
     import pytest
 
-    pytestmark = pytest.mark.skip(
-        reason="script-style autonomous-agent smoke test is environment-dependent"
-    )
+    pytestmark = pytest.mark.skip(reason="script-style autonomous-agent smoke test is environment-dependent")
 
 REPO_ROOT = Path(__file__).parent.parent
 

@@ -14,8 +14,7 @@ import json
 
 import pytest
 
-from shared.json_utils import (load_json, load_jsonl, merge_json_files,
-                               save_json, save_jsonl)
+from shared.json_utils import load_json, load_jsonl, merge_json_files, save_json, save_jsonl
 
 # ---------------------------------------------------------------------------
 # load_json
@@ -145,9 +144,7 @@ class TestLoadJsonl:
 
     def test_max_lines(self, tmp_path):
         p = tmp_path / "data.jsonl"
-        p.write_text(
-            "\n".join(json.dumps({"i": i}) for i in range(10)) + "\n", encoding="utf-8"
-        )
+        p.write_text("\n".join(json.dumps({"i": i}) for i in range(10)) + "\n", encoding="utf-8")
         result = load_jsonl(p, max_lines=3)
         assert len(result) == 3
         assert result[-1] == {"i": 2}

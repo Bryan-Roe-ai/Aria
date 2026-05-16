@@ -15,9 +15,7 @@ def test_evaluate_small(tmp_path: Path, samples_per_class):
     ds = tmp_path / "vision_ds"
     out = tmp_path / "out"
     # create toy dataset
-    train.generate_toy_shapes_dataset(
-        ds, samples_per_class=samples_per_class, size=(32, 32)
-    )
+    train.generate_toy_shapes_dataset(ds, samples_per_class=samples_per_class, size=(32, 32))
 
     # train a tiny model to get a checkpoint
     rc = train.main(

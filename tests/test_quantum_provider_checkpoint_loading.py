@@ -33,9 +33,7 @@ def _new_provider(model_path: Path) -> Any:
 
 
 @pytest.mark.unit
-@pytest.mark.skipif(
-    not QUANTUM_PROVIDER_AVAILABLE, reason="quantum_provider not available"
-)
+@pytest.mark.skipif(not QUANTUM_PROVIDER_AVAILABLE, reason="quantum_provider not available")
 class TestQuantumProviderCheckpointLoading:
     """Test quantum provider checkpoint loading with status metadata."""
 
@@ -106,9 +104,7 @@ class TestQuantumProviderCheckpointLoading:
 
 
 @pytest.mark.unit
-@pytest.mark.skipif(
-    not QUANTUM_PROVIDER_AVAILABLE, reason="quantum_provider not available"
-)
+@pytest.mark.skipif(not QUANTUM_PROVIDER_AVAILABLE, reason="quantum_provider not available")
 class TestQuantumProviderStatusMetadata:
     """Test quantum provider status metadata path handling."""
 

@@ -33,21 +33,11 @@ def demonstrate_quantum_llm_integration():
             print("\n✅ Quantum LLM Configuration (config/quantum_llm_config.yaml):")
             print(f"   Backend: {quantum_config['quantum_settings']['backend']}")
             print(f"   Qubits: {quantum_config['quantum_settings']['n_qubits']}")
-            print(
-                f"   Quantum Layers: {quantum_config['quantum_settings']['n_quantum_layers']}"
-            )
-            print(
-                f"   Passive Training: {quantum_config['passive_training']['enabled']}"
-            )
-            print(
-                f"   Training Interval: {quantum_config['passive_training']['interval_seconds']}s"
-            )
-            print(
-                f"   Optimize Attention: {quantum_config['quantum_enhancement']['optimize_attention']}"
-            )
-            print(
-                f"   Quantum Feature Encoding: {quantum_config['quantum_enhancement']['quantum_feature_encoding']}"
-            )
+            print(f"   Quantum Layers: {quantum_config['quantum_settings']['n_quantum_layers']}")
+            print(f"   Passive Training: {quantum_config['passive_training']['enabled']}")
+            print(f"   Training Interval: {quantum_config['passive_training']['interval_seconds']}s")
+            print(f"   Optimize Attention: {quantum_config['quantum_enhancement']['optimize_attention']}")
+            print(f"   Quantum Feature Encoding: {quantum_config['quantum_enhancement']['quantum_feature_encoding']}")
 
         # Load autonomous training config
         auto_config_path = Path("config/autonomous_training.yaml")
@@ -56,17 +46,11 @@ def demonstrate_quantum_llm_integration():
                 auto_config = yaml.safe_load(f)
 
             if "quantum_llm" in auto_config:
-                print(
-                    "\n✅ Autonomous Training Integration (config/autonomous_training.yaml):"
-                )
-                print(
-                    f"   Quantum LLM Enabled: {auto_config['quantum_llm']['enabled']}"
-                )
+                print("\n✅ Autonomous Training Integration (config/autonomous_training.yaml):")
+                print(f"   Quantum LLM Enabled: {auto_config['quantum_llm']['enabled']}")
                 print(f"   Passive Mode: {auto_config['quantum_llm']['passive_mode']}")
                 print(f"   Backend: {auto_config['quantum_llm']['backend']}")
-                print(
-                    f"   Training Interval: {auto_config['quantum_llm']['training_interval_minutes']} minutes"
-                )
+                print(f"   Training Interval: {auto_config['quantum_llm']['training_interval_minutes']} minutes")
 
     except Exception as e:
         print(f"⚠️ Could not load config: {e}")
@@ -79,9 +63,7 @@ def demonstrate_quantum_llm_integration():
     if module_path.exists():
         print(f"✅ Quantum LLM Trainer: {module_path}")
         print("   Components:")
-        print(
-            "   - QuantumAttentionOptimizer: Optimizes attention weights using quantum circuits"
-        )
+        print("   - QuantumAttentionOptimizer: Optimizes attention weights using quantum circuits")
         print("   - QuantumFeatureEncoder: Encodes features into quantum states")
         print("   - QuantumEnhancedLLMTrainer: Main training orchestrator")
         print("   Modes:")
@@ -218,9 +200,7 @@ def demonstrate_quantum_llm_integration():
             print(f"   Epochs Completed: {status.get('epochs_completed', 0)}")
             print(f"   Final Loss: {status.get('final_loss', 'N/A')}")
             if "quantum_metrics" in status:
-                print(
-                    f"   Quantum Executions: {status['quantum_metrics'].get('circuit_executions', 0)}"
-                )
+                print(f"   Quantum Executions: {status['quantum_metrics'].get('circuit_executions', 0)}")
         except Exception as e:
             print(f"⚠️ Could not read status: {e}")
     else:
@@ -251,9 +231,7 @@ def demonstrate_quantum_llm_integration():
     print("1. Review documentation: cat QUANTUM_LLM_TRAINING.md")
     print("2. Test active training: python scripts/quantum_llm_trainer.py --help")
     print("3. Enable passive training: Edit config/autonomous_training.yaml")
-    print(
-        "4. Start autonomous orchestrator: python scripts/autonomous_training_orchestrator.py"
-    )
+    print("4. Start autonomous orchestrator: python scripts/autonomous_training_orchestrator.py")
     print()
 
 

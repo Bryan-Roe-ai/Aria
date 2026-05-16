@@ -8,13 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-HOOK_PATH = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "pr_checklist_guard.py"
-)
+HOOK_PATH = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "pr_checklist_guard.py"
 
 
 def _load_module():
@@ -48,6 +42,7 @@ def _run_main(
 # ---------------------------------------------------------------------------
 # Stop event with changes present → print checklist
 # ---------------------------------------------------------------------------
+
 
 class TestStopWithChanges:
     def test_prints_checklist_when_staged_changes(self, monkeypatch, capsys):
@@ -106,6 +101,7 @@ class TestStopWithChanges:
 # Stop event with no changes → silent
 # ---------------------------------------------------------------------------
 
+
 class TestStopNoChanges:
     def test_silent_when_no_local_changes(self, monkeypatch, capsys):
         module = _load_module()
@@ -120,31 +116,26 @@ class TestStopNoChanges:
 # Non-Stop events → silent
 # ---------------------------------------------------------------------------
 
+
 class TestNonStopEvents:
     def test_silent_on_pre_tool_use(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_has_local_changes", lambda: True)
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, event="PreToolUse"
-        )
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, event="PreToolUse")
         assert code == 0
         assert out == ""
 
     def test_silent_on_user_prompt_submit(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_has_local_changes", lambda: True)
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, event="UserPromptSubmit"
-        )
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, event="UserPromptSubmit")
         assert code == 0
         assert out == ""
 
     def test_silent_on_session_start(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_has_local_changes", lambda: True)
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, event="SessionStart"
-        )
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, event="SessionStart")
         assert code == 0
         assert out == ""
 
@@ -153,22 +144,19 @@ class TestNonStopEvents:
 # Environment override
 # ---------------------------------------------------------------------------
 
+
 class TestEnvOverride:
     def test_skip_env_silences_checklist(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_has_local_changes", lambda: True)
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, skip_env="1"
-        )
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, skip_env="1")
         assert code == 0
         assert out == ""
 
     def test_skip_env_zero_does_not_suppress(self, monkeypatch, capsys):
         module = _load_module()
         monkeypatch.setattr(module, "_has_local_changes", lambda: True)
-        code, out, err = _run_main(
-            module, {}, monkeypatch, capsys, skip_env="0"
-        )
+        code, out, err = _run_main(module, {}, monkeypatch, capsys, skip_env="0")
         assert code == 0
         assert "PR Checklist" in out
 
@@ -176,6 +164,7 @@ class TestEnvOverride:
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestEdgeCases:
     def test_empty_stdin_exits_cleanly(self, monkeypatch, capsys):
@@ -214,6 +203,7 @@ class TestEdgeCases:
 # ---------------------------------------------------------------------------
 # Helper tests (minimal; _has_local_changes is patched in most tests)
 # ---------------------------------------------------------------------------
+
 
 class TestHelpers:
     def test_format_checklist_contains_all_items(self):

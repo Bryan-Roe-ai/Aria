@@ -142,17 +142,13 @@ def estimate_model_memory_gb(params_b: float, dtype: str = "fp16") -> float:
     return round(params_b * 1e9 * bytes_per_param / 1024**3, 2)
 
 
-def estimate_lora_overhead_gb(
-    lora_rank: int, hidden_size: int, num_layers: int
-) -> float:
+def estimate_lora_overhead_gb(lora_rank: int, hidden_size: int, num_layers: int) -> float:
     """Approximate LoRA adapter memory: rank × 2 × hidden_size × layers × fp16."""
     lora_params = lora_rank * 2 * hidden_size * num_layers
     return round(lora_params * 2 / 1024**3, 3)  # fp16 = 2 bytes
 
 
-def estimate_activation_memory_gb(
-    batch_size: int, seq_len: int, hidden_size: int, num_layers: int
-) -> float:
+def estimate_activation_memory_gb(batch_size: int, seq_len: int, hidden_size: int, num_layers: int) -> float:
     """Rough activation memory: batch × seq × hidden × layers × fp16."""
     activation_bytes = batch_size * seq_len * hidden_size * num_layers * 2
     return round(activation_bytes / 1024**3, 3)
@@ -227,16 +223,12 @@ def calculate_safe_batch_size(
     safe_batch = 1
     if budget_gb > 0:
         for bs in [32, 16, 12, 8, 6, 4, 2, 1]:
-            activation_gb = estimate_activation_memory_gb(
-                bs, seq_len, hidden_size, num_layers
-            )
+            activation_gb = estimate_activation_memory_gb(bs, seq_len, hidden_size, num_layers)
             if activation_gb <= budget_gb:
                 safe_batch = bs
                 break
 
-    activation_at_safe = estimate_activation_memory_gb(
-        safe_batch, seq_len, hidden_size, num_layers
-    )
+    activation_at_safe = estimate_activation_memory_gb(safe_batch, seq_len, hidden_size, num_layers)
     total_estimated_gb = fixed_overhead_gb + activation_at_safe
 
     free_pct = round(free_gb / total_gb * 100, 1) if total_gb > 0 else 0.0
@@ -251,12 +243,9 @@ def calculate_safe_batch_size(
         )
     reasoning.append(f"Model ({params_b:.1f}B {dtype}): ~{model_mem_gb:.1f} GB")
     reasoning.append(f"LoRA overhead (rank={lora_rank}): ~{lora_mem_gb:.3f} GB")
+    reasoning.append(f"Activations (bs={safe_batch}, seq={seq_len}): ~{activation_at_safe:.3f} GB")
     reasoning.append(
-        f"Activations (bs={safe_batch}, seq={seq_len}): ~{activation_at_safe:.3f} GB"
-    )
-    reasoning.append(
-        f"Total estimated: {total_estimated_gb:.1f} GB "
-        f"(budget was {max(budget_gb, 0):.1f} GB with 20% headroom)"
+        f"Total estimated: {total_estimated_gb:.1f} GB " f"(budget was {max(budget_gb, 0):.1f} GB with 20% headroom)"
     )
 
     return {
@@ -345,9 +334,7 @@ def main(argv: list[str] | None = None) -> None:
         )
     else:
         print("GPU:              Not available (CPU mode)")
-    print(
-        f"\nModel:            {result.get('model_name') or '(unknown)'} ({result['params_b']:.1f}B params)"
-    )
+    print(f"\nModel:            {result.get('model_name') or '(unknown)'} ({result['params_b']:.1f}B params)")
     print(f"Precision:        {result['dtype']}")
     print(f"LoRA rank:        {result['lora_rank']}")
     print(f"Sequence length:  {result['seq_len']}")

@@ -22,11 +22,7 @@ def test_lora_cleanup_removes_checkpoint_artifacts():
                 full_path = REPO_ROOT / Path(save_dir)
                 if not full_path.exists():
                     continue
-                checkpoint_dirs = [
-                    p for p in full_path.glob("checkpoint*") if p.is_dir()
-                ]
-                assert (
-                    not checkpoint_dirs
-                ), f"Found leftover checkpoints: {[p.name for p in checkpoint_dirs]}"
+                checkpoint_dirs = [p for p in full_path.glob("checkpoint*") if p.is_dir()]
+                assert not checkpoint_dirs, f"Found leftover checkpoints: {[p.name for p in checkpoint_dirs]}"
                 return
     pytest.skip("No completed cleanup jobs found to validate")

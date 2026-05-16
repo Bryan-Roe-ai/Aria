@@ -19,8 +19,7 @@ def test_aria_keyword_sets():
     """Test that keyword sets are properly defined."""
     print("Testing Aria web server keyword sets...")
     try:
-        from aria_web.server import (_MOVE_KEYWORDS, _SAY_KEYWORDS,
-                                     _any_word_in_text)
+        from aria_web.server import _MOVE_KEYWORDS, _SAY_KEYWORDS, _any_word_in_text
 
         # Check they're frozensets
         assert isinstance(_MOVE_KEYWORDS, frozenset), "Keywords should be frozensets"
@@ -28,9 +27,7 @@ def test_aria_keyword_sets():
 
         # Check function works
         assert _any_word_in_text(_MOVE_KEYWORDS, "move left"), "Should match 'move'"
-        assert not _any_word_in_text(
-            _MOVE_KEYWORDS, "dance"
-        ), "Should not match 'dance'"
+        assert not _any_word_in_text(_MOVE_KEYWORDS, "dance"), "Should not match 'dance'"
 
         print("  ✅ Aria web server optimizations validated")
         return True
@@ -112,7 +109,7 @@ def test_file_streaming():
             size = test_file.stat().st_size
 
             if size <= 65536:
-                with open(test_file, "r") as f:
+                with open(test_file) as f:
                     lines = f.readlines()
                     last_100 = lines[-100:]
                     assert len(last_100) == 100, "Should get last 100 lines"

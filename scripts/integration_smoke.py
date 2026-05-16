@@ -19,11 +19,9 @@ from urllib.error import URLError
 from urllib.request import urlopen
 
 try:
-    from .config_paths import (canonical_config_path, get_config_candidates,
-                               resolve_existing_config_path)
+    from .config_paths import canonical_config_path, get_config_candidates, resolve_existing_config_path
 except ImportError:
-    from config_paths import (canonical_config_path, get_config_candidates,
-                              resolve_existing_config_path)
+    from config_paths import canonical_config_path, get_config_candidates, resolve_existing_config_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"
@@ -142,10 +140,7 @@ def _check_config_paths() -> List[StepResult]:
                     status="warning",
                     critical=False,
                     duration_sec=duration,
-                    detail=(
-                        "using legacy path; prefer "
-                        f"{canonical.relative_to(REPO_ROOT)}"
-                    ),
+                    detail=("using legacy path; prefer " f"{canonical.relative_to(REPO_ROOT)}"),
                 )
             )
 
@@ -340,9 +335,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")
-    failed_critical = [
-        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}
-    ]
+    failed_critical = [s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 

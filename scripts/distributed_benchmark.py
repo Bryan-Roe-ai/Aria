@@ -238,9 +238,7 @@ def train_single_dataset(
                 _, predicted = torch.max(outputs, 1)
                 accuracy = (predicted == y_test_t).float().mean().item()
 
-            training_history.append(
-                {"epoch": epoch + 1, "train_loss": avg_loss, "val_acc": accuracy}
-            )
+            training_history.append({"epoch": epoch + 1, "train_loss": avg_loss, "val_acc": accuracy})
 
             if accuracy > best_acc:
                 best_acc = accuracy
@@ -306,7 +304,7 @@ class DistributedBenchmark:
     def load_checkpoint(self) -> Dict:
         """Load checkpoint if exists."""
         if self.checkpoint_file.exists():
-            with open(self.checkpoint_file, "r") as f:
+            with open(self.checkpoint_file) as f:
                 return json.load(f)
         return {"completed": [], "results": []}
 
@@ -341,9 +339,7 @@ class DistributedBenchmark:
         print(f"   Output: {self.output_dir}")
 
         # Load checkpoint
-        checkpoint = (
-            self.load_checkpoint() if resume else {"completed": [], "results": []}
-        )
+        checkpoint = self.load_checkpoint() if resume else {"completed": [], "results": []}
         completed_names = set(checkpoint["completed"])
 
         # Filter remaining datasets
@@ -358,9 +354,7 @@ class DistributedBenchmark:
             print("\n✅ All datasets already completed!")
             return
 
-        print(
-            f"\n🔄 Processing {len(remaining)} datasets with {self.n_workers} workers..."
-        )
+        print(f"\n🔄 Processing {len(remaining)} datasets with {self.n_workers} workers...")
 
         # Create partial function with fixed parameters
         worker_func = partial(
@@ -390,17 +384,11 @@ class DistributedBenchmark:
                 # Progress update
                 status_symbol = "✓" if result["status"] == "success" else "✗"
                 if result["status"] == "success":
-                    print(
-                        f"\n[{completed_count}/{len(csv_files)}] {status_symbol} {result['dataset']}"
-                    )
-                    print(
-                        f"   Accuracy: {result['best_accuracy']:.2%} (epoch {result['best_epoch']})"
-                    )
+                    print(f"\n[{completed_count}/{len(csv_files)}] {status_symbol} {result['dataset']}")
+                    print(f"   Accuracy: {result['best_accuracy']:.2%} (epoch {result['best_epoch']})")
                     print(f"   Duration: {result['duration_seconds']:.1f}s")
                 else:
-                    print(
-                        f"\n[{completed_count}/{len(csv_files)}] {status_symbol} {result['dataset']}"
-                    )
+                    print(f"\n[{completed_count}/{len(csv_files)}] {status_symbol} {result['dataset']}")
                     print(f"   Error: {result.get('error', 'Unknown')}")
 
                 # Save checkpoint every 10 datasets
@@ -453,9 +441,7 @@ class DistributedBenchmark:
             print(f"   Challenging (<75%): {len(challenging)}")
 
             # Top 10
-            top_datasets = sorted(
-                successful, key=lambda x: x["best_accuracy"], reverse=True
-            )[:10]
+            top_datasets = sorted(successful, key=lambda x: x["best_accuracy"], reverse=True)[:10]
             print("\n🥇 TOP 10 DATASETS:")
             for rank, result in enumerate(top_datasets, 1):
                 print(
@@ -499,12 +485,8 @@ def main():
         default="data_out/distributed_benchmark",
         help="Output directory for results",
     )
-    parser.add_argument(
-        "--workers", type=int, default=4, help="Number of parallel workers"
-    )
-    parser.add_argument(
-        "--epochs", type=int, default=25, help="Training epochs per dataset"
-    )
+    parser.add_argument("--workers", type=int, default=4, help="Number of parallel workers")
+    parser.add_argument("--epochs", type=int, default=25, help="Training epochs per dataset")
     parser.add_argument(
         "--quick-test",
         action="store_true",

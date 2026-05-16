@@ -86,19 +86,13 @@ def get_quantum_llm_status_fast(*, output_dir: Path | None = None) -> dict[str, 
             )
 
     checkpoint_ref = (
-        payload.get("best_checkpoint_path")
-        or payload.get("checkpoint_path")
-        or payload.get("last_checkpoint_path")
+        payload.get("best_checkpoint_path") or payload.get("checkpoint_path") or payload.get("last_checkpoint_path")
     )
 
     checkpoint_path: Path | None = None
     if checkpoint_ref:
         candidate = Path(str(checkpoint_ref))
-        checkpoint_path = (
-            candidate
-            if candidate.is_absolute()
-            else (resolved_output_dir / candidate).resolve()
-        )
+        checkpoint_path = candidate if candidate.is_absolute() else (resolved_output_dir / candidate).resolve()
     else:
         for filename in CHECKPOINT_FILENAMES:
             candidate = resolved_output_dir / filename
@@ -110,8 +104,7 @@ def get_quantum_llm_status_fast(*, output_dir: Path | None = None) -> dict[str, 
         payload["checkpoint_path"] = _repo_relative_str(checkpoint_path)
         payload["checkpoint_exists"] = checkpoint_path.exists()
         payload["inference_ready"] = bool(
-            checkpoint_path.exists()
-            and payload.get("status") in {"completed", "running", "idle"}
+            checkpoint_path.exists() and payload.get("status") in {"completed", "running", "idle"}
         )
 
     return payload
@@ -130,9 +123,7 @@ def format_status(status_data: dict[str, Any]) -> str:
     quantum_available = "✓" if status_data.get("quantum_available") else "✗"
 
     lines.append(f"Status:                  {available} {status}")
-    lines.append(
-        f"Available:               {'✓' if status_data.get('available') else '✗'}"
-    )
+    lines.append(f"Available:               {'✓' if status_data.get('available') else '✗'}")
     lines.append(f"Quantum Available:       {quantum_available}")
     lines.append("")
 
@@ -143,16 +134,12 @@ def format_status(status_data: dict[str, Any]) -> str:
         progress = (completed / total_epochs * 100) if total_epochs else 0
         progress_bar = "█" * int(progress / 5) + "░" * (20 - int(progress / 5))
         lines.append("TRAINING PROGRESS")
-        lines.append(
-            f"  Epochs:                  {completed}/{requested} [{progress_bar}] {progress:.0f}%"
-        )
+        lines.append(f"  Epochs:                  {completed}/{requested} [{progress_bar}] {progress:.0f}%")
         lines.append(f"  Current Loss:            {status_data.get('final_loss', '—')}")
         lines.append(f"  Best Loss:               {status_data.get('best_loss', '—')}")
         lines.append("")
 
-    checkpoint_path = status_data.get("checkpoint_path") or status_data.get(
-        "best_checkpoint_path"
-    )
+    checkpoint_path = status_data.get("checkpoint_path") or status_data.get("best_checkpoint_path")
     if checkpoint_path:
         checkpoint_exists = status_data.get("checkpoint_exists", False)
         inference_ready = status_data.get("inference_ready", False)
@@ -165,9 +152,7 @@ def format_status(status_data: dict[str, Any]) -> str:
     if status_data.get("status_file"):
         lines.append("STATUS FILE")
         lines.append(f"  Path:                    {status_data.get('status_file')}")
-        lines.append(
-            f"  Exists:                  {'✓' if status_data.get('status_file_exists') else '✗'}"
-        )
+        lines.append(f"  Exists:                  {'✓' if status_data.get('status_file_exists') else '✗'}")
         lines.append("")
 
     if status_data.get("last_error"):
@@ -179,18 +164,14 @@ def format_status(status_data: dict[str, Any]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Check and display Quantum LLM training status"
-    )
+    parser = argparse.ArgumentParser(description="Check and display Quantum LLM training status")
     parser.add_argument(
         "--output",
         type=str,
         default=None,
         help="Output directory path (default: data_out/quantum_llm_training)",
     )
-    parser.add_argument(
-        "--json", action="store_true", help="Output as JSON (machine-readable)"
-    )
+    parser.add_argument("--json", action="store_true", help="Output as JSON (machine-readable)")
     parser.add_argument(
         "--watch",
         action="store_true",

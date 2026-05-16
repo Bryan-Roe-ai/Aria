@@ -18,7 +18,7 @@ def load_jsonl(path: Path, max_samples: Optional[int] = None) -> List[Dict[str, 
         List of parsed JSON objects.
     """
     records: List[Dict[str, Any]] = []
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -43,7 +43,7 @@ def load_dataset(path: Path, max_samples: Optional[int] = None) -> List[Dict[str
     if suffix == ".jsonl":
         return load_jsonl(path, max_samples=max_samples)
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     if isinstance(data, list):
@@ -79,9 +79,7 @@ def naive_predict(example: Dict[str, Any]) -> str:
     return "echo:"
 
 
-def load_labels_from_dataset(
-    path: Path, max_samples: Optional[int] = None
-) -> List[Any]:
+def load_labels_from_dataset(path: Path, max_samples: Optional[int] = None) -> List[Any]:
     """Load ground-truth labels from a dataset file.
 
     Looks for a ``label`` key in each record. Falls back to the last
@@ -102,9 +100,7 @@ def load_labels_from_dataset(
         elif "expected" in rec:
             labels.append(rec["expected"])
         elif "messages" in rec:
-            assistant_msgs = [
-                m for m in rec["messages"] if m.get("role") == "assistant"
-            ]
+            assistant_msgs = [m for m in rec["messages"] if m.get("role") == "assistant"]
             if assistant_msgs:
                 labels.append(assistant_msgs[-1].get("content", ""))
             else:

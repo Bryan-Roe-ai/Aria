@@ -82,11 +82,7 @@ def validate_fields(body: dict, schema: dict[str, dict]) -> str | None:
         # Type check
         expected = rules.get("type")
         if expected and not isinstance(value, expected):
-            type_name = (
-                expected.__name__
-                if isinstance(expected, type)
-                else " | ".join(t.__name__ for t in expected)
-            )
+            type_name = expected.__name__ if isinstance(expected, type) else " | ".join(t.__name__ for t in expected)
             return f"Field '{field}' must be {type_name}"
 
         # Length checks (str / list)

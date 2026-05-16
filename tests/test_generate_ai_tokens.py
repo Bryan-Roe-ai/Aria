@@ -14,10 +14,8 @@ Covers:
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
-import time
 import unittest.mock as mock
 from pathlib import Path
 
@@ -27,14 +25,15 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import scripts.generate_ai_tokens as gat
 
-
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def _fake_probe(status: int, data: object, latency: float = 5.0):
     return (status, data, latency)
 
 
 # ── Settings helpers ──────────────────────────────────────────────────────────
+
 
 class TestLoadSettings:
     def test_returns_empty_if_missing(self, tmp_path, monkeypatch):
@@ -86,6 +85,7 @@ class TestSaveSettings:
 
 # ── Token generation helpers ──────────────────────────────────────────────────
 
+
 class TestGenerateLocalToken:
     def test_starts_with_prefix(self):
         tok = gat._generate_local_token("lmstudio")
@@ -103,7 +103,8 @@ class TestGenerateLocalToken:
 class TestAzCliGetAccount:
     def test_returns_none_when_az_not_found(self, monkeypatch):
         monkeypatch.setattr(
-            subprocess, "run",
+            subprocess,
+            "run",
             lambda *a, **kw: (_ for _ in ()).throw(FileNotFoundError()),
         )
         assert gat._az_cli_get_account() is None
@@ -124,6 +125,7 @@ class TestAzCliGetAccount:
 
 
 # ── Ollama probe ──────────────────────────────────────────────────────────────
+
 
 class TestProbeOllama:
     def test_ok_with_models(self, monkeypatch):
@@ -148,20 +150,19 @@ class TestProbeOllama:
         assert r.error == "connection refused"
 
     def test_records_latency(self, monkeypatch):
-        monkeypatch.setattr(gat, "_probe_url",
-                            lambda *a, **kw: (200, {"models": [{"name": "phi3"}]}, 42.5))
+        monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"models": [{"name": "phi3"}]}, 42.5))
         r = gat.probe_ollama({})
         assert r.latency_ms == pytest.approx(42.5)
 
     def test_write_sets_model_when_missing(self, monkeypatch):
-        monkeypatch.setattr(gat, "_probe_url",
-                            lambda *a, **kw: (200, {"models": [{"name": "llama3.2"}]}, 5.0))
+        monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"models": [{"name": "llama3.2"}]}, 5.0))
         env = {}  # OLLAMA_MODEL not set
         r = gat.probe_ollama(env, write=True)
         assert "OLLAMA_MODEL" in r.env_written
 
 
 # ── LM Studio probe ───────────────────────────────────────────────────────────
+
 
 class TestProbeLmStudio:
     def test_ok_authenticated(self, monkeypatch):
@@ -212,6 +213,7 @@ class TestProbeLmStudio:
 
 # ── Azure OpenAI probe ────────────────────────────────────────────────────────
 
+
 class TestProbeAzureOpenAI:
     def _base_env(self) -> dict:
         return {
@@ -245,11 +247,9 @@ class TestProbeAzureOpenAI:
         assert "401" in r.error
 
     def test_az_cli_token_exchange(self, monkeypatch):
-        monkeypatch.setattr(gat, "_az_cli_get_account",
-                            lambda: {"user": {"name": "me"}, "name": "MySub"})
+        monkeypatch.setattr(gat, "_az_cli_get_account", lambda: {"user": {"name": "me"}, "name": "MySub"})
         monkeypatch.setattr(gat, "_az_cli_get_token", lambda resource="": "aad-token-xyz")
-        monkeypatch.setattr(gat, "_probe_url",
-                            lambda *a, **kw: (200, {"value": [{"id": "gpt-4"}]}, 40.0))
+        monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"value": [{"id": "gpt-4"}]}, 40.0))
         env = {
             "AZURE_OPENAI_ENDPOINT": "https://myres.openai.azure.com",
             "AZURE_OPENAI_DEPLOYMENT": "gpt-4",
@@ -279,6 +279,7 @@ class TestProbeAzureOpenAI:
 
 
 # ── OpenAI probe ──────────────────────────────────────────────────────────────
+
 
 class TestProbeOpenAI:
     def test_ok_with_valid_key(self, monkeypatch):
@@ -317,6 +318,7 @@ class TestProbeOpenAI:
 
 # ── Aggregate runner ──────────────────────────────────────────────────────────
 
+
 class TestRun:
     def test_writes_env_to_settings(self, tmp_path, monkeypatch):
         target = tmp_path / "local.settings.json"
@@ -325,6 +327,7 @@ class TestRun:
 
         # Let lmstudio return a generated token
         call_count = {"n": 0}
+
         def fake_probe(url, headers=None, **kw):
             call_count["n"] += 1
             if call_count["n"] == 1:
@@ -353,6 +356,7 @@ class TestRun:
 
 # ── JSON status file ──────────────────────────────────────────────────────────
 
+
 class TestWriteJsonStatus:
     def test_creates_status_file(self, tmp_path, monkeypatch):
         monkeypatch.setattr(gat, "STATUS_OUT", tmp_path / "status.json")
@@ -370,6 +374,7 @@ class TestWriteJsonStatus:
 
 # ── CLI exit codes ────────────────────────────────────────────────────────────
 
+
 class TestCLIExitCodes:
     def _run(self, args: list, monkeypatch, settings=None):
         if settings is None:
@@ -381,8 +386,7 @@ class TestCLIExitCodes:
             return gat.main()
 
     def test_exit_0_when_at_least_one_ok(self, monkeypatch):
-        monkeypatch.setattr(gat, "_probe_url",
-                            lambda *a, **kw: (200, {"models": [{"name": "llama3.2"}]}, 5.0))
+        monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"models": [{"name": "llama3.2"}]}, 5.0))
         rc = self._run(["--provider", "ollama"], monkeypatch)
         assert rc == 0
 
@@ -392,8 +396,7 @@ class TestCLIExitCodes:
         assert rc == 1
 
     def test_json_flag_produces_valid_json(self, monkeypatch, capsys):
-        monkeypatch.setattr(gat, "_probe_url",
-                            lambda *a, **kw: (200, {"models": [{"name": "phi3"}]}, 8.0))
+        monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"models": [{"name": "phi3"}]}, 8.0))
         rc = self._run(["--provider", "ollama", "--json"], monkeypatch)
         out = capsys.readouterr().out
         # The JSON block starts with '{' on its own line; find and parse it

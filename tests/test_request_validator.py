@@ -7,19 +7,22 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from shared.request_validator import (CHAT_SCHEMA, QUANTUM_JOB_SCHEMA,
-                                      TTS_SCHEMA, ValidationError,
-                                      parse_json_body, validate_fields,
-                                      validate_request)
+from shared.request_validator import (
+    CHAT_SCHEMA,
+    QUANTUM_JOB_SCHEMA,
+    TTS_SCHEMA,
+    ValidationError,
+    parse_json_body,
+    validate_fields,
+    validate_request,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def _make_req(
-    body: dict | None = None, raw: bytes | None = None, bad_json: bool = False
-):
+def _make_req(body: dict | None = None, raw: bytes | None = None, bad_json: bool = False):
     """Create a mock request object mimicking Azure Functions HttpRequest."""
     req = MagicMock()
     if bad_json:
@@ -114,9 +117,7 @@ class TestValidateFields:
         assert "name" in err
 
     def test_required_field_present(self):
-        err = validate_fields(
-            {"name": "Alice"}, {"name": {"type": str, "required": True}}
-        )
+        err = validate_fields({"name": "Alice"}, {"name": {"type": str, "required": True}})
         assert err is None
 
     def test_optional_field_absent(self):
@@ -149,9 +150,7 @@ class TestValidateFields:
         assert "at least" in err
 
     def test_max_length_string(self):
-        err = validate_fields(
-            {"msg": "a" * 101}, {"msg": {"type": str, "max_length": 100}}
-        )
+        err = validate_fields({"msg": "a" * 101}, {"msg": {"type": str, "max_length": 100}})
         assert err is not None
         assert "max length" in err
 
@@ -160,9 +159,7 @@ class TestValidateFields:
         assert err is not None
 
     def test_max_length_list(self):
-        err = validate_fields(
-            {"items": list(range(11))}, {"items": {"type": list, "max_length": 10}}
-        )
+        err = validate_fields({"items": list(range(11))}, {"items": {"type": list, "max_length": 10}})
         assert err is not None
 
     def test_min_numeric(self):
@@ -180,15 +177,11 @@ class TestValidateFields:
         assert err is None
 
     def test_allowlist_valid(self):
-        err = validate_fields(
-            {"role": "user"}, {"role": {"type": str, "allowed": ["user", "admin"]}}
-        )
+        err = validate_fields({"role": "user"}, {"role": {"type": str, "allowed": ["user", "admin"]}})
         assert err is None
 
     def test_allowlist_invalid(self):
-        err = validate_fields(
-            {"role": "superuser"}, {"role": {"type": str, "allowed": ["user", "admin"]}}
-        )
+        err = validate_fields({"role": "superuser"}, {"role": {"type": str, "allowed": ["user", "admin"]}})
         assert err is not None
         assert "one of" in err
 
@@ -201,9 +194,7 @@ class TestValidateFields:
         assert err is not None  # one of the required fields missing
 
     def test_float_passes_union_check(self):
-        err = validate_fields(
-            {"temp": 0.7}, {"temp": {"type": (int, float), "min": 0, "max": 2}}
-        )
+        err = validate_fields({"temp": 0.7}, {"temp": {"type": (int, float), "min": 0, "max": 2}})
         assert err is None
 
 
@@ -269,9 +260,7 @@ class TestChatSchema:
         assert err is not None
 
     def test_max_output_tokens_too_high(self):
-        err = validate_fields(
-            {"messages": [{}], "max_output_tokens": 999999}, CHAT_SCHEMA
-        )
+        err = validate_fields({"messages": [{}], "max_output_tokens": 999999}, CHAT_SCHEMA)
         assert err is not None
 
 
@@ -299,9 +288,7 @@ class TestQuantumJobSchema:
         assert err is not None
 
     def test_shots_too_high(self):
-        err = validate_fields(
-            {"circuit_type": "ghz", "shots": 200000}, QUANTUM_JOB_SCHEMA
-        )
+        err = validate_fields({"circuit_type": "ghz", "shots": 200000}, QUANTUM_JOB_SCHEMA)
         assert err is not None
 
     def test_shots_too_low(self):

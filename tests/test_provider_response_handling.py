@@ -11,9 +11,7 @@ from unittest.mock import Mock
 from chat_providers import BaseChatProvider
 
 # Add talk-to-ai to path
-sys.path.insert(
-    0, str(Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src")
-)
+sys.path.insert(0, str(Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src"))
 
 
 def test_handle_openai_streaming_response():

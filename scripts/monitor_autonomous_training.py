@@ -37,9 +37,7 @@ class TrainingMonitor:
     ):
         self.status_file = Path(status_file)
         self.log_file = Path(log_file)
-        self.heartbeat_file = (
-            self.status_file.parent / "autonomous_training_heartbeat.json"
-        )
+        self.heartbeat_file = self.status_file.parent / "autonomous_training_heartbeat.json"
         self.last_status = None
         self.last_log_position = 0
 
@@ -83,7 +81,7 @@ class TrainingMonitor:
         try:
             # Stream log file with rolling buffer instead of loading entire file
             buffer = []
-            with open(self.log_file, "r") as f:
+            with open(self.log_file) as f:
                 for line in f:
                     buffer.append(line)
                     if len(buffer) > lines:
@@ -117,9 +115,7 @@ class TrainingMonitor:
     def print_header(self):
         """Print dashboard header"""
         print(f"\n{Colors.BOLD}{Colors.HEADER}{'='*80}{Colors.ENDC}")
-        print(
-            f"{Colors.BOLD}{Colors.HEADER}🤖 AUTONOMOUS AI TRAINING MONITOR{Colors.ENDC}"
-        )
+        print(f"{Colors.BOLD}{Colors.HEADER}🤖 AUTONOMOUS AI TRAINING MONITOR{Colors.ENDC}")
         print(f"{Colors.BOLD}{Colors.HEADER}{'='*80}{Colors.ENDC}\n")
         print(f"📊 Status File: {self.status_file}")
         print(f"📝 Log File: {self.log_file}")
@@ -131,9 +127,7 @@ class TrainingMonitor:
         print("─" * 80)
 
         if "error" in status:
-            print(
-                f"{Colors.FAIL}❌ Error loading status: {status['error']}{Colors.ENDC}"
-            )
+            print(f"{Colors.FAIL}❌ Error loading status: {status['error']}{Colors.ENDC}")
             return
 
         # Basic info
@@ -223,17 +217,12 @@ class TrainingMonitor:
         inventory = status.get("dataset_inventory", {})
         total = status.get("total_datasets_available")
         if total is None:
-            total = sum(
-                v.get("count", 0) if isinstance(v, dict) else int(v)
-                for v in inventory.values()
-            )
+            total = sum(v.get("count", 0) if isinstance(v, dict) else int(v) for v in inventory.values())
 
         if inventory:
             for category, item in inventory.items():
                 count = item.get("count", 0) if isinstance(item, dict) else int(item)
-                print(
-                    f"  {category:20s}: {Colors.BOLD}{count:4d}{Colors.ENDC} datasets"
-                )
+                print(f"  {category:20s}: {Colors.BOLD}{count:4d}{Colors.ENDC} datasets")
 
         print(f"\n  {Colors.BOLD}Total Available: {total}{Colors.ENDC}")
         print()
@@ -253,9 +242,7 @@ class TrainingMonitor:
         # Show last 5 cycles
         recent = history[-5:]
 
-        print(
-            f"  {'Cycle':<8} {'Epochs':<8} {'Mean Acc':<12} {'Max Acc':<12} {'Models':<10}"
-        )
+        print(f"  {'Cycle':<8} {'Epochs':<8} {'Mean Acc':<12} {'Max Acc':<12} {'Models':<10}")
         print("  " + "─" * 70)
 
         for i, perf in enumerate(recent, start=len(history) - len(recent) + 1):
@@ -268,9 +255,7 @@ class TrainingMonitor:
             mean_str = f"{mean_acc*100:.2f}%"
             max_str = f"{max_acc*100:.2f}%"
 
-            print(
-                f"  #{cycle_display:<7} {str(epochs):<8} {mean_str:<12} {max_str:<12} {successful:<10}"
-            )
+            print(f"  #{cycle_display:<7} {str(epochs):<8} {mean_str:<12} {max_str:<12} {successful:<10}")
 
         # Trend analysis
         if len(history) >= 2:
@@ -371,18 +356,13 @@ class TrainingMonitor:
             prev = history[-2].get("mean_accuracy", history[-2].get("accuracy", 0))
             curr = history[-1].get("mean_accuracy", history[-1].get("accuracy", 0))
             if curr < prev - 0.05:
-                alerts.append(
-                    ("WARNING", f"Performance degradation: {prev:.2%} → {curr:.2%}")
-                )
+                alerts.append(("WARNING", f"Performance degradation: {prev:.2%} → {curr:.2%}"))
 
         # Check dataset count
         total = status.get("total_datasets_available")
         if total is None:
             inventory = status.get("dataset_inventory", {})
-            total = sum(
-                v.get("count", 0) if isinstance(v, dict) else int(v)
-                for v in inventory.values()
-            )
+            total = sum(v.get("count", 0) if isinstance(v, dict) else int(v) for v in inventory.values())
         if total < 100:
             alerts.append(("WARNING", f"Low dataset count: {total}"))
 
@@ -404,12 +384,8 @@ class TrainingMonitor:
         status = self.load_status()
 
         if status is None:
-            print(
-                f"{Colors.WARNING}⚠️  Status file not found. Is the orchestrator running?{Colors.ENDC}"
-            )
-            print(
-                "\nStart it with: python ./scripts/autonomous_training_demo.py --cycles 3 --interval 5"
-            )
+            print(f"{Colors.WARNING}⚠️  Status file not found. Is the orchestrator running?{Colors.ENDC}")
+            print("\nStart it with: python ./scripts/autonomous_training_demo.py --cycles 3 --interval 5")
             return
 
         self.print_overview(status)
@@ -438,10 +414,7 @@ class TrainingMonitor:
         total = status.get("total_datasets_available")
         if total is None:
             inventory = status.get("dataset_inventory", {})
-            total = sum(
-                v.get("count", 0) if isinstance(v, dict) else int(v)
-                for v in inventory.values()
-            )
+            total = sum(v.get("count", 0) if isinstance(v, dict) else int(v) for v in inventory.values())
 
         print(f"\n{'='*80}")
         print("AUTONOMOUS TRAINING STATUS")
@@ -454,9 +427,7 @@ class TrainingMonitor:
         promotions = status.get("promotions", [])
         print(f"Promotions: {len(promotions)}")
         if heartbeat:
-            print(
-                f"Heartbeat: {heartbeat.get('state', 'unknown').upper()} @ {heartbeat.get('timestamp', '-')}"
-            )
+            print(f"Heartbeat: {heartbeat.get('state', 'unknown').upper()} @ {heartbeat.get('timestamp', '-')}")
             if heartbeat.get("next_cycle_eta"):
                 print(f"Next Cycle ETA: {heartbeat.get('next_cycle_eta')}")
 
@@ -465,15 +436,9 @@ class TrainingMonitor:
             latest = history[-1]
             print("\nLatest Results:")
             print(f"  Epochs: {latest.get('epochs', '-')}")
-            print(
-                f"  Mean Accuracy: {latest.get('mean_accuracy', latest.get('accuracy', 0)):.2%}"
-            )
-            print(
-                f"  Max Accuracy: {latest.get('max_accuracy', latest.get('accuracy', 0)):.2%}"
-            )
-            print(
-                f"  Successful: {latest.get('successful_count', latest.get('datasets_trained', 0))}"
-            )
+            print(f"  Mean Accuracy: {latest.get('mean_accuracy', latest.get('accuracy', 0)):.2%}")
+            print(f"  Max Accuracy: {latest.get('max_accuracy', latest.get('accuracy', 0)):.2%}")
+            print(f"  Successful: {latest.get('successful_count', latest.get('datasets_trained', 0))}")
             print(f"  Exceptional: {latest.get('exceptional_models', 0)}")
 
         print(f"{'='*80}\n")
@@ -529,9 +494,7 @@ class TrainingMonitor:
                         "mean_accuracy": mean_acc,
                         "median_accuracy": perf.get("median_accuracy", 0),
                         "max_accuracy": max_acc,
-                        "successful_count": perf.get(
-                            "successful_count", perf.get("datasets_trained", 0)
-                        ),
+                        "successful_count": perf.get("successful_count", perf.get("datasets_trained", 0)),
                         "failed_count": perf.get("failed_count", 0),
                         "exceptional_models": perf.get("exceptional_models", 0),
                         "excellent_models": perf.get("excellent_models", 0),

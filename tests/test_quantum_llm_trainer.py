@@ -16,10 +16,12 @@ scripts_path = Path(__file__).parent.parent / "scripts"
 sys.path.insert(0, str(scripts_path))
 
 try:
-    from quantum_llm_trainer import (QuantumAttentionOptimizer,
-                                     QuantumEnhancedLLMTrainer,
-                                     QuantumFeatureEncoder,
-                                     get_quantum_llm_status)
+    from quantum_llm_trainer import (
+        QuantumAttentionOptimizer,
+        QuantumEnhancedLLMTrainer,
+        QuantumFeatureEncoder,
+        get_quantum_llm_status,
+    )
 
     QUANTUM_LLM_AVAILABLE = True
 except (ImportError, OSError) as e:
@@ -61,9 +63,7 @@ class TestQuantumAttentionOptimizer:
 
         class _ShortQuantumLayer:
             def __call__(self, inputs):
-                return torch.tensor(
-                    [[0.1, 0.2, 0.3, 0.4]], dtype=inputs.dtype, device=inputs.device
-                )
+                return torch.tensor([[0.1, 0.2, 0.3, 0.4]], dtype=inputs.dtype, device=inputs.device)
 
         optimizer = QuantumAttentionOptimizer(n_qubits=4, n_layers=2)
         optimizer._quantum_layer = _ShortQuantumLayer()
@@ -224,9 +224,7 @@ class TestQuantumEnhancedLLMTrainer:
 
         mock_dataset = [{"text": f"Sample {i}"} for i in range(100)]
 
-        loss = trainer._train_epoch_with_quantum(
-            model=None, dataset=mock_dataset, epoch=0
-        )
+        loss = trainer._train_epoch_with_quantum(model=None, dataset=mock_dataset, epoch=0)
 
         # Check loss is reasonable
         assert isinstance(loss, float)

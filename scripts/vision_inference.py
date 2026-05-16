@@ -36,9 +36,7 @@ try:
     import torch
     from torch import nn
 except ImportError as err:
-    raise ImportError(
-        "PyTorch is required for vision inference. Install with: pip install torch"
-    ) from err
+    raise ImportError("PyTorch is required for vision inference. Install with: pip install torch") from err
 
 
 # Default checkpoint locations (prioritize latest training output)
@@ -100,17 +98,13 @@ class VisionInference:
             checkpoint_path = self._find_latest_checkpoint()
 
         if checkpoint_path is None:
-            raise FileNotFoundError(
-                "No checkpoint found. Train a model first using scripts/train_vision.py"
-            )
+            raise FileNotFoundError("No checkpoint found. Train a model first using scripts/train_vision.py")
 
         self.checkpoint_path = Path(checkpoint_path)
         logging.info(f"Loading vision model from {self.checkpoint_path}")
 
         # Load checkpoint
-        ckpt = torch.load(
-            self.checkpoint_path, map_location=self.device, weights_only=True
-        )
+        ckpt = torch.load(self.checkpoint_path, map_location=self.device, weights_only=True)
         self.classes = ckpt.get("classes", ["class_0", "class_1"])
 
         # Initialize model
@@ -155,9 +149,7 @@ class VisionInference:
 
         return tensor.to(self.device)
 
-    def predict(
-        self, img: Image.Image
-    ) -> Dict[str, Union[str, float, Dict[str, float]]]:
+    def predict(self, img: Image.Image) -> Dict[str, Union[str, float, Dict[str, float]]]:
         """Run inference on a PIL Image.
 
         Args:
@@ -189,9 +181,7 @@ class VisionInference:
             "scores": scores,
         }
 
-    def predict_base64(
-        self, b64_str: str
-    ) -> Dict[str, Union[str, float, Dict[str, float]]]:
+    def predict_base64(self, b64_str: str) -> Dict[str, Union[str, float, Dict[str, float]]]:
         """Run inference on a base64-encoded image.
 
         Args:
@@ -208,9 +198,7 @@ class VisionInference:
 
         return self.predict(img)
 
-    def predict_file(
-        self, file_path: str
-    ) -> Dict[str, Union[str, float, Dict[str, float]]]:
+    def predict_file(self, file_path: str) -> Dict[str, Union[str, float, Dict[str, float]]]:
         """Run inference on an image file.
 
         Args:
@@ -222,9 +210,7 @@ class VisionInference:
         img = Image.open(file_path)
         return self.predict(img)
 
-    def predict_batch(
-        self, images: List[Image.Image]
-    ) -> List[Dict[str, Union[str, float, Dict[str, float]]]]:
+    def predict_batch(self, images: List[Image.Image]) -> List[Dict[str, Union[str, float, Dict[str, float]]]]:
         """Run inference on a batch of PIL Images.
 
         Args:
@@ -247,9 +233,7 @@ class VisionInference:
             pred_idx = int(np.argmax(probs[i]))
             pred_label = self.classes[pred_idx]
             pred_conf = float(probs[i][pred_idx])
-            scores = {
-                self.classes[j]: float(probs[i][j]) for j in range(len(self.classes))
-            }
+            scores = {self.classes[j]: float(probs[i][j]) for j in range(len(self.classes))}
 
             results.append(
                 {

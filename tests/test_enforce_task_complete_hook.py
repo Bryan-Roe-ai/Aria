@@ -17,13 +17,7 @@ from pathlib import Path
 
 import pytest
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "enforce_task_complete.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "enforce_task_complete.py"
 BLOCK_MARKER = "You have not yet marked the task as complete"
 
 
@@ -114,10 +108,7 @@ class TestStopAllow:
         }
         r = _run_hook(payload)
         assert r.get("continue") is True
-        assert (
-            "loop" in r.get("systemMessage", "").lower()
-            or "escape" in r.get("systemMessage", "").lower()
-        )
+        assert "loop" in r.get("systemMessage", "").lower() or "escape" in r.get("systemMessage", "").lower()
 
     def test_loop_escape_more_than_max(self):
         """5 occurrences of block marker → still escape."""
@@ -214,11 +205,7 @@ class TestStopBlock:
     def test_markdown_todo_block_with_unfinished_items_blocks_stop(self):
         payload = {
             "hookEventName": "Stop",
-            "messages": [
-                {
-                    "content": "# Todo List\n- [x] finished\n- [-] patch hook\n- [ ] rerun tests"
-                }
-            ],
+            "messages": [{"content": "# Todo List\n- [x] finished\n- [-] patch hook\n- [ ] rerun tests"}],
         }
         r = _run_hook(payload)
         assert r.get("continue") is False
@@ -229,9 +216,7 @@ class TestStopBlock:
     def test_markdown_todo_block_all_completed_does_not_trigger_todo_guard(self):
         payload = {
             "hookEventName": "Stop",
-            "messages": [
-                {"content": "# Todo List\n- [x] finished\n- [X] also finished"}
-            ],
+            "messages": [{"content": "# Todo List\n- [x] finished\n- [X] also finished"}],
         }
         r = _run_hook(payload)
         assert r.get("continue") is False
@@ -286,9 +271,7 @@ class TestUserPromptSubmit:
         """If a prior reminder is already in the payload, don't inject again."""
         payload = {
             "hookEventName": "UserPromptSubmit",
-            "messages": [
-                {"content": "Reminder: before ending work call task_complete"}
-            ],
+            "messages": [{"content": "Reminder: before ending work call task_complete"}],
         }
         r = _run_hook(payload)
         assert r.get("continue") is True

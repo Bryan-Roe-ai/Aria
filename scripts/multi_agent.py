@@ -146,15 +146,11 @@ def run_parallel(
     started_at = datetime.now().isoformat()
     _start = time.monotonic()
 
-    _LOGGER.info(
-        f"Multi-agent run {run_id}: {len(jobs)} tasks, " f"max_workers={max_workers}"
-    )
+    _LOGGER.info(f"Multi-agent run {run_id}: {len(jobs)} tasks, " f"max_workers={max_workers}")
 
     completed_states: List[Any] = []
 
-    with ThreadPoolExecutor(
-        max_workers=max_workers, thread_name_prefix="agent"
-    ) as pool:
+    with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="agent") as pool:
         futures = {pool.submit(_run_single_job, job): job for job in jobs}
         for future in as_completed(futures):
             job = futures[future]
@@ -164,11 +160,7 @@ def run_parallel(
                 status_icon = "✓" if state.status == "complete" else "✗"
                 print(
                     f"  {status_icon} [{state.status:12s}] {job.task[:55]}"
-                    + (
-                        f" ({state.duration_seconds}s)"
-                        if state.duration_seconds
-                        else ""
-                    )
+                    + (f" ({state.duration_seconds}s)" if state.duration_seconds else "")
                 )
                 if verbose and state.errors:
                     for err in state.errors:
@@ -186,10 +178,7 @@ def run_parallel(
     total_tokens = sum(s.tokens_estimated for s in completed_states)
 
     consensus = consensus_from_task_results(
-        {
-            f"task_{idx + 1}": {"status": state.status}
-            for idx, state in enumerate(completed_states)
-        }
+        {f"task_{idx + 1}": {"status": state.status} for idx, state in enumerate(completed_states)}
     )
 
     report = MultiAgentReport(
@@ -383,9 +372,7 @@ def main() -> None:
         sys.exit(0)
 
     output_dir = Path(args.output_dir)
-    print(
-        f"\nRunning {len(jobs)} task(s) with up to {args.workers} parallel worker(s)..."
-    )
+    print(f"\nRunning {len(jobs)} task(s) with up to {args.workers} parallel worker(s)...")
     if args.dry_run:
         print("  [DRY RUN — no files will be modified]\n")
     if effective_skip_tests:

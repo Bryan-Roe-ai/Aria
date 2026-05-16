@@ -12,13 +12,7 @@ import json
 import sys
 from pathlib import Path
 
-HOOK_PATH = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "requirements_security_gate.py"
-)
+HOOK_PATH = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "requirements_security_gate.py"
 
 
 def _load_module():
@@ -71,7 +65,9 @@ def test_missing_pip_audit_prints_reminder(monkeypatch, capsys):
 def test_vulnerabilities_warn_by_default(monkeypatch, capsys):
     module = _load_module()
     monkeypatch.setattr(module, "_pip_audit_available", lambda: True)
-    monkeypatch.setattr(module, "_run_audit", lambda content, filename: (True, "  • flask==0.1 → GHSA-test (fix: 3.0.0)"))
+    monkeypatch.setattr(
+        module, "_run_audit", lambda content, filename: (True, "  • flask==0.1 → GHSA-test (fix: 3.0.0)")
+    )
     payload = {
         "toolName": "write_file",
         "filePath": "requirements.txt",
@@ -87,7 +83,9 @@ def test_vulnerabilities_warn_by_default(monkeypatch, capsys):
 def test_vulnerabilities_block_when_env_enabled(monkeypatch, capsys):
     module = _load_module()
     monkeypatch.setattr(module, "_pip_audit_available", lambda: True)
-    monkeypatch.setattr(module, "_run_audit", lambda content, filename: (True, "  • flask==0.1 → GHSA-test (fix: 3.0.0)"))
+    monkeypatch.setattr(
+        module, "_run_audit", lambda content, filename: (True, "  • flask==0.1 → GHSA-test (fix: 3.0.0)")
+    )
     monkeypatch.setattr(module, "_SEVERITY_BLOCK", True)
     payload = {
         "toolName": "write_file",
@@ -166,7 +164,7 @@ def test_malformed_pyproject_warns_but_does_not_block(monkeypatch, capsys):
     payload = {
         "toolName": "write_file",
         "filePath": "pyproject.toml",
-        "content": "[project\ndependencies = [\"flask\"]\n",
+        "content": '[project\ndependencies = ["flask"]\n',
     }
     code, out, err = _run_main(module, payload, monkeypatch, capsys)
     assert code == 0

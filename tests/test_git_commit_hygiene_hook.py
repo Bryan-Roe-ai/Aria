@@ -8,13 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-HOOK_PATH = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "git_commit_hygiene.py"
-)
+HOOK_PATH = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "git_commit_hygiene.py"
 
 
 def _load_module():
@@ -39,9 +33,7 @@ def _run_main(module, payload: dict, monkeypatch, capsys, *, event: str = "PreTo
 def test_warns_on_prompt_with_git_add_all(monkeypatch, capsys):
     module = _load_module()
     payload = {"userMessage": "please run git add . and commit"}
-    code, out, err = _run_main(
-        module, payload, monkeypatch, capsys, event="UserPromptSubmit"
-    )
+    code, out, err = _run_main(module, payload, monkeypatch, capsys, event="UserPromptSubmit")
     assert code == 0
     assert "Git hygiene reminder" in out
     assert err == ""

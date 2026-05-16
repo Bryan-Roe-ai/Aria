@@ -27,10 +27,11 @@ import json
 import subprocess
 import sys
 import time
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Sequence
+from typing import List
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_OUT = REPO_ROOT / "data_out" / "repo_health_automation"
@@ -180,9 +181,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
         result = _run_command(name, cmd)
         steps_out.append(result)
         icon = "PASS" if result.succeeded else "FAIL"
-        print(
-            f"[{icon}] {name} rc={result.returncode} duration={result.duration_sec:.2f}s"
-        )
+        print(f"[{icon}] {name} rc={result.returncode} duration={result.duration_sec:.2f}s")
 
         if not result.succeeded and not args.continue_on_fail:
             break
@@ -201,10 +200,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
     )
 
     print("\n" + "-" * 78)
-    print(
-        f"[repo_health_automation] cycle={cycle} "
-        f"succeeded={succeeded} duration={duration_sec:.2f}s"
-    )
+    print(f"[repo_health_automation] cycle={cycle} " f"succeeded={succeeded} duration={duration_sec:.2f}s")
     print("-" * 78)
 
     if not succeeded:
@@ -224,9 +220,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Automate Aria repo health cycles")
     mode = ap.add_mutually_exclusive_group()
-    mode.add_argument(
-        "--once", action="store_true", help="Run a single cycle (default)"
-    )
+    mode.add_argument("--once", action="store_true", help="Run a single cycle (default)")
     mode.add_argument("--watch", action="store_true", help="Run cycles continuously")
 
     ap.add_argument(

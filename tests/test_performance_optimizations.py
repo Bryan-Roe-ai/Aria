@@ -133,9 +133,7 @@ class TestWebAppOptimizations:
 
         # Apply the optimized trimming pattern
         if len(metrics_history["epochs"]) > 1000:
-            metrics_history = {
-                key: values[-1000:] for key, values in metrics_history.items()
-            }
+            metrics_history = {key: values[-1000:] for key, values in metrics_history.items()}
 
         # Verify trimming worked correctly
         assert len(metrics_history["epochs"]) == 1000
@@ -247,7 +245,7 @@ class TestBufferedWriteOptimizations:
                 f.write("\n".join(buffer) + "\n")
 
         # Verify output
-        with open(output_file, "r") as f:
+        with open(output_file) as f:
             lines = [line for line in f if line.strip()]
 
         assert len(lines) == 250
@@ -308,15 +306,11 @@ class TestDatasetSampleCountingOptimizations:
         dataset_dir.mkdir()
 
         # Create train.jsonl with 50 lines
-        train_data = (
-            "\n".join(['{"text": "sample ' + str(i) + '"}' for i in range(50)]) + "\n"
-        )
+        train_data = "\n".join(['{"text": "sample ' + str(i) + '"}' for i in range(50)]) + "\n"
         (dataset_dir / "train.jsonl").write_text(train_data)
 
         # Create test.jsonl with 10 lines
-        test_data = (
-            "\n".join(['{"text": "test ' + str(i) + '"}' for i in range(10)]) + "\n"
-        )
+        test_data = "\n".join(['{"text": "test ' + str(i) + '"}' for i in range(10)]) + "\n"
         (dataset_dir / "test.jsonl").write_text(test_data)
 
         # Count using optimized method
@@ -376,7 +370,7 @@ class TestJsonSampleCounting:
         data = [{"id": i} for i in range(100)]
         test_file.write_text(json.dumps(data))
 
-        with open(test_file, "r", encoding="utf-8") as f:
+        with open(test_file, encoding="utf-8") as f:
             first_char = f.read(1)
             f.seek(0)
 
@@ -394,7 +388,7 @@ class TestJsonSampleCounting:
         lines = [json.dumps({"id": i}) for i in range(100)]
         test_file.write_text("\n".join(lines) + "\n")
 
-        with open(test_file, "r", encoding="utf-8") as f:
+        with open(test_file, encoding="utf-8") as f:
             first_char = f.read(1)
             f.seek(0)
 
@@ -577,9 +571,7 @@ class TestCollectionOptimizations:
         ]
 
         # Old inefficient approach (for comparison)
-        old_result = any(x.get("role") == "user" for x in window) and any(
-            x.get("role") == "assistant" for x in window
-        )
+        old_result = any(x.get("role") == "user" for x in window) and any(x.get("role") == "assistant" for x in window)
 
         # New optimized approach
         roles = {x.get("role") for x in window}

@@ -21,9 +21,7 @@ def test_agent_registration():
     """Test that lmstudio-specialist is registered."""
     from agi_provider import _AGENT_REGISTRY
 
-    assert (
-        "lmstudio-specialist" in _AGENT_REGISTRY
-    ), "lmstudio-specialist not in registry"
+    assert "lmstudio-specialist" in _AGENT_REGISTRY, "lmstudio-specialist not in registry"
     agent = _AGENT_REGISTRY["lmstudio-specialist"]
 
     assert agent["provider"] == "lmstudio", "Provider should be 'lmstudio'"
@@ -74,7 +72,7 @@ def test_env_configuration():
     assert isinstance(lmstudio_url, str) and lmstudio_url, "LMSTUDIO_BASE_URL should be a non-empty string"
     assert isinstance(lmstudio_model, str) and lmstudio_model, "LMSTUDIO_MODEL should be a non-empty string"
 
-    print(f"✓ Environment configuration test passed")
+    print("✓ Environment configuration test passed")
     print(f"   LMSTUDIO_BASE_URL: {lmstudio_url}")
     print(f"   LMSTUDIO_MODEL: {lmstudio_model}")
 

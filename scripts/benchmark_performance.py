@@ -7,6 +7,7 @@ Compares old patterns vs new optimized patterns.
 """
 
 import json
+
 # Add shared to path
 import sys
 import tempfile
@@ -37,7 +38,7 @@ def benchmark_tail_file():
 
     # Old method: readlines()
     t0 = time.time()
-    with open(temp_path, "r") as f:
+    with open(temp_path) as f:
         lines = f.readlines()
         result1 = lines[-20:]
     t_old = time.time() - t0
@@ -93,9 +94,7 @@ def benchmark_json_parsing():
 
     # New method: rsplit() and reverse search
     t0 = time.time()
-    result2 = find_json_in_output(
-        output, key="metrics", search_from_end=True, max_lines=50
-    )
+    result2 = find_json_in_output(output, key="metrics", search_from_end=True, max_lines=50)
     t_new = time.time() - t0
 
     # Verify results match
@@ -126,16 +125,14 @@ def benchmark_jsonl_streaming():
 
     # Old method: Load all into list
     t0 = time.time()
-    with open(temp_path, "r") as f:
+    with open(temp_path) as f:
         all_records = [json.loads(line) for line in f if line.strip()]
     count1 = sum(1 for r in all_records if r["id"] % 2 == 0)
     t_old = time.time() - t0
 
     # New method: Stream with generator
     t0 = time.time()
-    count2 = sum(
-        1 for r in stream_jsonl(temp_path, filter_fn=lambda x: x["id"] % 2 == 0)
-    )
+    count2 = sum(1 for r in stream_jsonl(temp_path, filter_fn=lambda x: x["id"] % 2 == 0))
     t_new = time.time() - t0
 
     # Verify results match

@@ -146,10 +146,8 @@ class TrainingAnalytics:
         if promotions:
             p = promotions[-1]
             report.append(
-                (
-                    f"Latest Promotion: v{p.get('version', '?')} at cycle "
-                    f"{p.get('cycle', '?')} ({p.get('accuracy', 0):.2%})"
-                )
+                f"Latest Promotion: v{p.get('version', '?')} at cycle "
+                f"{p.get('cycle', '?')} ({p.get('accuracy', 0):.2%})"
             )
         report.append("")
 
@@ -165,9 +163,7 @@ class TrainingAnalytics:
 
             report.append(f"Initial Accuracy: {first:.2%}")
             report.append(f"Current Accuracy: {last:.2%}")
-            report.append(
-                f"Total Improvement: {improvement:.2%} (+{improvement*100:.2f} percentage points)"
-            )
+            report.append(f"Total Improvement: {improvement:.2%} (+{improvement*100:.2f} percentage points)")
 
             improvement_rate = self.calculate_improvement_rate()
             report.append(f"Improvement Rate: {improvement_rate*100:.3f}% per cycle")
@@ -191,9 +187,7 @@ class TrainingAnalytics:
 
         plateau = self.detect_plateau()
         if plateau:
-            report.append(
-                "Status: ⚠️  PLATEAU DETECTED - Consider increasing epochs or tuning hyperparameters"
-            )
+            report.append("Status: ⚠️  PLATEAU DETECTED - Consider increasing epochs or tuning hyperparameters")
         else:
             report.append("Status: ✅ Model is still improving")
         report.append("")
@@ -208,12 +202,8 @@ class TrainingAnalytics:
             report.append("MODEL QUALITY BREAKDOWN (Latest Cycle)")
             report.append("-" * 80)
             denom = successful if successful > 0 else 1
-            report.append(
-                f"Exceptional (≥95%): {exceptional} ({exceptional/denom*100:.1f}%)"
-            )
-            report.append(
-                f"Excellent (85-95%): {excellent} ({excellent/denom*100:.1f}%)"
-            )
+            report.append(f"Exceptional (≥95%): {exceptional} ({exceptional/denom*100:.1f}%)")
+            report.append(f"Excellent (85-95%): {excellent} ({excellent/denom*100:.1f}%)")
             report.append(f"Total Successful: {successful}")
             report.append("")
 
@@ -232,9 +222,7 @@ class TrainingAnalytics:
             report.append("• Performance is improving steadily")
 
         if plateau_cycles >= 5:
-            report.append(
-                "• Plateau stable for 5+ cycles — promotion cadence is active"
-            )
+            report.append("• Plateau stable for 5+ cycles — promotion cadence is active")
         if promotions:
             report.append("• Model promotion history available in status['promotions']")
 

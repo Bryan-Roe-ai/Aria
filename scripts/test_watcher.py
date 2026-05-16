@@ -46,12 +46,8 @@ def main():
         default=["tests", "apps", "shared", "scripts"],
         help="Paths to watch (files or directories)",
     )
-    parser.add_argument(
-        "--cmd", default="pytest tests -q", help="Command to run on changes"
-    )
-    parser.add_argument(
-        "--poll-interval", type=float, default=1.0, help="Polling interval seconds"
-    )
+    parser.add_argument("--cmd", default="pytest tests -q", help="Command to run on changes")
+    parser.add_argument("--poll-interval", type=float, default=1.0, help="Polling interval seconds")
     args = parser.parse_args()
 
     watch_paths = [Path(p) for p in args.paths]

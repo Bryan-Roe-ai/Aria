@@ -39,9 +39,7 @@ def azure_call(example: Dict[str, Any], deployment: str | None) -> str:
     if not HAS_AZURE_OPENAI or not os.getenv("AZURE_OPENAI_API_KEY"):
         return naive_predict(example)
 
-    prompt = example.get("input") or " ".join(
-        [m.get("content", "") for m in (example.get("messages") or [])]
-    )
+    prompt = example.get("input") or " ".join([m.get("content", "") for m in (example.get("messages") or [])])
     try:
         # Minimal safe attempt – real deployments may differ in invocation
         resp = openai.ChatCompletion.create(
@@ -66,11 +64,7 @@ def run(
     expects: List[str | None] = []
     timings: List[float] = []
 
-    use_azure = (
-        HAS_AZURE_OPENAI
-        and os.getenv("AZURE_OPENAI_API_KEY")
-        and os.getenv("AZURE_OPENAI_ENDPOINT")
-    )
+    use_azure = HAS_AZURE_OPENAI and os.getenv("AZURE_OPENAI_API_KEY") and os.getenv("AZURE_OPENAI_ENDPOINT")
 
     for ex in data:
         t0 = time.perf_counter()
@@ -84,9 +78,7 @@ def run(
 
     summary: Dict[str, Any] = {"samples": len(preds)}
     if "response_time" in metrics:
-        summary["response_time_ms"] = (
-            round(sum(timings) / len(timings), 3) if timings else 0.0
-        )
+        summary["response_time_ms"] = round(sum(timings) / len(timings), 3) if timings else 0.0
     if "accuracy" in metrics:
         summary["accuracy"] = round(compute_accuracy(preds, expects), 4)
 
@@ -96,17 +88,13 @@ def run(
             "summary": summary,
             "predictions": [{"pred": p, "expected": e} for p, e in zip(preds, expects)],
         }
-        (save_dir / "results.json").write_text(
-            json.dumps(out, indent=2), encoding="utf-8"
-        )
+        (save_dir / "results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 
     return summary
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(
-        description="Evaluate Azure OpenAI deployment (offline fallback for CI)"
-    )
+    ap = argparse.ArgumentParser(description="Evaluate Azure OpenAI deployment (offline fallback for CI)")
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--max-samples", type=int, default=None)
     ap.add_argument("--metric", action="append", dest="metrics")

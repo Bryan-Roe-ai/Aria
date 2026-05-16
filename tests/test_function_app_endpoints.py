@@ -68,9 +68,7 @@ def _install_fake_quantum_trainer_module(
         def __init__(self, tokens: list[int]):
             self._tokens = tokens
 
-        def generate(
-            self, prompt_ids, max_new_tokens: int, temperature: float, top_k: int
-        ):
+        def generate(self, prompt_ids, max_new_tokens: int, temperature: float, top_k: int):
             if capture is not None:
                 capture["generate_kwargs"] = {
                     "max_new_tokens": max_new_tokens,
@@ -96,9 +94,7 @@ def _install_fake_quantum_trainer_module(
             self.model_config = {"vocab_size": 256}
             self.model = _FakeModel(generate_tokens or [72, 105, 33])  # "Hi!"
 
-        def train_with_quantum_enhancement(
-            self, dataset_path, output_dir, epochs, model=None
-        ):
+        def train_with_quantum_enhancement(self, dataset_path, output_dir, epochs, model=None):
             if capture is not None:
                 capture["train_args"] = {
                     "dataset_path": dataset_path,
@@ -162,9 +158,7 @@ class TestGetEndpoints:
         data = json.loads(resp.get_body())
         assert "provider" in data or "status" in data
 
-    def test_ai_status_uses_shared_status_loader_without_leaking_metadata(
-        self, app_module, monkeypatch
-    ):
+    def test_ai_status_uses_shared_status_loader_without_leaking_metadata(self, app_module, monkeypatch):
         """GET /api/ai/status should strip shared loader metadata from payloads."""
 
         def _fake_status(path, *_, **__):
@@ -215,9 +209,7 @@ class TestGetEndpoints:
 
         assert orch["autonomous_training"]["cycles_completed"] == 4
         assert orch["autotrain"]["status"] == "ok"
-        assert not any(
-            key.startswith("_status_file_") for key in orch["autonomous_training"]
-        )
+        assert not any(key.startswith("_status_file_") for key in orch["autonomous_training"])
 
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
@@ -318,9 +310,7 @@ class TestPostValidation:
         data = json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
-    def test_chat_drops_compaction_placeholder_before_provider_call(
-        self, app_module, monkeypatch
-    ):
+    def test_chat_drops_compaction_placeholder_before_provider_call(self, app_module, monkeypatch):
         """Synthetic compaction placeholders should not be forwarded to providers."""
 
         captured: dict = {}
@@ -360,13 +350,9 @@ class TestPostValidation:
         resp = app_module.chat(req)
 
         assert resp.status_code == 200
-        assert captured["messages"] == [
-            {"role": "user", "content": "Continue with the fix"}
-        ]
+        assert captured["messages"] == [{"role": "user", "content": "Continue with the fix"}]
 
-    def test_chat_only_compaction_placeholder_messages_return_validation_error(
-        self, app_module
-    ):
+    def test_chat_only_compaction_placeholder_messages_return_validation_error(self, app_module):
         """Placeholder-only histories should be rejected like other empty input."""
 
         req = _mock_request(
@@ -582,9 +568,7 @@ class TestQuantumLlmEndpoint:
         assert data["readiness"]["inference_ready"] is True
         assert capture["generate_kwargs"]["max_new_tokens"] == 3
 
-    def test_quantum_llm_post_train_rejects_external_path(
-        self, app_module, monkeypatch
-    ):
+    def test_quantum_llm_post_train_rejects_external_path(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
         req = _mock_request(
             "POST",

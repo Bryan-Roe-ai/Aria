@@ -34,13 +34,9 @@ class _FakeRateLimitError(Exception):
     """Simulates an OpenAI transient rate-limit (429) error."""
 
 
-def _patch_quota_helpers(
-    monkeypatch: pytest.MonkeyPatch, *, quota_exc_type, rate_exc_type
-):
+def _patch_quota_helpers(monkeypatch: pytest.MonkeyPatch, *, quota_exc_type, rate_exc_type):
     """Patch is_quota_error and is_transient_rate_error in chat_providers module."""
-    monkeypatch.setattr(
-        chat_providers, "is_quota_error", lambda e: isinstance(e, quota_exc_type)
-    )
+    monkeypatch.setattr(chat_providers, "is_quota_error", lambda e: isinstance(e, quota_exc_type))
     monkeypatch.setattr(
         chat_providers,
         "is_transient_rate_error",
@@ -63,9 +59,7 @@ def test_openai_quota_error_non_stream_returns_friendly_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Non-streaming call: quota error → friendly string, no exception raised."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     fake_client = unittest.mock.MagicMock()
     fake_client.chat.completions.create.side_effect = _FakeQuotaError("over quota")
@@ -82,14 +76,10 @@ def test_openai_quota_error_stream_returns_friendly_generator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Streaming call: quota error → iterable yielding friendly message."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     fake_client = unittest.mock.MagicMock()
-    fake_client.chat.completions.create.side_effect = _FakeQuotaError(
-        "billing exceeded"
-    )
+    fake_client.chat.completions.create.side_effect = _FakeQuotaError("billing exceeded")
 
     provider = _make_openai_provider(monkeypatch, fake_client)
     result = provider.complete([{"role": "user", "content": "hi"}], stream=True)
@@ -109,9 +99,7 @@ def test_openai_transient_rate_limit_retries_and_succeeds(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Transient rate-limit errors should be retried; success on 2nd attempt."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
     monkeypatch.setattr(chat_providers.time, "sleep", lambda _: None)
 
     call_count = {"n": 0}
@@ -138,9 +126,7 @@ def test_openai_transient_rate_limit_retries_and_succeeds(
 @pytest.mark.unit
 def test_openai_non_transient_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
     """Non-quota, non-transient errors must still propagate as exceptions."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     fake_client = unittest.mock.MagicMock()
     fake_client.chat.completions.create.side_effect = ConnectionError("network down")
@@ -156,9 +142,7 @@ def test_openai_sanitizes_whitespace_only_text_blocks_before_sdk_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Whitespace-only text blocks should be removed before calling the SDK."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     fake_client = unittest.mock.MagicMock()
     mock_resp = unittest.mock.MagicMock()
@@ -204,9 +188,7 @@ def test_openai_sanitizes_whitespace_only_input_text_blocks_before_sdk_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Whitespace-only input_text blocks should be removed before SDK call."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     fake_client = unittest.mock.MagicMock()
     mock_resp = unittest.mock.MagicMock()
@@ -257,16 +239,10 @@ def test_openai_mid_stream_quota_error_yields_friendly_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Quota error raised mid-stream must be converted to a friendly yielded message."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     def _bad_iter():
-        yield unittest.mock.MagicMock(
-            choices=[
-                unittest.mock.MagicMock(delta=unittest.mock.MagicMock(content="tok1"))
-            ]
-        )
+        yield unittest.mock.MagicMock(choices=[unittest.mock.MagicMock(delta=unittest.mock.MagicMock(content="tok1"))])
         raise _FakeQuotaError("quota mid-stream")
 
     fake_client = unittest.mock.MagicMock()
@@ -286,16 +262,10 @@ def test_openai_mid_stream_generic_error_yields_error_token(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Non-quota mid-stream error must yield an error token rather than raising."""
-    _patch_quota_helpers(
-        monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError
-    )
+    _patch_quota_helpers(monkeypatch, quota_exc_type=_FakeQuotaError, rate_exc_type=_FakeRateLimitError)
 
     def _bad_iter():
-        yield unittest.mock.MagicMock(
-            choices=[
-                unittest.mock.MagicMock(delta=unittest.mock.MagicMock(content="tok1"))
-            ]
-        )
+        yield unittest.mock.MagicMock(choices=[unittest.mock.MagicMock(delta=unittest.mock.MagicMock(content="tok1"))])
         raise RuntimeError("unexpected stream failure")
 
     fake_client = unittest.mock.MagicMock()

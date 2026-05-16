@@ -47,9 +47,7 @@ except ImportError as e:
     QUANTUM_AVAILABLE = False
     QuantumLLM = None
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -164,15 +162,11 @@ def train_quantum_llm(args):
     logger.info("=" * 80)
 
     if not QUANTUM_AVAILABLE:
-        logger.error(
-            "Quantum layers not available. Install pennylane: pip install pennylane"
-        )
+        logger.error("Quantum layers not available. Install pennylane: pip install pennylane")
         return 1
 
     if torch is None or nn is None or DataLoader is None:
-        logger.error(
-            "PyTorch is not installed. Install torch to run training: pip install torch"
-        )
+        logger.error("PyTorch is not installed. Install torch to run training: pip install torch")
         return 1
 
     # Setup
@@ -190,9 +184,7 @@ def train_quantum_llm(args):
     logger.info(f"Vocabulary size: {vocab_size}")
     logger.info(f"Dataset size: {len(dataset)} sequences")
 
-    dataloader = DataLoader(
-        dataset, batch_size=args.batch_size, shuffle=True, num_workers=0
-    )
+    dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=0)
 
     # Create model
     logger.info("Creating quantum LLM...")
@@ -218,9 +210,7 @@ def train_quantum_llm(args):
 
     max_batches = args.max_batches_per_epoch if args.max_batches_per_epoch > 0 else None
     total_batches = len(dataloader)
-    display_total_batches = (
-        min(total_batches, max_batches) if max_batches else total_batches
-    )
+    display_total_batches = min(total_batches, max_batches) if max_batches else total_batches
 
     for epoch in range(args.epochs):
         total_loss = 0
@@ -255,9 +245,7 @@ def train_quantum_llm(args):
                 )
 
         avg_epoch_loss = total_loss / max(n_batches, 1)
-        logger.info(
-            f"Epoch {epoch+1}/{args.epochs} completed | Avg Loss: {avg_epoch_loss:.4f}"
-        )
+        logger.info(f"Epoch {epoch+1}/{args.epochs} completed | Avg Loss: {avg_epoch_loss:.4f}")
 
     # Save model
     output_dir = Path("data_out") / args.output
@@ -308,37 +296,23 @@ def train_quantum_llm(args):
     logger.info("TRAINING COMPLETE!")
     logger.info("=" * 80)
     logger.info("\nTo chat with this model, run:")
-    logger.info(
-        f"  python ai-projects/chat-cli/src/chat_cli.py --provider quantum --model {output_dir}"
-    )
+    logger.info(f"  python ai-projects/chat-cli/src/chat_cli.py --provider quantum --model {output_dir}")
 
     return 0
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Train a quantum-enhanced LLM for chat"
-    )
-    parser.add_argument(
-        "--epochs", type=int, default=3, help="Number of training epochs"
-    )
+    parser = argparse.ArgumentParser(description="Train a quantum-enhanced LLM for chat")
+    parser.add_argument("--epochs", type=int, default=3, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=8, help="Batch size")
     parser.add_argument("--seq-len", type=int, default=64, help="Sequence length")
     parser.add_argument("--d-model", type=int, default=64, help="Model dimension")
     parser.add_argument("--n-layers", type=int, default=2, help="Number of layers")
-    parser.add_argument(
-        "--n-heads", type=int, default=2, help="Number of attention heads"
-    )
-    parser.add_argument(
-        "--n-qubits", type=int, default=2, help="Number of qubits per quantum layer"
-    )
+    parser.add_argument("--n-heads", type=int, default=2, help="Number of attention heads")
+    parser.add_argument("--n-qubits", type=int, default=2, help="Number of qubits per quantum layer")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
-    parser.add_argument(
-        "--output", type=str, default="quantum_llm_chat", help="Output directory name"
-    )
-    parser.add_argument(
-        "--quick", action="store_true", help="Quick training (2 epochs, small model)"
-    )
+    parser.add_argument("--output", type=str, default="quantum_llm_chat", help="Output directory name")
+    parser.add_argument("--quick", action="store_true", help="Quick training (2 epochs, small model)")
     parser.add_argument(
         "--max-batches-per-epoch",
         type=int,

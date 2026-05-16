@@ -83,9 +83,7 @@ def write_dataset(category: str, count: int) -> Path:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate synthetic autonomous datasets"
-    )
+    parser = argparse.ArgumentParser(description="Generate synthetic autonomous datasets")
     parser.add_argument(
         "--samples-per-category",
         type=int,

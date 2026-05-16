@@ -12,9 +12,7 @@ import sys
 from pathlib import Path
 
 PAT_IMPORT_LOCAL = re.compile(r"^\s*(from|import)\s+(shared|shared\.|\.|\w+\.)", re.M)
-PAT_REPO_ROOT = re.compile(
-    r"REPO_ROOT\s*=\s*Path\(__file__\)\.resolve\(\)\.parent\.parent"
-)
+PAT_REPO_ROOT = re.compile(r"REPO_ROOT\s*=\s*Path\(__file__\)\.resolve\(\)\.parent\.parent")
 PAT_SYS_INSERT = re.compile(r"sys\.path\.insert\(\s*0\s*,\s*str\(REPO_ROOT\)\s*\)")
 
 

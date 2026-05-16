@@ -8,6 +8,7 @@ from __future__ import annotations
 import base64
 import importlib.util
 import io
+
 # Ensure repository root is on the path so 'scripts' is importable as a package
 import sys
 from pathlib import Path
@@ -129,23 +130,17 @@ class TestTinyConvNet:
 class TestVisionInference:
     """Test VisionInference class ."""
 
-    def test_initialization_with_checkpoint(
-        self, dummy_checkpoint: tuple[Path, list[str]]
-    ) -> None:
+    def test_initialization_with_checkpoint(self, dummy_checkpoint: tuple[Path, list[str]]) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference already imported at module level when available
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         assert str(vi.checkpoint_path) == str(ckpt_path)
         assert vi.classes == classes
         assert str(vi.device) == "cpu"
 
-    def test_initialization_without_checkpoint_fails(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_initialization_without_checkpoint_fails(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
@@ -156,9 +151,7 @@ class TestVisionInference:
         with pytest.raises(FileNotFoundError, match="No checkpoint found"):
             VisionInference()  # type: ignore
 
-    def test_device_autodetection(
-        self, dummy_checkpoint: tuple[Path, list[str]]
-    ) -> None:
+    def test_device_autodetection(self, dummy_checkpoint: tuple[Path, list[str]]) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
@@ -167,16 +160,12 @@ class TestVisionInference:
         expected_device = "cuda" if torch.cuda.is_available() else "cpu"
         assert str(vi.device) == expected_device
 
-    def test_preprocess(
-        self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image
-    ) -> None:
+    def test_preprocess(self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, _ = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu", img_size=64
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu", img_size=64)  # type: ignore
         tensor = vi.preprocess(test_image)  # type: ignore
         assert tensor.shape == (1, 3, 64, 64)  # type: ignore
         min_val = tensor.min().item()
@@ -184,30 +173,22 @@ class TestVisionInference:
         assert 0.0 - 1e-2 <= min_val <= 1.0 + 1e-2
         assert 0.0 - 1e-2 <= max_val <= 1.0 + 1e-2
 
-    def test_preprocess_converts_mode(
-        self, dummy_checkpoint: tuple[Path, list[str]]
-    ) -> None:
+    def test_preprocess_converts_mode(self, dummy_checkpoint: tuple[Path, list[str]]) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, _ = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         gray_img = Image.new("L", (64, 64), color=128)
         tensor = vi.preprocess(gray_img)  # type: ignore
         assert tensor.shape[1] == 3  # type: ignore
 
-    def test_predict(
-        self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image
-    ) -> None:
+    def test_predict(self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         result = vi.predict(test_image)  # type: ignore
         assert "label" in result
         assert "confidence" in result
@@ -219,16 +200,12 @@ class TestVisionInference:
         scores_sum = sum(result["scores"].values())  # type: ignore
         assert abs(scores_sum - 1.0) < 0.01
 
-    def test_predict_base64(
-        self, dummy_checkpoint: tuple[Path, list[str]], test_image_base64: str
-    ) -> None:
+    def test_predict_base64(self, dummy_checkpoint: tuple[Path, list[str]], test_image_base64: str) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         result = vi.predict_base64(test_image_base64)  # type: ignore
         assert "label" in result
         assert result["label"] in classes
@@ -243,9 +220,7 @@ class TestVisionInference:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         img_path = tmp_path / "test.png"
         test_image.save(img_path)
         result = vi.predict_file(str(img_path))  # type: ignore
@@ -257,14 +232,9 @@ class TestVisionInference:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         images = [
-            Image.fromarray(
-                np.random.randint(0, 255, size=(64, 64, 3), dtype=np.uint8), mode="RGB"
-            )
-            for _ in range(3)
+            Image.fromarray(np.random.randint(0, 255, size=(64, 64, 3), dtype=np.uint8), mode="RGB") for _ in range(3)
         ]
         results = vi.predict_batch(images)  # type: ignore
         assert len(results) == 3
@@ -279,9 +249,7 @@ class TestVisionInference:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu", img_size=128
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu", img_size=128)  # type: ignore
         info = vi.get_model_info()  # type: ignore
         assert info["checkpoint_path"] == str(ckpt_path)
         assert info["classes"] == classes
@@ -289,9 +257,7 @@ class TestVisionInference:
         assert "cpu" in str(info["device"])
         assert info["img_size"] == 128
 
-    def test_find_latest_checkpoint(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_find_latest_checkpoint(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
@@ -324,9 +290,7 @@ class TestVisionInferenceErrors:
         if not torch_available:
             pytest.skip("PyTorch not available")
         ckpt_path, _ = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         with pytest.raises(Exception):
             vi.predict_base64("not_valid_base64!!!")  # type: ignore
 
@@ -335,22 +299,16 @@ class TestVisionInferenceErrors:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, _ = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         with pytest.raises(FileNotFoundError):
             vi.predict_file("/nonexistent/path/image.jpg")  # type: ignore
 
-    def test_corrupted_image_data(
-        self, dummy_checkpoint: tuple[Path, list[str]]
-    ) -> None:
+    def test_corrupted_image_data(self, dummy_checkpoint: tuple[Path, list[str]]) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, _ = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         bad_data = base64.b64encode(b"not an image").decode("ascii")
         with pytest.raises(Exception):
             vi.predict_base64(bad_data)  # type: ignore
@@ -359,16 +317,12 @@ class TestVisionInferenceErrors:
 class TestIntegration:
     """Integration tests simulating endpoint usage."""
 
-    def test_full_inference_pipeline(
-        self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image
-    ) -> None:
+    def test_full_inference_pipeline(self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         # VisionInference imported at module level
         ckpt_path, classes = dummy_checkpoint
-        vi = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         result = vi.predict(test_image)  # type: ignore
         assert result["label"] in classes
         assert isinstance(result["confidence"], float)
@@ -380,15 +334,11 @@ class TestIntegration:
         assert result["label"] == top_class
         assert result["confidence"] == scores[top_class]  # type: ignore
 
-    def test_model_caching_simulation(
-        self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image
-    ) -> None:
+    def test_model_caching_simulation(self, dummy_checkpoint: tuple[Path, list[str]], test_image: Image.Image) -> None:
         if not torch_available:
             pytest.skip("PyTorch not available")
         ckpt_path, _ = dummy_checkpoint
-        vi1 = VisionInference(
-            checkpoint_path=str(ckpt_path), device="cpu"
-        )  # type: ignore
+        vi1 = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         result1 = vi1.predict(test_image)  # type: ignore
         result2 = vi1.predict(test_image)  # type: ignore
         assert "label" in result1

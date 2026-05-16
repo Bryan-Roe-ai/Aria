@@ -115,13 +115,7 @@ def log_chat_message_safe(
 
 
 def _parse_quantum_summary() -> Dict[str, Any]:
-    summary_path = (
-        REPO_ROOT
-        / "ai-projects"
-        / "quantum-ml"
-        / "results"
-        / "custom_training_summary.json"
-    )
+    summary_path = REPO_ROOT / "ai-projects" / "quantum-ml" / "results" / "custom_training_summary.json"
     if not summary_path.exists():
         return {}
     try:
@@ -156,11 +150,7 @@ def log_quantum_run_safe(
             "@StatusJsonPath=?, @ResultsJsonPath=?, @Status=?, @ErrorMessage=?, @RunId=@RunId OUTPUT; "
             "SELECT @RunId AS RunId;"
         )
-        backend = (
-            job.azure_backend
-            if getattr(job, "mode", "") == "azure_hardware"
-            else "qiskit_aer"
-        )
+        backend = job.azure_backend if getattr(job, "mode", "") == "azure_hardware" else "qiskit_aer"
         params = [
             job.name,
             dataset_name,
@@ -236,11 +226,7 @@ def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: A
         lora_dropout = job.lora_dropout or cfg.get("lora_dropout", 0.1)
         sequence_len = cfg.get("finetune_train_seqlen", 512)
         learning_rate = job.learning_rate or cfg.get("learning_rate", 2e-4)
-        target_modules = (
-            cfg.get("lora_target_modules")
-            or cfg.get("target_modules")
-            or ["q_proj", "v_proj"]
-        )
+        target_modules = cfg.get("lora_target_modules") or cfg.get("target_modules") or ["q_proj", "v_proj"]
         dataset_path = job.dataset or cfg.get("finetune_dataset", "data")
         dataset_name = Path(str(dataset_path)).name
         sql = (

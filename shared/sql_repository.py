@@ -89,9 +89,7 @@ def _ensure_table():
             _TABLE_CREATED = True
             return True
         except Exception as e:  # noqa: BLE001
-            logging.warning(
-                f"[sql_repository] sqlite fallback table create failed: {e}"
-            )
+            logging.warning(f"[sql_repository] sqlite fallback table create failed: {e}")
             return False
 
     engine = get_engine()
@@ -101,7 +99,9 @@ def _ensure_table():
     vendor = getattr(engine.dialect, "name", "unknown")
     try:
         if vendor == "sqlite":
-            ddl = "CREATE TABLE IF NOT EXISTS QAI_KeyValue (key_name TEXT PRIMARY KEY, value_data TEXT, updated_at TEXT)"
+            ddl = (
+                "CREATE TABLE IF NOT EXISTS QAI_KeyValue (key_name TEXT PRIMARY KEY, value_data TEXT, updated_at TEXT)"
+            )
         elif vendor in {"postgresql", "postgres"}:
             ddl = (
                 "CREATE TABLE IF NOT EXISTS QAI_KeyValue ("
@@ -209,9 +209,7 @@ def get_value(key: str) -> Optional[str]:
     if not _SQLALCHEMY_AVAILABLE:
         try:
             conn = _get_sqlite_conn()
-            cur = conn.execute(
-                "SELECT value_data FROM QAI_KeyValue WHERE key_name=?", (key,)
-            )
+            cur = conn.execute("SELECT value_data FROM QAI_KeyValue WHERE key_name=?", (key,))
             row = cur.fetchone()
             return None if not row else row[0]
         except Exception as e:  # noqa: BLE001
@@ -245,9 +243,7 @@ def delete_value(key: str) -> bool:
             conn.commit()
             return True
         except Exception as e:  # noqa: BLE001
-            logging.warning(
-                f"[sql_repository] sqlite fallback delete_value failed: {e}"
-            )
+            logging.warning(f"[sql_repository] sqlite fallback delete_value failed: {e}")
             return False
 
     engine = get_engine()
@@ -277,10 +273,7 @@ def list_values(limit: int = 100) -> list[dict]:  # noqa: ANN001
                 "SELECT key_name, value_data, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC LIMIT ?",
                 (limit,),
             )
-            return [
-                {"key_name": row[0], "value_data": row[1], "updated_at": row[2]}
-                for row in cur.fetchall()
-            ]
+            return [{"key_name": row[0], "value_data": row[1], "updated_at": row[2]} for row in cur.fetchall()]
         except Exception as e:  # noqa: BLE001
             logging.warning(f"[sql_repository] sqlite fallback list_values failed: {e}")
             return []
@@ -292,15 +285,10 @@ def list_values(limit: int = 100) -> list[dict]:  # noqa: ANN001
     try:
         with engine.connect() as conn:
             res = conn.execute(
-                text(
-                    "SELECT key_name, value_data, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC LIMIT :limit"
-                ),
+                text("SELECT key_name, value_data, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC LIMIT :limit"),
                 {"limit": limit},
             )
-            return [
-                {"key_name": row[0], "value_data": row[1], "updated_at": row[2]}
-                for row in res.fetchall()
-            ]
+            return [{"key_name": row[0], "value_data": row[1], "updated_at": row[2]} for row in res.fetchall()]
     except Exception as e:  # noqa: BLE001
         logging.warning(f"[sql_repository] list_values failed: {e}")
         return []

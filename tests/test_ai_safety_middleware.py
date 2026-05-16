@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from shared.ai_safety_middleware import (AISafetyMiddleware, SafetyDecision,
-                                         ToolPolicy)
+from shared.ai_safety_middleware import AISafetyMiddleware, SafetyDecision, ToolPolicy
 
 
 def test_validate_input_rejects_empty() -> None:

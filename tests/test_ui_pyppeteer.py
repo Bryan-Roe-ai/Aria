@@ -98,9 +98,7 @@ def wait_for_object(name, timeout=4.0):
 def test_pyppeteer_add_pickup_drop():
     async def _run():
         if sys.version_info >= (3, 12):
-            pytest.skip(
-                "pyppeteer is not reliable on Python >= 3.12 in this environment"
-            )
+            pytest.skip("pyppeteer is not reliable on Python >= 3.12 in this environment")
 
         try:
             from pyppeteer import launch
@@ -114,9 +112,7 @@ def test_pyppeteer_add_pickup_drop():
         browser = None
         try:
             try:
-                chrome_path = os.getenv("CHROME_PATH") or os.getenv(
-                    "PUPPETEER_EXECUTABLE_PATH"
-                )
+                chrome_path = os.getenv("CHROME_PATH") or os.getenv("PUPPETEER_EXECUTABLE_PATH")
                 launch_kwargs = {
                     "headless": True,
                     "args": [

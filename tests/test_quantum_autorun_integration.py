@@ -30,9 +30,7 @@ class TestCLI:
     def test_help(self):
         import sys
 
-        proc = subprocess.run(
-            [sys.executable, str(Q_SCRIPT), "--help"], capture_output=True, text=True
-        )
+        proc = subprocess.run([sys.executable, str(Q_SCRIPT), "--help"], capture_output=True, text=True)
         assert proc.returncode == 0
         assert "Quantum AutoRun" in proc.stdout or "usage" in proc.stdout.lower()
 

@@ -328,13 +328,9 @@ def detect_task_category(task_description: str) -> TaskCategory:
         return TaskCategory.BUG_FIX
     elif any(word in task_lower for word in ["security", "secure", "vulnerability"]):
         return TaskCategory.SECURITY
-    elif any(
-        word in task_lower for word in ["performance", "optimize", "fast", "speed"]
-    ):
+    elif any(word in task_lower for word in ["performance", "optimize", "fast", "speed"]):
         return TaskCategory.PERFORMANCE
-    elif any(
-        word in task_lower for word in ["test", "coverage", "unit test", "assertion"]
-    ):
+    elif any(word in task_lower for word in ["test", "coverage", "unit test", "assertion"]):
         return TaskCategory.TEST
     elif any(word in task_lower for word in ["document", "doc", "readme", "comment"]):
         return TaskCategory.DOCUMENTATION
@@ -390,7 +386,7 @@ if __name__ == "__main__":
     print(f"Category: {guidance['category']}")
     print(f"Risk Level: {guidance['risk_level']}")
     print(f"Complexity: {guidance['estimated_complexity']}")
-    print(f"\nSuccess Criteria:")
+    print("\nSuccess Criteria:")
     for criteria in guidance["success_criteria"]:
         print(f"  ✓ {criteria}")
 

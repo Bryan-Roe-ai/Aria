@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -19,7 +17,6 @@ from shared.subscription_manager import (
     SubscriptionTier,
     get_subscription_manager,
 )
-
 
 # ---------------------------------------------------------------------------
 # SubscriptionTier enum
@@ -325,8 +322,16 @@ class TestSubscriptionToDict:
         sub = Subscription("u1", tier=SubscriptionTier.PRO)
         d = sub.to_dict()
         required = [
-            "user_id", "tier", "tier_name", "price", "is_active",
-            "start_date", "end_date", "usage", "limits", "features",
+            "user_id",
+            "tier",
+            "tier_name",
+            "price",
+            "is_active",
+            "start_date",
+            "end_date",
+            "usage",
+            "limits",
+            "features",
         ]
         for key in required:
             assert key in d, f"Missing key: {key}"
@@ -473,8 +478,13 @@ class TestSubscriptionManager:
                 "end_date": "2025-01-01T00:00:00",
                 "payment_method": None,
                 "stripe_subscription_id": None,
-                "usage": {"chat_messages": 42, "quantum_jobs": 0, "training_hours": 0,
-                          "api_requests": 0, "websites_created": 0},
+                "usage": {
+                    "chat_messages": 42,
+                    "quantum_jobs": 0,
+                    "training_hours": 0,
+                    "api_requests": 0,
+                    "websites_created": 0,
+                },
                 "usage_reset_date": "2024-02-01T00:00:00",
                 "limits": {},
                 "features": {},

@@ -33,9 +33,7 @@ class TestLMStudioCacheThreadSafety:
         url = "http://127.0.0.1:1234/v1"
 
         # First call - cache miss, will try HTTP (which will fail)
-        with mock.patch(
-            "urllib.request.urlopen", side_effect=Exception("connection refused")
-        ):
+        with mock.patch("urllib.request.urlopen", side_effect=Exception("connection refused")):
             result1 = chat_providers._check_lmstudio_available(url)
 
         assert result1 is False
@@ -52,18 +50,14 @@ class TestLMStudioCacheThreadSafety:
         url = "http://127.0.0.1:1234/v1"
 
         # First call - cache miss
-        with mock.patch(
-            "urllib.request.urlopen", side_effect=Exception("connection refused")
-        ):
+        with mock.patch("urllib.request.urlopen", side_effect=Exception("connection refused")):
             result1 = chat_providers._check_lmstudio_available(url)
 
         assert result1 is False
 
         # Manually expire the cache
         with chat_providers._lmstudio_cache_lock:
-            chat_providers._lmstudio_cache["checked_at"] = (
-                time.time() - chat_providers._LMSTUDIO_CACHE_TTL - 1
-            )
+            chat_providers._lmstudio_cache["checked_at"] = time.time() - chat_providers._LMSTUDIO_CACHE_TTL - 1
 
         # Second call - should make new HTTP request
         with mock.patch("urllib.request.urlopen") as mock_urlopen:
@@ -77,9 +71,7 @@ class TestLMStudioCacheThreadSafety:
         url2 = "http://127.0.0.1:5678/v1"
 
         # First call with url1
-        with mock.patch(
-            "urllib.request.urlopen", side_effect=Exception("connection refused")
-        ):
+        with mock.patch("urllib.request.urlopen", side_effect=Exception("connection refused")):
             result1 = chat_providers._check_lmstudio_available(url1)
 
         assert result1 is False

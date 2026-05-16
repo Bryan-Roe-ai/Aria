@@ -94,11 +94,7 @@ def run_validation() -> bool:
         print(f"{status} {feature}")
 
     # 5. Summary
-    all_valid = (
-        defined_count == len(function_calls)
-        and not missing_ids
-        and all(features.values())
-    )
+    all_valid = defined_count == len(function_calls) and not missing_ids and all(features.values())
 
     print(f'\n{"=" * 50}')
     if all_valid:

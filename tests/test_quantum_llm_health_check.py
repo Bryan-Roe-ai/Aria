@@ -17,9 +17,7 @@ class TestQuantumLLMHealthCheck:
 
     def test_health_check_script_exists(self) -> None:
         """Test that health check script exists."""
-        assert (
-            HEALTH_CHECK_SCRIPT.exists()
-        ), f"Health check script not found at {HEALTH_CHECK_SCRIPT}"
+        assert HEALTH_CHECK_SCRIPT.exists(), f"Health check script not found at {HEALTH_CHECK_SCRIPT}"
 
     def test_health_check_with_no_status_file(self, tmp_path: Path) -> None:
         """Test health check behavior when status file is missing."""
@@ -30,10 +28,7 @@ class TestQuantumLLMHealthCheck:
         )
 
         assert result.returncode != 0, "Should exit with error when status file missing"
-        assert (
-            "Status file not found" in result.stdout
-            or "Status file not found" in result.stderr
-        )
+        assert "Status file not found" in result.stdout or "Status file not found" in result.stderr
 
     def test_health_check_with_valid_status(self, tmp_path: Path) -> None:
         """Test health check with valid status file."""

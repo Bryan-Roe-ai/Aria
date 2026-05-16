@@ -11,9 +11,13 @@ from pathlib import Path
 # Add shared to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from shared.http_utils import (create_cors_headers, create_no_cache_headers,
-                               serve_static_file, validate_messages,
-                               validate_provider_choice)
+from shared.http_utils import (
+    create_cors_headers,
+    create_no_cache_headers,
+    serve_static_file,
+    validate_messages,
+    validate_provider_choice,
+)
 
 
 def test_validate_messages_success():
@@ -229,9 +233,7 @@ def test_validate_provider_choice_lora_without_model():
 
 def test_validate_provider_choice_lora_with_model():
     """Test that LoRA with model path passes validation."""
-    is_valid, error, hints = validate_provider_choice(
-        "lora", model_override="/path/to/adapter"
-    )
+    is_valid, error, hints = validate_provider_choice("lora", model_override="/path/to/adapter")
 
     assert is_valid is True
     assert error is None
@@ -242,16 +244,12 @@ def test_validate_provider_choice_lora_with_model():
 def test_serve_static_file_success():
     """Test serving an existing file."""
     # Create a temporary file
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".html", delete=False, encoding="utf-8"
-    ) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False, encoding="utf-8") as f:
         f.write("<html><body>Test</body></html>")
         temp_path = Path(f.name)
 
     try:
-        content, status, headers = serve_static_file(
-            temp_path, "text/html", use_cache_headers=False
-        )
+        content, status, headers = serve_static_file(temp_path, "text/html", use_cache_headers=False)
 
         assert status == 200
         assert "<html>" in content
@@ -264,16 +262,12 @@ def test_serve_static_file_success():
 def test_serve_static_file_with_cache_headers():
     """Test serving file with cache headers."""
     # Create a temporary file
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".js", delete=False, encoding="utf-8"
-    ) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False, encoding="utf-8") as f:
         f.write("console.log('test');")
         temp_path = Path(f.name)
 
     try:
-        content, status, headers = serve_static_file(
-            temp_path, "application/javascript", use_cache_headers=True
-        )
+        content, status, headers = serve_static_file(temp_path, "application/javascript", use_cache_headers=True)
 
         assert status == 200
         assert "console.log" in content

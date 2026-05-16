@@ -59,9 +59,7 @@ def main():
                     "jsonrpc": "2.0",
                     "id": msg_id,
                     "result": {
-                        "content": [
-                            {"type": "text", "text": f"task_complete: {summary}"}
-                        ],
+                        "content": [{"type": "text", "text": f"task_complete: {summary}"}],
                         "isError": False,
                     },
                 }

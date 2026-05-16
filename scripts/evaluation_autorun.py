@@ -33,13 +33,11 @@ def _load_config(path: Path) -> Dict[str, Any]:
     """Load and return the YAML config."""
     if yaml is None:
         raise RuntimeError("PyYAML is required: pip install pyyaml")
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
 
-def _get_jobs(
-    cfg: Dict[str, Any], job_filter: str | None = None
-) -> List[Dict[str, Any]]:
+def _get_jobs(cfg: Dict[str, Any], job_filter: str | None = None) -> List[Dict[str, Any]]:
     """Extract job list from config, optionally filtering by name."""
     jobs = cfg.get("jobs", [])
     if job_filter:
@@ -89,19 +87,11 @@ def cmd_dry_run(cfg: Dict[str, Any], job_filter: str | None = None) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Evaluation AutoRun Orchestrator — validate and run evaluation jobs"
-    )
-    parser.add_argument(
-        "--config", type=Path, default=DEFAULT_CONFIG, help="Path to YAML config file"
-    )
+    parser = argparse.ArgumentParser(description="Evaluation AutoRun Orchestrator — validate and run evaluation jobs")
+    parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG, help="Path to YAML config file")
     parser.add_argument("--list", action="store_true", help="List jobs as JSON")
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Validate config without running"
-    )
-    parser.add_argument(
-        "--job", type=str, default=None, help="Filter to a specific job name"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Validate config without running")
+    parser.add_argument("--job", type=str, default=None, help="Filter to a specific job name")
 
     args = parser.parse_args()
 

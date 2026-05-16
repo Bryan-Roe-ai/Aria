@@ -253,9 +253,7 @@ def main():
         metavar="FILE",
         help="Export status to JSON",
     )
-    parser.add_argument(
-        "--interval", type=int, default=10, help="Refresh interval in seconds (--watch)"
-    )
+    parser.add_argument("--interval", type=int, default=10, help="Refresh interval in seconds (--watch)")
     args = parser.parse_args()
 
     if args.export:

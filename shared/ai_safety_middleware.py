@@ -13,9 +13,10 @@ or workflow paths to enforce practical AI safety rules:
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Iterable
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -207,9 +208,7 @@ class AISafetyMiddleware:
             reason="output accepted",
         )
 
-    def check_tool_call(
-        self, tool_name: str, args: dict[str, Any] | None
-    ) -> SafetyDecision:
+    def check_tool_call(self, tool_name: str, args: dict[str, Any] | None) -> SafetyDecision:
         """Evaluate a proposed tool invocation against policy."""
         if args is None:
             args_map: dict[str, Any] = {}

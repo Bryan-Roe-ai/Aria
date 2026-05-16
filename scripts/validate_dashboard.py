@@ -10,9 +10,7 @@ _RE_ASYNC_FUNCTION = re.compile(r"async\s+function")
 _RE_AWAIT = re.compile(r"\bawait\s+")
 _RE_EVENT_LISTENER = re.compile(r"addEventListener\s*\(")
 _RE_FETCH_CALLS = re.compile(r"fetch\(['\"]([^'\"]+)['\"]\)")
-_RE_LOCALSTORAGE = re.compile(
-    r"localStorage\.(getItem|setItem|removeItem)\(['\"]([^'\"]+)['\"]\)"
-)
+_RE_LOCALSTORAGE = re.compile(r"localStorage\.(getItem|setItem|removeItem)\(['\"]([^'\"]+)['\"]\)")
 _RE_ONCLICK = re.compile(r'onclick=["\']([^"\']+)["\']')
 
 
@@ -44,9 +42,7 @@ def run_validation() -> bool:
     # 1. Check for console.log statements (potential debugging artifacts)
     console_logs = _RE_CONSOLE_LOG.findall(content)
     if console_logs:
-        print(
-            f"  Found {len(console_logs)} console.log statements (consider removing for production)"
-        )
+        print(f"  Found {len(console_logs)} console.log statements (consider removing for production)")
     else:
         print(" No console.log statements")
 

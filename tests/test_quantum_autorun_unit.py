@@ -9,7 +9,12 @@ if str(REPO_ROOT / "scripts" / "evaluation") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "scripts" / "evaluation"))
 
 from quantum_autorun import load_jobs  # type: ignore
-from quantum_autorun import QJob, build_command, read_yaml, validate_job
+from quantum_autorun import (
+    QJob,
+    build_command,
+    read_yaml,
+    validate_job,
+)
 
 
 class TestQJobDataclass:
@@ -97,11 +102,7 @@ class TestCommandBuilder:
         cmd = build_command(j)
         assert len(cmd) >= 2
         # Check for python executable (python, python.exe, python3, python3.14, etc.)
-        assert (
-            cmd[0].endswith("python.exe")
-            or cmd[0].endswith("python")
-            or "python3" in cmd[0]
-        )
+        assert cmd[0].endswith("python.exe") or cmd[0].endswith("python") or "python3" in cmd[0]
         assert "train_custom_dataset.py" in cmd[1]
         assert "--preset" in cmd
         assert "heart" in cmd
@@ -174,9 +175,7 @@ class TestValidation:
         # Should report missing file
         assert res["status"] == "missing" or "missing" in res
 
-    @patch(
-        "quantum_autorun.AZURE_SUBMIT_SCRIPT", Path("/fake/deploy_to_azure_quantum.py")
-    )
+    @patch("quantum_autorun.AZURE_SUBMIT_SCRIPT", Path("/fake/deploy_to_azure_quantum.py"))
     def test_missing_azure_script(self):
         from quantum_autorun import validate_job  # type: ignore
 

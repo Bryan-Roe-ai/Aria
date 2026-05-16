@@ -16,18 +16,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "quantum_cost_gate.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "quantum_cost_gate.py"
 
 
-def _run_hook(
-    payload: dict, *, event: str, block_mode: bool = False
-) -> subprocess.CompletedProcess[str]:
+def _run_hook(payload: dict, *, event: str, block_mode: bool = False) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["COPILOT_HOOK_EVENT"] = event
     env["ARIA_QUANTUM_COST_BLOCK"] = "true" if block_mode else "false"

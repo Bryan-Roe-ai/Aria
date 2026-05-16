@@ -17,9 +17,7 @@ from pathlib import Path
 if "pytest" in sys.modules:
     import pytest
 
-    pytestmark = pytest.mark.skip(
-        reason="script-style repository audit checks are environment-dependent"
-    )
+    pytestmark = pytest.mark.skip(reason="script-style repository audit checks are environment-dependent")
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 

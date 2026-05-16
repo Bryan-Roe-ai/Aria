@@ -69,9 +69,7 @@ except ImportError:
     QUANTUM_LAYER_AVAILABLE = False
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -98,9 +96,7 @@ def _repo_relative_str(path_value: str | Path | None) -> str | None:
         return str(path)
 
 
-def _normalise_checkpoint_reference(
-    base_dir: Path, checkpoint_ref: str | Path | None
-) -> Path | None:
+def _normalise_checkpoint_reference(base_dir: Path, checkpoint_ref: str | Path | None) -> Path | None:
     """Resolve a checkpoint path from status metadata or direct references."""
     if not checkpoint_ref:
         return None
@@ -148,7 +144,7 @@ def get_quantum_llm_status(
 
     if resolved_status_file.exists():
         try:
-            with open(resolved_status_file, "r", encoding="utf-8") as status_handle:
+            with open(resolved_status_file, encoding="utf-8") as status_handle:
                 existing = json.load(status_handle)
             if isinstance(existing, dict):
                 payload.update(existing)
@@ -163,13 +159,9 @@ def get_quantum_llm_status(
             )
 
     checkpoint_ref = (
-        payload.get("best_checkpoint_path")
-        or payload.get("checkpoint_path")
-        or payload.get("last_checkpoint_path")
+        payload.get("best_checkpoint_path") or payload.get("checkpoint_path") or payload.get("last_checkpoint_path")
     )
-    checkpoint_path = _normalise_checkpoint_reference(
-        resolved_output_dir, checkpoint_ref
-    )
+    checkpoint_path = _normalise_checkpoint_reference(resolved_output_dir, checkpoint_ref)
     if checkpoint_path is None:
         for checkpoint_name in CHECKPOINT_FILENAMES:
             candidate = resolved_output_dir / checkpoint_name
@@ -181,8 +173,7 @@ def get_quantum_llm_status(
         payload["checkpoint_path"] = _repo_relative_str(checkpoint_path)
         payload["checkpoint_exists"] = checkpoint_path.exists()
         payload["inference_ready"] = bool(
-            checkpoint_path.exists()
-            and payload.get("status") in {"completed", "running", "idle"}
+            checkpoint_path.exists() and payload.get("status") in {"completed", "running", "idle"}
         )
 
     payload["status_file_exists"] = resolved_status_file.exists()
@@ -322,9 +313,7 @@ class QuantumFeatureEncoder:
             elif feature_dim > quantum_dim:
                 features = features[:, :quantum_dim]
 
-            features_norm = features / (
-                torch.norm(features, dim=1, keepdim=True) + 1e-8
-            )
+            features_norm = features / (torch.norm(features, dim=1, keepdim=True) + 1e-8)
             return self.quantum_layer(features_norm)
         except Exception as e:
             logger.warning(f"Quantum encoding failed: {e}, using classical fallback")
@@ -382,9 +371,7 @@ class QuantumAttentionOptimizer:
         repeats = (target_len + flat.numel() - 1) // flat.numel()
         return flat.repeat(repeats)[:target_len]
 
-    def optimize_attention_weights(
-        self, attention_scores: torch.Tensor
-    ) -> torch.Tensor:
+    def optimize_attention_weights(self, attention_scores: torch.Tensor) -> torch.Tensor:
         """Apply quantum optimization to attention scores.
 
         Args:
@@ -421,9 +408,7 @@ class QuantumAttentionOptimizer:
             result = torch.cat(processed).reshape(orig_shape)
             return result
         except Exception as e:
-            logger.warning(
-                f"Quantum attention optimization failed: {e}, using classical fallback"
-            )
+            logger.warning(f"Quantum attention optimization failed: {e}, using classical fallback")
             return torch.softmax(attention_scores.float(), dim=-1)
 
 
@@ -446,13 +431,9 @@ class QuantumEnhancedLLMTrainer:
         self.config = config
         self.passive_mode = config.get("passive", False)
         self.interval = config.get("interval", 3600)
-        output_config = (
-            config.get("output", {}) if isinstance(config.get("output"), dict) else {}
-        )
+        output_config = config.get("output", {}) if isinstance(config.get("output"), dict) else {}
         integration_config = (
-            config.get("autonomous_integration", {})
-            if isinstance(config.get("autonomous_integration"), dict)
-            else {}
+            config.get("autonomous_integration", {}) if isinstance(config.get("autonomous_integration"), dict) else {}
         )
         self.default_output_dir = _resolve_repo_path(
             output_config.get("save_dir") or config.get("output_dir"),
@@ -470,9 +451,7 @@ class QuantumEnhancedLLMTrainer:
 
         # Device
         use_gpu = config.get("use_gpu", True)
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() and use_gpu else "cpu"
-        )
+        self.device = torch.device("cuda" if torch.cuda.is_available() and use_gpu else "cpu")
 
         # Build quantum transformer config (supports both flat and nested layouts)
         qt_config = config.get("quantum_transformer", {})
@@ -480,17 +459,11 @@ class QuantumEnhancedLLMTrainer:
             "vocab_size": qt_config.get("vocab_size", config.get("vocab_size", 256)),
             "d_model": qt_config.get("d_model", config.get("d_model", 64)),
             "n_heads": qt_config.get("n_heads", config.get("n_heads", 4)),
-            "n_transformer_layers": qt_config.get(
-                "n_transformer_layers", config.get("n_transformer_layers", 2)
-            ),
+            "n_transformer_layers": qt_config.get("n_transformer_layers", config.get("n_transformer_layers", 2)),
             "n_qubits": qt_config.get("n_qubits", config.get("n_qubits", 4)),
-            "n_quantum_layers": qt_config.get(
-                "n_quantum_layers", config.get("n_quantum_layers", 2)
-            ),
+            "n_quantum_layers": qt_config.get("n_quantum_layers", config.get("n_quantum_layers", 2)),
             "max_seq_len": qt_config.get("max_seq_len", config.get("max_seq_len", 32)),
-            "entanglement": qt_config.get(
-                "entanglement", config.get("entanglement", "circular")
-            ),
+            "entanglement": qt_config.get("entanglement", config.get("entanglement", "circular")),
             "dropout": qt_config.get("dropout", config.get("dropout", 0.1)),
             "use_quantum_attention": qt_config.get("use_quantum_attention", True),
             "use_quantum_ffn": qt_config.get("use_quantum_ffn", True),
@@ -504,21 +477,15 @@ class QuantumEnhancedLLMTrainer:
         # Optimizer
         lr = qt_config.get("learning_rate", config.get("learning_rate", 0.001))
         wd = qt_config.get("weight_decay", config.get("weight_decay", 0.01))
-        self.optimizer = torch.optim.AdamW(
-            self.model.parameters(), lr=lr, weight_decay=wd
-        )
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=wd)
 
         # Loss and gradient clipping
         self.criterion = nn.CrossEntropyLoss()
-        self.grad_clip = qt_config.get(
-            "gradient_clip", config.get("gradient_clip", 1.0)
-        )
+        self.grad_clip = qt_config.get("gradient_clip", config.get("gradient_clip", 1.0))
         self.batch_size = qt_config.get("batch_size", config.get("batch_size", 4))
 
         # Learning rate scheduler
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode="min", factor=0.5, patience=3
-        )
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, mode="min", factor=0.5, patience=3)
 
         # Feature encoder (auxiliary)
         self.feature_encoder = QuantumFeatureEncoder(
@@ -631,9 +598,7 @@ class QuantumEnhancedLLMTrainer:
         combined = "\n".join(text_parts)
         if not combined.strip():
             # Generate a small synthetic corpus so training can still run
-            logger.warning(
-                "No text extracted from dataset -- using synthetic placeholder text"
-            )
+            logger.warning("No text extracted from dataset -- using synthetic placeholder text")
             combined = (
                 "The quick brown fox jumps over the lazy dog. "
                 "Pack my box with five dozen liquor jugs. "
@@ -815,9 +780,7 @@ class QuantumEnhancedLLMTrainer:
                             loss=epoch_loss,
                             training_mode=training_mode,
                         )
-                    logger.info(
-                        f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f}"
-                    )
+                    logger.info(f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f}")
                     write_quantum_llm_status(
                         {
                             "available": True,
@@ -827,9 +790,7 @@ class QuantumEnhancedLLMTrainer:
                             "dataset_path": dataset_path,
                             "epochs_requested": epochs,
                             "epochs_completed": results["epochs_completed"],
-                            "best_loss": (
-                                None if best_loss == float("inf") else best_loss
-                            ),
+                            "best_loss": (None if best_loss == float("inf") else best_loss),
                             "final_loss": epoch_loss,
                             "best_checkpoint_path": best_checkpoint_path,
                             "quantum_available": QUANTUM_AVAILABLE,
@@ -871,9 +832,7 @@ class QuantumEnhancedLLMTrainer:
                             "dataset_path": dataset_path,
                             "epochs_requested": epochs,
                             "epochs_completed": results["epochs_completed"],
-                            "best_loss": (
-                                None if best_loss == float("inf") else best_loss
-                            ),
+                            "best_loss": (None if best_loss == float("inf") else best_loss),
                             "final_loss": epoch_loss,
                             "best_checkpoint_path": best_checkpoint_path,
                             "quantum_available": QUANTUM_AVAILABLE,
@@ -895,9 +854,7 @@ class QuantumEnhancedLLMTrainer:
 
             results["completed_at"] = datetime.now().isoformat()
             results["best_loss"] = best_loss
-            results["checkpoint_path"] = str(
-                best_checkpoint_path or final_checkpoint_path
-            )
+            results["checkpoint_path"] = str(best_checkpoint_path or final_checkpoint_path)
 
             # Save results JSON
             results_file = output_dir / "quantum_training_results.json"
@@ -917,8 +874,7 @@ class QuantumEnhancedLLMTrainer:
                     "best_loss": best_loss,
                     "final_loss": results["final_loss"],
                     "checkpoint_path": best_checkpoint_path or final_checkpoint_path,
-                    "best_checkpoint_path": best_checkpoint_path
-                    or final_checkpoint_path,
+                    "best_checkpoint_path": best_checkpoint_path or final_checkpoint_path,
                     "last_checkpoint_path": final_checkpoint_path,
                     "quantum_available": QUANTUM_AVAILABLE,
                     "training_history": self.training_history,
@@ -978,17 +934,13 @@ class QuantumEnhancedLLMTrainer:
                         dataset = [json.loads(ln) for ln in f if ln.strip()]
         elif dataset_path.is_dir():
             # Look for train files using glob for efficiency
-            train_files = list(dataset_path.glob("train.json")) + list(
-                dataset_path.glob("train.jsonl")
-            )
+            train_files = list(dataset_path.glob("train.json")) + list(dataset_path.glob("train.jsonl"))
             if train_files:
                 return self._load_dataset(train_files[0])
 
         return dataset
 
-    def _train_epoch_with_quantum(
-        self, model: Optional[Any], dataset: List[Dict[str, Any]], epoch: int
-    ) -> float:
+    def _train_epoch_with_quantum(self, model: Optional[Any], dataset: List[Dict[str, Any]], epoch: int) -> float:
         """
         Train one epoch with quantum enhancement.
 
@@ -1009,9 +961,7 @@ class QuantumEnhancedLLMTrainer:
             if batch_idx % 10 == 0:
                 # Quantum-enhanced optimization step
                 mock_attention = torch.randn(1, 8, 8)
-                optimized = self.attention_optimizer.optimize_attention_weights(
-                    mock_attention
-                )
+                optimized = self.attention_optimizer.optimize_attention_weights(mock_attention)
                 self.quantum_metrics["circuit_executions"] += 1
                 self.quantum_metrics["optimization_steps"] += 1
 
@@ -1034,12 +984,8 @@ class QuantumEnhancedLLMTrainer:
     def _generate_sample(self, output_dir: Path, dataset: CharacterDataset):
         """Generate a sample from the trained model."""
         try:
-            prompt_ids = torch.tensor(
-                [[1, 2, 3, 4]], dtype=torch.long, device=self.device
-            )
-            generated = self.model.generate(
-                prompt_ids, max_new_tokens=50, temperature=0.8, top_k=20
-            )
+            prompt_ids = torch.tensor([[1, 2, 3, 4]], dtype=torch.long, device=self.device)
+            generated = self.model.generate(prompt_ids, max_new_tokens=50, temperature=0.8, top_k=20)
             text = dataset.decode(generated[0])
             logger.info(f"  Sample generation: {text[:100]}...")
 
@@ -1111,9 +1057,7 @@ class QuantumEnhancedLLMTrainer:
                 datasets_dir = Path("datasets/chat")
                 if datasets_dir.exists():
                     # Use explicit patterns to match only train.json and train.jsonl
-                    dataset_files = list(datasets_dir.glob("*/train.json")) + list(
-                        datasets_dir.glob("*/train.jsonl")
-                    )
+                    dataset_files = list(datasets_dir.glob("*/train.json")) + list(datasets_dir.glob("*/train.jsonl"))
 
                     dataset_files = (
                         list(datasets_dir.glob("*/train.json"))
@@ -1127,20 +1071,14 @@ class QuantumEnhancedLLMTrainer:
                         dataset_path = random.choice(dataset_files)
                         logger.info(f"Selected dataset: {dataset_path}")
 
-                        output_dir = (
-                            Path("data_out/quantum_llm_training")
-                            / f"cycle_{cycle_count}"
-                        )
+                        output_dir = Path("data_out/quantum_llm_training") / f"cycle_{cycle_count}"
 
                         results = self.train_with_quantum_enhancement(
                             dataset_path=dataset_path,
                             output_dir=output_dir,
                             epochs=1,
                         )
-                        logger.info(
-                            f"Cycle {cycle_count} complete: "
-                            f"Loss={results['final_loss']:.4f}"
-                        )
+                        logger.info(f"Cycle {cycle_count} complete: " f"Loss={results['final_loss']:.4f}")
                         write_quantum_llm_status(
                             {
                                 "available": True,
@@ -1219,9 +1157,7 @@ class QuantumEnhancedLLMTrainer:
 
             if self.running:
                 if self.interval == 0:
-                    logger.info(
-                        "Interval is 0; completed single passive training cycle, exiting."
-                    )
+                    logger.info("Interval is 0; completed single passive training cycle, exiting.")
                     break
                 logger.info(f"Waiting {self.interval} seconds until next cycle...")
                 time.sleep(self.interval)
@@ -1329,10 +1265,7 @@ def main():
         logger.info(f"  Epochs: {results['epochs_completed']}")
         logger.info(f"  Final Loss: {results['final_loss']:.4f}")
         logger.info(f"  Best Loss: {results.get('best_loss', 'N/A')}")
-        logger.info(
-            f"  Circuit Executions: "
-            f"{results['quantum_metrics']['circuit_executions']}"
-        )
+        logger.info(f"  Circuit Executions: " f"{results['quantum_metrics']['circuit_executions']}")
 
     return 0
 

@@ -83,8 +83,7 @@ def validate_messages(messages: Any) -> Tuple[bool, Optional[str]]:
 
         if not _has_non_whitespace_text_content(msg.get("content")):
             return False, (
-                f"Message {idx} has empty or whitespace-only content. "
-                "Text content must contain non-whitespace text."
+                f"Message {idx} has empty or whitespace-only content. " "Text content must contain non-whitespace text."
             )
 
         # Validate role is one of the expected values
@@ -215,7 +214,7 @@ def serve_static_file(
 
             return error_msg, 404, {}
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         headers = {}

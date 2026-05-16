@@ -14,9 +14,7 @@ def test_generate_and_train(tmp_path: Path, samples_per_class):
     ds = tmp_path / "vision_ds"
     out = tmp_path / "out"
     # generate a tiny toy dataset
-    vision.generate_toy_shapes_dataset(
-        ds, samples_per_class=samples_per_class, size=(32, 32)
-    )
+    vision.generate_toy_shapes_dataset(ds, samples_per_class=samples_per_class, size=(32, 32))
 
     assert ds.exists()
     # do a dry run first - should return 0

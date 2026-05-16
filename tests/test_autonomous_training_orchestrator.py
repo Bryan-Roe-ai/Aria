@@ -10,9 +10,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "autonomous_training_orchestrator.py"
 
-_spec = importlib.util.spec_from_file_location(
-    "_autonomous_training_orchestrator", SCRIPT_PATH
-)
+_spec = importlib.util.spec_from_file_location("_autonomous_training_orchestrator", SCRIPT_PATH)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Unable to load orchestrator module from {SCRIPT_PATH}")
 
@@ -86,9 +84,7 @@ def test_run_quantum_llm_training_disabled_sets_state() -> None:
     assert qstatus["last_error"] is None
 
 
-def test_run_autonomously_one_cycle_skip_quantum_writes_status(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_run_autonomously_one_cycle_skip_quantum_writes_status(tmp_path: Path, monkeypatch) -> None:
     status_file = tmp_path / "autonomous_training_status.json"
     heartbeat_file = tmp_path / "autonomous_training_heartbeat.json"
 

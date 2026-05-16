@@ -51,9 +51,7 @@ class TestInitTelemetry:
                 result = tel.init_telemetry()
 
         assert result is True
-        mock_configure.assert_called_once_with(
-            connection_string="InstrumentationKey=fake-key"
-        )
+        mock_configure.assert_called_once_with(connection_string="InstrumentationKey=fake-key")
 
     def test_is_enabled_reflects_state(self):
         tel = _reload_telemetry()

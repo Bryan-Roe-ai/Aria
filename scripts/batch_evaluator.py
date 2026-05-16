@@ -91,12 +91,7 @@ class BatchEvaluator:
             config = yaml.safe_load(f)
 
         # Use list comprehension for better performance
-        self.tasks.extend(
-            [
-                EvaluationTask(**task_data)
-                for task_data in config.get("evaluation_tasks", [])
-            ]
-        )
+        self.tasks.extend([EvaluationTask(**task_data) for task_data in config.get("evaluation_tasks", [])])
 
         print(f"[batch_eval] Loaded {len(self.tasks)} evaluation tasks")
 
@@ -170,9 +165,7 @@ class BatchEvaluator:
 
             # Try to extract metrics from output using optimized utility
             if result.returncode == 0:
-                data = find_json_in_output(
-                    result.stdout, key="metrics", search_from_end=True, max_lines=50
-                )
+                data = find_json_in_output(result.stdout, key="metrics", search_from_end=True, max_lines=50)
                 if data and "metrics" in data:
                     result_obj.metrics = data["metrics"]
             else:
@@ -208,9 +201,7 @@ class BatchEvaluator:
         print(f"[batch_eval] Workers: {self.max_workers}\n")
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            futures = {
-                executor.submit(self.evaluate_model, task): task for task in self.tasks
-            }
+            futures = {executor.submit(self.evaluate_model, task): task for task in self.tasks}
 
             for future in as_completed(futures):
                 task = futures[future]
@@ -222,9 +213,7 @@ class BatchEvaluator:
 
                     # Use ASCII-safe status indicators
                     status_icon = "[OK]" if result.status == "succeeded" else "[FAIL]"
-                    print(
-                        f"{status_icon} {result.model_id}: {result.status} ({result.duration:.1f}s)"
-                    )
+                    print(f"{status_icon} {result.model_id}: {result.status} ({result.duration:.1f}s)")
 
                     if result.metrics:
                         for metric, value in result.metrics.items():
@@ -265,10 +254,7 @@ class BatchEvaluator:
         )
 
         # Pre-compute ranking list
-        ranking = [
-            {"rank": i + 1, "model_id": r.model_id, "metrics": r.metrics}
-            for i, r in enumerate(ranked)
-        ]
+        ranking = [{"rank": i + 1, "model_id": r.model_id, "metrics": r.metrics} for i, r in enumerate(ranked)]
 
         return {
             "evaluated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -302,12 +288,8 @@ class BatchEvaluator:
             f.write("|------|-------|------|--------|----------|----------|\n")
 
             for item in aggregated["ranking"]:
-                metrics_str = ", ".join(
-                    f"{k}={v:.3f}" for k, v in item["metrics"].items()
-                )
-                f.write(
-                    f"| {item['rank']} | {item['model_id']} | - | ✓ | - | {metrics_str} |\n"
-                )
+                metrics_str = ", ".join(f"{k}={v:.3f}" for k, v in item["metrics"].items())
+                f.write(f"| {item['rank']} | {item['model_id']} | - | ✓ | - | {metrics_str} |\n")
 
             # Failed models
             failed = [r for r in self.results if r.status != "succeeded"]
@@ -349,9 +331,7 @@ class BatchEvaluator:
 
             # Preserve requested ordering.
             comparison_by_id = {r.model_id: r for r in comparison}
-            comparison = [
-                comparison_by_id[mid] for mid in model_ids if mid in comparison_by_id
-            ]
+            comparison = [comparison_by_id[mid] for mid in model_ids if mid in comparison_by_id]
 
         return {
             "models": [r.model_id for r in comparison],
@@ -367,9 +347,7 @@ class BatchEvaluator:
             ],
         }
 
-    def promote_best_model(
-        self, target_dir: Path | None = None, dry_run: bool = False
-    ) -> Dict:
+    def promote_best_model(self, target_dir: Path | None = None, dry_run: bool = False) -> Dict:
         """
         Promote the best-ranked model to deployed_models/.
 
@@ -474,20 +452,12 @@ class BatchEvaluator:
 def main():
     ap = argparse.ArgumentParser(description="Batch Model Evaluator")
     ap.add_argument("--config", type=Path, help="Load evaluation tasks from config")
-    ap.add_argument(
-        "--scan-models", action="store_true", help="Scan for trained models"
-    )
-    ap.add_argument(
-        "--evaluate-all", action="store_true", help="Evaluate all scanned models"
-    )
+    ap.add_argument("--scan-models", action="store_true", help="Scan for trained models")
+    ap.add_argument("--evaluate-all", action="store_true", help="Evaluate all scanned models")
     ap.add_argument("--compare", nargs="+", help="Compare specific models")
-    ap.add_argument(
-        "--export", choices=["json", "markdown", "both"], help="Export results"
-    )
+    ap.add_argument("--export", choices=["json", "markdown", "both"], help="Export results")
     ap.add_argument("--output", type=Path, help="Output file for export")
-    ap.add_argument(
-        "--max-workers", type=int, default=3, help="Number of parallel workers"
-    )
+    ap.add_argument("--max-workers", type=int, default=3, help="Number of parallel workers")
     ap.add_argument(
         "--promote-best",
         action="store_true",
@@ -519,24 +489,16 @@ def main():
         evaluator.run_parallel()
 
         # Auto-save results
-        results_file = (
-            evaluator.data_out
-            / f"results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        results_file = evaluator.data_out / f"results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         evaluator.export_json(results_file)
 
         # Auto-promote if requested
         if args.promote_best:
             try:
-                promotion_info = evaluator.promote_best_model(
-                    target_dir=args.promote_target, dry_run=args.dry_run
-                )
+                promotion_info = evaluator.promote_best_model(target_dir=args.promote_target, dry_run=args.dry_run)
                 if not args.dry_run:
                     # Save promotion info
-                    promo_file = (
-                        evaluator.data_out
-                        / f"promotion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                    )
+                    promo_file = evaluator.data_out / f"promotion_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
                     with promo_file.open("w") as f:
                         json.dump(promotion_info, f, indent=2)
                     print(f"[promote] Saved promotion info to: {promo_file}")
@@ -549,10 +511,7 @@ def main():
 
     if args.export:
         if not args.output:
-            args.output = (
-                evaluator.data_out
-                / f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            )
+            args.output = evaluator.data_out / f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         if args.export in ["json", "both"]:
             json_file = args.output.with_suffix(".json")

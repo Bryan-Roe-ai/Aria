@@ -27,8 +27,9 @@ import heapq
 import math
 import os
 import struct
+from collections.abc import Sequence
 from threading import RLock
-from typing import List, Optional, Sequence
+from typing import List, Optional
 
 try:
     import pyodbc  # type: ignore
@@ -61,9 +62,7 @@ except Exception:  # pragma: no cover - best effort import
             )
         )
 
-    def format_quota_message(
-        e: Exception, service_name: str = "Azure OpenAI"
-    ) -> str:  # noqa: D401
+    def format_quota_message(e: Exception, service_name: str = "Azure OpenAI") -> str:  # noqa: D401
         return f"{service_name} quota/premium limit reached. Details: {str(e)}"
 
 
@@ -218,9 +217,7 @@ def generate_embedding(text: str) -> List[float]:  # noqa: ANN001
                 try:
                     import logging
 
-                    logging.getLogger(__name__).warning(
-                        "Azure embedding call detected quota/premium error: %s", str(e)
-                    )
+                    logging.getLogger(__name__).warning("Azure embedding call detected quota/premium error: %s", str(e))
                 except Exception:
                     pass
                 return _hash_embedding(text)
@@ -231,9 +228,7 @@ def generate_embedding(text: str) -> List[float]:  # noqa: ANN001
     if oi_key and OpenAI is not None:
         try:
             client = OpenAI(api_key=oi_key)
-            resp = client.embeddings.create(
-                model="text-embedding-3-small", input=[text]
-            )
+            resp = client.embeddings.create(model="text-embedding-3-small", input=[text])
             return resp.data[0].embedding  # type: ignore[attr-defined]
         except Exception:
             pass
@@ -248,9 +243,7 @@ def _serialize_f32(vec: Sequence[float]) -> bytes:
     return struct.pack(f"<{len(vec)}f", *[float(v) for v in vec])
 
 
-def store_embedding(
-    message_id: Optional[str], embedding: Sequence[float], model: str
-) -> bool:  # noqa: ANN001
+def store_embedding(message_id: Optional[str], embedding: Sequence[float], model: str) -> bool:  # noqa: ANN001
     if not message_id or not embedding:
         return False
     conn = _get_conn()

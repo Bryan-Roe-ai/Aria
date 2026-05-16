@@ -61,12 +61,13 @@ MAX_FILE_SIZE = 100_000  # bytes
 MAX_CHANGES_PER_FILE = 5
 MAX_TASK_TOKENS = int(os.getenv("QAI_AGENT_MAX_TASK_TOKENS", "2000"))
 MAX_PROMPT_FILE_CHARS = int(os.getenv("QAI_AGENT_MAX_FILE_CHARS", "4000"))
-GIT_STATUS_TIMEOUT_SECONDS = float(
-    os.getenv("QAI_AGENT_GIT_STATUS_TIMEOUT_SECONDS", "3")
-)
-CAPTURE_UNCOMMITTED_CHANGES = os.getenv(
-    "QAI_AGENT_CAPTURE_UNCOMMITTED_CHANGES", ""
-).strip().lower() in {"1", "true", "yes", "on"}
+GIT_STATUS_TIMEOUT_SECONDS = float(os.getenv("QAI_AGENT_GIT_STATUS_TIMEOUT_SECONDS", "3"))
+CAPTURE_UNCOMMITTED_CHANGES = os.getenv("QAI_AGENT_CAPTURE_UNCOMMITTED_CHANGES", "").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 MIN_TEST_PASSING_RATE = 0.8  # 80% tests must pass
 
 
@@ -193,7 +194,7 @@ class RepositoryContext:
             return f"# File too large ({full_path.stat().st_size} bytes)"
 
         try:
-            with open(full_path, "r", encoding="utf-8") as f:
+            with open(full_path, encoding="utf-8") as f:
                 return f.read()
         except (UnicodeDecodeError, PermissionError) as e:
             return f"# Error reading file: {e}"
@@ -252,11 +253,7 @@ class EchoLLMClient:
         if "list" in prompt_lower and "file" in prompt_lower:
             # File identification call
             return "scripts/autonomous_code_agent.py\nscripts/autonomous_agent_tasks.py"
-        if (
-            "step" in prompt_lower
-            or "plan" in prompt_lower
-            or "analyze" in prompt_lower
-        ):
+        if "step" in prompt_lower or "plan" in prompt_lower or "analyze" in prompt_lower:
             # Planning call
             return (
                 "[Echo Plan]\n"
@@ -281,12 +278,9 @@ class LocalLLMClient:
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.llm_type = llm_type
-        self.request_timeout_seconds = int(
-            os.getenv("QAI_LOCAL_LLM_TIMEOUT_SECONDS", "180")
-        )
+        self.request_timeout_seconds = int(os.getenv("QAI_LOCAL_LLM_TIMEOUT_SECONDS", "180"))
         _LOGGER.info(
-            f"Initialized {llm_type} client: {base_url} model={model} "
-            f"timeout={self.request_timeout_seconds}s"
+            f"Initialized {llm_type} client: {base_url} model={model} " f"timeout={self.request_timeout_seconds}s"
         )
 
     def query(self, prompt: str, max_tokens: int = 2000) -> str:
@@ -320,15 +314,11 @@ class LocalLLMClient:
                 data=json_module.dumps(data).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(
-                req, timeout=self.request_timeout_seconds
-            ) as response:
+            with urllib.request.urlopen(req, timeout=self.request_timeout_seconds) as response:
                 result = json_module.loads(response.read().decode("utf-8"))
                 return result.get("response", "").strip()
         except urllib.error.URLError as e:
-            raise ConnectionError(
-                f"Cannot connect to Ollama at {self.base_url}: {e}"
-            ) from e
+            raise ConnectionError(f"Cannot connect to Ollama at {self.base_url}: {e}") from e
 
     def _query_lmstudio(self, prompt: str, max_tokens: int) -> str:
         """Query LM Studio API (OpenAI-compatible)."""
@@ -349,18 +339,14 @@ class LocalLLMClient:
                 data=json_module.dumps(data).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            with urllib.request.urlopen(
-                req, timeout=self.request_timeout_seconds
-            ) as response:
+            with urllib.request.urlopen(req, timeout=self.request_timeout_seconds) as response:
                 result = json_module.loads(response.read().decode("utf-8"))
                 choices = result.get("choices", [])
                 if choices:
                     return choices[0].get("message", {}).get("content", "").strip()
                 return ""
         except urllib.error.URLError as e:
-            raise ConnectionError(
-                f"Cannot connect to LM Studio at {self.base_url}: {e}"
-            ) from e
+            raise ConnectionError(f"Cannot connect to LM Studio at {self.base_url}: {e}") from e
 
     def is_available(self) -> bool:
         """Check if LLM is available."""
@@ -393,9 +379,7 @@ class CodeAgent:
         elif self.llm_type == "echo":
             self.llm = EchoLLMClient(model=self.model or "echo")
         else:
-            raise ValueError(
-                f"Unknown LLM type: {llm_type}. Choose: ollama, lmstudio, echo"
-            )
+            raise ValueError(f"Unknown LLM type: {llm_type}. Choose: ollama, lmstudio, echo")
 
         self.repo = RepositoryContext()
         self.state: Optional[AgentState] = None
@@ -408,9 +392,7 @@ class CodeAgent:
         DATA_OUT.mkdir(parents=True, exist_ok=True)
         handler = logging.FileHandler(DATA_OUT / "agent.log")
         handler.setLevel(logging.DEBUG)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         handler.setFormatter(formatter)
         _LOGGER.addHandler(handler)
         _LOGGER.setLevel(logging.DEBUG)
@@ -440,9 +422,7 @@ class CodeAgent:
             file_hints = []
             task_category = "unknown"
 
-        file_patterns_note = (
-            f"Likely search patterns: {', '.join(file_hints)}\n" if file_hints else ""
-        )
+        file_patterns_note = f"Likely search patterns: {', '.join(file_hints)}\n" if file_hints else ""
 
         prompt = (
             (f"{specialized_intro}\n\n" if specialized_intro else "")
@@ -497,9 +477,7 @@ Respond with ONLY a list of file paths relative to repo root (one per line). No 
             return
         full_path = self.repo.repo_root / filepath
         if full_path.exists() and full_path.is_file():
-            self._original_file_contents[filepath] = full_path.read_text(
-                encoding="utf-8"
-            )
+            self._original_file_contents[filepath] = full_path.read_text(encoding="utf-8")
         else:
             self._original_file_contents[filepath] = None
 
@@ -534,9 +512,7 @@ Respond with ONLY a list of file paths relative to repo root (one per line). No 
             # Limit content sent to LLM to avoid token overflow
             truncated = content[:MAX_PROMPT_FILE_CHARS]
             suffix_note = (
-                f"\n# ... (truncated, {len(content)} bytes total)"
-                if len(content) > MAX_PROMPT_FILE_CHARS
-                else ""
+                f"\n# ... (truncated, {len(content)} bytes total)" if len(content) > MAX_PROMPT_FILE_CHARS else ""
             )
 
             prompt = f"""Task: {task_description}
@@ -550,9 +526,7 @@ No markdown fences. No explanation.
             new_content = self._llm_query(prompt, max_tokens=MAX_TASK_TOKENS)
 
             if not new_content or len(new_content) < 20:
-                _LOGGER.warning(
-                    f"LLM returned empty/short response for {filepath}, skipping"
-                )
+                _LOGGER.warning(f"LLM returned empty/short response for {filepath}, skipping")
                 continue
 
             # Remove accidental markdown fences if present
@@ -614,9 +588,7 @@ No markdown fences. No explanation.
             )
             if collected_match:
                 collected = int(collected_match.group(1))
-                deselected = (
-                    int(collected_match.group(2)) if collected_match.group(2) else 0
-                )
+                deselected = int(collected_match.group(2)) if collected_match.group(2) else 0
                 total = max(0, collected - deselected)
 
             passed_match = re.search(r"(\d+)\s+passed", output)
@@ -751,10 +723,7 @@ No markdown fences. No explanation.
         try:
             if forced_files:
                 files = [f for f in forced_files if self.repo.file_exists(f)]
-                _LOGGER.info(
-                    "Using forced files from task spec: "
-                    f"{files} (requested={forced_files})"
-                )
+                _LOGGER.info("Using forced files from task spec: " f"{files} (requested={forced_files})")
             else:
                 files = self.identify_files(task_description)
             _LOGGER.info(f"Identified files: {files}")
@@ -811,12 +780,7 @@ No markdown fences. No explanation.
                 _LOGGER.error(f"Rollback failed: {rb_err}")
 
         # ── Phase 5: Commit ──────────────────────────────────────────────────
-        if (
-            not dry_run
-            and tests_passed
-            and self.state.files_modified
-            and not self.state.errors
-        ):
+        if not dry_run and tests_passed and self.state.files_modified and not self.state.errors:
             try:
                 commit_msg = f"agent/{task_id}: {task_description[:60]}"
                 self.commit_changes(commit_msg, files=self.state.files_modified)
@@ -827,17 +791,12 @@ No markdown fences. No explanation.
         self.state.duration_seconds = round(time.monotonic() - _start, 2)
         self.state.tokens_estimated = self._total_tokens
         self.state.save()
-        _LOGGER.info(
-            f"Task {task_id} complete in {self.state.duration_seconds}s "
-            f"(~{self._total_tokens} tokens)"
-        )
+        _LOGGER.info(f"Task {task_id} complete in {self.state.duration_seconds}s " f"(~{self._total_tokens} tokens)")
         return self.state
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Autonomous Code Agent - works on repo tasks using local LLM"
-    )
+    parser = argparse.ArgumentParser(description="Autonomous Code Agent - works on repo tasks using local LLM")
     parser.add_argument(
         "--task",
         type=str,

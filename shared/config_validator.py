@@ -15,9 +15,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 try:
     import yaml
 except ImportError:
-    raise SystemExit(
-        "pyyaml required for config validation: pip install pyyaml"
-    ) from None
+    raise SystemExit("pyyaml required for config validation: pip install pyyaml") from None
 
 
 @dataclass
@@ -108,7 +106,7 @@ class ConfigValidator:
 
         # 2. Parse YAML
         try:
-            with open(config_path, "r", encoding="utf-8") as f:
+            with open(config_path, encoding="utf-8") as f:
                 config = yaml.safe_load(f) or {}
         except yaml.YAMLError as e:
             result.errors.append(
@@ -144,9 +142,7 @@ class ConfigValidator:
         result.valid = not result.has_critical_errors
         return result
 
-    def _validate_orchestrators(
-        self, orchestrators: List[Dict[str, Any]], result: ValidationResult
-    ):
+    def _validate_orchestrators(self, orchestrators: List[Dict[str, Any]], result: ValidationResult):
         """Validate orchestrator list."""
         defined_names: Set[str] = set()
 
@@ -373,9 +369,7 @@ class ConfigValidator:
         orchestrators: List[Dict[str, Any]],
     ):
         """Validate workflow list."""
-        defined_orch_names = {
-            o.get("name") for o in orchestrators if isinstance(o, dict) and "name" in o
-        }
+        defined_orch_names = {o.get("name") for o in orchestrators if isinstance(o, dict) and "name" in o}
 
         for idx, wf in enumerate(workflows):
             if not isinstance(wf, dict):
@@ -433,9 +427,7 @@ class ConfigValidator:
             config_path = self.repo_root / "config" / "master_orchestrator.yaml"
         return self.validate_file(config_path)
 
-    def validate_autonomous_training(
-        self, config_path: Optional[Path] = None
-    ) -> ValidationResult:
+    def validate_autonomous_training(self, config_path: Optional[Path] = None) -> ValidationResult:
         """Validate autonomous_training.yaml specifically."""
         if config_path is None:
             config_path = self.repo_root / "config" / "autonomous_training.yaml"
@@ -503,9 +495,7 @@ if __name__ == "__main__":
     validator = ConfigValidator()
 
     if args.check_all:
-        _, results = validate_configs_before_daemon(
-            verbose=args.verbose, exit_on_error=False
-        )
+        _, results = validate_configs_before_daemon(verbose=args.verbose, exit_on_error=False)
         sys.exit(0 if all(r.valid for r in results) else 1)
     elif args.config:
         result = validator.validate_file(Path(args.config))

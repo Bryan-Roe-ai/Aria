@@ -18,13 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-HOOK_SCRIPT = (
-    Path(__file__).resolve().parent.parent
-    / ".github"
-    / "hooks"
-    / "scripts"
-    / "secrets_leak_guard.py"
-)
+HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "secrets_leak_guard.py"
 
 _FAKE_OPENAI_KEY = "sk-abcdefghijklmnopqrstuvwxyz12345678"
 

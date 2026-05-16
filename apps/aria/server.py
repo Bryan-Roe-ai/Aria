@@ -86,9 +86,7 @@ def _provider_response_to_text(raw) -> str:
 
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Add project paths
@@ -141,9 +139,7 @@ COME_HERE_KEYWORDS = frozenset(["come here", "come to me", "over here"])
 FOLLOW_ME_KEYWORDS = frozenset(["follow me", "come with me"])
 BRING_ME_KEYWORDS = frozenset(["bring me", "fetch", "hand me"])
 BRING_IT_KEYWORDS = frozenset(["bring it", "bring it here", "bring it to me"])
-DROP_HERE_KEYWORDS = frozenset(
-    ["drop it here", "put it here", "place it here", "set it down"]
-)
+DROP_HERE_KEYWORDS = frozenset(["drop it here", "put it here", "place it here", "set it down"])
 
 
 def _contains_any_keyword(text: str, keywords: frozenset) -> bool:
@@ -171,10 +167,7 @@ _PICKUP_KEYWORDS = PICKUP_KEYWORDS
 _JUMP_KEYWORDS = JUMP_KEYWORDS
 _DANCE_KEYWORDS = DANCE_KEYWORDS
 _LIMB_KEYWORDS = frozenset(
-    set(LEFT_ARM_KEYWORDS)
-    | set(RIGHT_ARM_KEYWORDS)
-    | set(LEFT_LEG_KEYWORDS)
-    | set(RIGHT_LEG_KEYWORDS)
+    set(LEFT_ARM_KEYWORDS) | set(RIGHT_ARM_KEYWORDS) | set(LEFT_LEG_KEYWORDS) | set(RIGHT_LEG_KEYWORDS)
 )
 
 # Global stage state that AI can see
@@ -301,16 +294,10 @@ class AriaActionParser:
 
             # Convenience: if ARIA_QUANTUM_MODEL_PATH is set and no provider is
             # configured, default Aria LLM parsing to the quantum provider.
-            quantum_model_path = os.getenv("ARIA_QUANTUM_MODEL_PATH") or os.getenv(
-                "QAI_QUANTUM_MODEL_PATH"
-            )
+            quantum_model_path = os.getenv("ARIA_QUANTUM_MODEL_PATH") or os.getenv("QAI_QUANTUM_MODEL_PATH")
             if not configured_model and quantum_model_path:
                 configured_model = quantum_model_path
-            if (
-                not configured_explicit
-                and configured_model == quantum_model_path
-                and quantum_model_path
-            ):
+            if not configured_explicit and configured_model == quantum_model_path and quantum_model_path:
                 configured_explicit = "quantum"
 
             self.provider, self.provider_choice = self._resolve_provider_for_request(
@@ -320,9 +307,7 @@ class AriaActionParser:
             provider_name = getattr(
                 self.provider_choice,
                 "name",
-                getattr(
-                    self.provider, "__class__", type(self.provider)
-                ).__class__.__name__,
+                getattr(self.provider, "__class__", type(self.provider)).__class__.__name__,
             )
             logger.info(f"✓ Initialized LLM provider: {provider_name}")
         except Exception as e:
@@ -407,26 +392,18 @@ Rules:
             logger.error(f"LLM parsing failed: {e}")
             raise
 
-    def parse_with_fallback(
-        self, command: str, _allow_split: bool = True, _planned_held_object=_UNSET
-    ) -> List[dict]:
+    def parse_with_fallback(self, command: str, _allow_split: bool = True, _planned_held_object=_UNSET) -> List[dict]:
         """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
         actions = []
         command_lower = command.lower()
         known_objects = ["apple", "book", "cup", "ball", "flower"]
         planned_held_object = (
-            stage_state["aria"].get("held_object")
-            if _planned_held_object is _UNSET
-            else _planned_held_object
+            stage_state["aria"].get("held_object") if _planned_held_object is _UNSET else _planned_held_object
         )
 
         # Compound command handling (e.g., "pick up cup and bring it here then put it on table")
         if _allow_split:
-            segments = [
-                seg.strip()
-                for seg in _RE_COMMAND_SEPARATORS.split(command)
-                if seg and seg.strip()
-            ]
+            segments = [seg.strip() for seg in _RE_COMMAND_SEPARATORS.split(command) if seg and seg.strip()]
             if len(segments) > 1:
                 combined_actions = []
                 current_planned_held = planned_held_object
@@ -441,9 +418,7 @@ Rules:
                     for action in seg_actions:
                         action_type = action.get("action")
                         if action_type == "pickup":
-                            current_planned_held = action.get(
-                                "object_id", current_planned_held
-                            )
+                            current_planned_held = action.get("object_id", current_planned_held)
                         elif action_type in ("drop", "throw"):
                             current_planned_held = None
 
@@ -474,24 +449,18 @@ Rules:
 
         # Conversational movement commands
         if _contains_any_keyword(command_lower, COME_HERE_KEYWORDS):
-            actions.append(
-                {"action": "move", "target": {"x": 50, "y": 85}, "speed": "normal"}
-            )
+            actions.append({"action": "move", "target": {"x": 50, "y": 85}, "speed": "normal"})
 
         if _contains_any_keyword(command_lower, FOLLOW_ME_KEYWORDS):
             actions.append({"action": "gesture", "gesture_type": "nod"})
-            actions.append(
-                {"action": "move", "target": {"x": 50, "y": 75}, "speed": "normal"}
-            )
+            actions.append({"action": "move", "target": {"x": 50, "y": 75}, "speed": "normal"})
 
         # Conversational object delivery commands
         if _contains_any_keyword(command_lower, BRING_ME_KEYWORDS):
             for obj in known_objects:
                 if obj in command_lower and obj in stage_state["objects"]:
                     obj_pos = stage_state["objects"][obj]["position"]
-                    actions.append(
-                        {"action": "move", "target": obj_pos, "speed": "normal"}
-                    )
+                    actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
                     actions.append({"action": "pickup", "object_id": obj})
                     actions.append(
                         {
@@ -507,9 +476,7 @@ Rules:
         if _contains_any_keyword(command_lower, BRING_IT_KEYWORDS):
             held_obj = planned_held_object
             if held_obj:
-                actions.append(
-                    {"action": "move", "target": {"x": 50, "y": 85}, "speed": "normal"}
-                )
+                actions.append({"action": "move", "target": {"x": 50, "y": 85}, "speed": "normal"})
                 actions.append({"action": "gesture", "gesture_type": "nod"})
             else:
                 actions.append(
@@ -526,16 +493,9 @@ Rules:
             or ("drop" in command_lower and "here" in command_lower)
             or (
                 "put" in command_lower
-                and (
-                    "here" in command_lower
-                    or "down" in command_lower
-                    or "table" in command_lower
-                )
+                and ("here" in command_lower or "down" in command_lower or "table" in command_lower)
             )
-            or (
-                "place" in command_lower
-                and ("here" in command_lower or "table" in command_lower)
-            )
+            or ("place" in command_lower and ("here" in command_lower or "table" in command_lower))
         )
         if has_drop_intent:
             held_obj = planned_held_object
@@ -552,52 +512,34 @@ Rules:
                 if "table" in command_lower:
                     table_pos = stage_state["environment"]["table"]["position"]
                     drop_target = {"x": table_pos["x"], "y": 35}
-                actions.append(
-                    {"action": "move", "target": drop_target, "speed": "normal"}
-                )
+                actions.append({"action": "move", "target": drop_target, "speed": "normal"})
                 actions.append({"action": "drop", "position": drop_target})
 
         # Parse move commands
         if _contains_any_keyword(command_lower, MOVE_KEYWORDS):
             # Extract target from command
             if "table" in command_lower:
-                actions.append(
-                    {"action": "move", "target": {"x": 60, "y": 35}, "speed": "normal"}
-                )
+                actions.append({"action": "move", "target": {"x": 60, "y": 35}, "speed": "normal"})
             elif "center" in command_lower or "middle" in command_lower:
-                actions.append(
-                    {"action": "move", "target": {"x": 50, "y": 50}, "speed": "normal"}
-                )
+                actions.append({"action": "move", "target": {"x": 50, "y": 50}, "speed": "normal"})
             elif "left" in command_lower:
-                actions.append(
-                    {"action": "move", "target": {"x": 20, "y": 50}, "speed": "normal"}
-                )
+                actions.append({"action": "move", "target": {"x": 20, "y": 50}, "speed": "normal"})
             elif "right" in command_lower:
-                actions.append(
-                    {"action": "move", "target": {"x": 80, "y": 50}, "speed": "normal"}
-                )
+                actions.append({"action": "move", "target": {"x": 80, "y": 50}, "speed": "normal"})
 
         # Parse say commands
         if _contains_any_keyword(command_lower, SAY_KEYWORDS):
             # Extract text after say/speak
             for trigger in ["say ", "speak ", "tell ", "greet "]:
                 if trigger in command_lower:
-                    text = command[command_lower.index(trigger) + len(trigger) :].strip(
-                        " \"'"
-                    )
-                    emotion = (
-                        "happy"
-                        if any(w in text.lower() for w in ["!", "hello", "hi"])
-                        else "neutral"
-                    )
+                    text = command[command_lower.index(trigger) + len(trigger) :].strip(" \"'")
+                    emotion = "happy" if any(w in text.lower() for w in ["!", "hello", "hi"]) else "neutral"
                     actions.append({"action": "say", "text": text, "emotion": emotion})
                     break
 
         # Parse pickup commands
         for obj in known_objects:
-            if obj in command_lower and _contains_any_keyword(
-                command_lower, PICKUP_KEYWORDS
-            ):
+            if obj in command_lower and _contains_any_keyword(command_lower, PICKUP_KEYWORDS):
                 # Move to object first
                 obj_pos = stage_state["objects"][obj]["position"]
                 actions.append({"action": "move", "target": obj_pos, "speed": "normal"})
@@ -649,9 +591,7 @@ Rules:
                     or self._normalize_provider_alias(provider_choice)
                     or "auto"
                 )
-                logger.info(
-                    f"✓ LLM parsed via {used_provider_name}: {command} -> {len(actions)} actions"
-                )
+                logger.info(f"✓ LLM parsed via {used_provider_name}: {command} -> {len(actions)} actions")
                 return actions
             except Exception as e:
                 logger.warning(f"LLM parsing failed, using fallback: {e}")
@@ -747,9 +687,7 @@ THEME_OBJECT_LIBRARY = {
 
 def generate_world_fallback(theme: str, count: int) -> dict:
     """Generate a world procedurally without LLM."""
-    objects_catalog = THEME_OBJECT_LIBRARY.get(
-        theme.lower(), THEME_OBJECT_LIBRARY["forest"]
-    )
+    objects_catalog = THEME_OBJECT_LIBRARY.get(theme.lower(), THEME_OBJECT_LIBRARY["forest"])
     random.shuffle(objects_catalog)
     chosen = objects_catalog[: max(1, count)]
     stage_objects = {}
@@ -838,9 +776,7 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
         if not sanitized_objects:
             return generate_world_fallback(theme, count)
         env.setdefault("theme", theme)
-        env.setdefault(
-            "generated_at", datetime.datetime.now(timezone.utc).isoformat() + "Z"
-        )
+        env.setdefault("generated_at", datetime.datetime.now(timezone.utc).isoformat() + "Z")
         env.setdefault("stage_bounds", {"width": 100, "height": 100})
         return {
             "objects": sanitized_objects,
@@ -872,9 +808,7 @@ def get_stage_context() -> str:
         obj_pos = obj_data["position"]
         if not isinstance(obj_pos, dict) or "x" not in obj_pos or "y" not in obj_pos:
             continue
-        distance = (
-            (aria_pos["x"] - obj_pos["x"]) ** 2 + (aria_pos["y"] - obj_pos["y"]) ** 2
-        ) ** 0.5
+        distance = ((aria_pos["x"] - obj_pos["x"]) ** 2 + (aria_pos["y"] - obj_pos["y"]) ** 2) ** 0.5
         if distance < 30:  # Within reach
             nearby_objects.append(obj_name)
 
@@ -915,9 +849,7 @@ def determine_position_from_context(cmd: str) -> str:
 
     # Object interaction positioning - move near the object
     for obj_name in ["apple", "book", "cup", "ball", "flower", "bear"]:
-        if obj_name in cmd and (
-            "pick" in cmd or "get" in cmd or "grab" in cmd or "take" in cmd
-        ):
+        if obj_name in cmd and ("pick" in cmd or "get" in cmd or "grab" in cmd or "take" in cmd):
             if obj_name in objects:
                 obj_data = objects[obj_name]
                 # Safety check: ensure object has position data
@@ -992,9 +924,7 @@ def generate_tags_ai(command: str) -> List[str]:
                 pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
             )
 
-        response = tokenizer.decode(
-            outputs[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True
-        )
+        response = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
         tags = _RE_ARIA_TAGS.findall(response)
         return tags[:2]  # Return first 2 tags max
     except Exception as e:
@@ -1191,9 +1121,7 @@ def generate_tags_fallback(command: str) -> List[str]:
     if "center" in cmd:
         tags.append("[aria:camera:center]")
     elif "zoom" in cmd:
-        tags.append(
-            "[aria:camera:zoom_in]" if "in" in cmd else "[aria:camera:zoom_out]"
-        )
+        tags.append("[aria:camera:zoom_in]" if "in" in cmd else "[aria:camera:zoom_out]")
 
     # Poses (body positions)
     if "sit" in cmd:
@@ -1326,10 +1254,7 @@ def execute_aria_action(action: dict) -> dict:
             # Check distance
             aria_pos = stage_state["aria"]["position"]
             obj_pos = stage_state["objects"][obj_id]["position"]
-            distance = (
-                (aria_pos["x"] - obj_pos["x"]) ** 2
-                + (aria_pos["y"] - obj_pos["y"]) ** 2
-            ) ** 0.5
+            distance = ((aria_pos["x"] - obj_pos["x"]) ** 2 + (aria_pos["y"] - obj_pos["y"]) ** 2) ** 0.5
 
             if distance > 30:
                 return {
@@ -1386,9 +1311,7 @@ def execute_aria_action(action: dict) -> dict:
 
         elif action_type == "gesture":
             gesture_type = action.get("gesture_type", "wave")
-            valid_gestures = frozenset(
-                ["wave", "thumbs_up", "clap", "shrug", "bow", "nod"]
-            )
+            valid_gestures = frozenset(["wave", "thumbs_up", "clap", "shrug", "bow", "nod"])
 
             if gesture_type not in valid_gestures:
                 gesture_type = "wave"  # Default fallback
@@ -1590,16 +1513,12 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         )
                         tags = tags_from_actions(actions)
                     except Exception as parse_err:
-                        logger.warning(
-                            f"/api/aria/command parser path failed, falling back: {parse_err}"
-                        )
+                        logger.warning(f"/api/aria/command parser path failed, falling back: {parse_err}")
 
                 # Legacy fallback path: rule-based tag generation.
                 if not tags:
                     legacy_tags = generate_tags_ai(command)
-                    tags = (
-                        legacy_tags if legacy_tags else generate_tags_fallback(command)
-                    )
+                    tags = legacy_tags if legacy_tags else generate_tags_fallback(command)
 
                 print(f"✨ Generated tags: {tags}")
 
@@ -1609,9 +1528,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     "actions": actions if actions else None,
                     "provider_requested": provider_choice or "auto",
                     "model_requested": model_override,
-                    "model": (
-                        "llm" if actions else ("ai" if (MODEL and tags) else "fallback")
-                    ),
+                    "model": ("llm" if actions else ("ai" if (MODEL and tags) else "fallback")),
                     "stage_context": get_stage_context(),
                     "stage_aware": True,
                 }
@@ -1641,9 +1558,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 request_data = json.loads(post_data.decode("utf-8"))
 
                 # Support both single object ({action, object}) and bulk ({objects: {...}})
-                if "objects" in request_data and isinstance(
-                    request_data["objects"], dict
-                ):
+                if "objects" in request_data and isinstance(request_data["objects"], dict):
                     # Merge supplied objects into stage_state
                     for k, v in request_data["objects"].items():
                         if isinstance(v, dict) and "position" in v:
@@ -1654,9 +1569,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     obj = request_data["object"]
                     obj_id = obj.get("id") or obj.get("name")
                     if not obj_id:
-                        raise ValueError(
-                            'Object payload must include "id" or "name" field.'
-                        )
+                        raise ValueError('Object payload must include "id" or "name" field.')
 
                     if action == "add":
                         position = obj.get("position", {"x": 50, "y": 50})
@@ -1690,9 +1603,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             "object": removed,
                         }
                     else:
-                        raise ValueError(
-                            f"Unknown action: {action}. Supported: add, update, remove/delete."
-                        )
+                        raise ValueError(f"Unknown action: {action}. Supported: add, update, remove/delete.")
 
                 else:
                     raise ValueError(
@@ -1754,9 +1665,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     if auto_execute:
                         for action in actions:
                             exec_result = execute_aria_action(action)
-                            execution_results.append(
-                                {"action": action, "result": exec_result}
-                            )
+                            execution_results.append({"action": action, "result": exec_result})
                             if exec_result.get("tags"):
                                 all_tags.extend(exec_result["tags"])
 
@@ -1827,9 +1736,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                             model_override=model_override,
                         )
                     except Exception as provider_err:
-                        logger.warning(
-                            f"World generation provider resolution failed: {provider_err}"
-                        )
+                        logger.warning(f"World generation provider resolution failed: {provider_err}")
                         world_provider = None
 
                     if world_provider:
@@ -1850,12 +1757,8 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                         "emoji": obj.get("emoji", ""),
                     }
                 # Update environment meta
-                stage_state["environment"]["theme"] = world["environment"].get(
-                    "theme", theme
-                )
-                stage_state["environment"]["generated_at"] = world["environment"].get(
-                    "generated_at"
-                )
+                stage_state["environment"]["theme"] = world["environment"].get("theme", theme)
+                stage_state["environment"]["generated_at"] = world["environment"].get("generated_at")
 
                 response = {
                     "status": "success",
@@ -1872,18 +1775,14 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
                 self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
-                logger.info(
-                    f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']})"
-                )
+                logger.info(f"✓ World generated (theme={theme}, llm={response['used_llm']}, count={response['count']})")
                 return
             except Exception as e:
                 logger.error(f"World generation error: {e}")
                 self.send_response(400)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
-                self.wfile.write(
-                    json.dumps({"status": "error", "error": str(e)}).encode("utf-8")
-                )
+                self.wfile.write(json.dumps({"status": "error", "error": str(e)}).encode("utf-8"))
                 return
 
         else:
@@ -1926,14 +1825,8 @@ def main():
             try:
                 with urllib.request.urlopen(state_url, timeout=1.0) as resp:
                     payload = json.loads(resp.read().decode("utf-8"))
-                if (
-                    isinstance(payload, dict)
-                    and "aria" in payload
-                    and "objects" in payload
-                ):
-                    print(
-                        f"⚠️ Aria server already running at http://{host}:{port} (detected healthy /api/aria/state)."
-                    )
+                if isinstance(payload, dict) and "aria" in payload and "objects" in payload:
+                    print(f"⚠️ Aria server already running at http://{host}:{port} (detected healthy /api/aria/state).")
                     print("ℹ️ Reusing existing server; exiting this process cleanly.")
                     return
             except Exception:
@@ -1944,12 +1837,8 @@ def main():
                 sock.bind((host, 0))
                 fallback_port = sock.getsockname()[1]
 
-            print(
-                f"⚠️ Port {port} is in use by another service; starting Aria on free port {fallback_port}."
-            )
-            print(
-                f"💡 Set ARIA_PORT={fallback_port} (or another free port) to control startup port explicitly."
-            )
+            print(f"⚠️ Port {port} is in use by another service; starting Aria on free port {fallback_port}.")
+            print(f"💡 Set ARIA_PORT={fallback_port} (or another free port) to control startup port explicitly.")
             port = fallback_port
             server = HTTPServer((host, port), AriaRequestHandler)
         else:

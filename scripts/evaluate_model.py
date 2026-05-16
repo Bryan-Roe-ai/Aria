@@ -82,9 +82,7 @@ except ImportError:
 
         if model_p.is_dir():
             has_config = (model_p / "adapter_config.json").exists()
-            has_weights = (model_p / "adapter_model.safetensors").exists() or (
-                model_p / "adapter_model.bin"
-            ).exists()
+            has_weights = (model_p / "adapter_model.safetensors").exists() or (model_p / "adapter_model.bin").exists()
             results["adapter_valid"] = has_config and has_weights
         else:
             results["adapter_valid"] = False
@@ -134,12 +132,8 @@ except ImportError:
 
     def main():
         ap = argparse.ArgumentParser(description="Evaluate a trained model.")
-        ap.add_argument(
-            "--model", required=True, help="Path to trained model or adapter"
-        )
-        ap.add_argument(
-            "--dataset", required=True, help="Path to evaluation dataset (JSONL/JSON)"
-        )
+        ap.add_argument("--model", required=True, help="Path to trained model or adapter")
+        ap.add_argument("--dataset", required=True, help="Path to evaluation dataset (JSONL/JSON)")
         ap.add_argument(
             "--metrics",
             nargs="+",

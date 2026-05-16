@@ -216,9 +216,7 @@ class TestRunAllChecks:
         results = self.mod.run_all_checks()
         valid_statuses = {"ok", "warn", "fail"}
         for r in results:
-            assert (
-                r.status in valid_statuses
-            ), f"{r.name} has unexpected status: {r.status}"
+            assert r.status in valid_statuses, f"{r.name} has unexpected status: {r.status}"
 
     def test_python_check_present(self):
         results = self.mod.run_all_checks()

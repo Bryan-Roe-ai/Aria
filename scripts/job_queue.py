@@ -78,7 +78,7 @@ class JobQueue:
         """Load queue from disk"""
         if self.queue_file.exists():
             try:
-                with open(self.queue_file, "r") as f:
+                with open(self.queue_file) as f:
                     data = json.load(f)
 
                 for job_data in data.get("jobs", []):
@@ -221,9 +221,7 @@ class JobQueue:
                 job.status = JobStatus.PENDING
                 job.error_message = error
                 heapq.heappush(self.priority_queue, job)
-                print(
-                    f"Retrying job {job_id} (attempt {job.retry_count + 1}/{job.max_retries})"
-                )
+                print(f"Retrying job {job_id} (attempt {job.retry_count + 1}/{job.max_retries})")
             else:
                 job.status = JobStatus.FAILED
                 job.error_message = error
@@ -315,9 +313,7 @@ class JobQueue:
             }
         return None
 
-    def list_jobs(
-        self, status: Optional[JobStatus] = None, tags: List[str] = None
-    ) -> List[Dict]:
+    def list_jobs(self, status: Optional[JobStatus] = None, tags: List[str] = None) -> List[Dict]:
         """List all jobs, optionally filtered by status or tags"""
         jobs = list(self.jobs.values())
 
@@ -337,11 +333,7 @@ class JobQueue:
             JobStatus.COMPLETED,
             JobStatus.CANCELLED,
         }  # O(1) set lookup
-        to_remove = [
-            job_id
-            for job_id, job in self.jobs.items()
-            if job.status in REMOVABLE_STATUSES
-        ]
+        to_remove = [job_id for job_id, job in self.jobs.items() if job.status in REMOVABLE_STATUSES]
 
         for job_id in to_remove:
             del self.jobs[job_id]
@@ -390,6 +382,4 @@ if __name__ == "__main__":
     # List pending jobs
     print("\nPending Jobs:")
     for job in queue.list_jobs(status=JobStatus.PENDING):
-        print(
-            f"  - {job['name']} (priority: {job['priority']}, deps: {job['dependencies']})"
-        )
+        print(f"  - {job['name']} (priority: {job['priority']}, deps: {job['dependencies']})")

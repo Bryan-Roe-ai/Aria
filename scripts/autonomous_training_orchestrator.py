@@ -73,7 +73,7 @@ def _now_iso() -> str:
 
 def load_config(config_path: Path = CONFIG_FILE) -> Dict[str, Any]:
     if config_path.exists():
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = yaml.safe_load(f) or {}
             if isinstance(data, dict):
                 return data
@@ -82,7 +82,7 @@ def load_config(config_path: Path = CONFIG_FILE) -> Dict[str, Any]:
 
 def load_status() -> Dict[str, Any]:
     if STATUS_FILE.exists():
-        with open(STATUS_FILE, "r", encoding="utf-8") as f:
+        with open(STATUS_FILE, encoding="utf-8") as f:
             status = json.load(f)
         history = status.get("performance_history", [])
         if len(history) > MAX_HISTORY_CYCLES:
@@ -172,9 +172,7 @@ def discover_datasets() -> Dict[str, Dict[str, Any]]:
         for category_dir in root.iterdir():
             if not category_dir.is_dir():
                 continue
-            files = list(category_dir.glob("**/train.json")) + list(
-                category_dir.glob("**/train.jsonl")
-            )
+            files = list(category_dir.glob("**/train.json")) + list(category_dir.glob("**/train.jsonl"))
             if files:
                 key = f"{prefix}{category_dir.name}" if prefix else category_dir.name
                 inventory[key] = {
@@ -211,9 +209,7 @@ def simulate_training_cycle(
         logger.info("  Training progress: %.0f%%", progress * 100)
 
     cap = _accuracy_cap(n_cats)
-    cycle_accuracy = (
-        accuracy_baseline + (cycle_num * 0.02) + (0.05 * (1 - (cycle_num * 0.1)))
-    )
+    cycle_accuracy = accuracy_baseline + (cycle_num * 0.02) + (0.05 * (1 - (cycle_num * 0.1)))
     cycle_accuracy = min(cycle_accuracy, cap)
 
     if plateau_cycles > 0:
@@ -248,9 +244,7 @@ def promote_model(status: Dict[str, Any]) -> None:
     with open(out, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
 
-    logger.info(
-        "🚀 Model v%s promoted → %s (accuracy=%.4f)", version, out, payload["accuracy"]
-    )
+    logger.info("🚀 Model v%s promoted → %s (accuracy=%.4f)", version, out, payload["accuracy"])
 
 
 # ----------------------------------------------------------------------------
@@ -281,19 +275,11 @@ def _select_quantum_dataset() -> Path:
 
 
 def _should_run_quantum_cycle(status: Dict[str, Any], config: Dict[str, Any]) -> bool:
-    qcfg = (
-        config.get("quantum_llm", {})
-        if isinstance(config.get("quantum_llm"), dict)
-        else {}
-    )
+    qcfg = config.get("quantum_llm", {}) if isinstance(config.get("quantum_llm"), dict) else {}
     if not qcfg.get("enabled", False):
         return False
 
-    auto_cfg = (
-        config.get("autonomous_mode", {})
-        if isinstance(config.get("autonomous_mode"), dict)
-        else {}
-    )
+    auto_cfg = config.get("autonomous_mode", {}) if isinstance(config.get("autonomous_mode"), dict) else {}
     cycle_minutes = int(auto_cfg.get("cycle_interval_minutes", 30))
     quantum_minutes = int(qcfg.get("training_interval_minutes", 60))
     cycles_between = max(1, int(round(quantum_minutes / max(cycle_minutes, 1))))
@@ -302,17 +288,11 @@ def _should_run_quantum_cycle(status: Dict[str, Any], config: Dict[str, Any]) ->
     if completed <= 0:
         return False
 
-    qstatus = (
-        status.get("quantum_llm", {})
-        if isinstance(status.get("quantum_llm"), dict)
-        else {}
-    )
+    qstatus = status.get("quantum_llm", {}) if isinstance(status.get("quantum_llm"), dict) else {}
     last_run = qstatus.get("last_run")
     if last_run:
         try:
-            elapsed = (
-                datetime.now() - datetime.fromisoformat(last_run)
-            ).total_seconds()
+            elapsed = (datetime.now() - datetime.fromisoformat(last_run)).total_seconds()
             if elapsed >= quantum_minutes * 60:
                 return True
         except Exception:
@@ -322,16 +302,8 @@ def _should_run_quantum_cycle(status: Dict[str, Any], config: Dict[str, Any]) ->
 
 
 def run_quantum_llm_training(status: Dict[str, Any], config: Dict[str, Any]) -> None:
-    qcfg = (
-        config.get("quantum_llm", {})
-        if isinstance(config.get("quantum_llm"), dict)
-        else {}
-    )
-    quantum_status = (
-        status.get("quantum_llm", {})
-        if isinstance(status.get("quantum_llm"), dict)
-        else {}
-    )
+    qcfg = config.get("quantum_llm", {}) if isinstance(config.get("quantum_llm"), dict) else {}
+    quantum_status = status.get("quantum_llm", {}) if isinstance(status.get("quantum_llm"), dict) else {}
 
     quantum_status.setdefault("runs", 0)
     quantum_status["enabled"] = bool(qcfg.get("enabled", False))
@@ -349,8 +321,7 @@ def run_quantum_llm_training(status: Dict[str, Any], config: Dict[str, Any]) -> 
 
     try:
         sys.path.insert(0, str(REPO_ROOT / "scripts"))
-        from quantum_llm_trainer import (QuantumEnhancedLLMTrainer,
-                                         get_quantum_llm_status)
+        from quantum_llm_trainer import QuantumEnhancedLLMTrainer, get_quantum_llm_status
 
         trainer_config: Dict[str, Any] = {
             "quantum_backend": qcfg.get("backend", "local"),
@@ -363,11 +334,9 @@ def run_quantum_llm_training(status: Dict[str, Any], config: Dict[str, Any]) -> 
             "status_file": "data_out/quantum_llm_training/status.json",
         }
 
-        config_file = _resolve_repo_path(
-            qcfg.get("config_file"), REPO_ROOT / "config" / "quantum_llm_config.yaml"
-        )
+        config_file = _resolve_repo_path(qcfg.get("config_file"), REPO_ROOT / "config" / "quantum_llm_config.yaml")
         if config_file.exists():
-            with open(config_file, "r", encoding="utf-8") as f:
+            with open(config_file, encoding="utf-8") as f:
                 file_cfg = yaml.safe_load(f) or {}
             if isinstance(file_cfg, dict):
                 trainer_config.update(file_cfg)
@@ -389,9 +358,7 @@ def run_quantum_llm_training(status: Dict[str, Any], config: Dict[str, Any]) -> 
                 "runs": int(quantum_status.get("runs", 0)) + 1,
                 "last_error": None,
                 "dataset_path": (
-                    str(dataset_path.relative_to(REPO_ROOT))
-                    if dataset_path.exists()
-                    else str(dataset_path)
+                    str(dataset_path.relative_to(REPO_ROOT)) if dataset_path.exists() else str(dataset_path)
                 ),
                 "epochs_completed": results.get("epochs_completed"),
                 "final_loss": results.get("final_loss"),
@@ -429,11 +396,7 @@ def run_autonomously(
 ) -> int:
     status = load_status()
 
-    auto_cfg = (
-        config.get("autonomous_mode", {})
-        if isinstance(config.get("autonomous_mode"), dict)
-        else {}
-    )
+    auto_cfg = config.get("autonomous_mode", {}) if isinstance(config.get("autonomous_mode"), dict) else {}
     configured_max_cycles = int(auto_cfg.get("max_cycles", 0))
     configured_interval_sec = int(auto_cfg.get("cycle_interval_minutes", 30)) * 60
 
@@ -531,14 +494,8 @@ def run_autonomously(
                 logger.info("🔬 Running scheduled Quantum LLM training step...")
                 run_quantum_llm_training(status, config)
             else:
-                qstate = (
-                    status.get("quantum_llm", {})
-                    if isinstance(status.get("quantum_llm"), dict)
-                    else {}
-                )
-                qstate["enabled"] = bool(
-                    config.get("quantum_llm", {}).get("enabled", False)
-                )
+                qstate = status.get("quantum_llm", {}) if isinstance(status.get("quantum_llm"), dict) else {}
+                qstate["enabled"] = bool(config.get("quantum_llm", {}).get("enabled", False))
                 qstate["status"] = "idle"
                 qstate["last_error"] = None
                 status["quantum_llm"] = qstate
@@ -548,9 +505,7 @@ def run_autonomously(
             if not infinite_mode and end_cycle is not None and cycle_num >= end_cycle:
                 status["next_cycle_eta"] = None
             else:
-                status["next_cycle_eta"] = (
-                    datetime.now() + timedelta(seconds=cycle_interval_sec)
-                ).isoformat()
+                status["next_cycle_eta"] = (datetime.now() + timedelta(seconds=cycle_interval_sec)).isoformat()
 
             save_status(status)
             save_heartbeat(
@@ -571,9 +526,7 @@ def run_autonomously(
             logger.info("%s", "=" * 70)
             logger.info("Cycles completed: %s", status.get("cycles_completed", 0))
             logger.info("Best accuracy: %.4f", float(status.get("best_accuracy", 0.0)))
-            logger.info(
-                "Datasets discovered: %s", len(status.get("dataset_inventory", {}))
-            )
+            logger.info("Datasets discovered: %s", len(status.get("dataset_inventory", {})))
 
             status["status"] = "completed"
             status["current_cycle"] = status.get("cycles_completed", 0)
@@ -596,9 +549,7 @@ def run_autonomously(
         status["error"] = str(exc)
         status["next_cycle_eta"] = None
         save_status(status)
-        save_heartbeat(
-            "error", current_cycle=status.get("cycles_completed", 0), error=str(exc)
-        )
+        save_heartbeat("error", current_cycle=status.get("cycles_completed", 0), error=str(exc))
         return 1
 
 
@@ -615,12 +566,8 @@ def main() -> int:
         default=None,
         help="Number of training cycles (0 = infinite)",
     )
-    parser.add_argument(
-        "--interval", type=int, default=None, help="Seconds between cycles"
-    )
-    parser.add_argument(
-        "--status", action="store_true", help="Show current status and exit"
-    )
+    parser.add_argument("--interval", type=int, default=None, help="Seconds between cycles")
+    parser.add_argument("--status", action="store_true", help="Show current status and exit")
     parser.add_argument(
         "--config",
         type=str,

@@ -113,9 +113,7 @@ class TestLoad:
 
     def test_valid_json_file_returns_dict(self, tmp_path, monkeypatch):
         monkeypatch.setattr(self.mod, "DATA_OUT", tmp_path)
-        (tmp_path / "test_status.json").write_text(
-            '{"total_jobs": 10, "succeeded": 8}', encoding="utf-8"
-        )
+        (tmp_path / "test_status.json").write_text('{"total_jobs": 10, "succeeded": 8}', encoding="utf-8")
         result = self.mod._load("test_status.json")
         assert result["total_jobs"] == 10
         assert result["succeeded"] == 8
@@ -136,9 +134,7 @@ class TestLoad:
     def test_nested_path_resolved(self, tmp_path, monkeypatch):
         monkeypatch.setattr(self.mod, "DATA_OUT", tmp_path)
         (tmp_path / "sub").mkdir()
-        (tmp_path / "sub" / "status.json").write_text(
-            '{"status": "ok"}', encoding="utf-8"
-        )
+        (tmp_path / "sub" / "status.json").write_text('{"status": "ok"}', encoding="utf-8")
         result = self.mod._load("sub/status.json")
         assert result["status"] == "ok"
 

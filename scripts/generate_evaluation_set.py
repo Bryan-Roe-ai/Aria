@@ -41,7 +41,7 @@ def collect_training_hashes_and_records(
             continue
 
         if path.suffix == ".jsonl":
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if not line:
@@ -52,7 +52,7 @@ def collect_training_hashes_and_records(
                     hashes.append(h)
                     records.append(rec)
         else:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 content = f.read().strip()
             # Try JSON array first, fall back to JSONL (one object per line)
             try:

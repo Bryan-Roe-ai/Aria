@@ -9,9 +9,10 @@ import hashlib
 import json
 import time
 from collections import deque
+from collections.abc import Iterator
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Iterator, List, Optional
+from typing import Any, Callable, List, Optional
 
 
 def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
@@ -37,15 +38,13 @@ def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
         return []
 
     try:
-        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+        with open(file_path, encoding="utf-8", errors="ignore") as f:
             return list(deque(f, maxlen=max_lines))
     except Exception:
         return []
 
 
-def tail_file_smart(
-    file_path: Path, max_lines: int = 20, small_file_threshold: int = 65536
-) -> List[str]:
+def tail_file_smart(file_path: Path, max_lines: int = 20, small_file_threshold: int = 65536) -> List[str]:
     """
     Smart tail operation that adapts to file size.
 
@@ -97,9 +96,7 @@ def tail_file_smart(
         return []
 
 
-def stream_jsonl(
-    file_path: Path, filter_fn: Optional[Callable[[dict], bool]] = None
-) -> Iterator[dict]:
+def stream_jsonl(file_path: Path, filter_fn: Optional[Callable[[dict], bool]] = None) -> Iterator[dict]:
     """
     Memory-efficient streaming of JSONL files.
 
@@ -127,7 +124,7 @@ def stream_jsonl(
     if not file_path.exists():
         return
 
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -141,9 +138,7 @@ def stream_jsonl(
                 continue
 
 
-def batch_process(
-    items: List[Any], batch_size: int, process_fn: Callable[[List[Any]], None]
-) -> None:
+def batch_process(items: List[Any], batch_size: int, process_fn: Callable[[List[Any]], None]) -> None:
     """
     Process items in batches to reduce memory pressure.
 
@@ -194,11 +189,7 @@ def find_json_in_output(
         ...     print(f"Accuracy: {metrics['metrics']['accuracy']}")
     """
     # Split and optionally reverse for end-first search
-    lines = (
-        output.rsplit("\n", max_lines)
-        if search_from_end
-        else output.split("\n", max_lines)
-    )
+    lines = output.rsplit("\n", max_lines) if search_from_end else output.split("\n", max_lines)
     line_iter = reversed(lines) if search_from_end else lines
 
     for line in line_iter:
@@ -291,11 +282,7 @@ class FileCache:
             "entries": len(self._cache),
             "current_size_mb": self.current_size / (1024 * 1024),
             "max_size_mb": self.max_size_bytes / (1024 * 1024),
-            "utilization": (
-                (self.current_size / self.max_size_bytes) * 100
-                if self.max_size_bytes > 0
-                else 0
-            ),
+            "utilization": ((self.current_size / self.max_size_bytes) * 100 if self.max_size_bytes > 0 else 0),
         }
 
 
