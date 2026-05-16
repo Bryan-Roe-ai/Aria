@@ -72,20 +72,31 @@ jobs:
         id: integration_smoke
         run: |
           set -euo pipefail
-          python scripts/integration_smoke.py --json
+          python scripts/integration_smoke.py \
+            --output data_out/integration_smoke/status-standard.json \
+            --json
+          test -f data_out/integration_smoke/status-standard.json
+          python -m json.tool data_out/integration_smoke/status-standard.json >/dev/null
 
       - name: Run strict endpoint smoke (scheduled only)
         id: strict_smoke
         if: github.event_name == 'schedule'
         run: |
           set -euo pipefail
-          python scripts/integration_smoke.py --strict-endpoints --json
+          python scripts/integration_smoke.py \
+            --strict-endpoints \
+            --output data_out/integration_smoke/status-strict.json \
+            --json
+          test -f data_out/integration_smoke/status-strict.json
+          python -m json.tool data_out/integration_smoke/status-strict.json >/dev/null
 
       - name: Validate AI status route contract tests
         id: contract_tests
         run: |
           set -euo pipefail
           python scripts/ci_orchestrator.py --integration-contract-tests
+          test -f data_out/ci_orchestrator/status.json
+          python -m json.tool data_out/ci_orchestrator/status.json >/dev/null
 
       - name: Upload smoke artifacts
         if: always()
@@ -110,6 +121,7 @@ jobs:
           # integration_smoke
           if [ "${{ steps.integration_smoke.outcome }}" = "success" ]; then
             echo "| integration_smoke.py --json | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| integration_smoke output | \`data_out/integration_smoke/status-standard.json\` |" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "| integration_smoke.py --json | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -118,6 +130,7 @@ jobs:
           if [ "${{ github.event_name }}" = "schedule" ]; then
             if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
               echo "| integration_smoke.py --strict-endpoints | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
+              echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |" >> "$GITHUB_STEP_SUMMARY"
             else
               echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
             fi

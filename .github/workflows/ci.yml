@@ -84,7 +84,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v4
+        uses: actions/cache@${{ env.ACTIONS_CACHE_SHA }}
         with:
           path: ~/.cache/pip
           key: pip-cache-${{ runner.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt','pyproject.toml','constraints.txt','requirements-dev.txt') }}
@@ -93,7 +93,7 @@ jobs:
 
       - name: Install lint dependencies
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           python -m pip install --upgrade pip
           if [[ -f requirements-dev.txt ]]; then
             python -m pip install -r requirements-dev.txt
@@ -146,12 +146,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           python -m pip install --upgrade pip setuptools wheel
           if [[ -f constraints.txt && -f requirements.txt ]]; then
-            pip install -r requirements.txt -c constraints.txt
+            python -m pip install -r requirements.txt -c constraints.txt
           elif [[ -f requirements.txt ]]; then
-            pip install -r requirements.txt
+            python -m pip install -r requirements.txt
           fi
           python -m pip install "mypy>=1.10,<2.0" pydantic pydantic-settings
 
@@ -192,7 +192,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Cache pip
-        uses: actions/cache@v4
+        uses: actions/cache@${{ env.ACTIONS_CACHE_SHA }}
         with:
           path: ~/.cache/pip
           key: pip-cache-${{ matrix.os }}-py${{ env.PYTHON_VERSION }}-${{ hashFiles('requirements*.txt','pyproject.toml','constraints.txt','requirements-dev.txt') }}
@@ -201,18 +201,18 @@ jobs:
 
       - name: Install dependencies
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           python -m pip install --upgrade pip setuptools wheel
           if [[ -f constraints.txt && -f requirements.txt ]]; then
-            pip install -r requirements.txt -c constraints.txt
+            python -m pip install -r requirements.txt -c constraints.txt
           elif [[ -f requirements.txt ]]; then
-            pip install -r requirements.txt
+            python -m pip install -r requirements.txt
           fi
           if [[ -f requirements-dev.txt ]]; then
-            pip install -r requirements-dev.txt
+            python -m pip install -r requirements-dev.txt
           fi
           python -m pip install pydantic pydantic-settings tenacity pytest pytest-cov
-          pip check || true
+          python -m pip check || true
 
       - name: Run unit tests
         env:
@@ -222,7 +222,7 @@ jobs:
           AZURE_CLIENT_SECRET: ""
           OPENAI_API_KEY: ""
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           mkdir -p data_out
           python -m pytest tests/ \
             -q --tb=short \

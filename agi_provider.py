@@ -55,7 +55,8 @@ def _validate_canonical_path(path: Path) -> None:
             "ai-projects/chat-cli/src/agi_provider.py"
         )
     if not path.is_file():
-        raise ImportError(f"Canonical AGI provider path is not a file: {path!s}")
+        raise ImportError(
+            f"Canonical AGI provider path is not a file: {path!s}")
 
 
 def _load_canonical_module(path: Path) -> ModuleType:
@@ -102,7 +103,19 @@ def _export(module: ModuleType, name: str) -> Any:
         ) from exc
 
 
+def _validate_expected_exports(module: ModuleType) -> None:
+    missing = [name for name in _EXPECTED_EXPORTS if not hasattr(module, name)]
+    if not missing:
+        return
+    missing_str = ", ".join(repr(name) for name in missing)
+    raise ImportError(
+        "Canonical AGI provider is missing expected exports: "
+        f"{missing_str} from {_CANONICAL_PATH!s}"
+    )
+
+
 _mod = _load_canonical_module(_CANONICAL_PATH)
+_validate_expected_exports(_mod)
 
 AGIProvider = _export(_mod, "AGIProvider")
 AGIContext = _export(_mod, "AGIContext")
@@ -121,4 +134,31 @@ _sanitize_for_logging = _export(_mod, "_sanitize_for_logging")
 _infer_aria_movement_tag = _export(_mod, "_infer_aria_movement_tag")
 _AGENT_REGISTRY = _export(_mod, "_AGENT_REGISTRY")
 
-__all__ = list(_EXPECTED_EXPORTS)
+__all__ = (
+    "AGIProvider",
+    "AGIContext",
+    "ReasoningStep",
+    "create_agi_provider",
+    "MemoryInterface",
+    "EnvironmentInterface",
+    "MAX_INPUT_LENGTH",
+    "MAX_HISTORY_SIZE",
+    "MAX_GOALS",
+    "MAX_REASONING_CHAINS",
+    "_sanitize_input",
+    "_sanitize_for_logging",
+    "_infer_aria_movement_tag",
+    "_AGENT_REGISTRY",
+)
+
+
+def _validate_public_api_consistency() -> None:
+    if tuple(__all__) == _EXPECTED_EXPORTS:
+        return
+    raise ImportError(
+        "AGI shim public API (__all__) drifted from _EXPECTED_EXPORTS; "
+        "update both consistently to preserve compatibility."
+    )
+
+
+_validate_public_api_consistency()

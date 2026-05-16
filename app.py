@@ -30,11 +30,11 @@ import typing
 if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-OpenAIAPIConnectionError = Exception
-OpenAIAPIError = Exception
-OpenAIAuthenticationError = Exception
-OpenAIRateLimitError = Exception
-_OpenAIClass = None
+OpenAIAPIConnectionError: typing.Type[Exception] = Exception
+OpenAIAPIError: typing.Type[Exception] = Exception
+OpenAIAuthenticationError: typing.Type[Exception] = Exception
+OpenAIRateLimitError: typing.Type[Exception] = Exception
+_OpenAIClass: typing.Any | None = None
 
 try:
     import openai

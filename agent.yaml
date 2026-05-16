@@ -18,6 +18,7 @@ metadata:
     tier: "backend"
     environment: "production"
     team: "ai-platform"
+    immutable: "true"
 
 build:
   context: "./"
@@ -29,6 +30,9 @@ build:
 platforms:
   - linux/amd64
   - linux/arm64 # Optional: for multi-arch builds
+
+image: ghcr.io/bryan-roe/aria:1.0.0
+imagePullPolicy: IfNotPresent
 
 resources:
   requests:
@@ -48,12 +52,48 @@ ports:
   #   containerPort: 9090
 
 healthcheck:
-  # Split out readiness/liveness if supported
-  command: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+  # Compatibility check: simple container-level health command
+  command: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/ready || exit 1"]
   interval: "30s"
   timeout: "5s"
   retries: 3
   startPeriod: "10s"
+
+# Prefer explicit Kubernetes-style probes when supported by the orchestrator.
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: 8080
+    scheme: HTTP
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+startupProbe:
+  httpGet:
+    path: /health/startup
+    port: 8080
+    scheme: HTTP
+  periodSeconds: 10
+  failureThreshold: 30
+  timeoutSeconds: 5
+
+lifecycle:
+  preStop:
+    exec:
+      command: ["sh", "-c", "sleep 10"]
 
 env:
   - name: LOG_LEVEL
@@ -71,6 +111,8 @@ security:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
+  fsGroup: 1000
+  privileged: false
   readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   capabilities:
