@@ -44,6 +44,7 @@ from __future__ import annotations
 import asyncio
 import html
 import logging
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -837,26 +838,42 @@ class AGIProvider(BaseChatProvider):
         Returns the agent's reply as a plain string, or ``None`` when the
         specialist is unavailable (falls back to AGI processing).
         """
+        if not query or not str(query).strip():
+            _logger.warning("Agent dispatch to %s: empty query provided", agent_name)
+            return None
+
         config = _AGENT_REGISTRY.get(agent_name, {})
         provider_name = config.get("provider", "agi")
 
         if provider_name in ("agi", ""):
             return None  # let AGI handle it directly
 
+        model_override: Optional[str] = None
+        if provider_name == "quantum":
+            model_override = self._resolve_quantum_model_path(analysis)
+            if not model_override:
+                analysis["quantum_backend_ready"] = False
+                _logger.info(
+                    "Agent dispatch skipped for %s: quantum model path not configured",
+                    agent_name,
+                )
+                return None
+            analysis["quantum_backend_ready"] = True
+            analysis["quantum_model_path"] = model_override
+
         try:
-            specialist, choice = detect_provider(explicit=provider_name)
+            specialist, choice = detect_provider(
+                explicit=provider_name,
+                model_override=model_override,
+                temperature=self.temperature,
+                max_output_tokens=self.max_output_tokens,
+            )
             if choice.name != provider_name:
                 _logger.debug(
                     "Agent dispatch skipped for %s: requested provider=%s resolved to %s",
                     agent_name,
                     provider_name,
                     choice.name,
-                )
-                return None
-            # Validate query is non-empty before constructing message
-            if not query or not str(query).strip():
-                _logger.warning(
-                    "Agent dispatch to %s: empty query provided", agent_name
                 )
                 return None
             messages = [{"role": "user", "content": query}]
@@ -871,6 +888,30 @@ class AGIProvider(BaseChatProvider):
                 _sanitize_for_logging(str(exc)),
             )
             return None  # fall back to AGI
+
+    def _resolve_quantum_model_path(self, analysis: Dict[str, Any]) -> Optional[str]:
+        """Resolve the quantum model path for quantum-specialist dispatch.
+
+        Resolution order:
+        1. ``analysis["quantum_model_path"]``
+        2. ``analysis["model_path"]``
+        3. ``QAI_QUANTUM_MODEL_PATH`` environment variable
+        4. ``QAI_QUANTUM_MODEL`` environment variable
+        5. ``ARIA_QUANTUM_MODEL_PATH`` environment variable
+        """
+        candidates = (
+            analysis.get("quantum_model_path"),
+            analysis.get("model_path"),
+            os.getenv("QAI_QUANTUM_MODEL_PATH"),
+            os.getenv("QAI_QUANTUM_MODEL"),
+            os.getenv("ARIA_QUANTUM_MODEL_PATH"),
+        )
+        for candidate in candidates:
+            if isinstance(candidate, str):
+                stripped = candidate.strip()
+                if stripped:
+                    return stripped
+        return None
 
     def _decompose_task(self, query: str, analysis: Dict[str, Any]) -> List[str]:
         """Break *query* into an ordered list of subtasks for the reasoning trace.
