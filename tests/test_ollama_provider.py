@@ -13,6 +13,8 @@ Covers:
 
 from __future__ import annotations
 from chat_providers import (
+    LMStudioProvider,
+    LocalEchoProvider,
     OllamaProvider,
     _check_ollama_available,
     _ollama_availability_cache,
@@ -429,3 +431,57 @@ def test_detect_provider_ollama_not_picked_when_unreachable(monkeypatch):
         provider, choice = detect_provider(explicit="auto")
 
     assert choice.name == "local"
+
+
+# ---------------------------------------------------------------------------
+# detect_provider — explicit 'local' prefers real local runtimes
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.unit
+def test_detect_provider_explicit_local_prefers_lmstudio(monkeypatch):
+    """Explicit local uses LMStudio when available."""
+    monkeypatch.setenv("LMSTUDIO_MODEL", "phi-3-mini")
+
+    with (
+        patch("chat_providers._check_lm_studio_available", return_value=True),
+        patch("chat_providers._check_ollama_available", return_value=True),
+        patch("chat_providers.OpenAI") as mock_openai_cls,
+    ):
+        mock_openai_cls.return_value = MagicMock()
+        provider, choice = detect_provider(explicit="local")
+
+    assert choice.name == "lmstudio"
+    assert choice.model == "phi-3-mini"
+    assert isinstance(provider, LMStudioProvider)
+
+
+@pytest.mark.unit
+def test_detect_provider_explicit_local_uses_ollama_when_lmstudio_unavailable(monkeypatch):
+    """Explicit local falls back to Ollama when LMStudio is unavailable."""
+    monkeypatch.setenv("OLLAMA_MODEL", "mistral")
+
+    with (
+        patch("chat_providers._check_lm_studio_available", return_value=False),
+        patch("chat_providers._check_ollama_available", return_value=True),
+        patch("chat_providers.OpenAI") as mock_openai_cls,
+    ):
+        mock_openai_cls.return_value = MagicMock()
+        provider, choice = detect_provider(explicit="local")
+
+    assert choice.name == "ollama"
+    assert choice.model == "mistral"
+    assert isinstance(provider, OllamaProvider)
+
+
+@pytest.mark.unit
+def test_detect_provider_explicit_local_falls_back_to_echo_when_no_local_runtime():
+    """Explicit local degrades to LocalEchoProvider if LMStudio/Ollama are unavailable."""
+    with (
+        patch("chat_providers._check_lm_studio_available", return_value=False),
+        patch("chat_providers._check_ollama_available", return_value=False),
+    ):
+        provider, choice = detect_provider(explicit="local")
+
+    assert choice.name == "local"
+    assert isinstance(provider, LocalEchoProvider)

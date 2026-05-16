@@ -1348,16 +1348,11 @@ def detect_provider(
 ) -> tuple[BaseChatProvider, ProviderChoice]:
     """Detect the best provider based on environment variables.
 
-    Priority:
-      1) explicit selection if provided
-      2) LM Studio if LMSTUDIO_BASE_URL is set
-      3) Ollama if OLLAMA_BASE_URL is set
-      4) AGI if selected (advanced reasoning capabilities)
-      5) Quantum if selected
-      6) Azure if all required vars present
-      7) OpenAI if OPENAI_API_KEY is present
-      8) Local fallback
-      9) LoRA if provider is 'lora' and model_override is set
+        Behavior summary:
+            - Explicit mode: uses the requested provider (including AGI/Quantum/LoRA).
+            - Explicit 'local': prefers local runtimes (LM Studio, then Ollama),
+                then falls back to LocalEchoProvider.
+            - Auto mode order: LM Studio -> Ollama -> Azure OpenAI -> OpenAI -> local.
     """
     provider_choice = (explicit or "auto").lower()
     provider_choice = _PROVIDER_ALIASES.get(provider_choice, provider_choice)
@@ -1557,6 +1552,28 @@ def detect_provider(
         return provider, ProviderChoice(name="openai", model=selected_model)
 
     if provider_choice == "local":
+        # "local" should prefer actual local-LLM runtimes first, then degrade
+        # to the deterministic local echo provider when no runtime is available.
+        if _check_lm_studio_available(lm_studio_base_url):
+            selected_model = model_override or lm_studio_model_name
+            provider = LMStudioProvider(
+                base_url=lm_studio_base_url,
+                model=selected_model,
+                temperature=temperature_setting,
+                max_output_tokens=max_output_tokens,
+            )
+            return provider, ProviderChoice(name="lmstudio", model=selected_model)
+
+        if _check_ollama_available(ollama_base_url):
+            selected_model = model_override or ollama_model_name
+            provider = OllamaProvider(
+                base_url=ollama_base_url,
+                model=selected_model,
+                temperature=temperature_setting,
+                max_output_tokens=max_output_tokens,
+            )
+            return provider, ProviderChoice(name="ollama", model=selected_model)
+
         selected_model = model_override or "local-echo"
         provider = LocalEchoProvider()
         return provider, ProviderChoice(name="local", model=selected_model)
