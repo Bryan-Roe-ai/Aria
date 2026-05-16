@@ -1,4 +1,4 @@
-"""Core autonomous runtime primitives for the lightweight Aria engine."""
+"""Core runtime primitives for Aria's autonomous agent system."""
 
 from core.agent import BaseAgent
 from core.registry import AgentRegistry

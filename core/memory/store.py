@@ -1,137 +1,168 @@
 """
 Aria Memory Store
-Enables shared context across agents for autonomous planning and execution.
+
+Provides a small, thread-safe in-memory event store used by agents for shared
+context during planning and execution.
+
+Improvements over the original simple list-based store:
+- Thread-safety (RLock) for concurrent access.
+- Optional bounded storage via collections.deque(maxlen=...).
+- Event IDs (UUID) for direct lookup.
+- ISO8601 UTC timestamps plus epoch seconds.
+- Flexible query API (filter by type, time range, limit, reverse).
+- Defensive copying of user-provided data to avoid accidental mutation.
+- Utility methods: get, clear, to_list, len, iteration.
 """
 
-from __future__ import annotations
-
-from typing import Any, Dict, List, Optional
-import time
-import sqlite3
-import json
+from collections import deque
+from copy import deepcopy
+from datetime import datetime, timezone
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 import threading
-import os
+import uuid
+
+
+Event = Dict[str, Any]
+
+
+def _now_utc() -> datetime:
+    """Return current time in UTC (timezone-aware)."""
+    return datetime.now(timezone.utc)
 
 
 class MemoryStore:
-    def __init__(self, db_path: Optional[str] = None, autoload: bool = True):
-        """In-memory event store with optional SQLite persistence.
+    """
+    Thread-safe in-memory event store.
 
-        Args:
-            db_path: optional path to SQLite DB file. If provided, events are
-                persisted and loaded from disk.
-            autoload: if True and db_path provided, load existing events into memory on init.
-        """
-        self.events: List[Dict[str, Any]] = []
+    Parameters
+    - max_events: Optional maximum number of events to retain. If provided,
+      the store will drop oldest events once the capacity is reached.
+    """
+
+    def __init__(self, max_events: Optional[int] = None) -> None:
         self._lock = threading.RLock()
-        self.db_path = db_path
-        self._conn: Optional[sqlite3.Connection] = None
-        if db_path:
-            parent = os.path.dirname(db_path)
-            if parent:
-                os.makedirs(parent, exist_ok=True)
-            self._ensure_db()
-            if autoload:
-                self._load_from_db()
+        # deque provides efficient appends and optional bounded length
+        self._events: deque[Event] = deque(maxlen=max_events) if max_events else deque()
 
-    def _ensure_db(self) -> None:
-        if self._conn:
-            return
-        self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        # use WAL for better concurrency
-        try:
-            self._conn.execute("PRAGMA journal_mode=WAL;")
-        except Exception:
-            pass
-        self._conn.execute(
-            "CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, timestamp REAL, type TEXT, data TEXT)"
-        )
-        self._conn.commit()
+    def write(self, event_type: str, data: Mapping[str, Any], timestamp: Optional[datetime] = None) -> str:
+        """
+        Append a new event to the store.
 
-    def _load_from_db(self) -> None:
-        if not self._conn:
-            return
-        cur = self._conn.execute("SELECT timestamp, type, data FROM events ORDER BY id ASC")
-        for ts, etype, data_text in cur.fetchall():
-            try:
-                data = json.loads(data_text) if data_text else {}
-            except Exception:
-                data = {"_raw": data_text}
-            self.events.append({"timestamp": ts, "type": etype, "data": data})
-
-    def write(self, event_type: str, data: Dict[str, Any]) -> None:
+        Returns the event id (hex UUID string).
+        The stored event has keys: id, timestamp (ISO8601 str UTC), epoch (float seconds), type, data.
+        The provided `data` is deep-copied to avoid external mutation.
+        """
+        ts = (timestamp.astimezone(timezone.utc) if timestamp else _now_utc())
+        event: Event = {
+            "id": uuid.uuid4().hex,
+            "timestamp": ts.isoformat(),
+            "epoch": ts.timestamp(),
+            "type": str(event_type),
+            "data": deepcopy(dict(data)),
+        }
         with self._lock:
-            event = {"timestamp": time.time(), "type": event_type, "data": dict(data)}
-            self.events.append(event)
-            if self._conn:
-                try:
-                    serialized = json.dumps(event["data"], ensure_ascii=False)
-                except Exception:
-                    serialized = json.dumps({"_repr": repr(event["data"])})
-                self._conn.execute(
-                    "INSERT INTO events (timestamp, type, data) VALUES (?, ?, ?)",
-                    (event["timestamp"], event["type"], serialized),
-                )
-                self._conn.commit()
+            self._events.append(event)
+        return event["id"]
 
-    def query(self, event_type: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+    def query(
+        self,
+        event_type: Optional[str] = None,
+        since: Optional[datetime] = None,
+        until: Optional[datetime] = None,
+        limit: Optional[int] = None,
+        reverse: bool = False,
+    ) -> List[Event]:
+        """
+        Query events with optional filters.
+
+        - event_type: filter events with matching type (exact match).
+        - since / until: timezone-aware datetimes used to filter by epoch (inclusive).
+        - limit: maximum number of events to return (applied after filters).
+        - reverse: if True, iterate from newest to oldest (useful with limit).
+
+        Returned events are shallow copies of the stored events (data dict remains a deepcopy from write).
+        """
+        # Normalize timestamps to epoch floats for comparisons
+        since_epoch = since.astimezone(timezone.utc).timestamp() if since else None
+        until_epoch = until.astimezone(timezone.utc).timestamp() if until else None
+
         with self._lock:
-            if self._conn:
-                if event_type is None:
-                    sql = "SELECT timestamp, type, data FROM events ORDER BY id ASC"
-                    params = ()
-                else:
-                    sql = "SELECT timestamp, type, data FROM events WHERE type = ? ORDER BY id ASC"
-                    params = (event_type,)
-                cur = self._conn.execute(sql, params)
-                rows = cur.fetchall()
-                results = []
-                for ts, etype, data_text in rows:
-                    try:
-                        data = json.loads(data_text) if data_text else {}
-                    except Exception:
-                        data = {"_raw": data_text}
-                    results.append({"timestamp": ts, "type": etype, "data": data})
-                if limit is not None:
-                    return results[-limit:]
-                return results
-            # fallback to in-memory
+            events_snapshot = list(self._events)
+
+        iterable: Iterable[Event] = reversed(events_snapshot) if reverse else events_snapshot
+
+        results: List[Event] = []
+        for e in iterable:
+            if event_type is not None and e.get("type") != event_type:
+                continue
+            epoch = float(e.get("epoch", 0))
+            if since_epoch is not None and epoch < since_epoch:
+                continue
+            if until_epoch is not None and epoch > until_epoch:
+                continue
+            # Provide a shallow copy to avoid callers mutating internal structures
+            results.append(e.copy())
+            if limit is not None and len(results) >= limit:
+                break
+
+        return results
+
+    def last(self, n: int = 10) -> List[Event]:
+        """
+        Return the last `n` events (newest last). If n <= 0, returns an empty list.
+        """
+        if n <= 0:
+            return []
+        with self._lock:
+            slice_events = list(self._events)[-n:]
+            return [e.copy() for e in slice_events]
+
+    def get(self, event_id: str) -> Optional[Event]:
+        """
+        Return an event by its id or None if not found.
+        """
+        with self._lock:
+            for e in self._events:
+                if e.get("id") == event_id:
+                    return e.copy()
+        return None
+
+    def clear(self, event_type: Optional[str] = None) -> int:
+        """
+        Clear events from the store.
+
+        - If event_type is None: clears all events.
+        - If event_type is provided: removes only events of that type.
+
+        Returns the number of removed events.
+        """
+        with self._lock:
+            original_len = len(self._events)
             if event_type is None:
-                results = list(self.events)
-            else:
-                results = [e for e in self.events if e["type"] == event_type]
-            if limit is not None:
-                return results[-limit:]
-            return list(results)
+                self._events.clear()
+                return original_len
+            # Rebuild deque without matching events while preserving maxlen
+            maxlen = self._events.maxlen
+            new_events = [e for e in self._events if e.get("type") != event_type]
+            self._events = deque(new_events, maxlen=maxlen)
+            return original_len - len(self._events)
 
-    def last(self, n: int = 10) -> List[Dict[str, Any]]:
-        return self.query(limit=n)
-
-    def last_of_type(self, event_type: str) -> Optional[Dict[str, Any]]:
-        matches = self.query(event_type=event_type, limit=1)
-        return matches[-1] if matches else None
-
-    def count_by_type(self) -> Dict[str, int]:
+    def to_list(self) -> List[Event]:
+        """
+        Return a snapshot list of all events (shallow copies).
+        """
         with self._lock:
-            if self._conn:
-                cur = self._conn.execute("SELECT type, COUNT(1) FROM events GROUP BY type")
-                return {row[0]: int(row[1]) for row in cur.fetchall()}
-            counts: Dict[str, int] = {}
-            for event in self.events:
-                etype = event.get("type", "event")
-                counts[etype] = counts.get(etype, 0) + 1
-            return counts
+            return [e.copy() for e in self._events]
 
-    def clear(self) -> None:
+    def __len__(self) -> int:
         with self._lock:
-            self.events.clear()
-            if self._conn:
-                self._conn.execute("DELETE FROM events")
-                self._conn.commit()
+            return len(self._events)
 
-    def close(self) -> None:
-        if self._conn:
-            try:
-                self._conn.close()
-            finally:
-                self._conn = None
+    def __iter__(self):
+        """
+        Iterate over events from oldest to newest. Yields shallow copies.
+        """
+        with self._lock:
+            snapshot = list(self._events)
+        for e in snapshot:
+            yield e.copy()

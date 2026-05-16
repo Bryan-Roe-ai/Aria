@@ -1,4 +1,4 @@
-"""Shared base contract for the lightweight Aria core agent runtime."""
+"""Base agent contract for the Aria core runtime."""
 
 from __future__ import annotations
 
@@ -9,17 +9,14 @@ from core.task import Task
 
 
 class BaseAgent(ABC):
-    """Minimal runtime contract shared by core agents."""
+    """Minimal interface shared by all runtime agents."""
 
     name = "base_agent"
 
     @abstractmethod
     def can_handle(self, task: Task) -> bool:
-        """Return True when this agent can execute the given task."""
+        """Return whether this agent can execute the task."""
 
     @abstractmethod
     def execute(self, task: Task) -> Dict[str, Any]:
-        """Execute the task and return a structured result."""
-
-    def describe(self) -> Dict[str, Any]:
-        return {"name": self.name, "class": self.__class__.__name__}
+        """Execute a task and return a structured result."""

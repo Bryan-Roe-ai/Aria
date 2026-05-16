@@ -162,6 +162,15 @@ class TestGetEndpoints:
         data = json.loads(resp.get_body())
         assert "provider" in data or "status" in data
 
+    def test_health(self, app_module):
+        """GET /api/health returns a compact status payload."""
+        req = _mock_request("GET")
+        resp = app_module.health(req)
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+        assert "settings" in data
+
     def test_ai_status_uses_shared_status_loader_without_leaking_metadata(
         self, app_module, monkeypatch
     ):
@@ -214,6 +223,7 @@ class TestGetEndpoints:
         orch = data["orchestrator_health"]["orchestrators"]
 
         assert orch["autonomous_training"]["cycles_completed"] == 4
+        assert orch["autonomous_training"]["heartbeat_running"] is False
         assert orch["autotrain"]["status"] == "ok"
         assert not any(
             key.startswith("_status_file_") for key in orch["autonomous_training"]
