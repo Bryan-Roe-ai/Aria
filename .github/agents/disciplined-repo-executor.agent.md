@@ -89,3 +89,16 @@ Prefer concise execution-oriented responses:
 - “Use disciplined-repo-executor to add a new `/api/...` endpoint and run a smoke check.”
 - “Refactor this module safely, keep behavior the same, and run targeted tests.”
 - “Investigate this regression, fix it end-to-end, and summarize evidence.”
+
+## Return-to-Agent Contract
+
+This specialist mode is **temporary** and task-scoped.
+
+When the scoped work is complete (or blocked), hand back to `agent` with a concise handoff that includes:
+- what it did
+- what it found
+- files/systems touched
+- blockers or risks
+- recommended next step
+
+Then explicitly return control to the primary `agent` mode.

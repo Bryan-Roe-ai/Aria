@@ -5,13 +5,26 @@ import logging
 import os
 import random
 import subprocess
+import sys
 import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Generator, Iterable, List, Optional
 
-from shared.local_summary import is_summary_request, summarize_text
+try:
+    from shared.local_summary import is_summary_request, summarize_text
+except ModuleNotFoundError:
+    # Support direct CLI execution from ai-projects/chat-cli/src where repo root
+    # is not automatically on sys.path (e.g., `python chat_cli.py --once ...`).
+    _THIS_FILE = Path(__file__).resolve()
+    for _parent in _THIS_FILE.parents:
+        if (_parent / "shared").is_dir():
+            _parent_str = str(_parent)
+            if _parent_str not in sys.path:
+                sys.path.insert(0, _parent_str)
+            break
+    from shared.local_summary import is_summary_request, summarize_text
 
 # Helpers for Azure quota/rate-limit detection
 try:  # shared package may not be importable in all contexts (tests add paths)

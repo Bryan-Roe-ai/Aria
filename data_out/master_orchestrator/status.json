@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-05-16T13:18:04Z",
-  "run_id": "20260516T131804Z",
+  "generated_at": "2026-05-16T13:22:11Z",
+  "run_id": "20260516T132211Z",
   "config_path": "config/master_orchestrator.yaml",
   "orchestrators": [
     {
@@ -112,8 +112,8 @@
   ],
   "resource_usage": {
     "available": true,
-    "cpu_percent": 7.2,
-    "memory_percent": 23.4,
+    "cpu_percent": 3.5,
+    "memory_percent": 23.6,
     "disk_percent": 16.4
   }
 }

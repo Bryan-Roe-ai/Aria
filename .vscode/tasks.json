@@ -4,10 +4,10 @@
 		{
 			"label": "func: host start",
 			"type": "shell",
-			"command": "func",
+			"command": "bash",
 			"args": [
-				"host",
-				"start"
+				"-lc",
+				"if command -v func >/dev/null 2>&1; then func host start; else echo \"[func: host start] Azure Functions Core Tools (func) not found on PATH; skipping local host startup.\"; echo \"Job host started (skipped: func missing)\"; fi"
 			],
 			"isBackground": true,
 			"options": {
@@ -25,7 +25,7 @@
 				"background": {
 					"activeOnStart": true,
 					"beginsPattern": ".*",
-					"endsPattern": "Worker process started and initialized|Host lock lease acquired|Job host started|Http Functions:"
+					"endsPattern": "Worker process started and initialized|Host lock lease acquired|Job host started|Http Functions:|Job host started \(skipped: func missing\)"
 				}
 			}
 		},
@@ -43,6 +43,16 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "integration:contract-gate-direct",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"bash ./scripts/integration_contract_gate.sh"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "integration:contract-gate-strict",
 			"type": "shell",
 			"command": "bash",
@@ -52,6 +62,16 @@
 			],
 			"dependsOn": [
 				"func: host start"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "integration:contract-gate-strict-direct",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"bash ./scripts/integration_contract_gate.sh --strict-endpoints"
 			],
 			"problemMatcher": []
 		},

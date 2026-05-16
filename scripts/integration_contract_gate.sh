@@ -25,6 +25,8 @@ endpoint="${INTEGRATION_AI_STATUS_ENDPOINT:-http://localhost:7071/api/ai/status}
 retry_count="${RETRY_COUNT:-30}"
 retry_interval="${RETRY_INTERVAL:-1}"
 start_cmd="${START_FUNC_CMD:-}" # optional command to start a local function host
+tmp_dir="${TMPDIR:-/tmp}"
+start_log="${tmp_dir%/}/integration_contract_gate.start.log"
 
 log() {
   echo "[integration_contract_gate] $*"
@@ -55,9 +57,9 @@ fi
 if [[ -n "${start_cmd}" ]]; then
   log "START_FUNC_CMD is provided; attempting to start process in background."
   # shellcheck disable=SC2086
-  ${start_cmd} &>/tmp/integration_contract_gate.start.log &
+  ${start_cmd} &>"${start_log}" &
   start_pid=$!
-  log "Started background process (PID=${start_pid}). Logs: /tmp/integration_contract_gate.start.log"
+  log "Started background process (PID=${start_pid}). Logs: ${start_log}"
 fi
 
 log "Strict mode: checking AI status endpoint: ${endpoint}"
@@ -70,17 +72,17 @@ while (( i < retry_count )); do
     # CI job should manage lifecycle. Exit success so workflow can continue.
     exit 0
   fi
-  ((i++))
+  ((i += 1))
   log "Attempt ${i}/${retry_count} — endpoint not ready yet; sleeping ${retry_interval}s"
   sleep "${retry_interval}"
 done
 
 log "AI status endpoint not reachable after ${retry_count} attempts: ${endpoint}" >&2
 log "Last lines of start log (if any):"
-if [[ -f /tmp/integration_contract_gate.start.log ]]; then
-  tail -n +1 /tmp/integration_contract_gate.start.log | sed -n '1,200p' || true
+if [[ -f "${start_log}" ]]; then
+  tail -n +1 "${start_log}" | sed -n '1,200p' || true
 else
-  log "(no start log present)"
+  log "(no start log present at ${start_log})"
 fi
 
 # Provide helpful diagnostics to the Actions log
