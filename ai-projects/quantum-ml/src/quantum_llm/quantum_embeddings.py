@@ -44,16 +44,22 @@ def _classical_amplitude_transform(
         return embedding.copy()
     state = embedding / norm
 
-    # Construct a rotation matrix: apply RY-like rotations using cos/sin
-    angles = np.resize(params, dim) * np.pi
+    # Construct pairwise real rotations (Givens-like 2x2 rotations) that preserve norm.
+    # Resize params to supply one angle per rotation pair.
+    angles = np.resize(params, (dim + 1) // 2) * np.pi
 
-    # Diagonal RY-style rotation: cos(θ) on amplitude, sin(θ) as phase shift
-    # (approximate classical analogue of single-qubit RY rotations)
-    rot = np.diag(np.cos(angles))  # real rotation via cosine
+    transformed = state.copy().astype(float)
+    # Apply 2x2 rotations across adjacent element pairs
+    for i in range(0, dim - 1, 2):
+        theta = angles[i // 2]
+        c = np.cos(theta)
+        s = np.sin(theta)
+        a = transformed[i]
+        b = transformed[i + 1]
+        transformed[i] = c * a - s * b
+        transformed[i + 1] = s * a + c * b
 
-    # Apply and project back
-    transformed = rot @ state
-    # Re-scale to original magnitude
+    # If dim is odd, the last element is left unchanged; rotations preserve norm
     return transformed * norm
 
 
