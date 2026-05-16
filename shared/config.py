@@ -19,6 +19,29 @@ from functools import lru_cache
 from typing import Annotated, List, Optional
 
 _LOG = logging.getLogger(__name__)
+_DEFAULT_PROVIDER_PRIORITY = ["azure", "openai", "lmstudio", "local"]
+
+
+def _normalize_provider_priority(value: object) -> List[str]:
+    if isinstance(value, str):
+        providers = [item.strip() for item in value.split(",") if item.strip()]
+        return providers or list(_DEFAULT_PROVIDER_PRIORITY)
+    if isinstance(value, (list, tuple)):
+        providers = [str(item).strip() for item in value if str(item).strip()]
+        return providers or list(_DEFAULT_PROVIDER_PRIORITY)
+    return list(_DEFAULT_PROVIDER_PRIORITY)
+
+
+def _normalize_provider_priority(value: object) -> List[str]:
+    """Return a normalized provider priority list from strings or iterables.
+
+    Non-string, non-iterable values fall back to the default provider order.
+    """
+    if isinstance(value, str):
+        return [item.strip() for item in value.split(",") if item.strip()]
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return ["azure", "openai", "lmstudio", "local"]
 
 # ---------------------------------------------------------------------------
 # Try to import pydantic v2 BaseSettings; fall back to a plain dataclass-style
@@ -26,7 +49,7 @@ _LOG = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 try:
     from pydantic import Field, field_validator
-    from pydantic_settings import BaseSettings
+    from pydantic_settings import BaseSettings, NoDecode
     try:
         from pydantic_settings import NoDecode as _NoDecode
     except ImportError:
@@ -41,6 +64,7 @@ except ImportError:  # pragma: no cover
     try:
         # pydantic v1 compatibility
         from pydantic import BaseSettings, Field, validator as field_validator  # type: ignore[assignment,no-redef]
+        NoDecode = None  # type: ignore[assignment]
         _ConfigDict = None  # type: ignore[assignment]
         _NoDecode = None  # type: ignore[assignment]
 
@@ -50,6 +74,7 @@ except ImportError:  # pragma: no cover
         BaseSettings = object  # type: ignore[assignment,misc]
         Field = None  # type: ignore[assignment]
         field_validator = None  # type: ignore[assignment]
+        NoDecode = None  # type: ignore[assignment]
         _ConfigDict = None  # type: ignore[assignment]
         _NoDecode = None  # type: ignore[assignment]
 
@@ -67,6 +92,10 @@ def _provider_priority_field():
         default_factory=lambda: ["azure", "openai", "lmstudio", "local"],
         alias="QAI_PROVIDER_PRIORITY",
     )
+
+ProviderPriority = (
+    Annotated[List[str], NoDecode] if _PYDANTIC_AVAILABLE and NoDecode is not None else List[str]
+)
 
 
 # ---------------------------------------------------------------------------
@@ -109,10 +138,10 @@ if _PYDANTIC_AVAILABLE:
         # ------------------------------------------------------------------
         # Provider selection
         # ------------------------------------------------------------------
-        if _NoDecode is not None:
-            provider_priority: Annotated[List[str], _NoDecode] = _provider_priority_field()  # type: ignore[valid-type]
-        else:
-            provider_priority: List[str] = _provider_priority_field()
+        provider_priority: ProviderPriority = Field(
+            default=["azure", "openai", "lmstudio", "local"],
+            alias="QAI_PROVIDER_PRIORITY",
+        )
 
         # ------------------------------------------------------------------
         # Database
@@ -237,8 +266,8 @@ if _PYDANTIC_AVAILABLE:
             return "local"
 
         def provider_chain(self) -> List[str]:
-            """Return provider order after normalizing configured priority."""
-            return _normalize_provider_priority(self.provider_priority)
+            """Return configured provider priority order."""
+            return list(self.provider_priority)
 
         def summary(self) -> dict:
             """Return a non-secret summary suitable for health endpoints."""
@@ -328,13 +357,13 @@ else:
                 "openai": self.openai_ready,
                 "lmstudio": self.lmstudio_ready,
             }
-            for name in self.provider_chain():
+            for name in self.provider_priority:
                 if checks.get(name, False):
                     return name
             return "local"
 
         def provider_chain(self) -> List[str]:
-            return _normalize_provider_priority(self.provider_priority)
+            return list(self.provider_priority)
 
         def summary(self) -> dict:
             return {
@@ -427,7 +456,16 @@ def reset_settings() -> None:
     get_settings.cache_clear()
 
 
-AppSettings = Settings
+class AppSettings(Settings):
+    """Backward-compatible alias for older settings API callers."""
+
+    def provider_chain(self) -> List[str]:
+        return list(self.provider_priority)
+
+    def summary(self) -> dict:
+        data = super().summary()
+        data["provider_chain"] = self.provider_chain()
+        return data
 
 
 __all__ = ["Settings", "AppSettings", "get_settings", "reset_settings"]
