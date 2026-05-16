@@ -1,177 +1,293 @@
 """
-Database connection caching and embedding storage utilities.
+Semantic chat memory: embedding generation (with hash fallback), serialization,
+cosine similarity, and DB-backed storage/retrieval.
 
-This module maintains a per-thread cached ODBC connection to avoid repeatedly
-creating expensive DB connections.
-
-Key changes:
-- Lazy-import pyodbc inside _create_connection so importing this module doesn't
-  immediately fail in environments missing the unixODBC shared libraries.
-- Use typing.Any for connection types to avoid import-time references.
-- Provide a clear, actionable RuntimeError when pyodbc (or system ODBC libs)
-  are missing.
-- Preserve previous caching, health-check, and commit/rollback semantics.
+- Lazy-imports pyodbc so the module loads even on systems without unixODBC.
+- If no API keys or DB connection string are present, functions degrade
+  gracefully (hash fallback for embeddings, no-op False/[] for DB ops).
 """
 
 from __future__ import annotations
 
+import hashlib
+import logging
+import math
 import os
+import struct
 import threading
 import time
-import logging
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Connection cache keyed by thread identity
-# Keep legacy shape: mapping tid -> connection object so external tests that
-# inspect _conn_cache still see connection objects.
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+_LOCAL_DIM = 256  # dimension of the local hash-based embedding fallback
+
+# ---------------------------------------------------------------------------
+# Connection cache (unchanged behavior)
+# ---------------------------------------------------------------------------
+
 _conn_cache: Dict[int, Any] = {}
 _conn_timestamps: Dict[int, float] = {}
 _conn_lock = threading.Lock()
 
-# Tunables
 _CONN_HEALTH_CHECK_SQL = "SELECT 1"
-_CONN_HEALTH_CHECK_TIMEOUT = 2.0  # seconds
-_MAX_CONN_AGE_SECONDS = int(os.getenv("QAI_DB_CONN_MAX_AGE", str(300)))
+_CONN_HEALTH_CHECK_TIMEOUT = 2.0
+_MAX_CONN_AGE_SECONDS = int(os.getenv("QAI_DB_CONN_MAX_AGE", "300"))
+
+
+def _conn_str() -> Optional[str]:
+    return (
+        os.getenv("QAI_DB_CONN")
+        or os.getenv("DB_CONN_STRING")
+        or os.getenv("CONN_STRING")
+    )
 
 
 def _create_connection() -> Any:
-    """
-    Create a new pyodbc connection using the connection string from env.
-
-    Lazy-imports pyodbc so importing this module won't fail on systems missing
-    the unixODBC shared libraries. Raises a RuntimeError with an actionable
-    message if pyodbc cannot be imported.
-    """
     try:
-        import pyodbc  # local import so module import doesn't fail when libodbc is missing
-    except Exception as e:  # ImportError or OSError from underlying lib load
+        import pyodbc  # local import
+    except Exception as e:
         raise RuntimeError(
-            "pyodbc import failed. Ensure the unixODBC system libraries are installed "
-            "(e.g. on Debian/Ubuntu: `apt-get update && apt-get install -y unixodbc unixodbc-dev libodbc1`). "
-            "Also ensure the Python package `pyodbc` is installed in your environment."
+            "pyodbc import failed. Install unixODBC system libs and the `pyodbc` package."
         ) from e
 
-    # Prefer application-specific env var but fall back to commonly-used names
-    conn_str = os.getenv("QAI_DB_CONN") or os.getenv("DB_CONN_STRING") or os.getenv("CONN_STRING")
-
+    conn_str = _conn_str()
     if not conn_str:
         raise RuntimeError("Database connection string not set in environment variables")
 
-    # Use a conservative timeout; autocommit disabled to allow explicit commits
-    # Some pyodbc drivers don't accept a 'timeout' keyword depending on version; keep type-ignore
-    conn = pyodbc.connect(conn_str, autocommit=False, timeout=4)  # type: ignore[arg-type]
-    return conn
+    return pyodbc.connect(conn_str, autocommit=False, timeout=4)  # type: ignore[arg-type]
 
 
 def _is_connection_usable(conn: Any) -> bool:
-    """
-    Perform a lightweight health check on the connection.
-
-    Returns True if the connection appears usable, False otherwise.
-    """
     try:
         start = time.time()
         cur = conn.cursor()
         cur.execute(_CONN_HEALTH_CHECK_SQL)
-        # fetching results often unnecessary for SELECT 1, but fetchone to be safe
         try:
-            _ = cur.fetchone()
+            cur.fetchone()
         except Exception:
-            # Some drivers don't require fetchone; ignore fetch errors here
             pass
         cur.close()
-        elapsed = time.time() - start
-        if elapsed > _CONN_HEALTH_CHECK_TIMEOUT:
-            logger.debug("Connection health check too slow (%.3fs)", elapsed)
-            return False
-        return True
+        return (time.time() - start) <= _CONN_HEALTH_CHECK_TIMEOUT
     except Exception:
         logger.debug("Connection health check failed", exc_info=True)
         return False
 
 
 def _get_conn() -> Any:
-    """
-    Get a cached connection for the current thread or create a new one.
-
-    This function is thread-safe and ensures the cached connection is still
-    healthy and not older than _MAX_CONN_AGE_SECONDS.
-    """
     tid = threading.get_ident()
     now = time.time()
-
     with _conn_lock:
         conn = _conn_cache.get(tid)
         if conn is not None:
-            ts = _conn_timestamps.get(tid, 0)
-            age = now - ts
+            age = now - _conn_timestamps.get(tid, 0)
             if age < _MAX_CONN_AGE_SECONDS and _is_connection_usable(conn):
                 return conn
-            # Dead or stale connection: close and continue to create a new one
             try:
                 conn.close()
             except Exception:
                 logger.debug("Failed closing stale connection", exc_info=True)
-
-        # Create new connection and cache it
         conn = _create_connection()
         _conn_cache[tid] = conn
         _conn_timestamps[tid] = now
         return conn
 
 
-def store_embedding(message_id: str, embedding: Sequence[float], model: str) -> bool:
-    """
-    Store an embedding for a message_id into the database.
+# ---------------------------------------------------------------------------
+# Hash-based embedding fallback
+# ---------------------------------------------------------------------------
 
-    - Uses _get_conn() to obtain a cached connection (so tests that patch pyodbc.connect
-      will see one call when creating the connection).
-    - Does NOT close the connection (it remains cached).
-    - Uses parameterized SQL to avoid injection.
-    - Commits the transaction after insert.
-
-    Returns True on success, False on failure.
+def _hash_embedding(text: str, dim: int = _LOCAL_DIM) -> List[float]:
     """
+    Deterministic, unit-normalized hash embedding used when no embedding API
+    is configured. Returns a zero vector for empty/whitespace input.
+    """
+    if not text or not text.strip():
+        return [0.0] * dim
+
+    vec = [0.0] * dim
+    # Token-level hashing with signed contribution per byte
+    for token in text.split():
+        digest = hashlib.sha256(token.encode("utf-8")).digest()
+        for i, b in enumerate(digest):
+            idx = (i * 131 + b) % dim
+            # Map byte to [-1, 1)
+            vec[idx] += (b - 127.5) / 127.5
+
+    norm = math.sqrt(sum(v * v for v in vec))
+    if norm == 0.0:
+        return [0.0] * dim
+    return [v / norm for v in vec]
+
+
+def generate_embedding(text: str) -> List[float]:
+    """
+    Generate an embedding using Azure OpenAI / OpenAI if configured; otherwise
+    fall back to the local hash embedding. Never raises — returns a list.
+    """
+    azure_key = os.getenv("AZURE_OPENAI_API_KEY")
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_deploy = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+    openai_key = os.getenv("OPENAI_API_KEY")
+
+    try:
+        if azure_key and azure_endpoint and azure_deploy:
+            from openai import AzureOpenAI  # type: ignore
+            client = AzureOpenAI(
+                api_key=azure_key,
+                azure_endpoint=azure_endpoint,
+                api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview"),
+            )
+            resp = client.embeddings.create(model=azure_deploy, input=text)
+            return [float(x) for x in resp.data[0].embedding]
+
+        if openai_key:
+            from openai import OpenAI  # type: ignore
+            client = OpenAI(api_key=openai_key)
+            resp = client.embeddings.create(
+                model=os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+                input=text,
+            )
+            return [float(x) for x in resp.data[0].embedding]
+    except Exception:
+        logger.exception("Embedding API call failed; falling back to hash embedding")
+
+    return _hash_embedding(text)
+
+
+# ---------------------------------------------------------------------------
+# Binary (de)serialization for float32 vectors
+# ---------------------------------------------------------------------------
+
+def _serialize_f32(vec: Sequence[float]) -> bytes:
+    """Pack a sequence of floats as little-endian float32 bytes."""
+    return struct.pack(f"<{len(vec)}f", *(float(v) for v in vec))
+
+
+def _deserialize_f32(blob: bytes, dim: int) -> List[float]:
+    """
+    Unpack little-endian float32 bytes back into a list of length `dim`.
+    Tolerates empty or truncated blobs by zero-padding.
+    """
+    if not blob:
+        return [0.0] * dim
+    count = min(dim, len(blob) // 4)
+    if count <= 0:
+        return [0.0] * dim
+    values = list(struct.unpack(f"<{count}f", blob[: count * 4]))
+    if count < dim:
+        values.extend([0.0] * (dim - count))
+    return values
+
+
+# ---------------------------------------------------------------------------
+# Cosine similarity
+# ---------------------------------------------------------------------------
+
+def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
+    """Return cosine similarity in [-1, 1]; 0.0 if inputs are empty or mismatched."""
+    if not a or not b or len(a) != len(b):
+        return 0.0
+    dot = 0.0
+    na = 0.0
+    nb = 0.0
+    for x, y in zip(a, b):
+        dot += x * y
+        na += x * x
+        nb += y * y
+    if na == 0.0 or nb == 0.0:
+        return 0.0
+    return dot / math.sqrt(na * nb)
+
+
+# ---------------------------------------------------------------------------
+# DB-backed storage and retrieval (graceful no-op when no DB)
+# ---------------------------------------------------------------------------
+
+def store_embedding(
+    message_id: Optional[str],
+    embedding: Sequence[float],
+    model: str,
+) -> bool:
+    """
+    Store an embedding row. Returns False (no raise) if inputs are invalid or
+    if no DB connection string is configured.
+    """
+    if not message_id or not embedding:
+        return False
+    if not _conn_str():
+        return False
+
     conn: Optional[Any] = None
     cur = None
     try:
         conn = _get_conn()
         cur = conn.cursor()
-
-        # Example schema: embeddings(message_id VARCHAR PRIMARY KEY, model VARCHAR, vector VARBINARY or similar)
-        insert_sql = """
-            INSERT INTO embeddings (message_id, model, embedding_vector)
-            VALUES (?, ?, ?)
-        """
-
-        # Serialize embedding to a bytes representation if required by DB. If DB expects
-        # a JSON/text column, adapt accordingly. Here we'll try a compact binary
-        # representation and fall back to comma-separated text.
-        try:
-            # Clamp to 0-255 per element and convert to bytes. This is lossy; callers should
-            # adapt to the DB schema they use (e.g., store JSON/text or use proper binary encoding).
-            embedding_value = bytes(bytearray(int(max(0, min(1, float(x))) * 255) & 0xFF for x in embedding))
-        except Exception:
-            embedding_value = ",".join(str(x) for x in embedding)
-
-        cur.execute(insert_sql, (message_id, model, embedding_value))
-
-        # Commit after successful insert
+        cur.execute(
+            """
+            INSERT INTO embeddings (message_id, model, embedding_vector, dim)
+            VALUES (?, ?, ?, ?)
+            """,
+            (message_id, model, _serialize_f32(embedding), len(embedding)),
+        )
         conn.commit()
         return True
     except Exception:
-        # Do not close the cached connection here; let _get_conn handle reconnection on next use.
         logger.exception("Failed to store embedding for message_id=%s", message_id)
         try:
             if conn is not None:
                 conn.rollback()
         except Exception:
-            logger.debug("Rollback failed or not applicable", exc_info=True)
+            logger.debug("Rollback failed", exc_info=True)
         return False
     finally:
-        # Close the cursor (driver resources), but keep connection cached for reuse
+        try:
+            if cur is not None:
+                cur.close()
+        except Exception:
+            logger.debug("Failed to close cursor", exc_info=True)
+
+
+def fetch_similar_messages(
+    query_embedding: Sequence[float],
+    limit: int = 5,
+    min_similarity: float = 0.0,
+) -> List[Tuple[str, float]]:
+    """
+    Return list of (message_id, similarity) sorted by descending similarity.
+    Returns [] if query is empty or no DB connection is configured.
+    """
+    if not query_embedding:
+        return []
+    if not _conn_str():
+        return []
+
+    conn: Optional[Any] = None
+    cur = None
+    try:
+        conn = _get_conn()
+        cur = conn.cursor()
+        cur.execute("SELECT message_id, embedding_vector, dim FROM embeddings")
+        rows = cur.fetchall()
+
+        scored: List[Tuple[str, float]] = []
+        for row in rows:
+            mid, blob, dim = row[0], row[1], int(row[2])
+            vec = _deserialize_f32(bytes(blob), dim)
+            sim = _cosine(query_embedding, vec)
+            if sim >= min_similarity:
+                scored.append((mid, sim))
+
+        scored.sort(key=lambda t: t[1], reverse=True)
+        return scored[:limit]
+    except Exception:
+        logger.exception("Failed to fetch similar messages")
+        return []
+    finally:
         try:
             if cur is not None:
                 cur.close()
@@ -180,14 +296,11 @@ def store_embedding(message_id: str, embedding: Sequence[float], model: str) -> 
 
 
 def clear_cached_connections() -> None:
-    """
-    Close and clear all cached connections. Use in shutdown or tests teardown if needed.
-    """
     with _conn_lock:
-        for tid, conn in list(_conn_cache.items()):
+        for _, conn in list(_conn_cache.items()):
             try:
                 conn.close()
             except Exception:
-                logger.debug("Error closing connection during clear", exc_info=True)
+                logger.debug("Error closing connection", exc_info=True)
         _conn_cache.clear()
         _conn_timestamps.clear()
