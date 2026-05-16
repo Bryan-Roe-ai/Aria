@@ -88,8 +88,8 @@ if _PYDANTIC_AVAILABLE:
         # ------------------------------------------------------------------
         # Provider selection
         # ------------------------------------------------------------------
-        provider_priority: List[str] = Field(
-            default=["azure", "openai", "lmstudio", "local"],
+        provider_priority: str = Field(
+            default="azure,openai,lmstudio,local",
             alias="QAI_PROVIDER_PRIORITY",
         )
 
@@ -205,15 +205,22 @@ if _PYDANTIC_AVAILABLE:
                 "openai": self.openai_ready,
                 "lmstudio": self.lmstudio_ready,
             }
-            for name in self.provider_priority:
+            for name in self.provider_chain():
                 if checks.get(name, False):
                     return name
             return "local"
+
+        def provider_chain(self) -> List[str]:
+            """Return provider order after normalizing configured priority."""
+            if isinstance(self.provider_priority, list):
+                return [str(name).strip() for name in self.provider_priority if str(name).strip()]
+            return [name.strip() for name in str(self.provider_priority).split(",") if name.strip()]
 
         def summary(self) -> dict:
             """Return a non-secret summary suitable for health endpoints."""
             return {
                 "active_provider": self.active_provider(),
+                "provider_chain": self.provider_chain(),
                 "azure_openai_ready": self.azure_openai_ready,
                 "openai_ready": self.openai_ready,
                 "lmstudio_ready": self.lmstudio_ready,
@@ -239,6 +246,9 @@ else:
             )
             self.openai_api_key = os.environ.get("OPENAI_API_KEY")
             self.lmstudio_base_url = os.environ.get("LMSTUDIO_BASE_URL")
+            self.provider_priority = os.environ.get(
+                "QAI_PROVIDER_PRIORITY", "azure,openai,lmstudio,local"
+            )
             self.db_connection_string = os.environ.get("QAI_DB_CONN")
             self.sql_pool_size = int(os.environ.get("QAI_SQL_POOL_SIZE", "10"))
             self.enable_cosmos = os.environ.get("QAI_ENABLE_COSMOS", "").lower() in (
@@ -289,23 +299,25 @@ else:
             return bool(self.lmstudio_base_url)
 
         def active_provider(self) -> str:
-            priority = os.environ.get(
-                "QAI_PROVIDER_PRIORITY", "azure,openai,lmstudio,local"
-            ).split(",")
             checks = {
                 "azure": self.azure_openai_ready,
                 "openai": self.openai_ready,
                 "lmstudio": self.lmstudio_ready,
             }
-            for name in priority:
-                name = name.strip()
+            for name in self.provider_chain():
                 if checks.get(name, False):
                     return name
             return "local"
 
+        def provider_chain(self) -> List[str]:
+            if isinstance(self.provider_priority, list):
+                return [str(name).strip() for name in self.provider_priority if str(name).strip()]
+            return [name.strip() for name in str(self.provider_priority).split(",") if name.strip()]
+
         def summary(self) -> dict:
             return {
                 "active_provider": self.active_provider(),
+                "provider_chain": self.provider_chain(),
                 "azure_openai_ready": self.azure_openai_ready,
                 "openai_ready": self.openai_ready,
                 "lmstudio_ready": self.lmstudio_ready,
@@ -393,4 +405,7 @@ def reset_settings() -> None:
     get_settings.cache_clear()
 
 
-__all__ = ["Settings", "get_settings", "reset_settings"]
+AppSettings = Settings
+
+
+__all__ = ["Settings", "AppSettings", "get_settings", "reset_settings"]
