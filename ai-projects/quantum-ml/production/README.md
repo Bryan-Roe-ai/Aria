@@ -254,7 +254,7 @@ docker-compose up
 ### Benchmark
 
 | Metric | Value |
-|--------|-------|
+| -------- | ------- |
 | Accuracy | 100% |
 | Precision | 100% |
 | Recall | 100% |
