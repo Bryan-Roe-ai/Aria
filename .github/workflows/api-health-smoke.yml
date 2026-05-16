@@ -20,7 +20,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: api-health-${{ github.workflow }}-${{ github.ref }}
+  group: api-health-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Principle of least privilege: this workflow only needs to read repo contents.
@@ -30,6 +30,9 @@ permissions:
 env:
   # Opt into Node.js 24 for JS actions ahead of June 2026 forced migration.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.2
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  UPLOAD_ARTIFACT_SHA: 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
   PYTHON_UNBUFFERED: "1"
   PYTHONDONTWRITEBYTECODE: "1"
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -46,32 +49,24 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
         with:
           persist-credentials: false
           fetch-depth: 1
 
-      # Use official setup-python for predictable environment; keep local setup-action as fallback if present.
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Setup Python environment
+        uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install test dependencies
-        run: |
-          set -euo pipefail
-          python -m pip install --upgrade pip
-          # keep required packages explicit and minimal for faster CI
-          python -m pip install pytest requests
+          install-requirements: 'false'
+          extra-packages: 'pytest requests'
 
       - name: Run integration smoke checks
         id: integration_smoke
@@ -94,7 +89,7 @@ jobs:
 
       - name: Upload smoke artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@${{ env.UPLOAD_ARTIFACT_SHA }}
         with:
           name: api-health-smoke-${{ github.run_number }}-${{ github.run_attempt }}
           retention-days: 14
@@ -107,45 +102,45 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          echo "## API Health Smoke" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "## API Health Smoke" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
 
           # integration_smoke
           if [ "${{ steps.integration_smoke.outcome }}" = "success" ]; then
-            echo "| integration_smoke.py --json | ✅ passed |" >> $GITHUB_STEP_SUMMARY
+            echo "| integration_smoke.py --json | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| integration_smoke.py --json | ❌ failed |" >> $GITHUB_STEP_SUMMARY
+            echo "| integration_smoke.py --json | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           # strict_smoke (scheduled only)
           if [ "${{ github.event_name }}" = "schedule" ]; then
             if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
-              echo "| integration_smoke.py --strict-endpoints | ✅ passed |" >> $GITHUB_STEP_SUMMARY
+              echo "| integration_smoke.py --strict-endpoints | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
             else
-              echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> $GITHUB_STEP_SUMMARY
+              echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
             fi
           else
-            echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |" >> $GITHUB_STEP_SUMMARY
+            echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           # contract_tests
           if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
-            echo "| ci_orchestrator --integration-contract-tests | ✅ passed |" >> $GITHUB_STEP_SUMMARY
+            echo "| ci_orchestrator --integration-contract-tests | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| ci_orchestrator --integration-contract-tests | ❌ failed |" >> $GITHUB_STEP_SUMMARY
+            echo "| ci_orchestrator --integration-contract-tests | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
           # Evaluate overall status and fail if any required test failed
           if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || \
              ( [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.strict_smoke.outcome }}" != "success" ] ) || \
              [ "${{ steps.contract_tests.outcome }}" != "success" ]; then
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### ❌ One or more API health checks failed." >> $GITHUB_STEP_SUMMARY
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### ❌ One or more API health checks failed." >> "$GITHUB_STEP_SUMMARY"
             echo "::error::API health checks failed. See artifacts and logs above."
             exit 1
           fi
 
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ All API health checks passed." >> $GITHUB_STEP_SUMMARY
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### ✅ All API health checks passed." >> "$GITHUB_STEP_SUMMARY"

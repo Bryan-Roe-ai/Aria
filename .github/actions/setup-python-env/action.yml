@@ -26,14 +26,17 @@ runs:
 
     - name: Install base dependencies
       shell: bash
-      run: python -m pip install --upgrade pip
+      run: |
+        set -euo pipefail
+        python -m pip install --upgrade pip
 
     - name: Install requirements
       if: inputs.install-requirements == 'true'
       shell: bash
       run: |
+        set -euo pipefail
         if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
+          python -m pip install -r requirements.txt
         fi
 
     - name: Install extra packages
@@ -44,4 +47,6 @@ runs:
       # Pass packages via env var to prevent shell-injection from the input value.
       # Word-splitting on $EXTRA_PACKAGES is intentional (space-separated list).
       # shellcheck disable=SC2086
-      run: pip install $EXTRA_PACKAGES
+      run: |
+        set -euo pipefail
+        python -m pip install $EXTRA_PACKAGES

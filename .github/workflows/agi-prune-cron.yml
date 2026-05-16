@@ -5,20 +5,55 @@ on:
     - cron: '0 3 * * *' # daily at 03:00 UTC
   workflow_dispatch:
 
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: agi-persistence-prune-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   actions: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.2
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  SETUP_PYTHON_SHA: a26af69be951a213d495a4c3e4e4022e16d87065    # v5.6.0
+  ACTIONS_CACHE_SHA: 1bd1e32a3bdc45362d1e726936510720a7c30a57   # v4.2.0
+
 jobs:
   prune:
+    if: ${{ secrets.QAI_AGI_PERSIST_DB != '' || secrets.QAI_AGI_PERSIST_PATH != '' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
         with:
-          python-version: '3.11'
+          egress-policy: audit
+          disable-sudo: true
+
+      - name: Checkout
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@${{ env.SETUP_PYTHON_SHA }}
+        with:
+          python-version: '3.11.x'
+
+      - name: Cache pip
+        uses: actions/cache@${{ env.ACTIONS_CACHE_SHA }}
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: Run prune (dry-run by default)
         env:
           QAI_AGI_PERSIST_DB: ${{ secrets.QAI_AGI_PERSIST_DB }}
@@ -28,7 +63,9 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt || true
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt || true
+          fi
           KEEP=${PRUNE_KEEP_ROWS:-1000}
           DRY=${PRUNE_DRY_RUN:-true}
           ARGS=""
@@ -37,6 +74,10 @@ jobs:
           fi
           if [ -n "${QAI_AGI_PERSIST_PATH:-}" ]; then
             ARGS="$ARGS --jsonl ${QAI_AGI_PERSIST_PATH}"
+          fi
+          if [ -z "${QAI_AGI_PERSIST_DB:-}" ] && [ -z "${QAI_AGI_PERSIST_PATH:-}" ]; then
+            echo "No persistence target configured (QAI_AGI_PERSIST_DB or QAI_AGI_PERSIST_PATH). Skipping."
+            exit 0
           fi
           ARGS="$ARGS --keep-rows ${KEEP}"
           if [ "${DRY}" = "true" ] || [ "${DRY}" = "1" ]; then

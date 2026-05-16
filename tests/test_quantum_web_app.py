@@ -9,27 +9,32 @@ The test verifies that the compatibility loader returns the expected JSON
 structure when provided a valid checkpoint.
 """
 
-import sys
 import importlib.util
-from pathlib import Path
-import types
 import logging
+import sys
+import types
+from pathlib import Path
 
 import numpy as np
-import pytest
+from pytest import MonkeyPatch
 
 
 def _load_wrapper():
     # Load the wrapper module by file path so tests don't rely on package imports.
     file = Path(__file__).resolve().parents[1] / "quantum-ai" / "web_app.py"
-    spec = importlib.util.spec_from_file_location("quantum_ai_web_app_for_tests", str(file))
+    spec = importlib.util.spec_from_file_location(
+        "quantum_ai_web_app_for_tests", str(file))
+    if spec is None:
+        raise RuntimeError(f"Could not create spec for {file}")
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
+    if spec.loader is None:
+        raise RuntimeError(f"Spec loader is None for {file}")
     spec.loader.exec_module(mod)
     return mod
 
 
-def test_compat_load_checkpoint_success(tmp_path, monkeypatch):
+def test_compat_load_checkpoint_success(tmp_path: Path, monkeypatch: MonkeyPatch):
     repo_root = Path(__file__).resolve().parents[1]
     chk_dir = repo_root / "quantum-ai" / "checkpoints"
     chk_dir.mkdir(parents=True, exist_ok=True)
@@ -40,7 +45,8 @@ def test_compat_load_checkpoint_success(tmp_path, monkeypatch):
     config = {"lr": 0.01}
     chk_file = chk_dir / "test_checkpoint.npz"
 
-    np.savez(chk_file, weights=weights, epoch=epoch, config=np.array(config, dtype=object))
+    np.savez(chk_file, weights=weights, epoch=epoch,
+             config=np.array(config, dtype=object))
 
     mod = _load_wrapper()
 

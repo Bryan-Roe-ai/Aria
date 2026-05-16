@@ -29,31 +29,65 @@ concurrency:
 
 permissions:
   contents: write
-  actions: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  SETUP_NODE_SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020      # v4.4.0
+  GITHUB_SCRIPT_SHA: f28e40c7f34bde8b3046d885e986cb6290c5673b    # v7
 
 jobs:
+  validate-inputs:
+    name: Validate workflow inputs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Validate numeric inputs
+        run: |
+          set -euo pipefail
+          
+          validate_threshold() {
+            local value=$1
+            local name=$2
+            if ! [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+              echo "::error::$name must be a valid number: $value"
+              exit 1
+            fi
+            local num=$(echo "$value" | bc 2>/dev/null || echo "$value")
+            if (( $(echo "$num < 0" | bc -l 2>/dev/null || echo 0) )); then
+              echo "::error::$name must be >= 0: $value"
+              exit 1
+            fi
+            if (( $(echo "$num > 100" | bc -l 2>/dev/null || echo 0) )); then
+              echo "::error::$name must be <= 100: $value"
+              exit 1
+            fi
+          }
+          
+          validate_threshold "${{ inputs.fitness_threshold }}" "fitness_threshold"
+          validate_threshold "${{ inputs.stability_threshold }}" "stability_threshold"
+          echo "✓ All inputs validated successfully"
+
   evolve:
     name: Evaluate & optionally trigger evolution
     runs-on: ubuntu-latest
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'workflow_run' &&
-        github.event.workflow_run.conclusion == 'success' &&
-        github.event.workflow_run.head_branch == 'main'
-      )
+    needs: [validate-inputs]
+    if: always() && (github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'))
     defaults:
       run:
         shell: bash
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        uses: actions/setup-node@${{ env.SETUP_NODE_SHA }}
         with:
           node-version: "20.x"
 
@@ -63,34 +97,65 @@ jobs:
           set -euo pipefail
           node <<'NODE'
           const fs = require('fs');
+          const path = require('path');
 
-          const fitness = Math.random() * 100;
-          const stability = Math.random() * 100;
-          const parsedFitnessThreshold = Number(process.env.FITNESS_THRESHOLD);
-          const parsedStabilityThreshold = Number(process.env.STABILITY_THRESHOLD);
-          const fitnessThreshold = Number.isFinite(parsedFitnessThreshold) ? parsedFitnessThreshold : 60;
-          const stabilityThreshold = Number.isFinite(parsedStabilityThreshold) ? parsedStabilityThreshold : 70;
-          const forceEvolution = (process.env.FORCE_EVOLUTION || 'false').toLowerCase() === 'true';
-          const telemetryConclusion = process.env.TELEMETRY_CONCLUSION || 'n/a';
+          try {
+            // Validate environment
+            const githubOutput = process.env.GITHUB_OUTPUT;
+            if (!githubOutput || !fs.existsSync(path.dirname(githubOutput))) {
+              throw new Error('GITHUB_OUTPUT environment variable not set or invalid');
+            }
 
-          const triggered = forceEvolution || (fitness > fitnessThreshold && stability < stabilityThreshold);
-          const reason = forceEvolution
-            ? 'forced'
-            : `fitness>${fitnessThreshold} && stability<${stabilityThreshold}`;
+            // Parse and validate inputs
+            const fitness = Math.random() * 100;
+            const stability = Math.random() * 100;
+            
+            const parsedFitnessThreshold = Number(process.env.FITNESS_THRESHOLD);
+            const parsedStabilityThreshold = Number(process.env.STABILITY_THRESHOLD);
+            
+            if (!Number.isFinite(parsedFitnessThreshold) || parsedFitnessThreshold < 0 || parsedFitnessThreshold > 100) {
+              throw new Error(`Invalid FITNESS_THRESHOLD: ${process.env.FITNESS_THRESHOLD}. Must be a number between 0 and 100.`);
+            }
+            if (!Number.isFinite(parsedStabilityThreshold) || parsedStabilityThreshold < 0 || parsedStabilityThreshold > 100) {
+              throw new Error(`Invalid STABILITY_THRESHOLD: ${process.env.STABILITY_THRESHOLD}. Must be a number between 0 and 100.`);
+            }
+            
+            const fitnessThreshold = parsedFitnessThreshold;
+            const stabilityThreshold = parsedStabilityThreshold;
+            
+            const forceEvolutionStr = (process.env.FORCE_EVOLUTION || 'false').toLowerCase().trim();
+            if (!['true', 'false'].includes(forceEvolutionStr)) {
+              throw new Error(`Invalid FORCE_EVOLUTION: ${process.env.FORCE_EVOLUTION}. Must be 'true' or 'false'.`);
+            }
+            const forceEvolution = forceEvolutionStr === 'true';
+            const telemetryConclusion = process.env.TELEMETRY_CONCLUSION || 'n/a';
 
-          console.log('Evaluating evolution readiness...');
-          console.log('telemetry conclusion:', telemetryConclusion);
-          console.log('fitness:', fitness.toFixed(2));
-          console.log('stability:', stability.toFixed(2));
-          console.log('evolution triggered:', triggered);
-          console.log('reason:', reason);
+            const triggered = forceEvolution || (fitness > fitnessThreshold && stability < stabilityThreshold);
+            const reason = forceEvolution
+              ? 'forced'
+              : `fitness>${fitnessThreshold} && stability<${stabilityThreshold}`;
 
-          const out = [];
-          out.push(`evolution_triggered=${triggered}`);
-          out.push(`fitness=${fitness.toFixed(4)}`);
-          out.push(`stability=${stability.toFixed(4)}`);
-          out.push(`reason=${reason}`);
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, out.join('\n') + '\n');
+            console.log('Evaluating evolution readiness...');
+            console.log('telemetry conclusion:', telemetryConclusion);
+            console.log('fitness:', fitness.toFixed(2));
+            console.log('stability:', stability.toFixed(2));
+            console.log('fitness threshold:', fitnessThreshold);
+            console.log('stability threshold:', stabilityThreshold);
+            console.log('evolution triggered:', triggered);
+            console.log('reason:', reason);
+
+            const out = [];
+            out.push(`evolution_triggered=${triggered}`);
+            out.push(`fitness=${fitness.toFixed(4)}`);
+            out.push(`stability=${stability.toFixed(4)}`);
+            out.push(`reason=${reason}`);
+            
+            fs.appendFileSync(githubOutput, out.join('\n') + '\n');
+            console.log('✓ Evaluation outputs written successfully');
+          } catch (error) {
+            console.error('Fatal error during evaluation:', error.message);
+            process.exit(1);
+          }
           NODE
         env:
           NODE_OPTIONS: "--no-warnings"
@@ -108,7 +173,7 @@ jobs:
 
       - name: Trigger experiment fork signal (repository_dispatch)
         if: ${{ steps.evaluate.outputs.evolution_triggered == 'true' }}
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7 (pinned SHA)
+        uses: actions/github-script@${{ env.GITHUB_SCRIPT_SHA }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

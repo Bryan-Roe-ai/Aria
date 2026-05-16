@@ -46,8 +46,10 @@ defaults:
     shell: bash
 
 env:
-  # Centralised pin for actions/checkout so all jobs stay in sync.
-  CHECKOUT_SHA: 34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  # Centralised pins so all jobs stay in sync.
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+  DEPENDENCY_REVIEW_SHA: 2031cfc080254a8a887f58cffee85186f0e49e48  # v4.9.0
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -62,7 +64,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}  # v4.3.1
         with:
           persist-credentials: false
 
@@ -94,7 +96,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}  # v4.3.1
         with:
           persist-credentials: false
 
@@ -141,12 +143,12 @@ jobs:
       pull-requests: write  # required by dependency-review-action to comment
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}  # v4.3.1
         with:
           persist-credentials: false
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48  # v4.9.0
+        uses: actions/dependency-review-action@${{ env.DEPENDENCY_REVIEW_SHA }}
         with:
           fail-on-severity: high
           deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0
@@ -166,7 +168,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}  # v4.3.1
         with:
           persist-credentials: false
 

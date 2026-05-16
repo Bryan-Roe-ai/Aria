@@ -520,6 +520,20 @@ class TestCreateAGIProvider:
 
         assert "gpt-4" in info.model
 
+    def test_create_with_filename_only_persistence_path(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+        """Filename-only QAI_AGI_PERSIST_PATH should not crash directory initialization."""
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("QAI_AGI_PERSIST", "true")
+        monkeypatch.setenv("QAI_AGI_PERSIST_PATH", "agi_reasoning.jsonl")
+        monkeypatch.delenv("QAI_AGI_PERSIST_DB", raising=False)
+        monkeypatch.delenv("QAI_AGI_PERSIST_SQLITE", raising=False)
+
+        provider, info = create_agi_provider(verbose=False)
+
+        assert isinstance(provider, AGIProvider)
+        assert info.name == "agi"
+        assert getattr(provider, "persistence", None) is not None
+
 
 class TestProviderIntegration:
     """Integration tests with the provider detection system."""

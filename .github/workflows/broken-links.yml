@@ -24,6 +24,14 @@ concurrency:
   group: "broken-links-${{ github.ref }}"
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.2
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+
 jobs:
   link-check:
     name: "Link Validation"
@@ -31,8 +39,17 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - name: "Checkout repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: "Run Lychee link checker"
         id: lychee

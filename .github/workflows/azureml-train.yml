@@ -39,23 +39,32 @@ concurrency:
   group: azureml-train-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  AZURE_LOGIN_SHA: a457da9ea143d694b1b9c7c869ebb04ebe844ef5    # v2.3.0
+  AZURE_CLI_SHA: 9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956      # v2.2.0
+
 jobs:
   submit-job:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: Azure login
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # v2.3.0
+        uses: azure/login@${{ env.AZURE_LOGIN_SHA }}
         with:
           # Create an Azure AD app and set its JSON creds in this secret:
           # { "clientId": "...", "clientSecret": "...", "subscriptionId": "...", "tenantId": "..." }
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Install Azure ML CLI
-        uses: azure/cli@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956  # v2.2.0
+        uses: azure/cli@${{ env.AZURE_CLI_SHA }}
         with:
           inlineScript: |
             az extension add -n ml -y
@@ -67,7 +76,7 @@ jobs:
           WORKSPACE_NAME: ${{ github.event.inputs.workspaceName }}
 
       - name: Submit Azure ML job
-        uses: azure/cli@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956  # v2.2.0
+        uses: azure/cli@${{ env.AZURE_CLI_SHA }}
         with:
           inlineScript: |
             echo "Submitting job from $JOB_FILE ..."

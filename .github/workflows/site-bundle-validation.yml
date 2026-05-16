@@ -16,6 +16,18 @@ on:
       - '.github/workflows/site-bundle-validation.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  UPLOAD_ARTIFACT_SHA: 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   validate-generated-sites:
     name: Validate Generated Site Bundles
@@ -23,7 +35,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
@@ -37,7 +52,7 @@ jobs:
 
       - name: Upload validation context
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        uses: actions/upload-artifact@${{ env.UPLOAD_ARTIFACT_SHA }}
         with:
           name: generated-site-bundles-${{ github.run_number }}
           retention-days: 7

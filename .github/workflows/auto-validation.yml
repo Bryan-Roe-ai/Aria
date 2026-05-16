@@ -19,6 +19,9 @@ on:
       - 'quantum_autorun.yaml'
       - 'scripts/autotrain.py'
       - 'scripts/quantum_autorun.py'
+      - 'scripts/auto_bootstrap.py'
+      - '.github/actions/setup-python-env/**'
+      - '.github/workflows/auto-validation.yml'
       - 'AI/**'
       - 'ai-projects/quantum-ml/**'
   schedule:
@@ -28,28 +31,58 @@ on:
 permissions:
   contents: read
 
-concurrency: auto-validation
+concurrency:
+  group: auto-validation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.2
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  UPLOAD_ARTIFACT_SHA: 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+  PYTHON_UNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   dry-run:
+    name: Dry-run orchestrator validation
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
         with:
           extra-packages: 'pyyaml'
+
       - name: Auto bootstrap (env + orchestrator validation)
-        run: python scripts/auto_bootstrap.py
+        run: |
+          set -euo pipefail
+          python scripts/auto_bootstrap.py
 
       - name: Generate validation summary
         if: always()
         run: |
+          set -euo pipefail
           {
             echo "## Auto-Validation Results"
+            echo
             for f in data_out/autotrain/status.json data_out/quantum_autorun/status.json data_out/auto_bootstrap/status_summary.json; do
               if [ -f "$f" ]; then
                 echo "### $(basename "$f")"
@@ -62,11 +95,13 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload status artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        if: always()
+        uses: actions/upload-artifact@${{ env.UPLOAD_ARTIFACT_SHA }}
         with:
-          name: auto-validation-status
+          name: auto-validation-status-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             data_out/autotrain/status.json
             data_out/quantum_autorun/status.json
             data_out/auto_bootstrap/status_summary.json
           retention-days: 14
+          if-no-files-found: warn

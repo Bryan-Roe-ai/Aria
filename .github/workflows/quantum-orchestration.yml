@@ -49,6 +49,11 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
+  AZURE_LOGIN_SHA: a457da9ea143d694b1b9c7c869ebb04ebe844ef5    # v2.3.0
+
 concurrency:
   group: quantum-orchestration-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -66,14 +71,41 @@ jobs:
       HAS_AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS != '' }}
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+      - uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
 
       - name: Validate inputs and required files
         run: |
           $ErrorActionPreference = 'Stop'
 
-          if ('${{ inputs.ORCHESTRATION_MODE }}' -eq 'logicapp' -and [string]::IsNullOrWhiteSpace($env:LOGIC_APP_URL)) {
-            throw "LOGIC_APP_URL is required when ORCHESTRATION_MODE=logicapp."
+          # Read workflow inputs (do not rely on env vars here)
+          $orchestrationMode = '${{ inputs.ORCHESTRATION_MODE }}'
+          $logicAppUrl = '${{ inputs.LOGIC_APP_URL }}'
+          $resourceGroup = '${{ inputs.RESOURCE_GROUP }}'
+          $workspaceName = '${{ inputs.WORKSPACE_NAME }}'
+          $location = '${{ inputs.LOCATION }}'
+
+          if ($orchestrationMode -eq 'logicapp') {
+            if ([string]::IsNullOrWhiteSpace($logicAppUrl)) {
+              throw "LOGIC_APP_URL is required when ORCHESTRATION_MODE=logicapp."
+            }
+            # Basic URL validation (must be HTTPS)
+            if (-not [System.Uri]::IsWellFormedUriString($logicAppUrl, [System.UriKind]::Absolute)) {
+              throw "LOGIC_APP_URL is not a well-formed absolute URI."
+            }
+            if ((New-Object System.Uri($logicAppUrl)).Scheme -ne 'https') {
+              throw "LOGIC_APP_URL must use the https scheme."
+            }
+          }
+
+          # Validate names to reduce risk of injection; allow alphanum and hyphen
+          $nameRegex = '^[a-zA-Z0-9\-]+$'
+          foreach ($val in @($resourceGroup, $workspaceName, $location)) {
+            if (-not [string]::IsNullOrWhiteSpace($val) -and -not ($val -match $nameRegex)) {
+              throw "Input value '$val' contains invalid characters. Allowed: letters, numbers, hyphen."
+            }
           }
 
           $master = './ai-projects/quantum-ml/azure/quantum_master_orchestration.ps1'
@@ -84,7 +116,7 @@ jobs:
 
       - name: Azure Login
         if: env.HAS_AZURE_CREDENTIALS == 'true'
-        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # v2.3.0
+        uses: azure/login@${{ env.AZURE_LOGIN_SHA }}
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 

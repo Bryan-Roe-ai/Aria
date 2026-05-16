@@ -21,6 +21,19 @@ on:
 permissions:
   contents: read
 
+env:
+  # Harden runner and checkout pins
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+  PYTHON_UNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHON_VERSION: "3.11"
+
+defaults:
+  run:
+    shell: bash
+
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
@@ -31,7 +44,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
+        with:
+          egress-policy: audit
+          disable-sudo: true
+      - uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
         with:
@@ -60,7 +81,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
+        with:
+          egress-policy: audit
+          disable-sudo: true
+      - uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
         with:
@@ -93,7 +122,15 @@ jobs:
       image: python:3.11-bullseye
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+      - name: Harden runner
+        uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
+        with:
+          egress-policy: audit
+          disable-sudo: true
+      - uses: actions/checkout@${{ env.CHECKOUT_SHA }}
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - name: Apt-get update & install dependencies
         run: |
           apt-get update

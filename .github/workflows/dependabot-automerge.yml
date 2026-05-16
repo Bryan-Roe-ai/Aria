@@ -33,12 +33,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
-    # Hard guard: only Dependabot PRs, and skip drafts.
+    # Hard guard: only Dependabot PRs, skip drafts, and ignore forked repos.
     # `pull_request.user.login` is more reliable than `github.actor`
     # (which can change on re-runs by humans).
     if: >-
       github.event.pull_request.user.login == 'dependabot[bot]' &&
-      github.event.pull_request.draft == false
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
 
     permissions:
       contents: write
@@ -77,13 +78,28 @@ jobs:
           echo "automerge=${automerge}" >> "$GITHUB_OUTPUT"
           echo "Decision: automerge=${automerge} (update-type=${UPDATE_TYPE}, dependency-type=${DEP_TYPE})"
 
+      - name: Authenticate GitHub CLI
+        # Ensure gh is authenticated before any subsequent gh commands (approve/merge/comment).
+        run: |
+          set -euo pipefail
+          if ! command -v gh >/dev/null 2>&1; then
+            echo "gh CLI not found on runner; aborting" >&2
+            exit 1
+          fi
+          echo "$GH_TOKEN" | gh auth login --with-token
+
       - name: Approve PR
         if: steps.gate.outputs.automerge == 'true'
-        run: gh pr review --approve "$PR_URL"
+        run: |
+          set -euo pipefail
+          gh pr review --approve "$PR_URL"
 
       - name: Enable auto-merge (squash)
         if: steps.gate.outputs.automerge == 'true'
-        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+        run: |
+          set -euo pipefail
+          # Enable GitHub auto-merge (squash). GitHub will wait for required checks if needed.
+          gh pr merge --auto --squash --delete-branch "$PR_URL"
 
       - name: Comment on major updates
         if: steps.metadata.outputs.update-type == 'version-update:semver-major'

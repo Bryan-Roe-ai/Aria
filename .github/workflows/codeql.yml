@@ -87,6 +87,7 @@ defaults:
     shell: bash
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   # Centralised pins for action SHAs (update in one place).
   CODEQL_ACTION_SHA: 4e828ff8d448a8a6e532957b1811f387a63867e8  # v4.30.4
   HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0      # v2.12.2
@@ -119,6 +120,7 @@ jobs:
         uses: step-security/harden-runner@${{ env.HARDEN_RUNNER_SHA }}
         with:
           egress-policy: audit
+          disable-sudo: true
 
       - name: Checkout repository
         uses: actions/checkout@${{ env.CHECKOUT_SHA }}
@@ -132,10 +134,10 @@ jobs:
           set -euo pipefail
           # Fetch base ref for PR so we can diff against it.
           BASE_REF="${{ github.event.pull_request.base.ref }}"
+          [ -z "$BASE_REF" ] && { echo "::error::BASE_REF is empty"; exit 1; }
           git fetch --no-tags --depth=1 origin "$BASE_REF" || true
           files=$(git diff --name-only "origin/$BASE_REF...HEAD" || true)
           echo "::debug::Files changed in PR: $files"
-          echo "$files" | grep -E -q '(^|/)(package.json|package-lock.json|yarn.lock|pyproject.toml|requirements(\.txt)?|Pipfile|setup\.py|poetry.lock|go.mod|Gemfile|pom.xml)' && echo "changed=true" || echo "changed=false"
           if echo "$files" | grep -E -q '(^|/)(package.json|package-lock.json|yarn.lock|pyproject.toml|requirements(\.txt)?|Pipfile|setup\.py|poetry.lock|go.mod|Gemfile|pom.xml)'; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
           else
@@ -203,37 +205,12 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - name: Generate CodeQL config (in-workflow)
-        id: codeql_config
-        run: |
-          set -euo pipefail
-          mkdir -p .github/codeql
-          if [ ! -f .github/codeql/codeql-config.yml ]; then
-            cat > .github/codeql/codeql-config.yml <<'YAML'
-name: "Aria CodeQL — maximum security coverage"
-
-queries:
-  - uses: security-extended
-  - uses: security-and-quality
-  - uses: security-experimental
-
-packs:
-  - codeql/javascript-queries
-  - codeql/python-queries
-  - codeql/cpp-queries
-  - codeql/actions-queries
-
-paths-ignore:
-  - "**/node_modules/**"
-  - "**/.venv/**"
-  - "**/venv/**"
-  - "**/__pycache__/**"
-  - "**/dist/**"
-  - "**/build/**"
-  - "**/*.min.js"
-  - "**/vendor/**"
-  - "**/third_party/**"
-  - "**/third-party/**"
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@${{ env.CODEQL_ACTION_SHA }}
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
 
       - name: Perform CodeQL Analysis
         id: analyze

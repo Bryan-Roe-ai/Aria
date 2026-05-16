@@ -1701,6 +1701,22 @@ def create_agi_provider(
         **kwargs,
     )
 
+    def _ensure_parent_dir(path: str) -> None:
+        """Create a parent directory for file-backed persistence paths.
+
+        Safely no-ops for in-memory SQLite markers and URI-style strings.
+        """
+        raw = (path or "").strip()
+        if not raw:
+            return
+        if raw in {":memory:", "file::memory:?cache=shared"}:
+            return
+        if "://" in raw:
+            return
+        parent = os.path.dirname(os.path.abspath(raw))
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+
     # Optionally attach a persistence backend if configured via environment.
     persist_enabled = os.getenv(
         "QAI_AGI_PERSIST", "").lower() in ("1", "true", "yes")
@@ -1712,7 +1728,7 @@ def create_agi_provider(
             from shared.agi_persistence_sqlite import SQLiteAGIPersistence
 
             path = sqlite_path
-            os.makedirs(os.path.dirname(path), exist_ok=True)
+            _ensure_parent_dir(path)
             provider.persistence = SQLiteAGIPersistence(path)
         except Exception as exc:  # pragma: no cover - best-effort persistence
             _logger.exception(
@@ -1726,7 +1742,7 @@ def create_agi_provider(
 
             path = jsonl_path or os.path.join(
                 os.getcwd(), "data_out", "agi_reasoning.jsonl")
-            os.makedirs(os.path.dirname(path), exist_ok=True)
+            _ensure_parent_dir(path)
             provider.persistence = FileAGIPersistence(path)
         except Exception as exc:  # pragma: no cover - best-effort persistence
             _logger.exception(
