@@ -139,7 +139,7 @@ class MemoryInterface(Protocol):
             A plain-text context snippet, or an empty string when no relevant
             context is available.
         """
-        ...
+        raise NotImplementedError
 
 
 @runtime_checkable
