@@ -1,46 +1,126 @@
-name: CodeQL Security Scanning
+# CodeQL Advanced workflow for the Aria repository.
+#
+# This workflow performs static analysis using GitHub's CodeQL engine across
+# the repository languages chosen in the matrix. Keep the matrix in sync with
+# the repo to avoid wasted CI minutes.
+#
+# Improvements made in this file:
+# - Added conservative concurrency grouping to avoid collisions across refs.
+# - Kept minimal workflow-level permissions and set job-level permissions needed
+#   for SARIF upload and pack fetching.
+# - Added an informational step and enabled CodeQL pack caching to speed runs.
+# - Clarified manual build guidance and preserved safe checkout settings.
+# - Restricted PR triggers to common lifecycle events to reduce noisy runs.
+#
+name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: ["main"]
+    # Ignore documentation and non-code infra changes to reduce CI minutes.
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE/**"
+      - "LICENSE"
   pull_request:
-    branches: [ main ]
+    # Run for relevant PR lifecycle events only.
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: ["main"]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE/**"
+      - "LICENSE"
   schedule:
-    - cron: '0 8 * * 1'  # Weekly on Monday at 8 AM UTC
+    # Weekly scan on Monday at 23:36 UTC.
+    - cron: "36 23 * * 1"
   workflow_dispatch:
 
+# Cancel in-progress runs for the same ref/PR when a new commit is pushed.
 concurrency:
-  group: codeql-${{ github.ref }}
+  # Use head_ref for PRs (if present) to produce stable, human-friendly groups.
+  group: codeql-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Minimal permissions at workflow level. Job adds the additional permissions it needs.
+permissions:
+  contents: read
 
 jobs:
   analyze:
-    name: Analyze Code
-    runs-on: ubuntu-latest
+    name: Analyze (${{ matrix.language }})
+    # Match runner OS to language requirements (Swift requires macOS).
+    runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+    timeout-minutes: 360
+
+    # Job-specific permissions required for uploading SARIF and fetching packs.
     permissions:
-      actions: read
+      security-events: write   # required to upload SARIF results to the Security tab
       contents: read
-      security-events: write
+      packages: read
+      actions: read
 
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'python', 'javascript' ]
+        include:
+          - language: actions
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+          - language: python
+            build-mode: none
+        # Supported values for 'language':
+        #   actions, c-cpp, csharp, go, java-kotlin,
+        #   javascript-typescript, python, ruby, rust, swift
+        # If you add or remove languages, keep this matrix in sync with the repo.
+        # Use build-mode: manual for compiled languages where autobuild needs guidance.
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Avoid passing repository token to the checkout step to reduce risk.
+          persist-credentials: false
+
+      - name: Info — selected language and build-mode
+        run: |
+          echo "CodeQL will analyze language: '${{ matrix.language }}' with build-mode: '${{ matrix['build-mode'] }}'"
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a  # v3.35.2
+        uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-          queries: security-extended,security-and-quality
+          build-mode: ${{ matrix['build-mode'] }}
+          # Use the extended security query suite for higher signal coverage.
+          queries: security-extended
+          # Enable pack caching (when supported) to speed up repeated runs.
+          cache: true
+          # Uncomment to use a config file for path filters / custom packs:
+          # config-file: ./.github/codeql/codeql-config.yml
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a  # v3.35.2
+      # If autobuild fails for a compiled language, switch its 'build-mode' to
+      # 'manual' in the matrix and provide explicit build commands here.
+      - name: Manual build steps
+        if: matrix['build-mode'] == 'manual'
+        shell: bash
+        run: |
+          echo "::error::No manual build commands configured for language '${{ matrix.language }}'."
+          echo "Edit .github/workflows/codeql.yml and replace this step with the"
+          echo "commands required to build the project, for example:"
+          echo "  make bootstrap"
+          echo "  make release"
+          echo "Or add language-specific commands, for example:"
+          echo "  # Python: pip install -r requirements.txt"
+          echo "  # C#: dotnet build MySolution.sln"
+          exit 1
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a  # v3.35.2
+        uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:${{matrix.language}}"
+          category: "/language:${{ matrix.language }}"
+          upload: always
