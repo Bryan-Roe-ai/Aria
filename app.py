@@ -33,12 +33,18 @@ try:
         OpenAI,
         RateLimitError,
     )
-except ImportError as exc:  # pragma: no cover - import-time guard
-    sys.stderr.write(
-        "Error: the 'openai' package is not installed.\n"
-        "Install it with: pip install openai\n"
-    )
-    raise SystemExit(1) from exc
+except ImportError:  # pragma: no cover - optional dependency when using local fallback
+    # When the `openai` package isn't installed, allow the CLI to still run
+    # in a local fallback mode. Define lightweight placeholders for exception
+    # types so the except handlers below continue to work.
+    class _OpenAIPackageMissing(Exception):
+        pass
+
+    APIConnectionError = _OpenAIPackageMissing
+    APIError = _OpenAIPackageMissing
+    AuthenticationError = _OpenAIPackageMissing
+    RateLimitError = _OpenAIPackageMissing
+    OpenAI = None  # type: ignore[assignment]
 
 
 # --------------------------------------------------------------------------- #
@@ -127,6 +133,57 @@ def ask_ai(
     return _extract_text(resp)
 
 
+def ask_local(prompt: str, *, system_prompt: str = SYSTEM_PROMPT) -> str:
+    """Deterministic local fallback responder.
+
+    This provides a helpful message when OpenAI is unavailable or when the
+    user explicitly requests local mode. It deliberately keeps behavior
+    deterministic and safe for local use.
+    """
+    prompt = (prompt or "").strip()
+    system_prompt = (system_prompt or "").strip()
+    if not prompt:
+        raise ValueError("Prompt cannot be empty.")
+    if not system_prompt:
+        raise ValueError("System prompt cannot be empty.")
+
+    # Heuristic summarizer: if the prompt asks to summarize or is long,
+    # return a short summary using simple sentence extraction.
+    ptext = prompt.strip()
+    lower = ptext.lower()
+    sentences = [s.strip() for s in ptext.replace('\n', ' ').split('.') if s.strip()]
+
+    if "summarize" in lower or len(ptext) > 300:
+        # Use the first sentence(s) as a naive summary.
+        if len(sentences) >= 2:
+            summary = ". ".join(sentences[:2]) + ("." if not sentences[1].endswith('.') else "")
+        else:
+            summary = sentences[0] if sentences else ptext[:200]
+        return (
+            "[Local fallback summary]\n\n"
+            f"Summary:\n{summary}\n\n"
+            "Note: this is a local heuristic summary. For richer results, set OPENAI_API_KEY and install the 'openai' package."
+        )
+
+    if "explain" in lower or "what is" in lower:
+        # Provide a concise explanatory template.
+        expl = sentences[0] if sentences else ptext
+        return (
+            "[Local fallback explanation]\n\n"
+            f"Brief explanation:\n{expl}\n\n"
+            "Suggestions:\n- Ask for examples\n- Ask for step-by-step instructions\n\n"
+            "Note: enable cloud provider for fuller explanations."
+        )
+
+    # Generic helpful fallback: echo plus tips.
+    tips = (
+        "[Local fallback mode] OpenAI unavailable — local responder.\n\n"
+        f"Prompt:\n{ptext}\n\n"
+        "Helpful next steps:\n- Try a shorter prompt for local fallback.\n- Set OPENAI_API_KEY to use the cloud provider.\n- Re-run with --provider local to force local mode.\n"
+    )
+    return tips
+
+
 # --------------------------------------------------------------------------- #
 # CLI plumbing
 # --------------------------------------------------------------------------- #
@@ -174,6 +231,18 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Override the system prompt.",
     )
     parser.add_argument(
+        "--provider",
+        choices=("auto", "openai", "local"),
+        default="auto",
+        help="Provider selection: auto (default), openai, or local.",
+    )
+    parser.add_argument(
+        "--no-local-fallback",
+        dest="local_fallback",
+        action="store_false",
+        help="Disable automatic fallback to local mode on OpenAI failures.",
+    )
+    parser.add_argument(
         "-v", "--verbose",
         action="store_true",
         help="Enable debug logging.",
@@ -190,24 +259,42 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        print(
-            "Error: missing OPENAI_API_KEY environment variable.",
-            file=sys.stderr,
-        )
-        return EXIT_AUTH
-
     prompt = _read_prompt(args.prompt)
     if not prompt:
         print("Error: prompt cannot be empty.", file=sys.stderr)
         return EXIT_USAGE
+
+    # If the user explicitly requested the local provider, respond locally.
+    if args.provider == "local":
+        print(ask_local(prompt, system_prompt=args.system))
+        return EXIT_OK
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    local_fallback = bool(getattr(args, "local_fallback", True))
+    # If provider is openai but no key provided, that's an auth error.
+    if args.provider == "openai" and not api_key:
+        print("Error: OPENAI_API_KEY is required when provider is 'openai'.", file=sys.stderr)
+        return EXIT_AUTH
+    # If no API key but fallback is allowed, use local fallback.
+    if not api_key and local_fallback:
+        print("Warning: OPENAI_API_KEY not set — falling back to local mode.", file=sys.stderr)
+        print(ask_local(prompt, system_prompt=args.system))
+        return EXIT_OK
 
     client_kwargs: dict[str, Any] = {"api_key": api_key, "timeout": DEFAULT_TIMEOUT}
     if base_url := os.getenv("OPENAI_BASE_URL"):
         client_kwargs["base_url"] = base_url
     if org := os.getenv("OPENAI_ORG"):
         client_kwargs["organization"] = org
+    # If the openai package isn't installed, handle according to fallback
+    # preference before attempting to construct the client.
+    if OpenAI is None:
+        if local_fallback:
+            print("Warning: 'openai' package not installed; falling back to local mode.", file=sys.stderr)
+            print(ask_local(prompt, system_prompt=args.system))
+            return EXIT_OK
+        print("Error: the 'openai' package is not installed. Install it with: pip install openai", file=sys.stderr)
+        return EXIT_USAGE
 
     try:
         client = OpenAI(**client_kwargs)
@@ -219,15 +306,31 @@ def main(argv: list[str] | None = None) -> int:
             system_prompt=args.system,
         )
     except AuthenticationError as exc:
+        if local_fallback:
+            print(f"Authentication failed ({exc}); using local fallback.", file=sys.stderr)
+            print(ask_local(prompt, system_prompt=args.system))
+            return EXIT_OK
         print(f"Authentication failed: {exc}", file=sys.stderr)
         return EXIT_AUTH
     except RateLimitError as exc:
+        if local_fallback:
+            print(f"Rate limited ({exc}); using local fallback.", file=sys.stderr)
+            print(ask_local(prompt, system_prompt=args.system))
+            return EXIT_OK
         print(f"Rate limit exceeded: {exc}", file=sys.stderr)
         return EXIT_RATE_LIMIT
     except APIConnectionError as exc:
+        if local_fallback:
+            print(f"Network error ({exc}); using local fallback.", file=sys.stderr)
+            print(ask_local(prompt, system_prompt=args.system))
+            return EXIT_OK
         print(f"Network error reaching OpenAI: {exc}", file=sys.stderr)
         return EXIT_NETWORK
     except APIError as exc:
+        if local_fallback:
+            print(f"OpenAI API error ({exc}); using local fallback.", file=sys.stderr)
+            print(ask_local(prompt, system_prompt=args.system))
+            return EXIT_OK
         print(f"OpenAI API error: {exc}", file=sys.stderr)
         return EXIT_API
     except ValueError as exc:

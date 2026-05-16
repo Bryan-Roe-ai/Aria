@@ -15,6 +15,8 @@ from typing import Optional, Sequence
 
 import numpy as np
 
+from .circuit_cache import CircuitCache
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -242,17 +244,31 @@ class QuantumSampler:
         shots: int = 512,
         num_layers: int = 2,
         seed: Optional[int] = None,
+        cache_enabled: bool = True,
+        cache_max_size: int = 256,
+        cache_ttl_seconds: float = 3600.0,
     ) -> None:
         self.effective_backend = _active_backend(backend)
         self.num_qubits = num_qubits
         self.shots = shots
         self.num_layers = num_layers
         self._rng = np.random.default_rng(seed)
+        
+        # Initialize circuit cache
+        self._cache_enabled = cache_enabled
+        self._cache = None
+        if cache_enabled:
+            self._cache = CircuitCache(
+                max_size=cache_max_size,
+                max_age_seconds=cache_ttl_seconds,
+            )
+        
         logger.info(
-            "QuantumSampler initialized: backend=%s, qubits=%d, shots=%d",
+            "QuantumSampler initialized: backend=%s, qubits=%d, shots=%d, cache=%s",
             self.effective_backend,
             num_qubits,
             shots,
+            "enabled" if cache_enabled else "disabled",
         )
 
     # ------------------------------------------------------------------
@@ -260,19 +276,36 @@ class QuantumSampler:
     # ------------------------------------------------------------------
 
     def _get_circuit_probs(self, params: np.ndarray) -> np.ndarray:
-        """Run the variational circuit and return probabilities over 2**n outcomes."""
+        """Run the variational circuit and return probabilities over 2**n outcomes.
+        
+        Checks cache first if enabled before computing circuit.
+        """
+        # Try cache first
+        if self._cache_enabled and self._cache is not None:
+            cached = self._cache.get(params, self.num_qubits)
+            if cached is not None:
+                return cached
+        
+        # Compute circuit
         if self.effective_backend == "pennylane":
-            return _pennylane_variational_probs(
+            probs = _pennylane_variational_probs(
                 params, self.num_qubits, self.shots, self.num_layers
             )
-        if self.effective_backend == "qiskit":
-            return _qiskit_variational_probs(
+        elif self.effective_backend == "qiskit":
+            probs = _qiskit_variational_probs(
                 params, self.num_qubits, self.shots, self.num_layers
             )
-        # Classical fallback
-        return _classical_variational_probs(
-            params, self.num_qubits, self.shots, self._rng
-        )
+        else:
+            # Classical fallback
+            probs = _classical_variational_probs(
+                params, self.num_qubits, self.shots, self._rng
+            )
+        
+        # Cache result
+        if self._cache_enabled and self._cache is not None:
+            self._cache.put(params, self.num_qubits, probs)
+        
+        return probs
 
     def sample(
         self,
@@ -328,3 +361,9 @@ class QuantumSampler:
 
         rng = np.random.default_rng(seed) if seed is not None else self._rng
         return int(rng.choice(k, p=blended))
+
+    def cache_stats(self) -> dict:
+        """Return cache performance statistics if enabled, else empty dict."""
+        if self._cache is None:
+            return {}
+        return self._cache.stats()

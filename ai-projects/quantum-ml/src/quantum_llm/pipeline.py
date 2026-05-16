@@ -105,6 +105,9 @@ class QuantumLLMPipeline:
             num_qubits=cfg.num_qubits,
             shots=cfg.shots,
             num_layers=cfg.num_layers,
+            cache_enabled=cfg.cache_enabled,
+            cache_max_size=cfg.cache_max_size,
+            cache_ttl_seconds=cfg.cache_ttl_seconds,
         )
         self.embedder = QuantumEmbeddingTransformer(
             backend=cfg.backend,
@@ -345,6 +348,7 @@ class QuantumLLMPipeline:
 
     def status(self) -> Dict[str, Any]:
         """Return a health/status dict for the ``/api/quantum-llm/status`` endpoint."""
+        cache_stats = self.sampler.cache_stats()
         return {
             "backend": self.effective_backend,
             "fallback": self.effective_backend == "classical",
@@ -359,4 +363,8 @@ class QuantumLLMPipeline:
             "router_backend": self.router.effective_backend,
             "embedder_backend": self.embedder.effective_backend,
             "sampler_backend": self.sampler.effective_backend,
+            "cache": {
+                "enabled": self.config.cache_enabled,
+                "stats": cache_stats,
+            },
         }

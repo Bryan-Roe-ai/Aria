@@ -85,6 +85,9 @@ class QuantumLLMConfig:
 
     # Performance
     use_thread: bool = True  # asyncio.to_thread for blocking quantum calls
+    cache_enabled: bool = True  # enable circuit result caching
+    cache_max_size: int = 256  # max cached circuits before LRU eviction
+    cache_ttl_seconds: float = 3600.0  # max age for cached entries (1 hour)
 
     def __post_init__(self) -> None:
         """Normalize and clamp config values to safe, valid ranges."""
@@ -110,6 +113,8 @@ class QuantumLLMConfig:
         self.max_tokens = min(self.max_tokens, self.max_tokens_cap)
 
         self.provider = (self.provider or "auto").strip()
+        self.cache_max_size = _coerce_int(self.cache_max_size, default=256, minimum=1)
+        self.cache_ttl_seconds = max(0.0, _coerce_float(self.cache_ttl_seconds, default=3600.0))
 
     @classmethod
     def from_env(cls) -> "QuantumLLMConfig":
@@ -127,6 +132,9 @@ class QuantumLLMConfig:
             max_tokens=_read_int_env("QUANTUM_LLM_MAX_TOKENS", 512),
             max_prompt_chars=_read_int_env("QUANTUM_LLM_MAX_PROMPT_CHARS", 8000),
             max_tokens_cap=_read_int_env("QUANTUM_LLM_MAX_TOKENS_CAP", 2048),
+            cache_enabled=os.getenv("QUANTUM_LLM_CACHE_ENABLED", "true").lower() in ("true", "1", "yes"),
+            cache_max_size=_read_int_env("QUANTUM_LLM_CACHE_MAX_SIZE", 256),
+            cache_ttl_seconds=_read_float_env("QUANTUM_LLM_CACHE_TTL_SECONDS", 3600.0),
         )
 
     def to_dict(self) -> dict:
@@ -142,4 +150,7 @@ class QuantumLLMConfig:
             "model": self.model,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
+            "cache_enabled": self.cache_enabled,
+            "cache_max_size": self.cache_max_size,
+            "cache_ttl_seconds": self.cache_ttl_seconds,
         }

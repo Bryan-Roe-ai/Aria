@@ -14,6 +14,7 @@ from .pipeline import QuantumLLMPipeline
 from .quantum_embeddings import QuantumEmbeddingTransformer
 from .quantum_router import QuantumRouter
 from .quantum_sampler import QuantumSampler
+from .circuit_cache import CircuitCache
 
 __all__ = [
     "QuantumLLMConfig",
@@ -21,4 +22,5 @@ __all__ = [
     "QuantumEmbeddingTransformer",
     "QuantumRouter",
     "QuantumSampler",
+    "CircuitCache",
 ]
