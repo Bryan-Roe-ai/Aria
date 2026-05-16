@@ -21,6 +21,16 @@ from typing import Annotated, List, Optional
 _LOG = logging.getLogger(__name__)
 _DEFAULT_PROVIDER_PRIORITY = ["azure", "openai", "lmstudio", "local"]
 
+
+def _normalize_provider_priority(value: object) -> List[str]:
+    if isinstance(value, str):
+        providers = [item.strip() for item in value.split(",") if item.strip()]
+        return providers or list(_DEFAULT_PROVIDER_PRIORITY)
+    if isinstance(value, (list, tuple)):
+        providers = [str(item).strip() for item in value if str(item).strip()]
+        return providers or list(_DEFAULT_PROVIDER_PRIORITY)
+    return list(_DEFAULT_PROVIDER_PRIORITY)
+
 # ---------------------------------------------------------------------------
 # Try to import pydantic v2 BaseSettings; fall back to a plain dataclass-style
 # class so the module never hard-fails in environments without pydantic.
@@ -90,7 +100,7 @@ if _PYDANTIC_AVAILABLE:
         # Provider selection
         # ------------------------------------------------------------------
         provider_priority: Annotated[List[str], NoDecode] = Field(
-            default=_DEFAULT_PROVIDER_PRIORITY,
+            default_factory=lambda: list(_DEFAULT_PROVIDER_PRIORITY),
             alias="QAI_PROVIDER_PRIORITY",
         )
 
@@ -176,13 +186,7 @@ if _PYDANTIC_AVAILABLE:
         @field_validator("provider_priority", mode="before")
         @classmethod
         def _validate_provider_priority(cls, value: object) -> List[str]:
-            if isinstance(value, str):
-                providers = [item.strip() for item in value.split(",") if item.strip()]
-                return providers or list(_DEFAULT_PROVIDER_PRIORITY)
-            if isinstance(value, (list, tuple)):
-                providers = [str(item).strip() for item in value if str(item).strip()]
-                return providers or list(_DEFAULT_PROVIDER_PRIORITY)
-            return list(_DEFAULT_PROVIDER_PRIORITY)
+            return _normalize_provider_priority(value)
 
         # ------------------------------------------------------------------
         # Derived helpers
@@ -256,13 +260,9 @@ else:
             )
             self.openai_api_key = os.environ.get("OPENAI_API_KEY")
             self.lmstudio_base_url = os.environ.get("LMSTUDIO_BASE_URL")
-            self.provider_priority = [
-                name.strip()
-                for name in os.environ.get(
-                    "QAI_PROVIDER_PRIORITY", ",".join(_DEFAULT_PROVIDER_PRIORITY)
-                ).split(",")
-                if name.strip()
-            ] or list(_DEFAULT_PROVIDER_PRIORITY)
+            self.provider_priority = _normalize_provider_priority(
+                os.environ.get("QAI_PROVIDER_PRIORITY", ",".join(_DEFAULT_PROVIDER_PRIORITY))
+            )
             self.db_connection_string = os.environ.get("QAI_DB_CONN")
             self.sql_pool_size = int(os.environ.get("QAI_SQL_POOL_SIZE", "10"))
             self.enable_cosmos = os.environ.get("QAI_ENABLE_COSMOS", "").lower() in (
@@ -417,6 +417,7 @@ def reset_settings() -> None:
     get_settings.cache_clear()
 
 
+# Backward compatibility alias used by existing tests/importers.
 AppSettings = Settings
 
 __all__ = ["Settings", "AppSettings", "get_settings", "reset_settings"]
