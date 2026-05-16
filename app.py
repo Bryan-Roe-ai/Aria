@@ -30,10 +30,10 @@ import typing
 if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-OpenAIAPIConnectionError: typing.Type[Exception] = Exception
-OpenAIAPIError: typing.Type[Exception] = Exception
-OpenAIAuthenticationError: typing.Type[Exception] = Exception
-OpenAIRateLimitError: typing.Type[Exception] = Exception
+OpenAIAPIConnectionError: type[Exception] = Exception
+OpenAIAPIError: type[Exception] = Exception
+OpenAIAuthenticationError: type[Exception] = Exception
+OpenAIRateLimitError: type[Exception] = Exception
 _OpenAIClass: typing.Any | None = None
 
 try:
@@ -98,6 +98,7 @@ except Exception:
 DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 DEFAULT_TEMPERATURE = 0.2
 DEFAULT_TIMEOUT_ENV = os.getenv("OPENAI_TIMEOUT", "60")
+MAX_PROMPT_CHARS = 10_000
 SYSTEM_PROMPT = (
     "You are a concise AI coding assistant. "
     "Return practical, code-focused responses."
@@ -139,6 +140,19 @@ def _validate_temperature(value: float) -> float:
     if not 0.0 <= value <= 2.0:
         raise ValueError("Temperature must be between 0.0 and 2.0.")
     return value
+
+
+def _validate_prompt(prompt: str, *, max_chars: int = MAX_PROMPT_CHARS) -> str:
+    """Validate and normalize user prompt text."""
+    normalized = (prompt or "").strip()
+    if not normalized:
+        raise ValueError("Prompt cannot be empty.")
+    if len(normalized) > max_chars:
+        raise ValueError(
+            f"Prompt is too long ({len(normalized)} chars). "
+            f"Maximum supported length is {max_chars} chars."
+        )
+    return normalized
 
 
 def _extract_text(resp: typing.Any) -> str:
@@ -188,13 +202,11 @@ def ask_ai(
     system_prompt: str = SYSTEM_PROMPT,
 ) -> str:
     """Send ``prompt`` to the Responses API and return the extracted text."""
-    prompt = prompt.strip()
+    prompt = _validate_prompt(prompt)
     system_prompt = system_prompt.strip()
     model = model.strip()
     temperature = _validate_temperature(temperature)
 
-    if not prompt:
-        raise ValueError("Prompt cannot be empty.")
     if not model:
         raise ValueError("Model cannot be empty.")
     if not system_prompt:
@@ -220,10 +232,8 @@ def ask_local(prompt: str, *, system_prompt: str = SYSTEM_PROMPT) -> str:
     user explicitly requests local mode. It deliberately keeps behavior
     deterministic and safe for local use.
     """
-    prompt = (prompt or "").strip()
+    prompt = _validate_prompt(prompt)
     system_prompt = (system_prompt or "").strip()
-    if not prompt:
-        raise ValueError("Prompt cannot be empty.")
     if not system_prompt:
         raise ValueError("System prompt cannot be empty.")
 
@@ -351,9 +361,10 @@ def main(argv: list[str] | None = None) -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    prompt = _read_prompt(args.prompt)
-    if not prompt:
-        print("Error: prompt cannot be empty.", file=sys.stderr)
+    try:
+        prompt = _validate_prompt(_read_prompt(args.prompt))
+    except ValueError as exc:
+        print(f"Invalid input: {exc}", file=sys.stderr)
         return EXIT_USAGE
 
     # Local mode is fully offline and should not require cloud credentials.
@@ -391,9 +402,11 @@ def main(argv: list[str] | None = None) -> int:
         "api_key": api_key,
         "timeout": timeout,
     }
-    if base_url := os.getenv("OPENAI_BASE_URL"):
-        client_kwargs["base_url"] = base_url.strip()
-    if org := os.getenv("OPENAI_ORG"):
+    base_url = (os.getenv("OPENAI_BASE_URL") or "").strip()
+    if base_url:
+        client_kwargs["base_url"] = base_url
+    org = (os.getenv("OPENAI_ORG") or "").strip()
+    if org:
         client_kwargs["organization"] = org
     # If the openai package isn't installed, handle according to fallback
     # preference before attempting to construct the client.
