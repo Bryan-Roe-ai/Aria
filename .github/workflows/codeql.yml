@@ -69,8 +69,6 @@ jobs:
         include:
           - language: actions
             build-mode: none
-          - language: csharp
-            build-mode: none
           - language: javascript-typescript
             build-mode: none
           - language: python
