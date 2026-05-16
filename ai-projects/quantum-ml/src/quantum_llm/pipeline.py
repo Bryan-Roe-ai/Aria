@@ -16,7 +16,8 @@ import asyncio
 import json
 import logging
 import time
-from typing import Any, AsyncIterator, Dict, List, Optional
+from collections.abc import AsyncIterator
+from typing import Any
 
 import numpy as np
 
@@ -36,8 +37,8 @@ logger = logging.getLogger(__name__)
 def _resolve_detect_provider():
     """Try to import detect_provider from the existing chat-cli stack."""
     try:
-        from pathlib import Path
         import sys
+        from pathlib import Path
 
         # Walk up to find the repo root (sentinel: pyproject.toml or .git)
         current = Path(__file__).resolve()
@@ -96,7 +97,7 @@ class QuantumLLMPipeline:
         Pipeline configuration.  Defaults to ``QuantumLLMConfig.from_env()``.
     """
 
-    def __init__(self, config: Optional[QuantumLLMConfig] = None) -> None:
+    def __init__(self, config: QuantumLLMConfig | None = None) -> None:
         self.config = config or QuantumLLMConfig.from_env()
         cfg = self.config
 
@@ -105,6 +106,9 @@ class QuantumLLMPipeline:
             num_qubits=cfg.num_qubits,
             shots=cfg.shots,
             num_layers=cfg.num_layers,
+            cache_enabled=cfg.cache_enabled,
+            cache_max_size=cfg.cache_max_size,
+            cache_ttl_seconds=cfg.cache_ttl_seconds,
         )
         self.embedder = QuantumEmbeddingTransformer(
             backend=cfg.backend,
@@ -129,7 +133,7 @@ class QuantumLLMPipeline:
     # Provider resolution
     # ------------------------------------------------------------------
 
-    def _get_provider(self, prompt: str, explicit_provider: Optional[str] = None):
+    def _get_provider(self, prompt: str, explicit_provider: str | None = None):
         """Resolve and return a chat provider instance."""
         provider_name = explicit_provider or self.config.provider
 
@@ -167,7 +171,7 @@ class QuantumLLMPipeline:
     # Token re-sampling
     # ------------------------------------------------------------------
 
-    def _resample_response(self, text: str, seed: Optional[int] = None) -> str:
+    def _resample_response(self, text: str, seed: int | None = None) -> str:
         """
         Apply quantum token re-sampling to a generated text.
 
@@ -182,10 +186,9 @@ class QuantumLLMPipeline:
         # Synthetic logits: prefer shorter words (simulate token probability)
         logits = [-len(w) * 0.1 for w in words]
         k = min(len(words), self.config.top_k)
-        top_indices = sorted(range(len(words)), key=lambda i: logits[i], reverse=True)[:k]
-        top_logits = [logits[i] for i in top_indices]
+        top_logits = sorted(logits, reverse=True)[:k]
 
-        sampled_pos = self.sampler.sample(
+        _ = self.sampler.sample(
             top_logits,
             blend_factor=self.config.temperature_blend,
             seed=seed,
@@ -201,10 +204,10 @@ class QuantumLLMPipeline:
     async def generate(
         self,
         prompt: str,
-        provider: Optional[str] = None,
-        seed: Optional[int] = None,
+        provider: str | None = None,
+        seed: int | None = None,
         **kwargs: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate a completion for ``prompt`` (non-streaming).
 
@@ -270,6 +273,8 @@ class QuantumLLMPipeline:
             "backend": self.effective_backend,
             "qubits": self.config.num_qubits,
             "shots": self.config.shots,
+            "embedding_dim": int(embedding.size),
+            "embedding_norm": float(np.linalg.norm(embedding)),
             "latency_ms": latency_ms,
             "quantum_augmented": True,
         }
@@ -277,8 +282,8 @@ class QuantumLLMPipeline:
     async def stream(
         self,
         prompt: str,
-        provider: Optional[str] = None,
-        seed: Optional[int] = None,
+        provider: str | None = None,
+        seed: int | None = None,
         **kwargs: Any,
     ) -> AsyncIterator[str]:
         """
@@ -343,8 +348,9 @@ class QuantumLLMPipeline:
         yield f'data: {json.dumps(done_meta)}\n\n'
         yield "data: [DONE]\n\n"
 
-    def status(self) -> Dict[str, Any]:
+    def status(self) -> dict[str, Any]:
         """Return a health/status dict for the ``/api/quantum-llm/status`` endpoint."""
+        cache_stats = self.sampler.cache_stats()
         return {
             "backend": self.effective_backend,
             "fallback": self.effective_backend == "classical",
@@ -359,4 +365,8 @@ class QuantumLLMPipeline:
             "router_backend": self.router.effective_backend,
             "embedder_backend": self.embedder.effective_backend,
             "sampler_backend": self.sampler.effective_backend,
+            "cache": {
+                "enabled": self.config.cache_enabled,
+                "stats": cache_stats,
+            },
         }

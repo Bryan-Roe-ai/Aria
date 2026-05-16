@@ -100,6 +100,30 @@ class ChatProviderTests(unittest.TestCase):
         )
         self.assertNotIn("canned responses", lowered)
 
+    def test_local_echo_summary_request_returns_ranked_extract(self) -> None:
+        """Offline summary mode should remove boilerplate and keep key content."""
+        provider = chat_providers.LocalEchoProvider(seed=4)
+        messages = [
+            {
+                "role": "user",
+                "content": (
+                    "Summarize this. Alpha release improves local summaries by ranking sentences. "
+                    "It removes prompt boilerplate before scoring. "
+                    "The fallback stays fully offline and deterministic."
+                ),
+            }
+        ]
+
+        reply = provider.complete(messages, stream=False)
+
+        self.assertIsInstance(reply, str)
+        self.assertIn("Local summary:", reply)
+        self.assertIn(
+            "Alpha release improves local summaries by ranking sentences.", reply
+        )
+        self.assertIn("It removes prompt boilerplate before scoring.", reply)
+        self.assertNotIn("Summarize this", reply)
+
     def test_save_conversation_writes_jsonl(self) -> None:
         """save_conversation should persist one JSON object per line in order."""
         messages = [

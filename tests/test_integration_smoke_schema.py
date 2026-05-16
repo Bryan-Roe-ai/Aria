@@ -64,6 +64,19 @@ def test_run_smoke_summary_includes_run_and_config_metadata(
     )
     monkeypatch.setattr(
         smoke_module,
+        "_probe_agi_endpoints",
+        lambda strict: [
+            smoke_module.StepResult(
+                name="functions_agi_status_endpoint",
+                status="skipped",
+                critical=False,
+                duration_sec=0.0,
+                detail="functions host not running (non-strict mode)",
+            )
+        ],
+    )
+    monkeypatch.setattr(
+        smoke_module,
         "resolve_existing_config_path",
         lambda _repo_root, key: config_map.get(key),
     )

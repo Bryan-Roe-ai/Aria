@@ -4,6 +4,8 @@ Handles learning signals, evaluation feedback, and optimization workflows
 within the Aria multi-agent runtime.
 """
 
+from __future__ import annotations
+
 from typing import Dict, Any
 from core.agent import BaseAgent
 from core.task import Task
@@ -23,10 +25,12 @@ class TrainingAgent(BaseAgent):
         signal_type = task.type
 
         # Store experience
-        self.buffer.append({
-            "type": signal_type,
-            "data": payload,
-        })
+        self.buffer.append(
+            {
+                "type": signal_type,
+                "data": dict(payload),
+            }
+        )
 
         result = self._process(signal_type, payload)
 
@@ -36,6 +40,7 @@ class TrainingAgent(BaseAgent):
             "status": "recorded",
             "result": result,
             "buffer_size": len(self.buffer),
+            "summary": self.summary(),
         }
 
     def _process(self, signal_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -53,3 +58,15 @@ class TrainingAgent(BaseAgent):
             return {"ack": "optimization queued"}
 
         return {"ack": "unknown training operation"}
+
+    def summary(self) -> Dict[str, Any]:
+        counts: Dict[str, int] = {}
+        for entry in self.buffer:
+            signal_type = entry.get("type", "unknown")
+            counts[signal_type] = counts.get(signal_type, 0) + 1
+        latest = self.buffer[-1] if self.buffer else None
+        return {
+            "total_signals": len(self.buffer),
+            "counts": counts,
+            "latest_signal": latest.get("type") if latest else None,
+        }

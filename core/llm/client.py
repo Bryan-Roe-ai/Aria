@@ -1,7 +1,7 @@
 """
 Aria LLM Client
 Unified abstraction layer for future model providers (OpenAI, local, Ollama, etc.).
-Currently a lightweight stub returning structured outputs.
+Currently a lightweight offline simulator returning deterministic JSON outputs.
 """
 
 from __future__ import annotations

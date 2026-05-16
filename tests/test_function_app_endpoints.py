@@ -526,6 +526,205 @@ class TestPostValidation:
 
 
 # ===========================================================================
+# AGI endpoint tests — /api/agi/analyze and /api/agi/status
+# ===========================================================================
+class TestAgiEndpoints:
+    def test_agi_analyze_uses_query_and_returns_routing(self, app_module, monkeypatch):
+        class _FakeAgiProvider:
+            def _analyze_query(self, query: str):
+                assert query == "implement a safer routing layer"
+                return {
+                    "complexity": "complex",
+                    "intent": "coding",
+                    "domain": "ai",
+                    "confidence": 0.92,
+                }
+
+            def _select_agent(self, analysis):
+                assert analysis["intent"] == "coding"
+                return "code-specialist", 0.88
+
+        monkeypatch.setattr(
+            app_module,
+            "create_agi_provider",
+            lambda **kwargs: (
+                _FakeAgiProvider(),
+                types.SimpleNamespace(name="local", model="local-echo"),
+            ),
+        )
+
+        req = _mock_request(
+            "POST",
+            body={"query": "implement a safer routing layer"},
+        )
+        resp = app_module.agi_analyze(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+        assert data["analysis"]["intent"] == "coding"
+        assert data["routing"]["selected_agent"] == "code-specialist"
+        assert data["provider"]["name"] == "agi"
+
+    def test_agi_analyze_validation_error_when_missing_query(self, app_module):
+        req = _mock_request("POST", body={})
+        resp = app_module.agi_analyze(req)
+
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert data["status"] == "error"
+        assert "validation error" in data["error"].lower()
+
+    def test_agi_status_returns_reasoning_summary(self, app_module, monkeypatch):
+        class _FakeAgiProvider:
+            def get_reasoning_summary(self):
+                return {
+                    "total_reasoning_chains": 3,
+                    "active_goals": ["improve reliability"],
+                    "learned_patterns_count": 2,
+                    "top_learned_patterns": [],
+                    "conversation_length": 12,
+                    "last_agent_used": "code-specialist",
+                    "last_agent_score": 0.81,
+                    "available_agents": ["general", "code-specialist"],
+                }
+
+        monkeypatch.setattr(
+            app_module,
+            "create_agi_provider",
+            lambda **kwargs: (
+                _FakeAgiProvider(),
+                types.SimpleNamespace(name="azure", model="gpt-4o"),
+            ),
+        )
+
+        req = _mock_request("GET")
+        resp = app_module.agi_status(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+        assert data["available"] is True
+        assert data["provider"]["name"] == "agi"
+        assert data["reasoning"]["total_reasoning_chains"] == 3
+
+    def test_agi_reason_returns_response_and_summary(self, app_module, monkeypatch):
+        class _FakeAgiProvider:
+            def __init__(self):
+                self.goals = []
+
+            def set_goal(self, goal: str):
+                self.goals.append(goal)
+
+            def complete(self, messages, stream=False):
+                assert stream is False
+                assert messages[-1]["content"] == "reason through this architecture"
+                return "Here is a reasoned response"
+
+            def get_reasoning_summary(self):
+                return {
+                    "total_reasoning_chains": 1,
+                    "active_goals": self.goals,
+                    "learned_patterns_count": 0,
+                    "top_learned_patterns": [],
+                    "conversation_length": 2,
+                    "last_agent_used": "reasoning-specialist",
+                    "last_agent_score": 0.77,
+                    "available_agents": ["general", "reasoning-specialist"],
+                }
+
+        monkeypatch.setattr(
+            app_module,
+            "create_agi_provider",
+            lambda **kwargs: (
+                _FakeAgiProvider(),
+                types.SimpleNamespace(name="openai", model="gpt-test"),
+            ),
+        )
+
+        req = _mock_request(
+            "POST",
+            body={
+                "query": "reason through this architecture",
+                "goals": ["be concise"],
+            },
+        )
+        resp = app_module.agi_reason(req)
+
+        assert resp.status_code == 200
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+        assert data["response"] == "Here is a reasoned response"
+        assert data["reasoning"]["active_goals"] == ["be concise"]
+
+    def test_agi_reason_validation_error_when_missing_input(self, app_module):
+        req = _mock_request("POST", body={})
+        resp = app_module.agi_reason(req)
+
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert data["status"] == "error"
+        assert "validation error" in data["error"].lower()
+
+    def test_agi_stream_emits_done_sentinel(self, app_module, monkeypatch):
+        import inspect
+
+        import azure.functions as _af
+
+        captured: dict = {"sse_body": b""}
+
+        class _FakeAgiProvider:
+            def complete(self, messages, stream=False):
+                assert stream is True
+                yield "Hello"
+                yield " world"
+
+            def set_goal(self, _goal: str):
+                return None
+
+        monkeypatch.setattr(
+            app_module,
+            "create_agi_provider",
+            lambda **kwargs: (
+                _FakeAgiProvider(),
+                types.SimpleNamespace(name="local", model="local-echo"),
+            ),
+        )
+
+        _real_HttpResponse = _af.HttpResponse
+
+        def _capturing_HttpResponse(body=None, **kwargs):
+            if body is not None and inspect.isgenerator(body):
+                consumed = b"".join(body)
+                captured["sse_body"] = consumed
+                return _real_HttpResponse(consumed, **kwargs)
+            return _real_HttpResponse(body, **kwargs)
+
+        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
+
+        req = _mock_request(
+            "POST",
+            body={"query": "stream a short response", "goals": ["be concise"]},
+        )
+        resp = app_module.agi_stream(req)
+
+        assert resp.status_code == 200
+        body_text = captured["sse_body"].decode("utf-8")
+        assert "event: meta" in body_text
+        assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
+        assert "data: [DONE]" in body_text
+
+    def test_agi_stream_validation_error_when_missing_input(self, app_module):
+        req = _mock_request("POST", body={})
+        resp = app_module.agi_stream(req)
+
+        assert resp.status_code == 400
+        data = json.loads(resp.get_body())
+        assert data["status"] == "error"
+        assert "validation error" in data["error"].lower()
+
+
+# ===========================================================================
 # Quantum LLM endpoint tests — /api/quantum/llm
 # ===========================================================================
 class TestQuantumLlmEndpoint:
@@ -716,6 +915,32 @@ class TestRequestValidator:
             CHAT_SCHEMA,
         )
         assert err is None
+
+    def test_agi_reason_schema_accepts_query_and_goals(self):
+        from shared.request_validator import AGI_REASON_SCHEMA, validate_fields
+
+        err = validate_fields(
+            {
+                "query": "Reason through this architecture",
+                "goals": ["be concise"],
+                "temperature": 0.3,
+                "include_reasoning_summary": True,
+            },
+            AGI_REASON_SCHEMA,
+        )
+        assert err is None
+
+    def test_agi_stream_schema_rejects_invalid_temperature(self):
+        from shared.request_validator import AGI_STREAM_SCHEMA, validate_fields
+
+        err = validate_fields(
+            {
+                "query": "Stream",
+                "temperature": 3.5,
+            },
+            AGI_STREAM_SCHEMA,
+        )
+        assert err is not None
 
     def test_validate_min_length(self):
         from shared.request_validator import validate_fields

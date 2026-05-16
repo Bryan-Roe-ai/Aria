@@ -16,7 +16,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.error import URLError
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 try:
     from .config_paths import (canonical_config_path, get_config_candidates,
@@ -158,6 +158,42 @@ def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]
         return json.loads(resp.read().decode("utf-8"))
 
 
+def _fetch_local_functions_json(
+    url: str,
+    *,
+    method: str = "GET",
+    payload: Optional[Dict[str, Any]] = None,
+    timeout: int = 5,
+) -> Dict[str, Any]:
+    """Fetch and parse a JSON response from local Functions endpoints."""
+    data = None
+    headers = {}
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = Request(url=url, data=data, headers=headers, method=method)
+    with urlopen(req, timeout=timeout) as resp:  # noqa: S310 - local probe
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def _fetch_local_functions_sse(
+    url: str,
+    *,
+    payload: Dict[str, Any],
+    timeout: int = 8,
+) -> str:
+    """Fetch raw SSE body text from local Functions endpoints."""
+    data = json.dumps(payload).encode("utf-8")
+    req = Request(
+        url=url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urlopen(req, timeout=timeout) as resp:  # noqa: S310 - local probe
+        return resp.read().decode("utf-8", errors="replace")
+
+
 def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
     """Best-effort fallback: start local adapter and retry endpoint probe."""
     proc: Optional[subprocess.Popen[str]] = None
@@ -193,6 +229,182 @@ def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
                 proc.wait(timeout=2)
             except subprocess.TimeoutExpired:
                 proc.kill()
+
+
+def _probe_with_local_dev_adapter_request(
+    *,
+    url: str,
+    method: str = "GET",
+    payload: Optional[Dict[str, Any]] = None,
+    sse: bool = False,
+) -> Optional[Any]:
+    """Best-effort adapter probe for arbitrary local Functions endpoints."""
+    proc: Optional[subprocess.Popen[str]] = None
+    deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
+
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "local_dev_adapter.py"],
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+
+        while time.time() < deadline:
+            try:
+                remaining = max(1.0, deadline - time.time())
+                request_timeout = min(
+                    LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
+                    remaining,
+                )
+                if sse:
+                    return _fetch_local_functions_sse(
+                        url,
+                        payload=payload or {},
+                        timeout=int(request_timeout),
+                    )
+                return _fetch_local_functions_json(
+                    url,
+                    method=method,
+                    payload=payload,
+                    timeout=int(request_timeout),
+                )
+            except (URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+                time.sleep(0.25)
+
+        return None
+    except OSError:
+        return None
+    finally:
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+
+def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
+    """Probe AGI HTTP routes with minimal contract checks."""
+    results: List[StepResult] = []
+
+    endpoints = [
+        {
+            "name": "functions_agi_status_endpoint",
+            "url": "http://localhost:7071/api/agi/status",
+            "method": "GET",
+            "payload": None,
+            "required_key": "available",
+            "sse": False,
+        },
+        {
+            "name": "functions_agi_analyze_endpoint",
+            "url": "http://localhost:7071/api/agi/analyze",
+            "method": "POST",
+            "payload": {"query": "integration smoke analyze"},
+            "required_key": "analysis",
+            "sse": False,
+        },
+        {
+            "name": "functions_agi_stream_endpoint",
+            "url": "http://localhost:7071/api/agi/stream",
+            "method": "POST",
+            "payload": {"query": "integration smoke stream"},
+            "required_key": "data: [DONE]",
+            "sse": True,
+        },
+    ]
+
+    for ep in endpoints:
+        start = time.perf_counter()
+        try:
+            if ep["sse"]:
+                body = _fetch_local_functions_sse(
+                    ep["url"],
+                    payload=ep["payload"] or {},
+                    timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
+                )
+                ok = ep["required_key"] in body and "\"delta\"" in body
+                if not ok:
+                    raise ValueError("stream_missing_expected_sse_markers")
+                detail = "sse=[DONE]+delta"
+            else:
+                payload = _fetch_local_functions_json(
+                    ep["url"],
+                    method=ep["method"],
+                    payload=ep["payload"],
+                    timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
+                )
+                if ep["required_key"] not in payload:
+                    raise ValueError(f"missing_key={ep['required_key']}")
+                detail = f"has_key={ep['required_key']}"
+
+            duration = round(time.perf_counter() - start, 2)
+            results.append(
+                StepResult(
+                    name=ep["name"],
+                    status="succeeded",
+                    critical=strict,
+                    duration_sec=duration,
+                    detail=detail,
+                )
+            )
+        except (URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError):
+            duration = round(time.perf_counter() - start, 2)
+            if strict:
+                fallback = _probe_with_local_dev_adapter_request(
+                    url=ep["url"],
+                    method=ep["method"],
+                    payload=ep["payload"],
+                    sse=bool(ep["sse"]),
+                )
+                if fallback is not None:
+                    if ep["sse"]:
+                        if ep["required_key"] in fallback and '"delta"' in fallback:
+                            results.append(
+                                StepResult(
+                                    name=ep["name"],
+                                    status="succeeded",
+                                    critical=True,
+                                    duration_sec=duration,
+                                    detail="sse=[DONE]+delta | via=local_dev_adapter",
+                                )
+                            )
+                            continue
+                    elif isinstance(fallback, dict) and ep["required_key"] in fallback:
+                        results.append(
+                            StepResult(
+                                name=ep["name"],
+                                status="succeeded",
+                                critical=True,
+                                duration_sec=duration,
+                                detail=f"has_key={ep['required_key']} | via=local_dev_adapter",
+                            )
+                        )
+                        continue
+
+                results.append(
+                    StepResult(
+                        name=ep["name"],
+                        status="failed",
+                        critical=True,
+                        duration_sec=duration,
+                        detail=f"endpoint_unreachable={ep['url']}",
+                    )
+                )
+            else:
+                results.append(
+                    StepResult(
+                        name=ep["name"],
+                        status="skipped",
+                        critical=False,
+                        duration_sec=duration,
+                        detail="functions host not running (non-strict mode)",
+                    )
+                )
+
+    return results
 
 
 def _probe_functions_endpoint(strict: bool) -> StepResult:
@@ -337,6 +549,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
     )
 
     steps.append(_probe_functions_endpoint(strict_endpoints))
+    steps.extend(_probe_agi_endpoints(strict_endpoints))
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")

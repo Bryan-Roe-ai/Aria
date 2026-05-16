@@ -9,6 +9,7 @@ Usage
     result = asyncio.run(pipeline.generate("Hello, world!"))
 """
 
+from .circuit_cache import CircuitCache
 from .config import QuantumLLMConfig
 from .pipeline import QuantumLLMPipeline
 from .quantum_embeddings import QuantumEmbeddingTransformer
@@ -21,4 +22,5 @@ __all__ = [
     "QuantumEmbeddingTransformer",
     "QuantumRouter",
     "QuantumSampler",
+    "CircuitCache",
 ]

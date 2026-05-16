@@ -24,16 +24,36 @@ class PlannerAgent(BaseAgent):
 
     def execute(self, task: Task) -> Dict[str, Any]:
         payload = task.payload or {}
-        goal = payload.get("goal") or payload.get("input") or ""
+        goal = (payload.get("goal") or payload.get("input") or "").strip()
 
         history = self.memory.last(20)
+        if not goal:
+            result = {
+                "agent": self.name,
+                "task_id": task.id,
+                "goal": "",
+                "plan": [],
+                "error": "No goal provided",
+            }
+            self.memory.write(
+                "plan_created",
+                {
+                    "goal": "",
+                    "plan": [],
+                    "error": "No goal provided",
+                },
+            )
+            return result
 
         plan = self._create_plan(goal, history)
 
-        self.memory.write("plan_created", {
-            "goal": goal,
-            "plan": plan,
-        })
+        self.memory.write(
+            "plan_created",
+            {
+                "goal": goal,
+                "plan": plan,
+            },
+        )
 
         return {
             "agent": self.name,
@@ -43,9 +63,6 @@ class PlannerAgent(BaseAgent):
         }
 
     def _create_plan(self, goal: str, history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        if not goal:
-            return [{"error": "No goal provided"}]
-
         context_summary = self._summarize_history(history)
 
         messages = [
@@ -89,12 +106,28 @@ Return a JSON list of tasks in this format:
     def _attach_ids(self, steps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         out = []
         for s in steps:
-            s["id"] = str(uuid.uuid4())
-            out.append(s)
+            if not isinstance(s, dict):
+                continue
+            step = dict(s)
+            step_type = step.get("type")
+            if not isinstance(step_type, str) or not step_type.strip():
+                continue
+            step["id"] = str(uuid.uuid4())
+            step.setdefault("payload", {})
+            out.append(step)
         return out
 
     def _summarize_history(self, history: List[Dict[str, Any]]) -> str:
         if not history:
             return "No prior context"
 
-        return " | ".join(e.get("type", "event") for e in history[-5:])
+        summaries = []
+        for event in history[-5:]:
+            event_type = event.get("type", "event")
+            data = event.get("data", {})
+            if isinstance(data, dict) and data:
+                keys = ", ".join(sorted(data.keys())[:3])
+                summaries.append(f"{event_type}({keys})")
+            else:
+                summaries.append(event_type)
+        return " | ".join(summaries)

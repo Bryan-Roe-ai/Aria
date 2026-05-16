@@ -10,7 +10,9 @@ Improvements:
 - Clearer typing and docstrings; goal length limiting and sanitization.
 """
 
-from typing import Dict, Any, Optional, Sequence
+from typing import Dict, Any
+import json
+
 from core.agent import BaseAgent
 from core.task import Task
 from core.memory.store import MemoryStore
@@ -44,18 +46,14 @@ class GoalEvolutionAgent(BaseAgent):
         Returns a dict containing the chosen goal and metadata.
         """
         history = self.memory.last(30)
-
         prompt = self._build_prompt(history)
 
         messages = [
             {
                 "role": "system",
-                "content": "You are a goal evolution engine. Output ONLY a JSON object with a single field: goal."
+                "content": "You are a goal evolution engine. Output ONLY a JSON object with a single field: goal.",
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
+            {"role": "user", "content": prompt},
         ]
 
         raw = ""

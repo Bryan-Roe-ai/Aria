@@ -22,6 +22,7 @@ graph TD
 | `QuantumSampler` | `quantum_sampler.py` | Re-weights LLM top-k logits via variational circuit |
 | `QuantumEmbeddingTransformer` | `quantum_embeddings.py` | Amplitude-encoding + variational transform |
 | `QuantumRouter` | `quantum_router.py` | QAOA-style provider routing |
+| `CircuitCache` | `circuit_cache.py` | LRU + TTL cache for circuit probability outputs |
 | `QuantumLLMPipeline` | `pipeline.py` | Wires all components; exposes `generate` / `stream` |
 | `QuantumLLMConfig` | `config.py` | Dataclass settings with env-var support |
 
@@ -50,6 +51,9 @@ All settings can be overridden via environment variables:
 | `QUANTUM_LLM_PROVIDER` | `auto` | Downstream LLM provider |
 | `QUANTUM_LLM_MAX_TOKENS` | `512` | Max output tokens |
 | `QUANTUM_LLM_MAX_PROMPT_CHARS` | `8000` | Prompt size limit |
+| `QUANTUM_LLM_CACHE_ENABLED` | `true` | Enable/disable circuit cache |
+| `QUANTUM_LLM_CACHE_MAX_SIZE` | `256` | Max cache entries (LRU) |
+| `QUANTUM_LLM_CACHE_TTL_SECONDS` | `3600` | Entry TTL in seconds (`0` disables expiration) |
 
 Python usage:
 
@@ -104,6 +108,8 @@ curl -X POST http://localhost:7071/api/quantum-llm/chat \
   "backend": "classical",
   "qubits": 4,
   "shots": 512,
+  "embedding_dim": 256,
+  "embedding_norm": 9.42,
   "latency_ms": 12.3,
   "quantum_augmented": true
 }
