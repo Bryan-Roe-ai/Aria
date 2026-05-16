@@ -212,8 +212,9 @@ def main() -> None:
         )
         sys.exit(1)
     else:
+        names = ", ".join(findings)
         print(
-            f"⚠️  SECRETS WARNING: Possible hardcoded secret detected{path_hint}. "
+            f"⚠️  SECRETS WARNING: Possible hardcoded secret detected{path_hint}. {names}. "
             "Verify this is not a real credential. Use env vars or local.settings.json for secrets."
         )
     sys.exit(0)
