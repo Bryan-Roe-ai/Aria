@@ -69,7 +69,12 @@ def _pennylane_amplitude_transform(
     num_layers: int,
 ) -> np.ndarray:
     """Amplitude-encode + variational transform via PennyLane."""
-    import pennylane as qml  # noqa: PLC0415
+    try:
+        import pennylane as qml  # type: ignore  # noqa: PLC0415
+    except ImportError:
+        logger.warning(
+            "PennyLane not available, using classical fallback")
+        return _classical_amplitude_transform(embedding, params, num_qubits)
 
     dim = len(embedding)
     pad_to = 2**num_qubits
@@ -83,7 +88,8 @@ def _pennylane_amplitude_transform(
 
     @qml.qnode(dev)
     def circuit(state_vec, params):
-        qml.AmplitudeEmbedding(state_vec, wires=range(num_qubits), normalize=True)
+        qml.AmplitudeEmbedding(
+            state_vec, wires=range(num_qubits), normalize=True)
         for layer in range(num_layers):
             for q in range(num_qubits):
                 idx = (layer * num_qubits + q) % len(params)
@@ -113,11 +119,12 @@ def _qiskit_amplitude_transform(
 ) -> np.ndarray:
     """Amplitude-encode + variational transform via Qiskit statevector sim."""
     try:
-        from qiskit import QuantumCircuit, transpile  # noqa: PLC0415
-        from qiskit.circuit import ParameterVector  # noqa: PLC0415
+        from qiskit import QuantumCircuit, transpile  # type: ignore  # noqa: PLC0415
+        from qiskit.circuit import ParameterVector  # type: ignore  # noqa: PLC0415
         from qiskit_aer import AerSimulator  # type: ignore  # noqa: PLC0415
     except ImportError:
-        logger.warning("Qiskit/AerSimulator not available, using classical fallback")
+        logger.warning(
+            "Qiskit/AerSimulator not available, using classical fallback")
         return _classical_amplitude_transform(embedding, params, num_qubits)
 
     dim = len(embedding)
@@ -145,7 +152,8 @@ def _qiskit_amplitude_transform(
         for q in range(n - 1):
             qc.cx(q, q + 1)
 
-    param_dict = {pv[i]: float(params[i % len(params)]) for i in range(total_params)}
+    param_dict = {pv[i]: float(params[i % len(params)])
+                  for i in range(total_params)}
     bound = qc.assign_parameters(param_dict)
 
     sim = AerSimulator(method="statevector")
