@@ -41,6 +41,7 @@ class LLMClient:
             return json.dumps({"goal": self._goal_from_prompt(prompt)})
 
         if "planning engine" in system_prompt.lower():
+            # Return a simple multi-step plan: an LLM step followed by a tool step
             return json.dumps(
                 [
                     {
@@ -48,7 +49,14 @@ class LLMClient:
                         "payload": {
                             "prompt": self._extract_goal(prompt),
                         },
-                    }
+                    },
+                    {
+                        "type": "tool",
+                        "payload": {
+                            "tool": "inspect_context",
+                            "args": {"goal": self._extract_goal(prompt)},
+                        },
+                    },
                 ]
             )
 

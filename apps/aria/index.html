@@ -125,6 +125,19 @@
 
       <aside class="panel control-panel" aria-label="Control panel">
         <h3 style="margin-top:0">Object Manager</h3>
+        <div style="margin:8px 0">
+          <label for="providerSelect" style="display:block;font-weight:600;margin-bottom:6px">Provider</label>
+          <select id="providerSelect" name="providerSelect" style="width:100%;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.08)">
+            <option value="auto">Auto</option>
+            <option value="local">Local</option>
+            <option value="openai">OpenAI</option>
+            <option value="azure">Azure</option>
+            <option value="quantum-llm">Quantum LLM</option>
+          </select>
+          <label for="modelInput" style="display:block;font-weight:600;margin-top:8px">Model / Path</label>
+          <input id="modelInput" name="modelInput" placeholder="model name or path" style="width:100%;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.08)" />
+          <div style="margin-top:8px"><label><input id="useLlmToggle" type="checkbox" /> Use LLM</label></div>
+        </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           <button class="object-btn" data-add="apple">Add Apple</button>
           <button class="object-btn" data-add="book">Add Book</button>

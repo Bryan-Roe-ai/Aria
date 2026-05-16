@@ -131,7 +131,47 @@
 			"command": "bash",
 			"args": [
 				"-lc",
-				"cd \"${workspaceFolder}\" && mkdir -p data_out && nohup bash ./scripts/aria_forever_watchdog.sh >> data_out/aria_forever_watchdog.log 2>&1 & echo 'started: scripts/aria_forever_watchdog.sh'"
+				"cd \"${workspaceFolder}\"; mkdir -p data_out; nohup bash ./scripts/aria_forever_watchdog.sh >> data_out/aria_forever_watchdog.log 2>&1 & echo started: scripts/aria_forever_watchdog.sh"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automation: go-forever-stop",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\"; if [ -f data_out/aria_forever_watchdog.pid ]; then kill $(cat data_out/aria_forever_watchdog.pid) 2>/dev/null || true; kill -9 $(cat data_out/aria_forever_watchdog.pid) 2>/dev/null || true; fi; for pid in $(pgrep -f \"scripts/aria_forever_watchdog.sh\" || true); do [ \"$pid\" = \"$$\" ] && continue; kill \"$pid\" 2>/dev/null || true; kill -9 \"$pid\" 2>/dev/null || true; done; for pid in $(pgrep -f \"repo_health_automation.py --watch --interval 300\" || true); do [ \"$pid\" = \"$$\" ] && continue; kill \"$pid\" 2>/dev/null || true; kill -9 \"$pid\" 2>/dev/null || true; done; echo stopped: scripts/aria_forever_watchdog.sh"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automation: go-forever-restart",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\"; mkdir -p data_out; if [ -f data_out/aria_forever_watchdog.pid ]; then kill $(cat data_out/aria_forever_watchdog.pid) 2>/dev/null || true; fi; for pid in $(pgrep -f \"scripts/aria_forever_watchdog.sh\" || true); do [ \"$pid\" = \"$$\" ] && continue; kill \"$pid\" 2>/dev/null || true; done; rm -f data_out/aria_forever_watchdog.pid; rmdir data_out/aria_forever_watchdog.lockdir 2>/dev/null || true; sleep 1; nohup bash ./scripts/aria_forever_watchdog.sh >> data_out/aria_forever_watchdog.log 2>&1 & echo restarted: scripts/aria_forever_watchdog.sh"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automation: go-forever-debug-short",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\"; timeout 8 bash -x ./scripts/aria_forever_watchdog.sh"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automation: repo-health-watch-nonstrict",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\"; mkdir -p data_out/repo_health_automation; pkill -f \"repo_health_automation.py --watch --interval 300\" 2>/dev/null || true; nohup /workspaces/Aria/.venv/bin/python scripts/repo_health_automation.py --watch --interval 300 --continue-on-fail >> data_out/repo_health_automation/automation.log 2>&1 & echo started: repo_health_automation non-strict"
 			],
 			"problemMatcher": []
 		},
@@ -141,7 +181,7 @@
 			"command": "bash",
 			"args": [
 				"-lc",
-				"cd \"${workspaceFolder}\" && if [ -f data_out/aria_forever_watchdog_heartbeat.json ]; then cat data_out/aria_forever_watchdog_heartbeat.json; else echo '{\"running\":false,\"reason\":\"heartbeat file missing\"}'; fi"
+				"cd \"${workspaceFolder}\" && if [ -f data_out/aria_forever_watchdog_heartbeat.json ]; then cat data_out/aria_forever_watchdog_heartbeat.json; else echo '{\"running\":false,\"reason\":\"heartbeat file missing\"}'; fi && echo && echo '[watchdog_processes]' && ps aux | grep 'scripts/aria_forever_watchdog.sh' | grep -v grep || true && echo && echo '[repo_health_watchers]' && ps aux | grep 'repo_health_automation.py --watch --interval 300' | grep -v grep || true"
 			],
 			"problemMatcher": []
 		},

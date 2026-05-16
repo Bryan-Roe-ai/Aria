@@ -191,10 +191,23 @@ while true; do
     "$PYTHON_BIN scripts/repo_automation.py --start" \
     "data_out/repo_automation.log"
 
-  enforce_single_instance "repo_health_automation.py --watch --interval 300 --strict-endpoints --continue-on-fail"
-  start_if_missing "repo_health_automation.py --watch --interval 300 --strict-endpoints --continue-on-fail" \
-    "$PYTHON_BIN scripts/repo_health_automation.py --watch --interval 300 --strict-endpoints --continue-on-fail" \
-    "data_out/repo_health_automation/automation.log"
+  # Repo health automation: strict endpoint checks only when func CLI exists.
+  repo_health_generic_pattern="repo_health_automation.py --watch --interval 300"
+  if command -v func >/dev/null 2>&1; then
+    repo_health_pattern="repo_health_automation.py --watch --interval 300 --strict-endpoints --continue-on-fail"
+    repo_health_cmd="$PYTHON_BIN scripts/repo_health_automation.py --watch --interval 300 --strict-endpoints --continue-on-fail"
+  else
+    repo_health_pattern="repo_health_automation.py --watch --interval 300 --continue-on-fail"
+    repo_health_cmd="$PYTHON_BIN scripts/repo_health_automation.py --watch --interval 300 --continue-on-fail"
+  fi
+
+  if ! pgrep -f "$repo_health_pattern" >/dev/null; then
+    # If mode changed (strict <-> non-strict), clear old watcher and start desired mode.
+    pkill -f "$repo_health_generic_pattern" 2>/dev/null || true
+    sleep 1
+    nohup bash -lc "$repo_health_cmd" >> "data_out/repo_health_automation/automation.log" 2>&1 &
+  fi
+  enforce_single_instance "$repo_health_pattern"
 
   # Aria web server
   enforce_single_instance "apps/aria/server.py"

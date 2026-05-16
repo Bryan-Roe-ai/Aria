@@ -1709,3 +1709,5 @@ ERROR tests/test_database_integration.py
 [91m[1mRESULT: Some checks failed (3/5 passed)[0m
 [1m═══════════════════════════════════════════════════════════════════[0m
 
+nohup: ignoring input
+nohup: ignoring input

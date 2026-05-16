@@ -172,6 +172,14 @@ class MemoryStore:
                 counts[event_type] = counts.get(event_type, 0) + 1
         return counts
 
+    def last_of_type(self, event_type: str) -> Optional[Event]:
+        """Return the most recent event matching event_type or None."""
+        with self._lock:
+            for e in reversed(self._events):
+                if e.get("type") == event_type:
+                    return e.copy()
+        return None
+
     def __len__(self) -> int:
         with self._lock:
             return len(self._events)

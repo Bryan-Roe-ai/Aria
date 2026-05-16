@@ -96,14 +96,17 @@ class AIProjectsRegistry:
         """Get chat-cli module (chat providers, token utilities, AGI provider)."""
         cache_key = "chat_cli"
         if cache_key not in cls._cache:
+            import sys
+            # Ensure project path exists; if missing, this is a hard failure for tests.
             try:
-                # Try direct import first (if venv is activated)
-                import sys
-
                 chat_cli_src = cls._get_ai_project_path("chat-cli", "src")
-                if str(chat_cli_src) not in sys.path:
-                    sys.path.insert(0, str(chat_cli_src))
+            except ImportError as e:
+                raise ImportError(f"Failed to load chat-cli: {e}")
 
+            if str(chat_cli_src) not in sys.path:
+                sys.path.insert(0, str(chat_cli_src))
+
+            try:
                 # Import using the dynamic module pattern
                 import importlib
 

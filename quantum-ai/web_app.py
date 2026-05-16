@@ -157,7 +157,21 @@ def _compat_load_checkpoint() -> Any:
             # Prefer dictionary-like access
             if hasattr(checkpoint, "files"):
                 # .npz archive
-                data = {k: checkpoint[k] for k in checkpoint.files}
+                try:
+                    data = {k: checkpoint[k] for k in checkpoint.files}
+                except Exception as e_read:
+                    # If initial load was without pickles, retry with allow_pickle=True
+                    if not allow_pickle:
+                        logger.debug("Reading checkpoint members failed (%s); retrying with allow_pickle=True", e_read)
+                        try:
+                            checkpoint = np.load(str(resolved_path), allow_pickle=True)
+                            allow_pickle = True
+                            data = {k: checkpoint[k] for k in checkpoint.files}
+                        except Exception as e_retry:
+                            logger.exception("Failed to read checkpoint after retry: %s", e_retry)
+                            return _mod.jsonify({"error": "Unexpected checkpoint format"}), 500
+                    else:
+                        raise
             elif isinstance(checkpoint, np.ndarray) and checkpoint.dtype == object:
                 # Legacy object arrays may contain a dict-like element
                 data = checkpoint.tolist()

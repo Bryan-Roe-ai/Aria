@@ -1,7 +1,7 @@
 {
-  "cycles_completed": 392,
+  "cycles_completed": 393,
   "best_accuracy": 0.956931,
-  "last_updated": "2026-03-29T14:28:52.290392",
+  "last_updated": "2026-05-16T16:10:19.665969",
   "performance_history": [
     {
       "cycle": 1,
@@ -3138,6 +3138,14 @@
       "samples_processed": 74968,
       "training_time_sec": 6,
       "timestamp": "2026-03-29T14:28:51.942438"
+    },
+    {
+      "cycle": 393,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-16T16:10:19.661137"
     }
   ],
   "dataset_inventory": {
@@ -3166,13 +3174,13 @@
       ]
     }
   },
-  "status": "running",
+  "status": "completed",
   "started_at": "2026-03-17T16:46:53.488027",
-  "run_mode": "infinite",
+  "run_mode": "bounded",
   "cycle_interval_sec": 1800,
-  "current_cycle": 392,
-  "next_cycle_eta": "2026-03-29T14:58:52.290376",
-  "plateau_cycles": 37,
+  "current_cycle": 393,
+  "next_cycle_eta": null,
+  "plateau_cycles": 38,
   "promotions": [
     {
       "version": 1,
@@ -3231,7 +3239,7 @@
   ],
   "quantum_llm": {
     "enabled": true,
-    "status": "completed",
+    "status": "idle",
     "last_run": "2026-03-29T14:28:52.022958",
     "last_error": null,
     "checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",

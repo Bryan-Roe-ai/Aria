@@ -284,6 +284,7 @@ if _PYDANTIC_AVAILABLE:
                 "local_tts_enabled": self.enable_local_tts,
             }
 
+
 else:
     # Minimal fallback when pydantic is not installed
     class Settings:  # type: ignore[no-redef]
@@ -458,6 +459,27 @@ def reset_settings() -> None:
     """Clear the cached settings (useful in tests)."""
     get_settings.cache_clear()
 
+
+# Runtime normalization: ensure log_level normalized on Settings instances
+try:
+    _orig_settings_init = Settings.__init__
+    def _wrapped_settings_init(self, *args, **kwargs):
+        _orig_settings_init(self, *args, **kwargs)
+        try:
+            v = getattr(self, "log_level", None)
+            if isinstance(v, str):
+                up = v.upper()
+                valid = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
+                if up not in valid:
+                    _LOG.warning("Invalid log level '%s'; defaulting to INFO", v)
+                    object.__setattr__(self, "log_level", "INFO")
+                else:
+                    object.__setattr__(self, "log_level", up)
+        except Exception:
+            pass
+    Settings.__init__ = _wrapped_settings_init
+except Exception:
+    pass
 
 class AppSettings(Settings):
     """Backward-compatible alias for older settings API callers."""
