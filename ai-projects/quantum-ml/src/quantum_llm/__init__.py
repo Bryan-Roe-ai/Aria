@@ -9,12 +9,12 @@ Usage
     result = asyncio.run(pipeline.generate("Hello, world!"))
 """
 
+from .circuit_cache import CircuitCache
 from .config import QuantumLLMConfig
 from .pipeline import QuantumLLMPipeline
 from .quantum_embeddings import QuantumEmbeddingTransformer
 from .quantum_router import QuantumRouter
 from .quantum_sampler import QuantumSampler
-from .circuit_cache import CircuitCache
 
 __all__ = [
     "QuantumLLMConfig",

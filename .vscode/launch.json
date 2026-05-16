@@ -3,18 +3,17 @@
     "configurations": [
         {
             "name": "Python Debugger: FastAPI",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
             "args": [
                 "main:app",
                 "--reload"
-            ],
-            "jinja": true
+            ]
         },
         {
             "name": "Python Debugger: Aria Gradio Chat App",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/app.py",
             "cwd": "${workspaceFolder}",
@@ -23,7 +22,7 @@
         },
         {
             "name": "Debug Writer-Reviewer Workflow HTTP Server",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "localhost",
@@ -35,7 +34,7 @@
         },
         {
             "name": "Attach to Python Functions",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "localhost",
@@ -45,7 +44,7 @@
         },
         {
             "name": "Attach to Python Functions + routes smoke",
-            "type": "python",
+            "type": "debugpy",
             "request": "attach",
             "connect": {
                 "host": "localhost",
@@ -56,7 +55,7 @@
         },
         {
             "name": "Run Gradio AI Chat app (task)",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/app.py",
             "cwd": "${workspaceFolder}",

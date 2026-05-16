@@ -25,6 +25,8 @@ import os
 import sys
 from typing import Any, Iterable
 
+from shared.local_summary import is_summary_request, summarize_text
+
 try:
     from openai import (
         APIConnectionError,
@@ -147,22 +149,16 @@ def ask_local(prompt: str, *, system_prompt: str = SYSTEM_PROMPT) -> str:
     if not system_prompt:
         raise ValueError("System prompt cannot be empty.")
 
-    # Heuristic summarizer: if the prompt asks to summarize or is long,
-    # return a short summary using simple sentence extraction.
     ptext = prompt.strip()
     lower = ptext.lower()
-    sentences = [s.strip() for s in ptext.replace('\n', ' ').split('.') if s.strip()]
+    sentences = [s.strip() for s in ptext.replace("\n", " ").split(".") if s.strip()]
 
-    if "summarize" in lower or len(ptext) > 300:
-        # Use the first sentence(s) as a naive summary.
-        if len(sentences) >= 2:
-            summary = ". ".join(sentences[:2]) + ("." if not sentences[1].endswith('.') else "")
-        else:
-            summary = sentences[0] if sentences else ptext[:200]
+    if is_summary_request(lower) or len(ptext) > 300:
+        summary = summarize_text(ptext, max_sentences=3, max_chars=420)
         return (
             "[Local fallback summary]\n\n"
             f"Summary:\n{summary}\n\n"
-            "Note: this is a local heuristic summary. For richer results, set OPENAI_API_KEY and install the 'openai' package."
+            "Note: this is an offline extractive summary. For richer abstractive summaries, set OPENAI_API_KEY and install the 'openai' package."
         )
 
     if "explain" in lower or "what is" in lower:

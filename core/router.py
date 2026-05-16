@@ -3,7 +3,10 @@ Aria Intelligent Router
 Scores agents dynamically and selects best execution target.
 """
 
-from typing import Dict, Any, List
+from __future__ import annotations
+
+from typing import Dict, Any
+from core.agent import BaseAgent
 from core.task import Task
 from core.registry import AgentRegistry
 
@@ -34,10 +37,14 @@ class TaskRouter:
         return {
             "agent": best_agent.name,
             "score": best_score,
+            "candidates": [
+                {"agent": agent.name, "score": score}
+                for score, agent in candidates
+            ],
             "result": result,
         }
 
-    def _score(self, agent, task: Task) -> float:
+    def _score(self, agent: BaseAgent, task: Task) -> float:
         """
         Default scoring model:
         - 1.0 if agent can handle task
@@ -60,5 +67,14 @@ class TaskRouter:
 
         if task.type in {"train", "feedback", "evaluate"} and agent.name == "training_agent":
             base += 0.5
+
+        if task.type in {"plan", "goal", "decompose"} and agent.name == "planner_agent":
+            base += 0.6
+
+        if task.type in {"goal_evolve", "new_goal", "reflect"} and agent.name == "goal_evolution_agent":
+            base += 0.6
+
+        if task.priority > 0:
+            base += min(task.priority * 0.05, 0.25)
 
         return base

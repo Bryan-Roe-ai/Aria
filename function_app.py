@@ -25,10 +25,12 @@ try:
     _chat_cli_api = _ai_registry.chat_cli()
     detect_provider = _chat_cli_api.detect_provider
     prune_messages = _chat_cli_api.token_utils.prune_messages
+    create_agi_provider = _chat_cli_api.create_agi_provider
 except Exception as _registry_err:
     logging.warning(f"[startup] AI projects registry failed: {_registry_err}")
     detect_provider = None
     prune_messages = None
+    create_agi_provider = None
 
 # Pre-compiled word split regex used in token/word counting hot paths.
 _RE_WORD_SPLIT = re.compile(r"\S+")
@@ -96,6 +98,27 @@ chat_memory_funcs = safe_import(
 generate_embedding = chat_memory_funcs["generate_embedding"]
 fetch_similar_messages = chat_memory_funcs["fetch_similar_messages"]
 store_embedding = chat_memory_funcs["store_embedding"]
+
+# Shared request validation helpers (schema + JSON parsing + constraints)
+request_validator_funcs = safe_import(
+    "shared.request_validator",
+    import_names=(
+        "validate_request",
+        "AGI_ANALYZE_SCHEMA",
+        "AGI_REASON_SCHEMA",
+        "AGI_STREAM_SCHEMA",
+    ),
+    fallback_factory=lambda name: {
+        "validate_request": lambda req, schema: (req.get_json(), None),
+        "AGI_ANALYZE_SCHEMA": {},
+        "AGI_REASON_SCHEMA": {},
+        "AGI_STREAM_SCHEMA": {},
+    }.get(name),
+)
+validate_request = request_validator_funcs["validate_request"]
+AGI_ANALYZE_SCHEMA = request_validator_funcs["AGI_ANALYZE_SCHEMA"]
+AGI_REASON_SCHEMA = request_validator_funcs["AGI_REASON_SCHEMA"]
+AGI_STREAM_SCHEMA = request_validator_funcs["AGI_STREAM_SCHEMA"]
 try:
     from shared.db_logging import log_chat_message_safe
 except Exception:  # pragma: no cover - if shared not on path
@@ -381,6 +404,327 @@ def _detect_provider_with_runtime_fallback(
             provider_error,
         )
         return detect_provider(explicit="local", model_override="local-echo")
+
+
+def _extract_agi_query_from_request(req_body: dict) -> str:
+    """Extract AGI query from either `query` or chat-style `messages` payload."""
+
+    query = req_body.get("query")
+    if isinstance(query, str) and query.strip():
+        return query.strip()
+
+    messages = req_body.get("messages", [])
+    if isinstance(messages, list) and messages:
+        sanitized = _sanitize_chat_messages(messages)
+        user_query = next(
+            (
+                _extract_text_content(m.get("content"))
+                for m in reversed(sanitized)
+                if m.get("role") == "user"
+            ),
+            "",
+        )
+        if user_query.strip():
+            return user_query.strip()
+
+    raise ValueError("Provide a non-empty `query` or user message in `messages`")
+
+
+def _create_agi_provider_for_api(
+    *,
+    model_override: str | None = None,
+    temperature: float | None = None,
+    max_output_tokens: int | None = None,
+    verbose: bool = False,
+):
+    """Create AGI provider instance for API routes with actionable errors."""
+
+    if create_agi_provider is None:
+        raise RuntimeError("AGI provider is unavailable in this runtime")
+
+    provider, provider_choice = create_agi_provider(
+        model=model_override,
+        temperature=temperature,
+        max_output_tokens=max_output_tokens,
+        verbose=verbose,
+    )
+    return provider, provider_choice
+
+
+@app.route(route="agi/analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
+    """Analyze a query using AGI reasoning classifier and agent routing preview."""
+    try:
+        req_body, req_err = validate_request(req, AGI_ANALYZE_SCHEMA)
+        if req_err:
+            raise ValueError(req_err)
+        query = _extract_agi_query_from_request(req_body)
+
+        provider, provider_choice = _create_agi_provider_for_api(
+            model_override=req_body.get("model"),
+            temperature=req_body.get("temperature"),
+            max_output_tokens=req_body.get("max_output_tokens"),
+            verbose=bool(req_body.get("verbose", False)),
+        )
+
+        analysis = provider._analyze_query(query)
+        selected_agent, agent_score = provider._select_agent(analysis)
+
+        payload = {
+            "status": "ok",
+            "query": query,
+            "analysis": analysis,
+            "routing": {
+                "selected_agent": selected_agent,
+                "agent_score": float(agent_score),
+            },
+            "provider": {
+                "name": "agi",
+                "base_provider": getattr(provider_choice, "name", None),
+                "base_model": getattr(provider_choice, "model", None),
+            },
+        }
+
+        return func.HttpResponse(
+            json.dumps(payload),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except ValueError as ve:
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
+            status_code=400,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except RuntimeError as re:
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except Exception as e:  # noqa: BLE001
+        logging.error(f"agi/analyze error: {e}")
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": str(e)}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="agi/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_status(req: func.HttpRequest) -> func.HttpResponse:
+    """Return AGI provider readiness and reasoning summary metadata."""
+    try:
+        provider_choice = None
+        summary = {
+            "total_reasoning_chains": 0,
+            "active_goals": [],
+            "learned_patterns_count": 0,
+            "top_learned_patterns": [],
+            "conversation_length": 0,
+            "last_agent_used": None,
+            "last_agent_score": None,
+            "available_agents": [],
+        }
+        available = create_agi_provider is not None
+
+        if available:
+            provider, provider_choice = _create_agi_provider_for_api()
+            summary = provider.get_reasoning_summary()
+
+        payload = {
+            "status": "ok",
+            "available": available,
+            "provider": {
+                "name": "agi",
+                "base_provider": getattr(provider_choice, "name", None),
+                "base_model": getattr(provider_choice, "model", None),
+            },
+            "reasoning": summary,
+            "endpoints": [
+                "/api/agi/analyze",
+                "/api/agi/reason",
+                "/api/agi/stream",
+                "/api/agi/status",
+            ],
+        }
+
+        return func.HttpResponse(
+            json.dumps(payload),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except Exception as e:  # noqa: BLE001
+        logging.error(f"agi/status error: {e}")
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": str(e)}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="agi/reason", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
+    """Execute AGI completion path and return a deterministic JSON payload."""
+    try:
+        req_body, req_err = validate_request(req, AGI_REASON_SCHEMA)
+        if req_err:
+            raise ValueError(req_err)
+        query = _extract_agi_query_from_request(req_body)
+
+        messages = req_body.get("messages")
+        if isinstance(messages, list) and messages:
+            messages = _sanitize_chat_messages(messages)
+        else:
+            messages = [{"role": "user", "content": query}]
+
+        provider, provider_choice = _create_agi_provider_for_api(
+            model_override=req_body.get("model"),
+            temperature=req_body.get("temperature"),
+            max_output_tokens=req_body.get("max_output_tokens"),
+            verbose=bool(req_body.get("verbose", False)),
+        )
+
+        goals = req_body.get("goals", [])
+        if isinstance(goals, list):
+            for goal in goals:
+                if isinstance(goal, str) and goal.strip():
+                    provider.set_goal(goal)
+
+        result = provider.complete(messages, stream=False)
+        if hasattr(result, "__iter__") and not isinstance(result, str):
+            result = "".join(result)
+
+        include_summary = bool(req_body.get("include_reasoning_summary", True))
+        payload = {
+            "status": "ok",
+            "query": query,
+            "response": str(result),
+            "provider": {
+                "name": "agi",
+                "base_provider": getattr(provider_choice, "name", None),
+                "base_model": getattr(provider_choice, "model", None),
+            },
+        }
+        if include_summary:
+            payload["reasoning"] = provider.get_reasoning_summary()
+
+        return func.HttpResponse(
+            json.dumps(payload),
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except ValueError as ve:
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
+            status_code=400,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except RuntimeError as re:
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except Exception as e:  # noqa: BLE001
+        logging.error(f"agi/reason error: {e}")
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": str(e)}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
+    """Stream AGI responses over SSE with data events and terminating [DONE] sentinel."""
+    try:
+        req_body, req_err = validate_request(req, AGI_STREAM_SCHEMA)
+        if req_err:
+            raise ValueError(req_err)
+
+        query = _extract_agi_query_from_request(req_body)
+
+        messages = req_body.get("messages")
+        if isinstance(messages, list) and messages:
+            messages = _sanitize_chat_messages(messages)
+        else:
+            messages = [{"role": "user", "content": query}]
+
+        provider, provider_choice = _create_agi_provider_for_api(
+            model_override=req_body.get("model"),
+            temperature=req_body.get("temperature"),
+            max_output_tokens=req_body.get("max_output_tokens"),
+            verbose=bool(req_body.get("verbose", False)),
+        )
+
+        goals = req_body.get("goals", [])
+        if isinstance(goals, list):
+            for goal in goals:
+                if isinstance(goal, str) and goal.strip():
+                    provider.set_goal(goal)
+
+        gen = provider.complete(messages, stream=True)
+
+        def _sse_iterable():
+            try:
+                pre = {
+                    "provider": "agi",
+                    "base_provider": getattr(provider_choice, "name", None),
+                    "base_model": getattr(provider_choice, "model", None),
+                }
+                yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
+
+                for chunk in gen:
+                    if not chunk:
+                        continue
+                    payload = json.dumps({"delta": chunk})
+                    yield (f"data: {payload}\n\n").encode("utf-8")
+
+                yield b"data: [DONE]\n\n"
+            except Exception as e:  # noqa: BLE001
+                err_payload = json.dumps({"error": str(e)})
+                yield (f"event: error\n" f"data: {err_payload}\n\n").encode("utf-8")
+                yield b"data: [DONE]\n\n"
+
+        return func.HttpResponse(
+            body=_sse_iterable(),
+            status_code=200,
+            mimetype="text/event-stream",
+            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
+        )
+    except ValueError as ve:
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
+            status_code=400,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except RuntimeError as re:
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+    except Exception as e:  # noqa: BLE001
+        logging.error(f"agi/stream error: {e}")
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": str(e)}),
+            status_code=500,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
 
 
 @app.route(route="chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -2035,6 +2379,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 "/api/chat",
                 "/api/chat/stream",
                 "/api/ai/status",
+                "/api/agi/analyze",
+                "/api/agi/reason",
+                "/api/agi/stream",
+                "/api/agi/status",
                 "/api/vision/infer",
                 "/api/vision/batch-infer",
                 "/api/image/generate",

@@ -12,9 +12,6 @@ in ``ai-projects/chat-cli/src/chat_providers.py`` and ``shared/``.
 from __future__ import annotations
 
 import logging
-import math
-import warnings
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -61,7 +58,7 @@ def _extract_prompt_features(
 
 def _classical_score_providers(
     features: np.ndarray,
-    providers: List[str],
+    providers: list[str],
     params: np.ndarray,
 ) -> np.ndarray:
     """
@@ -87,7 +84,7 @@ def _classical_score_providers(
 
 def _pennylane_qaoa_scores(
     features: np.ndarray,
-    providers: List[str],
+    providers: list[str],
     params: np.ndarray,
     num_qubits: int,
 ) -> np.ndarray:
@@ -145,10 +142,10 @@ class QuantumRouter:
 
     def __init__(
         self,
-        providers: Optional[List[str]] = None,
+        providers: list[str] | None = None,
         backend: str = "auto",
         num_qubits: int = 4,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         self.providers = list(providers or ["azure", "openai", "lmstudio", "local"])
         self.effective_backend = _active_backend(backend)
@@ -167,7 +164,7 @@ class QuantumRouter:
         self,
         prompt: str,
         latency_budget_ms: float = 5000.0,
-        exclude: Optional[List[str]] = None,
+        exclude: list[str] | None = None,
     ) -> str:
         """
         Select the best provider for the given prompt.
@@ -219,7 +216,7 @@ class QuantumRouter:
         self,
         prompt: str,
         latency_budget_ms: float = 5000.0,
-    ) -> Tuple[str, Dict[str, float]]:
+    ) -> tuple[str, dict[str, float]]:
         """
         Like ``route`` but also returns the per-provider score dict.
 

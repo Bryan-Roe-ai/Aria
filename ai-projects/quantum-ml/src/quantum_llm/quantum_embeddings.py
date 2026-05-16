@@ -11,12 +11,10 @@ When no quantum backend is installed, a numpy-only simulation is used.
 from __future__ import annotations
 
 import logging
-import warnings
-from typing import Optional
 
 import numpy as np
 
-from .quantum_sampler import _active_backend, _PENNYLANE_AVAILABLE, _QISKIT_AVAILABLE
+from .quantum_sampler import _active_backend
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +45,6 @@ def _classical_amplitude_transform(
     state = embedding / norm
 
     # Construct a rotation matrix: apply RY-like rotations using cos/sin
-    n_params = min(len(params), dim)
     angles = np.resize(params, dim) * np.pi
 
     # Diagonal RY-style rotation: cos(θ) on amplitude, sin(θ) as phase shift
@@ -189,7 +186,7 @@ class QuantumEmbeddingTransformer:
         backend: str = "auto",
         num_qubits: int = 4,
         num_layers: int = 2,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         self.effective_backend = _active_backend(backend)
         self.num_qubits = num_qubits

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -26,15 +26,15 @@ _PENNYLANE_AVAILABLE = False
 _QISKIT_AVAILABLE = False
 
 try:
-    import pennylane as qml  # type: ignore
+    import pennylane as _qml  # type: ignore  # noqa: F401
 
     _PENNYLANE_AVAILABLE = True
 except ImportError:
     pass
 
 try:
-    from qiskit import QuantumCircuit  # type: ignore
-    from qiskit.circuit import ParameterVector  # type: ignore
+    from qiskit import QuantumCircuit as _QuantumCircuit  # type: ignore  # noqa: F401
+    from qiskit.circuit import ParameterVector as _ParameterVector  # type: ignore  # noqa: F401
 
     _QISKIT_AVAILABLE = True
 except ImportError:
@@ -81,7 +81,6 @@ def _classical_variational_probs(
     state[0] = 1.0  # |0...0>
 
     # Build a simple rotation-based unitary: each param rotates qubit i
-    n_params = len(params)
     for i, theta in enumerate(params[:num_qubits]):
         q = i % num_qubits
         # Apply single-qubit Ry rotation to qubit q using tensor product
@@ -243,7 +242,7 @@ class QuantumSampler:
         num_qubits: int = 4,
         shots: int = 512,
         num_layers: int = 2,
-        seed: Optional[int] = None,
+        seed: int | None = None,
         cache_enabled: bool = True,
         cache_max_size: int = 256,
         cache_ttl_seconds: float = 3600.0,
@@ -253,7 +252,7 @@ class QuantumSampler:
         self.shots = shots
         self.num_layers = num_layers
         self._rng = np.random.default_rng(seed)
-        
+
         # Initialize circuit cache
         self._cache_enabled = cache_enabled
         self._cache = None
@@ -262,7 +261,7 @@ class QuantumSampler:
                 max_size=cache_max_size,
                 max_age_seconds=cache_ttl_seconds,
             )
-        
+
         logger.info(
             "QuantumSampler initialized: backend=%s, qubits=%d, shots=%d, cache=%s",
             self.effective_backend,
@@ -277,7 +276,7 @@ class QuantumSampler:
 
     def _get_circuit_probs(self, params: np.ndarray) -> np.ndarray:
         """Run the variational circuit and return probabilities over 2**n outcomes.
-        
+
         Checks cache first if enabled before computing circuit.
         """
         # Try cache first
@@ -285,7 +284,7 @@ class QuantumSampler:
             cached = self._cache.get(params, self.num_qubits)
             if cached is not None:
                 return cached
-        
+
         # Compute circuit
         if self.effective_backend == "pennylane":
             probs = _pennylane_variational_probs(
@@ -300,18 +299,18 @@ class QuantumSampler:
             probs = _classical_variational_probs(
                 params, self.num_qubits, self.shots, self._rng
             )
-        
+
         # Cache result
         if self._cache_enabled and self._cache is not None:
             self._cache.put(params, self.num_qubits, probs)
-        
+
         return probs
 
     def sample(
         self,
         logits: Sequence[float],
         blend_factor: float = 0.3,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> int:
         """
         Sample a token index from the re-weighted logit distribution.

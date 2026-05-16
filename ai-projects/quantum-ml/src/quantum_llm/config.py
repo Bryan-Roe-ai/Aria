@@ -7,8 +7,8 @@ Supports dataclass-based config (no pydantic dependency required).
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
-from typing import Literal, Optional
+from dataclasses import dataclass
+from typing import Literal
 
 
 def _read_int_env(name: str, default: int) -> int:
@@ -75,7 +75,7 @@ class QuantumLLMConfig:
 
     # LLM provider settings
     provider: str = "auto"  # forwarded to detect_provider
-    model: Optional[str] = None
+    model: str | None = None
     temperature: float = 0.7
     max_tokens: int = 512
 
@@ -117,7 +117,7 @@ class QuantumLLMConfig:
         self.cache_ttl_seconds = max(0.0, _coerce_float(self.cache_ttl_seconds, default=3600.0))
 
     @classmethod
-    def from_env(cls) -> "QuantumLLMConfig":
+    def from_env(cls) -> QuantumLLMConfig:
         """Build config from environment variables."""
         return cls(
             backend=_read_backend_env("QUANTUM_LLM_BACKEND", "auto"),

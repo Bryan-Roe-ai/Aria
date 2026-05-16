@@ -6,20 +6,19 @@ Tests sampler, embeddings, and router functions with classical backends.
 
 import numpy as np
 import pytest
-
-from ai_projects.quantum_ml.src.quantum_llm.quantum_sampler import (
-    QuantumSampler,
-    _active_backend,
-    _classical_variational_probs,
-)
 from ai_projects.quantum_ml.src.quantum_llm.quantum_embeddings import (
     QuantumEmbeddingTransformer,
     _classical_amplitude_transform,
 )
 from ai_projects.quantum_ml.src.quantum_llm.quantum_router import (
     QuantumRouter,
-    _extract_prompt_features,
     _classical_score_providers,
+    _extract_prompt_features,
+)
+from ai_projects.quantum_ml.src.quantum_llm.quantum_sampler import (
+    QuantumSampler,
+    _active_backend,
+    _classical_variational_probs,
 )
 
 
@@ -49,7 +48,7 @@ class TestClassicalVariationalProbs:
         """Should return normalized probability distribution."""
         params = np.array([0.5, 1.0, 1.5])
         probs = _classical_variational_probs(params, num_qubits=2, shots=100, rng=None)
-        
+
         assert isinstance(probs, np.ndarray)
         assert len(probs) == 4  # 2^2 = 4
         assert np.allclose(probs.sum(), 1.0)
@@ -61,10 +60,10 @@ class TestClassicalVariationalProbs:
         params = np.array([0.1, 0.2, 0.3])
         rng1 = np.random.Generator(np.random.PCG64(42))
         rng2 = np.random.Generator(np.random.PCG64(42))
-        
+
         probs1 = _classical_variational_probs(params, num_qubits=2, shots=100, rng=rng1)
         probs2 = _classical_variational_probs(params, num_qubits=2, shots=100, rng=rng2)
-        
+
         assert np.allclose(probs1, probs2)
 
     def test_different_qubit_counts(self):
@@ -96,7 +95,7 @@ class TestQuantumSampler:
         """Should return valid top-k index from logits."""
         sampler = QuantumSampler(backend="classical", num_qubits=2, shots=100, num_layers=1)
         logits = np.array([1.0, 2.0, 0.5, 1.5])
-        
+
         for _ in range(10):
             idx = sampler.sample(logits, blend_factor=0.5, seed=None)
             assert 0 <= idx < len(logits)
@@ -105,7 +104,7 @@ class TestQuantumSampler:
         """Should respect blend_factor between 0 and 1."""
         sampler = QuantumSampler(backend="classical", num_qubits=2, shots=100, num_layers=1)
         logits = np.array([10.0, 1.0, 1.0])  # Strongly prefer index 0
-        
+
         # With blend_factor=0 (classical), should heavily favor index 0
         classical_samples = [
             sampler.sample(logits, blend_factor=0.0, seed=None)
@@ -122,7 +121,7 @@ class TestClassicalAmplitudeTransform:
         """Should return embedding of same shape as input."""
         embedding = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
         params = np.array([0.5, 1.0, 1.5])
-        
+
         transformed = _classical_amplitude_transform(embedding, params, num_qubits=2)
         assert transformed.shape == embedding.shape
 
@@ -130,7 +129,7 @@ class TestClassicalAmplitudeTransform:
         """Should handle zero embedding gracefully."""
         embedding = np.zeros(5)
         params = np.array([0.5, 1.0])
-        
+
         transformed = _classical_amplitude_transform(embedding, params, num_qubits=2)
         assert transformed.shape == embedding.shape
         assert np.allclose(transformed, embedding)
@@ -139,11 +138,11 @@ class TestClassicalAmplitudeTransform:
         """Should preserve norm scaling."""
         embedding = np.array([1.0, 1.0, 1.0, 1.0])
         params = np.array([0.5])
-        
+
         original_norm = np.linalg.norm(embedding)
         transformed = _classical_amplitude_transform(embedding, params, num_qubits=2)
         transformed_norm = np.linalg.norm(transformed)
-        
+
         # Norm should be preserved
         assert np.isclose(original_norm, transformed_norm)
 
@@ -166,7 +165,7 @@ class TestQuantumEmbeddingTransformer:
         """Should return valid embedding."""
         embedder = QuantumEmbeddingTransformer(backend="classical", num_qubits=2, num_layers=1)
         embedding = np.random.randn(10)
-        
+
         transformed = embedder.transform(embedding)
         assert isinstance(transformed, np.ndarray)
         assert transformed.shape == embedding.shape
@@ -180,7 +179,7 @@ class TestPromptFeatureExtraction:
         """Should extract numeric features from prompt."""
         prompt = "This is a test prompt?"
         features = _extract_prompt_features(prompt)
-        
+
         assert isinstance(features, np.ndarray)
         assert len(features) == 5
         assert np.all(features >= 0.0)
@@ -190,10 +189,10 @@ class TestPromptFeatureExtraction:
         """Should cap length feature for very long prompts."""
         short = "hello"
         long = "x" * 20000
-        
+
         short_features = _extract_prompt_features(short)
         long_features = _extract_prompt_features(long)
-        
+
         # Length feature should saturate for long prompt
         assert short_features[0] < long_features[0]
         assert long_features[0] == pytest.approx(1.0)
@@ -202,7 +201,7 @@ class TestPromptFeatureExtraction:
         """Should detect presence of question mark."""
         with_q = _extract_prompt_features("Is this a question?")
         without_q = _extract_prompt_features("This is not a question")
-        
+
         assert with_q[2] == 1.0
         assert without_q[2] == 0.0
 
@@ -210,7 +209,7 @@ class TestPromptFeatureExtraction:
         """Should detect presence of code blocks."""
         with_code = _extract_prompt_features("Here's code: ```python\nprint('hi')\n```")
         without_code = _extract_prompt_features("Just plain text")
-        
+
         assert with_code[3] == 1.0
         assert without_code[3] == 0.0
 
@@ -223,9 +222,9 @@ class TestClassicalScoreProviders:
         features = np.array([0.5, 0.5, 0.5, 0.5, 0.5])
         providers = ["azure", "openai", "local"]
         params = np.random.randn(len(providers) * len(features))
-        
+
         scores = _classical_score_providers(features, providers, params)
-        
+
         assert len(scores) == len(providers)
         assert isinstance(scores, np.ndarray)
 
@@ -234,9 +233,9 @@ class TestClassicalScoreProviders:
         features = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
         providers = ["azure", "openai", "local"]
         params = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])
-        
+
         scores = _classical_score_providers(features, providers, params)
-        
+
         # Scores may differ (unless by chance they're equal)
         # Just verify they're computed
         assert len(scores) == len(providers)
@@ -255,7 +254,7 @@ class TestQuantumRouter:
         """Should return a provider name string."""
         router = QuantumRouter(backend="classical", num_qubits=2)
         provider = router.route("What is the meaning of life?")
-        
+
         assert isinstance(provider, str)
         assert len(provider) > 0
 
@@ -263,22 +262,22 @@ class TestQuantumRouter:
         """Should return consistent routing for same prompt."""
         router = QuantumRouter(backend="classical", num_qubits=2)
         prompt = "Tell me about quantum computing"
-        
+
         route1 = router.route(prompt)
         route2 = router.route(prompt)
-        
+
         assert route1 == route2
 
     def test_route_different_for_different_prompts(self):
         """May return different routes for different prompts."""
         router = QuantumRouter(backend="classical", num_qubits=2)
-        
+
         short = "Hi"
         long = "Can you explain quantum mechanics, quantum computing, and how they relate to artificial intelligence in the context of modern physics and classical computing paradigms?"
-        
+
         route_short = router.route(short)
         route_long = router.route(long)
-        
+
         # Routes might differ, just verify both are valid
         assert isinstance(route_short, str)
         assert isinstance(route_long, str)

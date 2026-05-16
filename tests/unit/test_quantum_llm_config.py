@@ -5,9 +5,7 @@ Tests configuration validation, environment variable handling, and
 safe defaults for quantum LLM pipeline.
 """
 
-import os
 import pytest
-
 from ai_projects.quantum_ml.src.quantum_llm.config import (
     QuantumLLMConfig,
     _coerce_float,
@@ -152,6 +150,9 @@ class TestQuantumLLMConfigFromEnv:
         monkeypatch.setenv("QUANTUM_LLM_MAX_TOKENS", "1024")
         monkeypatch.setenv("QUANTUM_LLM_PROVIDER", "azure")
         monkeypatch.setenv("QUANTUM_LLM_MODEL", "gpt-4")
+        monkeypatch.setenv("QUANTUM_LLM_CACHE_ENABLED", "true")
+        monkeypatch.setenv("QUANTUM_LLM_CACHE_MAX_SIZE", "321")
+        monkeypatch.setenv("QUANTUM_LLM_CACHE_TTL_SECONDS", "123.5")
 
         cfg = QuantumLLMConfig.from_env()
         assert cfg.backend == "qiskit"
@@ -164,6 +165,9 @@ class TestQuantumLLMConfigFromEnv:
         assert cfg.max_tokens == 1024
         assert cfg.provider == "azure"
         assert cfg.model == "gpt-4"
+        assert cfg.cache_enabled is True
+        assert cfg.cache_max_size == 321
+        assert cfg.cache_ttl_seconds == pytest.approx(123.5)
 
     def test_from_env_uses_defaults(self, monkeypatch):
         """Should use defaults when environment variables are not set."""
@@ -179,6 +183,9 @@ class TestQuantumLLMConfigFromEnv:
             "QUANTUM_LLM_MAX_TOKENS",
             "QUANTUM_LLM_PROVIDER",
             "QUANTUM_LLM_MODEL",
+            "QUANTUM_LLM_CACHE_ENABLED",
+            "QUANTUM_LLM_CACHE_MAX_SIZE",
+            "QUANTUM_LLM_CACHE_TTL_SECONDS",
         ]:
             monkeypatch.delenv(key, raising=False)
 
@@ -186,6 +193,9 @@ class TestQuantumLLMConfigFromEnv:
         assert cfg.backend == "auto"
         assert cfg.num_qubits == 4
         assert cfg.shots == 512
+        assert cfg.cache_enabled is True
+        assert cfg.cache_max_size == 256
+        assert cfg.cache_ttl_seconds == pytest.approx(3600.0)
 
 
 class TestQuantumLLMConfigToDict:
@@ -215,6 +225,9 @@ class TestQuantumLLMConfigToDict:
         assert d["max_tokens"] == 1024
         assert d["provider"] == "openai"
         assert d["model"] == "gpt-3.5-turbo"
+        assert "cache_enabled" in d
+        assert "cache_max_size" in d
+        assert "cache_ttl_seconds" in d
 
     def test_to_dict_json_serializable(self):
         """Should produce JSON-serializable dictionary."""

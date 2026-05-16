@@ -3,7 +3,10 @@ Tool Agent
 Executes registered tools inside the Aria multi-agent runtime.
 """
 
+from __future__ import annotations
+
 from typing import Dict, Any, Callable
+
 from core.agent import BaseAgent
 from core.task import Task
 
@@ -13,10 +16,21 @@ class ToolRegistry:
         self.tools: Dict[str, Callable[..., Any]] = {}
 
     def register(self, name: str, fn: Callable[..., Any]):
+        if not name or not name.strip():
+            raise ValueError("Tool name cannot be empty.")
         self.tools[name] = fn
 
     def get(self, name: str):
         return self.tools.get(name)
+
+    def unregister(self, name: str) -> None:
+        self.tools.pop(name, None)
+
+    def has(self, name: str) -> bool:
+        return name in self.tools
+
+    def list_tools(self) -> list[str]:
+        return sorted(self.tools)
 
 
 class ToolAgent(BaseAgent):
@@ -33,11 +47,27 @@ class ToolAgent(BaseAgent):
         tool_name = payload.get("tool")
         args = payload.get("args", {})
 
+        if not tool_name:
+            return {
+                "error": "No tool specified",
+                "available_tools": self.registry.list_tools(),
+                "agent": self.name,
+                "task_id": task.id,
+            }
+        if not isinstance(args, dict):
+            return {
+                "error": "Tool args must be a dictionary",
+                "tool": tool_name,
+                "agent": self.name,
+                "task_id": task.id,
+            }
+
         tool = self.registry.get(tool_name)
 
         if not tool:
             return {
                 "error": f"Tool not found: {tool_name}",
+                "available_tools": self.registry.list_tools(),
                 "agent": self.name,
                 "task_id": task.id,
             }
@@ -47,6 +77,7 @@ class ToolAgent(BaseAgent):
             return {
                 "output": result,
                 "tool": tool_name,
+                "args": dict(args),
                 "agent": self.name,
                 "task_id": task.id,
             }
@@ -54,6 +85,7 @@ class ToolAgent(BaseAgent):
             return {
                 "error": str(e),
                 "tool": tool_name,
+                "args": dict(args),
                 "agent": self.name,
                 "task_id": task.id,
             }

@@ -133,6 +133,45 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "smoke: ai/agi/status",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"curl -fsS http://127.0.0.1:7071/api/agi/status | python3 -m json.tool"
+			],
+			"dependsOn": [
+				"func: host start"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "smoke: ai/agi/analyze",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"curl -fsS -X POST http://127.0.0.1:7071/api/agi/analyze -H 'Content-Type: application/json' -d '{\"query\":\"reason through this architecture\"}' | python3 -m json.tool"
+			],
+			"dependsOn": [
+				"func: host start"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "smoke: ai/agi/stream",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"curl -fsS -N -X POST http://127.0.0.1:7071/api/agi/stream -H 'Content-Type: application/json' -d '{\"query\":\"stream a short response\"}' | grep -q 'data: \[DONE\]' && echo '{\"status\":\"ok\",\"done\":true}' | python3 -m json.tool"
+			],
+			"dependsOn": [
+				"func: host start"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "Validate writer-reviewer debug prerequisites",
 			"type": "aitk",
 			"command": "debug-check-prerequisites",

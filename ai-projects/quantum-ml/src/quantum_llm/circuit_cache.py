@@ -11,7 +11,7 @@ import hashlib
 import logging
 import time
 from collections import OrderedDict
-from typing import Any, Optional, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -44,7 +44,7 @@ class CircuitCache:
         """
         self.max_size = max(1, int(max_size))
         self.max_age_seconds = max(0, float(max_age_seconds))
-        self._cache: OrderedDict[str, Tuple[np.ndarray, float]] = OrderedDict()
+        self._cache: OrderedDict[str, tuple[np.ndarray, float]] = OrderedDict()
         self._stats = {
             "hits": 0,
             "misses": 0,
@@ -63,7 +63,7 @@ class CircuitCache:
         self,
         params: np.ndarray,
         num_qubits: int,
-    ) -> Optional[np.ndarray]:
+    ) -> np.ndarray | None:
         """
         Retrieve cached probability distribution.
 
@@ -80,9 +80,9 @@ class CircuitCache:
 
         probs, timestamp = self._cache[key]
 
-        # Check TTL
+        # Check TTL (non-positive TTL means no expiration)
         age_seconds = time.monotonic() - timestamp
-        if age_seconds > self.max_age_seconds:
+        if self.max_age_seconds > 0 and age_seconds > self.max_age_seconds:
             del self._cache[key]
             self._stats["expirations"] += 1
             self._stats["misses"] += 1

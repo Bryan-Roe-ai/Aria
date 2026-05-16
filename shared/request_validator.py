@@ -174,3 +174,28 @@ SUBSCRIPTION_SCHEMA = {
     "user_id": {"type": str, "required": True, "min_length": 1},
     "tier": {"type": str, "allowed": ["FREE", "PRO", "ENTERPRISE"]},
 }
+
+
+# AGI endpoint schemas (query/messages one-of requirement is enforced in endpoint helpers).
+AGI_BASE_SCHEMA = {
+    "query": {"type": str, "max_length": 10000},
+    "messages": {"type": list, "max_length": 500},
+    "model": {"type": str, "max_length": 256},
+    "temperature": {"type": (int, float), "min": 0, "max": 2},
+    "max_output_tokens": {"type": int, "min": 1, "max": 128000},
+    "verbose": {"type": bool},
+}
+
+AGI_ANALYZE_SCHEMA = {
+    **AGI_BASE_SCHEMA,
+}
+
+AGI_REASON_SCHEMA = {
+    **AGI_BASE_SCHEMA,
+    "goals": {"type": list, "max_length": 10},
+    "include_reasoning_summary": {"type": bool},
+}
+
+AGI_STREAM_SCHEMA = {
+    **AGI_REASON_SCHEMA,
+}
