@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Generator, Iterable, List, Optional
 
+from shared.local_summary import is_summary_request, summarize_text
+
 # Helpers for Azure quota/rate-limit detection
 try:  # shared package may not be importable in all contexts (tests add paths)
     from shared.azure_utils import (format_quota_message, is_quota_error,
@@ -655,6 +657,14 @@ class LocalEchoProvider(BaseChatProvider):
             or "choose the next useful step yourself" in lower
         ):
             return self._craft_autonomous_reply(messages, last_user, turn_count)
+
+        if is_summary_request(last_user):
+            summary = summarize_text(last_user, max_sentences=3, max_chars=420)
+            return (
+                "Local summary:\n"
+                f"{summary}\n\n"
+                "Offline extractive mode is active. Configure a live provider for abstractive summaries."
+            )
 
         # --- Greetings ---
         if intent == "greeting":
@@ -1362,10 +1372,34 @@ def detect_provider(
                 verbose=verbose,
             )
             return provider, ProviderChoice(name=info.name, model=info.model)
-        except ImportError as import_error:
-            raise RuntimeError(
-                f"AGI provider selected but agi_provider module not available: {import_error}"
-            ) from import_error
+        except Exception as import_error:
+            # If agi_provider isn't available or fails to import for any reason,
+            # fall back to a lightweight local AGI implementation that uses the
+            # core deterministic LLM simulator. This keeps `--provider agi`
+            # functional in minimal environments (CI, dev machines without
+            # heavy deps).
+            _LOGGER.warning(
+                "AGI provider import failed (%s); falling back to LocalAGIProvider",
+                import_error,
+            )
+            # Recompute settings (import may have failed before they were set).
+            temperature_value = float(
+                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7")
+            )
+            max_tokens_limit = int(max_output_tokens) if max_output_tokens is not None else 2048
+            try:
+                from local_agi_provider import LocalAGIProvider
+
+                provider = LocalAGIProvider(
+                    model=model_override or "local-llm",
+                    temperature=temperature_value,
+                    max_output_tokens=max_tokens_limit,
+                )
+                return provider, ProviderChoice(name="agi", model=getattr(provider, "model", "local-llm"))
+            except Exception as e:
+                raise RuntimeError(
+                    f"AGI provider selected but agi_provider module not available and local fallback failed: {import_error} / {e}"
+                ) from import_error
 
     if provider_choice == "quantum":
         try:

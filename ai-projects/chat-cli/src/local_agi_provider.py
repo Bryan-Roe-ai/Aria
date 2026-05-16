@@ -1,0 +1,90 @@
+"""
+Local AGI provider using the core/llm client as a deterministic, dependency-free
+fallback. This provider is intentionally lightweight and avoids importing heavy
+chat-cli internals at import time to reduce circular import risk.
+
+It implements a minimal `complete(messages, stream)` contract compatible with
+BaseChatProvider consumers.
+"""
+
+from __future__ import annotations
+
+import json
+import time
+from typing import Any, Dict, Iterable, List, Optional
+
+
+class LocalAGIProvider:
+    """Deterministic AGI-like provider backed by core.llm.client.LLMClient.
+
+    - `complete(messages, stream=True)` returns an iterable of string chunks
+      when `stream=True`, or a final string when `stream=False`.
+    - Uses the simulator's structured JSON output to provide useful chunks.
+    """
+
+    def __init__(self, model: str = "local-llm", temperature: float = 0.7, max_output_tokens: Optional[int] = None):
+        # Lazy import to avoid heavy startup and circular imports
+        try:
+            from core.llm.client import LLMClient
+        except Exception:
+            # Fall back to a tiny shim that returns echoes if the simulator is missing
+            LLMClient = None  # type: ignore
+
+        self._llm = LLMClient(model=model) if LLMClient is not None else None
+        self.model = model
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
+
+    def complete(self, messages: List[Dict[str, Any]], stream: bool = True) -> Iterable[str] | str:
+        # The core LLMClient expects a list of messages with roles 'system'/'user'.
+        if self._llm is None:
+            text = "[LocalAGI fallback] No simulator available."
+            return (c for c in text) if stream else text
+
+        raw = self._llm.complete(messages)
+
+        # The simulator returns JSON strings for structured modes; try to parse.
+        try:
+            payload = json.loads(raw) if isinstance(raw, str) else raw
+        except Exception:
+            # Non-JSON fallback — stream characters or return string
+            if stream:
+                def _char_gen():
+                    for ch in str(raw):
+                        yield ch
+                return _char_gen()
+            return str(raw)
+
+        # If streaming, yield analysis, steps, then output incrementally.
+        if stream:
+            def _gen():
+                try:
+                    if isinstance(payload, dict):
+                        analysis = payload.get("analysis")
+                        if analysis:
+                            yield f"[analysis] {analysis}"
+
+                        steps = payload.get("steps")
+                        if isinstance(steps, list):
+                            for s in steps:
+                                # yield step as compact JSON so consumer can parse
+                                yield json.dumps({"step": s})
+
+                        output = payload.get("output")
+                        if output:
+                            # Stream output by word for slightly coarser chunks
+                            for token in str(output).split():
+                                yield token + " "
+                            return
+
+                    # Generic fallback: stream the full JSON string
+                    yield json.dumps(payload)
+                except Exception as exc:
+                    yield f"[LocalAGI error] {str(exc)}"
+
+            return _gen()
+
+        # Non-streaming: return the most relevant text field
+        if isinstance(payload, dict):
+            return payload.get("output") or json.dumps(payload)
+        return str(payload)
