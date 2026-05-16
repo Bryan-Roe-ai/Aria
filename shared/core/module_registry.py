@@ -125,7 +125,68 @@ class AIProjectsRegistry:
 
                 cls._cache[cache_key] = ns
             except ImportError as e:
-                raise ImportError(f"Failed to load chat-cli: {e}")
+                # Provide a graceful fallback namespace when chat-cli is unavailable.
+                # This allows the rest of the application to operate with a local
+                # echo-style provider instead of raising ImportError at import time.
+                import logging as _logging
+
+                _logging.warning(f"chat-cli not found: {e}. Using fallback local shim.")
+
+                class ChatCliNamespace:
+                    pass
+
+                ns = ChatCliNamespace()
+
+                # Minimal token_utils fallback
+                class _TokenUtils:
+                    @staticmethod
+                    def prune_messages(messages, max_tokens=None):
+                        # Best-effort no-op prune for environments without token utils
+                        return messages
+
+                ns.token_utils = _TokenUtils()
+
+                # Minimal AGI provider stub
+                class _AGIProviderStub:
+                    @staticmethod
+                    def create_agi_provider(*args, **kwargs):
+                        raise ImportError("AGI provider not available in fallback")
+
+                ns.agi_provider = _AGIProviderStub()
+
+                # Simple fallback provider compatible with Consumer API used across repo
+                class _FallbackProvider:
+                    def complete(self, messages, stream=True):
+                        # Find last user message and echo it
+                        last = ""
+                        for m in reversed(messages or []):
+                            if isinstance(m, dict) and m.get("role") == "user":
+                                content = m.get("content")
+                                if isinstance(content, str) and content.strip():
+                                    last = content.strip()
+                                    break
+                        reply = f"Echo (fallback): {last}" if last else "Echo (fallback): Hello"
+                        if stream:
+                            def _gen():
+                                yield reply
+                            return _gen()
+                        return reply
+
+                # Lightweight info object with name/model attributes
+                class _Info:
+                    def __init__(self, name, model):
+                        self.name = name
+                        self.model = model
+
+                def _detect_provider(explicit=None, model_override=None, temperature=None, max_output_tokens=None):
+                    return _FallbackProvider(), _Info(name="local", model=(model_override or "fallback"))
+
+                ns.chat_providers = None
+                ns.detect_provider = _detect_provider
+                ns.prune_messages = ns.token_utils.prune_messages
+                ns.create_agi_provider = lambda *args, **kwargs: (_AGIProviderStub())
+
+                cls._cache[cache_key] = ns
 
         return cls._cache[cache_key]
 
