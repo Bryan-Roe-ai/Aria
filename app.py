@@ -23,6 +23,7 @@ import argparse
 import logging
 import math
 import os
+import re
 import sys
 import typing
 
@@ -99,6 +100,8 @@ DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 DEFAULT_TEMPERATURE = 0.2
 DEFAULT_TIMEOUT_ENV = os.getenv("OPENAI_TIMEOUT", "60")
 MAX_PROMPT_CHARS = 10_000
+MAX_SYSTEM_PROMPT_CHARS = 4_000
+MAX_MODEL_NAME_CHARS = 128
 SYSTEM_PROMPT = (
     "You are a concise AI coding assistant. "
     "Return practical, code-focused responses."
@@ -155,6 +158,47 @@ def _validate_prompt(prompt: str, *, max_chars: int = MAX_PROMPT_CHARS) -> str:
     return normalized
 
 
+def _validate_system_prompt(system_prompt: str) -> str:
+    """Validate and normalize system prompt text."""
+    normalized = (system_prompt or "").strip()
+    if not normalized:
+        raise ValueError("System prompt cannot be empty.")
+    if len(normalized) > MAX_SYSTEM_PROMPT_CHARS:
+        raise ValueError(
+            f"System prompt is too long ({len(normalized)} chars). "
+            f"Maximum supported length is {MAX_SYSTEM_PROMPT_CHARS} chars."
+        )
+    return normalized
+
+
+def _validate_model_name(model: str) -> str:
+    """Validate and normalize model identifier."""
+    normalized = (model or "").strip()
+    if not normalized:
+        raise ValueError("Model cannot be empty.")
+    if len(normalized) > MAX_MODEL_NAME_CHARS:
+        raise ValueError(
+            f"Model name is too long ({len(normalized)} chars). "
+            f"Maximum supported length is {MAX_MODEL_NAME_CHARS} chars."
+        )
+    if not re.fullmatch(r"[A-Za-z0-9._:-]+", normalized):
+        raise ValueError(
+            "Model contains unsupported characters. Allowed: letters, digits, '.', '_', ':', '-'"
+        )
+    return normalized
+
+
+def _read_stdin_limited(max_chars: int) -> str:
+    """Read stdin with a hard upper bound to avoid unbounded memory usage."""
+    # Read one extra char so validation can produce a precise "too long" error.
+    return sys.stdin.read(max_chars + 1)
+
+
+def _env_str(name: str) -> str:
+    """Read an environment variable as a stripped string (or empty)."""
+    return (os.getenv(name) or "").strip()
+
+
 def _extract_text(resp: typing.Any) -> str:
     """Extract plain text from an OpenAI Responses API result.
 
@@ -203,14 +247,9 @@ def ask_ai(
 ) -> str:
     """Send ``prompt`` to the Responses API and return the extracted text."""
     prompt = _validate_prompt(prompt)
-    system_prompt = system_prompt.strip()
-    model = model.strip()
+    system_prompt = _validate_system_prompt(system_prompt)
+    model = _validate_model_name(model)
     temperature = _validate_temperature(temperature)
-
-    if not model:
-        raise ValueError("Model cannot be empty.")
-    if not system_prompt:
-        raise ValueError("System prompt cannot be empty.")
 
     logger.debug("Requesting completion: model=%s temperature=%s",
                  model, temperature)
@@ -233,9 +272,7 @@ def ask_local(prompt: str, *, system_prompt: str = SYSTEM_PROMPT) -> str:
     deterministic and safe for local use.
     """
     prompt = _validate_prompt(prompt)
-    system_prompt = (system_prompt or "").strip()
-    if not system_prompt:
-        raise ValueError("System prompt cannot be empty.")
+    system_prompt = _validate_system_prompt(system_prompt)
 
     ptext = prompt.strip()
     lower = ptext.lower()
@@ -279,7 +316,7 @@ def _read_prompt(args_prompt: list[str]) -> str:
         return " ".join(args_prompt).strip()
 
     if not sys.stdin.isatty():
-        return sys.stdin.read().strip()
+        return _read_stdin_limited(MAX_PROMPT_CHARS).strip()
 
     try:
         return input("Prompt: ").strip()
@@ -383,7 +420,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Invalid configuration: {exc}", file=sys.stderr)
         return EXIT_USAGE
 
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = _env_str("OPENAI_API_KEY")
     if not api_key:
         if args.provider == "openai":
             print("Error: missing OPENAI_API_KEY environment variable.",
@@ -402,10 +439,10 @@ def main(argv: list[str] | None = None) -> int:
         "api_key": api_key,
         "timeout": timeout,
     }
-    base_url = (os.getenv("OPENAI_BASE_URL") or "").strip()
+    base_url = _env_str("OPENAI_BASE_URL")
     if base_url:
         client_kwargs["base_url"] = base_url
-    org = (os.getenv("OPENAI_ORG") or "").strip()
+    org = _env_str("OPENAI_ORG")
     if org:
         client_kwargs["organization"] = org
     # If the openai package isn't installed, handle according to fallback
