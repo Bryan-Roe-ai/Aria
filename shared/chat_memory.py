@@ -60,6 +60,7 @@ _MAX_CONN_AGE_SECONDS = int(os.getenv("QAI_DB_CONN_MAX_AGE", "300"))
 # a small pool (default 5) and the ability to return connections back to the pool.
 _connection_pool: list = []
 _POOL_MAX_SIZE: int = int(os.getenv("QAI_DB_CONN_POOL_SIZE", "5"))
+_last_connect_impl_id: Optional[int] = None
 
 
 def _conn_str() -> Optional[str]:
@@ -102,9 +103,35 @@ def _is_connection_usable(conn: Any) -> bool:
 
 
 def _get_conn() -> Any:
+    global _last_connect_impl_id
+
     tid = threading.get_ident()
     now = time.time()
+    current_connect_impl_id = id(getattr(pyodbc, "connect", None))
     with _conn_lock:
+        if _last_connect_impl_id is None:
+            _last_connect_impl_id = current_connect_impl_id
+        elif _last_connect_impl_id != current_connect_impl_id:
+            for thread_id, stale_conn in list(_conn_cache.items()):
+                try:
+                    stale_conn.close()
+                except Exception:
+                    logger.debug(
+                        "Error closing cached connection for thread_id=%s",
+                        thread_id,
+                        exc_info=True,
+                    )
+            _conn_cache.clear()
+            _conn_timestamps.clear()
+
+            for pooled_conn in list(_connection_pool):
+                try:
+                    pooled_conn.close()
+                except Exception:
+                    logger.debug("Error closing pooled connection", exc_info=True)
+            _connection_pool.clear()
+            _last_connect_impl_id = current_connect_impl_id
+
         # Check thread-local cache first
         conn = _conn_cache.get(tid)
         if conn is not None:
@@ -326,6 +353,59 @@ def fetch_similar_messages(
     except Exception:
         logger.exception("Failed to fetch similar messages")
         return []
+    finally:
+        try:
+            if cur is not None:
+                cur.close()
+        except Exception:
+            logger.debug("Failed to close cursor", exc_info=True)
+
+
+def store_embeddings_batch(
+    rows: Sequence[Tuple[str, Sequence[float], str]],
+) -> int:
+    """Store multiple embeddings.
+
+    Args:
+        rows: Sequence of tuples in the form
+            ``(message_id, embedding_vector, model)``.
+
+    Returns:
+        Number of rows inserted. Returns ``0`` when no rows are provided, no DB
+        connection string is configured, or the batch fails and rolls back.
+    """
+    if not rows:
+        return 0
+    if not _conn_str():
+        return 0
+
+    inserted = 0
+    conn: Optional[Any] = None
+    cur = None
+    try:
+        conn = _get_conn()
+        cur = conn.cursor()
+        for message_id, embedding, model in rows:
+            if not message_id or not embedding:
+                continue
+            cur.execute(
+                """
+                INSERT INTO embeddings (message_id, model, embedding_vector, dim)
+                VALUES (?, ?, ?, ?)
+                """,
+                (message_id, model, _serialize_f32(embedding), len(embedding)),
+            )
+            inserted += 1
+        conn.commit()
+        return inserted
+    except Exception:
+        logger.exception("Failed to store embedding batch")
+        try:
+            if conn is not None:
+                conn.rollback()
+        except Exception:
+            logger.debug("Rollback failed", exc_info=True)
+        return 0
     finally:
         try:
             if cur is not None:
