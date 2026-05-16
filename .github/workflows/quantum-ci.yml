@@ -1,0 +1,35 @@
+name: quantum-ci
+
+on:
+  push:
+    branches: [ main, hardening/quantum-tests-ci ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.10, 3.11]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f quantum-ai/requirements-smoke.txt ]; then pip install -r quantum-ai/requirements-smoke.txt || true; fi
+          pip install -r requirements-dev.txt
+      - name: Run pytest
+        run: |
+          pytest -q
