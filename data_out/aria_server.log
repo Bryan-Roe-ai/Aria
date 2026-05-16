@@ -1,3 +1,53 @@
 nohup: ignoring input
 2026-03-29 07:25:54,696 - WARNING - ✗ LLM providers not available - will use rule-based fallback only
 2026-03-29 07:25:54,696 - INFO - LLM not available - will use rule-based fallback
+2026-05-16 13:28:57,884 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:28:57,885 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:29:24,481 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:29:24,481 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:29:54,546 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:29:54,547 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:30:24,666 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:30:24,666 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:30:54,781 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:30:54,782 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:31:24,887 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:31:24,888 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:31:54,993 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:31:54,993 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:32:25,114 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:32:25,114 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:32:55,245 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:32:55,246 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:33:25,336 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:33:25,337 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.

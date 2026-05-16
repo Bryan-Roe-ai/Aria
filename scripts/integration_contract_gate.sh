@@ -8,6 +8,7 @@ set -euo pipefail
 #
 # Behavior:
 #  - Always runs:
+#      python scripts/automate_core_files.py
 #      python scripts/integration_smoke.py
 #      python scripts/ci_orchestrator.py --integration-contract-tests
 #      python scripts/ci_orchestrator.py --validate-all
@@ -45,6 +46,7 @@ run_step() {
   fi
 }
 
+run_step core_files_automation python scripts/automate_core_files.py
 run_step integration_smoke python scripts/integration_smoke.py
 run_step integration_contract_tests python scripts/ci_orchestrator.py --integration-contract-tests
 run_step validate_all python scripts/ci_orchestrator.py --validate-all

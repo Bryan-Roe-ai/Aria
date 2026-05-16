@@ -58,6 +58,16 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 - **Purpose:** validates `autotrain.yaml` and `quantum_autorun.yaml`
 - **Duration:** ~5–10 minutes
 
+#### `default-github-automation.yml` — GitHub baseline verification
+- **Triggers:** changes to baseline GitHub automation files, weekly schedule, manual dispatch
+- **Purpose:** verifies core repository automation remains configured (merge gate, labeler, stale, dependency review, dependabot)
+- **Duration:** ~2–5 minutes
+
+#### `ruleset-json-validation.yml` — Ruleset template validation
+- **Triggers:** changes to `.github/rulesets/*.json` and ruleset docs, weekly schedule, manual dispatch
+- **Purpose:** validates ruleset JSON template structure and required status-check context alignment
+- **Duration:** ~2–5 minutes
+
 ### ☁️ Cloud Workflows
 
 #### `azureml-train.yml` — Azure ML training
@@ -80,6 +90,8 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 | `aria-tests.yml` | ✅ | ✅ | ❌ | ✅ | ✅ | 20–30 min |
 | `e2e-tests.yml` | ✅ | ✅ | ❌ | ✅ | ❌ | 10–15 min |
 | `auto-validation.yml` | ✅ | ✅ | ✅ | ✅ | ✅ | 5–10 min |
+| `default-github-automation.yml` | ✅ | ✅ | ✅ | ✅ | ✅ | 2–5 min |
+| `ruleset-json-validation.yml` | ✅ | ✅ | ✅ | ✅ | ✅ | 2–5 min |
 | `azureml-train.yml` | ❌ | ❌ | ❌ | ✅ | n/a | 30+ min |
 | `quantum-orchestration.yml` | ✅ | ❌ | ❌ | ✅ | ❌ | varies |
 

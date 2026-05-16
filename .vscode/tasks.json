@@ -25,7 +25,7 @@
 				"background": {
 					"activeOnStart": true,
 					"beginsPattern": ".*",
-					"endsPattern": "Worker process started and initialized|Host lock lease acquired|Job host started|Http Functions:|Job host started \(skipped: func missing\)"
+					"endsPattern": "Worker process started and initialized|Host lock lease acquired|Job host started|Http Functions:|Job host started (skipped: func missing)"
 				}
 			}
 		},
@@ -76,6 +76,16 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "integration:contract-gate-strict-direct-autostart",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"if command -v func >/dev/null 2>&1; then START_FUNC_CMD=\"func host start\" bash ./scripts/integration_contract_gate.sh --strict-endpoints; else echo \"[integration:contract-gate-strict-direct-autostart] func not found on PATH; run integration:contract-gate-direct instead.\"; exit 0; fi"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "validate:site-bundles-strict",
 			"type": "shell",
 			"command": "bash",
@@ -102,6 +112,36 @@
 			"args": [
 				"-lc",
 				"python3 scripts/validate_foundry_config.py"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automate: core-files",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"python3 scripts/automate_core_files.py --json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automation: go-forever",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && mkdir -p data_out && nohup bash ./scripts/aria_forever_watchdog.sh >> data_out/aria_forever_watchdog.log 2>&1 & echo 'started: scripts/aria_forever_watchdog.sh'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "automation: go-forever-status",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && if [ -f data_out/aria_forever_watchdog_heartbeat.json ]; then cat data_out/aria_forever_watchdog_heartbeat.json; else echo '{\"running\":false,\"reason\":\"heartbeat file missing\"}'; fi"
 			],
 			"problemMatcher": []
 		},
