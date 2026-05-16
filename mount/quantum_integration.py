@@ -104,6 +104,24 @@ class QuantumIntegration:
         try:
             train_script = self.quantum_path / "train_custom_dataset.py"
 
+            datasets_path = self.workspace_root / "datasets" / "quantum"
+            allowed_datasets = {
+                csv_file.stem for csv_file in datasets_path.glob("*.csv")
+            } if datasets_path.exists() else set()
+
+            if dataset not in allowed_datasets:
+                return {
+                    "success": False,
+                    "error": f"Invalid dataset '{dataset}'.",
+                }
+
+            allowed_backends = set(self._get_available_backends())
+            if backend not in allowed_backends:
+                return {
+                    "success": False,
+                    "error": f"Invalid backend '{backend}'.",
+                }
+
             cmd = [
                 sys.executable,
                 str(train_script),
