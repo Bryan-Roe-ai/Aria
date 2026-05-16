@@ -14,14 +14,13 @@ import json
 import logging
 import os
 import sys
-from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 try:
-    from mcp.server import Server
-    from mcp.server.stdio import stdio_server
-    from mcp.types import TextContent, Tool
-except ImportError as e:
+    from mcp.server import Server  # type: ignore
+    from mcp.server.stdio import stdio_server  # type: ignore
+    from mcp.types import TextContent, Tool  # type: ignore
+except ImportError:
     print("Error: MCP package not installed.")
     print("Install with: pip install 'mcp>=0.9.0'")
     sys.exit(1)
@@ -74,7 +73,7 @@ class LMStudioClient:
             logger.error(f"Connection check failed: {e}")
             return False
 
-    async def list_models(self) -> Dict[str, Any]:
+    async def list_models(self) -> dict[str, Any]:
         """List available models on LM Studio server."""
         try:
             response = await self.client.get(f"{self.base_url}/models")
@@ -195,8 +194,11 @@ def get_client() -> LMStudioClient:
     if _client is None:
         base_url = os.getenv("LMSTUDIO_BASE_URL", DEFAULT_BASE_URL)
         model = os.getenv("LMSTUDIO_MODEL", DEFAULT_MODEL)
-        temperature = float(os.getenv("LMSTUDIO_TEMPERATURE", DEFAULT_TEMPERATURE))
-        max_tokens = int(os.getenv("LMSTUDIO_MAX_TOKENS", DEFAULT_MAX_TOKENS))
+        # Ensure environment defaults are strings before casting
+        temperature = float(
+            os.getenv("LMSTUDIO_TEMPERATURE", str(DEFAULT_TEMPERATURE)))
+        max_tokens = int(
+            os.getenv("LMSTUDIO_MAX_TOKENS", str(DEFAULT_MAX_TOKENS)))
 
         _client = LMStudioClient(
             base_url=base_url,
@@ -294,7 +296,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
                 return [
                     TextContent(
                         type="text",
-                        text=json.dumps({"error": "No messages provided"}, indent=2),
+                        text=json.dumps(
+                            {"error": "No messages provided"}, indent=2),
                     )
                 ]
 
@@ -329,7 +332,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
             return [
                 TextContent(
                     type="text",
-                    text=json.dumps({"error": f"Unknown tool: {name}"}, indent=2),
+                    text=json.dumps(
+                        {"error": f"Unknown tool: {name}"}, indent=2),
                 )
             ]
 
@@ -354,10 +358,13 @@ async def main():
     if connected:
         logger.info("✓ Successfully connected to LM Studio")
         models = await client.list_models()
-        logger.info(f"✓ Available models: {models.get('available_models', [])}")
+        logger.info(
+            f"✓ Available models: {models.get('available_models', [])}")
     else:
-        logger.warning(f"⚠ Could not connect to LM Studio at {client.base_url}")
-        logger.info("Make sure LM Studio is running and the local server is enabled.")
+        logger.warning(
+            f"⚠ Could not connect to LM Studio at {client.base_url}")
+        logger.info(
+            "Make sure LM Studio is running and the local server is enabled.")
 
     # Start MCP server
     async with stdio_server() as (read_stream, write_stream):

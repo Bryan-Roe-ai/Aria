@@ -738,3 +738,81 @@ Config: /workspaces/Aria/config/autonomous_training.yaml
 🛑 Stopping Quantum Computing Workflows...
 ✅ Quantum Computing Workflows stopped
 ✅ All components stopped
+
+🔍 Pre-flight validation...
+
+🔍 Validating orchestrator configurations...
+
+✅ VALID | 0 errors, 0 warnings
+Config: /workspaces/Aria/config/master_orchestrator.yaml
+
+✅ VALID | 0 errors, 0 warnings
+Config: /workspaces/Aria/config/autonomous_training.yaml
+
+✅ All configurations valid. Safe to start daemon.
+
+================================================================================
+🤖 Repository-Wide Automation Starting
+================================================================================
+
+🚀 Starting Aria Character Automation...
+✅ Aria Character Automation started (PID 99685)
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🚀 Starting Quantum Computing Workflows...
+✅ Quantum Computing Workflows started (PID 99766)
+⚠️  Dependency 'training' not running, starting it first...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+❌ Failed to start dependency 'training'
+⚠️  Component 'Dataset Auto-Discovery (Integrated in training)' is disabled
+⚠️  Component 'Status Dashboard' is disabled
+⚠️  Component 'Backup Manager' is disabled
+
+👁️  Starting monitoring loop (interval: 60s)
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #1: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #2: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #3: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #4: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #5: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #6: 1/7 components running
+
+⚠️  Received signal 15, shutting down...
+
+🛑 Stopping all components...
+🛑 Stopping Aria Character Automation...
+✅ Aria Character Automation stopped
+🛑 Stopping Quantum Computing Workflows...
+✅ Quantum Computing Workflows stopped
+✅ All components stopped

@@ -13,10 +13,17 @@ import time
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 import numpy as np
-from qiskit import QuantumCircuit
+
+try:
+    import qiskit
+except ImportError:
+    print("Error: qiskit package not installed or incompatible version.")
+    print("\nTo install qiskit, run:")
+    print("  pip install qiskit")
+    sys.exit(1)
 
 src_path = Path(__file__).parent / "src"
 if str(src_path) not in sys.path:
@@ -35,9 +42,9 @@ if not src_path.exists():
 
 # Import MCP dependencies
 try:
-    from mcp.server import Server
-    from mcp.server.stdio import stdio_server
-    from mcp.types import TextContent, Tool
+    import mcp.server  # type: ignore
+    from mcp.server.stdio import stdio_server  # type: ignore
+    from mcp.types import TextContent, Tool  # type: ignore
 except ImportError as e:
     print("Error: MCP package not installed or incompatible version.")
     print("\nTo install MCP dependencies, run:")
@@ -77,7 +84,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Initialize MCP server
-app = Server("quantum-ai-mcp")
+app = mcp.server.Server("quantum-ai-mcp")
 
 # Thread pool for CPU-bound operations
 cpu_executor = ProcessPoolExecutor(max_workers=2)
@@ -93,7 +100,7 @@ class CircuitCache:
         self.ttl_seconds = ttl_seconds
         self.timestamps = {}
 
-    def get(self, key: str) -> Optional[QuantumCircuit]:
+    def get(self, key: str) -> Optional[qiskit.QuantumCircuit]:
         if key not in self.cache:
             return None
 
@@ -106,7 +113,7 @@ class CircuitCache:
         self.cache.move_to_end(key)
         return self.cache[key]
 
-    def put(self, key: str, circuit: QuantumCircuit):
+    def put(self, key: str, circuit: qiskit.QuantumCircuit):
         if key in self.cache:
             self.cache[key] = circuit
             self.cache.move_to_end(key)
@@ -214,6 +221,36 @@ def _normalize_required_string(value: Any) -> Optional[str]:
     return normalized or None
 
 
+def _text_response(message: str) -> list[TextContent]:
+    """Return a standard text response payload."""
+    return [TextContent(type="text", text=message)]
+
+
+def _require_string_arg(args: dict, key: str) -> tuple[Optional[str], Optional[list[TextContent]]]:
+    """Validate a required string argument from tool args."""
+    value = _normalize_required_string(args.get(key))
+    if value is None:
+        return None, _text_response(f"{key} is required")
+    return value, None
+
+
+def _parse_shots_arg(args: dict, *, default: int) -> tuple[Optional[int], Optional[list[TextContent]]]:
+    """Validate and normalize shots argument for bounded execution safety."""
+    shots = args.get("shots", default)
+    if (
+        isinstance(shots, bool)
+        or not isinstance(shots, int)
+        or not (1 <= shots <= MAX_SHOTS_PER_CALL)
+    ):
+        return (
+            None,
+            _text_response(
+                f"shots must be an integer between 1 and {MAX_SHOTS_PER_CALL}"
+            ),
+        )
+    return shots, None
+
+
 def _is_free_backend(backend_name: Optional[str]) -> bool:
     """Return True when the backend is simulator-like and should not incur cost."""
     normalized = _normalize_backend_name(backend_name)
@@ -233,9 +270,12 @@ def _requires_cost_confirmation(backend_name: Optional[str]) -> bool:
     normalized = _normalize_backend_name(backend_name)
     if not normalized:
         return False
+    # Simulators are free even when provider-qualified (e.g., ionq.simulator).
+    if _is_free_backend(normalized):
+        return False
     if any(keyword in normalized for keyword in PAID_BACKEND_KEYWORDS):
         return True
-    return not _is_free_backend(normalized)
+    return True
 
 
 def _estimate_job_cost_sync(circuit, backend_name: str, shots: int) -> float:
@@ -266,7 +306,7 @@ def _estimate_job_cost_sync(circuit, backend_name: str, shots: int) -> float:
     return max(0.0, estimated_cost)  # Never negative
 
 
-def _normalize_backend_allowlist(backends: List[str]) -> set[str]:
+def _normalize_backend_allowlist(backends: list[str]) -> set[str]:
     """Normalize allowlist for membership checks."""
     return {
         _normalize_backend_name(name)
@@ -358,7 +398,7 @@ def initialize_quantum_resources():
 
 
 @app.list_tools()
-async def list_tools() -> List[Tool]:
+async def list_tools() -> list[Tool]:
     """List available quantum computing tools"""
     return [
         Tool(
@@ -553,7 +593,7 @@ async def list_tools() -> List[Tool]:
 
 
 @app.call_tool()
-async def call_tool(name: str, arguments: Any) -> List[TextContent]:
+async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     """Handle tool calls"""
 
     try:
@@ -589,7 +629,7 @@ async def call_tool(name: str, arguments: Any) -> List[TextContent]:
         return [TextContent(type="text", text=f"Error: {str(e)}")]
 
 
-async def create_circuit_handler(args: Dict) -> List[TextContent]:
+async def create_circuit_handler(args: dict) -> list[TextContent]:
     """Create a quantum circuit based on parameters (optimized with async execution)"""
     # Periodic cache cleanup to prevent memory leaks
     _cleanup_cache_if_needed()
@@ -674,26 +714,26 @@ async def create_circuit_handler(args: Dict) -> List[TextContent]:
 
 
 def _create_circuit_sync(
-    n_qubits: int, circuit_type: str, gates: Optional[List] = None
-) -> Optional[QuantumCircuit]:
+    n_qubits: int, circuit_type: str, gates: Optional[list] = None
+) -> Optional[qiskit.QuantumCircuit]:
     """Synchronous circuit creation (runs in thread pool)"""
     if circuit_type == "entanglement":
         return create_sample_circuit(n_qubits)
     elif circuit_type == "bell":
-        circuit = QuantumCircuit(2, 2)
+        circuit = qiskit.QuantumCircuit(2, 2)
         circuit.h(0)
         circuit.cx(0, 1)
         circuit.measure([0, 1], [0, 1])
         return circuit
     elif circuit_type == "ghz":
-        circuit = QuantumCircuit(n_qubits, n_qubits)
+        circuit = qiskit.QuantumCircuit(n_qubits, n_qubits)
         circuit.h(0)
         for i in range(n_qubits - 1):
             circuit.cx(i, i + 1)
         circuit.measure(range(n_qubits), range(n_qubits))
         return circuit
     elif circuit_type == "random":
-        circuit = QuantumCircuit(n_qubits, n_qubits)
+        circuit = qiskit.QuantumCircuit(n_qubits, n_qubits)
         import random
 
         for _ in range(n_qubits * 2):
@@ -712,7 +752,7 @@ def _create_circuit_sync(
         circuit.measure(range(n_qubits), range(n_qubits))
         return circuit
     elif circuit_type == "custom" and gates:
-        circuit = QuantumCircuit(n_qubits, n_qubits)
+        circuit = qiskit.QuantumCircuit(n_qubits, n_qubits)
         for gate_spec in gates:
             if not isinstance(gate_spec, dict):
                 continue
@@ -753,26 +793,19 @@ def _create_circuit_sync(
     return None
 
 
-async def simulate_circuit_handler(args: Dict) -> List[TextContent]:
+async def simulate_circuit_handler(args: dict) -> list[TextContent]:
     """Simulate a quantum circuit locally (optimized with async execution)"""
-    circuit_id = _normalize_required_string(args.get("circuit_id"))
-    shots = args.get("shots", MAX_SHOTS_PER_CALL)
+    circuit_id, circuit_id_error = _require_string_arg(args, "circuit_id")
+    if circuit_id_error:
+        return circuit_id_error
 
-    if circuit_id is None:
-        return [TextContent(type="text", text="circuit_id is required")]
+    shots, shots_error = _parse_shots_arg(args, default=MAX_SHOTS_PER_CALL)
+    if shots_error:
+        return shots_error
 
-    # Validate shots to prevent DoS via excessively large simulation jobs.
-    if (
-        isinstance(shots, bool)
-        or not isinstance(shots, int)
-        or not (1 <= shots <= MAX_SHOTS_PER_CALL)
-    ):
-        return [
-            TextContent(
-                type="text",
-                text=f"shots must be an integer between 1 and {MAX_SHOTS_PER_CALL}",
-            )
-        ]
+    # Narrow optional helper outputs for static typing.
+    assert circuit_id is not None
+    assert shots is not None
 
     # Clean expired cache entries periodically
     _cleanup_cache_if_needed()
@@ -841,7 +874,7 @@ async def simulate_circuit_handler(args: Dict) -> List[TextContent]:
     return [TextContent(type="text", text=result_text)]
 
 
-def _simulate_circuit_sync(circuit: QuantumCircuit, shots: int) -> Dict:
+def _simulate_circuit_sync(circuit: qiskit.QuantumCircuit, shots: int) -> dict:
     """Synchronous circuit simulation (runs in process pool)"""
     from qiskit_aer import AerSimulator
 
@@ -851,7 +884,7 @@ def _simulate_circuit_sync(circuit: QuantumCircuit, shots: int) -> Dict:
     return result.get_counts()
 
 
-async def connect_azure_handler(args: Dict) -> List[TextContent]:
+async def connect_azure_handler(args: dict) -> list[TextContent]:
     """Connect to Azure Quantum workspace (optimized with config caching)"""
     subscription_id = _normalize_required_string(args.get("subscription_id"))
     resource_group = _normalize_required_string(args.get("resource_group"))
@@ -912,7 +945,7 @@ async def connect_azure_handler(args: Dict) -> List[TextContent]:
         ]
 
 
-def _connect_azure_sync(config: Dict) -> AzureQuantumIntegration:
+def _connect_azure_sync(config: dict) -> AzureQuantumIntegration:
     """Synchronous Azure connection (runs in thread pool)"""
     import os
     import tempfile
@@ -935,7 +968,7 @@ def _connect_azure_sync(config: Dict) -> AzureQuantumIntegration:
             pass
 
 
-async def list_backends_handler(args: Dict) -> List[TextContent]:
+async def list_backends_handler(args: dict) -> list[TextContent]:
     """List available quantum backends (optimized with async I/O)"""
     if quantum_state["azure_integration"] is None:
         return [
@@ -963,30 +996,29 @@ async def list_backends_handler(args: Dict) -> List[TextContent]:
         return [TextContent(type="text", text=f"Error listing backends: {str(e)}")]
 
 
-async def submit_job_handler(args: Dict) -> List[TextContent]:
+async def submit_job_handler(args: dict) -> list[TextContent]:
     """Submit a quantum job to Azure Quantum with cost-gating (optimized)"""
-    circuit_id = _normalize_required_string(args.get("circuit_id"))
-    backend_name = _normalize_required_string(args.get("backend_name"))
-    confirm_cost = args.get("confirm_cost", False)
-    shots = args.get("shots", 500)
+    circuit_id, circuit_id_error = _require_string_arg(args, "circuit_id")
+    if circuit_id_error:
+        return circuit_id_error
 
-    if circuit_id is None:
-        return [TextContent(type="text", text="circuit_id is required")]
-    if backend_name is None:
-        return [TextContent(type="text", text="backend_name is required")]
+    backend_name, backend_name_error = _require_string_arg(
+        args, "backend_name")
+    if backend_name_error:
+        return backend_name_error
+
+    confirm_cost = args.get("confirm_cost", False)
+    shots, shots_error = _parse_shots_arg(args, default=500)
+
     if not isinstance(confirm_cost, bool):
-        return [TextContent(type="text", text="confirm_cost must be a boolean")]
-    if (
-        isinstance(shots, bool)
-        or not isinstance(shots, int)
-        or not (1 <= shots <= MAX_SHOTS_PER_CALL)
-    ):
-        return [
-            TextContent(
-                type="text",
-                text=f"shots must be an integer between 1 and {MAX_SHOTS_PER_CALL}",
-            )
-        ]
+        return _text_response("confirm_cost must be a boolean")
+    if shots_error:
+        return shots_error
+
+    # Narrow optional helper outputs for static typing.
+    assert circuit_id is not None
+    assert backend_name is not None
+    assert shots is not None
 
     if quantum_state["azure_integration"] is None:
         return [
@@ -1068,7 +1100,7 @@ async def submit_job_handler(args: Dict) -> List[TextContent]:
         return [TextContent(type="text", text=f"Error submitting job: {str(e)}")]
 
 
-async def train_classifier_handler(args: Dict) -> List[TextContent]:
+async def train_classifier_handler(args: dict) -> list[TextContent]:
     """Train a quantum classifier (optimized with process pool for CPU-intensive training)"""
     dataset_name = args.get("dataset")
     n_qubits = args.get("n_qubits", 4)
@@ -1237,27 +1269,25 @@ Training History:
         return f"Training failed: {str(e)}"
 
 
-async def estimate_cost_handler(args: Dict) -> List[TextContent]:
+async def estimate_cost_handler(args: dict) -> list[TextContent]:
     """Estimate quantum job cost (optimized)"""
-    circuit_id = _normalize_required_string(args.get("circuit_id"))
-    backend_name = _normalize_required_string(args.get("backend_name"))
-    shots = args.get("shots", 100)
+    circuit_id, circuit_id_error = _require_string_arg(args, "circuit_id")
+    if circuit_id_error:
+        return circuit_id_error
 
-    if circuit_id is None:
-        return [TextContent(type="text", text="circuit_id is required")]
-    if backend_name is None:
-        return [TextContent(type="text", text="backend_name is required")]
-    if (
-        isinstance(shots, bool)
-        or not isinstance(shots, int)
-        or not (1 <= shots <= MAX_SHOTS_PER_CALL)
-    ):
-        return [
-            TextContent(
-                type="text",
-                text=f"shots must be an integer between 1 and {MAX_SHOTS_PER_CALL}",
-            )
-        ]
+    backend_name, backend_name_error = _require_string_arg(
+        args, "backend_name")
+    if backend_name_error:
+        return backend_name_error
+
+    shots, shots_error = _parse_shots_arg(args, default=100)
+    if shots_error:
+        return shots_error
+
+    # Narrow optional helper outputs for static typing.
+    assert circuit_id is not None
+    assert backend_name is not None
+    assert shots is not None
 
     if quantum_state["azure_integration"] is None:
         return [TextContent(type="text", text="Not connected to Azure Quantum.")]
@@ -1306,7 +1336,7 @@ Note: Actual costs vary by provider:
         return [TextContent(type="text", text=f"Error estimating cost: {str(e)}")]
 
 
-async def circuit_properties_handler(args: Dict) -> List[TextContent]:
+async def circuit_properties_handler(args: dict) -> list[TextContent]:
     """Get circuit properties (optimized with caching)"""
     circuit_id = _normalize_required_string(args.get("circuit_id"))
 

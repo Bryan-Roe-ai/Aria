@@ -48,7 +48,7 @@
 			"command": "bash",
 			"args": [
 				"-lc",
-				"python3 scripts/repo_automation.py --start"
+				"bash ./scripts/integration_contract_gate.sh"
 			],
 			"problemMatcher": []
 		},
@@ -150,27 +150,12 @@
 			"type": "shell",
 			"command": "${command:python.interpreterPath}",
 			"args": [
-				"app.py"
+				"apps/chat/gradio_app.py"
 			],
-			"isBackground": true,
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},
-			"problemMatcher": {
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": "Running on local URL|Uvicorn running on|To create a public link"
-				}
-			}
+			"problemMatcher": []
 		},
 		{
 			"label": "smoke: ai/routes",
@@ -230,7 +215,7 @@
 			"command": "bash",
 			"args": [
 				"-lc",
-				"curl -fsS -N -X POST http://127.0.0.1:7071/api/agi/stream -H 'Content-Type: application/json' -d '{\"query\":\"stream a short response\"}' | grep -q 'data: \[DONE\]' && echo '{\"status\":\"ok\",\"done\":true}' | python3 -m json.tool"
+				"curl -fsS -N -X POST http://127.0.0.1:7071/api/agi/stream -H 'Content-Type: application/json' -d '{\"query\":\"stream a short response\"}' | grep -q 'data: DONE' && echo '{\"status\":\"ok\",\"done\":true}' | python3 -m json.tool"
 			],
 			"dependsOn": [
 				"func: host start"
