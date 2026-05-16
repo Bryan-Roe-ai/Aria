@@ -48,7 +48,7 @@
 			"command": "bash",
 			"args": [
 				"-lc",
-				"bash ./scripts/integration_contract_gate.sh"
+				"python3 scripts/repo_automation.py --start"
 			],
 			"problemMatcher": []
 		},

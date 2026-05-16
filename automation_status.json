@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-16T13:33:04Z",
+  "generated_at": "2026-05-16T13:34:24Z",
   "run_id": "20260516T132852Z",
   "started": "2026-05-16T13:28:52Z",
   "config_path": null,
@@ -7,9 +7,9 @@
     "quantum": "config/quantum/quantum_autorun.yaml",
     "evaluation": "config/evaluation/evaluation_autorun.yaml"
   },
-  "uptime_seconds": 251.923282,
+  "uptime_seconds": 332.118338,
   "components_running": {
-    "aria": true,
+    "aria": false,
     "training": false,
     "quantum": false,
     "evaluation": false,
@@ -22,9 +22,10 @@
     "training": false,
     "quantum": true
   },
-  "last_health_check": "2026-05-16T13:33:04Z",
-  "total_cycles": 4,
+  "last_health_check": "2026-05-16T13:34:24Z",
+  "total_cycles": 5,
   "errors": [
+    "Dependencies still missing after install (training): pandas, torch",
     "Dependencies still missing after install (training): pandas, torch",
     "Dependencies still missing after install (training): pandas, torch",
     "Dependencies still missing after install (training): pandas, torch",

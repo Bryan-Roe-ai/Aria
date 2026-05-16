@@ -51,3 +51,10 @@ nohup: ignoring input
 ⚠️ Skipping AI model loading - using rule-based fallback for faster startup
 ⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
 ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:33:55,519 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:33:55,519 - INFO - ✓ Initialized LLM provider: type
+⚠️ Skipping AI model loading - using rule-based fallback for faster startup
+⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
+ℹ️ Reusing existing server; exiting this process cleanly.
+2026-05-16 13:34:25,603 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-16 13:34:25,603 - INFO - ✓ Initialized LLM provider: type
