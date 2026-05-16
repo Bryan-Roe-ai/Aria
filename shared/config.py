@@ -16,7 +16,7 @@ from __future__ import annotations
 import logging
 import os
 from functools import lru_cache
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 _LOG = logging.getLogger(__name__)
 
@@ -28,6 +28,10 @@ try:
     from pydantic import Field, field_validator
     from pydantic_settings import BaseSettings
     try:
+        from pydantic_settings import NoDecode as _NoDecode
+    except ImportError:
+        _NoDecode = None  # type: ignore[assignment,misc]
+    try:
         from pydantic import ConfigDict as _ConfigDict
     except ImportError:
         _ConfigDict = None  # type: ignore[assignment,misc]
@@ -38,6 +42,7 @@ except ImportError:  # pragma: no cover
         # pydantic v1 compatibility
         from pydantic import BaseSettings, Field, validator as field_validator  # type: ignore[assignment,no-redef]
         _ConfigDict = None  # type: ignore[assignment]
+        _NoDecode = None  # type: ignore[assignment]
 
         _PYDANTIC_AVAILABLE = True
     except ImportError:
@@ -46,6 +51,15 @@ except ImportError:  # pragma: no cover
         Field = None  # type: ignore[assignment]
         field_validator = None  # type: ignore[assignment]
         _ConfigDict = None  # type: ignore[assignment]
+        _NoDecode = None  # type: ignore[assignment]
+
+
+def _normalize_provider_priority(value: object) -> List[str]:
+    if isinstance(value, str):
+        return [name.strip() for name in value.split(",") if name.strip()]
+    if isinstance(value, (list, tuple)):
+        return [str(name).strip() for name in value if str(name).strip()]
+    return ["azure", "openai", "lmstudio", "local"]
 
 
 # ---------------------------------------------------------------------------
@@ -88,10 +102,16 @@ if _PYDANTIC_AVAILABLE:
         # ------------------------------------------------------------------
         # Provider selection
         # ------------------------------------------------------------------
-        provider_priority: str = Field(
-            default="azure,openai,lmstudio,local",
-            alias="QAI_PROVIDER_PRIORITY",
-        )
+        if _NoDecode is not None:
+            provider_priority: Annotated[List[str], _NoDecode] = Field(  # type: ignore[valid-type]
+                default_factory=lambda: ["azure", "openai", "lmstudio", "local"],
+                alias="QAI_PROVIDER_PRIORITY",
+            )
+        else:
+            provider_priority: List[str] = Field(
+                default_factory=lambda: ["azure", "openai", "lmstudio", "local"],
+                alias="QAI_PROVIDER_PRIORITY",
+            )
 
         # ------------------------------------------------------------------
         # Database
@@ -172,6 +192,11 @@ if _PYDANTIC_AVAILABLE:
                 return "INFO"
             return upper
 
+        @field_validator("provider_priority", mode="before")
+        @classmethod
+        def _validate_provider_priority(cls, v: object) -> List[str]:
+            return _normalize_provider_priority(v)
+
         # ------------------------------------------------------------------
         # Derived helpers
         # ------------------------------------------------------------------
@@ -212,9 +237,7 @@ if _PYDANTIC_AVAILABLE:
 
         def provider_chain(self) -> List[str]:
             """Return provider order after normalizing configured priority."""
-            if isinstance(self.provider_priority, list):
-                return [str(name).strip() for name in self.provider_priority if str(name).strip()]
-            return [name.strip() for name in str(self.provider_priority).split(",") if name.strip()]
+            return _normalize_provider_priority(self.provider_priority)
 
         def summary(self) -> dict:
             """Return a non-secret summary suitable for health endpoints."""
@@ -310,9 +333,7 @@ else:
             return "local"
 
         def provider_chain(self) -> List[str]:
-            if isinstance(self.provider_priority, list):
-                return [str(name).strip() for name in self.provider_priority if str(name).strip()]
-            return [name.strip() for name in str(self.provider_priority).split(",") if name.strip()]
+            return _normalize_provider_priority(self.provider_priority)
 
         def summary(self) -> dict:
             return {
