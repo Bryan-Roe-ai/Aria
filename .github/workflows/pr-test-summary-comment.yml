@@ -46,7 +46,7 @@ jobs:
             const prs = run.pull_requests || [];
             const openaiApiKey = process.env.OPENAI_API_KEY || '';
             const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-            const maxCommentWords = 219; // Keep generated comments at 219 words max.
+            const maxCommentWords = 219; // Keep comments under 220 words; hard truncation is intentional for deterministic bounds.
             const maxErrorMessageLength = 500;
 
             // Try to enumerate artifacts and jobs (best-effort)
