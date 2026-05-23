@@ -62,6 +62,8 @@ To run the Space locally:
 
 ```bash
 ./.venv/bin/python app.py
+# or run the richer local Gradio UI
+make start-gradio
 ```
 
 If you want the full Aria platform instead, use the Quick Start steps below.
@@ -123,6 +125,8 @@ curl http://localhost:7071/api/ai/status | python -m json.tool
 
 ```bash
 ./.venv/bin/python app.py
+# Local Gradio demo UI (chat/session tools)
+make start-gradio
 ```
 
 ### 5 — Local autonomous/dev stack with Docker Compose
