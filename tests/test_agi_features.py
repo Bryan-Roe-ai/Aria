@@ -1,0 +1,292 @@
+from __future__ import annotations
+
+import json
+import sys
+import threading
+import types
+import uuid
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+from core.agents.goal_evolution_agent import GoalEvolutionAgent
+from core.agents.human_feedback_agent import HumanFeedbackAgent
+from core.agents.llm_agent import LLMAgent
+from core.agents.tool_agent import ToolRegistry
+from core.agents.training_agent import TrainingAgent
+from core.bus import AgentBus
+from core.ingestion.pipeline import (
+    DataQualityValidator,
+    FileDataSource,
+    HttpDataSource,
+    IngestionPipeline,
+)
+from core.knowledge.graph import ConceptLinker, KnowledgeGraph, OntologyLoader
+from core.llm.client import LLMClient
+from core.memory.store import MemoryStore
+from core.notifications import NotificationAdapter
+from core.registry import AgentRegistry
+from core.router import TaskRouter
+from core.runner import AriaRunner
+from core.task import Task
+
+
+def _artifact_path(name: str) -> Path:
+    root = Path(__file__).resolve().parent / "_artifacts"
+    root.mkdir(exist_ok=True)
+    return root / f"{name}-{uuid.uuid4().hex}"
+
+
+class _JsonHandler(BaseHTTPRequestHandler):
+    responses = {"GET": {"ok": True}, "POST": {"ok": True}}
+    seen_headers = []
+    seen_bodies = []
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(self.responses["GET"]).encode("utf-8"))
+
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", "0"))
+        body = self.rfile.read(length).decode("utf-8")
+        type(self).seen_headers.append(dict(self.headers))
+        type(self).seen_bodies.append(body)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(json.dumps(self.responses["POST"]).encode("utf-8"))
+
+    def log_message(self, format, *args):
+        return
+
+
+def _start_server(get_payload=None, post_payload=None):
+    handler = type(
+        "TestJsonHandler",
+        (_JsonHandler,),
+        {
+            "responses": {
+                "GET": get_payload or {"ok": True},
+                "POST": post_payload or {"ok": True},
+            },
+            "seen_headers": [],
+            "seen_bodies": [],
+        },
+    )
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server, handler
+
+
+def test_memory_store_persists_events_with_sqlite_backend() -> None:
+    db_path = _artifact_path("memory-store").with_suffix(".sqlite")
+    try:
+        memory = MemoryStore(db_path=str(db_path))
+        event_id = memory.write("goal_created", {"goal": "persist this"})
+
+        reloaded = MemoryStore(db_path=str(db_path))
+        restored = reloaded.get(event_id)
+
+        assert restored is not None
+        assert restored["data"]["goal"] == "persist this"
+    finally:
+        if db_path.exists():
+            db_path.unlink()
+
+
+def test_ingestion_pipeline_supports_file_and_http_sources() -> None:
+    jsonl_path = _artifact_path("ingestion").with_suffix(".jsonl")
+    jsonl_path.write_text(
+        '{"id": 1, "name": "alpha"}\n{"id": 2}\n',
+        encoding="utf-8",
+    )
+    server, _handler = _start_server(get_payload=[{"id": 3, "name": "beta"}])
+    try:
+        memory = MemoryStore()
+        validator = DataQualityValidator().required_fields(["id", "name"])
+        pipeline = IngestionPipeline(
+            sources=[
+                FileDataSource(str(jsonl_path)),
+                HttpDataSource(f"http://127.0.0.1:{server.server_port}"),
+            ],
+            memory=memory,
+            validator=validator,
+        )
+
+        result = pipeline.run()
+
+        assert result == {"ingested": 2, "rejected": 1}
+        assert len(memory.query(event_type="ingested_record")) == 2
+    finally:
+        server.shutdown()
+        server.server_close()
+        if jsonl_path.exists():
+            jsonl_path.unlink()
+
+
+def test_knowledge_graph_linking_and_ontology_loading() -> None:
+    memory = MemoryStore()
+    memory.write("goal_created", {"goal": "improve planning"})
+    graph = KnowledgeGraph()
+    ConceptLinker(graph, memory).link_recent(5)
+
+    ontology_path = _artifact_path("ontology").with_suffix(".json")
+    ontology_path.write_text(
+        json.dumps(
+            {
+                "entities": ["planner", {"name": "agent", "properties": {"kind": "runtime"}}],
+                "relationships": [
+                    {"source": "planner", "target": "agent", "relation": "instance_of"}
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    try:
+        loader = OntologyLoader()
+        loader.apply_to_graph(graph, loader.load(str(ontology_path)))
+
+        assert "improve planning" in graph.neighbors("goal_created")
+        assert graph.shortest_path("planner", "agent") == ["planner", "agent"]
+        assert "improve planning" in graph.find_related("goal_created")
+    finally:
+        if ontology_path.exists():
+            ontology_path.unlink()
+
+
+def test_training_agent_self_assess_and_lora_dispatch() -> None:
+    log_path = Path("logs") / "lora_signals.jsonl"
+    original = log_path.read_text(encoding="utf-8") if log_path.exists() else None
+    try:
+        agent = TrainingAgent()
+        train_result = agent.execute(Task(type="train", payload={"goal": "improve"}))
+        eval_result = agent.execute(Task(type="evaluate", payload={"score": 0.4}))
+        assessment = agent.self_assess(target_score=0.7)
+
+        assert train_result["result"]["ack"] == "training signal recorded"
+        assert eval_result["result"]["needs_retraining"] is True
+        assert assessment["needs_retraining"] is True
+        assert log_path.exists()
+        assert '"goal": "improve"' in log_path.read_text(encoding="utf-8")
+    finally:
+        if original is None:
+            if log_path.exists():
+                log_path.unlink()
+        else:
+            log_path.write_text(original, encoding="utf-8")
+
+
+def test_planner_agent_assigns_priority_metadata() -> None:
+    router = TaskRouter(AgentRegistry())
+    assert router.classify_intent("please plan this") == "plan"
+
+    planner = AriaRunner(config={"sleep_seconds": 0}).registry.get("planner_agent")
+    assert planner is not None
+
+    plan = planner.execute(Task(type="plan", payload={"goal": "inspect context and answer"}))[
+        "plan"
+    ]
+    assert all("confidence" in step and "risk" in step and "priority" in step for step in plan)
+    assert plan[0]["priority"] >= plan[-1]["priority"]
+
+
+def test_goal_evolution_agent_tracks_horizon() -> None:
+    memory = MemoryStore()
+    memory.write("task_result", {"message": "recent failure"})
+    agent = GoalEvolutionAgent(memory, goal_horizon="short_term")
+
+    result = agent.execute(Task(type="goal_evolve", payload={"horizon": "long_term"}))
+
+    assert result["goal_horizon"] == "long_term"
+    assert memory.last_of_type("goal_evolved")["data"]["goal_horizon"] == "long_term"
+
+
+def test_llm_agent_reasoning_mode_returns_reasoning_chain() -> None:
+    agent = LLMAgent()
+
+    result = agent.execute(
+        Task(type="reason", payload={"prompt": "Explain plan", "reasoning_mode": True})
+    )
+
+    assert result["reasoning_chain"]
+    assert result["reasoning_chain"][0]["name"] == "analyze"
+    assert result["output"] == "Simulated result for: Explain plan"
+
+
+def test_llm_client_can_use_stubbed_real_provider(monkeypatch) -> None:
+    stub = types.ModuleType("agi_provider")
+
+    class _Provider:
+        def complete(self, messages, stream=False):
+            assert stream is False
+            return "real provider response"
+
+    stub.create_agi_provider = lambda model=None: _Provider()
+    monkeypatch.setitem(sys.modules, "agi_provider", stub)
+    monkeypatch.setenv("ARIA_USE_REAL_LLM", "1")
+
+    client = LLMClient()
+
+    assert client.complete([{"role": "user", "content": "hello"}]) == "real provider response"
+
+
+def test_bus_feedback_router_notifications_and_remote_tool() -> None:
+    bus = AgentBus()
+    seen = []
+
+    def _listener(message):
+        seen.append(message["message"])
+        return "ok"
+
+    bus.subscribe("human_feedback", _listener)
+    memory = MemoryStore()
+    agent = HumanFeedbackAgent(memory, bus)
+    feedback_result = agent.execute(
+        Task(type="human_feedback", payload={"message": "looks good", "rating": 5})
+    )
+    bus.unsubscribe("human_feedback", _listener)
+
+    registry = AgentRegistry()
+    registry.register(agent)
+    routed = TaskRouter(registry).route_text("feedback: keep going", {"message": "feedback: keep going"})
+
+    server, handler = _start_server(post_payload={"status": "ok"})
+    try:
+        notifier = NotificationAdapter(f"http://127.0.0.1:{server.server_port}")
+        notify_result = notifier.notify("cycle complete", {"ok": True})
+
+        tool_registry = ToolRegistry()
+        tool_registry.register_remote("remote_echo", f"http://127.0.0.1:{server.server_port}")
+        remote_result = tool_registry.get("remote_echo")(message="hello")
+
+        assert feedback_result["status"] == "recorded"
+        assert seen == ["looks good"]
+        assert routed["agent"] == "human_feedback_agent"
+        assert notify_result["status"] == "sent"
+        assert remote_result == {"status": "ok"}
+        assert any("application/json" in headers.get("Content-Type", "") for headers in handler.seen_headers)
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_runner_registers_knowledge_tools_and_self_assessment() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0, "target_score": 0.8})
+    training_agent = runner.registry.get("training_agent")
+    assert training_agent is not None
+    training_agent.execute(Task(type="evaluate", payload={"score": 0.5}))
+
+    result = runner.run_once()
+
+    tool_agent = runner.registry.get("tool_agent")
+    assert tool_agent is not None
+    assert tool_agent.registry.has("knowledge_neighbors")
+    assert "self_assessment" in result
+    assert runner.memory.last_of_type("training_self_assessment") is not None
+
+    related = tool_agent.execute(
+        Task(type="tool", payload={"tool": "knowledge_related", "args": {"entity": "goal_created"}})
+    )
+    assert related["tool"] == "knowledge_related"

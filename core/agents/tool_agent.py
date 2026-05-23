@@ -5,7 +5,9 @@ Executes registered tools inside the Aria multi-agent runtime.
 
 from __future__ import annotations
 
-from typing import Dict, Any, Callable
+import json
+from typing import Any, Callable, Dict
+from urllib.request import Request, urlopen
 
 from core.agent import BaseAgent
 from core.task import Task
@@ -19,6 +21,23 @@ class ToolRegistry:
         if not name or not name.strip():
             raise ValueError("Tool name cannot be empty.")
         self.tools[name] = fn
+
+    def register_remote(self, name: str, url: str, timeout: int = 10, headers: Dict[str, str] | None = None) -> None:
+        def _remote_tool(**kwargs: Any) -> Any:
+            request = Request(
+                url,
+                data=json.dumps(kwargs).encode("utf-8"),
+                headers={"Content-Type": "application/json", **(headers or {})},
+                method="POST",
+            )
+            with urlopen(request, timeout=timeout) as response:
+                body = response.read().decode("utf-8")
+            try:
+                return json.loads(body) if body else None
+            except json.JSONDecodeError:
+                return body
+
+        self.register(name, _remote_tool)
 
     def get(self, name: str):
         return self.tools.get(name)

@@ -37,13 +37,19 @@ class MemoryStore:
     Parameters
     - max_events: Optional maximum number of events to retain. If provided,
       the store will drop oldest events once the capacity is reached.
+    - db_path: Optional SQLite database file path for persistent storage.
     """
 
-    def __init__(self, max_events: Optional[int] = None) -> None:
+    def __init__(self, max_events: Optional[int] = None, db_path: Optional[str] = None) -> None:
         self._lock = threading.RLock()
-        # deque provides efficient appends and optional bounded length
-        self._events: deque[Event] = deque(
-            maxlen=max_events) if max_events else deque()
+        self._events: deque[Event] = deque(maxlen=max_events) if max_events else deque()
+        self._backend = None
+        if db_path:
+            from core.memory.sqlite_backend import SQLiteMemoryBackend
+
+            self._backend = SQLiteMemoryBackend(db_path)
+            for event in self._backend.load_all():
+                self._events.append(event)
 
     def write(self, event_type: str, data: Mapping[str, Any], timestamp: Optional[datetime] = None) -> str:
         """
@@ -53,7 +59,7 @@ class MemoryStore:
         The stored event has keys: id, timestamp (ISO8601 str UTC), epoch (float seconds), type, data.
         The provided `data` is deep-copied to avoid external mutation.
         """
-        ts = (timestamp.astimezone(timezone.utc) if timestamp else _now_utc())
+        ts = timestamp.astimezone(timezone.utc) if timestamp else _now_utc()
         event: Event = {
             "id": uuid.uuid4().hex,
             "timestamp": ts.isoformat(),
@@ -63,6 +69,8 @@ class MemoryStore:
         }
         with self._lock:
             self._events.append(event)
+            if self._backend is not None:
+                self._backend.write(event)
         return event["id"]
 
     def query(
@@ -83,17 +91,13 @@ class MemoryStore:
 
         Returned events are shallow copies of the stored events (data dict remains a deepcopy from write).
         """
-        # Normalize timestamps to epoch floats for comparisons
-        since_epoch = since.astimezone(
-            timezone.utc).timestamp() if since else None
-        until_epoch = until.astimezone(
-            timezone.utc).timestamp() if until else None
+        since_epoch = since.astimezone(timezone.utc).timestamp() if since else None
+        until_epoch = until.astimezone(timezone.utc).timestamp() if until else None
 
         with self._lock:
             events_snapshot = list(self._events)
 
-        iterable: Iterable[Event] = reversed(
-            events_snapshot) if reverse else events_snapshot
+        iterable: Iterable[Event] = reversed(events_snapshot) if reverse else events_snapshot
 
         results: List[Event] = []
         for e in iterable:
@@ -104,7 +108,6 @@ class MemoryStore:
                 continue
             if until_epoch is not None and epoch > until_epoch:
                 continue
-            # Provide a shallow copy to avoid callers mutating internal structures
             results.append(e.copy())
             if limit is not None and len(results) >= limit:
                 break
@@ -145,10 +148,8 @@ class MemoryStore:
             if event_type is None:
                 self._events.clear()
                 return original_len
-            # Rebuild deque without matching events while preserving maxlen
             maxlen = self._events.maxlen
-            new_events = [e for e in self._events if e.get(
-                "type") != event_type]
+            new_events = [e for e in self._events if e.get("type") != event_type]
             self._events = deque(new_events, maxlen=maxlen)
             return original_len - len(self._events)
 

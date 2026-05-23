@@ -5,15 +5,44 @@ Scores agents dynamically and selects best execution target.
 
 from __future__ import annotations
 
-from typing import Dict, Any
+from typing import Any, Dict, Optional
+
 from core.agent import BaseAgent
-from core.task import Task
 from core.registry import AgentRegistry
+from core.task import Task
 
 
 class TaskRouter:
     def __init__(self, registry: AgentRegistry):
         self.registry = registry
+
+    def classify_intent(self, text: str) -> str:
+        normalized = (text or "").lower()
+        if any(token in normalized for token in ("plan", "decompose", "strategy")):
+            return "plan"
+        if any(token in normalized for token in ("train", "retrain", "fine-tune", "optimize model")):
+            return "train"
+        if any(token in normalized for token in ("feedback", "review", "rating")):
+            return "feedback"
+        if any(token in normalized for token in ("tool", "run", "execute", "inspect")):
+            return "tool"
+        if any(token in normalized for token in ("goal", "reflect", "improve next")):
+            return "goal_evolve"
+        return "llm"
+
+    def route_text(self, text: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        task_type = self.classify_intent(text)
+        merged_payload: Dict[str, Any] = dict(payload or {})
+        if task_type == "plan":
+            merged_payload.setdefault("goal", text)
+        elif task_type in {"feedback", "human_feedback"}:
+            merged_payload.setdefault("message", text)
+        elif task_type == "tool":
+            merged_payload.setdefault("tool", text)
+            merged_payload.setdefault("args", {})
+        else:
+            merged_payload.setdefault("prompt", text)
+        return self.route(Task(type=task_type, payload=merged_payload))
 
     def route(self, task: Task) -> Dict[str, Any]:
         candidates = []
@@ -24,33 +53,20 @@ class TaskRouter:
                 candidates.append((score, agent))
 
         if not candidates:
-            return {
-                "agent": None,
-                "result": {"error": "No suitable agent found"},
-            }
+            return {"agent": None, "result": {"error": "No suitable agent found"}}
 
-        candidates.sort(key=lambda x: x[0], reverse=True)
+        candidates.sort(key=lambda item: item[0], reverse=True)
         best_score, best_agent = candidates[0]
-
         result = best_agent.execute(task)
 
         return {
             "agent": best_agent.name,
             "score": best_score,
-            "candidates": [
-                {"agent": agent.name, "score": score}
-                for score, agent in candidates
-            ],
+            "candidates": [{"agent": agent.name, "score": score} for score, agent in candidates],
             "result": result,
         }
 
     def _score(self, agent: BaseAgent, task: Task) -> float:
-        """
-        Default scoring model:
-        - 1.0 if agent can handle task
-        - +0.5 if task type strongly matches agent domain
-        """
-
         base = 0.0
 
         if hasattr(agent, "can_handle") and agent.can_handle(task):
@@ -58,7 +74,6 @@ class TaskRouter:
         else:
             return 0.0
 
-        # lightweight heuristics
         if task.type in {"llm", "chat", "reason"} and agent.name == "llm_agent":
             base += 0.5
 
@@ -67,6 +82,9 @@ class TaskRouter:
 
         if task.type in {"train", "feedback", "evaluate"} and agent.name == "training_agent":
             base += 0.5
+
+        if task.type in {"feedback", "human_feedback", "review"} and agent.name == "human_feedback_agent":
+            base += 0.55
 
         if task.type in {"plan", "goal", "decompose"} and agent.name == "planner_agent":
             base += 0.6
