@@ -1,0 +1,10 @@
+name: Autofix
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 2 * * 2"
+
+permissions:
+  contents: write
+  pull-requests: write
