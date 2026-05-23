@@ -23,9 +23,11 @@ COMPOSE      ?= docker compose
 TEST_PATH    ?= tests
 ARIA_PORT    ?= 8080
 FUNC_PORT    ?= 7071
+GRADIO_PORT  ?= 7860
+GRADIO_SHARE ?= false
 
 .PHONY: all install dev start stop build test test-unit test-integration \
-        lint format type-check clean docker-build docker-dev help
+        lint format type-check clean docker-build docker-dev start-gradio help
 
 # Default target
 all: lint test
@@ -63,6 +65,11 @@ start:
 start-functions:
 	@command -v func >/dev/null 2>&1 || { echo "❌ func CLI not found. Install: npm i -g azure-functions-core-tools@4"; exit 1; }
 	func host start --port $(FUNC_PORT)
+
+## Start local Gradio demo UI
+start-gradio:
+	@echo "🚀 Starting local Gradio demo on port $(GRADIO_PORT)..."
+	GRADIO_PORT=$(GRADIO_PORT) GRADIO_SHARE=$(GRADIO_SHARE) $(PYTHON) scripts/gradio_demo.py
 
 ## Start autonomous training orchestrator (dry-run by default)
 start-orchestrator:
