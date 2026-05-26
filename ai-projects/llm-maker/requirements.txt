@@ -4,7 +4,7 @@
 # Already installed in parent: openai, azure-openai
 
 # Code Safety and Analysis
-ast-grep-py>=0.42.3
+ast-grep-py>=0.43.0
 astroid>=4.1.2
 
 # Sandboxed Execution
