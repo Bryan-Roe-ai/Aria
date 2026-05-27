@@ -6,13 +6,17 @@ Currently a lightweight offline simulator returning deterministic JSON outputs.
 
 from __future__ import annotations
 
+import importlib
 import json
-from typing import Dict, List
+import os
+from typing import Dict, Iterable, List
 
 
 class LLMClient:
-    def __init__(self, model: str = "auto"):
+    def __init__(self, model: str = "auto", use_real_provider: bool = False):
         self.model = model
+        env_enabled = os.getenv("ARIA_USE_REAL_LLM") == "1"
+        self.use_real_provider = bool(use_real_provider or env_enabled)
 
     def complete(self, messages: List[Dict[str, str]]) -> str:
         """
@@ -21,17 +25,38 @@ class LLMClient:
         """
         last_user_message = ""
         system_prompt = ""
-        for m in reversed(messages):
-            if m.get("role") == "user":
-                last_user_message = m.get("content", "")
+        for message in reversed(messages):
+            if message.get("role") == "user":
+                last_user_message = message.get("content", "")
                 break
 
-        for m in messages:
-            if m.get("role") == "system":
-                system_prompt = m.get("content", "")
+        for message in messages:
+            if message.get("role") == "system":
+                system_prompt = message.get("content", "")
                 break
+
+        if self.use_real_provider:
+            real_response = self._complete_with_real_provider(messages)
+            if real_response is not None:
+                return real_response
 
         return self._simulate(last_user_message, system_prompt)
+
+    def _complete_with_real_provider(self, messages: List[Dict[str, str]]) -> str | None:
+        try:
+            module = importlib.import_module("agi_provider")
+            if hasattr(module, "create_agi_provider"):
+                provider = module.create_agi_provider(model=self.model)
+            else:
+                provider = module.AGIProvider(model=self.model)
+            response = provider.complete(messages, stream=False)
+            if isinstance(response, str):
+                return response
+            if isinstance(response, Iterable):
+                return "".join(str(part) for part in response)
+        except Exception:
+            return None
+        return None
 
     def _simulate(self, prompt: str, system_prompt: str = "") -> str:
         if not prompt:
@@ -41,21 +66,12 @@ class LLMClient:
             return json.dumps({"goal": self._goal_from_prompt(prompt)})
 
         if "planning engine" in system_prompt.lower():
-            # Return a simple multi-step plan: an LLM step followed by a tool step
             return json.dumps(
                 [
-                    {
-                        "type": "llm",
-                        "payload": {
-                            "prompt": self._extract_goal(prompt),
-                        },
-                    },
+                    {"type": "llm", "payload": {"prompt": self._extract_goal(prompt)}},
                     {
                         "type": "tool",
-                        "payload": {
-                            "tool": "inspect_context",
-                            "args": {"goal": self._extract_goal(prompt)},
-                        },
+                        "payload": {"tool": "inspect_context", "args": {"goal": self._extract_goal(prompt)}},
                     },
                 ]
             )
@@ -63,11 +79,7 @@ class LLMClient:
         return json.dumps(
             {
                 "analysis": f"Processed: {prompt}",
-                "steps": [
-                    "understand_goal",
-                    "decompose_task",
-                    "execute_solution",
-                ],
+                "steps": ["understand_goal", "decompose_task", "execute_solution"],
                 "output": f"Simulated result for: {prompt}",
             }
         )

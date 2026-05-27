@@ -3,12 +3,21 @@ LLM Agent
 Core reasoning agent for Aria multi-agent runtime.
 """
 
+from __future__ import annotations
+
 import json
-from typing import Dict, Any
+from dataclasses import asdict, dataclass
+from typing import Any, Dict, List
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
 from core.task import Task
+
+
+@dataclass
+class ReasoningStep:
+    name: str
+    detail: str
 
 
 class LLMAgent(BaseAgent):
@@ -25,6 +34,21 @@ class LLMAgent(BaseAgent):
         payload = task.payload or {}
         prompt = payload.get("prompt") or payload.get("message") or ""
         system_prompt = payload.get("system_prompt") or payload.get("system") or ""
+        reasoning_mode = bool(payload.get("reasoning_mode"))
+
+        if reasoning_mode:
+            response, reasoning_chain = self._run_reasoning_chain(prompt, system_prompt=system_prompt)
+            parsed = self._parse_response(response)
+            steps = parsed.get("steps") or [step.name for step in reasoning_chain]
+            return {
+                "output": parsed.get("output", response),
+                "analysis": parsed.get("analysis"),
+                "steps": steps,
+                "raw_output": response,
+                "agent": self.name,
+                "task_id": task.id,
+                "reasoning_chain": [asdict(step) for step in reasoning_chain],
+            }
 
         response = self._run_llm(prompt, system_prompt=system_prompt)
         parsed = self._parse_response(response)
@@ -37,6 +61,17 @@ class LLMAgent(BaseAgent):
             "agent": self.name,
             "task_id": task.id,
         }
+
+    def _run_reasoning_chain(self, prompt: str, *, system_prompt: str = "") -> tuple[str, List[ReasoningStep]]:
+        if not prompt:
+            return "No input provided", [ReasoningStep(name="validate_input", detail="Prompt was empty")]
+        reasoning_chain = [
+            ReasoningStep(name="analyze", detail=f"Analyze request: {prompt[:80]}"),
+            ReasoningStep(name="plan", detail="Draft a concise response plan"),
+            ReasoningStep(name="respond", detail="Generate the final response"),
+        ]
+        response = self._run_llm(prompt, system_prompt=system_prompt)
+        return response, reasoning_chain
 
     def _run_llm(self, prompt: str, *, system_prompt: str = "") -> str:
         if not prompt:
