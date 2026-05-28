@@ -148,6 +148,40 @@ python scripts/autonomous_training_orchestrator.py --force-run --cycles 1
 
 ---
 
+## 🧭 AI Contributor Quickstart
+
+If your goal is to start building AI features quickly (providers, prompts, memory, or orchestration), use this path:
+
+1. **Bootstrap env files**
+   ```bash
+   cp .env.example .env
+   cp local.settings.json.example local.settings.json
+   ```
+2. **Install dependencies**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   pip install -r requirements-dev.txt
+   ```
+3. **Run a zero-key provider smoke check**
+   ```bash
+   python ai-projects/chat-cli/src/chat_cli.py --provider local --once "hello"
+   ```
+4. **Run the AI status endpoint locally (optional but recommended)**
+   ```bash
+   func host start
+   curl http://localhost:7071/api/ai/status | python -m json.tool
+   ```
+5. **Run fast validation before PRs**
+   ```bash
+   python scripts/test_runner.py --unit
+   ```
+
+For an AI-focused map of key modules and commands, see [docs/guides/AI_CONTRIBUTOR_QUICKSTART.md](docs/guides/AI_CONTRIBUTOR_QUICKSTART.md).
+
+---
+
 ## 🏗️ Project Structure
 
 ```text
@@ -385,6 +419,7 @@ Never commit secrets. Store keys in environment variables or `local.settings.jso
 | [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md) | Chat CLI reference |
 | [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md) | Tool maker guide |
 | [docs/aria/](docs/aria/) | Aria movement and training documentation |
+| [docs/guides/AI_CONTRIBUTOR_QUICKSTART.md](docs/guides/AI_CONTRIBUTOR_QUICKSTART.md) | AI-first onboarding path for contributors |
 | [MONETIZATION_GUIDE.md](MONETIZATION_GUIDE.md) | Subscription and revenue system |
 | [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference |
 | [QUANTUM_LLM_TRAINING.md](QUANTUM_LLM_TRAINING.md) | Quantum-LLM concurrent training |
@@ -404,69 +439,3 @@ Never commit secrets. Store keys in environment variables or `local.settings.jso
 ## 📄 License
 
 See individual project directories for license information.
-
-## PLAN (pseudocode)
-
-## 1) Validate OPENAI_API_KEY
-
-## 2) Read prompt from CLI args or stdin
-
-## 3) Call OpenAI Responses API
-
-## 4) Extract text safely from response.output_text with fallback parsing
-
-## 5) Print final text; fail gracefully on errors
-
-import os
-import sys
-from openai import OpenAI
-
-MODEL = "gpt-4o-mini"
-SYSTEM_PROMPT = "You are a concise AI coding assistant. Return practical code-focused responses."
-
-def _extract_text(resp) -> str:
-    if getattr(resp, "output_text", None):
-        return resp.output_text.strip()
-
-    parts = []
-    for item in getattr(resp, "output", []) or []:
-        for content in getattr(item, "content", []) or []:
-            if getattr(content, "type", "") == "output_text":
-                text = getattr(content, "text", "")
-                if text:
-                    parts.append(text)
-    return "\n".join(parts).strip()
-
-def ask_ai(client: OpenAI, prompt: str) -> str:
-    resp = client.responses.create(
-        model=MODEL,
-        input=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.2,
-    )
-    return _extract_text(resp)
-
-def main() -> None:
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("Missing OPENAI_API_KEY environment variable.")
-
-    prompt = " ".join(sys.argv[1:]).strip()
-    if not prompt:
-        prompt = input("Prompt: ").strip()
-    if not prompt:
-        raise ValueError("Prompt cannot be empty.")
-
-    client = OpenAI(api_key=api_key)
-
-    try:
-        output = ask_ai(client, prompt)
-        print(output or "(No text returned.)")
-    except Exception as exc:
-        print(f"AI request failed: {exc}", file=sys.stderr)
-        sys.exit(1)
-
-if **name** == "**main**":
-    main()
