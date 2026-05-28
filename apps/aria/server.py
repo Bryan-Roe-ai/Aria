@@ -1668,6 +1668,7 @@ def tags_to_actions(tags: List[str]) -> List[dict]:
     inferred: List[dict] = []
     for tag in tags:
         try:
+            # [aria:position:12:34]
             m = re.match(r"\[aria:position:(\d{1,3}):(\d{1,3})\]", tag)
             if m:
                 x = max(0, min(100, int(m.group(1))))
@@ -1675,17 +1676,55 @@ def tags_to_actions(tags: List[str]) -> List[dict]:
                 inferred.append({"action": "move", "target": {"x": x, "y": y}, "speed": "normal"})
                 continue
 
+            # Named positions: [aria:position:center]
+            m = re.match(r"\[aria:position:([a-z_\-]+)\]", tag)
+            if m:
+                name = m.group(1)
+                named_map = {
+                    "center": {"x": 50, "y": 50},
+                    "left": {"x": 20, "y": 70},
+                    "right": {"x": 80, "y": 70},
+                    "front": {"x": 50, "y": 85},
+                    "back": {"x": 50, "y": 15},
+                    "top": {"x": 50, "y": 10},
+                    "bottom": {"x": 50, "y": 90},
+                }
+                coords = named_map.get(name)
+                if coords:
+                    inferred.append({"action": "move", "target": coords, "speed": "normal"})
+                    continue
+
+            # gesture & animation -> gesture if allowed
             m = re.match(r"\[aria:gesture:([a-z_]+)\]", tag)
             if m:
                 inferred.append({"action": "gesture", "gesture_type": m.group(1)})
                 continue
 
+            m = re.match(r"\[aria:animation:([a-z_]+)\]", tag)
+            if m:
+                anim = m.group(1)
+                # map some animations to allowed gestures; fall back to 'wave'
+                if anim in VALID_GESTURES:
+                    inferred.append({"action": "gesture", "gesture_type": anim})
+                else:
+                    inferred.append({"action": "gesture", "gesture_type": "wave"})
+                continue
+
+            # Expression -> set expression via say action (emotion)
+            m = re.match(r"\[aria:expression:([^\]]+)\]", tag)
+            if m:
+                expr = m.group(1)
+                inferred.append({"action": "say", "text": "", "emotion": expr})
+                continue
+
+            # say text
             m = re.match(r"\[aria:say:(.+)\]", tag)
             if m:
                 text = m.group(1)
                 inferred.append({"action": "say", "text": text, "emotion": "neutral"})
                 continue
 
+            # pickup/drop
             m = re.match(r"\[aria:pickup:([^\]]+)\]", tag)
             if m:
                 inferred.append({"action": "pickup", "object_id": m.group(1)})
@@ -1700,9 +1739,19 @@ def tags_to_actions(tags: List[str]) -> List[dict]:
                 inferred.append({"action": "drop", "position": None})
                 continue
 
+            # look
             m = re.match(r"\[aria:look:([^\]]+)\]", tag)
             if m:
                 inferred.append({"action": "look", "target": m.group(1)})
+                continue
+
+            # effects -> map to a harmless gesture (wave) to represent visual effect
+            m = re.match(r"\[aria:effect:([a-z_]+):([a-z_]+)\]", tag)
+            if m:
+                effect = m.group(1)
+                # only map some known effects to gestures
+                if effect in ("sparkle", "hearts", "glow"):
+                    inferred.append({"action": "gesture", "gesture_type": "wave"})
                 continue
 
         except Exception:
