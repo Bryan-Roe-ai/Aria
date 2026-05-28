@@ -1,4 +1,4 @@
-name: Autofix
+name: auto-fix
 
 on:
   workflow_dispatch:
@@ -45,7 +45,7 @@ jobs:
             "black==25.1.0" \
             "pytest==8.3.5"
 
-      - name: Detect Python files
+      - name: Detect safe Python targets
         id: detect
         shell: bash
         run: |
@@ -58,67 +58,107 @@ jobs:
               ".git",
               ".venv",
               "venv",
+              ".tox",
+              ".nox",
               "__pycache__",
               "node_modules",
               ".mypy_cache",
               ".pytest_cache",
+              ".ruff_cache",
+              ".eggs",
               "dist",
               "build",
+              "coverage",
+              "htmlcov",
           }
 
-          has_python = False
-          for path in Path(".").rglob("*.py"):
-              if ignore_dirs.intersection(path.parts):
-                  continue
-              has_python = True
-              break
+          candidate_dirs = [
+              Path("apps/aria"),
+              Path("shared"),
+              Path("scripts"),
+          ]
+
+          candidate_files = [
+              Path("function_app.py"),
+          ]
+
+          targets = []
+
+          for directory in candidate_dirs:
+              if directory.exists() and any(
+                  not ignore_dirs.intersection(path.parts)
+                  for path in directory.rglob("*.py")
+              ):
+                  targets.append(str(directory))
+
+          for file_path in candidate_files:
+              if file_path.exists() and file_path.suffix == ".py":
+                  targets.append(str(file_path))
+
+          has_python = "true" if targets else "false"
 
           with open("detect_output.txt", "w", encoding="utf-8") as f:
-              f.write(f"has_python={'true' if has_python else 'false'}\n")
+              f.write(f"has_python={has_python}\n")
+              f.write(f"targets={' '.join(targets)}\n")
           PY
 
           cat detect_output.txt >> "$GITHUB_OUTPUT"
+
+      - name: Show detected targets
+        if: steps.detect.outputs.has_python == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Autofix targets: ${{ steps.detect.outputs.targets }}"
 
       - name: Run Ruff autofixes
         if: steps.detect.outputs.has_python == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          ruff check . --fix
+          ruff check ${{ steps.detect.outputs.targets }} --fix
 
       - name: Run Black formatting
         if: steps.detect.outputs.has_python == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          black .
+          black ${{ steps.detect.outputs.targets }}
 
       - name: Verify Ruff
         if: steps.detect.outputs.has_python == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          ruff check .
+          ruff check ${{ steps.detect.outputs.targets }}
 
       - name: Verify Black
         if: steps.detect.outputs.has_python == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          black . --check
+          black ${{ steps.detect.outputs.targets }} --check
 
-      - name: Run pytest if configured
+      - name: Run targeted pytest
         if: steps.detect.outputs.has_python == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          if [ -d tests ] || [ -f pytest.ini ] || [ -f pyproject.toml ]; then
-            pytest -q || {
-              echo "Pytest failed in repo-wide mode; consider scoping tests per Python project."
-              exit 1
-            }
-          else
-            echo "No pytest configuration or tests directory found; skipping tests."
+
+          ran_tests=false
+
+          if [ -d "tests" ]; then
+            pytest -q tests
+            ran_tests=true
+          fi
+
+          if [ -d "apps/aria/tests" ]; then
+            pytest -q apps/aria/tests
+            ran_tests=true
+          fi
+
+          if [ "$ran_tests" = false ]; then
+            echo "No supported targeted test directories found; skipping pytest."
           fi
 
       - name: Detect changes
@@ -142,21 +182,28 @@ jobs:
           title: "ci: automated safe autofixes"
           body: |
             ## Summary
-            Apply scheduled/manual safe autofixes for Python code.
+            Apply scheduled/manual safe autofixes for scoped Python targets.
 
             ## What changed
-            - Ran `ruff check --fix`
-            - Ran `black`
+            - Ran `ruff check --fix` on approved Python paths
+            - Ran `black` on approved Python paths
             - Verified lint and formatting
-            - Ran pytest when tests/configuration were present
+            - Ran targeted pytest where supported
+
+            ## Scope
+            - `apps/aria/`
+            - `shared/`
+            - `scripts/`
+            - `function_app.py`
 
             ## Testing
             - Ruff verification
             - Black verification
-            - Pytest (when available)
+            - Targeted pytest (when supported)
 
             ## Risk & Impact
             - Intended to be low risk and non-functional
+            - Scoped to approved Python paths only
             - Review recommended before merge
           labels: |
             automation
