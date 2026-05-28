@@ -8,7 +8,7 @@ qiskit-algorithms>=0.4.0
 qiskit-machine-learning>=0.9.0
 
 # Azure Quantum
-azure-quantum>=3.9.1
+azure-quantum>=3.10.0
 azure-identity>=1.25.3
 
 # Deep learning frameworks
