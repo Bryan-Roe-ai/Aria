@@ -839,8 +839,9 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield (f"event: error\n" f"data: {err_payload}\n\n").encode("utf-8")
                 yield b"data: [DONE]\n\n"
 
+        # Azure Functions HttpResponse requires bytes/str body; materialize SSE payload.
         return func.HttpResponse(
-            body=_sse_iterable(),
+            body=b"".join(_sse_iterable()),
             status_code=200,
             mimetype="text/event-stream",
             headers={**create_cors_response_headers(),

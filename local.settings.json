@@ -14,9 +14,10 @@
     "AZURE_OPENAI_DEPLOYMENT": "",
     "OPENAI_API_KEY": "",
 
-    "# Optional: Ollama local AI - leave blank to auto-detect or set to http://127.0.0.1:11434/v1": "",
-    "OLLAMA_BASE_URL": "",
-    "OLLAMA_MODEL": "tinyllama",
+    "# Optional: Ollama local AI - configured for local coding model": "",
+    "OLLAMA_BASE_URL": "http://127.0.0.1:11434/v1",
+    "OLLAMA_MODEL": "qwen2.5-coder:7b",
+    "DEFAULT_AI_PROVIDER": "ollama",
 
     "# Optional: LM Studio local AI - set to your LM Studio base URL if available": "",
     "LMSTUDIO_BASE_URL": "",
