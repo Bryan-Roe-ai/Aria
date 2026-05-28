@@ -53,7 +53,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         **kwargs,
     ):
         super().__init__()
-        self.model_path = Path(model_path)
+        self.model_path = self._validate_model_path(model_path)
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -76,6 +76,43 @@ class QuantumLLMChatProvider(BaseChatProvider):
         except Exception as e:
             logger.error(f"Failed to load quantum LLM: {e}")
             raise
+
+    @staticmethod
+    def _is_within_directory(path: Path, base_dir: Path) -> bool:
+        """Return True when `path` is located under `base_dir`."""
+        try:
+            path.resolve().relative_to(base_dir.resolve())
+            return True
+        except Exception:
+            return False
+
+    def _validate_model_path(self, model_path: str) -> Path:
+        """Validate user-provided model path against trusted local directories."""
+        candidate = Path(model_path).expanduser()
+        if not candidate.exists():
+            raise FileNotFoundError(f"Model path does not exist: {candidate}")
+
+        resolved = candidate.resolve()
+        trusted_roots = [repo_root.resolve(), quantum_ml_path.resolve()]
+        if not any(self._is_within_directory(resolved, root) for root in trusted_roots):
+            raise ValueError(
+                f"Refusing to load model from untrusted path: {resolved}. "
+                "Model path must be under the project repository."
+            )
+        return resolved
+
+    def _validate_checkpoint_path(self, checkpoint_path: Path) -> Path:
+        """Validate final checkpoint file path before deserialization."""
+        resolved = checkpoint_path.resolve()
+        if not resolved.is_file():
+            raise FileNotFoundError(f"Checkpoint file not found: {resolved}")
+
+        trusted_roots = [repo_root.resolve(), quantum_ml_path.resolve()]
+        if not any(self._is_within_directory(resolved, root) for root in trusted_roots):
+            raise ValueError(
+                f"Refusing to deserialize checkpoint from untrusted path: {resolved}"
+            )
+        return resolved
 
     def _resolve_checkpoint_path(self) -> Path:
         """Resolve checkpoint file path from directory or direct file input."""
@@ -197,6 +234,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
             raise RuntimeError("QuantumLLM class is unavailable")
 
         checkpoint_path = self._resolve_checkpoint_path()
+        checkpoint_path = self._validate_checkpoint_path(checkpoint_path)
         logger.info(f"Loading checkpoint from {checkpoint_path}")
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
 
