@@ -121,6 +121,15 @@ func host start
 curl http://localhost:7071/api/ai/status | python -m json.tool
 ```
 
+If you only need the health endpoint, or `func host start` is unavailable, use the
+lightweight local adapter instead:
+
+```bash
+make start-local-status
+# or choose a different port when 7071 is already in use
+make start-local-status FUNC_PORT=7072
+```
+
 ### 4 — Run the Hugging Face Space locally
 
 ```bash
@@ -403,8 +412,8 @@ Never commit secrets. Store keys in environment variables or `local.settings.jso
 
 ## Troubleshooting
 
-- If `func host start` fails, install Azure Functions Core Tools and confirm it is on your `PATH`.
-- If `http://localhost:8080` or `http://localhost:7071` is unavailable, check for local port conflicts.
+- If `func host start` fails, install Azure Functions Core Tools and confirm it is on your `PATH`, or use `make start-local-status`.
+- If `http://localhost:8080` or `http://localhost:7071` is unavailable, check for local port conflicts and try `make start-local-status FUNC_PORT=7072`.
 - If cloud providers fail, verify the required environment variables are set correctly.
 - If no provider credentials are configured, use `--provider local` for a zero-dependency fallback.
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from typing import Any
 
 import pytest
@@ -159,3 +160,31 @@ def test_probe_with_local_dev_adapter_uses_long_request_timeout(
     assert payload == {"active_provider": "local"}
     assert observed_timeouts
     assert observed_timeouts[0] >= 8
+
+
+@pytest.mark.unit
+def test_local_dev_adapter_command_uses_target_url_port() -> None:
+    command = smoke_module._local_dev_adapter_command(
+        "http://localhost:7072/api/ai/status"
+    )
+
+    assert command == [
+        sys.executable,
+        "local_dev_adapter.py",
+        "--port",
+        "7072",
+    ]
+
+
+@pytest.mark.unit
+def test_local_dev_adapter_command_defaults_to_7071_without_explicit_port() -> None:
+    command = smoke_module._local_dev_adapter_command(
+        "http://localhost/api/ai/status"
+    )
+
+    assert command == [
+        sys.executable,
+        "local_dev_adapter.py",
+        "--port",
+        "7071",
+    ]

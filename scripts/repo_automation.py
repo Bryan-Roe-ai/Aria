@@ -32,7 +32,10 @@ except Exception:  # pragma: no cover - optional dependency
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 # Add shared dir for config_validator import
-sys.path.insert(0, str(REPO_ROOT / "shared"))
+shared_path = str(REPO_ROOT / "shared")
+if shared_path not in sys.path:
+    # Append (do not prepend) to avoid shadowing stdlib modules like `logging`.
+    sys.path.append(shared_path)
 AUTOMATION_DIR = REPO_ROOT / "data_out" / "repo_automation"
 PID_FILE = AUTOMATION_DIR / "processes.json"
 STATUS_FILE = AUTOMATION_DIR / "status.json"
@@ -145,8 +148,12 @@ class RepoAutomation:
             "quantum": ComponentConfig(
                 name="Quantum Computing Workflows",
                 script="scripts/quantum_autorun.py",
-                command=["python3", "scripts/quantum_autorun.py"],
-                auto_restart=False,
+                command=[
+                    "bash",
+                    "-lc",
+                    "while true; do python3 scripts/quantum_autorun.py --dry-run >/dev/null 2>&1; sleep 600; done",
+                ],
+                auto_restart=True,
                 health_check_interval=600,
                 enabled=False,  # Will be enabled if quantum_autorun.yaml exists
                 required_packages=[],  # Add azure quantum SDK here when environment ready
@@ -154,12 +161,16 @@ class RepoAutomation:
             "evaluation": ComponentConfig(
                 name="Model Evaluation System",
                 script="scripts/evaluation_autorun.py",
-                command=["python3", "scripts/evaluation_autorun.py"],
-                auto_restart=False,
+                command=[
+                    "bash",
+                    "-lc",
+                    "while true; do python3 scripts/evaluation_autorun.py --dry-run >/dev/null 2>&1; sleep 300; done",
+                ],
+                auto_restart=True,
                 health_check_interval=300,
                 dependencies=["training"],
                 enabled=False,  # Enabled if evaluation_autorun.yaml exists
-                required_packages=["scikit-learn", "numpy", "matplotlib", "seaborn"],
+                required_packages=["scikit-learn:sklearn", "numpy", "matplotlib", "seaborn"],
             ),
             "datasets": ComponentConfig(
                 name="Dataset Auto-Discovery (Integrated in training)",

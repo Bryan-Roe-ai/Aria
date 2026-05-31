@@ -28,12 +28,35 @@
                 </div>
                 <h1 class="gradient-text">Quantum AI Training Platform</h1>
                 <p class="subtitle">Enterprise-grade quantum machine learning with real-time visualization</p>
-                <div class="status-badge">
+                <div class="status-badge" id="system-status-badge">
                     <span class="pulse-dot"></span>
-                    <span>System Online</span>
+                    <span id="system-status-text">Checking system health...</span>
                 </div>
             </div>
         </header>
+
+        <section class="overview-grid">
+            <div class="overview-card glass-panel">
+                <span class="overview-label">Datasets</span>
+                <strong id="overview-datasets">--</strong>
+                <span class="overview-meta" id="overview-datasets-meta">Discovering available datasets</span>
+            </div>
+            <div class="overview-card glass-panel">
+                <span class="overview-label">Active Sessions</span>
+                <strong id="overview-active-sessions">--</strong>
+                <span class="overview-meta" id="overview-active-meta">Waiting for live session data</span>
+            </div>
+            <div class="overview-card glass-panel">
+                <span class="overview-label">Completed Runs</span>
+                <strong id="overview-completed-sessions">--</strong>
+                <span class="overview-meta" id="overview-completed-meta">Historical runs loaded on demand</span>
+            </div>
+            <div class="overview-card glass-panel">
+                <span class="overview-label">Average Best Accuracy</span>
+                <strong id="overview-average-accuracy">--</strong>
+                <span class="overview-meta" id="overview-uptime">Server uptime unavailable</span>
+            </div>
+        </section>
 
         <!-- Main Content -->
         <div class="main-content">
@@ -50,6 +73,10 @@
                         <option value="">Loading datasets...</option>
                     </select>
                     <div id="dataset-info" class="info-text"></div>
+                    <div id="dataset-guidance" class="guidance-card" hidden>
+                        <div class="guidance-title">Suggested starting point</div>
+                        <p id="dataset-guidance-text"></p>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -248,8 +275,16 @@
                     <h2><span class="icon-gradient">📚</span> Training History</h2>
                     <button class="refresh-btn" onclick="loadResults()">🔄 Refresh</button>
                 </div>
-                <div id="results-list" class="results-list">
-                    <p class="info-text">No training sessions yet. Start training to see results here.</p>
+                <div class="results-layout">
+                    <div id="results-list" class="results-list">
+                        <p class="info-text">No training sessions yet. Start training to see results here.</p>
+                    </div>
+                    <aside id="result-details" class="result-details-panel">
+                        <div class="details-empty">
+                            <h3>Run Details</h3>
+                            <p>Select a completed run to inspect its configuration and best metrics.</p>
+                        </div>
+                    </aside>
                 </div>
             </div>
         </div>
@@ -263,6 +298,8 @@
             </div>
         </footer>
     </div>
+
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
     <script src="/static/app.js"></script>
 </body>

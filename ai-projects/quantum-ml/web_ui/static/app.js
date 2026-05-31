@@ -1,12 +1,15 @@
 // Quantum AI Training Dashboard - Frontend Logic
 
 let currentSessionId = null;
+let lastActionSessionId = null;
 let statusUpdateInterval = null;
 let lossChart = null;
 let accuracyChart = null;
 let circuitCanvas = null;
 let circuitCtx = null;
 let particleInterval = null;
+let datasetCatalog = [];
+let lastSelectedResultFilename = null;
 
 // API Base URL
 const API_BASE = window.location.origin;
@@ -18,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeCharts();
     loadDatasets();
     loadResults();
+    refreshDashboardSummary();
     setupEventListeners();
 });
 
@@ -35,6 +39,106 @@ function setupEventListeners() {
         const input = document.getElementById(id);
         input.addEventListener('input', () => validateInput(input));
     });
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+}
+
+function formatPercent(value) {
+    return `${(value * 100).toFixed(2)}%`;
+}
+
+function formatElapsed(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) {
+        return 'Unavailable';
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+
+    return `${remainingSeconds}s`;
+}
+
+function getSessionActionTarget() {
+    return currentSessionId || lastActionSessionId;
+}
+
+async function refreshDashboardSummary() {
+    try {
+        const [healthResponse, statsResponse] = await Promise.all([
+            fetch(`${API_BASE}/api/health`),
+            fetch(`${API_BASE}/api/stats`)
+        ]);
+
+        if (!healthResponse.ok || !statsResponse.ok) {
+            throw new Error('Dashboard summary endpoints are unavailable');
+        }
+
+        const health = await healthResponse.json();
+        const stats = await statsResponse.json();
+        updateSystemStatus(health);
+        updateOverviewCards(stats);
+    } catch (error) {
+        console.error('Error refreshing dashboard summary:', error);
+        updateSystemStatus(null, error);
+    }
+}
+
+function updateSystemStatus(health, error = null) {
+    const badge = document.getElementById('system-status-badge');
+    const label = document.getElementById('system-status-text');
+
+    badge.classList.remove('degraded', 'error');
+
+    if (error || !health) {
+        badge.classList.add('error');
+        label.textContent = 'API status unavailable';
+        return;
+    }
+
+    const activeSessions = health.active_sessions ?? 0;
+    if (health.status !== 'healthy') {
+        badge.classList.add('degraded');
+        label.textContent = `Status: ${health.status}`;
+        return;
+    }
+
+    label.textContent = activeSessions > 0
+        ? `Healthy • ${activeSessions} active session${activeSessions === 1 ? '' : 's'}`
+        : 'Healthy • Ready for training';
+}
+
+function updateOverviewCards(stats) {
+    document.getElementById('overview-datasets').textContent = datasetCatalog.length || '--';
+    document.getElementById('overview-datasets-meta').textContent = datasetCatalog.length
+        ? `${datasetCatalog.map(dataset => dataset.name).slice(0, 3).join(', ')}${datasetCatalog.length > 3 ? '…' : ''}`
+        : 'No datasets discovered yet';
+
+    document.getElementById('overview-active-sessions').textContent = stats.active_sessions ?? 0;
+    document.getElementById('overview-active-meta').textContent = `${stats.total_sessions ?? 0} total session${stats.total_sessions === 1 ? '' : 's'} tracked`;
+
+    document.getElementById('overview-completed-sessions').textContent = stats.completed_sessions ?? 0;
+    document.getElementById('overview-completed-meta').textContent = `${Math.round((stats.total_epochs_trained ?? 0))} total epochs processed`;
+
+    document.getElementById('overview-average-accuracy').textContent = Number.isFinite(stats.average_best_accuracy)
+        ? formatPercent(stats.average_best_accuracy)
+        : '--';
+    document.getElementById('overview-uptime').textContent = `Uptime ${formatElapsed(stats.server_uptime ?? 0)}`;
 }
 
 // Initialize Circuit Canvas
@@ -365,7 +469,11 @@ function initializeCharts() {
 async function loadDatasets() {
     try {
         const response = await fetch(`${API_BASE}/api/datasets`);
+        if (!response.ok) {
+            throw new Error('Dataset request failed');
+        }
         const datasets = await response.json();
+        datasetCatalog = datasets;
 
         const select = document.getElementById('dataset-select');
         select.innerHTML = '<option value="">Select a dataset...</option>';
@@ -378,6 +486,8 @@ async function loadDatasets() {
         });
 
         console.log(`✅ Loaded ${datasets.length} datasets`);
+        updateDatasetInfo();
+        refreshDashboardSummary();
     } catch (error) {
         console.error('Error loading datasets:', error);
         showError('Failed to load datasets');
@@ -388,11 +498,22 @@ async function loadDatasets() {
 function updateDatasetInfo() {
     const select = document.getElementById('dataset-select');
     const infoDiv = document.getElementById('dataset-info');
+    const guidanceCard = document.getElementById('dataset-guidance');
+    const guidanceText = document.getElementById('dataset-guidance-text');
+    const selectedDataset = datasetCatalog.find(dataset => dataset.name === select.value);
 
-    if (select.value) {
-        infoDiv.textContent = `Selected: ${select.value}`;
+    if (selectedDataset) {
+        const recommendedQubits = Math.min(Math.max(2, selectedDataset.features), 8);
+        const recommendedLayers = selectedDataset.features > 20 ? 3 : 2;
+        const recommendedBatchSize = selectedDataset.features > 20 ? 16 : 32;
+
+        infoDiv.textContent = `${selectedDataset.name} • ${selectedDataset.features} input features • ${selectedDataset.exists ? 'dataset ready' : 'dataset missing'}`;
+        guidanceText.textContent = `Start with ${recommendedQubits} qubits, ${recommendedLayers} layers, and batch size ${recommendedBatchSize} to match this dataset's feature count without over-sizing the circuit.`;
+        guidanceCard.hidden = false;
     } else {
         infoDiv.textContent = '';
+        guidanceText.textContent = '';
+        guidanceCard.hidden = true;
     }
 }
 
@@ -401,7 +522,7 @@ async function startTraining() {
     const dataset = document.getElementById('dataset-select').value;
 
     if (!dataset) {
-        alert('Please select a dataset');
+        showError('Please select a dataset before starting training.');
         return;
     }
 
@@ -432,8 +553,14 @@ async function startTraining() {
             body: JSON.stringify(config)
         });
 
+        if (!response.ok) {
+            const errorPayload = await response.json().catch(() => ({}));
+            throw new Error(errorPayload.error || 'Failed to start training');
+        }
+
         const result = await response.json();
         currentSessionId = result.session_id;
+        lastActionSessionId = result.session_id;
 
         // Update UI
         document.getElementById('start-training-btn').disabled = true;
@@ -454,9 +581,11 @@ async function startTraining() {
         startStatusPolling();
 
         console.log(`✅ Training started: ${currentSessionId}`);
+        showSuccess(`Training started for ${dataset}.`);
+        refreshDashboardSummary();
     } catch (error) {
         console.error('Error starting training:', error);
-        showError('Failed to start training');
+        showError(error.message || 'Failed to start training');
     }
 }
 
@@ -470,9 +599,12 @@ async function stopTraining() {
         });
 
         stopStatusPolling();
+        showSuccess('Training stop requested.');
+        refreshDashboardSummary();
         console.log('⏹️ Training stopped');
     } catch (error) {
         console.error('Error stopping training:', error);
+        showError('Failed to stop training');
     }
 }
 
@@ -486,7 +618,12 @@ function startStatusPolling() {
 }
 
 // Stop Status Polling
-function stopStatusPolling() {
+function stopStatusPolling(options = {}) {
+    const {
+        preserveSessionId = false,
+        allowPostTrainingActions = false
+    } = options;
+
     if (statusUpdateInterval) {
         clearInterval(statusUpdateInterval);
         statusUpdateInterval = null;
@@ -502,10 +639,14 @@ function stopStatusPolling() {
     document.getElementById('status-idle').style.display = 'block';
     document.getElementById('status-training').style.display = 'none';
     document.getElementById('progress-container').style.display = 'none';
-    document.getElementById('evaluate-btn').disabled = true;
+    document.getElementById('evaluate-btn').disabled = !allowPostTrainingActions;
     document.getElementById('evaluation-section').style.display = 'none';
+    document.getElementById('export-metrics-btn').disabled = !allowPostTrainingActions;
 
-    currentSessionId = null;
+    if (!preserveSessionId) {
+        currentSessionId = null;
+    }
+
     loadResults(); // Refresh results list
 }
 
@@ -520,8 +661,8 @@ async function updateTrainingStatus() {
         // Update status text
         document.getElementById('status-text').textContent = status.status;
         document.getElementById('current-epoch').textContent = status.current_epoch;
-        document.getElementById('current-loss').textContent = status.current_loss.toFixed(4);
-        document.getElementById('best-val-acc').textContent = (status.best_val_acc * 100).toFixed(2) + '%';
+        document.getElementById('current-loss').textContent = Number.isFinite(status.current_loss) ? status.current_loss.toFixed(4) : '-';
+        document.getElementById('best-val-acc').textContent = formatPercent(status.best_val_acc || 0);
 
         // Update performance metrics
         if (status.epochs_per_second > 0) {
@@ -571,12 +712,14 @@ async function updateTrainingStatus() {
 
         // Check if completed
         if (status.status === 'completed' || status.status === 'early_stopped' || status.status === 'error' || status.status === 'stopped') {
-            stopStatusPolling();
+            const completedSuccessfully = status.status === 'completed' || status.status === 'early_stopped';
+            stopStatusPolling({
+                preserveSessionId: completedSuccessfully,
+                allowPostTrainingActions: completedSuccessfully
+            });
 
-            if (status.status === 'completed' || status.status === 'early_stopped') {
+            if (completedSuccessfully) {
                 showSuccess('Training completed successfully!');
-                // Enable evaluation
-                document.getElementById('evaluate-btn').disabled = false;
                 // Auto-evaluate if checkpoint exists
                 if (status.checkpoint_path) {
                     evaluateNow();
@@ -584,6 +727,8 @@ async function updateTrainingStatus() {
             } else if (status.status === 'error') {
                 showError('Training failed: ' + (status.error_message || 'Unknown error'));
             }
+
+            refreshDashboardSummary();
         }
 
     } catch (error) {
@@ -609,6 +754,9 @@ function updateCharts(metrics) {
 async function loadResults() {
     try {
         const response = await fetch(`${API_BASE}/api/results`);
+        if (!response.ok) {
+            throw new Error('Results request failed');
+        }
         const results = await response.json();
 
         const resultsDiv = document.getElementById('results-list');
@@ -623,15 +771,16 @@ async function loadResults() {
         results.forEach(result => {
             const item = document.createElement('div');
             item.className = 'result-item';
+            item.dataset.filename = result.filename;
             item.onclick = () => viewResultDetails(result.filename);
 
             item.innerHTML = `
                 <div class="result-header">
-                    <div class="result-title">${result.dataset}</div>
+                    <div class="result-title">${escapeHtml(result.dataset)}</div>
                     <div class="result-badge success">${(result.best_acc * 100).toFixed(2)}% acc</div>
                 </div>
                 <div class="result-meta">
-                    <span>📅 ${result.timestamp.join('_')}</span>
+                    <span>📅 ${escapeHtml(result.timestamp.join('_'))}</span>
                     <span>🔄 ${result.epochs} epochs</span>
                 </div>
             `;
@@ -640,8 +789,15 @@ async function loadResults() {
         });
 
         console.log(`✅ Loaded ${results.length} training results`);
+        refreshDashboardSummary();
+
+        const preferredResult = results.find(result => result.filename === lastSelectedResultFilename) || results[0];
+        if (preferredResult) {
+            viewResultDetails(preferredResult.filename, { quiet: true });
+        }
     } catch (error) {
         console.error('Error loading results:', error);
+        showError('Failed to load saved results');
     }
 }
 
@@ -670,12 +826,12 @@ function validateInput(input) {
     }
 
     if (error) {
-        input.style.borderColor = '#ef4444';
+        input.classList.add('invalid');
         errorDiv.textContent = error;
         errorDiv.style.display = 'block';
         document.getElementById('start-training-btn').disabled = true;
     } else {
-        input.style.borderColor = '';
+        input.classList.remove('invalid');
         errorDiv.style.display = 'none';
         document.getElementById('start-training-btn').disabled = false;
     }
@@ -683,17 +839,25 @@ function validateInput(input) {
 
 // Export Metrics
 async function exportMetrics() {
-    if (!currentSessionId) return;
+    const sessionId = getSessionActionTarget();
+    if (!sessionId) {
+        showError('No session available to export.');
+        return;
+    }
 
     try {
-        const response = await fetch(`${API_BASE}/api/export/metrics/${currentSessionId}`);
+        const response = await fetch(`${API_BASE}/api/export/metrics/${sessionId}`);
+        if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            throw new Error(payload.error || 'Failed to export metrics');
+        }
         const blob = await response.blob();
 
         // Create download link
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `metrics_${currentSessionId}.csv`;
+        a.download = `metrics_${sessionId}.csv`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -708,9 +872,13 @@ async function exportMetrics() {
 
 // Evaluation
 async function evaluateNow() {
-    if (!currentSessionId) return;
+    const sessionId = getSessionActionTarget();
+    if (!sessionId) {
+        showError('No completed session available to evaluate.');
+        return;
+    }
     try {
-        const res = await fetch(`${API_BASE}/api/train/evaluate/${currentSessionId}`);
+        const res = await fetch(`${API_BASE}/api/train/evaluate/${sessionId}`);
         const data = await res.json();
         if (data.error) {
             showError('Evaluation failed: ' + data.error);
@@ -760,9 +928,66 @@ function renderConfusionMatrix(container, matrix, labels) {
 }
 
 // View Result Details
-async function viewResultDetails(filename) {
+function markActiveResult(filename) {
+    document.querySelectorAll('.result-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.filename === filename);
+    });
+}
+
+function renderResultDetails(data) {
+    const details = document.getElementById('result-details');
+    const config = data.config || {};
+    const detailRows = [
+        ['Dataset', config.dataset || 'Unknown'],
+        ['Qubits', config.n_qubits ?? '—'],
+        ['Layers', config.n_layers ?? '—'],
+        ['Learning rate', config.learning_rate ?? '—'],
+        ['Batch size', config.batch_size ?? '—'],
+        ['Optimizer', config.optimizer || 'adam']
+    ];
+
+    details.innerHTML = `
+        <div class="details-section">
+            <h3>${escapeHtml(config.dataset || 'Training Run')}</h3>
+            <p>Inspect the best checkpoint and configuration without leaving the dashboard.</p>
+            <div class="details-grid">
+                <div class="details-metric">
+                    <span>Best validation accuracy</span>
+                    <strong>${formatPercent(data.best_val_acc || 0)}</strong>
+                </div>
+                <div class="details-metric">
+                    <span>Total epochs</span>
+                    <strong>${data.total_epochs ?? 0}</strong>
+                </div>
+                <div class="details-metric">
+                    <span>Current status</span>
+                    <strong>${escapeHtml(data.status || 'completed')}</strong>
+                </div>
+                <div class="details-metric">
+                    <span>Checkpoint</span>
+                    <strong>${data.checkpoint_path ? 'Available' : 'Not saved'}</strong>
+                </div>
+            </div>
+            <div class="details-config">
+                ${detailRows.map(([label, value]) => `
+                    <div class="details-config-item">
+                        <span>${escapeHtml(label)}</span>
+                        <strong>${escapeHtml(value)}</strong>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+async function viewResultDetails(filename, options = {}) {
+    const { quiet = false } = options;
     try {
         const response = await fetch(`${API_BASE}/api/results/${filename}`);
+        if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            throw new Error(payload.error || 'Failed to load result details');
+        }
         const data = await response.json();
 
         console.log('📊 Result details:', data);
@@ -772,22 +997,48 @@ async function viewResultDetails(filename) {
             updateCharts(data.metrics);
         }
 
-        // Show details (could open a modal or expand in place)
-        alert(`Training Session Details:\n\nDataset: ${data.config.dataset}\nQubits: ${data.config.n_qubits}\nLayers: ${data.config.n_layers}\nEpochs: ${data.total_epochs}\nBest Accuracy: ${(data.best_val_acc * 100).toFixed(2)}%`);
+        renderResultDetails(data);
+        lastSelectedResultFilename = filename;
+        markActiveResult(filename);
+        lastActionSessionId = data.session_id || lastActionSessionId;
+
+        if (!quiet) {
+            showToast('info', 'Loaded run details', `Showing metrics for ${data.config?.dataset || 'saved run'}.`);
+        }
 
     } catch (error) {
         console.error('Error loading result details:', error);
+        showError(error.message || 'Failed to load result details');
     }
+}
+
+function showToast(type, title, message) {
+    const container = document.getElementById('toast-container');
+    if (!container) {
+        return;
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <span class="toast-title">${escapeHtml(title)}</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
+    `;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3500);
 }
 
 // Show Success Message
 function showSuccess(message) {
     console.log('✅', message);
-    // Could add a toast notification here
+    showToast('success', 'Success', message);
 }
 
 // Show Error Message
 function showError(message) {
     console.error('❌', message);
-    alert('Error: ' + message);
+    showToast('error', 'Error', message);
 }

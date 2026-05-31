@@ -1,7 +1,7 @@
 {
-  "cycles_completed": 393,
+  "cycles_completed": 430,
   "best_accuracy": 0.956931,
-  "last_updated": "2026-05-16T16:10:19.665969",
+  "last_updated": "2026-05-31T22:53:50.047623",
   "performance_history": [
     {
       "cycle": 1,
@@ -3146,6 +3146,302 @@
       "samples_processed": 74968,
       "training_time_sec": 6,
       "timestamp": "2026-05-16T16:10:19.661137"
+    },
+    {
+      "cycle": 394,
+      "accuracy": 0.954051,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T13:03:48.078339"
+    },
+    {
+      "cycle": 395,
+      "accuracy": 0.9539,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T13:04:34.798277"
+    },
+    {
+      "cycle": 396,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T13:34:40.874417"
+    },
+    {
+      "cycle": 397,
+      "accuracy": 0.952841,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T13:48:56.489891"
+    },
+    {
+      "cycle": 398,
+      "accuracy": 0.955814,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T15:40:30.379604"
+    },
+    {
+      "cycle": 399,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T16:10:38.190015"
+    },
+    {
+      "cycle": 400,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T21:29:17.087995"
+    },
+    {
+      "cycle": 401,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T21:59:23.310587"
+    },
+    {
+      "cycle": 402,
+      "accuracy": 0.948133,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T22:29:29.488708"
+    },
+    {
+      "cycle": 403,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T22:59:35.622351"
+    },
+    {
+      "cycle": 404,
+      "accuracy": 0.951911,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-29T23:29:41.808095"
+    },
+    {
+      "cycle": 405,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-30T05:11:27.896619"
+    },
+    {
+      "cycle": 406,
+      "accuracy": 0.955529,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-30T05:52:36.334109"
+    },
+    {
+      "cycle": 407,
+      "accuracy": 0.952902,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-30T08:09:10.484587"
+    },
+    {
+      "cycle": 408,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-30T17:58:52.889499"
+    },
+    {
+      "cycle": 409,
+      "accuracy": 0.950081,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T01:46:03.317096"
+    },
+    {
+      "cycle": 410,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T02:16:09.550539"
+    },
+    {
+      "cycle": 411,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T02:46:15.971925"
+    },
+    {
+      "cycle": 412,
+      "accuracy": 0.955072,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T03:16:22.297741"
+    },
+    {
+      "cycle": 413,
+      "accuracy": 0.955507,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T03:46:28.699652"
+    },
+    {
+      "cycle": 414,
+      "accuracy": 0.951868,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T04:16:35.083950"
+    },
+    {
+      "cycle": 415,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T04:46:41.498397"
+    },
+    {
+      "cycle": 416,
+      "accuracy": 0.954578,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T05:16:47.871702"
+    },
+    {
+      "cycle": 417,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T05:46:54.287651"
+    },
+    {
+      "cycle": 418,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T06:17:00.654405"
+    },
+    {
+      "cycle": 419,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T06:47:07.024526"
+    },
+    {
+      "cycle": 420,
+      "accuracy": 0.954609,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T07:17:13.363122"
+    },
+    {
+      "cycle": 421,
+      "accuracy": 0.953849,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T07:47:19.732605"
+    },
+    {
+      "cycle": 422,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T08:17:26.091457"
+    },
+    {
+      "cycle": 423,
+      "accuracy": 0.951649,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T08:47:32.447277"
+    },
+    {
+      "cycle": 424,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T09:17:38.757446"
+    },
+    {
+      "cycle": 425,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T10:27:57.317581"
+    },
+    {
+      "cycle": 426,
+      "accuracy": 0.946931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T10:58:03.595756"
+    },
+    {
+      "cycle": 427,
+      "accuracy": 0.954435,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T12:03:10.053462"
+    },
+    {
+      "cycle": 428,
+      "accuracy": 0.954331,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T12:33:16.334725"
+    },
+    {
+      "cycle": 429,
+      "accuracy": 0.956465,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T22:23:43.743691"
+    },
+    {
+      "cycle": 430,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-05-31T22:53:50.020257"
     }
   ],
   "dataset_inventory": {
@@ -3155,10 +3451,10 @@
         "datasets/chat/github_actions/train.json"
       ]
     },
-    "synthetic:aria_commands": {
+    "synthetic:quantum": {
       "count": 1,
       "paths": [
-        "data_out/autonomous_datasets/aria_commands/train.jsonl"
+        "data_out/autonomous_datasets/quantum/train.jsonl"
       ]
     },
     "synthetic:python_help": {
@@ -3167,20 +3463,20 @@
         "data_out/autonomous_datasets/python_help/train.jsonl"
       ]
     },
-    "synthetic:quantum": {
+    "synthetic:aria_commands": {
       "count": 1,
       "paths": [
-        "data_out/autonomous_datasets/quantum/train.jsonl"
+        "data_out/autonomous_datasets/aria_commands/train.jsonl"
       ]
     }
   },
-  "status": "completed",
+  "status": "running",
   "started_at": "2026-03-17T16:46:53.488027",
-  "run_mode": "bounded",
+  "run_mode": "infinite",
   "cycle_interval_sec": 1800,
-  "current_cycle": 393,
-  "next_cycle_eta": null,
-  "plateau_cycles": 38,
+  "current_cycle": 430,
+  "next_cycle_eta": "2026-05-31T23:23:50.047611",
+  "plateau_cycles": 75,
   "promotions": [
     {
       "version": 1,
@@ -3235,20 +3531,68 @@
       "cycle": 390,
       "accuracy": 0.956931,
       "promoted_at": "2026-03-29T13:23:47.660880"
+    },
+    {
+      "version": 10,
+      "cycle": 395,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-29T13:04:34.798924"
+    },
+    {
+      "version": 11,
+      "cycle": 400,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-29T21:29:17.088598"
+    },
+    {
+      "version": 12,
+      "cycle": 405,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-30T05:11:27.897139"
+    },
+    {
+      "version": 13,
+      "cycle": 410,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-31T02:16:09.551746"
+    },
+    {
+      "version": 14,
+      "cycle": 415,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-31T04:46:41.498875"
+    },
+    {
+      "version": 15,
+      "cycle": 420,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-31T07:17:13.363813"
+    },
+    {
+      "version": 16,
+      "cycle": 425,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-31T10:27:57.319886"
+    },
+    {
+      "version": 17,
+      "cycle": 430,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-05-31T22:53:50.020947"
     }
   ],
   "quantum_llm": {
     "enabled": true,
-    "status": "idle",
-    "last_run": "2026-03-29T14:28:52.022958",
+    "status": "completed",
+    "last_run": "2026-05-31T22:53:50.021548",
     "last_error": null,
     "checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
     "inference_ready": true,
-    "runs": 18,
+    "runs": 43,
     "dataset_path": "datasets/chat/github_actions/train.json",
     "epochs_completed": 1,
-    "final_loss": 0.9779973624191345,
-    "best_loss": 0.9779973624191345,
+    "final_loss": 0.9866212448482706,
+    "best_loss": 0.9866212448482706,
     "trainer_status": "completed"
   }
 }

@@ -8,6 +8,8 @@ exposes the `/api/ai/status` endpoint used by the repo for health checks.
 Usage:
   # Run server on port 7071 (default)
   python local_dev_adapter.py
+  # Run on a different port
+  python local_dev_adapter.py --port 7072
 
 Design notes:
 - Imports the `function_app` module and calls `ai_status()` directly.
@@ -17,8 +19,10 @@ Design notes:
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
+import os
 import sys
 import types
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -341,11 +345,41 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
         server.server_close()
 
 
-if __name__ == "__main__":
-    print("Starting local dev adapter for /api/ai/status on http://0.0.0.0:7071")
-    # Use port 7071 to match Functions local host default
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse local adapter CLI arguments."""
+
+    default_host = os.getenv("LOCAL_DEV_ADAPTER_HOST", "0.0.0.0")
+    default_port = int(os.getenv("LOCAL_DEV_ADAPTER_PORT", "7071"))
+
+    parser = argparse.ArgumentParser(
+        description="Run the local /api/ai/status adapter without Azure Functions Core Tools.",
+    )
+    parser.add_argument(
+        "--host",
+        default=default_host,
+        help=f"Bind host for the local adapter (default: {default_host}).",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=default_port,
+        help=f"Bind port for the local adapter (default: {default_port}).",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
+    print(
+        f"Starting local dev adapter for /api/ai/status on http://{args.host}:{args.port}"
+    )
+
     if HAS_FLASK:
         app = create_app()
-        app.run(host="0.0.0.0", port=7071, debug=False)
+        app.run(host=args.host, port=args.port, debug=False)
     else:
-        run_stdlib_server(host="0.0.0.0", port=7071)
+        run_stdlib_server(host=args.host, port=args.port)
+
+
+if __name__ == "__main__":
+    main()

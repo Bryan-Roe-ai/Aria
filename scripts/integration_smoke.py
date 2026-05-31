@@ -16,6 +16,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.error import URLError
+from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
 try:
@@ -189,6 +190,14 @@ def _fetch_local_functions_sse(
         return resp.read().decode("utf-8", errors="replace")
 
 
+def _local_dev_adapter_command(url: str) -> List[str]:
+    """Build the adapter command for the target local Functions URL."""
+
+    parsed = urlparse(url)
+    port = parsed.port or 7071
+    return [sys.executable, "local_dev_adapter.py", "--port", str(port)]
+
+
 def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
     """Best-effort fallback: start local adapter and retry endpoint probe."""
     proc: Optional[subprocess.Popen[str]] = None
@@ -196,7 +205,7 @@ def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
 
     try:
         proc = subprocess.Popen(
-            [sys.executable, "local_dev_adapter.py"],
+            _local_dev_adapter_command(url),
             cwd=str(REPO_ROOT),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
@@ -239,7 +248,7 @@ def _probe_with_local_dev_adapter_request(
 
     try:
         proc = subprocess.Popen(
-            [sys.executable, "local_dev_adapter.py"],
+            _local_dev_adapter_command(url),
             cwd=str(REPO_ROOT),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

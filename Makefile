@@ -27,7 +27,8 @@ GRADIO_PORT  ?= 7860
 GRADIO_SHARE ?= false
 
 .PHONY: all install dev start stop build test test-unit test-integration \
-        lint format type-check clean docker-build docker-dev start-gradio help
+        lint format type-check clean docker-build docker-dev start-gradio \
+        start-local-status help
 
 # Default target
 all: lint test
@@ -65,6 +66,10 @@ start:
 start-functions:
 	@command -v func >/dev/null 2>&1 || { echo "❌ func CLI not found. Install: npm i -g azure-functions-core-tools@4"; exit 1; }
 	func host start --port $(FUNC_PORT)
+
+## Start the lightweight local /api/ai/status adapter on FUNC_PORT
+start-local-status:
+	$(PYTHON) local_dev_adapter.py --port $(FUNC_PORT)
 
 ## Start local Gradio demo UI
 start-gradio:

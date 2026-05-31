@@ -1,17 +1,17 @@
 {
   "mode": "full",
-  "started": "2026-05-16T13:44:21.898067",
-  "uptime_seconds": 9960.307821,
+  "started": "2026-05-30T05:11:19.443701",
+  "uptime_seconds": 151243.615021,
   "server_running": true,
   "backend_running": false,
   "training_active": false,
-  "last_health_check": "2026-05-16T16:30:22.206066",
+  "last_health_check": "2026-05-31T23:12:03.058869",
   "processes": [
     {
       "name": "aria_server",
-      "pid": 3118,
+      "pid": 17047,
       "command": "python server.py",
-      "started": "2026-05-16T13:44:21.914164",
+      "started": "2026-05-30T05:11:24.947232",
       "status": "running",
       "port": 8080,
       "health_url": "http://localhost:8080"

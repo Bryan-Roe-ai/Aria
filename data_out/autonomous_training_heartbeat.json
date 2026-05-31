@@ -1,6 +1,7 @@
 {
-  "timestamp": "2026-05-16T16:10:19.669025",
-  "state": "completed",
-  "pid": 240516,
-  "current_cycle": 393
+  "timestamp": "2026-05-31T22:53:50.051272",
+  "state": "running",
+  "pid": 17079,
+  "current_cycle": 430,
+  "next_cycle_eta": "2026-05-31T23:23:50.047611"
 }
