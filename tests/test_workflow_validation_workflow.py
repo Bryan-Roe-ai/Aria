@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+EXPECTED_PYTHON_SETUP_ACTION = "./.github/actions/setup-python-env"
+
 
 @pytest.mark.unit
 def test_workflow_validation_uses_reusable_python_setup_without_duplicate_pip_cache() -> None:
@@ -13,8 +15,24 @@ def test_workflow_validation_uses_reusable_python_setup_without_duplicate_pip_ca
 
     for job_name in ("validate-workflows", "test-workflows"):
         steps = workflow["jobs"][job_name]["steps"]
-        python_steps = [step for step in steps if step.get("uses") == "./.github/actions/setup-python-env"]
+        python_steps = [step for step in steps if step.get("uses") == EXPECTED_PYTHON_SETUP_ACTION]
 
         assert len(python_steps) == 1, f"Expected reusable Python setup in {job_name}"
         assert python_steps[0]["with"]["install-requirements"] == "false"
         assert all("actions/cache@" not in step.get("uses", "") for step in steps)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "workflow_name",
+    ("ruleset-json-validation.yml", "default-github-automation.yml"),
+)
+def test_workflows_use_reusable_python_setup_without_installing_repo_requirements(workflow_name: str) -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / workflow_name
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+
+    steps = next(iter(workflow["jobs"].values()))["steps"]
+    python_steps = [step for step in steps if step.get("uses") == EXPECTED_PYTHON_SETUP_ACTION]
+
+    assert len(python_steps) == 1, f"Expected reusable Python setup in {workflow_name}"
+    assert python_steps[0]["with"]["install-requirements"] == "false"
