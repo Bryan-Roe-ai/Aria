@@ -80,7 +80,7 @@ actions. Tag forms recognised include:
 
 ## Conventions
 
-- Provider precedence: explicit flag → LMStudio → Azure OpenAI → OpenAI → LoRA → local
+- Provider precedence (`detect_provider()` auto mode): explicit flag → LM Studio → Ollama → Azure OpenAI → OpenAI → local (`lora`/`agi`/`quantum` are explicit-only)
 - Config precedence: YAML base < CLI flags < per-job YAML < env vars
 - Chat dataset format: `[{"messages": [{"role": "...", "content": "..."}]}]`
 - LoRA adapters must include both `adapter_config.json` and `adapter_model.safetensors`

@@ -13,21 +13,7 @@
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},
-			"problemMatcher": {
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": "Worker process started and initialized|Host lock lease acquired|Job host started|Http Functions:|Job host started (skipped: func missing)"
-				}
-			}
+			"problemMatcher": []
 		},
 		{
 			"label": "integration:contract-gate",
@@ -188,29 +174,25 @@
 		{
 			"label": "Run Gradio AI Chat app",
 			"type": "shell",
-			"command": "${command:python.interpreterPath}",
+			"command": "bash",
 			"args": [
-				"scripts/gradio_hello.py"
+				"-lc",
+				"cd \"${workspaceFolder}\" && \"${command:python.interpreterPath}\" scripts/gradio_hello.py"
 			],
 			"isBackground": true,
 			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": {
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": "Running on local URL:|Running on local URL"
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"PYTHONUNBUFFERED": "1"
 				}
-			}
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"focus": false,
+				"clear": true
+			},
+			"problemMatcher": []
 		},
 		{
 			"label": "smoke: ai/routes",
@@ -284,21 +266,7 @@
 			"dependsOn": [
 				"Validate writer-reviewer debug prerequisites"
 			],
-			"problemMatcher": {
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": "Application startup complete|running on|Started server process"
-				}
-			}
+			"problemMatcher": []
 		},
 		{
 			"label": "Open writer-reviewer Agent Inspector",
@@ -333,21 +301,7 @@
 			"dependsOn": [
 				"Validate email-spam debug prerequisites"
 			],
-			"problemMatcher": {
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": "Application startup complete|running on|Started server process"
-				}
-			}
+			"problemMatcher": []
 		},
 		{
 			"label": "Open email-spam Agent Inspector",

@@ -57,7 +57,7 @@ All servers are configured in `.vscode/mcp.json`:
   "servers": {
     "quantum-ai": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"],
       "env": {
         "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml"
@@ -65,7 +65,7 @@ All servers are configured in `.vscode/mcp.json`:
     },
     "llm-maker": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"],
       "env": {
         "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
@@ -73,7 +73,7 @@ All servers are configured in `.vscode/mcp.json`:
     },
     "task-complete": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"]
     }
   }
@@ -461,7 +461,7 @@ Add to `.vscode/mcp.json`:
   "servers": {
     "my-server": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/scripts/my_mcp_server.py"],
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
@@ -514,7 +514,7 @@ ls scripts/task_complete_mcp_server.py
 **Check logs**:
 ```bash
 # Run server manually to see errors
-python3 ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
+.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
 ```
 
 **Common Issues**:
@@ -574,7 +574,7 @@ If quantum-ai is unavailable:
 Before critical tasks:
 ```bash
 # Quick health check
-python3 ai-projects/quantum-ml/quantum_mcp_server.py <<< '{}' | head -3
+.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py <<< '{}' | head -3
 
 # Full introspection
 @quantum-ai List available quantum tools

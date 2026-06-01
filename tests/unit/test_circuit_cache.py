@@ -133,6 +133,50 @@ class TestCircuitCacheLRU:
         assert cache.get(params2, num_qubits=1) is None
         assert cache.get(params3, num_qubits=1) is not None
 
+    def test_update_existing_key_at_capacity_does_not_evict(self):
+        """Re-putting an existing key at capacity must not evict another entry."""
+        cache = CircuitCache(max_size=2)
+
+        params1 = np.array([1.0])
+        params2 = np.array([2.0])
+        probs_a = np.array([0.5, 0.5])
+        probs_b = np.array([0.1, 0.9])
+
+        cache.put(params1, num_qubits=1, probs=probs_a)
+        cache.put(params2, num_qubits=1, probs=probs_a)
+
+        # Update an existing key while full — should overwrite in place, not evict.
+        cache.put(params1, num_qubits=1, probs=probs_b)
+
+        stats = cache.stats()
+        assert stats["size"] == 2
+        assert stats["evictions"] == 0
+        # Both original keys remain present; params1 reflects the updated value.
+        assert cache.get(params2, num_qubits=1) is not None
+        np.testing.assert_array_equal(cache.get(params1, num_qubits=1), probs_b)
+
+    def test_put_refreshes_lru_recency(self):
+        """Re-putting an existing key should move it to most-recently-used."""
+        cache = CircuitCache(max_size=2)
+
+        params1 = np.array([1.0])
+        params2 = np.array([2.0])
+        probs = np.array([0.5, 0.5])
+
+        cache.put(params1, num_qubits=1, probs=probs)
+        cache.put(params2, num_qubits=1, probs=probs)
+
+        # Re-put params1 so it becomes most-recently-used (params2 now oldest).
+        cache.put(params1, num_qubits=1, probs=probs)
+
+        # Inserting a third key should evict params2, the least-recently-used.
+        params3 = np.array([3.0])
+        cache.put(params3, num_qubits=1, probs=probs)
+
+        assert cache.get(params1, num_qubits=1) is not None
+        assert cache.get(params2, num_qubits=1) is None
+        assert cache.get(params3, num_qubits=1) is not None
+
 
 class TestCircuitCacheTTL:
     """Test TTL expiration behavior."""

@@ -115,7 +115,7 @@ ls .github/agents/*.agent.md | wc -l
 test -f ai-projects/quantum-ml/quantum_mcp_server.py
 
 # Test startup
-python3 ai-projects/quantum-ml/quantum_mcp_server.py <<< '{}' 2>&1 | head -5
+.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py <<< '{}' 2>&1 | head -5
 # Should show: {"jsonrpc": "2.0", ...}
 ```
 
@@ -130,7 +130,7 @@ python3 ai-projects/quantum-ml/quantum_mcp_server.py <<< '{}' 2>&1 | head -5
 test -f ai-projects/llm-maker/llm_maker_mcp_server.py
 
 # Test startup
-python3 ai-projects/llm-maker/llm_maker_mcp_server.py <<< '{}' 2>&1 | head -5
+.venv/bin/python ai-projects/llm-maker/llm_maker_mcp_server.py <<< '{}' 2>&1 | head -5
 ```
 
 - [ ] Server file exists
@@ -144,7 +144,7 @@ python3 ai-projects/llm-maker/llm_maker_mcp_server.py <<< '{}' 2>&1 | head -5
 test -f scripts/task_complete_mcp_server.py
 
 # Test startup
-python3 scripts/task_complete_mcp_server.py <<< '{}' 2>&1 | head -5
+.venv/bin/python scripts/task_complete_mcp_server.py <<< '{}' 2>&1 | head -5
 ```
 
 - [ ] Server file exists

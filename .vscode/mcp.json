@@ -4,7 +4,7 @@
     // Quantum ML MCP server
     "quantum-ai": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": [
         "${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"
       ],
@@ -24,7 +24,7 @@
     // LLM Maker MCP server
     "llm-maker": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": [
         "${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"
       ],
@@ -44,7 +44,7 @@
     // Task completion MCP server
     "task-complete": {
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": [
         "${workspaceFolder}/scripts/task_complete_mcp_server.py"
       ],
@@ -55,81 +55,6 @@
         "LOG_LEVEL": "INFO",
         "MAX_WORKERS": "4",
         "ENABLE_TELEMETRY": "true"
-      },
-      "cwd": "${workspaceFolder}/scripts"
-    },
-    // Code analysis & linting MCP server
-    "code-analysis": {
-      "type": "stdio",
-      "command": "python3",
-      "args": [
-        "${workspaceFolder}/scripts/code_analysis_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "MAX_WORKERS": "4",
-        "ENABLE_TELEMETRY": "true",
-        "ANALYSIS_DEPTH": "full"
-      },
-      "cwd": "${workspaceFolder}/scripts"
-    },
-    // Data pipeline MCP server
-    "data-pipeline": {
-      "type": "stdio",
-      "command": "python3",
-      "args": [
-        "${workspaceFolder}/ai-projects/data-pipeline/data_pipeline_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/data-pipeline:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "ENABLE_TELEMETRY": "true",
-        "MAX_WORKERS": "8",
-        "BATCH_SIZE": "256",
-        "QAI_SQL_POOL_SIZE": "10"
-      },
-      "cwd": "${workspaceFolder}/ai-projects/data-pipeline"
-    },
-    // Model evaluation MCP server
-    "model-eval": {
-      "type": "stdio",
-      "command": "python3",
-      "args": [
-        "${workspaceFolder}/ai-projects/model-eval/model_eval_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/model-eval:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "MAX_WORKERS": "4",
-        "ENABLE_TELEMETRY": "true",
-        "EVAL_TIMEOUT": "300",
-        "PERFORMANCE_DEGRADATION_THRESHOLD": "0.05",
-        "QAI_SQL_POOL_SIZE": "10"
-      },
-      "cwd": "${workspaceFolder}/ai-projects/model-eval"
-    },
-    // File system & workspace utilities MCP server
-    "workspace-utils": {
-      "type": "stdio",
-      "command": "python3",
-      "args": [
-        "${workspaceFolder}/scripts/workspace_utils_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "MAX_WORKERS": "4",
-        "ENABLE_TELEMETRY": "true",
-        "WORKSPACE_ROOT": "${workspaceFolder}"
       },
       "cwd": "${workspaceFolder}/scripts"
     }

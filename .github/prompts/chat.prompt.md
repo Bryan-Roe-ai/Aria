@@ -10,7 +10,7 @@ Start a chat conversation using the Aria platform's multi-provider system with s
 
 ## Pipeline
 
-1. **Provider auto-detection**: Azure OpenAI → OpenAI → LMStudio → LoRA → Local
+1. **Provider auto-detection** (`detect_provider()`): LM Studio → Ollama → Azure OpenAI → OpenAI → Local (LoRA explicit-only)
 2. **Memory injection**: Embed user message → fetch similar past messages → inject as context
 3. **Token pruning**: Fit conversation within context window budget
 4. **Streaming**: SSE-based response delivery with movement tag extraction

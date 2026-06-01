@@ -468,6 +468,35 @@ class TestCostGatingEnforcement:
         assert cost > 0.0, "IonQ should have nonzero cost"
         assert abs(cost - 0.12) < 0.01, f"Expected ~0.12, got {cost}"
 
+    def test_requires_confirmation_false_for_simulators(self):
+        """Simulator backends (incl. provider-qualified) never require confirmation."""
+        mcp_server = self._import_server()
+        for backend in ("simulator", "ionq.simulator", "quantinuum.sim.h1-1sc"):
+            assert mcp_server._requires_cost_confirmation(backend) is False, backend
+
+    def test_requires_confirmation_true_for_paid_backends(self):
+        """Known paid QPU backends require explicit confirmation."""
+        mcp_server = self._import_server()
+        for backend in ("ionq.qpu", "quantinuum.qpu.h1-1"):
+            assert mcp_server._requires_cost_confirmation(backend) is True, backend
+
+    def test_requires_confirmation_true_for_unknown_backend_failsafe(self):
+        """Fail-safe: unknown non-simulator backends must require confirmation.
+
+        Guards against weakening the cost gate so that an unrecognized (and
+        possibly paid) backend could be submitted without explicit confirmation.
+        """
+        mcp_server = self._import_server()
+        assert mcp_server._requires_cost_confirmation("mystery-qpu") is True
+        assert mcp_server._requires_cost_confirmation("totally.new.hardware") is True
+
+    def test_requires_confirmation_false_for_empty_backend(self):
+        """Empty/missing backend names default to no confirmation requirement."""
+        mcp_server = self._import_server()
+        assert mcp_server._requires_cost_confirmation("") is False
+        assert mcp_server._requires_cost_confirmation(None) is False
+        assert mcp_server._requires_cost_confirmation("   ") is False
+
     def test_submit_job_rejects_cost_per_job_limit(self):
         """Returns error when single job cost exceeds MAX_COST_PER_JOB_USD."""
         mcp_server = self._import_server()

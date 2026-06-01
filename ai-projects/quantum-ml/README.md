@@ -339,13 +339,13 @@ To use the Quantum AI MCP server:
 pip install -r mcp-requirements.txt
 
 # Run the server
-python quantum_mcp_server.py
+.venv/bin/python quantum_mcp_server.py
 
 # Or use with VS Code MCP support (add to .vscode/mcp.json):
 {
   "quantum-ai": {
     "type": "stdio",
-    "command": "python",
+    "command": "${workspaceFolder}/.venv/bin/python",
     "args": ["c:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\quantum_mcp_server.py"]
   }
 }
@@ -459,7 +459,7 @@ The quantum-ai project includes an MCP server that exposes quantum capabilities 
 pip install -r mcp-requirements.txt
 
 # Run the MCP server
-python quantum_mcp_server.py
+.venv/bin/python quantum_mcp_server.py
 
 # Or use the example client
 python example_mcp_client.py

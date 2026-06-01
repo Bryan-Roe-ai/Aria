@@ -170,6 +170,30 @@ class TestQuantumSampler:
         # Index 0 must win at least 90% of the time
         assert results.count(0) >= 18
 
+    def test_blend_factor_above_one_is_clamped(self):
+        """blend_factor > 1 must be clamped, not raise on negative probabilities."""
+        s = self._make_sampler()
+        logits = [3.0, 1.0, 0.5, 0.2]
+        # Without clamping this raised ValueError("Probabilities are not non-negative").
+        idx = s.sample(logits, blend_factor=1.5, seed=1)
+        assert 0 <= idx < len(logits)
+
+    def test_blend_factor_below_zero_is_clamped(self):
+        """blend_factor < 0 must be clamped to a pure-classical blend."""
+        s = self._make_sampler()
+        logits = [5.0, 0.0, 0.0, 0.0]
+        # Clamped to 0.0 => pure classical, so the strongly favoured index 0 wins.
+        results = [s.sample(logits, blend_factor=-0.5, seed=i) for i in range(20)]
+        assert results.count(0) >= 18
+
+    def test_blend_factor_above_one_matches_pure_quantum(self):
+        """Clamping blend_factor=1.5 yields the same draw as blend_factor=1.0."""
+        s = self._make_sampler()
+        logits = [3.0, 1.0, 0.5, 0.2]
+        assert s.sample(logits, blend_factor=1.5, seed=11) == s.sample(
+            logits, blend_factor=1.0, seed=11
+        )
+
 
 # ===========================================================================
 # QuantumEmbeddingTransformer tests

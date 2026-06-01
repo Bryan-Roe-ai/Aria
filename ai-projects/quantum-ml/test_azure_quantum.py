@@ -3,13 +3,20 @@ Test Optimized Quantum Circuit on Real Azure Quantum Hardware
 Submits the optimized quantum classifier to IonQ or other quantum backends
 """
 
+from __future__ import annotations
+
 import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Optional, cast
 
-import yaml
+import yaml  # type: ignore[import-untyped]
+
+if TYPE_CHECKING:
+    from qiskit import QuantumCircuit as QuantumCircuitType  # noqa: F401
+else:
+    QuantumCircuitType = Any
 
 _OPTIONAL_IMPORT_ERROR: Optional[ImportError] = None
 
@@ -18,11 +25,13 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 try:
     import numpy as np
-    from azure_quantum_integration import (AzureQuantumIntegration,
-                                           create_sample_circuit)
-    from qiskit import QuantumCircuit
+    import azure_quantum_integration as aqi_module
+    import qiskit as qiskit_module
 except ImportError as exc:  # pragma: no cover - environment dependent
     _OPTIONAL_IMPORT_ERROR = exc
+    np = cast(Any, None)
+    aqi_module = cast(Any, None)
+    qiskit_module = cast(Any, None)
 
 if _OPTIONAL_IMPORT_ERROR is not None and "pytest" in sys.modules:
     import pytest
@@ -40,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 def create_optimized_quantum_circuit(
     n_qubits: int = 4, n_layers: int = 3
-) -> QuantumCircuit:
+) -> QuantumCircuitType:
     """
     Create a quantum circuit using our optimized parameters.
     This simulates the structure of our trained quantum classifier.
@@ -52,7 +61,7 @@ def create_optimized_quantum_circuit(
     Returns:
         Quantum circuit
     """
-    circuit = QuantumCircuit(n_qubits, n_qubits)
+    circuit = qiskit_module.QuantumCircuit(n_qubits, n_qubits)
 
     # Initial state preparation (Hadamard layer)
     for qubit in range(n_qubits):
@@ -78,7 +87,7 @@ def create_optimized_quantum_circuit(
     return circuit
 
 
-def create_bell_state_test() -> QuantumCircuit:
+def create_bell_state_test() -> QuantumCircuitType:
     """
     Create a simple Bell state for initial hardware testing.
     This is a good first test to verify quantum entanglement on hardware.
@@ -86,7 +95,7 @@ def create_bell_state_test() -> QuantumCircuit:
     Returns:
         Bell state circuit
     """
-    circuit = QuantumCircuit(2, 2)
+    circuit = qiskit_module.QuantumCircuit(2, 2)
     circuit.h(0)
     circuit.cx(0, 1)
     circuit.measure([0, 1], [0, 1])
@@ -104,12 +113,13 @@ def test_azure_quantum_connection():
     try:
         if _OPTIONAL_IMPORT_ERROR is not None:
             raise RuntimeError(
-                f"Missing optional quantum dependencies: {_OPTIONAL_IMPORT_ERROR}"
+                "Missing optional quantum dependencies: "
+                f"{_OPTIONAL_IMPORT_ERROR}"
             )
 
         # Initialize Azure Quantum
         config_path = Path(__file__).parent / "config" / "quantum_config.yaml"
-        azure = AzureQuantumIntegration(str(config_path))
+        azure = aqi_module.AzureQuantumIntegration(str(config_path))
 
         print("✓ Configuration loaded")
         print(f"  Workspace: {azure.azure_config['workspace_name']}")
@@ -118,7 +128,7 @@ def test_azure_quantum_connection():
 
         # Connect to workspace
         print("Connecting to Azure Quantum workspace...")
-        workspace = azure.connect()
+        azure.connect()
         print("✓ Successfully connected to Azure Quantum!\n")
 
         # List available backends
@@ -135,17 +145,24 @@ def test_azure_quantum_connection():
     except Exception as e:
         print(f"\n✗ Connection failed: {str(e)}\n")
         print("TROUBLESHOOTING STEPS:")
-        print("1. Ensure Azure Quantum workspace is deployed (see azure/DEPLOYMENT.md)")
-        print("2. Run: az login")
-        print("3. Update config/quantum_config.yaml with your subscription details")
         print(
-            "4. Verify workspace exists: az quantum workspace show -g rg-quantum-ai -n quantum-ai-workspace\n"
+            "1. Ensure Azure Quantum workspace is deployed "
+            "(see azure/DEPLOYMENT.md)"
+        )
+        print("2. Run: az login")
+        print(
+            "3. Update config/quantum_config.yaml with your "
+            "subscription details"
+        )
+        print(
+            "4. Verify workspace exists: az quantum workspace show "
+            "-g rg-quantum-ai -n quantum-ai-workspace\n"
         )
         return None, []
 
 
 def test_bell_state_on_hardware(
-    azure: AzureQuantumIntegration, backend_name: str = None
+    azure: Any, backend_name: Optional[str] = None
 ):
     """
     Test 2: Run Bell state on quantum hardware to verify entanglement.
@@ -173,12 +190,17 @@ def test_bell_state_on_hardware(
         print(f"Cost Estimate: {cost_estimate}\n")
 
         # Submit to hardware
-        print(f"Submitting Bell state to {backend_name or 'default backend'}...")
+        print(
+            f"Submitting Bell state to {backend_name or 'default backend'}..."
+        )
         job = azure.submit_circuit(
             circuit,
             backend_name=backend_name,
             shots=100,
-            job_name=f"bell_state_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            job_name=(
+                "bell_state_test_"
+                f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            ),
         )
 
         print("✓ Job submitted successfully!")
@@ -223,7 +245,7 @@ def test_bell_state_on_hardware(
 
 
 def test_optimized_circuit_on_hardware(
-    azure: AzureQuantumIntegration, backend_name: str = None
+    azure: Any, backend_name: Optional[str] = None
 ):
     """
     Test 3: Run our optimized quantum classifier circuit on real hardware.
@@ -266,12 +288,18 @@ def test_optimized_circuit_on_hardware(
         print(f"Cost Estimate: {cost_estimate}\n")
 
         # Submit to hardware
-        print(f"Submitting optimized circuit to {backend_name or 'default backend'}...")
+        print(
+            "Submitting optimized circuit to "
+            f"{backend_name or 'default backend'}..."
+        )
         job = azure.submit_circuit(
             circuit,
             backend_name=backend_name,
             shots=500,
-            job_name=f"optimized_classifier_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            job_name=(
+                "optimized_classifier_"
+                f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            ),
         )
 
         print("✓ Job submitted successfully!")
@@ -306,12 +334,16 @@ def test_optimized_circuit_on_hardware(
         max_entropy = np.log2(2**n_qubits)
 
         print("\nQuantum State Analysis:")
-        print(f"  Unique states measured: {len(results['counts'])}/{2**n_qubits}")
+        print(
+            f"  Unique states measured: {len(results['counts'])}/{2**n_qubits}"
+        )
         print(f"  Entropy: {entropy:.3f} / {max_entropy:.3f}")
         print(f"  Distribution uniformity: {(entropy/max_entropy)*100:.1f}%")
 
         # Save results
-        azure.save_results(results, f"optimized_circuit_results_{job.id()}.json")
+        azure.save_results(
+            results, f"optimized_circuit_results_{job.id()}.json"
+        )
         print("\n✓ Results saved to results/\n")
 
         return results
@@ -321,7 +353,7 @@ def test_optimized_circuit_on_hardware(
         return None
 
 
-def compare_simulator_vs_hardware(azure: AzureQuantumIntegration):
+def compare_simulator_vs_hardware(azure: Any):
     """
     Test 4: Compare results between simulator and real hardware.
     """
@@ -363,7 +395,11 @@ def compare_simulator_vs_hardware(azure: AzureQuantumIntegration):
         print("  COMPARISON RESULTS")
         print("=" * 70)
 
-        print("\n{:<15} {:<20} {:<20}".format("State", "Simulator", "Hardware"))
+        print(
+            "\n{:<15} {:<20} {:<20}".format(
+                "State", "Simulator", "Hardware"
+            )
+        )
         print("-" * 70)
 
         all_states = set(sim_results["counts"].keys()) | set(
@@ -381,14 +417,18 @@ def compare_simulator_vs_hardware(azure: AzureQuantumIntegration):
         print("  - Simulator: Ideal quantum behavior (no noise)")
         print("  - Hardware: Real quantum effects + decoherence/gate errors")
         print(
-            "  - Hardware noise is expected and demonstrates real quantum computing!\n"
+            "  - Hardware noise is expected and demonstrates real "
+            "quantum computing!\n"
         )
 
         return sim_results, hw_results
 
     except Exception as e:
         print(f"\n✗ Comparison failed: {str(e)}")
-        print("Note: Quantum hardware access may require credits or additional setup\n")
+        print(
+            "Note: Quantum hardware access may require credits or "
+            "additional setup\n"
+        )
         return None, None
 
 
@@ -406,7 +446,10 @@ def main():
 
     if azure is None:
         print("\n⚠ Cannot proceed without Azure Quantum connection.")
-        print("Please complete Azure deployment first (see azure/DEPLOYMENT.md)\n")
+        print(
+            "Please complete Azure deployment first "
+            "(see azure/DEPLOYMENT.md)\n"
+        )
         return
 
     # Select backend
@@ -469,9 +512,9 @@ def main():
         print("✓ Bell state test completed successfully!\n")
 
         # Ask if user wants to continue with optimized circuit
-        proceed = (
-            input("Proceed with optimized circuit test? (yes/no): ").strip().lower()
-        )
+        proceed = input(
+            "Proceed with optimized circuit test? (yes/no): "
+        ).strip().lower()
         if proceed == "yes":
             # Test 3: Optimized circuit
             opt_results = test_optimized_circuit_on_hardware(azure, backend)

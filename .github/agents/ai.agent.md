@@ -54,7 +54,7 @@ You are the primary autonomous agent for the Aria platform. You handle complex m
 
 Aria is an interactive AI character platform with:
 
-- **Multi-provider chat** (Azure OpenAI → OpenAI → LMStudio → LoRA → Local fallback)
+- **Multi-provider chat** (LM Studio → Ollama → Azure OpenAI → OpenAI → Local fallback; LoRA explicit-only)
 - **AGI reasoning** (chain-of-thought, task decomposition, self-reflection)
 - **Interactive character** (3D animated avatar, NL commands, world generation)
 - **Autonomous training** (continuous LoRA fine-tuning with 30-min cycles)

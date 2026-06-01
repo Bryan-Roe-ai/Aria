@@ -33,7 +33,8 @@ try:  # shared package may not be importable in all contexts (tests add paths)
     from shared.azure_utils import (format_quota_message, is_quota_error,
                                     is_transient_rate_error)
 except Exception:  # pragma: no cover - best-effort import
-    # Provide fallbacks if shared module isn't available in runtime/test harness
+    # Provide fallbacks if the shared module is unavailable in the
+    # runtime/test harness.
     def is_quota_error(e: Any) -> bool:
         txt = str(e).lower() if e is not None else ""
         return any(

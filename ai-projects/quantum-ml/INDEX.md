@@ -113,7 +113,7 @@
 
 **Use MCP server**
 → Read: `MCP_SERVER_README.md`
-→ Run: `python quantum_mcp_server.py`
+→ Run: `.venv/bin/python quantum_mcp_server.py`
 
 **Customize settings**
 → Edit: `config/quantum_config.yaml`

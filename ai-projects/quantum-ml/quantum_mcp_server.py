@@ -273,8 +273,9 @@ def _requires_cost_confirmation(backend_name: Optional[str]) -> bool:
     # Simulators are free even when provider-qualified (e.g., ionq.simulator).
     if _is_free_backend(normalized):
         return False
-    if any(keyword in normalized for keyword in PAID_BACKEND_KEYWORDS):
-        return True
+    # Everything else is gated. This covers known paid QPUs (see
+    # PAID_BACKEND_KEYWORDS) *and* unrecognized backends: an unknown backend may
+    # be paid, so as a deliberate fail-safe we never auto-approve it.
     return True
 
 

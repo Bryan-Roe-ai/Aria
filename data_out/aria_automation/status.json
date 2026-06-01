@@ -1,11 +1,11 @@
 {
   "mode": "full",
   "started": "2026-05-30T05:11:19.443701",
-  "uptime_seconds": 209159.147639,
+  "uptime_seconds": 216308.80562,
   "server_running": true,
   "backend_running": false,
   "training_active": false,
-  "last_health_check": "2026-06-01T15:17:18.591466",
+  "last_health_check": "2026-06-01T17:16:28.249423",
   "processes": [
     {
       "name": "aria_server",
@@ -15,6 +15,15 @@
       "status": "running",
       "port": 8080,
       "health_url": "http://localhost:8080"
+    },
+    {
+      "name": "functions_backend",
+      "pid": 344882,
+      "command": "func host start",
+      "started": "2026-06-01T15:57:28.489860",
+      "status": "running",
+      "port": 7071,
+      "health_url": "http://localhost:7071/api/ai/status"
     }
   ],
   "training_cycles": 0,
