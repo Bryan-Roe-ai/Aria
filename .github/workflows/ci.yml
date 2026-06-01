@@ -49,7 +49,7 @@ env:
   PYTHONDONTWRITEBYTECODE: "1"
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
-  LINT_PATHS: "shared/ scripts/ apps/aria/server.py tests/"
+  LINT_PATHS: "shared scripts tests apps/aria/server.py"
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -97,10 +97,18 @@ jobs:
           python -m pip install "ruff>=0.5,<1.0" "black>=24.0,<26.0"
 
       - name: Ruff (lint)
-        run: ruff check ${LINT_PATHS} --output-format=github
+        run: |
+          set -euo pipefail
+          mapfile -t lint_paths < <(find shared scripts tests -name '*.py' -print | sort)
+          lint_paths+=("apps/aria/server.py")
+          ruff check "${lint_paths[@]}" --output-format=github
 
       - name: Black (format check)
-        run: black --check --quiet ${LINT_PATHS}
+        run: |
+          set -euo pipefail
+          mapfile -t lint_paths < <(find shared scripts tests -name '*.py' -print | sort)
+          lint_paths+=("apps/aria/server.py")
+          black --check --quiet "${lint_paths[@]}"
 
   # ---------------------------------------------------------------------------
   # Type checks (mypy) — advisory until baseline is clean
