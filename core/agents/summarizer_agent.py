@@ -19,6 +19,7 @@ from core.task import Task
 logger = logging.getLogger(__name__)
 
 _MAX_INPUT_CHARS = 4000
+_MAX_SUMMARY_LENGTH = 500
 
 
 class SummarizerAgent(BaseAgent):
@@ -56,15 +57,7 @@ class SummarizerAgent(BaseAgent):
             if not events:
                 summary = "No context to summarize."
             else:
-                text = "\n".join(
-                    "{}: {}".format(
-                        e.get("type", "event"),
-                        json.dumps(e.get("data", ""), ensure_ascii=False)
-                        if isinstance(e.get("data"), (dict, list))
-                        else str(e.get("data", "")),
-                    )
-                    for e in events
-                )
+                text = "\n".join(self._format_event(e) for e in events)
                 summary = self._summarize(text)
         else:
             summary = self._summarize(text)
@@ -128,6 +121,17 @@ class SummarizerAgent(BaseAgent):
 
         heuristic = re.search(r"summary\s*[:\-]\s*(.+)", raw, re.I)
         if heuristic:
-            return heuristic.group(1).strip().strip("'\"")[:500]
+            return heuristic.group(1).strip().strip("'\"")[:_MAX_SUMMARY_LENGTH]
 
-        return raw.strip()[:500] or fallback
+        return raw.strip()[:_MAX_SUMMARY_LENGTH] or fallback
+
+    @staticmethod
+    def _format_event(event: Dict[str, Any]) -> str:
+        event_type = event.get("type", "event")
+        data = event.get("data", "")
+        data_str = (
+            json.dumps(data, ensure_ascii=False)
+            if isinstance(data, (dict, list))
+            else str(data)
+        )
+        return "{}: {}".format(event_type, data_str)

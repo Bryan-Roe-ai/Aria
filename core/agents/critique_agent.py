@@ -24,6 +24,14 @@ _MAX_INPUT_CHARS = 4000
 _DEFAULT_SCORE = 0.5
 
 
+def _clamp_score(value: Any) -> float:
+    """Convert *value* to a float clamped to ``[0.0, 1.0]``."""
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except (TypeError, ValueError):
+        return _DEFAULT_SCORE
+
+
 class CritiqueAgent(BaseAgent):
     """Evaluates content quality and returns a structured critique.
 
@@ -132,12 +140,7 @@ class CritiqueAgent(BaseAgent):
                 return None
             if not any(k in data for k in ("score", "issues", "suggestions")):
                 return None
-            score = data.get("score", _DEFAULT_SCORE)
-            try:
-                score = float(score)
-            except (TypeError, ValueError):
-                score = _DEFAULT_SCORE
-            score = max(0.0, min(1.0, score))
+            score = _clamp_score(data.get("score", _DEFAULT_SCORE))
             issues = data.get("issues") or []
             suggestions = data.get("suggestions") or []
             if not isinstance(issues, list):
