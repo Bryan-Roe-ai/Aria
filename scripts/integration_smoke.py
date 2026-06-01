@@ -32,6 +32,21 @@ DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"
 LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC = 25.0
 LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC = 10.0
 
+_REQUIRED_AI_STATUS_KEYS = {"active_provider", "settings", "endpoints", "status"}
+_REQUIRED_AI_STATUS_ENDPOINTS = {
+    "/api/ai/status",
+    "/api/chat",
+    "/api/chat-web",
+    "/api/tts",
+    "/api/quantum/run",
+}
+_REQUIRED_AI_ROUTE_NAMES = {
+    "ai/status",
+    "chat",
+    "chat-web",
+    "agi/stream",
+}
+
 
 @dataclass
 class StepResult:
@@ -415,16 +430,30 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
     name = "functions_ai_status_endpoint"
     start = time.perf_counter()
     url = "http://localhost:7071/api/ai/status"
+    def _build_success_detail(payload: Dict[str, Any], source: str = "") -> Optional[str]:
+        valid, detail = _validate_ai_status_payload(payload)
+        if not valid:
+            return None
+        return f"{detail}{source}"
+
     try:
         payload = _fetch_local_functions_payload(url)
-        provider = payload.get("active_provider", "unknown")
+        detail = _build_success_detail(payload)
         duration = round(time.perf_counter() - start, 2)
+        if detail is not None:
+            return StepResult(
+                name=name,
+                status="succeeded",
+                critical=strict,
+                duration_sec=duration,
+                detail=detail,
+            )
         return StepResult(
             name=name,
-            status="succeeded",
+            status="failed",
             critical=strict,
             duration_sec=duration,
-            detail=f"provider={provider}",
+            detail="invalid_ai_status_payload",
         )
     except (URLError, TimeoutError, OSError):
         duration = round(time.perf_counter() - start, 2)
@@ -434,43 +463,46 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
                 time.sleep(0.25)
                 try:
                     payload = _fetch_local_functions_payload(url)
-                    provider = payload.get("active_provider", "unknown")
+                    detail = _build_success_detail(payload, " | via=direct_retry")
+                    duration = round(time.perf_counter() - start, 2)
+                    if detail is not None:
+                        return StepResult(
+                            name=name,
+                            status="succeeded",
+                            critical=True,
+                            duration_sec=duration,
+                            detail=detail,
+                        )
+                except (URLError, TimeoutError, OSError):
+                    continue
+
+            fallback_payload = _probe_with_local_dev_adapter(url)
+            if fallback_payload is not None:
+                detail = _build_success_detail(fallback_payload, " | via=local_dev_adapter")
+                if detail is not None:
                     duration = round(time.perf_counter() - start, 2)
                     return StepResult(
                         name=name,
                         status="succeeded",
                         critical=True,
                         duration_sec=duration,
-                        detail=f"provider={provider} | via=direct_retry",
+                        detail=detail,
                     )
-                except (URLError, TimeoutError, OSError):
-                    continue
-
-            fallback_payload = _probe_with_local_dev_adapter(url)
-            if fallback_payload is not None:
-                provider = fallback_payload.get("active_provider", "unknown")
-                duration = round(time.perf_counter() - start, 2)
-                return StepResult(
-                    name=name,
-                    status="succeeded",
-                    critical=True,
-                    duration_sec=duration,
-                    detail=f"provider={provider} | via=local_dev_adapter",
-                )
 
             # Final direct retry covers the case where adapter startup fails
             # because another process is already bound to :7071.
             try:
                 payload = _fetch_local_functions_payload(url)
-                provider = payload.get("active_provider", "unknown")
+                detail = _build_success_detail(payload, " | via=final_direct_retry")
                 duration = round(time.perf_counter() - start, 2)
-                return StepResult(
-                    name=name,
-                    status="succeeded",
-                    critical=True,
-                    duration_sec=duration,
-                    detail=f"provider={provider} | via=final_direct_retry",
-                )
+                if detail is not None:
+                    return StepResult(
+                        name=name,
+                        status="succeeded",
+                        critical=True,
+                        duration_sec=duration,
+                        detail=detail,
+                    )
             except (URLError, TimeoutError, OSError):
                 return StepResult(
                     name=name,
@@ -495,6 +527,110 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
             duration_sec=duration,
             detail=str(exc),
         )
+
+
+def _validate_ai_status_payload(payload: Dict[str, Any]) -> tuple[bool, str]:
+    missing_keys = sorted(k for k in _REQUIRED_AI_STATUS_KEYS if k not in payload)
+    if missing_keys:
+        return False, f"missing_keys={','.join(missing_keys)}"
+
+    if payload.get("status") != "ok":
+        return False, f"status={payload.get('status')}"
+
+    settings = payload.get("settings")
+    if not isinstance(settings, dict):
+        return False, "settings_not_dict"
+
+    provider_chain = settings.get("provider_chain")
+    if not isinstance(provider_chain, list) or not provider_chain:
+        return False, "provider_chain_missing_or_empty"
+
+    if not settings.get("active_provider"):
+        return False, "settings_active_provider_missing"
+
+    endpoints = payload.get("endpoints")
+    if not isinstance(endpoints, list):
+        return False, "endpoints_not_list"
+
+    missing_endpoints = sorted(_REQUIRED_AI_STATUS_ENDPOINTS - set(endpoints))
+    if missing_endpoints:
+        return False, f"missing_endpoints={','.join(missing_endpoints)}"
+
+    provider = payload.get("active_provider", "unknown")
+    return True, f"provider={provider} | provider_chain_len={len(provider_chain)}"
+
+
+def _probe_ai_routes_endpoint(strict: bool) -> StepResult:
+    name = "functions_ai_routes_endpoint"
+    start = time.perf_counter()
+    url = "http://localhost:7071/api/ai/routes"
+    try:
+        payload = _fetch_local_functions_json(url, method="GET", timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC)
+        detail = _validate_ai_routes_payload(payload)
+        duration = round(time.perf_counter() - start, 2)
+        if detail is not None:
+            return StepResult(
+                name=name,
+                status="succeeded",
+                critical=strict,
+                duration_sec=duration,
+                detail=detail,
+            )
+        return StepResult(
+            name=name,
+            status="failed",
+            critical=strict,
+            duration_sec=duration,
+            detail="invalid_ai_routes_payload",
+        )
+    except (URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError):
+        duration = round(time.perf_counter() - start, 2)
+        if strict:
+            fallback = _probe_with_local_dev_adapter_request(
+                url=url,
+                method="GET",
+                payload=None,
+                sse=False,
+            )
+            if isinstance(fallback, dict):
+                detail = _validate_ai_routes_payload(fallback)
+                if detail is not None:
+                    return StepResult(
+                        name=name,
+                        status="succeeded",
+                        critical=True,
+                        duration_sec=duration,
+                        detail=f"{detail} | via=local_dev_adapter",
+                    )
+            return StepResult(
+                name=name,
+                status="failed",
+                critical=True,
+                duration_sec=duration,
+                detail=f"endpoint_unreachable={url}",
+            )
+        return StepResult(
+            name=name,
+            status="skipped",
+            critical=False,
+            duration_sec=duration,
+            detail="functions host not running (non-strict mode)",
+        )
+
+
+def _validate_ai_routes_payload(payload: Dict[str, Any]) -> Optional[str]:
+    functions = payload.get("functions")
+    if not isinstance(functions, list):
+        return None
+    route_names = {
+        item.get("route")
+        for item in functions
+        if isinstance(item, dict) and isinstance(item.get("route"), str)
+    }
+    missing = sorted(_REQUIRED_AI_ROUTE_NAMES - route_names)
+    if missing:
+        return None
+    return f"routes={len(functions)}"
 
 
 def _resolved_config_paths() -> Dict[str, Optional[str]]:
@@ -553,6 +689,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
     )
 
     steps.append(_probe_functions_endpoint(strict_endpoints))
+    steps.append(_probe_ai_routes_endpoint(strict_endpoints))
     steps.extend(_probe_agi_endpoints(strict_endpoints))
 
     total = len(steps)

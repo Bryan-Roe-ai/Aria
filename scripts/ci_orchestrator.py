@@ -16,6 +16,7 @@ Features:
 
 Usage examples (PowerShell):
   python .\\scripts\\ci_orchestrator.py --validate-all
+  python .\\scripts\\ci_orchestrator.py --integration-baseline
   python .\\scripts\\ci_orchestrator.py --quick-test
   python .\\scripts\\ci_orchestrator.py --full-test
   python .\\scripts\\ci_orchestrator.py --prepare-deployment
@@ -128,6 +129,41 @@ class CIOrchestrator:
             "tests/test_agent_mode_delegation_contracts.py",
         ]
         return self._run_command("integration_contract_tests", cmd)
+
+    def run_targeted_provider_regression(self) -> bool:
+        """Run targeted provider+AGI regression tests."""
+        print("\n[ci] Running Targeted Provider/AGI Regression Tests")
+        cmd = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "ai-projects/chat-cli/src/test_chat_providers.py",
+            "tests/test_agi_provider.py",
+            "-q",
+            "--tb=short",
+        ]
+        return self._run_command("targeted_provider_regression", cmd)
+
+    def run_integration_baseline(self) -> bool:
+        """Run canonical repo integration baseline checks."""
+        print("\n[ci] ========================================")
+        print("[ci] Running Integration Baseline")
+        print("[ci] ========================================\n")
+        steps = [
+            ("Validate Orchestrators", self.validate_all_orchestrators),
+            ("Integration Smoke", self.run_integration_smoke),
+            ("Integration Contract Tests", self.run_integration_contract_tests),
+            ("Targeted Provider Regression", self.run_targeted_provider_regression),
+        ]
+        all_passed = True
+        for step_name, step_func in steps:
+            print(f"\n[ci] Step: {step_name}")
+            if not step_func():
+                all_passed = False
+                print(f"[ci] [FAIL] Step failed: {step_name}")
+            else:
+                print(f"[ci] [OK] Step passed: {step_name}")
+        return all_passed
 
     def validate_datasets(self) -> bool:
         """Validate dataset integrity."""
@@ -495,6 +531,11 @@ def main():
         action="store_true",
         help="Run focused integration contract unit tests",
     )
+    ap.add_argument(
+        "--integration-baseline",
+        action="store_true",
+        help="Run canonical integration baseline (validate-all, smoke, contract tests, targeted regression)",
+    )
     args = ap.parse_args()
 
     ci = CIOrchestrator()
@@ -526,6 +567,11 @@ def main():
 
     if args.integration_contract_tests:
         success = ci.run_integration_contract_tests()
+        ci._save_results()
+        sys.exit(0 if success else 1)
+
+    if args.integration_baseline:
+        success = ci.run_integration_baseline()
         ci._save_results()
         sys.exit(0 if success else 1)
 

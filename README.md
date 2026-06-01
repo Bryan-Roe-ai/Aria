@@ -219,6 +219,25 @@ function_app.py        Azure Functions entry point (all /api/* endpoints)
 
 ---
 
+## 🔗 Entire-Repo Integration Scope & Success Criteria
+
+Scope covered by integration baseline:
+- `apps/aria/`
+- `function_app.py`
+- `shared/`
+- `ai-projects/*`
+- `AI/`
+- `scripts/` orchestrators and integration tooling
+
+Success criteria:
+- One canonical local integration flow is runnable end-to-end.
+- Integration contracts pass (`integration_smoke` + contract tests + orchestrator validation).
+- `/api/ai/status` and `/api/ai/routes` keep expected provider and route contract shape.
+- Cross-surface API coverage remains present for chat, status, TTS, AGI stream, and quantum run routes.
+- Canonical PR merge policy remains centered on `merge-gate.yml`.
+
+---
+
 ## 🎭 Aria Character
 
 The Aria character stage runs at `http://localhost:8080` or the [GitHub Pages demo](https://bryan-roe.github.io/Aria).
@@ -363,6 +382,9 @@ Security: no dangerous imports, no filesystem or network access, no `eval` / `ex
 ## 🧪 Testing
 
 ```bash
+# Canonical local integration baseline (contracts first, then smoke + targeted regression)
+python scripts/ci_orchestrator.py --integration-baseline
+
 # Fast unit tests (~0.5 s, no external services)
 python scripts/test_runner.py --unit
 
@@ -377,6 +399,9 @@ bash ./scripts/integration_contract_gate.sh
 
 # Strict gate (requires local Functions host at :7071)
 bash ./scripts/integration_contract_gate.sh --strict-endpoints
+
+# Focused provider + AGI regression check
+python -m pytest ai-projects/chat-cli/src/test_chat_providers.py tests/test_agi_provider.py -q --tb=short
 
 # Direct pytest
 pytest -m "not slow and not azure" tests/
