@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-05-31T23:49:49Z",
-  "run_id": "20260531T234949Z",
+  "generated_at": "2026-06-01T22:37:54Z",
+  "run_id": "20260601T223754Z",
   "config_path": null,
   "config_paths": {
     "autotrain": "config/training/autotrain.yaml",
@@ -14,39 +14,39 @@
   "skipped": 0,
   "results": [
     {
-      "name": "evaluation_autorun",
-      "cmd": [
-        "/usr/local/bin/python",
-        "scripts/evaluation_autorun.py",
-        "--dry-run"
-      ],
-      "status": "succeeded",
-      "return_code": 0,
-      "duration_sec": 0.07,
-      "critical": true
-    },
-    {
-      "name": "autotrain",
-      "cmd": [
-        "/usr/local/bin/python",
-        "scripts/autotrain.py",
-        "--dry-run"
-      ],
-      "status": "succeeded",
-      "return_code": 0,
-      "duration_sec": 0.09,
-      "critical": true
-    },
-    {
       "name": "quantum_autorun",
       "cmd": [
-        "/usr/local/bin/python",
+        "/usr/bin/python",
         "scripts/quantum_autorun.py",
         "--dry-run"
       ],
       "status": "succeeded",
       "return_code": 0,
-      "duration_sec": 0.09,
+      "duration_sec": 0.06,
+      "critical": true
+    },
+    {
+      "name": "evaluation_autorun",
+      "cmd": [
+        "/usr/bin/python",
+        "scripts/evaluation_autorun.py",
+        "--dry-run"
+      ],
+      "status": "succeeded",
+      "return_code": 0,
+      "duration_sec": 0.06,
+      "critical": true
+    },
+    {
+      "name": "autotrain",
+      "cmd": [
+        "/usr/bin/python",
+        "scripts/autotrain.py",
+        "--dry-run"
+      ],
+      "status": "succeeded",
+      "return_code": 0,
+      "duration_sec": 0.08,
       "critical": true
     }
   ]
