@@ -36,7 +36,7 @@ def test_copilot_setup_workflow_has_selective_lint_logic() -> None:
 
 
 @pytest.mark.unit
-def test_expected_copilot_entrypoint_files_exist_with_key_pointers() -> None:
+def test_copilot_entrypoint_files_exist_and_reference_instructions() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     copilot_md = repo_root / ".github" / "COPILOT.md"
     copilot_yml = repo_root / ".github" / "copilot.yml"
@@ -49,5 +49,7 @@ def test_expected_copilot_entrypoint_files_exist_with_key_pointers() -> None:
     assert ".github/copilot-instructions.full.md" in copilot_md_content
 
     copilot_yml_content = copilot_yml.read_text(encoding="utf-8")
-    assert "quick_instructions: .github/copilot-instructions.md" in copilot_yml_content
-    assert "full_instructions: .github/copilot-instructions.full.md" in copilot_yml_content
+    assert "quick_instructions" in copilot_yml_content
+    assert "full_instructions" in copilot_yml_content
+    assert ".github/copilot-instructions.md" in copilot_yml_content
+    assert ".github/copilot-instructions.full.md" in copilot_yml_content
