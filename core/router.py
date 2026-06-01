@@ -28,6 +28,10 @@ class TaskRouter:
             return "tool"
         if any(token in normalized for token in ("goal", "reflect", "improve next")):
             return "goal_evolve"
+        if any(token in normalized for token in ("summarize", "compress", "condense")):
+            return "summarize"
+        if any(token in normalized for token in ("critique", "evaluate response", "assess quality")):
+            return "critique"
         return "llm"
 
     def route_text(self, text: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -90,6 +94,12 @@ class TaskRouter:
             base += 0.6
 
         if task.type in {"goal_evolve", "new_goal", "reflect"} and agent.name == "goal_evolution_agent":
+            base += 0.6
+
+        if task.type in {"summarize", "compress", "condense"} and agent.name == "summarizer_agent":
+            base += 0.6
+
+        if task.type in {"critique", "evaluate_response", "assess_quality"} and agent.name == "critique_agent":
             base += 0.6
 
         if task.priority > 0:

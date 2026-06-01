@@ -290,3 +290,169 @@ def test_runner_registers_knowledge_tools_and_self_assessment() -> None:
         Task(type="tool", payload={"tool": "knowledge_related", "args": {"entity": "goal_created"}})
     )
     assert related["tool"] == "knowledge_related"
+
+
+def test_summarizer_agent_summarizes_free_text() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = SummarizerAgent(memory)
+
+    result = agent.execute(
+        Task(type="summarize", payload={"text": "The system processed 10 goals and completed 8 tasks."})
+    )
+
+    assert result["agent"] == "summarizer_agent"
+    assert "summary" in result
+    assert isinstance(result["summary"], str)
+    assert result["summary"]
+    assert memory.last_of_type("summary_created") is not None
+
+
+def test_summarizer_agent_summarizes_memory_events() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    memory.write("goal_created", {"goal": "improve accuracy"})
+    memory.write("task_result", {"output": "done"})
+    agent = SummarizerAgent(memory)
+
+    result = agent.execute(Task(type="summarize", payload={}))
+
+    assert result["agent"] == "summarizer_agent"
+    assert isinstance(result["summary"], str)
+    assert result["summary"]
+
+
+def test_summarizer_agent_empty_memory_returns_default() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = SummarizerAgent(memory)
+
+    result = agent.execute(Task(type="summarize", payload={}))
+
+    assert result["summary"] == "No context to summarize."
+
+
+def test_summarizer_agent_can_handle_types() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    agent = SummarizerAgent(MemoryStore())
+    for t in ("summarize", "compress", "condense"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_critique_agent_evaluates_response() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = CritiqueAgent(memory)
+
+    result = agent.execute(
+        Task(
+            type="critique",
+            payload={"response": "The model achieves 95% accuracy on the test set with minimal overfitting."},
+        )
+    )
+
+    assert result["agent"] == "critique_agent"
+    assert "score" in result
+    assert 0.0 <= result["score"] <= 1.0
+    assert isinstance(result["issues"], list)
+    assert isinstance(result["suggestions"], list)
+    assert "passed" in result
+    assert isinstance(result["passed"], bool)
+    assert memory.last_of_type("critique_created") is not None
+
+
+def test_critique_agent_evaluates_plan() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = CritiqueAgent(memory)
+    plan = [{"type": "llm", "payload": {"prompt": "improve model"}}, {"type": "train", "payload": {}}]
+
+    result = agent.execute(Task(type="critique", payload={"plan": plan}))
+
+    assert result["agent"] == "critique_agent"
+    assert "score" in result
+
+
+def test_critique_agent_threshold_passed_flag() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    high_threshold_agent = CritiqueAgent(memory, threshold=0.99)
+
+    result = high_threshold_agent.execute(
+        Task(type="critique", payload={"response": "some content"})
+    )
+
+    # The simulated score is 0.75, which is below 0.99.
+    assert result["passed"] is False
+
+    low_threshold_agent = CritiqueAgent(MemoryStore(), threshold=0.0)
+    result2 = low_threshold_agent.execute(
+        Task(type="critique", payload={"response": "some content"})
+    )
+    assert result2["passed"] is True
+
+
+def test_critique_agent_can_handle_types() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    agent = CritiqueAgent(MemoryStore())
+    for t in ("critique", "evaluate_response", "assess_quality"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_router_classifies_summarize_and_critique_intents() -> None:
+    from core.registry import AgentRegistry
+    from core.router import TaskRouter
+
+    router = TaskRouter(AgentRegistry())
+    assert router.classify_intent("please summarize the recent events") == "summarize"
+    assert router.classify_intent("compress this context") == "summarize"
+    assert router.classify_intent("critique the following response") == "critique"
+    assert router.classify_intent("assess quality of this output") == "critique"
+
+
+def test_runner_registers_summarizer_and_critique_agents() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    assert runner.registry.get("summarizer_agent") is not None
+    assert runner.registry.get("critique_agent") is not None
+
+
+def test_runner_routes_summarize_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    runner.memory.write("goal_created", {"goal": "reduce latency"})
+
+    result = runner.router.route(
+        Task(type="summarize", payload={"text": "System ran 5 cycles with 3 successes."})
+    )
+
+    assert result["agent"] == "summarizer_agent"
+    assert "summary" in result["result"]
+
+
+def test_runner_routes_critique_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    result = runner.router.route(
+        Task(type="critique", payload={"response": "Model accuracy is 0.9."})
+    )
+
+    assert result["agent"] == "critique_agent"
+    assert "score" in result["result"]
+

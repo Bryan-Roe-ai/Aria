@@ -76,6 +76,17 @@ class LLMClient:
                 ]
             )
 
+        if "summarization engine" in system_prompt.lower():
+            excerpt = " ".join(prompt.split())[:200]
+            return json.dumps({"summary": f"Summary of: {excerpt}"})
+
+        if "critique engine" in system_prompt.lower():
+            return json.dumps({
+                "score": 0.75,
+                "issues": ["Minor verbosity detected"],
+                "suggestions": ["Consider trimming the response for conciseness"],
+            })
+
         return json.dumps(
             {
                 "analysis": f"Processed: {prompt}",

@@ -266,6 +266,30 @@ _AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
         ],
         "description": "Local LM Studio inference for general-purpose reasoning and Q&A",
     },
+    "summarizer-specialist": {
+        "domains": [],
+        "intents": ["explanation", "question"],
+        "provider": "agi",
+        "confidence_boost": 0.05,
+        "subtask_templates": [
+            "Identify the key points and themes in the content",
+            "Condense information, removing redundancy",
+            "Produce a concise 2-3 sentence digest",
+        ],
+        "description": "Summarizes conversation history and event logs into compact digests",
+    },
+    "critique-specialist": {
+        "domains": ["ai", "technical"],
+        "intents": ["explanation", "question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.08,
+        "subtask_templates": [
+            "Identify the evaluation criteria for the content",
+            "Score accuracy, completeness, and clarity",
+            "List concrete issues and improvement suggestions",
+        ],
+        "description": "Evaluates plans and responses against a quality rubric",
+    },
     "general": {
         "domains": [],
         "intents": [],
