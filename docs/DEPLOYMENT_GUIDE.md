@@ -54,10 +54,11 @@ Aria/
 
 GitHub Pages automatically deploys when changes are pushed:
 
-1. **Trigger**: Push to `main` or `copilot/enable-github-pages-for-repo` branch
-2. **Build**: GitHub Actions runs Jekyll build on `docs/` directory
-3. **Deploy**: Built site is published to GitHub Pages
-4. **URL**: https://bryan-roe.github.io/Aria
+1. **Trigger**: Push to `main` with changes in `docs/**`, `aria_web/**`, or `generated_sites/**`
+2. **Sync + Validate**: Generated site bundles are strict-validated and mirrored into `docs/generated/` (stale generated files are removed)
+3. **Build**: GitHub Actions runs Jekyll build on `docs/` directory
+4. **Deploy**: Built site is published to GitHub Pages
+5. **URL**: https://bryan-roe.github.io/Aria
 
 ### Deployment Workflow (.github/workflows/pages.yml)
 
@@ -66,7 +67,13 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main, copilot/enable-github-pages-for-repo ]
+    branches: [ main ]
+    paths:
+      - "docs/**"
+      - "aria_web/**"
+      - "generated_sites/**"
+      - "scripts/validate_site_bundles.py"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:

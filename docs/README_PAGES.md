@@ -73,10 +73,11 @@ For complete functionality with AI, quantum computing, and training:
 
 GitHub Pages automatically deploys when changes are pushed to the main branch:
 
-1. Changes pushed to `main` or `copilot/enable-github-pages-for-repo` branch
+1. Changes in `docs/**`, `aria_web/**`, or `generated_sites/**` are pushed to `main`
 2. GitHub Actions workflow (`.github/workflows/pages.yml`) runs
-3. Jekyll builds the site from the `docs/` directory
-4. Site is deployed to GitHub Pages
+3. Generated site bundles are validated and mirrored into `docs/generated/` (stale generated files are removed)
+4. Jekyll builds the site from the `docs/` directory
+5. Site is deployed to GitHub Pages
 
 ### Manual Deployment
 
