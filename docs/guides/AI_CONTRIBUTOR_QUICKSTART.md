@@ -15,6 +15,14 @@ pip install -r requirements-dev.txt
 
 ## Fast local AI checks
 
+### Canonical integration flow (recommended order)
+
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+python scripts/ci_orchestrator.py --integration-baseline
+```
+
 ### 1) Chat provider smoke check (no keys required)
 
 ```bash
@@ -63,9 +71,10 @@ python scripts/test_runner.py --unit
 
 ## Before opening a PR
 
-1. Run `python scripts/test_runner.py --unit`.
-2. If provider/chat behavior changed, run:
+1. Run `python scripts/ci_orchestrator.py --integration-baseline`.
+2. Run `python scripts/test_runner.py --unit`.
+3. If provider/chat behavior changed, run:
    ```bash
    python -m pytest ai-projects/chat-cli/src/test_chat_providers.py tests/test_agi_provider.py -q --tb=short
    ```
-3. Update `README.md` when adding/changing provider flags, environment variables, or onboarding commands.
+4. Update `README.md` when adding/changing provider flags, environment variables, or onboarding commands.

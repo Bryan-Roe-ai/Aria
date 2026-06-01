@@ -164,9 +164,7 @@ def test_probe_with_local_dev_adapter_uses_long_request_timeout(
 
 @pytest.mark.unit
 def test_local_dev_adapter_command_uses_target_url_port() -> None:
-    command = smoke_module._local_dev_adapter_command(
-        "http://localhost:7072/api/ai/status"
-    )
+    command = smoke_module._local_dev_adapter_command("http://localhost:7072/api/ai/status")
 
     assert command == [
         sys.executable,
@@ -178,9 +176,7 @@ def test_local_dev_adapter_command_uses_target_url_port() -> None:
 
 @pytest.mark.unit
 def test_local_dev_adapter_command_defaults_to_7071_without_explicit_port() -> None:
-    command = smoke_module._local_dev_adapter_command(
-        "http://localhost/api/ai/status"
-    )
+    command = smoke_module._local_dev_adapter_command("http://localhost/api/ai/status")
 
     assert command == [
         sys.executable,
@@ -188,3 +184,51 @@ def test_local_dev_adapter_command_defaults_to_7071_without_explicit_port() -> N
         "--port",
         "7071",
     ]
+
+
+@pytest.mark.unit
+def test_validate_ai_status_payload_requires_core_keys_and_endpoints() -> None:
+    ok, detail = smoke_module._validate_ai_status_payload(
+        {
+            "active_provider": "local",
+            "status": "ok",
+            "settings": {
+                "active_provider": "local",
+                "provider_chain": ["local"],
+            },
+            "endpoints": [
+                "/api/ai/status",
+                "/api/chat",
+                "/api/chat-web",
+                "/api/tts",
+                "/api/quantum/run",
+            ],
+        }
+    )
+
+    assert ok is True
+    assert "provider=local" in detail
+    assert "provider_chain_len=1" in detail
+
+
+@pytest.mark.unit
+def test_probe_ai_routes_endpoint_uses_functions_contract(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        smoke_module,
+        "_fetch_local_functions_json",
+        lambda *_args, **_kwargs: {
+            "count": 4,
+            "functions": [
+                {"route": "ai/status"},
+                {"route": "chat"},
+                {"route": "chat-web"},
+                {"route": "agi/stream"},
+            ],
+        },
+    )
+
+    result = smoke_module._probe_ai_routes_endpoint(strict=True)
+
+    assert result.status == "succeeded"
+    assert result.name == "functions_ai_routes_endpoint"
+    assert "routes=4" in result.detail
