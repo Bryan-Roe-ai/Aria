@@ -290,3 +290,576 @@ def test_runner_registers_knowledge_tools_and_self_assessment() -> None:
         Task(type="tool", payload={"tool": "knowledge_related", "args": {"entity": "goal_created"}})
     )
     assert related["tool"] == "knowledge_related"
+
+
+def test_summarizer_agent_summarizes_free_text() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = SummarizerAgent(memory)
+
+    result = agent.execute(
+        Task(type="summarize", payload={"text": "The system processed 10 goals and completed 8 tasks."})
+    )
+
+    assert result["agent"] == "summarizer_agent"
+    assert "summary" in result
+    assert isinstance(result["summary"], str)
+    assert result["summary"]
+    assert memory.last_of_type("summary_created") is not None
+
+
+def test_summarizer_agent_summarizes_memory_events() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    memory.write("goal_created", {"goal": "improve accuracy"})
+    memory.write("task_result", {"output": "done"})
+    agent = SummarizerAgent(memory)
+
+    result = agent.execute(Task(type="summarize", payload={}))
+
+    assert result["agent"] == "summarizer_agent"
+    assert isinstance(result["summary"], str)
+    assert result["summary"]
+
+
+def test_summarizer_agent_empty_memory_returns_default() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = SummarizerAgent(memory)
+
+    result = agent.execute(Task(type="summarize", payload={}))
+
+    assert result["summary"] == "No context to summarize."
+
+
+def test_summarizer_agent_can_handle_types() -> None:
+    from core.agents.summarizer_agent import SummarizerAgent
+    from core.memory.store import MemoryStore
+
+    agent = SummarizerAgent(MemoryStore())
+    for t in ("summarize", "compress", "condense"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_critique_agent_evaluates_response() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = CritiqueAgent(memory)
+
+    result = agent.execute(
+        Task(
+            type="critique",
+            payload={"response": "The model achieves 95% accuracy on the test set with minimal overfitting."},
+        )
+    )
+
+    assert result["agent"] == "critique_agent"
+    assert "score" in result
+    assert 0.0 <= result["score"] <= 1.0
+    assert isinstance(result["issues"], list)
+    assert isinstance(result["suggestions"], list)
+    assert "passed" in result
+    assert isinstance(result["passed"], bool)
+    assert memory.last_of_type("critique_created") is not None
+
+
+def test_critique_agent_evaluates_plan() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = CritiqueAgent(memory)
+    plan = [{"type": "llm", "payload": {"prompt": "improve model"}}, {"type": "train", "payload": {}}]
+
+    result = agent.execute(Task(type="critique", payload={"plan": plan}))
+
+    assert result["agent"] == "critique_agent"
+    assert "score" in result
+
+
+def test_critique_agent_threshold_passed_flag() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    high_threshold_agent = CritiqueAgent(memory, threshold=0.99)
+
+    result = high_threshold_agent.execute(
+        Task(type="critique", payload={"response": "some content"})
+    )
+
+    # The simulated score is 0.75, which is below 0.99.
+    assert result["passed"] is False
+
+    low_threshold_agent = CritiqueAgent(MemoryStore(), threshold=0.0)
+    result2 = low_threshold_agent.execute(
+        Task(type="critique", payload={"response": "some content"})
+    )
+    assert result2["passed"] is True
+
+
+def test_critique_agent_can_handle_types() -> None:
+    from core.agents.critique_agent import CritiqueAgent
+    from core.memory.store import MemoryStore
+
+    agent = CritiqueAgent(MemoryStore())
+    for t in ("critique", "evaluate_response", "assess_quality"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_router_classifies_summarize_and_critique_intents() -> None:
+    from core.registry import AgentRegistry
+    from core.router import TaskRouter
+
+    router = TaskRouter(AgentRegistry())
+    assert router.classify_intent("please summarize the recent events") == "summarize"
+    assert router.classify_intent("compress this context") == "summarize"
+    assert router.classify_intent("critique the following response") == "critique"
+    assert router.classify_intent("assess quality of this output") == "critique"
+
+
+def test_runner_registers_summarizer_and_critique_agents() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    assert runner.registry.get("summarizer_agent") is not None
+    assert runner.registry.get("critique_agent") is not None
+
+
+def test_runner_routes_summarize_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    runner.memory.write("goal_created", {"goal": "reduce latency"})
+
+    result = runner.router.route(
+        Task(type="summarize", payload={"text": "System ran 5 cycles with 3 successes."})
+    )
+
+    assert result["agent"] == "summarizer_agent"
+    assert "summary" in result["result"]
+
+
+def test_runner_routes_critique_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    result = runner.router.route(
+        Task(type="critique", payload={"response": "Model accuracy is 0.9."})
+    )
+
+    assert result["agent"] == "critique_agent"
+    assert "score" in result["result"]
+
+
+# ---------------------------------------------------------------------------
+# ReasoningAgent tests
+# ---------------------------------------------------------------------------
+
+def test_reasoning_agent_free_text() -> None:
+    from core.agents.reasoning_agent import ReasoningAgent
+    from core.memory.store import MemoryStore
+
+    agent = ReasoningAgent(MemoryStore())
+    task = Task(type="reason", payload={"question": "Why is the sky blue?"})
+    result = agent.execute(task)
+
+    assert result["agent"] == "reasoning_agent"
+    assert isinstance(result["steps"], list)
+    assert len(result["steps"]) >= 1
+    assert isinstance(result["conclusion"], str) and result["conclusion"]
+    assert 0.0 <= result["confidence"] <= 1.0
+
+
+def test_reasoning_agent_empty_question_fallback() -> None:
+    from core.agents.reasoning_agent import ReasoningAgent
+    from core.memory.store import MemoryStore
+
+    agent = ReasoningAgent(MemoryStore())
+    result = agent.execute(Task(type="reason", payload={}))
+
+    assert result["agent"] == "reasoning_agent"
+    assert result["steps"] == []
+    assert "No question provided" in result["conclusion"]
+    assert result["confidence"] == 0.0
+
+
+def test_reasoning_agent_alternate_payload_keys() -> None:
+    from core.agents.reasoning_agent import ReasoningAgent
+    from core.memory.store import MemoryStore
+
+    agent = ReasoningAgent(MemoryStore())
+    result = agent.execute(Task(type="explain", payload={"prompt": "Explain gradient descent."}))
+
+    assert result["agent"] == "reasoning_agent"
+    assert isinstance(result["steps"], list)
+    assert isinstance(result["conclusion"], str)
+
+
+def test_reasoning_agent_can_handle_types() -> None:
+    from core.agents.reasoning_agent import ReasoningAgent
+    from core.memory.store import MemoryStore
+
+    agent = ReasoningAgent(MemoryStore())
+    for t in ("reason", "explain", "chain_of_thought"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_reasoning_agent_writes_to_memory() -> None:
+    from core.agents.reasoning_agent import ReasoningAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = ReasoningAgent(memory)
+    agent.execute(Task(type="reason", payload={"question": "What is AGI?"}))
+
+    events = memory.last(5)
+    types_seen = [e.get("type") for e in events]
+    assert "reasoning_completed" in types_seen
+
+
+# ---------------------------------------------------------------------------
+# DebateAgent tests
+# ---------------------------------------------------------------------------
+
+def test_debate_agent_basic_challenge() -> None:
+    from core.agents.debate_agent import DebateAgent
+    from core.memory.store import MemoryStore
+
+    agent = DebateAgent(MemoryStore())
+    result = agent.execute(
+        Task(type="debate", payload={"claim": "AGI will be achieved within 10 years."})
+    )
+
+    assert result["agent"] == "debate_agent"
+    assert isinstance(result["counter_arguments"], list)
+    assert len(result["counter_arguments"]) >= 1
+    assert isinstance(result["weaknesses"], list)
+    assert isinstance(result["verdict"], str) and result["verdict"]
+
+
+def test_debate_agent_with_steelman() -> None:
+    from core.agents.debate_agent import DebateAgent
+    from core.memory.store import MemoryStore
+
+    agent = DebateAgent(MemoryStore())
+    result = agent.execute(
+        Task(type="debate", payload={"claim": "Open-source models are safer.", "steelman": True})
+    )
+
+    assert isinstance(result["steelman"], str) and result["steelman"]
+
+
+def test_debate_agent_without_steelman() -> None:
+    from core.agents.debate_agent import DebateAgent
+    from core.memory.store import MemoryStore
+
+    agent = DebateAgent(MemoryStore())
+    result = agent.execute(
+        Task(type="stress_test", payload={"text": "Caching always improves performance.", "steelman": False})
+    )
+
+    assert result["agent"] == "debate_agent"
+    assert result["steelman"] == ""
+
+
+def test_debate_agent_empty_claim_fallback() -> None:
+    from core.agents.debate_agent import DebateAgent
+    from core.memory.store import MemoryStore
+
+    agent = DebateAgent(MemoryStore())
+    result = agent.execute(Task(type="debate", payload={}))
+
+    assert result["agent"] == "debate_agent"
+    assert result["counter_arguments"] == []
+    assert "No claim provided" in result["verdict"]
+
+
+def test_debate_agent_can_handle_types() -> None:
+    from core.agents.debate_agent import DebateAgent
+    from core.memory.store import MemoryStore
+
+    agent = DebateAgent(MemoryStore())
+    for t in ("debate", "challenge", "stress_test"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="critique", payload={}))
+
+
+def test_debate_agent_writes_to_memory() -> None:
+    from core.agents.debate_agent import DebateAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = DebateAgent(memory)
+    agent.execute(Task(type="challenge", payload={"proposal": "All data should be public."}))
+
+    events = memory.last(5)
+    types_seen = [e.get("type") for e in events]
+    assert "debate_completed" in types_seen
+
+
+# ---------------------------------------------------------------------------
+# Router intent classification for reasoning and debate
+# ---------------------------------------------------------------------------
+
+def test_router_classifies_reason_and_debate_intents() -> None:
+    from core.registry import AgentRegistry
+    from core.router import TaskRouter
+
+    router = TaskRouter(AgentRegistry())
+    assert router.classify_intent("reason through this problem") == "reason"
+    assert router.classify_intent("explain how neural networks work") == "reason"
+    assert router.classify_intent("chain of thought for this question") == "reason"
+    assert router.classify_intent("debate whether AGI is near") == "debate"
+    assert router.classify_intent("challenge this proposal") == "debate"
+    assert router.classify_intent("stress test this design") == "debate"
+
+
+# ---------------------------------------------------------------------------
+# Runner integration — registration and routing
+# ---------------------------------------------------------------------------
+
+def test_runner_registers_reasoning_and_debate_agents() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    assert runner.registry.get("reasoning_agent") is not None
+    assert runner.registry.get("debate_agent") is not None
+
+
+def test_runner_routes_reason_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    result = runner.router.route(
+        Task(type="reason", payload={"question": "Why does gradient descent converge?"})
+    )
+
+    assert result["agent"] == "reasoning_agent"
+    assert "steps" in result["result"]
+    assert "conclusion" in result["result"]
+
+
+def test_runner_routes_debate_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    result = runner.router.route(
+        Task(type="debate", payload={"claim": "Transformers will replace all classical NLP."})
+    )
+
+    assert result["agent"] == "debate_agent"
+    assert "counter_arguments" in result["result"]
+    assert "verdict" in result["result"]
+
+# ---------------------------------------------------------------------------
+# HypothesisAgent tests
+# ---------------------------------------------------------------------------
+
+def test_hypothesis_agent_from_observation() -> None:
+    from core.agents.hypothesis_agent import HypothesisAgent
+    from core.memory.store import MemoryStore
+
+    agent = HypothesisAgent(MemoryStore())
+    result = agent.execute(
+        Task(
+            type="hypothesize",
+            payload={"observation": "Cycles with >5 steps complete faster than those with <3 steps."},
+        )
+    )
+
+    assert result["agent"] == "hypothesis_agent"
+    assert isinstance(result["hypotheses"], list)
+    assert len(result["hypotheses"]) >= 1
+    h = result["hypotheses"][0]
+    assert "statement" in h and isinstance(h["statement"], str)
+    assert "rationale" in h and isinstance(h["rationale"], str)
+    assert "testable" in h and isinstance(h["testable"], bool)
+    assert isinstance(result["summary"], str) and result["summary"]
+
+
+def test_hypothesis_agent_from_memory_events() -> None:
+    from core.agents.hypothesis_agent import HypothesisAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    memory.write("cycle_completed", {"goal": "reduce latency", "executed_steps": 4, "skipped_steps": 1})
+    memory.write("cycle_completed", {"goal": "improve accuracy", "executed_steps": 3, "skipped_steps": 0})
+
+    agent = HypothesisAgent(memory)
+    result = agent.execute(Task(type="hypothesize", payload={}))
+
+    assert result["agent"] == "hypothesis_agent"
+    assert isinstance(result["hypotheses"], list)
+
+
+def test_hypothesis_agent_empty_memory_fallback() -> None:
+    from core.agents.hypothesis_agent import HypothesisAgent
+    from core.memory.store import MemoryStore
+
+    agent = HypothesisAgent(MemoryStore())
+    result = agent.execute(Task(type="infer", payload={}))
+
+    assert result["agent"] == "hypothesis_agent"
+    assert result["hypotheses"] == []
+    assert "No observations available" in result["summary"]
+
+
+def test_hypothesis_agent_can_handle_types() -> None:
+    from core.agents.hypothesis_agent import HypothesisAgent
+    from core.memory.store import MemoryStore
+
+    agent = HypothesisAgent(MemoryStore())
+    for t in ("hypothesize", "infer", "generate_hypothesis"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_hypothesis_agent_writes_to_memory() -> None:
+    from core.agents.hypothesis_agent import HypothesisAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    agent = HypothesisAgent(memory)
+    agent.execute(
+        Task(type="hypothesize", payload={"observation": "Short cycles skip fewer steps."})
+    )
+
+    events = memory.last(5)
+    assert any(e.get("type") == "hypothesis_generated" for e in events)
+
+
+# ---------------------------------------------------------------------------
+# ReflectionAgent tests
+# ---------------------------------------------------------------------------
+
+def test_reflection_agent_from_cycle_history() -> None:
+    from core.agents.reflection_agent import ReflectionAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    for i in range(3):
+        memory.write(
+            "cycle_completed",
+            {
+                "goal": f"goal_{i}",
+                "executed_steps": 4,
+                "skipped_steps": 1,
+                "self_assessment": {"score": 0.7 + i * 0.05},
+            },
+        )
+
+    agent = ReflectionAgent(memory)
+    result = agent.execute(Task(type="retrospect", payload={}))
+
+    assert result["agent"] == "reflection_agent"
+    assert isinstance(result["lessons"], list) and len(result["lessons"]) >= 1
+    assert isinstance(result["patterns"], list)
+    assert isinstance(result["adjustments"], list)
+    assert isinstance(result["overall"], str) and result["overall"]
+
+
+def test_reflection_agent_falls_back_to_general_events() -> None:
+    from core.agents.reflection_agent import ReflectionAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    memory.write("goal_created", {"goal": "improve throughput"})
+    memory.write("plan_created", {"plan": []})
+
+    agent = ReflectionAgent(memory)
+    result = agent.execute(Task(type="meta_learn", payload={}))
+
+    assert result["agent"] == "reflection_agent"
+    assert isinstance(result["lessons"], list)
+
+
+def test_reflection_agent_empty_memory_fallback() -> None:
+    from core.agents.reflection_agent import ReflectionAgent
+    from core.memory.store import MemoryStore
+
+    agent = ReflectionAgent(MemoryStore())
+    result = agent.execute(Task(type="reflect", payload={}))
+
+    assert result["agent"] == "reflection_agent"
+    assert result["lessons"] == []
+    assert "No cycle history available" in result["overall"]
+
+
+def test_reflection_agent_can_handle_types() -> None:
+    from core.agents.reflection_agent import ReflectionAgent
+    from core.memory.store import MemoryStore
+
+    agent = ReflectionAgent(MemoryStore())
+    for t in ("reflect", "retrospect", "meta_learn"):
+        assert agent.can_handle(Task(type=t, payload={}))
+    assert not agent.can_handle(Task(type="plan", payload={}))
+
+
+def test_reflection_agent_writes_to_memory() -> None:
+    from core.agents.reflection_agent import ReflectionAgent
+    from core.memory.store import MemoryStore
+
+    memory = MemoryStore()
+    memory.write("cycle_completed", {"goal": "reduce errors", "executed_steps": 5, "skipped_steps": 0})
+    agent = ReflectionAgent(memory)
+    agent.execute(Task(type="retrospect", payload={}))
+
+    events = memory.last(10)
+    assert any(e.get("type") == "reflection_completed" for e in events)
+
+
+# ---------------------------------------------------------------------------
+# Router intent classification for hypothesis and reflection
+# ---------------------------------------------------------------------------
+
+def test_router_classifies_hypothesis_and_retrospect_intents() -> None:
+    from core.registry import AgentRegistry
+    from core.router import TaskRouter
+
+    router = TaskRouter(AgentRegistry())
+    assert router.classify_intent("hypothesize why cycles are slow") == "hypothesize"
+    assert router.classify_intent("generate hypothesis from patterns") == "hypothesize"
+    assert router.classify_intent("infer pattern from data") == "hypothesize"
+    assert router.classify_intent("retrospect on last cycle") == "retrospect"
+    assert router.classify_intent("meta learn from history") == "retrospect"
+    assert router.classify_intent("meta-learn from past cycles") == "retrospect"
+
+
+# ---------------------------------------------------------------------------
+# Runner integration — registration and routing
+# ---------------------------------------------------------------------------
+
+def test_runner_registers_hypothesis_and_reflection_agents() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    assert runner.registry.get("hypothesis_agent") is not None
+    assert runner.registry.get("reflection_agent") is not None
+
+
+def test_runner_routes_hypothesize_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    runner.memory.write("cycle_completed", {"goal": "reduce latency", "executed_steps": 4, "skipped_steps": 1})
+
+    result = runner.router.route(
+        Task(type="hypothesize", payload={"observation": "Latency spikes after step 3."})
+    )
+
+    assert result["agent"] == "hypothesis_agent"
+    assert "hypotheses" in result["result"]
+    assert "summary" in result["result"]
+
+
+def test_runner_routes_retrospect_task() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    runner.memory.write(
+        "cycle_completed",
+        {"goal": "improve accuracy", "executed_steps": 6, "skipped_steps": 0},
+    )
+
+    result = runner.router.route(Task(type="retrospect", payload={}))
+
+    assert result["agent"] == "reflection_agent"
+    assert "lessons" in result["result"]
+    assert "overall" in result["result"]

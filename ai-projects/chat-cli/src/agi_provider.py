@@ -266,6 +266,82 @@ _AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
         ],
         "description": "Local LM Studio inference for general-purpose reasoning and Q&A",
     },
+    "summarizer-specialist": {
+        "domains": [],
+        "intents": ["summarize", "explanation", "question"],
+        "provider": "agi",
+        "confidence_boost": 0.05,
+        "subtask_templates": [
+            "Identify the key points and themes in the content",
+            "Condense information, removing redundancy",
+            "Produce a concise 2-3 sentence digest",
+        ],
+        "description": "Summarizes conversation history and event logs into compact digests",
+    },
+    "critique-specialist": {
+        "domains": ["ai", "technical"],
+        "intents": ["critique", "explanation", "question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.08,
+        "subtask_templates": [
+            "Identify the evaluation criteria for the content",
+            "Score accuracy, completeness, and clarity",
+            "List concrete issues and improvement suggestions",
+        ],
+        "description": "Evaluates plans and responses against a quality rubric",
+    },
+    "reasoning-chain-specialist": {
+        "domains": ["ai", "technical"],
+        "intents": ["explanation", "question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.12,
+        "subtask_templates": [
+            "Identify the core question and key concepts",
+            "Break the problem into explicit reasoning steps",
+            "Evaluate each step and surface assumptions",
+            "Synthesise a confident conclusion from the chain",
+        ],
+        "description": "Multi-step chain-of-thought reasoning for complex questions",
+    },
+    "debate-specialist": {
+        "domains": ["ai", "technical"],
+        "intents": ["debate", "question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.1,
+        "subtask_templates": [
+            "Identify the core claim or proposal",
+            "Generate devil's advocate counter-arguments",
+            "Surface structural weaknesses and edge cases",
+            "Provide a steelmanned defence and overall verdict",
+        ],
+        "description": "Stress-tests ideas with counter-arguments and devil's advocate analysis",
+    },
+    "hypothesis-specialist": {
+        "domains": ["ai", "technical"],
+        "intents": ["hypothesize", "question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.09,
+        "subtask_templates": [
+            "Identify observable patterns in the provided data or events",
+            "Formulate 2–4 falsifiable hypotheses from those patterns",
+            "Assign a rationale and testability flag to each hypothesis",
+            "Summarise the dominant pattern in one sentence",
+        ],
+        "description": "Generates testable hypotheses from memory patterns and observations",
+    },
+    "reflection-specialist": {
+        "domains": ["ai"],
+        "intents": ["reflect", "question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.11,
+        "subtask_templates": [
+            "Review recent autonomous execution cycle outcomes",
+            "Extract key lessons and recurring failure patterns",
+            "Recommend concrete behavioural adjustments",
+            "Produce an executive summary of system learning",
+        ],
+        "description": "Produces meta-learning insights and retrospective analysis from cycle history",
+    },
     "general": {
         "domains": [],
         "intents": [],
@@ -723,6 +799,31 @@ class AGIProvider(BaseChatProvider):
             ]
         ):
             intent = "reasoning"
+        elif any(
+            p in query_lower
+            for p in ["summarize", "condense", "digest", "tl;dr", "brief summary", "compress this"]
+        ):
+            intent = "summarize"
+        elif any(
+            p in query_lower
+            for p in ["debate", "counter-argument", "steelman", "argue against", "challenge this", "devil's advocate"]
+        ):
+            intent = "debate"
+        elif any(
+            p in query_lower
+            for p in ["critique", "evaluate this", "assess quality", "score this", "review this", "assess this"]
+        ):
+            intent = "critique"
+        elif any(
+            p in query_lower
+            for p in ["hypothesis", "hypothesize", "generate hypothes", "infer from patterns", "what patterns"]
+        ):
+            intent = "hypothesize"
+        elif any(
+            p in query_lower
+            for p in ["reflect on", "retrospect", "lessons learned", "what did we learn", "meta-learn"]
+        ):
+            intent = "reflect"
         elif any(
             p in query_lower
             for p in ["what is", "explain", "how does", "define", "describe"]
@@ -1215,6 +1316,48 @@ class AGIProvider(BaseChatProvider):
                 "Think step-by-step. Show your intermediate reasoning before the final answer.",
                 "Use structured formats (numbered lists, tables) for multi-step logic.",
             ]
+        elif selected_agent == "summarizer-specialist":
+            lines += [
+                "You are acting as the Summarizer Specialist.",
+                "Produce a concise, accurate summary. Omit redundant detail.",
+                "Lead with the most important takeaway, then add supporting points.",
+                "Target 2–4 sentences unless more detail is explicitly requested.",
+            ]
+        elif selected_agent == "critique-specialist":
+            lines += [
+                "You are acting as the Critique Specialist.",
+                "Evaluate the content against accuracy, completeness, and clarity.",
+                "List concrete issues as bullet points, then provide improvement suggestions.",
+                "Assign an overall quality score (0–1) and justify it briefly.",
+            ]
+        elif selected_agent == "reasoning-chain-specialist":
+            lines += [
+                "You are acting as the Reasoning Chain Specialist.",
+                "Break the problem into explicit, numbered reasoning steps.",
+                "State your assumptions clearly before each step.",
+                "Conclude with a confident answer synthesised from the chain.",
+            ]
+        elif selected_agent == "debate-specialist":
+            lines += [
+                "You are acting as the Debate Specialist.",
+                "Generate strong counter-arguments and identify structural weaknesses.",
+                "Include a steelmanned defence of the strongest opposing position.",
+                "Close with a balanced verdict that acknowledges both sides.",
+            ]
+        elif selected_agent == "hypothesis-specialist":
+            lines += [
+                "You are acting as the Hypothesis Specialist.",
+                "Identify observable patterns and formulate 2–4 falsifiable hypotheses.",
+                "Each hypothesis must include a rationale and a testability assessment.",
+                "Summarise the dominant pattern in one sentence at the end.",
+            ]
+        elif selected_agent == "reflection-specialist":
+            lines += [
+                "You are acting as the Reflection Specialist.",
+                "Analyse past outcomes to extract key lessons and recurring patterns.",
+                "Recommend concrete, actionable behavioural adjustments.",
+                "Close with a one-sentence executive summary of the overall insight.",
+            ]
         else:
             # General / fallback — keep existing aria domain guidance
             if domain == "aria":
@@ -1299,6 +1442,12 @@ class AGIProvider(BaseChatProvider):
                 "ai-specialist": 0.5,
                 "aria-character": 0.8,
                 "reasoning-specialist": 0.4,
+                "summarizer-specialist": 0.3,
+                "critique-specialist": 0.4,
+                "reasoning-chain-specialist": 0.3,
+                "debate-specialist": 0.6,
+                "hypothesis-specialist": 0.5,
+                "reflection-specialist": 0.4,
             }
             original_temp = getattr(provider, "temperature", None)
             if selected_agent in _AGENT_TEMPERATURES:
