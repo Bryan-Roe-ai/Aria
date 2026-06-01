@@ -85,6 +85,25 @@ Returns list of all objects on stage.
 }
 ```
 
+### GET `/api/aria/health`
+
+Lightweight health/status snapshot for monitoring and uptime probes.
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "version": "1.0.0",
+  "uptime_seconds": 12.34,
+  "timestamp": "2026-06-01T18:55:15+00:00",
+  "llm_available": true,
+  "model_loaded": false,
+  "counts": { "objects": 5, "action_types": 8, "valid_gestures": 6 },
+  "aria": { "position": { "x": 15, "y": 20 }, "expression": "neutral", "held_object": null }
+}
+```
+
 ### POST `/api/aria/object`
 
 Add, update, or remove an object.

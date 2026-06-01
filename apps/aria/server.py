@@ -15,6 +15,7 @@ import random
 import re
 import socket
 import sys
+import time
 import urllib.request
 from datetime import timezone
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -23,6 +24,10 @@ from typing import Optional
 
 # Pre-compile regex patterns for performance (avoid recompiling in loops)
 _RE_JSON_BLOCK = re.compile(r"\[.*\]", re.DOTALL)
+
+# Server version and process start marker used by the /api/aria/health endpoint.
+SERVER_VERSION = "1.0.0"
+_SERVER_START = time.monotonic()
 
 
 def _sanitize_for_log(value: str) -> str:
@@ -290,6 +295,53 @@ ARIA_ACTIONS = {
         "example": {"action": "wait", "duration": 2.0},
     },
 }
+
+
+def build_health_payload(
+    stage: Optional[dict] = None,
+    *,
+    llm_available: Optional[bool] = None,
+    model_loaded: Optional[bool] = None,
+    start_time: Optional[float] = None,
+) -> dict:
+    """Build a machine-readable health/status snapshot for the Aria server.
+
+    Reports server version, uptime, provider/model availability, stage entity
+    counts, and Aria's current pose. Arguments default to live module state but
+    can be injected for deterministic testing.
+
+    Returns:
+        A JSON-serializable dict with keys ``status``, ``version``,
+        ``uptime_seconds``, ``timestamp``, ``llm_available``, ``model_loaded``,
+        ``counts`` (objects/action_types/valid_gestures), and ``aria`` pose.
+    """
+    stage = stage if stage is not None else stage_state
+    llm = LLM_AVAILABLE if llm_available is None else llm_available
+    model_flag = (MODEL is not None) if model_loaded is None else model_loaded
+    start = _SERVER_START if start_time is None else start_time
+
+    uptime = max(0.0, time.monotonic() - start)
+    aria = stage.get("aria", {}) if isinstance(stage, dict) else {}
+    objects = stage.get("objects", {}) if isinstance(stage, dict) else {}
+
+    return {
+        "status": "ok",
+        "version": SERVER_VERSION,
+        "uptime_seconds": round(uptime, 3),
+        "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
+        "llm_available": bool(llm),
+        "model_loaded": bool(model_flag),
+        "counts": {
+            "objects": len(objects) if isinstance(objects, dict) else 0,
+            "action_types": len(ARIA_ACTIONS),
+            "valid_gestures": len(VALID_GESTURES),
+        },
+        "aria": {
+            "position": aria.get("position", {}) if isinstance(aria, dict) else {},
+            "expression": aria.get("expression") if isinstance(aria, dict) else None,
+            "held_object": aria.get("held_object") if isinstance(aria, dict) else None,
+        },
+    }
 
 
 def validate_action(action: dict) -> tuple[bool, str]:
@@ -1932,6 +1984,13 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                 payload = {
                     "error": f"presets file unavailable: {exc}", "presets": []}
             self.wfile.write(json.dumps(payload).encode("utf-8"))
+            return
+        if self.path == "/api/aria/health":
+            # Lightweight health/status snapshot for monitoring and uptime probes.
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(build_health_payload()).encode("utf-8"))
             return
         if self.path == "/":
             self.path = "/index.html"
