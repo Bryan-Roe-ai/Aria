@@ -316,6 +316,32 @@ _AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
         ],
         "description": "Stress-tests ideas with counter-arguments and devil's advocate analysis",
     },
+    "hypothesis-specialist": {
+        "domains": ["ai", "technical"],
+        "intents": ["question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.09,
+        "subtask_templates": [
+            "Identify observable patterns in the provided data or events",
+            "Formulate 2–4 falsifiable hypotheses from those patterns",
+            "Assign a rationale and testability flag to each hypothesis",
+            "Summarise the dominant pattern in one sentence",
+        ],
+        "description": "Generates testable hypotheses from memory patterns and observations",
+    },
+    "reflection-specialist": {
+        "domains": ["ai"],
+        "intents": ["question", "reasoning"],
+        "provider": "agi",
+        "confidence_boost": 0.11,
+        "subtask_templates": [
+            "Review recent autonomous execution cycle outcomes",
+            "Extract key lessons and recurring failure patterns",
+            "Recommend concrete behavioural adjustments",
+            "Produce an executive summary of system learning",
+        ],
+        "description": "Produces meta-learning insights and retrospective analysis from cycle history",
+    },
     "general": {
         "domains": [],
         "intents": [],

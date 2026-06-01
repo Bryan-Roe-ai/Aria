@@ -114,6 +114,41 @@ class LLMClient:
                 "verdict": "The claim has merit but requires stronger evidence and broader scope.",
             })
 
+        if "hypothesis generation engine" in system_prompt.lower():
+            excerpt = " ".join(prompt.split())[:80]
+            return json.dumps({
+                "hypotheses": [
+                    {
+                        "statement": f"Increasing cycle frequency improves goal achievement given: {excerpt}",
+                        "rationale": "More cycles allow faster feedback and course correction.",
+                        "testable": True,
+                    },
+                    {
+                        "statement": "Skipped steps correlate with inadequate goal specificity.",
+                        "rationale": "Vague goals produce incomplete plans, leading to skips.",
+                        "testable": True,
+                    },
+                ],
+                "summary": "System patterns suggest optimisation opportunities in cycle frequency and goal clarity.",
+            })
+
+        if "meta-learning reflection engine" in system_prompt.lower():
+            return json.dumps({
+                "lessons": [
+                    "Smaller, focused goals lead to higher execution rates.",
+                    "Self-assessment scores improve after targeted retraining cycles.",
+                ],
+                "patterns": [
+                    "Skipped steps tend to cluster around tool-type tasks.",
+                    "Goal quality degrades when memory context exceeds 20 events.",
+                ],
+                "adjustments": [
+                    "Decompose goals into at most 3 sub-tasks per cycle.",
+                    "Trigger summarization when memory exceeds 50 events.",
+                ],
+                "overall": "The system is converging but benefits from tighter goal scoping and memory compression.",
+            })
+
         return json.dumps(
             {
                 "analysis": f"Processed: {prompt}",

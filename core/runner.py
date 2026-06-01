@@ -16,6 +16,8 @@ from core.agents.summarizer_agent import SummarizerAgent
 from core.agents.critique_agent import CritiqueAgent
 from core.agents.reasoning_agent import ReasoningAgent
 from core.agents.debate_agent import DebateAgent
+from core.agents.hypothesis_agent import HypothesisAgent
+from core.agents.reflection_agent import ReflectionAgent
 from core.agents.tool_agent import ToolAgent
 from core.agents.training_agent import TrainingAgent
 from core.bus import AgentBus
@@ -52,6 +54,8 @@ class AriaRunner:
         critique = CritiqueAgent(self.memory)
         reasoning = ReasoningAgent(self.memory)
         debate = DebateAgent(self.memory)
+        hypothesis = HypothesisAgent(self.memory)
+        reflection = ReflectionAgent(self.memory)
 
         tool.registry.register("inspect_context", self._inspect_context)
         tool.registry.register("recent_events", self._recent_events)
@@ -69,6 +73,8 @@ class AriaRunner:
         self.registry.register(critique)
         self.registry.register(reasoning)
         self.registry.register(debate)
+        self.registry.register(hypothesis)
+        self.registry.register(reflection)
 
     def _inspect_context(self, goal: str = "") -> Dict[str, Any]:
         return {"goal": goal, "event_counts": self.memory.count_by_type(), "recent_events": self.memory.last(5)}

@@ -36,6 +36,10 @@ class TaskRouter:
             return "reason"
         if any(token in normalized for token in ("debate", "challenge", "stress test", "counter")):
             return "debate"
+        if any(token in normalized for token in ("hypothesize", "generate hypothesis", "infer pattern")):
+            return "hypothesize"
+        if any(token in normalized for token in ("retrospect", "meta learn", "meta-learn")):
+            return "retrospect"
         return "llm"
 
     def route_text(self, text: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -111,6 +115,19 @@ class TaskRouter:
 
         if task.type in {"debate", "challenge", "stress_test"} and agent.name == "debate_agent":
             base += 0.6
+
+        if task.type in {"hypothesize", "infer", "generate_hypothesis"} and agent.name == "hypothesis_agent":
+            base += 0.6
+
+        if task.type in {"retrospect", "meta_learn"} and agent.name == "reflection_agent":
+            base += 0.6
+
+        # Boost reflection_agent over goal_evolution_agent for the reflect task type.
+        if task.type == "reflect" and agent.name == "reflection_agent":
+            base += 0.55
+
+        if task.type == "reflect" and agent.name == "goal_evolution_agent":
+            base += 0.3
 
         if task.priority > 0:
             base += min(task.priority * 0.05, 0.25)
