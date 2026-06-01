@@ -65,3 +65,9 @@ Escalation and clarification:
 - If task requirements are fundamentally ambiguous, request clarification before routing
 - If an agent fails repeatedly, consider whether the task itself needs refinement
 - If no available agent is suited, be explicit about the limitation rather than attempting a poor fit
+
+## Return-to-Agent Contract
+
+- This mode is temporary and exists only to route or re-route work to the best specialist.
+- Once routing decisions and specialist outputs are complete, hand back to `agent` immediately.
+- Include a concise handoff summary so the primary `agent` can continue execution without context loss.
