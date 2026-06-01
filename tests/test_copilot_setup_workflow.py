@@ -25,7 +25,10 @@ def test_copilot_setup_workflow_lints_changed_files_only() -> None:
 
     assert "fetch-depth: 0" in content
     assert "id: targets" in content
-    assert 'git diff --name-only --diff-filter=ACMR "$base_sha" "$head_sha" > "$diff_file"' in content
+    assert "NULL_SHA=" in content
+    assert "git diff --name-only" in content
+    assert "--diff-filter=ACMR -z" in content
+    assert "load_changed_targets() {" in content
     assert 'load_changed_targets "${PR_BASE_SHA}" "${PR_HEAD_SHA}" || load_default_targets' in content
     assert 'load_changed_targets "${PUSH_BEFORE_SHA}" "${HEAD_SHA}" || load_default_targets' in content
     assert 'YAML_LIST_FILE="${{ steps.targets.outputs.yaml_list_file }}"' in content
