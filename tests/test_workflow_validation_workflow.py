@@ -30,10 +30,7 @@ def test_workflow_validation_uses_reusable_python_setup_without_duplicate_pip_ca
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize(
-    "workflow_name",
-    ("ruleset-json-validation.yml", "default-github-automation.yml"),
-)
+@pytest.mark.parametrize("workflow_name", tuple(EXPECTED_SINGLE_JOB_BY_WORKFLOW))
 def test_workflows_use_reusable_python_setup_without_installing_repo_requirements(workflow_name: str) -> None:
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / workflow_name
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
@@ -46,11 +43,12 @@ def test_workflows_use_reusable_python_setup_without_installing_repo_requirement
 
 
 @pytest.mark.unit
-def test_default_github_automation_workflow_hardens_runner_and_uses_bash_shell() -> None:
-    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "default-github-automation.yml"
+@pytest.mark.parametrize("workflow_name", tuple(EXPECTED_SINGLE_JOB_BY_WORKFLOW))
+def test_workflows_harden_runner_and_use_bash_shell(workflow_name: str) -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / workflow_name
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
-    steps = workflow["jobs"]["baseline"]["steps"]
+    steps = workflow["jobs"][EXPECTED_SINGLE_JOB_BY_WORKFLOW[workflow_name]]["steps"]
     assert workflow["defaults"]["run"]["shell"] == "bash"
     assert steps[0]["name"] == "Harden runner"
     assert steps[0]["uses"] == EXPECTED_HARDEN_RUNNER_ACTION
