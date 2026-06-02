@@ -11,8 +11,6 @@ import importlib.util
 import subprocess
 from pathlib import Path
 
-import pytest
-
 
 def _load_module():
     script_path = Path(__file__).parent.parent / "run_continuous_automation.py"

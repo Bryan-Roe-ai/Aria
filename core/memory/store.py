@@ -40,9 +40,15 @@ class MemoryStore:
     - db_path: Optional SQLite database file path for persistent storage.
     """
 
-    def __init__(self, max_events: Optional[int] = None, db_path: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        max_events: Optional[int] = None,
+        db_path: Optional[str] = None,
+    ) -> None:
         self._lock = threading.RLock()
-        self._events: deque[Event] = deque(maxlen=max_events) if max_events else deque()
+        self._events: deque[Event] = (
+            deque(maxlen=max_events) if max_events else deque()
+        )
         self._backend = None
         if db_path:
             from core.memory.sqlite_backend import SQLiteMemoryBackend
@@ -51,12 +57,18 @@ class MemoryStore:
             for event in self._backend.load_all():
                 self._events.append(event)
 
-    def write(self, event_type: str, data: Mapping[str, Any], timestamp: Optional[datetime] = None) -> str:
+    def write(
+        self,
+        event_type: str,
+        data: Mapping[str, Any],
+        timestamp: Optional[datetime] = None,
+    ) -> str:
         """
         Append a new event to the store.
 
         Returns the event id (hex UUID string).
-        The stored event has keys: id, timestamp (ISO8601 str UTC), epoch (float seconds), type, data.
+        The stored event has keys: id, timestamp (ISO8601 str UTC),
+        epoch (float seconds), type, data.
         The provided `data` is deep-copied to avoid external mutation.
         """
         ts = timestamp.astimezone(timezone.utc) if timestamp else _now_utc()
@@ -81,23 +93,24 @@ class MemoryStore:
         limit: Optional[int] = None,
         reverse: bool = False,
     ) -> List[Event]:
-        """
-        Query events with optional filters.
+        """Query events with optional filters.
 
-        - event_type: filter events with matching type (exact match).
-        - since / until: timezone-aware datetimes used to filter by epoch (inclusive).
-        - limit: maximum number of events to return (applied after filters).
-        - reverse: if True, iterate from newest to oldest (useful with limit).
-
-        Returned events are shallow copies of the stored events (data dict remains a deepcopy from write).
+        Returned events are shallow copies of the stored events
+        (data dict remains a deepcopy from write).
         """
-        since_epoch = since.astimezone(timezone.utc).timestamp() if since else None
-        until_epoch = until.astimezone(timezone.utc).timestamp() if until else None
+        since_epoch = (
+            since.astimezone(timezone.utc).timestamp() if since else None
+        )
+        until_epoch = (
+            until.astimezone(timezone.utc).timestamp() if until else None
+        )
 
         with self._lock:
             events_snapshot = list(self._events)
 
-        iterable: Iterable[Event] = reversed(events_snapshot) if reverse else events_snapshot
+        iterable: Iterable[Event] = (
+            reversed(events_snapshot) if reverse else events_snapshot
+        )
 
         results: List[Event] = []
         for e in iterable:
@@ -116,7 +129,8 @@ class MemoryStore:
 
     def last(self, n: int = 10) -> List[Event]:
         """
-        Return the last `n` events (newest last). If n <= 0, returns an empty list.
+        Return the last `n` events (newest last). If n <= 0, returns an empty
+        list.
         """
         if n <= 0:
             return []
@@ -149,7 +163,9 @@ class MemoryStore:
                 self._events.clear()
                 return original_len
             maxlen = self._events.maxlen
-            new_events = [e for e in self._events if e.get("type") != event_type]
+            new_events = [
+                e for e in self._events if e.get("type") != event_type
+            ]
             self._events = deque(new_events, maxlen=maxlen)
             return original_len - len(self._events)
 

@@ -505,6 +505,26 @@ class TestCreateAGIProvider:
         assert info.name == "agi"
         assert info.model == "agi-openai-gpt-4"
 
+    def test_create_respects_agi_base_provider_env(self, monkeypatch: pytest.MonkeyPatch):
+        """AGI_BASE_PROVIDER should pin the base provider passed to detection."""
+        base = MockBaseProvider("pinned local base")
+        seen = {}
+
+        def fake_detect_provider(explicit=None, model_override=None, temperature=None, max_output_tokens=None):
+            seen["explicit"] = explicit
+            return base, ProviderChoice(name="local", model=model_override or "local-echo")
+
+        monkeypatch.setenv("AGI_BASE_PROVIDER", "local")
+        monkeypatch.setitem(create_agi_provider.__globals__,
+                            "detect_provider", fake_detect_provider)
+
+        provider, info = create_agi_provider()
+
+        assert seen["explicit"] == "local"
+        assert provider.base_provider is base
+        assert info.name == "agi"
+        assert info.model.startswith("agi-local")
+
     def test_create_with_options(self):
         """Test creating AGI provider with custom options."""
         provider, info = create_agi_provider(
@@ -716,7 +736,7 @@ class TestAGISecurity:
         """Test that exceptions don't leak sensitive information."""
 
         class FailingProvider(BaseChatProvider):
-            def complete(self, messages, stream=True):
+            def complete(self, _messages, stream=True):
                 raise RuntimeError("SENSITIVE: database password is secret123")
 
         agi = AGIProvider(base_provider=FailingProvider())
@@ -791,7 +811,7 @@ class TestEnvironmentInterface:
         from agi_provider import EnvironmentInterface
 
         class EchoEnvironment:
-            def complete(self, messages, stream=True):
+            def complete(self, _messages, stream=True):
                 return "echo"
 
         env = EchoEnvironment()

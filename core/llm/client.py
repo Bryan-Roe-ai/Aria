@@ -1,7 +1,8 @@
 """
 Aria LLM Client
-Unified abstraction layer for future model providers (OpenAI, local, Ollama, etc.).
-Currently a lightweight offline simulator returning deterministic JSON outputs.
+Unified abstraction layer for future model providers (OpenAI, local, Ollama,
+etc.). Currently a lightweight offline simulator returning deterministic JSON
+outputs.
 """
 
 from __future__ import annotations
@@ -42,7 +43,10 @@ class LLMClient:
 
         return self._simulate(last_user_message, system_prompt)
 
-    def _complete_with_real_provider(self, messages: List[Dict[str, str]]) -> str | None:
+    def _complete_with_real_provider(
+        self,
+        messages: List[Dict[str, str]],
+    ) -> str | None:
         try:
             module = importlib.import_module("agi_provider")
             if hasattr(module, "create_agi_provider"):
@@ -54,7 +58,7 @@ class LLMClient:
                 return response
             if isinstance(response, Iterable):
                 return "".join(str(part) for part in response)
-        except Exception:
+        except (AttributeError, ModuleNotFoundError, TypeError, ValueError):
             return None
         return None
 
@@ -66,12 +70,19 @@ class LLMClient:
             return json.dumps({"goal": self._goal_from_prompt(prompt)})
 
         if "planning engine" in system_prompt.lower():
+            goal = self._extract_goal(prompt)
             return json.dumps(
                 [
-                    {"type": "llm", "payload": {"prompt": self._extract_goal(prompt)}},
+                    {
+                        "type": "llm",
+                        "payload": {"prompt": goal},
+                    },
                     {
                         "type": "tool",
-                        "payload": {"tool": "inspect_context", "args": {"goal": self._extract_goal(prompt)}},
+                        "payload": {
+                            "tool": "inspect_context",
+                            "args": {"goal": goal},
+                        },
                     },
                 ]
             )
@@ -84,7 +95,9 @@ class LLMClient:
             return json.dumps({
                 "score": 0.75,
                 "issues": ["Minor verbosity detected"],
-                "suggestions": ["Consider trimming the response for conciseness"],
+                "suggestions": [
+                    "Consider trimming the response for conciseness"
+                ],
             })
 
         if "chain-of-thought reasoning engine" in system_prompt.lower():
@@ -95,7 +108,10 @@ class LLMClient:
                     "2. Break the problem into smaller sub-problems",
                     "3. Evaluate each sub-problem systematically",
                 ],
-                "conclusion": f"Based on the reasoning above, a well-structured answer can be formed for: {excerpt}",
+                "conclusion": (
+                    "Based on the reasoning above, a well-structured answer "
+                    f"can be formed for: {excerpt}"
+                ),
                 "confidence": 0.8,
             })
 
@@ -103,15 +119,24 @@ class LLMClient:
             excerpt = " ".join(prompt.split())[:80]
             return json.dumps({
                 "counter_arguments": [
-                    f"The claim '{excerpt}' may not hold under different assumptions",
+                    (
+                        f"The claim '{excerpt}' may not hold under different "
+                        "assumptions"
+                    ),
                     "Evidence may be incomplete or biased",
                 ],
                 "weaknesses": [
                     "Relies on unverified premises",
                     "Does not account for edge cases",
                 ],
-                "steelman": f"The strongest case for '{excerpt}' rests on its core logic being sound under ideal conditions.",
-                "verdict": "The claim has merit but requires stronger evidence and broader scope.",
+                "steelman": (
+                    f"The strongest case for '{excerpt}' rests on its core "
+                    "logic being sound under ideal conditions."
+                ),
+                "verdict": (
+                    "The claim has merit but requires stronger evidence and "
+                    "broader scope."
+                ),
             })
 
         if "hypothesis generation engine" in system_prompt.lower():
@@ -119,41 +144,65 @@ class LLMClient:
             return json.dumps({
                 "hypotheses": [
                     {
-                        "statement": f"Increasing cycle frequency improves goal achievement given: {excerpt}",
-                        "rationale": "More cycles allow faster feedback and course correction.",
+                        "statement": (
+                            "Increasing cycle frequency improves goal "
+                            f"achievement given: {excerpt}"
+                        ),
+                        "rationale": (
+                            "More cycles allow faster feedback and course "
+                            "correction."
+                        ),
                         "testable": True,
                     },
                     {
-                        "statement": "Skipped steps correlate with inadequate goal specificity.",
-                        "rationale": "Vague goals produce incomplete plans, leading to skips.",
+                        "statement": (
+                            "Skipped steps correlate with inadequate goal "
+                            "specificity."
+                        ),
+                        "rationale": (
+                            "Vague goals produce incomplete plans, leading "
+                            "to skips."
+                        ),
                         "testable": True,
                     },
                 ],
-                "summary": "System patterns suggest optimisation opportunities in cycle frequency and goal clarity.",
+                "summary": (
+                    "System patterns suggest optimisation opportunities in "
+                    "cycle frequency and goal clarity."
+                ),
             })
 
         if "meta-learning reflection engine" in system_prompt.lower():
             return json.dumps({
                 "lessons": [
                     "Smaller, focused goals lead to higher execution rates.",
-                    "Self-assessment scores improve after targeted retraining cycles.",
+                    "Self-assessment scores improve after targeted retraining "
+                    "cycles.",
                 ],
                 "patterns": [
                     "Skipped steps tend to cluster around tool-type tasks.",
-                    "Goal quality degrades when memory context exceeds 20 events.",
+                    "Goal quality degrades when memory context exceeds 20 "
+                    "events.",
                 ],
                 "adjustments": [
                     "Decompose goals into at most 3 sub-tasks per cycle.",
                     "Trigger summarization when memory exceeds 50 events.",
                 ],
-                "overall": "The system is converging but benefits from tighter goal scoping and memory compression.",
+                "overall": (
+                    "The system is converging but benefits from tighter goal "
+                    "scoping and memory compression."
+                ),
             })
 
         return json.dumps(
             {
-                "analysis": f"Processed: {prompt}",
-                "steps": ["understand_goal", "decompose_task", "execute_solution"],
-                "output": f"Simulated result for: {prompt}",
+                    "analysis": f"Processed: {prompt}",
+                    "steps": [
+                        "understand_goal",
+                        "decompose_task",
+                        "execute_solution",
+                    ],
+                    "output": f"Simulated result for: {prompt}",
             }
         )
 

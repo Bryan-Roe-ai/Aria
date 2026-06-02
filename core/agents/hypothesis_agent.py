@@ -1,7 +1,7 @@
 """
 Hypothesis Agent
 Generates structured, testable hypotheses from patterns observed in memory
-events.  Useful for surfacing causal theories about system behaviour, failure
+events. Useful for surfacing causal theories about system behaviour, failure
 modes, or improvement opportunities so they can be validated by subsequent
 planning or experiment cycles.
 """
@@ -25,9 +25,11 @@ _DEFAULT_LIMIT = 20
 
 
 class HypothesisAgent(BaseAgent):
-    """Derives testable hypotheses from recent memory events or a supplied observation.
+    """Derives testable hypotheses from recent memory events or a supplied
+    observation.
 
-    Accepts tasks of type ``hypothesize``, ``infer``, or ``generate_hypothesis``.
+    Accepts tasks of type ``hypothesize``, ``infer``, or
+    ``generate_hypothesis``.
     When the task payload includes an ``observation`` or ``text`` field that
     text is used as the input; otherwise the agent fetches the last ``limit``
     events from memory and derives hypotheses from those.
@@ -56,10 +58,10 @@ class HypothesisAgent(BaseAgent):
 
     def execute(self, task: Task) -> Dict[str, Any]:
         payload = task.payload or {}
-        observation: str = (
-            payload.get("observation") or payload.get("text") or ""
-        ).strip()
-        limit: int = max(1, int(payload.get("limit", _DEFAULT_LIMIT)))
+        observation = self._normalize_text(
+            payload.get("observation") or payload.get("text")
+        )
+        limit = self._coerce_limit(payload.get("limit", _DEFAULT_LIMIT))
 
         if not observation:
             events: List[Dict[str, Any]] = self.memory.last(limit)
@@ -68,7 +70,9 @@ class HypothesisAgent(BaseAgent):
                     "agent": self.name,
                     "task_id": task.id,
                     "hypotheses": [],
-                    "summary": "No observations available to hypothesize from.",
+                    "summary": (
+                        "No observations available to hypothesize from."
+                    ),
                 }
             observation = self._format_events(events)
 
@@ -78,7 +82,7 @@ class HypothesisAgent(BaseAgent):
 
         try:
             self.memory.write("hypothesis_generated", result)
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             logger.exception("Memory write failed when storing hypotheses")
 
         return result
@@ -91,16 +95,19 @@ class HypothesisAgent(BaseAgent):
                 "content": (
                     "You are a hypothesis generation engine. "
                     "Output ONLY a JSON object with these fields: "
-                    '"hypotheses" (list of objects, each with "statement" (str), '
-                    '"rationale" (str), "testable" (bool)), '
+                    '"hypotheses" (list of objects, each with '
+                    '"statement" (str), "rationale" (str), '
+                    '"testable" (bool)), '
                     '"summary" (str: one-sentence narrative of the patterns).'
                 ),
             },
             {
                 "role": "user",
                 "content": (
-                    "Based on the following observations, generate 2–4 testable "
-                    f"hypotheses about system behaviour or improvement opportunities:\n{truncated}"
+                    "Based on the following observations, generate 2–4 "
+                    "testable hypotheses about system behaviour or "
+                    "improvement opportunities:\n"
+                    f"{truncated}"
                 ),
             },
         ]
@@ -108,7 +115,7 @@ class HypothesisAgent(BaseAgent):
         raw = ""
         try:
             raw = self.llm.complete(messages)
-        except Exception:
+        except (AttributeError, TypeError, ValueError, RuntimeError):
             logger.exception("LLM client failed during hypothesis generation")
 
         return self._parse(raw)
@@ -117,7 +124,10 @@ class HypothesisAgent(BaseAgent):
         fallback: Dict[str, Any] = {
             "hypotheses": [
                 {
-                    "statement": "Hypothesis generation failed: no valid response from LLM",
+                    "statement": (
+                        "Hypothesis generation failed: no valid response "
+                        "from LLM"
+                    ),
                     "rationale": "",
                     "testable": False,
                 }
@@ -128,14 +138,16 @@ class HypothesisAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Dict[str, Any] | None:
+        def _extract(data: Any) -> Optional[Dict[str, Any]]:
             if not isinstance(data, dict):
                 return None
             if "hypotheses" not in data:
                 return None
+
             hypotheses = data.get("hypotheses") or []
             if not isinstance(hypotheses, list):
                 return None
+
             cleaned: List[Dict[str, Any]] = []
             for h in hypotheses:
                 if not isinstance(h, dict):
@@ -147,40 +159,102 @@ class HypothesisAgent(BaseAgent):
                         "testable": bool(h.get("testable", False)),
                     }
                 )
+
             summary = str(data.get("summary", "")).strip()
             return {
                 "hypotheses": cleaned,
                 "summary": summary or "No summary provided.",
             }
 
-        try:
-            result = _extract(json.loads(raw))
-            if result is not None:
-                return result
-        except Exception:
-            pass
-
-        try:
-            match = re.search(r"\{.*?\}", raw, re.S)
-            if match:
-                result = _extract(json.loads(match.group(0)))
+        for candidate in self._json_candidates(raw):
+            try:
+                result = _extract(json.loads(candidate))
                 if result is not None:
                     return result
-        except Exception:
-            pass
+            except json.JSONDecodeError:
+                continue
 
         return fallback
 
     @staticmethod
+    def _coerce_limit(value: Any) -> int:
+        try:
+            return max(1, int(value))
+        except (TypeError, ValueError):
+            return _DEFAULT_LIMIT
+
+    @staticmethod
+    def _normalize_text(value: Any) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, str):
+            return value.strip()
+        if isinstance(value, (dict, list)):
+            try:
+                return json.dumps(value, ensure_ascii=False).strip()
+            except TypeError:
+                return str(value).strip()
+        return str(value).strip()
+
+    @staticmethod
+    def _json_candidates(raw: str) -> List[str]:
+        text = raw.strip()
+        candidates: List[str] = []
+
+        fence = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.I | re.S)
+        if fence:
+            candidates.append(fence.group(1).strip())
+
+        snippet = HypothesisAgent._extract_json_object(text)
+        if snippet:
+            candidates.append(snippet)
+
+        if text not in candidates:
+            candidates.append(text)
+
+        return candidates
+
+    @staticmethod
+    def _extract_json_object(text: str) -> Optional[str]:
+        start = text.find("{")
+        while start != -1:
+            depth = 0
+            in_string = False
+            escape = False
+
+            for index in range(start, len(text)):
+                char = text[index]
+                if in_string:
+                    if escape:
+                        escape = False
+                    elif char == "\\":
+                        escape = True
+                    elif char == '"':
+                        in_string = False
+                    continue
+
+                if char == '"':
+                    in_string = True
+                elif char == "{":
+                    depth += 1
+                elif char == "}":
+                    depth -= 1
+                    if depth == 0:
+                        return text[start:index + 1]
+
+            start = text.find("{", start + 1)
+
+        return None
+
+    @staticmethod
     def _format_events(events: List[Dict[str, Any]]) -> str:
         parts: List[str] = []
-        for e in events:
-            event_type = e.get("type", "event")
-            data = e.get("data", "")
-            data_str = (
-                json.dumps(data, ensure_ascii=False)
-                if isinstance(data, (dict, list))
-                else str(data)
-            )
+        for event in events:
+            event_type = event.get("type", "event")
+            data = event.get("data", "")
+            if isinstance(data, (dict, list)):
+                data_str = json.dumps(data, ensure_ascii=False)
+            else:
+                data_str = str(data)
             parts.append(f"{event_type}: {data_str}")
         return "\n".join(parts)

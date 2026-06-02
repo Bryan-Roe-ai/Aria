@@ -9,7 +9,6 @@ These tests verify that:
 """
 
 from __future__ import annotations
-from shared.config import Settings, get_settings, reset_settings
 
 import os
 import sys
@@ -17,6 +16,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
+from shared.config import Settings, get_settings, reset_settings
 
 # Ensure shared/ is importable when running from the repo root
 _REPO_ROOT = Path(__file__).resolve().parent.parent

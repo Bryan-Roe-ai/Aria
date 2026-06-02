@@ -325,7 +325,7 @@ class _MockProvider:
     def __init__(self, response: str = "mock response"):
         self._response = response
 
-    def complete(self, messages, stream=False):
+    def complete(self, _messages, stream=False):
         if stream:
             return iter(self._response.split())
         return self._response

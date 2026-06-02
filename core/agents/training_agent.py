@@ -18,7 +18,7 @@ class TrainingAgent(BaseAgent):
     name = "training_agent"
 
     def __init__(self) -> None:
-        self.buffer = []
+        self.buffer: List[Dict[str, Any]] = []
         self.performance_history: List[Dict[str, Any]] = []
         self.needs_retraining: bool = False
         self.lora_signal_path = Path("logs") / "lora_signals.jsonl"
@@ -42,7 +42,11 @@ class TrainingAgent(BaseAgent):
             "summary": self.summary(),
         }
 
-    def _process(self, signal_type: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _process(
+        self,
+        signal_type: str,
+        payload: Dict[str, Any],
+    ) -> Dict[str, Any]:
         if signal_type == "feedback":
             return {"ack": "feedback stored"}
 
@@ -52,17 +56,27 @@ class TrainingAgent(BaseAgent):
             return {"ack": "training signal recorded"}
 
         if signal_type == "evaluate":
-            score = payload.get("score", payload.get("metric", payload.get("value")))
+            score = payload.get(
+                "score",
+                payload.get("metric", payload.get("value")),
+            )
             if isinstance(score, (int, float)):
                 numeric_score = float(score)
-                self.performance_history.append({"score": numeric_score, "payload": dict(payload)})
-                self.needs_retraining = numeric_score < float(payload.get("target_score", 0.7))
+                self.performance_history.append(
+                    {"score": numeric_score, "payload": dict(payload)}
+                )
+                self.needs_retraining = numeric_score < float(
+                    payload.get("target_score", 0.7)
+                )
                 return {
                     "ack": "evaluation logged",
                     "score": numeric_score,
                     "needs_retraining": self.needs_retraining,
                 }
-            return {"ack": "evaluation logged", "needs_retraining": self.needs_retraining}
+            return {
+                "ack": "evaluation logged",
+                "needs_retraining": self.needs_retraining,
+            }
 
         if signal_type == "optimize":
             return {"ack": "optimization queued"}
@@ -76,7 +90,11 @@ class TrainingAgent(BaseAgent):
             handle.write(json.dumps(record) + "\n")
 
     def self_assess(self, target_score: float = 0.7) -> Dict[str, Any]:
-        latest_score = self.performance_history[-1]["score"] if self.performance_history else None
+        latest_score = (
+            self.performance_history[-1]["score"]
+            if self.performance_history
+            else None
+        )
         if latest_score is not None:
             self.needs_retraining = latest_score < target_score
         return {

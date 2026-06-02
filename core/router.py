@@ -104,7 +104,12 @@ class TaskRouter:
         candidates = []
 
         for agent in self.registry.get_agents():
-            score = self._score(agent, task)
+            try:
+                score = self._score(agent, task)
+            except Exception:
+                # A misbehaving agent's can_handle()/scoring must not prevent
+                # routing to other, healthy agents.
+                continue
             if score > 0:
                 candidates.append((score, agent))
 
@@ -116,15 +121,33 @@ class TaskRouter:
 
         candidates.sort(key=lambda item: item[0], reverse=True)
         best_score, best_agent = candidates[0]
-        result = best_agent.execute(task)
+
+        candidate_summary = [
+            {"agent": agent.name, "score": score}
+            for score, agent in candidates
+        ]
+
+        try:
+            result = best_agent.execute(task)
+        except Exception as exc:
+            # Isolate agent execution failures so a single faulty agent cannot
+            # crash the routing call (and, by extension, the runtime cycle).
+            return {
+                "agent": best_agent.name,
+                "score": best_score,
+                "candidates": candidate_summary,
+                "result": {
+                    "error": "Agent execution failed",
+                    "agent": best_agent.name,
+                    "exception_type": type(exc).__name__,
+                    "exception": str(exc),
+                },
+            }
 
         return {
             "agent": best_agent.name,
             "score": best_score,
-            "candidates": [
-                {"agent": agent.name, "score": score}
-                for score, agent in candidates
-            ],
+            "candidates": candidate_summary,
             "result": result,
         }
 

@@ -1,5 +1,6 @@
-from scripts import gradio_webhook
 import os
+
+from scripts import gradio_webhook
 
 
 def test_post_conversation_to_webhook(tmp_path):

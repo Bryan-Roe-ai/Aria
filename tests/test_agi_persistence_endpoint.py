@@ -4,9 +4,7 @@ Tests for the read-only AGI persistence audit endpoint (/api/agi/persistence).
 
 import json
 import time
-import os
 from unittest.mock import MagicMock
-from pathlib import Path
 
 import pytest
 

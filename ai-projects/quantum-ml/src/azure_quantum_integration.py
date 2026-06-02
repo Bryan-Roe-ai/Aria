@@ -394,7 +394,7 @@ class QuantumJobManager:
         status = job.status()
 
         logger.info(f"Job '{job_name}' status: {status}")
-        return status.name
+        return getattr(status, "name", str(status))
 
     def get_all_results(self) -> Dict[str, Dict]:
         """

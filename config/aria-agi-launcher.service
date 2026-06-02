@@ -1,0 +1,32 @@
+[Unit]
+Description=Aria AGI Launcher (startup_agi.sh) — user service
+After=network.target
+Wants=network-online.target
+StartLimitIntervalSec=200
+StartLimitBurst=5
+
+[Service]
+Type=simple
+WorkingDirectory=/workspaces/Aria
+Environment="PATH=/usr/local/bin:/usr/bin:/bin:/workspaces/Aria/node_modules/.bin"
+Environment="PYTHONUNBUFFERED=1"
+
+# Launcher tuning (startup_agi.sh reads these env overrides).
+# 0 cycles = run forever; adjust as needed.
+Environment="AGI_LAUNCH_CYCLES=0"
+Environment="AGI_SHORT_BREAK_SEC=30"
+Environment="AGI_LONG_BREAK_SEC=300"
+Environment="AGI_LONG_BREAK_EVERY=5"
+
+ExecStart=/usr/bin/env bash /workspaces/Aria/scripts/startup_agi.sh
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Logging
+StandardOutput=append:/workspaces/Aria/data_out/aria-agi-launcher.service.log
+StandardError=append:/workspaces/Aria/data_out/aria-agi-launcher.service_error.log
+
+[Install]
+WantedBy=default.target

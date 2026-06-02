@@ -9,10 +9,12 @@ looks wrong we abort the plan and leave the file untouched.
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Sequence
+from typing import Callable
 
 from .planner import UpgradePlan
+from .registry import SUPPORTED_FINDING_KINDS
 from .risk_manager import RiskManager
 
 _logger = logging.getLogger(__name__)
@@ -32,14 +34,42 @@ def _ensure_final_newline(text: str) -> str:
     return text if text.endswith("\n") else text + "\n"
 
 
-_TRANSFORMS: Dict[str, Transform] = {
+def _trim_trailing_blank_lines(text: str) -> str:
+    if not text:
+        return text
+    return text.rstrip("\n") + "\n"
+
+
+def _normalize_line_endings(text: str) -> str:
+    """Replace all CRLF sequences with LF."""
+    return text.replace("\r\n", "\n")
+
+
+_TRANSFORMS: dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
+    "trailing_blank_lines": _trim_trailing_blank_lines,
+    "mixed_line_endings": _normalize_line_endings,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with
 #: :data:`aria_bot.analyzer.SUPPORTED_KINDS`.
-SUPPORTED_KINDS: tuple[str, ...] = tuple(sorted(_TRANSFORMS.keys()))
+SUPPORTED_KINDS: tuple[str, ...] = tuple(sorted(SUPPORTED_FINDING_KINDS))
+
+#: Canonical application order for transforms. Transforms MUST run in this
+#: order so that combined application converges in a single pass: e.g.
+#: normalizing CRLF or stripping trailing whitespace can expose trailing
+#: blank lines, which must then be trimmed; finalizing the newline runs last.
+#: The analyzer's detection mirrors this exact order (see ``analyzer._inspect``).
+TRANSFORM_ORDER: tuple[str, ...] = (
+    "mixed_line_endings",
+    "trailing_whitespace",
+    "trailing_blank_lines",
+    "missing_final_newline",
+)
+
+# Fail fast if a transform is ever added without a defined application order.
+assert set(TRANSFORM_ORDER) == set(_TRANSFORMS), "TRANSFORM_ORDER must cover every transform"
 
 
 @dataclass
@@ -66,8 +96,8 @@ class Executor:
     risk_manager: RiskManager
     dry_run: bool = True
 
-    def execute(self, plans: Sequence[UpgradePlan]) -> List[ExecutionResult]:
-        results: List[ExecutionResult] = []
+    def execute(self, plans: Sequence[UpgradePlan]) -> list[ExecutionResult]:
+        results: list[ExecutionResult] = []
         for plan in plans:
             results.append(self._execute_one(plan))
         return results
@@ -81,9 +111,7 @@ class Executor:
         # Final path-level safety check — never trust the planner alone.
         path_assessment = self.risk_manager.assess_file(path)
         if not path_assessment.allowed:
-            return ExecutionResult(
-                plan=plan, applied=False, reason="; ".join(path_assessment.reasons)
-            )
+            return ExecutionResult(plan=plan, applied=False, reason="; ".join(path_assessment.reasons))
 
         unsupported = [k for k in plan.kinds if k not in _TRANSFORMS]
         if unsupported:
@@ -102,21 +130,20 @@ class Executor:
         try:
             text = original.decode("utf-8")
         except UnicodeDecodeError:
-            return ExecutionResult(
-                plan=plan, applied=False, reason="file is not valid UTF-8"
-            )
+            return ExecutionResult(plan=plan, applied=False, reason="file is not valid UTF-8")
 
+        # Apply transforms in the canonical order (not plan.kinds order),
+        # so combined application is deterministic and converges in one pass.
+        ordered_kinds = [k for k in TRANSFORM_ORDER if k in plan.kinds]
         new_text = text
-        for kind in plan.kinds:
+        for kind in ordered_kinds:
             new_text = _TRANSFORMS[kind](new_text)
         new_bytes = new_text.encode("utf-8")
 
         # Diff-level safety: re-check size delta and require an actual change.
         change_assessment = self.risk_manager.assess_change(path, original, new_bytes)
         if not change_assessment.allowed:
-            return ExecutionResult(
-                plan=plan, applied=False, reason="; ".join(change_assessment.reasons)
-            )
+            return ExecutionResult(plan=plan, applied=False, reason="; ".join(change_assessment.reasons))
 
         if self.dry_run:
             _logger.info("[dry-run] would update %s (%s)", path, plan.description())

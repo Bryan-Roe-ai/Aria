@@ -383,8 +383,8 @@ class TestPostValidation:
         captured: dict = {}
 
         class _FakeProvider:
-            def complete(self, messages, stream=False):
-                captured["messages"] = messages
+            def complete(self, _messages, stream=False):
+                captured["messages"] = _messages
                 return "Recovered reply"
 
         monkeypatch.setattr(
@@ -628,7 +628,7 @@ class TestPostValidation:
         captured: dict = {"sse_body": b""}
 
         class _FakeProvider:
-            def complete(self, messages, stream=False):
+            def complete(self, _messages, stream=False):
                 assert stream is True
                 yield "Hello"
                 yield " world"
@@ -769,9 +769,9 @@ class TestAgiEndpoints:
             def set_goal(self, goal: str):
                 self.goals.append(goal)
 
-            def complete(self, messages, stream=False):
+            def complete(self, _messages, stream=False):
                 assert stream is False
-                assert messages[-1]["content"] == "reason through this architecture"
+                assert _messages[-1]["content"] == "reason through this architecture"
                 return "Here is a reasoned response"
 
             def get_reasoning_summary(self):
@@ -827,7 +827,7 @@ class TestAgiEndpoints:
         captured: dict = {"sse_body": b""}
 
         class _FakeAgiProvider:
-            def complete(self, messages, stream=False):
+            def complete(self, _messages, stream=False):
                 assert stream is True
                 yield "Hello"
                 yield " world"

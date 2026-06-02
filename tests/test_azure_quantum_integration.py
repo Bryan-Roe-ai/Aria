@@ -1,11 +1,9 @@
 import sys
 from importlib import import_module
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from unittest.mock import patch
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = REPO_ROOT / "ai-projects" / "quantum-ml" / "src"
@@ -157,3 +155,100 @@ def test_submit_circuit_uses_default_shots_when_none():
     transpile_mock.assert_called_once()
     backend.run.assert_called_once_with("transpiled", shots=123)
     assert result is backend.run.return_value
+
+
+# ---------------------------------------------------------------------------
+# QuantumJobManager.check_status — string and enum shapes
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+def test_check_status_tolerates_string_status():
+    """check_status must not blow up when job.status() returns a string."""
+    module = _load_module()
+    azure = MagicMock()
+    manager = module.QuantumJobManager(azure)
+
+    job = MagicMock()
+    job.status.return_value = "running"  # plain string, has no .name attribute
+    manager.jobs["my_job"] = job
+
+    result = manager.check_status("my_job")
+
+    assert result == "running"
+
+
+@pytest.mark.unit
+def test_check_status_tolerates_enum_status():
+    """check_status must also work when job.status() returns an Enum-like."""
+    import enum
+
+    module = _load_module()
+    azure = MagicMock()
+    manager = module.QuantumJobManager(azure)
+
+    class JobStatus(enum.Enum):
+        COMPLETED = "completed"
+
+    job = MagicMock()
+    job.status.return_value = JobStatus.COMPLETED
+    manager.jobs["enum_job"] = job
+
+    result = manager.check_status("enum_job")
+
+    assert result == "COMPLETED"
+
+
+@pytest.mark.unit
+def test_check_status_raises_for_unknown_job():
+    module = _load_module()
+    azure = MagicMock()
+    manager = module.QuantumJobManager(azure)
+
+    with pytest.raises(ValueError, match="not found"):
+        manager.check_status("nonexistent")
+
+
+# ---------------------------------------------------------------------------
+# QuantumJobManager.get_all_results — partial failure tolerance
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+def test_get_all_results_continues_after_failed_job():
+    """Errors in one job must not suppress results from other jobs."""
+    module = _load_module()
+    azure = MagicMock()
+    azure.get_job_results.side_effect = [
+        {"counts": {"00": 500, "11": 500}},
+        RuntimeError("timeout"),
+    ]
+    manager = module.QuantumJobManager(azure)
+    manager.jobs = {"good_job": MagicMock(), "bad_job": MagicMock()}
+
+    results = manager.get_all_results()
+
+    assert "counts" in results["good_job"]
+    assert "error" in results["bad_job"]
+
+
+# ---------------------------------------------------------------------------
+# AzureQuantumIntegration.save_results — directory creation and content
+# ---------------------------------------------------------------------------
+
+@pytest.mark.unit
+def test_save_results_creates_directory_and_writes_json(tmp_path):
+    module = _load_module()
+    inst = module.AzureQuantumIntegration.__new__(
+        module.AzureQuantumIntegration
+    )
+    inst.config = {
+        "logging": {"results_dir": str(tmp_path / "out" / "results")}
+    }
+
+    payload = {"counts": {"00": 1}, "success": True}
+    inst.save_results(payload, "test_run.json")
+
+    written = tmp_path / "out" / "results" / "test_run.json"
+    assert written.exists()
+    import json
+    data = json.loads(written.read_text())
+    assert data["counts"] == {"00": 1}

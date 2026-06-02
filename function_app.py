@@ -20,6 +20,7 @@ from shared.config import get_settings
 from shared.core.module_registry import AIProjectsRegistry
 from shared.import_helpers import create_stub_function, safe_import
 from shared.json_utils import load_status_json
+from shared.runtime_env import build_venv_info
 from shared.logging import configure_json_logging
 
 configure_json_logging()
@@ -2528,40 +2529,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         }
 
         repo_root = Path(__file__).resolve().parent
-        venv_python = repo_root / "venv" / "Scripts" / "python.exe"
-        venv_info = {
-            "path": str(venv_python),
-            "exists": venv_python.exists(),
-            "packages": {},
-            "error": None,
-        }
-
-        if venv_info["exists"]:
-            try:
-                code = (
-                    "import json, importlib.util, importlib.metadata as md;"
-                    "mods=['torch','transformers','peft'];"
-                    "avail={m:(importlib.util.find_spec(m) is not None) for m in mods};"
-                    "vers={};"
-                    "\nfor m in mods:\n\t"
-                    "\n\ttry:\n\t\tvers[m]=md.version(m)\n\texcept Exception:\n\t\tvers[m]=None;"
-                    "print(json.dumps({'available':avail,'versions':vers}))"
-                )
-                proc = subprocess.run(
-                    [str(venv_python), "-c", code],
-                    capture_output=True,
-                    text=True,
-                    timeout=12,
-                )
-                if proc.returncode == 0:
-                    data = json.loads(proc.stdout.strip() or "{}")
-                    venv_info["packages"] = data
-                else:
-                    venv_info["error"] = (
-                        proc.stderr.strip() or f"exit {proc.returncode}"
-                    )
-            except Exception as e:  # noqa: BLE001
-                venv_info["error"] = str(e)
+        venv_info = build_venv_info(repo_root)
 
         # LoRA adapter defaults
         lora_default = repo_root / "data_out" / "lora_training" / "lora_adapter"

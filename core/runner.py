@@ -59,7 +59,10 @@ class AriaRunner:
 
         tool.registry.register("inspect_context", self._inspect_context)
         tool.registry.register("recent_events", self._recent_events)
-        tool.registry.register("knowledge_neighbors", self._knowledge_neighbors)
+        tool.registry.register(
+            "knowledge_neighbors",
+            self._knowledge_neighbors,
+        )
         tool.registry.register("knowledge_related", self._knowledge_related)
         tool.registry.register("knowledge_path", self._knowledge_path)
 
@@ -77,41 +80,90 @@ class AriaRunner:
         self.registry.register(reflection)
 
     def _inspect_context(self, goal: str = "") -> Dict[str, Any]:
-        return {"goal": goal, "event_counts": self.memory.count_by_type(), "recent_events": self.memory.last(5)}
+        return {
+            "goal": goal,
+            "event_counts": self.memory.count_by_type(),
+            "recent_events": self.memory.last(5),
+        }
 
     def _recent_events(self, limit: int = 5) -> Dict[str, Any]:
         return {"events": self.memory.last(limit)}
 
     def _knowledge_neighbors(self, entity: str) -> Dict[str, Any]:
-        return {"entity": entity, "neighbors": self.knowledge_graph.neighbors(entity)}
+        return {
+            "entity": entity,
+            "neighbors": self.knowledge_graph.neighbors(entity),
+        }
 
-    def _knowledge_related(self, entity: str, max_depth: int = 2) -> Dict[str, Any]:
-        return {"entity": entity, "related": self.knowledge_graph.find_related(entity, max_depth=max_depth)}
+    def _knowledge_related(
+        self,
+        entity: str,
+        max_depth: int = 2,
+    ) -> Dict[str, Any]:
+        return {
+            "entity": entity,
+            "related": self.knowledge_graph.find_related(
+                entity,
+                max_depth=max_depth,
+            ),
+        }
 
     def _knowledge_path(self, source: str, target: str) -> Dict[str, Any]:
-        return {"source": source, "target": target, "path": self.knowledge_graph.shortest_path(source, target)}
+        return {
+            "source": source,
+            "target": target,
+            "path": self.knowledge_graph.shortest_path(source, target),
+        }
 
     def _run_task(self, task: Task):
         result = self.router.route(task)
-        self.memory.write("task_result", {"task_id": task.id, "task_type": task.type, "result": result})
+        self.memory.write(
+            "task_result",
+            {
+                "task_id": task.id,
+                "task_type": task.type,
+                "result": result,
+            },
+        )
         return result
 
-    def _normalize_plan_step(self, step: Any, index: int) -> tuple[Task | None, Dict[str, Any] | None]:
+    def _normalize_plan_step(
+        self,
+        step: Any,
+        index: int,
+    ) -> tuple[Task | None, Dict[str, Any] | None]:
         if not isinstance(step, dict):
-            return None, {"index": index, "error": "Plan step must be a dictionary"}
+            return None, {
+                "index": index,
+                "error": "Plan step must be a dictionary",
+            }
 
         step_type = step.get("type")
         if not isinstance(step_type, str) or not step_type.strip():
-            return None, {"index": index, "error": "Plan step is missing a valid type"}
+            return None, {
+                "index": index,
+                "error": "Plan step is missing a valid type",
+            }
 
         payload = step.get("payload", {})
         if payload is None:
             payload = {}
         if not isinstance(payload, dict):
-            return None, {"index": index, "error": "Plan step payload must be a dictionary"}
+            return None, {
+                "index": index,
+                "error": "Plan step payload must be a dictionary",
+            }
 
         try:
-            task = Task(id=step.get("id"), type=step_type, payload=payload, priority=int(step.get("priority", 0)))
+            task_id = step.get("id")
+            if not isinstance(task_id, str) or not task_id.strip():
+                task_id = f"plan-step-{index}"
+            task = Task(
+                id=task_id,
+                type=step_type,
+                payload=payload,
+                priority=int(step.get("priority", 0)),
+            )
         except Exception as exc:
             return None, {"index": index, "error": str(exc)}
         return task, None
@@ -119,7 +171,10 @@ class AriaRunner:
     def _generate_goal(self) -> str:
         task = Task(id="goal_evolve", type="goal_evolve", payload={})
         result = self.router.route(task)
-        return result.get("result", {}).get("goal", "improve system performance")
+        return result.get("result", {}).get(
+            "goal",
+            "improve system performance",
+        )
 
     def _run_self_assess_loop(self, goal: str) -> Dict[str, Any] | None:
         training_agent = self.registry.get("training_agent")
@@ -128,10 +183,18 @@ class AriaRunner:
         assessor = getattr(training_agent, "self_assess", None)
         if not callable(assessor):
             return None
-        assessment = assessor(target_score=float(self.config.get("target_score", 0.7)))
-        self.memory.write("training_self_assessment", {"goal": goal, **assessment})
+        assessment = assessor(
+            target_score=float(self.config.get("target_score", 0.7))
+        )
+        self.memory.write(
+            "training_self_assessment",
+            {"goal": goal, **assessment},
+        )
         if assessment.get("needs_retraining"):
-            retrain_task = Task(type="train", payload={"goal": goal, "source": "self_assess"})
+            retrain_task = Task(
+                type="train",
+                payload={"goal": goal, "source": "self_assess"},
+            )
             retrain_result = self.router.route(retrain_task)
             assessment = dict(assessment)
             assessment["retrain_result"] = retrain_result
@@ -156,16 +219,26 @@ class AriaRunner:
                 skipped.append(skip_reason)
                 self.memory.write("plan_step_skipped", skip_reason)
                 continue
+            assert task is not None
             executed.append(self._run_task(task))
 
         self.concept_linker.link_recent(10)
         assessment = self._run_self_assess_loop(goal)
+
+        failed_steps = sum(
+            1
+            for routed in executed
+            if isinstance(routed, dict)
+            and isinstance(routed.get("result"), dict)
+            and routed["result"].get("error")
+        )
 
         cycle_summary = {
             "goal": goal,
             "plan_length": len(plan),
             "executed_steps": len(executed),
             "skipped_steps": len(skipped),
+            "failed_steps": failed_steps,
             "skipped": skipped,
             "plan_error": plan_error,
             "results": executed,
@@ -186,7 +259,10 @@ class AriaRunner:
             try:
                 self._autonomous_cycle()
                 cycle_count += 1
-                if self.max_cycles is not None and cycle_count >= int(self.max_cycles):
+                if (
+                    self.max_cycles is not None
+                    and cycle_count >= int(self.max_cycles)
+                ):
                     break
                 time.sleep(self.sleep_seconds)
             except KeyboardInterrupt:

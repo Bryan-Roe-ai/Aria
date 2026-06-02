@@ -1,6 +1,6 @@
 # tests/test_connection_pool_mock.py
-from unittest.mock import MagicMock, patch
 import shared.chat_memory as cm
+
 
 class FakeCursor:
     def execute(self, *args, **kwargs): pass

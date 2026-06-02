@@ -58,7 +58,7 @@ class ReflectionAgent(BaseAgent):
 
     def execute(self, task: Task) -> Dict[str, Any]:
         payload = task.payload or {}
-        cycle_limit: int = max(1, int(payload.get("cycle_limit", _DEFAULT_CYCLE_LIMIT)))
+        cycle_limit = self._coerce_limit(payload.get("cycle_limit", _DEFAULT_CYCLE_LIMIT))
 
         # Prefer cycle_completed events; fall back to recent general events.
         cycles: List[Dict[str, Any]] = self.memory.query(
@@ -168,6 +168,13 @@ class ReflectionAgent(BaseAgent):
             pass
 
         return fallback
+
+    @staticmethod
+    def _coerce_limit(value: Any) -> int:
+        try:
+            return max(1, int(value))
+        except (TypeError, ValueError):
+            return _DEFAULT_CYCLE_LIMIT
 
     @staticmethod
     def _format_cycles(cycles: List[Dict[str, Any]]) -> str:

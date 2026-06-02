@@ -1,6 +1,8 @@
 # reuse orchestrator logic for retry
 import json
 import os
+import re
+import shlex
 import signal
 import subprocess
 import sys
@@ -12,13 +14,21 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
-from flask import Flask, jsonify, render_template
+from flask import Flask, abort, jsonify, render_template, send_file
 from flask_socketio import SocketIO
 
-from scripts.autotrain import Job, load_jobs, run_job
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
+# Repo root must be on sys.path *before* importing the scripts package, and it
+# is the parent of apps/ (this file lives at <repo>/apps/dashboard/app.py).
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))  # Ensure scripts module is importable
+
+from scripts.autotrain import (  # noqa: E402  (import after sys.path setup)
+    DEFAULT_CONFIG,
+    TrainJob,
+    build_command,
+    load_jobs,
+    validate_job,
+)
 
 
 app = Flask(__name__)
@@ -30,6 +40,15 @@ DATA_OUT = REPO_ROOT / "data_out"
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/global-upgrade.css")
+def global_upgrade_css():
+    """Serve the shared global theme stylesheet referenced by the dashboard."""
+    css_path = REPO_ROOT / "apps" / "global-upgrade.css"
+    if not css_path.exists():
+        abort(404)
+    return send_file(str(css_path), mimetype="text/css")
 
 
 @app.route("/status")
@@ -63,7 +82,7 @@ def resources():
 def results():
     # Load latest exported results
     res_path = (
-        Path(__file__).resolve().parents[1] / "exports" / "all_orchestrators.json"
+        REPO_ROOT / "exports" / "all_orchestrators.json"
     )
     if res_path.exists():
         with res_path.open() as f:
@@ -80,7 +99,7 @@ def _compute_training_progress():
       eta_seconds / eta_iso: estimated remaining time until all jobs finish (based on avg succeeded duration)
       average_job_duration_seconds: mean duration of succeeded jobs
     """
-    cfg_path = REPO_ROOT / "autotrain.yaml"
+    cfg_path = DEFAULT_CONFIG
     try:
         cfg = (
             yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
@@ -288,6 +307,10 @@ def _compute_training_progress():
 RETRY_LOCK = threading.Lock()
 ACTIVE_RETRY: Optional[str] = None
 ACTIVE_JOB_PIDS: Dict[str, int] = {}
+# Job names for which a cancellation has been explicitly requested via
+# /api/cancel_job. Used so the retry worker preserves the "cancelled" status
+# even when the subprocess handles SIGTERM and exits cleanly (return code 0).
+CANCEL_REQUESTED: set = set()
 STATUS_PATH = DATA_OUT / "autotrain" / "status.json"
 
 
@@ -313,6 +336,141 @@ def _find_job_entry(status_obj: Dict[str, Any], name: str) -> Optional[Dict[str,
         if j.get("name") == name:
             return j
     return None
+
+
+def _safe_name(name: str) -> str:
+    """Sanitize a job name for safe use in log filenames."""
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]", "_", str(name)).strip("._")
+    return cleaned or "job"
+
+
+def _format_duration(seconds: float) -> str:
+    """Render a human-readable H:MM:SS / M:SS style duration."""
+    seconds = max(0, int(round(seconds)))
+    hours, rem = divmod(seconds, 3600)
+    minutes, secs = divmod(rem, 60)
+    if hours:
+        return f"{hours}h {minutes}m {secs}s"
+    if minutes:
+        return f"{minutes}m {secs}s"
+    return f"{secs}s"
+
+
+def run_job(
+    job: TrainJob,
+    dry_run: bool = False,
+    job_index: int = 0,
+    total_jobs: int = 1,
+) -> Dict[str, Any]:
+    """Execute a single training job as a subprocess and return a result dict.
+
+    This mirrors the orchestrator behaviour in ``scripts/autotrain.py`` but adds
+    PID tracking so the dashboard's cancel route can terminate the process group.
+    The returned dict uses the status vocabulary the dashboard badges expect
+    (``succeeded`` / ``failed`` / ``cancelled`` / ``validated`` / ``skipped``).
+    """
+    start_dt = datetime.now(timezone.utc)
+    start_time = start_dt.strftime("%Y%m%dT%H%M%SZ")
+    base: Dict[str, Any] = {
+        "name": job.name,
+        "runner": job.runner,
+        "start_time": start_time,
+    }
+
+    # Respect the enabled flag.
+    if not getattr(job, "enabled", True):
+        return {**base, "status": "skipped", "reason": "disabled"}
+
+    # Validate inputs (datasets/configs present) before launching anything.
+    try:
+        validation = validate_job(job)
+    except Exception as e:  # pragma: no cover - defensive
+        validation = {"status": "missing", "missing": [str(e)]}
+    if validation.get("status") != "ok":
+        return {
+            **base,
+            "status": "failed",
+            "reason": "validation_failed",
+            "missing": validation.get("missing", []),
+        }
+
+    try:
+        cmd = build_command(job)
+    except Exception as e:
+        return {**base, "status": "failed", "error": f"build_command: {e}"}
+
+    cmd_display = shlex.join(cmd)
+
+    if dry_run:
+        return {
+            **base,
+            "status": "validated",
+            "cmd": cmd_display,
+            "return_code": 0,
+            "duration_sec": 0,
+            "duration_human": "0s",
+        }
+
+    log_dir = DATA_OUT / "autotrain" / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"{_safe_name(job.name)}_{start_time}.log"
+
+    perf = time.perf_counter()
+    return_code: Optional[int] = None
+    try:
+        with open(log_path, "w", encoding="utf-8") as log_fh:
+            log_fh.write(f"# job: {job.name}\n# cmd: {cmd_display}\n# start: {start_time}\n\n")
+            log_fh.flush()
+            popen_kwargs: Dict[str, Any] = {
+                "cwd": str(REPO_ROOT),
+                "stdout": log_fh,
+                "stderr": subprocess.STDOUT,
+            }
+            if os.name != "nt":
+                # New session => own process group so cancel_job can killpg().
+                popen_kwargs["start_new_session"] = True
+            proc = subprocess.Popen(cmd, **popen_kwargs)  # noqa: S603
+            with RETRY_LOCK:
+                ACTIVE_JOB_PIDS[job.name] = proc.pid
+            try:
+                return_code = proc.wait()
+            finally:
+                with RETRY_LOCK:
+                    ACTIVE_JOB_PIDS.pop(job.name, None)
+    except Exception as e:
+        with RETRY_LOCK:
+            ACTIVE_JOB_PIDS.pop(job.name, None)
+        return {
+            **base,
+            "status": "failed",
+            "error": str(e),
+            "cmd": cmd_display,
+            "log": str(log_path),
+        }
+
+    duration_sec = time.perf_counter() - perf
+
+    # A negative return code means the process was terminated by a signal,
+    # which is how cancel_job stops it -> report "cancelled" (don't clobber).
+    if return_code is not None and return_code < 0:
+        status = "cancelled"
+    elif return_code == 0:
+        status = "succeeded"
+    else:
+        status = "failed"
+
+    result: Dict[str, Any] = {
+        **base,
+        "status": status,
+        "return_code": return_code,
+        "duration_sec": round(duration_sec, 2),
+        "duration_human": _format_duration(duration_sec),
+        "cmd": cmd_display,
+        "log": str(log_path),
+    }
+    if job.save_dir:
+        result["output_dir"] = str(REPO_ROOT / job.save_dir)
+    return result
 
 
 @app.route("/api/retry_job/<job_name>", methods=["POST"])
@@ -341,14 +499,14 @@ def retry_job(job_name: str):
             return jsonify({"error": "job_not_found"}), 404
 
         # Load job from config so we have full definition (dataset, save_dir, etc.)
-        cfg_path = REPO_ROOT / "autotrain.yaml"
+        cfg_path = DEFAULT_CONFIG
         try:
             config_jobs = {j.name: j for j in load_jobs(cfg_path)}
         except Exception:
             return jsonify({"error": "config_load_failed"}), 500
         if job_name not in config_jobs:
             return jsonify({"error": "job_not_in_config"}), 400
-        job_obj: Job = config_jobs[job_name]
+        job_obj: TrainJob = config_jobs[job_name]
 
         # Prepare placeholder update
         retry_count = int(target_entry.get("retry_count", 0)) + 1
@@ -365,7 +523,7 @@ def retry_job(job_name: str):
         _write_status(status_obj)
         ACTIVE_RETRY = job_name
 
-        def _do_retry(job: Job, retry_num: int):
+        def _do_retry(job: TrainJob, retry_num: int):
             global ACTIVE_RETRY
             try:
                 result = run_job(job, dry_run=False, job_index=0, total_jobs=1)
@@ -380,17 +538,26 @@ def retry_job(job_name: str):
                 }
             # Merge result back into status
             with RETRY_LOCK:
+                # If a cancellation was explicitly requested for this job,
+                # preserve the "cancelled" status even if the subprocess
+                # trapped SIGTERM and exited cleanly (return code 0).
+                cancel_requested = job.name in CANCEL_REQUESTED
+                CANCEL_REQUESTED.discard(job.name)
+                if cancel_requested:
+                    result["status"] = "cancelled"
                 current_status = _read_status()
                 entry = _find_job_entry(current_status, job.name)
                 if entry is not None:
                     # Preserve retry_count from placeholder
                     preserved_retry = entry.get("retry_count", retry_num)
                     result["retry_count"] = preserved_retry
-                    result["status"] = result.get("status")
                     result["retry_completed_time"] = datetime.now(
                         timezone.utc
                     ).strftime("%Y%m%dT%H%M%SZ")
-                    # Mark as succeeded/failed (no special retry_running state anymore)
+                    # Mark as succeeded/failed/cancelled (no special
+                    # retry_running state anymore). Diagnostic fields
+                    # (reason/missing/error/trace) are propagated so a failed
+                    # validation/build surfaces an actionable cause.
                     for k in [
                         "status",
                         "return_code",
@@ -403,6 +570,10 @@ def retry_job(job_name: str):
                         "start_time",
                         "retry_count",
                         "retry_completed_time",
+                        "reason",
+                        "missing",
+                        "error",
+                        "trace",
                     ]:
                         v = result.get(k)
                         if v is not None:
@@ -449,6 +620,10 @@ def cancel_job(job_name: str):
                 subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], check=False)
             else:
                 os.killpg(os.getpgid(pid), signal.SIGTERM)
+
+            # Record the cancellation so the retry worker preserves the
+            # "cancelled" status when the subprocess exits (even with code 0).
+            CANCEL_REQUESTED.add(job_name)
 
             # Update status to cancelled
             target_entry["status"] = "cancelled"

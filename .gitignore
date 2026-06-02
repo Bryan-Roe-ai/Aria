@@ -107,6 +107,15 @@ celerybeat-schedule
 *.swo
 *~
 talk-to-ai/src/Untitled-*.json
+# Scratch/untitled notebook artifacts (created by editors, not source)
+Untitled-*.ipynb
+Untitled-*.json
+.github/Untitled-*
+# keep_working launcher runtime state (not source)
+keep_working_history.db
+keep_working_history.json
+keep_working_config.json
+keep_working_status.json
 
 # Azure Functions / Azurite
 bin/
@@ -116,6 +125,7 @@ local.settings.json
 __blobstorage__/
 __queuestorage__/
 __azurite_db*__.json
+.azurite/
 .python_packages/
 
 # Project-generated artifacts

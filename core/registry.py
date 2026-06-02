@@ -14,7 +14,7 @@ class AgentRegistry:
         self._agents: List[BaseAgent] = []
 
     def register(self, agent: BaseAgent) -> BaseAgent:
-        """Register an agent and reject duplicate names to keep routing deterministic."""
+        """Register an agent and reject duplicate names."""
         if self.get(agent.name) is not None:
             raise ValueError(f"Agent already registered: {agent.name}")
         self._agents.append(agent)

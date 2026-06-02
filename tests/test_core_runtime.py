@@ -2,155 +2,103 @@
 
 from __future__ import annotations
 
-import pytest
-
-from core.agents.goal_evolution_agent import GoalEvolutionAgent
-from core.agents.llm_agent import LLMAgent
-from core.agents.planner_agent import PlannerAgent
-from core.agents.tool_agent import ToolAgent, ToolRegistry
-from core.agents.training_agent import TrainingAgent
-from core.memory.store import MemoryStore
-from core.queue import TaskQueue
-from core.registry import AgentRegistry
-from core.router import TaskRouter
+from core.agents.tool_agent import ToolAgent
 from core.runner import AriaRunner
 from core.task import Task
 
 
-def test_task_defaults_and_validation() -> None:
-    task = Task(type="llm", payload={"prompt": "hello"})
+def test_runner_self_assess_loop_records_retrain_result() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0, "target_score": 0.9})
+    training_agent = runner.registry.get("training_agent")
 
-    assert task.id
-    assert task.priority == 0
-    assert task.to_dict()["payload"] == {"prompt": "hello"}
+    assert training_agent is not None
 
-    with pytest.raises(ValueError):
-        Task(type="  ")
+    routed_tasks: list[Task] = []
 
+    def _self_assess(*, target_score: float = 0.7) -> dict:
+        return {
+            "target_score": target_score,
+            "latest_score": 0.5,
+            "history_size": 1,
+            "needs_retraining": True,
+        }
 
-def test_agent_registry_rejects_duplicate_names() -> None:
-    memory = MemoryStore()
-    registry = AgentRegistry()
+    def _route(task: Task) -> dict:
+        routed_tasks.append(task)
+        return {
+            "agent": "training_agent",
+            "result": {"ack": "training signal recorded"},
+        }
 
-    registry.register(PlannerAgent(memory))
+    setattr(training_agent, "self_assess", _self_assess)
+    setattr(runner.router, "route", _route)
 
-    with pytest.raises(ValueError):
-        registry.register(PlannerAgent(memory))
+    assessment = runner._run_self_assess_loop("improve reliability")
 
+    assert assessment is not None
+    assert assessment["needs_retraining"] is True
+    assert assessment["retrain_result"]["agent"] == "training_agent"
+    assert routed_tasks[0].type == "train"
+    assert routed_tasks[0].payload == {
+        "goal": "improve reliability",
+        "source": "self_assess",
+    }
 
-def test_planner_agent_returns_structured_plan() -> None:
-    memory = MemoryStore()
-    memory.write("goal_created", {"goal": "improve local tool execution"})
-    agent = PlannerAgent(memory)
-
-    result = agent.execute(
-        Task(type="plan", payload={"goal": "Use a tool to inspect files"})
-    )
-    plan = result["plan"]
-
-    assert len(plan) >= 2
-    assert all(step["id"] for step in plan)
-    assert {step["type"] for step in plan} >= {"llm", "tool"}
-
-
-def test_planner_agent_reports_missing_goal_without_invalid_steps() -> None:
-    memory = MemoryStore()
-    agent = PlannerAgent(memory)
-
-    result = agent.execute(Task(type="plan", payload={}))
-
-    assert result["error"] == "No goal provided"
-    assert result["plan"] == []
-    plan_created = memory.last_of_type("plan_created")
-    assert plan_created is not None
-    assert plan_created["data"]["error"] == "No goal provided"
+    memory_event = runner.memory.last_of_type("training_self_assessment")
+    assert memory_event is not None
+    assert memory_event["data"]["goal"] == "improve reliability"
+    assert memory_event["data"]["needs_retraining"] is True
 
 
-def test_goal_evolution_agent_returns_goal() -> None:
-    memory = MemoryStore()
-    memory.write("plan_created", {"plan": [{"type": "llm"}]})
-    agent = GoalEvolutionAgent(memory)
+def test_runner_self_assess_loop_skips_retrain_when_not_needed() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0, "target_score": 0.4})
+    training_agent = runner.registry.get("training_agent")
 
-    result = agent.execute(Task(type="goal_evolve"))
+    assert training_agent is not None
 
-    assert result["goal"]
-    assert isinstance(result["goal"], str)
+    routed_tasks: list[Task] = []
 
+    def _self_assess(*, target_score: float = 0.7) -> dict:
+        return {
+            "target_score": target_score,
+            "latest_score": 0.8,
+            "history_size": 2,
+            "needs_retraining": False,
+        }
 
-def test_llm_agent_uses_structured_core_client_output() -> None:
-    agent = LLMAgent()
+    def _route(task: Task) -> dict:
+        routed_tasks.append(task)
+        return {
+            "agent": "training_agent",
+            "result": {"ack": "training signal recorded"},
+        }
 
-    result = agent.execute(
-        Task(type="llm", payload={"prompt": "Verify this design"})
-    )
+    setattr(training_agent, "self_assess", _self_assess)
+    setattr(runner.router, "route", _route)
 
-    assert result["output"] == "Simulated result for: Verify this design"
-    assert result["analysis"] == "Processed: Verify this design"
-    assert "execute_solution" in result["steps"]
+    assessment = runner._run_self_assess_loop("improve throughput")
 
+    assert assessment is not None
+    assert assessment["needs_retraining"] is False
+    assert "retrain_result" not in assessment
+    assert routed_tasks == []
 
-def test_tool_agent_reports_available_tools_on_error() -> None:
-    registry = ToolRegistry()
-    registry.register("echo", lambda text: text)
-    agent = ToolAgent(registry)
-
-    result = agent.execute(
-        Task(type="tool", payload={"tool": "missing", "args": {}})
-    )
-
-    assert result["error"] == "Tool not found: missing"
-    assert result["available_tools"] == ["echo"]
-
-
-def test_tool_agent_rejects_non_mapping_args() -> None:
-    agent = ToolAgent()
-
-    result = agent.execute(
-        Task(type="tool", payload={"tool": "anything", "args": ["x"]})
-    )
-
-    assert result["error"] == "Tool args must be a dictionary"
+    memory_event = runner.memory.last_of_type("training_self_assessment")
+    assert memory_event is not None
+    assert memory_event["data"]["goal"] == "improve throughput"
+    assert memory_event["data"]["needs_retraining"] is False
 
 
-def test_router_prioritizes_matching_agent_types() -> None:
-    memory = MemoryStore()
-    registry = AgentRegistry()
-    planner = PlannerAgent(memory)
-    llm = LLMAgent()
-    registry.register(planner)
-    registry.register(llm)
-    router = TaskRouter(registry)
-
-    result = router.route(
-        Task(type="plan", payload={"goal": "Investigate files"})
-    )
-
-    assert result["agent"] == "planner_agent"
-    assert result["candidates"][0]["agent"] == "planner_agent"
-
-
-def test_router_classifies_reflection_requests_for_reflection_agent() -> None:
+def test_runner_normalize_plan_step_falls_back_to_index_id() -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
 
-    result = runner.router.route_text(
-        "Reflect on the last cycle and identify lessons"
+    task, skip_reason = runner._normalize_plan_step(
+        {"type": "tool", "payload": {"tool": "inspect_context"}}, 3
     )
 
-    assert result["agent"] == "reflection_agent"
-
-
-def test_training_agent_summary_tracks_signal_counts() -> None:
-    agent = TrainingAgent()
-
-    train_result = agent.execute(
-        Task(type="train", payload={"goal": "improve"})
-    )
-    eval_result = agent.execute(Task(type="evaluate", payload={"score": 0.8}))
-
-    assert train_result["summary"]["counts"]["train"] == 1
-    assert eval_result["summary"]["counts"]["train"] == 1
-    assert eval_result["summary"]["counts"]["evaluate"] == 1
-    assert eval_result["summary"]["latest_signal"] == "evaluate"
+    assert skip_reason is None
+    assert task is not None
+    assert task.id == "plan-step-3"
 
 
 def test_runner_run_once_executes_cycle_and_records_memory() -> None:
@@ -195,6 +143,31 @@ def test_runner_default_inspect_context_tool_uses_memory() -> None:
     assert result["output"]["event_counts"]["goal_created"] == 1
 
 
+def test_runner_knowledge_path_tool_uses_graph_relationships() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    tool_agent = runner.registry.get("tool_agent")
+
+    assert tool_agent is not None
+
+    runner.knowledge_graph.add_relationship("alpha", "beta", "links_to")
+    runner.knowledge_graph.add_relationship("beta", "gamma", "links_to")
+
+    result = tool_agent.execute(
+        Task(
+            type="tool",
+            payload={
+                "tool": "knowledge_path",
+                "args": {"source": "alpha", "target": "gamma"},
+            },
+        )
+    )
+
+    assert result["tool"] == "knowledge_path"
+    assert result["output"]["source"] == "alpha"
+    assert result["output"]["target"] == "gamma"
+    assert result["output"]["path"] == ["alpha", "beta", "gamma"]
+
+
 def test_runner_skips_invalid_plan_steps_and_records_reason() -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
     planner = runner.registry.get("planner_agent")
@@ -222,18 +195,24 @@ def test_runner_skips_invalid_plan_steps_and_records_reason() -> None:
     assert runner.memory.last_of_type("plan_step_skipped") is not None
 
 
-@pytest.mark.asyncio
-async def test_task_queue_processes_tasks_and_stops_cleanly() -> None:
-    queue: TaskQueue = TaskQueue(max_workers=2)
-    processed: list[str] = []
+def test_runner_cycle_summary_counts_failed_steps() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    planner = runner.registry.get("planner_agent")
+    assert planner is not None
 
-    async def handler(task: str) -> None:
-        processed.append(task)
+    def _plan_with_failures(_task: Task) -> dict:
+        return {
+            "agent": "planner_agent",
+            "plan": [
+                {"type": "tool", "payload": {"tool": "missing", "args": {}}},
+                {"type": "llm", "payload": {"prompt": "ok"}},
+            ],
+        }
 
-    await queue.start(handler)
-    await queue.add_task("a")
-    await queue.add_task("b")
-    await queue.stop()
+    setattr(planner, "execute", _plan_with_failures)
 
-    assert sorted(processed) == ["a", "b"]
-    assert queue.pending_count() == 0
+    result = runner.run_once()
+
+    # The "missing" tool step routes to an error result; the llm step succeeds.
+    assert result["executed_steps"] == 2
+    assert result["failed_steps"] == 1

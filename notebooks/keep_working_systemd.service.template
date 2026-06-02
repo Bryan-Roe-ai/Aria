@@ -1,0 +1,13 @@
+; Systemd service template for Keep Working CLI loop
+[Unit]
+Description=Keep Working Pomodoro Service
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/workspaces/Aria
+ExecStart=%h/workspaces/Aria/.venv/bin/python %h/workspaces/Aria/notebooks/keep_working_launcher.py --task "Focus" --work 1500 --short 300 --long 900 --repeat
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

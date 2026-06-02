@@ -9,13 +9,15 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 
 from core.runner import AriaRunner
 
 
-def main() -> None:
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run Aria core autonomous runtime")
+        description="Run Aria core autonomous runtime"
+    )
     parser.add_argument(
         "--cycles",
         type=int,
@@ -28,12 +30,20 @@ def main() -> None:
         default=0.1,
         help="Seconds to sleep between cycles when --cycles > 1.",
     )
-    args = parser.parse_args()
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> None:
+    args = _build_parser().parse_args(list(argv) if argv is not None else None)
+
+    if args.cycles < 1:
+        raise SystemExit("--cycles must be at least 1")
 
     runner = AriaRunner(
-        config={"max_cycles": args.cycles, "sleep_seconds": args.sleep})
+        config={"max_cycles": args.cycles, "sleep_seconds": args.sleep}
+    )
 
-    if args.cycles <= 1:
+    if args.cycles == 1:
         summary = runner.run_once()
         print(json.dumps(summary, indent=2))
         return

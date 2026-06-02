@@ -14,6 +14,7 @@ if str(shared_path) not in sys.path:
     sys.path.insert(0, str(shared_path))
 
 from chat_providers import detect_provider  # noqa: E402
+from runtime_env import build_venv_info  # noqa: E402
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
@@ -48,37 +49,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     # Repo root and venv python
     repo_root = Path(__file__).resolve().parents[1]
-    venv_python = repo_root / "venv" / "Scripts" / "python.exe"
-    venv_info = {
-        "path": str(venv_python),
-        "exists": venv_python.exists(),
-        "packages": {},
-        "error": None,
-    }
-    if venv_info["exists"]:
-        try:
-            code = (
-                "import json, importlib.util, importlib.metadata as md;"
-                "mods=['torch','transformers','peft'];"
-                "avail={m:(importlib.util.find_spec(m) is not None) for m in mods};"
-                "vers={};"
-                "\nfor m in mods:\n\t"
-                "\n\ttry:\n\t\tvers[m]=md.version(m)\n\texcept Exception:\n\t\tvers[m]=None;"
-                "print(json.dumps({'available':avail,'versions':vers}))"
-            )
-            proc = subprocess.run(
-                [str(venv_python), "-c", code],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            if proc.returncode == 0:
-                data = json.loads(proc.stdout.strip() or "{}")
-                venv_info["packages"] = data
-            else:
-                venv_info["error"] = proc.stderr.strip() or f"exit {proc.returncode}"
-        except Exception as e:  # noqa: BLE001
-            venv_info["error"] = str(e)
+    venv_info = build_venv_info(repo_root, timeout_seconds=10)
 
     # LoRA default adapter location and readiness
     lora_default = repo_root / "data_out" / "lora_training" / "lora_adapter"

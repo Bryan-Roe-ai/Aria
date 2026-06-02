@@ -13,6 +13,19 @@
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},
+			"dependsOn": [
+				"storage: emulator start"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "storage: emulator start",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && if lsof -iTCP:10000 -sTCP:LISTEN >/dev/null 2>&1; then echo \"[storage: emulator start] Azurite already listening on 10000.\"; exit 0; fi; mkdir -p data_out .azurite; nohup npx --yes azurite --silent --location .azurite --blobPort 10000 --queuePort 10001 --tablePort 10002 > data_out/azurite.log 2>&1 & for i in $(seq 1 30); do if lsof -iTCP:10000 -sTCP:LISTEN >/dev/null 2>&1; then echo \"[storage: emulator start] Azurite is ready.\"; exit 0; fi; sleep 1; done; echo \"[storage: emulator start] Azurite failed to start.\"; tail -20 data_out/azurite.log; exit 1"
+			],
 			"problemMatcher": []
 		},
 		{
@@ -265,6 +278,66 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "startup: agi",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && bash scripts/startup_agi.sh --cycles ${input:agiCycles} --short-break-sec ${input:agiShortBreakSec} --long-break-sec ${input:agiLongBreakSec} --long-break-every ${input:agiLongBreakEvery}"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"focus": false,
+				"clear": true
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "service: agi install",
+			"detail": "Install/refresh the systemd --user service for the AGI launcher and enable it.",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"mkdir -p \"$HOME/.config/systemd/user\" && cp \"${workspaceFolder}/config/aria-agi-launcher.service\" \"$HOME/.config/systemd/user/aria-agi-launcher.service\" && { [ -S \"${XDG_RUNTIME_DIR:-/nonexistent}/systemd/private\" ] || { echo 'systemd user manager is not available here (e.g. inside this dev container). Unit copied to ~/.config/systemd/user/ — install/enable it on a host with systemd, or use the \"startup: agi\" task instead.'; exit 1; }; } && systemctl --user daemon-reload && systemctl --user enable aria-agi-launcher.service && echo 'Installed and enabled aria-agi-launcher.service (start it with the \"service: agi start\" task).'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "service: agi start",
+			"detail": "Start the AGI launcher user service.",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"{ [ -S \"${XDG_RUNTIME_DIR:-/nonexistent}/systemd/private\" ] || { echo 'systemd user manager is not available here. Use the \"startup: agi\" task instead, or run on a host with systemd.'; exit 1; }; } && systemctl --user start aria-agi-launcher.service && systemctl --user --no-pager status aria-agi-launcher.service"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "service: agi stop",
+			"detail": "Stop the AGI launcher user service.",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"systemctl --user stop aria-agi-launcher.service && echo 'Stopped aria-agi-launcher.service.'"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "service: agi status",
+			"detail": "Show status and recent logs for the AGI launcher user service.",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"systemctl --user --no-pager status aria-agi-launcher.service; echo '--- recent logs ---'; journalctl --user -u aria-agi-launcher.service -n 30 --no-pager 2>/dev/null || tail -n 30 \"${workspaceFolder}/data_out/aria-agi-launcher.service.log\" 2>/dev/null || true"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "Validate writer-reviewer debug prerequisites",
 			"type": "aitk",
 			"command": "debug-check-prerequisites",
@@ -339,9 +412,47 @@
 			"type": "shell",
 			"command": "echo ${input:terminate}",
 			"problemMatcher": []
+		},
+		{
+			"label": "Keep Working: Pomodoro",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && \"${command:python.interpreterPath}\" notebooks/keep_working_launcher.py --task \"${input:keepWorkingTask}\" --work ${input:keepWorkingWork} --repeat --notify --sound"
+			],
+			"isBackground": true,
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
+		{
+			"id": "agiCycles",
+			"type": "promptString",
+			"description": "startup: agi — number of launcher cycles (0 = infinite)",
+			"default": "1"
+		},
+		{
+			"id": "agiShortBreakSec",
+			"type": "promptString",
+			"description": "startup: agi — seconds to sleep between normal cycles",
+			"default": "30"
+		},
+		{
+			"id": "agiLongBreakSec",
+			"type": "promptString",
+			"description": "startup: agi — seconds to sleep after every long-break interval",
+			"default": "300"
+		},
+		{
+			"id": "agiLongBreakEvery",
+			"type": "promptString",
+			"description": "startup: agi — use the long break after every N cycles",
+			"default": "5"
+		},
 		{
 			"id": "openWriterReviewerInspector",
 			"type": "command",
@@ -365,6 +476,18 @@
 			"type": "command",
 			"command": "workbench.action.tasks.terminate",
 			"args": "terminateAll"
+		},
+		{
+			"id": "keepWorkingTask",
+			"type": "promptString",
+			"description": "Keep Working — task name to log",
+			"default": "Deep work"
+		},
+		{
+			"id": "keepWorkingWork",
+			"type": "promptString",
+			"description": "Keep Working — work duration in seconds",
+			"default": "1500"
 		}
 	]
 }

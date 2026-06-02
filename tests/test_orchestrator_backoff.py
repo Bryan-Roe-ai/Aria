@@ -8,9 +8,7 @@ resources or real training.
 from __future__ import annotations
 
 import sys
-import time
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -72,7 +70,7 @@ class TestTenacityRetry:
 
     def test_raises_after_max_attempts(self):
         try:
-            from tenacity import retry, stop_after_attempt, wait_none, RetryError
+            from tenacity import retry, stop_after_attempt, wait_none
 
             @retry(stop=stop_after_attempt(2), wait=wait_none(), reraise=True)
             def always_fails():
@@ -206,6 +204,7 @@ class TestSaveStatus:
 
     def test_save_creates_file(self, tmp_path):
         import json
+
         import scripts.autonomous_training_orchestrator as orch_mod
 
         original = orch_mod.STATUS_FILE

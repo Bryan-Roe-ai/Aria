@@ -582,7 +582,7 @@ def test_log_message_handles_httpstatus_args(capsys):
 
 def test_generate_world_with_llm_accepts_provider_content_dict():
     class MockProvider:
-        def complete(self, messages, stream=False):
+        def complete(self, _messages, stream=False):
             world_payload = {
                 "objects": [
                     {
@@ -613,7 +613,7 @@ def test_generate_world_with_llm_accepts_provider_content_dict():
 
 def test_generate_world_with_llm_accepts_object_list_in_response():
     class MockProvider:
-        def complete(self, messages, stream=False):
+        def complete(self, _messages, stream=False):
             world_payload = {
                 "objects": [
                     {
@@ -802,7 +802,7 @@ def test_parse_accepts_quantum_llm_provider_alias(monkeypatch):
     captured = {}
 
     class DummyProvider:
-        def complete(self, messages, stream=False):
+        def complete(self, _messages, stream=False):
             return "[]"
 
     class DummyChoice:

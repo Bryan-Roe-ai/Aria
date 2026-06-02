@@ -2,7 +2,7 @@
 
 # Aria — Copilot Quick Guide
 
-*Last updated: November 29, 2025*
+*Last updated: June 1, 2026*
 
 Short & actionable summary for AI agents editing Aria — an interactive AI character platform with autonomous learning, quantum ML integration, and multi-provider chat backends.
 
@@ -257,12 +257,28 @@ async def run_single_cycle(cycle_number):
 
 ## Testing & Validation
 
-- **Unit tests:** `pytest tests/ -m "not slow and not azure"` or `python scripts/test_runner.py --unit`
-- **Integration tests:** `python scripts/test_runner.py --integration`
-- **All tests:** `python scripts/test_runner.py --all`
+- **Unit tests:** `make test-unit` or `pytest tests/ -m "not slow and not azure and not integration"` or `python scripts/test_runner.py --unit`
+- **Integration tests:** `make test-integration` or `python scripts/test_runner.py --integration`
+- **All tests:** `make test` or `python scripts/test_runner.py --all`
+- **Single file:** `pytest tests/test_function_app.py -q`
+- **Single test:** `pytest tests/test_function_app.py::test_status_endpoint -q`
+- **By keyword:** `pytest -k "chat and not slow" -q`
+- **Coverage:** `make test-coverage` (writes HTML to `data_out/coverage_html`)
 - **VS Code Test Explorer:** Use 🧪 icon for interactive test running
-- **Markers:** `@pytest.mark.slow`, `@pytest.mark.azure`, `@pytest.mark.integration`
+- **Markers** (defined in `pyproject.toml` / `pytest.ini`): `unit`, `slow`, `azure`, `integration`, `e2e`, `playwright`, `pyppeteer`, `selenium`
+- **Config:** `asyncio_mode = "auto"` — async tests need no `@pytest.mark.asyncio`
 - **Chat dataset validation:** `python scripts/validate_datasets.py --category chat`
+
+## Lint, Format & Type-Check
+
+The `Makefile` is the canonical entry point; underlying tools are configured in `pyproject.toml` (ruff/black/isort line-length **120**, ruff lint select `E,F,W,I,B,UP`).
+
+- **Lint (ruff + black --check):** `make lint`
+- **Auto-format (ruff --fix + black):** `make format`
+- **Type-check (mypy, non-fatal):** `make type-check`
+- **Import smoke test:** `make smoke`
+- Pre-commit hooks are configured in `.pre-commit-config.yaml` (`pre-commit run --all-files`).
+- Per-file ignores: `tests/*` allows `F811` (fixture redefinition); `scripts/*` allows `print()`.
 
 ## Optional Services
 

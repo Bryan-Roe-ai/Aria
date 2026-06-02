@@ -1794,9 +1794,12 @@ def create_agi_provider(
     """Create an :class:`AGIProvider` wrapping the best available base provider.
 
     Auto-detects the base provider using :func:`~chat_providers.detect_provider`
-    with ``explicit="auto"``.  If detection fails the provider is created
-    without a pre-loaded base provider (it will be auto-detected on the first
-    ``complete`` call).
+    with ``explicit="auto"``.  Set the ``AGI_BASE_PROVIDER`` environment variable
+    to pin the base provider explicitly (e.g. ``azure``, ``openai``, or
+    ``local_echo`` for a guaranteed-working deterministic base in minimal
+    environments where auto-detection would otherwise select an unusable
+    backend).  If detection fails the provider is created without a pre-loaded
+    base provider (it will be auto-detected on the first ``complete`` call).
 
     Parameters
     ----------
@@ -1831,9 +1834,14 @@ def create_agi_provider(
     base_provider = None
     base_choice = None
 
+    # The base provider defaults to auto-detection, but operators can pin it via
+    # the AGI_BASE_PROVIDER env var (e.g. "local" for a guaranteed-working
+    # deterministic base in minimal environments, or "azure"/"openai" in prod).
+    base_explicit = (os.getenv("AGI_BASE_PROVIDER", "auto").strip() or "auto")
+
     try:
         base_provider, base_choice = detect_provider(
-            explicit="auto",
+            explicit=base_explicit,
             model_override=model,
             temperature=temperature,
             max_output_tokens=max_output_tokens,

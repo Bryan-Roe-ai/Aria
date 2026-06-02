@@ -12,7 +12,11 @@ class KnowledgeGraph:
         self._entities: Dict[str, Dict[str, Any]] = {}
         self._edges: Dict[str, List[Dict[str, Any]]] = {}
 
-    def add_entity(self, name: str, properties: Optional[Dict[str, Any]] = None) -> None:
+    def add_entity(
+        self,
+        name: str,
+        properties: Optional[Dict[str, Any]] = None,
+    ) -> None:
         if not name:
             return
         if name not in self._entities:
@@ -21,10 +25,22 @@ class KnowledgeGraph:
         elif properties:
             self._entities[name].update(properties)
 
-    def add_relationship(self, source: str, target: str, relation: str, weight: float = 1.0) -> None:
+    def add_relationship(
+        self,
+        source: str,
+        target: str,
+        relation: str,
+        weight: float = 1.0,
+    ) -> None:
         self.add_entity(source)
         self.add_entity(target)
-        self._edges[source].append({"target": target, "relation": relation, "weight": weight})
+        self._edges[source].append(
+            {
+                "target": target,
+                "relation": relation,
+                "weight": weight,
+            }
+        )
 
     def neighbors(self, entity: str) -> List[str]:
         return [edge["target"] for edge in self._edges.get(entity, [])]
@@ -101,7 +117,7 @@ class OntologyLoader:
             content = handle.read()
         if path.endswith((".yaml", ".yml")):
             try:
-                import yaml
+                import yaml  # type: ignore[import-untyped]
 
                 loaded = yaml.safe_load(content)
                 return loaded or {}
@@ -109,12 +125,19 @@ class OntologyLoader:
                 pass
         return json.loads(content)
 
-    def apply_to_graph(self, graph: KnowledgeGraph, ontology: Dict[str, Any]) -> None:
+    def apply_to_graph(
+        self,
+        graph: KnowledgeGraph,
+        ontology: Dict[str, Any],
+    ) -> None:
         for entity in ontology.get("entities", []):
             if isinstance(entity, str):
                 graph.add_entity(entity)
             elif isinstance(entity, dict):
-                graph.add_entity(entity.get("name", ""), entity.get("properties"))
+                graph.add_entity(
+                    entity.get("name", ""),
+                    entity.get("properties"),
+                )
         for relationship in ontology.get("relationships", []):
             graph.add_relationship(
                 relationship["source"],

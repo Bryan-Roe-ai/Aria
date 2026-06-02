@@ -1,11 +1,11 @@
 from pathlib import Path
 
 from scripts.validate_mcp_setup import (
+    ServerValidationResult,
     build_server_params,
     load_mcp_config,
     resolve_workspace_value,
     results_to_json,
-    ServerValidationResult,
     strip_jsonc_comments,
 )
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import suppress
-from typing import Any, Awaitable, Callable, Generic, TypeVar
+from typing import Any, Awaitable, Callable, Generic, TypeVar, cast
 
 
 _STOP = object()
@@ -38,7 +38,7 @@ class TaskQueue(Generic[TTask]):
             try:
                 if task is _STOP:
                     return
-                await handler(task)
+                await handler(cast(TTask, task))
             except Exception as e:
                 print("[Queue error]", e)
             finally:

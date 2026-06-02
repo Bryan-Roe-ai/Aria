@@ -10,9 +10,9 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "shared"))
 
-from config_validator import ValidationError  # noqa: E402
 from config_validator import (
     ConfigValidator,
+    ValidationError,  # noqa: E402
     ValidationResult,
 )
 

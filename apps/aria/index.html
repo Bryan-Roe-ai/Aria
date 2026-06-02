@@ -63,9 +63,19 @@
     .engine-btn[aria-pressed="true"]{background:linear-gradient(135deg,#c06070 0%,var(--accent) 50%,#a78bfa 100%);color:#fff;border-color:var(--accent)}
 
     /* Objects */
-    .object{position:absolute;font-size:32px;cursor:grab;user-select:none;transition:transform 0.18s ease,filter 0.18s ease}
+    .object{position:absolute;font-size:32px;cursor:grab;user-select:none;transition:transform 0.18s ease,filter 0.18s ease,left 0.3s ease,bottom 0.3s ease}
     .object:hover{transform:scale(1.08)}
     .object.grabbed{cursor:grabbing;z-index:100}
+    .object.held{filter:drop-shadow(0 0 6px var(--accent)) brightness(1.1)}
+
+    /* Synced avatar marker (server-driven position) */
+    .aria-avatar{position:absolute;font-size:56px;transform:translateX(-50%);transition:left 0.35s ease,bottom 0.35s ease;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.25));z-index:50}
+
+    /* Preset chips */
+    .chip{background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.35);color:var(--accent);padding:4px 10px;border-radius:999px;cursor:pointer;font-size:0.82rem;font-weight:600}
+    .chip:hover{background:rgba(102,126,234,0.22)}
+    [data-theme="dark"] .panel{background:rgba(24,28,40,0.95)}
+    [data-theme="dark"] .chip{color:#a9b6ff}
 
     /* eyes tracking via custom properties */
     .aria-eye::before,.aria-eye::after{transition:transform 0.12s linear}
@@ -124,6 +134,26 @@
       </section>
 
       <aside class="panel control-panel" aria-label="Control panel">
+        <h3 style="margin-top:0">Command Aria</h3>
+        <form id="commandForm" autocomplete="off" style="margin:8px 0">
+          <label for="commandInput" class="visually-hidden">Natural language command</label>
+          <div style="display:flex;gap:8px">
+            <input id="commandInput" name="commandInput" type="text" maxlength="500"
+              placeholder='Try: "wave", "move left", "pick up apple"'
+              style="flex:1;padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.08)" />
+            <button id="runCommandBtn" type="submit" class="engine-btn">Run</button>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem">
+              <input id="autoExecuteToggle" type="checkbox" /> Auto-execute actions
+            </label>
+          </div>
+          <div id="presetChips" role="group" aria-label="Command presets"
+            style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </form>
+
+        <hr style="margin:12px 0" />
+
         <h3 style="margin-top:0">Object Manager</h3>
         <div style="margin:8px 0">
           <label for="providerSelect" style="display:block;font-weight:600;margin-bottom:6px">Provider</label>
@@ -240,6 +270,256 @@
         o.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); o.click(); } });
       });
     })();
+
+    // ---------------------------------------------------------------------
+    // Server integration: client API + natural-language command bar.
+    // These functions are intentionally global so automated UI tests and
+    // the console can drive the stage (addObject/pickUpObject/dropObject).
+    // ---------------------------------------------------------------------
+
+    const EMOJI_BY_NAME = { apple:'🍎', book:'📚', cup:'☕', ball:'⚽', star:'⭐', toy:'🧸' };
+    const stageEl = document.getElementById('stage');
+
+    function readControls(){
+      const provider = (document.getElementById('providerSelect')||{}).value || 'auto';
+      const model = (document.getElementById('modelInput')||{}).value || '';
+      const useLlm = !!(document.getElementById('useLlmToggle')||{}).checked;
+      return { provider, model: model.trim() || null, use_llm: useLlm };
+    }
+
+    async function postJSON(path, body){
+      const res = await fetch(path, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      let data = null;
+      try { data = await res.json(); } catch(_) { data = null; }
+      if(!res.ok){
+        const msg = (data && (data.error || data.message)) || ('HTTP '+res.status);
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    // Place (or create) a DOM node for an object at server coordinates {x,y}
+    // where x,y are 0-100. x maps to left%, y maps to bottom%.
+    function renderObjectNode(id, position, opts){
+      opts = opts || {};
+      let node = document.getElementById(id);
+      if(!node){
+        node = document.createElement('div');
+        node.id = id;
+        node.className = 'object';
+        node.setAttribute('role','button');
+        node.setAttribute('tabindex','0');
+        node.setAttribute('aria-label', id);
+        node.textContent = opts.emoji || EMOJI_BY_NAME[id] || '🔶';
+        node.addEventListener('click', ()=>{ log('Clicked '+id); node.classList.toggle('grabbed'); });
+        node.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); node.click(); } });
+        if(stageEl) stageEl.appendChild(node);
+      }
+      if(opts.emoji) node.textContent = opts.emoji;
+      const x = position && typeof position.x === 'number' ? position.x : 50;
+      const y = position && typeof position.y === 'number' ? position.y : 28;
+      node.style.left = Math.max(0,Math.min(100,x)) + '%';
+      node.style.bottom = Math.max(0,Math.min(100,y)) + '%';
+      if(opts.held) node.classList.add('held'); else node.classList.remove('held');
+      return node;
+    }
+
+    async function addObject(name, emoji){
+      const id = String(name||'').trim();
+      if(!id){ log('addObject: missing name'); return null; }
+      const position = { x: 40 + Math.round(Math.random()*20), y: 28 };
+      renderObjectNode(id, position, { emoji });
+      try{
+        const data = await postJSON('/api/aria/object', {
+          action:'add',
+          object:{ id, position, state:'on_stage' }
+        });
+        log('Added object "'+id+'" ('+(data && data.status||'ok')+')');
+        return data;
+      }catch(err){
+        log('⚠️ addObject failed: '+err.message);
+        return null;
+      }
+    }
+
+    async function pickUpObject(name){
+      const id = String(name||'').trim();
+      if(!id) return null;
+      const node = document.getElementById(id);
+      if(node) node.classList.add('held');
+      try{
+        const data = await postJSON('/api/aria/object', {
+          action:'update',
+          object:{ id, state:'held' }
+        });
+        log('Picked up "'+id+'"');
+        return data;
+      }catch(err){
+        log('⚠️ pickUpObject failed: '+err.message);
+        return null;
+      }
+    }
+
+    async function dropObject(name){
+      const id = String(name||'').trim();
+      if(!id) return null;
+      const node = document.getElementById(id);
+      const position = { x: 50, y: 28 };
+      if(node){ node.classList.remove('held'); renderObjectNode(id, position); }
+      try{
+        const data = await postJSON('/api/aria/object', {
+          action:'update',
+          object:{ id, state:'on_stage', position }
+        });
+        log('Dropped "'+id+'"');
+        return data;
+      }catch(err){
+        log('⚠️ dropObject failed: '+err.message);
+        return null;
+      }
+    }
+
+    async function removeObject(name){
+      const id = String(name||'').trim();
+      if(!id) return null;
+      const node = document.getElementById(id);
+      if(node && node.parentNode) node.parentNode.removeChild(node);
+      try{
+        const data = await postJSON('/api/aria/object', { action:'remove', object:{ id } });
+        log('Removed "'+id+'"');
+        return data;
+      }catch(err){
+        log('⚠️ removeObject failed: '+err.message);
+        return null;
+      }
+    }
+
+    // Reflect the server's authoritative stage state onto the DOM.
+    async function refreshState(){
+      try{
+        const res = await fetch('/api/aria/state');
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const state = await res.json();
+        const objects = (state && state.objects) || {};
+        Object.keys(objects).forEach(id=>{
+          const o = objects[id] || {};
+          renderObjectNode(id, o.position, { held: o.state === 'held' });
+        });
+        // Render Aria's position as a visible avatar marker.
+        const aria = (state && state.aria) || {};
+        const pos = aria.position || {};
+        if(typeof pos.x === 'number' || typeof pos.y === 'number'){
+          let avatar = document.getElementById('aria-avatar');
+          if(!avatar){
+            avatar = document.createElement('div');
+            avatar.id = 'aria-avatar';
+            avatar.className = 'aria-avatar';
+            avatar.setAttribute('aria-hidden','true');
+            avatar.textContent = '🧍';
+            if(stageEl) stageEl.appendChild(avatar);
+          }
+          avatar.style.left = Math.max(0,Math.min(100, pos.x ?? 50)) + '%';
+          avatar.style.bottom = Math.max(0,Math.min(100, pos.y ?? 30)) + '%';
+        }
+        return state;
+      }catch(err){
+        log('⚠️ refreshState failed: '+err.message);
+        return null;
+      }
+    }
+
+    function describeActions(actions){
+      if(!Array.isArray(actions) || !actions.length) return '';
+      return actions.map(a=>{
+        if(!a || typeof a !== 'object') return String(a);
+        if(a.type === 'say' && a.text) return 'say "'+a.text+'"';
+        if(a.type === 'move' && a.target) return 'move→'+JSON.stringify(a.target);
+        if(a.type === 'gesture' && a.name) return 'gesture:'+a.name;
+        return a.type || JSON.stringify(a);
+      }).join(', ');
+    }
+
+    async function sendCommand(command){
+      const text = String(command||'').trim();
+      if(!text){ log('Enter a command first.'); return null; }
+      const controls = readControls();
+      const autoExecute = !!(document.getElementById('autoExecuteToggle')||{}).checked;
+      const path = autoExecute ? '/api/aria/execute' : '/api/aria/command';
+      const body = Object.assign({ command: text }, controls);
+      if(autoExecute) body.auto_execute = true;
+      log('▶ '+(autoExecute?'Executing':'Parsing')+': "'+text+'"');
+      try{
+        const data = await postJSON(path, body);
+        const tags = (data && data.tags) || [];
+        const actions = (data && data.actions) || [];
+        if(tags.length) log('  tags: '+tags.join(' '));
+        const desc = describeActions(actions);
+        if(desc) log('  actions: '+desc);
+        if(data && data.message) log('  '+data.message);
+        if(!tags.length && !desc && !(data && data.message)) log('  (no actionable output)');
+        await refreshState();
+        return data;
+      }catch(err){
+        log('⚠️ command failed: '+err.message);
+        return null;
+      }
+    }
+
+    // Wire the command form.
+    (function(){
+      const form = document.getElementById('commandForm');
+      const input = document.getElementById('commandInput');
+      if(!form || !input) return;
+      form.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const v = input.value;
+        sendCommand(v);
+        input.value = '';
+        input.focus();
+      });
+    })();
+
+    // Wire the existing Add Apple/Book/Cup buttons to the server.
+    (function(){
+      document.querySelectorAll('.object-btn[data-add]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const name = btn.getAttribute('data-add');
+          addObject(name, EMOJI_BY_NAME[name]);
+        });
+      });
+    })();
+
+    // Load command presets for quick discovery of supported phrases.
+    (function(){
+      const container = document.getElementById('presetChips');
+      const input = document.getElementById('commandInput');
+      if(!container) return;
+      fetch('/api/aria/presets').then(r=>r.ok?r.json():null).then(data=>{
+        if(!data || !Array.isArray(data.presets)) return;
+        const seen = new Set();
+        data.presets.forEach(group=>{
+          (group.commands||[]).forEach(cmd=>{
+            if(seen.has(cmd) || cmd.startsWith('[')) return; // skip raw-tag presets
+            seen.add(cmd);
+            if(seen.size > 12) return; // keep the chip row compact
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'chip';
+            chip.textContent = cmd;
+            chip.addEventListener('click', ()=>{ if(input){ input.value = cmd; input.focus(); } });
+            container.appendChild(chip);
+          });
+        });
+      }).catch(()=>{ /* presets are optional */ });
+    })();
+
+    // Initial sync so the stage reflects server truth on load.
+    if(document.readyState !== 'loading') refreshState();
+    else document.addEventListener('DOMContentLoaded', refreshState);
 
   </script>
 </body>

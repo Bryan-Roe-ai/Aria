@@ -33,13 +33,22 @@ class LLMAgent(BaseAgent):
     def execute(self, task: Task) -> Dict[str, Any]:
         payload = task.payload or {}
         prompt = payload.get("prompt") or payload.get("message") or ""
-        system_prompt = payload.get("system_prompt") or payload.get("system") or ""
+        system_prompt = (
+            payload.get("system_prompt")
+            or payload.get("system")
+            or ""
+        )
         reasoning_mode = bool(payload.get("reasoning_mode"))
 
         if reasoning_mode:
-            response, reasoning_chain = self._run_reasoning_chain(prompt, system_prompt=system_prompt)
+            response, reasoning_chain = self._run_reasoning_chain(
+                prompt,
+                system_prompt=system_prompt,
+            )
             parsed = self._parse_response(response)
-            steps = parsed.get("steps") or [step.name for step in reasoning_chain]
+            steps = parsed.get("steps") or [
+                step.name for step in reasoning_chain
+            ]
             return {
                 "output": parsed.get("output", response),
                 "analysis": parsed.get("analysis"),
@@ -62,13 +71,32 @@ class LLMAgent(BaseAgent):
             "task_id": task.id,
         }
 
-    def _run_reasoning_chain(self, prompt: str, *, system_prompt: str = "") -> tuple[str, List[ReasoningStep]]:
+    def _run_reasoning_chain(
+        self,
+        prompt: str,
+        *,
+        system_prompt: str = "",
+    ) -> tuple[str, List[ReasoningStep]]:
         if not prompt:
-            return "No input provided", [ReasoningStep(name="validate_input", detail="Prompt was empty")]
+            return (
+                "No input provided",
+                [
+                    ReasoningStep(
+                        name="validate_input",
+                        detail="Prompt was empty",
+                    )
+                ],
+            )
         reasoning_chain = [
-            ReasoningStep(name="analyze", detail=f"Analyze request: {prompt[:80]}"),
+            ReasoningStep(
+                name="analyze",
+                detail=f"Analyze request: {prompt[:80]}",
+            ),
             ReasoningStep(name="plan", detail="Draft a concise response plan"),
-            ReasoningStep(name="respond", detail="Generate the final response"),
+            ReasoningStep(
+                name="respond",
+                detail="Generate the final response",
+            ),
         ]
         response = self._run_llm(prompt, system_prompt=system_prompt)
         return response, reasoning_chain
@@ -79,7 +107,11 @@ class LLMAgent(BaseAgent):
 
         return self.client.complete(
             [
-                {"role": "system", "content": system_prompt or "You are a helpful core reasoning agent."},
+                {
+                    "role": "system",
+                    "content": system_prompt
+                    or "You are a helpful core reasoning agent.",
+                },
                 {"role": "user", "content": prompt},
             ]
         )

@@ -7,7 +7,6 @@ boolean. These tests mock urllib so no network access is required.
 from __future__ import annotations
 
 import importlib.util
-from contextlib import contextmanager
 from pathlib import Path
 
 

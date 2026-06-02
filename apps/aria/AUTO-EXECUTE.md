@@ -301,44 +301,74 @@ stage_state = {
 
 ## Testing
 
-### Unit Test Example
+### Comprehensive Test Suite
 
-```python
-def test_action_parser():
-    parser = AriaActionParser()
+The auto-execute system includes a comprehensive test suite at `tests/test_aria_auto_execute.py` with 30+ test cases covering:
 
-    # Test LLM parsing (if available)
-    actions = parser.parse("Walk to the apple and pick it up", use_llm=True)
-    assert len(actions) == 2
-    assert actions[0]['action'] == 'move'
-    assert actions[1]['action'] == 'pickup'
+**Schema & Contract Tests:**
+- Action schema validation
+- Required fields verification
+- Valid gesture type definitions
 
-    # Test fallback parsing
-    actions = parser.parse("Say hello", use_llm=False)
-    assert len(actions) == 1
-    assert actions[0]['action'] == 'say'
-    assert 'hello' in actions[0]['text'].lower()
-```
+**Plan Mode Tests:**
+- Simple move, pickup, say, gesture commands
+- Complex multi-step sequences
+- State immutability (plan doesn't modify state)
 
-### Integration Test
+**Execution Mode Tests:**
+- Simple move command execution
+- Updated state returns
+- Result structure validation
+- Tags output for UI integration
+
+**Validation Tests:**
+- Invalid action handling
+- Empty command handling
+- Very long command handling
+- Special character handling
+
+**State Management Tests:**
+- State endpoint structure
+- Position coordinate bounds
+- Expression validity
+- State consistency across sequences
+
+**Object Management Tests:**
+- Object list retrieval
+- Add object functionality
+- Object state tracking (on_table, held, dropped)
+
+**Provider Detection Tests:**
+- LLM provider detection
+- Fallback parsing validation
+
+**Integration Tests:**
+- Full workflow: plan → execute
+- Sequential command state maintenance
+- Response format consistency
+
+**Running the Tests:**
 
 ```bash
-# Start server
-python server.py &
+# Start Aria server (required)
+cd apps/aria && python server.py &
 
-# Test plan-only
-curl -X POST http://localhost:8080/api/aria/execute \
-  -H "Content-Type: application/json" \
-  -d '{"command": "Walk to the table", "auto_execute": false}'
+# Run all auto-execute tests
+pytest tests/test_aria_auto_execute.py -v
 
-# Test execution
-curl -X POST http://localhost:8080/api/aria/execute \
-  -H "Content-Type: application/json" \
-  -d '{"command": "Pick up the apple", "auto_execute": true}'
+# Run specific test class
+pytest tests/test_aria_auto_execute.py::TestAriaAutoExecuteMode -v
 
-# Check state
-curl http://localhost:8080/api/aria/state
+# Run with coverage
+pytest tests/test_aria_auto_execute.py --cov=apps/aria --cov-report=html
 ```
+
+**Test Structure:**
+- Tests automatically skip if Aria server not running on localhost:8080
+- All tests handle both plan and execute modes
+- Error handling tests verify graceful degradation
+- Response format tests ensure API contract compliance
+- Integration tests verify end-to-end workflows
 
 ## Troubleshooting
 
@@ -414,7 +444,7 @@ curl http://localhost:8080/api/aria/state | jq '.objects'
 - `auto-execute.html` - Web UI for testing auto-execution
 - `index.html` - Original Aria visual command interface
 - `shared/chat_providers.py` - LLM provider detection and abstraction
-- `tests/test_aria_auto_execute.py` - Unit and integration tests (TODO)
+- `tests/test_aria_auto_execute.py` - **Comprehensive test suite with 30+ test cases**
 
 ## Contributing
 
