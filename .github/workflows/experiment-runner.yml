@@ -72,7 +72,7 @@ jobs:
           FAIL_ON_LOW: ${{ inputs.fail_on_low || 'false' }}
           METRICS_FILE: experiment-metrics.json
         run: |
-          set -euo pipefail
+          set -euo pipefail # cspell:ignore pipefail
           # Use a Node heredoc for readability and maintainability.
           # Outputs are written to $GITHUB_OUTPUT for downstream steps to consume.
           node <<'NODE'

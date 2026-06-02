@@ -33,6 +33,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -47,25 +52,30 @@ jobs:
 
       - name: Run flake8 (blocking — syntax errors)
         run: |
+          set -euo pipefail
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Run flake8 (advisory — style warnings)
         run: |
+          set -euo pipefail
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=venv,venv_*,__pycache__,.git,data_out,mount,__blobstorage__,__queuestorage__
         continue-on-error: true
 
       - name: Check code formatting with black
         run: |
+          set -euo pipefail
           black --check --diff --exclude="(venv|venv_.*|__pycache__|\.git|data_out|mount|__blobstorage__|__queuestorage__)" .
         continue-on-error: true
 
       - name: Check import sorting with isort
         run: |
+          set -euo pipefail
           isort --check-only --diff --skip-glob="venv*" --skip-glob="data_out*" --skip-glob="mount*" .
         continue-on-error: true
 
       - name: Type check with mypy (optional)
         run: |
+          set -euo pipefail
           mypy --install-types --non-interactive --ignore-missing-imports --exclude="(venv|venv_.*|data_out|mount)" . || echo "MyPy check completed with warnings"
         continue-on-error: true
 
@@ -74,6 +84,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -83,16 +98,18 @@ jobs:
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
         with:
-          extra-packages: 'safety pip-audit'
+          extra-packages: 'pip-audit'
 
       - name: Check dependencies for vulnerabilities
         run: |
+          set -euo pipefail
           pip-audit --format json --output safety-report.json || echo "Vulnerability check completed with findings"
         continue-on-error: true
 
       - name: Generate security summary
         if: always()
         run: |
+          set -euo pipefail
           {
             echo "## Security Check Results"
             if [ -f safety-report.json ]; then
@@ -101,7 +118,7 @@ jobs:
               echo ''
               echo '```'
             else
-              echo "No vulnerabilities found."
+              echo "pip-audit did not produce a report (check job logs)."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

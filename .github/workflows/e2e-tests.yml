@@ -25,7 +25,9 @@ env:
   # Harden runner and checkout pins
   HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
   CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+  UPLOAD_ARTIFACT_SHA: 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
   PYTHON_UNBUFFERED: "1"
+  # cspell:ignore PYTHONDONTWRITEBYTECODE
   PYTHONDONTWRITEBYTECODE: "1"
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   PYTHON_VERSION: "3.11"
@@ -76,6 +78,69 @@ jobs:
           fi
           pytest -q tests/test_aria_server.py tests/test_object_api_integration.py
 
+  core_monitor:
+    name: Core Runtime Monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+          disable-sudo: true
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Setup Python
+        uses: ./.github/actions/setup-python-env
+        with:
+          install-requirements: 'false'
+      - name: Monitor aria-bot/core runtime
+        id: core_monitor
+        run: |
+          set -euo pipefail
+          python scripts/automate_core_files.py --json > data_out/core_automation/status-monitor.json
+          test -f data_out/core_automation/status-monitor.json
+          python -m json.tool data_out/core_automation/status-monitor.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path('data_out/core_automation/status-monitor.json')
+          data = json.loads(p.read_text(encoding='utf-8'))
+          assert isinstance(data, dict), 'status-monitor.json must be a JSON object'
+          for key in ('passed', 'compile_failed', 'python_files_total'):
+              assert key in data, f'status-monitor.json missing required key: {key}'
+          assert data['passed'] is True, 'core automation monitor must pass'
+          print(f"core automation monitor: {data['python_files_total']} python files, compile_failed={data['compile_failed']}")
+          PY
+
+      - name: Upload core monitor artifact
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: core-monitor-${{ github.run_number }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            data_out/core_automation/status-monitor.json
+
+      - name: Summary
+        if: always()
+        run: |
+          set -euo pipefail
+          echo "## Core Runtime Monitor" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.core_monitor.outcome }}" = "success" ]; then
+            echo "| automating core files | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| core monitor artifact | \`data_out/core_automation/status-monitor.json\` |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| automating core files | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   e2e_playwright:
     name: E2E (Playwright)
     runs-on: ubuntu-latest
@@ -122,20 +187,17 @@ jobs:
       image: python:3.11-bullseye
     timeout-minutes: 25
     steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          egress-policy: audit
-          disable-sudo: true
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
           fetch-depth: 1
       - name: Apt-get update & install dependencies
+        # cspell:ignore libxss libgtk libasound libnss libatk libgbm libx
         run: |
           apt-get update
           apt-get install -y wget gnupg ca-certificates xz-utils fonts-liberation libgtk-3-0 libxss1 libasound2 libnss3 libatk-bridge2.0-0 libx11-xcb1 libgbm1
       - name: Install Chromium (stable)
+        # cspell:ignore elif
         run: |
           set -e
           # Use Debian repo for chromium; package name varies by image/repo.
@@ -159,6 +221,7 @@ jobs:
             exit 1
           fi
       - name: Install Python test deps
+        # cspell:ignore asyncio pyppeteer pytest
         run: python -m pip install --upgrade pip && python -m pip install pytest pytest-asyncio pyppeteer requests
       - name: Start server and run pyppeteer tests
         env:

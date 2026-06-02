@@ -23,6 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -32,4 +37,4 @@ jobs:
       - name: Build and test devcontainer
         uses: devcontainers/ci@b63b30de439b47a52267f241112c5b453b673db5
         with:
-          runCmd: python -m pytest tests -q --maxfail=1
+          runCmd: "python scripts/test_runner.py --unit"

@@ -6,33 +6,79 @@
 # disabled from this YAML — narrowing them here is allowed, widening is
 # silently ignored.
 
-# Cap on plans applied per cycle. Keep small to enforce incrementalism.
-max_plans: 50
+# ---------------------------------------------------------------------------
+# Throughput limits
+# ---------------------------------------------------------------------------
 
-# Cap on bytes a single plan is allowed to change.
-max_plan_delta_bytes: 16384
+# Maximum number of improvement plans applied in a single cycle.
+# Keep low to ensure incremental, reviewable progress.
+max_plans: 5
 
-# Cap on the size of files the analyzer will read.
-max_file_bytes: 524288
+# Maximum bytes a single plan may change across all affected files.
+# 8 KiB keeps diffs human-reviewable; raise cautiously.
+max_plan_delta_bytes: 4096
 
-# File suffixes the analyzer is allowed to consider.
+# Maximum size of a source file the analyzer will read into memory.
+# Files larger than this are skipped to prevent runaway memory usage.
+max_file_bytes: 262144 # 256 KiB — reduced to limit memory overhead
+
+# ---------------------------------------------------------------------------
+# Analyzer scope
+# ---------------------------------------------------------------------------
+
+# File suffixes the analyzer is allowed to consider. Add entries here to
+# expand scope; remove entries to narrow it.
 suffixes:
   - .py
   - .md
   - .yaml
   - .yml
   - .txt
+  - .toml
+  - .cfg
 
-# Paths that must never be modified by the loop. Hard-coded defaults are
-# ALWAYS merged with this list — see aria_bot/risk_manager.py.
+# ---------------------------------------------------------------------------
+# Protected paths
+# ---------------------------------------------------------------------------
+
+# Paths that must never be modified by the self-improvement loop.
+# Hard-coded defaults in aria_bot/risk_manager.py are ALWAYS merged with
+# this list — narrowing is respected, widening is silently ignored.
 protected_prefixes:
   - .git/
+  - .github/
   - .github/agents/
+  - config/
   - datasets/
   - data_out/
   - secrets/
   - AI/
+  - node_modules/
+  - .venv/
+  - venv/
+  - __pycache__/
+  - dist/
+  - build/
+  - .tox/
+  - .mypy_cache/
+  - .ruff_cache/
+  - .pytest_cache/
+  - htmlcov/
+  - coverage/
+  - logs/
+  - tests/fixtures/
 
-# Behaviour flags. The CLI flags --apply / --commit override these.
+# Hard-coded protected file names (enforced in code, not configurable here):
+# `.env`, `.env.local`, `local.settings.json`, `id_rsa`, `id_ed25519`.
+
+# ---------------------------------------------------------------------------
+# Behaviour flags
+# ---------------------------------------------------------------------------
+
+# Whether to apply plans to disk. The CLI flag --apply overrides this.
+# Set to true only in a fully-automated pipeline with appropriate guards.
 apply: false
+
+# Whether to commit applied changes via git. The CLI flag --commit overrides
+# this. Requires apply: true to have any effect.
 commit: false

@@ -88,6 +88,22 @@ jobs:
         with:
           workflows-path: .github/workflows
 
+      - name: Validate VS Code MCP config
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          from scripts.validate_mcp_setup import load_mcp_config
+
+          config = load_mcp_config(Path('.vscode/mcp.json'))
+          servers = config.get('servers', {})
+          required = {'quantum-ai', 'llm-maker', 'task-complete'}
+          missing = sorted(required - set(servers))
+          if missing:
+              raise SystemExit(f'missing MCP servers: {", ".join(missing)}')
+          print(f"Validated .vscode/mcp.json with {len(servers)} servers")
+          PY
+
   test-workflows:
     name: Test Workflow Execution
     runs-on: ubuntu-latest

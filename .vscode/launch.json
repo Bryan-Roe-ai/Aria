@@ -1,8 +1,6 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
-        
         {
             "name": "Python Debugger: FastAPI",
             "type": "debugpy",
@@ -18,6 +16,97 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/scripts/gradio_hello.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "core",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime (3 cycles)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "core",
+            "args": [
+                "--cycles",
+                "3"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime (direct file)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/core/__main__.py",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime (10 cycles, fast)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "core",
+            "args": [
+                "--cycles",
+                "10",
+                "--sleep",
+                "0"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime (100 cycles, stress)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "core",
+            "args": [
+                "--cycles",
+                "100",
+                "--sleep",
+                "0"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime (5 cycles, paced)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "core",
+            "args": [
+                "--cycles",
+                "5",
+                "--sleep",
+                "0.1"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: Core Runtime (single cycle, fast)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "core",
+            "args": [
+                "--cycles",
+                "1",
+                "--sleep",
+                "0"
+            ],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "justMyCode": true

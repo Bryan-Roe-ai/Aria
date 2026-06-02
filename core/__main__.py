@@ -11,6 +11,12 @@ import argparse
 import json
 from collections.abc import Sequence
 
+if __package__ in (None, ""):
+    from pathlib import Path
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from core.runner import AriaRunner
 
 

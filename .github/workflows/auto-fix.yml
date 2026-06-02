@@ -35,33 +35,33 @@ jobs:
           python-version: "3.11"
           install-requirements: "false"
           install-dev-requirements: "false"
-          extra-packages: "ruff==0.11.13 black==25.1.0 pytest==8.3.5"
+          extra-packages: "ruff==0.11.13 black==25.1.0 pytest==8.3.5"  # cspell:ignore pytest
 
       - name: Detect safe Python targets
         id: detect
         shell: bash
         run: |
-          set -euo pipefail
+          set -euo pipefail  # cspell:ignore pipefail
 
           python <<'PY'
-          from pathlib import Path
+          from pathlib import Path  # cspell:ignore pathlib
 
           ignore_dirs = {
               ".git",
               ".venv",
-              "venv",
+              "venv",  # cspell:ignore venv
               ".tox",
               ".nox",
-              "__pycache__",
+              "__pycache__",  # cspell:ignore pycache
               "node_modules",
-              ".mypy_cache",
+              ".mypy_cache",  # cspell:ignore mypy
               ".pytest_cache",
               ".ruff_cache",
               ".eggs",
               "dist",
               "build",
               "coverage",
-              "htmlcov",
+              "htmlcov",  # cspell:ignore htmlcov
           }
 
           candidate_dirs = [
@@ -79,7 +79,7 @@ jobs:
           for directory in candidate_dirs:
               if directory.exists() and any(
                   not ignore_dirs.intersection(path.parts)
-                  for path in directory.rglob("*.py")
+                  for path in directory.rglob("*.py")  # cspell:ignore rglob
               ):
                   targets.append(str(directory))
 

@@ -19,6 +19,7 @@ Safety guarantees (enforced by :mod:`aria_bot.risk_manager`):
 
 from __future__ import annotations
 
+from .defaults import DEFAULT_MAX_PLANS
 from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
 from .executor import ExecutionResult, Executor
@@ -32,6 +33,7 @@ __all__ = [
     "Analyzer",
     "Finding",
     "CommitSystem",
+    "DEFAULT_MAX_PLANS",
     "Executor",
     "ExecutionResult",
     "Orchestrator",

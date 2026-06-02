@@ -100,7 +100,12 @@ disabled from configuration:
 - **Dry-run by default.** `--apply` is required to write any file.
 - **Never pushes.** `commit_system.py` only stages and commits locally.
 - **Protected paths** (`datasets/`, `.git/`, `.github/agents/`,
-  `local.settings.json`, `data_out/`, `secrets/`, `AI/`) are never modified.
+  `data_out/`, `secrets/`, `AI/`, `node_modules/`, `.venv/`, `venv/`,
+  `__pycache__/`, `dist/`, `build/`, `.tox/`, `.mypy_cache/`,
+  `.ruff_cache/`, `.pytest_cache/`, `htmlcov/`, `coverage/`) are never
+  modified.
+- **Protected file names** (`.env`, `.env.local`, `local.settings.json`,
+  `id_rsa`, `id_ed25519`) are always blocked.
 - **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup,
   missing-final-newline fixes, trailing-blank-line trimming, and CRLF→LF
   line-ending normalization — all pure-text and idempotent.

@@ -15,6 +15,7 @@ if str(PKG_PARENT) not in sys.path:
     sys.path.insert(0, str(PKG_PARENT))
 
 from aria_bot import (  # noqa: E402  (sys.path tweak above)
+    DEFAULT_MAX_PLANS as EXPORTED_DEFAULT_MAX_PLANS,
     SUPPORTED_FINDING_KINDS,
     Analyzer,
     Executor,
@@ -24,6 +25,7 @@ from aria_bot import (  # noqa: E402  (sys.path tweak above)
     RiskManager,
     run_cycle,
 )
+from aria_bot.defaults import DEFAULT_MAX_PLANS as INTERNAL_DEFAULT_MAX_PLANS  # noqa: E402
 from aria_bot.commit_system import COMMIT_PREFIX  # noqa: E402
 
 
@@ -51,6 +53,39 @@ def test_risk_manager_blocks_protected_paths(fake_repo: Path) -> None:
     assert rm.is_path_protected(fake_repo / "datasets" / "dirty.py")
     assert rm.is_path_protected(fake_repo / ".git" / "HEAD")
     assert not rm.is_path_protected(fake_repo / "src" / "needs_fix.py")
+
+
+def test_risk_manager_enforces_hard_coded_default_protections(tmp_path: Path) -> None:
+    rm = RiskManager(repo_root=tmp_path)
+
+    protected_examples = [
+        tmp_path / ".github" / "agents" / "helper.md",
+        tmp_path / "node_modules" / "pkg" / "index.js",
+        tmp_path / ".venv" / "bin" / "activate",
+        tmp_path / "__pycache__" / "module.cpython-314.pyc",
+        tmp_path / ".env",
+        tmp_path / "coverage" / "index.html",
+    ]
+
+    assert all(rm.is_path_protected(path) for path in protected_examples)
+
+
+def test_default_max_plans_matches_documentation(tmp_path: Path) -> None:
+    rm = RiskManager(repo_root=tmp_path)
+    planner = Planner(risk_manager=rm)
+    config = OrchestratorConfig(repo_root=tmp_path)
+
+    from aria_bot import cli as aria_cli  # noqa: E402
+
+    parser = aria_cli._build_parser()
+    args = parser.parse_args([])
+
+    assert EXPORTED_DEFAULT_MAX_PLANS == 5
+    assert INTERNAL_DEFAULT_MAX_PLANS == 5
+    assert EXPORTED_DEFAULT_MAX_PLANS == INTERNAL_DEFAULT_MAX_PLANS
+    assert planner.max_plans == INTERNAL_DEFAULT_MAX_PLANS
+    assert config.max_plans == INTERNAL_DEFAULT_MAX_PLANS
+    assert args.max_plans == INTERNAL_DEFAULT_MAX_PLANS
 
 
 def test_risk_manager_blocks_symlinks(tmp_path: Path) -> None:
@@ -183,13 +218,17 @@ def test_single_pass_idempotency_and_convergence(tmp_path: Path, name: str, cont
     rm = RiskManager(repo_root=tmp_path)
 
     # Pass 1: apply every fix.
-    plans = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    plans = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
     Executor(risk_manager=rm, dry_run=False).execute(plans)
-    assert p.read_bytes() == expected, f"{name}: unexpected result after pass 1"
+    assert p.read_bytes(
+    ) == expected, f"{name}: unexpected result after pass 1"
 
     # Pass 2: must find nothing (single-pass convergence / idempotency).
-    plans2 = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
-    assert plans2 == [], f"{name}: not idempotent — pass 2 still has work {plans2}"
+    plans2 = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
+    assert plans2 == [
+    ], f"{name}: not idempotent — pass 2 still has work {plans2}"
 
 
 def test_transform_order_covers_all_transforms() -> None:
@@ -244,7 +283,8 @@ def test_executor_syntax_guard_allows_preexisting_broken_py(tmp_path: Path) -> N
     p = tmp_path / "broken.py"
     p.write_bytes(b"def (:   \n")  # invalid syntax + trailing whitespace
     rm = RiskManager(repo_root=tmp_path)
-    plans = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    plans = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
     results = Executor(risk_manager=rm, dry_run=False).execute(plans)
     # Whitespace fix still applied despite pre-existing syntax error.
     assert any(r.applied for r in results)
@@ -272,7 +312,8 @@ def test_orchestrator_dry_run_writes_status(fake_repo: Path) -> None:
     assert payload["summary"]["counts"]["findings"] == payload["totals"]["findings"]
     assert payload["summary"]["counts"]["applied"] == 0
     assert "trailing_whitespace" in payload["summary"]["by_kind"]["findings"]
-    assert payload["summary"]["kind_summary"]["findings"].startswith("missing_final_newline=")
+    assert payload["summary"]["kind_summary"]["findings"].startswith(
+        "missing_final_newline=")
     # No file mutation occurred.
     assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
     # ruff may be missing in test env
@@ -294,7 +335,8 @@ def test_orchestrator_apply_status_reports_paths(fake_repo: Path) -> None:
     assert payload["applied_paths"]
     assert payload["validation_targets"] == payload["applied_paths"]
     assert payload["summary"]["state"] in {"applied", "validation_failed"}
-    assert payload["summary"]["status_text"].startswith(payload["summary"]["state"])
+    assert payload["summary"]["status_text"].startswith(
+        payload["summary"]["state"])
     assert payload["summary"]["paths"]["applied"] == payload["applied_paths"]
     assert payload["summary"]["counts"]["executions"] == payload["totals"]["executions"]
     assert payload["summary"]["kind_summary"]["plans"]
@@ -456,12 +498,14 @@ def test_single_pass_bom_plus_crlf_plus_trailing(tmp_path: Path) -> None:
     p.write_bytes(b"\xef\xbb\xbfa = 1  \r\nb = 2\r\n\r\n")
     rm = RiskManager(repo_root=tmp_path)
 
-    plans = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    plans = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
     Executor(risk_manager=rm, dry_run=False).execute(plans)
     assert p.read_bytes() == b"a = 1\nb = 2\n"
 
     # Idempotent.
-    plans2 = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    plans2 = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
     assert plans2 == []
 
 
@@ -489,7 +533,8 @@ def test_executor_normalizes_lone_cr(tmp_path: Path) -> None:
     assert p.read_bytes() == b"hello\nworld\n"
 
     # Idempotent.
-    plans2 = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    plans2 = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
     assert plans2 == []
 
 
@@ -613,7 +658,8 @@ def test_bom_only_file_stripped_correctly(tmp_path: Path) -> None:
     assert p.read_bytes() == b""
 
     # Idempotent.
-    plans2 = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    plans2 = Planner(risk_manager=rm).build_plans(
+        Analyzer(risk_manager=rm).scan(paths=[p]))
     assert plans2 == []
 
 

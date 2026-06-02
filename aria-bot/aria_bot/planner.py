@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .analyzer import Finding
+from .defaults import DEFAULT_MAX_PLANS
 from .risk_manager import RiskManager
 
 _logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class Planner:
     """Group findings into atomic per-file upgrade plans."""
 
     risk_manager: RiskManager
-    max_plans: int = 50
+    max_plans: int = DEFAULT_MAX_PLANS
 
     def build_plans(self, findings: Sequence[Finding]) -> list[UpgradePlan]:
         # Group findings by file so each plan is a single commit candidate.

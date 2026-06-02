@@ -16,6 +16,7 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+from .defaults import DEFAULT_MAX_PLANS
 from .orchestrator import run_cycle
 
 
@@ -43,7 +44,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-plans",
         type=int,
-        default=50,
+        default=DEFAULT_MAX_PLANS,
         help="Cap on the number of plans applied per cycle.",
     )
     parser.add_argument(
@@ -86,10 +87,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("error: --max-plans must be at least 1", file=sys.stderr)
         return 2
     if not args.repo_root.exists():
-        print(f"error: repo root does not exist: {args.repo_root}", file=sys.stderr)
+        print(
+            f"error: repo root does not exist: {args.repo_root}", file=sys.stderr)
         return 2
     if not args.repo_root.is_dir():
-        print(f"error: repo root is not a directory: {args.repo_root}", file=sys.stderr)
+        print(
+            f"error: repo root is not a directory: {args.repo_root}", file=sys.stderr)
         return 2
 
     result = run_cycle(
