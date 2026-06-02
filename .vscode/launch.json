@@ -69,11 +69,13 @@
         {
             "name": "Run Gradio AI Chat app (task)",
             "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/scripts/gradio_hello.py",
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5681
+            },
             "preLaunchTask": "Run Gradio AI Chat app",
+            "internalConsoleOptions": "neverOpen",
             "justMyCode": true
         }
     ],

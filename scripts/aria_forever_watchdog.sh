@@ -17,6 +17,14 @@ if [[ -x "/workspaces/Aria/.venv/bin/python" ]]; then
   PYTHON_BIN="/workspaces/Aria/.venv/bin/python"
 fi
 
+# Choose backend host command based on local tool availability.
+FUNCTIONS_PATTERN="func host start"
+FUNCTIONS_CMD="func host start"
+if ! command -v func >/dev/null 2>&1; then
+  FUNCTIONS_PATTERN="local_dev_adapter.py"
+  FUNCTIONS_CMD="$PYTHON_BIN local_dev_adapter.py"
+fi
+
 # Strong single-instance guard: atomic mkdir with one stale-lock retry.
 acquire_lock() {
   if mkdir "$LOCK_DIR" 2>/dev/null; then
@@ -149,12 +157,12 @@ restart_aria_now() {
 }
 
 restart_functions_now() {
-  local func_pattern="func host start"
+  local func_pattern="$FUNCTIONS_PATTERN"
   if pgrep -f "$func_pattern" >/dev/null; then
     pkill -f "$func_pattern" || true
     sleep 1
   fi
-  nohup bash -lc "func host start" >> "data_out/functions_host.log" 2>&1 &
+  nohup bash -lc "$FUNCTIONS_CMD" >> "data_out/functions_host.log" 2>&1 &
 }
 
 while true; do
@@ -228,22 +236,20 @@ while true; do
     fi
   fi
 
-  # Azure Functions host (optional; only if func CLI exists)
-  if command -v func >/dev/null 2>&1; then
-    enforce_single_instance "func host start"
-    start_if_missing "func host start" \
-      "func host start" \
-      "data_out/functions_host.log"
-    if [[ "$(http_status "http://localhost:7071/api/ai/status")" == "200" ]]; then
+  # Backend status host: Azure Functions when available, local adapter otherwise.
+  enforce_single_instance "$FUNCTIONS_PATTERN"
+  start_if_missing "$FUNCTIONS_PATTERN" \
+    "$FUNCTIONS_CMD" \
+    "data_out/functions_host.log"
+  if [[ "$(http_status "http://localhost:7071/api/ai/status")" == "200" ]]; then
+    functions_failures=0
+  else
+    functions_failures=$((functions_failures + 1))
+    # Cooldown: at least 120s between forced restarts.
+    if [[ "$functions_failures" -ge 3 ]] && (( now_epoch - last_functions_restart_epoch >= 120 )); then
+      restart_functions_now
       functions_failures=0
-    else
-      functions_failures=$((functions_failures + 1))
-      # Cooldown: at least 120s between forced restarts.
-      if [[ "$functions_failures" -ge 3 ]] && (( now_epoch - last_functions_restart_epoch >= 120 )); then
-        restart_functions_now
-        functions_failures=0
-        last_functions_restart_epoch="$now_epoch"
-      fi
+      last_functions_restart_epoch="$now_epoch"
     fi
   fi
 

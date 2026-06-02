@@ -62,3 +62,7 @@ nohup: ignoring input
 2026-05-16 16:28:40,071 - INFO - Dry-run plan mode for command 'Say hello world': [{"action":"say","text":"hello world","emotion":"happy"}]
 2026-05-16 16:28:40,074 - INFO - ✓ Fallback parsed: Wave at the audience -> 1 actions
 2026-05-16 16:28:40,074 - INFO - Executing validated action sequence: [{"action":"gesture","gesture_type":"wave"}]
+2026-05-28 07:20:58,713 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-28 07:20:58,723 - INFO - ✓ Initialized LLM provider: type
+2026-05-28 07:21:10,126 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-28 07:21:10,127 - INFO - ✓ Initialized LLM provider: type

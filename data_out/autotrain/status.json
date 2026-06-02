@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-05-31T23:49:49.947643+00:00",
+  "generated_at": "2026-05-28T08:08:31.880054+00:00",
   "total_jobs": 12,
   "succeeded": 0,
   "failed": 0,
   "skipped": 0,
   "running": 0,
   "avg_duration": null,
-  "last_updated": "2026-05-31T23:49:49.947659+00:00",
+  "last_updated": "2026-05-28T08:08:31.880075+00:00",
   "jobs": [
     {
       "name": "phi35_comprehensive_full",
@@ -14,7 +14,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/comprehensive"
+          "dataset path not found: datasets/chat/comprehensive",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -25,7 +27,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/comprehensive"
+          "dataset path not found: datasets/chat/comprehensive",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -36,7 +40,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat"
+          "dataset path not found: datasets/chat/mixed_chat",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -47,7 +53,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat"
+          "dataset path not found: datasets/chat/mixed_chat",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -58,7 +66,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/dolly"
+          "dataset path not found: datasets/chat/dolly",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -69,7 +79,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/app_repo_augmented"
+          "dataset path not found: datasets/chat/app_repo_augmented",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -80,7 +92,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/app_repo_augmented"
+          "dataset path not found: datasets/chat/app_repo_augmented",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -91,7 +105,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat"
+          "dataset path not found: datasets/chat/mixed_chat",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -102,7 +118,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat"
+          "dataset path not found: datasets/chat/mixed_chat",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -113,7 +131,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat"
+          "dataset path not found: datasets/chat/mixed_chat",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -124,7 +144,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/anime_avatar"
+          "dataset path not found: datasets/chat/anime_avatar",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true
@@ -135,7 +157,9 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat"
+          "dataset path not found: datasets/chat/mixed_chat",
+          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
+          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
         ]
       },
       "dry_run": true

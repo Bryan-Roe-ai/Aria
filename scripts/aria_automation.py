@@ -293,17 +293,20 @@ class AriaAutomation:
             return True
 
         try:
-            # Check if func is available
-            result = subprocess.run(["func", "--version"], capture_output=True, text=True, timeout=5)
+            # Prefer Azure Functions Core Tools when present, otherwise use local status adapter.
+            command = ["func", "host", "start"]
+            command_label = "func host start"
+            try:
+                result = subprocess.run(["func", "--version"], capture_output=True, text=True, timeout=5)
+                if result.returncode != 0:
+                    raise FileNotFoundError("func command returned non-zero version status")
+            except (FileNotFoundError, subprocess.TimeoutExpired):
+                print("⚠️  Azure Functions Core Tools not available; using local_dev_adapter.py fallback")
+                command = [sys.executable, "local_dev_adapter.py"]
+                command_label = f"{sys.executable} local_dev_adapter.py"
 
-            if result.returncode != 0:
-                print("⚠️  Azure Functions Core Tools not installed")
-                print("   Install from: https://docs.microsoft.com/azure/azure-functions/functions-run-local")
-                return False
-
-            # Start Functions host
             proc = subprocess.Popen(
-                ["func", "host", "start"],
+                command,
                 cwd=REPO_ROOT,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -319,7 +322,7 @@ class AriaAutomation:
                     self.processes["functions_backend"] = ProcessInfo(
                         name="functions_backend",
                         pid=proc.pid,
-                        command="func host start",
+                        command=command_label,
                         started=datetime.now().isoformat(),
                         port=7071,
                         health_url="http://localhost:7071/api/ai/status",
@@ -331,9 +334,6 @@ class AriaAutomation:
             proc.terminate()
             return False
 
-        except FileNotFoundError:
-            print("⚠️  Azure Functions Core Tools not found in PATH")
-            return False
         except Exception as e:
             error = f"Failed to start Functions backend: {e}"
             print(f"❌ {error}")

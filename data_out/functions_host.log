@@ -1,1 +1,154 @@
 nohup: failed to run command 'func': No such file or directory
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: nohup: ignoring inputignoring input
+
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/workspaces/Aria/local_dev_adapter.py", line 57, in <module>
+    from azure.functions import HttpResponse as AzureHttpResponse
+ModuleNotFoundError: No module named 'azure'

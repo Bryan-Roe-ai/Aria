@@ -1,12 +1,73 @@
 {
-	"name": "Aria Dev Container",
-	"image": "mcr.microsoft.com/devcontainers/python:2-3.14-trixie",
-	"features": {},
-	"postCreateCommand": "python -m pip install --upgrade pip && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi && if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi",
+	"name": "Aria AI Dev Container",
+	"image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"installZsh": "true",
+			"configureZshAsDefaultShell": "false",
+			"upgradePackages": "true"
+		},
+		"ghcr.io/devcontainers/features/azure-cli:1": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "22"
+		}
+	},
+	"remoteUser": "vscode",
+	"forwardPorts": [
+		7071,
+		7860,
+		8080,
+		8088,
+		11434
+	],
+	"portsAttributes": {
+		"7071": {
+			"label": "Azure Functions",
+			"onAutoForward": "notify"
+		},
+		"7860": {
+			"label": "Gradio",
+			"onAutoForward": "openPreview"
+		},
+		"8080": {
+			"label": "Aria Web",
+			"onAutoForward": "openPreview"
+		},
+		"8088": {
+			"label": "Writer Reviewer",
+			"onAutoForward": "notify"
+		},
+		"11434": {
+			"label": "Ollama",
+			"onAutoForward": "silent"
+		}
+	},
+	"remoteEnv": {
+		"LMSTUDIO_BASE_URL": "http://host.docker.internal:1234/v1",
+		"OLLAMA_BASE_URL": "http://host.docker.internal:11434/v1",
+		"OLLAMA_MODEL": "llama3.2",
+		"PIP_DISABLE_PIP_VERSION_CHECK": "1",
+		"PYTHONUNBUFFERED": "1"
+	},
+	"postCreateCommand": "bash -lc 'set -euo pipefail; python -m pip install --upgrade pip; if [ -f requirements.txt ]; then pip install -r requirements.txt; fi; if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi; if command -v npm >/dev/null 2>&1 && ! command -v func >/dev/null 2>&1; then npm install -g azure-functions-core-tools@4 --unsafe-perm true; fi'",
 	"customizations": {
 		"vscode": {
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/local/bin/python",
+				"python.analysis.typeCheckingMode": "basic",
+				"python.testing.pytestEnabled": true,
+				"python.testing.pytestArgs": [
+					"tests"
+				],
+				"editor.inlineSuggest.enabled": true,
+				"terminal.integrated.defaultProfile.linux": "bash"
+			},
 			"extensions": [
 				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-toolsai.jupyter",
+				"ms-azuretools.vscode-azurefunctions",
 				"ms-azuretools.vscode-docker",
 				"ms-windows-ai-studio.windows-ai-studio",
 				"GitHub.copilot-chat",

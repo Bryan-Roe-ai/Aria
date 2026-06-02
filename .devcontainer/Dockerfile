@@ -1,9 +1,13 @@
-# Install system ODBC libs required by pyodbc (Debian/Ubuntu)
+FROM mcr.microsoft.com/devcontainers/python:2-3.14-trixie
+
+# Install system ODBC libs required by pyodbc and Azure SQL connectivity.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    unixodbc \
-    unixodbc-dev \
+    build-essential \
+    curl \
+    gnupg \
     libodbc1 \
     odbcinst \
-    build-essential \
     python3-dev \
+    unixodbc \
+    unixodbc-dev \
  && rm -rf /var/lib/apt/lists/*
