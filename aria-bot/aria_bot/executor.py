@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from .planner import UpgradePlan
-from .registry import SUPPORTED_FINDING_KINDS
+from .registry import SUPPORTED_FINDING_KINDS, TRANSFORM_ORDER
 from .risk_manager import RiskManager
 
 _logger = logging.getLogger(__name__)
@@ -40,6 +40,13 @@ def _py_parses(text: str, filename: str) -> bool:
     return True
 
 
+def _strip_utf8_bom(text: str) -> str:
+    """Remove a leading UTF-8 BOM (U+FEFF) if present."""
+    if text.startswith("\ufeff"):
+        return text[1:]
+    return text
+
+
 def _strip_trailing_whitespace(text: str) -> str:
     # Preserve the original line endings (LF only here — repo is LF).
     return "\n".join(line.rstrip(" \t") for line in text.split("\n"))
@@ -58,11 +65,13 @@ def _trim_trailing_blank_lines(text: str) -> str:
 
 
 def _normalize_line_endings(text: str) -> str:
-    """Replace all CRLF sequences with LF."""
-    return text.replace("\r\n", "\n")
+    """Replace all CRLF and lone CR sequences with LF."""
+    # CRLF first, then remaining lone CRs (old Mac-style).
+    return text.replace("\r\n", "\n").replace("\r", "\n")
 
 
 _TRANSFORMS: dict[str, Transform] = {
+    "utf8_bom": _strip_utf8_bom,
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
     "trailing_blank_lines": _trim_trailing_blank_lines,
@@ -72,18 +81,6 @@ _TRANSFORMS: dict[str, Transform] = {
 #: Finding kinds the executor knows how to apply. Keep this in sync with
 #: :data:`aria_bot.analyzer.SUPPORTED_KINDS`.
 SUPPORTED_KINDS: tuple[str, ...] = tuple(sorted(SUPPORTED_FINDING_KINDS))
-
-#: Canonical application order for transforms. Transforms MUST run in this
-#: order so that combined application converges in a single pass: e.g.
-#: normalizing CRLF or stripping trailing whitespace can expose trailing
-#: blank lines, which must then be trimmed; finalizing the newline runs last.
-#: The analyzer's detection mirrors this exact order (see ``analyzer._inspect``).
-TRANSFORM_ORDER: tuple[str, ...] = (
-    "mixed_line_endings",
-    "trailing_whitespace",
-    "trailing_blank_lines",
-    "missing_final_newline",
-)
 
 # Fail fast if a transform is ever added without a defined application order.
 assert set(TRANSFORM_ORDER) == set(_TRANSFORMS), "TRANSFORM_ORDER must cover every transform"

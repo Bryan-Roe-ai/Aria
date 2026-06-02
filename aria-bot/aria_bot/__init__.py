@@ -9,8 +9,9 @@ Safety guarantees (enforced by :mod:`aria_bot.risk_manager`):
 
 * Dry-run by default; ``--apply`` is required to write to disk.
 * Never pushes to a remote; commits stay local.
-* Only whitelisted, idempotent text transforms (trailing whitespace,
-  missing-final-newline) are applied in this version.
+* Only whitelisted, idempotent text transforms are applied: UTF-8 BOM
+  stripping, trailing whitespace, missing-final-newline, trailing-blank-lines,
+  and CRLF/lone-CR→LF line-ending normalization.
 * Protected paths (``datasets/``, ``.git/``, ``.github/agents/``,
   ``local.settings.json``, ``data_out/``) are never modified.
 * Per-cycle file and plan limits prevent runaway changes.
@@ -23,6 +24,7 @@ from .commit_system import CommitSystem
 from .executor import ExecutionResult, Executor
 from .orchestrator import Orchestrator, OrchestratorConfig, run_cycle
 from .planner import Planner, UpgradePlan
+from .registry import SUPPORTED_FINDING_KINDS
 from .risk_manager import RiskAssessment, RiskManager
 from .validator import ValidationResult, Validator
 
@@ -34,6 +36,7 @@ __all__ = [
     "ExecutionResult",
     "Orchestrator",
     "OrchestratorConfig",
+    "SUPPORTED_FINDING_KINDS",
     "run_cycle",
     "Planner",
     "UpgradePlan",

@@ -18,10 +18,10 @@ from __future__ import annotations
 import json
 import logging
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
 
 from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
@@ -45,7 +45,8 @@ class OrchestratorConfig:
     apply: bool = False
     commit: bool = False
     max_plans: int = 50
-    status_path: Optional[Path] = None
+    status_path: Path | None = None
+    paths: Sequence[Path] | None = None
 
     def resolve_status_path(self) -> Path:
         if self.status_path is not None:
@@ -62,16 +63,79 @@ class CycleResult:
     duration_seconds: float
     apply: bool
     commit: bool
-    findings: List[Finding] = field(default_factory=list)
-    plans: List[UpgradePlan] = field(default_factory=list)
-    executions: List[ExecutionResult] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
+    plans: list[UpgradePlan] = field(default_factory=list)
+    executions: list[ExecutionResult] = field(default_factory=list)
     validation_ok: bool = True
     validation: dict = field(default_factory=dict)
-    commit_sha: Optional[str] = None
-    notes: List[str] = field(default_factory=list)
+    commit_sha: str | None = None
+    notes: list[str] = field(default_factory=list)
+
+    def _state(self, applied: list[ExecutionResult], skipped: list[ExecutionResult]) -> str:
+        if not self.apply:
+            return "dry_run"
+        if self.validation_ok is False:
+            return "validation_failed"
+        if applied:
+            return "applied"
+        if skipped and not applied:
+            return "no_changes"
+        return "idle"
 
     def to_dict(self) -> dict:
         applied = [e for e in self.executions if e.applied]
+        skipped = [e for e in self.executions if not e.applied]
+        applied_paths = [str(e.plan.path) for e in applied]
+        skipped_paths = [str(e.plan.path) for e in skipped]
+        validation_targets = applied_paths if applied_paths else []
+
+        finding_kinds: dict[str, int] = {}
+        for finding in self.findings:
+            finding_kinds[finding.kind] = finding_kinds.get(finding.kind, 0) + 1
+
+        plan_kinds: dict[str, int] = {}
+        for plan in self.plans:
+            for kind in plan.kinds:
+                plan_kinds[kind] = plan_kinds.get(kind, 0) + 1
+
+        def _format_kind_summary(kind_counts: dict[str, int]) -> str:
+            if not kind_counts:
+                return "none"
+            return ", ".join(f"{kind}={count}" for kind, count in sorted(kind_counts.items()))
+
+        counts = {
+            "findings": len(self.findings),
+            "plans": len(self.plans),
+            "executions": len(self.executions),
+            "applied": len(applied),
+            "skipped": len(skipped),
+        }
+
+        state = self._state(applied, skipped)
+        status_text = (
+            f"{state}: {counts['findings']} finding(s), {counts['plans']} plan(s), "
+            f"{counts['applied']} applied, {counts['skipped']} skipped"
+        )
+
+        summary = {
+            "state": state,
+            "status_text": status_text,
+            "counts": counts,
+            "paths": {
+                "applied": applied_paths,
+                "skipped": skipped_paths,
+                "validated": validation_targets,
+            },
+            "by_kind": {
+                "findings": finding_kinds,
+                "plans": plan_kinds,
+            },
+            "kind_summary": {
+                "findings": _format_kind_summary(finding_kinds),
+                "plans": _format_kind_summary(plan_kinds),
+            },
+        }
+
         return {
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -81,11 +145,18 @@ class CycleResult:
             "totals": {
                 "findings": len(self.findings),
                 "plans": len(self.plans),
+                "executions": len(self.executions),
                 "applied": len(applied),
+                "skipped": len(skipped),
             },
             "findings": [f.to_dict() for f in self.findings],
             "plans": [p.to_dict() for p in self.plans],
             "executions": [e.to_dict() for e in self.executions],
+            "status_text": status_text,
+            "applied_paths": applied_paths,
+            "skipped_paths": skipped_paths,
+            "validation_targets": validation_targets,
+            "summary": summary,
             "validation_ok": self.validation_ok,
             "validation": self.validation,
             "commit_sha": self.commit_sha,
@@ -111,10 +182,11 @@ class Orchestrator:
         validator = Validator(repo_root=repo_root)
         commits = CommitSystem(repo_root=repo_root)
 
-        notes: List[str] = []
+        notes: list[str] = []
 
         _logger.info("aria-bot: scanning repository at %s", repo_root)
-        findings = analyzer.scan()
+        scan_paths = self._resolve_paths(analyzer) if self.config.paths else None
+        findings = analyzer.scan(paths=scan_paths)
         _logger.info("aria-bot: %d finding(s)", len(findings))
 
         plans = planner.build_plans(findings)
@@ -122,18 +194,24 @@ class Orchestrator:
 
         executions = executor.execute(plans)
         applied_paths = [e.plan.path for e in executions if e.applied]
+        skipped_paths = [e.plan.path for e in executions if not e.applied]
 
-        validation = validator.validate(applied_paths if applied_paths else None)
+        # Only validate when files were actually modified — dry-runs and
+        # no-op cycles have nothing to validate.
+        if applied_paths:
+            validation = validator.validate(applied_paths)
+        else:
+            validation = validator.validate(changed_paths=[])
+        notes.append(
+            f"execution summary: {len(executions)} plan(s), {len(applied_paths)} applied, {len(skipped_paths)} skipped"
+        )
         if not validation.ok:
             notes.append("validation failed; skipping commit")
+        elif applied_paths:
+            notes.append(f"validated {len(applied_paths)} applied path(s)")
 
-        commit_sha: Optional[str] = None
-        if (
-            self.config.apply
-            and self.config.commit
-            and validation.ok
-            and applied_paths
-        ):
+        commit_sha: str | None = None
+        if self.config.apply and self.config.commit and validation.ok and applied_paths:
             message = self._commit_message(executions)
             commit_sha = commits.commit(applied_paths, message)
             if commit_sha is None:
@@ -163,7 +241,30 @@ class Orchestrator:
         return result
 
     # ------------------------------------------------------------------
-    def _commit_message(self, executions: List[ExecutionResult]) -> str:
+    def _resolve_paths(self, analyzer: Analyzer) -> list[Path]:
+        """Expand ``config.paths`` — directories become their matching files."""
+        repo_root = Path(self.config.repo_root).resolve()
+        result: list[Path] = []
+        wanted = {s.lower() for s in analyzer.suffixes}
+        for p in self.config.paths or []:
+            p = Path(p)
+            if not p.is_absolute():
+                p = repo_root / p
+            if p.is_dir():
+                import os
+
+                for root, _dirs, files in os.walk(p):
+                    for name in files:
+                        fp = Path(root, name)
+                        if fp.suffix.lower() in wanted:
+                            result.append(fp)
+            elif p.is_file():
+                result.append(p)
+            else:
+                _logger.debug("--paths target does not exist: %s", p)
+        return result
+
+    def _commit_message(self, executions: list[ExecutionResult]) -> str:
         # Only called when at least one execution applied; defend against
         # accidental misuse by future callers.
         applied = [e for e in executions if e.applied]
@@ -193,7 +294,8 @@ def run_cycle(
     apply: bool = False,
     commit: bool = False,
     max_plans: int = 50,
-    status_path: Optional[Path] = None,
+    status_path: Path | None = None,
+    paths: Sequence[Path] | None = None,
 ) -> CycleResult:
     """Convenience wrapper used by the CLI and tests."""
 
@@ -203,5 +305,6 @@ def run_cycle(
         commit=commit,
         max_plans=max_plans,
         status_path=status_path,
+        paths=list(paths) if paths else None,
     )
     return Orchestrator(config=config).run()

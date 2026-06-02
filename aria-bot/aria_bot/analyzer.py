@@ -7,10 +7,11 @@ apply them without LLM judgement.
 
 Currently supported finding kinds:
 
+* ``utf8_bom`` — files that start with a UTF-8 byte-order mark.
 * ``trailing_whitespace`` — lines that end with spaces or tabs.
 * ``missing_final_newline`` — files that don't end with a newline.
 * ``trailing_blank_lines`` — files that end with extra blank lines.
-* ``mixed_line_endings`` — files that mix CRLF (``\\r\\n``) and LF line endings.
+* ``mixed_line_endings`` — files that use CRLF (``\\r\\n``) or lone CR (``\\r``) line endings.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -23,7 +24,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from .registry import SUPPORTED_FINDING_KINDS
+from .registry import SUPPORTED_FINDING_KINDS, TRANSFORM_ORDER
 from .risk_manager import RiskManager
 
 _logger = logging.getLogger(__name__)
@@ -54,7 +55,22 @@ class Analyzer:
     """Scan the repo for safe, mechanically-fixable issues."""
 
     risk_manager: RiskManager
-    suffixes: Sequence[str] = (".py", ".md", ".yaml", ".yml", ".txt")
+    suffixes: Sequence[str] = (
+        ".py",
+        ".md",
+        ".yaml",
+        ".yml",
+        ".txt",
+        ".json",
+        ".toml",
+        ".cfg",
+        ".ini",
+        ".rst",
+        ".html",
+        ".css",
+        ".js",
+        ".ts",
+    )
 
     def scan(self, paths: Iterable[Path] | None = None) -> list[Finding]:
         """Return all findings for the requested files (or whole repo)."""
@@ -103,53 +119,71 @@ class Analyzer:
         # naive raw-text check would miss until the next cycle.
         cursor = text
 
-        # Stage 1: normalize CRLF line endings to LF.
-        if "\r\n" in cursor:
-            crlf_count = cursor.count("\r\n")
-            results.append(
-                Finding(
-                    kind="mixed_line_endings",
-                    path=path,
-                    detail=f"{crlf_count} CRLF line ending(s)",
-                )
-            )
-            cursor = cursor.replace("\r\n", "\n")
-
-        # Stage 2: strip per-line trailing whitespace (on LF-normalized text).
-        offending_lines = [i + 1 for i, line in enumerate(cursor.split("\n")) if line != line.rstrip(" \t")]
-        if offending_lines:
-            preview = ",".join(str(n) for n in offending_lines[:5])
-            results.append(
-                Finding(
-                    kind="trailing_whitespace",
-                    path=path,
-                    detail=f"{len(offending_lines)} line(s) (e.g. {preview})",
-                )
-            )
-            cursor = "\n".join(line.rstrip(" \t") for line in cursor.split("\n"))
-
-        # Stage 3: trim extra blank lines at EOF (on whitespace-stripped text)
-        # down to exactly one terminal newline.
-        if cursor:
-            trailing_newlines = len(cursor) - len(cursor.rstrip("\n"))
-            if trailing_newlines > 1:
-                results.append(
-                    Finding(
-                        kind="trailing_blank_lines",
-                        path=path,
-                        detail=f"{trailing_newlines - 1} extra blank line(s) at EOF",
+        for kind in TRANSFORM_ORDER:
+            if kind == "utf8_bom":
+                if cursor.startswith("\ufeff"):
+                    results.append(
+                        Finding(
+                            kind=kind,
+                            path=path,
+                            detail="file starts with a UTF-8 BOM",
+                        )
                     )
-                )
-                cursor = cursor.rstrip("\n") + "\n"
-
-        # Stage 4: ensure a single final newline (non-empty content only).
-        if cursor and not cursor.endswith("\n"):
-            results.append(
-                Finding(
-                    kind="missing_final_newline",
-                    path=path,
-                    detail="file does not end with a newline",
-                )
-            )
+                    cursor = cursor[1:]
+            elif kind == "mixed_line_endings":
+                # Stage 1a: CRLF → LF (must happen before lone-CR detection).
+                crlf_count = cursor.count("\r\n")
+                if crlf_count:
+                    cursor = cursor.replace("\r\n", "\n")
+                # Stage 1b: lone CR → LF (old Mac-style line endings).
+                lone_cr_count = cursor.count("\r")
+                if crlf_count or lone_cr_count:
+                    if lone_cr_count:
+                        cursor = cursor.replace("\r", "\n")
+                    parts = []
+                    if crlf_count:
+                        parts.append(f"{crlf_count} CRLF")
+                    if lone_cr_count:
+                        parts.append(f"{lone_cr_count} lone CR")
+                    results.append(
+                        Finding(
+                            kind=kind,
+                            path=path,
+                            detail=f"{', '.join(parts)} line ending(s)",
+                        )
+                    )
+            elif kind == "trailing_whitespace":
+                offending_lines = [i + 1 for i, line in enumerate(cursor.split("\n")) if line != line.rstrip(" \t")]
+                if offending_lines:
+                    preview = ",".join(str(n) for n in offending_lines[:5])
+                    results.append(
+                        Finding(
+                            kind=kind,
+                            path=path,
+                            detail=f"{len(offending_lines)} line(s) (e.g. {preview})",
+                        )
+                    )
+                    cursor = "\n".join(line.rstrip(" \t") for line in cursor.split("\n"))
+            elif kind == "trailing_blank_lines":
+                if cursor:
+                    trailing_newlines = len(cursor) - len(cursor.rstrip("\n"))
+                    if trailing_newlines > 1:
+                        results.append(
+                            Finding(
+                                kind=kind,
+                                path=path,
+                                detail=f"{trailing_newlines - 1} extra blank line(s) at EOF",
+                            )
+                        )
+                        cursor = cursor.rstrip("\n") + "\n"
+            elif kind == "missing_final_newline":
+                if cursor and not cursor.endswith("\n"):
+                    results.append(
+                        Finding(
+                            kind=kind,
+                            path=path,
+                            detail="file does not end with a newline",
+                        )
+                    )
 
         return results

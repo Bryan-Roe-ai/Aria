@@ -49,6 +49,48 @@ python -m aria_bot --apply --commit
 
 Each cycle writes a machine-readable summary to
 `data_out/aria_bot/status.json` per the repo's status-file convention.
+The status payload now includes both the original top-level totals and a
+dashboard-friendly `summary` object with:
+
+- `status_text` — top-level shortcut to the compact cycle status string
+- `summary.state` — `dry_run`, `applied`, `no_changes`, or `validation_failed`
+- `summary.status_text` — same compact string (also at the top level above)
+- `summary.counts` — findings, plans, executions, applied, and skipped counts
+- `summary.paths` — applied, skipped, and validated file paths
+- `summary.by_kind` — per-kind counts for findings and plans
+- `summary.kind_summary` — compact `kind=count` strings for findings and plans
+
+### Sample status.json (dry-run cycle)
+
+```json
+{
+  "status_text": "dry_run: 2 finding(s), 2 plan(s), 0 applied, 2 skipped",
+  "apply": false,
+  "commit": false,
+  "duration_seconds": 0.041,
+  "totals": { "findings": 2, "plans": 2, "executions": 2, "applied": 0, "skipped": 2 },
+  "applied_paths": [],
+  "skipped_paths": ["src/needs_fix.py", "src/needs_newline.md"],
+  "summary": {
+    "state": "dry_run",
+    "status_text": "dry_run: 2 finding(s), 2 plan(s), 0 applied, 2 skipped",
+    "counts": { "findings": 2, "plans": 2, "executions": 2, "applied": 0, "skipped": 2 },
+    "by_kind": {
+      "findings": { "missing_final_newline": 1, "trailing_whitespace": 1 },
+      "plans":   { "missing_final_newline": 1, "trailing_whitespace": 1 }
+    },
+    "kind_summary": {
+      "findings": "missing_final_newline=1, trailing_whitespace=1",
+      "plans":    "missing_final_newline=1, trailing_whitespace=1"
+    }
+  },
+  "validation_ok": null
+}
+```
+
+The legacy top-level fields remain available for compatibility, including
+`totals`, `findings`, `plans`, `executions`, `applied_paths`,
+`skipped_paths`, and `validation_targets`.
 
 ## Safety Guarantees
 
@@ -59,8 +101,9 @@ disabled from configuration:
 - **Never pushes.** `commit_system.py` only stages and commits locally.
 - **Protected paths** (`datasets/`, `.git/`, `.github/agents/`,
   `local.settings.json`, `data_out/`, `secrets/`, `AI/`) are never modified.
-- **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup
-  and missing-final-newline fixes — both pure-text and idempotent.
+- **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup,
+  missing-final-newline fixes, trailing-blank-line trimming, and CRLF→LF
+  line-ending normalization — all pure-text and idempotent.
 - **No deletions, no renames, no symlink follows.**
 - **Per-cycle caps** on plans, file size, and per-plan delta bytes.
 

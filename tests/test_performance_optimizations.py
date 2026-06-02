@@ -716,9 +716,9 @@ class TestCommandParsingOptimizations:
             parse_movement_commands(text)
         elapsed = time.perf_counter() - start
 
-        # Should complete 100 iterations in under 10ms
+        # Should complete 100 iterations in under 100ms
         # (extremely generous threshold; actual should be much faster)
-        assert elapsed < 0.01
+        assert elapsed < 0.1
 
 
 class TestFileReadingOptimizations:

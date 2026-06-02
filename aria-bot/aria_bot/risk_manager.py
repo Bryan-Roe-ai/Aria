@@ -9,9 +9,9 @@ should be a deliberate, reviewed change.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List, Sequence
 
 # Paths that must never be touched by the autonomous loop. These are
 # encoded here (not just in YAML) so misconfiguration cannot disable them.
@@ -23,6 +23,19 @@ _DEFAULT_PROTECTED_PREFIXES: tuple[str, ...] = (
     "local.settings.json",
     "secrets/",
     "AI/",
+    # Generated / vendor / cache directories that should never be modified.
+    "node_modules/",
+    ".venv/",
+    "venv/",
+    "__pycache__/",
+    "dist/",
+    "build/",
+    ".tox/",
+    ".mypy_cache/",
+    ".ruff_cache/",
+    ".pytest_cache/",
+    "htmlcov/",
+    "coverage/",
 )
 
 # Filenames that are sensitive even outside the protected prefixes above.
@@ -53,11 +66,11 @@ class RiskAssessment:
     reasons: tuple[str, ...] = ()
 
     @classmethod
-    def allow(cls) -> "RiskAssessment":
+    def allow(cls) -> RiskAssessment:
         return cls(allowed=True, reasons=())
 
     @classmethod
-    def deny(cls, *reasons: str) -> "RiskAssessment":
+    def deny(cls, *reasons: str) -> RiskAssessment:
         return cls(allowed=False, reasons=tuple(reasons))
 
 
@@ -66,12 +79,8 @@ class RiskManager:
     """Evaluate whether a proposed change is safe to apply."""
 
     repo_root: Path
-    protected_prefixes: Sequence[str] = field(
-        default_factory=lambda: list(_DEFAULT_PROTECTED_PREFIXES)
-    )
-    protected_names: Sequence[str] = field(
-        default_factory=lambda: list(_DEFAULT_PROTECTED_NAMES)
-    )
+    protected_prefixes: Sequence[str] = field(default_factory=lambda: list(_DEFAULT_PROTECTED_PREFIXES))
+    protected_names: Sequence[str] = field(default_factory=lambda: list(_DEFAULT_PROTECTED_NAMES))
     max_file_bytes: int = _MAX_FILE_BYTES
     max_plan_delta_bytes: int = _MAX_PLAN_DELTA_BYTES
 
@@ -125,9 +134,7 @@ class RiskManager:
             return RiskAssessment.deny(f"unable to stat file: {exc}")
 
         if size > self.max_file_bytes:
-            return RiskAssessment.deny(
-                f"file exceeds size cap ({size} > {self.max_file_bytes} bytes)"
-            )
+            return RiskAssessment.deny(f"file exceeds size cap ({size} > {self.max_file_bytes} bytes)")
 
         return RiskAssessment.allow()
 
@@ -146,16 +153,14 @@ class RiskManager:
 
         delta = abs(len(modified) - len(original))
         if delta > self.max_plan_delta_bytes:
-            return RiskAssessment.deny(
-                f"change delta exceeds cap ({delta} > {self.max_plan_delta_bytes} bytes)"
-            )
+            return RiskAssessment.deny(f"change delta exceeds cap ({delta} > {self.max_plan_delta_bytes} bytes)")
 
         return RiskAssessment.allow()
 
     # ------------------------------------------------------------------
     # Iteration helpers
     # ------------------------------------------------------------------
-    def iter_candidate_files(self, suffixes: Iterable[str] = (".py", ".md", ".yaml", ".yml")) -> List[Path]:
+    def iter_candidate_files(self, suffixes: Iterable[str] = (".py", ".md", ".yaml", ".yml")) -> list[Path]:
         """Yield repo files that pass the path-level safety filter.
 
         Used by the analyzer to scope its scan. We deliberately walk the
@@ -164,7 +169,7 @@ class RiskManager:
         """
 
         wanted = {s.lower() for s in suffixes}
-        results: List[Path] = []
+        results: list[Path] = []
         for root, dirs, files in os.walk(self.repo_root):
             # Prune protected directories early.
             pruned: list[str] = []

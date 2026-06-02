@@ -13,8 +13,8 @@ import argparse
 import json
 import logging
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 from .orchestrator import run_cycle
 
@@ -53,6 +53,13 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Override the status.json output location.",
     )
     parser.add_argument(
+        "--paths",
+        type=Path,
+        nargs="+",
+        default=None,
+        help="Target specific files or directories instead of scanning the entire repo.",
+    )
+    parser.add_argument(
         "--quiet",
         action="store_true",
         help="Suppress the JSON summary (status file is still written).",
@@ -65,7 +72,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
+def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     logging.basicConfig(
         level=getattr(logging, str(args.log_level).upper(), logging.INFO),
@@ -75,6 +82,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.commit and not args.apply:
         print("error: --commit requires --apply", file=sys.stderr)
         return 2
+    if args.max_plans < 1:
+        print("error: --max-plans must be at least 1", file=sys.stderr)
+        return 2
+    if not args.repo_root.exists():
+        print(f"error: repo root does not exist: {args.repo_root}", file=sys.stderr)
+        return 2
+    if not args.repo_root.is_dir():
+        print(f"error: repo root is not a directory: {args.repo_root}", file=sys.stderr)
+        return 2
 
     result = run_cycle(
         repo_root=args.repo_root,
@@ -82,11 +98,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         commit=args.commit,
         max_plans=args.max_plans,
         status_path=args.status_path,
+        paths=args.paths,
     )
 
     if not args.quiet:
+        payload = result.to_dict()
         summary = {
-            "totals": result.to_dict()["totals"],
+            "status_text": payload["status_text"],
+            "totals": payload["totals"],
             "validation_ok": result.validation_ok,
             "commit_sha": result.commit_sha,
             "notes": result.notes,
