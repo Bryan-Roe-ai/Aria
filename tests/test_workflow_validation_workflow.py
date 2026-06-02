@@ -10,6 +10,9 @@ EXPECTED_SINGLE_JOB_BY_WORKFLOW = {
     "ruleset-json-validation.yml": "validate-rulesets",
     "default-github-automation.yml": "baseline",
 }
+EXPECTED_HARDEN_RUNNER_ACTION = (
+    "step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0"
+)
 
 
 @pytest.mark.unit
@@ -40,3 +43,16 @@ def test_workflows_use_reusable_python_setup_without_installing_repo_requirement
 
     assert len(python_steps) == 1, f"Expected reusable Python setup in {workflow_name}"
     assert python_steps[0]["with"]["install-requirements"] == "false"
+
+
+@pytest.mark.unit
+def test_default_github_automation_workflow_hardens_runner_and_uses_bash_shell() -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "default-github-automation.yml"
+    workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+
+    steps = workflow["jobs"]["baseline"]["steps"]
+    assert workflow["defaults"]["run"]["shell"] == "bash"
+    assert steps[0]["name"] == "Harden runner"
+    assert steps[0]["uses"] == EXPECTED_HARDEN_RUNNER_ACTION
+    assert steps[0]["with"]["egress-policy"] == "audit"
+    assert steps[0]["with"]["disable-sudo"] is True
