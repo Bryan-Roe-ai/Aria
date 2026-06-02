@@ -5,14 +5,15 @@ from pathlib import Path
 import pytest
 import yaml
 
-EXPECTED_PYTHON_SETUP_ACTION = "./.github/actions/setup-python-env"
+from tests.workflow_test_helpers import (
+    EXPECTED_HARDEN_RUNNER_ACTION,
+    EXPECTED_SETUP_PYTHON_ACTION,
+)
+
 EXPECTED_SINGLE_JOB_BY_WORKFLOW = {
     "ruleset-json-validation.yml": "validate-rulesets",
     "default-github-automation.yml": "baseline",
 }
-EXPECTED_HARDEN_RUNNER_ACTION = (
-    "step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0"
-)
 
 
 @pytest.mark.unit
@@ -22,7 +23,7 @@ def test_workflow_validation_uses_reusable_python_setup_without_duplicate_pip_ca
 
     for job_name in ("validate-workflows", "test-workflows"):
         steps = workflow["jobs"][job_name]["steps"]
-        python_steps = [step for step in steps if step.get("uses") == EXPECTED_PYTHON_SETUP_ACTION]
+        python_steps = [step for step in steps if step.get("uses") == EXPECTED_SETUP_PYTHON_ACTION]
 
         assert len(python_steps) == 1, f"Expected reusable Python setup in {job_name}"
         assert python_steps[0]["with"]["install-requirements"] == "false"
@@ -36,7 +37,7 @@ def test_workflows_use_reusable_python_setup_without_installing_repo_requirement
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
     steps = workflow["jobs"][EXPECTED_SINGLE_JOB_BY_WORKFLOW[workflow_name]]["steps"]
-    python_steps = [step for step in steps if step.get("uses") == EXPECTED_PYTHON_SETUP_ACTION]
+    python_steps = [step for step in steps if step.get("uses") == EXPECTED_SETUP_PYTHON_ACTION]
 
     assert len(python_steps) == 1, f"Expected reusable Python setup in {workflow_name}"
     assert python_steps[0]["with"]["install-requirements"] == "false"

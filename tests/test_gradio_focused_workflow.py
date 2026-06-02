@@ -5,10 +5,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-EXPECTED_HARDEN_RUNNER_ACTION = (
-    "step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0"
+from tests.workflow_test_helpers import (
+    EXPECTED_HARDEN_RUNNER_ACTION,
+    EXPECTED_SETUP_PYTHON_ACTION,
 )
-EXPECTED_SETUP_PYTHON_ACTION = "./.github/actions/setup-python-env"
 
 
 @pytest.mark.unit
@@ -33,7 +33,11 @@ def test_gradio_focused_workflow_uses_reusable_python_setup_without_repo_require
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "gradio-focused-tests.yml"
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
-    setup_step = workflow["jobs"]["gradio-focused"]["steps"][2]
+    setup_step = next(
+        step
+        for step in workflow["jobs"]["gradio-focused"]["steps"]
+        if step.get("uses") == EXPECTED_SETUP_PYTHON_ACTION
+    )
     assert setup_step["uses"] == EXPECTED_SETUP_PYTHON_ACTION
     assert setup_step["with"]["install-requirements"] == "false"
     assert setup_step["with"]["install-dev-requirements"] == "false"
