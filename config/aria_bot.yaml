@@ -31,6 +31,8 @@ protected_prefixes:
   - datasets/
   - data_out/
   - secrets/
+  - apps/aria/
+  - apps/chat/
   - AI/
 
 # Behaviour flags. The CLI flags --apply / --commit override these.
