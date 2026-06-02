@@ -23,6 +23,23 @@ _logger = logging.getLogger(__name__)
 Transform = Callable[[str], str]
 
 
+def _py_parses(text: str, filename: str) -> bool:
+    """Return True if ``text`` is syntactically valid Python.
+
+    Uses :func:`compile` (which never executes code) purely as a parse check.
+    Non-syntax ``ValueError`` cases (e.g. embedded NUL bytes) are treated as
+    "cannot judge" and reported as parseable so we don't block on them.
+    """
+
+    try:
+        compile(text, filename, "exec", dont_inherit=True)
+    except SyntaxError:
+        return False
+    except ValueError:
+        return True
+    return True
+
+
 def _strip_trailing_whitespace(text: str) -> str:
     # Preserve the original line endings (LF only here — repo is LF).
     return "\n".join(line.rstrip(" \t") for line in text.split("\n"))
@@ -139,6 +156,17 @@ class Executor:
         for kind in ordered_kinds:
             new_text = _TRANSFORMS[kind](new_text)
         new_bytes = new_text.encode("utf-8")
+
+        # Syntax safety net: if the original Python file parsed but our edit
+        # would break it, abort. This is diff-scoped and false-positive-free —
+        # we never blame the bot for pre-existing syntax errors. Whitespace
+        # transforms never trip this; it guards future, less-trivial transforms.
+        if path.suffix == ".py" and _py_parses(text, str(path)) and not _py_parses(new_text, str(path)):
+            return ExecutionResult(
+                plan=plan,
+                applied=False,
+                reason="transform would introduce a Python syntax error",
+            )
 
         # Diff-level safety: re-check size delta and require an actual change.
         change_assessment = self.risk_manager.assess_change(path, original, new_bytes)

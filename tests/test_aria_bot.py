@@ -15,13 +15,13 @@ if str(PKG_PARENT) not in sys.path:
     sys.path.insert(0, str(PKG_PARENT))
 
 from aria_bot import (  # noqa: E402  (sys.path tweak above)
+    SUPPORTED_FINDING_KINDS,
     Analyzer,
     Executor,
     Orchestrator,
     OrchestratorConfig,
     Planner,
     RiskManager,
-    SUPPORTED_FINDING_KINDS,
     run_cycle,
 )
 from aria_bot.commit_system import COMMIT_PREFIX  # noqa: E402
@@ -203,6 +203,54 @@ def test_transform_order_covers_all_transforms() -> None:
 
     assert set(TRANSFORM_ORDER) == set(_TRANSFORMS)
     assert set(TRANSFORM_ORDER) == set(SUPPORTED_FINDING_KINDS)
+
+
+def test_executor_syntax_guard_blocks_breaking_edit(tmp_path: Path) -> None:
+    """A transform that would break valid Python syntax must be aborted."""
+
+    from aria_bot.executor import Executor, _py_parses
+    from aria_bot.planner import UpgradePlan
+
+    assert _py_parses("x = 1\n", "a.py")
+    assert not _py_parses("def (:\n", "a.py")
+
+    p = tmp_path / "good.py"
+    p.write_bytes(b"x = 1\n")
+    rm = RiskManager(repo_root=tmp_path)
+    executor = Executor(risk_manager=rm, dry_run=False)
+    # Force a transform that corrupts the file into invalid Python.
+    executor_transforms = {"trailing_whitespace": lambda _t: "def (:\n"}
+    import aria_bot.executor as _ex
+
+    original = _ex._TRANSFORMS
+    _ex._TRANSFORMS = {**original, **executor_transforms}
+    try:
+        plan = UpgradePlan(path=p, kinds=("trailing_whitespace",))
+        result = executor._execute_one(plan)
+    finally:
+        _ex._TRANSFORMS = original
+
+    assert result.applied is False
+    assert "syntax error" in result.reason
+    # File must be untouched.
+    assert p.read_bytes() == b"x = 1\n"
+
+
+def test_executor_syntax_guard_allows_preexisting_broken_py(tmp_path: Path) -> None:
+    """The guard never blames the bot for a file that was already broken."""
+
+    from aria_bot.executor import _py_parses
+
+    # Original already does not parse -> guard must not block whitespace fixes.
+    assert not _py_parses("def (:   \n", "b.py")
+    p = tmp_path / "broken.py"
+    p.write_bytes(b"def (:   \n")  # invalid syntax + trailing whitespace
+    rm = RiskManager(repo_root=tmp_path)
+    plans = Planner(risk_manager=rm).build_plans(Analyzer(risk_manager=rm).scan(paths=[p]))
+    results = Executor(risk_manager=rm, dry_run=False).execute(plans)
+    # Whitespace fix still applied despite pre-existing syntax error.
+    assert any(r.applied for r in results)
+    assert p.read_bytes() == b"def (:\n"
 
 
 def test_orchestrator_dry_run_writes_status(fake_repo: Path) -> None:
