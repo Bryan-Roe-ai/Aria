@@ -15,7 +15,7 @@
   "started_at": "2026-06-01T19:11:53.457528",
   "updated_at": "2026-06-01T19:11:53.461434",
   "task_category": "unknown",
-  "duration_seconds": 0.01,
+  "duration_seconds": 0.0,
   "tokens_estimated": 0,
   "rollback_performed": false,
   "dry_run": false,

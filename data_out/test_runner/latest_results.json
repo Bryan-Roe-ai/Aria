@@ -2,10 +2,10 @@
   "timestamp": "20260601T191213Z",
   "suites": [
     {
-      "passed": 0,
+      "passed": 2345,
       "failed": 0,
       "errors": 0,
-      "skipped": 0,
+      "skipped": 44,
       "suite": "unit",
       "returncode": 0,
       "duration_s": 99.57,
