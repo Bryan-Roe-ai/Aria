@@ -1,5 +1,5 @@
 {
-  "timestamp": "20260601T191213Z",
+  "timestamp": "20260601T223857Z",
   "suites": [
     {
       "passed": 2345,
@@ -7,10 +7,10 @@
       "errors": 0,
       "skipped": 44,
       "suite": "unit",
-      "returncode": 0,
-      "duration_s": 99.57,
-      "success": true
+      "returncode": 2,
+      "duration_s": 7.71,
+      "success": false
     }
   ],
-  "overall_success": true
+  "overall_success": false
 }
