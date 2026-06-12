@@ -1,6 +1,16 @@
 {
+<<<<<<< HEAD
   "generated_at": "2026-06-01T19:13:38Z",
   "run_id": "20260601T191338Z",
+=======
+<<<<<<< Updated upstream
+  "generated_at": "2026-05-28T08:08:16Z",
+  "run_id": "20260528T080816Z",
+=======
+  "generated_at": "2026-05-29T23:31:06Z",
+  "run_id": "20260529T233106Z",
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
   "config_path": null,
   "config_paths": {
     "master_orchestrator": "config/master_orchestrator.yaml",
@@ -41,29 +51,66 @@
       "name": "master_orchestrator_status",
       "status": "succeeded",
       "critical": true,
+<<<<<<< HEAD
       "duration_sec": 1.1,
       "detail": "rc=0 | stdout=   \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    },\n    {\n      \"name\": \"aria_server_only\",\n      \"enabled\": false,\n      \"trigger\": \"manual\",\n      \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    }\n  ],\n  \"resource_usage\": {\n    \"available\": true,\n    \"cpu_percent\": 16.0,\n    \"memory_percent\": 37.8,\n    \"disk_percent\": 12.8\n  }\n}"
+=======
+<<<<<<< Updated upstream
+      "duration_sec": 1.29,
+      "detail": "rc=0 | stdout=     \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    },\n    {\n      \"name\": \"aria_server_only\",\n      \"enabled\": false,\n      \"trigger\": \"manual\",\n      \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    }\n  ],\n  \"resource_usage\": {\n    \"available\": true,\n    \"cpu_percent\": 0.1,\n    \"memory_percent\": 2.9,\n    \"disk_percent\": 10.1\n  }\n}"
+=======
+      "duration_sec": 1.1,
+      "detail": "rc=0 | stdout=     \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    },\n    {\n      \"name\": \"aria_server_only\",\n      \"enabled\": false,\n      \"trigger\": \"manual\",\n      \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    }\n  ],\n  \"resource_usage\": {\n    \"available\": true,\n    \"cpu_percent\": 3.8,\n    \"memory_percent\": 15.4,\n    \"disk_percent\": 2.0\n  }\n}"
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
     },
     {
       "name": "quantum_autorun_dry_run",
       "status": "succeeded",
       "critical": true,
+<<<<<<< HEAD
       "duration_sec": 0.08,
+=======
+<<<<<<< Updated upstream
+      "duration_sec": 0.24,
+=======
+      "duration_sec": 0.06,
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
       "detail": "rc=0 | stdout=Validated 4 job(s): heart_quick, ionosphere_quick, azure_quantinuum_simulator, azure_ionq_qpu_test"
     },
     {
       "name": "repo_automation_status",
       "status": "succeeded",
       "critical": true,
+<<<<<<< HEAD
       "duration_sec": 0.11,
       "detail": "rc=0 | stdout=Aria Character Automation (PID 17031) (\ud83e\udde9 deps)\n  \u2705 Autonomous Training System (PID 17079) (\ud83e\udde9 deps)\n  \u2705 Quantum Computing Workflows (PID 17081) (\ud83e\udde9 deps)\n  \u2705 Model Evaluation System (PID 17102) (\ud83e\udde9 deps)\n  \u2705 Dataset Auto-Discovery (Integrated in training) (\ud83e\udde9 deps)\n  \u274c Status Dashboard (\ud83e\udde9 deps)\n  \u274c Backup Manager (\ud83e\udde9 deps)\n================================================================================"
+=======
+<<<<<<< Updated upstream
+      "duration_sec": 0.36,
+=======
+      "duration_sec": 0.06,
+>>>>>>> Stashed changes
+      "detail": "rc=0 | stdout=r install (training): pandas, torch\n  - Dependencies still missing after install (training): pandas, torch\n  - Dependencies still missing after install (training): pandas, torch\n  - Dependencies still missing after install (training): pandas, torch\n  - Dependencies still missing after install (training): pandas, torch\n================================================================================"
+>>>>>>> a40f84a20 (hhh)
     },
     {
       "name": "chat_cli_local_once",
       "status": "succeeded",
       "critical": true,
+<<<<<<< HEAD
       "duration_sec": 1.29,
       "detail": "rc=0 | stdout=\u274c Model 'llama3.2' not found in Ollama.\n\nTroubleshooting steps:\n1. Pull the model first:\n   ollama pull llama3.2\n\n2. List available models:\n   ollama list\n\n3. Popular models to try:\n   - llama2:latest (7B general purpose)\n   - codellama:latest (7B for coding)\n   - mistral:latest (7B high quality)\n   - llama3.2:latest (3B latest from Meta)\n\nUse --model flag or set OLLAMA_MODEL environment variable."
+=======
+<<<<<<< Updated upstream
+      "duration_sec": 2.43,
+      "detail": "rc=0 | stdout=Provider: local | Model: local-echo\nassistant> I'm running in local fallback mode. Set AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or start LM Studio / Ollama to enable full AI responses."
+=======
+      "duration_sec": 0.88,
+      "detail": "rc=0 | stdout=Provider: local | Model: local-echo\nassistant> No live model detected. Run with `--provider lmstudio` (LM Studio running locally), `--provider ollama`, `--provider openai`, or `--provider azure`."
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
     },
     {
       "name": "functions_ai_status_endpoint",

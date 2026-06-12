@@ -1,5 +1,13 @@
 {
+<<<<<<< HEAD
   "task_id": "20260601_191153",
+=======
+<<<<<<< Updated upstream
+  "task_id": "20260601_145448",
+=======
+  "task_id": "20260529_233613",
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
   "task_description": "update only the requested file",
   "status": "complete",
   "llm_type": "echo",
@@ -12,8 +20,18 @@
   "reasoning": "",
   "commits": [],
   "errors": [],
+<<<<<<< HEAD
   "started_at": "2026-06-01T19:11:53.457528",
   "updated_at": "2026-06-01T19:11:53.461434",
+=======
+<<<<<<< Updated upstream
+  "started_at": "2026-06-01T14:54:48.439010",
+  "updated_at": "2026-06-01T14:54:48.447565",
+=======
+  "started_at": "2026-05-29T23:36:13.135762",
+  "updated_at": "2026-05-29T23:36:13.136591",
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
   "task_category": "unknown",
   "duration_seconds": 0.0,
   "tokens_estimated": 0,

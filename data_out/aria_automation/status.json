@@ -1,5 +1,6 @@
 {
   "mode": "full",
+<<<<<<< Updated upstream
   "started": "2026-05-30T05:11:19.443701",
   "uptime_seconds": 223208.513977,
   "server_running": true,
@@ -12,6 +13,20 @@
       "pid": 17047,
       "command": "python server.py",
       "started": "2026-05-30T05:11:24.947232",
+=======
+  "started": "2026-05-28T12:54:25.171937",
+  "uptime_seconds": 124644.532903,
+  "server_running": true,
+  "backend_running": false,
+  "training_active": false,
+  "last_health_check": "2026-05-29T23:31:49.705068",
+  "processes": [
+    {
+      "name": "aria_server",
+      "pid": 2373,
+      "command": "python server.py",
+      "started": "2026-05-28T12:54:25.174982",
+>>>>>>> Stashed changes
       "status": "running",
       "port": 8080,
       "health_url": "http://localhost:8080"

@@ -1,12 +1,28 @@
 {
+<<<<<<< HEAD
   "generated_at": "2026-06-01T22:37:54.194396+00:00",
+=======
+<<<<<<< Updated upstream
+  "generated_at": "2026-05-28T08:08:31.880054+00:00",
+=======
+  "generated_at": "2026-05-29T23:31:07.643042+00:00",
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
   "total_jobs": 12,
   "succeeded": 0,
   "failed": 0,
   "skipped": 0,
   "running": 0,
   "avg_duration": null,
+<<<<<<< HEAD
   "last_updated": "2026-06-01T22:37:54.194405+00:00",
+=======
+<<<<<<< Updated upstream
+  "last_updated": "2026-05-28T08:08:31.880075+00:00",
+=======
+  "last_updated": "2026-05-29T23:31:07.643050+00:00",
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)
   "jobs": [
     {
       "name": "phi35_comprehensive_full",

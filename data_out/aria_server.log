@@ -62,6 +62,7 @@ nohup: ignoring input
 2026-05-16 16:28:40,071 - INFO - Dry-run plan mode for command 'Say hello world': [{"action":"say","text":"hello world","emotion":"happy"}]
 2026-05-16 16:28:40,074 - INFO - ✓ Fallback parsed: Wave at the audience -> 1 actions
 2026-05-16 16:28:40,074 - INFO - Executing validated action sequence: [{"action":"gesture","gesture_type":"wave"}]
+<<<<<<< HEAD
 2026-06-01 15:56:10,424 - INFO - ✓ LLM providers available for automatic action generation
 2026-06-01 15:56:10,425 - INFO - ✓ Initialized LLM provider: type
 ⚠️ Skipping AI model loading - using rule-based fallback for faster startup
@@ -1822,3 +1823,15 @@ nohup: ignoring input
 ⚠️ Skipping AI model loading - using rule-based fallback for faster startup
 ⚠️ Aria server already running at http://127.0.0.1:8080 (detected healthy /api/aria/state).
 ℹ️ Reusing existing server; exiting this process cleanly.
+=======
+<<<<<<< Updated upstream
+2026-05-28 07:20:58,713 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-28 07:20:58,723 - INFO - ✓ Initialized LLM provider: type
+2026-05-28 07:21:10,126 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-28 07:21:10,127 - INFO - ✓ Initialized LLM provider: type
+=======
+nohup: ignoring input
+2026-05-28 12:53:25,095 - INFO - ✓ LLM providers available for automatic action generation
+2026-05-28 12:53:25,095 - INFO - ✓ Initialized LLM provider: type
+>>>>>>> Stashed changes
+>>>>>>> a40f84a20 (hhh)

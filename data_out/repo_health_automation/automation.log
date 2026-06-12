@@ -1711,3 +1711,4696 @@ ERROR tests/test_database_integration.py
 
 nohup: ignoring input
 nohup: ignoring input
+
+==============================================================================
+[repo_health_automation] cycle=1 started_at=2026-05-28T12:53:24.913501+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=0.11s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[FAIL] integration_contract_gate rc=1 duration=0.84s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=1 succeeded=False duration=0.95s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+
+/usr/local/bin/python: No module named pytest
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=2 started_at=2026-05-28T12:58:25.845395+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.01s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.91s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=2 succeeded=False duration=48.92s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 42.91s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=3 started_at=2026-05-28T13:04:14.974505+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.64s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.06s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=3 succeeded=False duration=44.70s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.35s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=4 started_at=2026-05-28T13:09:59.643579+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.33s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.02s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=4 succeeded=False duration=43.36s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.17s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=5 started_at=2026-05-28T14:10:33.838628+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.16s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.94s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=5 succeeded=False duration=44.10s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.03s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=6 started_at=2026-05-28T16:53:16.485419+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=52.01s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.30s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=6 succeeded=False duration=55.30s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 48.31s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=7 started_at=2026-05-28T16:59:11.767225+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=45.50s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.29s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=7 succeeded=False duration=48.79s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.89s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=8 started_at=2026-05-28T17:05:00.535734+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.14s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.06s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=8 succeeded=False duration=47.20s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 40.68s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=9 started_at=2026-05-28T17:10:47.709647+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.43s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.18s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=9 succeeded=False duration=47.61s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 40.97s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=10 started_at=2026-05-28T17:16:35.293490+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.89s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.96s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=10 succeeded=False duration=44.85s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.88s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=11 started_at=2026-05-28T17:22:20.105953+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.39s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.08s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=11 succeeded=False duration=45.47s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.94s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=12 started_at=2026-05-28T17:28:05.537521+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.37s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.05s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=12 succeeded=False duration=44.42s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.44s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=13 started_at=2026-05-28T17:33:49.917330+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.89s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.07s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=13 succeeded=False duration=44.96s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.63s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=14 started_at=2026-05-28T17:39:34.846210+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.51s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.06s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=14 succeeded=False duration=44.57s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.51s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=15 started_at=2026-05-28T17:45:19.383281+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.70s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.10s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=15 succeeded=False duration=44.80s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.49s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=16 started_at=2026-05-28T17:51:04.146578+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.51s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.97s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=16 succeeded=False duration=44.49s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.55s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=17 started_at=2026-05-28T17:56:48.605703+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.34s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.98s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=17 succeeded=False duration=44.32s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.38s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=18 started_at=2026-05-28T18:02:32.902482+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.29s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.00s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=18 succeeded=False duration=44.29s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.22s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=19 started_at=2026-05-28T18:08:17.161212+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.39s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.01s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=19 succeeded=False duration=44.40s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.48s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=20 started_at=2026-05-28T18:14:01.530833+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.42s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.99s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=20 succeeded=False duration=44.40s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.33s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=21 started_at=2026-05-28T18:19:45.894318+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.64s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=21 succeeded=False duration=44.67s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.63s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=22 started_at=2026-05-28T18:25:30.530796+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.62s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.98s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=22 succeeded=False duration=44.60s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.45s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=23 started_at=2026-05-28T18:31:15.105656+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.27s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.95s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=23 succeeded=False duration=44.22s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.29s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=24 started_at=2026-05-28T18:36:59.298132+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=43.18s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.11s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=24 succeeded=False duration=46.29s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.56s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=25 started_at=2026-05-28T18:42:45.560348+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.88s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.07s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=25 succeeded=False duration=44.95s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.60s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=26 started_at=2026-05-28T18:48:30.485579+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.12s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.98s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=26 succeeded=False duration=45.10s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.06s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=27 started_at=2026-05-28T18:54:15.560208+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.42s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.02s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=27 succeeded=False duration=45.44s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.10s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=28 started_at=2026-05-28T19:00:00.977609+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=43.17s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.17s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=28 succeeded=False duration=46.33s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.50s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=29 started_at=2026-05-28T19:05:47.286109+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.99s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.19s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=29 succeeded=False duration=45.18s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.44s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=30 started_at=2026-05-28T19:11:32.447603+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.25s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.07s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=30 succeeded=False duration=45.32s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.22s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=31 started_at=2026-05-28T19:17:17.747257+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.49s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.31s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=31 succeeded=False duration=47.80s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.12s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=32 started_at=2026-05-28T19:23:05.522780+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.41s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.22s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=32 succeeded=False duration=47.63s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 40.91s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=33 started_at=2026-05-28T19:28:53.132842+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.37s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.31s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=33 succeeded=False duration=47.68s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.03s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=34 started_at=2026-05-28T19:34:40.788822+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.92s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.30s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=34 succeeded=False duration=48.21s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.14s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=35 started_at=2026-05-28T19:40:28.983525+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.86s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.07s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=35 succeeded=False duration=44.93s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.70s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=36 started_at=2026-05-28T19:46:13.888233+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.61s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.22s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=36 succeeded=False duration=47.83s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.10s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=37 started_at=2026-05-28T19:52:01.695409+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.57s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.19s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=37 succeeded=False duration=47.76s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.13s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=38 started_at=2026-05-28T19:57:49.433189+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=43.29s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.31s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=38 succeeded=False duration=46.60s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.33s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=39 started_at=2026-05-28T20:05:27.628755+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.68s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.97s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=39 succeeded=False duration=44.65s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.54s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=40 started_at=2026-05-29T03:04:17.273108+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.16s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.00s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=40 succeeded=False duration=44.16s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.26s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=41 started_at=2026-05-29T03:11:02.827338+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.49s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=41 succeeded=False duration=43.51s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.40s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=42 started_at=2026-05-29T05:19:11.988218+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.60s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.96s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=42 succeeded=False duration=44.56s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.59s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=43 started_at=2026-05-29T06:14:02.087430+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.43s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=43 succeeded=False duration=44.46s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.43s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=44 started_at=2026-05-29T06:21:18.380453+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.77s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.01s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=44 succeeded=False duration=43.79s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.86s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=45 started_at=2026-05-29T06:35:02.926572+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.05s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.06s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=45 succeeded=False duration=44.11s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.95s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=46 started_at=2026-05-29T06:46:20.409999+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.11s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.08s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=46 succeeded=False duration=44.19s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.15s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=47 started_at=2026-05-29T06:52:04.567813+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.98s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.43s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=47 succeeded=False duration=48.41s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.27s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=48 started_at=2026-05-29T06:57:52.944129+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.52s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.28s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=48 succeeded=False duration=49.80s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 42.88s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=49 started_at=2026-05-29T07:29:49.761724+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.02s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.14s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=49 succeeded=False duration=47.17s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 40.72s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=50 started_at=2026-05-29T11:50:15.489770+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.73s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.37s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=50 succeeded=False duration=50.10s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 43.04s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=51 started_at=2026-05-29T11:56:05.564290+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.20s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.02s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=51 succeeded=False duration=49.22s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 42.58s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=52 started_at=2026-05-29T12:01:54.748102+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.17s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.38s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=52 succeeded=False duration=49.55s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 42.07s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=53 started_at=2026-05-29T12:07:44.262350+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=44.71s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.23s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=53 succeeded=False duration=47.94s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 40.84s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=54 started_at=2026-05-29T12:20:17.506401+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.08s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.31s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=54 succeeded=False duration=49.38s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 42.11s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=55 started_at=2026-05-29T12:26:38.574895+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=46.90s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.18s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=55 succeeded=False duration=50.07s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 42.64s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=56 started_at=2026-05-29T13:01:26.468040+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=47.34s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.50s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=56 succeeded=False duration=50.84s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 43.67s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=57 started_at=2026-05-29T13:07:17.287595+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=45.48s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.09s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=57 succeeded=False duration=48.57s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 41.15s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=58 started_at=2026-05-29T13:13:05.802856+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.90s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.06s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=58 succeeded=False duration=45.95s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.20s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=59 started_at=2026-05-29T13:18:51.702135+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.85s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=59 succeeded=False duration=44.87s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.36s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=60 started_at=2026-05-29T13:24:36.545413+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.03s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=60 succeeded=False duration=45.06s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.91s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=61 started_at=2026-05-29T13:30:21.570444+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.47s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.11s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=61 succeeded=False duration=44.58s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.32s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=62 started_at=2026-05-29T13:36:06.126823+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.60s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.15s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=62 succeeded=False duration=45.75s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.14s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=63 started_at=2026-05-29T13:41:51.854798+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.72s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.18s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=63 succeeded=False duration=45.90s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.92s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=64 started_at=2026-05-29T13:47:37.727848+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=47.62s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.48s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=64 succeeded=False duration=51.10s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 43.61s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=65 started_at=2026-05-29T15:14:56.481338+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=45.06s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.16s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=65 succeeded=False duration=48.22s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 40.69s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=66 started_at=2026-05-29T15:20:44.683458+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=43.33s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.12s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=66 succeeded=False duration=46.45s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.43s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=67 started_at=2026-05-29T15:26:31.110534+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=43.42s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.17s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=67 succeeded=False duration=46.60s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.39s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=68 started_at=2026-05-29T15:32:17.684232+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.28s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.10s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=68 succeeded=False duration=44.38s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.07s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=69 started_at=2026-05-29T15:38:02.037918+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.54s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.99s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=69 succeeded=False duration=44.53s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.15s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=70 started_at=2026-05-29T15:43:46.534311+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.31s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.94s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=70 succeeded=False duration=44.24s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.22s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=71 started_at=2026-05-29T15:49:30.747453+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.95s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=71 succeeded=False duration=43.99s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.60s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=72 started_at=2026-05-29T15:55:14.705811+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.98s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.03s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=72 succeeded=False duration=45.01s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.87s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=73 started_at=2026-05-29T16:00:59.689187+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.32s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.04s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=73 succeeded=False duration=44.36s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.16s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=74 started_at=2026-05-29T16:06:44.023471+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.12s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.93s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=74 succeeded=False duration=44.05s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.04s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=75 started_at=2026-05-29T16:12:28.044406+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.91s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.08s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=75 succeeded=False duration=43.99s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.89s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=76 started_at=2026-05-29T16:18:12.001710+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.75s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.02s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=76 succeeded=False duration=44.77s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.48s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=77 started_at=2026-05-29T21:12:29.449412+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.04s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.08s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=77 succeeded=False duration=45.12s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.46s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=78 started_at=2026-05-29T21:18:14.547887+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.45s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.05s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=78 succeeded=False duration=45.50s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.93s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=79 started_at=2026-05-29T21:24:00.023944+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.09s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.17s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=79 succeeded=False duration=44.26s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.97s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=80 started_at=2026-05-29T21:29:44.258731+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=43.54s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.10s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=80 succeeded=False duration=46.63s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.38s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=81 started_at=2026-05-29T21:35:30.862596+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.46s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.09s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=81 succeeded=False duration=44.55s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.13s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=82 started_at=2026-05-29T21:41:15.380793+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.80s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.09s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=82 succeeded=False duration=45.88s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 39.12s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=83 started_at=2026-05-29T21:47:01.238356+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.05s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.05s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=83 succeeded=False duration=45.10s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.66s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=84 started_at=2026-05-29T21:52:46.309812+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.54s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.96s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=84 succeeded=False duration=44.51s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.40s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=85 started_at=2026-05-29T21:58:30.793761+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.17s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.08s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=85 succeeded=False duration=44.25s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.30s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=86 started_at=2026-05-29T22:04:15.013010+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.55s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.06s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=86 succeeded=False duration=44.61s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.64s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=87 started_at=2026-05-29T22:09:59.602964+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.67s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.94s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=87 succeeded=False duration=43.61s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 37.78s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=88 started_at=2026-05-29T22:15:43.185613+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.71s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.04s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=88 succeeded=False duration=44.75s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.53s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=89 started_at=2026-05-29T22:21:27.912006+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.94s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.10s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=89 succeeded=False duration=45.04s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.62s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=90 started_at=2026-05-29T22:27:12.931680+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.97s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.02s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=90 succeeded=False duration=44.99s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.76s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=91 started_at=2026-05-29T22:32:57.898717+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=42.48s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.11s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=91 succeeded=False duration=45.59s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.70s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=92 started_at=2026-05-29T22:38:43.458683+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.91s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.98s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=92 succeeded=False duration=43.89s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.07s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=93 started_at=2026-05-29T22:44:27.319284+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=41.65s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=2.96s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=93 succeeded=False duration=44.61s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.27s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=94 started_at=2026-05-29T22:50:11.904937+00:00
+==============================================================================
+
+--> pre_commit_check: /usr/local/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=40.96s
+
+--> integration_contract_gate: bash scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=3.01s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=94 succeeded=False duration=43.97s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+_____ TestAgiEndpoints.test_agi_stream_emits_done_sentinel _____________
+tests/test_function_app_endpoints.py:867: in test_agi_stream_emits_done_sentinel
+    assert "event: meta" in body_text
+E   AssertionError: assert 'event: meta' in ''
+=========================== short test summary info ============================
+FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel
+================= 1 failed, 2215 passed, 44 skipped in 38.13s ==================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+

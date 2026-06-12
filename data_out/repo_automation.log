@@ -817,6 +817,7 @@ Config: /workspaces/Aria/config/autonomous_training.yaml
 ✅ Quantum Computing Workflows stopped
 ✅ All components stopped
 pyyaml required for config validation: pip install pyyaml
+<<<<<<< Updated upstream
 pyyaml required for config validation: pip install pyyaml
 pyyaml required for config validation: pip install pyyaml
 nohup: ignoring input
@@ -870,3 +871,3001 @@ nohup: ignoring input
 pyyaml required for config validation: pip install pyyaml
 nohup: ignoring input
 pyyaml required for config validation: pip install pyyaml
+=======
+nohup: ignoring input
+pyyaml required for config validation: pip install pyyaml
+nohup: ignoring input
+
+🔍 Pre-flight validation...
+
+🔍 Validating orchestrator configurations...
+
+✅ VALID | 0 errors, 0 warnings
+Config: /workspaces/Aria/config/master_orchestrator.yaml
+
+✅ VALID | 0 errors, 0 warnings
+Config: /workspaces/Aria/config/autonomous_training.yaml
+
+✅ All configurations valid. Safe to start daemon.
+
+================================================================================
+🤖 Repository-Wide Automation Starting
+================================================================================
+
+🚀 Starting Aria Character Automation...
+✅ Aria Character Automation started (PID 2742)
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🚀 Starting Quantum Computing Workflows...
+✅ Quantum Computing Workflows started (PID 3142)
+⚠️  Dependency 'training' not running, starting it first...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+❌ Failed to start dependency 'training'
+⚠️  Component 'Dataset Auto-Discovery (Integrated in training)' is disabled
+⚠️  Component 'Status Dashboard' is disabled
+⚠️  Component 'Backup Manager' is disabled
+
+👁️  Starting monitoring loop (interval: 60s)
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #1: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #2: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #3: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #4: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #5: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #6: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #7: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #8: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #9: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #10: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #11: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #12: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #13: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #14: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #15: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #16: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #17: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #18: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #19: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #20: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #21: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #22: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #23: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #24: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #25: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #26: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #27: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #28: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #29: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #30: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #31: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #32: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #33: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #34: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #35: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #36: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #37: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #38: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #39: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #40: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #41: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #42: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #43: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #44: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #45: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #46: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #47: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #48: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #49: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #50: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #51: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #52: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #53: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #54: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #55: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #56: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #57: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #58: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #59: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #60: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #61: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #62: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #63: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #64: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #65: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #66: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #67: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #68: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #69: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #70: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #71: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #72: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #73: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #74: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #75: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #76: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #77: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #78: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #79: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #80: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #81: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #82: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #83: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #84: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #85: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #86: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #87: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #88: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #89: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #90: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #91: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #92: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #93: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #94: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #95: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #96: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #97: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #98: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #99: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #100: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #101: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #102: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #103: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #104: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #105: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #106: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #107: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #108: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #109: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #110: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #111: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #112: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #113: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #114: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #115: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #116: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #117: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #118: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #119: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #120: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #121: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #122: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #123: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #124: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #125: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #126: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #127: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #128: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #129: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #130: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #131: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #132: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #133: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #134: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #135: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #136: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #137: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #138: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #139: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #140: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #141: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #142: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #143: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #144: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #145: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #146: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #147: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #148: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #149: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #150: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #151: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #152: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #153: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #154: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #155: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #156: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #157: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #158: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #159: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #160: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #161: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #162: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #163: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #164: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #165: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #166: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #167: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #168: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #169: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #170: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #171: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #172: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #173: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #174: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #175: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #176: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #177: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #178: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #179: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #180: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #181: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #182: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #183: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #184: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #185: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #186: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #187: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #188: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #189: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #190: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #191: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #192: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #193: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #194: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #195: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #196: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #197: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #198: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #199: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #200: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #201: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #202: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #203: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #204: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #205: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #206: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #207: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #208: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #209: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #210: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #211: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #212: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #213: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #214: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #215: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #216: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #217: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #218: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #219: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #220: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #221: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #222: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #223: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #224: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #225: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #226: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #227: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #228: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #229: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #230: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #231: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #232: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #233: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #234: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #235: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #236: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #237: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #238: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #239: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #240: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #241: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #242: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #243: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #244: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #245: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #246: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #247: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #248: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #249: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #250: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #251: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #252: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #253: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #254: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #255: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #256: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #257: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #258: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #259: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #260: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #261: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #262: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #263: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #264: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #265: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #266: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #267: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #268: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #269: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #270: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #271: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #272: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #273: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #274: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #275: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #276: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #277: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #278: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #279: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #280: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #281: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #282: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #283: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #284: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #285: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #286: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #287: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #288: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #289: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #290: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #291: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #292: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #293: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #294: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #295: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #296: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #297: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #298: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #299: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #300: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #301: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #302: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #303: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #304: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #305: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #306: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #307: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #308: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #309: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #310: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #311: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #312: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #313: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #314: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #315: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #316: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #317: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #318: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #319: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #320: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #321: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #322: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #323: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #324: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #325: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #326: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #327: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #328: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #329: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #330: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #331: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #332: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #333: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #334: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #335: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #336: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #337: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #338: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #339: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #340: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #341: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #342: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #343: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #344: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #345: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #346: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #347: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #348: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #349: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #350: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #351: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #352: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #353: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #354: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #355: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #356: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #357: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #358: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #359: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #360: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #361: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #362: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #363: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #364: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #365: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #366: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #367: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #368: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #369: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #370: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #371: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #372: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #373: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #374: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #375: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #376: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #377: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #378: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #379: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #380: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #381: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #382: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #383: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #384: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #385: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #386: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #387: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #388: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #389: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #390: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #391: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #392: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #393: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #394: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #395: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #396: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #397: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #398: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #399: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #400: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #401: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #402: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #403: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #404: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #405: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #406: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #407: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #408: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #409: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #410: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #411: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #412: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #413: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #414: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #415: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #416: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #417: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #418: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #419: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #420: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #421: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #422: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #423: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #424: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #425: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #426: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #427: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #428: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #429: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #430: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #431: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #432: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #433: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #434: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #435: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #436: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #437: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #438: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #439: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #440: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #441: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #442: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #443: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #444: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #445: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #446: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #447: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #448: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #449: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #450: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #451: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #452: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #453: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #454: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #455: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #456: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #457: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #458: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #459: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #460: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #461: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #462: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #463: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #464: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #465: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #466: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #467: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #468: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #469: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #470: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #471: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #472: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #473: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #474: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #475: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #476: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #477: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #478: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #479: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #480: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #481: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #482: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #483: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #484: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #485: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #486: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #487: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #488: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #489: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #490: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #491: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #492: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+🔧 Installing missing dependencies for training: pandas, torch
+❌ Cannot start Autonomous Training System due to dependency installation failure
+
+🔍 Health check #493: 1/7 components running
+
+🔄 Auto-restarting Autonomous Training System...
+>>>>>>> Stashed changes
