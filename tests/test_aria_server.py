@@ -50,6 +50,27 @@ def test_validate_action_sequence_accepts_basic_plan():
     assert reason == ""
 
 
+def test_validate_action_accepts_move_to_object_string_target():
+    # execute_aria_action supports moving to a named object; validation must allow it.
+    valid, reason = aria_server.validate_action({"action": "move", "target": "apple"})
+    assert valid is True
+    assert reason == ""
+
+
+def test_validate_action_rejects_empty_move_string_target():
+    valid, reason = aria_server.validate_action({"action": "move", "target": "   "})
+    assert valid is False
+    assert "non-empty" in reason
+
+
+def test_validate_action_still_rejects_out_of_bounds_move_coords():
+    valid, reason = aria_server.validate_action(
+        {"action": "move", "target": {"x": 1000, "y": 50}}
+    )
+    assert valid is False
+    assert "between 0 and 100" in reason
+
+
 def test_determine_position_come_here_command():
     tag = aria_server.determine_position_from_context("come here please")
     assert tag == "[aria:position:50:85]"
@@ -895,3 +916,51 @@ def test_execute_pickup_auto_moves_when_object_is_far():
         aria_server.stage_state["aria"]["position"] = original_position
         aria_server.stage_state["aria"]["held_object"] = original_held
         aria_server.stage_state["objects"]["book"] = original_book
+
+
+# --------------------------------------------------------------------------- #
+# /api/aria/health — build_health_payload
+# --------------------------------------------------------------------------- #
+def test_health_payload_has_expected_shape():
+    payload = aria_server.build_health_payload()
+    assert payload["status"] == "ok"
+    assert payload["version"] == aria_server.SERVER_VERSION
+    assert isinstance(payload["uptime_seconds"], float)
+    assert payload["uptime_seconds"] >= 0.0
+    assert isinstance(payload["timestamp"], str)
+    for key in ("objects", "action_types", "valid_gestures"):
+        assert key in payload["counts"]
+    assert payload["counts"]["action_types"] == len(aria_server.ARIA_ACTIONS)
+    assert payload["counts"]["valid_gestures"] == len(aria_server.VALID_GESTURES)
+
+
+def test_health_payload_reflects_injected_stage():
+    stage = {
+        "aria": {"position": {"x": 9, "y": 3}, "expression": "happy", "held_object": "ball"},
+        "objects": {"a": {}, "b": {}, "c": {}},
+    }
+    payload = aria_server.build_health_payload(
+        stage, llm_available=False, model_loaded=False, start_time=aria_server.time.monotonic()
+    )
+    assert payload["counts"]["objects"] == 3
+    assert payload["aria"]["position"] == {"x": 9, "y": 3}
+    assert payload["aria"]["expression"] == "happy"
+    assert payload["aria"]["held_object"] == "ball"
+    assert payload["llm_available"] is False
+    assert payload["model_loaded"] is False
+    assert payload["uptime_seconds"] >= 0.0
+
+
+def test_health_payload_tolerates_malformed_stage():
+    # Non-dict aria/objects should degrade gracefully, not raise.
+    payload = aria_server.build_health_payload(
+        {"aria": None, "objects": None}, llm_available=True, model_loaded=True
+    )
+    assert payload["counts"]["objects"] == 0
+    assert payload["aria"]["position"] == {}
+    assert payload["aria"]["expression"] is None
+    assert payload["llm_available"] is True
+
+
+def test_health_payload_is_json_serializable():
+    json.dumps(aria_server.build_health_payload())

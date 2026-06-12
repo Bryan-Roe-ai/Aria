@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from core.agent import BaseAgent
 from core.agents.goal_evolution_agent import GoalEvolutionAgent
 from core.agents.llm_agent import LLMAgent
 from core.agents.planner_agent import PlannerAgent
@@ -59,7 +60,9 @@ def test_planner_agent_reports_missing_goal_without_invalid_steps() -> None:
 
     assert result["error"] == "No goal provided"
     assert result["plan"] == []
-    assert memory.last_of_type("plan_created")["data"]["error"] == "No goal provided"
+    plan_created = memory.last_of_type("plan_created")
+    assert plan_created is not None
+    assert plan_created["data"]["error"] == "No goal provided"
 
 
 def test_goal_evolution_agent_returns_goal() -> None:
@@ -76,7 +79,9 @@ def test_goal_evolution_agent_returns_goal() -> None:
 def test_llm_agent_uses_structured_core_client_output() -> None:
     agent = LLMAgent()
 
-    result = agent.execute(Task(type="llm", payload={"prompt": "Verify this design"}))
+    result = agent.execute(
+        Task(type="llm", payload={"prompt": "Verify this design"})
+    )
 
     assert result["output"] == "Simulated result for: Verify this design"
     assert result["analysis"] == "Processed: Verify this design"
@@ -88,7 +93,9 @@ def test_tool_agent_reports_available_tools_on_error() -> None:
     registry.register("echo", lambda text: text)
     agent = ToolAgent(registry)
 
-    result = agent.execute(Task(type="tool", payload={"tool": "missing", "args": {}}))
+    result = agent.execute(
+        Task(type="tool", payload={"tool": "missing", "args": {}})
+    )
 
     assert result["error"] == "Tool not found: missing"
     assert result["available_tools"] == ["echo"]
@@ -97,7 +104,9 @@ def test_tool_agent_reports_available_tools_on_error() -> None:
 def test_tool_agent_rejects_non_mapping_args() -> None:
     agent = ToolAgent()
 
-    result = agent.execute(Task(type="tool", payload={"tool": "anything", "args": ["x"]}))
+    result = agent.execute(
+        Task(type="tool", payload={"tool": "anything", "args": ["x"]})
+    )
 
     assert result["error"] == "Tool args must be a dictionary"
 
@@ -111,16 +120,212 @@ def test_router_prioritizes_matching_agent_types() -> None:
     registry.register(llm)
     router = TaskRouter(registry)
 
-    result = router.route(Task(type="plan", payload={"goal": "Investigate files"}))
+    result = router.route(
+        Task(type="plan", payload={"goal": "Investigate files"})
+    )
 
     assert result["agent"] == "planner_agent"
     assert result["candidates"][0]["agent"] == "planner_agent"
 
 
+def test_router_route_text_populates_plan_goal() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+    planner = runner.registry.get("planner_agent")
+
+    assert planner is not None
+
+    seen_tasks: list[Task] = []
+
+    def _capture_plan(task: Task) -> dict:
+        seen_tasks.append(task)
+        return {
+            "agent": "planner_agent",
+            "task_id": task.id,
+            "goal": task.payload.get("goal"),
+            "plan": [],
+        }
+
+    setattr(planner, "execute", _capture_plan)
+
+    result = runner.router.route_text("Plan the next runtime steps")
+
+    assert result["agent"] == "planner_agent"
+    assert seen_tasks[0].type == "plan"
+    assert seen_tasks[0].payload["goal"] == "Plan the next runtime steps"
+
+
+def test_router_route_text_normalizes_tool_and_default_payloads() -> None:
+    captured: list[Task] = []
+
+    class _CaptureAgent(BaseAgent):
+        name = "capture_agent"
+
+        def can_handle(self, task: Task) -> bool:
+            return True
+
+        def execute(self, task: Task) -> dict:
+            captured.append(task)
+            return {"agent": self.name, "task_id": task.id}
+
+    registry = AgentRegistry()
+    registry.register(_CaptureAgent())
+    router = TaskRouter(registry)
+
+    router.route_text("Run the cleanup tool")
+    tool_task = captured[-1]
+    assert tool_task.type == "tool"
+    assert tool_task.payload["tool"] == "Run the cleanup tool"
+    assert tool_task.payload["args"] == {}
+
+    router.route_text("Say something friendly")
+    default_task = captured[-1]
+    assert default_task.type == "llm"
+    assert default_task.payload["prompt"] == "Say something friendly"
+
+
+def test_router_route_text_preserves_caller_payload() -> None:
+    captured: list[Task] = []
+
+    class _CaptureAgent(BaseAgent):
+        name = "capture_agent"
+
+        def can_handle(self, task: Task) -> bool:
+            return True
+
+        def execute(self, task: Task) -> dict:
+            captured.append(task)
+            return {"agent": self.name, "task_id": task.id}
+
+    registry = AgentRegistry()
+    registry.register(_CaptureAgent())
+    router = TaskRouter(registry)
+
+    router.route_text(
+        "Plan the rollout",
+        payload={"goal": "explicit goal", "extra": 42},
+    )
+
+    task = captured[-1]
+    assert task.type == "plan"
+    # Caller-provided goal must not be overwritten by route_text.
+    assert task.payload["goal"] == "explicit goal"
+    assert task.payload["extra"] == 42
+
+
+def test_router_classifies_reflection_requests_for_reflection_agent() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    result = runner.router.route_text(
+        "Reflect on the last cycle and identify lessons"
+    )
+
+    assert result["agent"] == "reflection_agent"
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("Retrospect on the sprint and meta-learn", "retrospect"),
+        ("Reflect on the postmortem", "reflect"),
+        ("Plan the migration strategy", "plan"),
+        ("Retrain the model to fine-tune", "train"),
+        ("Please review the feedback rating", "feedback"),
+        ("Run the inspect tool", "tool"),
+        ("Set the next goal to improve next", "goal_evolve"),
+        ("Summarize and condense the notes", "summarize"),
+        ("Critique and assess quality", "critique"),
+        ("Explain your chain of thought", "reason"),
+        ("Debate and stress test the claim", "debate"),
+        ("Hypothesize and infer pattern", "hypothesize"),
+        ("Tell me a friendly joke", "llm"),
+        ("", "llm"),
+    ],
+)
+def test_router_classify_intent_maps_tokens_to_types(
+    text: str, expected: str
+) -> None:
+    router = TaskRouter(AgentRegistry())
+
+    assert router.classify_intent(text) == expected
+
+
+def test_router_route_text_normalizes_feedback_payload() -> None:
+    captured: list[Task] = []
+
+    class _CaptureAgent(BaseAgent):
+        name = "capture_agent"
+
+        def can_handle(self, task: Task) -> bool:
+            return True
+
+        def execute(self, task: Task) -> dict:
+            captured.append(task)
+            return {"agent": self.name, "task_id": task.id}
+
+    registry = AgentRegistry()
+    registry.register(_CaptureAgent())
+    router = TaskRouter(registry)
+
+    router.route_text("Please review this feedback")
+    feedback_task = captured[-1]
+
+    assert feedback_task.type == "feedback"
+    assert feedback_task.payload["message"] == "Please review this feedback"
+
+
+def test_runner_normalize_plan_step_accepts_valid_step() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    task, skip_reason = runner._normalize_plan_step(
+        {"type": "tool", "payload": {"tool": "cleanup"}, "priority": 3}, 0
+    )
+
+    assert skip_reason is None
+    assert task is not None
+    assert task.type == "tool"
+    assert task.payload == {"tool": "cleanup"}
+    assert task.priority == 3
+
+
+def test_runner_normalize_plan_step_defaults_missing_payload() -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    task, skip_reason = runner._normalize_plan_step({"type": "plan"}, 1)
+
+    assert skip_reason is None
+    assert task is not None
+    assert task.payload == {}
+    assert task.priority == 0
+
+
+@pytest.mark.parametrize(
+    ("step", "expected_error_fragment"),
+    [
+        (["not", "a", "dict"], "must be a dictionary"),
+        ({"type": "   "}, "missing a valid type"),
+        ({"payload": {}}, "missing a valid type"),
+        ({"type": "tool", "payload": ["bad"]}, "payload must be a dictionary"),
+    ],
+)
+def test_runner_normalize_plan_step_rejects_invalid_steps(
+    step: object, expected_error_fragment: str
+) -> None:
+    runner = AriaRunner(config={"sleep_seconds": 0})
+
+    task, skip_reason = runner._normalize_plan_step(step, 4)
+
+    assert task is None
+    assert skip_reason is not None
+    assert skip_reason["index"] == 4
+    assert expected_error_fragment in skip_reason["error"]
+
+
 def test_training_agent_summary_tracks_signal_counts() -> None:
     agent = TrainingAgent()
 
-    train_result = agent.execute(Task(type="train", payload={"goal": "improve"}))
+    train_result = agent.execute(
+        Task(type="train", payload={"goal": "improve"})
+    )
     eval_result = agent.execute(Task(type="evaluate", payload={"score": 0.8}))
 
     assert train_result["summary"]["counts"]["train"] == 1
@@ -145,6 +350,7 @@ def test_runner_registers_default_tooling() -> None:
     tool_agent = runner.registry.get("tool_agent")
 
     assert tool_agent is not None
+    assert isinstance(tool_agent, ToolAgent)
     assert tool_agent.registry.has("inspect_context")
     assert tool_agent.registry.has("recent_events")
 
@@ -158,7 +364,10 @@ def test_runner_default_inspect_context_tool_uses_memory() -> None:
     result = tool_agent.execute(
         Task(
             type="tool",
-            payload={"tool": "inspect_context", "args": {"goal": "check status"}},
+            payload={
+                "tool": "inspect_context",
+                "args": {"goal": "check status"},
+            },
         )
     )
 
@@ -178,10 +387,14 @@ def test_runner_skips_invalid_plan_steps_and_records_reason() -> None:
             "agent": "planner_agent",
             "task_id": "planner",
             "goal": "bad plan",
-            "plan": [{"payload": {}}, "oops", {"type": "llm", "payload": {"prompt": "ok"}}],
+            "plan": [
+                {"payload": {}},
+                "oops",
+                {"type": "llm", "payload": {"prompt": "ok"}},
+            ],
         }
 
-    planner.execute = _bad_plan  # type: ignore[method-assign]
+    setattr(planner, "execute", _bad_plan)
 
     result = runner.run_once()
 
@@ -192,7 +405,7 @@ def test_runner_skips_invalid_plan_steps_and_records_reason() -> None:
 
 @pytest.mark.asyncio
 async def test_task_queue_processes_tasks_and_stops_cleanly() -> None:
-    queue = TaskQueue(max_workers=2)
+    queue: TaskQueue = TaskQueue(max_workers=2)
     processed: list[str] = []
 
     async def handler(task: str) -> None:

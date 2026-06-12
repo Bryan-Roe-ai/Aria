@@ -85,6 +85,7 @@ PLATEAU_PROMOTION_CYCLES = 5
 PLATEAU_VARIANCE = 0.005
 MAX_HISTORY_CYCLES = 500
 _STOP_REQUESTED = False
+_CYCLE_NOW_REQUESTED = False
 
 
 # ----------------------------------------------------------------------------
@@ -100,6 +101,38 @@ def _request_stop(signum: int, _frame) -> None:
     global _STOP_REQUESTED
     logger.info("Received signal %s; graceful shutdown requested", signum)
     _STOP_REQUESTED = True
+
+
+def _request_cycle_now(signum: int, _frame) -> None:
+    global _CYCLE_NOW_REQUESTED
+    logger.info("Received signal %s; immediate training cycle requested", signum)
+    _CYCLE_NOW_REQUESTED = True
+
+
+def _consume_cycle_now() -> bool:
+    """Return whether an immediate cycle was requested, clearing the flag."""
+    global _CYCLE_NOW_REQUESTED
+    if _CYCLE_NOW_REQUESTED:
+        _CYCLE_NOW_REQUESTED = False
+        return True
+    return False
+
+
+def _install_signal_handlers() -> None:
+    """Register graceful-stop and immediate-cycle signal handlers.
+
+    SIGUSR1 (where available) triggers an immediate cycle by interrupting the
+    inter-cycle sleep; SIGINT/SIGTERM request a graceful shutdown. SIGUSR1 is
+    absent on some platforms (e.g. Windows), so it is registered defensively.
+    """
+    signal.signal(signal.SIGINT, _request_stop)
+    signal.signal(signal.SIGTERM, _request_stop)
+    sigusr1 = getattr(signal, "SIGUSR1", None)
+    if sigusr1 is not None:
+        try:
+            signal.signal(sigusr1, _request_cycle_now)
+        except (ValueError, OSError):  # pragma: no cover - non-main thread / unsupported
+            logger.warning("Unable to register SIGUSR1 handler; immediate-cycle trigger disabled")
 
 
 def _acquire_pidfile(*, force: bool = False) -> None:
@@ -596,6 +629,9 @@ def run_autonomously(
                 for _ in range(cycle_interval_sec):
                     if _STOP_REQUESTED:
                         break
+                    if _consume_cycle_now():
+                        logger.info("Immediate cycle requested; skipping remaining wait")
+                        break
                     time.sleep(1)
 
         if _STOP_REQUESTED:
@@ -692,8 +728,7 @@ def main() -> int:
         return 1
 
     config = load_config(config_path)
-    signal.signal(signal.SIGINT, _request_stop)
-    signal.signal(signal.SIGTERM, _request_stop)
+    _install_signal_handlers()
     _acquire_pidfile(force=args.force_run)
     atexit.register(_release_pidfile)
     try:

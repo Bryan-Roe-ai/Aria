@@ -108,7 +108,7 @@ python scripts/test_runner.py --unit
 | ------- | ------- |
 | Chat returns 500 | Provider detection chain, missing env vars |
 | No streaming | SSE format: `data: {json}\n\n` + `data: [DONE]\n\n` |
-| Wrong provider used | Detection order: Azure → OpenAI → LMStudio → LoRA → Local |
+| Wrong provider used | Detection order: LM Studio → Ollama → Azure → OpenAI → Local (LoRA explicit-only) |
 | LoRA won't load | Need both `adapter_config.json` + `adapter_model.safetensors` |
 | TTS failing | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`, fallback chain |
 | SQL pool saturated | `/api/ai/status` → `saturation_alert`, increase `QAI_SQL_POOL_SIZE` |

@@ -1,3 +1,5 @@
 nohup: ignoring input
 nohup: ignoring input
 nohup: ignoring input
+nohup: ignoring input
+scripts/aria_forever_watchdog.sh: line 267: 342515 Hangup                  nohup bash -lc "$cmd" >> "$log_file" 2>&1

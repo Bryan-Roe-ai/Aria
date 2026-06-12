@@ -3,6 +3,10 @@ LLM Maker MCP Server
 Exposes tool creation and execution capabilities via Model Context Protocol
 """
 
+from src.tool_validator import ToolValidator
+from src.tool_registry import ToolRegistry
+from src.tool_maker import ToolMaker
+from src.tool_executor import ToolExecutor
 import asyncio
 import json
 import logging
@@ -12,6 +16,11 @@ from pathlib import Path
 # Add src directory to path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
+
+# Ensure shared workspace modules are importable when launched from the MCP config.
+workspace_root = Path(__file__).resolve().parents[2]
+if str(workspace_root) not in sys.path:
+    sys.path.insert(0, str(workspace_root))
 
 # Import MCP dependencies
 try:
@@ -26,12 +35,7 @@ except ImportError as e:
     print(f"\nDetails: {e}")
     sys.exit(1)
 
-from src.tool_executor import ToolExecutor
-
 # Import LLM Maker components
-from src.tool_maker import ToolMaker
-from src.tool_registry import ToolRegistry
-from src.tool_validator import ToolValidator
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

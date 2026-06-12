@@ -26,7 +26,7 @@ Perform a thorough code review of the specified code, evaluating these dimension
 - Frozenset usage for O(1) keyword lookups (Aria convention)
 
 **4. Conventions**
-- Provider detection chain: Azure → OpenAI → LMStudio → LoRA → Local
+- Provider detection chain (`detect_provider()` auto mode): LM Studio → Ollama → Azure → OpenAI → Local (LoRA explicit-only)
 - Config precedence: YAML < CLI < per-job YAML < env vars
 - Data immutability: read-only `datasets/`, write-only `data_out/`
 - Status files: `data_out/<orchestrator>/status.json`

@@ -1368,3 +1368,4 @@ Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_train
 2026-05-31 22:53:50,046 - INFO - 
 Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_training/quantum_training_results.json
 2026-05-31 22:53:50,051 - INFO - Cycle complete. Next cycle in 1800s...
+2026-06-01 16:53:42,061 - INFO - Received signal 10; immediate training cycle requested

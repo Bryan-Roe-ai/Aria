@@ -3,13 +3,21 @@ Test Optimized Quantum Circuit on Real Azure Quantum Hardware
 Submits the optimized quantum classifier to IonQ or other quantum backends
 """
 
+from __future__ import annotations
+
+import argparse
 import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Any, Optional, cast
 
-import yaml
+import yaml  # type: ignore[import-untyped]
+
+if TYPE_CHECKING:
+    from qiskit import QuantumCircuit as QuantumCircuitType  # noqa: F401
+else:
+    QuantumCircuitType = Any
 
 _OPTIONAL_IMPORT_ERROR: Optional[ImportError] = None
 
@@ -18,10 +26,13 @@ sys.path.append(str(Path(__file__).parent / "src"))
 
 try:
     import numpy as np
-    from azure_quantum_integration import AzureQuantumIntegration, create_sample_circuit
-    from qiskit import QuantumCircuit
+    import azure_quantum_integration as aqi_module
+    import qiskit as qiskit_module
 except ImportError as exc:  # pragma: no cover - environment dependent
     _OPTIONAL_IMPORT_ERROR = exc
+    np = cast(Any, None)
+    aqi_module = cast(Any, None)
+    qiskit_module = cast(Any, None)
 
 if _OPTIONAL_IMPORT_ERROR is not None and "pytest" in sys.modules:
     import pytest
@@ -35,7 +46,127 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 
-def create_optimized_quantum_circuit(n_qubits: int = 4, n_layers: int = 3) -> QuantumCircuit:
+def parse_args() -> argparse.Namespace:
+    """
+    Parse command-line options for safer, non-interactive runs.
+    """
+    parser = argparse.ArgumentParser(
+        description="Test Azure Quantum hardware and simulator backends"
+    )
+    parser.add_argument(
+        "--backend",
+        default=None,
+        help=(
+            "Backend to use. Defaults to ionq.simulator when running "
+            "non-interactively."
+        ),
+    )
+    parser.add_argument(
+        "--non-interactive",
+        action="store_true",
+        help=(
+            "Skip prompts and use simulator-first defaults. Safe for CI and "
+            "headless runs."
+        ),
+    )
+    parser.add_argument(
+        "--skip-hardware",
+        action="store_true",
+        help=(
+            "Skip paid hardware tests even if hardware backends are "
+            "available."
+        ),
+    )
+    parser.add_argument(
+        "--compare-simulator",
+        action="store_true",
+        help="Run the simulator-vs-hardware comparison test at the end.",
+    )
+    parser.add_argument(
+        "--shots",
+        type=int,
+        default=None,
+        help="Override the default shot count for the optimized circuit test.",
+    )
+    return parser.parse_args()
+
+
+def choose_backend(
+    backends: list[str],
+    requested_backend: Optional[str],
+    non_interactive: bool,
+    skip_hardware: bool,
+) -> tuple[str, bool]:
+    """
+    Pick a backend while keeping paid hardware opt-in.
+
+    Returns:
+        Tuple of (backend_name, allow_hardware_comparison).
+    """
+    def is_simulator_backend(backend_name: str) -> bool:
+        backend_name = backend_name.lower()
+        return "simulator" in backend_name or ".sim." in backend_name
+
+    def select_simulator_backend() -> str:
+        for backend_name in backends:
+            if backend_name == "ionq.simulator":
+                return backend_name
+        for backend_name in backends:
+            if is_simulator_backend(backend_name):
+                return backend_name
+        return "ionq.simulator"
+
+    if requested_backend:
+        if skip_hardware and not is_simulator_backend(requested_backend):
+            return select_simulator_backend(), False
+        return requested_backend, not is_simulator_backend(requested_backend)
+
+    if non_interactive or skip_hardware:
+        return select_simulator_backend(), False
+
+    simulator_backends = [b for b in backends if is_simulator_backend(b)]
+    hardware_backends = [b for b in backends if not is_simulator_backend(b)]
+
+    print("Available backends:")
+    print("\nSimulators (FREE - recommended for testing):")
+    for backend in simulator_backends:
+        print(f"  • {backend}")
+
+    if hardware_backends:
+        print("\nQuantum Hardware (PAID - requires credits):")
+        for backend in hardware_backends:
+            print(f"  • {backend}")
+
+    print("\nRecommended testing order:")
+    print("  1. Start with simulator (free, fast)")
+    print("  2. Test Bell state on hardware (low cost)")
+    print("  3. Run optimized circuit on hardware (verify 90% accuracy)\n")
+
+    print("Select backend for testing:")
+    print("  1. ionq.simulator (FREE - recommended)")
+    if hardware_backends:
+        print("  2. ionq.qpu (PAID - real quantum computer)")
+    print("  3. Skip hardware tests\n")
+
+    choice = input("Enter choice (1-3): ").strip()
+
+    if choice == "3":
+        return "ionq.simulator", False
+
+    if choice == "2" and hardware_backends:
+        print("\n⚠ Selected PAID hardware: ionq.qpu")
+        print("This will use quantum computing credits!")
+        confirm = input("Continue? (yes/no): ").strip().lower()
+        if confirm != "yes":
+            return "ionq.simulator", False
+        return "ionq.qpu", True
+
+    return "ionq.simulator", False
+
+
+def create_optimized_quantum_circuit(
+    n_qubits: int = 4, n_layers: int = 3
+) -> QuantumCircuitType:
     """
     Create a quantum circuit using our optimized parameters.
     This simulates the structure of our trained quantum classifier.
@@ -47,7 +178,7 @@ def create_optimized_quantum_circuit(n_qubits: int = 4, n_layers: int = 3) -> Qu
     Returns:
         Quantum circuit
     """
-    circuit = QuantumCircuit(n_qubits, n_qubits)
+    circuit = qiskit_module.QuantumCircuit(n_qubits, n_qubits)
 
     # Initial state preparation (Hadamard layer)
     for qubit in range(n_qubits):
@@ -73,7 +204,7 @@ def create_optimized_quantum_circuit(n_qubits: int = 4, n_layers: int = 3) -> Qu
     return circuit
 
 
-def create_bell_state_test() -> QuantumCircuit:
+def create_bell_state_test() -> QuantumCircuitType:
     """
     Create a simple Bell state for initial hardware testing.
     This is a good first test to verify quantum entanglement on hardware.
@@ -81,14 +212,14 @@ def create_bell_state_test() -> QuantumCircuit:
     Returns:
         Bell state circuit
     """
-    circuit = QuantumCircuit(2, 2)
+    circuit = qiskit_module.QuantumCircuit(2, 2)
     circuit.h(0)
     circuit.cx(0, 1)
     circuit.measure([0, 1], [0, 1])
     return circuit
 
 
-def test_azure_quantum_connection():
+def run_azure_quantum_connection():
     """
     Test 1: Verify Azure Quantum connection and list backends.
     """
@@ -98,11 +229,14 @@ def test_azure_quantum_connection():
 
     try:
         if _OPTIONAL_IMPORT_ERROR is not None:
-            raise RuntimeError(f"Missing optional quantum dependencies: {_OPTIONAL_IMPORT_ERROR}")
+            raise RuntimeError(
+                "Missing optional quantum dependencies: "
+                f"{_OPTIONAL_IMPORT_ERROR}"
+            )
 
         # Initialize Azure Quantum
         config_path = Path(__file__).parent / "config" / "quantum_config.yaml"
-        azure = AzureQuantumIntegration(str(config_path))
+        azure = aqi_module.AzureQuantumIntegration(str(config_path))
 
         print("✓ Configuration loaded")
         print(f"  Workspace: {azure.azure_config['workspace_name']}")
@@ -111,7 +245,7 @@ def test_azure_quantum_connection():
 
         # Connect to workspace
         print("Connecting to Azure Quantum workspace...")
-        workspace = azure.connect()
+        azure.connect()
         print("✓ Successfully connected to Azure Quantum!\n")
 
         # List available backends
@@ -128,14 +262,25 @@ def test_azure_quantum_connection():
     except Exception as e:
         print(f"\n✗ Connection failed: {str(e)}\n")
         print("TROUBLESHOOTING STEPS:")
-        print("1. Ensure Azure Quantum workspace is deployed (see azure/DEPLOYMENT.md)")
+        print(
+            "1. Ensure Azure Quantum workspace is deployed "
+            "(see azure/DEPLOYMENT.md)"
+        )
         print("2. Run: az login")
-        print("3. Update config/quantum_config.yaml with your subscription details")
-        print("4. Verify workspace exists: az quantum workspace show -g rg-quantum-ai -n quantum-ai-workspace\n")
+        print(
+            "3. Update config/quantum_config.yaml with your "
+            "subscription details"
+        )
+        print(
+            "4. Verify workspace exists: az quantum workspace show "
+            "-g rg-quantum-ai -n quantum-ai-workspace\n"
+        )
         return None, []
 
 
-def test_bell_state_on_hardware(azure: AzureQuantumIntegration, backend_name: str = None):
+def run_bell_state_on_hardware(
+    azure: Any, backend_name: Optional[str] = None
+):
     """
     Test 2: Run Bell state on quantum hardware to verify entanglement.
     """
@@ -160,12 +305,17 @@ def test_bell_state_on_hardware(azure: AzureQuantumIntegration, backend_name: st
         print(f"Cost Estimate: {cost_estimate}\n")
 
         # Submit to hardware
-        print(f"Submitting Bell state to {backend_name or 'default backend'}...")
+        print(
+            f"Submitting Bell state to {backend_name or 'default backend'}..."
+        )
         job = azure.submit_circuit(
             circuit,
             backend_name=backend_name,
             shots=100,
-            job_name=f"bell_state_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            job_name=(
+                "bell_state_test_"
+                f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            ),
         )
 
         print("✓ Job submitted successfully!")
@@ -209,7 +359,9 @@ def test_bell_state_on_hardware(azure: AzureQuantumIntegration, backend_name: st
         return None
 
 
-def test_optimized_circuit_on_hardware(azure: AzureQuantumIntegration, backend_name: str = None):
+def run_optimized_circuit_on_hardware(
+    azure: Any, backend_name: Optional[str] = None, shots: Optional[int] = None
+):
     """
     Test 3: Run our optimized quantum classifier circuit on real hardware.
     """
@@ -232,6 +384,9 @@ def test_optimized_circuit_on_hardware(azure: AzureQuantumIntegration, backend_n
     print(f"  Entanglement: {entanglement}")
     print(f"  Learning Rate: {config['ml']['training']['learning_rate']}\n")
 
+    if shots is None:
+        shots = 500
+
     # Create circuit
     circuit = create_optimized_quantum_circuit(n_qubits, n_layers)
 
@@ -245,16 +400,24 @@ def test_optimized_circuit_on_hardware(azure: AzureQuantumIntegration, backend_n
     try:
         # Estimate cost
         print("Estimating cost for optimized circuit...")
-        cost_estimate = azure.estimate_cost(circuit, backend_name or "ionq.simulator", shots=500)
+        cost_estimate = azure.estimate_cost(
+            circuit, backend_name or "ionq.simulator", shots=shots
+        )
         print(f"Cost Estimate: {cost_estimate}\n")
 
         # Submit to hardware
-        print(f"Submitting optimized circuit to {backend_name or 'default backend'}...")
+        print(
+            "Submitting optimized circuit to "
+            f"{backend_name or 'default backend'}..."
+        )
         job = azure.submit_circuit(
             circuit,
             backend_name=backend_name,
-            shots=500,
-            job_name=f"optimized_classifier_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            shots=shots,
+            job_name=(
+                "optimized_classifier_"
+                f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            ),
         )
 
         print("✓ Job submitted successfully!")
@@ -283,12 +446,16 @@ def test_optimized_circuit_on_hardware(azure: AzureQuantumIntegration, backend_n
         max_entropy = np.log2(2**n_qubits)
 
         print("\nQuantum State Analysis:")
-        print(f"  Unique states measured: {len(results['counts'])}/{2**n_qubits}")
+        print(
+            f"  Unique states measured: {len(results['counts'])}/{2**n_qubits}"
+        )
         print(f"  Entropy: {entropy:.3f} / {max_entropy:.3f}")
         print(f"  Distribution uniformity: {(entropy/max_entropy)*100:.1f}%")
 
         # Save results
-        azure.save_results(results, f"optimized_circuit_results_{job.id()}.json")
+        azure.save_results(
+            results, f"optimized_circuit_results_{job.id()}.json"
+        )
         print("\n✓ Results saved to results/\n")
 
         return results
@@ -298,7 +465,7 @@ def test_optimized_circuit_on_hardware(azure: AzureQuantumIntegration, backend_n
         return None
 
 
-def compare_simulator_vs_hardware(azure: AzureQuantumIntegration):
+def compare_simulator_vs_hardware(azure: Any):
     """
     Test 4: Compare results between simulator and real hardware.
     """
@@ -340,7 +507,11 @@ def compare_simulator_vs_hardware(azure: AzureQuantumIntegration):
         print("  COMPARISON RESULTS")
         print("=" * 70)
 
-        print("\n{:<15} {:<20} {:<20}".format("State", "Simulator", "Hardware"))
+        print(
+            "\n{:<15} {:<20} {:<20}".format(
+                "State", "Simulator", "Hardware"
+            )
+        )
         print("-" * 70)
 
         all_states = set(sim_results["counts"].keys()) | set(hw_results["counts"].keys())
@@ -355,13 +526,19 @@ def compare_simulator_vs_hardware(azure: AzureQuantumIntegration):
         print("\nKey Differences:")
         print("  - Simulator: Ideal quantum behavior (no noise)")
         print("  - Hardware: Real quantum effects + decoherence/gate errors")
-        print("  - Hardware noise is expected and demonstrates real quantum computing!\n")
+        print(
+            "  - Hardware noise is expected and demonstrates real "
+            "quantum computing!\n"
+        )
 
         return sim_results, hw_results
 
     except Exception as e:
         print(f"\n✗ Comparison failed: {str(e)}")
-        print("Note: Quantum hardware access may require credits or additional setup\n")
+        print(
+            "Note: Quantum hardware access may require credits or "
+            "additional setup\n"
+        )
         return None, None
 
 
@@ -369,20 +546,24 @@ def main():
     """
     Main test suite for Azure Quantum hardware.
     """
+    args = parse_args()
+
     print("\n" + "=" * 70)
     print("  AZURE QUANTUM HARDWARE TEST SUITE")
     print("  Testing Optimized Quantum AI Configuration (90% Accuracy)")
     print("=" * 70)
 
     # Test 1: Connection
-    azure, backends = test_azure_quantum_connection()
+    azure, backends = run_azure_quantum_connection()
 
     if azure is None:
         print("\n⚠ Cannot proceed without Azure Quantum connection.")
-        print("Please complete Azure deployment first (see azure/DEPLOYMENT.md)\n")
+        print(
+            "Please complete Azure deployment first "
+            "(see azure/DEPLOYMENT.md)\n"
+        )
         return
 
-    # Select backend
     print("\n" + "=" * 70)
     print("  BACKEND SELECTION")
     print("=" * 70 + "\n")
@@ -391,64 +572,55 @@ def main():
         print("⚠ No backends available. Check workspace configuration.\n")
         return
 
-    # Recommend starting with simulator
-    simulator_backends = [b for b in backends if "simulator" in b.lower()]
-    hardware_backends = [b for b in backends if "simulator" not in b.lower()]
+    backend, allow_hardware_comparison = choose_backend(
+        backends=backends,
+        requested_backend=args.backend,
+        non_interactive=args.non_interactive,
+        skip_hardware=args.skip_hardware,
+    )
 
-    print("Available backends:")
-    print("\nSimulators (FREE - recommended for testing):")
-    for backend in simulator_backends:
-        print(f"  • {backend}")
-
-    if hardware_backends:
-        print("\nQuantum Hardware (PAID - requires credits):")
-        for backend in hardware_backends:
-            print(f"  • {backend}")
-
-    print("\nRecommended testing order:")
-    print("  1. Start with simulator (free, fast)")
-    print("  2. Test Bell state on hardware (low cost)")
-    print("  3. Run optimized circuit on hardware (verify 90% accuracy)\n")
-
-    # Ask user to select backend
-    print("Select backend for testing:")
-    print("  1. ionq.simulator (FREE - recommended)")
-    if hardware_backends:
-        print("  2. ionq.qpu (PAID - real quantum computer)")
-    print("  3. Skip hardware tests\n")
-
-    choice = input("Enter choice (1-3): ").strip()
-
-    if choice == "3":
-        print("\nSkipping hardware tests. Goodbye!\n")
-        return
-    elif choice == "2" and hardware_backends:
-        backend = "ionq.qpu"
-        print(f"\n⚠ Selected PAID hardware: {backend}")
-        print("This will use quantum computing credits!")
-        confirm = input("Continue? (yes/no): ").strip().lower()
-        if confirm != "yes":
-            print("\nTest cancelled.\n")
-            return
+    if args.non_interactive or args.skip_hardware:
+        print("Simulator-first mode enabled; hardware tests are skipped.\n")
     else:
-        backend = "ionq.simulator"
-
-    print(f"\nUsing backend: {backend}\n")
+        print(f"\nUsing backend: {backend}\n")
 
     # Test 2: Bell state
-    bell_results = test_bell_state_on_hardware(azure, backend)
+    bell_results = run_bell_state_on_hardware(azure, backend)
 
     if bell_results:
         print("✓ Bell state test completed successfully!\n")
 
         # Ask if user wants to continue with optimized circuit
-        proceed = input("Proceed with optimized circuit test? (yes/no): ").strip().lower()
+        proceed = (
+            "yes"
+            if args.non_interactive or args.skip_hardware
+            else input(
+                "Proceed with optimized circuit test? (yes/no): "
+            ).strip().lower()
+        )
         if proceed == "yes":
             # Test 3: Optimized circuit
-            opt_results = test_optimized_circuit_on_hardware(azure, backend)
+            opt_results = run_optimized_circuit_on_hardware(
+                azure,
+                backend,
+                shots=args.shots,
+            )
 
             if opt_results:
                 print("✓ Optimized circuit test completed successfully!\n")
+
+    if args.compare_simulator:
+        print("\n" + "=" * 70)
+        print("  SIMULATOR VS HARDWARE COMPARISON")
+        print("=" * 70 + "\n")
+
+        if allow_hardware_comparison and not args.skip_hardware:
+            compare_simulator_vs_hardware(azure)
+        else:
+            print(
+                "Skipping simulator-vs-hardware comparison because a paid "
+                "hardware backend was not selected.\n"
+            )
 
     # Summary
     print("\n" + "=" * 70)

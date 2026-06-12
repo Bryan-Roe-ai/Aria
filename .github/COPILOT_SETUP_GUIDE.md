@@ -141,7 +141,7 @@ The MCP (Model Context Protocol) configuration connects Copilot to specialized s
     "quantum-ai": {
       "description": "Quantum ML pipelines, circuit design, and Azure Quantum integration",
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"],
       "env": {
         "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml"
@@ -150,7 +150,7 @@ The MCP (Model Context Protocol) configuration connects Copilot to specialized s
     "llm-maker": {
       "description": "Safe LLM-powered code generation and website creation",
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"],
       "env": {
         "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
@@ -159,7 +159,7 @@ The MCP (Model Context Protocol) configuration connects Copilot to specialized s
     "task-complete": {
       "description": "Task completion tracking and artifact management",
       "type": "stdio",
-      "command": "python3",
+      "command": "${workspaceFolder}/.venv/bin/python",
       "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"]
     }
   }
@@ -239,13 +239,13 @@ MCP servers start automatically when you open the project in VS Code. To manuall
 
 ```bash
 # Test quantum-ai MCP server
-python3 ai-projects/quantum-ml/quantum_mcp_server.py
+.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py
 
 # Test llm-maker MCP server
-python3 ai-projects/llm-maker/llm_maker_mcp_server.py
+.venv/bin/python ai-projects/llm-maker/llm_maker_mcp_server.py
 
 # Test task-complete MCP server
-python3 scripts/task_complete_mcp_server.py
+.venv/bin/python scripts/task_complete_mcp_server.py
 ```
 
 ### Available MCP Tools
@@ -297,7 +297,7 @@ If MCP servers don't appear in Copilot Chat:
 
 2. **Test individual server**:
    ```bash
-   python3 ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
+  .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
    ```
 
 3. **Verify configuration**:
@@ -433,7 +433,7 @@ Better: "The test_chat_streaming test is failing with timeout in the SSE respons
 ### 4. Leverage Multi-Provider Safety
 
 The system includes fallback providers. If one fails:
-- Azure OpenAI → OpenAI → LMStudio → Local
+- LM Studio → Ollama → Azure OpenAI → OpenAI → Local
 - Copilot will automatically retry with appropriate prompts
 
 ### 5. Review Before Committing
@@ -544,7 +544,7 @@ Edit `.vscode/settings.json` to route requests to specific models:
      "servers": {
        "my-server": {
          "type": "stdio",
-         "command": "python3",
+         "command": "${workspaceFolder}/.venv/bin/python",
          "args": ["./path/to/server.py"]
        }
      }

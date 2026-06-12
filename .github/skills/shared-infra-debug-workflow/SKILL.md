@@ -99,7 +99,7 @@ Required env vars for Azure OpenAI (all 4 must be set):
 - `AZURE_OPENAI_API_VERSION`
 
 Check `/api/ai/status` → `active_provider` field to confirm which provider was selected.
-Fallback order: Azure OpenAI → OpenAI → LMStudio → Local.
+Runtime `detect_provider()` auto order: LM Studio → Ollama → Azure OpenAI → OpenAI → Local. (Distinct from the declared `QAI_PROVIDER_PRIORITY` list in `shared/config.py`, default `["azure", "openai", "lmstudio", "local"]`.)
 
 ### Step 7 — Run Unit Tests
 ```bash

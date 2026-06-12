@@ -40,17 +40,20 @@ python ai-projects/chat-cli/src/chat_cli.py --provider local --once "Hello"
 ```
 
 ### Step 2 — Verify provider detection order
-The detection chain in `shared/chat_providers.py:detect_provider()` runs in order:
-1. **Azure OpenAI** — requires ALL 4 env vars:
+The detection chain in `shared/chat_providers.py:detect_provider()` runs in order (auto mode):
+1. **LM Studio** — if reachable at `LMSTUDIO_BASE_URL` (default `http://127.0.0.1:1234/v1`)
+2. **Ollama** — if reachable at `OLLAMA_BASE_URL` (default `http://127.0.0.1:11434/v1`)
+3. **Azure OpenAI** — requires ALL 4 env vars:
    ```
    AZURE_OPENAI_API_KEY
    AZURE_OPENAI_ENDPOINT
    AZURE_OPENAI_DEPLOYMENT
    AZURE_OPENAI_API_VERSION
    ```
-2. **OpenAI** — requires `OPENAI_API_KEY`
-3. **LoRA** — explicit `--provider lora --model <adapter_dir>`
-4. **Local** — always available, zero-dependency fallback
+4. **OpenAI** — requires `OPENAI_API_KEY`
+5. **Local** — always available, zero-dependency fallback
+
+Explicit specials (selected only via `--provider`): `lmstudio`, `ollama`, `azure`, `openai`, `lora`, `agi`, `quantum`.
 
 ```bash
 # Check which env vars are present:

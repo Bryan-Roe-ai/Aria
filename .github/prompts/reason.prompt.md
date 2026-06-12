@@ -36,7 +36,7 @@ Apply the AGI reasoning framework to analyze and solve the following task.
    - Note any remaining uncertainties
 
 **Codebase context:**
-- Provider chain: Azure OpenAI → OpenAI → LMStudio → LoRA → Local
+- Provider chain (`detect_provider()` auto mode): LM Studio → Ollama → Azure OpenAI → OpenAI → Local (LoRA explicit-only)
 - Config: YAML < CLI < per-job YAML < env vars
 - Data: read-only `datasets/`, write-only `data_out/`
 - Always `--dry-run` orchestrators first

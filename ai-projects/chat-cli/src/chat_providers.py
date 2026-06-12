@@ -32,7 +32,8 @@ except ModuleNotFoundError:
 try:  # shared package may not be importable in all contexts (tests add paths)
     from shared.azure_utils import format_quota_message, is_quota_error, is_transient_rate_error
 except Exception:  # pragma: no cover - best-effort import
-    # Provide fallbacks if shared module isn't available in runtime/test harness
+    # Provide fallbacks if the shared module is unavailable in the
+    # runtime/test harness.
     def is_quota_error(e: Any) -> bool:
         txt = str(e).lower() if e is not None else ""
         return any(
@@ -1296,7 +1297,7 @@ def detect_provider(
     """
     explicit_normalized = (explicit or "").strip().lower()
     force_local_echo = explicit_normalized in {"local_echo", "local-echo"}
-    provider_choice = (explicit or "auto").lower()
+    provider_choice = explicit_normalized or "auto"
     provider_choice = _PROVIDER_ALIASES.get(provider_choice, provider_choice)
 
     explicit_requested = bool(explicit and str(explicit).strip())

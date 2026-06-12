@@ -140,7 +140,7 @@ Do not narrate every sub-step. Provide a progress update at:
 ### Provider Detection Chain
 
 When testing or verifying chat functionality, the provider chain is:
-`Azure OpenAI → OpenAI → LMStudio → Local`
+`LM Studio → Ollama → Azure OpenAI → OpenAI → Local`
 
 Use `/api/ai/status` to verify active provider before assuming a specific one.
 

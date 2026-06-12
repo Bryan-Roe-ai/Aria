@@ -322,6 +322,7 @@ class QuantumSampler:
             LLM logit scores for top-k candidates.
         blend_factor : float
             Weight for quantum distribution (0 = pure classical, 1 = pure quantum).
+            Values outside ``[0, 1]`` are clamped into range.
         seed : int, optional
             Override the sampler's internal RNG seed for this call.
 
@@ -335,6 +336,11 @@ class QuantumSampler:
 
         if k == 0:
             return 0
+
+        # Clamp blend_factor to its documented [0, 1] range. Values outside this
+        # range can produce negative blended probabilities, which would make the
+        # downstream rng.choice(p=...) call raise "probabilities are not non-negative".
+        blend_factor = float(min(1.0, max(0.0, blend_factor)))
 
         # Classical softmax distribution
         logits_arr -= logits_arr.max()  # numerical stability
@@ -353,7 +359,13 @@ class QuantumSampler:
         else:
             # Repeat/tile to fill k candidates
             quantum_probs = np.resize(circuit_probs, k)
-        quantum_probs = quantum_probs / quantum_probs.sum()
+        quantum_sum = quantum_probs.sum()
+        if quantum_sum > 0:
+            quantum_probs = quantum_probs / quantum_sum
+        else:
+            # All sliced circuit outcomes had zero probability mass; fall back to
+            # a uniform quantum distribution so the blend stays well-defined.
+            quantum_probs = np.full(k, 1.0 / k)
 
         # Blend
         blended = (1.0 - blend_factor) * classical_probs + blend_factor * quantum_probs

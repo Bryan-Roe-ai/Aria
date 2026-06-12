@@ -52,7 +52,7 @@ pip install -r mcp-requirements.txt
 Run the server directly:
 
 ```powershell
-python quantum_mcp_server.py
+.venv/bin/python quantum_mcp_server.py
 ```
 
 ### In VS Code with MCP Configuration
@@ -64,7 +64,7 @@ Add to your `mcp.json` (in VS Code settings):
   "servers": {
     "quantum-ai": {
       "type": "stdio",
-      "command": "python",
+            "command": "${workspaceFolder}/.venv/bin/python",
       "args": [
         "c:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\quantum_mcp_server.py"
       ],

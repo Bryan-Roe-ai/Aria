@@ -120,7 +120,7 @@ python scripts/automated_training_pipeline.py --quick  # Quick LoRA (TinyLlama)
 python scripts/train_and_promote.py --quick --auto-promote  # Train + auto-deploy
 
 # === MCP & TOOLS ===
-python ai-projects/quantum-ml/quantum_mcp_server.py       # Start quantum MCP server
+.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py       # Start quantum MCP server
 
 # === MONITORING & DIAGNOSTICS ===
 curl http://localhost:7071/api/ai/status | jq # Comprehensive health check
@@ -156,14 +156,15 @@ watch -n 5 'cat data_out/autonomous_training_status.json | python -m json.tool' 
 - Chat datasets: `[{"messages": [{"role": "user|assistant", "content": "..."}]}]`
 - LoRA adapters need both `adapter_config.json` + `adapter_model.safetensors`
 
-**Provider detection chain** (in `shared/chat_providers.py`):
-
-1. Explicit choice (--provider flag)
-2. LMStudio (if `LMSTUDIO_BASE_URL` configured)
-3. Azure OpenAI (needs all 4: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`)
-4. OpenAI (needs `OPENAI_API_KEY`)
-5. LoRA (explicit --provider lora with adapter path)
+**Provider detection chain** (`detect_provider()` in `shared/chat_providers.py`, auto mode):
+1. Explicit choice (`--provider` flag) — including the specials `agi`, `quantum`, `lora`
+2. LM Studio (if reachable at `LMSTUDIO_BASE_URL`, default `http://127.0.0.1:1234/v1`)
+3. Ollama (if reachable at `OLLAMA_BASE_URL`, default `http://127.0.0.1:11434/v1`)
+4. Azure OpenAI (needs all 4: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`)
+5. OpenAI (needs `OPENAI_API_KEY`)
 6. Local fallback (zero-dependency echo)
+
+> Note: `QAI_PROVIDER_PRIORITY` in `shared/config.py` is a separate *declared* priority list (default `["azure", "openai", "lmstudio", "local"]`) surfaced by `Settings.provider_chain()`; it is distinct from the runtime `detect_provider()` probe order above.
 
 **Config precedence:**
 `YAML base` < `CLI flags` < `per-job YAML` < `env vars`
@@ -387,7 +388,7 @@ Available agents in `.github/agents/`:
    - Verify test suite passes: `python scripts/test_runner.py --unit`
 
 3. **Follow Established Patterns**
-   - Provider detection chain: Azure OpenAI → OpenAI → LMStudio → Local
+   - Provider detection chain (`detect_provider()` auto mode): LM Studio → Ollama → Azure OpenAI → OpenAI → Local
    - Config precedence: `YAML base` < `CLI flags` < `per-job YAML` < `env vars`
    - Status files: Always write to `data_out/<orchestrator>/status.json`
    - Autonomous systems: Use signal-based triggers (`pkill -USR1`) for immediate execution

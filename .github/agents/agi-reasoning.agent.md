@@ -165,7 +165,7 @@ create_agi_provider(
 
 ## Workspace Context
 
-- **Provider chain**: Azure OpenAI → OpenAI → LMStudio → LoRA → Local
+- **Provider chain** (`detect_provider()` auto mode): LM Studio → Ollama → Azure OpenAI → OpenAI → Local (LoRA explicit-only)
 - **Config precedence**: YAML base < CLI flags < per-job YAML < env vars
 - **Data immutability**: Read-only `datasets/`, write-only `data_out/`
 - **Testing**: `python scripts/test_runner.py --unit` before committing

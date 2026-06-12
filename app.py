@@ -1,35 +1,47 @@
-"""Aria CLI — minimal OpenAI Responses API client.
+"""Aria CLI — minimal multi-provider AI client.
 
-Reads a prompt from CLI args or stdin, calls the OpenAI Responses API,
-and prints the model's reply. Designed to fail gracefully and to be
-trivially testable.
-
-Usage:
-    OPENAI_API_KEY=sk-... python app.py "Explain quantum entanglement"
-    echo "Hello" | python app.py
-    python app.py --model gpt-4o-mini --temperature 0.0 "Refactor this code"
-
-Environment variables:
-    OPENAI_API_KEY            Required for --provider openai; optional when using local fallback.
-    OPENAI_MODEL              Optional. Overrides default model.
-    OPENAI_BASE_URL           Optional. Custom API base (e.g. Azure-compatible proxy).
-    OPENAI_ORG                Optional. Organization ID.
-    OPENAI_TIMEOUT            Optional. Request timeout in seconds (default: 60).
+Reads a prompt from CLI args or stdin, calls a provider, and prints the reply.
+Supports:
+- Quantum AI via /api/quantum-llm/chat
+- OpenAI Responses API
+- Local deterministic fallback
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib
+import json
 import logging
 import math
 import os
 import re
 import sys
 import typing
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
-# Ensure the shared module can be imported from the project root
-if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+logger = logging.getLogger("aria.app")
+
+DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+DEFAULT_TEMPERATURE = 0.2
+DEFAULT_TIMEOUT_ENV = os.getenv("OPENAI_TIMEOUT", "60")
+MAX_PROMPT_CHARS = 10_000
+MAX_SYSTEM_PROMPT_CHARS = 4_000
+MAX_MODEL_NAME_CHARS = 128
+SYSTEM_PROMPT = (
+    "You are a concise AI coding assistant. "
+    "Return practical, code-focused responses."
+)
+QUANTUM_CHAT_PATH = "/api/quantum-llm/chat"
+
+EXIT_OK = 0
+EXIT_UNEXPECTED = 1
+EXIT_USAGE = 2
+EXIT_AUTH = 3
+EXIT_RATE_LIMIT = 4
+EXIT_NETWORK = 5
+EXIT_API = 6
 
 OpenAIAPIConnectionError: type[Exception] = Exception
 OpenAIAPIError: type[Exception] = Exception
@@ -40,8 +52,6 @@ _OpenAIClass: typing.Any | None = None
 try:
     import openai
 
-    # Bug fix: avoid AttributeError on legacy openai packages
-    # that do not expose `OpenAI`.
     _OpenAIClass = getattr(openai, "OpenAI", None)
 
     try:
@@ -51,9 +61,6 @@ try:
         OpenAIRateLimitError = openai.RateLimitError
     except AttributeError:
         try:
-            # Lazy import of importlib for dynamic openai.error module loading
-            import importlib
-
             openai_error = importlib.import_module("openai.error")
             OpenAIAPIConnectionError = openai_error.APIConnectionError
             OpenAIAPIError = openai_error.APIError
@@ -61,10 +68,7 @@ try:
             OpenAIRateLimitError = openai_error.RateLimitError
         except (ImportError, AttributeError):
             pass
-except ImportError:  # pragma: no cover - optional dependency when using local fallback
-    # When the `openai` package isn't installed, allow the CLI to still run
-    # in a local fallback mode. Define lightweight placeholders for exception
-    # types so the except handlers below continue to work.
+except ImportError:  # pragma: no cover - optional dependency
     class _OpenAIPackageMissing(Exception):
         pass
 
@@ -77,69 +81,31 @@ except ImportError:  # pragma: no cover - optional dependency when using local f
 if typing.TYPE_CHECKING:
     from openai import OpenAI
 else:
-    OpenAI = _OpenAIClass  # type: ignore[assignment, misc]
+    OpenAI = _OpenAIClass
 
-
-# Optional: import summarizer helpers directly so the code can call them
-# without referencing `shared.local_summary` each time. Provide safe fallbacks
-# when the shared.local_summary module is not available.
 try:
     from shared.local_summary import is_summary_request, summarize_text
-except Exception:
-
-    def is_summary_request(text: str) -> bool:  # pragma: no cover - fallback
+except Exception:  # pragma: no cover - fallback
+    def is_summary_request(text: str) -> bool:
         return False
 
     def summarize_text(
         text: str, *, max_sentences: int = 3, max_chars: int = 420
-    ) -> str:  # pragma: no cover - fallback
+    ) -> str:
         return ""
 
 
-# --------------------------------------------------------------------------- #
-# Constants & configuration
-# --------------------------------------------------------------------------- #
-
-DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-DEFAULT_TEMPERATURE = 0.2
-DEFAULT_TIMEOUT_ENV = os.getenv("OPENAI_TIMEOUT", "60")
-MAX_PROMPT_CHARS = 10_000
-MAX_SYSTEM_PROMPT_CHARS = 4_000
-MAX_MODEL_NAME_CHARS = 128
-SYSTEM_PROMPT = "You are a concise AI coding assistant. " "Return practical, code-focused responses."
-
-# Exit codes
-EXIT_OK = 0
-EXIT_UNEXPECTED = 1
-EXIT_USAGE = 2
-EXIT_AUTH = 3
-EXIT_RATE_LIMIT = 4
-EXIT_NETWORK = 5
-EXIT_API = 6
-
-logger = logging.getLogger("aria.app")
-
-
-# --------------------------------------------------------------------------- #
-# Validation & parsing helpers
-# --------------------------------------------------------------------------- #
-
-
 def _parse_timeout(value: str) -> float:
-    """Parse and validate a timeout value from the environment."""
     try:
         timeout = float(value)
     except (TypeError, ValueError) as exc:
         raise ValueError("OPENAI_TIMEOUT must be a valid number.") from exc
-
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("OPENAI_TIMEOUT must be a positive finite number.")
-
     return timeout
 
 
 def _validate_temperature(value: float) -> float:
-    """Validate a sampling temperature."""
     if not math.isfinite(value):
         raise ValueError("Temperature must be a finite number.")
     if not 0.0 <= value <= 2.0:
@@ -148,7 +114,6 @@ def _validate_temperature(value: float) -> float:
 
 
 def _validate_prompt(prompt: str, *, max_chars: int = MAX_PROMPT_CHARS) -> str:
-    """Validate and normalize user prompt text."""
     normalized = (prompt or "").strip()
     if not normalized:
         raise ValueError("Prompt cannot be empty.")
@@ -160,7 +125,6 @@ def _validate_prompt(prompt: str, *, max_chars: int = MAX_PROMPT_CHARS) -> str:
 
 
 def _validate_system_prompt(system_prompt: str) -> str:
-    """Validate and normalize system prompt text."""
     normalized = (system_prompt or "").strip()
     if not normalized:
         raise ValueError("System prompt cannot be empty.")
@@ -173,7 +137,6 @@ def _validate_system_prompt(system_prompt: str) -> str:
 
 
 def _validate_model_name(model: str) -> str:
-    """Validate and normalize model identifier."""
     normalized = (model or "").strip()
     if not normalized:
         raise ValueError("Model cannot be empty.")
@@ -183,28 +146,22 @@ def _validate_model_name(model: str) -> str:
             f"Maximum supported length is {MAX_MODEL_NAME_CHARS} chars."
         )
     if not re.fullmatch(r"[A-Za-z0-9._:-]+", normalized):
-        raise ValueError("Model contains unsupported characters. Allowed: letters, digits, '.', '_', ':', '-'")
+        raise ValueError(
+            "Model contains unsupported characters. Allowed: letters, "
+            "digits, '.', '_', ':', '-'"
+        )
     return normalized
 
 
 def _read_stdin_limited(max_chars: int) -> str:
-    """Read stdin with a hard upper bound to avoid unbounded memory usage."""
-    # Read one extra char so validation can produce a precise "too long" error.
     return sys.stdin.read(max_chars + 1)
 
 
 def _env_str(name: str) -> str:
-    """Read an environment variable as a stripped string (or empty)."""
     return (os.getenv(name) or "").strip()
 
 
 def _extract_text(resp: typing.Any) -> str:
-    """Extract plain text from an OpenAI Responses API result.
-
-    Prefers the convenience ``output_text`` attribute when available, and
-    falls back to walking the structured ``output`` list. Always returns
-    a stripped string (possibly empty).
-    """
     output_text = getattr(resp, "output_text", None)
     if isinstance(output_text, str) and output_text.strip():
         return output_text.strip()
@@ -221,18 +178,96 @@ def _extract_text(resp: typing.Any) -> str:
             text = getattr(content, "text", None)
             if text is not None and hasattr(text, "value"):
                 text = text.value
+            if isinstance(text, str) and text.strip():
+                parts.append(text.strip())
 
-            if isinstance(text, str):
-                stripped = text.strip()
-                if stripped:
-                    parts.append(stripped)
-
-    return "\n".join(parts)
+    return "\n".join(parts).strip()
 
 
-# --------------------------------------------------------------------------- #
-# Core request
-# --------------------------------------------------------------------------- #
+def _extract_quantum_text(payload: typing.Any) -> str:
+    if isinstance(payload, str):
+        return payload.strip()
+
+    if isinstance(payload, dict):
+        for key in (
+            "output_text",
+            "text",
+            "response",
+            "completion",
+            "message",
+        ):
+            value = payload.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+
+        choices = payload.get("choices")
+        if isinstance(choices, list) and choices:
+            first = choices[0]
+            if isinstance(first, dict):
+                message = first.get("message")
+                if isinstance(message, dict):
+                    content = message.get("content")
+                    if isinstance(content, str) and content.strip():
+                        return content.strip()
+                text = first.get("text")
+                if isinstance(text, str) and text.strip():
+                    return text.strip()
+
+        data = payload.get("data")
+        if isinstance(data, dict):
+            nested = _extract_quantum_text(data)
+            if nested:
+                return nested
+
+    return ""
+
+
+def ask_quantum(
+    prompt: str,
+    *,
+    model: str = DEFAULT_MODEL,
+    temperature: float = DEFAULT_TEMPERATURE,
+    system_prompt: str = SYSTEM_PROMPT,
+    base_url: str = "http://localhost:7071",
+    timeout: float = 60.0,
+) -> str:
+    prompt = _validate_prompt(prompt)
+    system_prompt = _validate_system_prompt(system_prompt)
+    model = _validate_model_name(model)
+    temperature = _validate_temperature(temperature)
+
+    base_url = (base_url or "").strip().rstrip("/")
+    if not base_url:
+        raise ValueError("Quantum base URL cannot be empty.")
+
+    payload = {
+        "prompt": prompt,
+        "system_prompt": system_prompt,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ],
+        "model": model,
+        "temperature": temperature,
+    }
+
+    req = urllib_request.Request(
+        f"{base_url}{QUANTUM_CHAT_PATH}",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+
+    with urllib_request.urlopen(req, timeout=timeout) as resp:
+        raw = resp.read().decode("utf-8", errors="replace").strip()
+        if not raw:
+            return ""
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            return raw
+        return _extract_quantum_text(parsed) or raw
+
 
 
 def ask_ai(
@@ -243,13 +278,11 @@ def ask_ai(
     temperature: float = DEFAULT_TEMPERATURE,
     system_prompt: str = SYSTEM_PROMPT,
 ) -> str:
-    """Send ``prompt`` to the Responses API and return the extracted text."""
     prompt = _validate_prompt(prompt)
     system_prompt = _validate_system_prompt(system_prompt)
     model = _validate_model_name(model)
     temperature = _validate_temperature(temperature)
 
-    logger.debug("Requesting completion: model=%s temperature=%s", model, temperature)
     resp = client.responses.create(
         model=model,
         input=[
@@ -262,14 +295,8 @@ def ask_ai(
 
 
 def ask_local(prompt: str, *, system_prompt: str = SYSTEM_PROMPT) -> str:
-    """Deterministic local fallback responder.
-
-    This provides a helpful message when OpenAI is unavailable or when the
-    user explicitly requests local mode. It deliberately keeps behavior
-    deterministic and safe for local use.
-    """
     prompt = _validate_prompt(prompt)
-    system_prompt = _validate_system_prompt(system_prompt)
+    _validate_system_prompt(system_prompt)
 
     ptext = prompt.strip()
     lower = ptext.lower()
@@ -279,42 +306,36 @@ def ask_local(prompt: str, *, system_prompt: str = SYSTEM_PROMPT) -> str:
         return (
             "[Local fallback summary]\n\n"
             f"Summary:\n{summary}\n\n"
-            "Note: this is an offline extractive summary. For richer abstractive summaries, set OPENAI_API_KEY and install the 'openai' package."
+            "Note: this is an offline extractive summary. "
+            "For richer results, set QUANTUM_LLM_BASE_URL or OPENAI_API_KEY."
         )
 
     if "explain" in lower or "what is" in lower:
-        # Build sentences lazily — only needed in this branch.
-        sentences = [s.strip() for s in ptext.replace("\n", " ").split(".") if s.strip()]
+        sentences = [s.strip()
+                     for s in ptext.replace("\n", " ").split(".") if s.strip()]
         expl = sentences[0] if sentences else ptext
         return (
             "[Local fallback explanation]\n\n"
             f"Brief explanation:\n{expl}\n\n"
-            "Suggestions:\n- Ask for examples\n- Ask for step-by-step instructions\n\n"
-            "Note: enable cloud provider for fuller explanations."
+            "Suggestions:\n"
+            "- Ask for examples\n"
+            "- Ask for step-by-step instructions"
         )
 
-    # Generic helpful fallback: echo plus tips.
-    tips = (
-        "[Local fallback mode] OpenAI unavailable — local responder.\n\n"
+    return (
+        "[Local fallback mode]\n\n"
         f"Prompt:\n{ptext}\n\n"
-        "Helpful next steps:\n- Try a shorter prompt for local fallback.\n- Set OPENAI_API_KEY to use the cloud provider.\n- Re-run with --provider local to force local mode.\n"
+        "Helpful next steps:\n"
+        "- Set QUANTUM_LLM_BASE_URL to use Quantum AI.\n"
+        "- Set OPENAI_API_KEY to use OpenAI.\n"
     )
-    return tips
-
-
-# --------------------------------------------------------------------------- #
-# CLI plumbing
-# --------------------------------------------------------------------------- #
 
 
 def _read_prompt(args_prompt: list[str]) -> str:
-    """Read prompt from CLI args, piped stdin, or interactive input."""
     if args_prompt:
         return " ".join(args_prompt).strip()
-
     if not sys.stdin.isatty():
         return _read_stdin_limited(MAX_PROMPT_CHARS).strip()
-
     try:
         return input("Prompt: ").strip()
     except EOFError:
@@ -324,51 +345,42 @@ def _read_prompt(args_prompt: list[str]) -> str:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="aria-app",
-        description="Minimal OpenAI Responses API CLI for Aria.",
+        description="Minimal multi-provider AI CLI for Aria.",
     )
-    parser.add_argument(
-        "prompt",
-        nargs="*",
-        help="Prompt text. If omitted, reads from stdin.",
-    )
-    parser.add_argument(
-        "--model",
-        default=DEFAULT_MODEL,
-        help=f"Model name (default: {DEFAULT_MODEL}).",
-    )
+    parser.add_argument("prompt", nargs="*",
+                        help="Prompt text. If omitted, reads from stdin.")
+    parser.add_argument("--model", default=DEFAULT_MODEL,
+                        help=f"Model name (default: {DEFAULT_MODEL}).")
     parser.add_argument(
         "--temperature",
         type=float,
         default=DEFAULT_TEMPERATURE,
-        help=f"Sampling temperature from 0.0 to 2.0 (default: {DEFAULT_TEMPERATURE}).",
+        help=(
+            f"Sampling temperature from 0.0 to 2.0 "
+            f"(default: {DEFAULT_TEMPERATURE})."
+        ),
     )
-    parser.add_argument(
-        "--system",
-        default=SYSTEM_PROMPT,
-        help="Override the system prompt.",
-    )
+    parser.add_argument("--system", default=SYSTEM_PROMPT,
+                        help="Override the system prompt.")
     parser.add_argument(
         "--provider",
-        choices=("auto", "openai", "local"),
+        choices=("auto", "openai", "quantum", "local"),
         default="auto",
-        help="Provider selection: auto (default), openai, or local.",
+        help="Provider selection: auto (default), openai, quantum, or local.",
     )
     parser.add_argument(
         "--no-local-fallback",
         dest="local_fallback",
         action="store_false",
-        help="Disable automatic fallback to local mode on OpenAI failures.",
+        help="Disable automatic fallback to local mode on provider failures.",
     )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="Enable debug logging.",
-    )
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Enable debug logging.")
+    parser.set_defaults(local_fallback=True)
     return parser
 
 
-def _handle_openai_error(
+def _handle_provider_error(
     exc: Exception,
     err_msg: str,
     exit_code: int,
@@ -377,7 +389,6 @@ def _handle_openai_error(
     prompt: str,
     system: str,
 ) -> int:
-    """Shared handler for OpenAI API errors: fall back locally or exit with code."""
     if local_fallback:
         print(f"{type(exc).__name__} ({exc}); using local fallback.", file=sys.stderr)
         print(ask_local(prompt, system_prompt=system))
@@ -401,7 +412,17 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Invalid input: {exc}", file=sys.stderr)
         return EXIT_USAGE
 
-    # Local mode is fully offline and should not require cloud credentials.
+    try:
+        timeout = _parse_timeout(DEFAULT_TIMEOUT_ENV)
+        temperature = _validate_temperature(args.temperature)
+    except ValueError as exc:
+        print(f"Invalid configuration: {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    quantum_base_url = _env_str(
+        "QUANTUM_LLM_BASE_URL") or _env_str("FUNCTIONS_BASE_URL")
+    quantum_enabled = bool(quantum_base_url)
+
     if args.provider == "local":
         try:
             print(ask_local(prompt, system_prompt=args.system))
@@ -410,25 +431,73 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Invalid input: {exc}", file=sys.stderr)
             return EXIT_USAGE
 
-    try:
-        timeout = _parse_timeout(DEFAULT_TIMEOUT_ENV)
-        temperature = _validate_temperature(args.temperature)
-    except ValueError as exc:
-        print(f"Invalid configuration: {exc}", file=sys.stderr)
-        return EXIT_USAGE
+    if args.provider in {"auto", "quantum"} and quantum_enabled:
+        try:
+            print(
+                ask_quantum(
+                    prompt,
+                    model=args.model,
+                    temperature=temperature,
+                    system_prompt=args.system,
+                    base_url=quantum_base_url,
+                    timeout=timeout,
+                )
+            )
+            return EXIT_OK
+        except urllib_error.HTTPError as exc:
+            if args.provider == "quantum":
+                return _handle_provider_error(
+                    exc,
+                    "Quantum API error",
+                    EXIT_API,
+                    local_fallback=args.local_fallback,
+                    prompt=prompt,
+                    system=args.system,
+                )
+        except (urllib_error.URLError, TimeoutError) as exc:
+            if args.provider == "quantum":
+                return _handle_provider_error(
+                    exc,
+                    "Network error reaching Quantum AI",
+                    EXIT_NETWORK,
+                    local_fallback=args.local_fallback,
+                    prompt=prompt,
+                    system=args.system,
+                )
+        except ValueError as exc:
+            print(f"Invalid input: {exc}", file=sys.stderr)
+            return EXIT_USAGE
 
     api_key = _env_str("OPENAI_API_KEY")
     if not api_key:
         if args.provider == "openai":
-            print("Error: missing OPENAI_API_KEY environment variable.", file=sys.stderr)
+            if args.local_fallback:
+                print(ask_local(prompt, system_prompt=args.system))
+                return EXIT_OK
+            print(
+                "Error: missing OPENAI_API_KEY environment variable.",
+                file=sys.stderr,
+            )
             return EXIT_AUTH
-        # auto mode: transparently degrade to local when allowed
         if args.local_fallback:
-            print("Warning: missing OPENAI_API_KEY; falling back to local mode.", file=sys.stderr)
             print(ask_local(prompt, system_prompt=args.system))
             return EXIT_OK
-        print("Error: missing OPENAI_API_KEY environment variable.", file=sys.stderr)
+        print(
+            "Error: missing OPENAI_API_KEY environment variable.",
+            file=sys.stderr,
+        )
         return EXIT_AUTH
+
+    if OpenAI is None:
+        if args.local_fallback:
+            print(ask_local(prompt, system_prompt=args.system))
+            return EXIT_OK
+        print(
+            "Error: the 'openai' package is not installed. Install it with: "
+            "pip install openai",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
 
     client_kwargs: dict[str, typing.Any] = {
         "api_key": api_key,
@@ -440,15 +509,6 @@ def main(argv: list[str] | None = None) -> int:
     org = _env_str("OPENAI_ORG")
     if org:
         client_kwargs["organization"] = org
-    # If the openai package isn't installed, handle according to fallback
-    # preference before attempting to construct the client.
-    if OpenAI is None:
-        if args.local_fallback:
-            print("Warning: 'openai' package not installed; falling back to local mode.", file=sys.stderr)
-            print(ask_local(prompt, system_prompt=args.system))
-            return EXIT_OK
-        print("Error: the 'openai' package is not installed. Install it with: pip install openai", file=sys.stderr)
-        return EXIT_USAGE
 
     try:
         client = OpenAI(**client_kwargs)
@@ -460,7 +520,7 @@ def main(argv: list[str] | None = None) -> int:
             system_prompt=args.system,
         )
     except OpenAIAuthenticationError as exc:
-        return _handle_openai_error(
+        return _handle_provider_error(
             exc,
             "Authentication failed",
             EXIT_AUTH,
@@ -469,7 +529,7 @@ def main(argv: list[str] | None = None) -> int:
             system=args.system,
         )
     except OpenAIRateLimitError as exc:
-        return _handle_openai_error(
+        return _handle_provider_error(
             exc,
             "Rate limit exceeded",
             EXIT_RATE_LIMIT,
@@ -478,7 +538,7 @@ def main(argv: list[str] | None = None) -> int:
             system=args.system,
         )
     except OpenAIAPIConnectionError as exc:
-        return _handle_openai_error(
+        return _handle_provider_error(
             exc,
             "Network error reaching OpenAI",
             EXIT_NETWORK,
@@ -487,7 +547,7 @@ def main(argv: list[str] | None = None) -> int:
             system=args.system,
         )
     except OpenAIAPIError as exc:
-        return _handle_openai_error(
+        return _handle_provider_error(
             exc,
             "OpenAI API error",
             EXIT_API,
@@ -501,7 +561,7 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         print("Interrupted.", file=sys.stderr)
         return 130
-    except Exception as exc:  # noqa: BLE001 - last-resort safety net
+    except Exception as exc:  # noqa: BLE001
         logger.exception("Unexpected failure")
         print(f"Unexpected error: {exc}", file=sys.stderr)
         return EXIT_UNEXPECTED

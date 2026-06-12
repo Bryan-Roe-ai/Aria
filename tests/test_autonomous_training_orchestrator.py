@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import signal
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -161,3 +162,28 @@ def test_pidfile_force_run_allows_takeover(tmp_path: Path, monkeypatch) -> None:
 
     orchestrator._acquire_pidfile(force=True)
     assert pidfile.read_text(encoding="utf-8").strip() == str(os.getpid())
+
+
+def test_request_cycle_now_sets_and_consumes_flag(monkeypatch) -> None:
+    monkeypatch.setattr(orchestrator, "_CYCLE_NOW_REQUESTED", False)
+    # No request pending yet.
+    assert orchestrator._consume_cycle_now() is False
+
+    orchestrator._request_cycle_now(getattr(signal, "SIGUSR1", 10), None)
+    assert orchestrator._CYCLE_NOW_REQUESTED is True
+
+    # First consume returns True and clears the flag; second returns False.
+    assert orchestrator._consume_cycle_now() is True
+    assert orchestrator._consume_cycle_now() is False
+
+
+@pytest.mark.skipif(not hasattr(signal, "SIGUSR1"), reason="SIGUSR1 unavailable on this platform")
+def test_install_signal_handlers_registers_sigusr1(monkeypatch) -> None:
+    registered: dict[int, object] = {}
+    monkeypatch.setattr(orchestrator.signal, "signal", lambda sig, handler: registered.__setitem__(sig, handler))
+
+    orchestrator._install_signal_handlers()
+
+    assert registered[signal.SIGINT] is orchestrator._request_stop
+    assert registered[signal.SIGTERM] is orchestrator._request_stop
+    assert registered[signal.SIGUSR1] is orchestrator._request_cycle_now
