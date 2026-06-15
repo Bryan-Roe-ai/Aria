@@ -18,5 +18,5 @@ pyyaml>=6.0.3
 pydantic>=2.13.4
 
 # Testing
-pytest>=9.0.3
+pytest>=9.1.0
 pytest-asyncio>=1.4.0
