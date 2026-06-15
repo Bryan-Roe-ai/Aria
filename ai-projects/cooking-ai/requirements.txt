@@ -2,4 +2,4 @@
 # Cloud providers use OpenAI SDK compatible with GitHub Models
 openai>=2.41.1
 jsonschema>=4.26.0
-pytest>=9.0.3
+pytest>=9.1.0
