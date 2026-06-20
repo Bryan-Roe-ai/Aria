@@ -12,7 +12,6 @@ python scripts\run_pipeline.py --input-dataset ..\..\datasets\chat\dolly\train.j
 
 ## 📊 Individual Tools
 
-
 ### GPU Optimizer
 
 ```bash
@@ -22,7 +21,6 @@ python scripts\gpu_optimizer.py --update-config lora\lora.yaml
 # Custom settings
 python scripts\gpu_optimizer.py --model-size 7.0 --memory-usage 0.8
 ```
-
 
 ### Semantic Pruning
 
@@ -34,7 +32,6 @@ python scripts\semantic_pruning.py --input raw.jsonl --output clean.jsonl
 python scripts\semantic_pruning.py --input raw.jsonl --output clean.jsonl --similarity-threshold 0.90 --quality-threshold 0.5
 ```
 
-
 ### Auto Evaluation
 
 ```bash
@@ -45,25 +42,17 @@ python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --metrics perplexity inference_time bleu rouge
 ```
 
-
-
-
-
-
-
 #### Quality Metrics (BLEU / ROUGE)
 
 BLEU and ROUGE are optional; they require extra packages. If the libraries are not installed the script will gracefully skip them and report `null`.
 
 Install (recommended):
 
-
 ```bash
 pip install rouge-score sacrebleu
 ```
 
 Usage examples:
-
 
 ```bash
 # Minimal (only speed + perplexity)
@@ -74,8 +63,6 @@ python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl 
 
 # Add ROUGE (averages rouge1/rouge2/rougeL)
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --metrics perplexity rouge
-
-
 
 - Perplexity ↓: Lower is better (model assigns higher probability to test tokens).
 - Inference Time ↓: Lower latency per prompt.
@@ -88,7 +75,6 @@ Best practices:
 - Keep evaluation sample size modest during iteration (10–20) then scale to 100–500.
 - Never select training checkpoints solely on one metric—track multiple to avoid overfitting.
 - For chat datasets, ensure reference = last assistant message; prompt = last user message.
-
 
 ### RAG Pipeline
 
@@ -130,7 +116,6 @@ data_out/
 
 ## 💡 Common Patterns
 
-
 ### Pattern 1: Quick Iteration
 
 ```bash
@@ -140,7 +125,6 @@ python scripts\gpu_optimizer.py --update-config lora\lora.yaml
 python scripts\train_lora.py --dataset data --config lora\lora.yaml --max-train-samples 64
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --num-samples 10
 ```
-
 
 ### Pattern 2: Production Training
 
@@ -153,9 +137,7 @@ python scripts\train_lora.py --dataset data --config lora\lora.yaml
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --num-samples 500 --metrics perplexity inference_time bleu rouge
 ```
 
-
 ### Pattern 3: RAG Deployment
-
 
 ```bash
 # Train + RAG
@@ -163,7 +145,6 @@ python scripts\train_lora.py --dataset data --config lora\lora.yaml
 python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datasets --rebuild-index
 python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datasets --interactive
 ```
-
 
 ### Pattern 4: Full Orchestrated Pipeline With Metrics
 
