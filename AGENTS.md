@@ -106,6 +106,8 @@ The startup update script installs Python deps into `.venv` (Python 3.12). Use `
 - Automation agent framework lives in `scripts/agents/` — new agents extend `AutomationAgent` and use the `@register` decorator from `scripts/agents/base.py`.
 - `scripts/run_repo_agents.py` orchestrates `status-freshness`, `marker-audit`, and `docstring-audit` agents; aggregated results written to `data_out/agents/status.json`.
 - `scripts/repo_health_automation.py --run-agents` includes the agent runner in health cycles; `scripts/integration_contract_gate.sh` uses `PYTHON_BIN` (default `python3`) — set `PYTHON_BIN=.venv/bin/python` to use the venv.
+- `scripts/repair_data_out_status.py` resolves merge-conflict markers in `data_out/**/status.json`, resets unrecoverable payloads, and can refresh stale timestamps (`--refresh-stale`); wired into health cycles via `--repair-status`.
+- `status-freshness` agent recognizes `generated_at` in addition to `last_updated` / `updated_at` timestamp fields.
 - Cursor agent hooks use `.github/hooks/scripts/run_python_hook.sh` as a cross-platform, fail-open bash wrapper — hooks never block on a missing Python interpreter.
 - `shared/chat_memory.py::fetch_similar_messages` applies `session_id` filter at SQL query time (not Python-side) when a scoped session is provided.
 - `mount/quantum_integration.py::_find_job_status()` normalises both list- and dict-shaped quantum autorun status payloads.
