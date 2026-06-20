@@ -90,13 +90,68 @@ let uploadedImageBase64 = null;
 let ariaAvatarGenerated = false;
 let ariaAvatarUrl = null;
 
+function emitEmbeddedChatEvent(name, detail) {
+    if (!window.ARIA_EMBEDDED) return;
+    try {
+        document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+    } catch (e) {
+        /* ignore */
+    }
+}
+
+function notifyEmbeddedAssistant(text) {
+    if (!text) return;
+    emitEmbeddedChatEvent('aria-chat-assistant', { text: String(text) });
+}
+
+function initEmbeddedTransport() {
+    console.log('chat.js: ARIA_EMBEDDED — wiring chat transport (send + AGI)');
+
+    if (messageInput) {
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+        });
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    if (sendButton) sendButton.addEventListener('click', sendMessage);
+    if (agiModeButton) agiModeButton.addEventListener('click', toggleAgiMode);
+    if (cancelStreamBtn) {
+        cancelStreamBtn.addEventListener('click', function () {
+            if (activeAbortController) {
+                activeAbortController.abort();
+                updateStatus('Streaming cancelled');
+            }
+            cancelStreamBtn.style.display = 'none';
+        });
+    }
+
+    loadFromStorage();
+    // Embedded page has no stream toggle UI — prefer AGI SSE streaming.
+    streamEnabled = true;
+    fetchSystemStatus();
+
+    window.__ariaChatTransport = {
+        sendMessage: sendMessage,
+        getAgiMode: function () {
+            return agiMode;
+        },
+        toggleAgiMode: toggleAgiMode,
+    };
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-        // When the Aria interactive page embeds chat, it provides its own
-        // send/receive wiring and should avoid double-wiring the controls
-        // in this script. A page can opt-in by setting window.ARIA_EMBEDDED=true
+        // Embedded Aria page keeps character/lip-sync in index.html but uses
+        // chat.js for send routing (including AGI stream) to avoid drift.
         if (window && window.ARIA_EMBEDDED) {
-            console.log('chat.js: ARIA_EMBEDDED detected — skipping default UI wiring');
+            initEmbeddedTransport();
             return;
         }
         if (cancelStreamBtn) {
@@ -284,6 +339,8 @@ async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || isProcessing) return;
 
+    emitEmbeddedChatEvent('aria-chat-send', { text });
+
     // Perform quantum analysis if enabled (disabled while AGI mode is active)
     if (quantumMode && !agiMode) {
         updateStatus('Performing quantum analysis...');
@@ -292,6 +349,7 @@ async function sendMessage() {
 
     // Add user message to UI
     addMessage('user', text);
+    emitEmbeddedChatEvent('aria-chat-message', { role: 'user', content: text });
     messageInput.value = '';
     messageInput.style.height = 'auto';
     messageInput.disabled = true;
@@ -405,6 +463,7 @@ async function oneShotResponse(typingIndicator) {
     }
     updateStatus('Ready');
     saveToStorage();
+    notifyEmbeddedAssistant(assistantMessage);
     messageInput.disabled = false;
     sendButton.disabled = false;
     isProcessing = false;
@@ -498,6 +557,7 @@ async function streamResponse(typingIndicator) {
         retryCount = 0;
         updateStatus('Ready');
         saveToStorage();
+        notifyEmbeddedAssistant(fullText);
     } catch (error) {
         typingIndicator.remove();
         assistantDiv.remove();
@@ -569,6 +629,7 @@ async function agiOneShotResponse(typingIndicator) {
     }
     updateStatus('Ready (AGI)');
     saveToStorage();
+    notifyEmbeddedAssistant(assistantMessage);
     messageInput.disabled = false;
     sendButton.disabled = false;
     isProcessing = false;
@@ -692,6 +753,7 @@ async function streamAgiResponse(typingIndicator) {
         retryCount = 0;
         updateStatus('Ready (AGI stream)');
         saveToStorage();
+        notifyEmbeddedAssistant(outputText);
     } catch (error) {
         typingIndicator.remove();
         assistantDiv.remove();
@@ -1152,6 +1214,7 @@ function toggleAgiMode() {
         currentProvider = 'agi';
         updateStatus('AGI reasoning enabled');
         if (providerInfo) providerInfo.textContent = 'AGI';
+        emitEmbeddedChatEvent('aria-agi-enabled', {});
     } else {
         if (agiModeButton) {
             agiModeButton.textContent = '🧠 AGI OFF';

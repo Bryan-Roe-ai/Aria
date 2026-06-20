@@ -3147,34 +3147,7 @@
             var browserLlmToggle = document.getElementById('browserLlmToggle');
             var browserLlmModelSelect = document.getElementById('browserLlmModelSelect');
             var browserLlmReloadBtn = document.getElementById('browserLlmReloadBtn');
-            var agiModeButton = document.getElementById('agiModeButton');
-            var agiMode = localStorage.getItem('chatAgiMode') === '1';
-
-            if (agiModeButton) {
-                if (agiMode) {
-                    agiModeButton.textContent = '🧠 AGI ON';
-                    agiModeButton.classList.add('active');
-                }
-                agiModeButton.addEventListener('click', function () {
-                    agiMode = !agiMode;
-                    if (agiMode) {
-                        agiModeButton.textContent = '🧠 AGI ON';
-                        agiModeButton.classList.add('active');
-                        updateProviderLabel('AGI');
-                        if (browserLLMState.enabled) {
-                            browserLLMState.enabled = false;
-                            persistBrowserLLMState();
-                            syncBrowserLLMControls();
-                            publishBrowserLLMStatus();
-                        }
-                    } else {
-                        agiModeButton.textContent = '🧠 AGI OFF';
-                        agiModeButton.classList.remove('active');
-                        updateProviderLabel('Connected');
-                    }
-                    try { localStorage.setItem('chatAgiMode', agiMode ? '1' : '0'); } catch (e) { }
-                });
-            }
+            // AGI toggle + send routing handled by chat.js (initEmbeddedTransport)
 
             // ==== Avatar & Vision Handlers ====
             // Removed duplicate handlers - chat.js module now handles all vision upload and avatar generation
@@ -4181,379 +4154,7 @@
             return messageDiv;
         }
 
-        // Stream helper: posts to /api/chat/stream and parses SSE events (data/meta/token/done/error)
-        function streamChat(messages, handlers) {
-            handlers = handlers || {};
-            var controller = new AbortController();
-            var signal = controller.signal;
-
-            (async function () {
-                try {
-                    var resp = await fetch('/api/chat/stream', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: messages, stream: true }),
-                        signal: signal
-                    });
-
-                    if (!resp.ok) {
-                        var txt = '';
-                        try { txt = await resp.text(); } catch (e) { }
-                        handlers.onError && handlers.onError({ error: 'Stream fetch failed', detail: txt });
-                        return;
-                    }
-
-                    var reader = resp.body.getReader();
-                    var decoder = new TextDecoder('utf-8');
-                    var buf = '';
-                    var doneEmitted = false;
-
-                    function processBlock(block) {
-                        if (!block) return;
-                        var lines = block.split('\n');
-                        var event = null;
-                        var dataLines = [];
-                        for (var i = 0; i < lines.length; i++) {
-                            var line = lines[i];
-                            if (line.startsWith('event:')) { event = line.slice(6).trim(); }
-                            else if (line.startsWith('data:')) { dataLines.push(line.slice(5).trim()); }
-                        }
-                        var dataStr = dataLines.join('\n');
-                        if (!event) {
-                            // default data block
-                            try { var obj = JSON.parse(dataStr); if (obj && obj.delta !== undefined) { handlers.onData && handlers.onData(obj); } } catch (e) { }
-                        } else if (event === 'meta') {
-                            try { var meta = JSON.parse(dataStr); handlers.onMeta && handlers.onMeta(meta); } catch (e) { }
-                        } else if (event === 'token') {
-                            try { var tok = JSON.parse(dataStr); handlers.onToken && handlers.onToken(tok); } catch (e) { }
-                        } else if (event === 'movement') {
-                            try {
-                                var movement = JSON.parse(dataStr);
-                                if (movement.commands && movement.commands.length > 0) {
-                                    executeMovementCommands(movement.commands);
-                                }
-                            } catch (e) { console.error('Movement parse error:', e); }
-                        } else if (event === 'done') {
-                            doneEmitted = true;
-                            handlers.onDone && handlers.onDone();
-                        } else if (event === 'error') {
-                            try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
-                        }
-                    }
-
-                    while (true) {
-                        var r = await reader.read();
-                        if (r.done) break;
-                        buf += decoder.decode(r.value, { stream: true });
-                        // parse blocks separated by double newline
-                        var idx = buf.indexOf('\n\n');
-                        while (idx !== -1) {
-                            var block = buf.slice(0, idx);
-                            buf = buf.slice(idx + 2);
-                            processBlock(block.trim());
-                            idx = buf.indexOf('\n\n');
-                        }
-                    }
-
-                    // Process any leftover
-                    if (buf && buf.trim().length) processBlock(buf.trim());
-                    // completed stream
-                    if (!doneEmitted) handlers.onDone && handlers.onDone();
-                } catch (e) {
-                    if (e && e.name === 'AbortError') {
-                        handlers.onError && handlers.onError({ error: 'aborted' });
-                    } else {
-                        handlers.onError && handlers.onError({ error: (e && e.message) || String(e) });
-                    }
-                }
-            })();
-
-            return {
-                cancel: function () { try { controller.abort(); } catch (e) { } }
-            };
-        }
-
-        function extractAgiOutputText(delta) {
-            if (!delta || typeof delta !== 'object') return '';
-            if (delta.type === 'output') return String(delta.data || '');
-            return '';
-        }
-
-        function renderAgiDeltaHtml(delta) {
-            if (typeof AGIStreamUtils !== 'undefined' && AGIStreamUtils.prettyPrintDelta) {
-                return AGIStreamUtils.prettyPrintDelta(delta);
-            }
-            return '<pre>' + JSON.stringify(delta) + '</pre>';
-        }
-
-        // Stream helper: posts to /api/agi/stream and parses AGI SSE deltas
-        function streamAgi(messages, handlers) {
-            handlers = handlers || {};
-            var controller = new AbortController();
-            var signal = controller.signal;
-
-            (async function () {
-                try {
-                    var resp = await fetch('/api/agi/stream', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: messages }),
-                        signal: signal
-                    });
-
-                    if (!resp.ok) {
-                        var txt = '';
-                        try { txt = await resp.text(); } catch (e) { }
-                        handlers.onError && handlers.onError({ error: 'AGI stream fetch failed', detail: txt });
-                        return;
-                    }
-
-                    var reader = resp.body.getReader();
-                    var decoder = new TextDecoder('utf-8');
-                    var buf = '';
-                    var doneEmitted = false;
-
-                    function processBlock(block) {
-                        if (!block) return;
-                        var lines = block.split('\n');
-                        var event = null;
-                        var dataLines = [];
-                        for (var i = 0; i < lines.length; i++) {
-                            var line = lines[i];
-                            if (line.startsWith('event:')) { event = line.slice(6).trim(); }
-                            else if (line.startsWith('data:')) { dataLines.push(line.slice(5).trim()); }
-                        }
-                        var dataStr = dataLines.join('\n');
-                        if (!dataStr || dataStr === '[DONE]') {
-                            if (dataStr === '[DONE]') {
-                                doneEmitted = true;
-                                handlers.onDone && handlers.onDone();
-                            }
-                            return;
-                        }
-                        if (event === 'meta') {
-                            try { var meta = JSON.parse(dataStr); handlers.onMeta && handlers.onMeta(meta); } catch (e) { }
-                        } else if (event === 'error') {
-                            try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
-                        } else {
-                            try {
-                                var obj = JSON.parse(dataStr);
-                                if (obj && obj.delta !== undefined) {
-                                    handlers.onData && handlers.onData(obj);
-                                }
-                            } catch (e) { }
-                        }
-                    }
-
-                    while (true) {
-                        var r = await reader.read();
-                        if (r.done) break;
-                        buf += decoder.decode(r.value, { stream: true });
-                        var idx = buf.indexOf('\n\n');
-                        while (idx !== -1) {
-                            var block = buf.slice(0, idx);
-                            buf = buf.slice(idx + 2);
-                            processBlock(block.trim());
-                            idx = buf.indexOf('\n\n');
-                        }
-                    }
-
-                    if (buf && buf.trim().length) processBlock(buf.trim());
-                    if (!doneEmitted) handlers.onDone && handlers.onDone();
-                } catch (e) {
-                    if (e && e.name === 'AbortError') {
-                        handlers.onError && handlers.onError({ error: 'aborted' });
-                    } else {
-                        handlers.onError && handlers.onError({ error: (e && e.message) || String(e) });
-                    }
-                }
-            })();
-
-            return {
-                cancel: function () { try { controller.abort(); } catch (e) { } }
-            };
-        }
-
-        async function sendMessage() {
-            var message = messageInput.value.trim();
-            if (!message) return;
-
-            if (handleBrowserLLMCommand(message)) {
-                messageInput.value = '';
-                return;
-            }
-
-            // interrupt any current speech/audio when user sends input
-            cancelSpeak();
-            addMessage('user', message);
-            messageInput.value = '';
-            pushConversationMessage('user', message);
-
-            if (agiMode) {
-                try {
-                    providerInfo.textContent = 'AGI reasoning...';
-                    var agiAssistantEl = addMessage('assistant', '', false);
-                    var agiContentDiv = agiAssistantEl.querySelector('.message-content');
-                    var agiReply = '';
-                    var agiReasoningHtml = '';
-                    streamAgi(sanitizeConversationHistory(conversationHistory), {
-                        onMeta: function (meta) {
-                            try {
-                                updateProviderLabel('AGI' + (meta.base_provider ? ' (' + meta.base_provider + ')' : ''));
-                            } catch (e) { }
-                        },
-                        onData: function (obj) {
-                            try {
-                                var delta = obj.delta || {};
-                                var chunk = extractAgiOutputText(delta);
-                                if (chunk) {
-                                    agiReply += chunk;
-                                } else if (delta.type && delta.type !== 'output') {
-                                    agiReasoningHtml += renderAgiDeltaHtml(delta);
-                                }
-                                agiContentDiv.innerHTML = agiReasoningHtml + '<div class="agi-final-output">' + agiReply + '</div>';
-                                chatMessages.scrollTop = chatMessages.scrollHeight;
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                pushConversationMessage('assistant', agiReply);
-                                if (ariaSettings.autoSpeak && agiReply) {
-                                    try { speakWithLipSync(agiReply).catch(function () { }); } catch (e) { }
-                                } else {
-                                    stopMouthTalking(350);
-                                }
-                                parseAriaCommands(agiReply);
-                                updateProviderLabel('AGI');
-                            } catch (e) { }
-                        },
-                        onError: function (err) {
-                            addMessage('system', 'AGI error: ' + (err && (err.error || err.message) || 'stream error'));
-                            stopMouthTalking();
-                            cancelSpeak();
-                        }
-                    });
-                } catch (agiErr) {
-                    addMessage('system', 'AGI error: ' + (agiErr && agiErr.message ? agiErr.message : String(agiErr)));
-                    providerInfo.textContent = 'Error';
-                    stopMouthTalking();
-                    cancelSpeak();
-                }
-                return;
-            }
-
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var localReply = await generateBrowserReply(message);
-                    addMessage('assistant', localReply);
-                    pushConversationMessage('assistant', localReply);
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(localReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(localReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                    updateProviderLabel('Browser LLM error');
-                }
-                return;
-            }
-
-            try {
-                providerInfo.textContent = 'Thinking...';
-                // If token-mode lip-sync is chosen, stream the response and use token events to drive mouth
-                if (ariaSettings.lipSyncMode === 'token') {
-                    var assistantEl = addMessage('assistant', '', false); // create placeholder without mirroring
-                    var contentDiv = assistantEl.querySelector('.message-content');
-                    var replyAccum = '';
-                    var streamHandle = streamChat(sanitizeConversationHistory(conversationHistory), {
-                        onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
-                        onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; chatMessages.scrollTop = chatMessages.scrollHeight; } catch (e) { } },
-                        onToken: function (tok) {
-                            try {
-                                if (ariaSettings.lipSyncMode === 'token') {
-                                    var tokenText = (tok.token || '') + '';
-                                    var len = Math.max(1, tokenText.length);
-                                    var openness = Math.min(1, Math.max(0.18, len / 8)) * (parseFloat(ariaSettings.mouthStrength) || 1);
-                                    setMouthOpen(openness + (Math.random() * 0.18));
-                                    // schedule quick close
-                                    var closetime = 60 + Math.floor(Math.random() * 160);
-                                    var ttmp = setTimeout(function () { setMouthOpen(0.12); }, closetime);
-                                    currentSpeech.fallbackTimers.push(ttmp);
-                                }
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                // finalize
-                                addBubbleMessage('assistant', replyAccum);
-                                pushConversationMessage('assistant', replyAccum);
-                                // speak if auto-speak enabled
-                                if (ariaSettings.autoSpeak) {
-                                    try { speakWithLipSync(replyAccum).catch(function () { }); } catch (e) { }
-                                } else {
-                                    stopMouthTalking(350);
-                                }
-                                parseAriaCommands(replyAccum);
-                            } catch (e) { /* ignore */ }
-                        },
-                        onError: function (err) {
-                            addMessage('system', 'Error (stream): ' + (err && (err.error || err.message) || 'stream error'));
-                            stopMouthTalking();
-                            cancelSpeak();
-                        }
-                    });
-                } else {
-                    // start mouth animation while waiting for assistant reply
-                    startMouthTalking();
-                    var response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            messages: sanitizeConversationHistory(conversationHistory),
-                            stream: false
-                        })
-                    });
-
-                    var data = await response.json();
-                    var reply = data.choices?.[0]?.message?.content || data.response || '';
-                    addMessage('assistant', reply);
-                    pushConversationMessage('assistant', reply);
-                    // speak with lip-sync if enabled, otherwise give the mouth a brief tail
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
-                    } else {
-                        stopMouthTalking(350);
-                    }
-                    providerInfo.textContent = data.provider || 'Connected';
-
-                    // Parse AI commands for Aria control
-                    parseAriaCommands(reply);
-                }
-            } catch (e) {
-                if (browserLLMState.autoFallback && !browserLLMState.enabled) {
-                    try {
-                        updateProviderLabel('Browser LLM fallback');
-                        var fallbackReply = await generateBrowserReply(message);
-                        addMessage('assistant', fallbackReply);
-                        pushConversationMessage('assistant', fallbackReply);
-                        if (ariaSettings.autoSpeak) {
-                            try { speakWithLipSync(fallbackReply).catch(function () { }); } catch (se) { }
-                        }
-                        parseAriaCommands(fallbackReply);
-                        return;
-                    } catch (fbErr) {
-                        // fall through to original error path
-                    }
-                }
-                addMessage('system', 'Error: ' + e.message);
-                providerInfo.textContent = 'Error';
-                // stop mouth if request failed
-                stopMouthTalking();
-                // cancel any running speech
-                cancelSpeak();
-            }
-        }
+        // Send + AGI routing delegated to chat.js (__ariaChatTransport)
 
         // Parse AI responses for Aria movement commands
         function parseAriaCommands(text) {
@@ -4919,22 +4520,7 @@
             setArmRotation('right', 10, 0);
         }
 
-        // Animate character briefly on send, then send message
-        sendButton.addEventListener('click', function () {
-            try {
-                character.style.transform = 'translateY(-20px)';
-                setTimeout(function () { character.style.transform = 'translateY(0)'; }, 300);
-            } catch (e) {
-                // character might not exist in some contexts
-            }
-            sendMessage();
-        });
-        messageInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        // Send button wired by chat.js (initEmbeddedTransport)
 
         // Character variables
         var chatBubble = document.getElementById('chatBubble');
@@ -5546,6 +5132,45 @@
             });
             observer.observe(chatMessages, { childList: true, subtree: true });
         }
+
+        document.addEventListener('aria-chat-send', function () {
+            try {
+                cancelSpeak();
+                character.style.transform = 'translateY(-20px)';
+                setTimeout(function () { character.style.transform = 'translateY(0)'; }, 300);
+            } catch (e) { }
+        });
+
+        document.addEventListener('aria-chat-message', function (e) {
+            var detail = (e && e.detail) || {};
+            if (detail.role === 'user') {
+                pushConversationMessage('user', detail.content || '');
+            }
+            if (detail.role === 'user' || detail.role === 'assistant') {
+                try { addBubbleMessage(detail.role, detail.content || ''); } catch (err) { }
+            }
+        });
+
+        document.addEventListener('aria-chat-assistant', function (e) {
+            var text = (e && e.detail && e.detail.text) || '';
+            if (!text) return;
+            pushConversationMessage('assistant', text);
+            if (ariaSettings.autoSpeak) {
+                try { speakWithLipSync(text).catch(function () { }); } catch (err) { }
+            } else {
+                stopMouthTalking(350);
+            }
+            parseAriaCommands(text);
+        });
+
+        document.addEventListener('aria-agi-enabled', function () {
+            if (browserLLMState.enabled) {
+                browserLLMState.enabled = false;
+                persistBrowserLLMState();
+                syncBrowserLLMControls();
+                publishBrowserLLMStatus();
+            }
+        });
     })();
 
         // QAI Backend status check logic
