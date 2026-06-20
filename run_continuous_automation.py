@@ -5,13 +5,12 @@ Runs automation continuously in the background with configurable intervals.
 """
 
 import os
-import sys
-import subprocess
-import time
 import signal
-from pathlib import Path
+import subprocess
+import sys
+import time
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
 
 # Use .venv environment if available
 workspace_root = Path(__file__).parent
@@ -25,7 +24,8 @@ venv_python = (
 if venv_python.exists():
     # Prepend venv bin to PATH so subprocess uses venv Python
     venv_bin = venv_python.parent
-    os.environ["PATH"] = str(venv_bin) + os.pathsep + os.environ.get("PATH", "")
+    os.environ["PATH"] = str(venv_bin) + os.pathsep + \
+        os.environ.get("PATH", "")
     # Also explicitly use venv python for subprocess calls
     _PYTHON_EXECUTABLE = str(venv_python)
 else:
@@ -37,7 +37,7 @@ if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except:
+    except Exception:
         pass
 
 # Color codes for terminal output
@@ -63,7 +63,8 @@ def get_marker(name: str) -> str:
 
 def print_section(title: str) -> None:
     """Print a section header."""
-    print(f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+    print(
+        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
     print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
 
@@ -96,7 +97,15 @@ def print_sync(msg: str) -> None:
 class ContinuousAutomationDaemon:
     """Manages continuous background automation."""
 
-    def __init__(self, workspace_root: Path, interval_minutes: int = 60):
+    def __init__(
+        self,
+        workspace_root: Path,
+        interval_minutes: int = 60,
+        *,
+        auto_improve: bool = True,
+        strict_endpoints: bool = False,
+        full_pytest: bool = False,
+    ):
         """Initialize the daemon."""
         self.workspace_root = workspace_root
         self.interval_minutes = interval_minutes
@@ -105,6 +114,9 @@ class ContinuousAutomationDaemon:
         self.log_file = workspace_root / "logs" / "continuous_automation.log"
         self.running = True
         self.run_count = 0
+        self.auto_improve = auto_improve
+        self.strict_endpoints = strict_endpoints
+        self.full_pytest = full_pytest
 
         # Create logs directory
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -137,8 +149,16 @@ class ContinuousAutomationDaemon:
             print_sync(f"Running automation cycle #{self.run_count}...")
             self.log_message(f"Starting automation cycle #{self.run_count}")
 
+            command = [_PYTHON_EXECUTABLE, str(self.automation_script)]
+            if self.auto_improve:
+                command.append("--auto-improve")
+            if self.strict_endpoints:
+                command.append("--strict-endpoints")
+            if self.full_pytest:
+                command.append("--full-pytest")
+
             result = subprocess.run(
-                [_PYTHON_EXECUTABLE, str(self.automation_script)],
+                command,
                 cwd=str(self.workspace_root),
                 capture_output=True,
                 text=True,
@@ -148,12 +168,16 @@ class ContinuousAutomationDaemon:
             )
 
             if result.returncode == 0:
-                print_ok(f"Automation cycle #{self.run_count} completed successfully")
-                self.log_message(f"Automation cycle #{self.run_count} completed successfully")
+                print_ok(
+                    f"Automation cycle #{self.run_count} completed successfully")
+                self.log_message(
+                    f"Automation cycle #{self.run_count} completed successfully")
                 return True
             else:
-                print_warning(f"Automation cycle #{self.run_count} completed with warnings")
-                self.log_message(f"Automation cycle #{self.run_count} completed with warnings")
+                print_warning(
+                    f"Automation cycle #{self.run_count} completed with warnings")
+                self.log_message(
+                    f"Automation cycle #{self.run_count} completed with warnings")
                 if result.stdout:
                     self.log_message(f"Output: {result.stdout[:500]}")
                 return True  # Don't stop on failures
@@ -182,6 +206,12 @@ class ContinuousAutomationDaemon:
         print_section("Aria Continuous Automation Daemon")
         print_ok(f"Workspace: {self.workspace_root}")
         print_ok(f"Interval: {self.interval_minutes} minutes")
+        print_ok(
+            f"Auto-improve: {'enabled' if self.auto_improve else 'disabled'}")
+        print_ok(
+            f"Strict endpoints: {'enabled' if self.strict_endpoints else 'disabled'}")
+        print_ok(
+            f"Full pytest in improve cycle: {'enabled' if self.full_pytest else 'disabled'}")
         print_ok(f"Log file: {self.log_file}")
         print_info("Press Ctrl+C to stop the daemon")
 
@@ -189,17 +219,18 @@ class ContinuousAutomationDaemon:
 
         try:
             while self.running:
-                print_section(f"Automation Cycle #{self.run_count + 1} at {datetime.now().strftime('%H:%M:%S')}")
+                print_section(
+                    f"Automation Cycle #{self.run_count + 1} at {datetime.now().strftime('%H:%M:%S')}")
 
                 self.run_automation()
 
                 if self.running:
                     next_run = self.calculate_next_run()
-                    print_info(f"Next automtion run: {next_run}")
+                    print_info(f"Next automation run: {next_run}")
                     print_info(f"Waiting {self.interval_minutes} minutes...")
 
                     # Sleep in 1-minute intervals to allow graceful shutdown
-                    for i in range(self.interval_minutes):
+                    for _ in range(self.interval_minutes):
                         if not self.running:
                             break
                         time.sleep(60)
@@ -240,10 +271,31 @@ def main() -> None:
         default=Path(__file__).parent,
         help="Workspace root directory (default: script directory)",
     )
+    parser.add_argument(
+        "--no-auto-improve",
+        action="store_true",
+        help="Disable auto-improve mode for each automation cycle.",
+    )
+    parser.add_argument(
+        "--strict-endpoints",
+        action="store_true",
+        help="Use strict endpoint checks in auto-improve mode.",
+    )
+    parser.add_argument(
+        "--full-pytest",
+        action="store_true",
+        help="Include full pytest smoke in auto-improve mode.",
+    )
 
     args = parser.parse_args()
 
-    daemon = ContinuousAutomationDaemon(workspace_root=args.workspace, interval_minutes=args.interval)
+    daemon = ContinuousAutomationDaemon(
+        workspace_root=args.workspace,
+        interval_minutes=args.interval,
+        auto_improve=not args.no_auto_improve,
+        strict_endpoints=args.strict_endpoints,
+        full_pytest=args.full_pytest,
+    )
     daemon.run()
 
 

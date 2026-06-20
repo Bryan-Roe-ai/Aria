@@ -1,21 +1,31 @@
 {
     "version": "0.2.0",
     "configurations": [
-        
         {
             "name": "Python Debugger: FastAPI",
             "type": "debugpy",
             "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
             "module": "uvicorn",
             "args": [
-                "main:app",
-                "--reload"
-            ]
+                "mount.app:app",
+                "--reload",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8000",
+                "--log-level",
+                "info"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
         },
         {
             "name": "Python Debugger: Aria Gradio Chat App",
             "type": "debugpy",
             "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
             "program": "${workspaceFolder}/scripts/gradio_hello.py",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

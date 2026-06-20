@@ -31,7 +31,6 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_OUT = REPO_ROOT / "data_out" / "repo_health_automation"
@@ -41,7 +40,7 @@ STATUS_PATH = DATA_OUT / "status.json"
 @dataclass
 class StepResult:
     name: str
-    command: List[str]
+    command: list[str]
     returncode: int
     duration_sec: float
     succeeded: bool
@@ -56,7 +55,7 @@ class CycleResult:
     finished_at: str
     duration_sec: float
     succeeded: bool
-    steps: List[StepResult]
+    steps: list[StepResult]
 
 
 def _now_iso() -> str:
@@ -89,7 +88,7 @@ def _run_command(name: str, command: Sequence[str]) -> StepResult:
     )
 
 
-def _changed_python_files() -> List[str]:
+def _changed_python_files() -> list[str]:
     """Return changed tracked Python files (staged + unstaged)."""
     commands = [
         ["git", "diff", "--name-only", "--", "*.py"],
@@ -114,8 +113,8 @@ def _changed_python_files() -> List[str]:
     return sorted(files)
 
 
-def _build_steps(args: argparse.Namespace) -> List[tuple[str, List[str]]]:
-    steps: List[tuple[str, List[str]]] = []
+def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
+    steps: list[tuple[str, list[str]]] = []
 
     if args.auto_fix_ruff:
         changed_py = _changed_python_files()
@@ -127,7 +126,8 @@ def _build_steps(args: argparse.Namespace) -> List[tuple[str, List[str]]]:
                 )
             )
 
-    steps.append(("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
+    steps.append(
+        ("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
     gate_cmd = ["bash", "scripts/integration_contract_gate.sh"]
     if args.strict_endpoints:
@@ -153,8 +153,14 @@ def _build_steps(args: argparse.Namespace) -> List[tuple[str, List[str]]]:
     return steps
 
 
-def _write_status(history: List[CycleResult]) -> None:
-    DATA_OUT.mkdir(parents=True, exist_ok=True)
+def _write_status(history: list[CycleResult]) -> None:
+    try:
+        DATA_OUT.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:  # pragma: no cover - defensive filesystem guard
+        print(
+            f"[repo_health_automation] warning: cannot create status dir {DATA_OUT}: {exc}")
+        return
+
     payload = {
         "updated_at": _now_iso(),
         "total_cycles": len(history),
@@ -163,7 +169,11 @@ def _write_status(history: List[CycleResult]) -> None:
         "last_cycle": asdict(history[-1]) if history else None,
         "recent_cycles": [asdict(c) for c in history[-20:]],
     }
-    STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    try:
+        STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    except Exception as exc:  # pragma: no cover - defensive filesystem guard
+        print(
+            f"[repo_health_automation] warning: cannot write status file {STATUS_PATH}: {exc}")
 
 
 def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
@@ -174,14 +184,15 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
     print(f"[repo_health_automation] cycle={cycle} started_at={started_at}")
     print("=" * 78)
 
-    steps_out: List[StepResult] = []
+    steps_out: list[StepResult] = []
 
     for name, cmd in _build_steps(args):
         print(f"\n--> {name}: {' '.join(cmd)}")
         result = _run_command(name, cmd)
         steps_out.append(result)
         icon = "PASS" if result.succeeded else "FAIL"
-        print(f"[{icon}] {name} rc={result.returncode} duration={result.duration_sec:.2f}s")
+        print(
+            f"[{icon}] {name} rc={result.returncode} duration={result.duration_sec:.2f}s")
 
         if not result.succeeded and not args.continue_on_fail:
             break
@@ -200,7 +211,8 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
     )
 
     print("\n" + "-" * 78)
-    print(f"[repo_health_automation] cycle={cycle} " f"succeeded={succeeded} duration={duration_sec:.2f}s")
+    print(
+        f"[repo_health_automation] cycle={cycle} " f"succeeded={succeeded} duration={duration_sec:.2f}s")
     print("-" * 78)
 
     if not succeeded:
@@ -218,10 +230,13 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
 
 
 def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser(description="Automate Aria repo health cycles")
+    ap = argparse.ArgumentParser(
+        description="Automate Aria repo health cycles")
     mode = ap.add_mutually_exclusive_group()
-    mode.add_argument("--once", action="store_true", help="Run a single cycle (default)")
-    mode.add_argument("--watch", action="store_true", help="Run cycles continuously")
+    mode.add_argument("--once", action="store_true",
+                      help="Run a single cycle (default)")
+    mode.add_argument("--watch", action="store_true",
+                      help="Run cycles continuously")
 
     ap.add_argument(
         "--interval",
@@ -255,7 +270,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    history: List[CycleResult] = []
+    history: list[CycleResult] = []
 
     watch = args.watch
     if not args.watch and not args.once:

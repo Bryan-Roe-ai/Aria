@@ -1,20 +1,48 @@
 {
-  "total_jobs": 1,
+  "total_jobs": 4,
   "jobs": [
     {
-      "name": "another",
-      "preset": "heart"
+      "name": "heart_quick",
+      "mode": "train_custom_dataset",
+      "preset": "heart",
+      "n_qubits": "4",
+      "epochs": "50",
+      "batch_size": "16",
+      "learning_rate": "0.001",
+      "test_size": "0.2",
+      "enabled": "true"
+    },
+    {
+      "name": "ionosphere_quick",
+      "mode": "train_custom_dataset",
+      "preset": "ionosphere",
+      "n_qubits": "4",
+      "epochs": "100",
+      "batch_size": "16",
+      "learning_rate": "0.001",
+      "test_size": "0.2",
+      "enabled": "true  # ENABLED for quantum training"
+    },
+    {
+      "name": "azure_quantinuum_simulator",
+      "mode": "azure_hardware",
+      "azure_backend": "quantinuum.sim.h2-1sc  # FREE: Quantinuum cloud simulator",
+      "azure_shots": "100",
+      "qubits": "3",
+      "enabled": "true  # ENABLED for Azure testing"
+    },
+    {
+      "name": "azure_ionq_qpu_test",
+      "mode": "azure_hardware",
+      "azure_backend": "ionq.qpu  # PAID: Real IonQ quantum hardware",
+      "azure_shots": "100",
+      "n_qubits": "3",
+      "azure_confirm_cost": "false  # SAFETY: Set to true to enable (acknowledges costs)",
+      "enabled": "false",
+      "extra_args": ""
     }
   ],
-<<<<<<< HEAD
-  "last_updated": "2026-06-01T22:37:54.174558Z",
-=======
-<<<<<<< Updated upstream
-  "last_updated": "2026-05-28T08:08:31.722518Z",
-=======
-  "last_updated": "2026-05-29T23:36:20.389391Z",
->>>>>>> Stashed changes
->>>>>>> a40f84a20 (hhh)
+  "last_updated": "2026-06-20T04:55:45.610097Z",
   "succeeded": 0,
   "failed": 0,
   "running": 0,

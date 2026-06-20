@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "position": {
+    "courseId": "katas",
+    "unitId": "complex_arithmetic",
+    "activityId": "complex_arithmetic__overview"
+  },
+  "completions": {
+    "katas__getting_started__getting_started__welcome": {
+      "completedAt": "2026-06-20T04:32:17.076Z"
+    }
+  },
+  "startedAt": "2026-06-20T04:32:10.098Z"
+}
