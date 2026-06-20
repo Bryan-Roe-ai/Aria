@@ -65,6 +65,7 @@ def test_agi_status_exposes_lmstudio_agent_tools(app_module):
     }.issubset(lmstudio_tools)
 
 
+<<<<<<< HEAD
 def test_agi_status_exposes_mcp_agi_tools(app_module):
     req = _mock_request("GET")
     resp = app_module.agi_status(req)
@@ -75,6 +76,8 @@ def test_agi_status_exposes_mcp_agi_tools(app_module):
     assert {"agi_analyze", "agi_reason", "agi_stream"}.issubset(mcp_tools)
 
 
+=======
+>>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 def test_agi_analyze_requires_query_or_messages(app_module):
     req = _mock_request("POST", body={})
     resp = app_module.agi_analyze(req)
@@ -93,6 +96,7 @@ def test_agi_stream_requires_query_or_messages(app_module):
     assert resp.status_code == 400
 
 
+<<<<<<< HEAD
 def test_materialize_sse_body_joins_generator_chunks(app_module):
     def _chunks():
         yield b"event: meta\n"
@@ -101,6 +105,8 @@ def test_materialize_sse_body_joins_generator_chunks(app_module):
     body = app_module._materialize_sse_body(_chunks())
     assert body == b"event: meta\ndata: {}\n\n"
 
+=======
+>>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 def test_agi_status_response_schema(app_module):
     """Guard test: ensure agi/status response shape remains stable."""
     req = _mock_request("GET")
@@ -157,4 +163,8 @@ def test_agi_status_agent_tools_deterministic(app_module):
     for agent_name in tools1:
         assert tools1[agent_name] == tools2[agent_name]
         # Verify no duplicates (set size equals list size)
+<<<<<<< HEAD
         assert len(set(tools1[agent_name])) == len(tools1[agent_name])
+=======
+        assert len(set(tools1[agent_name])) == len(tools1[agent_name])
+>>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
