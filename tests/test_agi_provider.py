@@ -312,6 +312,26 @@ class TestAGIProvider:
 
         assert analysis["domain"] != "ai"
 
+    def test_query_analysis_detects_infrastructure_domain(self):
+        """Deployment and DevOps queries should map to the infrastructure domain."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        analysis = agi._analyze_query("How do I deploy this Azure Functions app with GitHub Actions?")
+
+        assert analysis["domain"] == "infrastructure"
+
+    def test_infrastructure_specialist_routing(self):
+        """Infrastructure queries should prefer infrastructure-specialist."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        analysis = agi._analyze_query("Design a CI/CD pipeline for Azure deployment")
+        selected_agent, score = agi._select_agent(analysis)
+
+        assert selected_agent == "infrastructure-specialist"
+        assert score > 0.5
+
     def test_task_decomposition_explanation(self):
         """Test task decomposition for explanation queries."""
         mock_provider = MockBaseProvider()

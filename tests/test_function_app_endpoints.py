@@ -813,12 +813,6 @@ class TestAgiEndpoints:
         assert "validation error" in data["error"].lower()
 
     def test_agi_stream_emits_done_sentinel(self, app_module, monkeypatch):
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"sse_body": b""}
-
         class _FakeAgiProvider:
             def complete(self, messages, stream=False):
                 assert stream is True
@@ -837,17 +831,6 @@ class TestAgiEndpoints:
             ),
         )
 
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
-
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},
@@ -855,7 +838,7 @@ class TestAgiEndpoints:
         resp = app_module.agi_stream(req)
 
         assert resp.status_code == 200
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         assert "event: meta" in body_text
         assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
         assert "data: [DONE]" in body_text

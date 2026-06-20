@@ -65,3 +65,12 @@ def test_agi_stream_requires_query_or_messages(app_module):
     req = _mock_request("POST", body={})
     resp = app_module.agi_stream(req)
     assert resp.status_code == 400
+
+
+def test_materialize_sse_body_joins_generator_chunks(app_module):
+    def _chunks():
+        yield b"event: meta\n"
+        yield b"data: {}\n\n"
+
+    body = app_module._materialize_sse_body(_chunks())
+    assert body == b"event: meta\ndata: {}\n\n"

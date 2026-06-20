@@ -77,6 +77,18 @@ def test_env_configuration():
     print(f"   LMSTUDIO_MODEL: {lmstudio_model}")
 
 
+def test_lmstudio_specialist_routing():
+    """General Q&A should be able to route to lmstudio-specialist."""
+    from agi_provider import create_agi_provider
+
+    provider, _info = create_agi_provider()
+    analysis = provider._analyze_query("Explain how transformers work in simple terms")
+    selected_agent, score = provider._select_agent(analysis)
+
+    assert selected_agent in {"lmstudio-specialist", "ai-specialist", "reasoning-specialist", "general"}
+    assert score > 0
+
+
 def run_all_tests():
     """Run all integration tests."""
     print("\n" + "=" * 70)
@@ -86,6 +98,7 @@ def run_all_tests():
     tests = [
         ("Agent Registration", test_agent_registration),
         ("Provider Detection", test_provider_detection),
+        ("LM Studio Specialist Routing", test_lmstudio_specialist_routing),
         ("AGI Provider Initialization", test_agent_class_methods),
         ("Environment Configuration", test_env_configuration),
     ]

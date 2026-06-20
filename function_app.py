@@ -850,13 +850,7 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield (f"event: error\n" f"data: {err_payload}\n\n").encode("utf-8")
                 yield b"data: [DONE]\n\n"
 
-        # Pass generator directly so SSE chunks stream incrementally.
-        return func.HttpResponse(
-            body=_sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _make_sse_response(_sse_iterable())
     except ValueError as ve:
         return func.HttpResponse(
             json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
@@ -937,6 +931,7 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
         sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv("QAI_AGI_PERSIST_SQLITE")
         jsonl_path = os.getenv("QAI_AGI_PERSIST_PATH")
         jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "").lower() in ("1", "true", "yes")
+        default_jsonl_path = _default_agi_persist_jsonl_path()
 
         if sqlite_path:
             try:
@@ -960,8 +955,8 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                     headers=create_cors_response_headers(),
                 )
 
-        if jsonl_path or jsonl_enabled:
-            path = jsonl_path or os.path.join(os.getcwd(), "data_out", "agi_reasoning.jsonl")
+        path = jsonl_path or default_jsonl_path
+        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
             try:
                 entries = []
                 if os.path.exists(path):
@@ -974,7 +969,16 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                         except Exception:
                             entries.append({"raw": ln})
                 return func.HttpResponse(
-                    json.dumps({"status": "ok", "backend": "jsonl", "entries": entries}, default=str),
+                    json.dumps(
+                        {
+                            "status": "ok",
+                            "backend": "jsonl",
+                            "path": path,
+                            "configured": bool(jsonl_path or jsonl_enabled or os.path.exists(path)),
+                            "entries": entries,
+                        },
+                        default=str,
+                    ),
                     status_code=200,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
@@ -1398,6 +1402,35 @@ def create_cors_response_headers():
     }
 
 
+def _default_agi_persist_jsonl_path() -> str:
+    """Default JSONL audit path for AGI reasoning chains."""
+    return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
+
+
+def _materialize_sse_body(sse_generator) -> bytes:
+    """Join SSE byte chunks for azure.functions.HttpResponse.
+
+    azure-functions 1.x accepts only str/bytes/bytearray bodies, not generators.
+    """
+    if sse_generator is None:
+        return b""
+    if isinstance(sse_generator, (bytes, bytearray)):
+        return bytes(sse_generator)
+    if isinstance(sse_generator, str):
+        return sse_generator.encode("utf-8")
+    return b"".join(sse_generator)
+
+
+def _make_sse_response(sse_generator, *, status_code: int = 200) -> func.HttpResponse:
+    """Build an SSE HttpResponse, materializing generator output when required."""
+    return func.HttpResponse(
+        body=_materialize_sse_body(sse_generator),
+        status_code=status_code,
+        mimetype="text/event-stream",
+        headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
+    )
+
+
 # =============================================================================
 # Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
 # =============================================================================
@@ -1657,12 +1690,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                     yield (f"data: {payload}\n\n").encode("utf-8")
                     yield b"data: [DONE]\n\n"
 
-                return func.HttpResponse(
-                    body=blocked_sse(),
-                    status_code=200,
-                    mimetype="text/event-stream",
-                    headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-                )
+                return _make_sse_response(blocked_sse())
         stream_memory_messages: list[dict] = []
         if stream_user_content:
             try:
@@ -1861,12 +1889,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 # Canonical SSE completion sentinel used by chat-web clients.
                 yield b"data: [DONE]\n\n"
 
-        return func.HttpResponse(
-            body=sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _make_sse_response(sse_iterable())
 
     except ValueError as ve:
         logging.error(f"chat/stream validation error: {ve}")
@@ -4629,12 +4652,7 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-            )
+            return _make_sse_response(_unavail(), status_code=503)
 
         # Honour per-request max_tokens (within cap) — use a local override dict
         # instead of mutating the shared pipeline config to avoid race conditions.
@@ -4703,12 +4721,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-            )
+            return _make_sse_response(_unavail(), status_code=503)
 
         import asyncio  # noqa: PLC0415
 
@@ -4733,12 +4746,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             finally:
                 loop.close()
 
-        return func.HttpResponse(
-            body=_sse_generator(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _make_sse_response(_sse_generator())
     except Exception as exc:  # noqa: BLE001
         logging.error("quantum-llm/stream error: %s", exc)
         _exc = exc  # capture before exception binding is deleted at end of except block
@@ -4747,12 +4755,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             yield f'data: {json.dumps({"error": str(_exc)})}\n\n'.encode("utf-8")
             yield b"data: [DONE]\n\n"
 
-        return func.HttpResponse(
-            body=_err(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _make_sse_response(_err())
 
 
 @app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)

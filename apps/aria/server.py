@@ -334,6 +334,17 @@ def build_health_payload(
         "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
         "llm_available": bool(llm),
         "model_loaded": bool(model_flag),
+        "agi_provider_supported": bool(llm),
+        "supported_providers": [
+            "auto",
+            "local",
+            "ollama",
+            "lmstudio",
+            "azure",
+            "openai",
+            "quantum",
+            "agi",
+        ],
         "counts": {
             "objects": len(objects) if isinstance(objects, dict) else 0,
             "action_types": len(ARIA_ACTIONS),
@@ -435,6 +446,8 @@ class AriaActionParser:
             "quantum-llm": "quantum",
             "quantum_llm": "quantum",
             "azure_openai": "azure",
+            "agi-reasoning": "agi",
+            "agi_reasoning": "agi",
         }
         return alias_map.get(normalized, normalized)
 

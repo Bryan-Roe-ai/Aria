@@ -55,6 +55,8 @@ jobs:
             tests/test_agi_persistence_endpoint.py \
             tests/test_agi_persistence_auth.py \
             tests/test_agi_prune.py \
+            tests/test_lmstudio_agi_integration.py \
+            tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel \
             -q
           pytest \
             tests/test_agi_smoke.py \
@@ -62,6 +64,8 @@ jobs:
             tests/test_agi_persistence_endpoint.py \
             tests/test_agi_persistence_auth.py \
             tests/test_agi_prune.py \
+            tests/test_lmstudio_agi_integration.py \
+            tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_emits_done_sentinel \
             -v --tb=short --timeout=10 --maxfail=1 \
             --junitxml=agi-smoke-junit.xml
 
