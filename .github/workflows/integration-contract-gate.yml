@@ -317,6 +317,6 @@ jobs:
               echo '```'
             } >> "${GITHUB_STEP_SUMMARY}"
           else
-            echo "_No orchestrator status file produced (`${status_file}` missing or empty)._" \
+            echo "_No orchestrator status file produced (\`${status_file}\` missing or empty)._" \
               >> "${GITHUB_STEP_SUMMARY}"
           fi

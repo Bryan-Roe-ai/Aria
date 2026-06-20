@@ -47,7 +47,7 @@ describe('AGIStreamUtils', () => {
   it('prettyPrintDelta renders known delta types safely', () => {
     const html = prettyPrintDelta({ type: 'output', data: '<script>alert(1)</script>' });
     assert.match(html, /agi-output/);
-    assert.doesNotMatch(html, /<script>/);
+    assert.doesNotMatch(html, /<script\b/i);
     assert.match(html, /&lt;script&gt;/);
   });
 
