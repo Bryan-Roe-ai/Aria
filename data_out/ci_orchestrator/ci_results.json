@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-22T10:05:04Z",
-  "run_id": "20260622T100504Z",
+  "generated_at": "2026-06-20T14:04:41Z",
+  "run_id": "20260620T140441Z",
   "config_path": null,
   "config_paths": {
     "autotrain": "config/training/autotrain.yaml",
@@ -14,6 +14,30 @@
   "skipped": 0,
   "results": [
     {
+      "name": "evaluation_autorun",
+      "cmd": [
+        "/workspace/.venv/bin/python",
+        "scripts/evaluation_autorun.py",
+        "--dry-run"
+      ],
+      "status": "succeeded",
+      "return_code": 0,
+      "duration_sec": 0.04,
+      "critical": true
+    },
+    {
+      "name": "quantum_autorun",
+      "cmd": [
+        "/workspace/.venv/bin/python",
+        "scripts/quantum_autorun.py",
+        "--dry-run"
+      ],
+      "status": "succeeded",
+      "return_code": 0,
+      "duration_sec": 0.05,
+      "critical": true
+    },
+    {
       "name": "autotrain",
       "cmd": [
         "/workspace/.venv/bin/python",
@@ -22,31 +46,8 @@
       ],
       "status": "succeeded",
       "return_code": 0,
-      "duration_sec": 0.07,
-      "critical": true
-    },
-      "cmd": [
-        "/workspace/.venv/bin/python",
-        "scripts/evaluation_autorun.py",
-        "scripts/evaluation_autorun.py",
-        "--dry-run"
-      ],
-      "status": "succeeded",
       "duration_sec": 0.06,
-      "duration_sec": 0.04,
       "critical": true
-      "critical": true
-    },
-    {
-      "name": "quantum_autorun",
-        "/usr/bin/python3",
-        "/workspace/.venv/bin/python",
-      ],
-      "status": "succeeded",
-      "status": "succeeded",
-      "return_code": 0,
-      "status": "succeeded",
-      "duration_sec": 0.08,
+    }
   ]
-}
 }
