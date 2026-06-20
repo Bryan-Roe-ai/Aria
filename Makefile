@@ -70,7 +70,7 @@ start-functions:
 
 ## Start the lightweight local /api/ai/status adapter on FUNC_PORT
 start-local-status:
-	$(PYTHON) local_dev_adapter.py --port $(FUNC_PORT)
+	@if $(PYTHON) -c "import socket,sys; s=socket.socket(); rc=s.connect_ex(('127.0.0.1', $(FUNC_PORT))); s.close(); sys.exit(0 if rc==0 else 1)" >/dev/null 2>&1; then echo "ℹ️ Port $(FUNC_PORT) already in use; checking existing /api/ai/status..."; if $(PYTHON) -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:$(FUNC_PORT)/api/ai/status', timeout=3).read(1)" >/dev/null 2>&1; then echo "✅ Local status adapter already running on :$(FUNC_PORT)."; exit 0; else echo "❌ Port $(FUNC_PORT) is occupied by a different service. Stop it or choose another port."; exit 1; fi; else $(PYTHON) local_dev_adapter.py --port $(FUNC_PORT); fi
 
 ## Install QAI integration service dependencies
 install-qai:
