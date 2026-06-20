@@ -62,9 +62,9 @@ class TestKeywordSetPerformance:
 
         start = time.perf_counter()
         for cmd in commands:
-            result = old_style_check(cmd, list(JUMP_KEYWORDS))
-            result = old_style_check(cmd, list(DANCE_KEYWORDS))
-            result = old_style_check(cmd, list(WAVE_KEYWORDS))
+            old_style_check(cmd, list(JUMP_KEYWORDS))
+            old_style_check(cmd, list(DANCE_KEYWORDS))
+            old_style_check(cmd, list(WAVE_KEYWORDS))
         old_time = time.perf_counter() - start
 
         # Optimized should be at least as fast (usually faster)
@@ -94,7 +94,10 @@ class TestConnectionPooling:
 
     def test_connection_pool_basic(self):
         """Test that connection pooling works correctly."""
-        pytest.importorskip("pyodbc")
+        try:
+            import pyodbc  # noqa: F401
+        except ImportError:
+            pytest.skip("pyodbc is not installed")
 
         from shared.chat_memory import _connection_pool, _get_conn, _return_conn
 
