@@ -11,6 +11,8 @@ Currently supported finding kinds:
 * ``missing_final_newline`` — files that don't end with a newline.
 * ``normalize_line_endings`` — files containing CRLF/CR line endings.
 * ``excess_final_newlines`` — files ending with more than one newline.
+* ``remove_utf8_bom`` — files that start with a UTF-8 BOM marker.
+* ``normalize_unicode_newlines`` — files containing U+2028/U+2029.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -34,6 +36,8 @@ SUPPORTED_KINDS: tuple[str, ...] = (
     "missing_final_newline",
     "normalize_line_endings",
     "excess_final_newlines",
+    "remove_utf8_bom",
+    "normalize_unicode_newlines",
 )
 
 
@@ -92,10 +96,20 @@ class Analyzer:
         if b"\x00" in data[:4096]:
             return results
 
+        had_utf8_bom = data.startswith(b"\xef\xbb\xbf")
         try:
-            text = data.decode("utf-8")
+            text = data.decode("utf-8-sig")
         except UnicodeDecodeError:
             return results
+
+        if had_utf8_bom:
+            results.append(
+                Finding(
+                    kind="remove_utf8_bom",
+                    path=path,
+                    detail="file starts with UTF-8 BOM",
+                )
+            )
 
         # trailing whitespace
         offending_lines = [i + 1 for i, line in enumerate(text.splitlines()) if line != line.rstrip(" \t")]
@@ -118,6 +132,16 @@ class Analyzer:
                     kind="normalize_line_endings",
                     path=path,
                     detail=f"CRLF={crlf_count}, CR={lone_cr_count}",
+                )
+            )
+
+        unicode_newlines = text.count("\u2028") + text.count("\u2029")
+        if unicode_newlines:
+            results.append(
+                Finding(
+                    kind="normalize_unicode_newlines",
+                    path=path,
+                    detail=f"{unicode_newlines} unicode newline separator(s)",
                 )
             )
 

@@ -62,7 +62,8 @@ disabled from configuration:
    are never modified.
 - **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup
    and missing-final-newline fixes, line-ending normalization (CRLF/CR→LF),
-   and trimming excess final newlines — all pure-text and idempotent.
+   trimming excess final newlines, UTF-8 BOM removal, and Unicode newline
+   normalization (U+2028/U+2029→LF) — all pure-text and idempotent.
 - **No deletions, no renames, no symlink follows.**
 - **Per-cycle caps** on plans, file size, and per-plan delta bytes.
 

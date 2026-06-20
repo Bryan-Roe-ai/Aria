@@ -44,11 +44,30 @@ def _trim_excess_final_newlines(text: str) -> str:
     return stripped + "\n"
 
 
+def _remove_utf8_bom(text: str) -> str:
+    return text[1:] if text.startswith("\ufeff") else text
+
+
+def _normalize_unicode_newlines(text: str) -> str:
+    had_terminal_unicode_sep = text.endswith("\u2028") or text.endswith("\u2029")
+    had_terminal_unicode_sep_with_lf = text.endswith("\u2028\n") or text.endswith("\u2029\n")
+
+    normalized = text.replace("\u2028", "\n").replace("\u2029", "\n")
+
+    # If missing_final_newline ran first, a terminal unicode separator can
+    # become a double LF after normalization. Keep exactly one LF at EOF.
+    if (had_terminal_unicode_sep or had_terminal_unicode_sep_with_lf) and normalized.endswith("\n\n"):
+        normalized = normalized[:-1]
+    return normalized
+
+
 _TRANSFORMS: Dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
     "normalize_line_endings": _normalize_line_endings,
     "excess_final_newlines": _trim_excess_final_newlines,
+    "remove_utf8_bom": _remove_utf8_bom,
+    "normalize_unicode_newlines": _normalize_unicode_newlines,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with
