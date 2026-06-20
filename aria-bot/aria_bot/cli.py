@@ -119,8 +119,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
 
     if not args.quiet:
+        result_dict = result.to_dict()
         summary = {
-            "totals": result.to_dict()["totals"],
+            "totals": result_dict["totals"],
+            "findings_by_kind": result_dict["findings_by_kind"],
+            "plans_by_kind": result_dict["plans_by_kind"],
+            "applied_by_kind": result_dict["applied_by_kind"],
             "validation_ok": result.validation_ok,
             "commit_sha": result.commit_sha,
             "notes": result.notes,

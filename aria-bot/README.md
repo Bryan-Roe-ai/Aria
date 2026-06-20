@@ -61,6 +61,7 @@ Each cycle writes a machine-readable summary to
 
 Status payloads include both totals and per-kind counters for observability:
 `findings_by_kind`, `plans_by_kind`, and `applied_by_kind`.
+The default CLI JSON summary now includes these same per-kind fields.
 
 ## Safety Guarantees
 

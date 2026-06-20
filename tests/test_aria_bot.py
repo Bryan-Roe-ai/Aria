@@ -289,3 +289,25 @@ def test_cli_list_kinds_outputs_supported_kinds() -> None:
     assert "trailing_whitespace" in output_lines
     assert "missing_final_newline" in output_lines
     assert "remove_zero_width_chars" in output_lines
+
+
+def test_cli_summary_includes_kind_metrics(fake_repo: Path) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+
+    payload = json.loads(proc.stdout)
+    assert "findings_by_kind" in payload
+    assert "plans_by_kind" in payload
+    assert "applied_by_kind" in payload
+    assert payload["applied_by_kind"] == {}
