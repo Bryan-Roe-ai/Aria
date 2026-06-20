@@ -8,8 +8,8 @@ Health cycle steps:
 1) Repair data_out status.json merge conflicts (optional)
 2) Optional Ruff auto-fix on changed Python files
 3) pre_commit_check.py
-4) run_repo_agents.py (optional)
-5) integration_contract_gate.sh (strict optional)
+4) integration_contract_gate.sh (strict optional)
+5) run_repo_agents.py (optional; runs after gate so status files are fresh)
 6) Optional full pytest smoke (tests/ -q --maxfail=1)
 
 Outputs:
@@ -137,13 +137,13 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps.append(
         ("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
-    if args.run_agents:
-        steps.append(("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
-
     gate_cmd = ["bash", "scripts/integration_contract_gate.sh"]
     if args.strict_endpoints:
         gate_cmd.append("--strict-endpoints")
     steps.append(("integration_contract_gate", gate_cmd))
+
+    if args.run_agents:
+        steps.append(("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
 
     if args.full_pytest:
         steps.append(
@@ -283,7 +283,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument(
         "--run-agents",
         action="store_true",
-        help="Run repository automation agents before health checks",
+        help="Run repository automation agents after the integration contract gate",
     )
     ap.add_argument(
         "--continue-on-fail",
