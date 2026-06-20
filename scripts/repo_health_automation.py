@@ -123,8 +123,6 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
         if args.refresh_stale_status:
             repair_cmd.append("--refresh-stale")
         steps.append(("repair_data_out_status", repair_cmd))
-
-    if args.auto_fix_ruff:
         changed_py = _changed_python_files()
         if changed_py:
             steps.append(
@@ -137,15 +135,18 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps.append(
         ("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
-    gate_cmd = ["bash", "scripts/integration_contract_gate.sh"]
+    if args.run_agents:
+        steps.append(
+            ("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
     if args.strict_endpoints:
         gate_cmd.append("--strict-endpoints")
     steps.append(("integration_contract_gate", gate_cmd))
 
-    if args.run_agents:
-        steps.append(("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
+    steps.append(("integration_contract_gate", gate_cmd))
 
-    if args.full_pytest:
+    if args.run_agents:
+        steps.append(
+            ("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
         steps.append(
             (
                 "pytest_full_smoke",
@@ -251,8 +252,6 @@ def parse_args() -> argparse.Namespace:
             "  python scripts/repo_health_automation.py --once --repair-status --refresh-stale-status\n"
             "  python scripts/repo_health_automation.py --watch --interval 300 --continue-on-fail\n"
         ),
-    )
-    mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--once", action="store_true",
                       help="Run a single cycle (default)")
     mode.add_argument("--watch", action="store_true",
@@ -274,6 +273,8 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Include full pytest smoke step after contract gate",
     )
+        help="Include full pytest smoke step after contract gate",
+    )
     ap.add_argument(
         "--repair-status",
         action="store_true",
@@ -283,17 +284,16 @@ def parse_args() -> argparse.Namespace:
         "--refresh-stale-status",
         action="store_true",
         help="With --repair-status, refresh timestamps older than 24 hours",
-    )
-    ap.add_argument(
+        "--auto-fix-ruff",
         "--auto-fix-ruff",
         action="store_true",
+        help="Run ruff --fix for changed Python files before checks",
         help="Run ruff --fix for changed Python files before checks",
     )
     ap.add_argument(
         "--run-agents",
         action="store_true",
         help="Run repository automation agents after the integration contract gate",
-    )
     ap.add_argument(
         "--continue-on-fail",
         action="store_true",
@@ -304,17 +304,17 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    args = parse_args()
-    history: list[CycleResult] = []
+    args=parse_args()
+    history: list[CycleResult]=[]
 
-    watch = args.watch
+    watch=args.watch
     if not args.watch and not args.once:
         # Default behavior: one-shot cycle
-        watch = False
+        watch=False
 
-    cycle = 1
+    cycle=1
     while True:
-        result = run_cycle(cycle=cycle, args=args)
+        result=run_cycle(cycle=cycle, args=args)
         history.append(result)
         _write_status(history)
 

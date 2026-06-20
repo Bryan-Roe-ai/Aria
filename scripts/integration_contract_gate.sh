@@ -57,7 +57,6 @@ if "${PYTHON_BIN}" -c "import pytest" >/dev/null 2>&1; then
 else
   log "pytest not available; skipping integration_contract_tests and validate_all in minimal environment."
 fi
-
 if [[ "${strict_endpoints}" != "true" ]]; then
   log "Standard mode complete."
   exit 0
