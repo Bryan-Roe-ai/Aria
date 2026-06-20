@@ -50,6 +50,9 @@ python -m aria_bot --apply --commit
 Each cycle writes a machine-readable summary to
 `data_out/aria_bot/status.json` per the repo's status-file convention.
 
+Status payloads include both totals and per-kind counters for observability:
+`findings_by_kind`, `plans_by_kind`, and `applied_by_kind`.
+
 ## Safety Guarantees
 
 These properties are enforced by `aria_bot/risk_manager.py` and cannot be

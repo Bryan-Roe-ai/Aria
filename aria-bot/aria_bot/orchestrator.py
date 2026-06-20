@@ -21,7 +21,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
@@ -70,8 +70,18 @@ class CycleResult:
     commit_sha: Optional[str] = None
     notes: List[str] = field(default_factory=list)
 
+    @staticmethod
+    def _count_by_kind(items: List[str]) -> Dict[str, int]:
+        counts: Dict[str, int] = {}
+        for kind in items:
+            counts[kind] = counts.get(kind, 0) + 1
+        return dict(sorted(counts.items()))
+
     def to_dict(self) -> dict:
         applied = [e for e in self.executions if e.applied]
+        finding_kinds = [f.kind for f in self.findings]
+        plan_kinds = [kind for plan in self.plans for kind in plan.kinds]
+        applied_kinds = [kind for e in applied for kind in e.plan.kinds]
         return {
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -83,6 +93,9 @@ class CycleResult:
                 "plans": len(self.plans),
                 "applied": len(applied),
             },
+            "findings_by_kind": self._count_by_kind(finding_kinds),
+            "plans_by_kind": self._count_by_kind(plan_kinds),
+            "applied_by_kind": self._count_by_kind(applied_kinds),
             "findings": [f.to_dict() for f in self.findings],
             "plans": [p.to_dict() for p in self.plans],
             "executions": [e.to_dict() for e in self.executions],

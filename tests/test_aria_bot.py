@@ -191,6 +191,10 @@ def test_orchestrator_dry_run_writes_status(fake_repo: Path) -> None:
     payload = json.loads(status_path.read_text())
     assert payload["apply"] is False
     assert payload["totals"]["findings"] >= 2
+    assert "findings_by_kind" in payload
+    assert "plans_by_kind" in payload
+    assert "applied_by_kind" in payload
+    assert payload["applied_by_kind"] == {}
     # Dry-run never applies.
     assert payload["totals"]["applied"] == 0
     # No file mutation occurred.
@@ -204,6 +208,11 @@ def test_run_cycle_apply_modifies_files(fake_repo: Path) -> None:
     assert result.apply is True
     applied = [e for e in result.executions if e.applied]
     assert applied, "expected at least one applied plan"
+
+    payload = result.to_dict()
+    assert payload["applied_by_kind"]
+    assert payload["findings_by_kind"]
+    assert payload["plans_by_kind"]
     # Protected dataset file is still dirty.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 
