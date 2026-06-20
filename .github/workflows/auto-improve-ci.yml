@@ -1,0 +1,175 @@
+name: "Auto-Improve CI/CD"
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "**/*.py"
+      - "pyproject.toml"
+      - "requirements*.txt"
+      - ".github/workflows/auto-improve-ci.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Run daily at 3 AM UTC
+    - cron: "0 3 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-improve-check:
+    name: Auto-Improve Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -q ruff pyyaml
+
+      - name: Run auto-improve health check
+        id: health-check
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python run_automation.py --auto-improve --continue-on-fail 2>&1 | tee ci-health-check.log
+          exit_code=${PIPESTATUS[0]}
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+
+      - name: Check for issues
+        if: steps.health-check.outputs.exit_code != '0'
+        run: |
+          echo "❌ Auto-improve health check detected issues"
+          cat ci-health-check.log
+          exit 1
+
+      - name: Comment on PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const logPath = 'ci-health-check.log';
+            const log = fs.existsSync(logPath)
+              ? fs.readFileSync(logPath, 'utf8')
+              : '(health check log not found)';
+            const succeeded = '${{ steps.health-check.outputs.exit_code }}' === '0';
+            const statusLine = succeeded
+              ? '**Status:** All health checks passed ✓'
+              : '**Status:** Issues detected ❌';
+            const tail = log.split('\n').slice(-30).join('\n');
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const comment = [
+              '## ✅ Auto-Improve CI Check',
+              '',
+              statusLine,
+              '',
+              '```',
+              tail,
+              '```',
+              '',
+              `See the [full workflow run](${runUrl}) for details.`
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Upload health check artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-logs
+          path: |
+            ci-health-check.log
+            data_out/repo_health_automation/status.json
+          retention-days: 30
+
+      - name: Notify on failure (Slack/Email)
+        if: failure() && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('🚨 Health check failed on main branch');
+            console.log('Run: ' + process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID);
+            // TODO: Integrate with Slack webhook or email service
+
+  auto-improve-enforcement:
+    name: Enforce Code Quality Standards
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install -q ruff
+
+      - name: Run ruff check (fail if issues)
+        run: ruff check --config pyproject.toml .
+
+      - name: Run ruff format check
+        run: ruff format --check .
+
+      - name: Comment quality summary
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          ENFORCEMENT_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const succeeded = process.env.ENFORCEMENT_STATUS === 'success';
+            const comment = [
+              '## 📊 Code Quality Summary',
+              '',
+              `- ${succeeded ? '✅' : '❌'} Ruff linting/formatting: ${succeeded ? 'Passed' : 'Failed'}`,
+              '- ℹ️ Type checking: See auto-improve CI check above',
+              '',
+              '**Tip:** Run locally before pushing:',
+              '```bash',
+              '# One-shot check',
+              'python run_automation.py --auto-improve --strict-endpoints',
+              '',
+              '# Or use pre-commit hooks',
+              'pre-commit run --all-files',
+              '```'
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

@@ -78,24 +78,24 @@ jobs:
       - name: Validate inputs
         run: |
           set -euo pipefail
-          
+
           # Validate PR URL is not empty and is from GitHub
           if [[ -z "${{ github.event.pull_request.html_url }}" ]]; then
             echo "❌ PR URL is empty"
             exit 1
           fi
-          
+
           if [[ ! "${{ github.event.pull_request.html_url }}" =~ ^https://github\.com/.*/pull/[0-9]+$ ]]; then
             echo "❌ PR URL format is invalid: ${{ github.event.pull_request.html_url }}"
             exit 1
           fi
-          
+
           # Validate label name matches expected value
           if [[ "${{ github.event.action }}" == "labeled" && "${{ github.event.label.name }}" != "$AUTO_MERGE_LABEL" ]]; then
             echo "❌ Label name mismatch. Expected: $AUTO_MERGE_LABEL, Got: ${{ github.event.label.name }}"
             exit 1
           fi
-          
+
           echo "✅ Input validation passed"
 
       - name: Enable auto-merge (squash)
@@ -104,13 +104,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          
+
           # Verify GH_TOKEN is set
           if [[ -z "$GH_TOKEN" ]]; then
             echo "❌ GH_TOKEN is not set"
             exit 1
           fi
-          
+
           # Enable auto-merge with error handling
           if gh pr merge --auto --squash "$PR_URL"; then
             echo "✅ Auto-merge enabled for ${PR_URL}"

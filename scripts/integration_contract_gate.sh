@@ -46,7 +46,17 @@ run_step() {
   fi
 }
 
-PYTHON_BIN="${PYTHON_BIN:-python3}"
+if [[ -z "${PYTHON_BIN:-}" ]]; then
+  if [[ -n "${VIRTUAL_ENV:-}" && -x "${VIRTUAL_ENV}/bin/python" ]]; then
+    PYTHON_BIN="${VIRTUAL_ENV}/bin/python"
+  elif [[ -x ".venv/bin/python" ]]; then
+    PYTHON_BIN=".venv/bin/python"
+  else
+    PYTHON_BIN="python3"
+  fi
+fi
+
+log "Using PYTHON_BIN=${PYTHON_BIN}"
 
 run_step core_files_automation "${PYTHON_BIN}" scripts/automate_core_files.py
 run_step integration_smoke "${PYTHON_BIN}" scripts/integration_smoke.py

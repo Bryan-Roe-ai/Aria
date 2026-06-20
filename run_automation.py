@@ -12,9 +12,9 @@ import sys
 from pathlib import Path
 
 # Use .venv environment if available
-workspace_root = Path(__file__).parent
+REPO_ROOT = Path(__file__).parent
 venv_python = (
-    workspace_root
+    REPO_ROOT
     / ".venv"
     / ("Scripts" if sys.platform == "win32" else "bin")
     / ("python.exe" if sys.platform == "win32" else "python")
@@ -36,7 +36,7 @@ if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except (AttributeError, ValueError, OSError):
         pass
 
 # Color codes for terminal output
@@ -50,10 +50,11 @@ BOLD = "\033[1m"
 
 def print_section(title: str) -> None:
     """Print a section header."""
+    divider = f"{BOLD}{BLUE}{'═' * 59}{RESET}"
     print(
-        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+        f"\n{divider}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
-    print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+    print(divider)
 
 
 def print_ok(msg: str) -> None:
@@ -85,14 +86,14 @@ class AutomationRunner:
 
     def __init__(
         self,
-        workspace_root: Path,
+        root_path: Path,
         *,
         auto_improve: bool = False,
         strict_endpoints: bool = False,
         full_pytest: bool = False,
     ):
         """Initialize the automation runner."""
-        self.workspace_root = workspace_root
+        self.workspace_root = root_path
         self.processes: list[subprocess.Popen] = []
         self.running = True
         self.auto_improve = auto_improve
@@ -102,7 +103,7 @@ class AutomationRunner:
     def setup_signal_handlers(self) -> None:
         """Setup SIGINT and SIGTERM handlers for graceful shutdown."""
 
-        def signal_handler(signum, frame):
+        def signal_handler(_signum, _frame):
             print_warning("Shutdown signal received...")
             self.shutdown()
             sys.exit(0)
@@ -147,6 +148,7 @@ class AutomationRunner:
                 [_PYTHON_EXECUTABLE, str(check_script)],
                 cwd=str(self.workspace_root),
                 capture_output=True,
+                check=False,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -168,7 +170,7 @@ class AutomationRunner:
         except subprocess.TimeoutExpired:
             print_warning("Environment check timed out")
             return True
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Failed to run environment check: {e}")
             return True
 
@@ -184,9 +186,17 @@ class AutomationRunner:
         try:
             print_info("Starting pytest...")
             result = subprocess.run(
-                [_PYTHON_EXECUTABLE, "-m", "pytest", "tests", "-q", "--tb=short"],
+                [
+                    _PYTHON_EXECUTABLE,
+                    "-m",
+                    "pytest",
+                    "tests",
+                    "-q",
+                    "--tb=short",
+                ],
                 cwd=str(self.workspace_root),
                 capture_output=True,
+                check=False,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -215,7 +225,7 @@ class AutomationRunner:
         except subprocess.TimeoutExpired:
             print_warning("Test suite timed out after 5 minutes")
             return False
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Failed to run tests: {e}")
             return False
 
@@ -223,7 +233,9 @@ class AutomationRunner:
         """Run integration validation checks."""
         print_section("Running Integration Validation")
 
-        validation_script = self.workspace_root / "scripts" / "fast_validate.py"
+        validation_script = (
+            self.workspace_root / "scripts" / "fast_validate.py"
+        )
         if not validation_script.exists():
             print_info("Fast validation script not found, skipping")
             return True
@@ -234,6 +246,7 @@ class AutomationRunner:
                 [_PYTHON_EXECUTABLE, str(validation_script)],
                 cwd=str(self.workspace_root),
                 capture_output=True,
+                check=False,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -255,15 +268,20 @@ class AutomationRunner:
         except subprocess.TimeoutExpired:
             print_warning("Validation timed out")
             return False
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Failed to run validation: {e}")
             return False
 
     def run_auto_improve(self) -> bool:
-        """Run repo auto-improvement cycle (ruff fix + contract/health checks)."""
+        """Run repo auto-improvement cycle.
+
+        Includes ruff auto-fix and contract/health checks.
+        """
         print_section("Running Auto-Improve Repo Cycle")
 
-        improve_script = self.workspace_root / "scripts" / "repo_health_automation.py"
+        improve_script = (
+            self.workspace_root / "scripts" / "repo_health_automation.py"
+        )
         if not improve_script.exists():
             print_warning(f"Auto-improve script not found: {improve_script}")
             return False
@@ -286,6 +304,7 @@ class AutomationRunner:
                 command,
                 cwd=str(self.workspace_root),
                 capture_output=True,
+                check=False,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -307,7 +326,7 @@ class AutomationRunner:
         except subprocess.TimeoutExpired:
             print_warning("Auto-improve cycle timed out")
             return False
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Failed to run auto-improve cycle: {e}")
             return False
 
@@ -332,7 +351,7 @@ class AutomationRunner:
                 except subprocess.TimeoutExpired:
                     proc.kill()
                     print_warning(f"Process {proc.pid} killed forcefully")
-                except Exception as e:
+                except (OSError, subprocess.SubprocessError) as e:
                     print_error(f"Error terminating process {proc.pid}: {e}")
 
         self.running = False
@@ -363,7 +382,9 @@ class AutomationRunner:
             # Run validation
             validation_ok = self.run_validation()
 
-            overall_ok = env_ok and auto_improve_ok and tests_ok and validation_ok
+            overall_ok = (
+                env_ok and auto_improve_ok and tests_ok and validation_ok
+            )
 
             # Display final status
             print_section("Automation Complete")
@@ -371,7 +392,9 @@ class AutomationRunner:
                 print_ok("All automated tasks completed successfully!")
             else:
                 print_warning(
-                    "Automation finished with issues. Review the warnings/errors above.")
+                    "Automation finished with issues. "
+                    "Review the warnings/errors above."
+                )
             self.display_status()
             return overall_ok
 
@@ -379,7 +402,7 @@ class AutomationRunner:
             print_warning("Interrupted by user")
             self.shutdown()
             return False
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Automation runner error: {e}")
             self.shutdown()
             return False
@@ -391,7 +414,10 @@ def main() -> int:
     parser.add_argument(
         "--auto-improve",
         action="store_true",
-        help="Run auto-improve repo cycle (ruff fix + repo health checks) before tests.",
+        help=(
+            "Run auto-improve repo cycle "
+            "(ruff fix + repo health checks) before tests."
+        ),
     )
     parser.add_argument(
         "--strict-endpoints",
@@ -405,10 +431,10 @@ def main() -> int:
     )
 
     args = parser.parse_args()
-    workspace_root = Path(__file__).parent
+    root_path = Path(__file__).parent
 
     runner = AutomationRunner(
-        workspace_root,
+        root_path,
         auto_improve=args.auto_improve,
         strict_endpoints=args.strict_endpoints,
         full_pytest=args.full_pytest,

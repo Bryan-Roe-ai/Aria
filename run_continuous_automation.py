@@ -13,9 +13,9 @@ from datetime import datetime
 from pathlib import Path
 
 # Use .venv environment if available
-workspace_root = Path(__file__).parent
+REPO_ROOT = Path(__file__).parent
 venv_python = (
-    workspace_root
+    REPO_ROOT
     / ".venv"
     / ("Scripts" if sys.platform == "win32" else "bin")
     / ("python.exe" if sys.platform == "win32" else "python")
@@ -37,7 +37,7 @@ if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except (AttributeError, ValueError, OSError):
         pass
 
 # Color codes for terminal output
@@ -63,10 +63,11 @@ def get_marker(name: str) -> str:
 
 def print_section(title: str) -> None:
     """Print a section header."""
+    divider = f"{BOLD}{BLUE}{'═' * 59}{RESET}"
     print(
-        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+        f"\n{divider}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
-    print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+    print(divider)
 
 
 def print_ok(msg: str) -> None:
@@ -99,7 +100,7 @@ class ContinuousAutomationDaemon:
 
     def __init__(
         self,
-        workspace_root: Path,
+        root_path: Path,
         interval_minutes: int = 60,
         *,
         auto_improve: bool = True,
@@ -107,11 +108,11 @@ class ContinuousAutomationDaemon:
         full_pytest: bool = False,
     ):
         """Initialize the daemon."""
-        self.workspace_root = workspace_root
+        self.workspace_root = root_path
         self.interval_minutes = interval_minutes
         self.interval_seconds = interval_minutes * 60
-        self.automation_script = workspace_root / "run_automation.py"
-        self.log_file = workspace_root / "logs" / "continuous_automation.log"
+        self.automation_script = root_path / "run_automation.py"
+        self.log_file = root_path / "logs" / "continuous_automation.log"
         self.running = True
         self.run_count = 0
         self.auto_improve = auto_improve
@@ -124,7 +125,7 @@ class ContinuousAutomationDaemon:
     def setup_signal_handlers(self) -> None:
         """Setup graceful shutdown handlers."""
 
-        def signal_handler(signum, frame):
+        def signal_handler(_signum, _frame):
             print_warning("Shutdown signal received...")
             self.shutdown()
             sys.exit(0)
@@ -138,7 +139,7 @@ class ContinuousAutomationDaemon:
             with open(self.log_file, "a", encoding="utf-8") as f:
                 timestamp = datetime.now().isoformat()
                 f.write(f"[{timestamp}] {message}\n")
-        except Exception as e:
+        except OSError as e:
             print_error(f"Failed to write log: {e}")
 
     def run_automation(self) -> bool:
@@ -161,6 +162,7 @@ class ContinuousAutomationDaemon:
                 command,
                 cwd=str(self.workspace_root),
                 capture_output=True,
+                check=False,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
@@ -169,15 +171,23 @@ class ContinuousAutomationDaemon:
 
             if result.returncode == 0:
                 print_ok(
-                    f"Automation cycle #{self.run_count} completed successfully")
+                    "Automation cycle "
+                    f"#{self.run_count} completed successfully"
+                )
                 self.log_message(
-                    f"Automation cycle #{self.run_count} completed successfully")
+                    "Automation cycle "
+                    f"#{self.run_count} completed successfully"
+                )
                 return True
             else:
                 print_warning(
-                    f"Automation cycle #{self.run_count} completed with warnings")
+                    "Automation cycle "
+                    f"#{self.run_count} completed with warnings"
+                )
                 self.log_message(
-                    f"Automation cycle #{self.run_count} completed with warnings")
+                    "Automation cycle "
+                    f"#{self.run_count} completed with warnings"
+                )
                 if result.stdout:
                     self.log_message(f"Output: {result.stdout[:500]}")
                 return True  # Don't stop on failures
@@ -186,7 +196,7 @@ class ContinuousAutomationDaemon:
             print_warning(f"Automation cycle #{self.run_count} timed out")
             self.log_message(f"Automation cycle #{self.run_count} timed out")
             return False
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Failed to run automation: {e}")
             self.log_message(f"Error running automation: {e}")
             return False
@@ -194,9 +204,7 @@ class ContinuousAutomationDaemon:
     def calculate_next_run(self) -> str:
         """Calculate and format the next run time."""
         next_run = datetime.now().timestamp() + self.interval_seconds
-        from datetime import datetime as dt
-
-        next_run_dt = dt.fromtimestamp(next_run)
+        next_run_dt = datetime.fromtimestamp(next_run)
         return next_run_dt.strftime("%Y-%m-%d %H:%M:%S")
 
     def run(self) -> None:
@@ -209,9 +217,13 @@ class ContinuousAutomationDaemon:
         print_ok(
             f"Auto-improve: {'enabled' if self.auto_improve else 'disabled'}")
         print_ok(
-            f"Strict endpoints: {'enabled' if self.strict_endpoints else 'disabled'}")
+            "Strict endpoints: "
+            f"{'enabled' if self.strict_endpoints else 'disabled'}"
+        )
         print_ok(
-            f"Full pytest in improve cycle: {'enabled' if self.full_pytest else 'disabled'}")
+            "Full pytest in improve cycle: "
+            f"{'enabled' if self.full_pytest else 'disabled'}"
+        )
         print_ok(f"Log file: {self.log_file}")
         print_info("Press Ctrl+C to stop the daemon")
 
@@ -220,7 +232,10 @@ class ContinuousAutomationDaemon:
         try:
             while self.running:
                 print_section(
-                    f"Automation Cycle #{self.run_count + 1} at {datetime.now().strftime('%H:%M:%S')}")
+                    "Automation Cycle "
+                    f"#{self.run_count + 1} "
+                    f"at {datetime.now().strftime('%H:%M:%S')}"
+                )
 
                 self.run_automation()
 
@@ -238,7 +253,7 @@ class ContinuousAutomationDaemon:
         except KeyboardInterrupt:
             print_warning("Interrupted by user")
             self.shutdown()
-        except Exception as e:
+        except (OSError, subprocess.SubprocessError) as e:
             print_error(f"Daemon error: {e}")
             self.log_message(f"Daemon error: {e}")
             self.shutdown()
@@ -290,7 +305,7 @@ def main() -> None:
     args = parser.parse_args()
 
     daemon = ContinuousAutomationDaemon(
-        workspace_root=args.workspace,
+        root_path=args.workspace,
         interval_minutes=args.interval,
         auto_improve=not args.no_auto_improve,
         strict_endpoints=args.strict_endpoints,
