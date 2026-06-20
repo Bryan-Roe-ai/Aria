@@ -232,7 +232,8 @@ class TestGetEndpoints:
         assert orch["autonomous_training"]["cycles_completed"] == 4
         assert orch["autonomous_training"]["heartbeat_running"] is False
         assert orch["autotrain"]["status"] == "ok"
-        assert not any(key.startswith("_status_file_") for key in orch["autonomous_training"])
+        assert not any(key.startswith("_status_file_")
+                       for key in orch["autonomous_training"])
 
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
@@ -416,9 +417,12 @@ class TestPostValidation:
         assert resp.status_code == 200
         # prune_messages prepends a system prompt; verify the compaction placeholder
         # was dropped and the user message is present (ignoring the system message).
-        user_messages = [m for m in captured["messages"] if m.get("role") == "user"]
-        assistant_messages = [m for m in captured["messages"] if m.get("content") == "Compacted conversation"]
-        assert user_messages == [{"role": "user", "content": "Continue with the fix"}]
+        user_messages = [m for m in captured["messages"]
+                         if m.get("role") == "user"]
+        assistant_messages = [m for m in captured["messages"]
+                              if m.get("content") == "Compacted conversation"]
+        assert user_messages == [
+            {"role": "user", "content": "Continue with the fix"}]
         assert assistant_messages == [], "Compaction placeholder should have been dropped"
 
     def test_chat_only_compaction_placeholder_messages_return_validation_error(self, app_module):
@@ -520,8 +524,25 @@ class TestPostValidation:
         data = json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
-    def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module):
+    def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should emit safe fallback SSE when prompt is blocked."""
+        import inspect
+
+        import azure.functions as _af
+
+        captured: dict = {"sse_body": b""}
+        _real_HttpResponse = _af.HttpResponse
+
+        def _capturing_HttpResponse(body=None, **kwargs):
+            if body is not None and inspect.isgenerator(body):
+                consumed = b"".join(body)
+                captured["sse_body"] = consumed
+                return _real_HttpResponse(consumed, **kwargs)
+            return _real_HttpResponse(body, **kwargs)
+
+        monkeypatch.setattr(app_module.func, "HttpResponse",
+                            _capturing_HttpResponse)
+
         req = _mock_request(
             "POST",
             body={
@@ -535,13 +556,18 @@ class TestPostValidation:
         )
         resp = app_module.chat_stream(req)
         assert resp.status_code == 200
-        body_text = resp.get_body().decode("utf-8")
+        body_text = captured["sse_body"].decode("utf-8")
         assert "data: [DONE]" in body_text
         assert "safely" in body_text.lower()
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
-        captured: dict = {"embedding": None, "session_id": None}
+        import inspect
+
+        import azure.functions as _af
+
+        captured: dict = {"embedding": None,
+                          "session_id": None, "sse_body": b""}
 
         def _fake_embedding(text: str):
             captured["embedding"] = text
@@ -551,8 +577,21 @@ class TestPostValidation:
             captured["session_id"] = session_id
             return [{"content": "Previous answer about widgets", "similarity": 0.88}]
 
+        # Patch func.HttpResponse inside function_app so streaming body (generator) is consumed
+        _real_HttpResponse = _af.HttpResponse
+
+        def _capturing_HttpResponse(body=None, **kwargs):
+            if body is not None and inspect.isgenerator(body):
+                consumed = b"".join(body)
+                captured["sse_body"] = consumed
+                return _real_HttpResponse(consumed, **kwargs)
+            return _real_HttpResponse(body, **kwargs)
+
+        monkeypatch.setattr(app_module.func, "HttpResponse",
+                            _capturing_HttpResponse)
         monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
-        monkeypatch.setattr(app_module, "fetch_similar_messages", _fake_similar)
+        monkeypatch.setattr(
+            app_module, "fetch_similar_messages", _fake_similar)
 
         req = _mock_request(
             "POST",
@@ -565,7 +604,7 @@ class TestPostValidation:
         assert resp.status_code == 200
 
         # Parse SSE body for the meta event
-        body_text = resp.get_body().decode("utf-8")
+        body_text = captured["sse_body"].decode("utf-8")
         meta_data: dict | None = None
         for line in body_text.splitlines():
             if line.startswith("data:"):
@@ -584,6 +623,12 @@ class TestPostValidation:
 
     def test_chat_stream_emits_done_sentinel(self, app_module, monkeypatch):
         """POST /api/chat/stream should terminate SSE with data: [DONE]."""
+        import inspect
+
+        import azure.functions as _af
+
+        captured: dict = {"sse_body": b""}
+
         class _FakeProvider:
             def complete(self, messages, stream=False):
                 assert stream is True
@@ -605,6 +650,18 @@ class TestPostValidation:
             lambda query_emb, top_k=5, session_id=None: [],
         )
 
+        _real_HttpResponse = _af.HttpResponse
+
+        def _capturing_HttpResponse(body=None, **kwargs):
+            if body is not None and inspect.isgenerator(body):
+                consumed = b"".join(body)
+                captured["sse_body"] = consumed
+                return _real_HttpResponse(consumed, **kwargs)
+            return _real_HttpResponse(body, **kwargs)
+
+        monkeypatch.setattr(app_module.func, "HttpResponse",
+                            _capturing_HttpResponse)
+
         req = _mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "say hi"}]},
@@ -612,7 +669,7 @@ class TestPostValidation:
         resp = app_module.chat_stream(req)
 
         assert resp.status_code == 200
-        body_text = resp.get_body().decode("utf-8")
+        body_text = captured["sse_body"].decode("utf-8")
         assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
         assert "data: [DONE]" in body_text
 
@@ -719,6 +776,13 @@ class TestAgiEndpoints:
         assert data["available"] is True
         assert data["provider"]["name"] == "agi"
         assert data["reasoning"]["total_reasoning_chains"] == 3
+        agent_tools = data.get("agent_tools") or {}
+        lmstudio_tools = set(agent_tools.get("lmstudio-specialist") or [])
+        assert {
+            "list_models",
+            "chat_completion",
+            "server_status",
+        }.issubset(lmstudio_tools)
 
     def test_agi_reason_returns_response_and_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
@@ -779,6 +843,12 @@ class TestAgiEndpoints:
         assert "validation error" in data["error"].lower()
 
     def test_agi_stream_emits_done_sentinel(self, app_module, monkeypatch):
+        import inspect
+
+        import azure.functions as _af
+
+        captured: dict = {"sse_body": b""}
+
         class _FakeAgiProvider:
             def complete(self, messages, stream=False):
                 assert stream is True
@@ -797,6 +867,18 @@ class TestAgiEndpoints:
             ),
         )
 
+        _real_HttpResponse = _af.HttpResponse
+
+        def _capturing_HttpResponse(body=None, **kwargs):
+            if body is not None and inspect.isgenerator(body):
+                consumed = b"".join(body)
+                captured["sse_body"] = consumed
+                return _real_HttpResponse(consumed, **kwargs)
+            return _real_HttpResponse(body, **kwargs)
+
+        monkeypatch.setattr(app_module.func, "HttpResponse",
+                            _capturing_HttpResponse)
+
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},
@@ -804,7 +886,7 @@ class TestAgiEndpoints:
         resp = app_module.agi_stream(req)
 
         assert resp.status_code == 200
-        body_text = resp.get_body().decode("utf-8")
+        body_text = captured["sse_body"].decode("utf-8")
         assert "event: meta" in body_text
         assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
         assert "data: [DONE]" in body_text
@@ -927,7 +1009,8 @@ class TestQuantumLlmEndpoint:
         train_args = capture["train_args"]
         assert train_args["epochs"] == 5
         assert train_args["dataset_path"].is_absolute()
-        assert str(train_args["output_dir"]).endswith("data_out/quantum_llm_api")
+        assert str(train_args["output_dir"]).endswith(
+            "data_out/quantum_llm_api")
 
     def test_quantum_llm_post_unknown_action(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
@@ -1048,7 +1131,8 @@ class TestRequestValidator:
         from shared.request_validator import validate_fields
 
         err = validate_fields(
-            {"messages": [{"role": "user", "content": "hi"}], "temperature": 0.7},
+            {"messages": [{"role": "user", "content": "hi"}],
+                "temperature": 0.7},
             {
                 "messages": {"type": list, "required": True, "min_length": 1},
                 "temperature": {"type": (int, float), "min": 0, "max": 2},
