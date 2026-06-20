@@ -355,3 +355,42 @@ def test_cli_writes_summary_path(fake_repo: Path, tmp_path: Path) -> None:
     assert summary_path.exists()
     payload = json.loads(summary_path.read_text())
     assert "totals" in payload
+
+
+def test_cli_fail_on_findings_returns_nonzero(fake_repo: Path) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--fail-on-findings",
+            "--quiet",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 1
+
+
+def test_cli_fail_on_findings_passes_when_clean(fake_repo: Path) -> None:
+    # Clean the fake repo first.
+    run_cycle(repo_root=fake_repo, apply=True, commit=False)
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--fail-on-findings",
+            "--quiet",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0

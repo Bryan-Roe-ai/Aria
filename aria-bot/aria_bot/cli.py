@@ -103,6 +103,14 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="List supported finding/transform kinds and exit.",
     )
+    parser.add_argument(
+        "--fail-on-findings",
+        action="store_true",
+        help=(
+            "Exit with status 1 when any findings are detected "
+            "(useful for CI quality gates)."
+        ),
+    )
     return parser
 
 
@@ -158,6 +166,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if not args.quiet:
         sys.stdout.write(rendered)
         sys.stdout.write("\n")
+
+    if args.fail_on_findings and result_dict["totals"]["findings"] > 0:
+        return 1
 
     return 0 if result.validation_ok else 1
 
