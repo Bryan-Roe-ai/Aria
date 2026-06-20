@@ -55,15 +55,18 @@ def test_run_returns_false_and_reports_issues(monkeypatch, capsys):
 
 
 def test_main_returns_zero_on_success(monkeypatch):
+    import sys
+
     mod = _load_run_automation_module()
 
     class FakeRunner:
-        def __init__(self, workspace_root):
+        def __init__(self, workspace_root, **kwargs):
             self.workspace_root = workspace_root
 
         def run(self):
             return True
 
     monkeypatch.setattr(mod, "AutomationRunner", FakeRunner)
+    monkeypatch.setattr(sys, "argv", ["run_automation.py"])
 
     assert mod.main() == 0

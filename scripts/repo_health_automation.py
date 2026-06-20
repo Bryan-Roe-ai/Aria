@@ -129,6 +129,9 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps.append(
         ("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
+    if args.run_agents:
+        steps.append(("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
+
     gate_cmd = ["bash", "scripts/integration_contract_gate.sh"]
     if args.strict_endpoints:
         gate_cmd.append("--strict-endpoints")
@@ -258,6 +261,11 @@ def parse_args() -> argparse.Namespace:
         "--auto-fix-ruff",
         action="store_true",
         help="Run ruff --fix for changed Python files before checks",
+    )
+    ap.add_argument(
+        "--run-agents",
+        action="store_true",
+        help="Run repository automation agents before health checks",
     )
     ap.add_argument(
         "--continue-on-fail",

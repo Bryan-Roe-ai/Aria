@@ -206,7 +206,7 @@ class TestFetchSimilarMessages:
 
     def test_accepts_top_k_and_returns_dict_records(self):
         class _FakeCursor:
-            def execute(self, _sql):
+            def execute(self, _sql, _params=None):
                 return None
 
             def fetchall(self):
@@ -236,7 +236,7 @@ class TestFetchSimilarMessages:
 
     def test_session_isolation_skips_non_matching_or_unknown_session_rows(self):
         class _FakeCursor:
-            def execute(self, _sql):
+            def execute(self, _sql, _params=None):
                 return None
 
             def fetchall(self):
@@ -263,7 +263,7 @@ class TestFetchSimilarMessages:
 
     def test_min_similarity_env_is_clamped(self):
         class _FakeCursor:
-            def execute(self, _sql):
+            def execute(self, _sql, _params=None):
                 return None
 
             def fetchall(self):
