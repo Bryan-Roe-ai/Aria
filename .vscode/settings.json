@@ -9,13 +9,7 @@
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen",
     "azureFunctions.projectLanguageModel": 2,
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        ".",
-        "-p",
-        "*test*.py"
-    ],
+    "python.testing.unittestArgs": ["-v", "-s", ".", "-p", "*test*.py"],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestArgs": [
@@ -200,5 +194,6 @@
     },
     "python-envs.defaultEnvManager": "ms-python.python:venv",
     "editor.formatOnSave": true,
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
+    "iis.configDir": ""
 }
