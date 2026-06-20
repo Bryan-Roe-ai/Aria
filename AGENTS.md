@@ -77,6 +77,7 @@ actions. Tag forms recognised include:
 - Fast unit tests: `python scripts/test_runner.py --unit`
 - Aria-specific unit tests: `pytest tests/unit/test_tags_to_actions.py`
 - Quick repo validation: `python scripts/fast_validate.py`
+- Repo automation agents: `python scripts/run_repo_agents.py` (writes `data_out/agents/status.json`; use `--run-agents` with `scripts/repo_health_automation.py`)
 - System health: `curl http://localhost:7071/api/ai/status | jq`
 
 ## Conventions
