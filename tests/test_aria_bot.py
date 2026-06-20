@@ -41,6 +41,7 @@ def fake_repo(tmp_path: Path) -> Path:
     (tmp_path / "src" / "extra_eof.md").write_bytes(b"line\n\n\n")
     (tmp_path / "src" / "bom_file.txt").write_bytes(b"\xef\xbb\xbfhello\n")
     (tmp_path / "src" / "unicode_newline.txt").write_text("a\u2028b\u2029")
+    (tmp_path / "src" / "blank_runs.md").write_text("A\n\n\n\nB\n")
     (tmp_path / "src" / "clean.py").write_bytes(b"def ok():\n    return 1\n")
 
     # Protected: must never be touched.
@@ -60,6 +61,7 @@ def test_risk_manager_blocks_virtualenv_paths(tmp_path: Path) -> None:
     rm = RiskManager(repo_root=tmp_path)
     assert rm.is_path_protected(tmp_path / ".venv" / "lib" / "site.py")
     assert rm.is_path_protected(tmp_path / "venv" / "lib" / "site.py")
+    assert rm.is_path_protected(tmp_path / "any" / "data_out" / "x.txt")
 
 
 def test_risk_manager_blocks_symlinks(tmp_path: Path) -> None:
@@ -112,6 +114,7 @@ def test_analyzer_detects_findings(fake_repo: Path) -> None:
     assert ("extra_eof.md", "excess_final_newlines") in kinds_by_path
     assert ("bom_file.txt", "remove_utf8_bom") in kinds_by_path
     assert ("unicode_newline.txt", "normalize_unicode_newlines") in kinds_by_path
+    assert ("blank_runs.md", "collapse_blank_line_runs") in kinds_by_path
     # Protected file must not appear at all.
     assert not any(f.path.name == "dirty.py" for f in findings)
     # Clean file should produce nothing.
@@ -159,6 +162,7 @@ def test_executor_applies_and_is_idempotent(fake_repo: Path) -> None:
     assert not (fake_repo / "src" / "bom_file.txt").read_text().startswith("\ufeff")
     assert "\u2028" not in (fake_repo / "src" / "unicode_newline.txt").read_text()
     assert "\u2029" not in (fake_repo / "src" / "unicode_newline.txt").read_text()
+    assert (fake_repo / "src" / "blank_runs.md").read_text() == "A\n\nB\n"
     # Protected file untouched.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 

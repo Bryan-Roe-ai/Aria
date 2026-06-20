@@ -101,6 +101,11 @@ class RiskManager:
         rel_posix = rel.as_posix()
         if rel.name in self.protected_names:
             return True
+
+        # Protect artifact directories even when nested (e.g. project/data_out/).
+        if "data_out" in rel.parts:
+            return True
+
         for prefix in self.protected_prefixes:
             if rel_posix == prefix.rstrip("/") or rel_posix.startswith(prefix):
                 return True

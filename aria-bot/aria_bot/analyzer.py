@@ -13,6 +13,7 @@ Currently supported finding kinds:
 * ``excess_final_newlines`` — files ending with more than one newline.
 * ``remove_utf8_bom`` — files that start with a UTF-8 BOM marker.
 * ``normalize_unicode_newlines`` — files containing U+2028/U+2029.
+* ``collapse_blank_line_runs`` — markdown/text/yaml files with 3+ blank lines.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -38,6 +39,7 @@ SUPPORTED_KINDS: tuple[str, ...] = (
     "excess_final_newlines",
     "remove_utf8_bom",
     "normalize_unicode_newlines",
+    "collapse_blank_line_runs",
 )
 
 
@@ -165,5 +167,26 @@ class Analyzer:
                     detail=f"{trailing_newlines} trailing newlines",
                 )
             )
+
+        # Collapse 3+ blank lines in documentation-like text files.
+        if path.suffix.lower() in {".md", ".txt", ".yaml", ".yml"}:
+            max_blank_run = 0
+            current_blank_run = 0
+            for line in text.split("\n"):
+                if line.strip() == "":
+                    current_blank_run += 1
+                    if current_blank_run > max_blank_run:
+                        max_blank_run = current_blank_run
+                else:
+                    current_blank_run = 0
+
+            if max_blank_run >= 3:
+                results.append(
+                    Finding(
+                        kind="collapse_blank_line_runs",
+                        path=path,
+                        detail=f"max blank-line run: {max_blank_run}",
+                    )
+                )
 
         return results

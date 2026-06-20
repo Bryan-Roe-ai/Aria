@@ -63,7 +63,8 @@ disabled from configuration:
 - **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup
    and missing-final-newline fixes, line-ending normalization (CRLF/CR→LF),
    trimming excess final newlines, UTF-8 BOM removal, and Unicode newline
-   normalization (U+2028/U+2029→LF) — all pure-text and idempotent.
+   normalization (U+2028/U+2029→LF), plus collapsing 3+ blank-line runs in
+   docs/text/yaml files — all pure-text and idempotent.
 - **No deletions, no renames, no symlink follows.**
 - **Per-cycle caps** on plans, file size, and per-plan delta bytes.
 

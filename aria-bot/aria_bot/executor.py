@@ -61,6 +61,26 @@ def _normalize_unicode_newlines(text: str) -> str:
     return normalized
 
 
+def _collapse_blank_line_runs(text: str) -> str:
+    if not text:
+        return text
+
+    lines = text.split("\n")
+    out: list[str] = []
+    blank_run = 0
+    for line in lines:
+        if line.strip() == "":
+            blank_run += 1
+            if blank_run <= 1:
+                out.append(line)
+            continue
+
+        blank_run = 0
+        out.append(line)
+
+    return "\n".join(out)
+
+
 _TRANSFORMS: Dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
@@ -68,6 +88,7 @@ _TRANSFORMS: Dict[str, Transform] = {
     "excess_final_newlines": _trim_excess_final_newlines,
     "remove_utf8_bom": _remove_utf8_bom,
     "normalize_unicode_newlines": _normalize_unicode_newlines,
+    "collapse_blank_line_runs": _collapse_blank_line_runs,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with
