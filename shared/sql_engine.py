@@ -158,6 +158,7 @@ def _build_url_from_odbc(conn_str: str) -> str:
 
 
 def resolve_sql_url() -> Optional[str]:
+    """Resolve the SQLAlchemy URL from environment variables."""
     url = os.getenv("QAI_SQL_URL")
     if url:
         return url.strip() or None
@@ -195,6 +196,7 @@ def resolve_slow_query_threshold() -> float:
 
 
 def get_engine():  # noqa: ANN001
+    """Return a cached SQLAlchemy engine for the configured database URL."""
     global _ENGINE, _LAST_URL
     url = resolve_sql_url()
     if not url:
@@ -231,6 +233,7 @@ def get_engine():  # noqa: ANN001
 
 
 def sql_health() -> dict:
+    """Return connectivity and dialect details for the configured SQL engine."""
     engine = get_engine()
     if not engine:
         return {"enabled": False, "url": None}
@@ -276,6 +279,7 @@ def _safe_call(obj: Any, name: str) -> Any:
 
 
 def engine_stats() -> Dict[str, Any]:
+    """Return pool and connection statistics for the active SQL engine."""
     engine = get_engine()
     if not engine:
         return {"enabled": False}

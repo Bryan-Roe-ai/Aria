@@ -26,6 +26,13 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 CHAT_CLI = ROOT_DIR / "ai-projects" / "chat-cli" / "src" / "chat_cli.py"
 LOG_DIR = ROOT_DIR / "ai-projects" / "chat-cli" / "logs"
 
+try:
+    from shared.local_settings import apply_local_settings
+
+    apply_local_settings()
+except Exception:
+    pass
+
 # Cached ANSI escape regex for performance across imports
 _ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 

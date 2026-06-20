@@ -411,6 +411,13 @@ def get_settings() -> Settings:
     On first call, loads Key Vault secrets (if configured) before returning.
     Subsequent calls return the cached instance via ``lru_cache``.
     """
+    try:
+        from shared.local_settings import apply_local_settings
+
+        apply_local_settings()
+    except Exception:
+        pass
+
     if _PYDANTIC_AVAILABLE:
         instance = Settings()  # type: ignore[call-arg]
     else:
@@ -452,9 +459,11 @@ class AppSettings(Settings):
     """Backward-compatible alias for older settings API callers."""
 
     def provider_chain(self) -> List[str]:
+        """Return the configured provider priority chain."""
         return list(self.provider_priority)
 
     def summary(self) -> dict:
+        """Return settings summary including the provider chain."""
         data = super().summary()
         data["provider_chain"] = self.provider_chain()
         return data

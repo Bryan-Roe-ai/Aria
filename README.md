@@ -401,8 +401,14 @@ python scripts/test_runner.py --all
 # With coverage report
 python scripts/test_runner.py --all --coverage
 
+# Deterministic repository inspection agents (status freshness, markers, docstrings)
+python scripts/run_repo_agents.py --dry-run
+
 # One-command integration contract gate (local)
 bash ./scripts/integration_contract_gate.sh
+
+# Use the repo virtualenv explicitly when needed
+PYTHON_BIN=.venv/bin/python bash ./scripts/integration_contract_gate.sh
 
 # Strict gate (requires local Functions host at :7071)
 bash ./scripts/integration_contract_gate.sh --strict-endpoints

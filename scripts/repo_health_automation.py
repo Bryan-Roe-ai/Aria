@@ -5,10 +5,12 @@ This script is intended to reduce manual repetition when stabilizing the Aria
 workspace. It can run a one-shot health cycle or watch mode loops.
 
 Health cycle steps:
-1) Optional Ruff auto-fix on changed Python files
-2) pre_commit_check.py
-3) integration_contract_gate.sh (strict optional)
-4) Optional full pytest smoke (tests/ -q --maxfail=1)
+1) Repair data_out status.json merge conflicts (optional)
+2) Optional Ruff auto-fix on changed Python files
+3) pre_commit_check.py
+4) run_repo_agents.py (optional)
+5) integration_contract_gate.sh (strict optional)
+6) Optional full pytest smoke (tests/ -q --maxfail=1)
 
 Outputs:
 - Console summary per cycle
@@ -115,6 +117,12 @@ def _changed_python_files() -> list[str]:
 
 def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps: list[tuple[str, list[str]]] = []
+
+    if args.repair_status:
+        repair_cmd = [sys.executable, "scripts/repair_data_out_status.py"]
+        if args.refresh_stale_status:
+            repair_cmd.append("--refresh-stale")
+        steps.append(("repair_data_out_status", repair_cmd))
 
     if args.auto_fix_ruff:
         changed_py = _changed_python_files()
@@ -256,6 +264,16 @@ def parse_args() -> argparse.Namespace:
         "--full-pytest",
         action="store_true",
         help="Include full pytest smoke step after contract gate",
+    )
+    ap.add_argument(
+        "--repair-status",
+        action="store_true",
+        help="Repair merge conflicts in data_out status.json files before checks",
+    )
+    ap.add_argument(
+        "--refresh-stale-status",
+        action="store_true",
+        help="With --repair-status, refresh timestamps older than 24 hours",
     )
     ap.add_argument(
         "--auto-fix-ruff",

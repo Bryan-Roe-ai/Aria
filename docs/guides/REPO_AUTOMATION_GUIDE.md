@@ -221,32 +221,82 @@ tail -f data_out/aria_automation/*.log
 tail -f data_out/autotrain/*.log
 ```
 
+## Repository Inspection Agents
+
+Use `scripts/run_repo_agents.py` when you need deterministic repository checks that report findings without modifying source files. The runner loads registered agents from `scripts/agents/`, executes them, writes per-agent status, and writes an aggregate summary for dashboards.
+
+### Current agents
+
+| Agent | Intent | Typical finding |
+| --- | --- | --- |
+| `status-freshness` | Inspect `data_out/**/status.json` for stale, failed, timestamp-less, or unparseable runs | A health file has not updated within the configured max age |
+| `marker-audit` | Scan source-like files for `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers | Maintenance marker counts by file and marker type |
+| `docstring-audit` | Measure Python module/class/function docstring coverage | Public functions missing docstrings in audited paths |
+
+### Contract and outputs
+
+Each agent returns an `AgentResult` with:
+
+- `status`: one of `ok`, `warning`, or `error`
+- `summary`: one-line human-readable result
+- `findings`: structured, agent-specific records
+- `metrics`: numeric/string counters for dashboards
+- `timestamp`: ISO-8601 UTC generation time
+
+Status files:
+
+- `data_out/agents/<agent-name>/status.json` for individual agents
+- `data_out/agents/status.json` for the aggregate runner summary
+
+### Common commands
+
+```bash
+# Preview all agent results without writing status files
+python scripts/run_repo_agents.py --dry-run
+
+# Write per-agent and aggregate status files
+python scripts/run_repo_agents.py
+
+# Run one agent and emit aggregate JSON
+python scripts/run_repo_agents.py --agent status-freshness --json
+
+# Fail a CI/check step when any agent warns or errors
+python scripts/run_repo_agents.py --fail-on-warning
+```
+
+`repo_health_automation.py --run-agents` inserts the agent runner before the integration contract gate. This is useful after orchestrator, status-file, or documentation-maintenance changes because it records repository inspection results in the same health-cycle status payload.
+
 ## Operational Smoke Flow
 
 Use this sequence after config or orchestrator changes.
 
 ```bash
-# 1) Repository integration smoke (local fast gate)
+# 1) Repository inspection agents (optional, useful after status/doc/tooling changes)
+python scripts/run_repo_agents.py --dry-run
+
+# 2) Repository integration smoke (local fast gate)
 python scripts/integration_smoke.py --json
 
-# 2) CI smoke stage parity check
+# 3) CI smoke stage parity check
 python scripts/ci_orchestrator.py --integration-smoke
 
-# 3) Focused integration contract tests
+# 4) Focused integration contract tests
 python scripts/ci_orchestrator.py --integration-contract-tests
 
-# 4) Core orchestrator dry-run checks
+# 5) Core orchestrator dry-run checks
 python scripts/ci_orchestrator.py --validate-all
 
-# 5) Unified runtime view (optional continuous watch)
+# 6) Unified runtime view (optional continuous watch)
 python scripts/status_dashboard.py --watch
 ```
 
-Shortcut in VS Code: run task `integration:contract-gate` from `.vscode/tasks.json` to execute steps 1-4 in one command.
+Shortcut in VS Code: run task `integration:contract-gate` from `.vscode/tasks.json` to execute the contract-gate sequence (`integration_smoke.py`, integration contract tests, and `validate-all`) in one command.
 
-Shell shortcut: `bash ./scripts/integration_contract_gate.sh` (add `--strict-endpoints` to require local Functions host).
+Shell shortcut: `bash ./scripts/integration_contract_gate.sh` runs `automate_core_files.py`, `integration_smoke.py`, integration contract tests, and `validate-all`. Set `PYTHON_BIN=.venv/bin/python` to use the repository virtualenv. Add `--strict-endpoints` to require the AI status endpoint; strict mode honors `INTEGRATION_AI_STATUS_ENDPOINT`, `RETRY_COUNT`, `RETRY_INTERVAL`, and optional `START_FUNC_CMD`.
 
-If step 1 fails, fix integration wiring first. If step 1 passes but step 2 or 3 fails, fix CI parity or contract regressions before merging.
+Health-cycle shortcut: `python scripts/repo_health_automation.py --once --run-agents --strict-endpoints` records the agent pass, pre-commit check, integration gate, and optional strict endpoint result in `data_out/repo_health_automation/status.json`.
+
+If the agent pass warns or errors, inspect `data_out/agents/status.json` and the per-agent files first. If integration smoke fails, fix integration wiring before contract tests. If smoke passes but CI parity or contract tests fail, fix CI parity or contract regressions before merging.
 
 ## Production Deployment
 

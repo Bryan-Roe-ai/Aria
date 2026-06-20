@@ -28,6 +28,12 @@
     "LMSTUDIO_MODEL": "local-model",
 
     "# Optional local fallback for TTS. Set to true to allow server-side local synthesis when Azure Speech is not configured": "",
-    "QAI_ENABLE_LOCAL_TTS": "true"
+    "QAI_ENABLE_LOCAL_TTS": "true",
+
+    "# Default chat provider for Azure Functions endpoints (auto|ollama|lmstudio|local|azure|openai)": "",
+    "DEFAULT_AI_PROVIDER": "auto",
+
+    "# Aria web UI LLM provider (ollama|lmstudio|auto|local) — falls back to DEFAULT_AI_PROVIDER": "",
+    "ARIA_LLM_PROVIDER": ""
   }
 }

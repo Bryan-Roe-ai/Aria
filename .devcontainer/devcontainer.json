@@ -8,9 +8,7 @@
     "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {},
     "ghcr.io/devcontainers-extra/features/actions-runner:1": {},
     "ghcr.io/helpers4/devcontainer/github-dev:1": {},
-    "ghcr.io/sliekens/devcontainer-features/copilot:1": {},
-    "ghcr.io/postfinance/devcontainer-features/git-lfs:1": {},
-    "ghcr.io/postfinance/devcontainer-features/github-copilot-cli:1": {}
+    "ghcr.io/sliekens/devcontainer-features/copilot:1": {}
   },
   "remoteUser": "vscode",
   "forwardPorts": [

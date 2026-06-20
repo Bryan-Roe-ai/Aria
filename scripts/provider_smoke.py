@@ -15,6 +15,10 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
+from shared.local_settings import apply_local_settings
+
+apply_local_settings()
+
 from shared.core.module_registry import AIProjectsRegistry
 
 
