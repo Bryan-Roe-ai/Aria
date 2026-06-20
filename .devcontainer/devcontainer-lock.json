@@ -40,11 +40,6 @@
       "resolved": "ghcr.io/postfinance/devcontainer-features/github-copilot-cli@sha256:2e4981e98719f81fe4386d04f7b38a4119c6b0fa7658f0a4eb546725ed2016e1",
       "integrity": "sha256:2e4981e98719f81fe4386d04f7b38a4119c6b0fa7658f0a4eb546725ed2016e1"
     },
-    "ghcr.io/postfinance/devcontainer-features/python:1": {
-      "version": "1.0.0",
-      "resolved": "ghcr.io/postfinance/devcontainer-features/python@sha256:441f963e0c7bba87a708e8059e2c26da6cca77f641572be6c61faa316e86c7c1",
-      "integrity": "sha256:441f963e0c7bba87a708e8059e2c26da6cca77f641572be6c61faa316e86c7c1"
-    },
     "ghcr.io/sliekens/devcontainer-features/copilot:1": {
       "version": "1.1.1",
       "resolved": "ghcr.io/sliekens/devcontainer-features/copilot@sha256:a7675d965592940402e2d6d5088afb679798f6f479efe587324d3d6cf1d5d577",

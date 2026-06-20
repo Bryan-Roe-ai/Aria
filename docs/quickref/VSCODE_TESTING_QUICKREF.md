@@ -27,13 +27,15 @@
 
 Quick test configurations accessible from Test Explorer dropdown:
 
-- **Unit Tests (Fast)** - Quick unit tests only (40 tests in ~0.5s)
-- **Integration Tests** - External service tests (30 tests in ~3s)
-- **All Fast Tests** - Everything except slow/Azure tests (83 tests in ~10s)
+- **Unit Tests (Fast)** - Unit tests excluding slow, Azure, integration, quantum, and GPU markers
+- **Integration Tests** - Tests marked `integration`
+- **All Fast Tests** - Everything except slow/Azure tests
 - **AutoTrain Tests** - Training orchestrator tests
 - **Quantum Tests** - Quantum-specific test files
-- **All Tests** - Complete test suite (84+ tests)
+- **All Tests** - Complete test suite
 - **All with Coverage** - Full suite + coverage report
+
+The exact count changes as coverage grows. Run `python .\scripts\test_runner.py --list-suites` for the current suite definitions.
 
 ## 🐛 Debugging Tests
 
@@ -94,6 +96,7 @@ python .\scripts\test_runner.py --all          # All fast tests
 python .\scripts\test_runner.py --unit         # Unit tests only
 python .\scripts\test_runner.py --integration  # Integration tests
 python .\scripts\test_runner.py --coverage     # With coverage report
+python .\scripts\run_repo_agents.py --dry-run   # Repository inspection agents
 
 # Direct pytest commands
 python -m pytest tests/ -v

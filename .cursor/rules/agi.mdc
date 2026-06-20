@@ -1,0 +1,59 @@
+---
+description: AGI provider implementation, API routes, and reasoning workflow
+globs: **/*agi*
+alwaysApply: false
+---
+
+# AGI Provider
+
+## Canonical locations
+
+- **Implementation:** `ai-projects/chat-cli/src/agi_provider.py`
+- **Shim:** root `agi_provider.py` (re-exports only — edit the canonical file)
+- **Persistence:** `shared/agi_persistence.py`, `shared/agi_persistence_sqlite.py`
+- **API routes:** `function_app.py` (`/api/agi/analyze`, `/reason`, `/stream`, `/status`, `/persistence`)
+- **Tests:** `tests/test_agi_*.py` — prefer `pytest tests/ -m "not slow and not azure"`
+
+## Core pipeline
+
+`create_agi_provider()` → `AGIProvider.complete()`:
+
+1. `_sanitize_input()` → `_reason()` (`_analyze_query` → `_select_agent` → `_decompose_task` → `_chain_of_thought`)
+2. `_generate_response()` → `_reflect_and_improve()` → `_learn_from_routing()`
+
+Key types: `AGIContext` (memory), `ReasoningStep` (step_type, content, confidence, metadata).
+
+## Limits and security
+
+- `MAX_INPUT_LENGTH=10000`, `MAX_HISTORY_SIZE=50`, `MAX_REASONING_CHAINS=10`, `MAX_GOALS=5`
+- `_sanitize_input()` strips control chars; `_sanitize_for_logging()` for safe logs
+- Catch exceptions; never leak raw error details to clients
+
+## Agent routing
+
+`_AGENT_REGISTRY` maps specialists by domain/intent (quantum, code, aria, ai, general). When adding an agent:
+
+1. Add registry entry with domains, intents, provider, confidence_boost
+2. Add persona block in `_build_agi_system_prompt`
+3. Update tests in `tests/test_agi_provider.py`
+
+## API conventions
+
+- Accept `query` or chat-style `messages`; extract via `_extract_agi_query_from_request()`
+- Validate with `AGI_ANALYZE_SCHEMA`, `AGI_REASON_SCHEMA`, `AGI_STREAM_SCHEMA`
+- Use `_create_agi_provider_for_api()` — surface actionable errors when provider unavailable
+
+## Reasoning behavior (for agents)
+
+Internal pipeline only — do not expose chain-of-thought in user-facing output:
+
+1. **Analyze** — complexity (simple/moderate/complex), intent, domain
+2. **Decompose** — ordered subtasks for complex queries
+3. **Execute** — minimal targeted edits, verify after each step
+4. **Reflect** — completeness, correctness, safety, simplicity
+
+## Safety
+
+- Read-only `datasets/`; outputs to `data_out/<orchestrator>/`
+- `--dry-run` orchestrators before GPU/QPU execution
+- Aria-domain responses may include movement tags: `[aria:walk:left]`, `[aria:wave]`, etc.
