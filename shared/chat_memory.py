@@ -357,20 +357,38 @@ def fetch_similar_messages(
     try:
         conn = _get_conn()
         cur = conn.cursor()
+        scoped_session_id = str(session_id).strip() if session_id is not None else ""
         try:
-            cur.execute(
-                """
-                SELECT
-                    e.message_id,
-                    e.embedding_vector,
-                    e.dim,
-                    COALESCE(cm.content, m.content, '') AS content,
-                    COALESCE(cm.session_id, m.session_id, '') AS session_id
-                FROM embeddings e
-                LEFT JOIN chat_messages cm ON cm.message_id = e.message_id
-                LEFT JOIN messages m ON m.message_id = e.message_id
-                """
-            )
+            if scoped_session_id:
+                cur.execute(
+                    """
+                    SELECT
+                        e.message_id,
+                        e.embedding_vector,
+                        e.dim,
+                        COALESCE(cm.content, m.content, '') AS content,
+                        COALESCE(cm.session_id, m.session_id, '') AS session_id
+                    FROM embeddings e
+                    LEFT JOIN chat_messages cm ON cm.message_id = e.message_id
+                    LEFT JOIN messages m ON m.message_id = e.message_id
+                    WHERE COALESCE(cm.session_id, m.session_id, '') = ?
+                    """,
+                    (scoped_session_id,),
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT
+                        e.message_id,
+                        e.embedding_vector,
+                        e.dim,
+                        COALESCE(cm.content, m.content, '') AS content,
+                        COALESCE(cm.session_id, m.session_id, '') AS session_id
+                    FROM embeddings e
+                    LEFT JOIN chat_messages cm ON cm.message_id = e.message_id
+                    LEFT JOIN messages m ON m.message_id = e.message_id
+                    """
+                )
             rows = cur.fetchall()
             has_joined_metadata = True
         except Exception:
@@ -391,8 +409,6 @@ def fetch_similar_messages(
             sim = _cosine(query_embedding, vec)
             if sim < effective_min_similarity:
                 continue
-            # Empty/whitespace session_id values intentionally mean "no scoping".
-            scoped_session_id = str(session_id).strip() if session_id is not None else ""
             if scoped_session_id:
                 # Fail closed for isolation: when caller scopes by session, ignore
                 # rows that lack session metadata or do not match exactly.
