@@ -152,7 +152,8 @@ class Orchestrator:
         executions = executor.execute(plans)
         applied_paths = [e.plan.path for e in executions if e.applied]
 
-        validation = validator.validate(applied_paths if applied_paths else None)
+        validation = validator.validate(
+            applied_paths if applied_paths else None)
         if not validation.ok:
             notes.append("validation failed; skipping commit")
 
@@ -161,7 +162,8 @@ class Orchestrator:
             message = self._commit_message(executions)
             commit_sha = commits.commit(applied_paths, message)
             if commit_sha is None:
-                notes.append("commit step produced no SHA (nothing staged or git unavailable)")
+                notes.append(
+                    "commit step produced no SHA (nothing staged or git unavailable)")
         elif not self.config.apply:
             notes.append("dry-run: no files were modified")
         elif not applied_paths:
@@ -201,7 +203,8 @@ class Orchestrator:
             if not kept_kinds:
                 continue
 
-            kept_findings = tuple(f for f in plan.findings if f.kind in kept_kinds)
+            kept_findings = tuple(
+                f for f in plan.findings if f.kind in kept_kinds)
             filtered.append(
                 UpgradePlan(
                     path=plan.path,
@@ -233,7 +236,8 @@ class Orchestrator:
                 encoding="utf-8",
             )
         except OSError as exc:  # pragma: no cover - filesystem dependent
-            _logger.warning("unable to write status file %s: %s", status_path, exc)
+            _logger.warning(
+                "unable to write status file %s: %s", status_path, exc)
 
 
 def run_cycle(
