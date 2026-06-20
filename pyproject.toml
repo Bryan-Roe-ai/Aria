@@ -67,6 +67,10 @@ warn_unused_ignores = true
 warn_return_any = false
 exclude = ["data_out/", "mount/", "venv/"]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shared*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --tb=short"

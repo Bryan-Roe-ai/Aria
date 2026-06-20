@@ -1,0 +1,11 @@
+﻿ M .vscode/settings.json
+ M __pycache__/chat_providers.cpython-314.pyc
+ M ai-projects/chat-cli/src/__pycache__/chat_cli.cpython-314.pyc
+ M ai-projects/chat-cli/src/__pycache__/chat_providers.cpython-314.pyc
+ M ai-projects/cooking-ai/src/agents/__pycache__/recipe_agent.cpython-314.pyc
+ M ai-projects/llm-maker/src/__pycache__/tool_executor.cpython-314.pyc
+ M ai-projects/llm-maker/src/__pycache__/tool_registry.cpython-314.pyc
+ M ai-projects/llm-maker/src/__pycache__/tool_validator.cpython-314.pyc
+ M pyproject.toml
+?? .git_status_short.tmp
+?? uv.lock
