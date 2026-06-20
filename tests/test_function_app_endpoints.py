@@ -520,24 +520,8 @@ class TestPostValidation:
         data = json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
-    def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module, monkeypatch):
+    def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module):
         """POST /api/chat/stream should emit safe fallback SSE when prompt is blocked."""
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"sse_body": b""}
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
-
         req = _mock_request(
             "POST",
             body={
@@ -551,17 +535,13 @@ class TestPostValidation:
         )
         resp = app_module.chat_stream(req)
         assert resp.status_code == 200
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         assert "data: [DONE]" in body_text
         assert "safely" in body_text.lower()
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"embedding": None, "session_id": None, "sse_body": b""}
+        captured: dict = {"embedding": None, "session_id": None}
 
         def _fake_embedding(text: str):
             captured["embedding"] = text
@@ -571,17 +551,6 @@ class TestPostValidation:
             captured["session_id"] = session_id
             return [{"content": "Previous answer about widgets", "similarity": 0.88}]
 
-        # Patch func.HttpResponse inside function_app so streaming body (generator) is consumed
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
         monkeypatch.setattr(app_module, "fetch_similar_messages", _fake_similar)
 
@@ -596,7 +565,7 @@ class TestPostValidation:
         assert resp.status_code == 200
 
         # Parse SSE body for the meta event
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         meta_data: dict | None = None
         for line in body_text.splitlines():
             if line.startswith("data:"):
@@ -615,12 +584,6 @@ class TestPostValidation:
 
     def test_chat_stream_emits_done_sentinel(self, app_module, monkeypatch):
         """POST /api/chat/stream should terminate SSE with data: [DONE]."""
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"sse_body": b""}
-
         class _FakeProvider:
             def complete(self, messages, stream=False):
                 assert stream is True
@@ -642,17 +605,6 @@ class TestPostValidation:
             lambda query_emb, top_k=5, session_id=None: [],
         )
 
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
-
         req = _mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "say hi"}]},
@@ -660,7 +612,7 @@ class TestPostValidation:
         resp = app_module.chat_stream(req)
 
         assert resp.status_code == 200
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
         assert "data: [DONE]" in body_text
 
