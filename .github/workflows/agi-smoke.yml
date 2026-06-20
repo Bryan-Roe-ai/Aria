@@ -22,6 +22,7 @@ env:
     tests/test_agi_prune.py
     tests/test_lmstudio_agi_integration.py
     tests/test_lmstudio_mcp_agi_tools.py
+    tests/test_agi_stream_utils_js.py
     tests/test_function_app_endpoints.py::TestChatWebAssets
     tests/test_function_app_endpoints.py::TestAgiEndpoints
 

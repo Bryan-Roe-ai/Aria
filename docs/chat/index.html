@@ -1004,6 +1004,25 @@
             background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
         }
 
+        .agi-mode-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .agi-mode-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .agi-mode-btn.active {
+            background: rgba(56, 189, 248, 0.45);
+        }
+
         .quantum-indicator {
             color: #0f9d89;
             font-weight: bold;
@@ -3023,6 +3042,8 @@
                     <button id="browserLlmReloadBtn" class="browser-llm-reload" type="button"
                         title="Reload browser model">↻</button>
                 </div>
+                <button id="agiModeButton" class="agi-mode-btn" type="button"
+                    title="Route prompts through the AGI reasoning pipeline">🧠 AGI OFF</button>
             </div>
         </div>
 
@@ -3053,7 +3074,7 @@
     <script>
         // Allow chat.js to wire up vision and avatar features
         // The embedded controller will handle streaming chat separately
-        window.ARIA_EMBEDDED = false;
+        window.ARIA_EMBEDDED = true;
 
         // Pupil cursor tracking - both eyes
         document.addEventListener('DOMContentLoaded', function () {
@@ -3136,7 +3157,8 @@
             });
         });
     </script>
-    <script src="/api/chat-web/chat.js"></script>
+    <script src="static/agi_stream_utils.js"></script>
+    <script src="chat.js"></script>
     <script>
         // Anime Character Controller with AI Chat
         (function () {
@@ -3161,6 +3183,28 @@
             var browserLlmToggle = document.getElementById('browserLlmToggle');
             var browserLlmModelSelect = document.getElementById('browserLlmModelSelect');
             var browserLlmReloadBtn = document.getElementById('browserLlmReloadBtn');
+            var agiModeButton = document.getElementById('agiModeButton');
+            var agiMode = localStorage.getItem('chatAgiMode') === '1';
+
+            if (agiModeButton) {
+                if (agiMode) {
+                    agiModeButton.textContent = '🧠 AGI ON';
+                    agiModeButton.classList.add('active');
+                }
+                agiModeButton.addEventListener('click', function () {
+                    agiMode = !agiMode;
+                    if (agiMode) {
+                        agiModeButton.textContent = '🧠 AGI ON';
+                        agiModeButton.classList.add('active');
+                        updateProviderLabel('AGI');
+                    } else {
+                        agiModeButton.textContent = '🧠 AGI OFF';
+                        agiModeButton.classList.remove('active');
+                        updateProviderLabel(DEMO_MODE ? 'Demo Mode (Local)' : 'Connected');
+                    }
+                    try { localStorage.setItem('chatAgiMode', agiMode ? '1' : '0'); } catch (e) { }
+                });
+            }
 
             // ==== Avatar & Vision Handlers ====
             // Removed duplicate handlers - chat.js module now handles all vision upload and avatar generation
@@ -4226,6 +4270,106 @@
             };
         }
 
+        function extractAgiOutputText(delta) {
+            if (!delta || typeof delta !== 'object') return '';
+            if (delta.type === 'output') return String(delta.data || '');
+            return '';
+        }
+
+        function renderAgiDeltaHtml(delta) {
+            if (typeof AGIStreamUtils !== 'undefined' && AGIStreamUtils.prettyPrintDelta) {
+                return AGIStreamUtils.prettyPrintDelta(delta);
+            }
+            return '<pre>' + JSON.stringify(delta) + '</pre>';
+        }
+
+        function streamAgi(messages, handlers) {
+            handlers = handlers || {};
+            var controller = new AbortController();
+            var signal = controller.signal;
+
+            (async function () {
+                try {
+                    var resp = await fetch('/api/agi/stream', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messages: messages }),
+                        signal: signal
+                    });
+
+                    if (!resp.ok) {
+                        var txt = '';
+                        try { txt = await resp.text(); } catch (e) { }
+                        handlers.onError && handlers.onError({ error: 'AGI stream fetch failed', detail: txt });
+                        return;
+                    }
+
+                    var reader = resp.body.getReader();
+                    var decoder = new TextDecoder('utf-8');
+                    var buf = '';
+                    var doneEmitted = false;
+
+                    function processBlock(block) {
+                        if (!block) return;
+                        var lines = block.split('\n');
+                        var event = null;
+                        var dataLines = [];
+                        for (var i = 0; i < lines.length; i++) {
+                            var line = lines[i];
+                            if (line.startsWith('event:')) { event = line.slice(6).trim(); }
+                            else if (line.startsWith('data:')) { dataLines.push(line.slice(5).trim()); }
+                        }
+                        var dataStr = dataLines.join('\n');
+                        if (!dataStr || dataStr === '[DONE]') {
+                            if (dataStr === '[DONE]') {
+                                doneEmitted = true;
+                                handlers.onDone && handlers.onDone();
+                            }
+                            return;
+                        }
+                        if (event === 'meta') {
+                            try { var meta = JSON.parse(dataStr); handlers.onMeta && handlers.onMeta(meta); } catch (e) { }
+                        } else if (event === 'error') {
+                            try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
+                        } else {
+                            try {
+                                var obj = JSON.parse(dataStr);
+                                if (obj && obj.delta !== undefined) {
+                                    handlers.onData && handlers.onData(obj);
+                                }
+                            } catch (e) { }
+                        }
+                    }
+
+                    while (true) {
+                        var r = await reader.read();
+                        if (r.done) break;
+                        buf += decoder.decode(r.value, { stream: true });
+                        var idx = buf.indexOf('\n\n');
+                        while (idx !== -1) {
+                            var block = buf.slice(0, idx);
+                            buf = buf.slice(idx + 2);
+                            processBlock(block.trim());
+                            idx = buf.indexOf('\n\n');
+                        }
+                    }
+
+                    if (buf && buf.trim().length) processBlock(buf.trim());
+                    if (!doneEmitted) handlers.onDone && handlers.onDone();
+                } catch (e) {
+                    if (e && e.name === 'AbortError') {
+                        handlers.onError && handlers.onError({ error: 'aborted' });
+                    } else {
+                        handlers.onError && handlers.onError({ error: (e && e.message) || String(e) });
+                    }
+                }
+            })();
+
+            return {
+                cancel: function () { try { controller.abort(); } catch (e) { } }
+            };
+        }
+
         async function sendMessage() {
             var message = messageInput.value.trim();
             if (!message) return;
@@ -4254,6 +4398,97 @@
                 } catch (localErr) {
                     addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
                     updateProviderLabel('Browser LLM error');
+                }
+                return;
+            }
+
+            if (agiMode) {
+                if (DEMO_MODE) {
+                    try {
+                        updateProviderLabel('AGI Demo');
+                        await new Promise(function (resolve) { setTimeout(resolve, 400); });
+                        var demoReply = DEMO_RESPONSES[demoResponseIndex % DEMO_RESPONSES.length];
+                        demoResponseIndex++;
+                        var demoSteps = [
+                            { type: 'analysis', data: 'intent=general | complexity=simple | demo=true' },
+                            { type: 'step', data: { agent: 'general', action: 'simulate_reasoning' } },
+                            {
+                                type: 'output',
+                                data: demoReply + ' Run the Functions backend locally to use live /api/agi/stream reasoning.'
+                            }
+                        ];
+                        var agiReasoningHtml = '';
+                        var agiReply = '';
+                        demoSteps.forEach(function (delta) {
+                            var chunk = extractAgiOutputText(delta);
+                            if (chunk) {
+                                agiReply += chunk;
+                            } else if (delta.type && delta.type !== 'output') {
+                                agiReasoningHtml += renderAgiDeltaHtml(delta);
+                            }
+                        });
+                        var agiAssistantEl = addMessage('assistant', '', false);
+                        agiAssistantEl.querySelector('.message-content').innerHTML =
+                            agiReasoningHtml + '<div class="agi-final-output">' + agiReply + '</div>';
+                        conversationHistory.push({ role: 'assistant', content: agiReply });
+                        if (ariaSettings.autoSpeak && agiReply) {
+                            try { speakWithLipSync(agiReply).catch(function () { }); } catch (e) { }
+                        }
+                        parseAriaCommands(agiReply);
+                    } catch (agiDemoErr) {
+                        addMessage('system', 'AGI demo error: ' + (agiDemoErr && agiDemoErr.message ? agiDemoErr.message : String(agiDemoErr)));
+                    }
+                    return;
+                }
+
+                try {
+                    providerInfo.textContent = 'AGI reasoning...';
+                    var agiAssistantEl = addMessage('assistant', '', false);
+                    var agiContentDiv = agiAssistantEl.querySelector('.message-content');
+                    var agiReply = '';
+                    var agiReasoningHtml = '';
+                    streamAgi(conversationHistory, {
+                        onMeta: function (meta) {
+                            try {
+                                updateProviderLabel('AGI' + (meta.base_provider ? ' (' + meta.base_provider + ')' : ''));
+                            } catch (e) { }
+                        },
+                        onData: function (obj) {
+                            try {
+                                var delta = obj.delta || {};
+                                var chunk = extractAgiOutputText(delta);
+                                if (chunk) {
+                                    agiReply += chunk;
+                                } else if (delta.type && delta.type !== 'output') {
+                                    agiReasoningHtml += renderAgiDeltaHtml(delta);
+                                }
+                                agiContentDiv.innerHTML = agiReasoningHtml + '<div class="agi-final-output">' + agiReply + '</div>';
+                                chatMessages.scrollTop = chatMessages.scrollHeight;
+                            } catch (e) { }
+                        },
+                        onDone: function () {
+                            try {
+                                conversationHistory.push({ role: 'assistant', content: agiReply });
+                                if (ariaSettings.autoSpeak && agiReply) {
+                                    try { speakWithLipSync(agiReply).catch(function () { }); } catch (e) { }
+                                } else {
+                                    stopMouthTalking(350);
+                                }
+                                parseAriaCommands(agiReply);
+                                updateProviderLabel('AGI');
+                            } catch (e) { }
+                        },
+                        onError: function (err) {
+                            addMessage('system', 'AGI error: ' + (err && (err.error || err.message) || 'stream error'));
+                            stopMouthTalking();
+                            cancelSpeak();
+                        }
+                    });
+                } catch (agiErr) {
+                    addMessage('system', 'AGI error: ' + (agiErr && agiErr.message ? agiErr.message : String(agiErr)));
+                    providerInfo.textContent = 'Error';
+                    stopMouthTalking();
+                    cancelSpeak();
                 }
                 return;
             }
