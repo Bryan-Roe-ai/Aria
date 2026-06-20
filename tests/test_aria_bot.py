@@ -70,6 +70,17 @@ def test_risk_manager_blocks_symlinks(tmp_path: Path) -> None:
     assert any("symlink" in r for r in assessment.reasons)
 
 
+def test_risk_manager_blocks_non_writable_files(tmp_path: Path) -> None:
+    p = tmp_path / "readonly.py"
+    p.write_text("x = 1\n")
+    p.chmod(0o444)
+
+    rm = RiskManager(repo_root=tmp_path)
+    assessment = rm.assess_file(p)
+    assert not assessment.allowed
+    assert any("not writable" in r for r in assessment.reasons)
+
+
 def test_risk_manager_caps_file_size(tmp_path: Path) -> None:
     big = tmp_path / "big.py"
     big.write_bytes(b"a = 1\n" * 2)  # 12 bytes, well over the 1-byte cap

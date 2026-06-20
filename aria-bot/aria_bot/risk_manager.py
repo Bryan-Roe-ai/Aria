@@ -121,6 +121,11 @@ class RiskManager:
         if not path.is_file():
             return RiskAssessment.deny(f"not a regular file: {self._safe_display(path)}")
 
+        if not os.access(path, os.W_OK):
+            return RiskAssessment.deny(
+                f"file is not writable: {self._safe_display(path)}"
+            )
+
         try:
             size = path.stat().st_size
         except OSError as exc:  # pragma: no cover - filesystem race
