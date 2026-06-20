@@ -29,21 +29,6 @@
       "version": "1.0.3",
       "resolved": "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence@sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f",
       "integrity": "sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f"
-    },
-    "ghcr.io/postfinance/devcontainer-features/git-lfs:1": {
-      "version": "1.0.1",
-      "resolved": "ghcr.io/postfinance/devcontainer-features/git-lfs@sha256:1f8953214559db9942b9af492c39f94d068e53f2a8c816ec99401142a507ce7e",
-      "integrity": "sha256:1f8953214559db9942b9af492c39f94d068e53f2a8c816ec99401142a507ce7e"
-    },
-    "ghcr.io/postfinance/devcontainer-features/github-copilot-cli:1": {
-      "version": "1.0.0",
-      "resolved": "ghcr.io/postfinance/devcontainer-features/github-copilot-cli@sha256:2e4981e98719f81fe4386d04f7b38a4119c6b0fa7658f0a4eb546725ed2016e1",
-      "integrity": "sha256:2e4981e98719f81fe4386d04f7b38a4119c6b0fa7658f0a4eb546725ed2016e1"
-    },
-    "ghcr.io/sliekens/devcontainer-features/copilot:1": {
-      "version": "1.1.1",
-      "resolved": "ghcr.io/sliekens/devcontainer-features/copilot@sha256:a7675d965592940402e2d6d5088afb679798f6f479efe587324d3d6cf1d5d577",
-      "integrity": "sha256:a7675d965592940402e2d6d5088afb679798f6f479efe587324d3d6cf1d5d577"
     }
   }
 }
