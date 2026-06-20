@@ -32,4 +32,5 @@
 *.npy binary
 *.pt binary
 *.safetensors binary
+/core.55949 filter=lfs diff=lfs merge=lfs -text
 *.psd filter=lfs diff=lfs merge=lfs -text

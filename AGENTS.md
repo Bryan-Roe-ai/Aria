@@ -112,3 +112,11 @@ actions. Tag forms recognised include:
 - Gitignore pattern `local_settings.py` also ignores `shared/local_settings.py`; use `git add -f` when committing that module.
 - Docs navigation: `docs/AI_REPO_INDEX.md` (code map) and `docs/QAI_DOCS_INDEX.md` (docs index).
 - Ollama on Windows can be installed non-interactively via `winget install Ollama.Ollama`.
+
+## Cursor Cloud specific instructions
+
+The startup update script installs Python deps into `.venv` (Python 3.12). Use `.venv/bin/python` (or `make`, which auto-detects `.venv`). Everything runs fully offline with the `local` echo provider — no API keys required for setup or testing.
+
+- **Aria web UI** (flagship, port 8080): `.venv/bin/python apps/aria/server.py --port 8080` (or `make start`). The root page `/` is a static stage demo with **no command box**; the natural-language command UI is at **`/auto-execute.html`** (text input + "Execute Actions" → `POST /api/aria/execute`). Backend command/execute endpoints work via curl regardless (see AGENTS.md API table). `ARIA_RENDER_MODE` defaults to `ue5` but the browser falls back to Three.js, so the stage still renders without UE5.
+- **Azure Functions API** (port 7071): `func host start --port 7071` (or `make start-functions`). The `func` CLI (v4) is preinstalled in the VM snapshot at `~/.npm-global/bin` but is **not on the default PATH** — prepend it: `export PATH="$HOME/.npm-global/bin:$PATH"`. If `func` is ever missing, reinstall with `npm install -g azure-functions-core-tools@4 --unsafe-perm true`, then run `npm config delete prefix` to avoid an nvm/npmrc conflict. On startup the host logs `AzureWebJobsStorage ... Unhealthy` because Azurite isn't running; this is **expected and non-fatal** — HTTP-triggered endpoints (`/api/ai/status`, `/api/chat`, `/api/tts`, etc.) still respond. A lightweight fallback `make start-local-status` serves only `/api/ai/status`.
+- **Tests/lint:** `.venv/bin/python scripts/test_runner.py --unit` is the fast suite. ~6 unit tests fail in this environment for reasons unrelated to dependencies (hardcoded `/workspaces/Aria/...` devcontainer paths, e.g. `test_validate_mcp_setup`, and tests assuming external services); the other ~2690 pass. `make lint` (ruff + black) currently reports many pre-existing findings across the repo — treat lint failures as code-quality state, not an environment problem.
