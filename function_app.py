@@ -341,6 +341,46 @@ def serve_agi_stream_utils(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
 
 
+@app.route(route="chat-web/global-upgrade.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_js(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade script for chat-web."""
+    try:
+        js_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.js"
+        if not js_path.exists():
+            return func.HttpResponse("// Error: global-upgrade.js not found", status_code=404, mimetype="application/javascript")
+        with open(js_path, "r", encoding="utf-8") as f:
+            js_content = f.read()
+        return func.HttpResponse(
+            js_content,
+            status_code=200,
+            mimetype="application/javascript",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.css", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_css(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade stylesheet for chat-web."""
+    try:
+        css_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.css"
+        if not css_path.exists():
+            return func.HttpResponse("/* Error: global-upgrade.css not found */", status_code=404, mimetype="text/css")
+        with open(css_path, "r", encoding="utf-8") as f:
+            css_content = f.read()
+        return func.HttpResponse(
+            css_content,
+            status_code=200,
+            mimetype="text/css",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.css: {str(e)}")
+        return func.HttpResponse(f"/* Error: {str(e)} */", status_code=500, mimetype="text/css")
+
+
 # =============================================================================
 # Chat API - Backend for AI interactions
 # =============================================================================

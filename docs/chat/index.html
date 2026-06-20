@@ -3973,6 +3973,7 @@
                         }
                     });
                 }
+            }
 
         // Initialize control panel UI, populate voice list, and wire settings
         function initAriaControls() {
@@ -5601,7 +5602,7 @@
             });
             observer.observe(chatMessages, { childList: true, subtree: true });
         }
-    }) ();
+    })();
 
         // QAI Backend status check logic
         document.addEventListener('DOMContentLoaded', function () {

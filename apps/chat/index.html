@@ -2750,7 +2750,7 @@
             display: none;
         }
     </style>
-    <link rel="stylesheet" href="../global-upgrade.css">
+    <link rel="stylesheet" href="/api/chat-web/global-upgrade.css">
 </head>
 
 <body>
@@ -3967,6 +3967,7 @@
                         }
                     });
                 }
+            }
 
         // Initialize control panel UI, populate voice list, and wire settings
         function initAriaControls() {
@@ -5539,7 +5540,7 @@
             });
             observer.observe(chatMessages, { childList: true, subtree: true });
         }
-    }) ();
+    })();
 
         // QAI Backend status check logic
         document.addEventListener('DOMContentLoaded', function () {
@@ -5839,7 +5840,7 @@
             sync();
         })();
     </script>
-    <script src="../global-upgrade.js"></script>
+    <script src="/api/chat-web/global-upgrade.js"></script>
 </body>
 
 </html>
