@@ -1,14 +1,15 @@
 {
   "name": "Aria AI Dev Container",
-  "image": "mcr.microsoft.com/devcontainers/python:1-3.11-bookworm",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/copilot-cli:1": {},
     "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {},
     "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {},
     "ghcr.io/devcontainers-extra/features/actions-runner:1": {},
-    "ghcr.io/helpers4/devcontainer/github-dev:1": {},
-    "ghcr.io/sliekens/devcontainer-features/copilot:1": {}
+    "ghcr.io/helpers4/devcontainer/github-dev:1": {}
   },
   "remoteUser": "vscode",
   "forwardPorts": [
