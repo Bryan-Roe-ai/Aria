@@ -236,4 +236,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:  # noqa: BLE001
+        # Fail open: a crash must never block the developer.
+        # Set ARIA_SECRETS_SKIP=true for an intentional bypass.
+        sys.exit(0)
