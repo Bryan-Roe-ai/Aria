@@ -9,6 +9,8 @@ Currently supported finding kinds:
 
 * ``trailing_whitespace`` — lines that end with spaces or tabs.
 * ``missing_final_newline`` — files that don't end with a newline.
+* ``normalize_line_endings`` — files containing CRLF/CR line endings.
+* ``excess_final_newlines`` — files ending with more than one newline.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -30,6 +32,8 @@ _logger = logging.getLogger(__name__)
 SUPPORTED_KINDS: tuple[str, ...] = (
     "trailing_whitespace",
     "missing_final_newline",
+    "normalize_line_endings",
+    "excess_final_newlines",
 )
 
 
@@ -105,6 +109,18 @@ class Analyzer:
                 )
             )
 
+        # non-LF line endings
+        crlf_count = text.count("\r\n")
+        lone_cr_count = text.count("\r") - crlf_count
+        if crlf_count or lone_cr_count:
+            results.append(
+                Finding(
+                    kind="normalize_line_endings",
+                    path=path,
+                    detail=f"CRLF={crlf_count}, CR={lone_cr_count}",
+                )
+            )
+
         # missing final newline (only meaningful if the file has any content)
         if text and not text.endswith("\n"):
             results.append(
@@ -112,6 +128,17 @@ class Analyzer:
                     kind="missing_final_newline",
                     path=path,
                     detail="file does not end with a newline",
+                )
+            )
+
+        # more than one trailing newline at EOF
+        trailing_newlines = len(text) - len(text.rstrip("\n"))
+        if trailing_newlines > 1:
+            results.append(
+                Finding(
+                    kind="excess_final_newlines",
+                    path=path,
+                    detail=f"{trailing_newlines} trailing newlines",
                 )
             )
 

@@ -37,6 +37,8 @@ def fake_repo(tmp_path: Path) -> Path:
     )
     # no trailing newline
     (tmp_path / "src" / "needs_newline.md").write_bytes(b"# heading")
+    (tmp_path / "src" / "crlf_file.txt").write_bytes(b"a\r\nb\r\n")
+    (tmp_path / "src" / "extra_eof.md").write_bytes(b"line\n\n\n")
     (tmp_path / "src" / "clean.py").write_bytes(b"def ok():\n    return 1\n")
 
     # Protected: must never be touched.
@@ -104,6 +106,8 @@ def test_analyzer_detects_findings(fake_repo: Path) -> None:
 
     assert ("needs_fix.py", "trailing_whitespace") in kinds_by_path
     assert ("needs_newline.md", "missing_final_newline") in kinds_by_path
+    assert ("crlf_file.txt", "normalize_line_endings") in kinds_by_path
+    assert ("extra_eof.md", "excess_final_newlines") in kinds_by_path
     # Protected file must not appear at all.
     assert not any(f.path.name == "dirty.py" for f in findings)
     # Clean file should produce nothing.
@@ -146,6 +150,8 @@ def test_executor_applies_and_is_idempotent(fake_repo: Path) -> None:
     fixed = (fake_repo / "src" / "needs_fix.py").read_bytes()
     assert b"   \n" not in fixed
     assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
+    assert b"\r" not in (fake_repo / "src" / "crlf_file.txt").read_bytes()
+    assert (fake_repo / "src" / "extra_eof.md").read_bytes() == b"line\n"
     # Protected file untouched.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 

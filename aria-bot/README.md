@@ -61,7 +61,8 @@ disabled from configuration:
    `.venv/`, `venv/`, `local.settings.json`, `data_out/`, `secrets/`, `AI/`)
    are never modified.
 - **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup
-  and missing-final-newline fixes — both pure-text and idempotent.
+   and missing-final-newline fixes, line-ending normalization (CRLF/CR→LF),
+   and trimming excess final newlines — all pure-text and idempotent.
 - **No deletions, no renames, no symlink follows.**
 - **Per-cycle caps** on plans, file size, and per-plan delta bytes.
 

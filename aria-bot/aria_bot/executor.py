@@ -32,9 +32,23 @@ def _ensure_final_newline(text: str) -> str:
     return text if text.endswith("\n") else text + "\n"
 
 
+def _normalize_line_endings(text: str) -> str:
+    # Normalize CRLF and CR-only files to LF.
+    return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _trim_excess_final_newlines(text: str) -> str:
+    if not text:
+        return text
+    stripped = text.rstrip("\n")
+    return stripped + "\n"
+
+
 _TRANSFORMS: Dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
+    "normalize_line_endings": _normalize_line_endings,
+    "excess_final_newlines": _trim_excess_final_newlines,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with
