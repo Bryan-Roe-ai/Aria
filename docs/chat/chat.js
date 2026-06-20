@@ -7,7 +7,6 @@ const API_BASE = `/api/chat`;
 const STREAM_API = `/api/chat/stream`;
 const AGI_STREAM_API = `/api/agi/stream`;
 const AGI_REASON_API = `/api/agi/reason`;
-const AGI_STATUS_API = `/api/agi/status`;
 const STATUS_API = `/api/ai/status`;
 const QUANTUM_CLASSIFY_API = '/api/quantum/classify';
 const QUANTUM_CIRCUIT_API = '/api/quantum/circuit';
