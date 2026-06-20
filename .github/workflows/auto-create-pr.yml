@@ -53,36 +53,36 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const ref = context.ref;
-
+            
             // Validate branch reference
             if (!ref || !ref.startsWith('refs/heads/')) {
               core.info('Not a branch ref; skipping.');
               return;
             }
-
+            
             const head = ref.replace('refs/heads/', '');
             const base = 'main';
-
+            
             // Prevent self-merging
             if (head === base) {
               core.info('Branch equals base; skipping.');
               return;
             }
-
+            
             // Validate branch name format
             const validPrefixes = ['agi/', 'auto-pr/', 'feature/', 'pr/'];
             if (!validPrefixes.some(prefix => head.startsWith(prefix))) {
               core.info(`Branch '${head}' does not match auto-PR prefixes; skipping.`);
               return;
             }
-
+            
             core.info(`Checking existing PRs for branch: ${head}`);
             try {
-              const { data: existing } = await github.rest.pulls.list({
-                owner,
-                repo,
-                head: `${owner}:${head}`,
-                state: 'open'
+              const { data: existing } = await github.rest.pulls.list({ 
+                owner, 
+                repo, 
+                head: `${owner}:${head}`, 
+                state: 'open' 
               });
               if (existing && existing.length > 0) {
                 core.info('PR already exists for this branch; skipping creation.');
@@ -92,21 +92,21 @@ jobs:
               core.warning(`Failed to list existing PRs: ${listErr.message}`);
               throw listErr;
             }
-
+            
             const title = `[Auto PR] ${head}`;
             const body = `Automated pull request for branch **${head}** → **${base}**.\n\nSummary: AGI persistence audit + CI updates.\n\nThis PR was created by the repository automation workflow (.github/workflows/auto-create-pr.yml).`;
 
             // Create the PR as a draft
             let pr;
             try {
-              pr = await github.rest.pulls.create({
-                owner,
-                repo,
-                head,
-                base,
-                title,
-                body,
-                draft: true
+              pr = await github.rest.pulls.create({ 
+                owner, 
+                repo, 
+                head, 
+                base, 
+                title, 
+                body, 
+                draft: true 
               });
               core.info(`Created PR: ${pr.data.html_url}`);
             } catch (createErr) {
@@ -116,11 +116,11 @@ jobs:
 
             // Add labels and assignee if possible (best-effort)
             try {
-              await github.rest.issues.addLabels({
-                owner,
-                repo,
-                issue_number: pr.data.number,
-                labels: ['ci', 'automation']
+              await github.rest.issues.addLabels({ 
+                owner, 
+                repo, 
+                issue_number: pr.data.number, 
+                labels: ['ci', 'automation'] 
               });
               core.info('Added labels: ci, automation');
             } catch (labErr) {
@@ -129,11 +129,11 @@ jobs:
 
             try {
               // Assign to repository owner if permitted
-              await github.rest.issues.addAssignees({
-                owner,
-                repo,
-                issue_number: pr.data.number,
-                assignees: [owner]
+              await github.rest.issues.addAssignees({ 
+                owner, 
+                repo, 
+                issue_number: pr.data.number, 
+                assignees: [owner] 
               });
               core.info(`Assigned PR to: ${owner}`);
             } catch (assignErr) {

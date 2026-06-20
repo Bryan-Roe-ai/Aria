@@ -43,7 +43,7 @@ Unsure which version you’re using? Review the [release notes](https://github.c
 To report a potential security issue **privately and securely**:
 
 1. **[Open a private report (recommended)](https://github.com/Bryan-Roe/Aria/security/advisories/new)**
-2. **Contact via email:**
+2. **Contact via email:**  
    Message the maintainer using their public address from the [project maintainer’s GitHub profile](https://github.com/Bryan-Roe). Whenever possible, encrypt sensitive details.
 
 Reports should be written in English when possible.

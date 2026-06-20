@@ -72,11 +72,7 @@ def print_error(text: str):
     print(f"{RED}✗ {text}{RESET}")
 
 
-def run_command(
-    cmd: List[str],
-    cwd: Path = REPO_ROOT,
-    timeout_seconds: int = 120,
-) -> Tuple[int, str, str]:
+def run_command(cmd: List[str], cwd: Path = REPO_ROOT, timeout_seconds: int = 120) -> Tuple[int, str, str]:
     """Run a command and return (exit_code, stdout, stderr)."""
     try:
         result = subprocess.run(
@@ -85,12 +81,11 @@ def run_command(
             capture_output=True,
             text=True,
             timeout=timeout_seconds,
-            check=False,
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return 1, "", f"Command timed out after {timeout_seconds}s"
-    except (OSError, ValueError) as e:
+    except Exception as e:
         return 1, "", str(e)
 
 
@@ -99,9 +94,7 @@ def check_unit_tests() -> bool:
     print_header("[1/5] Running unit tests...")
 
     default_timeout = 600
-    raw_timeout = os.environ.get(
-        "PRE_COMMIT_TEST_TIMEOUT", str(default_timeout)
-    )
+    raw_timeout = os.environ.get("PRE_COMMIT_TEST_TIMEOUT", str(default_timeout))
     try:
         test_timeout = max(60, int(raw_timeout))
     except ValueError:
@@ -111,38 +104,8 @@ def check_unit_tests() -> bool:
     if not pytest_exe.exists():
         pytest_exe = Path(sys.executable)
 
-    pytest_cmd = [
-        str(pytest_exe),
-        "-m",
-        "pytest",
-        "tests/unit",
-        "-v",
-        "--tb=short",
-    ]
-
-    optional_suite_ignores = [
-        "--ignore-glob=tests/test_quantum*",
-        "--ignore-glob=tests/unit/test_quantum*",
-        "--ignore-glob=tests/*playwright*",
-        "--ignore-glob=tests/*pyppeteer*",
-        "--ignore-glob=tests/*selenium*",
-        "--ignore-glob=tests/unit/test_circuit_cache.py",
-    ]
-    pytest_cmd.extend(optional_suite_ignores)
-
-    torch_code, _, _ = run_command(
-        [str(pytest_exe), "-c", "import torch"],
-        timeout_seconds=10,
-    )
-    if torch_code != 0:
-        print_warning(
-            "PyTorch not available; skipping torch-dependent LoRA "
-            "resolution tests in pre-commit check"
-        )
-        pytest_cmd.append("--ignore=tests/test_train_lora_model_resolution.py")
-
     code, stdout, stderr = run_command(
-        pytest_cmd,
+        [str(pytest_exe), "-m", "pytest", "tests/", "-v", "--tb=short"],
         timeout_seconds=test_timeout,
     )
 
@@ -156,8 +119,7 @@ def check_unit_tests() -> bool:
         return True
     else:
         print_error("Tests failed")
-        # Show last 500 chars for quick context.
-        print(stdout[-500:] if len(stdout) > 500 else stdout)
+        print(stdout[-500:] if len(stdout) > 500 else stdout)  # Show last 500 chars
         if stderr:
             print(stderr[-300:] if len(stderr) > 300 else stderr)
         return False
@@ -177,7 +139,7 @@ def check_linting() -> bool:
     # to avoid blocking commits on large-scale formatting debt in unrelated
     # staged files.
     critical_rules = ["E9", "F63", "F7", "F82", "B904"]
-    code, stdout, _ = run_command(
+    code, stdout, stderr = run_command(
         [
             sys.executable,
             "-m",
@@ -190,10 +152,7 @@ def check_linting() -> bool:
     )
 
     if code == 5:  # ruff not installed
-        print_warning(
-            "ruff not installed, skipping linting "
-            "(install with: pip install ruff)"
-        )
+        print_warning("ruff not installed, skipping linting (install with: pip install ruff)")
         return True
 
     if code == 0:
@@ -203,8 +162,7 @@ def check_linting() -> bool:
         issues = [line for line in stdout.splitlines() if line.strip()]
         print_error(
             "Found critical linting issues "
-            f"({','.join(critical_rules)}) in "
-            f"{len(staged_python_files)} staged file(s)"
+            f"({','.join(critical_rules)}) in {len(staged_python_files)} staged file(s)"
         )
         for issue in issues[:10]:
             print(f"  {issue}")
@@ -226,11 +184,7 @@ def check_security() -> bool:
     ]
 
     py_files = list(REPO_ROOT.glob("**/*.py"))
-    py_files = [
-        f
-        for f in py_files
-        if "venv" not in str(f) and "__pycache__" not in str(f)
-    ]
+    py_files = [f for f in py_files if "venv" not in str(f) and "__pycache__" not in str(f)]
 
     for py_file in py_files[:50]:  # Limit to first 50 files for speed
         try:
@@ -238,12 +192,9 @@ def check_security() -> bool:
             for pattern, desc in secret_patterns:
                 if re.search(pattern, content, re.IGNORECASE):
                     # Exclude test files and env templates
-                    if (
-                        "test_" not in py_file.name
-                        and "example" not in py_file.name.lower()
-                    ):
+                    if "test_" not in py_file.name and "example" not in py_file.name.lower():
                         issues.append(f"{py_file.name}: {desc}")
-        except (OSError, UnicodeDecodeError):
+        except Exception:
             continue
 
     # Check if .env is being committed
@@ -283,16 +234,7 @@ def check_git_hygiene() -> bool:
         full_path = REPO_ROOT / file_path
 
         # Check for unwanted files
-        if any(
-            pattern in file_path
-            for pattern in [
-                "__pycache__",
-                ".pyc",
-                "venv/",
-                ".venv/",
-                "__azurite_db",
-            ]
-        ):
+        if any(pattern in file_path for pattern in ["__pycache__", ".pyc", "venv/", ".venv/", "__azurite_db"]):
             issues.append(f"Unwanted file: {file_path}")
 
         # Check file size (warn if >10MB)
@@ -345,15 +287,10 @@ def check_documentation() -> bool:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Pre-commit validation for QAI"
-    )
+    parser = argparse.ArgumentParser(description="Pre-commit validation for QAI")
     parser.add_argument(
         "--checks",
-        help=(
-            "Comma-separated list of checks to run "
-            "(tests,lint,security,git,docs)"
-        ),
+        help="Comma-separated list of checks to run (tests,lint,security,git,docs)",
         default="tests,lint,security,git,docs",
     )
     parser.add_argument(
@@ -394,17 +331,11 @@ def main():
     total = len(results)
 
     if passed == total:
-        print(
-            f"{GREEN}{BOLD}RESULT: All checks passed ✓ "
-            f"({passed}/{total}){RESET}"
-        )
+        print(f"{GREEN}{BOLD}RESULT: All checks passed ✓ ({passed}/{total}){RESET}")
         print(f"{BOLD}{'═' * 67}{RESET}\n")
         return 0
     else:
-        print(
-            f"{RED}{BOLD}RESULT: Some checks failed "
-            f"({passed}/{total} passed){RESET}"
-        )
+        print(f"{RED}{BOLD}RESULT: Some checks failed ({passed}/{total} passed){RESET}")
         print(f"{BOLD}{'═' * 67}{RESET}\n")
         return 1
 

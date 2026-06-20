@@ -32,78 +32,9 @@ def _ensure_final_newline(text: str) -> str:
     return text if text.endswith("\n") else text + "\n"
 
 
-def _normalize_line_endings(text: str) -> str:
-    # Normalize CRLF and CR-only files to LF.
-    return text.replace("\r\n", "\n").replace("\r", "\n")
-
-
-def _trim_excess_final_newlines(text: str) -> str:
-    if not text:
-        return text
-    stripped = text.rstrip("\n")
-    return stripped + "\n"
-
-
-def _remove_utf8_bom(text: str) -> str:
-    return text[1:] if text.startswith("\ufeff") else text
-
-
-def _normalize_unicode_newlines(text: str) -> str:
-    had_terminal_unicode_sep = text.endswith(
-        "\u2028") or text.endswith("\u2029")
-    had_terminal_unicode_sep_with_lf = text.endswith(
-        "\u2028\n") or text.endswith("\u2029\n")
-
-    normalized = text.replace("\u2028", "\n").replace("\u2029", "\n")
-
-    # If missing_final_newline ran first, a terminal unicode separator can
-    # become a double LF after normalization. Keep exactly one LF at EOF.
-    if (had_terminal_unicode_sep or had_terminal_unicode_sep_with_lf) and normalized.endswith("\n\n"):
-        normalized = normalized[:-1]
-    return normalized
-
-
-def _collapse_blank_line_runs(text: str) -> str:
-    if not text:
-        return text
-
-    lines = text.split("\n")
-    out: list[str] = []
-    blank_run = 0
-    for line in lines:
-        if line.strip() == "":
-            blank_run += 1
-            if blank_run <= 1:
-                out.append(line)
-            continue
-
-        blank_run = 0
-        out.append(line)
-
-    return "\n".join(out)
-
-
-def _normalize_nonbreaking_spaces(text: str) -> str:
-    return text.replace("\u00a0", " ")
-
-
-def _remove_zero_width_chars(text: str) -> str:
-    cleaned = text
-    for ch in ("\u200b", "\u200c", "\u200d", "\u2060", "\ufeff"):
-        cleaned = cleaned.replace(ch, "")
-    return cleaned
-
-
 _TRANSFORMS: Dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
-    "normalize_line_endings": _normalize_line_endings,
-    "excess_final_newlines": _trim_excess_final_newlines,
-    "remove_utf8_bom": _remove_utf8_bom,
-    "normalize_unicode_newlines": _normalize_unicode_newlines,
-    "collapse_blank_line_runs": _collapse_blank_line_runs,
-    "normalize_nonbreaking_spaces": _normalize_nonbreaking_spaces,
-    "remove_zero_width_chars": _remove_zero_width_chars,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with
@@ -177,14 +108,12 @@ class Executor:
         new_bytes = new_text.encode("utf-8")
 
         # Diff-level safety: re-check size delta and require an actual change.
-        change_assessment = self.risk_manager.assess_change(
-            path, original, new_bytes)
+        change_assessment = self.risk_manager.assess_change(path, original, new_bytes)
         if not change_assessment.allowed:
             return ExecutionResult(plan=plan, applied=False, reason="; ".join(change_assessment.reasons))
 
         if self.dry_run:
-            _logger.info("[dry-run] would update %s (%s)",
-                         path, plan.description())
+            _logger.info("[dry-run] would update %s (%s)", path, plan.description())
             return ExecutionResult(plan=plan, applied=False, reason="dry-run")
 
         try:

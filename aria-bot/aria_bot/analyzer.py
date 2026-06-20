@@ -9,13 +9,6 @@ Currently supported finding kinds:
 
 * ``trailing_whitespace`` — lines that end with spaces or tabs.
 * ``missing_final_newline`` — files that don't end with a newline.
-* ``normalize_line_endings`` — files containing CRLF/CR line endings.
-* ``excess_final_newlines`` — files ending with more than one newline.
-* ``remove_utf8_bom`` — files that start with a UTF-8 BOM marker.
-* ``normalize_unicode_newlines`` — files containing U+2028/U+2029.
-* ``collapse_blank_line_runs`` — markdown/text/yaml files with 3+ blank lines.
-* ``normalize_nonbreaking_spaces`` — replace U+00A0 with plain spaces.
-* ``remove_zero_width_chars`` — strip common zero-width characters.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -37,13 +30,6 @@ _logger = logging.getLogger(__name__)
 SUPPORTED_KINDS: tuple[str, ...] = (
     "trailing_whitespace",
     "missing_final_newline",
-    "normalize_line_endings",
-    "excess_final_newlines",
-    "remove_utf8_bom",
-    "normalize_unicode_newlines",
-    "collapse_blank_line_runs",
-    "normalize_nonbreaking_spaces",
-    "remove_zero_width_chars",
 )
 
 
@@ -102,24 +88,13 @@ class Analyzer:
         if b"\x00" in data[:4096]:
             return results
 
-        had_utf8_bom = data.startswith(b"\xef\xbb\xbf")
         try:
-            text = data.decode("utf-8-sig")
+            text = data.decode("utf-8")
         except UnicodeDecodeError:
             return results
 
-        if had_utf8_bom:
-            results.append(
-                Finding(
-                    kind="remove_utf8_bom",
-                    path=path,
-                    detail="file starts with UTF-8 BOM",
-                )
-            )
-
         # trailing whitespace
-        offending_lines = [
-            i + 1 for i, line in enumerate(text.splitlines()) if line != line.rstrip(" \t")]
+        offending_lines = [i + 1 for i, line in enumerate(text.splitlines()) if line != line.rstrip(" \t")]
         if offending_lines:
             preview = ",".join(str(n) for n in offending_lines[:5])
             results.append(
@@ -130,53 +105,6 @@ class Analyzer:
                 )
             )
 
-        # non-LF line endings
-        crlf_count = text.count("\r\n")
-        lone_cr_count = text.count("\r") - crlf_count
-        if crlf_count or lone_cr_count:
-            results.append(
-                Finding(
-                    kind="normalize_line_endings",
-                    path=path,
-                    detail=f"CRLF={crlf_count}, CR={lone_cr_count}",
-                )
-            )
-
-        unicode_newlines = text.count("\u2028") + text.count("\u2029")
-        if unicode_newlines:
-            results.append(
-                Finding(
-                    kind="normalize_unicode_newlines",
-                    path=path,
-                    detail=f"{unicode_newlines} unicode newline separator(s)",
-                )
-            )
-
-        textish_exts = {".md", ".txt", ".yaml", ".yml"}
-        if path.suffix.lower() in textish_exts:
-            nbsp_count = text.count("\u00a0")
-            if nbsp_count:
-                results.append(
-                    Finding(
-                        kind="normalize_nonbreaking_spaces",
-                        path=path,
-                        detail=f"{nbsp_count} non-breaking space(s)",
-                    )
-                )
-
-            zero_width_count = sum(
-                text.count(ch)
-                for ch in ("\u200b", "\u200c", "\u200d", "\u2060", "\ufeff")
-            )
-            if zero_width_count:
-                results.append(
-                    Finding(
-                        kind="remove_zero_width_chars",
-                        path=path,
-                        detail=f"{zero_width_count} zero-width char(s)",
-                    )
-                )
-
         # missing final newline (only meaningful if the file has any content)
         if text and not text.endswith("\n"):
             results.append(
@@ -186,37 +114,5 @@ class Analyzer:
                     detail="file does not end with a newline",
                 )
             )
-
-        # more than one trailing newline at EOF
-        trailing_newlines = len(text) - len(text.rstrip("\n"))
-        if trailing_newlines > 1:
-            results.append(
-                Finding(
-                    kind="excess_final_newlines",
-                    path=path,
-                    detail=f"{trailing_newlines} trailing newlines",
-                )
-            )
-
-        # Collapse 3+ blank lines in documentation-like text files.
-        if path.suffix.lower() in textish_exts:
-            max_blank_run = 0
-            current_blank_run = 0
-            for line in text.split("\n"):
-                if line.strip() == "":
-                    current_blank_run += 1
-                    if current_blank_run > max_blank_run:
-                        max_blank_run = current_blank_run
-                else:
-                    current_blank_run = 0
-
-            if max_blank_run >= 3:
-                results.append(
-                    Finding(
-                        kind="collapse_blank_line_runs",
-                        path=path,
-                        detail=f"max blank-line run: {max_blank_run}",
-                    )
-                )
 
         return results

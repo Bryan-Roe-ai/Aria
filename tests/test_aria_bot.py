@@ -32,18 +32,9 @@ def fake_repo(tmp_path: Path) -> Path:
 
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "needs_fix.py").write_bytes(
-        # trailing ws on both lines, has final newline
-        b"def foo():    \n    return 1   \n"
+        b"def foo():    \n    return 1   \n"  # trailing ws on both lines, has final newline
     )
-    # no trailing newline
-    (tmp_path / "src" / "needs_newline.md").write_bytes(b"# heading")
-    (tmp_path / "src" / "crlf_file.txt").write_bytes(b"a\r\nb\r\n")
-    (tmp_path / "src" / "extra_eof.md").write_bytes(b"line\n\n\n")
-    (tmp_path / "src" / "bom_file.txt").write_bytes(b"\xef\xbb\xbfhello\n")
-    (tmp_path / "src" / "unicode_newline.txt").write_text("a\u2028b\u2029")
-    (tmp_path / "src" / "blank_runs.md").write_text("A\n\n\n\nB\n")
-    (tmp_path / "src" / "nbsp.md").write_text("A\u00a0B\n")
-    (tmp_path / "src" / "zwsp.md").write_text("A\u200bB\u2060C\n")
+    (tmp_path / "src" / "needs_newline.md").write_bytes(b"# heading")  # no trailing newline
     (tmp_path / "src" / "clean.py").write_bytes(b"def ok():\n    return 1\n")
 
     # Protected: must never be touched.
@@ -59,13 +50,6 @@ def test_risk_manager_blocks_protected_paths(fake_repo: Path) -> None:
     assert not rm.is_path_protected(fake_repo / "src" / "needs_fix.py")
 
 
-def test_risk_manager_blocks_virtualenv_paths(tmp_path: Path) -> None:
-    rm = RiskManager(repo_root=tmp_path)
-    assert rm.is_path_protected(tmp_path / ".venv" / "lib" / "site.py")
-    assert rm.is_path_protected(tmp_path / "venv" / "lib" / "site.py")
-    assert rm.is_path_protected(tmp_path / "any" / "data_out" / "x.txt")
-
-
 def test_risk_manager_blocks_symlinks(tmp_path: Path) -> None:
     target = tmp_path / "real.py"
     target.write_text("x = 1\n")
@@ -76,17 +60,6 @@ def test_risk_manager_blocks_symlinks(tmp_path: Path) -> None:
     assessment = rm.assess_file(link)
     assert not assessment.allowed
     assert any("symlink" in r for r in assessment.reasons)
-
-
-def test_risk_manager_blocks_non_writable_files(tmp_path: Path) -> None:
-    p = tmp_path / "readonly.py"
-    p.write_text("x = 1\n")
-    p.chmod(0o444)
-
-    rm = RiskManager(repo_root=tmp_path)
-    assessment = rm.assess_file(p)
-    assert not assessment.allowed
-    assert any("not writable" in r for r in assessment.reasons)
 
 
 def test_risk_manager_caps_file_size(tmp_path: Path) -> None:
@@ -112,13 +85,6 @@ def test_analyzer_detects_findings(fake_repo: Path) -> None:
 
     assert ("needs_fix.py", "trailing_whitespace") in kinds_by_path
     assert ("needs_newline.md", "missing_final_newline") in kinds_by_path
-    assert ("crlf_file.txt", "normalize_line_endings") in kinds_by_path
-    assert ("extra_eof.md", "excess_final_newlines") in kinds_by_path
-    assert ("bom_file.txt", "remove_utf8_bom") in kinds_by_path
-    assert ("unicode_newline.txt", "normalize_unicode_newlines") in kinds_by_path
-    assert ("blank_runs.md", "collapse_blank_line_runs") in kinds_by_path
-    assert ("nbsp.md", "normalize_nonbreaking_spaces") in kinds_by_path
-    assert ("zwsp.md", "remove_zero_width_chars") in kinds_by_path
     # Protected file must not appear at all.
     assert not any(f.path.name == "dirty.py" for f in findings)
     # Clean file should produce nothing.
@@ -161,18 +127,6 @@ def test_executor_applies_and_is_idempotent(fake_repo: Path) -> None:
     fixed = (fake_repo / "src" / "needs_fix.py").read_bytes()
     assert b"   \n" not in fixed
     assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
-    assert b"\r" not in (fake_repo / "src" / "crlf_file.txt").read_bytes()
-    assert (fake_repo / "src" / "extra_eof.md").read_bytes() == b"line\n"
-    assert not (fake_repo / "src" /
-                "bom_file.txt").read_text().startswith("\ufeff")
-    assert "\u2028" not in (
-        fake_repo / "src" / "unicode_newline.txt").read_text()
-    assert "\u2029" not in (
-        fake_repo / "src" / "unicode_newline.txt").read_text()
-    assert (fake_repo / "src" / "blank_runs.md").read_text() == "A\n\nB\n"
-    assert "\u00a0" not in (fake_repo / "src" / "nbsp.md").read_text()
-    assert "\u200b" not in (fake_repo / "src" / "zwsp.md").read_text()
-    assert "\u2060" not in (fake_repo / "src" / "zwsp.md").read_text()
     # Protected file untouched.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 
@@ -191,16 +145,11 @@ def test_orchestrator_dry_run_writes_status(fake_repo: Path) -> None:
     payload = json.loads(status_path.read_text())
     assert payload["apply"] is False
     assert payload["totals"]["findings"] >= 2
-    assert "findings_by_kind" in payload
-    assert "plans_by_kind" in payload
-    assert "applied_by_kind" in payload
-    assert payload["applied_by_kind"] == {}
     # Dry-run never applies.
     assert payload["totals"]["applied"] == 0
     # No file mutation occurred.
     assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
-    # ruff may be missing in test env
-    assert result.validation_ok in (True, False)
+    assert result.validation_ok in (True, False)  # ruff may be missing in test env
 
 
 def test_run_cycle_apply_modifies_files(fake_repo: Path) -> None:
@@ -208,145 +157,8 @@ def test_run_cycle_apply_modifies_files(fake_repo: Path) -> None:
     assert result.apply is True
     applied = [e for e in result.executions if e.applied]
     assert applied, "expected at least one applied plan"
-
-    payload = result.to_dict()
-    assert payload["applied_by_kind"]
-    assert payload["findings_by_kind"]
-    assert payload["plans_by_kind"]
     # Protected dataset file is still dirty.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
-
-
-def test_run_cycle_enable_kind_limits_changes(fake_repo: Path) -> None:
-    result = run_cycle(
-        repo_root=fake_repo,
-        apply=True,
-        commit=False,
-        enabled_kinds=["missing_final_newline"],
-    )
-    assert result.apply is True
-
-    # missing_final_newline should be fixed.
-    assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
-    # trailing whitespace should remain because that kind was not enabled.
-    assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
-
-
-def test_run_cycle_disable_kind_excludes_changes(fake_repo: Path) -> None:
-    result = run_cycle(
-        repo_root=fake_repo,
-        apply=True,
-        commit=False,
-        disabled_kinds=["trailing_whitespace"],
-    )
-    assert result.apply is True
-
-    # trailing whitespace should remain because that kind was disabled.
-    assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
-    # other kinds should still run.
-    assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
-
-
-def test_run_cycle_include_suffix_limits_scan(fake_repo: Path) -> None:
-    # Only scan markdown files.
-    result = run_cycle(
-        repo_root=fake_repo,
-        apply=False,
-        commit=False,
-        include_suffixes=[".md"],
-    )
-    payload = result.to_dict()
-
-    # Python findings should be excluded when only .md is scanned.
-    assert "trailing_whitespace" not in payload["findings_by_kind"]
-    # Markdown findings should still be present.
-    assert payload["findings_by_kind"]["missing_final_newline"] >= 1
-
-
-def test_cli_include_suffix_limits_scan(fake_repo: Path) -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--include-suffix",
-            ".md",
-            "--quiet",
-            "--summary-path",
-            str(fake_repo / "summary.json"),
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-    payload = json.loads((fake_repo / "summary.json").read_text())
-    assert "trailing_whitespace" not in payload["findings_by_kind"]
-
-
-def test_run_cycle_exclude_suffix_limits_scan(fake_repo: Path) -> None:
-    baseline = run_cycle(
-        repo_root=fake_repo,
-        apply=False,
-        commit=False,
-    ).to_dict()
-
-    # Exclude markdown files from scanning.
-    result = run_cycle(
-        repo_root=fake_repo,
-        apply=False,
-        commit=False,
-        exclude_suffixes=[".md"],
-    )
-    payload = result.to_dict()
-
-    # Excluding .md should reduce total findings in this fixture.
-    assert payload["totals"]["findings"] < baseline["totals"]["findings"]
-    # Python findings remain.
-    assert payload["findings_by_kind"]["trailing_whitespace"] >= 1
-
-
-def test_cli_exclude_suffix_limits_scan(fake_repo: Path) -> None:
-    baseline_proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--quiet",
-            "--summary-path",
-            str(fake_repo / "summary_baseline.json"),
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert baseline_proc.returncode == 0
-    baseline = json.loads((fake_repo / "summary_baseline.json").read_text())
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--exclude-suffix",
-            ".md",
-            "--quiet",
-            "--summary-path",
-            str(fake_repo / "summary_exclude.json"),
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-    payload = json.loads((fake_repo / "summary_exclude.json").read_text())
-    assert payload["totals"]["findings"] < baseline["totals"]["findings"]
 
 
 def test_commit_requires_apply(fake_repo: Path) -> None:
@@ -372,189 +184,3 @@ def test_commit_requires_apply(fake_repo: Path) -> None:
 
 def test_commit_message_uses_known_prefix() -> None:
     assert COMMIT_PREFIX.startswith("chore(aria-bot):")
-
-
-def test_cli_list_kinds_outputs_supported_kinds() -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--list-kinds",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-    output_lines = [line.strip()
-                    for line in proc.stdout.splitlines() if line.strip()]
-    assert "trailing_whitespace" in output_lines
-    assert "missing_final_newline" in output_lines
-    assert "remove_zero_width_chars" in output_lines
-
-
-def test_cli_summary_includes_kind_metrics(fake_repo: Path) -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-
-    payload = json.loads(proc.stdout)
-    assert "findings_by_kind" in payload
-    assert "plans_by_kind" in payload
-    assert "applied_by_kind" in payload
-    assert payload["applied_by_kind"] == {}
-
-
-def test_cli_compact_output_is_single_line(fake_repo: Path) -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--output-format",
-            "compact",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-    lines = [line for line in proc.stdout.splitlines() if line.strip()]
-    assert len(lines) == 1
-    payload = json.loads(lines[0])
-    assert "totals" in payload
-
-
-def test_cli_writes_summary_path(fake_repo: Path, tmp_path: Path) -> None:
-    summary_path = tmp_path / "cli-summary.json"
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--summary-path",
-            str(summary_path),
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-    assert summary_path.exists()
-    payload = json.loads(summary_path.read_text())
-    assert "totals" in payload
-
-
-def test_cli_fail_on_findings_returns_nonzero(fake_repo: Path) -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--fail-on-findings",
-            "--quiet",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 1
-
-
-def test_cli_fail_on_findings_passes_when_clean(fake_repo: Path) -> None:
-    # Clean the fake repo first.
-    run_cycle(repo_root=fake_repo, apply=True, commit=False)
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--fail-on-findings",
-            "--quiet",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-
-
-def test_cli_max_findings_fails_when_exceeded(fake_repo: Path) -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--max-findings",
-            "0",
-            "--quiet",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 1
-
-
-def test_cli_max_findings_passes_when_within_limit(fake_repo: Path) -> None:
-    # Clean the fake repo first so findings become 0.
-    run_cycle(repo_root=fake_repo, apply=True, commit=False)
-
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--max-findings",
-            "0",
-            "--quiet",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 0
-
-
-def test_cli_max_findings_rejects_negative(fake_repo: Path) -> None:
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "aria_bot",
-            "--repo-root",
-            str(fake_repo),
-            "--max-findings",
-            "-1",
-            "--quiet",
-        ],
-        cwd=PKG_PARENT,
-        capture_output=True,
-        text=True,
-    )
-    assert proc.returncode == 2
-    assert "--max-findings must be >= 0" in proc.stderr

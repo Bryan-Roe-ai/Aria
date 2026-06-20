@@ -1,7 +1,7 @@
 # Aria Environment Setup — Configuration Guide
 
-**Status:** Python 3.14 venv configured for main workspace + isolated sub-projects
-**Date:** May 16, 2026
+**Status:** Python 3.14 venv configured for main workspace + isolated sub-projects  
+**Date:** May 16, 2026  
 **Setup Completion:** ✅ Ready for dependency installation & validation
 
 ---
@@ -36,7 +36,7 @@ cd /workspaces/Aria
 # Quantum ML
 /workspaces/Aria/.venv/bin/pip install -r ai-projects/quantum-ml/requirements.txt
 
-# Chat CLI
+# Chat CLI  
 /workspaces/Aria/.venv/bin/pip install -r ai-projects/chat-cli/requirements.txt
 
 # LLM Maker
@@ -171,19 +171,19 @@ The system checks providers in this order:
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
-
+    
     "AZURE_SPEECH_KEY": "<your-speech-key>",
     "AZURE_SPEECH_REGION": "<your-region>",
-
+    
     "AZURE_OPENAI_API_KEY": "<key>",
     "AZURE_OPENAI_ENDPOINT": "<endpoint>",
     "AZURE_OPENAI_DEPLOYMENT": "<deployment>",
-
+    
     "OPENAI_API_KEY": "<key>",
-
+    
     "LMSTUDIO_BASE_URL": "http://localhost:1234/v1",
     "LMSTUDIO_MODEL": "local-model",
-
+    
     "QAI_ENABLE_LOCAL_TTS": "true"
   }
 }
@@ -496,6 +496,6 @@ curl -X POST http://localhost:7071/api/ai/provider-probe \
 
 ---
 
-**Generated:** May 16, 2026
-**Python Version:** 3.14
+**Generated:** May 16, 2026  
+**Python Version:** 3.14  
 **Status:** ✅ Ready for dependency installation

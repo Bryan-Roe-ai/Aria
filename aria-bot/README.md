@@ -45,41 +45,10 @@ python -m aria_bot --apply
 
 # Apply and create a local git commit (never pushes).
 python -m aria_bot --apply --commit
-
-# Only run specific transform kinds.
-python -m aria_bot --apply --enable-kind missing_final_newline
-
-# Run all except one kind.
-python -m aria_bot --apply --disable-kind trailing_whitespace
-
-# Show all available transform kinds.
-python -m aria_bot --list-kinds
-
-# Restrict analysis to selected file suffixes.
-python -m aria_bot --include-suffix .md --include-suffix .yaml
-
-# Exclude selected suffixes from analysis.
-python -m aria_bot --exclude-suffix .md
-
-# Compact one-line JSON summary output.
-python -m aria_bot --output-format compact
-
-# Also write summary JSON to a file.
-python -m aria_bot --summary-path data_out/aria_bot/cli-summary.json
-
-# Fail CI if any findings are detected.
-python -m aria_bot --fail-on-findings --quiet
-
-# Fail CI when findings exceed a threshold budget.
-python -m aria_bot --max-findings 10 --quiet
 ```
 
 Each cycle writes a machine-readable summary to
 `data_out/aria_bot/status.json` per the repo's status-file convention.
-
-Status payloads include both totals and per-kind counters for observability:
-`findings_by_kind`, `plans_by_kind`, and `applied_by_kind`.
-The default CLI JSON summary now includes these same per-kind fields.
 
 ## Safety Guarantees
 
@@ -89,15 +58,9 @@ disabled from configuration:
 - **Dry-run by default.** `--apply` is required to write any file.
 - **Never pushes.** `commit_system.py` only stages and commits locally.
 - **Protected paths** (`datasets/`, `.git/`, `.github/agents/`,
-   `.venv/`, `venv/`, `local.settings.json`, `data_out/`, `secrets/`, `AI/`)
-   are never modified.
+  `local.settings.json`, `data_out/`, `secrets/`, `AI/`) are never modified.
 - **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup
-   and missing-final-newline fixes, line-ending normalization (CRLF/CR→LF),
-   trimming excess final newlines, UTF-8 BOM removal, and Unicode newline
-   normalization (U+2028/U+2029→LF), plus collapsing 3+ blank-line runs in
-   docs/text/yaml files, non-breaking-space normalization (U+00A0→space),
-   and zero-width character removal (e.g. U+200B/U+2060) — all pure-text
-   and idempotent.
+  and missing-final-newline fixes — both pure-text and idempotent.
 - **No deletions, no renames, no symlink follows.**
 - **Per-cycle caps** on plans, file size, and per-plan delta bytes.
 

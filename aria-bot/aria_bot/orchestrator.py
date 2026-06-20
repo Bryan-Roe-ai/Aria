@@ -21,9 +21,9 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Set
+from typing import List, Optional
 
-from .analyzer import Analyzer, Finding, SUPPORTED_KINDS
+from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
 from .executor import ExecutionResult, Executor
 from .planner import Planner, UpgradePlan
@@ -46,66 +46,11 @@ class OrchestratorConfig:
     commit: bool = False
     max_plans: int = 50
     status_path: Optional[Path] = None
-    enabled_kinds: Optional[Sequence[str]] = None
-    disabled_kinds: Optional[Sequence[str]] = None
-    include_suffixes: Optional[Sequence[str]] = None
-    exclude_suffixes: Optional[Sequence[str]] = None
 
     def resolve_status_path(self) -> Path:
         if self.status_path is not None:
             return Path(self.status_path)
         return Path(self.repo_root) / _DEFAULT_STATUS_PATH
-
-    def resolve_allowed_kinds(self) -> Set[str]:
-        supported = set(SUPPORTED_KINDS)
-        if self.enabled_kinds:
-            allowed = set(self.enabled_kinds) & supported
-        else:
-            allowed = set(supported)
-
-        if self.disabled_kinds:
-            allowed -= set(self.disabled_kinds)
-
-        return allowed
-
-    @staticmethod
-    def _normalize_suffixes(suffixes: Optional[Sequence[str]]) -> List[str]:
-        if not suffixes:
-            return []
-
-        normalized: List[str] = []
-        for suffix in suffixes:
-            s = suffix.strip().lower()
-            if not s:
-                continue
-            if not s.startswith("."):
-                s = f".{s}"
-            normalized.append(s)
-
-        # Preserve order while de-duplicating.
-        seen = set()
-        ordered_unique = []
-        for s in normalized:
-            if s in seen:
-                continue
-            seen.add(s)
-            ordered_unique.append(s)
-        return ordered_unique
-
-    def resolve_scan_suffixes(self) -> Optional[tuple[str, ...]]:
-        include = self._normalize_suffixes(self.include_suffixes)
-        exclude = set(self._normalize_suffixes(self.exclude_suffixes))
-
-        if include:
-            filtered = [s for s in include if s not in exclude]
-            return tuple(filtered) if filtered else None
-
-        if not exclude:
-            return None
-
-        defaults = list(Analyzer.suffixes)
-        filtered_defaults = [s for s in defaults if s not in exclude]
-        return tuple(filtered_defaults) if filtered_defaults else None
 
 
 @dataclass
@@ -125,18 +70,8 @@ class CycleResult:
     commit_sha: Optional[str] = None
     notes: List[str] = field(default_factory=list)
 
-    @staticmethod
-    def _count_by_kind(items: List[str]) -> Dict[str, int]:
-        counts: Dict[str, int] = {}
-        for kind in items:
-            counts[kind] = counts.get(kind, 0) + 1
-        return dict(sorted(counts.items()))
-
     def to_dict(self) -> dict:
         applied = [e for e in self.executions if e.applied]
-        finding_kinds = [f.kind for f in self.findings]
-        plan_kinds = [kind for plan in self.plans for kind in plan.kinds]
-        applied_kinds = [kind for e in applied for kind in e.plan.kinds]
         return {
             "started_at": self.started_at,
             "finished_at": self.finished_at,
@@ -148,9 +83,6 @@ class CycleResult:
                 "plans": len(self.plans),
                 "applied": len(applied),
             },
-            "findings_by_kind": self._count_by_kind(finding_kinds),
-            "plans_by_kind": self._count_by_kind(plan_kinds),
-            "applied_by_kind": self._count_by_kind(applied_kinds),
             "findings": [f.to_dict() for f in self.findings],
             "plans": [p.to_dict() for p in self.plans],
             "executions": [e.to_dict() for e in self.executions],
@@ -173,11 +105,7 @@ class Orchestrator:
 
         repo_root = Path(self.config.repo_root).resolve()
         risk = RiskManager(repo_root=repo_root)
-        scan_suffixes = self.config.resolve_scan_suffixes()
-        analyzer = Analyzer(
-            risk_manager=risk,
-            suffixes=scan_suffixes or Analyzer.suffixes,
-        )
+        analyzer = Analyzer(risk_manager=risk)
         planner = Planner(risk_manager=risk, max_plans=self.config.max_plans)
         executor = Executor(risk_manager=risk, dry_run=not self.config.apply)
         validator = Validator(repo_root=repo_root)
@@ -190,15 +118,12 @@ class Orchestrator:
         _logger.info("aria-bot: %d finding(s)", len(findings))
 
         plans = planner.build_plans(findings)
-        allowed_kinds = self.config.resolve_allowed_kinds()
-        plans = self._filter_plans_by_kind(plans, allowed_kinds)
         _logger.info("aria-bot: %d plan(s) after risk filter", len(plans))
 
         executions = executor.execute(plans)
         applied_paths = [e.plan.path for e in executions if e.applied]
 
-        validation = validator.validate(
-            applied_paths if applied_paths else None)
+        validation = validator.validate(applied_paths if applied_paths else None)
         if not validation.ok:
             notes.append("validation failed; skipping commit")
 
@@ -207,8 +132,7 @@ class Orchestrator:
             message = self._commit_message(executions)
             commit_sha = commits.commit(applied_paths, message)
             if commit_sha is None:
-                notes.append(
-                    "commit step produced no SHA (nothing staged or git unavailable)")
+                notes.append("commit step produced no SHA (nothing staged or git unavailable)")
         elif not self.config.apply:
             notes.append("dry-run: no files were modified")
         elif not applied_paths:
@@ -234,32 +158,6 @@ class Orchestrator:
         return result
 
     # ------------------------------------------------------------------
-    def _filter_plans_by_kind(
-        self,
-        plans: List[UpgradePlan],
-        allowed_kinds: Set[str],
-    ) -> List[UpgradePlan]:
-        if not allowed_kinds:
-            return []
-
-        filtered: List[UpgradePlan] = []
-        for plan in plans:
-            kept_kinds = tuple(k for k in plan.kinds if k in allowed_kinds)
-            if not kept_kinds:
-                continue
-
-            kept_findings = tuple(
-                f for f in plan.findings if f.kind in kept_kinds)
-            filtered.append(
-                UpgradePlan(
-                    path=plan.path,
-                    kinds=kept_kinds,
-                    findings=kept_findings,
-                )
-            )
-
-        return filtered
-
     def _commit_message(self, executions: List[ExecutionResult]) -> str:
         # Only called when at least one execution applied; defend against
         # accidental misuse by future callers.
@@ -281,8 +179,7 @@ class Orchestrator:
                 encoding="utf-8",
             )
         except OSError as exc:  # pragma: no cover - filesystem dependent
-            _logger.warning(
-                "unable to write status file %s: %s", status_path, exc)
+            _logger.warning("unable to write status file %s: %s", status_path, exc)
 
 
 def run_cycle(
@@ -292,10 +189,6 @@ def run_cycle(
     commit: bool = False,
     max_plans: int = 50,
     status_path: Optional[Path] = None,
-    enabled_kinds: Optional[Sequence[str]] = None,
-    disabled_kinds: Optional[Sequence[str]] = None,
-    include_suffixes: Optional[Sequence[str]] = None,
-    exclude_suffixes: Optional[Sequence[str]] = None,
 ) -> CycleResult:
     """Convenience wrapper used by the CLI and tests."""
 
@@ -305,9 +198,5 @@ def run_cycle(
         commit=commit,
         max_plans=max_plans,
         status_path=status_path,
-        enabled_kinds=enabled_kinds,
-        disabled_kinds=disabled_kinds,
-        include_suffixes=include_suffixes,
-        exclude_suffixes=exclude_suffixes,
     )
     return Orchestrator(config=config).run()
