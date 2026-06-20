@@ -526,6 +526,7 @@ def _return_conn(conn: Any) -> None:
 
 
 def clear_cached_connections() -> None:
+    """Close and clear all cached and pooled chat-memory connections."""
     with _conn_lock:
         for _, conn in list(_conn_cache.items()):
             try:

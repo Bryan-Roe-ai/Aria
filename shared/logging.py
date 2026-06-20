@@ -68,6 +68,7 @@ class JsonFormatter(logging.Formatter):
     """
 
     def format(self, record: logging.LogRecord) -> str:
+        """Serialize a log record as a single JSON line."""
         record.message = record.getMessage()
         if record.exc_info:
             record.exc_text = self.formatException(record.exc_info)

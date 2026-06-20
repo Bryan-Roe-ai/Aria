@@ -128,6 +128,16 @@ logger = logging.getLogger(__name__)
 # Resolve repository root robustly (apps/aria/server.py -> repo root is parents[2]).
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from shared.local_settings import apply_local_settings
+
+    apply_local_settings()
+except Exception:
+    pass
+
 
 def _load_detect_provider():
     """Load shared.chat_providers.detect_provider without mutating sys.path."""
@@ -459,8 +469,10 @@ class AriaActionParser:
             return
 
         try:
-            configured_explicit = os.getenv("ARIA_LLM_PROVIDER")
-            configured_model = os.getenv("ARIA_LLM_MODEL")
+            configured_explicit = os.getenv("ARIA_LLM_PROVIDER") or os.getenv("DEFAULT_AI_PROVIDER")
+            configured_model = os.getenv("ARIA_LLM_MODEL") or os.getenv("OLLAMA_MODEL") or os.getenv(
+                "LMSTUDIO_MODEL"
+            )
 
             # Convenience: if ARIA_QUANTUM_MODEL_PATH is set and no provider is
             # configured, default Aria LLM parsing to the quantum provider.

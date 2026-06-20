@@ -17,6 +17,7 @@ _INITIALIZED = False
 
 
 def init_telemetry() -> bool:
+    """Configure Azure Monitor OpenTelemetry when a connection string is set."""
     global _INITIALIZED
     if _INITIALIZED:
         return True
@@ -40,6 +41,7 @@ def init_telemetry() -> bool:
 
 
 def is_enabled() -> bool:
+    """Return whether telemetry initialization succeeded in this process."""
     return _INITIALIZED
 
 

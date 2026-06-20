@@ -100,6 +100,7 @@ def create_stub_function(name: str, error_key: str = "error") -> Callable[..., D
     """
 
     def stub(*args, **kwargs) -> Dict[str, Any]:
+        """Return a disabled stub payload for unavailable optional dependencies."""
         return {"enabled": False, error_key: f"{name}_unavailable"}
 
     stub.__name__ = name
