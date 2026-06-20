@@ -5,44 +5,47 @@
       "name": "heart_quick",
       "mode": "train_custom_dataset",
       "preset": "heart",
-      "n_qubits": "4",
-      "epochs": "50",
-      "batch_size": "16",
-      "learning_rate": "0.001",
-      "test_size": "0.2",
-      "enabled": "true"
+      "n_qubits": 4,
+      "epochs": 50,
+      "batch_size": 16,
+      "learning_rate": 0.001,
+      "test_size": 0.2,
+      "enabled": true
     },
     {
       "name": "ionosphere_quick",
       "mode": "train_custom_dataset",
       "preset": "ionosphere",
-      "n_qubits": "4",
-      "epochs": "100",
-      "batch_size": "16",
-      "learning_rate": "0.001",
-      "test_size": "0.2",
-      "enabled": "true  # ENABLED for quantum training"
+      "n_qubits": 4,
+      "epochs": 100,
+      "batch_size": 16,
+      "learning_rate": 0.001,
+      "test_size": 0.2,
+      "enabled": true
     },
     {
       "name": "azure_quantinuum_simulator",
       "mode": "azure_hardware",
-      "azure_backend": "quantinuum.sim.h2-1sc  # FREE: Quantinuum cloud simulator",
-      "azure_shots": "100",
-      "qubits": "3",
-      "enabled": "true  # ENABLED for Azure testing"
+      "azure_backend": "quantinuum.sim.h2-1sc",
+      "azure_shots": 100,
+      "qubits": 3,
+      "enabled": true
     },
     {
       "name": "azure_ionq_qpu_test",
       "mode": "azure_hardware",
-      "azure_backend": "ionq.qpu  # PAID: Real IonQ quantum hardware",
-      "azure_shots": "100",
-      "n_qubits": "3",
-      "azure_confirm_cost": "false  # SAFETY: Set to true to enable (acknowledges costs)",
-      "enabled": "false",
-      "extra_args": ""
+      "azure_backend": "ionq.qpu",
+      "azure_shots": 100,
+      "n_qubits": 3,
+      "azure_confirm_cost": false,
+      "enabled": false,
+      "extra_args": [
+        "--circuit-file",
+        "ai-projects/quantum-ml/results/sample_circuit.qasm"
+      ]
     }
   ],
-  "last_updated": "2026-06-20T04:55:45.610097Z",
+  "last_updated": "2026-06-20T08:58:30.092556Z",
   "succeeded": 0,
   "failed": 0,
   "running": 0,
