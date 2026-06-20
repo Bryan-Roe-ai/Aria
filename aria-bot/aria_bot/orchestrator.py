@@ -49,6 +49,7 @@ class OrchestratorConfig:
     enabled_kinds: Optional[Sequence[str]] = None
     disabled_kinds: Optional[Sequence[str]] = None
     include_suffixes: Optional[Sequence[str]] = None
+    exclude_suffixes: Optional[Sequence[str]] = None
 
     def resolve_status_path(self) -> Path:
         if self.status_path is not None:
@@ -67,21 +68,19 @@ class OrchestratorConfig:
 
         return allowed
 
-    def resolve_scan_suffixes(self) -> Optional[tuple[str, ...]]:
-        if not self.include_suffixes:
-            return None
+    @staticmethod
+    def _normalize_suffixes(suffixes: Optional[Sequence[str]]) -> List[str]:
+        if not suffixes:
+            return []
 
-        normalized = []
-        for suffix in self.include_suffixes:
+        normalized: List[str] = []
+        for suffix in suffixes:
             s = suffix.strip().lower()
             if not s:
                 continue
             if not s.startswith("."):
                 s = f".{s}"
             normalized.append(s)
-
-        if not normalized:
-            return None
 
         # Preserve order while de-duplicating.
         seen = set()
@@ -91,7 +90,22 @@ class OrchestratorConfig:
                 continue
             seen.add(s)
             ordered_unique.append(s)
-        return tuple(ordered_unique)
+        return ordered_unique
+
+    def resolve_scan_suffixes(self) -> Optional[tuple[str, ...]]:
+        include = self._normalize_suffixes(self.include_suffixes)
+        exclude = set(self._normalize_suffixes(self.exclude_suffixes))
+
+        if include:
+            filtered = [s for s in include if s not in exclude]
+            return tuple(filtered) if filtered else None
+
+        if not exclude:
+            return None
+
+        defaults = list(Analyzer.suffixes)
+        filtered_defaults = [s for s in defaults if s not in exclude]
+        return tuple(filtered_defaults) if filtered_defaults else None
 
 
 @dataclass
@@ -281,6 +295,7 @@ def run_cycle(
     enabled_kinds: Optional[Sequence[str]] = None,
     disabled_kinds: Optional[Sequence[str]] = None,
     include_suffixes: Optional[Sequence[str]] = None,
+    exclude_suffixes: Optional[Sequence[str]] = None,
 ) -> CycleResult:
     """Convenience wrapper used by the CLI and tests."""
 
@@ -293,5 +308,6 @@ def run_cycle(
         enabled_kinds=enabled_kinds,
         disabled_kinds=disabled_kinds,
         include_suffixes=include_suffixes,
+        exclude_suffixes=exclude_suffixes,
     )
     return Orchestrator(config=config).run()

@@ -286,6 +286,69 @@ def test_cli_include_suffix_limits_scan(fake_repo: Path) -> None:
     assert "trailing_whitespace" not in payload["findings_by_kind"]
 
 
+def test_run_cycle_exclude_suffix_limits_scan(fake_repo: Path) -> None:
+    baseline = run_cycle(
+        repo_root=fake_repo,
+        apply=False,
+        commit=False,
+    ).to_dict()
+
+    # Exclude markdown files from scanning.
+    result = run_cycle(
+        repo_root=fake_repo,
+        apply=False,
+        commit=False,
+        exclude_suffixes=[".md"],
+    )
+    payload = result.to_dict()
+
+    # Excluding .md should reduce total findings in this fixture.
+    assert payload["totals"]["findings"] < baseline["totals"]["findings"]
+    # Python findings remain.
+    assert payload["findings_by_kind"]["trailing_whitespace"] >= 1
+
+
+def test_cli_exclude_suffix_limits_scan(fake_repo: Path) -> None:
+    baseline_proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--quiet",
+            "--summary-path",
+            str(fake_repo / "summary_baseline.json"),
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert baseline_proc.returncode == 0
+    baseline = json.loads((fake_repo / "summary_baseline.json").read_text())
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--exclude-suffix",
+            ".md",
+            "--quiet",
+            "--summary-path",
+            str(fake_repo / "summary_exclude.json"),
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    payload = json.loads((fake_repo / "summary_exclude.json").read_text())
+    assert payload["totals"]["findings"] < baseline["totals"]["findings"]
+
+
 def test_commit_requires_apply(fake_repo: Path) -> None:
     """The CLI rejects --commit without --apply."""
 
@@ -324,7 +387,8 @@ def test_cli_list_kinds_outputs_supported_kinds() -> None:
         text=True,
     )
     assert proc.returncode == 0
-    output_lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    output_lines = [line.strip()
+                    for line in proc.stdout.splitlines() if line.strip()]
     assert "trailing_whitespace" in output_lines
     assert "missing_final_newline" in output_lines
     assert "remove_zero_width_chars" in output_lines

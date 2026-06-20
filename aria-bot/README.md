@@ -58,6 +58,9 @@ python -m aria_bot --list-kinds
 # Restrict analysis to selected file suffixes.
 python -m aria_bot --include-suffix .md --include-suffix .yaml
 
+# Exclude selected suffixes from analysis.
+python -m aria_bot --exclude-suffix .md
+
 # Compact one-line JSON summary output.
 python -m aria_bot --output-format compact
 

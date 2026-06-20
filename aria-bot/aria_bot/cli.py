@@ -57,6 +57,15 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--exclude-suffix",
+        action="append",
+        default=None,
+        help=(
+            "Exclude selected file suffixes from analysis. "
+            "Can be passed multiple times."
+        ),
+    )
+    parser.add_argument(
         "--enable-kind",
         action="append",
         choices=SUPPORTED_KINDS,
@@ -158,6 +167,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         enabled_kinds=args.enable_kind,
         disabled_kinds=args.disable_kind,
         include_suffixes=args.include_suffix,
+        exclude_suffixes=args.exclude_suffix,
     )
 
     result_dict = result.to_dict()
