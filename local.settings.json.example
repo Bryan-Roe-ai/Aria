@@ -30,6 +30,8 @@
     "DEFAULT_AI_PROVIDER": "auto",
     "# Aria web UI LLM provider (ollama|lmstudio|auto|local|azure|agi) - set azure to match Azure OpenAI; falls back to DEFAULT_AI_PROVIDER": "",
     "ARIA_LLM_PROVIDER": "",
+    "# Aria 3D stage proxy target for /api/aria/* routes on the Functions host": "",
+    "ARIA_STAGE_BASE_URL": "http://127.0.0.1:8080",
     "# AGI reasoning persistence (JSONL audit log written to data_out/agi_reasoning.jsonl by default)": "",
     "QAI_AGI_PERSIST": "true",
     "QAI_AGI_PERSIST_PATH": "data_out/agi_reasoning.jsonl"

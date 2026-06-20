@@ -3115,7 +3115,11 @@
         // Allow chat.js to wire up vision and avatar features
         // The embedded controller will handle streaming chat separately
         window.ARIA_EMBEDDED = true;
-        window.ARIA_STAGE_API_BASE = window.ARIA_STAGE_API_BASE || 'http://127.0.0.1:8080';
+        if (window.ARIA_STAGE_API_BASE == null) {
+            window.ARIA_STAGE_API_BASE = /\/api\/chat-web/i.test(window.location.pathname)
+                ? window.location.origin
+                : 'http://127.0.0.1:8080';
+        }
         window.ARIA_STAGE_BRIDGE_ENABLED = window.ARIA_STAGE_BRIDGE_ENABLED !== false;
 
         // Pupil cursor tracking - both eyes
@@ -4331,7 +4335,7 @@
         async function bridgeAssistantTextToStage(text) {
             if (!window.ARIA_STAGE_BRIDGE_ENABLED || !text) return;
             if (!extractAriaTags(text).length && text.indexOf('[aria:') === -1) return;
-            var base = window.ARIA_STAGE_API_BASE || 'http://127.0.0.1:8080';
+            var base = window.ARIA_STAGE_API_BASE || window.location.origin || 'http://127.0.0.1:8080';
             try {
                 var resp = await fetch(base + '/api/aria/execute', {
                     method: 'POST',

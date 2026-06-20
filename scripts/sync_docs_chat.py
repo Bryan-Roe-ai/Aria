@@ -12,11 +12,12 @@ DST = REPO_ROOT / "docs" / "chat"
 
 
 def sync_docs_chat() -> None:
-    """Copy chat.js and AGI stream utilities into docs/chat."""
+    """Copy chat web assets into docs/chat."""
     DST.mkdir(parents=True, exist_ok=True)
     static_dst = DST / "static"
     static_dst.mkdir(parents=True, exist_ok=True)
 
+    shutil.copy2(SRC / "index.html", DST / "index.html")
     shutil.copy2(SRC / "chat.js", DST / "chat.js")
     shutil.copy2(SRC / "static" / "agi_stream_utils.js", static_dst / "agi_stream_utils.js")
 

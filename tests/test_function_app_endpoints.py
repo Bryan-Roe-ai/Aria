@@ -695,6 +695,66 @@ class TestChatWebAssets:
 
 
 # ===========================================================================
+# Aria stage proxy — /api/aria/*
+# ===========================================================================
+class TestAriaStageProxy:
+    def test_aria_execute_proxy_forwards_post(self, app_module, monkeypatch):
+        captured: dict = {}
+
+        class _FakeResponse:
+            content = b'{"status":"ok","tags":["[aria:gesture:wave]"]}'
+            status_code = 200
+            headers = {"Content-Type": "application/json"}
+
+        def _fake_request(method, url, data=None, headers=None, timeout=None):
+            captured["method"] = method
+            captured["url"] = url
+            captured["data"] = data
+            captured["headers"] = headers
+            return _FakeResponse()
+
+        import requests
+
+        monkeypatch.setattr(requests, "request", _fake_request)
+
+        req = _mock_request(
+            "POST",
+            body={"command": "[aria:gesture:wave]", "auto_execute": True},
+        )
+        resp = app_module.aria_execute_proxy(req)
+
+        assert resp.status_code == 200
+        assert captured["url"].endswith("/api/aria/execute")
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+
+    def test_aria_state_proxy_forwards_get(self, app_module, monkeypatch):
+        captured: dict = {}
+
+        class _FakeResponse:
+            content = b'{"aria":{"x":50,"y":50},"objects":{}}'
+            status_code = 200
+            headers = {"Content-Type": "application/json"}
+
+        def _fake_get(url, params=None, timeout=None):
+            captured["url"] = url
+            captured["params"] = params
+            return _FakeResponse()
+
+        import requests
+
+        monkeypatch.setattr(requests, "get", _fake_get)
+
+        req = _mock_request("GET")
+        resp = app_module.aria_state_proxy(req)
+
+        assert resp.status_code == 200
+        assert captured["url"].endswith("/api/aria/state")
+        data = json.loads(resp.get_body())
+        assert "aria" in data
+
+
+# ===========================================================================
 # AGI endpoint tests — /api/agi/analyze and /api/agi/status
 # ===========================================================================
 class TestAgiEndpoints:

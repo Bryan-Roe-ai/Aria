@@ -385,6 +385,70 @@ def serve_chat_global_upgrade_css(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # =============================================================================
+# Aria stage proxy — forwards /api/aria/* to the 3D stage server (port 8080)
+# =============================================================================
+
+ARIA_STAGE_BASE_URL = os.getenv(
+    "ARIA_STAGE_BASE_URL", "http://127.0.0.1:8080").rstrip("/")
+
+
+def _proxy_aria_request(req: func.HttpRequest, subpath: str) -> func.HttpResponse:
+    """Forward a request to the Aria stage HTTP API."""
+    import requests
+
+    url = f"{ARIA_STAGE_BASE_URL}/api/aria/{subpath}"
+    try:
+        if req.method.upper() == "GET":
+            resp = requests.get(url, params=dict(req.params), timeout=10)
+        else:
+            body = req.get_body()
+            resp = requests.request(
+                req.method.upper(),
+                url,
+                data=body,
+                headers={"Content-Type": "application/json"},
+                timeout=30,
+            )
+        content_type = resp.headers.get("Content-Type", "application/json")
+        return func.HttpResponse(
+            resp.content,
+            status_code=resp.status_code,
+            mimetype=content_type.split(";")[0].strip(),
+            headers=create_cors_response_headers(),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("Aria stage proxy failed for %s: %s", subpath, exc)
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Aria stage unavailable: {exc}"}),
+            status_code=502,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="aria/state", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy GET /api/aria/state to the Aria stage server."""
+    return _proxy_aria_request(req, "state")
+
+
+@app.route(route="aria/execute", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_execute_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy POST /api/aria/execute to the Aria stage server."""
+    if req.method.upper() == "OPTIONS":
+        return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return _proxy_aria_request(req, "execute")
+
+
+@app.route(route="aria/command", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy POST /api/aria/command to the Aria stage server."""
+    if req.method.upper() == "OPTIONS":
+        return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return _proxy_aria_request(req, "command")
+
+
+# =============================================================================
 # Chat API - Backend for AI interactions
 # =============================================================================
 
@@ -2951,6 +3015,9 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "/api/agi/stream",
             "/api/agi/status",
             "/api/agi/persistence",
+            "/api/aria/state",
+            "/api/aria/execute",
+            "/api/aria/command",
             "/api/vision/infer",
             "/api/vision/batch-infer",
             "/api/image/generate",
@@ -3036,6 +3103,12 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
                 "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/persistence",
                 "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/state",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/execute",
+                "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
+            {"route": "aria/command",
+                "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "chat", "methods": [
                 "POST", "OPTIONS"], "authLevel": "anonymous"},
             {

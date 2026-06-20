@@ -4,67 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aria Chat — Streaming AI Interface</title>
-    <meta name="description" content="Streaming chat UI with multi-provider support, markdown rendering, code highlighting, and backend diagnostics for the Aria platform.">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://bryan-roe.github.io/Aria/chat/">
-    <meta name="theme-color" content="#0f9d89">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://bryan-roe.github.io/Aria/chat/">
-    <meta property="og:title" content="Aria Chat — Streaming AI Interface">
-    <meta property="og:description" content="Streaming chat UI with multi-provider support, markdown rendering, code highlighting, and backend diagnostics.">
-    <meta property="og:image" content="https://bryan-roe.github.io/Aria/og-image.svg">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Aria Chat — Streaming AI Interface">
-    <meta name="twitter:image" content="https://bryan-roe.github.io/Aria/og-image.svg">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23122033'/%3E%3Ccircle cx='50' cy='36' r='16' fill='%230f9d89'/%3E%3Cpath d='M24 78c5-14 18-22 26-22s21 8 26 22' stroke='%23f7f2e8' stroke-width='10' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+    <title>QAI Chat - Quantum AI System</title>
     <!-- Marked.js for markdown rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Highlight.js for code syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        :root {
-            --teal: #0f9d89;
-            --teal-hover: #0a7a6d;
-            --coral: #d95b43;
-            --gold: #d3a53e;
-            --ink: #122033;
-            --ink-soft: #5f6874;
-            --paper: #f7f2e8;
-            --line: rgba(18, 32, 51, 0.12);
-            --shadow: 0 16px 48px rgba(18, 32, 51, 0.14);
-        }
-
         body {
-            font-family: "Instrument Sans", system-ui, sans-serif;
-            background: linear-gradient(180deg, #fbf7ef 0%, #f7f2e8 56%, #efe5d6 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
 
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background:
-                radial-gradient(circle at 12% 18%, rgba(15, 157, 137, 0.16), transparent 30%),
-                radial-gradient(circle at 88% 12%, rgba(217, 91, 67, 0.12), transparent 26%),
-                radial-gradient(circle at 50% 78%, rgba(211, 165, 62, 0.12), transparent 28%);
-            pointer-events: none;
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .chat-container {
@@ -77,13 +53,14 @@
             max-height: 500px;
             background: rgba(255, 255, 255, 0.98);
             border-radius: 25px;
-            box-shadow: var(--shadow), 0 0 0 2px rgba(15, 157, 137, 0.2);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(147, 51, 234, 0.3);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 1;
-            pointer-events: auto;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
             z-index: 10002;
         }
 
@@ -91,27 +68,28 @@
 
         .chat-container.visible {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
             transform: translateX(-50%);
         }
 
         .chat-container:hover {
-            box-shadow: var(--shadow), 0 0 0 2px rgba(15, 157, 137, 0.35);
+            box-shadow: 0 30px 90px rgba(102, 126, 234, 0.4), 0 0 0 2px rgba(102, 126, 234, 0.5);
         }
 
         .chat-container.dragging {
             cursor: grabbing;
-            box-shadow: 0 35px 80px rgba(18, 32, 51, 0.2), 0 0 0 3px rgba(15, 157, 137, 0.5);
+            box-shadow: 0 35px 100px rgba(102, 126, 234, 0.5), 0 0 0 3px rgba(102, 126, 234, 0.8);
         }
 
         .chat-header {
-            background: linear-gradient(135deg, var(--teal) 0%, var(--teal-hover) 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(15, 157, 137, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -321,14 +299,14 @@
         }
 
         .message-content blockquote {
-            border-left: 4px solid #0f9d89;
+            border-left: 4px solid #667eea;
             padding-left: 12px;
             margin: 8px 0;
             color: #666;
         }
 
         .message-content a {
-            color: #0f9d89;
+            color: #667eea;
             text-decoration: none;
         }
 
@@ -374,7 +352,7 @@
         }
 
         .message.user .message-content {
-            background: linear-gradient(135deg, #0f9d89 0%, #0a7a6d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-bottom-right-radius: 4px;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -429,7 +407,7 @@
         .typing-indicator span {
             height: 10px;
             width: 10px;
-            background: linear-gradient(135deg, #0f9d89 0%, #0a7a6d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: inline-block;
             margin: 0 3px;
@@ -498,7 +476,7 @@
         }
 
         .model-selector select:focus {
-            border-color: #0f9d89;
+            border-color: #667eea;
         }
 
         .keyboard-hints {
@@ -528,7 +506,7 @@
         }
 
         #messageInput:focus {
-            border-color: #0f9d89;
+            border-color: #667eea;
             box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
             transform: translateY(-1px);
         }
@@ -543,7 +521,7 @@
         }
 
         #sendButton {
-            background: linear-gradient(135deg, #0f9d89 0%, #0a7a6d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             padding: 12px 28px;
@@ -604,7 +582,7 @@
 
         /* Vision upload button */
         #visionUploadButton {
-            background: linear-gradient(135deg, #d95b43 0%, #b8432f 100%);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -726,7 +704,7 @@
         }
 
         .control-button:hover {
-            background: linear-gradient(135deg, #0f9d89 0%, #0a7a6d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-color: transparent;
             transform: translateY(-2px);
@@ -866,7 +844,7 @@
         }
 
         body.dark-theme #messageInput:focus {
-            border-color: #0f9d89;
+            border-color: #667eea;
         }
 
         body.dark-theme .control-button {
@@ -990,12 +968,12 @@
         }
 
         .quantum-mode-btn {
-            background: linear-gradient(135deg, #0f9d89 0%, #0a7a6d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transition: all 0.3s;
         }
 
         .quantum-mode-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0a7a6d 0%, #0f9d89 100%);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
@@ -1024,7 +1002,7 @@
         }
 
         .quantum-indicator {
-            color: #0f9d89;
+            color: #667eea;
             font-weight: bold;
             animation: quantumPulse 2s infinite;
             display: none;
@@ -1056,7 +1034,7 @@
         }
 
         .quantum-panel-header {
-            background: linear-gradient(135deg, #0f9d89 0%, #0a7a6d 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 15px 20px;
             display: flex;
@@ -1104,7 +1082,7 @@
         }
 
         .quantum-value {
-            color: #0f9d89;
+            color: #667eea;
             font-weight: bold;
         }
 
@@ -1149,7 +1127,7 @@
         .start-backend-btn {
             font-size: 13px;
             font-weight: 500;
-            background: #0f9d89;
+            background: #667eea;
             color: #fff;
             border: none;
             border-radius: 6px;
@@ -1159,7 +1137,7 @@
         }
 
         .start-backend-btn:hover {
-            background: #0a7a6d;
+            background: #764ba2;
         }
 
         .max-tokens-input {
@@ -1425,7 +1403,7 @@
             padding: 6px 8px;
             border-radius: 6px;
             border: none;
-            background: linear-gradient(90deg, #0f9d89, #0a7a6d);
+            background: linear-gradient(90deg, #667eea, #764ba2);
             color: white;
             cursor: pointer;
         }
@@ -1963,7 +1941,7 @@
             position: absolute;
             width: 16px;
             height: 20px;
-            background: linear-gradient(145deg, #13b8a4 0%, #0f9d89 50%, #0a7a6d 100%);
+            background: linear-gradient(145deg, #7b68ee 0%, #667eea 50%, #5a67d8 100%);
             border-radius: 8px 8px 6px 6px;
             top: 150px;
             box-shadow:
@@ -1996,7 +1974,7 @@
             position: absolute;
             width: 14px;
             height: 18px;
-            background: linear-gradient(145deg, #13b8a4 0%, #0f9d89 50%, #0a7a6d 100%);
+            background: linear-gradient(145deg, #7b68ee 0%, #667eea 50%, #5a67d8 100%);
             border-radius: 7px 7px 5px 5px;
             bottom: -18px;
             left: 1px;
@@ -2228,6 +2206,76 @@
 
         body.dark-theme .character-message::after {
             border-top-color: #3a3a3a;
+        }
+
+        /* Expression overlays (canonical [aria:expression:*] tags) */
+        .anime-character.expression-smile .character-mouth,
+        .anime-character.expression-happy .character-mouth {
+            height: 14px;
+            border-radius: 0 0 18px 18px;
+            background: #e85d8a;
+        }
+
+        .anime-character.expression-sad .character-head {
+            transform: rotate(8deg);
+        }
+
+        .anime-character.expression-sad .character-mouth {
+            height: 8px;
+            border-radius: 18px 18px 0 0;
+            margin-top: 6px;
+        }
+
+        .anime-character.expression-surprised .eye {
+            transform: scaleY(1.18);
+        }
+
+        .anime-character.expression-surprised .character-mouth {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-left: 32px;
+        }
+
+        .anime-character.expression-thinking .character-head {
+            transform: rotate(-6deg);
+        }
+
+        .anime-character.expression-wink .eye.left {
+            transform: scaleY(0.15);
+        }
+
+        .anime-character.expression-confused .character-head {
+            animation: ariaConfusedTilt 900ms ease-in-out 1;
+        }
+
+        @keyframes ariaConfusedTilt {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        .character-held-prop {
+            position: absolute;
+            right: -8px;
+            top: 72px;
+            font-size: 22px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+            opacity: 0;
+            transform: scale(0.6);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: none;
+            z-index: 12;
+        }
+
+        .character-held-prop.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .anime-character.facing-left {
+            transform: scaleX(-1);
         }
 
         /* Interactive Objects */
@@ -2531,7 +2579,7 @@
         }
 
         .bubble-msg.user {
-            background: linear-gradient(135deg, #0f9d89, #0a7a6d);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             align-self: flex-end;
         }
@@ -2649,7 +2697,7 @@
             padding: 8px 10px;
             border-radius: 8px;
             border: none;
-            background: linear-gradient(135deg, #0f9d89, #0a7a6d);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
             cursor: pointer;
         }
@@ -2773,50 +2821,12 @@
         .aria-avatar-hidden {
             display: none;
         }
-
-        /* Demo Mode Banner */
-        .demo-banner {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            z-index: 9999;
-            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            text-align: center;
-            max-width: 90%;
-        }
-
-        .demo-banner strong {
-            font-weight: 600;
-        }
-
-        .demo-banner a {
-            color: white;
-            text-decoration: underline;
-        }
     </style>
-    <link rel="stylesheet" href="../global-upgrade.css">
+    <link rel="stylesheet" href="/api/chat-web/global-upgrade.css">
 </head>
 
 <body>
 
-    <!-- Back Navigation -->
-    <a href="../"
-        style="position:fixed;top:16px;left:16px;z-index:10001;display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.8);text-decoration:none;font-size:.9em;font-weight:500;padding:8px 16px;background:rgba(0,0,0,.3);border-radius:8px;backdrop-filter:blur(8px);">←
-        Back to Aria Home</a>
-
-    <!-- Demo Mode Banner -->
-    <div class="demo-banner">
-        <strong>🌐 Demo Mode:</strong> Running with simulated responses.
-        For real AI chat with multiple providers,
-        <a href="https://github.com/Bryan-Roe/Aria" target="_blank">run locally</a>.
-    </div>
 
     <!-- AI-Generated Aria Avatar -->
     <div class="aria-avatar-container" id="ariaAvatarContainer" style="display: none;">
@@ -2890,6 +2900,7 @@
 
             <!-- Message bubble -->
             <div class="character-message">Hi! I'm Aria! ✨</div>
+            <div class="character-held-prop" id="characterHeldProp" aria-hidden="true"></div>
         </div>
     </div>
 
@@ -2983,7 +2994,7 @@
                 <button id="ttsDiagRun" class="tts-test-btn" type="button">Run test</button>
                 <button id="ttsDiagPlay" class="tts-test-btn" disabled type="button">Play</button>
                 <a id="ttsDiagDownload"
-                    style="display:none;font-size:12px;color:#0f9d89;text-decoration:underline;cursor:pointer">Download</a>
+                    style="display:none;font-size:12px;color:#667eea;text-decoration:underline;cursor:pointer">Download</a>
             </div>
 
             <h4 style="margin:6px 0 4px 0">Server environment</h4>
@@ -3025,10 +3036,26 @@
         </div>
     </div>
 
-    <div class="chat-container">
+    <div class="chat-container visible">
         <div class="chat-header">
-            <h1>🤖 QAI Chat</h1>
-            <div style="display:flex;align-items:center;gap:10px;position:relative;z-index:2">
+            <div style="display:flex;align-items:center;gap:12px">
+                <h1>🤖 QAI Chat</h1>
+                <nav style="display:flex;gap:6px;margin-left:8px">
+                    <a href="../aria/"
+                        style="color:rgba(255,255,255,0.8);text-decoration:none;font-size:12px;padding:3px 8px;border-radius:8px;background:rgba(255,255,255,0.12);transition:background 0.2s"
+                        onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.12)'">Aria</a>
+                    <a href="../dashboard/"
+                        style="color:rgba(255,255,255,0.8);text-decoration:none;font-size:12px;padding:3px 8px;border-radius:8px;background:rgba(255,255,255,0.12);transition:background 0.2s"
+                        onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.12)'">Dashboard</a>
+                    <a href="../store/"
+                        style="color:rgba(255,255,255,0.8);text-decoration:none;font-size:12px;padding:3px 8px;border-radius:8px;background:rgba(255,255,255,0.12);transition:background 0.2s"
+                        onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                        onmouseout="this.style.background='rgba(255,255,255,0.12)'">Store</a>
+                </nav>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
                 <div class="provider-info" id="providerInfo">Connecting...</div>
                 <div class="browser-llm-controls" id="browserLlmControls">
                     <label class="browser-llm-toggle" title="Run responses locally in this browser">
@@ -3044,6 +3071,10 @@
                 </div>
                 <button id="agiModeButton" class="agi-mode-btn" type="button"
                     title="Route prompts through the AGI reasoning pipeline">🧠 AGI OFF</button>
+                <button
+                    onclick="document.body.classList.toggle('dark-theme');localStorage.setItem('chat-dark',document.body.classList.contains('dark-theme'))"
+                    style="background:rgba(255,255,255,0.15);border:none;color:white;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:14px;transition:background 0.2s"
+                    title="Toggle dark mode (Ctrl/Cmd+D)">🌙</button>
             </div>
         </div>
 
@@ -3066,6 +3097,15 @@
                 <img id="visionPreviewImage" alt="Image preview">
                 <button id="visionClearButton">✕ Clear</button>
             </div>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span id="statusText">Ready</span>
+                </div>
+                <div style="display:flex;gap:12px">
+                    <span class="stat-item" id="msgCount">Messages: 0</span>
+                    <span class="stat-item" id="charCount">Chars: 0</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3075,6 +3115,12 @@
         // Allow chat.js to wire up vision and avatar features
         // The embedded controller will handle streaming chat separately
         window.ARIA_EMBEDDED = true;
+        if (window.ARIA_STAGE_API_BASE == null) {
+            window.ARIA_STAGE_API_BASE = /\/api\/chat-web/i.test(window.location.pathname)
+                ? window.location.origin
+                : 'http://127.0.0.1:8080';
+        }
+        window.ARIA_STAGE_BRIDGE_ENABLED = window.ARIA_STAGE_BRIDGE_ENABLED !== false;
 
         // Pupil cursor tracking - both eyes
         document.addEventListener('DOMContentLoaded', function () {
@@ -3157,23 +3203,20 @@
             });
         });
     </script>
-    <script src="static/agi_stream_utils.js"></script>
-    <script src="chat.js"></script>
+    <script>
+        // Auto-apply saved dark mode preference
+        (function () {
+            if (localStorage.getItem('chat-dark') === 'true') document.body.classList.add('dark-theme');
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'd') { e.preventDefault(); document.body.classList.toggle('dark-theme'); localStorage.setItem('chat-dark', document.body.classList.contains('dark-theme')); }
+            });
+        })();
+    </script>
+    <script src="/api/chat-web/static/agi_stream_utils.js"></script>
+    <script src="/api/chat-web/chat.js"></script>
     <script>
         // Anime Character Controller with AI Chat
         (function () {
-            // GitHub Pages Demo Mode Configuration
-            const DEMO_MODE = true;
-            const DEMO_RESPONSES = [
-                "Hello! I'm Aria in demo mode. I can respond to your messages with simulated AI responses!",
-                "In demo mode, I'm using pre-programmed responses. For real AI chat, run me locally with the Python backend!",
-                "That's interesting! In full mode, I can access Azure OpenAI, OpenAI, or local models for more intelligent conversations.",
-                "I understand! When running with the backend, I can have contextual conversations and remember our chat history.",
-                "Demo mode is great for trying out the interface! For the full experience with streaming responses and multiple providers, check out the GitHub repository.",
-                "I'm running entirely in your browser right now! No server needed for this demo."
-            ];
-            let demoResponseIndex = 0;
-
             var character = document.getElementById('animeCharacter');
             var chatContainer = document.querySelector('.chat-container');
             var messageInput = document.getElementById('messageInput');
@@ -3183,28 +3226,7 @@
             var browserLlmToggle = document.getElementById('browserLlmToggle');
             var browserLlmModelSelect = document.getElementById('browserLlmModelSelect');
             var browserLlmReloadBtn = document.getElementById('browserLlmReloadBtn');
-            var agiModeButton = document.getElementById('agiModeButton');
-            var agiMode = localStorage.getItem('chatAgiMode') === '1';
-
-            if (agiModeButton) {
-                if (agiMode) {
-                    agiModeButton.textContent = '🧠 AGI ON';
-                    agiModeButton.classList.add('active');
-                }
-                agiModeButton.addEventListener('click', function () {
-                    agiMode = !agiMode;
-                    if (agiMode) {
-                        agiModeButton.textContent = '🧠 AGI ON';
-                        agiModeButton.classList.add('active');
-                        updateProviderLabel('AGI');
-                    } else {
-                        agiModeButton.textContent = '🧠 AGI OFF';
-                        agiModeButton.classList.remove('active');
-                        updateProviderLabel(DEMO_MODE ? 'Demo Mode (Local)' : 'Connected');
-                    }
-                    try { localStorage.setItem('chatAgiMode', agiMode ? '1' : '0'); } catch (e) { }
-                });
-            }
+            // AGI toggle + send routing handled by chat.js (initEmbeddedTransport)
 
             // ==== Avatar & Vision Handlers ====
             // Removed duplicate handlers - chat.js module now handles all vision upload and avatar generation
@@ -3231,6 +3253,37 @@
 
             // AI Chat functionality
             var conversationHistory = [];
+            var COMPACTION_PLACEHOLDER_LINES = {
+                'compacted conversation': true,
+                'conversation compacted': true
+            };
+
+            function isSyntheticCompactionPlaceholder(content) {
+                if (typeof content !== 'string') return false;
+                var normalizedLines = content
+                    .split(/\r?\n/)
+                    .map(function (line) { return line.trim().toLowerCase(); })
+                    .filter(Boolean);
+                return normalizedLines.length > 0 && normalizedLines.every(function (line) {
+                    return !!COMPACTION_PLACEHOLDER_LINES[line];
+                });
+            }
+
+            function sanitizeConversationHistory(items) {
+                return (items || []).filter(function (msg) {
+                    if (!msg || typeof msg !== 'object') return false;
+                    if (typeof msg.content !== 'string') return true;
+                    return !isSyntheticCompactionPlaceholder(msg.content);
+                });
+            }
+
+            function pushConversationMessage(role, content) {
+                if (typeof content === 'string' && isSyntheticCompactionPlaceholder(content)) {
+                    return false;
+                }
+                conversationHistory.push({ role: role, content: content });
+                return true;
+            }
 
             // ---- Browser LLM (client-side) ----
             // Commands:
@@ -3250,7 +3303,6 @@
             function persistBrowserLLMState() {
                 try { localStorage.setItem('browserLlmState', JSON.stringify(browserLLMState)); } catch (e) { }
             }
-
             function publishBrowserLLMStatus() {
                 try {
                     window.__BROWSER_LLM_ENABLED__ = !!browserLLMState.enabled;
@@ -3307,8 +3359,8 @@
                     persistBrowserLLMState();
                     syncBrowserLLMControls();
                     publishBrowserLLMStatus();
-                    addMessage('system', 'Backend/demo mode enabled.');
-                    updateProviderLabel('Backend/demo');
+                    addMessage('system', 'Backend mode enabled. Using /api/chat again.');
+                    updateProviderLabel('Backend chat');
                     return true;
                 }
                 if (lower === '/browser status') {
@@ -3340,7 +3392,7 @@
                         return true;
                     }
                     browserLLMState.model = newModel;
-                    browserLLMGenerator = null;
+                    browserLLMGenerator = null; // force reload
                     persistBrowserLLMState();
                     syncBrowserLLMControls();
                     publishBrowserLLMStatus();
@@ -3378,7 +3430,7 @@
 
             async function generateBrowserReply(userText) {
                 var generator = await ensureBrowserLLMLoaded();
-                var recent = (conversationHistory || []).slice(-6).map(function (m) {
+                var recent = sanitizeConversationHistory(conversationHistory).slice(-6).map(function (m) {
                     return (m.role === 'assistant' ? 'Assistant: ' : 'User: ') + (m.content || '');
                 }).join('\n');
 
@@ -3429,7 +3481,7 @@
                         updateProviderLabel('Browser LLM (local)');
                         try { showToast('Browser LLM enabled'); } catch (e) { }
                     } else {
-                        updateProviderLabel('Backend/demo');
+                        updateProviderLabel('Backend chat');
                         try { showToast('Browser LLM disabled'); } catch (e) { }
                     }
                 });
@@ -4181,438 +4233,156 @@
             return messageDiv;
         }
 
-        // Stream helper: posts to /api/chat/stream and parses SSE events (data/meta/token/done/error)
-        function streamChat(messages, handlers) {
-            handlers = handlers || {};
-            var controller = new AbortController();
-            var signal = controller.signal;
+        // Send + AGI routing delegated to chat.js (__ariaChatTransport)
 
-            (async function () {
-                try {
-                    var resp = await fetch('/api/chat/stream', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: messages, stream: true }),
-                        signal: signal
-                    });
+        var ariaHeldObject = null;
+        var ariaExpressionTimer = null;
+        var OBJECT_EMOJI = {
+            apple: '🍎', book: '📚', cup: '☕', ball: '⚽', flower: '🌸', bear: '🧸',
+            box: '📦', star: '⭐', heart: '💖', key: '🔑', gem: '💎'
+        };
 
-                    if (!resp.ok) {
-                        var txt = '';
-                        try { txt = await resp.text(); } catch (e) { }
-                        handlers.onError && handlers.onError({ error: 'Stream fetch failed', detail: txt });
-                        return;
-                    }
-
-                    var reader = resp.body.getReader();
-                    var decoder = new TextDecoder('utf-8');
-                    var buf = '';
-
-                    function processBlock(block) {
-                        if (!block) return;
-                        var lines = block.split('\n');
-                        var event = null;
-                        var dataLines = [];
-                        for (var i = 0; i < lines.length; i++) {
-                            var line = lines[i];
-                            if (line.startsWith('event:')) { event = line.slice(6).trim(); }
-                            else if (line.startsWith('data:')) { dataLines.push(line.slice(5).trim()); }
-                        }
-                        var dataStr = dataLines.join('\n');
-                        if (!event) {
-                            // default data block
-                            try { var obj = JSON.parse(dataStr); if (obj && obj.delta !== undefined) { handlers.onData && handlers.onData(obj); } } catch (e) { }
-                        } else if (event === 'meta') {
-                            try { var meta = JSON.parse(dataStr); handlers.onMeta && handlers.onMeta(meta); } catch (e) { }
-                        } else if (event === 'token') {
-                            try { var tok = JSON.parse(dataStr); handlers.onToken && handlers.onToken(tok); } catch (e) { }
-                        } else if (event === 'movement') {
-                            try {
-                                var movement = JSON.parse(dataStr);
-                                if (movement.commands && movement.commands.length > 0) {
-                                    executeMovementCommands(movement.commands);
-                                }
-                            } catch (e) { console.error('Movement parse error:', e); }
-                        } else if (event === 'done') {
-                            handlers.onDone && handlers.onDone();
-                        } else if (event === 'error') {
-                            try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
-                        }
-                    }
-
-                    while (true) {
-                        var r = await reader.read();
-                        if (r.done) break;
-                        buf += decoder.decode(r.value, { stream: true });
-                        // parse blocks separated by double newline
-                        var idx = buf.indexOf('\n\n');
-                        while (idx !== -1) {
-                            var block = buf.slice(0, idx);
-                            buf = buf.slice(idx + 2);
-                            processBlock(block.trim());
-                            idx = buf.indexOf('\n\n');
-                        }
-                    }
-
-                    // Process any leftover
-                    if (buf && buf.trim().length) processBlock(buf.trim());
-                    // completed stream
-                    handlers.onDone && handlers.onDone();
-                } catch (e) {
-                    if (e && e.name === 'AbortError') {
-                        handlers.onError && handlers.onError({ error: 'aborted' });
-                    } else {
-                        handlers.onError && handlers.onError({ error: (e && e.message) || String(e) });
-                    }
-                }
-            })();
-
-            return {
-                cancel: function () { try { controller.abort(); } catch (e) { } }
-            };
+        function shrugArms() {
+            setArmRotation('left', -5, 20);
+            setArmRotation('right', 5, 20);
+            setTimeout(function () { resetArms(); }, 700);
         }
 
-        function extractAgiOutputText(delta) {
-            if (!delta || typeof delta !== 'object') return '';
-            if (delta.type === 'output') return String(delta.data || '');
-            return '';
+        function thumbsUpArms() {
+            setArmRotation('left', -10, 0);
+            setArmRotation('right', 75, -20);
+            setTimeout(function () { resetArms(); }, 900);
         }
 
-        function renderAgiDeltaHtml(delta) {
-            if (typeof AGIStreamUtils !== 'undefined' && AGIStreamUtils.prettyPrintDelta) {
-                return AGIStreamUtils.prettyPrintDelta(delta);
-            }
-            return '<pre>' + JSON.stringify(delta) + '</pre>';
+        function setCharacterFacing(direction) {
+            if (!character) return;
+            if (direction === 'left') character.classList.add('facing-left');
+            else character.classList.remove('facing-left');
         }
 
-        function streamAgi(messages, handlers) {
-            handlers = handlers || {};
-            var controller = new AbortController();
-            var signal = controller.signal;
-
-            (async function () {
-                try {
-                    var resp = await fetch('/api/agi/stream', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: messages }),
-                        signal: signal
-                    });
-
-                    if (!resp.ok) {
-                        var txt = '';
-                        try { txt = await resp.text(); } catch (e) { }
-                        handlers.onError && handlers.onError({ error: 'AGI stream fetch failed', detail: txt });
-                        return;
-                    }
-
-                    var reader = resp.body.getReader();
-                    var decoder = new TextDecoder('utf-8');
-                    var buf = '';
-                    var doneEmitted = false;
-
-                    function processBlock(block) {
-                        if (!block) return;
-                        var lines = block.split('\n');
-                        var event = null;
-                        var dataLines = [];
-                        for (var i = 0; i < lines.length; i++) {
-                            var line = lines[i];
-                            if (line.startsWith('event:')) { event = line.slice(6).trim(); }
-                            else if (line.startsWith('data:')) { dataLines.push(line.slice(5).trim()); }
-                        }
-                        var dataStr = dataLines.join('\n');
-                        if (!dataStr || dataStr === '[DONE]') {
-                            if (dataStr === '[DONE]') {
-                                doneEmitted = true;
-                                handlers.onDone && handlers.onDone();
-                            }
-                            return;
-                        }
-                        if (event === 'meta') {
-                            try { var meta = JSON.parse(dataStr); handlers.onMeta && handlers.onMeta(meta); } catch (e) { }
-                        } else if (event === 'error') {
-                            try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
-                        } else {
-                            try {
-                                var obj = JSON.parse(dataStr);
-                                if (obj && obj.delta !== undefined) {
-                                    handlers.onData && handlers.onData(obj);
-                                }
-                            } catch (e) { }
-                        }
-                    }
-
-                    while (true) {
-                        var r = await reader.read();
-                        if (r.done) break;
-                        buf += decoder.decode(r.value, { stream: true });
-                        var idx = buf.indexOf('\n\n');
-                        while (idx !== -1) {
-                            var block = buf.slice(0, idx);
-                            buf = buf.slice(idx + 2);
-                            processBlock(block.trim());
-                            idx = buf.indexOf('\n\n');
-                        }
-                    }
-
-                    if (buf && buf.trim().length) processBlock(buf.trim());
-                    if (!doneEmitted) handlers.onDone && handlers.onDone();
-                } catch (e) {
-                    if (e && e.name === 'AbortError') {
-                        handlers.onError && handlers.onError({ error: 'aborted' });
-                    } else {
-                        handlers.onError && handlers.onError({ error: (e && e.message) || String(e) });
-                    }
-                }
-            })();
-
-            return {
-                cancel: function () { try { controller.abort(); } catch (e) { } }
-            };
+        function setAriaExpression(expression) {
+            if (!character) return;
+            var expr = String(expression || 'neutral').toLowerCase().trim();
+            var aliases = { happy: 'smile', grin: 'smile', joy: 'smile', upset: 'sad', unhappy: 'sad', shock: 'surprised', shocked: 'surprised', ponder: 'thinking', think: 'thinking' };
+            expr = aliases[expr] || expr;
+            character.classList.remove('expression-smile', 'expression-happy', 'expression-sad', 'expression-surprised', 'expression-thinking', 'expression-wink', 'expression-confused');
+            if (expr && expr !== 'neutral') character.classList.add('expression-' + expr);
+            if (ariaExpressionTimer) clearTimeout(ariaExpressionTimer);
+            ariaExpressionTimer = setTimeout(function () {
+                character.classList.remove('expression-smile', 'expression-happy', 'expression-sad', 'expression-surprised', 'expression-thinking', 'expression-wink', 'expression-confused');
+            }, 4500);
         }
 
-        async function sendMessage() {
-            var message = messageInput.value.trim();
-            if (!message) return;
+        function showCharacterMessage(text) {
+            if (!character) return;
+            var bubble = character.querySelector('.character-message');
+            if (!bubble) return;
+            bubble.textContent = String(text || '').slice(0, 120);
+            bubble.style.opacity = '1';
+            setTimeout(function () { bubble.style.opacity = ''; }, 3500);
+        }
 
-            if (handleBrowserLLMCommand(message)) {
-                messageInput.value = '';
+        function updateHeldPropDisplay() {
+            var propEl = document.getElementById('characterHeldProp');
+            if (!propEl) return;
+            if (!ariaHeldObject) {
+                propEl.textContent = '';
+                propEl.classList.remove('visible');
+                propEl.setAttribute('aria-hidden', 'true');
                 return;
             }
+            propEl.textContent = OBJECT_EMOJI[String(ariaHeldObject).toLowerCase()] || '📦';
+            propEl.classList.add('visible');
+            propEl.setAttribute('aria-hidden', 'false');
+        }
 
-            // interrupt any current speech/audio when user sends input
-            cancelSpeak();
-            addMessage('user', message);
-            messageInput.value = '';
-            conversationHistory.push({ role: 'user', content: message });
+        function ariaPickup(objectId) {
+            if (!objectId) return;
+            ariaHeldObject = String(objectId).trim();
+            reachUp();
+            updateHeldPropDisplay();
+            try { showToast('Picked up ' + ariaHeldObject); } catch (e) { }
+        }
 
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var localReply = await generateBrowserReply(message);
-                    addMessage('assistant', localReply);
-                    conversationHistory.push({ role: 'assistant', content: localReply });
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(localReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(localReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                    updateProviderLabel('Browser LLM error');
-                }
+        function ariaDrop() {
+            if (!ariaHeldObject) {
+                try { showToast('Not holding anything'); } catch (e) { }
                 return;
             }
+            var dropped = ariaHeldObject;
+            ariaHeldObject = null;
+            updateHeldPropDisplay();
+            resetArms();
+            try { showToast('Dropped ' + dropped); } catch (e) { }
+        }
 
-            if (agiMode) {
-                if (DEMO_MODE) {
-                    try {
-                        updateProviderLabel('AGI Demo');
-                        await new Promise(function (resolve) { setTimeout(resolve, 400); });
-                        var demoReply = DEMO_RESPONSES[demoResponseIndex % DEMO_RESPONSES.length];
-                        demoResponseIndex++;
-                        var demoSteps = [
-                            { type: 'analysis', data: 'intent=general | complexity=simple | demo=true' },
-                            { type: 'step', data: { agent: 'general', action: 'simulate_reasoning' } },
-                            {
-                                type: 'output',
-                                data: demoReply + ' Run the Functions backend locally to use live /api/agi/stream reasoning.'
-                            }
-                        ];
-                        var agiReasoningHtml = '';
-                        var agiReply = '';
-                        demoSteps.forEach(function (delta) {
-                            var chunk = extractAgiOutputText(delta);
-                            if (chunk) {
-                                agiReply += chunk;
-                            } else if (delta.type && delta.type !== 'output') {
-                                agiReasoningHtml += renderAgiDeltaHtml(delta);
-                            }
-                        });
-                        var agiAssistantEl = addMessage('assistant', '', false);
-                        agiAssistantEl.querySelector('.message-content').innerHTML =
-                            agiReasoningHtml + '<div class="agi-final-output">' + agiReply + '</div>';
-                        conversationHistory.push({ role: 'assistant', content: agiReply });
-                        if (ariaSettings.autoSpeak && agiReply) {
-                            try { speakWithLipSync(agiReply).catch(function () { }); } catch (e) { }
-                        }
-                        parseAriaCommands(agiReply);
-                    } catch (agiDemoErr) {
-                        addMessage('system', 'AGI demo error: ' + (agiDemoErr && agiDemoErr.message ? agiDemoErr.message : String(agiDemoErr)));
-                    }
-                    return;
-                }
+        function ariaLook(target) {
+            var value = String(target || '').trim().toLowerCase();
+            if (!value || value === 'center') { nodHead(); return; }
+            if (value === 'left') { setCharacterFacing('left'); pointDirection('left'); return; }
+            if (value === 'right') { setCharacterFacing('right'); pointDirection('right'); return; }
+            if (value === 'up') { pointDirection('up'); return; }
+            setCharacterFacing(value.charCodeAt(0) % 2 === 0 ? 'right' : 'left');
+            nodHead();
+            showCharacterMessage('Looking at ' + target);
+        }
 
-                try {
-                    providerInfo.textContent = 'AGI reasoning...';
-                    var agiAssistantEl = addMessage('assistant', '', false);
-                    var agiContentDiv = agiAssistantEl.querySelector('.message-content');
-                    var agiReply = '';
-                    var agiReasoningHtml = '';
-                    streamAgi(conversationHistory, {
-                        onMeta: function (meta) {
-                            try {
-                                updateProviderLabel('AGI' + (meta.base_provider ? ' (' + meta.base_provider + ')' : ''));
-                            } catch (e) { }
-                        },
-                        onData: function (obj) {
-                            try {
-                                var delta = obj.delta || {};
-                                var chunk = extractAgiOutputText(delta);
-                                if (chunk) {
-                                    agiReply += chunk;
-                                } else if (delta.type && delta.type !== 'output') {
-                                    agiReasoningHtml += renderAgiDeltaHtml(delta);
-                                }
-                                agiContentDiv.innerHTML = agiReasoningHtml + '<div class="agi-final-output">' + agiReply + '</div>';
-                                chatMessages.scrollTop = chatMessages.scrollHeight;
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                conversationHistory.push({ role: 'assistant', content: agiReply });
-                                if (ariaSettings.autoSpeak && agiReply) {
-                                    try { speakWithLipSync(agiReply).catch(function () { }); } catch (e) { }
-                                } else {
-                                    stopMouthTalking(350);
-                                }
-                                parseAriaCommands(agiReply);
-                                updateProviderLabel('AGI');
-                            } catch (e) { }
-                        },
-                        onError: function (err) {
-                            addMessage('system', 'AGI error: ' + (err && (err.error || err.message) || 'stream error'));
-                            stopMouthTalking();
-                            cancelSpeak();
-                        }
-                    });
-                } catch (agiErr) {
-                    addMessage('system', 'AGI error: ' + (agiErr && agiErr.message ? agiErr.message : String(agiErr)));
-                    providerInfo.textContent = 'Error';
-                    stopMouthTalking();
-                    cancelSpeak();
-                }
-                return;
-            }
+        function extractAriaTags(text) {
+            if (!text || typeof text !== 'string') return [];
+            return text.match(/\[aria:[^\]]+\]/gi) || [];
+        }
 
-            // Demo Mode - Simulated Response
-            if (DEMO_MODE && !browserLLMState.enabled) {
-                try {
-                    providerInfo.textContent = 'Demo Mode (Local)';
-                    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
-
-                    const demoReply = DEMO_RESPONSES[demoResponseIndex % DEMO_RESPONSES.length];
-                    demoResponseIndex++;
-
-                    addMessage('assistant', demoReply);
-                    conversationHistory.push({ role: 'assistant', content: demoReply });
-
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(demoReply).catch(function () { }); } catch (e) { }
-                    }
-                } catch (error) {
-                    addMessage('system', 'Demo mode error: ' + error.message);
-                }
-                return;
-            }
-
+        async function bridgeAssistantTextToStage(text) {
+            if (!window.ARIA_STAGE_BRIDGE_ENABLED || !text) return;
+            if (!extractAriaTags(text).length && text.indexOf('[aria:') === -1) return;
+            var base = window.ARIA_STAGE_API_BASE || window.location.origin || 'http://127.0.0.1:8080';
             try {
-                providerInfo.textContent = 'Thinking...';
-                // If token-mode lip-sync is chosen, stream the response and use token events to drive mouth
-                if (ariaSettings.lipSyncMode === 'token') {
-                    var assistantEl = addMessage('assistant', '', false); // create placeholder without mirroring
-                    var contentDiv = assistantEl.querySelector('.message-content');
-                    var replyAccum = '';
-                    var streamHandle = streamChat(conversationHistory, {
-                        onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
-                        onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; chatMessages.scrollTop = chatMessages.scrollHeight; } catch (e) { } },
-                        onToken: function (tok) {
-                            try {
-                                if (ariaSettings.lipSyncMode === 'token') {
-                                    var tokenText = (tok.token || '') + '';
-                                    var len = Math.max(1, tokenText.length);
-                                    var openness = Math.min(1, Math.max(0.18, len / 8)) * (parseFloat(ariaSettings.mouthStrength) || 1);
-                                    setMouthOpen(openness + (Math.random() * 0.18));
-                                    // schedule quick close
-                                    var closetime = 60 + Math.floor(Math.random() * 160);
-                                    var ttmp = setTimeout(function () { setMouthOpen(0.12); }, closetime);
-                                    currentSpeech.fallbackTimers.push(ttmp);
-                                }
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                // finalize
-                                addBubbleMessage('assistant', replyAccum);
-                                conversationHistory.push({ role: 'assistant', content: replyAccum });
-                                // speak if auto-speak enabled
-                                if (ariaSettings.autoSpeak) {
-                                    try { speakWithLipSync(replyAccum).catch(function () { }); } catch (e) { }
-                                } else {
-                                    stopMouthTalking(350);
-                                }
-                                parseAriaCommands(replyAccum);
-                            } catch (e) { /* ignore */ }
-                        },
-                        onError: function (err) {
-                            addMessage('system', 'Error (stream): ' + (err && (err.error || err.message) || 'stream error'));
-                            stopMouthTalking();
-                            cancelSpeak();
-                        }
-                    });
-                } else {
-                    // start mouth animation while waiting for assistant reply
-                    startMouthTalking();
-                    var response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            messages: conversationHistory,
-                            stream: false
-                        })
-                    });
+                var resp = await fetch(base + '/api/aria/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: text.slice(0, 500), auto_execute: true, use_llm: false })
+                });
+                if (!resp.ok) return;
+                var data = await resp.json();
+                if (data && data.tags && data.tags.length) parseCanonicalAriaTags(data.tags.join(' '), true);
+            } catch (e) { }
+        }
 
-                    var data = await response.json();
-                    var reply = data.choices?.[0]?.message?.content || data.response || '';
-                    addMessage('assistant', reply);
-                    conversationHistory.push({ role: 'assistant', content: reply });
-                    // speak with lip-sync if enabled, otherwise give the mouth a brief tail
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
-                    } else {
-                        stopMouthTalking(350);
-                    }
-                    providerInfo.textContent = data.provider || 'Connected';
-
-                    // Parse AI commands for Aria control
-                    parseAriaCommands(reply);
-                }
-            } catch (e) {
-                if (browserLLMState.autoFallback && !browserLLMState.enabled) {
-                    try {
-                        updateProviderLabel('Browser LLM fallback');
-                        var fallbackReply = await generateBrowserReply(message);
-                        addMessage('assistant', fallbackReply);
-                        conversationHistory.push({ role: 'assistant', content: fallbackReply });
-                        if (ariaSettings.autoSpeak) {
-                            try { speakWithLipSync(fallbackReply).catch(function () { }); } catch (se) { }
-                        }
-                        parseAriaCommands(fallbackReply);
-                        return;
-                    } catch (fbErr) {
-                        // continue to original error path
-                    }
-                }
-                addMessage('system', 'Error: ' + e.message);
-                providerInfo.textContent = 'Error';
-                // stop mouth if request failed
-                stopMouthTalking();
-                // cancel any running speech
-                cancelSpeak();
-            }
+        function parseCanonicalAriaTags(text, skipStageBridge) {
+            extractAriaTags(text).forEach(function (tag) {
+                var posPct = tag.match(/\[aria:position:(\d{1,3}):(\d{1,3})\]/i);
+                if (posPct) { moveAriaToPercent(parseInt(posPct[1], 10), parseInt(posPct[2], 10)); return; }
+                var posNamed = tag.match(/\[aria:position:([a-z_\-]+)\]/i);
+                if (posNamed) { moveAriaToNamedPosition(posNamed[1]); return; }
+                if (/\[aria:gesture:wave\]|\[aria:animation:wave\]/i.test(tag)) { ariaWave(); return; }
+                if (/\[aria:gesture:spin\]|\[aria:animation:spin\]/i.test(tag)) { ariaSpin(); return; }
+                if (/\[aria:gesture:bow\]/i.test(tag)) { bowArms(); return; }
+                if (/\[aria:gesture:nod\]/i.test(tag)) { nodHead(); return; }
+                if (/\[aria:gesture:clap\]/i.test(tag)) { clapArms(); return; }
+                if (/\[aria:gesture:shrug\]/i.test(tag)) { shrugArms(); return; }
+                if (/\[aria:gesture:thumbs_up\]/i.test(tag)) { thumbsUpArms(); return; }
+                if (/\[aria:gesture:jump\]|\[aria:animation:jump\]/i.test(tag)) { ariaJump(); return; }
+                if (/\[aria:gesture:dance\]|\[aria:animation:dance\]/i.test(tag)) { ariaDance(); return; }
+                var expr = tag.match(/\[aria:expression:([^\]]+)\]/i);
+                if (expr) { setAriaExpression(expr[1]); return; }
+                var pick = tag.match(/\[aria:pickup:([^\]]+)\]/i);
+                if (pick) { ariaPickup(pick[1]); return; }
+                if (/^\[aria:drop(?::[^\]]+)?\]$/i.test(tag)) { ariaDrop(); return; }
+                var look = tag.match(/\[aria:look(?::([^\]]+))?\]/i);
+                if (look) { ariaLook(look[1] || ''); return; }
+                var say = tag.match(/\[aria:say:([^\]]+)\]/i);
+                if (say) { showCharacterMessage(say[1]); return; }
+                var facing = tag.match(/\[aria:facing:(left|right)\]/i);
+                if (facing) { setCharacterFacing(facing[1]); return; }
+                if (/^\[aria:effect:(sparkle|hearts|glow)/i.test(tag)) { ariaWave(); return; }
+            });
+            if (!skipStageBridge) bridgeAssistantTextToStage(text);
         }
 
         // Parse AI responses for Aria movement commands
         function parseAriaCommands(text) {
+            if (!text || typeof text !== 'string') return;
+            parseCanonicalAriaTags(text);
             var lowerText = text.toLowerCase();
 
             // Movement commands with walking
@@ -4874,6 +4644,30 @@
             // visual position will be updated smoothly by the main animation loop
         }
 
+        function moveAriaToPercent(pctX, pctY) {
+            var clampedX = Math.max(0, Math.min(100, pctX));
+            var clampedY = Math.max(0, Math.min(100, pctY));
+            var x = Math.round((clampedX / 100) * Math.max(1, window.innerWidth - 140));
+            var minY = 50;
+            var maxY = window.innerHeight - 200;
+            var y = Math.round(minY + ((100 - clampedY) / 100) * Math.max(1, maxY - minY));
+            moveAriaTo(x, y);
+        }
+
+        function moveAriaToNamedPosition(name) {
+            var named = {
+                center: { x: 50, y: 50 },
+                left: { x: 20, y: 70 },
+                right: { x: 80, y: 70 },
+                front: { x: 50, y: 85 },
+                back: { x: 50, y: 15 },
+                top: { x: 50, y: 10 },
+                bottom: { x: 50, y: 90 }
+            };
+            var coords = named[(name || '').toLowerCase()];
+            if (coords) moveAriaToPercent(coords.x, coords.y);
+        }
+
         function moveAriaToCenter() {
             moveAriaTo(window.innerWidth / 2 - 70, window.innerHeight - 200);
         }
@@ -4910,6 +4704,18 @@
                     character.style.transform = '';
                 }
             }, 200);
+        }
+
+        function ariaSpin() {
+            var rotation = 0;
+            var spinInterval = setInterval(function () {
+                rotation += 24;
+                character.style.transform = 'rotate(' + rotation + 'deg)';
+                if (rotation >= 360) {
+                    clearInterval(spinInterval);
+                    character.style.transform = '';
+                }
+            }, 30);
         }
 
         // Arm joint control functions
@@ -4975,22 +4781,29 @@
             setArmRotation('right', 10, 0);
         }
 
-        // Animate character briefly on send, then send message
-        sendButton.addEventListener('click', function () {
+        function nodHead() {
             try {
-                character.style.transform = 'translateY(-20px)';
-                setTimeout(function () { character.style.transform = 'translateY(0)'; }, 300);
-            } catch (e) {
-                // character might not exist in some contexts
-            }
-            sendMessage();
-        });
-        messageInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+                var head = character.querySelector('.character-head');
+                if (head) {
+                    head.style.transform = 'rotate(12deg)';
+                    setTimeout(function () { head.style.transform = ''; }, 320);
+                }
+            } catch (e) { }
+        }
+
+        function bowArms() {
+            setArmRotation('left', -20, 35);
+            setArmRotation('right', 20, 35);
+            setTimeout(function () { resetArms(); }, 800);
+        }
+
+        function clapArms() {
+            setArmRotation('left', 15, -45);
+            setArmRotation('right', -15, 45);
+            setTimeout(function () { resetArms(); }, 520);
+        }
+
+        // Send button wired by chat.js (initEmbeddedTransport)
 
         // Character variables
         var chatBubble = document.getElementById('chatBubble');
@@ -5056,11 +4869,17 @@
         var isDraggingAria = false;
         var ariaDragOffsetX = 0;
         var ariaDragOffsetY = 0;
+        var ariaDragStartX = 0;
+        var ariaDragStartY = 0;
+        var ariaDidDrag = false;
 
         character.addEventListener('mousedown', function (e) {
             // Don't drag if clicking on eyes
             if (e.target.closest('.character-eyes')) return;
 
+            ariaDragStartX = e.clientX;
+            ariaDragStartY = e.clientY;
+            ariaDidDrag = false;
             isDraggingAria = true;
             character.style.cursor = 'grabbing';
 
@@ -5071,12 +4890,14 @@
 
             // Disable autonomous movement while dragging
             autonomousMode = false;
-
-            e.preventDefault();
         });
 
         document.addEventListener('mousemove', function (e) {
             if (isDraggingAria) {
+                if (Math.abs(e.clientX - ariaDragStartX) > 4 || Math.abs(e.clientY - ariaDragStartY) > 4) {
+                    ariaDidDrag = true;
+                }
+                if (!ariaDidDrag) return;
                 // Calculate new position
                 var newX = e.clientX - ariaDragOffsetX;
                 var newY = e.clientY - ariaDragOffsetY;
@@ -5280,110 +5101,17 @@
                 bubbleInput.value = '';
                 return;
             }
-            // cancel any running speech/audio
-            cancelSpeak();
-            // add to main chat history & UI (main addMessage will mirror to compact bubble)
-            addMessage('user', txt);
-            conversationHistory.push({ role: 'user', content: txt });
-            bubbleInput.value = '';
 
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var bubbleLocalReply = await generateBrowserReply(txt);
-                    addMessage('assistant', bubbleLocalReply);
-                    conversationHistory.push({ role: 'assistant', content: bubbleLocalReply });
-                    addBubbleMessage('assistant', bubbleLocalReply);
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(bubbleLocalReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(bubbleLocalReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                }
+            bubbleInput.value = '';
+            if (messageInput) messageInput.value = txt;
+            cancelSpeak();
+
+            if (window.__ariaChatTransport && typeof window.__ariaChatTransport.sendMessage === 'function') {
+                await window.__ariaChatTransport.sendMessage();
                 return;
             }
 
-            // send to backend
-            try {
-                providerInfo.textContent = 'Thinking...';
-                // start mouth animation while waiting for assistant reply
-                // start mouth animation while waiting for assistant reply
-                if (ariaSettings.lipSyncMode === 'token') {
-                    var assistantEl = addMessage('assistant', '', false);
-                    var contentDiv = assistantEl.querySelector('.message-content');
-                    var replyAccum = '';
-                    streamChat(conversationHistory, {
-                        onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
-                        onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; scrollBubbleToBottom(); } catch (e) { } },
-                        onToken: function (tok) {
-                            try {
-                                if (ariaSettings.lipSyncMode === 'token') {
-                                    var tokenText = (tok.token || '') + '';
-                                    var len = Math.max(1, tokenText.length);
-                                    var openness = Math.min(1, Math.max(0.18, len / 8)) * (parseFloat(ariaSettings.mouthStrength) || 1);
-                                    setMouthOpen(openness + (Math.random() * 0.18));
-                                    var closetime = 60 + Math.floor(Math.random() * 160);
-                                    var ttmp = setTimeout(function () { setMouthOpen(0.12); }, closetime);
-                                    currentSpeech.fallbackTimers.push(ttmp);
-                                }
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                var reply = replyAccum || '...';
-                                addMessage('assistant', reply);
-                                conversationHistory.push({ role: 'assistant', content: reply });
-                                addBubbleMessage('assistant', reply);
-                                providerInfo.textContent = 'Connected';
-                                if (ariaSettings.autoSpeak) { try { speakWithLipSync(reply).catch(function () { }); } catch (e) { } } else { stopMouthTalking(350); }
-                                parseAriaCommands(reply);
-                            } catch (e) { }
-                        },
-                        onError: function (err) { addMessage('system', 'Error: ' + (err && (err.error || err.message) || 'stream failure')); stopMouthTalking(); cancelSpeak(); }
-                    });
-                } else {
-                    startMouthTalking();
-                    var response = await fetch('/api/chat', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: conversationHistory, stream: false })
-                    });
-                    var data = await response.json();
-                    var reply = data.choices?.[0]?.message?.content || '...';
-                    addMessage('assistant', reply);
-                    conversationHistory.push({ role: 'assistant', content: reply });
-                    providerInfo.textContent = data.provider || 'Connected';
-                    // speak with lip-sync if enabled
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
-                    } else {
-                        // brief mouth tail
-                        stopMouthTalking(350);
-                    }
-                }
-            } catch (err) {
-                if (browserLLMState.autoFallback && !browserLLMState.enabled) {
-                    try {
-                        updateProviderLabel('Browser LLM fallback');
-                        var bubbleFallbackReply = await generateBrowserReply(txt);
-                        addMessage('assistant', bubbleFallbackReply);
-                        conversationHistory.push({ role: 'assistant', content: bubbleFallbackReply });
-                        addBubbleMessage('assistant', bubbleFallbackReply);
-                        if (ariaSettings.autoSpeak) {
-                            try { speakWithLipSync(bubbleFallbackReply).catch(function () { }); } catch (e) { }
-                        }
-                        parseAriaCommands(bubbleFallbackReply);
-                        return;
-                    } catch (fbErr) {
-                        // continue to original error handler
-                    }
-                }
-                addMessage('assistant', 'Error: ' + (err.message || 'request failed'));
-                providerInfo.textContent = 'Error';
-                // stop any speaking animation on error
-                stopMouthTalking();
-                cancelSpeak();
-            }
+            addMessage('system', 'Chat transport not ready yet — try again in a moment.');
         }
 
         // open full chat from bubble
@@ -5410,6 +5138,10 @@
 
         // Click character to open chat interface
         character.addEventListener('click', function (e) {
+            if (ariaDidDrag) {
+                ariaDidDrag = false;
+                return;
+            }
             e.stopPropagation();
 
             // Toggle chat container visibility
@@ -5602,6 +5334,45 @@
             });
             observer.observe(chatMessages, { childList: true, subtree: true });
         }
+
+        document.addEventListener('aria-chat-send', function () {
+            try {
+                cancelSpeak();
+                character.style.transform = 'translateY(-20px)';
+                setTimeout(function () { character.style.transform = 'translateY(0)'; }, 300);
+            } catch (e) { }
+        });
+
+        document.addEventListener('aria-chat-message', function (e) {
+            var detail = (e && e.detail) || {};
+            if (detail.role === 'user') {
+                pushConversationMessage('user', detail.content || '');
+            }
+            if (detail.role === 'user' || detail.role === 'assistant') {
+                try { addBubbleMessage(detail.role, detail.content || ''); } catch (err) { }
+            }
+        });
+
+        document.addEventListener('aria-chat-assistant', function (e) {
+            var text = (e && e.detail && e.detail.text) || '';
+            if (!text) return;
+            pushConversationMessage('assistant', text);
+            if (ariaSettings.autoSpeak) {
+                try { speakWithLipSync(text).catch(function () { }); } catch (err) { }
+            } else {
+                stopMouthTalking(350);
+            }
+            parseAriaCommands(text);
+        });
+
+        document.addEventListener('aria-agi-enabled', function () {
+            if (browserLLMState.enabled) {
+                browserLLMState.enabled = false;
+                persistBrowserLLMState();
+                syncBrowserLLMControls();
+                publishBrowserLLMStatus();
+            }
+        });
     })();
 
         // QAI Backend status check logic
@@ -5657,6 +5428,8 @@
             const messageInput = document.getElementById('messageInput');
             const sendButton = document.getElementById('sendButton');
             const chatMessages = document.getElementById('chatMessages');
+            const statusText = document.getElementById('statusText');
+            const msgCount = document.getElementById('msgCount');
 
             if (!toggle || !modelSelect || !messageInput || !sendButton || !chatMessages) return;
 
@@ -5701,12 +5474,22 @@
                 providerInfo.style.color = color || '#fff';
             }
 
+            function updateStatus(text) {
+                if (statusText) statusText.textContent = text;
+            }
+
             function sync() {
                 toggle.checked = !!state.enabled;
                 ensureModelOption(state.model);
                 modelSelect.value = state.model || 'Xenova/distilgpt2';
                 publish();
                 if (state.enabled) updateProvider('BROWSER - ' + (state.model || 'local'), '#b8ffd2');
+            }
+
+            function updateMessageCounter() {
+                if (!msgCount) return;
+                const count = chatMessages.querySelectorAll('.message.user, .message.assistant').length;
+                msgCount.textContent = 'Messages: ' + count;
             }
 
             function appendMessage(role, content) {
@@ -5718,6 +5501,7 @@
                 messageDiv.appendChild(contentDiv);
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+                updateMessageCounter();
                 return messageDiv;
             }
 
@@ -5736,8 +5520,8 @@
                     state.enabled = false;
                     persist();
                     sync();
-                    updateProvider('Backend/demo', '#fff');
-                    appendMessage('system', 'Backend/demo mode enabled.');
+                    updateProvider('Backend chat', '#fff');
+                    appendMessage('system', 'Backend mode enabled.');
                     return true;
                 }
                 if (lower === '/browser status') {
@@ -5775,6 +5559,7 @@
                 if (loading) return loading;
                 loading = (async function () {
                     updateProvider('Loading browser model...', '#b8ffd2');
+                    updateStatus('Loading browser LLM...');
                     const mod = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
                     if (mod && mod.env) {
                         mod.env.allowLocalModels = false;
@@ -5782,6 +5567,7 @@
                     }
                     generator = await mod.pipeline('text-generation', state.model || 'Xenova/distilgpt2');
                     updateProvider('BROWSER - ' + (state.model || 'local'), '#b8ffd2');
+                    updateStatus('Ready');
                     return generator;
                 })().finally(function () {
                     loading = null;
@@ -5823,13 +5609,16 @@
                 if (!text) return;
                 appendMessage('user', text);
                 history.push({ role: 'user', content: text });
+                updateStatus('Thinking locally...');
                 updateProvider('BROWSER - ' + (state.model || 'local'), '#b8ffd2');
                 try {
                     const reply = await generateReply(text);
                     appendMessage('assistant', reply);
                     history.push({ role: 'assistant', content: reply });
+                    updateStatus('Ready');
                 } catch (err) {
                     appendMessage('system', 'Browser LLM error: ' + ((err && err.message) || String(err)));
+                    updateStatus('Browser LLM error');
                 }
             }
 
@@ -5849,7 +5638,7 @@
                 state.enabled = !!toggle.checked;
                 persist();
                 sync();
-                if (!state.enabled) updateProvider('Backend/demo', '#fff');
+                if (!state.enabled) updateProvider('Backend chat', '#fff');
             });
 
             modelSelect.addEventListener('change', function () {
@@ -5864,7 +5653,7 @@
                 generator = null;
                 loading = null;
                 if (!state.enabled) {
-                    appendMessage('system', 'Enable Browser LLM to preload model.');
+                    updateStatus('Enable Browser LLM to preload model');
                     return;
                 }
                 try {
@@ -5884,8 +5673,7 @@
             sync();
         })();
     </script>
-    <script src="../aria-nav.js"></script>
-    <script src="../global-upgrade.js"></script>
+    <script src="/api/chat-web/global-upgrade.js"></script>
 </body>
 
 </html>

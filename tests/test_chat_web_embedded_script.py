@@ -45,6 +45,7 @@ def test_embedded_controller_stage_bridge_and_tag_handlers():
     assert "function ariaLook" in script
     assert "ARIA_STAGE_API_BASE" in script
     assert "ARIA_STAGE_BRIDGE_ENABLED" in script
+    assert "window.location.origin" in script
     assert "characterHeldProp" in html
     assert "expression-smile" in html
     assert "[aria:expression:" in script or "setAriaExpression" in script
