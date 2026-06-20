@@ -18,11 +18,22 @@ from typing import Iterable, List, Sequence
 _DEFAULT_PROTECTED_PREFIXES: tuple[str, ...] = (
     ".git/",
     ".github/agents/",
+    ".venv/",
+    "venv/",
+    ".env/",
+    "node_modules/",
+    "pxt_modules/",
+    "__pycache__/",
+    ".npm-global/",
     "datasets/",
     "data_out/",
     "local.settings.json",
     "secrets/",
     "AI/",
+    "deployed_models/",
+    "generated_sites/",
+    "generated_tools/",
+    "logs/",
 )
 
 # Filenames that are sensitive even outside the protected prefixes above.
@@ -66,8 +77,10 @@ class RiskManager:
     """Evaluate whether a proposed change is safe to apply."""
 
     repo_root: Path
-    protected_prefixes: Sequence[str] = field(default_factory=lambda: list(_DEFAULT_PROTECTED_PREFIXES))
-    protected_names: Sequence[str] = field(default_factory=lambda: list(_DEFAULT_PROTECTED_NAMES))
+    protected_prefixes: Sequence[str] = field(
+        default_factory=lambda: list(_DEFAULT_PROTECTED_PREFIXES))
+    protected_names: Sequence[str] = field(
+        default_factory=lambda: list(_DEFAULT_PROTECTED_NAMES))
     max_file_bytes: int = _MAX_FILE_BYTES
     max_plan_delta_bytes: int = _MAX_PLAN_DELTA_BYTES
 
@@ -75,9 +88,11 @@ class RiskManager:
         self.repo_root = Path(self.repo_root).resolve()
         # Always include the hard-coded defaults even if a caller passed in
         # a narrower list. This prevents accidental privilege widening.
-        merged_prefixes = set(self.protected_prefixes) | set(_DEFAULT_PROTECTED_PREFIXES)
+        merged_prefixes = set(self.protected_prefixes) | set(
+            _DEFAULT_PROTECTED_PREFIXES)
         self.protected_prefixes = tuple(sorted(merged_prefixes))
-        merged_names = set(self.protected_names) | set(_DEFAULT_PROTECTED_NAMES)
+        merged_names = set(self.protected_names) | set(
+            _DEFAULT_PROTECTED_NAMES)
         self.protected_names = tuple(sorted(merged_names))
 
     # ------------------------------------------------------------------
@@ -161,7 +176,8 @@ class RiskManager:
             # Prune protected directories early.
             pruned: list[str] = []
             for d in dirs:
-                rel = (Path(root, d).relative_to(self.repo_root)).as_posix() + "/"
+                rel = (Path(root, d).relative_to(
+                    self.repo_root)).as_posix() + "/"
                 if any(rel == p or rel.startswith(p) for p in self.protected_prefixes):
                     continue
                 pruned.append(d)
