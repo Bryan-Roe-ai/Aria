@@ -394,3 +394,64 @@ def test_cli_fail_on_findings_passes_when_clean(fake_repo: Path) -> None:
         text=True,
     )
     assert proc.returncode == 0
+
+
+def test_cli_max_findings_fails_when_exceeded(fake_repo: Path) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--max-findings",
+            "0",
+            "--quiet",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 1
+
+
+def test_cli_max_findings_passes_when_within_limit(fake_repo: Path) -> None:
+    # Clean the fake repo first so findings become 0.
+    run_cycle(repo_root=fake_repo, apply=True, commit=False)
+
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--max-findings",
+            "0",
+            "--quiet",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+
+
+def test_cli_max_findings_rejects_negative(fake_repo: Path) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--max-findings",
+            "-1",
+            "--quiet",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 2
+    assert "--max-findings must be >= 0" in proc.stderr

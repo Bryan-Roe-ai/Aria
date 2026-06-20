@@ -63,6 +63,9 @@ python -m aria_bot --summary-path data_out/aria_bot/cli-summary.json
 
 # Fail CI if any findings are detected.
 python -m aria_bot --fail-on-findings --quiet
+
+# Fail CI when findings exceed a threshold budget.
+python -m aria_bot --max-findings 10 --quiet
 ```
 
 Each cycle writes a machine-readable summary to

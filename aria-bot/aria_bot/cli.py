@@ -111,6 +111,15 @@ def _build_parser() -> argparse.ArgumentParser:
             "(useful for CI quality gates)."
         ),
     )
+    parser.add_argument(
+        "--max-findings",
+        type=int,
+        default=None,
+        help=(
+            "Exit with status 1 when findings exceed this threshold "
+            "(useful for CI budgets)."
+        ),
+    )
     return parser
 
 
@@ -169,6 +178,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if args.fail_on_findings and result_dict["totals"]["findings"] > 0:
         return 1
+
+    if args.max_findings is not None:
+        if args.max_findings < 0:
+            print("error: --max-findings must be >= 0", file=sys.stderr)
+            return 2
+        if result_dict["totals"]["findings"] > args.max_findings:
+            return 1
 
     return 0 if result.validation_ok else 1
 
