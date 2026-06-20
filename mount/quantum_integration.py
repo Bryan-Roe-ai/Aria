@@ -105,6 +105,14 @@ class QuantumIntegration:
                 {csv_file.stem for csv_file in datasets_path.glob("*.csv")} if datasets_path.exists() else set()
             )
 
+            safe_arg_pattern = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+            if not safe_arg_pattern.fullmatch(dataset):
+                return {
+                    "success": False,
+                    "error": f"Invalid dataset '{dataset}'.",
+                }
+
             if dataset not in allowed_datasets:
                 return {
                     "success": False,
@@ -112,6 +120,12 @@ class QuantumIntegration:
                 }
 
             allowed_backends = set(self._get_available_backends())
+            if not safe_arg_pattern.fullmatch(backend):
+                return {
+                    "success": False,
+                    "error": f"Invalid backend '{backend}'.",
+                }
+
             if backend not in allowed_backends:
                 return {
                     "success": False,
@@ -129,7 +143,7 @@ class QuantumIntegration:
                 backend,
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.quantum_path))
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.quantum_path), shell=False)
 
             return {
                 "success": result.returncode == 0,
