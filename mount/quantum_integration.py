@@ -230,14 +230,21 @@ class QuantumIntegration:
             autorun_script = self.workspace_root / "scripts" / "quantum_autorun.py"
             normalized_job_name = (job_name or "").strip()
 
-            if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", normalized_job_name):
+            allowed_jobs = {
+                "baseline": "baseline",
+                "benchmark": "benchmark",
+                "nightly": "nightly",
+                "smoke": "smoke",
+            }
+            selected_job = allowed_jobs.get(normalized_job_name)
+            if selected_job is None:
                 return {
                     "success": False,
-                    "error": "Invalid job_name format. Allowed: letters, numbers, underscore, hyphen (max 64 chars).",
+                    "error": "Invalid job_name. Allowed values: baseline, benchmark, nightly, smoke.",
                 }
 
             cmd = [sys.executable, str(
-                autorun_script), "--job", normalized_job_name]
+                autorun_script), "--job", selected_job]
             if dry_run:
                 cmd.append("--dry-run")
 
