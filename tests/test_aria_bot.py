@@ -32,9 +32,11 @@ def fake_repo(tmp_path: Path) -> Path:
 
     (tmp_path / "src").mkdir()
     (tmp_path / "src" / "needs_fix.py").write_bytes(
-        b"def foo():    \n    return 1   \n"  # trailing ws on both lines, has final newline
+        # trailing ws on both lines, has final newline
+        b"def foo():    \n    return 1   \n"
     )
-    (tmp_path / "src" / "needs_newline.md").write_bytes(b"# heading")  # no trailing newline
+    # no trailing newline
+    (tmp_path / "src" / "needs_newline.md").write_bytes(b"# heading")
     (tmp_path / "src" / "clean.py").write_bytes(b"def ok():\n    return 1\n")
 
     # Protected: must never be touched.
@@ -155,7 +157,8 @@ def test_orchestrator_dry_run_writes_status(fake_repo: Path) -> None:
     assert payload["totals"]["applied"] == 0
     # No file mutation occurred.
     assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
-    assert result.validation_ok in (True, False)  # ruff may be missing in test env
+    # ruff may be missing in test env
+    assert result.validation_ok in (True, False)
 
 
 def test_run_cycle_apply_modifies_files(fake_repo: Path) -> None:
