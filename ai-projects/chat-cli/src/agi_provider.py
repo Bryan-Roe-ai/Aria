@@ -261,6 +261,11 @@ _AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {
         "intents": ["explanation", "question", "coding", "creation"],
         "provider": "lmstudio",
         "confidence_boost": 0.05,
+        "tools": [
+            {"name": "list_models"},
+            {"name": "chat_completion"},
+            {"name": "server_status"},
+        ],
         "subtask_templates": [
             "Understand the query: identify key concepts and requirements",
             "Formulate response: structure thoughts logically and clearly",
