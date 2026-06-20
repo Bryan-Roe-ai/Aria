@@ -1375,13 +1375,22 @@ with gr.Blocks() as demo:
         export_json_btn.click(export_json, inputs=[hist_state, session_name], outputs=[export_file])
         export_md_btn.click(export_md, inputs=[hist_state, session_name], outputs=[export_file])
 
+        def _sanitize_session_name(name: Any) -> str:
+            raw = str(name or "session").strip()
+            sanitized = re.sub(r"[^A-Za-z0-9._-]+", "_", raw)
+            sanitized = sanitized.strip("._-")
+            return sanitized or "session"
+
         def export_txt(hist_state, session_name):
             if not hist_state:
                 return None
             ensure_conv_dir()
             ts = int(time.time())
-            safe_name = (session_name or "session").strip().replace(" ", "_")
-            filename = os.path.join(CONV_DIR, f"{safe_name}_{ts}.txt")
+            safe_name = _sanitize_session_name(session_name)
+            conv_root = os.path.realpath(CONV_DIR)
+            filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.txt"))
+            if os.path.commonpath([conv_root, filename]) != conv_root:
+                return None
             temp = filename + ".tmp"
             try:
                 with _conv_lock():
@@ -1407,8 +1416,11 @@ with gr.Blocks() as demo:
                 return None
             ensure_conv_dir()
             ts = int(time.time())
-            safe_name = (session_name or "session").strip().replace(" ", "_")
-            filename = os.path.join(CONV_DIR, f"{safe_name}_{ts}.jsonl")
+            safe_name = _sanitize_session_name(session_name)
+            conv_root = os.path.realpath(CONV_DIR)
+            filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.jsonl"))
+            if os.path.commonpath([conv_root, filename]) != conv_root:
+                return None
             temp = filename + ".tmp"
             try:
                 with _conv_lock():
