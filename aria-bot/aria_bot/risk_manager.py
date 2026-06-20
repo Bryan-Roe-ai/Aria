@@ -18,6 +18,8 @@ from typing import Iterable, List, Sequence
 _DEFAULT_PROTECTED_PREFIXES: tuple[str, ...] = (
     ".git/",
     ".github/agents/",
+    ".venv/",
+    "venv/",
     "datasets/",
     "data_out/",
     "local.settings.json",

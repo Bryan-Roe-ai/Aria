@@ -50,6 +50,12 @@ def test_risk_manager_blocks_protected_paths(fake_repo: Path) -> None:
     assert not rm.is_path_protected(fake_repo / "src" / "needs_fix.py")
 
 
+def test_risk_manager_blocks_virtualenv_paths(tmp_path: Path) -> None:
+    rm = RiskManager(repo_root=tmp_path)
+    assert rm.is_path_protected(tmp_path / ".venv" / "lib" / "site.py")
+    assert rm.is_path_protected(tmp_path / "venv" / "lib" / "site.py")
+
+
 def test_risk_manager_blocks_symlinks(tmp_path: Path) -> None:
     target = tmp_path / "real.py"
     target.write_text("x = 1\n")

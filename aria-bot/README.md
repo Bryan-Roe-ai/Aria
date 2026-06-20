@@ -58,7 +58,8 @@ disabled from configuration:
 - **Dry-run by default.** `--apply` is required to write any file.
 - **Never pushes.** `commit_system.py` only stages and commits locally.
 - **Protected paths** (`datasets/`, `.git/`, `.github/agents/`,
-  `local.settings.json`, `data_out/`, `secrets/`, `AI/`) are never modified.
+   `.venv/`, `venv/`, `local.settings.json`, `data_out/`, `secrets/`, `AI/`)
+   are never modified.
 - **Whitelisted transforms only.** v1 supports trailing-whitespace cleanup
   and missing-final-newline fixes — both pure-text and idempotent.
 - **No deletions, no renames, no symlink follows.**
