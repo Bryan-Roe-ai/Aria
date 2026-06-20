@@ -38,6 +38,7 @@ def _settings_present() -> bool:
 
 
 def init() -> bool:
+    """Initialize the Cosmos client and container when settings are present."""
     global _CLIENT, _CONTAINER
     if not _enabled():
         logging.info("[cosmos] Disabled via QAI_ENABLE_COSMOS flag.")
@@ -83,6 +84,7 @@ def init() -> bool:
 
 
 def container():
+    """Return the initialized Cosmos container, or ``None`` when unavailable."""
     if _CLIENT is None or _CONTAINER is None:
         return None
     return _CONTAINER
