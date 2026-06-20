@@ -624,6 +624,20 @@ class TestPostValidation:
 
 
 # ===========================================================================
+# Chat web static assets
+# ===========================================================================
+class TestChatWebAssets:
+    def test_serve_agi_stream_utils(self, app_module):
+        req = _mock_request("GET")
+        resp = app_module.serve_agi_stream_utils(req)
+
+        assert resp.status_code == 200
+        body = resp.get_body().decode("utf-8")
+        assert "AGIStreamUtils" in body
+        assert resp.mimetype == "application/javascript"
+
+
+# ===========================================================================
 # AGI endpoint tests — /api/agi/analyze and /api/agi/status
 # ===========================================================================
 class TestAgiEndpoints:

@@ -308,6 +308,39 @@ def serve_chat_js(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
 
 
+@app.route(route="chat-web/static/agi_stream_utils.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_agi_stream_utils(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve AGI SSE parsing utilities for chat-web clients."""
+    try:
+        js_path = (
+            Path(__file__).resolve().parent / "apps" / "chat" / "static" / "agi_stream_utils.js"
+        )
+
+        if js_path.exists():
+            with open(js_path, "r", encoding="utf-8") as f:
+                js_content = f.read()
+
+            return func.HttpResponse(
+                js_content,
+                status_code=200,
+                mimetype="application/javascript",
+                headers={
+                    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            )
+
+        return func.HttpResponse(
+            f"// Error: JavaScript file not found at {js_path}",
+            status_code=404,
+            mimetype="application/javascript",
+        )
+    except Exception as e:
+        logging.error(f"Error serving agi_stream_utils.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
 # =============================================================================
 # Chat API - Backend for AI interactions
 # =============================================================================
@@ -2739,6 +2772,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         public_endpoints = [
             "/api/chat-web",
             "/api/chat-web/chat.js",
+            "/api/chat-web/static/agi_stream_utils.js",
             "/api/chat",
             "/api/chat/stream",
             "/api/health",
