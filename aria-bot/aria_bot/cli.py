@@ -79,6 +79,21 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Suppress the JSON summary (status file is still written).",
     )
     parser.add_argument(
+        "--output-format",
+        choices=("json", "compact"),
+        default="json",
+        help=(
+            "Summary output format: pretty JSON ('json') or single-line "
+            "JSON ('compact')."
+        ),
+    )
+    parser.add_argument(
+        "--summary-path",
+        type=Path,
+        default=None,
+        help="Optional path to also write the CLI summary JSON.",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         help="Logging level (default: INFO).",
@@ -118,20 +133,30 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         disabled_kinds=args.disable_kind,
     )
 
+    result_dict = result.to_dict()
+    summary = {
+        "totals": result_dict["totals"],
+        "findings_by_kind": result_dict["findings_by_kind"],
+        "plans_by_kind": result_dict["plans_by_kind"],
+        "applied_by_kind": result_dict["applied_by_kind"],
+        "validation_ok": result.validation_ok,
+        "commit_sha": result.commit_sha,
+        "notes": result.notes,
+        "apply": result.apply,
+        "commit": result.commit,
+    }
+
+    if args.output_format == "compact":
+        rendered = json.dumps(summary, sort_keys=True)
+    else:
+        rendered = json.dumps(summary, indent=2, sort_keys=True)
+
+    if args.summary_path is not None:
+        args.summary_path.parent.mkdir(parents=True, exist_ok=True)
+        args.summary_path.write_text(rendered + "\n", encoding="utf-8")
+
     if not args.quiet:
-        result_dict = result.to_dict()
-        summary = {
-            "totals": result_dict["totals"],
-            "findings_by_kind": result_dict["findings_by_kind"],
-            "plans_by_kind": result_dict["plans_by_kind"],
-            "applied_by_kind": result_dict["applied_by_kind"],
-            "validation_ok": result.validation_ok,
-            "commit_sha": result.commit_sha,
-            "notes": result.notes,
-            "apply": result.apply,
-            "commit": result.commit,
-        }
-        json.dump(summary, sys.stdout, indent=2, sort_keys=True)
+        sys.stdout.write(rendered)
         sys.stdout.write("\n")
 
     return 0 if result.validation_ok else 1

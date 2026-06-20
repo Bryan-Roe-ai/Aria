@@ -54,6 +54,12 @@ python -m aria_bot --apply --disable-kind trailing_whitespace
 
 # Show all available transform kinds.
 python -m aria_bot --list-kinds
+
+# Compact one-line JSON summary output.
+python -m aria_bot --output-format compact
+
+# Also write summary JSON to a file.
+python -m aria_bot --summary-path data_out/aria_bot/cli-summary.json
 ```
 
 Each cycle writes a machine-readable summary to

@@ -311,3 +311,47 @@ def test_cli_summary_includes_kind_metrics(fake_repo: Path) -> None:
     assert "plans_by_kind" in payload
     assert "applied_by_kind" in payload
     assert payload["applied_by_kind"] == {}
+
+
+def test_cli_compact_output_is_single_line(fake_repo: Path) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--output-format",
+            "compact",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    lines = [line for line in proc.stdout.splitlines() if line.strip()]
+    assert len(lines) == 1
+    payload = json.loads(lines[0])
+    assert "totals" in payload
+
+
+def test_cli_writes_summary_path(fake_repo: Path, tmp_path: Path) -> None:
+    summary_path = tmp_path / "cli-summary.json"
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--summary-path",
+            str(summary_path),
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    assert summary_path.exists()
+    payload = json.loads(summary_path.read_text())
+    assert "totals" in payload
