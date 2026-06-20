@@ -96,6 +96,7 @@ class _SafeEvaluator(ast.NodeVisitor):
     """Evaluate a restricted arithmetic AST, rejecting anything unsafe."""
 
     def visit(self, node: ast.AST) -> float:
+        """Dispatch to the visitor for *node* or reject unsupported nodes."""
         method = "visit_" + type(node).__name__
         visitor = getattr(self, method, None)
         if visitor is None:
@@ -103,9 +104,11 @@ class _SafeEvaluator(ast.NodeVisitor):
         return visitor(node)
 
     def visit_Expression(self, node: ast.Expression) -> float:
+        """Evaluate the body of an expression wrapper node."""
         return self.visit(node.body)
 
     def visit_BinOp(self, node: ast.BinOp) -> float:
+        """Evaluate a supported binary arithmetic operation."""
         op_type = type(node.op)
         if op_type not in _BIN_OPS:
             raise ValueError("Unsupported operator")
@@ -116,12 +119,14 @@ class _SafeEvaluator(ast.NodeVisitor):
         return _BIN_OPS[op_type](left, right)
 
     def visit_UnaryOp(self, node: ast.UnaryOp) -> float:
+        """Evaluate a supported unary arithmetic operation."""
         op_type = type(node.op)
         if op_type not in _UNARY_OPS:
             raise ValueError("Unsupported unary operator")
         return _UNARY_OPS[op_type](self.visit(node.operand))
 
     def visit_Constant(self, node: ast.Constant) -> float:
+        """Return a numeric constant value."""
         if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
             raise ValueError("Only numeric constants are allowed")
         return node.value

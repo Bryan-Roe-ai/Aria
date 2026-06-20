@@ -305,6 +305,7 @@ def timeit(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        """Time the wrapped call and print its duration."""
         t0 = time.time()
         result = func(*args, **kwargs)
         duration = time.time() - t0
@@ -337,12 +338,13 @@ def memoize_with_ttl(ttl_seconds: float = 60.0):
     """
 
     def decorator(func: Callable) -> Callable:
+        """Build a TTL memoization wrapper around *func*."""
         cache: dict = {}
         cache_times: dict = {}
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # Create cache key from args/kwargs
+            """Return a cached result when fresh, otherwise call *func*."""
             key_data = (args, tuple(sorted(kwargs.items())))
             cache_key = hashlib.md5(str(key_data).encode()).hexdigest()
 

@@ -34,6 +34,7 @@ class FileAGIPersistence:
         self._lock = threading.RLock()
 
     def write_reasoning_chain(self, chain: List[Dict[str, Any]], meta: Optional[Dict[str, Any]] = None) -> str:
+        """Append one reasoning chain entry and return its generated id."""
         entry = {
             "id": uuid.uuid4().hex,
             "ts": time.time(),
@@ -45,10 +46,11 @@ class FileAGIPersistence:
         return entry["id"]
 
     def add_reasoning_chain(self, chain: List[Dict[str, Any]]) -> str:
-        # Backwards-compatible alias used by some callers
+        """Backwards-compatible alias for :meth:`write_reasoning_chain`."""
         return self.write_reasoning_chain(chain)
 
     def add_message(self, message: Dict[str, Any]) -> str:
+        """Append one message entry and return its generated id."""
         entry = {
             "id": uuid.uuid4().hex,
             "ts": time.time(),
@@ -88,5 +90,4 @@ class FileAGIPersistence:
         return out
 
     def close(self) -> None:
-        # File is opened per-write; nothing to close persistently.
-        return
+        """No-op close hook; file handles are opened per write."""

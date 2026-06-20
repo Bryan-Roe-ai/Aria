@@ -452,9 +452,11 @@ class AppSettings(Settings):
     """Backward-compatible alias for older settings API callers."""
 
     def provider_chain(self) -> List[str]:
+        """Return the configured provider priority chain."""
         return list(self.provider_priority)
 
     def summary(self) -> dict:
+        """Return settings summary including the provider chain."""
         data = super().summary()
         data["provider_chain"] = self.provider_chain()
         return data
