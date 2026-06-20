@@ -736,6 +736,7 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
                 "/api/agi/reason",
                 "/api/agi/stream",
                 "/api/agi/status",
+                "/api/agi/persistence",
             ],
         }
 
@@ -2784,6 +2785,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "/api/agi/reason",
             "/api/agi/stream",
             "/api/agi/status",
+            "/api/agi/persistence",
             "/api/vision/infer",
             "/api/vision/batch-infer",
             "/api/image/generate",
@@ -2860,6 +2862,7 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
             {"route": "agi/analyze", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/reason", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/stream", "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "agi/persistence", "methods": ["GET"], "authLevel": "anonymous"},
             {"route": "chat", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {
                 "route": "chat/stream",
@@ -2869,6 +2872,11 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
             {"route": "chat-web", "methods": ["GET"], "authLevel": "anonymous"},
             {
                 "route": "chat-web/chat.js",
+                "methods": ["GET"],
+                "authLevel": "anonymous",
+            },
+            {
+                "route": "chat-web/static/agi_stream_utils.js",
                 "methods": ["GET"],
                 "authLevel": "anonymous",
             },
