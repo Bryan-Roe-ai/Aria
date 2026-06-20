@@ -58,8 +58,9 @@
             flex-direction: column;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 1;
-            pointer-events: auto;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
             z-index: 10002;
         }
 
@@ -67,6 +68,7 @@
 
         .chat-container.visible {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
             transform: translateX(-50%);
         }
@@ -2963,7 +2965,7 @@
         </div>
     </div>
 
-    <div class="chat-container">
+    <div class="chat-container visible">
         <div class="chat-header">
             <div style="display:flex;align-items:center;gap:12px">
                 <h1>🤖 QAI Chat</h1>
@@ -4158,7 +4160,33 @@
 
         // Parse AI responses for Aria movement commands
         function parseAriaCommands(text) {
+            if (!text || typeof text !== 'string') return;
             var lowerText = text.toLowerCase();
+
+            // Server / AGI canonical tags (aligned with apps/aria/server.py)
+            var posPct = text.match(/\[aria:position:(\d{1,3}):(\d{1,3})\]/i);
+            if (posPct) {
+                moveAriaToPercent(parseInt(posPct[1], 10), parseInt(posPct[2], 10));
+            }
+            var posNamed = text.match(/\[aria:position:([a-z_\-]+)\]/i);
+            if (posNamed && !posPct) {
+                moveAriaToNamedPosition(posNamed[1]);
+            }
+            if (/\[aria:gesture:wave\]/i.test(text) || /\[aria:animation:wave\]/i.test(text)) {
+                ariaWave();
+            }
+            if (/\[aria:gesture:spin\]/i.test(text) || /\[aria:animation:spin\]/i.test(text)) {
+                ariaSpin();
+            }
+            if (/\[aria:gesture:bow\]/i.test(text)) {
+                bowArms();
+            }
+            if (/\[aria:gesture:nod\]/i.test(text)) {
+                nodHead();
+            }
+            if (/\[aria:gesture:clap\]/i.test(text)) {
+                clapArms();
+            }
 
             // Movement commands with walking
             if (lowerText.includes('[aria:walk:left]') || lowerText.includes('walk left') || lowerText.includes('aria walk left')) {
@@ -4419,6 +4447,30 @@
             // visual position will be updated smoothly by the main animation loop
         }
 
+        function moveAriaToPercent(pctX, pctY) {
+            var clampedX = Math.max(0, Math.min(100, pctX));
+            var clampedY = Math.max(0, Math.min(100, pctY));
+            var x = Math.round((clampedX / 100) * Math.max(1, window.innerWidth - 140));
+            var minY = 50;
+            var maxY = window.innerHeight - 200;
+            var y = Math.round(minY + ((100 - clampedY) / 100) * Math.max(1, maxY - minY));
+            moveAriaTo(x, y);
+        }
+
+        function moveAriaToNamedPosition(name) {
+            var named = {
+                center: { x: 50, y: 50 },
+                left: { x: 20, y: 70 },
+                right: { x: 80, y: 70 },
+                front: { x: 50, y: 85 },
+                back: { x: 50, y: 15 },
+                top: { x: 50, y: 10 },
+                bottom: { x: 50, y: 90 }
+            };
+            var coords = named[(name || '').toLowerCase()];
+            if (coords) moveAriaToPercent(coords.x, coords.y);
+        }
+
         function moveAriaToCenter() {
             moveAriaTo(window.innerWidth / 2 - 70, window.innerHeight - 200);
         }
@@ -4455,6 +4507,18 @@
                     character.style.transform = '';
                 }
             }, 200);
+        }
+
+        function ariaSpin() {
+            var rotation = 0;
+            var spinInterval = setInterval(function () {
+                rotation += 24;
+                character.style.transform = 'rotate(' + rotation + 'deg)';
+                if (rotation >= 360) {
+                    clearInterval(spinInterval);
+                    character.style.transform = '';
+                }
+            }, 30);
         }
 
         // Arm joint control functions
@@ -4518,6 +4582,28 @@
         function resetArms() {
             setArmRotation('left', -10, 0);
             setArmRotation('right', 10, 0);
+        }
+
+        function nodHead() {
+            try {
+                var head = character.querySelector('.character-head');
+                if (head) {
+                    head.style.transform = 'rotate(12deg)';
+                    setTimeout(function () { head.style.transform = ''; }, 320);
+                }
+            } catch (e) { }
+        }
+
+        function bowArms() {
+            setArmRotation('left', -20, 35);
+            setArmRotation('right', 20, 35);
+            setTimeout(function () { resetArms(); }, 800);
+        }
+
+        function clapArms() {
+            setArmRotation('left', 15, -45);
+            setArmRotation('right', -15, 45);
+            setTimeout(function () { resetArms(); }, 520);
         }
 
         // Send button wired by chat.js (initEmbeddedTransport)
@@ -4586,11 +4672,17 @@
         var isDraggingAria = false;
         var ariaDragOffsetX = 0;
         var ariaDragOffsetY = 0;
+        var ariaDragStartX = 0;
+        var ariaDragStartY = 0;
+        var ariaDidDrag = false;
 
         character.addEventListener('mousedown', function (e) {
             // Don't drag if clicking on eyes
             if (e.target.closest('.character-eyes')) return;
 
+            ariaDragStartX = e.clientX;
+            ariaDragStartY = e.clientY;
+            ariaDidDrag = false;
             isDraggingAria = true;
             character.style.cursor = 'grabbing';
 
@@ -4601,12 +4693,14 @@
 
             // Disable autonomous movement while dragging
             autonomousMode = false;
-
-            e.preventDefault();
         });
 
         document.addEventListener('mousemove', function (e) {
             if (isDraggingAria) {
+                if (Math.abs(e.clientX - ariaDragStartX) > 4 || Math.abs(e.clientY - ariaDragStartY) > 4) {
+                    ariaDidDrag = true;
+                }
+                if (!ariaDidDrag) return;
                 // Calculate new position
                 var newX = e.clientX - ariaDragOffsetX;
                 var newY = e.clientY - ariaDragOffsetY;
@@ -4810,110 +4904,17 @@
                 bubbleInput.value = '';
                 return;
             }
-            // cancel any running speech/audio
-            cancelSpeak();
-            // add to main chat history & UI (main addMessage will mirror to compact bubble)
-            addMessage('user', txt);
-            pushConversationMessage('user', txt);
-            bubbleInput.value = '';
 
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var bubbleLocalReply = await generateBrowserReply(txt);
-                    addMessage('assistant', bubbleLocalReply);
-                    pushConversationMessage('assistant', bubbleLocalReply);
-                    addBubbleMessage('assistant', bubbleLocalReply);
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(bubbleLocalReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(bubbleLocalReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                }
+            bubbleInput.value = '';
+            if (messageInput) messageInput.value = txt;
+            cancelSpeak();
+
+            if (window.__ariaChatTransport && typeof window.__ariaChatTransport.sendMessage === 'function') {
+                await window.__ariaChatTransport.sendMessage();
                 return;
             }
 
-            // send to backend
-            try {
-                providerInfo.textContent = 'Thinking...';
-                // start mouth animation while waiting for assistant reply
-                // start mouth animation while waiting for assistant reply
-                if (ariaSettings.lipSyncMode === 'token') {
-                    var assistantEl = addMessage('assistant', '', false);
-                    var contentDiv = assistantEl.querySelector('.message-content');
-                    var replyAccum = '';
-                    streamChat(sanitizeConversationHistory(conversationHistory), {
-                        onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
-                        onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; scrollBubbleToBottom(); } catch (e) { } },
-                        onToken: function (tok) {
-                            try {
-                                if (ariaSettings.lipSyncMode === 'token') {
-                                    var tokenText = (tok.token || '') + '';
-                                    var len = Math.max(1, tokenText.length);
-                                    var openness = Math.min(1, Math.max(0.18, len / 8)) * (parseFloat(ariaSettings.mouthStrength) || 1);
-                                    setMouthOpen(openness + (Math.random() * 0.18));
-                                    var closetime = 60 + Math.floor(Math.random() * 160);
-                                    var ttmp = setTimeout(function () { setMouthOpen(0.12); }, closetime);
-                                    currentSpeech.fallbackTimers.push(ttmp);
-                                }
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                var reply = replyAccum || '...';
-                                addMessage('assistant', reply);
-                                pushConversationMessage('assistant', reply);
-                                addBubbleMessage('assistant', reply);
-                                providerInfo.textContent = 'Connected';
-                                if (ariaSettings.autoSpeak) { try { speakWithLipSync(reply).catch(function () { }); } catch (e) { } } else { stopMouthTalking(350); }
-                                parseAriaCommands(reply);
-                            } catch (e) { }
-                        },
-                        onError: function (err) { addMessage('system', 'Error: ' + (err && (err.error || err.message) || 'stream failure')); stopMouthTalking(); cancelSpeak(); }
-                    });
-                } else {
-                    startMouthTalking();
-                    var response = await fetch('/api/chat', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: sanitizeConversationHistory(conversationHistory), stream: false })
-                    });
-                    var data = await response.json();
-                    var reply = data.choices?.[0]?.message?.content || '...';
-                    addMessage('assistant', reply);
-                    pushConversationMessage('assistant', reply);
-                    providerInfo.textContent = data.provider || 'Connected';
-                    // speak with lip-sync if enabled
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
-                    } else {
-                        // brief mouth tail
-                        stopMouthTalking(350);
-                    }
-                }
-            } catch (err) {
-                if (browserLLMState.autoFallback && !browserLLMState.enabled) {
-                    try {
-                        updateProviderLabel('Browser LLM fallback');
-                        var bubbleFallbackReply = await generateBrowserReply(txt);
-                        addMessage('assistant', bubbleFallbackReply);
-                        pushConversationMessage('assistant', bubbleFallbackReply);
-                        addBubbleMessage('assistant', bubbleFallbackReply);
-                        if (ariaSettings.autoSpeak) {
-                            try { speakWithLipSync(bubbleFallbackReply).catch(function () { }); } catch (e) { }
-                        }
-                        parseAriaCommands(bubbleFallbackReply);
-                        return;
-                    } catch (fbErr) {
-                        // fall through to original error handling
-                    }
-                }
-                addMessage('assistant', 'Error: ' + (err.message || 'request failed'));
-                providerInfo.textContent = 'Error';
-                // stop any speaking animation on error
-                stopMouthTalking();
-                cancelSpeak();
-            }
+            addMessage('system', 'Chat transport not ready yet — try again in a moment.');
         }
 
         // open full chat from bubble
@@ -4940,6 +4941,10 @@
 
         // Click character to open chat interface
         character.addEventListener('click', function (e) {
+            if (ariaDidDrag) {
+                ariaDidDrag = false;
+                return;
+            }
             e.stopPropagation();
 
             // Toggle chat container visibility

@@ -20,6 +20,19 @@ def test_embedded_controller_script_has_balanced_structure():
     assert script.count("{") == script.count("}")
     assert "Send + AGI routing delegated to chat.js" in script
     assert "aria-chat-assistant" in script
+    assert "moveAriaToPercent" in script
+    assert "function ariaSpin" in script
+    assert "sendBubbleMessage" in script
+    assert "__ariaChatTransport" in script
+
+
+def test_embedded_controller_parses_canonical_aria_tags():
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    assert "[aria:position:" in html or "moveAriaToNamedPosition" in html
+    assert "function parseAriaCommands" in html
+    script = _extract_embedded_script(html)
+    assert "moveAriaToNamedPosition" in script
+    assert "ariaSpin" in script
 
 
 def test_chat_js_declares_embedded_transport():
