@@ -51,6 +51,9 @@ python -m aria_bot --apply --enable-kind missing_final_newline
 
 # Run all except one kind.
 python -m aria_bot --apply --disable-kind trailing_whitespace
+
+# Show all available transform kinds.
+python -m aria_bot --list-kinds
 ```
 
 Each cycle writes a machine-readable summary to

@@ -270,3 +270,22 @@ def test_commit_requires_apply(fake_repo: Path) -> None:
 
 def test_commit_message_uses_known_prefix() -> None:
     assert COMMIT_PREFIX.startswith("chore(aria-bot):")
+
+
+def test_cli_list_kinds_outputs_supported_kinds() -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--list-kinds",
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    output_lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+    assert "trailing_whitespace" in output_lines
+    assert "missing_final_newline" in output_lines
+    assert "remove_zero_width_chars" in output_lines

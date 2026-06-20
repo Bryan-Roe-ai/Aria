@@ -83,11 +83,22 @@ def _build_parser() -> argparse.ArgumentParser:
         default="INFO",
         help="Logging level (default: INFO).",
     )
+    parser.add_argument(
+        "--list-kinds",
+        action="store_true",
+        help="List supported finding/transform kinds and exit.",
+    )
     return parser
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _build_parser().parse_args(argv)
+
+    if args.list_kinds:
+        for kind in SUPPORTED_KINDS:
+            print(kind)
+        return 0
+
     logging.basicConfig(
         level=getattr(logging, str(args.log_level).upper(), logging.INFO),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
