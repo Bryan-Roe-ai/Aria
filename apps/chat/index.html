@@ -2208,6 +2208,76 @@
             border-top-color: #3a3a3a;
         }
 
+        /* Expression overlays (canonical [aria:expression:*] tags) */
+        .anime-character.expression-smile .character-mouth,
+        .anime-character.expression-happy .character-mouth {
+            height: 14px;
+            border-radius: 0 0 18px 18px;
+            background: #e85d8a;
+        }
+
+        .anime-character.expression-sad .character-head {
+            transform: rotate(8deg);
+        }
+
+        .anime-character.expression-sad .character-mouth {
+            height: 8px;
+            border-radius: 18px 18px 0 0;
+            margin-top: 6px;
+        }
+
+        .anime-character.expression-surprised .eye {
+            transform: scaleY(1.18);
+        }
+
+        .anime-character.expression-surprised .character-mouth {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-left: 32px;
+        }
+
+        .anime-character.expression-thinking .character-head {
+            transform: rotate(-6deg);
+        }
+
+        .anime-character.expression-wink .eye.left {
+            transform: scaleY(0.15);
+        }
+
+        .anime-character.expression-confused .character-head {
+            animation: ariaConfusedTilt 900ms ease-in-out 1;
+        }
+
+        @keyframes ariaConfusedTilt {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        .character-held-prop {
+            position: absolute;
+            right: -8px;
+            top: 72px;
+            font-size: 22px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+            opacity: 0;
+            transform: scale(0.6);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: none;
+            z-index: 12;
+        }
+
+        .character-held-prop.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .anime-character.facing-left {
+            transform: scaleX(-1);
+        }
+
         /* Interactive Objects */
         .game-object {
             position: fixed;
@@ -2830,6 +2900,7 @@
 
             <!-- Message bubble -->
             <div class="character-message">Hi! I'm Aria! ✨</div>
+            <div class="character-held-prop" id="characterHeldProp" aria-hidden="true"></div>
         </div>
     </div>
 
@@ -3044,6 +3115,8 @@
         // Allow chat.js to wire up vision and avatar features
         // The embedded controller will handle streaming chat separately
         window.ARIA_EMBEDDED = true;
+        window.ARIA_STAGE_API_BASE = window.ARIA_STAGE_API_BASE || 'http://127.0.0.1:8080';
+        window.ARIA_STAGE_BRIDGE_ENABLED = window.ARIA_STAGE_BRIDGE_ENABLED !== false;
 
         // Pupil cursor tracking - both eyes
         document.addEventListener('DOMContentLoaded', function () {
@@ -4158,35 +4231,155 @@
 
         // Send + AGI routing delegated to chat.js (__ariaChatTransport)
 
+        var ariaHeldObject = null;
+        var ariaExpressionTimer = null;
+        var OBJECT_EMOJI = {
+            apple: '🍎', book: '📚', cup: '☕', ball: '⚽', flower: '🌸', bear: '🧸',
+            box: '📦', star: '⭐', heart: '💖', key: '🔑', gem: '💎'
+        };
+
+        function shrugArms() {
+            setArmRotation('left', -5, 20);
+            setArmRotation('right', 5, 20);
+            setTimeout(function () { resetArms(); }, 700);
+        }
+
+        function thumbsUpArms() {
+            setArmRotation('left', -10, 0);
+            setArmRotation('right', 75, -20);
+            setTimeout(function () { resetArms(); }, 900);
+        }
+
+        function setCharacterFacing(direction) {
+            if (!character) return;
+            if (direction === 'left') character.classList.add('facing-left');
+            else character.classList.remove('facing-left');
+        }
+
+        function setAriaExpression(expression) {
+            if (!character) return;
+            var expr = String(expression || 'neutral').toLowerCase().trim();
+            var aliases = { happy: 'smile', grin: 'smile', joy: 'smile', upset: 'sad', unhappy: 'sad', shock: 'surprised', shocked: 'surprised', ponder: 'thinking', think: 'thinking' };
+            expr = aliases[expr] || expr;
+            character.classList.remove('expression-smile', 'expression-happy', 'expression-sad', 'expression-surprised', 'expression-thinking', 'expression-wink', 'expression-confused');
+            if (expr && expr !== 'neutral') character.classList.add('expression-' + expr);
+            if (ariaExpressionTimer) clearTimeout(ariaExpressionTimer);
+            ariaExpressionTimer = setTimeout(function () {
+                character.classList.remove('expression-smile', 'expression-happy', 'expression-sad', 'expression-surprised', 'expression-thinking', 'expression-wink', 'expression-confused');
+            }, 4500);
+        }
+
+        function showCharacterMessage(text) {
+            if (!character) return;
+            var bubble = character.querySelector('.character-message');
+            if (!bubble) return;
+            bubble.textContent = String(text || '').slice(0, 120);
+            bubble.style.opacity = '1';
+            setTimeout(function () { bubble.style.opacity = ''; }, 3500);
+        }
+
+        function updateHeldPropDisplay() {
+            var propEl = document.getElementById('characterHeldProp');
+            if (!propEl) return;
+            if (!ariaHeldObject) {
+                propEl.textContent = '';
+                propEl.classList.remove('visible');
+                propEl.setAttribute('aria-hidden', 'true');
+                return;
+            }
+            propEl.textContent = OBJECT_EMOJI[String(ariaHeldObject).toLowerCase()] || '📦';
+            propEl.classList.add('visible');
+            propEl.setAttribute('aria-hidden', 'false');
+        }
+
+        function ariaPickup(objectId) {
+            if (!objectId) return;
+            ariaHeldObject = String(objectId).trim();
+            reachUp();
+            updateHeldPropDisplay();
+            try { showToast('Picked up ' + ariaHeldObject); } catch (e) { }
+        }
+
+        function ariaDrop() {
+            if (!ariaHeldObject) {
+                try { showToast('Not holding anything'); } catch (e) { }
+                return;
+            }
+            var dropped = ariaHeldObject;
+            ariaHeldObject = null;
+            updateHeldPropDisplay();
+            resetArms();
+            try { showToast('Dropped ' + dropped); } catch (e) { }
+        }
+
+        function ariaLook(target) {
+            var value = String(target || '').trim().toLowerCase();
+            if (!value || value === 'center') { nodHead(); return; }
+            if (value === 'left') { setCharacterFacing('left'); pointDirection('left'); return; }
+            if (value === 'right') { setCharacterFacing('right'); pointDirection('right'); return; }
+            if (value === 'up') { pointDirection('up'); return; }
+            setCharacterFacing(value.charCodeAt(0) % 2 === 0 ? 'right' : 'left');
+            nodHead();
+            showCharacterMessage('Looking at ' + target);
+        }
+
+        function extractAriaTags(text) {
+            if (!text || typeof text !== 'string') return [];
+            return text.match(/\[aria:[^\]]+\]/gi) || [];
+        }
+
+        async function bridgeAssistantTextToStage(text) {
+            if (!window.ARIA_STAGE_BRIDGE_ENABLED || !text) return;
+            if (!extractAriaTags(text).length && text.indexOf('[aria:') === -1) return;
+            var base = window.ARIA_STAGE_API_BASE || 'http://127.0.0.1:8080';
+            try {
+                var resp = await fetch(base + '/api/aria/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: text.slice(0, 500), auto_execute: true, use_llm: false })
+                });
+                if (!resp.ok) return;
+                var data = await resp.json();
+                if (data && data.tags && data.tags.length) parseCanonicalAriaTags(data.tags.join(' '), true);
+            } catch (e) { }
+        }
+
+        function parseCanonicalAriaTags(text, skipStageBridge) {
+            extractAriaTags(text).forEach(function (tag) {
+                var posPct = tag.match(/\[aria:position:(\d{1,3}):(\d{1,3})\]/i);
+                if (posPct) { moveAriaToPercent(parseInt(posPct[1], 10), parseInt(posPct[2], 10)); return; }
+                var posNamed = tag.match(/\[aria:position:([a-z_\-]+)\]/i);
+                if (posNamed) { moveAriaToNamedPosition(posNamed[1]); return; }
+                if (/\[aria:gesture:wave\]|\[aria:animation:wave\]/i.test(tag)) { ariaWave(); return; }
+                if (/\[aria:gesture:spin\]|\[aria:animation:spin\]/i.test(tag)) { ariaSpin(); return; }
+                if (/\[aria:gesture:bow\]/i.test(tag)) { bowArms(); return; }
+                if (/\[aria:gesture:nod\]/i.test(tag)) { nodHead(); return; }
+                if (/\[aria:gesture:clap\]/i.test(tag)) { clapArms(); return; }
+                if (/\[aria:gesture:shrug\]/i.test(tag)) { shrugArms(); return; }
+                if (/\[aria:gesture:thumbs_up\]/i.test(tag)) { thumbsUpArms(); return; }
+                if (/\[aria:gesture:jump\]|\[aria:animation:jump\]/i.test(tag)) { ariaJump(); return; }
+                if (/\[aria:gesture:dance\]|\[aria:animation:dance\]/i.test(tag)) { ariaDance(); return; }
+                var expr = tag.match(/\[aria:expression:([^\]]+)\]/i);
+                if (expr) { setAriaExpression(expr[1]); return; }
+                var pick = tag.match(/\[aria:pickup:([^\]]+)\]/i);
+                if (pick) { ariaPickup(pick[1]); return; }
+                if (/^\[aria:drop(?::[^\]]+)?\]$/i.test(tag)) { ariaDrop(); return; }
+                var look = tag.match(/\[aria:look(?::([^\]]+))?\]/i);
+                if (look) { ariaLook(look[1] || ''); return; }
+                var say = tag.match(/\[aria:say:([^\]]+)\]/i);
+                if (say) { showCharacterMessage(say[1]); return; }
+                var facing = tag.match(/\[aria:facing:(left|right)\]/i);
+                if (facing) { setCharacterFacing(facing[1]); return; }
+                if (/^\[aria:effect:(sparkle|hearts|glow)/i.test(tag)) { ariaWave(); return; }
+            });
+            if (!skipStageBridge) bridgeAssistantTextToStage(text);
+        }
+
         // Parse AI responses for Aria movement commands
         function parseAriaCommands(text) {
             if (!text || typeof text !== 'string') return;
+            parseCanonicalAriaTags(text);
             var lowerText = text.toLowerCase();
-
-            // Server / AGI canonical tags (aligned with apps/aria/server.py)
-            var posPct = text.match(/\[aria:position:(\d{1,3}):(\d{1,3})\]/i);
-            if (posPct) {
-                moveAriaToPercent(parseInt(posPct[1], 10), parseInt(posPct[2], 10));
-            }
-            var posNamed = text.match(/\[aria:position:([a-z_\-]+)\]/i);
-            if (posNamed && !posPct) {
-                moveAriaToNamedPosition(posNamed[1]);
-            }
-            if (/\[aria:gesture:wave\]/i.test(text) || /\[aria:animation:wave\]/i.test(text)) {
-                ariaWave();
-            }
-            if (/\[aria:gesture:spin\]/i.test(text) || /\[aria:animation:spin\]/i.test(text)) {
-                ariaSpin();
-            }
-            if (/\[aria:gesture:bow\]/i.test(text)) {
-                bowArms();
-            }
-            if (/\[aria:gesture:nod\]/i.test(text)) {
-                nodHead();
-            }
-            if (/\[aria:gesture:clap\]/i.test(text)) {
-                clapArms();
-            }
 
             // Movement commands with walking
             if (lowerText.includes('[aria:walk:left]') || lowerText.includes('walk left') || lowerText.includes('aria walk left')) {

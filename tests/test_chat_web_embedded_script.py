@@ -35,6 +35,23 @@ def test_embedded_controller_parses_canonical_aria_tags():
     assert "ariaSpin" in script
 
 
+def test_embedded_controller_stage_bridge_and_tag_handlers():
+    html = INDEX_HTML.read_text(encoding="utf-8")
+    script = _extract_embedded_script(html)
+    assert "function parseCanonicalAriaTags" in script
+    assert "function bridgeAssistantTextToStage" in script
+    assert "function setAriaExpression" in script
+    assert "function ariaPickup" in script
+    assert "function ariaLook" in script
+    assert "ARIA_STAGE_API_BASE" in script
+    assert "ARIA_STAGE_BRIDGE_ENABLED" in script
+    assert "characterHeldProp" in html
+    assert "expression-smile" in html
+    assert "[aria:expression:" in script or "setAriaExpression" in script
+    assert "[aria:pickup:" in script or "ariaPickup" in script
+    assert "[aria:look" in script or "ariaLook" in script
+
+
 def test_chat_js_declares_embedded_transport():
     chat_js = (REPO_ROOT / "apps" / "chat" / "chat.js").read_text(encoding="utf-8")
     assert "function initEmbeddedTransport()" in chat_js
