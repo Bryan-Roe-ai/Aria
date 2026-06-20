@@ -49,8 +49,10 @@ def _remove_utf8_bom(text: str) -> str:
 
 
 def _normalize_unicode_newlines(text: str) -> str:
-    had_terminal_unicode_sep = text.endswith("\u2028") or text.endswith("\u2029")
-    had_terminal_unicode_sep_with_lf = text.endswith("\u2028\n") or text.endswith("\u2029\n")
+    had_terminal_unicode_sep = text.endswith(
+        "\u2028") or text.endswith("\u2029")
+    had_terminal_unicode_sep_with_lf = text.endswith(
+        "\u2028\n") or text.endswith("\u2029\n")
 
     normalized = text.replace("\u2028", "\n").replace("\u2029", "\n")
 
@@ -175,12 +177,14 @@ class Executor:
         new_bytes = new_text.encode("utf-8")
 
         # Diff-level safety: re-check size delta and require an actual change.
-        change_assessment = self.risk_manager.assess_change(path, original, new_bytes)
+        change_assessment = self.risk_manager.assess_change(
+            path, original, new_bytes)
         if not change_assessment.allowed:
             return ExecutionResult(plan=plan, applied=False, reason="; ".join(change_assessment.reasons))
 
         if self.dry_run:
-            _logger.info("[dry-run] would update %s (%s)", path, plan.description())
+            _logger.info("[dry-run] would update %s (%s)",
+                         path, plan.description())
             return ExecutionResult(plan=plan, applied=False, reason="dry-run")
 
         try:
