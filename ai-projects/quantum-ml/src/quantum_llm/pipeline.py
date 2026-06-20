@@ -316,6 +316,14 @@ class QuantumLLMPipeline:
             yield "data: [DONE]\n\n"
             return
 
+        # Empty / whitespace-only prompts are handled gracefully without calling
+        # the LLM provider, which typically rejects empty message content.
+        if not prompt.strip():
+            yield f'data: {json.dumps({"delta": ""})}\n\n'
+            yield f'data: {json.dumps({"latency_ms": 0.0, "quantum_augmented": False})}\n\n'
+            yield "data: [DONE]\n\n"
+            return
+
         t0 = time.monotonic()
         llm_provider = self._get_provider(prompt, provider)
         provider_name = getattr(llm_provider, "name", str(type(llm_provider).__name__))

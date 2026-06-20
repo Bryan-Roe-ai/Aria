@@ -20,13 +20,15 @@ class QuantumIntegration:
         self.config = config
         self.workspace_root = Path(config["paths"]["workspace_root"])
         self.quantum_path = Path(config["paths"]["quantum_ai"])
-        self.results_dir = Path(config["quantum"].get("results_dir") or (self.quantum_path / "results"))
+        self.results_dir = Path(config["quantum"].get(
+            "results_dir") or (self.quantum_path / "results"))
         self.quantum_config = self._load_quantum_config()
 
     def _load_quantum_config(self) -> Dict[str, Any]:
         """Load quantum configuration from YAML"""
         configured = self.config["quantum"].get("config_file")
-        config_path = Path(configured) if configured else self.quantum_path / "config" / "quantum_config.yaml"
+        config_path = Path(
+            configured) if configured else self.quantum_path / "config" / "quantum_config.yaml"
         if config_path.exists():
             with open(config_path) as f:
                 return yaml.safe_load(f)
@@ -68,7 +70,8 @@ class QuantumIntegration:
             return results
 
         # Find all JSON result files
-        json_files = sorted(results_path.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:limit]
+        json_files = sorted(results_path.glob(
+            "*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:limit]
 
         for json_file in json_files:
             try:
@@ -88,6 +91,38 @@ class QuantumIntegration:
 
         return results
 
+    @staticmethod
+    def _find_job_status(status_data: Dict[str, Any], job_name: str) -> Dict[str, Any]:
+        """Return the most relevant job entry from a status payload.
+
+        The quantum autorun status file has historically used both list- and
+        dict-shaped ``jobs`` payloads.  This helper keeps the bridge resilient
+        to either format while preserving the per-job details callers expect.
+        """
+        jobs = status_data.get("jobs")
+        if isinstance(jobs, dict):
+            entry = jobs.get(job_name)
+            return entry if isinstance(entry, dict) else {}
+
+        if isinstance(jobs, list):
+            normalized_job_name = job_name.strip().lower()
+            for index, entry in enumerate(jobs):
+                if not isinstance(entry, dict):
+                    continue
+
+                candidate_names = [entry.get("name"), entry.get(
+                    "job_name"), entry.get("preset")]
+                for candidate in candidate_names:
+                    if isinstance(candidate, str) and candidate.strip().lower() == normalized_job_name:
+                        return entry
+
+                if len(jobs) == 1:
+                    # Preserve backward compatibility with single-job snapshots
+                    # even when the stored name is absent or slightly different.
+                    return entry
+
+        return {}
+
     async def train_classifier(
         self,
         dataset: str,
@@ -102,7 +137,8 @@ class QuantumIntegration:
 
             datasets_path = self.workspace_root / "datasets" / "quantum"
             allowed_datasets = (
-                {csv_file.stem for csv_file in datasets_path.glob("*.csv")} if datasets_path.exists() else set()
+                {csv_file.stem for csv_file in datasets_path.glob(
+                    "*.csv")} if datasets_path.exists() else set()
             )
 
             safe_arg_pattern = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -143,7 +179,8 @@ class QuantumIntegration:
                 backend,
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.quantum_path), shell=False)
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(
+                self.quantum_path), shell=False)
 
             return {
                 "success": result.returncode == 0,
@@ -199,7 +236,8 @@ class QuantumIntegration:
                     "error": "Invalid job_name format. Allowed: letters, numbers, underscore, hyphen (max 64 chars).",
                 }
 
-            cmd = [sys.executable, str(autorun_script), "--job", normalized_job_name]
+            cmd = [sys.executable, str(
+                autorun_script), "--job", normalized_job_name]
             if dry_run:
                 cmd.append("--dry-run")
 
@@ -224,7 +262,7 @@ class QuantumIntegration:
                 "dry_run": dry_run,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
-                "status": status_data.get("jobs", {}).get(normalized_job_name, {}),
+                "status": self._find_job_status(status_data, normalized_job_name),
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
