@@ -60,7 +60,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 1;
             pointer-events: auto;
-            z-index: 10000;
+            z-index: 10002;
         }
 
         /* Speech bubble pointer removed - bottom centered chat */
@@ -3161,6 +3161,12 @@
                         agiModeButton.textContent = '🧠 AGI ON';
                         agiModeButton.classList.add('active');
                         updateProviderLabel('AGI');
+                        if (browserLLMState.enabled) {
+                            browserLLMState.enabled = false;
+                            persistBrowserLLMState();
+                            syncBrowserLLMControls();
+                            publishBrowserLLMStatus();
+                        }
                     } else {
                         agiModeButton.textContent = '🧠 AGI OFF';
                         agiModeButton.classList.remove('active');
@@ -4383,23 +4389,6 @@
             messageInput.value = '';
             pushConversationMessage('user', message);
 
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var localReply = await generateBrowserReply(message);
-                    addMessage('assistant', localReply);
-                    pushConversationMessage('assistant', localReply);
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(localReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(localReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                    updateProviderLabel('Browser LLM error');
-                }
-                return;
-            }
-
             if (agiMode) {
                 try {
                     providerInfo.textContent = 'AGI reasoning...';
@@ -4449,6 +4438,23 @@
                     providerInfo.textContent = 'Error';
                     stopMouthTalking();
                     cancelSpeak();
+                }
+                return;
+            }
+
+            if (browserLLMState.enabled) {
+                try {
+                    updateProviderLabel('Browser LLM (local)');
+                    var localReply = await generateBrowserReply(message);
+                    addMessage('assistant', localReply);
+                    pushConversationMessage('assistant', localReply);
+                    if (ariaSettings.autoSpeak) {
+                        try { speakWithLipSync(localReply).catch(function () { }); } catch (e) { }
+                    }
+                    parseAriaCommands(localReply);
+                } catch (localErr) {
+                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
+                    updateProviderLabel('Browser LLM error');
                 }
                 return;
             }
