@@ -21,9 +21,9 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence, Set
 
-from .analyzer import Analyzer, Finding
+from .analyzer import Analyzer, Finding, SUPPORTED_KINDS
 from .commit_system import CommitSystem
 from .executor import ExecutionResult, Executor
 from .planner import Planner, UpgradePlan
@@ -46,11 +46,25 @@ class OrchestratorConfig:
     commit: bool = False
     max_plans: int = 50
     status_path: Optional[Path] = None
+    enabled_kinds: Optional[Sequence[str]] = None
+    disabled_kinds: Optional[Sequence[str]] = None
 
     def resolve_status_path(self) -> Path:
         if self.status_path is not None:
             return Path(self.status_path)
         return Path(self.repo_root) / _DEFAULT_STATUS_PATH
+
+    def resolve_allowed_kinds(self) -> Set[str]:
+        supported = set(SUPPORTED_KINDS)
+        if self.enabled_kinds:
+            allowed = set(self.enabled_kinds) & supported
+        else:
+            allowed = set(supported)
+
+        if self.disabled_kinds:
+            allowed -= set(self.disabled_kinds)
+
+        return allowed
 
 
 @dataclass
@@ -131,6 +145,8 @@ class Orchestrator:
         _logger.info("aria-bot: %d finding(s)", len(findings))
 
         plans = planner.build_plans(findings)
+        allowed_kinds = self.config.resolve_allowed_kinds()
+        plans = self._filter_plans_by_kind(plans, allowed_kinds)
         _logger.info("aria-bot: %d plan(s) after risk filter", len(plans))
 
         executions = executor.execute(plans)
@@ -171,6 +187,31 @@ class Orchestrator:
         return result
 
     # ------------------------------------------------------------------
+    def _filter_plans_by_kind(
+        self,
+        plans: List[UpgradePlan],
+        allowed_kinds: Set[str],
+    ) -> List[UpgradePlan]:
+        if not allowed_kinds:
+            return []
+
+        filtered: List[UpgradePlan] = []
+        for plan in plans:
+            kept_kinds = tuple(k for k in plan.kinds if k in allowed_kinds)
+            if not kept_kinds:
+                continue
+
+            kept_findings = tuple(f for f in plan.findings if f.kind in kept_kinds)
+            filtered.append(
+                UpgradePlan(
+                    path=plan.path,
+                    kinds=kept_kinds,
+                    findings=kept_findings,
+                )
+            )
+
+        return filtered
+
     def _commit_message(self, executions: List[ExecutionResult]) -> str:
         # Only called when at least one execution applied; defend against
         # accidental misuse by future callers.
@@ -202,6 +243,8 @@ def run_cycle(
     commit: bool = False,
     max_plans: int = 50,
     status_path: Optional[Path] = None,
+    enabled_kinds: Optional[Sequence[str]] = None,
+    disabled_kinds: Optional[Sequence[str]] = None,
 ) -> CycleResult:
     """Convenience wrapper used by the CLI and tests."""
 
@@ -211,5 +254,7 @@ def run_cycle(
         commit=commit,
         max_plans=max_plans,
         status_path=status_path,
+        enabled_kinds=enabled_kinds,
+        disabled_kinds=disabled_kinds,
     )
     return Orchestrator(config=config).run()

@@ -45,6 +45,12 @@ python -m aria_bot --apply
 
 # Apply and create a local git commit (never pushes).
 python -m aria_bot --apply --commit
+
+# Only run specific transform kinds.
+python -m aria_bot --apply --enable-kind missing_final_newline
+
+# Run all except one kind.
+python -m aria_bot --apply --disable-kind trailing_whitespace
 ```
 
 Each cycle writes a machine-readable summary to

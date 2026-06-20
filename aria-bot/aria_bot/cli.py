@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 from typing import Optional, Sequence
 
+from .analyzer import SUPPORTED_KINDS
 from .orchestrator import run_cycle
 
 
@@ -45,6 +46,26 @@ def _build_parser() -> argparse.ArgumentParser:
         type=int,
         default=50,
         help="Cap on the number of plans applied per cycle.",
+    )
+    parser.add_argument(
+        "--enable-kind",
+        action="append",
+        choices=SUPPORTED_KINDS,
+        default=None,
+        help=(
+            "Only run the specified finding kind(s). "
+            "Can be passed multiple times."
+        ),
+    )
+    parser.add_argument(
+        "--disable-kind",
+        action="append",
+        choices=SUPPORTED_KINDS,
+        default=None,
+        help=(
+            "Skip the specified finding kind(s). "
+            "Can be passed multiple times."
+        ),
     )
     parser.add_argument(
         "--status-path",
@@ -82,6 +103,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         commit=args.commit,
         max_plans=args.max_plans,
         status_path=args.status_path,
+        enabled_kinds=args.enable_kind,
+        disabled_kinds=args.disable_kind,
     )
 
     if not args.quiet:

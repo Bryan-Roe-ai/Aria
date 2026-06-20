@@ -217,6 +217,36 @@ def test_run_cycle_apply_modifies_files(fake_repo: Path) -> None:
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 
 
+def test_run_cycle_enable_kind_limits_changes(fake_repo: Path) -> None:
+    result = run_cycle(
+        repo_root=fake_repo,
+        apply=True,
+        commit=False,
+        enabled_kinds=["missing_final_newline"],
+    )
+    assert result.apply is True
+
+    # missing_final_newline should be fixed.
+    assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
+    # trailing whitespace should remain because that kind was not enabled.
+    assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
+
+
+def test_run_cycle_disable_kind_excludes_changes(fake_repo: Path) -> None:
+    result = run_cycle(
+        repo_root=fake_repo,
+        apply=True,
+        commit=False,
+        disabled_kinds=["trailing_whitespace"],
+    )
+    assert result.apply is True
+
+    # trailing whitespace should remain because that kind was disabled.
+    assert (fake_repo / "src" / "needs_fix.py").read_bytes().endswith(b"   \n")
+    # other kinds should still run.
+    assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
+
+
 def test_commit_requires_apply(fake_repo: Path) -> None:
     """The CLI rejects --commit without --apply."""
 
