@@ -28,6 +28,13 @@ except ModuleNotFoundError:
     from shared.local_calc import evaluate_arithmetic, normalize_expression
     from shared.local_summary import is_summary_request, summarize_text
 
+try:
+    from shared.local_settings import apply_local_settings
+
+    apply_local_settings()
+except Exception:
+    pass
+
 # Helpers for Azure quota/rate-limit detection
 try:  # shared package may not be importable in all contexts (tests add paths)
     from shared.azure_utils import format_quota_message, is_quota_error, is_transient_rate_error

@@ -411,6 +411,13 @@ def get_settings() -> Settings:
     On first call, loads Key Vault secrets (if configured) before returning.
     Subsequent calls return the cached instance via ``lru_cache``.
     """
+    try:
+        from shared.local_settings import apply_local_settings
+
+        apply_local_settings()
+    except Exception:
+        pass
+
     if _PYDANTIC_AVAILABLE:
         instance = Settings()  # type: ignore[call-arg]
     else:
