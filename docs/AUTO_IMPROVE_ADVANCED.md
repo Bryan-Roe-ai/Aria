@@ -107,7 +107,7 @@ git commit --no-verify
 - id: auto-improve-checks
   # Customize stages where hook runs
   stages: [commit, push, manual]
-  
+
   # Or skip by default, run manually
   stages: [manual]
 ```
@@ -219,12 +219,12 @@ from scripts.custom_validation_rules import (
 
 class MyCustomRule(ValidationRule):
     """Check that all CLI scripts have repo root in sys.path."""
-    
+
     name = "cli-sys-path-check"
     category = "code"  # code, config, security, performance, custom
     description = "Verify CLI scripts import repo root"
     severity = "medium"
-    
+
     def validate(self):
         issues = []
         for script in Path("scripts").glob("*.py"):
