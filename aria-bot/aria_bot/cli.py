@@ -48,6 +48,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Cap on the number of plans applied per cycle.",
     )
     parser.add_argument(
+        "--include-suffix",
+        action="append",
+        default=None,
+        help=(
+            "Limit analysis to selected file suffixes (e.g. .md or py). "
+            "Can be passed multiple times."
+        ),
+    )
+    parser.add_argument(
         "--enable-kind",
         action="append",
         choices=SUPPORTED_KINDS,
@@ -148,6 +157,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         status_path=args.status_path,
         enabled_kinds=args.enable_kind,
         disabled_kinds=args.disable_kind,
+        include_suffixes=args.include_suffix,
     )
 
     result_dict = result.to_dict()

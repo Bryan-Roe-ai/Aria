@@ -55,6 +55,9 @@ python -m aria_bot --apply --disable-kind trailing_whitespace
 # Show all available transform kinds.
 python -m aria_bot --list-kinds
 
+# Restrict analysis to selected file suffixes.
+python -m aria_bot --include-suffix .md --include-suffix .yaml
+
 # Compact one-line JSON summary output.
 python -m aria_bot --output-format compact
 

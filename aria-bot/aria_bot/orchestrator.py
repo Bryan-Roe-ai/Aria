@@ -48,6 +48,7 @@ class OrchestratorConfig:
     status_path: Optional[Path] = None
     enabled_kinds: Optional[Sequence[str]] = None
     disabled_kinds: Optional[Sequence[str]] = None
+    include_suffixes: Optional[Sequence[str]] = None
 
     def resolve_status_path(self) -> Path:
         if self.status_path is not None:
@@ -65,6 +66,32 @@ class OrchestratorConfig:
             allowed -= set(self.disabled_kinds)
 
         return allowed
+
+    def resolve_scan_suffixes(self) -> Optional[tuple[str, ...]]:
+        if not self.include_suffixes:
+            return None
+
+        normalized = []
+        for suffix in self.include_suffixes:
+            s = suffix.strip().lower()
+            if not s:
+                continue
+            if not s.startswith("."):
+                s = f".{s}"
+            normalized.append(s)
+
+        if not normalized:
+            return None
+
+        # Preserve order while de-duplicating.
+        seen = set()
+        ordered_unique = []
+        for s in normalized:
+            if s in seen:
+                continue
+            seen.add(s)
+            ordered_unique.append(s)
+        return tuple(ordered_unique)
 
 
 @dataclass
@@ -132,7 +159,11 @@ class Orchestrator:
 
         repo_root = Path(self.config.repo_root).resolve()
         risk = RiskManager(repo_root=repo_root)
-        analyzer = Analyzer(risk_manager=risk)
+        scan_suffixes = self.config.resolve_scan_suffixes()
+        analyzer = Analyzer(
+            risk_manager=risk,
+            suffixes=scan_suffixes or Analyzer.suffixes,
+        )
         planner = Planner(risk_manager=risk, max_plans=self.config.max_plans)
         executor = Executor(risk_manager=risk, dry_run=not self.config.apply)
         validator = Validator(repo_root=repo_root)
@@ -249,6 +280,7 @@ def run_cycle(
     status_path: Optional[Path] = None,
     enabled_kinds: Optional[Sequence[str]] = None,
     disabled_kinds: Optional[Sequence[str]] = None,
+    include_suffixes: Optional[Sequence[str]] = None,
 ) -> CycleResult:
     """Convenience wrapper used by the CLI and tests."""
 
@@ -260,5 +292,6 @@ def run_cycle(
         status_path=status_path,
         enabled_kinds=enabled_kinds,
         disabled_kinds=disabled_kinds,
+        include_suffixes=include_suffixes,
     )
     return Orchestrator(config=config).run()

@@ -247,6 +247,45 @@ def test_run_cycle_disable_kind_excludes_changes(fake_repo: Path) -> None:
     assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
 
 
+def test_run_cycle_include_suffix_limits_scan(fake_repo: Path) -> None:
+    # Only scan markdown files.
+    result = run_cycle(
+        repo_root=fake_repo,
+        apply=False,
+        commit=False,
+        include_suffixes=[".md"],
+    )
+    payload = result.to_dict()
+
+    # Python findings should be excluded when only .md is scanned.
+    assert "trailing_whitespace" not in payload["findings_by_kind"]
+    # Markdown findings should still be present.
+    assert payload["findings_by_kind"]["missing_final_newline"] >= 1
+
+
+def test_cli_include_suffix_limits_scan(fake_repo: Path) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "aria_bot",
+            "--repo-root",
+            str(fake_repo),
+            "--include-suffix",
+            ".md",
+            "--quiet",
+            "--summary-path",
+            str(fake_repo / "summary.json"),
+        ],
+        cwd=PKG_PARENT,
+        capture_output=True,
+        text=True,
+    )
+    assert proc.returncode == 0
+    payload = json.loads((fake_repo / "summary.json").read_text())
+    assert "trailing_whitespace" not in payload["findings_by_kind"]
+
+
 def test_commit_requires_apply(fake_repo: Path) -> None:
     """The CLI rejects --commit without --apply."""
 
