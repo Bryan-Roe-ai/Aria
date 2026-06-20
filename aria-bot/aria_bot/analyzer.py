@@ -14,6 +14,7 @@ Currently supported finding kinds:
 * ``remove_utf8_bom`` — files that start with a UTF-8 BOM marker.
 * ``normalize_unicode_newlines`` — files containing U+2028/U+2029.
 * ``collapse_blank_line_runs`` — markdown/text/yaml files with 3+ blank lines.
+* ``normalize_nonbreaking_spaces`` — replace U+00A0 with plain spaces.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -40,6 +41,7 @@ SUPPORTED_KINDS: tuple[str, ...] = (
     "remove_utf8_bom",
     "normalize_unicode_newlines",
     "collapse_blank_line_runs",
+    "normalize_nonbreaking_spaces",
 )
 
 
@@ -147,6 +149,18 @@ class Analyzer:
                 )
             )
 
+        textish_exts = {".md", ".txt", ".yaml", ".yml"}
+        if path.suffix.lower() in textish_exts:
+            nbsp_count = text.count("\u00a0")
+            if nbsp_count:
+                results.append(
+                    Finding(
+                        kind="normalize_nonbreaking_spaces",
+                        path=path,
+                        detail=f"{nbsp_count} non-breaking space(s)",
+                    )
+                )
+
         # missing final newline (only meaningful if the file has any content)
         if text and not text.endswith("\n"):
             results.append(
@@ -169,7 +183,7 @@ class Analyzer:
             )
 
         # Collapse 3+ blank lines in documentation-like text files.
-        if path.suffix.lower() in {".md", ".txt", ".yaml", ".yml"}:
+        if path.suffix.lower() in textish_exts:
             max_blank_run = 0
             current_blank_run = 0
             for line in text.split("\n"):

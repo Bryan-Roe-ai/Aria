@@ -81,6 +81,10 @@ def _collapse_blank_line_runs(text: str) -> str:
     return "\n".join(out)
 
 
+def _normalize_nonbreaking_spaces(text: str) -> str:
+    return text.replace("\u00a0", " ")
+
+
 _TRANSFORMS: Dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
@@ -89,6 +93,7 @@ _TRANSFORMS: Dict[str, Transform] = {
     "remove_utf8_bom": _remove_utf8_bom,
     "normalize_unicode_newlines": _normalize_unicode_newlines,
     "collapse_blank_line_runs": _collapse_blank_line_runs,
+    "normalize_nonbreaking_spaces": _normalize_nonbreaking_spaces,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with

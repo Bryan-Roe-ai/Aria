@@ -42,6 +42,7 @@ def fake_repo(tmp_path: Path) -> Path:
     (tmp_path / "src" / "bom_file.txt").write_bytes(b"\xef\xbb\xbfhello\n")
     (tmp_path / "src" / "unicode_newline.txt").write_text("a\u2028b\u2029")
     (tmp_path / "src" / "blank_runs.md").write_text("A\n\n\n\nB\n")
+    (tmp_path / "src" / "nbsp.md").write_text("A\u00a0B\n")
     (tmp_path / "src" / "clean.py").write_bytes(b"def ok():\n    return 1\n")
 
     # Protected: must never be touched.
@@ -115,6 +116,7 @@ def test_analyzer_detects_findings(fake_repo: Path) -> None:
     assert ("bom_file.txt", "remove_utf8_bom") in kinds_by_path
     assert ("unicode_newline.txt", "normalize_unicode_newlines") in kinds_by_path
     assert ("blank_runs.md", "collapse_blank_line_runs") in kinds_by_path
+    assert ("nbsp.md", "normalize_nonbreaking_spaces") in kinds_by_path
     # Protected file must not appear at all.
     assert not any(f.path.name == "dirty.py" for f in findings)
     # Clean file should produce nothing.
@@ -159,10 +161,14 @@ def test_executor_applies_and_is_idempotent(fake_repo: Path) -> None:
     assert (fake_repo / "src" / "needs_newline.md").read_bytes().endswith(b"\n")
     assert b"\r" not in (fake_repo / "src" / "crlf_file.txt").read_bytes()
     assert (fake_repo / "src" / "extra_eof.md").read_bytes() == b"line\n"
-    assert not (fake_repo / "src" / "bom_file.txt").read_text().startswith("\ufeff")
-    assert "\u2028" not in (fake_repo / "src" / "unicode_newline.txt").read_text()
-    assert "\u2029" not in (fake_repo / "src" / "unicode_newline.txt").read_text()
+    assert not (fake_repo / "src" /
+                "bom_file.txt").read_text().startswith("\ufeff")
+    assert "\u2028" not in (
+        fake_repo / "src" / "unicode_newline.txt").read_text()
+    assert "\u2029" not in (
+        fake_repo / "src" / "unicode_newline.txt").read_text()
     assert (fake_repo / "src" / "blank_runs.md").read_text() == "A\n\nB\n"
+    assert "\u00a0" not in (fake_repo / "src" / "nbsp.md").read_text()
     # Protected file untouched.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 
