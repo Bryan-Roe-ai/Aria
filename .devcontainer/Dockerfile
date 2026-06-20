@@ -5,9 +5,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     gnupg \
-    libodbc1 \
     odbcinst \
     python3-dev \
     unixodbc \
     unixodbc-dev \
- && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/*
