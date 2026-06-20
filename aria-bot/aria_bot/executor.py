@@ -85,6 +85,13 @@ def _normalize_nonbreaking_spaces(text: str) -> str:
     return text.replace("\u00a0", " ")
 
 
+def _remove_zero_width_chars(text: str) -> str:
+    cleaned = text
+    for ch in ("\u200b", "\u200c", "\u200d", "\u2060", "\ufeff"):
+        cleaned = cleaned.replace(ch, "")
+    return cleaned
+
+
 _TRANSFORMS: Dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
@@ -94,6 +101,7 @@ _TRANSFORMS: Dict[str, Transform] = {
     "normalize_unicode_newlines": _normalize_unicode_newlines,
     "collapse_blank_line_runs": _collapse_blank_line_runs,
     "normalize_nonbreaking_spaces": _normalize_nonbreaking_spaces,
+    "remove_zero_width_chars": _remove_zero_width_chars,
 }
 
 #: Finding kinds the executor knows how to apply. Keep this in sync with

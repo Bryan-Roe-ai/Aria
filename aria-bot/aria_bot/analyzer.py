@@ -15,6 +15,7 @@ Currently supported finding kinds:
 * ``normalize_unicode_newlines`` — files containing U+2028/U+2029.
 * ``collapse_blank_line_runs`` — markdown/text/yaml files with 3+ blank lines.
 * ``normalize_nonbreaking_spaces`` — replace U+00A0 with plain spaces.
+* ``remove_zero_width_chars`` — strip common zero-width characters.
 
 Adding a new finding kind requires a matching entry in the executor's
 transform table; see :mod:`aria_bot.executor`.
@@ -42,6 +43,7 @@ SUPPORTED_KINDS: tuple[str, ...] = (
     "normalize_unicode_newlines",
     "collapse_blank_line_runs",
     "normalize_nonbreaking_spaces",
+    "remove_zero_width_chars",
 )
 
 
@@ -158,6 +160,19 @@ class Analyzer:
                         kind="normalize_nonbreaking_spaces",
                         path=path,
                         detail=f"{nbsp_count} non-breaking space(s)",
+                    )
+                )
+
+            zero_width_count = sum(
+                text.count(ch)
+                for ch in ("\u200b", "\u200c", "\u200d", "\u2060", "\ufeff")
+            )
+            if zero_width_count:
+                results.append(
+                    Finding(
+                        kind="remove_zero_width_chars",
+                        path=path,
+                        detail=f"{zero_width_count} zero-width char(s)",
                     )
                 )
 

@@ -43,6 +43,7 @@ def fake_repo(tmp_path: Path) -> Path:
     (tmp_path / "src" / "unicode_newline.txt").write_text("a\u2028b\u2029")
     (tmp_path / "src" / "blank_runs.md").write_text("A\n\n\n\nB\n")
     (tmp_path / "src" / "nbsp.md").write_text("A\u00a0B\n")
+    (tmp_path / "src" / "zwsp.md").write_text("A\u200bB\u2060C\n")
     (tmp_path / "src" / "clean.py").write_bytes(b"def ok():\n    return 1\n")
 
     # Protected: must never be touched.
@@ -117,6 +118,7 @@ def test_analyzer_detects_findings(fake_repo: Path) -> None:
     assert ("unicode_newline.txt", "normalize_unicode_newlines") in kinds_by_path
     assert ("blank_runs.md", "collapse_blank_line_runs") in kinds_by_path
     assert ("nbsp.md", "normalize_nonbreaking_spaces") in kinds_by_path
+    assert ("zwsp.md", "remove_zero_width_chars") in kinds_by_path
     # Protected file must not appear at all.
     assert not any(f.path.name == "dirty.py" for f in findings)
     # Clean file should produce nothing.
@@ -169,6 +171,8 @@ def test_executor_applies_and_is_idempotent(fake_repo: Path) -> None:
         fake_repo / "src" / "unicode_newline.txt").read_text()
     assert (fake_repo / "src" / "blank_runs.md").read_text() == "A\n\nB\n"
     assert "\u00a0" not in (fake_repo / "src" / "nbsp.md").read_text()
+    assert "\u200b" not in (fake_repo / "src" / "zwsp.md").read_text()
+    assert "\u2060" not in (fake_repo / "src" / "zwsp.md").read_text()
     # Protected file untouched.
     assert (fake_repo / "datasets" / "dirty.py").read_bytes() == b"x = 1   \n"
 
