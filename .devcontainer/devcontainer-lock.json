@@ -1,24 +1,54 @@
 {
   "features": {
-    "ghcr.io/devcontainers/features/azure-cli:1": {
-      "version": "1.3.0",
-      "resolved": "ghcr.io/devcontainers/features/azure-cli@sha256:d98f1066c077be0fa9d115b718f458bd803e415181b4a96f82a6f5d9f77241ac",
-      "integrity": "sha256:d98f1066c077be0fa9d115b718f458bd803e415181b4a96f82a6f5d9f77241ac"
+    "ghcr.io/devcontainers-extra/features/actions-runner:1": {
+      "version": "1.0.13",
+      "resolved": "ghcr.io/devcontainers-extra/features/actions-runner@sha256:d5b302251d0d02dd5ed824438f56f3ba856d152a8059a80a1f44500c076314a8",
+      "integrity": "sha256:d5b302251d0d02dd5ed824438f56f3ba856d152a8059a80a1f44500c076314a8"
     },
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "version": "2.5.9",
-      "resolved": "ghcr.io/devcontainers/features/common-utils@sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a",
-      "integrity": "sha256:cb0c4d3c276f157eed17935747e364178d75fee17f55c4e129966f64633deb3a"
+    "ghcr.io/devcontainers/features/copilot-cli:1": {
+      "version": "1.1.3",
+      "resolved": "ghcr.io/devcontainers/features/copilot-cli@sha256:e10d091ae7ef9b8d2ed5f601d75f5a090bc04acbac1a26d4cd3c0d5edde4ea10",
+      "integrity": "sha256:e10d091ae7ef9b8d2ed5f601d75f5a090bc04acbac1a26d4cd3c0d5edde4ea10"
     },
-    "ghcr.io/devcontainers/features/github-cli:1": {
-      "version": "1.1.0",
-      "resolved": "ghcr.io/devcontainers/features/github-cli@sha256:d22f50b70ed75339b4eed1ba9ecde3a1791f90e88d37936517e3bace0bbad671",
-      "integrity": "sha256:d22f50b70ed75339b4eed1ba9ecde3a1791f90e88d37936517e3bace0bbad671"
+    "ghcr.io/devcontainers/features/git-lfs:1": {
+      "version": "1.2.5",
+      "resolved": "ghcr.io/devcontainers/features/git-lfs@sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72",
+      "integrity": "sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72"
     },
-    "ghcr.io/devcontainers/features/node:2": {
-      "version": "2.1.0",
-      "resolved": "ghcr.io/devcontainers/features/node@sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857",
-      "integrity": "sha256:586c9a6f7dd40bd3ba2cd41e7f2f88dcc31fbe5d1442afcbf07ffbc66b686857"
+    "ghcr.io/helpers4/devcontainer/github-dev:1": {
+      "version": "1.0.4",
+      "resolved": "ghcr.io/helpers4/devcontainer/github-dev@sha256:882e16fc26bb451f3a14a07bfcc3d5e06bc9db7f742e5ac556f6dcdbcaf1109d",
+      "integrity": "sha256:882e16fc26bb451f3a14a07bfcc3d5e06bc9db7f742e5ac556f6dcdbcaf1109d"
+    },
+    "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {
+      "version": "2.0.0",
+      "resolved": "ghcr.io/hspaans/devcontainer-features/pyupgrade@sha256:326fed1dbe3253369321f5ca27e300171870ed357b90ec6144156042446acac6",
+      "integrity": "sha256:326fed1dbe3253369321f5ca27e300171870ed357b90ec6144156042446acac6"
+    },
+    "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {
+      "version": "1.0.3",
+      "resolved": "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence@sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f",
+      "integrity": "sha256:757843d75915f140ec22bc16ccb5e657a910d9b1d1f445d15350a78e584d130f"
+    },
+    "ghcr.io/postfinance/devcontainer-features/git-lfs:1": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/postfinance/devcontainer-features/git-lfs@sha256:1f8953214559db9942b9af492c39f94d068e53f2a8c816ec99401142a507ce7e",
+      "integrity": "sha256:1f8953214559db9942b9af492c39f94d068e53f2a8c816ec99401142a507ce7e"
+    },
+    "ghcr.io/postfinance/devcontainer-features/github-copilot-cli:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/postfinance/devcontainer-features/github-copilot-cli@sha256:2e4981e98719f81fe4386d04f7b38a4119c6b0fa7658f0a4eb546725ed2016e1",
+      "integrity": "sha256:2e4981e98719f81fe4386d04f7b38a4119c6b0fa7658f0a4eb546725ed2016e1"
+    },
+    "ghcr.io/postfinance/devcontainer-features/python:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/postfinance/devcontainer-features/python@sha256:441f963e0c7bba87a708e8059e2c26da6cca77f641572be6c61faa316e86c7c1",
+      "integrity": "sha256:441f963e0c7bba87a708e8059e2c26da6cca77f641572be6c61faa316e86c7c1"
+    },
+    "ghcr.io/sliekens/devcontainer-features/copilot:1": {
+      "version": "1.1.1",
+      "resolved": "ghcr.io/sliekens/devcontainer-features/copilot@sha256:a7675d965592940402e2d6d5088afb679798f6f479efe587324d3d6cf1d5d577",
+      "integrity": "sha256:a7675d965592940402e2d6d5088afb679798f6f479efe587324d3d6cf1d5d577"
     }
   }
 }
