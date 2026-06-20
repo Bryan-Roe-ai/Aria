@@ -478,13 +478,13 @@ import asyncio
 async def benchmark():
     pipeline = QuantumLLMPipeline()
     times = []
-    
+
     for i in range(10):
         t0 = time.monotonic()
         result = await pipeline.generate(f"Test prompt {i}")
         t1 = time.monotonic()
         times.append((t1 - t0) * 1000)
-    
+
     print(f"Mean: {sum(times)/len(times):.1f}ms")
     print(f"Min: {min(times):.1f}ms")
     print(f"Max: {max(times):.1f}ms")
@@ -518,7 +518,7 @@ if result["provider"] == "local-echo":
 status = pipeline.status()
 if not status["cache"]["enabled"]:
     print("Cache is disabled")
-    
+
 stats = status["cache"]["stats"]
 if stats.get("hit_rate", 0) < 0.1:
     print("Low cache hit rate, consider adjusting parameters")

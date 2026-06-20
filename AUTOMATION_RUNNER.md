@@ -83,7 +83,7 @@ To extend the automation runner, edit `run_automation.py` and add new methods to
 def run_custom_task(self) -> bool:
     """Run a custom automated task."""
     print_section("Running Custom Task")
-    
+
     try:
         # Your automation code here
         print_ok("Custom task completed")

@@ -34,7 +34,7 @@ Automatically runs every day at 2:00 AM using Windows Task Scheduler.
 
 **What it does:**
 - Validates environment
-- Checks dependencies  
+- Checks dependencies
 - Runs test suite
 - Performs validation
 - Logs all output
@@ -202,7 +202,7 @@ Start-Process powershell -Verb RunAs
 
 ```powershell
 # Get detailed task history
-Get-WinEvent -LogName "Microsoft-Windows-TaskScheduler/Operational" -MaxEvents 50 | 
+Get-WinEvent -LogName "Microsoft-Windows-TaskScheduler/Operational" -MaxEvents 50 |
     Where-Object {$_.Message -like "*Aria Automation*"} |
     Select-Object TimeCreated, Message
 ```
@@ -213,7 +213,7 @@ Get-WinEvent -LogName "Microsoft-Windows-TaskScheduler/Operational" -MaxEvents 5
 
 ### Check Task Status
 ```powershell
-Get-ScheduledTask -TaskName "Aria Automation" | 
+Get-ScheduledTask -TaskName "Aria Automation" |
     Select-Object TaskName, State, LastRunTime, LastTaskResult
 ```
 
