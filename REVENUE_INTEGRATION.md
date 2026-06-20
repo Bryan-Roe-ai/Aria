@@ -21,7 +21,7 @@ The main Aria character page (`aria_web/index.html`) now features:
 - **Subscription Badge:** Displays current tier (Free, Pro, Enterprise)
 - **Upgrade Button:** Prominent call-to-action for up/downgrade
 
-**Screenshot:**
+**Screenshot:**  
 ![Aria Interface with Monetization Nav](https://github.com/user-attachments/assets/4b505ae3-7324-4570-85d8-2e78ebb0bd5f)
 
 ### 2. "Try Aria" Button on Monetization Hub
@@ -31,7 +31,7 @@ The monetization index page now includes:
 - **Primary "Try Aria" Button:** Hero button leading to character interface
 - **Platform Pages Section:** Quick link to character experience
 
-**Screenshot:**
+**Screenshot:**  
 ![Monetization Hub with Try Aria](https://github.com/user-attachments/assets/fe80e500-19c1-45e9-8a5f-05adc035837f)
 
 ---
@@ -231,5 +231,5 @@ python -m http.server 8000
 
 ---
 
-**Revenue Stream Status:** ✅ Active — 111.8% of $2,000 target
+**Revenue Stream Status:** ✅ Active — 111.8% of $2,000 target  
 **Last Updated:** 2026-02-17
