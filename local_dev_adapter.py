@@ -57,127 +57,128 @@ logger = logging.getLogger(__name__)
 # function_app can import and its ai_status handler can be invoked. The shim
 # implements only what the local adapter needs: FunctionApp decorator, simple
 # HttpRequest/HttpResponse types and an AuthLevel constant.
+
+AzureHttpResponse = None
 try:
     from azure.functions import HttpResponse as AzureHttpResponse
-
-    import function_app
-except ModuleNotFoundError as e:
+except ModuleNotFoundError:
     # Provide a lightweight shim for azure.functions when it's not installed.
-    if "azure" in str(e):
-        logger.debug("azure.functions not found; installing lightweight shim for local dev adapter")
-        fake_mod = types.ModuleType("azure.functions")
+    logger.debug(
+        "azure.functions not found; installing lightweight shim for local dev adapter")
+    fake_mod = types.ModuleType("azure.functions")
 
-        class AuthLevel:
-            ANONYMOUS = "ANONYMOUS"
+    class AuthLevel:
+        ANONYMOUS = "ANONYMOUS"
 
-        class HttpRequest:  # minimal request placeholder with helpful helpers
-            def __init__(
-                self,
-                method: str = "GET",
-                url: str = "/",
-                params: dict | None = None,
-                headers: dict | None = None,
-                body: Any = None,
-                route_params: dict | None = None,
-            ):
-                self.method = method
-                self.url = url
-                self.params = params or {}
-                self.route_params = route_params or {}
-                # Normalize headers to lowercase keys for convenience
-                self.headers = {k.lower(): v for k, v in (headers or {}).items()}
-                # Normalize body to bytes internally
-                if isinstance(body, bytes):
-                    self._body = body
-                elif isinstance(body, str):
-                    self._body = body.encode("utf-8")
-                elif body is None:
-                    self._body = b""
-                else:
-                    try:
-                        self._body = json.dumps(body).encode("utf-8")
-                    except Exception:
-                        self._body = str(body).encode("utf-8")
-                self._json_cache = None
-
-            def get_body(self) -> bytes:
-                return self._body
-
-            def get_json(self, force: bool = False):
-                """Parse and return JSON body. Raises ValueError on parse failure.
-
-                Args:
-                    force: If True, re-parse even if cached.
-                """
-                if self._json_cache is not None and not force:
-                    return self._json_cache
+    class HttpRequest:  # minimal request placeholder with helpful helpers
+        def __init__(
+            self,
+            method: str = "GET",
+            url: str = "/",
+            params: dict | None = None,
+            headers: dict | None = None,
+            body: Any = None,
+            route_params: dict | None = None,
+        ):
+            self.method = method
+            self.url = url
+            self.params = params or {}
+            self.route_params = route_params or {}
+            # Normalize headers to lowercase keys for convenience
+            self.headers = {k.lower(): v for k, v in (
+                headers or {}).items()}
+            # Normalize body to bytes internally
+            if isinstance(body, bytes):
+                self._body = body
+            elif isinstance(body, str):
+                self._body = body.encode("utf-8")
+            elif body is None:
+                self._body = b""
+            else:
                 try:
-                    text = self._body.decode("utf-8")
-                    parsed = json.loads(text) if text else {}
-                    self._json_cache = parsed
-                    return parsed
-                except Exception as e:
-                    logger.debug("HttpRequest.get_json failed: %s", e)
-                    raise ValueError("Failed to parse JSON body") from e
+                    self._body = json.dumps(body).encode("utf-8")
+                except Exception:
+                    self._body = str(body).encode("utf-8")
+            self._json_cache = None
 
-        class HttpResponse:
-            def __init__(
-                self,
-                body=b"",
-                status_code: int = 200,
-                mimetype: str | None = None,
-                headers: dict | None = None,
-            ):
-                # Normalize to bytes to match real azure HttpResponse.get_body()
-                if isinstance(body, str):
-                    self._body = body.encode("utf-8")
-                elif isinstance(body, bytes):
-                    self._body = body
-                else:
-                    try:
-                        self._body = json.dumps(body).encode("utf-8")
-                    except Exception:
-                        self._body = str(body).encode("utf-8")
-                self.status_code = status_code
-                self.mimetype = mimetype
-                self.headers = headers or {}
+        def get_body(self) -> bytes:
+            return self._body
 
-            def get_body(self):
-                return self._body
+        def get_json(self, force: bool = False):
+            """Parse and return JSON body. Raises ValueError on parse failure.
 
-        class FunctionApp:
-            def __init__(self):
-                self._routes = []
+            Args:
+                force: If True, re-parse even if cached.
+            """
+            if self._json_cache is not None and not force:
+                return self._json_cache
+            try:
+                text = self._body.decode("utf-8")
+                parsed = json.loads(text) if text else {}
+                self._json_cache = parsed
+                return parsed
+            except Exception as e:
+                logger.debug("HttpRequest.get_json failed: %s", e)
+                raise ValueError("Failed to parse JSON body") from e
 
-            def route(self, *args, **kwargs):
-                def decorator(fn):
-                    # attach route metadata but otherwise return the original function
-                    try:
-                        fn.__qai_route__ = {"args": args, "kwargs": kwargs}
-                    except Exception:
-                        pass
-                    return fn
+    class HttpResponse:
+        def __init__(
+            self,
+            body=b"",
+            status_code: int = 200,
+            mimetype: str | None = None,
+            headers: dict | None = None,
+        ):
+            # Normalize to bytes to match real azure HttpResponse.get_body()
+            if isinstance(body, str):
+                self._body = body.encode("utf-8")
+            elif isinstance(body, bytes):
+                self._body = body
+            else:
+                try:
+                    self._body = json.dumps(body).encode("utf-8")
+                except Exception:
+                    self._body = str(body).encode("utf-8")
+            self.status_code = status_code
+            self.mimetype = mimetype
+            self.headers = headers or {}
 
-                return decorator
+        def get_body(self):
+            return self._body
 
-        fake_mod.AuthLevel = AuthLevel
-        fake_mod.HttpRequest = HttpRequest
-        fake_mod.HttpResponse = HttpResponse
-        fake_mod.FunctionApp = FunctionApp
+    class FunctionApp:
+        def __init__(self):
+            self._routes = []
 
-        # Insert into sys.modules so import statements in function_app succeed.
-        azure_pkg = sys.modules.setdefault("azure", types.ModuleType("azure"))
-        if not hasattr(azure_pkg, "__path__"):
-            azure_pkg.__path__ = []  # type: ignore[attr-defined]
-        setattr(azure_pkg, "functions", fake_mod)
-        sys.modules.setdefault("azure.functions", fake_mod)
+        def route(self, *args, **kwargs):
+            def decorator(fn):
+                # attach route metadata but otherwise return the original function
+                try:
+                    fn.__qai_route__ = {"args": args, "kwargs": kwargs}
+                except Exception:
+                    pass
+                return fn
 
-        # Now import function_app and reference the shim's HttpResponse
-        import function_app
+            return decorator
 
-        AzureHttpResponse = fake_mod.HttpResponse
-    else:
-        raise
+    fake_mod.AuthLevel = AuthLevel
+    fake_mod.HttpRequest = HttpRequest
+    fake_mod.HttpResponse = HttpResponse
+    fake_mod.FunctionApp = FunctionApp
+
+    # Insert into sys.modules so import statements in function_app succeed.
+    # We need both the package root (azure) and the submodule (azure.functions)
+    # because function_app imports them using `import azure.functions as func`.
+    azure_pkg = sys.modules.setdefault("azure", types.ModuleType("azure"))
+    if not hasattr(azure_pkg, "__path__"):
+        azure_pkg.__path__ = []  # type: ignore[attr-defined]
+    setattr(azure_pkg, "functions", fake_mod)
+    sys.modules.setdefault("azure.functions", fake_mod)
+
+    AzureHttpResponse = fake_mod.HttpResponse
+
+# Now import function_app (will use shim if azure.functions was unavailable)
+import function_app
 
 
 def _azure_response_parts(
@@ -195,7 +196,8 @@ def _azure_response_parts(
     mimetype = getattr(resp, "mimetype", None)
     headers = dict(getattr(resp, "headers", None) or {})
     if not mimetype:
-        content_type = headers.get("Content-Type") or headers.get("content-type")
+        content_type = headers.get(
+            "Content-Type") or headers.get("content-type")
         if content_type:
             mimetype = content_type
         else:
@@ -224,7 +226,8 @@ def _azure_to_flask(resp: AzureHttpResponse) -> Response:
             flask_resp.headers[k] = v
     except Exception:
         # best-effort fallback for unexpected header shapes
-        logger.debug("Unexpected header shape when converting azure HttpResponse to Flask Response")
+        logger.debug(
+            "Unexpected header shape when converting azure HttpResponse to Flask Response")
 
     return flask_resp
 
@@ -307,7 +310,8 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
             try:
                 body, status_code, mimetype, headers = get_ai_status_parts()
             except Exception as exc:  # noqa: BLE001
-                logger.exception("Failed to build /api/ai/status response: %s", exc)
+                logger.exception(
+                    "Failed to build /api/ai/status response: %s", exc)
                 body = json.dumps({"error": str(exc)}).encode("utf-8")
                 status_code = 500
                 mimetype = "application/json"
@@ -368,7 +372,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
-    print(f"Starting local dev adapter for /api/ai/status on http://{args.host}:{args.port}")
+    print(
+        f"Starting local dev adapter for /api/ai/status on http://{args.host}:{args.port}")
 
     if HAS_FLASK:
         app = create_app()
