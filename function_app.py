@@ -2,6 +2,7 @@
 # QAI Azure Functions Application
 # =============================================================================
 import importlib.util as _iu
+import hmac
 import json
 import logging
 import os
@@ -1094,7 +1095,10 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                 provided_token = provided_token.split(" ", 1)[1]
         except Exception:
             provided_token = None
-        if provided_token != token_required:
+        if not (
+            isinstance(provided_token, str)
+            and hmac.compare_digest(provided_token, token_required)
+        ):
             return func.HttpResponse(
                 json.dumps({"status": "error", "error": "unauthorized"}),
                 status_code=401,
@@ -1606,6 +1610,11 @@ def create_cors_response_headers():
 def _default_agi_persist_jsonl_path() -> str:
     """Default JSONL audit path for AGI reasoning chains."""
     return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
+
+
+def _materialize_sse_body(chunks) -> bytes:
+    """Backward-compatible alias for tests and callers expecting the PR name."""
+    return _sse_body_bytes(chunks)
 
 
 def _sse_body_bytes(chunks) -> bytes:
