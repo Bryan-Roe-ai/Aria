@@ -94,11 +94,17 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Skip training; load saved model path and run evaluator only",
     )
+    parser.add_argument("--hub-model-id", default=None)
+    parser.add_argument("--push-to-hub", action="store_true")
     return parser.parse_args()
 
 
-def setup_logging(run_name: str) -> None:
-    log_dir = REPO_ROOT / "data_out" / "sentence_transformer_training" / "logs"
+def setup_logging(run_name: str, output_dir: str | None = None) -> None:
+    log_dir = (
+        Path(output_dir) / "logs"
+        if output_dir
+        else REPO_ROOT / "data_out" / "sentence_transformer_training" / "logs"
+    )
     log_dir.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
         format="%(asctime)s - %(message)s",
@@ -122,12 +128,33 @@ def load_split(name: str, subset: str | None, split: str):
     return load_dataset(name, split=split)
 
 
+def resolve_hub_model_id(args: argparse.Namespace) -> str | None:
+    hub_id = (args.hub_model_id or os.environ.get("HUB_MODEL_ID") or "").strip()
+    if hub_id:
+        return hub_id
+    if not args.push_to_hub or os.environ.get("SMOKE_TEST") == "1":
+        return None
+    if not os.environ.get("HF_TOKEN"):
+        return None
+    try:
+        from huggingface_hub import whoami
+
+        user = whoami().get("name")
+        if user:
+            return f"{user}/{args.run_name}"
+    except Exception:
+        pass
+    return None
+
+
 def main() -> None:
     args = parse_args()
     smoke_test = os.environ.get("SMOKE_TEST") == "1"
     output_dir = args.output_dir or str(DEFAULT_OUTPUT_ROOT / args.run_name)
+    hub_model_id = resolve_hub_model_id(args)
+    hub_push = bool(args.push_to_hub and hub_model_id and not smoke_test)
 
-    setup_logging(args.run_name)
+    setup_logging(args.run_name, output_dir if args.output_dir else None)
 
     if args.eval_only:
         logging.info("Eval-only mode: loading model from %s", args.eval_only)
@@ -166,6 +193,11 @@ def main() -> None:
     with autocast_ctx():
         baseline_eval = evaluator(model)[evaluator.primary_metric]
     metric_key = f"eval_{evaluator.primary_metric}"
+    hub_kwargs = (
+        {"push_to_hub": True, "hub_model_id": hub_model_id, "hub_strategy": "every_save"}
+        if hub_push
+        else {}
+    )
 
     training_args = SentenceTransformerTrainingArguments(
         output_dir=output_dir,
@@ -193,6 +225,7 @@ def main() -> None:
         report_to="none" if smoke_test else "trackio",
         run_name=args.run_name,
         seed=12,
+        **hub_kwargs,
     )
 
     trainer = SentenceTransformerTrainer(
@@ -227,9 +260,11 @@ def main() -> None:
     if smoke_test:
         logging.info("SMOKE_TEST=1: skipping Hub push")
         return
+    if not hub_push:
+        return
 
     try:
-        commit_url = model.push_to_hub(args.run_name)
+        commit_url = model.push_to_hub(hub_model_id)
         logging.info("Pushed model to %s", commit_url.rsplit("/commit/", 1)[0])
     except Exception:
         import traceback
