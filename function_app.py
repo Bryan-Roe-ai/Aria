@@ -483,7 +483,13 @@ def _detect_provider_with_runtime_fallback(
             model_override,
             provider_error,
         )
-        return detect_provider(explicit="local", model_override="local-echo")
+        try:
+            return detect_provider(explicit="local", model_override="local-echo")
+        except Exception as fallback_error:
+            logging.error(f"Even fallback to local provider failed: {fallback_error}")
+            raise RuntimeError(
+                f"Provider detection failed with '{provider_error}' and fallback also failed: {fallback_error}"
+            ) from fallback_error
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -2545,7 +2551,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
 
         # Detect active provider
         provider, info = _detect_provider_with_runtime_fallback(
-            explicit="auto")
+              explicit=os.getenv("DEFAULT_AI_PROVIDER", "auto"))
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()
