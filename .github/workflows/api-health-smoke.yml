@@ -121,16 +121,16 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/ci_orchestrator.py --integration-contract-tests
-          test -f data_out/ci_orchestrator/status.json
-          python -m json.tool data_out/ci_orchestrator/status.json >/dev/null
+          test -f data_out/ci_orchestrator/ci_results.json
+          python -m json.tool data_out/ci_orchestrator/ci_results.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
-          p = Path("data_out/ci_orchestrator/status.json")
+          p = Path("data_out/ci_orchestrator/ci_results.json")
           data = json.loads(p.read_text(encoding="utf-8"))
-          assert isinstance(data, dict), "status.json must be a JSON object"
-          for key in ("total_jobs", "succeeded", "failed"):
-              assert key in data, f"status.json missing required key: {key}"
+          assert isinstance(data, dict), "ci_results.json must be a JSON object"
+          for key in ("total_steps", "succeeded", "failed", "results"):
+              assert key in data, f"ci_results.json missing required key: {key}"
           PY
 
       - name: Upload smoke artifacts
@@ -142,7 +142,7 @@ jobs:
           if-no-files-found: warn
           path: |
             data_out/integration_smoke/
-            data_out/ci_orchestrator/status.json
+            data_out/ci_orchestrator/ci_results.json
 
       - name: Summary
         if: always()
