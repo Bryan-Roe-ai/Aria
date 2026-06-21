@@ -2,14 +2,13 @@
 Local Developer Adapter for Azure Functions endpoints
 
 This tiny adapter lets you run selected Azure Functions handlers locally without
-needing the Azure Functions Core Tools host. It's intentionally small and only
-exposes the `/api/ai/status` endpoint used by the repo for health checks.
+needing the Azure Functions Core Tools host. It exposes ``GET /api/ai/status``
+and ``GET /api/agi/status`` for local health checks.
 
 Usage:
-  # Run server on port 7071 (default)
   python local_dev_adapter.py
-  # Run on a different port
   python local_dev_adapter.py --port 7072
+  python local_dev_adapter.py --check
 
 Design notes:
 - Imports the `function_app` module and calls `ai_status()` directly.
@@ -18,7 +17,6 @@ Design notes:
 """
 
 from __future__ import annotations
-import function_app
 import argparse
 import json
 import logging
@@ -42,6 +40,12 @@ except ModuleNotFoundError:  # pragma: no cover - exercised in minimal envs
     HAS_FLASK = False
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_log_label(value: str) -> str:
+    """Strip control chars from user-influenced values before logging."""
+    return str(value).split("?", 1)[0].replace("\n", "").replace("\r", "")[:120]
+
 
 # Ensure repo modules are importable when running from the repo root.
 repo_root = Path(__file__).resolve().parent
@@ -187,6 +191,13 @@ except ModuleNotFoundError:
 # Import function_app only after sys.path, env, and shim setup.
 
 
+def _get_function_app() -> Any:
+    """Import function_app after sys.path, env, and azure shim setup."""
+    import function_app as fa
+
+    return fa
+
+
 def _azure_response_parts(
     resp: AzureHttpResponse,
 ) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
@@ -238,53 +249,62 @@ def _azure_to_flask(resp: AzureHttpResponse) -> Response:
     return flask_resp
 
 
-def get_ai_status_response() -> Tuple[Response, int]:
-    """Call the function_app.ai_status handler and return a Flask response.
+def _call_function_handler(handler_name: str, method: str, url: str) -> AzureHttpResponse:
+    """Invoke a function_app HTTP handler with a minimal HttpRequest."""
+    function_app = _get_function_app()
+    handler = getattr(function_app, handler_name, None)
+    if handler is None:
+        raise RuntimeError(f"function_app.{handler_name} is not available")
 
-    ai_status() does not depend on incoming request data so we just call it
-    with a lightweight HttpRequest and adapt the returned azure.functions.HttpResponse.
-    """
-    # Provide a minimal HttpRequest instance for greater compatibility with
-    # handlers that expect `req` to be an azure.functions.HttpRequest.
     try:
-        req = getattr(function_app, "HttpRequest", None)
+        req_cls = getattr(function_app, "HttpRequest", None)
     except Exception:
-        req = None
+        req_cls = None
 
-    if req is None or not hasattr(req, "get_body"):
-        # Use shim's HttpRequest if available in sys.modules
+    request_kwargs = {"method": method, "url": url, "body": b""}
+
+    if req_cls is None or not hasattr(req_cls, "get_body"):
         try:
             from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
 
-            fake_req = ShimHttpRequest(method="GET", url="/api/ai/status")
-        except Exception:
-            fake_req = None
+            try:
+                fake_req = ShimHttpRequest(**request_kwargs)
+            except TypeError:
+                fake_req = ShimHttpRequest(method=method, url=url)
+        except Exception as exc:
+            raise RuntimeError(
+                "No HttpRequest implementation available for local dev adapter"
+            ) from exc
     else:
-        fake_req = req(method="GET", url="/api/ai/status")
+        try:
+            fake_req = req_cls(**request_kwargs)
+        except TypeError:
+            fake_req = req_cls(method=method, url=url)
 
-    azure_resp = function_app.ai_status(fake_req)
-    flask_resp = _azure_to_flask(azure_resp)
-    return flask_resp
+    return handler(fake_req)
+
+
+def get_ai_status_response() -> Tuple[Response, int]:
+    """Call the function_app.ai_status handler and return a Flask response."""
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+    return _azure_to_flask(azure_resp)
+
+
+def get_agi_status_response() -> Tuple[Response, int]:
+    """Call function_app.agi_status and return a Flask response."""
+    azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
+    return _azure_to_flask(azure_resp)
 
 
 def get_ai_status_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
     """Return endpoint response components for non-Flask fallback servers."""
-    try:
-        req = getattr(function_app, "HttpRequest", None)
-    except Exception:
-        req = None
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+    return _azure_response_parts(azure_resp)
 
-    if req is None or not hasattr(req, "get_body"):
-        try:
-            from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
 
-            fake_req = ShimHttpRequest(method="GET", url="/api/ai/status")
-        except Exception:
-            fake_req = None
-    else:
-        fake_req = req(method="GET", url="/api/ai/status")
-
-    azure_resp = function_app.ai_status(fake_req)
+def get_agi_status_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Return /api/agi/status response components for non-Flask servers."""
+    azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
     return _azure_response_parts(azure_resp)
 
 
@@ -298,6 +318,10 @@ def create_app() -> Flask:
     def ai_status_route():
         return get_ai_status_response()
 
+    @app.get("/api/agi/status")
+    def agi_status_route():
+        return get_agi_status_response()
+
     return app
 
 
@@ -306,7 +330,12 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
 
     class _Handler(BaseHTTPRequestHandler):
         def do_GET(self) -> None:  # noqa: N802
-            if self.path.split("?", 1)[0] != "/api/ai/status":
+            path = self.path.split("?", 1)[0]
+            if path == "/api/ai/status":
+                parts_fn = get_ai_status_parts
+            elif path == "/api/agi/status":
+                parts_fn = get_agi_status_parts
+            else:
                 self.send_response(404)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
@@ -314,10 +343,10 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
                 return
 
             try:
-                body, status_code, mimetype, headers = get_ai_status_parts()
+                body, status_code, mimetype, headers = parts_fn()
             except Exception as exc:  # noqa: BLE001
-                logger.exception(
-                    "Failed to build /api/ai/status response: %s", exc)
+                logger.exception("Failed to build %s response: %s",
+                                 _safe_log_label(path), exc)
                 body = json.dumps({"error": str(exc)}).encode("utf-8")
                 status_code = 500
                 mimetype = "application/json"
@@ -353,6 +382,30 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
         server.server_close()
 
 
+def check_status_endpoints() -> int:
+    """Probe adapter handlers without starting an HTTP server."""
+    probes = (
+        ("GET /api/ai/status", get_ai_status_parts),
+        ("GET /api/agi/status", get_agi_status_parts),
+    )
+    errors: list[str] = []
+    for label, parts_fn in probes:
+        try:
+            _body, status_code, _mimetype, _headers = parts_fn()
+            if status_code != 200:
+                errors.append(f"{label}: http {status_code}")
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"{label}: {exc}")
+
+    if errors:
+        for line in errors:
+            print(line, file=sys.stderr)
+        return 1
+
+    print("ok: /api/ai/status, /api/agi/status")
+    return 0
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse local adapter CLI arguments."""
 
@@ -360,7 +413,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     default_port = int(os.getenv("LOCAL_DEV_ADAPTER_PORT", "7071"))
 
     parser = argparse.ArgumentParser(
-        description="Run the local /api/ai/status adapter without Azure Functions Core Tools.",
+        description=(
+            "Run the local dev adapter for GET /api/ai/status and GET /api/agi/status "
+            "without Azure Functions Core Tools."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python local_dev_adapter.py\n"
+            "  python local_dev_adapter.py --port 7072\n"
+            "  python local_dev_adapter.py --check\n"
+            "  curl -s http://localhost:7071/api/agi/status | jq .backends\n"
+        ),
     )
     parser.add_argument(
         "--host",
@@ -373,13 +437,21 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=default_port,
         help=f"Bind port for the local adapter (default: {default_port}).",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Probe /api/ai/status and /api/agi/status handlers and exit (no server).",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    if args.check:
+        raise SystemExit(check_status_endpoints())
+
     print(
-        f"Starting local dev adapter for /api/ai/status on http://{args.host}:{args.port}")
+        f"Starting local dev adapter for /api/ai/status and /api/agi/status on http://{args.host}:{args.port}")
 
     if HAS_FLASK:
         app = create_app()

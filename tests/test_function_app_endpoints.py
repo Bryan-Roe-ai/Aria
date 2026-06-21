@@ -46,6 +46,27 @@ def _mock_request(
     return req
 
 
+def _capture_sse_http_response(monkeypatch, app_module, captured: dict) -> None:
+    """Patch HttpResponse so SSE bodies are captured as bytes or generators."""
+    import inspect
+
+    import azure.functions as _af
+
+    _real_HttpResponse = _af.HttpResponse
+
+    def _capturing_HttpResponse(body=None, **kwargs):
+        if body is not None and inspect.isgenerator(body):
+            consumed = b"".join(body)
+            captured["sse_body"] = consumed
+            return _real_HttpResponse(consumed, **kwargs)
+        if isinstance(body, (bytes, bytearray)):
+            captured["sse_body"] = bytes(body)
+        return _real_HttpResponse(body, **kwargs)
+
+    monkeypatch.setattr(app_module.func, "HttpResponse",
+                        _capturing_HttpResponse)
+
+
 def _install_fake_quantum_trainer_module(
     monkeypatch: pytest.MonkeyPatch,
     capture: dict | None = None,
@@ -249,7 +270,11 @@ class TestGetEndpoints:
 
             return object(), _Info()
 
-        monkeypatch.setattr(app_module._settings, "active_provider", lambda: "lmstudio")
+        monkeypatch.setattr(
+            type(app_module._settings),
+            "active_provider",
+            lambda self: "lmstudio",
+        )
         monkeypatch.setattr(
             app_module,
             "_detect_provider_with_runtime_fallback",

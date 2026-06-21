@@ -242,7 +242,16 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
-        description="Automate Aria repo health cycles")
+        description="Automate Aria repo health cycles",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python scripts/repo_health_automation.py --once\n"
+            "  python scripts/repo_health_automation.py --once --run-agents\n"
+            "  python scripts/repo_health_automation.py --once --repair-status --refresh-stale-status\n"
+            "  python scripts/repo_health_automation.py --watch --interval 300 --continue-on-fail\n"
+        ),
+    )
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--once", action="store_true",
                       help="Run a single cycle (default)")
