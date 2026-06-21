@@ -208,11 +208,9 @@ jobs:
             fi
 
             # Start Functions host from repo root (host.json + function_app.py live here).
-            start_cmd="func host start --port 7071 --cors \"*\""
-
-            echo "Starting Functions host using: ${start_cmd}"
-            # shellcheck disable=SC2086
-            nohup ${start_cmd} &>"${func_log}" &
+            start_cmd=(func host start --port 7071 --cors '*')
+            echo "Starting Functions host using: ${start_cmd[*]}"
+            nohup "${start_cmd[@]}" &>"${func_log}" &
           fi
 
           echo "Waiting for endpoint to become available: ${INTEGRATION_AI_STATUS_ENDPOINT}"

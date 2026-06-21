@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-20T17:33:01Z",
-  "run_id": "20260620T173300Z",
+  "generated_at": "2026-06-21T00:38:15Z",
+  "run_id": "20260621T003815Z",
   "config_path": null,
   "config_paths": {
     "autotrain": "config/training/autotrain.yaml",
@@ -8,45 +8,29 @@
     "evaluation_autorun": "config/evaluation/evaluation_autorun.yaml",
     "master_orchestrator": "config/master_orchestrator.yaml"
   },
-  "total_steps": 3,
-  "succeeded": 3,
+  "total_steps": 1,
+  "succeeded": 1,
   "failed": 0,
   "skipped": 0,
   "results": [
     {
-      "name": "evaluation_autorun",
+      "name": "integration_contract_tests",
       "cmd": [
         "/usr/bin/python3",
-        "scripts/evaluation_autorun.py",
-        "--dry-run"
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_config_paths.py",
+        "tests/test_master_orchestrator_schedule.py",
+        "tests/test_status_schema.py",
+        "tests/test_integration_smoke_schema.py",
+        "tests/test_status_schema_fixtures.py",
+        "tests/test_integration_contract_gate_script.py",
+        "tests/test_agent_mode_delegation_contracts.py"
       ],
       "status": "succeeded",
       "return_code": 0,
-      "duration_sec": 0.04,
-      "critical": true
-    },
-    {
-      "name": "quantum_autorun",
-      "cmd": [
-        "/usr/bin/python3",
-        "scripts/quantum_autorun.py",
-        "--dry-run"
-      ],
-      "status": "succeeded",
-      "return_code": 0,
-      "duration_sec": 0.05,
-      "critical": true
-    },
-    {
-      "name": "autotrain",
-      "cmd": [
-        "/usr/bin/python3",
-        "scripts/autotrain.py",
-        "--dry-run"
-      ],
-      "status": "succeeded",
-      "return_code": 0,
-      "duration_sec": 0.06,
+      "duration_sec": 0.47,
       "critical": true
     }
   ]
