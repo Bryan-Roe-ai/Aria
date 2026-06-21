@@ -34,9 +34,12 @@ def test_agent_registration():
     print("✓ Agent registration test passed")
 
 
-def test_provider_detection():
+def test_provider_detection(monkeypatch):
     """Test that detect_provider can create LMStudioProvider."""
     from chat_providers import LMStudioProvider, detect_provider
+
+    monkeypatch.delenv("LMSTUDIO_MODEL", raising=False)
+    monkeypatch.delenv("LMSTUDIO_BASE_URL", raising=False)
 
     with patch("chat_providers.OpenAI") as mock_openai_cls:
         mock_openai_cls.return_value = MagicMock()

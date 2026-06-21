@@ -261,17 +261,25 @@ def _call_function_handler(handler_name: str, method: str, url: str) -> AzureHtt
     except Exception:
         req_cls = None
 
+    request_kwargs = {"method": method, "url": url, "body": b""}
+
     if req_cls is None or not hasattr(req_cls, "get_body"):
         try:
             from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
 
-            fake_req = ShimHttpRequest(method=method, url=url)
+            try:
+                fake_req = ShimHttpRequest(**request_kwargs)
+            except TypeError:
+                fake_req = ShimHttpRequest(method=method, url=url)
         except Exception as exc:
             raise RuntimeError(
                 "No HttpRequest implementation available for local dev adapter"
             ) from exc
     else:
-        fake_req = req_cls(method=method, url=url)
+        try:
+            fake_req = req_cls(**request_kwargs)
+        except TypeError:
+            fake_req = req_cls(method=method, url=url)
 
     return handler(fake_req)
 
