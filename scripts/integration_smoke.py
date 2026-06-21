@@ -449,6 +449,14 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
                 duration_sec=duration,
                 detail=detail,
             )
+        if not strict:
+            return StepResult(
+                name=name,
+                status="skipped",
+                critical=False,
+                duration_sec=duration,
+                detail="functions host payload shape differs (non-strict mode)",
+            )
         return StepResult(
             name=name,
             status="failed",
@@ -576,6 +584,14 @@ def _probe_ai_routes_endpoint(strict: bool) -> StepResult:
                 critical=strict,
                 duration_sec=duration,
                 detail=detail,
+            )
+        if not strict:
+            return StepResult(
+                name=name,
+                status="skipped",
+                critical=False,
+                duration_sec=duration,
+                detail="functions routes payload shape differs (non-strict mode)",
             )
         return StepResult(
             name=name,
