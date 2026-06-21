@@ -33,8 +33,8 @@ def _stub_subprocess(returncode: int = 0, stdout: str = "ok", stderr: str = ""):
 @pytest.mark.parametrize(
     "jobs_payload,expected_preset",
     [
-        ([{"name": "baseline", "preset": "heart", "status": "completed"}], "heart"),
-        ({"baseline": {"name": "baseline", "preset": "heart", "status": "completed"}}, "heart"),
+        ([{"name": "smoke", "preset": "heart", "status": "completed"}], "heart"),
+        ({"smoke": {"name": "smoke", "preset": "heart", "status": "completed"}}, "heart"),
     ],
 )
 def test_run_autorun_job_reads_status_for_list_and_dict_shapes(tmp_path: Path, monkeypatch, jobs_payload, expected_preset):
@@ -49,10 +49,10 @@ def test_run_autorun_job_reads_status_for_list_and_dict_shapes(tmp_path: Path, m
     monkeypatch.setattr("mount.quantum_integration.subprocess.run",
                         lambda *args, **kwargs: _stub_subprocess())
 
-    result = asyncio.run(integration.run_autorun_job("baseline", dry_run=True))
+    result = asyncio.run(integration.run_autorun_job("smoke", dry_run=True))
 
     assert result["success"] is True
-    assert result["job_name"] == "baseline"
+    assert result["job_name"] == "smoke"
     assert result["dry_run"] is True
     assert result["status"]["preset"] == expected_preset
-    assert result["status"]["name"] == "baseline"
+    assert result["status"]["name"] == "smoke"

@@ -517,6 +517,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
             "openai",
             "azure",
             "local",
+            "local_echo",
+            "local-echo",
             "lora",
             "agi",
             "quantum",

@@ -235,6 +235,35 @@ class TestGetEndpoints:
         assert not any(key.startswith("_status_file_")
                        for key in orch["autonomous_training"])
 
+    def test_ai_status_uses_settings_active_provider_for_detection(self, app_module, monkeypatch):
+        """GET /api/ai/status should use the configured active provider explicitly."""
+
+        captured = {}
+
+        def _fake_detect_provider_with_runtime_fallback(*, explicit=None, **kwargs):
+            captured["explicit"] = explicit
+
+            class _Info:
+                name = explicit
+                model = "test-model"
+
+            return object(), _Info()
+
+        monkeypatch.setattr(app_module._settings, "active_provider", lambda: "lmstudio")
+        monkeypatch.setattr(
+            app_module,
+            "_detect_provider_with_runtime_fallback",
+            _fake_detect_provider_with_runtime_fallback,
+        )
+
+        req = _mock_request("GET")
+        resp = app_module.ai_status(req)
+
+        assert resp.status_code == 200
+        assert captured["explicit"] == "lmstudio"
+        data = json.loads(resp.get_body())
+        assert data["active_provider"] == "lmstudio"
+
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
         req = _mock_request("OPTIONS")
