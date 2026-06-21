@@ -86,7 +86,7 @@
 
         /* Build everything */
         const M = buildMaterials();
-        buildEnvironment(scene, M, renderer);
+        const envRefs = buildEnvironment(scene, M, renderer);
         const char = buildCharacter(scene, M);
 
         /* Mouse tracking */
@@ -143,6 +143,45 @@
                 anim.moodColor.set(color || 0x4a90e2);
                 anim.moodIntensity = intensity || 0;
             },
+            setStageTheme(stageStyle) {
+                if (!stageStyle || typeof stageStyle !== 'object') return;
+
+                if (stageStyle.background && stageEl) {
+                    stageEl.style.background = stageStyle.background;
+                }
+
+                const label = String(stageStyle.label || '').toLowerCase();
+                const accent = String(stageStyle.accent || '').toLowerCase();
+                const isQuantum = label.includes('quantum') || accent === '#38bdf8';
+
+                if (envRefs.hemi) {
+                    if (isQuantum) {
+                        envRefs.hemi.color.set(0x38bdf8);
+                        envRefs.hemi.groundColor.set(0x0f172a);
+                        envRefs.hemi.intensity = 0.55;
+                    } else {
+                        envRefs.hemi.color.set(0xb0d8f5);
+                        envRefs.hemi.groundColor.set(0x91d590);
+                        envRefs.hemi.intensity = 0.65;
+                    }
+                }
+
+                if (envRefs.floor && envRefs.floor.material) {
+                    envRefs.floor.material.color.set(isQuantum ? 0x1e293b : 0x7cbf8a);
+                }
+
+                if (isQuantum) {
+                    scene.fog = new THREE.FogExp2(0x0f172a, 0.055);
+                    if (envRefs.particles && envRefs.particles.material) {
+                        envRefs.particles.material.color.set(0x38bdf8);
+                    }
+                } else {
+                    scene.fog = new THREE.FogExp2(0xd8eef8, 0.045);
+                    if (envRefs.particles && envRefs.particles.material) {
+                        envRefs.particles.material.color.set(0xfff0f8);
+                    }
+                }
+            },
             triggerDance: () => { anim.dancing = !anim.dancing; },
             triggerJump: () => { if (anim.jumpT < 0) anim.jumpT = 0; },
             triggerWave: () => { anim.waveT = 0; },
@@ -196,6 +235,7 @@
        ║  ENVIRONMENT                                                      ║
        ╚══════════════════════════════════════════════════════════════════╝ */
     function buildEnvironment(scene, M, renderer) {
+        const envRefs = { hemi: null, floor: null, particles: null };
         /* Environment gloss: subtle global light bounce */
         const pmrem = new THREE.PMREMGenerator(renderer);
         pmrem.compileEquirectangularShader();
@@ -208,6 +248,7 @@
         /* Hemisphere – sky very soft */
         const hemi = new THREE.HemisphereLight(0xb0d8f5, 0x91d590, 0.65);
         scene.add(hemi);
+        envRefs.hemi = hemi;
 
         /* Main sun – warm, casts shadows */
         const sun = new THREE.DirectionalLight(0xfff6e6, 1.45);
@@ -238,6 +279,7 @@
         floor.position.y = 0;
         floor.receiveShadow = true;
         scene.add(floor);
+        envRefs.floor = floor;
 
         /* Stage table so objects still feel grounded after hiding the CSS one */
         const table = new THREE.Group();
@@ -289,9 +331,11 @@
         pts.userData.isParticle = true;
         pts.userData.basePos = pPos.slice();
         scene.add(pts);
+        envRefs.particles = pts;
 
         /* Background gradient fog */
         scene.fog = new THREE.FogExp2(0xd8eef8, 0.045);
+        return envRefs;
     }
 
     /* ╔══════════════════════════════════════════════════════════════════╗

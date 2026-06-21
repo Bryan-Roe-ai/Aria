@@ -982,7 +982,118 @@ THEME_OBJECT_LIBRARY = {
         ("console", "🎮"),
         ("heart", "❤️"),
     ],
+    "quantum": [
+        ("qubit", "⚛️"),
+        ("gate", "🔀"),
+        ("circuit", "🔗"),
+        ("photon", "✨"),
+        ("laser", "🔦"),
+        ("chip", "💾"),
+        ("atom", "🧬"),
+        ("wave", "〰️"),
+    ],
 }
+
+THEME_STAGE_STYLES = {
+    "quantum": {
+        "label": "Quantum Lab",
+        "background": "radial-gradient(circle at 50% 18%, #1e3a5f 0%, #0f172a 50%, #020617 100%)",
+        "accent": "#38bdf8",
+    },
+}
+
+QUANTUM_STAGE_PRESETS = {
+    "intro": [
+        {"action": "say", "text": "Welcome to the quantum lab!", "emotion": "happy"},
+        {"action": "gesture", "gesture_type": "wave"},
+        {"action": "look", "target": "qubit"},
+    ],
+    "entangle": [
+        {"action": "move", "target": {"x": 35, "y": 50}},
+        {"action": "pickup", "object_id": "qubit"},
+        {"action": "gesture", "gesture_type": "nod"},
+        {"action": "say", "text": "Superposition engaged!", "emotion": "happy"},
+    ],
+    "measure": [
+        {"action": "gesture", "gesture_type": "bow"},
+        {"action": "say", "text": "Measurement complete — wavefunction collapsed.", "emotion": "neutral"},
+        {"action": "gesture", "gesture_type": "nod"},
+    ],
+}
+
+
+def apply_world_to_stage(world: dict, *, theme: str) -> None:
+    """Replace stage objects and environment metadata from a generated world."""
+    stage_state["objects"] = {}
+    for oid, obj in world.get("objects", {}).items():
+        stage_state["objects"][oid] = {
+            "position": obj["position"],
+            "state": obj.get("state", "on_stage"),
+            "emoji": obj.get("emoji", ""),
+        }
+    env = world.get("environment") or {}
+    stage_state["environment"]["theme"] = env.get("theme", theme)
+    stage_state["environment"]["generated_at"] = env.get("generated_at")
+    if env.get("stage_style"):
+        stage_state["environment"]["stage_style"] = env["stage_style"]
+
+
+def setup_quantum_stage(*, preset: str = "intro", count: int = 6, run_actions: bool = True) -> dict:
+    """Load the quantum-themed world and optionally run a preset action sequence."""
+    world = generate_world_fallback("quantum", max(count, 6))
+    apply_world_to_stage(world, theme="quantum")
+
+    # Ensure preset-critical objects exist even if shuffle omitted them.
+    if "qubit" not in stage_state["objects"]:
+        stage_state["objects"]["qubit"] = {
+            "position": {"x": 60, "y": 35},
+            "state": "on_stage",
+            "emoji": "⚛️",
+        }
+    if "gate" not in stage_state["objects"]:
+        stage_state["objects"]["gate"] = {
+            "position": {"x": 25, "y": 40},
+            "state": "on_stage",
+            "emoji": "🔀",
+        }
+
+    execution_results = []
+    preset_key = preset if preset in QUANTUM_STAGE_PRESETS else "intro"
+    actions = QUANTUM_STAGE_PRESETS[preset_key]
+    if run_actions:
+        valid, reason = validate_action_sequence(actions)
+        if not valid:
+            return {
+                "status": "error",
+                "message": f"Preset actions invalid: {reason}",
+                "world": world,
+                "preset": preset_key,
+            }
+        for action in actions:
+            execution_results.append({"action": action, "result": execute_aria_action(action)})
+
+    return {
+        "status": "success",
+        "theme": "quantum",
+        "preset": preset_key,
+        "count": len(world.get("objects", {})),
+        "objects": world.get("objects", {}),
+        "environment": world.get("environment", {}),
+        "actions": actions,
+        "results": execution_results if run_actions else None,
+        "state": stage_state,
+    }
+
+
+def _get_agi_provider(*, verbose: bool = False):
+    """Return (AGIProvider, choice) or (None, None) when unavailable."""
+    try:
+        from agi_provider import create_agi_provider
+
+        return create_agi_provider(verbose=verbose)
+    except Exception as exc:
+        logger.warning("AGI provider unavailable: %s", _sanitize_for_log(str(exc)))
+        return None, None
 
 
 def generate_world_fallback(theme: str, count: int) -> dict:
@@ -1012,6 +1123,9 @@ def generate_world_fallback(theme: str, count: int) -> dict:
         "seed": random.randint(100000, 999999),
         "stage_bounds": {"width": 100, "height": 100},
     }
+    stage_style = THEME_STAGE_STYLES.get(theme.lower())
+    if stage_style:
+        environment["stage_style"] = stage_style
     return {"objects": stage_objects, "environment": environment}
 
 
@@ -2251,6 +2365,84 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     pass
                 return
 
+        # /api/aria/quantum/setup - Load quantum world + preset actions
+        elif self.path == "/api/aria/quantum/setup":
+            try:
+                content_length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(content_length)
+                request_data = json.loads(body.decode("utf-8")) if body else {}
+                preset = str(request_data.get("preset", "intro"))
+                count = int(request_data.get("count", 6))
+                run_actions = bool(request_data.get("run_actions", True))
+                response = setup_quantum_stage(preset=preset, count=count, run_actions=run_actions)
+                status_code = 200 if response.get("status") == "success" else 400
+                self.send_response(status_code)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
+                return
+            except Exception as e:
+                logger.error(f"Quantum setup error: {e}")
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                return
+
+        # /api/aria/quantum/ask - AGI quantum-specialist (local, no Functions required)
+        elif self.path == "/api/aria/quantum/ask":
+            try:
+                content_length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(content_length)
+                request_data = json.loads(body.decode("utf-8")) if body else {}
+                query = str(request_data.get("query", "")).strip()
+                if not query:
+                    raise ValueError("query is required")
+                if len(query) > 10000:
+                    raise ValueError("query exceeds 10000 characters")
+                verbose = bool(request_data.get("verbose", False))
+                provider, _choice = _get_agi_provider(verbose=verbose)
+                if provider is None:
+                    raise RuntimeError("AGI provider unavailable")
+                result = provider.complete_quantum(
+                    query,
+                    include_analysis=bool(request_data.get("include_analysis", False)),
+                )
+                response = {
+                    "status": "ok",
+                    "query": query,
+                    "response": result.get("response", ""),
+                    "agent": result.get("agent", "quantum-specialist"),
+                    "quantum": result.get("quantum", {}),
+                    "state": stage_state,
+                }
+                if "analysis" in result:
+                    response["analysis"] = result["analysis"]
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(response, indent=2).encode("utf-8"))
+                return
+            except ValueError as ve:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(ve)}).encode("utf-8"))
+                return
+            except RuntimeError as re:
+                self.send_response(503)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(re)}).encode("utf-8"))
+                return
+            except Exception as e:
+                logger.error(f"Quantum ask error: {e}")
+                self.send_response(500)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode("utf-8"))
+                return
+
         # /api/aria/world - Generate or regenerate themed world layout
         elif self.path == "/api/aria/world":
             try:
@@ -2286,16 +2478,7 @@ class AriaRequestHandler(SimpleHTTPRequestHandler):
                     world["llm"] = False
 
                 # Update global stage_state (replace objects, keep aria position)
-                stage_state["objects"] = {}
-                for oid, obj in world["objects"].items():
-                    stage_state["objects"][oid] = {
-                        "position": obj["position"],
-                        "state": obj.get("state", "on_stage"),
-                        "emoji": obj.get("emoji", ""),
-                    }
-                # Update environment meta
-                stage_state["environment"]["theme"] = world["environment"].get("theme", theme)
-                stage_state["environment"]["generated_at"] = world["environment"].get("generated_at")
+                apply_world_to_stage(world, theme=theme)
 
                 response = {
                     "status": "success",
