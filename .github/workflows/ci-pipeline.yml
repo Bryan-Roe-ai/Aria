@@ -110,10 +110,12 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ -f data_out/ci_orchestrator/status.json ]; then
-            echo '```json' >> "$GITHUB_STEP_SUMMARY"
-            cat data_out/ci_orchestrator/status.json >> "$GITHUB_STEP_SUMMARY"
-            echo '' >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
+              {
+                echo '```json'
+                cat data_out/ci_orchestrator/status.json
+                echo ''
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
           else
             echo "⚠️ No ci_orchestrator status file found" >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -178,12 +180,16 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          echo "## Training Results" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "## Training Results"
+            } >> "$GITHUB_STEP_SUMMARY"
           if [ -f data_out/master_orchestrator/status.json ]; then
-            echo '```json' >> "$GITHUB_STEP_SUMMARY"
-            cat data_out/master_orchestrator/status.json >> "$GITHUB_STEP_SUMMARY"
-            echo '' >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
+              {
+                echo '```json'
+                cat data_out/master_orchestrator/status.json
+                echo ''
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
           else
             echo "⚠️ No master_orchestrator status file found" >> "$GITHUB_STEP_SUMMARY"
           fi
