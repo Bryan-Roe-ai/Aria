@@ -29,7 +29,8 @@ GRADIO_SHARE ?= false
 
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
-	start-local-status start-qai validate-mcp validate-mcp-json help
+	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
+	agents agents-dry ai-automation help
 
 # Default target
 all: lint test
@@ -68,9 +69,25 @@ start-functions:
 	@command -v func >/dev/null 2>&1 || { echo "❌ func CLI not found. Install: npm i -g azure-functions-core-tools@4"; exit 1; }
 	func host start --port $(FUNC_PORT)
 
+## Stop any listener on FUNC_PORT (deterministic, port-based)
+start-functions-clean:
+	@pids=$$(lsof -t -i:$(FUNC_PORT) -sTCP:LISTEN 2>/dev/null || true); \
+	if [ -n "$$pids" ]; then \
+		echo "🛑 Stopping process(es) on :$(FUNC_PORT): $$pids"; \
+		kill -9 $$pids; \
+	else \
+		echo "ℹ️ No listener on :$(FUNC_PORT)"; \
+	fi
+
+## Restart Azure Functions host using a clean, port-based stop/start flow
+restart-functions-clean: start-functions-clean
+	@echo "🚀 Restarting Functions host on :$(FUNC_PORT)..."
+	@command -v func >/dev/null 2>&1 || { echo "❌ func CLI not found. Install: npm i -g azure-functions-core-tools@4"; exit 1; }
+	func host start --port $(FUNC_PORT)
+
 ## Start the lightweight local /api/ai/status adapter on FUNC_PORT
 start-local-status:
-	$(PYTHON) local_dev_adapter.py --port $(FUNC_PORT)
+	@if $(PYTHON) -c "import socket,sys; s=socket.socket(); rc=s.connect_ex(('127.0.0.1', $(FUNC_PORT))); s.close(); sys.exit(0 if rc==0 else 1)" >/dev/null 2>&1; then echo "ℹ️ Port $(FUNC_PORT) already in use; checking existing /api/ai/status..."; if $(PYTHON) -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:$(FUNC_PORT)/api/ai/status', timeout=3).read(1)" >/dev/null 2>&1; then echo "✅ Local status adapter already running on :$(FUNC_PORT)."; exit 0; else echo "❌ Port $(FUNC_PORT) is occupied by a different service. Stop it or choose another port."; exit 1; fi; else $(PYTHON) local_dev_adapter.py --port $(FUNC_PORT); fi
 
 ## Install QAI integration service dependencies
 install-qai:
@@ -128,6 +145,21 @@ validate-mcp:
 ## Validate configured VS Code MCP stdio servers with JSON output
 validate-mcp-json:
 	@$(PYTHON) scripts/validate_mcp_setup.py --json
+
+# ---------------------------------------------------------------------------
+# Repository inspection agents
+# ---------------------------------------------------------------------------
+
+## Run all repository inspection agents
+agents:
+	$(PYTHON) scripts/run_repo_agents.py
+
+## Preview agent results without writing data_out/agents/*
+agents-dry:
+	$(PYTHON) scripts/run_repo_agents.py --dry-run
+
+## Alias for agents
+ai-automation: agents
 
 # ---------------------------------------------------------------------------
 # Code quality

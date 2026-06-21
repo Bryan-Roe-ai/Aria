@@ -46,6 +46,27 @@ def _mock_request(
     return req
 
 
+def _capture_sse_http_response(monkeypatch, app_module, captured: dict) -> None:
+    """Patch HttpResponse so SSE bodies are captured as bytes or generators."""
+    import inspect
+
+    import azure.functions as _af
+
+    _real_HttpResponse = _af.HttpResponse
+
+    def _capturing_HttpResponse(body=None, **kwargs):
+        if body is not None and inspect.isgenerator(body):
+            consumed = b"".join(body)
+            captured["sse_body"] = consumed
+            return _real_HttpResponse(consumed, **kwargs)
+        if isinstance(body, (bytes, bytearray)):
+            captured["sse_body"] = bytes(body)
+        return _real_HttpResponse(body, **kwargs)
+
+    monkeypatch.setattr(app_module.func, "HttpResponse",
+                        _capturing_HttpResponse)
+
+
 def _install_fake_quantum_trainer_module(
     monkeypatch: pytest.MonkeyPatch,
     capture: dict | None = None,
@@ -232,7 +253,41 @@ class TestGetEndpoints:
         assert orch["autonomous_training"]["cycles_completed"] == 4
         assert orch["autonomous_training"]["heartbeat_running"] is False
         assert orch["autotrain"]["status"] == "ok"
-        assert not any(key.startswith("_status_file_") for key in orch["autonomous_training"])
+        assert not any(key.startswith("_status_file_")
+                       for key in orch["autonomous_training"])
+
+    def test_ai_status_uses_settings_active_provider_for_detection(self, app_module, monkeypatch):
+        """GET /api/ai/status should use the configured active provider explicitly."""
+
+        captured = {}
+
+        def _fake_detect_provider_with_runtime_fallback(*, explicit=None, **kwargs):
+            captured["explicit"] = explicit
+
+            class _Info:
+                name = explicit
+                model = "test-model"
+
+            return object(), _Info()
+
+        monkeypatch.setattr(
+            type(app_module._settings),
+            "active_provider",
+            lambda self: "lmstudio",
+        )
+        monkeypatch.setattr(
+            app_module,
+            "_detect_provider_with_runtime_fallback",
+            _fake_detect_provider_with_runtime_fallback,
+        )
+
+        req = _mock_request("GET")
+        resp = app_module.ai_status(req)
+
+        assert resp.status_code == 200
+        assert captured["explicit"] == "lmstudio"
+        data = json.loads(resp.get_body())
+        assert data["active_provider"] == "lmstudio"
 
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
@@ -416,9 +471,12 @@ class TestPostValidation:
         assert resp.status_code == 200
         # prune_messages prepends a system prompt; verify the compaction placeholder
         # was dropped and the user message is present (ignoring the system message).
-        user_messages = [m for m in captured["messages"] if m.get("role") == "user"]
-        assistant_messages = [m for m in captured["messages"] if m.get("content") == "Compacted conversation"]
-        assert user_messages == [{"role": "user", "content": "Continue with the fix"}]
+        user_messages = [m for m in captured["messages"]
+                         if m.get("role") == "user"]
+        assistant_messages = [m for m in captured["messages"]
+                              if m.get("content") == "Compacted conversation"]
+        assert user_messages == [
+            {"role": "user", "content": "Continue with the fix"}]
         assert assistant_messages == [], "Compaction placeholder should have been dropped"
 
     def test_chat_only_compaction_placeholder_messages_return_validation_error(self, app_module):
@@ -522,22 +580,6 @@ class TestPostValidation:
 
     def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should emit safe fallback SSE when prompt is blocked."""
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"sse_body": b""}
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
-
         req = _mock_request(
             "POST",
             body={
@@ -551,17 +593,13 @@ class TestPostValidation:
         )
         resp = app_module.chat_stream(req)
         assert resp.status_code == 200
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         assert "data: [DONE]" in body_text
         assert "safely" in body_text.lower()
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"embedding": None, "session_id": None, "sse_body": b""}
+        captured: dict = {"embedding": None, "session_id": None}
 
         def _fake_embedding(text: str):
             captured["embedding"] = text
@@ -571,19 +609,9 @@ class TestPostValidation:
             captured["session_id"] = session_id
             return [{"content": "Previous answer about widgets", "similarity": 0.88}]
 
-        # Patch func.HttpResponse inside function_app so streaming body (generator) is consumed
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
-        monkeypatch.setattr(app_module, "fetch_similar_messages", _fake_similar)
+        monkeypatch.setattr(
+            app_module, "fetch_similar_messages", _fake_similar)
 
         req = _mock_request(
             "POST",
@@ -596,7 +624,7 @@ class TestPostValidation:
         assert resp.status_code == 200
 
         # Parse SSE body for the meta event
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         meta_data: dict | None = None
         for line in body_text.splitlines():
             if line.startswith("data:"):
@@ -615,12 +643,6 @@ class TestPostValidation:
 
     def test_chat_stream_emits_done_sentinel(self, app_module, monkeypatch):
         """POST /api/chat/stream should terminate SSE with data: [DONE]."""
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"sse_body": b""}
-
         class _FakeProvider:
             def complete(self, messages, stream=False):
                 assert stream is True
@@ -639,19 +661,8 @@ class TestPostValidation:
         monkeypatch.setattr(
             app_module,
             "fetch_similar_messages",
-            lambda query_emb, top_k=5, session_id=None: [],
+            lambda query_emb, top_k=5, session_id=None, min_similarity=0.0: [],
         )
-
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
 
         req = _mock_request(
             "POST",
@@ -660,7 +671,7 @@ class TestPostValidation:
         resp = app_module.chat_stream(req)
 
         assert resp.status_code == 200
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
         assert "data: [DONE]" in body_text
 
@@ -669,6 +680,80 @@ class TestPostValidation:
         req = _mock_request("POST", body={})
         resp = app_module.tts(req)
         assert resp.status_code in (400, 500)
+
+
+# ===========================================================================
+# Chat web static assets
+# ===========================================================================
+class TestChatWebAssets:
+    def test_serve_agi_stream_utils(self, app_module):
+        req = _mock_request("GET")
+        resp = app_module.serve_agi_stream_utils(req)
+
+        assert resp.status_code == 200
+        body = resp.get_body().decode("utf-8")
+        assert "AGIStreamUtils" in body
+        assert resp.mimetype == "application/javascript"
+
+
+# ===========================================================================
+# Aria stage proxy — /api/aria/*
+# ===========================================================================
+class TestAriaStageProxy:
+    def test_aria_execute_proxy_forwards_post(self, app_module, monkeypatch):
+        captured: dict = {}
+
+        class _FakeResponse:
+            content = b'{"status":"ok","tags":["[aria:gesture:wave]"]}'
+            status_code = 200
+            headers = {"Content-Type": "application/json"}
+
+        def _fake_request(method, url, data=None, headers=None, timeout=None):
+            captured["method"] = method
+            captured["url"] = url
+            captured["data"] = data
+            captured["headers"] = headers
+            return _FakeResponse()
+
+        import requests
+
+        monkeypatch.setattr(requests, "request", _fake_request)
+
+        req = _mock_request(
+            "POST",
+            body={"command": "[aria:gesture:wave]", "auto_execute": True},
+        )
+        resp = app_module.aria_execute_proxy(req)
+
+        assert resp.status_code == 200
+        assert captured["url"].endswith("/api/aria/execute")
+        data = json.loads(resp.get_body())
+        assert data["status"] == "ok"
+
+    def test_aria_state_proxy_forwards_get(self, app_module, monkeypatch):
+        captured: dict = {}
+
+        class _FakeResponse:
+            content = b'{"aria":{"x":50,"y":50},"objects":{}}'
+            status_code = 200
+            headers = {"Content-Type": "application/json"}
+
+        def _fake_get(url, params=None, timeout=None):
+            captured["url"] = url
+            captured["params"] = params
+            return _FakeResponse()
+
+        import requests
+
+        monkeypatch.setattr(requests, "get", _fake_get)
+
+        req = _mock_request("GET")
+        resp = app_module.aria_state_proxy(req)
+
+        assert resp.status_code == 200
+        assert captured["url"].endswith("/api/aria/state")
+        data = json.loads(resp.get_body())
+        assert "aria" in data
 
 
 # ===========================================================================
@@ -695,7 +780,7 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="local", model="local-echo"),
+                types.SimpleNamespace(name="agi", model="agi-local-local-echo"),
             ),
         )
 
@@ -711,6 +796,26 @@ class TestAgiEndpoints:
         assert data["analysis"]["intent"] == "coding"
         assert data["routing"]["selected_agent"] == "code-specialist"
         assert data["provider"]["name"] == "agi"
+        assert data["provider"]["wrapper_model"] == "agi-local-local-echo"
+
+    def test_agi_provider_metadata_uses_base_choice(self, app_module):
+        provider = types.SimpleNamespace(
+            _base_provider_choice=types.SimpleNamespace(name="local", model="local-echo")
+        )
+        wrapper = types.SimpleNamespace(name="agi", model="agi-local-local-echo")
+        meta = app_module._agi_provider_metadata(provider, wrapper)
+        assert meta["name"] == "agi"
+        assert meta["base_provider"] == "local"
+        assert meta["base_model"] == "local-echo"
+        assert meta["wrapper_model"] == "agi-local-local-echo"
+
+    def test_normalize_agi_stream_delta_wraps_strings(self, app_module):
+        delta = app_module._normalize_agi_stream_delta("Hello")
+        assert delta == {"type": "output", "data": "Hello"}
+        assert app_module._normalize_agi_stream_delta({"type": "analysis", "data": "x"}) == {
+            "type": "analysis",
+            "data": "x",
+        }
 
     def test_agi_analyze_validation_error_when_missing_query(self, app_module):
         req = _mock_request("POST", body={})
@@ -723,6 +828,8 @@ class TestAgiEndpoints:
 
     def test_agi_status_returns_reasoning_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(name="azure", model="gpt-4o")
+
             def get_reasoning_summary(self):
                 return {
                     "total_reasoning_chains": 3,
@@ -740,7 +847,7 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="azure", model="gpt-4o"),
+                types.SimpleNamespace(name="agi", model="agi-azure-gpt-4o"),
             ),
         )
 
@@ -752,10 +859,21 @@ class TestAgiEndpoints:
         assert data["status"] == "ok"
         assert data["available"] is True
         assert data["provider"]["name"] == "agi"
+        assert data["provider"]["base_provider"] == "azure"
+        assert data["provider"]["base_model"] == "gpt-4o"
         assert data["reasoning"]["total_reasoning_chains"] == 3
+        agent_tools = data.get("agent_tools") or {}
+        lmstudio_tools = set(agent_tools.get("lmstudio-specialist") or [])
+        assert {
+            "list_models",
+            "chat_completion",
+            "server_status",
+        }.issubset(lmstudio_tools)
 
     def test_agi_reason_returns_response_and_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(name="local", model="local-echo")
+
             def __init__(self):
                 self.goals = []
 
@@ -784,7 +902,7 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="openai", model="gpt-test"),
+                types.SimpleNamespace(name="agi", model="agi-local-local-echo"),
             ),
         )
 
@@ -802,6 +920,8 @@ class TestAgiEndpoints:
         assert data["status"] == "ok"
         assert data["response"] == "Here is a reasoned response"
         assert data["reasoning"]["active_goals"] == ["be concise"]
+        assert data["provider"]["base_provider"] == "local"
+        assert data["provider"]["base_model"] == "local-echo"
 
     def test_agi_reason_validation_error_when_missing_input(self, app_module):
         req = _mock_request("POST", body={})
@@ -813,13 +933,9 @@ class TestAgiEndpoints:
         assert "validation error" in data["error"].lower()
 
     def test_agi_stream_emits_done_sentinel(self, app_module, monkeypatch):
-        import inspect
-
-        import azure.functions as _af
-
-        captured: dict = {"sse_body": b""}
-
         class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(name="local", model="local-echo")
+
             def complete(self, messages, stream=False):
                 assert stream is True
                 yield "Hello"
@@ -837,17 +953,6 @@ class TestAgiEndpoints:
             ),
         )
 
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
-
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},
@@ -855,9 +960,12 @@ class TestAgiEndpoints:
         resp = app_module.agi_stream(req)
 
         assert resp.status_code == 200
-        body_text = captured["sse_body"].decode("utf-8")
+        body_text = resp.get_body().decode("utf-8")
         assert "event: meta" in body_text
-        assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
+        assert '"base_provider": "local"' in body_text
+        assert '"type": "output"' in body_text
+        assert '"data": "Hello"' in body_text
+        assert '"data": " world"' in body_text
         assert "data: [DONE]" in body_text
 
     def test_agi_stream_validation_error_when_missing_input(self, app_module):
@@ -978,7 +1086,8 @@ class TestQuantumLlmEndpoint:
         train_args = capture["train_args"]
         assert train_args["epochs"] == 5
         assert train_args["dataset_path"].is_absolute()
-        assert str(train_args["output_dir"]).endswith("data_out/quantum_llm_api")
+        assert str(train_args["output_dir"]).endswith(
+            "data_out/quantum_llm_api")
 
     def test_quantum_llm_post_unknown_action(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
@@ -1099,7 +1208,8 @@ class TestRequestValidator:
         from shared.request_validator import validate_fields
 
         err = validate_fields(
-            {"messages": [{"role": "user", "content": "hi"}], "temperature": 0.7},
+            {"messages": [{"role": "user", "content": "hi"}],
+                "temperature": 0.7},
             {
                 "messages": {"type": list, "required": True, "min_length": 1},
                 "temperature": {"type": (int, float), "min": 0, "max": 2},

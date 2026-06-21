@@ -2,12 +2,21 @@
 """
 Fast validation runner - minimal checks for rapid feedback
 Optimized for speed over completeness
+
+Examples:
+  python scripts/fast_validate.py
+  python scripts/fast_validate.py --json
+  python scripts/fast_validate.py --check Dependencies --quiet
+  python scripts/fast_validate.py --list-checks
 """
+from __future__ import annotations
+
+import argparse
 import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Sequence
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -314,30 +323,95 @@ def quick_check_dependencies() -> Dict[str, Any]:
     return details
 
 
-def main() -> None:
-    """Run all fast checks (completes in <100ms)."""
-    print("🚀 Fast Validation (no heavy imports, no parsing)")
-    print("=" * 60)
+CHECKS: dict[str, Callable[[], Dict[str, Any]]] = {
+    "Datasets": quick_check_datasets,
+    "Scripts": quick_check_scripts,
+    "Virtual Envs": quick_check_venv,
+    "Output Dirs": quick_check_outputs,
+    "Configs": quick_check_configs,
+    "Providers": quick_check_providers,
+    "AI Tokens": quick_check_ai_tokens,
+    "Dependencies": quick_check_dependencies,
+}
 
-    checks = [
-        ("Datasets", quick_check_datasets),
-        ("Scripts", quick_check_scripts),
-        ("Virtual Envs", quick_check_venv),
-        ("Output Dirs", quick_check_outputs),
-        ("Configs", quick_check_configs),
-        ("Providers", quick_check_providers),
-        ("AI Tokens", quick_check_ai_tokens),
-        ("Dependencies", quick_check_dependencies),
-    ]
 
-    results: List[Dict[str, Any]] = []
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run fast repository validation checks (<100ms, no heavy imports).",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python scripts/fast_validate.py\n"
+            "  python scripts/fast_validate.py --json\n"
+            "  python scripts/fast_validate.py --check Dependencies\n"
+            "  python scripts/fast_validate.py --list-checks\n"
+        ),
+    )
+    parser.add_argument(
+        "--check",
+        action="append",
+        dest="checks",
+        metavar="NAME",
+        help="Run only the named check (repeatable). Default: all checks.",
+    )
+    parser.add_argument(
+        "--list-checks",
+        action="store_true",
+        help="Print available check names and exit.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full result payload as JSON to stdout.",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress human-readable table output (use with --json).",
+    )
+    return parser
+
+
+def _resolve_checks(selected: Sequence[str] | None) -> list[tuple[str, Callable[[], Dict[str, Any]]]]:
+    if not selected:
+        return list(CHECKS.items())
+    missing = [name for name in selected if name not in CHECKS]
+    if missing:
+        known = ", ".join(CHECKS)
+        raise SystemExit(
+            f"Unknown check(s): {', '.join(missing)}\n"
+            f"Available checks: {known}\n"
+            "List checks: python scripts/fast_validate.py --list-checks"
+        )
+    return [(name, CHECKS[name]) for name in selected]
+
+
+def run_validation(
+    selected: Sequence[str] | None = None,
+    *,
+    quiet: bool = False,
+) -> tuple[list[dict[str, Any]], dict[str, Any], bool, Path]:
+    """Run checks and return results, summary, all_ok, and output path."""
+    checks = _resolve_checks(selected)
+    results: list[dict[str, Any]] = []
     all_ok = True
+
+    if not quiet:
+        print("🚀 Fast Validation (no heavy imports, no parsing)")
+        print("=" * 60)
 
     for name, func in checks:
         result = func()
-        results.append({"check": name, **result})
+        row = {"check": name, **result}
+        results.append(row)
 
         critical_failure = is_critical_failure(name, result["status"])
+        if critical_failure:
+            all_ok = False
+
+        if quiet:
+            continue
+
         if result["status"] == "ok":
             status_icon = "✅"
         elif critical_failure:
@@ -347,28 +421,46 @@ def main() -> None:
         print(f"{status_icon} {name:15} - {result['status']}")
 
         if critical_failure:
-            all_ok = False
             for key in ["error", "missing", "issues"]:
                 if key in result and result[key]:
                     print(f"   ⚠️  {result[key]}")
 
-    print("=" * 60)
+    if not quiet:
+        print("=" * 60)
 
-    # Write results
     output_path = REPO_ROOT / "data_out" / "fast_validate_results.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
     summary = summarize_results(results)
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(
-            {"checks": results, "summary": summary, "all_ok": all_ok},
-            f,
-            indent=2,
-        )
+    payload = {"checks": results, "summary": summary, "all_ok": all_ok}
+    output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
-    print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
-    sys.exit(0 if all_ok else 1)
+    if not quiet:
+        print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
+
+    return results, payload, all_ok, output_path
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+
+    if args.list_checks:
+        for name in CHECKS:
+            print(name)
+        return 0
+
+    _, payload, all_ok, output_path = run_validation(
+        args.checks,
+        quiet=args.quiet or args.json,
+    )
+
+    if args.json:
+        payload["results_path"] = str(output_path.relative_to(REPO_ROOT))
+        print(json.dumps(payload, indent=2))
+    elif args.quiet:
+        print(f"all_ok={all_ok} results={output_path.relative_to(REPO_ROOT)}")
+
+    return 0 if all_ok else 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

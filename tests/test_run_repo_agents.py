@@ -77,3 +77,23 @@ def test_main_fail_on_warning(monkeypatch):
 
     assert runner.main(["--dry-run"]) == 0
     assert runner.main(["--dry-run", "--fail-on-warning"]) == 1
+
+
+def test_main_list_agents(monkeypatch, capsys):
+    class _ListedAgent:
+        name = "listed-agent"
+        description = "Example agent for listing."
+
+        def run(self) -> AgentResult:
+            return AgentResult(name=self.name, status="ok", summary="ok")
+
+        def write_status(self, _result: AgentResult) -> Path:
+            return Path("/dev/null")
+
+    monkeypatch.setattr(runner, "_AGENT_MODULES", ())
+    monkeypatch.setattr(runner, "get_registered_agents", lambda: {"listed-agent": _ListedAgent})
+
+    assert runner.main(["--list-agents"]) == 0
+    out = capsys.readouterr().out
+    assert "listed-agent" in out
+    assert "Example agent for listing." in out

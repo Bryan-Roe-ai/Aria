@@ -16,7 +16,7 @@
     {
       "name": "evaluation_autorun",
       "cmd": [
-        "/workspace/.venv/bin/python",
+        "/usr/bin/python3",
         "scripts/evaluation_autorun.py",
         "--dry-run"
       ],
@@ -28,7 +28,7 @@
     {
       "name": "quantum_autorun",
       "cmd": [
-        "/workspace/.venv/bin/python",
+        "/usr/bin/python3",
         "scripts/quantum_autorun.py",
         "--dry-run"
       ],
@@ -40,13 +40,13 @@
     {
       "name": "autotrain",
       "cmd": [
-        "/workspace/.venv/bin/python",
+        "/usr/bin/python3",
         "scripts/autotrain.py",
         "--dry-run"
       ],
       "status": "succeeded",
       "return_code": 0,
-      "duration_sec": 0.06,
+      "duration_sec": 0.05,
       "critical": true
     }
   ]

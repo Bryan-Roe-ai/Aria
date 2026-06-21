@@ -54,7 +54,7 @@
           "scripts/run_repo_agents.py"
         ],
         "returncode": 0,
-        "duration_sec": 1.16,
+        "duration_sec": 1.19,
         "succeeded": true,
         "stdout_tail": "[warning] docstring-audit: Docstring coverage 89.6% (335/374); 0 public missing.\n[warning] marker-audit: Found 96 markers across 1542 scanned files.\n[ok] status-freshness: Scanned 12 status files; found 0 issues.\n[run_repo_agents] summary written to /workspace/data_out/agents/status.json\n",
         "stderr_tail": ""
@@ -113,7 +113,7 @@
             "scripts/run_repo_agents.py"
           ],
           "returncode": 0,
-          "duration_sec": 1.16,
+          "duration_sec": 1.19,
           "succeeded": true,
           "stdout_tail": "[warning] docstring-audit: Docstring coverage 89.6% (335/374); 0 public missing.\n[warning] marker-audit: Found 96 markers across 1542 scanned files.\n[ok] status-freshness: Scanned 12 status files; found 0 issues.\n[run_repo_agents] summary written to /workspace/data_out/agents/status.json\n",
           "stderr_tail": ""

@@ -74,7 +74,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           install-requirements: 'false'
-          extra-packages: 'pytest requests'
+          extra-packages: 'pytest requests pyyaml'
 
       - name: Run integration smoke checks
         id: integration_smoke
@@ -121,16 +121,16 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/ci_orchestrator.py --integration-contract-tests
-          test -f data_out/ci_orchestrator/status.json
-          python -m json.tool data_out/ci_orchestrator/status.json >/dev/null
+          test -f data_out/ci_orchestrator/ci_results.json
+          python -m json.tool data_out/ci_orchestrator/ci_results.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path
-          p = Path("data_out/ci_orchestrator/status.json")
+          p = Path("data_out/ci_orchestrator/ci_results.json")
           data = json.loads(p.read_text(encoding="utf-8"))
-          assert isinstance(data, dict), "status.json must be a JSON object"
-          for key in ("total_jobs", "succeeded", "failed"):
-              assert key in data, f"status.json missing required key: {key}"
+          assert isinstance(data, dict), "ci_results.json must be a JSON object"
+          for key in ("total_steps", "succeeded", "failed", "results"):
+              assert key in data, f"ci_results.json missing required key: {key}"
           PY
 
       - name: Upload smoke artifacts
@@ -142,21 +142,25 @@ jobs:
           if-no-files-found: warn
           path: |
             data_out/integration_smoke/
-            data_out/ci_orchestrator/status.json
+            data_out/ci_orchestrator/ci_results.json
 
       - name: Summary
         if: always()
         run: |
           set -euo pipefail
-          echo "## API Health Smoke" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## API Health Smoke"
+            echo ""
+            echo "| Check | Result |"
+            echo "|-------|--------|"
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # integration_smoke
           if [ "${{ steps.integration_smoke.outcome }}" = "success" ]; then
-            echo "| integration_smoke.py --json | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| integration_smoke output | \`data_out/integration_smoke/status-standard.json\` |" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "| integration_smoke.py --json | ✅ passed |"
+              echo "| integration_smoke output | \`data_out/integration_smoke/status-standard.json\` |"
+            } >> "$GITHUB_STEP_SUMMARY"
           else
             echo "| integration_smoke.py --json | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -164,31 +168,39 @@ jobs:
           # strict_smoke (scheduled only)
           if [ "${{ github.event_name }}" = "schedule" ]; then
             if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
-              echo "| integration_smoke.py --strict-endpoints | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-              echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |" >> "$GITHUB_STEP_SUMMARY"
+              {
+                echo "| integration_smoke.py --strict-endpoints | ✅ passed |"
+                echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |"
+              } >> "$GITHUB_STEP_SUMMARY"
             else
-              echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
+              echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |"
             fi
-          else
-            echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |" >> "$GITHUB_STEP_SUMMARY"
-          fi
 
-          # contract_tests
-          if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
-            echo "| ci_orchestrator --integration-contract-tests | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "| ci_orchestrator --integration-contract-tests | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
-          fi
+            # contract_tests
+            if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
+              echo "| ci_orchestrator --integration-contract-tests | ✅ passed |"
+            else
+              echo "| ci_orchestrator --integration-contract-tests | ❌ failed |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # Evaluate overall status and fail if any required test failed
-          if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || \
-             ( [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.strict_smoke.outcome }}" != "success" ] ) || \
-             [ "${{ steps.contract_tests.outcome }}" != "success" ]; then
+          if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || [ "${{ steps.contract_tests.outcome }}" != "success" ]; then
+            failed=1
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.strict_smoke.outcome }}" != "success" ]; then
+            failed=1
+          else
+            failed=0
+          fi
+
+          if [ "$failed" -eq 1 ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "### ❌ One or more API health checks failed." >> "$GITHUB_STEP_SUMMARY"
             echo "::error::API health checks failed. See artifacts and logs above."
             exit 1
           fi
 
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### ✅ All API health checks passed." >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo ""
+            echo "### ✅ All API health checks passed."
+          } >> "$GITHUB_STEP_SUMMARY"

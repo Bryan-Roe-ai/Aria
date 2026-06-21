@@ -73,6 +73,7 @@ include = ["shared*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+norecursedirs = ["ai-projects", "datasets", "data_out", "mount", ".venv", "venv", "node_modules"]
 addopts = "-q --tb=short"
 asyncio_mode = "auto"
 markers = [
