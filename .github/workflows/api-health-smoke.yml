@@ -74,7 +74,7 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           install-requirements: 'false'
-          extra-packages: 'pytest requests'
+          extra-packages: 'pytest requests pyyaml'
 
       - name: Run integration smoke checks
         id: integration_smoke
