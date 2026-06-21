@@ -14,7 +14,8 @@
 
   function parseSSEText(text) {
     if (typeof text !== 'string') return [];
-    var events = text.split('\n\n').filter(function (e) { return e.trim(); });
+    var normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    var events = normalized.split('\n\n').filter(function (e) { return e.trim(); });
     var deltas = [];
     events.forEach(function (ev) {
       var lines = ev.split('\n');

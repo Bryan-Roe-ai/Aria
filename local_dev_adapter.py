@@ -261,8 +261,10 @@ def _call_function_handler(handler_name: str, method: str, url: str) -> AzureHtt
             from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
 
             fake_req = ShimHttpRequest(method=method, url=url)
-        except Exception:
-            fake_req = None
+        except Exception as exc:
+            raise RuntimeError(
+                "No HttpRequest implementation available for local dev adapter"
+            ) from exc
     else:
         fake_req = req_cls(method=method, url=url)
 

@@ -7,6 +7,7 @@ import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -42,7 +43,7 @@ class AgiHealthAgent(AutomationAgent):
     def run(self) -> AgentResult:
         """Run AGI health checks and return structured findings."""
         findings: list[dict] = []
-        metrics: dict[str, int | str | bool | None] = {
+        metrics: dict[str, Any] = {
             "registry_size": 0,
             "provider_import_ok": False,
             "smoke_complete_ok": False,

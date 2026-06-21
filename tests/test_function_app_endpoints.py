@@ -269,7 +269,11 @@ class TestGetEndpoints:
 
             return object(), _Info()
 
-        monkeypatch.setattr(app_module._settings, "active_provider", lambda: "lmstudio")
+        monkeypatch.setattr(
+            type(app_module._settings),
+            "active_provider",
+            lambda self: "lmstudio",
+        )
         monkeypatch.setattr(
             app_module,
             "_detect_provider_with_runtime_fallback",

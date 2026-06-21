@@ -1811,6 +1811,18 @@ def create_agi_provider(
     else:
         provider.persistence = None
 
+    memory_backend = os.getenv("QAI_AGI_MEMORY_BACKEND", "").strip().lower()
+    if memory_backend == "redis":
+        try:
+            from shared.agi_memory_redis import create_redis_agi_memory
+
+            provider.context = create_redis_agi_memory()
+        except Exception as exc:  # pragma: no cover - best-effort memory backend
+            _logger.exception(
+                "Failed to initialise Redis AGI memory backend: %s",
+                _sanitize_for_logging(str(exc)),
+            )
+
     if base_choice:
         model_name = f"agi-{base_choice.name}-{base_choice.model}"
     elif model:

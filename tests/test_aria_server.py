@@ -645,11 +645,15 @@ def test_generate_world_fallback_quantum_theme_includes_stage_style():
 
 
 def test_setup_quantum_stage_loads_objects_and_runs_intro():
-    aria_server.stage_state["objects"] = {}
-    result = aria_server.setup_quantum_stage(preset="intro", count=4, run_actions=True)
-    assert result["status"] == "success"
-    assert "qubit" in aria_server.stage_state["objects"]
-    assert len(result["results"]) == len(aria_server.QUANTUM_STAGE_PRESETS["intro"])
+    original_objects = dict(aria_server.stage_state["objects"])
+    try:
+        aria_server.stage_state["objects"] = {}
+        result = aria_server.setup_quantum_stage(preset="intro", count=4, run_actions=True)
+        assert result["status"] == "success"
+        assert "qubit" in aria_server.stage_state["objects"]
+        assert len(result["results"]) == len(aria_server.QUANTUM_STAGE_PRESETS["intro"])
+    finally:
+        aria_server.stage_state["objects"] = original_objects
 
 
 # ===== Sparkle Functionality Tests =====
