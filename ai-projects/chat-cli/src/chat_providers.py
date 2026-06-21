@@ -1024,6 +1024,23 @@ class LMStudioProvider(BaseChatProvider):
                     return gen_err()
                 return suggestion
 
+            if "no models loaded" in error_msg or "please load a model" in error_msg:
+                suggestion = (
+                    f"❌ LM Studio is reachable but no model is currently loaded.\n\n"
+                    f"Troubleshooting steps:\n"
+                    f"1. Open LM Studio and load a model in the Developer/Server page\n"
+                    f"2. Confirm the model matches LMSTUDIO_MODEL (currently '{self.model}')\n"
+                    f"3. Re-run after the model shows as loaded in the server panel\n\n"
+                    f"If you changed models recently, restart the local server to refresh the load."
+                )
+                if stream:
+
+                    def gen_err() -> Generator[str, None, None]:
+                        yield suggestion
+
+                    return gen_err()
+                return suggestion
+
             if "invalid_api_key" in error_msg or "api token is required" in error_msg:
                 suggestion = (
                     f"❌ LM Studio at {self.base_url} requires API token authentication.\n\n"

@@ -108,3 +108,23 @@ def test_lmstudio_http_fallback_respects_timeout_env():
 
     assert result == "OK"
     assert captured.get("timeout") == 12.5
+
+
+def test_lmstudio_no_models_loaded_message():
+    from chat_providers import LMStudioProvider
+
+    error_text = (
+        "Error code: 400 - {'error': {'message': \"No models loaded. Please load a model in the developer page or use the 'lms load' command.\", 'type': 'invalid_request_error', 'param': 'model', 'code': None}}"
+    )
+
+    with patch("chat_providers.OpenAI", None):
+        provider = LMStudioProvider(base_url="http://127.0.0.1:1234/v1", model="openai/gpt-oss-20b")
+
+    with patch("urllib.request.urlopen", side_effect=RuntimeError(error_text)):
+        result = provider.complete(
+            [{"role": "user", "content": "Reply with OK only."}],
+            stream=False,
+        )
+
+    assert "no model is currently loaded" in result.lower()
+    assert "LMSTUDIO_MODEL" in result
