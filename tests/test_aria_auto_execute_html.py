@@ -38,3 +38,14 @@ def test_auto_execute_settings_persistence_wiring_present() -> None:
     assert (
         "persistAutoExecuteSettings(provider, model, useLlm, showState)" in html
     ), "Auto-execute should persist settings before requests"
+
+
+def test_auto_execute_quantum_toolbar_and_presets() -> None:
+    html = HTML_PATH.read_text(encoding="utf-8")
+
+    assert "quantum-toolbar" in html, "Auto-execute should expose quantum toolbar"
+    assert 'id="quantum-status"' in html, "Quantum toolbar should show live status"
+    assert 'aria-live="polite"' in html, "Quantum status should be announced to assistive tech"
+    assert "loadQuantumWorld(" in html, "Auto-execute should load quantum world via API"
+    assert "loadCommandPresets()" in html, "Auto-execute should fetch command presets on load"
+    assert "/api/aria/presets" in html, "Preset chips should come from presets endpoint"

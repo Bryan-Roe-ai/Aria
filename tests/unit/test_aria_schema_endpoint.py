@@ -115,7 +115,7 @@ def test_presets_endpoint_returns_curated_commands(aria_server):
 
     quantum_groups = [e for e in body["presets"] if e.get("name") == "Quantum Lab"]
     assert quantum_groups, "Presets should include a Quantum Lab group"
-    assert len(quantum_groups[0]["commands"]) >= 3
+    assert len(quantum_groups[0]["commands"]) >= 5, "Quantum Lab pack should expose at least five commands"
 
 
 def test_execute_plan_mode_returns_actions_without_side_effects(aria_server):

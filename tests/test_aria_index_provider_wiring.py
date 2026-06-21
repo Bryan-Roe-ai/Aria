@@ -54,6 +54,11 @@ def test_index_loads_stage_controller_and_threejs() -> None:
     assert 'id="aria"' in html, "Main stage should expose Aria character DOM"
     assert "loadQuantumStage(" in html, "Main stage should expose Load Quantum World controls"
 
+    three_idx = html.index('src="aria_threejs.js"')
+    controller_idx = html.index('src="aria_controller.js"')
+    cdn_idx = html.index("three@0.152")
+    assert cdn_idx < three_idx < controller_idx, "Scripts must load CDN → threejs → controller"
+
 
 def test_controller_has_quantum_stage_sync_helpers() -> None:
     js = CONTROLLER_JS.read_text(encoding="utf-8")
@@ -64,6 +69,8 @@ def test_controller_has_quantum_stage_sync_helpers() -> None:
     assert "updateStageLabel" in js
     assert "environment.stage_style" in js or "stage_style" in js
     assert "window.loadQuantumStage" in js
+    assert "window.aria3D?.setStageTheme" in js, "Controller should delegate theme to Three.js overlay"
+    assert "/api/aria/quantum/setup" in js, "Controller should call quantum setup endpoint"
 
 
 def test_threejs_exposes_stage_theme_hook() -> None:
