@@ -312,6 +312,26 @@ class TestAGIProvider:
 
         assert analysis["domain"] != "ai"
 
+    def test_query_analysis_detects_infrastructure_domain(self):
+        """Deployment and DevOps queries should map to the infrastructure domain."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        analysis = agi._analyze_query("How do I deploy this Azure Functions app with GitHub Actions?")
+
+        assert analysis["domain"] == "infrastructure"
+
+    def test_infrastructure_specialist_routing(self):
+        """Infrastructure queries should prefer infrastructure-specialist."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        analysis = agi._analyze_query("Design a CI/CD pipeline for Azure deployment")
+        selected_agent, score = agi._select_agent(analysis)
+
+        assert selected_agent == "infrastructure-specialist"
+        assert score > 0.5
+
     def test_task_decomposition_explanation(self):
         """Test task decomposition for explanation queries."""
         mock_provider = MockBaseProvider()
@@ -347,6 +367,23 @@ class TestAGIProvider:
 
         assert len(thoughts) > 0
         assert any("quantum" in t.lower() for t in thoughts)
+
+    def test_chain_of_thought_infrastructure_domain(self):
+        """Infrastructure domain should add deployment-aware reasoning hints."""
+        mock_provider = MockBaseProvider()
+        agi = AGIProvider(base_provider=mock_provider)
+
+        analysis = {
+            "intent": "question",
+            "domain": "infrastructure",
+            "complexity": "moderate",
+            "summary": "Moderate question query about infrastructure",
+        }
+        messages = [{"role": "user", "content": "How do I roll back a bad deploy?"}]
+
+        thoughts = agi._chain_of_thought("How do I roll back a bad deploy?", analysis, messages)
+
+        assert any("Infrastructure context" in t for t in thoughts)
 
     def test_self_reflection_aria_movement(self):
         """Test self-reflection adds Aria movement tags when needed."""
@@ -1048,6 +1085,11 @@ class TestNewSpecialistSystemPrompts:
         assert "Reflection Specialist" in prompt
         assert "lessons" in prompt.lower() or "adjustments" in prompt.lower()
 
+    def test_infrastructure_specialist_persona(self):
+        prompt = self._build_prompt("infrastructure-specialist")
+        assert "Infrastructure Specialist" in prompt
+        assert "rollback" in prompt.lower() or "ci/cd" in prompt.lower()
+
 
 class TestNewSpecialistTemperatures:
     """Tests that new specialists have dedicated temperature settings.
@@ -1069,6 +1111,7 @@ class TestNewSpecialistTemperatures:
         "debate-specialist": 0.6,
         "hypothesis-specialist": 0.5,
         "reflection-specialist": 0.4,
+        "infrastructure-specialist": 0.25,
     }
 
     def test_all_new_specialists_have_temperature_entries(self):
@@ -1096,6 +1139,10 @@ class TestNewSpecialistTemperatures:
         """code-specialist and reasoning-chain-specialist should use the lowest temperatures."""
         for agent in ("code-specialist", "reasoning-chain-specialist"):
             assert self._EXPECTED_TEMPERATURES[agent] <= 0.3, f"{agent} should be <= 0.3"
+
+    def test_infrastructure_specialist_temperature_is_low(self):
+        """infrastructure-specialist should stay deterministic for deployment advice."""
+        assert self._EXPECTED_TEMPERATURES["infrastructure-specialist"] <= 0.3
 
     def test_temperature_settings_exercised_during_complete(self):
         """Running complete with a summarize query exercises the temperature code path."""

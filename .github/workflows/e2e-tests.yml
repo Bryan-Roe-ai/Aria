@@ -85,7 +85,8 @@ jobs:
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
-          disable-sudo: true
+          # Playwright --with-deps installs browser system packages via apt (sudo).
+          disable-sudo: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false

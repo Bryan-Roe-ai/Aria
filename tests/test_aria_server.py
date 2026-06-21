@@ -845,6 +845,37 @@ def test_parse_accepts_quantum_llm_provider_alias(monkeypatch):
     assert captured["model_override"] == "data_out/quantum_llm_training"
 
 
+def test_parse_accepts_agi_provider_alias(monkeypatch):
+    captured = {}
+
+    class DummyProvider:
+        def complete(self, messages, stream=False):
+            return '[{"action": "gesture", "gesture_type": "wave"}]'
+
+    class DummyChoice:
+        name = "agi"
+        model = "agi-local-local-echo"
+
+    def fake_detect_provider(explicit=None, model_override=None, **kwargs):
+        captured["explicit"] = explicit
+        captured["model_override"] = model_override
+        return DummyProvider(), DummyChoice()
+
+    monkeypatch.setattr(aria_server, "detect_provider", fake_detect_provider)
+
+    parser = aria_server.AriaActionParser()
+    actions = parser.parse("wave hello", use_llm=True, provider_choice="agi-reasoning")
+
+    assert any(a.get("action") == "gesture" for a in actions)
+    assert captured["explicit"] == "agi"
+
+
+def test_health_payload_includes_agi_provider_support():
+    payload = aria_server.build_health_payload(stage={"aria": {}, "objects": {}})
+    assert payload["agi_provider_supported"] is True
+    assert "agi" in payload["supported_providers"]
+
+
 def test_parse_falls_back_when_provider_resolution_fails(monkeypatch):
     parser = aria_server.AriaActionParser()
 

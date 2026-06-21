@@ -157,7 +157,7 @@ jobs:
 
       - name: Start local Functions host (for endpoint checks)
         id: start-func
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && steps.mode.outputs.strict == 'true'
         env:
           INTEGRATION_AI_STATUS_ENDPOINT: ${{ env.INTEGRATION_AI_STATUS_ENDPOINT }}
           RETRY_COUNT: ${{ env.RETRY_COUNT }}
@@ -183,7 +183,7 @@ jobs:
               echo "AI status endpoint reachable: ${INTEGRATION_AI_STATUS_ENDPOINT}"
               exit 0
             fi
-            ((++i))
+            i=$((i + 1))
             echo "Attempt ${i}/${RETRY_COUNT} — endpoint not ready yet; sleeping ${RETRY_INTERVAL}s"
             sleep "${RETRY_INTERVAL}"
           done

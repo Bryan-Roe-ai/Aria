@@ -2,6 +2,7 @@
 # QAI Azure Functions Application
 # =============================================================================
 import importlib.util as _iu
+import hmac
 import json
 import logging
 import os
@@ -309,6 +310,143 @@ def serve_chat_js(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Error serving chat.js: {str(e)}")
         return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/static/agi_stream_utils.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_agi_stream_utils(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve AGI SSE parsing utilities for chat-web clients."""
+    try:
+        js_path = (
+            Path(__file__).resolve().parent / "apps" / "chat" / "static" / "agi_stream_utils.js"
+        )
+
+        if js_path.exists():
+            with open(js_path, "r", encoding="utf-8") as f:
+                js_content = f.read()
+
+            return func.HttpResponse(
+                js_content,
+                status_code=200,
+                mimetype="application/javascript",
+                headers={
+                    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            )
+
+        return func.HttpResponse(
+            f"// Error: JavaScript file not found at {js_path}",
+            status_code=404,
+            mimetype="application/javascript",
+        )
+    except Exception as e:
+        logging.error(f"Error serving agi_stream_utils.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_js(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade script for chat-web."""
+    try:
+        js_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.js"
+        if not js_path.exists():
+            return func.HttpResponse("// Error: global-upgrade.js not found", status_code=404, mimetype="application/javascript")
+        with open(js_path, "r", encoding="utf-8") as f:
+            js_content = f.read()
+        return func.HttpResponse(
+            js_content,
+            status_code=200,
+            mimetype="application/javascript",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.css", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_css(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade stylesheet for chat-web."""
+    try:
+        css_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.css"
+        if not css_path.exists():
+            return func.HttpResponse("/* Error: global-upgrade.css not found */", status_code=404, mimetype="text/css")
+        with open(css_path, "r", encoding="utf-8") as f:
+            css_content = f.read()
+        return func.HttpResponse(
+            css_content,
+            status_code=200,
+            mimetype="text/css",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.css: {str(e)}")
+        return func.HttpResponse(f"/* Error: {str(e)} */", status_code=500, mimetype="text/css")
+
+
+# =============================================================================
+# Aria stage proxy — forwards /api/aria/* to the 3D stage server (port 8080)
+# =============================================================================
+
+ARIA_STAGE_BASE_URL = os.getenv(
+    "ARIA_STAGE_BASE_URL", "http://127.0.0.1:8080").rstrip("/")
+
+
+def _proxy_aria_request(req: func.HttpRequest, subpath: str) -> func.HttpResponse:
+    """Forward a request to the Aria stage HTTP API."""
+    import requests
+
+    url = f"{ARIA_STAGE_BASE_URL}/api/aria/{subpath}"
+    try:
+        if req.method.upper() == "GET":
+            resp = requests.get(url, params=dict(req.params), timeout=10)
+        else:
+            body = req.get_body()
+            resp = requests.request(
+                req.method.upper(),
+                url,
+                data=body,
+                headers={"Content-Type": "application/json"},
+                timeout=30,
+            )
+        content_type = resp.headers.get("Content-Type", "application/json")
+        return func.HttpResponse(
+            resp.content,
+            status_code=resp.status_code,
+            mimetype=content_type.split(";")[0].strip(),
+            headers=create_cors_response_headers(),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("Aria stage proxy failed for %s: %s", subpath, exc)
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Aria stage unavailable: {exc}"}),
+            status_code=502,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="aria/state", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy GET /api/aria/state to the Aria stage server."""
+    return _proxy_aria_request(req, "state")
+
+
+@app.route(route="aria/execute", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_execute_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy POST /api/aria/execute to the Aria stage server."""
+    if req.method.upper() == "OPTIONS":
+        return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return _proxy_aria_request(req, "execute")
+
+
+@app.route(route="aria/command", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy POST /api/aria/command to the Aria stage server."""
+    if req.method.upper() == "OPTIONS":
+        return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return _proxy_aria_request(req, "command")
 
 
 # =============================================================================
@@ -619,6 +757,30 @@ def _create_agi_provider_for_api(
     return provider, provider_choice
 
 
+def _agi_provider_metadata(provider, provider_choice) -> dict:
+    """Return AGI wrapper metadata with the detected base provider exposed."""
+    base = getattr(provider, "_base_provider_choice", None)
+    if base is not None:
+        base_provider = getattr(base, "name", None)
+        base_model = getattr(base, "model", None)
+    else:
+        base_provider = getattr(provider_choice, "name", None)
+        base_model = getattr(provider_choice, "model", None)
+    return {
+        "name": "agi",
+        "base_provider": base_provider,
+        "base_model": base_model,
+        "wrapper_model": getattr(provider_choice, "model", None),
+    }
+
+
+def _normalize_agi_stream_delta(chunk) -> dict:
+    """Normalize AGI stream chunks to structured delta objects for SSE clients."""
+    if isinstance(chunk, dict):
+        return chunk
+    return {"type": "output", "data": str(chunk)}
+
+
 @app.route(route="agi/analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
     """Analyze a query using AGI reasoning classifier and agent routing preview."""
@@ -646,11 +808,7 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
                 "selected_agent": selected_agent,
                 "agent_score": float(agent_score),
             },
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": _agi_provider_metadata(provider, provider_choice),
         }
 
         return func.HttpResponse(
@@ -725,14 +883,17 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception:
             agent_tools = {}
 
+        # MCP bridge tools (registered in lmstudio_mcp_server, not _AGENT_REGISTRY).
+        agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason", "agi_stream"])
+
+        provider_meta = {"name": "agi", "base_provider": None, "base_model": None, "wrapper_model": None}
+        if available:
+            provider_meta = _agi_provider_metadata(provider, provider_choice)
+
         payload = {
             "status": "ok",
             "available": available,
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": provider_meta,
             "reasoning": summary,
             "agent_tools": agent_tools,
             "endpoints": [
@@ -740,6 +901,7 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
                 "/api/agi/reason",
                 "/api/agi/stream",
                 "/api/agi/status",
+                "/api/agi/persistence",
             ],
         }
 
@@ -796,11 +958,7 @@ def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
             "status": "ok",
             "query": query,
             "response": str(result),
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": _agi_provider_metadata(provider, provider_choice),
         }
         if include_summary:
             payload["reasoning"] = provider.get_reasoning_summary()
@@ -870,17 +1028,14 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
 
         def _sse_iterable():
             try:
-                pre = {
-                    "provider": "agi",
-                    "base_provider": getattr(provider_choice, "name", None),
-                    "base_model": getattr(provider_choice, "model", None),
-                }
+                pre = _agi_provider_metadata(provider, provider_choice)
                 yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
 
                 for chunk in gen:
                     if not chunk:
                         continue
-                    payload = json.dumps({"delta": chunk})
+                    delta = _normalize_agi_stream_delta(chunk)
+                    payload = json.dumps({"delta": delta})
                     yield (f"data: {payload}\n\n").encode("utf-8")
 
                 yield b"data: [DONE]\n\n"
@@ -947,7 +1102,10 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                 provided_token = provided_token.split(" ", 1)[1]
         except Exception:
             provided_token = None
-        if provided_token != token_required:
+        if not (
+            isinstance(provided_token, str)
+            and hmac.compare_digest(provided_token, token_required)
+        ):
             return func.HttpResponse(
                 json.dumps({"status": "error", "error": "unauthorized"}),
                 status_code=401,
@@ -974,9 +1132,8 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
         sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv(
             "QAI_AGI_PERSIST_SQLITE")
         jsonl_path = os.getenv("QAI_AGI_PERSIST_PATH")
-        jsonl_enabled = os.getenv(
-            "QAI_AGI_PERSIST", "").lower() in ("1", "true", "yes")
-
+        jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "true").lower() in ("1", "true", "yes")
+        default_jsonl_path = _default_agi_persist_jsonl_path()
         if sqlite_path:
             try:
                 from shared.agi_persistence_sqlite import SQLiteAGIPersistence
@@ -1000,9 +1157,8 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                     headers=create_cors_response_headers(),
                 )
 
-        if jsonl_path or jsonl_enabled:
-            path = jsonl_path or os.path.join(
-                os.getcwd(), "data_out", "agi_reasoning.jsonl")
+        path = jsonl_path or default_jsonl_path
+        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
             try:
                 entries = []
                 if os.path.exists(path):
@@ -1015,9 +1171,16 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                         except Exception:
                             entries.append({"raw": ln})
                 return func.HttpResponse(
-                    json.dumps({"status": "ok", "backend": "jsonl",
-                               "entries": entries}, default=str),
-                    status_code=200,
+                    json.dumps(
+                        {
+                            "status": "ok",
+                            "backend": "jsonl",
+                            "path": path,
+                            "configured": bool(jsonl_path or jsonl_enabled or os.path.exists(path)),
+                            "entries": entries,
+                        },
+                        default=str,
+                    ),                    status_code=200,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
                 )
@@ -1449,6 +1612,16 @@ def create_cors_response_headers():
         "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
     }
+
+
+def _default_agi_persist_jsonl_path() -> str:
+    """Default JSONL audit path for AGI reasoning chains."""
+    return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
+
+
+def _materialize_sse_body(chunks) -> bytes:
+    """Backward-compatible alias for tests and callers expecting the PR name."""
+    return _sse_body_bytes(chunks)
 
 
 def _sse_body_bytes(chunks) -> bytes:
@@ -2852,6 +3025,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         public_endpoints = [
             "/api/chat-web",
             "/api/chat-web/chat.js",
+            "/api/chat-web/static/agi_stream_utils.js",
             "/api/chat",
             "/api/chat/stream",
             "/api/health",
@@ -2863,6 +3037,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "/api/agi/reason",
             "/api/agi/stream",
             "/api/agi/status",
+            "/api/agi/persistence",
+            "/api/aria/state",
+            "/api/aria/execute",
+            "/api/aria/command",
             "/api/vision/infer",
             "/api/vision/batch-infer",
             "/api/image/generate",
@@ -2946,6 +3124,14 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
                 "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/stream",
                 "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "agi/persistence",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/state",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/execute",
+                "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
+            {"route": "aria/command",
+                "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "chat", "methods": [
                 "POST", "OPTIONS"], "authLevel": "anonymous"},
             {
@@ -2957,6 +3143,11 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
                 "methods": ["GET"], "authLevel": "anonymous"},
             {
                 "route": "chat-web/chat.js",
+                "methods": ["GET"],
+                "authLevel": "anonymous",
+            },
+            {
+                "route": "chat-web/static/agi_stream_utils.js",
                 "methods": ["GET"],
                 "authLevel": "anonymous",
             },
@@ -4920,7 +5111,6 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             yield b"data: [DONE]\n\n"
 
         return _sse_response(_err(), status_code=200)
-
 
 @app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
