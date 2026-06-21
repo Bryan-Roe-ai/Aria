@@ -164,3 +164,5 @@ $RECYCLE.BIN/
 
 # Additional ignores
 coverage.json
+
+.fake

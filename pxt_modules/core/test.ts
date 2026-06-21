@@ -5,3 +5,4 @@ let minus = i - f
 
 let r = Math.random()
 let ri = Math.randomRange(5, 10)
+

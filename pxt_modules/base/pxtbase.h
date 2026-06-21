@@ -1173,7 +1173,7 @@ bool removeElement(RefCollection *c, TValue x);
 #endif
 #else
 #define FLASH_TOP 0x00000000
-#endif
+#endif         
 #endif
 
 #define PXT_SHIMS_BEGIN                                                                            \

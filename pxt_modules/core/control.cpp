@@ -1,7 +1,7 @@
 #include "pxt.h"
 
 #if defined(NRF52_SERIES) || defined(PICO_BOARD)
-#define _estack __StackTop
+#define _estack __StackTop 
 #endif
 extern uint32_t _estack;
 

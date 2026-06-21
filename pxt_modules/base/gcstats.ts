@@ -36,5 +36,5 @@ namespace control {
             res[name] = buf.getNumber(NumberFormat.UInt32LE, off)
             off += 4
         }
-    }
+    }    
 }
