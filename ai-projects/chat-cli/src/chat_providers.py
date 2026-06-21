@@ -145,6 +145,25 @@ def _get_lmstudio_api_key() -> Optional[str]:
     )
 
 
+def _get_bounded_timeout_env(name: str, default: float, *, minimum: float = 0.1, maximum: float = 300.0) -> float:
+    """Read a timeout value from env with bounds and fallback.
+
+    Returns ``default`` when missing/invalid, and clamps to ``[minimum, maximum]``.
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return float(default)
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return float(default)
+    if value < minimum:
+        return float(minimum)
+    if value > maximum:
+        return float(maximum)
+    return float(value)
+
+
 def _is_text_like_content_block_type(block_type: Any) -> bool:
     """Return True for OpenAI-compatible text block type variants."""
     if not isinstance(block_type, str):
@@ -894,6 +913,8 @@ class LMStudioProvider(BaseChatProvider):
         import json
         import urllib.request
 
+        timeout_seconds = _get_bounded_timeout_env("LMSTUDIO_HTTP_TIMEOUT", 60.0, minimum=1.0, maximum=600.0)
+
         normalized_messages = self._normalize_messages_for_api(messages)
         payload: Dict[str, Any] = {
             "model": self.model,
@@ -922,7 +943,7 @@ class LMStudioProvider(BaseChatProvider):
         if stream:
 
             def _gen() -> Generator[str, None, None]:
-                with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 - local configurable endpoint
+                with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:  # noqa: S310 - local configurable endpoint
                     for raw_line in resp:
                         line = raw_line.decode("utf-8", errors="replace").strip()
                         if not line or not line.startswith("data:"):
@@ -941,7 +962,7 @@ class LMStudioProvider(BaseChatProvider):
 
             return _gen()
 
-        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 - local configurable endpoint
+        with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:  # noqa: S310 - local configurable endpoint
             body = resp.read().decode("utf-8", errors="replace")
         obj = _json.loads(body)
         return obj.get("choices", [{}])[0].get("message", {}).get("content", "") or ""
@@ -1262,6 +1283,9 @@ def _check_lm_studio_available(server_url: str) -> bool:
     # Perform HTTP check outside lock to avoid blocking other threads
     is_available = False
     lmstudio_api_key = _get_lmstudio_api_key()
+    healthcheck_timeout = _get_bounded_timeout_env(
+        "LMSTUDIO_HEALTHCHECK_TIMEOUT", 1.0, minimum=0.1, maximum=30.0
+    )
     try:
         import urllib.error
         import urllib.request
@@ -1273,7 +1297,7 @@ def _check_lm_studio_available(server_url: str) -> bool:
         if lmstudio_api_key:
             headers["Authorization"] = f"Bearer {lmstudio_api_key}"
         request = urllib.request.Request(models_endpoint_url, headers=headers)
-        urllib.request.urlopen(request, timeout=1)
+        urllib.request.urlopen(request, timeout=healthcheck_timeout)
         is_available = True
     except urllib.error.HTTPError as exc:
         # Endpoint is reachable but auth failed: count as available only when

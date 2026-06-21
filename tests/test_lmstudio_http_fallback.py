@@ -76,3 +76,35 @@ def test_lmstudio_http_fallback_stream():
         output = "".join(chunks)
 
     assert output == "OK"
+
+
+def test_lmstudio_http_fallback_respects_timeout_env():
+    from chat_providers import LMStudioProvider
+
+    captured: dict[str, float] = {}
+    payload = {
+        "choices": [
+            {
+                "message": {
+                    "content": "OK",
+                }
+            }
+        ]
+    }
+
+    def _fake_urlopen(req, timeout=None):
+        captured["timeout"] = timeout
+        return _FakeHTTPResponse(body=json.dumps(payload).encode("utf-8"))
+
+    with patch("chat_providers.OpenAI", None):
+        provider = LMStudioProvider(base_url="http://127.0.0.1:1234/v1", model="local-model")
+
+    with patch.dict("os.environ", {"LMSTUDIO_HTTP_TIMEOUT": "12.5"}, clear=False), patch(
+        "urllib.request.urlopen", side_effect=_fake_urlopen
+    ):
+        result = provider.complete(
+            [{"role": "user", "content": "Reply with OK only."}], stream=False
+        )
+
+    assert result == "OK"
+    assert captured.get("timeout") == 12.5
