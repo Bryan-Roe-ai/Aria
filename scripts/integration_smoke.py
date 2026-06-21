@@ -32,7 +32,8 @@ DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"
 LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC = 25.0
 LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC = 10.0
 
-_REQUIRED_AI_STATUS_KEYS = {"active_provider", "settings", "endpoints", "status"}
+_REQUIRED_AI_STATUS_KEYS = {"active_provider",
+    "settings", "endpoints", "status"}
 _REQUIRED_AI_STATUS_ENDPOINTS = {
     "/api/ai/status",
     "/api/chat",
@@ -46,17 +47,17 @@ _REQUIRED_AI_STATUS_ENDPOINTS = {
     "/api/agi/stream",
 }
 _REQUIRED_AI_ROUTE_NAMES = {
+_REQUIRED_AI_ROUTE_NAMES = {
     "ai/status",
     "chat",
     "chat-web",
-    "agi/status",
     "agi/analyze",
     "agi/reason",
     "agi/stream",
 }
 
 
-@dataclass
+@ dataclass
 class StepResult:
     name: str
     status: str
@@ -69,8 +70,8 @@ def _run_command(
     name: str,
     cmd: List[str],
     *,
-    critical: bool = True,
-    timeout: int = 180,
+    critical: bool=True,
+    timeout: int=180,
 ) -> StepResult:
     start = time.perf_counter()
     try:
@@ -132,7 +133,8 @@ def _check_config_paths() -> List[StepResult]:
         candidates = get_config_candidates(REPO_ROOT, config_key)
         canonical = canonical_config_path(REPO_ROOT, config_key)
         start = time.perf_counter()
-        found: Optional[Path] = next((p for p in candidates if p.exists()), None)
+        found: Optional[Path] = next(
+            (p for p in candidates if p.exists()), None)
         duration = round(time.perf_counter() - start, 2)
 
         if found is None:
@@ -164,14 +166,15 @@ def _check_config_paths() -> List[StepResult]:
                     status="warning",
                     critical=False,
                     duration_sec=duration,
-                    detail=("using legacy path; prefer " f"{canonical.relative_to(REPO_ROOT)}"),
+                    detail=(
+                        "using legacy path; prefer " f"{canonical.relative_to(REPO_ROOT)}"),
                 )
             )
 
     return results
 
 
-def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]:
+def _fetch_local_functions_payload(url: str, timeout: int=2) -> Dict[str, Any]:
     """Fetch and parse the local Functions status payload."""
     with urlopen(url, timeout=timeout) as resp:  # noqa: S310 - local probe
         return json.loads(resp.read().decode("utf-8"))
@@ -180,9 +183,9 @@ def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]
 def _fetch_local_functions_json(
     url: str,
     *,
-    method: str = "GET",
-    payload: Optional[Dict[str, Any]] = None,
-    timeout: int = 5,
+    method: str="GET",
+    payload: Optional[Dict[str, Any]]=None,
+    timeout: int=5,
 ) -> Dict[str, Any]:
     """Fetch and parse a JSON response from local Functions endpoints."""
     data = None
@@ -199,7 +202,7 @@ def _fetch_local_functions_sse(
     url: str,
     *,
     payload: Dict[str, Any],
-    timeout: int = 8,
+    timeout: int=8,
 ) -> str:
     """Fetch raw SSE body text from local Functions endpoints."""
     data = json.dumps(payload).encode("utf-8")
@@ -212,10 +215,7 @@ def _fetch_local_functions_sse(
     with urlopen(req, timeout=timeout) as resp:  # noqa: S310 - local probe
         return resp.read().decode("utf-8", errors="replace")
 
-
-def _fetch_local_functions_text(
-    url: str,
-    *,
+    * ,
     method: str = "GET",
     payload: Optional[Dict[str, Any]] = None,
     timeout: int = 5,
@@ -232,7 +232,7 @@ def _fetch_local_functions_text(
 
 
 def _local_dev_adapter_command(url: str) -> List[str]:
-    """Build the adapter command for the target local Functions URL."""
+    method: str = "GET",
 
     parsed = urlparse(url)
     port = parsed.port or 7071
@@ -282,8 +282,6 @@ def _probe_with_local_dev_adapter_request(
     method: str = "GET",
     payload: Optional[Dict[str, Any]] = None,
     sse: bool = False,
-    text: bool = False,
-) -> Optional[Any]:
     """Best-effort adapter probe for arbitrary local Functions endpoints."""
     proc: Optional[subprocess.Popen[str]] = None
     deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
@@ -310,7 +308,7 @@ def _probe_with_local_dev_adapter_request(
                         payload=payload or {},
                         timeout=int(request_timeout),
                     )
-                if text:
+                    return _fetch_local_functions_text(
                     return _fetch_local_functions_text(
                         url,
                         method=method,
@@ -340,9 +338,9 @@ def _probe_with_local_dev_adapter_request(
 
 def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
     """Probe AGI HTTP routes with minimal contract checks."""
-    results: List[StepResult] = []
+    results: List[StepResult]=[]
 
-    endpoints = [
+    endpoints=[
         {
             "name": "functions_agi_status_endpoint",
             "url": "http://localhost:7071/api/agi/status",
@@ -359,7 +357,6 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
             "required_key": "analysis",
             "sse": False,
         },
-        {
             "name": "functions_agi_reason_endpoint",
             "url": "http://localhost:7071/api/agi/reason",
             "method": "POST",
@@ -368,6 +365,7 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
             "sse": False,
         },
         {
+            "name": "functions_agi_stream_endpoint",
             "name": "functions_agi_stream_endpoint",
             "url": "http://localhost:7071/api/agi/stream",
             "method": "POST",
@@ -378,20 +376,20 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
     ]
 
     for ep in endpoints:
-        start = time.perf_counter()
+        start=time.perf_counter()
         try:
             if ep["sse"]:
-                body = _fetch_local_functions_sse(
+                body=_fetch_local_functions_sse(
                     ep["url"],
                     payload=ep["payload"] or {},
                     timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
                 )
-                ok = ep["required_key"] in body and '"delta"' in body
+                ok=ep["required_key"] in body and '"delta"' in body
                 if not ok:
                     raise ValueError("stream_missing_expected_sse_markers")
-                detail = "sse=[DONE]+delta"
+                detail="sse=[DONE]+delta"
             else:
-                payload = _fetch_local_functions_json(
+                payload=_fetch_local_functions_json(
                     ep["url"],
                     method=ep["method"],
                     payload=ep["payload"],
@@ -399,9 +397,9 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
                 )
                 if ep["required_key"] not in payload:
                     raise ValueError(f"missing_key={ep['required_key']}")
-                detail = f"has_key={ep['required_key']}"
+                detail=f"has_key={ep['required_key']}"
 
-            duration = round(time.perf_counter() - start, 2)
+            duration=round(time.perf_counter() - start, 2)
             results.append(
                 StepResult(
                     name=ep["name"],
@@ -412,9 +410,9 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
                 )
             )
         except (URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError):
-            duration = round(time.perf_counter() - start, 2)
+            duration=round(time.perf_counter() - start, 2)
             if strict:
-                fallback = _probe_with_local_dev_adapter_request(
+                fallback=_probe_with_local_dev_adapter_request(
                     url=ep["url"],
                     method=ep["method"],
                     payload=ep["payload"],
@@ -467,19 +465,18 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
 
     return results
 
-
 def _probe_chat_web_assets(strict: bool) -> StepResult:
     """Verify AGI stream utilities are served for chat-web clients."""
-    name = "functions_chat_web_agi_stream_utils"
-    start = time.perf_counter()
-    url = "http://localhost:7071/api/chat-web/static/agi_stream_utils.js"
+    name="functions_chat_web_agi_stream_utils"
+    start=time.perf_counter()
+    url="http://localhost:7071/api/chat-web/static/agi_stream_utils.js"
     try:
-        req = Request(url, method="GET")
+        req=Request(url, method="GET")
         with urlopen(req, timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC) as resp:
-            body = resp.read().decode("utf-8", errors="replace")
+            body=resp.read().decode("utf-8", errors="replace")
         if "AGIStreamUtils" not in body:
             raise ValueError("missing_AGIStreamUtils_marker")
-        duration = round(time.perf_counter() - start, 2)
+        duration=round(time.perf_counter() - start, 2)
         return StepResult(
             name=name,
             status="succeeded",
@@ -488,9 +485,9 @@ def _probe_chat_web_assets(strict: bool) -> StepResult:
             detail="has_marker=AGIStreamUtils",
         )
     except (URLError, TimeoutError, OSError, ValueError):
-        duration = round(time.perf_counter() - start, 2)
+        duration=round(time.perf_counter() - start, 2)
         if strict:
-            fallback = _probe_with_local_dev_adapter_request(
+            fallback=_probe_with_local_dev_adapter_request(
                 url=url,
                 method="GET",
                 payload=None,
@@ -521,20 +518,21 @@ def _probe_chat_web_assets(strict: bool) -> StepResult:
 
 
 def _probe_functions_endpoint(strict: bool) -> StepResult:
-    name = "functions_ai_status_endpoint"
-    start = time.perf_counter()
-    url = "http://localhost:7071/api/ai/status"
+def _probe_functions_endpoint(strict: bool) -> StepResult:
+    name="functions_ai_status_endpoint"
+    start=time.perf_counter()
+    url="http://localhost:7071/api/ai/status"
 
-    def _build_success_detail(payload: Dict[str, Any], source: str = "") -> Optional[str]:
-        valid, detail = _validate_ai_status_payload(payload)
+    def _build_success_detail(payload: Dict[str, Any], source: str="") -> Optional[str]:
+        valid, detail=_validate_ai_status_payload(payload)
         if not valid:
             return None
         return f"{detail}{source}"
 
     try:
-        payload = _fetch_local_functions_payload(url)
-        detail = _build_success_detail(payload)
-        duration = round(time.perf_counter() - start, 2)
+        payload=_fetch_local_functions_payload(url)
+        detail=_build_success_detail(payload)
+        duration=round(time.perf_counter() - start, 2)
         if detail is not None:
             return StepResult(
                 name=name,
@@ -559,15 +557,16 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
             detail="invalid_ai_status_payload",
         )
     except (URLError, TimeoutError, OSError):
-        duration = round(time.perf_counter() - start, 2)
+        duration=round(time.perf_counter() - start, 2)
         if strict:
             # First retry directly to absorb transient startup races.
             for _ in range(2):
                 time.sleep(0.25)
                 try:
-                    payload = _fetch_local_functions_payload(url)
-                    detail = _build_success_detail(payload, " | via=direct_retry")
-                    duration = round(time.perf_counter() - start, 2)
+                    payload=_fetch_local_functions_payload(url)
+                    detail=_build_success_detail(
+                        payload, " | via=direct_retry")
+                        payload, " | via=direct_retry")
                     if detail is not None:
                         return StepResult(
                             name=name,
@@ -581,9 +580,8 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
 
             fallback_payload = _probe_with_local_dev_adapter(url)
             if fallback_payload is not None:
-                detail = _build_success_detail(fallback_payload, " | via=local_dev_adapter")
                 if detail is not None:
-                    duration = round(time.perf_counter() - start, 2)
+                    fallback_payload, " | via=local_dev_adapter")
                     return StepResult(
                         name=name,
                         status="succeeded",
@@ -596,7 +594,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
             # because another process is already bound to :7071.
             try:
                 payload = _fetch_local_functions_payload(url)
-                detail = _build_success_detail(payload, " | via=final_direct_retry")
+                duration = round(time.perf_counter() - start, 2)
                 duration = round(time.perf_counter() - start, 2)
                 if detail is not None:
                     return StepResult(
@@ -633,10 +631,8 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
 
 
 def _validate_ai_status_payload(payload: Dict[str, Any]) -> tuple[bool, str]:
-    missing_keys = sorted(k for k in _REQUIRED_AI_STATUS_KEYS if k not in payload)
-    if missing_keys:
+    missing_keys = sorted(
         return False, f"missing_keys={','.join(missing_keys)}"
-
     if payload.get("status") != "ok":
         return False, f"status={payload.get('status')}"
 
@@ -668,10 +664,10 @@ def _probe_ai_routes_endpoint(strict: bool) -> StepResult:
     start = time.perf_counter()
     url = "http://localhost:7071/api/ai/routes"
     try:
-        payload = _fetch_local_functions_json(url, method="GET", timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC)
         detail = _validate_ai_routes_payload(payload)
-        duration = round(time.perf_counter() - start, 2)
-        if detail is not None:
+        payload = _fetch_local_functions_json(
+            url, method="GET", timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC)
+        detail = _validate_ai_routes_payload(payload)
             return StepResult(
                 name=name,
                 status="succeeded",
@@ -752,12 +748,10 @@ def _resolved_config_paths() -> Dict[str, Optional[str]]:
     resolved: Dict[str, Optional[str]] = {}
     for key in config_keys:
         selected = resolve_existing_config_path(REPO_ROOT, key)
-        resolved[key] = str(selected.relative_to(REPO_ROOT)) if selected else None
-    return resolved
-
-
 def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
-    steps: List[StepResult] = []
+        resolved[key] = str(selected.relative_to(
+            REPO_ROOT)) if selected else None
+def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
     steps.extend(_check_config_paths())
 
@@ -803,16 +797,14 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
     steps.append(_probe_functions_endpoint(strict_endpoints))
     steps.append(_probe_ai_routes_endpoint(strict_endpoints))
     steps.extend(_probe_agi_endpoints(strict_endpoints))
-    steps.append(_probe_chat_web_assets(strict_endpoints))
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")
+    failed_critical = [
+        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
+    succeeded = sum(1 for s in steps if s.status == "succeeded")
     failed_critical = [s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-
-    summary = {
-        "generated_at": generated_at,
         "run_id": run_id,
         "config_path": None,
         "config_paths": _resolved_config_paths(),
@@ -830,13 +822,12 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Run Aria integration smoke checks")
-    ap.add_argument(
-        "--strict-endpoints",
         action="store_true",
-        help="Fail if local Functions endpoint is unavailable",
-    )
     ap.add_argument(
+    ap = argparse.ArgumentParser(
+        description="Run Aria integration smoke checks")
+        help="Fail if local Functions endpoint is unavailable",
+        action="store_true",
         "--output",
         default=str(DATA_OUT / "status.json"),
         help="Path to write JSON summary",

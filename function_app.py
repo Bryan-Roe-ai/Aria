@@ -3,6 +3,7 @@
 # =============================================================================
 import hmac
 import importlib.util as _iu
+import hmac
 import json
 import logging
 import os
@@ -96,7 +97,8 @@ log_chat_message_safe = db_logging["log_chat_message_safe"]
 # Chat memory functions with graceful degradation
 chat_memory_funcs = safe_import(
     "shared.chat_memory",
-    import_names=("generate_embedding", "fetch_similar_messages", "store_embedding"),
+    import_names=("generate_embedding",
+                  "fetch_similar_messages", "store_embedding"),
     fallback_factory=lambda name: {
         "generate_embedding": lambda text: [],
         "fetch_similar_messages": lambda query_emb, top_k=5, session_id=None: [],
@@ -171,7 +173,8 @@ except Exception:
             pass
 
         setattr(shared_chat_memory, "generate_embedding", _generate_embedding)
-        setattr(shared_chat_memory, "fetch_similar_messages", _fetch_similar_messages)
+        setattr(shared_chat_memory, "fetch_similar_messages",
+                _fetch_similar_messages)
         setattr(shared_chat_memory, "store_embedding", _store_embedding)
         sys.modules["shared.chat_memory"] = shared_chat_memory
 
@@ -252,10 +255,9 @@ app = func.FunctionApp()
 def serve_chat_web(req: func.HttpRequest) -> func.HttpResponse:
     """Serve the chat web interface HTML"""
     try:
-        html_path = Path(__file__).resolve().parent / "apps" / "chat" / "index.html"
-
         if html_path.exists():
-            with open(html_path, "r", encoding="utf-8") as f:
+        html_path = Path(__file__).resolve().parent / \
+            "apps" / "chat" / "index.html"
                 html_content = f.read()
 
             return func.HttpResponse(
@@ -447,6 +449,144 @@ def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # =============================================================================
+
+@app.route(route="chat-web/static/agi_stream_utils.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_agi_stream_utils(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve AGI SSE parsing utilities for chat-web clients."""
+    try:
+        js_path = (
+            Path(__file__).resolve().parent / "apps" / "chat" / "static" / "agi_stream_utils.js"
+        )
+
+        if js_path.exists():
+            with open(js_path, "r", encoding="utf-8") as f:
+                js_content = f.read()
+
+            return func.HttpResponse(
+                js_content,
+                status_code=200,
+                mimetype="application/javascript",
+                headers={
+                    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            )
+
+        return func.HttpResponse(
+            f"// Error: JavaScript file not found at {js_path}",
+            status_code=404,
+            mimetype="application/javascript",
+        )
+    except Exception as e:
+        logging.error(f"Error serving agi_stream_utils.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_js(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade script for chat-web."""
+    try:
+        js_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.js"
+        if not js_path.exists():
+            return func.HttpResponse("// Error: global-upgrade.js not found", status_code=404, mimetype="application/javascript")
+        with open(js_path, "r", encoding="utf-8") as f:
+            js_content = f.read()
+        return func.HttpResponse(
+            js_content,
+            status_code=200,
+            mimetype="application/javascript",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.css", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_css(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade stylesheet for chat-web."""
+    try:
+        css_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.css"
+        if not css_path.exists():
+            return func.HttpResponse("/* Error: global-upgrade.css not found */", status_code=404, mimetype="text/css")
+        with open(css_path, "r", encoding="utf-8") as f:
+            css_content = f.read()
+        return func.HttpResponse(
+            css_content,
+            status_code=200,
+            mimetype="text/css",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.css: {str(e)}")
+        return func.HttpResponse(f"/* Error: {str(e)} */", status_code=500, mimetype="text/css")
+
+
+# =============================================================================
+# Aria stage proxy — forwards /api/aria/* to the 3D stage server (port 8080)
+# =============================================================================
+
+ARIA_STAGE_BASE_URL = os.getenv(
+    "ARIA_STAGE_BASE_URL", "http://127.0.0.1:8080").rstrip("/")
+
+
+def _proxy_aria_request(req: func.HttpRequest, subpath: str) -> func.HttpResponse:
+    """Forward a request to the Aria stage HTTP API."""
+    import requests
+
+    url = f"{ARIA_STAGE_BASE_URL}/api/aria/{subpath}"
+    try:
+        if req.method.upper() == "GET":
+            resp = requests.get(url, params=dict(req.params), timeout=10)
+        else:
+            body = req.get_body()
+            resp = requests.request(
+                req.method.upper(),
+                url,
+                data=body,
+                headers={"Content-Type": "application/json"},
+                timeout=30,
+            )
+        content_type = resp.headers.get("Content-Type", "application/json")
+        return func.HttpResponse(
+            resp.content,
+            status_code=resp.status_code,
+            mimetype=content_type.split(";")[0].strip(),
+            headers=create_cors_response_headers(),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("Aria stage proxy failed for %s: %s", subpath, exc)
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Aria stage unavailable: {exc}"}),
+            status_code=502,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="aria/state", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy GET /api/aria/state to the Aria stage server."""
+    return _proxy_aria_request(req, "state")
+
+
+@app.route(route="aria/execute", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_execute_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy POST /api/aria/execute to the Aria stage server."""
+    if req.method.upper() == "OPTIONS":
+        return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return _proxy_aria_request(req, "execute")
+
+
+@app.route(route="aria/command", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    """Proxy POST /api/aria/command to the Aria stage server."""
+    if req.method.upper() == "OPTIONS":
+        return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return _proxy_aria_request(req, "command")
+
+
 # Chat API - Backend for AI interactions
 # =============================================================================
 
@@ -494,8 +634,8 @@ def _is_compaction_placeholder_message(content: str) -> bool:
     if not isinstance(content, str):
         return False
 
+    normalized_lines = [line.strip().lower()
     normalized_lines = [line.strip().lower() for line in content.splitlines() if line.strip()]
-    if not normalized_lines:
         return False
 
     placeholder_lines = {
@@ -517,7 +657,7 @@ def _sanitize_chat_messages(messages) -> list[dict]:
     sanitized: list[dict] = []
     for idx, msg in enumerate(messages):
         if not isinstance(msg, dict) or "role" not in msg or "content" not in msg:
-            raise ValueError(f"Invalid message format at index {idx}. Expected {{role, content}}")
+            raise ValueError(
 
         content = msg.get("content")
         normalized_content = None
@@ -619,9 +759,10 @@ def _detect_provider_with_runtime_fallback(
         try:
             return detect_provider(explicit="local_echo", model_override="local-echo")
         except Exception as fallback_error:
-            logging.error(f"Even fallback to local provider failed: {fallback_error}")
             raise RuntimeError(
-                f"Provider detection failed with '{provider_error}' and fallback also failed: {fallback_error}"
+            raise RuntimeError(
+                f"Even fallback to local provider failed: {fallback_error}")
+            raise RuntimeError(
             ) from fallback_error
 
 
@@ -664,9 +805,8 @@ def _build_guardrail_fallback_text() -> str:
 def _record_ai_capability_event(event_type: str, payload: dict) -> None:
     """Best-effort event append for auditability and trend analysis."""
     try:
-        out_dir = Path(__file__).resolve().parent / "data_out" / "ai_capabilities"
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         out_dir.mkdir(parents=True, exist_ok=True)
-        event = {
             "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "event_type": event_type,
             **payload,
@@ -718,18 +858,16 @@ def _extract_agi_query_from_request(req_body: dict) -> str:
     if isinstance(messages, list) and messages:
         sanitized = _sanitize_chat_messages(messages)
         user_query = next(
-            (_extract_text_content(m.get("content")) for m in reversed(sanitized) if m.get("role") == "user"),
-            "",
-        )
         if user_query.strip():
-            return user_query.strip()
+        if user_query.strip():
+            (_extract_text_content(m.get("content"))
+             for m in reversed(sanitized) if m.get("role") == "user"),
 
-    raise ValueError("Provide a non-empty `query` or user message in `messages`")
-
-
-def _create_agi_provider_for_api(
-    *,
     model_override: str | None = None,
+
+    model_override: str | None = None,
+        "Provide a non-empty `query` or user message in `messages`")
+
     temperature: float | None = None,
     max_output_tokens: int | None = None,
     verbose: bool = False,
@@ -748,7 +886,8 @@ def _create_agi_provider_for_api(
     return provider, provider_choice
 
 
-def _agi_provider_metadata(provider, provider_choice) -> dict:
+@app.route(route="agi/analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
     """Return AGI wrapper metadata with the detected base provider exposed."""
     base = getattr(provider, "_base_provider_choice", None)
     if base is not None:
@@ -774,7 +913,31 @@ def _normalize_agi_stream_delta(chunk) -> dict:
 
 @app.route(route="agi/analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
-    """Analyze a query using AGI reasoning classifier and agent routing preview."""
+
+def _agi_provider_metadata(provider, provider_choice) -> dict:
+    """Return AGI wrapper metadata with the detected base provider exposed."""
+    base = getattr(provider, "_base_provider_choice", None)
+    if base is not None:
+        base_provider = getattr(base, "name", None)
+        base_model = getattr(base, "model", None)
+    else:
+        base_provider = getattr(provider_choice, "name", None)
+        base_model = getattr(provider_choice, "model", None)
+    return {
+        "name": "agi",
+        "base_provider": base_provider,
+        "base_model": base_model,
+        "wrapper_model": getattr(provider_choice, "model", None),
+    }
+
+
+def _normalize_agi_stream_delta(chunk) -> dict:
+    """Normalize AGI stream chunks to structured delta objects for SSE clients."""
+    if isinstance(chunk, dict):
+        return chunk
+    return {"type": "output", "data": str(chunk)}
+
+
     try:
         req_body, req_err = validate_request(req, AGI_ANALYZE_SCHEMA)
         if req_err:
@@ -799,27 +962,31 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
                 "selected_agent": selected_agent,
                 "agent_score": float(agent_score),
             },
+            "provider": {
+                "name": "agi",
+                "base_provider": getattr(provider_choice, "name", None),
+            status_code=200,
+            mimetype="application/json",
             "provider": _agi_provider_metadata(provider, provider_choice),
         }
 
         return func.HttpResponse(
-            json.dumps(payload),
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
     except ValueError as ve:
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
+            headers=create_cors_response_headers(),
             status_code=400,
-            mimetype="application/json",
+            json.dumps(
             headers=create_cors_response_headers(),
         )
     except RuntimeError as re:
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
+            headers=create_cors_response_headers(),
             status_code=500,
-            mimetype="application/json",
+            json.dumps(
             headers=create_cors_response_headers(),
         )
     except Exception as e:  # noqa: BLE001
@@ -836,9 +1003,10 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
 def agi_status(req: func.HttpRequest) -> func.HttpResponse:
     """Return AGI provider readiness and reasoning summary metadata."""
     try:
-        provider = None
+            "active_goals": [],
         provider_choice = None
-        agent_tools: dict[str, list[str]] = {}
+        provider_choice = None
+            "active_goals": [],
         summary = {
             "total_reasoning_chains": 0,
             "active_goals": [],
@@ -859,11 +1027,11 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
             from agi_provider import _AGENT_REGISTRY
 
             for agent_name, config in _AGENT_REGISTRY.items():
-                tools = config.get("tools") if isinstance(config, dict) else None
-                if not isinstance(tools, list) or not tools:
-                    continue
+                tools = config.get("tools") if isinstance(
+                    config, dict) else None
                 tool_names = [str(tool.get("name")) for tool in tools if isinstance(tool, dict) and tool.get("name")]
-                if tool_names:
+                    str(tool.get("name"))
+                    for tool in tools
                     agent_tools[str(agent_name)] = sorted(set(tool_names))
         except Exception:
             agent_tools = {}
@@ -871,8 +1039,10 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
         # MCP bridge tools (registered in lmstudio_mcp_server, not _AGENT_REGISTRY).
         agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason", "agi_stream"])
 
-        from shared.agi_backend_status import build_agi_backend_status
-
+        payload = {
+            "status": "ok",
+            "available": available,
+            "provider": {
         provider_meta = {"name": "agi", "base_provider": None, "base_model": None, "wrapper_model": None}
         if available:
             provider_meta = _agi_provider_metadata(provider, provider_choice)
@@ -885,14 +1055,33 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
             "agent_tools": agent_tools,
             "backends": build_agi_backend_status(provider),
             "endpoints": [
-                "/api/agi/analyze",
-                "/api/agi/reason",
+        # MCP bridge tools (registered in lmstudio_mcp_server, not _AGENT_REGISTRY).
+        agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason", "agi_stream"])
+
+        provider_meta = {"name": "agi", "base_provider": None, "base_model": None, "wrapper_model": None}
+        if available:
+            provider_meta = _agi_provider_metadata(provider, provider_choice)
+
+        payload = {
+                "base_provider": getattr(provider_choice, "name", None),
+                "base_model": getattr(provider_choice, "model", None),
                 "/api/agi/stream",
-                "/api/agi/status",
+            "provider": provider_meta,
+            "reasoning": summary,
+
                 "/api/agi/persistence",
             ],
         }
 
+        return func.HttpResponse(
+                "/api/agi/stream",
+                "/api/agi/status",
+            ],
+        }
+            headers=create_cors_response_headers(),
+        )
+    except Exception as e:  # noqa: BLE001
+                "/api/agi/persistence",
         return func.HttpResponse(
             json.dumps(payload),
             status_code=200,
@@ -946,10 +1135,12 @@ def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
             "status": "ok",
             "query": query,
             "response": str(result),
+            "provider": {
+                "name": "agi",
+            status_code=200,
+            mimetype="application/json",
             "provider": _agi_provider_metadata(provider, provider_choice),
         }
-        if include_summary:
-            payload["reasoning"] = provider.get_reasoning_summary()
 
         return func.HttpResponse(
             json.dumps(payload),
@@ -959,18 +1150,16 @@ def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
         )
     except ValueError as ve:
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
-            status_code=400,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
+        return func.HttpResponse(
+            json.dumps(
+        return func.HttpResponse(
         )
     except RuntimeError as re:
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+        logging.error(f"agi/reason error: {e}")
+            json.dumps(
+                {"status": "error", "error": f"Configuration error: {re}"}),
+        logging.error(f"agi/reason error: {e}")
     except Exception as e:  # noqa: BLE001
         logging.error(f"agi/reason error: {e}")
         return func.HttpResponse(
@@ -1014,18 +1203,23 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
 
         def _sse_iterable():
             try:
-                pre = _agi_provider_metadata(provider, provider_choice)
-                yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
-
-                for chunk in gen:
-                    if not chunk:
-                        continue
+                pre = {
+                    "provider": "agi",
+                    "base_provider": getattr(provider_choice, "name", None),
+                    "base_model": getattr(provider_choice, "model", None),
                     delta = _normalize_agi_stream_delta(chunk)
                     payload = json.dumps({"delta": delta})
+                pre = _agi_provider_metadata(provider, provider_choice)
+                        continue
+                    payload = json.dumps({"delta": chunk})
                     yield (f"data: {payload}\n\n").encode("utf-8")
 
                 yield b"data: [DONE]\n\n"
             except Exception as e:  # noqa: BLE001
+                err_payload = json.dumps({"error": str(e)})
+                yield (f"event: error\n" f"data: {err_payload}\n\n").encode("utf-8")
+                    delta = _normalize_agi_stream_delta(chunk)
+                    payload = json.dumps({"delta": delta})
                 err_payload = json.dumps({"error": str(e)})
                 yield (f"event: error\n" f"data: {err_payload}\n\n").encode("utf-8")
                 yield b"data: [DONE]\n\n"
@@ -1034,19 +1228,18 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
         return _sse_response(_sse_iterable(), status_code=200)
     except ValueError as ve:
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
+            json.dumps(
+                {"status": "error", "error": f"Validation error: {ve}"}),
             status_code=400,
             mimetype="application/json",
-            headers=create_cors_response_headers(),
         )
     except RuntimeError as re:
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
+        logging.error(f"agi/stream error: {e}")
             status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
+            json.dumps(
+                {"status": "error", "error": f"Configuration error: {re}"}),
+        logging.error(f"agi/stream error: {e}")
         logging.error(f"agi/stream error: {e}")
         return func.HttpResponse(
             json.dumps({"status": "error", "error": str(e)}),
@@ -1080,17 +1273,24 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                 )
             else:
                 # headers may be a case-insensitive mapping-like object
-                provided_token = headers.get("X-AGI-AUDIT-TOKEN") if hasattr(headers, "get") else None
-            if provided_token and isinstance(provided_token, str) and provided_token.startswith("Bearer "):
+            provided_token = None
+                provided_token = headers.get(
+                    "X-AGI-AUDIT-TOKEN") if hasattr(headers, "get") else None
                 provided_token = provided_token.split(" ", 1)[1]
         except Exception:
             provided_token = None
-        if not (isinstance(provided_token, str) and hmac.compare_digest(provided_token, token_required)):
             return func.HttpResponse(
                 json.dumps({"status": "error", "error": "unauthorized"}),
                 status_code=401,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
+            )
+    try:
+        # Parse limit param (clamp to reasonable bounds)
+            provided_token = None
+        if not (
+            isinstance(provided_token, str)
+            and hmac.compare_digest(provided_token, token_required)
             )
     try:
         # Parse limit param (clamp to reasonable bounds)
@@ -1109,34 +1309,37 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
             limit = 50
         limit = max(1, min(limit, 500))
 
-        sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv("QAI_AGI_PERSIST_SQLITE")
+        sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv(
+            "QAI_AGI_PERSIST_SQLITE")
         jsonl_path = os.getenv("QAI_AGI_PERSIST_PATH")
-        jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "true").lower() in ("1", "true", "yes")
-        default_jsonl_path = _default_agi_persist_jsonl_path()
-        if sqlite_path:
-            try:
-                from shared.agi_persistence_sqlite import SQLiteAGIPersistence
+            "QAI_AGI_PERSIST", "").lower() in ("1", "true", "yes")
 
-                backend = SQLiteAGIPersistence(sqlite_path)
+                from shared.agi_persistence_sqlite import SQLiteAGIPersistence
+                from shared.agi_persistence_sqlite import SQLiteAGIPersistence
                 entries = backend.read_last(limit)
                 backend.close()
                 return func.HttpResponse(
                     json.dumps({"status": "ok", "backend": "sqlite", "entries": entries}, default=str),
-                    status_code=200,
-                    mimetype="application/json",
+        jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "true").lower() in ("1", "true", "yes")
+        default_jsonl_path = _default_agi_persist_jsonl_path()
+                backend.close()
+                return func.HttpResponse(
+                logging.exception("AGI persistence sqlite read error: %s", e)
+                    json.dumps({"status": "ok", "backend": "sqlite",
+                               "entries": entries}, default=str),
                     headers=create_cors_response_headers(),
                 )
             except Exception as e:  # noqa: BLE001
                 logging.exception("AGI persistence sqlite read error: %s", e)
-                return func.HttpResponse(
                     json.dumps({"status": "error", "error": str(e)}),
                     status_code=500,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
                 )
 
-        path = jsonl_path or default_jsonl_path
-        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
+        if jsonl_path or jsonl_enabled:
+            path = jsonl_path or os.path.join(
+                os.getcwd(), "data_out", "agi_reasoning.jsonl")
             try:
                 entries = []
                 if os.path.exists(path):
@@ -1145,9 +1348,30 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                         lines = fh.read().splitlines()
                     for ln in lines[-limit:]:
                         try:
+                )
+
+        path = jsonl_path or default_jsonl_path
+        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
+                        try:
                             entries.append(json.loads(ln))
                         except Exception:
                             entries.append({"raw": ln})
+                return func.HttpResponse(
+                    json.dumps({"status": "ok", "backend": "jsonl",
+                               "entries": entries}, default=str),
+                    status_code=200,
+                    mimetype="application/json",
+                    headers=create_cors_response_headers(),
+                )
+            except Exception as e:  # noqa: BLE001
+                        default=str,
+                    ),
+                    status_code=200,
+                    mimetype="application/json",
+                    headers=create_cors_response_headers(),
+                )
+            except Exception as e:  # noqa: BLE001
+                logging.exception("AGI persistence jsonl read error: %s", e)
                 return func.HttpResponse(
                     json.dumps(
                         {
@@ -1158,31 +1382,21 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                             "entries": entries,
                         },
                         default=str,
-                    ),
-                    status_code=200,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-            except Exception as e:  # noqa: BLE001
-                logging.exception("AGI persistence jsonl read error: %s", e)
-                return func.HttpResponse(
-                    json.dumps({"status": "error", "error": str(e)}),
+                    ),                    status_code=200,
                     status_code=500,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
                 )
 
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": "AGI persistence not configured"}),
-            status_code=404,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
+        logging.exception("agi/persistence unexpected error: %s", e)
+            json.dumps(
+                {"status": "error", "error": "AGI persistence not configured"}),
         )
     except Exception as e:  # noqa: BLE001
         logging.exception("agi/persistence unexpected error: %s", e)
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
-            status_code=500,
+        logging.exception("agi/persistence unexpected error: %s", e)
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
@@ -1210,17 +1424,17 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Chat function invoked")
 
     # Telemetry span setup (optional)
-    span_ctx = _tracer.start_as_current_span("chat_request") if _tracer is not None else None
+        # Optional client-provided session identifier
     try:
-        if span_ctx:
-            span_ctx.__enter__()
-        # Parse request
+    span_ctx = _tracer.start_as_current_span(
+        "chat_request") if _tracer is not None else None
+    try:
         req_body = _parse_json_object_body(req)
         messages = _sanitize_chat_messages(req_body.get("messages", []))
         # Optional client-provided session identifier
         session_id = req_body.get("session_id")
-        provider_choice = req_body.get("provider", os.getenv("QAI_PROVIDER", "auto"))
-        model_override = req_body.get("model", os.getenv("QAI_LORA_MODEL"))
+        # Optional client-provided session identifier
+            "provider", os.getenv("QAI_PROVIDER", "auto"))
         temperature = req_body.get("temperature")
         max_output_tokens = req_body.get("max_output_tokens")
         max_context_tokens = req_body.get("max_context_tokens")
@@ -1228,24 +1442,22 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         guardrails_enabled = _env_flag("QAI_AI_GUARDRAILS_ENABLED", True)
         if not system_prompt:
             system_prompt = _default_chat_system_prompt()
-        _AI_CAPABILITY_COUNTERS["chat_requests"] += 1
-
+        max_context_tokens = req_body.get("max_context_tokens")
         # =============================
         # Memory Retrieval (SQL-backed)
         # =============================
         user_message_content = next(
-            (_extract_text_content(m.get("content")) for m in reversed(messages) if m.get("role") == "user"),
+                _AI_CAPABILITY_COUNTERS["safety_blocked_input"] += 1
+            (_extract_text_content(m.get("content"))
+             for m in reversed(messages) if m.get("role") == "user"),
             None,
-        )
-        if guardrails_enabled and user_message_content:
             input_decision = _ai_safety.validate_input(user_message_content)
             if not input_decision.allowed:
                 _AI_CAPABILITY_COUNTERS["safety_blocked_input"] += 1
                 _record_ai_capability_event(
                     "chat_input_blocked",
                     {
-                        "provider_request": provider_choice,
-                        "risk_level": input_decision.risk_level,
+                _AI_CAPABILITY_COUNTERS["safety_blocked_input"] += 1
                         "reason": input_decision.reason,
                         "flags": list(getattr(input_decision, "flags", ()) or ()),
                     },
@@ -1294,9 +1506,10 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                     user_embedding,
                     top_k=_safe_int_env("QAI_MEMORY_TOP_K", 5),
                     session_id=session_id,
-                    min_similarity=_safe_float_env("QAI_MEMORY_MIN_SIMILARITY", 0.2),
+                    memory_content = sm.get("content")
                 )
-                _AI_CAPABILITY_COUNTERS["memory_candidates"] += len(similar)
+                    min_similarity=_safe_float_env(
+                        "QAI_MEMORY_MIN_SIMILARITY", 0.2),
                 for idx, sm in enumerate(similar):
                     # Inject prior memory as system messages (helps provider summarize past context)
                     memory_content = sm.get("content")
@@ -1304,8 +1517,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                     if memory_content and str(memory_content).strip():
                         memory_messages.append(
                             {
-                                "role": "system",
-                                "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {memory_content}",
+                    memory_content = sm.get("content")
                             }
                         )
             except Exception as mem_err:  # noqa: BLE001
@@ -1357,10 +1569,10 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             provider=info.name,
             model=info.model,
             max_context_tokens=max_context_tokens,
-            reserve_output_tokens=int(max_output_tokens) if max_output_tokens else 1024,
+        # If result is still a generator, consume it
+            reserve_output_tokens=int(
+                max_output_tokens) if max_output_tokens else 1024,
             system_prompt=system_prompt,
-        )
-        # Completion (non-streaming for HTTP simplicity)
         result = provider.complete(pruned_messages, stream=False)
         duration_ms = int((time.perf_counter() - start_time) * 1000)
 
@@ -1368,8 +1580,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         if hasattr(result, "__iter__") and not isinstance(result, str):
             result = "".join(result)
         result = str(result)
-        if guardrails_enabled:
-            output_decision = _ai_safety.validate_output(result)
+        # If result is still a generator, consume it
             if not output_decision.allowed:
                 _AI_CAPABILITY_COUNTERS["safety_blocked_output"] += 1
                 _record_ai_capability_event(
@@ -1389,27 +1600,24 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
         # Self-Learning: Log conversation for training
         # =============================
         try:
-            logs_dir = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "logs"
-            logs_dir.mkdir(parents=True, exist_ok=True)
-
-            # Create timestamped log file
+            with open(log_file, "a", encoding="utf-8") as f:
+            logs_dir = Path(__file__).resolve().parent / \
+                "ai-projects" / "chat-cli" / "logs"
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            log_file = logs_dir / f"chat_{timestamp}_{session_id or 'anonymous'}.jsonl"
-
-            # Append conversation to log
+                                "role": "user",
+            log_file = logs_dir / \
+                f"chat_{timestamp}_{session_id or 'anonymous'}.jsonl"
             with open(log_file, "a", encoding="utf-8") as f:
                 # Log user message
                 if user_message_content:
                     f.write(
                         json.dumps(
-                            {
-                                "role": "user",
+            with open(log_file, "a", encoding="utf-8") as f:
                                 "content": user_message_content,
                                 "timestamp": datetime.now().isoformat(),
                                 "provider": info.name,
                                 "model": info.model,
-                            }
-                        )
+                                "role": "user",
                         + "\n"
                     )
                 # Log assistant response
@@ -1426,10 +1634,11 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                     + "\n"
                 )
         except Exception as log_err:
-            logging.warning(f"Self-learning conversation logging failed: {log_err}")
+                    user_log = log_chat_message_safe(
 
-        # =============================
-        # Logging + Embedding Storage
+            logging.warning(
+                f"Self-learning conversation logging failed: {log_err}")
+
         # =============================
         if log_chat_message_safe:
             try:
@@ -1440,8 +1649,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                         provider=info.name,
                         model=info.model,
                         role="user",
-                        content=user_message_content,
-                        execution_time_ms=None,
+                    user_log = log_chat_message_safe(
                         finish_reason=None,
                     )
                     if user_log.get("success") and user_embedding:
@@ -1473,8 +1681,9 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
             try:
                 if os.getenv("QAI_COSMOS_PERSIST_STRATEGY", "messages") == "messages":
                     # Persist user and assistant messages separately
-                    last_user_msg = next((m for m in reversed(messages) if m.get("role") == "user"), None)
-                    if last_user_msg:
+                            },
+                    last_user_msg = next((m for m in reversed(
+                        messages) if m.get("role") == "user"), None)
                         cosmos_client.record_chat_message(
                             user_id,
                             {
@@ -1487,8 +1696,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                         )
                     cosmos_client.record_chat_message(
                         user_id,
-                        {
-                            "role": "assistant",
+                            },
                             "content": str(result),
                             "timestamp": time.time(),
                         },
@@ -1498,9 +1706,10 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                     cosmos_written = True
                 else:
                     # Session-level persistence
-                    cosmos_client.record_chat_session(user_id, messages, provider=info.name, model=info.model)
+            "pruning": {
+                    cosmos_client.record_chat_session(
+                        user_id, messages, provider=info.name, model=info.model)
                     cosmos_written = True
-            except Exception as c_err:  # noqa: BLE001
                 logging.warning(f"[cosmos] Persistence failed: {c_err}")
 
         response_data = {
@@ -1512,8 +1721,7 @@ def chat(req: func.HttpRequest) -> func.HttpResponse:
                 "original_tokens": stats.original_tokens,
                 "pruned_tokens": stats.pruned_tokens,
                 "removed_count": stats.removed_count,
-                "budget": stats.budget,
-                "reserve_output_tokens": stats.reserve_output_tokens,
+            "pruning": {
             },
             "telemetry_span": bool(_tracer),
             "duration_ms": duration_ms,
@@ -1582,16 +1790,6 @@ def create_cors_response_headers():
     }
 
 
-def _default_agi_persist_jsonl_path() -> str:
-    """Default JSONL audit path for AGI reasoning chains."""
-    return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
-
-
-def _materialize_sse_body(chunks) -> bytes:
-    """Backward-compatible alias for tests and callers expecting the PR name."""
-    return _sse_body_bytes(chunks)
-
-
 def _sse_body_bytes(chunks) -> bytes:
     """Coerce SSE chunks into bytes for Azure Functions HttpResponse bodies."""
     if isinstance(chunks, bytes):
@@ -1606,7 +1804,30 @@ def _sse_body_bytes(chunks) -> bytes:
         if chunk is None:
             continue
         if isinstance(chunk, bytes):
-            out.extend(chunk)
+    """Coerce SSE chunks into bytes for Azure Functions HttpResponse bodies."""
+    if isinstance(chunks, bytes):
+        return chunks
+    if isinstance(chunks, bytearray):
+        return bytes(chunks)
+    if isinstance(chunks, str):
+        return chunks.encode("utf-8")
+
+    out = bytearray()
+    for chunk in chunks:
+        if chunk is None:
+            continue
+        if isinstance(chunk, bytes):
+    }
+
+
+def _default_agi_persist_jsonl_path() -> str:
+    """Default JSONL audit path for AGI reasoning chains."""
+    return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
+
+
+def _materialize_sse_body(chunks) -> bytes:
+    """Backward-compatible alias for tests and callers expecting the PR name."""
+    return _sse_body_bytes(chunks)
         elif isinstance(chunk, bytearray):
             out.extend(chunk)
         else:
@@ -1633,9 +1854,9 @@ def _sse_response(chunks, *, status_code: int = 200) -> func.HttpResponse:
 def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
     """Return latest resource monitor snapshot."""
     try:
-        snap_path = Path(__file__).resolve().parent / "data_out" / "resource_monitor_snapshot.json"
+        snap_path = Path(__file__).resolve().parent / \
+            "data_out" / "resource_monitor_snapshot.json"
         if snap_path.exists():
-            # Use cached read with 60s TTL (resource snapshots change infrequently)
             data = read_json_cached(snap_path, ttl_seconds=60)
             if data:
                 return func.HttpResponse(
@@ -1648,7 +1869,6 @@ def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
                 return func.HttpResponse(
                     json.dumps({"error": "Failed to load snapshot"}),
                     status_code=500,
-                    mimetype="application/json",
                     headers=create_cors_response_headers(),
                 )
         else:
@@ -1672,8 +1892,8 @@ def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
 def model_deployer_status(req: func.HttpRequest) -> func.HttpResponse:
     """Return model deployer registry status."""
     try:
-        reg_path = Path(__file__).resolve().parent / "deployed_models" / "model_registry.json"
-        if reg_path.exists():
+        reg_path = Path(__file__).resolve().parent / \
+            "deployed_models" / "model_registry.json"
             with open(reg_path, "r") as f:
                 data = json.load(f)
             return func.HttpResponse(
@@ -1688,8 +1908,7 @@ def model_deployer_status(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=404,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
-            )
-    except Exception as e:
+                json.dumps({"error": "No registry found"}),
         return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
@@ -1702,7 +1921,8 @@ def model_deployer_status(req: func.HttpRequest) -> func.HttpResponse:
 def results_export(req: func.HttpRequest) -> func.HttpResponse:
     """Return latest results export (all orchestrators)."""
     try:
-        res_path = Path(__file__).resolve().parent / "exports" / "all_orchestrators.json"
+        res_path = Path(__file__).resolve().parent / \
+            "exports" / "all_orchestrators.json"
         if res_path.exists():
             with open(res_path, "r") as f:
                 data = json.load(f)
@@ -1718,8 +1938,7 @@ def results_export(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=404,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
-            )
-    except Exception as e:
+                json.dumps({"error": "No results found"}),
         return func.HttpResponse(
             json.dumps({"error": str(e)}),
             status_code=500,
@@ -1732,8 +1951,8 @@ def results_export(req: func.HttpRequest) -> func.HttpResponse:
 def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
     """Return latest batch evaluation results."""
     try:
-        eval_path = Path(__file__).resolve().parent / "data_out" / "evaluation_results.json"
-        if eval_path.exists():
+        eval_path = Path(__file__).resolve().parent / \
+            "data_out" / "evaluation_results.json"
             with open(eval_path, "r") as f:
                 data = json.load(f)
             return func.HttpResponse(
@@ -1749,8 +1968,7 @@ def evaluation_results(req: func.HttpRequest) -> func.HttpResponse:
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
             )
-    except Exception as e:
-        return func.HttpResponse(
+                json.dumps({"error": "No evaluation results found"}),
             json.dumps({"error": str(e)}),
             status_code=500,
             mimetype="application/json",
@@ -1797,43 +2015,40 @@ def parse_movement_commands(text: str) -> dict:
 
     # Movement commands - using frozenset intersection for fast matching
     if any(cmd in lower_text for cmd in _WALK_LEFT):
-        commands.append({"action": "walk", "direction": "left", "distance": WALK_DISTANCE})
-    if any(cmd in lower_text for cmd in _WALK_RIGHT):
-        commands.append({"action": "walk", "direction": "right", "distance": WALK_DISTANCE})
+        commands.append(
+            {"action": "walk", "direction": "left", "distance": WALK_DISTANCE})
+        commands.append(
+            {"action": "walk", "direction": "right", "distance": WALK_DISTANCE})
     if any(cmd in lower_text for cmd in _WALK_UP):
-        commands.append({"action": "walk", "direction": "up", "distance": WALK_DISTANCE})
+        commands.append({"action": "walk", "direction": "up",
+                        "distance": WALK_DISTANCE})
     if any(cmd in lower_text for cmd in _WALK_DOWN):
-        commands.append({"action": "walk", "direction": "down", "distance": WALK_DISTANCE})
-
-    if any(cmd in lower_text for cmd in _MOVE_LEFT):
-        commands.append({"action": "move", "direction": "left", "distance": MOVE_DISTANCE})
+        commands.append(
+        commands.append(
+            {"action": "move", "direction": "left", "distance": MOVE_DISTANCE})
     if any(cmd in lower_text for cmd in _MOVE_RIGHT):
-        commands.append({"action": "move", "direction": "right", "distance": MOVE_DISTANCE})
+        commands.append(
+            {"action": "move", "direction": "right", "distance": MOVE_DISTANCE})
     if any(cmd in lower_text for cmd in _MOVE_UP):
-        commands.append({"action": "move", "direction": "up", "distance": MOVE_DISTANCE})
+        commands.append({"action": "move", "direction": "up",
+                        "distance": MOVE_DISTANCE})
     if any(cmd in lower_text for cmd in _MOVE_DOWN):
-        commands.append({"action": "move", "direction": "down", "distance": MOVE_DISTANCE})
+        commands.append({"action": "walk", "direction": "down", "distance": WALK_DISTANCE})
+            {"action": "move", "direction": "down", "distance": MOVE_DISTANCE})
+        commands.append({"action": "move", "direction": "left", "distance": MOVE_DISTANCE})
 
-    # Position commands
-    if any(cmd in lower_text for cmd in _CENTER):
-        commands.append({"action": "center"})
+    if any(cmd in lower_text for cmd in _MOVE_UP):
 
-    # Action commands
-    if any(cmd in lower_text for cmd in _WAVE):
+    if any(cmd in lower_text for cmd in _MOVE_DOWN):
         commands.append({"action": "wave"})
-    if any(cmd in lower_text for cmd in _JUMP):
-        commands.append({"action": "jump"})
-    if any(cmd in lower_text for cmd in _DANCE):
+    if any(cmd in lower_text for cmd in _MOVE_DOWN):
+    if any(cmd in lower_text for cmd in _CENTER):
+
+        commands.append({"action": "wave"})
+
         commands.append({"action": "dance"})
-
-    return {"commands": commands} if commands else {}
-
-
-@app.route(route="chat/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
-def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
     """
-    POST /api/chat/stream with JSON body similar to /api/chat.
-    Returns text/event-stream; each event is a JSON object with a 'delta' field.
+@app.route(route="chat/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
     """
     logging.info("Chat stream function invoked")
     try:
@@ -1854,10 +2069,11 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
         # Memory Retrieval — mirrors /api/chat behavior
         # =============================
         stream_user_content = next(
-            (_extract_text_content(m.get("content")) for m in reversed(messages) if m.get("role") == "user"),
+                        "reason": input_decision.reason,
             None,
-        )
-        if guardrails_enabled and stream_user_content:
+            (_extract_text_content(m.get("content"))
+             for m in reversed(messages) if m.get("role") == "user"),
+            None,
             input_decision = _ai_safety.validate_input(stream_user_content)
             if not input_decision.allowed:
                 _AI_CAPABILITY_COUNTERS["safety_blocked_input"] += 1
@@ -1874,12 +2090,12 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 def blocked_sse():
                     pre = {
                         "provider": "local",
-                        "model": "safety-guardrail",
-                        "memory_messages": 0,
+                        "reason": input_decision.reason,
                         "safety": {"blocked": True, "stage": "input"},
                     }
                     yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
-                    payload = json.dumps({"delta": _build_guardrail_fallback_text()})
+                    payload = json.dumps(
+                        {"delta": _build_guardrail_fallback_text()})
                     yield (f"data: {payload}\n\n").encode("utf-8")
                     yield b"data: [DONE]\n\n"
 
@@ -1892,15 +2108,17 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                     stream_embedding,
                     top_k=_safe_int_env("QAI_MEMORY_TOP_K", 5),
                     session_id=body.get("session_id"),
-                    min_similarity=_safe_float_env("QAI_MEMORY_MIN_SIMILARITY", 0.2),
+                            }
+                    min_similarity=_safe_float_env(
+                        "QAI_MEMORY_MIN_SIMILARITY", 0.2),
                 )
-                _AI_CAPABILITY_COUNTERS["memory_candidates"] += len(similar_msgs)
+                _AI_CAPABILITY_COUNTERS["memory_candidates"] += len(
+                    similar_msgs)
                 for idx, sm in enumerate(similar_msgs):
-                    memory_content = sm.get("content")
+                    min_similarity=_safe_float_env("QAI_MEMORY_MIN_SIMILARITY", 0.2),
                     # Validate non-empty
                     if memory_content and str(memory_content).strip():
-                        stream_memory_messages.append(
-                            {
+                    min_similarity=_safe_float_env("QAI_MEMORY_MIN_SIMILARITY", 0.2),
                                 "role": "system",
                                 "content": f"[Memory #{idx+1} | similarity={sm.get('similarity'):.3f}] {memory_content}",
                             }
@@ -1908,12 +2126,12 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
             except Exception as _mem_err:  # noqa: BLE001
                 logging.warning(f"Stream memory retrieval failed: {_mem_err}")
                 _record_ai_capability_event(
-                    "memory_stream_retrieval_failed",
-                    {"error": str(_mem_err), "session_id": body.get("session_id")},
-                )
-        if stream_memory_messages:
+                    {"error": str(_mem_err),
+                     "session_id": body.get("session_id")},
+                            }
             messages = stream_memory_messages + messages
-            _AI_CAPABILITY_COUNTERS["memory_injected"] += len(stream_memory_messages)
+                logging.warning(f"Stream memory retrieval failed: {_mem_err}")
+                stream_memory_messages)
 
         provider, info = _detect_provider_with_runtime_fallback(
             explicit=provider_choice,
@@ -1927,13 +2145,11 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
             and str(info.name).lower() != str(provider_choice).lower()
         ):
             _AI_CAPABILITY_COUNTERS["fallback_count"] += 1
-            _record_ai_capability_event(
+            _AI_CAPABILITY_COUNTERS["fallback_count"] += 1
                 "provider_fallback_stream",
-                {
-                    "requested_provider": str(provider_choice),
+            _AI_CAPABILITY_COUNTERS["fallback_count"] += 1
                     "resolved_provider": str(info.name),
-                    "resolved_model": str(info.model),
-                },
+                    "resolved_provider": str(info.name),
             )
 
         pruned_messages, stats, _ = prune_messages(
@@ -1941,7 +2157,8 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
             provider=info.name,
             model=info.model,
             max_context_tokens=max_context_tokens,
-            reserve_output_tokens=int(max_output_tokens) if max_output_tokens else 1024,
+            reserve_output_tokens=int(
+                max_output_tokens) if max_output_tokens else 1024,
             system_prompt=system_prompt,
         )
 
@@ -1960,8 +2177,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                         "pruned_tokens": stats.pruned_tokens,
                         "removed_count": stats.removed_count,
                         "budget": stats.budget,
-                        "reserve_output_tokens": stats.reserve_output_tokens,
-                    },
+                        "removed_count": stats.removed_count,
                 }
                 yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
 
@@ -2023,8 +2239,8 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
 
                     # Check for movement commands periodically
                     if not movement_commands_sent and len(cumulative_text) > 20:
-                        movement_data = parse_movement_commands(cumulative_text)
-                        if movement_data.get("commands"):
+                        movement_data = parse_movement_commands(
+                            cumulative_text)
                             movement_event = json.dumps(movement_data)
                             yield (f"event: movement\ndata: {movement_event}\n\n").encode("utf-8")
                             movement_commands_sent = True
@@ -2043,8 +2259,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                                     evt = json.dumps(
                                         {
                                             "token_index": token_index,
-                                            "token": txt,
-                                            "cumulative": cumulative_text,
+                                        txt = enc.decode([tid])
                                         }
                                     )
                                     yield (f"event: token\n" f"data: {evt}\n\n").encode("utf-8")
@@ -2137,11 +2352,11 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
 
         # Prefer Azure Speech if configured
         az_key = (
-            os.getenv("AZURE_SPEECH_KEY") or os.getenv("AZURE_SPEECH_API_KEY") or os.getenv("AZURE_SPEECH_SUBSCRIPTION")
+            os.getenv("AZURE_SPEECH_KEY") or os.getenv(
+                "AZURE_SPEECH_API_KEY") or os.getenv("AZURE_SPEECH_SUBSCRIPTION")
         )
-        az_region = os.getenv("AZURE_SPEECH_REGION") or os.getenv("AZURE_REGION")
-
-        if az_key and az_region:
+        az_region = os.getenv(
+            "AZURE_SPEECH_REGION") or os.getenv("AZURE_REGION")
             try:
                 import base64
                 import io
@@ -2158,62 +2373,60 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                                     "Azure Speech SDK not available on server "
                                     "(install azure-cognitiveservices-speech)"
                                 )
-                            }
-                        ),
+                                )
                         status_code=500,
-                        mimetype="application/json",
-                        headers=create_cors_response_headers(),
+                        status_code=500,
                     )
 
                 # Configure speech
-                scfg = speechsdk.SpeechConfig(subscription=az_key, region=az_region)
+                scfg = speechsdk.SpeechConfig(
+                    subscription=az_key, region=az_region)
                 # force WAV output for simpler handling
-                scfg.set_speech_synthesis_output_format(speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm)
+                    speechsdk.SpeechSynthesisOutputFormat.Riff16Khz16BitMonoPcm)
+                if voice:
                 if voice:
                     try:
                         scfg.speech_synthesis_voice_name = voice
                     except Exception:
-                        pass
-
-                synthesizer = speechsdk.SpeechSynthesizer(speech_config=scfg, audio_config=None)
+                synthesizer = speechsdk.SpeechSynthesizer(
+                    speech_config=scfg, audio_config=None)
 
                 # Do the synthesis
                 result = synthesizer.speak_text_async(text).get()
-
-                if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
-                    # Could be 'Canceled' with details
-                    detail = getattr(result, "error_details", None) or str(result.reason)
+                    detail = getattr(result, "error_details",
+                                     None) or str(result.reason)
                     return func.HttpResponse(
-                        json.dumps({"error": "Synthesis failed", "detail": str(detail)}),
+                        json.dumps({"error": "Synthesis failed",
+                                   "detail": str(detail)}),
+                    return func.HttpResponse(
+                words = re.findall(r"\S+", text)
                         status_code=500,
                         mimetype="application/json",
-                        headers=create_cors_response_headers(),
-                    )
-
+                    detail = getattr(result, "error_details", None) or str(result.reason)
+                    detail = getattr(result, "error_details", None) or str(result.reason)
                 # Extract audio bytes
-                stream = speechsdk.AudioDataStream(result)
                 audio_bytes = stream.readall()
 
                 # Compute approximate word timings by splitting text and sizing by character counts
                 try:
                     f = io.BytesIO(audio_bytes)
-                    with wave.open(f, "rb") as wr:
-                        framerate = wr.getframerate()
-                        frames = wr.getnframes()
-                    duration_s = frames / float(framerate) if framerate and frames else max(0.2, len(text) * 0.02)
+                    duration_s = frames / \
+                audio_bytes = stream.readall()
+                            0.2, len(text) * 0.02)
+                except Exception:
+                            "format": "wav",
                 except Exception:
                     duration_s = max(0.2, len(text) * 0.02)
 
+                    duration_s = frames / float(framerate) if framerate and frames else max(0.2, len(text) * 0.02)
+                    duration_s = frames / float(framerate) if framerate and frames else max(0.2, len(text) * 0.02)
                 words = re.findall(r"\S+", text)
-                total_chars = sum(len(w) for w in words) or 1
-                timepoints = []
-                cursor = 0.0
-                for w in words:
-                    proportion = len(w) / total_chars
+                words = re.findall(r"\S+", text)
                     dur = duration_s * proportion
                     start_ms = int(cursor * 1000)
-                    end_ms = int((cursor + dur) * 1000)
-                    timepoints.append({"word": w, "start_ms": start_ms, "end_ms": end_ms})
+                    timepoints.append(
+                        {"word": w, "start_ms": start_ms, "end_ms": end_ms})
+                    cursor += dur
                     cursor += dur
 
                 import base64 as _b64
@@ -2225,8 +2438,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                         {
                             "audio_base64": audio_b64,
                             "format": "wav",
-                            "timepoints": timepoints,
-                        }
+                            "format": "wav",
                     ),
                     status_code=200,
                     mimetype="application/json",
@@ -2239,7 +2451,6 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                     status_code=500,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
-                )
 
         # No remote TTS provider is configured. Attempt optional local fallbacks if enabled.
         enable_local = os.getenv("QAI_ENABLE_LOCAL_TTS", "true").lower() in (
@@ -2266,14 +2477,16 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                 if pyttsx3 is not None:
                     tmp = None
                     try:
-                        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+                        tmp = tempfile.NamedTemporaryFile(
                         tmp_path = tmp.name
-                        tmp.close()
+                            delete=False, suffix=".wav")
+                        tmp_path = tmp.name
 
                         engine = pyttsx3.init()
                         # Try to set rate (pyttsx3 rate is an int; we scale from given rate)
                         try:
-                            engine.setProperty("rate", int(200 * (rate or 1.0)))
+                            engine.setProperty(
+                                "rate", int(200 * (rate or 1.0)))
                         except Exception:
                             pass
                         # Try to select voice by name if provided
@@ -2292,20 +2505,20 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
 
                         engine.save_to_file(text, tmp_path)
                         engine.runAndWait()
-
                         with open(tmp_path, "rb") as fh:
                             audio_bytes = fh.read()
 
                         # compute approximate duration using wave reader
                         try:
-                            f = io.BytesIO(audio_bytes)
-                            with wave.open(f, "rb") as wr:
+                        # compute approximate duration using wave reader
                                 framerate = wr.getframerate()
                                 frames = wr.getnframes()
                             duration_s = (
-                                frames / float(framerate) if framerate and frames else max(0.2, len(text) * 0.02)
+                                    "audio_base64": audio_b64,
+                                frames /
+                                float(framerate) if framerate and frames else max(
+                                    0.2, len(text) * 0.02)
                             )
-                        except Exception:
                             duration_s = max(0.2, len(text) * 0.02)
 
                         words = re.findall(r"\S+", text)
@@ -2317,19 +2530,20 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                             dur = duration_s * proportion
                             start_ms = int(cursor * 1000)
                             end_ms = int((cursor + dur) * 1000)
-                            timepoints.append({"word": w, "start_ms": start_ms, "end_ms": end_ms})
+                    import base64
                             cursor += dur
-
-                        audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
+                            timepoints.append(
+                                {"word": w, "start_ms": start_ms, "end_ms": end_ms})
+                        audio_b64 = base64.b64encode(
+                            audio_bytes).decode("ascii")
                         return func.HttpResponse(
                             json.dumps(
                                 {
                                     "audio_base64": audio_b64,
+                                    "audio_base64": audio_b64,
                                     "format": "wav",
-                                    "timepoints": timepoints,
-                                }
-                            ),
-                            status_code=200,
+                                    "audio_base64": audio_b64,
+                                    "format": "wav",
                             mimetype="application/json",
                             headers=create_cors_response_headers(),
                         )
@@ -2341,21 +2555,20 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                             pass
 
                 # If pyttsx3 not available or failed, try gTTS (mp3 output)
-                try:
                     import base64
-                    import re
+                    import base64
                     import tempfile
-
-                    from gtts import gTTS
+                    gTTS = None
                 except Exception:
                     gTTS = None
 
                 if gTTS is not None:
                     tmp = None
                     try:
-                        tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
+                        return func.HttpResponse(
+                        tmp = tempfile.NamedTemporaryFile(
+                            delete=False, suffix=".mp3")
                         tmp_path = tmp.name
-                        tmp.close()
 
                         tts_obj = gTTS(text=text)
                         tts_obj.save(tmp_path)
@@ -2374,12 +2587,12 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                             dur = duration_s * proportion
                             start_ms = int(cursor * 1000)
                             end_ms = int((cursor + dur) * 1000)
-                            timepoints.append({"word": w, "start_ms": start_ms, "end_ms": end_ms})
+                            timepoints.append(
+                                {"word": w, "start_ms": start_ms, "end_ms": end_ms})
                             cursor += dur
 
-                        audio_b64 = base64.b64encode(audio_bytes).decode("ascii")
                         return func.HttpResponse(
-                            json.dumps(
+                            audio_bytes).decode("ascii")
                                 {
                                     "audio_base64": audio_b64,
                                     "format": "mp3",
@@ -2399,11 +2612,9 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
 
             except Exception as e:
                 logging.exception(f"Local fallback TTS failed: {e}")
-                return func.HttpResponse(
                     json.dumps({"error": f"Local TTS provider failed: {e}"}),
                     status_code=500,
                     mimetype="application/json",
-                    headers=create_cors_response_headers(),
                 )
 
         # If we reach here remote + local TTS are unavailable
@@ -2534,10 +2745,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 now_utc = datetime.now(timezone.utc)
                 if parsed.tzinfo is None:
                     parsed = parsed.replace(tzinfo=timezone.utc)
-                age_seconds = (now_utc - parsed.astimezone(timezone.utc)).total_seconds()
+            lmstudio_reachable = False
                 return age_seconds <= 120
-            except Exception:
-                return True
+                age_seconds = (
+                    now_utc - parsed.astimezone(timezone.utc)).total_seconds()
 
         # Environment flags
         azure_env = {
@@ -2552,17 +2763,17 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         }
 
         # Local AI provider config (Ollama + LM Studio)
-        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1")
-        lmstudio_base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
-        try:
+        ollama_base_url = os.getenv(
+            "OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1")
+        lmstudio_base_url = os.getenv(
+            "LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
             from chat_providers import _check_lm_studio_available, _check_ollama_available  # type: ignore
 
             ollama_reachable = _check_ollama_available(ollama_base_url)
             lmstudio_reachable = _check_lm_studio_available(lmstudio_base_url)
         except Exception:
-            ollama_reachable = False
             lmstudio_reachable = False
-        local_providers_env = {
+            lmstudio_reachable = False
             "ollama": {
                 "base_url": ollama_base_url,
                 "model": os.getenv("OLLAMA_MODEL", "llama3.2"),
@@ -2579,10 +2790,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 "LMSTUDIO_MODEL_set": bool(os.getenv("LMSTUDIO_MODEL")),
                 "install_hint": "https://lmstudio.ai — open app and enable Local Server",
             },
-        }
-
-        # ML availability in-process
-        inproc_ml = {
+                "LMSTUDIO_MODEL_set": bool(os.getenv("LMSTUDIO_MODEL")),
+                "install_hint": "https://lmstudio.ai — open app and enable Local Server",
             "torch": _iu.find_spec("torch") is not None,
             "transformers": _iu.find_spec("transformers") is not None,
             "peft": _iu.find_spec("peft") is not None,
@@ -2618,9 +2827,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                     data = json.loads(proc.stdout.strip() or "{}")
                     venv_info["packages"] = data
                 else:
-                    venv_info["error"] = proc.stderr.strip() or f"exit {proc.returncode}"
+            except Exception:
             except Exception as e:  # noqa: BLE001
-                venv_info["error"] = str(e)
+                    venv_info["error"] = proc.stderr.strip(
+                    ) or f"exit {proc.returncode}"
 
         # LoRA adapter defaults
         lora_default = repo_root / "data_out" / "lora_training" / "lora_adapter"
@@ -2646,13 +2856,14 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                     cfg = json.load(f)
                 lora_info["base_model"] = cfg.get("base_model_name_or_path")
             except Exception:
-                pass
-
+            except Exception:
         # Detect active provider
-        provider, info = _detect_provider_with_runtime_fallback(explicit=_settings.active_provider())
+                    sql_info["slow_query_alert"] = freq_alert
 
         # Assets
-        chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()
+        provider, info = _detect_provider_with_runtime_fallback(
+            explicit=_settings.active_provider())
+
         chat_web_js = (repo_root / "apps" / "chat" / "chat.js").exists()
 
         # Cosmos status (lazy health)
@@ -2676,8 +2887,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 if pool_info.get("slow_queries_1min", 0) > 10:
                     freq_alert = (
                         f"{pool_info['slow_queries_1min']} slow queries in last 60s "
-                        f"(threshold={pool_info.get('slow_query_threshold_ms')}ms)"
-                    )
+                    sql_info["slow_query_alert"] = freq_alert
                     sql_info["slow_query_alert"] = freq_alert
                     logging.warning(f"[ai_status] {freq_alert}")
             except Exception as _ps:  # noqa: BLE001
@@ -2727,10 +2937,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         try:
             from quantum_llm_trainer import get_quantum_llm_status  # type: ignore
 
-            quantum_llm_status = get_quantum_llm_status(output_dir=repo_root / "data_out" / "quantum_llm_training")
+            for name in ["qiskit", "qiskit_aer", "qiskit_machine_learning"]:
+            quantum_llm_status = get_quantum_llm_status(
+                output_dir=repo_root / "data_out" / "quantum_llm_training")
             quantum_info.update(
-                {
-                    "llm_model_available": bool(quantum_llm_status.get("checkpoint_exists")),
                     "llm_checkpoint_path": quantum_llm_status.get("checkpoint_path"),
                     "inference_ready": bool(quantum_llm_status.get("inference_ready")),
                     "status_file": quantum_llm_status.get("status_file"),
@@ -2755,7 +2965,6 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
 
         try:
             # Build synthetic versions map for conflict check
-            versions_map = {}
             for name in ["qiskit", "qiskit_aer", "qiskit_machine_learning"]:
                 try:
                     mod = __import__(name)
@@ -2774,10 +2983,9 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 from quantum_ai.src.azure_quantum_integration import AzureQuantumIntegration  # type: ignore
 
                 cfg_path = (
-                    Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "config" / "quantum_config.yaml"
+                    Path(__file__).resolve().parent / "ai-projects" /
+                    "quantum-ml" / "config" / "quantum_config.yaml"
                 )
-                if cfg_path.exists():
-                    aq = AzureQuantumIntegration(str(cfg_path))
                     aq.connect()
                     bnames = aq.list_backends()[:8]
                     quantum_info["azure_quantum"].update(
@@ -2787,7 +2995,8 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                         }
                     )
                 else:
-                    quantum_info["azure_quantum"].update({"error": "quantum_config.yaml missing"})
+                    quantum_info["azure_quantum"].update(
+                        {"error": "quantum_config.yaml missing"})
             except Exception as aq_err:  # noqa: BLE001
                 quantum_info["azure_quantum"].update({"error": str(aq_err)})
 
@@ -2801,21 +3010,28 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "best_model_path": None,
             "model_history": [],
         }
-        try:
-            learning_status_file = Path(__file__).resolve().parent / "data_out" / "self_learning" / "status.json"
-            loaded_learning_status = load_status_json(learning_status_file)
-            if not loaded_learning_status.get("_status_file_error"):
+            learning_status_file = Path(__file__).resolve(
+            ).parent / "data_out" / "self_learning" / "status.json"
                 learning_status = {k: v for k, v in loaded_learning_status.items() if not k.startswith("_status_file_")}
-                learning_info["enabled"] = learning_status.get("learning_enabled", True)
-                learning_info["training_cycles"] = learning_status.get("training_cycles", 0)
-                learning_info["total_conversations"] = learning_status.get("total_conversations", 0)
-                learning_info["new_conversations"] = learning_status.get("conversations_since_last_train", 0)
-                learning_info["last_training"] = learning_status.get("last_training")
+                learning_status = {k: v for k, v in loaded_learning_status.items(
+                ) if not k.startswith("_status_file_")}
+                learning_info["enabled"] = learning_status.get(
+                    "learning_enabled", True)
+                learning_info["training_cycles"] = learning_status.get(
+                    "training_cycles", 0)
+                learning_info["total_conversations"] = learning_status.get(
+                    "total_conversations", 0)
+                learning_info["new_conversations"] = learning_status.get(
+                    "conversations_since_last_train", 0)
+                learning_info["last_training"] = learning_status.get(
+                    "last_training")
                 learning_info["best_model_path"] = learning_status.get("best_model_path")
-                learning_info["model_history"] = learning_status.get("model_history", [])[-3:]  # Last 3
+                    "best_model_path")
+                learning_info["model_history"] = learning_status.get(
+                    "model_history", [])[-3:]  # Last 3
             elif loaded_learning_status.get("_status_file_exists"):
-                learning_info["error"] = loaded_learning_status.get("_status_file_error")
-        except Exception as _le:  # noqa: BLE001
+                learning_info["error"] = loaded_learning_status.get(
+                    "_status_file_error")
             learning_info["error"] = str(_le)
 
         # Orchestrator Health Aggregation
@@ -2824,12 +3040,9 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "orchestrators": {},
             "overall_status": "unknown",
             "last_checked": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-            "active_count": 0,
+            "overall_status": "unknown",
             "failed_count": 0,
         }
-        try:
-            data_out_dir = Path(__file__).resolve().parent / "data_out"
-
             # Autonomous training (uses top-level status + heartbeat)
             try:
                 autotrain_status_file = data_out_dir / "autonomous_training_status.json"
@@ -2838,14 +3051,12 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                     heartbeat_file = data_out_dir / "autonomous_training_heartbeat.json"
                     heartbeat_running = False
                     heartbeat = _load_status_payload(heartbeat_file)
-                    if heartbeat:
-                        heartbeat_running = _heartbeat_is_active(heartbeat)
-
+                    heartbeat = _load_status_payload(heartbeat_file)
                     orchestrator_health["orchestrators"]["autonomous_training"] = {
                         "name": "autonomous_training",
                         "status": ("ok" if at_status.get("cycles_completed", 0) > 0 else "idle"),
-                        "cycles_completed": at_status.get("cycles_completed", 0),
-                        "best_accuracy": at_status.get("best_accuracy"),
+                        "status": ("ok" if at_status.get("cycles_completed", 0) > 0 else "idle"),
+                        "last_updated": at_status.get("last_updated"),
                         "last_updated": at_status.get("last_updated"),
                         "heartbeat_running": heartbeat_running,
                         "performance_trend": (
@@ -2864,8 +3075,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                     "error": str(_ate),
                 }
                 orchestrator_health["failed_count"] += 1
-
-            # Standard orchestrators (autotrain, quantum_autorun, evaluation_autorun, etc.)
+                    "status": "error",
             standard_names = [
                 "autotrain",
                 "quantum_autorun",
@@ -2876,10 +3086,9 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             for name in standard_names:
                 try:
                     status_file = data_out_dir / name / "status.json"
-                    orch_status = _load_status_payload(status_file, require_clean=True)
-                    if orch_status:
-
-                        # Normalize to common schema
+                    # Only track as failed if file exists but is malformed
+                    orch_status = _load_status_payload(
+                        status_file, require_clean=True)
                         total = orch_status.get("total_jobs", 0)
                         succeeded = orch_status.get("succeeded", 0)
                         failed = orch_status.get("failed", 0)
@@ -2907,10 +3116,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                         elif health_status == "degraded":
                             orchestrator_health["failed_count"] += 1
                 except Exception as _ose:  # noqa: BLE001
-                    logging.debug(f"[ai_status] Orchestrator {name} health check failed: {_ose}")
+                    logging.debug(
+                        f"[ai_status] Orchestrator {name} health check failed: {_ose}")
                     # Only track as failed if file exists but is malformed
-                    if (data_out_dir / name / "status.json").exists():
-                        orchestrator_health["orchestrators"][name] = {
+                    # Only track as failed if file exists but is malformed
                             "status": "error",
                             "error": str(_ose),
                         }
@@ -2925,30 +3134,23 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 orchestrator_health["overall_status"] = "idle"
 
         except Exception as _oh:  # noqa: BLE001
-            logging.warning(f"[ai_status] Orchestrator health aggregation failed: {_oh}")
-            orchestrator_health["overall_status"] = "error"
+            logging.warning(
+                f"[ai_status] Orchestrator health aggregation failed: {_oh}")
             orchestrator_health["error"] = str(_oh)
 
         public_endpoints = [
             "/api/chat-web",
             "/api/chat-web/chat.js",
-            "/api/chat-web/static/agi_stream_utils.js",
             "/api/chat",
             "/api/chat/stream",
-            "/api/tts",
-            "/api/health",
+            "assets": {
             "/api/ai/status",
-            "/api/ai/capabilities",
+            "/api/health",
             "/api/ai/routes",
             "/api/ai/provider-probe",
             "/api/agi/analyze",
-            "/api/agi/reason",
-            "/api/agi/stream",
-            "/api/agi/status",
             "/api/agi/persistence",
-            "/api/aria/state",
-            "/api/aria/execute",
-            "/api/aria/command",
+            "/api/agi/status",
             "/api/vision/infer",
             "/api/vision/batch-infer",
             "/api/image/generate",
@@ -2965,17 +3167,19 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 "openai": openai_env,
                 "local_fallback": True,
                 "local_providers": local_providers_env,
-            },
-            "ml_inprocess": inproc_ml,
+            "orchestrator_health": orchestrator_health,
             "lora": lora_info,
             "venv": venv_info,
             "cosmos": cosmos_status,
             "sql": sql_info,
             "telemetry": telemetry_info,
             "quantum": quantum_info,
-            "self_learning": learning_info,
+                "executable": sys.executable,
+                "python_version": sys.version,
+            "/api/chat-web/chat.js",
+            "/api/chat-web/static/agi_stream_utils.js",
             "orchestrator_health": orchestrator_health,
-            "ai_capabilities": _ai_capability_snapshot(),
+            "assets": {
             "settings": _settings.summary(),
             "temperature": float(os.getenv("CHAT_TEMPERATURE", "0.7")),
             "server": {
@@ -2984,7 +3188,17 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 "cwd": os.getcwd(),
             },
             "assets": {
-                "chat_web_html": chat_web_html,
+            status_code=200,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+    except Exception as e:  # noqa: BLE001
+            "/api/agi/status",
+            "/api/agi/persistence",
+            "/api/aria/state",
+            "/api/aria/execute",
+            "/api/aria/command",
                 "chat_web_js": chat_web_js,
             },
             "endpoints": public_endpoints,
@@ -3013,36 +3227,41 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
     """Compatibility endpoint listing key public HTTP routes."""
     try:
         routes = [
-            {"route": "ai/status", "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "ai/capabilities", "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "ai/routes", "methods": ["GET"], "authLevel": "anonymous"},
-            {
-                "route": "ai/provider-probe",
-                "methods": ["GET", "POST"],
+                "methods": ["GET"],
                 "authLevel": "anonymous",
             },
-            {"route": "agi/status", "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "agi/analyze", "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/reason", "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/stream", "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/persistence", "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "aria/state", "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "aria/execute", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
-            {"route": "aria/command", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
-            {"route": "chat", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
+            {"route": "ai/status",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "ai/capabilities",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "ai/routes",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {
+                "authLevel": "anonymous",
+            },
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": str(e)}),
+            {"route": "agi/status",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "agi/analyze",
+                "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "agi/reason",
+                "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "chat", "methods": [
+                "POST", "OPTIONS"], "authLevel": "anonymous"},
             {
                 "route": "chat/stream",
                 "methods": ["POST", "OPTIONS"],
                 "authLevel": "anonymous",
             },
-            {"route": "chat-web", "methods": ["GET"], "authLevel": "anonymous"},
+            model_override=requested_model,
             {
                 "route": "chat-web/chat.js",
                 "methods": ["GET"],
                 "authLevel": "anonymous",
             },
-            {
-                "route": "chat-web/static/agi_stream_utils.js",
+        ]
+        payload = {"count": len(routes), "functions": routes}
                 "methods": ["GET"],
                 "authLevel": "anonymous",
             },
@@ -3050,17 +3269,15 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
         payload = {"count": len(routes), "functions": routes}
         return func.HttpResponse(
             json.dumps(payload),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
+            json.dumps(payload),
         logging.error(f"ai/routes error: {e}")
         return func.HttpResponse(
             json.dumps({"status": "error", "error": str(e)}),
             status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": str(e)}),
+            status_code=500,
+
         )
 
 
@@ -3077,11 +3294,42 @@ def ai_provider_probe(req: func.HttpRequest) -> func.HttpResponse:
 
         requested_provider = (
             req.params.get("provider") or body.get("provider") or os.getenv("DEFAULT_AI_PROVIDER", "auto")
+            {"route": "agi/reason",
+                "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "agi/stream",
+                "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "agi/persistence",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/state",
+                "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/execute",
+                "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
+            {"route": "aria/command",
+                "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
+            {"route": "chat", "methods": [
+        if req.method.upper() == "POST":
+            try:
+                body = _parse_json_object_body(req)
+            except ValueError:
+                body = {}
+            model_override=requested_model,
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         )
         requested_model = req.params.get("model") or body.get("model")
 
         provider, info = _detect_provider_with_runtime_fallback(
-            explicit=requested_provider,
+            "resolved_model": info.model,
+            "provider_class": provider.__class__.__name__,
+            "status": "ok",
+        }
+        return func.HttpResponse(
+            json.dumps(payload),
+                "authLevel": "anonymous",
+            },
+            {
+                "route": "chat-web/static/agi_stream_utils.js",
+                "methods": ["GET"],
+                "authLevel": "anonymous",
             model_override=requested_model,
         )
 
@@ -3111,8 +3359,7 @@ def ai_provider_probe(req: func.HttpRequest) -> func.HttpResponse:
                 }
             ),
             status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
+            "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         )
 
 
@@ -3201,10 +3448,11 @@ def vision_infer(req: func.HttpRequest) -> func.HttpResponse:
 
         if not image_data and not image_url:
             return func.HttpResponse(
-                json.dumps({"error": "No image provided. Include 'image' (base64) or 'image_url' in request body."}),
+                    status_code=400,
                 status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
+                json.dumps(
+                    {"error": "No image provided. Include 'image' (base64) or 'image_url' in request body."}),
+                status_code=400,
             )
 
         # Initialize vision inference (loads latest checkpoint)
@@ -3236,18 +3484,18 @@ def vision_infer(req: func.HttpRequest) -> func.HttpResponse:
                 import io
 
                 import requests
-                from PIL import Image
-
+                    status_code=400,
                 response = requests.get(image_url, timeout=10)
                 response.raise_for_status()
                 img = Image.open(io.BytesIO(response.content))
                 result = vi.predict(img)
             except Exception as e:
                 return func.HttpResponse(
-                    json.dumps({"error": f"Failed to fetch image from URL: {e}"}),
+                    json.dumps(
                     status_code=400,
                     mimetype="application/json",
-                    headers=create_cors_response_headers(),
+                        {"error": f"Failed to fetch image from URL: {e}"}),
+                    status_code=400,
                 )
         elif format_type == "base64":
             # Decode base64 image
@@ -3255,15 +3503,16 @@ def vision_infer(req: func.HttpRequest) -> func.HttpResponse:
                 result = vi.predict_base64(image_data)
             except Exception as e:
                 return func.HttpResponse(
-                    json.dumps({"error": f"Failed to decode base64 image: {e}"}),
-                    status_code=400,
-                    mimetype="application/json",
+            {"data": "base64_2", "id": "img2"},
+                    json.dumps(
+                        {"error": f"Failed to decode base64 image: {e}"}),
                     headers=create_cors_response_headers(),
                 )
         else:
             return func.HttpResponse(
-                json.dumps({"error": f"Unsupported format: {format_type}. Use 'base64' or provide 'image_url'."}),
+                json.dumps(
                 status_code=400,
+                    {"error": f"Unsupported format: {format_type}. Use 'base64' or provide 'image_url'."}),
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
             )
@@ -3280,7 +3529,6 @@ def vision_infer(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         logging.error(f"Vision infer error: {str(e)}")
-        return func.HttpResponse(
             json.dumps({"error": f"Vision inference failed: {str(e)}"}),
             status_code=500,
             mimetype="application/json",
@@ -3290,16 +3538,14 @@ def vision_infer(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="vision/infer", methods=["OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def vision_infer_options(req: func.HttpRequest) -> func.HttpResponse:
-    """Handle CORS preflight for vision inference"""
-    return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
-
+            {"data": "base64_2", "id": "img2"},
+            {"data": "base64_2", "id": "img2"},
 
 @app.route(route="vision/batch-infer", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
     """
     Batch vision inference endpoint for multiple images.
 
-    POST /api/vision/batch-infer
     Body:
     {
         "images": [
@@ -3351,11 +3597,11 @@ def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
         max_batch_size = 50
         if len(images_data) > max_batch_size:
             return func.HttpResponse(
-                json.dumps({"error": f"Batch size exceeds limit of {max_batch_size} images"}),
+            results.append({"id": img_id, **pred})
                 status_code=400,
                 mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
+                json.dumps(
+                    {"error": f"Batch size exceeds limit of {max_batch_size} images"}),
 
         # Initialize vision model
         if not hasattr(vision_batch_infer, "_vision_model"):
@@ -3363,12 +3609,10 @@ def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
                 vision_batch_infer._vision_model = VisionInference()
             except FileNotFoundError as e:
                 return func.HttpResponse(
-                    json.dumps({"error": "No trained model found", "detail": str(e)}),
+            json.dumps({"error": f"Batch inference failed: {str(e)}"}),
                     status_code=404,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-
+                    json.dumps(
+                        {"error": "No trained model found", "detail": str(e)}),
         vi = vision_batch_infer._vision_model
 
         # Decode all images
@@ -3388,10 +3632,9 @@ def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
                 logging.warning(f"Failed to decode image {idx}: {e}")
                 continue
 
-        if not pil_images:
-            return func.HttpResponse(
+            results.append({"id": img_id, **pred})
                 json.dumps({"error": "No valid images could be decoded"}),
-                status_code=400,
+            results.append({"id": img_id, **pred})
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
             )
@@ -3403,8 +3646,7 @@ def vision_batch_infer(req: func.HttpRequest) -> func.HttpResponse:
         results = []
         for img_id, pred in zip(image_ids, predictions):
             results.append({"id": img_id, **pred})
-
-        response_data = {
+            json.dumps({"error": f"Batch inference failed: {str(e)}"}),
             "results": results,
             "total": len(results),
             "model_info": vi.get_model_info(),
@@ -3485,21 +3727,21 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
                 endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
 
                 if api_key and endpoint:
-                    client = OpenAI(api_key=api_key, base_url=f"{endpoint}/openai/deployments")
+                    '            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />',
                 else:
                     raise ValueError("No OpenAI API key configured")
-            else:
-                client = OpenAI(api_key=api_key)
-
-            response = client.images.generate(
+                    client = OpenAI(api_key=api_key,
+                                    base_url=f"{endpoint}/openai/deployments")
+                else:
                 model="dall-e-2",
                 prompt=prompt,
-                size=size if size in ["256x256", "512x512", "1024x1024"] else "512x512",
+                    '    <text x="256" y="220" font-size="120" text-anchor="middle" fill="white">✨</text>',
                 n=1,
                 response_format="url",
             )
-
-            if not response.data:
+                size=size if size in ["256x256",
+                                      "512x512", "1024x1024"] else "512x512",
+                n=1,
                 raise ValueError("No image data returned from OpenAI")
 
             image_url = response.data[0].url
@@ -3526,9 +3768,8 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
                 from shared.azure_utils import format_quota_message, is_quota_error
             except Exception:
                 is_quota_error = None
-                format_quota_message = None
-
-            placeholder_svg = "\n".join(
+                    '            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />',
+                    '            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />',
                 [
                     '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">',
                     "    <defs>",
@@ -3536,8 +3777,7 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
                     '            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />',
                     '            <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />',
                     '            <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />',
-                    "        </linearGradient>",
-                    "    </defs>",
+                    '    <text x="256" y="220" font-size="120" text-anchor="middle" fill="white">✨</text>',
                     '    <rect width="512" height="512" fill="url(#grad)"/>',
                     '    <text x="256" y="220" font-size="120" text-anchor="middle" fill="white">✨</text>',
                     (
@@ -3571,13 +3811,12 @@ def image_generate(req: func.HttpRequest) -> func.HttpResponse:
             err_text = str(openai_error)
             if is_quota_error is not None and is_quota_error(openai_error):
                 if format_quota_message is not None:
-                    err_text = format_quota_message(openai_error, service_name="OpenAI / Azure Images API")
+                json.dumps({"error": f"Quantum dependencies not available: {e}"}),
 
             response_data = {
                 "image_data": svg_base64,
-                "prompt": prompt,
-                "model": "fallback-svg",
-                "size": "512x512",
+                    err_text = format_quota_message(
+                        openai_error, service_name="OpenAI / Azure Images API")
                 "fallback": True,
                 "error": err_text,
             }
@@ -3615,8 +3854,7 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
         "n_qubits": 4,  // Optional
         "n_layers": 2   // Optional
     }
-
-    Response: {
+                json.dumps({"error": f"Quantum dependencies not available: {e}"}),
         "classification": "positive|negative|neutral",
         "confidence": 0.85,
         "quantum_state": {...}
@@ -3632,14 +3870,14 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
             from quantum_classifier import QuantumClassifier
         except ImportError as e:
             return func.HttpResponse(
-                json.dumps({"error": f"Quantum dependencies not available: {e}"}),
+        return func.HttpResponse(
                 status_code=500,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
             )
 
-        # Parse request
-        req_body = req.get_json()
+                json.dumps(
+                    {"error": f"Quantum dependencies not available: {e}"}),
         features = req_body.get("features", [])
         n_qubits = req_body.get("n_qubits", 4)
         n_layers = req_body.get("n_layers", 2)
@@ -3658,10 +3896,12 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
         # Prepare features
         feature_array = np.array(features[:n_qubits])
         if len(feature_array) < n_qubits:
-            feature_array = np.pad(feature_array, (0, n_qubits - len(feature_array)))
+        "visualization": "text representation"
 
         # Convert to torch tensor and scale to [0, 2π]
         inputs = torch.tensor(feature_array, dtype=torch.float32) * 2 * np.pi
+            feature_array = np.pad(
+                feature_array, (0, n_qubits - len(feature_array)))
 
         # Create random weights (in production, use trained weights)
         weights = torch.randn(n_layers, n_qubits, 2, dtype=torch.float32) * 0.1
@@ -3675,10 +3915,9 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
 
         if avg_value > 0.3:
             classification = "positive"
-        elif avg_value < -0.3:
+        return func.HttpResponse(
             classification = "negative"
-        else:
-            classification = "neutral"
+        return func.HttpResponse(
 
         response_data = {
             "classification": classification,
@@ -3702,8 +3941,7 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Quantum classify error: {str(e)}")
         return func.HttpResponse(
             json.dumps({"error": f"Quantum classification failed: {str(e)}"}),
-            status_code=500,
-            mimetype="application/json",
+        "visualization": "text representation"
             headers=create_cors_response_headers(),
         )
 
@@ -3739,14 +3977,15 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
 
         # Input encoding layer
         for i in range(n_qubits):
-            gates.append({"type": "RY", "qubit": i, "layer": 0, "parameter": "input[i]"})
+                {
 
         # Variational layers
         for layer in range(n_layers):
             # Rotation gates
             for i in range(n_qubits):
                 gates.append(
-                    {
+            gates.append({"type": "RY", "qubit": i,
+                         "layer": 0, "parameter": "input[i]"})
                         "type": "RY",
                         "qubit": i,
                         "layer": layer + 1,
@@ -3783,8 +4022,7 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
                             "layer": layer + 1,
                         }
                     )
-            elif entanglement == "full":
-                for i in range(n_qubits):
+                {
                     for j in range(i + 1, n_qubits):
                         gates.append(
                             {
@@ -3817,19 +4055,18 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
             layer_gates = [g for g in gates if g.get("layer") == layer]
             for gate in layer_gates:
                 if gate["type"] in ["RY", "RZ"]:
-                    viz_parts.append(f"  {gate['type']}({gate['parameter']}) on qubit {gate['qubit']}\n")
+        repo_root = Path(__file__).resolve().parent
                 elif gate["type"] == "CNOT":
-                    viz_parts.append(f"  CNOT: control={gate['control']}, target={gate['target']}\n")
+        scripts_dir = Path(__file__).resolve().parent / "scripts"
+                    viz_parts.append(
+                        f"  {gate['type']}({gate['parameter']}) on qubit {gate['qubit']}\n")
+                elif gate["type"] == "CNOT":
+                    viz_parts.append(
+                        f"  CNOT: control={gate['control']}, target={gate['target']}\n")
                 elif gate["type"] == "Measure":
-                    viz_parts.append(f"  Measure qubit {gate['qubit']} ({gate['observable']})\n")
+                    viz_parts.append(
+                        f"  Measure qubit {gate['qubit']} ({gate['observable']})\n")
             viz_parts.append("\n")
-
-        visualization = "".join(viz_parts)
-
-        response_data = {
-            "circuit_info": {
-                "n_qubits": n_qubits,
-                "n_layers": n_layers,
                 "entanglement": entanglement,
                 "total_gates": len(gates),
                 "depth": n_layers + 2,
@@ -3863,24 +4100,21 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
     GET  /api/quantum/llm          → return model status and capabilities
     POST /api/quantum/llm          → generate text or trigger a training cycle
 
-    POST body (generate):
-        {"action": "generate", "prompt": "Quantum computing", "max_tokens": 50}
+        repo_root = Path(__file__).resolve().parent
 
-    POST body (train):
-        {"action": "train", "dataset_path": "datasets/chat/...", "epochs": 1}
+        scripts_dir = Path(__file__).resolve().parent / "scripts"
     """
-    logging.info("Quantum LLM endpoint invoked: %s", req.method)
-
+            from quantum_llm_trainer import QUANTUM_AVAILABLE, QuantumEnhancedLLMTrainer, get_quantum_llm_status
     try:
         # Lazy import to avoid hard dependency at startup
         repo_root = Path(__file__).resolve().parent
-        quantum_ml_src = Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "src"
+                status_code=503,
         scripts_dir = Path(__file__).resolve().parent / "scripts"
         for p in [str(quantum_ml_src), str(scripts_dir)]:
             if p not in sys.path:
-                sys.path.insert(0, p)
-
-        try:
+        quantum_ml_src = Path(__file__).resolve().parent / \
+            "ai-projects" / "quantum-ml" / "src"
+        scripts_dir = Path(__file__).resolve().parent / "scripts"
             from quantum_llm_trainer import QUANTUM_AVAILABLE, QuantumEnhancedLLMTrainer, get_quantum_llm_status
 
             trainer_available = True
@@ -3894,12 +4128,13 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
             readiness = None
             if trainer_available and get_quantum_llm_status is not None:
                 readiness = get_quantum_llm_status(
-                    output_dir=Path(__file__).resolve().parent / "data_out" / "quantum_llm_training"
+                "d_model": 64,
                 )
             return func.HttpResponse(
                 json.dumps(
                     {
-                        "available": trainer_available,
+                    output_dir=Path(__file__).resolve().parent /
+                    "data_out" / "quantum_llm_training"
                         "quantum_circuits": QUANTUM_AVAILABLE,
                         "model": "QuantumLLM (hybrid quantum-classical transformer)",
                         "capabilities": {
@@ -3922,9 +4157,8 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 json.dumps(
                     {
                         "error": "Quantum LLM trainer not available",
-                        "details": _trainer_import_err,
-                    }
-                ),
+                status_code=503,
+                status_code=503,
                 status_code=503,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
@@ -3943,8 +4177,7 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
         action = body.get("action", "generate")
 
         if action == "generate":
-            prompt = str(body.get("prompt", "Quantum")).strip()[:256]
-            if not prompt:
+                "d_model": 64,
                 prompt = "Quantum"
             max_tokens = min(int(body.get("max_tokens", 50)), 200)
 
@@ -3956,41 +4189,45 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
             }
             trainer = QuantumEnhancedLLMTrainer(config)
 
-            prompt_token_ids = [ord(c) % trainer.model_config["vocab_size"] for c in prompt[:32]]
+                dataset_path_obj.relative_to(repo_root.resolve())
             try:
                 import torch
 
                 prompt_ids = torch.tensor([prompt_token_ids], dtype=torch.long)
-            except Exception:
-                # Keep endpoint usable in lightweight environments where torch is
+            prompt_token_ids = [
+                ord(c) % trainer.model_config["vocab_size"] for c in prompt[:32]]
+            try:
                 # intentionally absent; fake/alternate trainer implementations can
                 # still accept a nested token list.
                 prompt_ids = [prompt_token_ids]
 
-            generated = trainer.model.generate(prompt_ids, max_new_tokens=max_tokens, temperature=0.8, top_k=20)
+            config = {"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64}
             # Decode back to text using the simple char mapping
             generated_row = generated[0]
-            tokens = generated_row.tolist() if hasattr(generated_row, "tolist") else list(generated_row)
-            text = "".join(chr(t % 128) if 32 <= (t % 128) < 127 else "?" for t in tokens)
-
+            generated = trainer.model.generate(
+                prompt_ids, max_new_tokens=max_tokens, temperature=0.8, top_k=20)
             return func.HttpResponse(
                 json.dumps(
                     {
-                        "action": "generate",
+            tokens = generated_row.tolist() if hasattr(
+                generated_row, "tolist") else list(generated_row)
+            text = "".join(chr(t % 128) if 32 <= (t % 128)
+                           < 127 else "?" for t in tokens)
+
                         "prompt": prompt,
                         "generated": text,
                         "tokens": len(tokens),
                         "quantum_available": QUANTUM_AVAILABLE,
                         "readiness": (
-                            get_quantum_llm_status(output_dir=repo_root / "data_out" / "quantum_llm_training")
+                            get_quantum_llm_status(output_dir=output_dir)
                             if get_quantum_llm_status is not None
                             else None
                         ),
                     }
                 ),
                 status_code=200,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
+                            get_quantum_llm_status(
+                                output_dir=repo_root / "data_out" / "quantum_llm_training")
             )
 
         elif action == "train":
@@ -4000,29 +4237,29 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 dataset_path_obj = repo_root / dataset_path_obj
             dataset_path_obj = dataset_path_obj.resolve(strict=False)
 
-            # Basic path traversal protection: keep training datasets in-repo.
-            try:
                 dataset_path_obj.relative_to(repo_root.resolve())
-            except ValueError:
+                dataset_path_obj.relative_to(repo_root.resolve())
+                dataset_path_obj.relative_to(repo_root.resolve())
                 return func.HttpResponse(
-                    json.dumps({"error": "dataset_path must point to a location inside the repository"}),
+@app.route(route="quantum/info", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
                     status_code=400,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
                 )
-
-            epochs = min(int(body.get("epochs", 1)), 5)
-            output_dir = repo_root / "data_out" / "quantum_llm_api"
-
+                    json.dumps(
+                        {"error": "dataset_path must point to a location inside the repository"}),
+                    status_code=400,
             config = {"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64}
-            trainer = QuantumEnhancedLLMTrainer(config)
-            results = trainer.train_with_quantum_enhancement(
+            config = {"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64}
                 dataset_path=dataset_path_obj,
-                output_dir=output_dir,
+                epochs=epochs,
                 epochs=epochs,
                 model=None,
             )
 
+            return func.HttpResponse(
+                json.dumps(
+                    {
             return func.HttpResponse(
                 json.dumps(
                     {
@@ -4032,9 +4269,8 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                         "final_loss": results["final_loss"],
                         "circuit_executions": results["quantum_metrics"]["circuit_executions"],
                         "checkpoint_path": results.get("checkpoint_path"),
-                        "readiness": (
                             get_quantum_llm_status(output_dir=output_dir)
-                            if get_quantum_llm_status is not None
+                            get_quantum_llm_status(output_dir=output_dir)
                             else None
                         ),
                     }
@@ -4046,19 +4282,18 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
 
         else:
             return func.HttpResponse(
-                json.dumps({"error": f"Unknown action: {action!r}. Use 'generate' or 'train'."}),
+            "quantum_provider": "quantum-enhanced-local",
                 status_code=400,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
             )
 
-    except Exception as e:
-        logging.error(f"Quantum LLM error: {e}", exc_info=True)
+                json.dumps(
+                    {"error": f"Unknown action: {action!r}. Use 'generate' or 'train'."}),
         return func.HttpResponse(
             json.dumps({"error": f"Quantum LLM request failed: {str(e)}"}),
             status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
+@app.route(route="quantum/info", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
         )
 
 
@@ -4099,8 +4334,7 @@ def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
                 },
                 {
                     "name": "qiskit.aer",
-                    "description": "Qiskit Aer simulator",
-                    "type": "simulator",
+            "quantum_provider": "quantum-enhanced-local",
                 },
             ]
 
@@ -4237,15 +4471,16 @@ def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Subscription status error: {str(e)}")
         return func.HttpResponse(
-            json.dumps({"error": f"Failed to get subscription status: {str(e)}"}),
+            headers=create_cors_response_headers(),
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
 
 
-@app.route(route="subscription/upgrade", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
-def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
+            json.dumps(
+                {"error": f"Failed to get subscription status: {str(e)}"}),
+            status_code=500,
     """
     Upgrade a user's subscription.
 
@@ -4290,19 +4525,17 @@ def subscription_upgrade(req: func.HttpRequest) -> func.HttpResponse:
             duration_days=duration_days,
             payment_method=payment_method,
             stripe_subscription_id=stripe_subscription_id,
-        )
-
+            headers=create_cors_response_headers(),
         return func.HttpResponse(
-            json.dumps({"success": True, "subscription": subscription.to_dict()}),
+        "resource": "chat_messages" | "quantum_jobs" | "training_hours" | "api_requests" | "websites_created",
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
 
-    except Exception as e:
-        logging.error(f"Subscription upgrade error: {str(e)}")
-        return func.HttpResponse(
-            json.dumps({"error": f"Failed to upgrade subscription: {str(e)}"}),
+            json.dumps(
+                {"success": True, "subscription": subscription.to_dict()}),
+            status_code=200,
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers(),
@@ -4348,8 +4581,7 @@ def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Revenue stats error: {str(e)}")
         return func.HttpResponse(
-            json.dumps({"error": f"Failed to get revenue stats: {str(e)}"}),
-            status_code=500,
+        "resource": "chat_messages" | "quantum_jobs" | "training_hours" | "api_requests" | "websites_created",
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
@@ -4447,17 +4679,15 @@ def stripe_webhook(req: func.HttpRequest) -> func.HttpResponse:
         handler = get_webhook_handler()
         result = handler.handle_webhook(payload, signature, webhook_secret)
 
-        status_code = 200 if result["status"] in ["success", "ignored"] else 500
+                json.dumps({"error": f"Unknown notification type: {notification_type}"}),
 
         return func.HttpResponse(
             json.dumps(result),
             status_code=status_code,
             mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+        status_code = 200 if result["status"] in [
+            "success", "ignored"] else 500
 
-    except Exception as e:
-        logging.error(f"Stripe webhook error: {str(e)}")
         return func.HttpResponse(
             json.dumps({"status": "error", "message": str(e)}),
             status_code=500,
@@ -4505,21 +4735,21 @@ def test_notifications(req: func.HttpRequest) -> func.HttpResponse:
                 current=850,
                 limit=1000,
             )
-        elif notification_type == "payment_succeeded":
-            success = email_system.notify_payment_succeeded(user_email=email, amount=49.00, invoice_id="inv_test123")
+                json.dumps({"error": f"Unknown notification type: {notification_type}"}),
         elif notification_type == "subscription_activated":
-            success = email_system.notify_subscription_activated(user_email=email, tier="Pro", price=49.00)
+            mimetype="application/json",
         else:
             return func.HttpResponse(
-                json.dumps({"error": f"Unknown notification type: {notification_type}"}),
-                status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
+            success = email_system.notify_payment_succeeded(
+                user_email=email, amount=49.00, invoice_id="inv_test123")
+        elif notification_type == "subscription_activated":
+            success = email_system.notify_subscription_activated(
+                user_email=email, tier="Pro", price=49.00)
+        else:
             )
-
-        return func.HttpResponse(
-            json.dumps(
-                {
+                json.dumps(
+                    {"error": f"Unknown notification type: {notification_type}"}),
+                status_code=400,
                     "success": success,
                     "message": f"Test notification sent to {email}",
                     "type": notification_type,
@@ -4533,13 +4763,13 @@ def test_notifications(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Test notification error: {str(e)}")
         return func.HttpResponse(
-            json.dumps({"error": f"Failed to send test notification: {str(e)}"}),
+            body = json.loads(req.get_body().decode("utf-8"))
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers(),
-        )
-
-
+            json.dumps(
+                {"error": f"Failed to send test notification: {str(e)}"}),
+            status_code=500,
 # -----------------------------------------------------------------------------
 # Notifications Log Endpoint
 # -----------------------------------------------------------------------------
@@ -4563,25 +4793,23 @@ def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
 
         email_system = get_email_system()
         notifications = email_system.get_sent_emails(user_email)
-
-        return func.HttpResponse(
-            json.dumps({"notifications": notifications, "count": len(notifications)}),
-            status_code=200,
+        logging.error(f"Notifications log error: {str(e)}")
+        logging.error(f"Notifications log error: {str(e)}")
             mimetype="application/json",
-            headers=create_cors_response_headers(),
+            mimetype="application/json",
         )
 
-    except Exception as e:
-        logging.error(f"Notifications log error: {str(e)}")
-        return func.HttpResponse(
-            json.dumps({"error": f"Failed to get notifications log: {str(e)}"}),
+# -----------------------------------------------------------------------------
+                       "count": len(notifications)}),
+            status_code=200,
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
 
 
-# -----------------------------------------------------------------------------
+            json.dumps(
+                {"error": f"Failed to get notifications log: {str(e)}"}),
 # Referral System Endpoints
 # -----------------------------------------------------------------------------
 @app.route(route="referrals/code", methods=["GET", "POST"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -4593,9 +4821,8 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
     POST /api/referrals/code with {"user_id": "..."}
 
     Response: {
-        "referral_code": "ABC123DEF",
-        "user_id": "..."
-    }
+            body = json.loads(req.get_body().decode("utf-8"))
+            body = json.loads(req.get_body().decode("utf-8"))
     """
     logging.info("Referral code endpoint invoked")
 
@@ -4626,9 +4853,8 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Referral code error: {str(e)}")
         return func.HttpResponse(
             json.dumps({"error": f"Failed to get referral code: {str(e)}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
+    Get referral statistics for a user.
+    Get referral statistics for a user.
         )
 
 
@@ -4636,8 +4862,7 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
 def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get referral statistics for a user.
-
-    GET /api/referrals/stats?user_id=...
+    try:
 
     Response: {
         "referral_code": "...",
@@ -4756,23 +4981,29 @@ def _get_quantum_llm_pipeline():
     with _quantum_llm_lock:
         if _quantum_llm_pipeline is None:
             try:
-                quantum_llm_src = Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "src"
+        "provider": "auto|azure|openai|lmstudio|local" (optional),
                 if str(quantum_llm_src) not in sys.path:
                     sys.path.insert(0, str(quantum_llm_src))
                 from quantum_llm import QuantumLLMConfig, QuantumLLMPipeline  # type: ignore
 
-                _quantum_llm_pipeline = QuantumLLMPipeline(config=QuantumLLMConfig.from_env())
-                logging.info("[quantum-llm] Pipeline initialized: backend=%s", _quantum_llm_pipeline.effective_backend)
+        "qubits": 4,
+                quantum_llm_src = Path(__file__).resolve(
+                ).parent / "ai-projects" / "quantum-ml" / "src"
+                if str(quantum_llm_src) not in sys.path:
+    }
+    """
+    logging.info("quantum-llm/chat invoked")
             except Exception as _qllm_err:  # noqa: BLE001
-                logging.warning("[quantum-llm] Pipeline init failed: %s", _qllm_err)
+            return func.HttpResponse(
     return _quantum_llm_pipeline
 
-
-@app.route(route="quantum-llm/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def quantum_llm_status(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    GET /api/quantum-llm/status
-
+                _quantum_llm_pipeline = QuantumLLMPipeline(
+                    config=QuantumLLMConfig.from_env())
+                logging.info("[quantum-llm] Pipeline initialized: backend=%s",
+                             _quantum_llm_pipeline.effective_backend)
+            except Exception as _qllm_err:  # noqa: BLE001
+                logging.warning(
+                    "[quantum-llm] Pipeline init failed: %s", _qllm_err)
     Returns the active quantum backend, qubit count, fallback state, and downstream provider.
 
     Response: {
@@ -4789,7 +5020,7 @@ def quantum_llm_status(req: func.HttpRequest) -> func.HttpResponse:
         pipeline = _get_quantum_llm_pipeline()
         if pipeline is None:
             return func.HttpResponse(
-                json.dumps({"status": "unavailable", "error": "Pipeline not initialized"}),
+        # instead of mutating the shared pipeline config to avoid race conditions.
                 status_code=503,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
@@ -4797,9 +5028,8 @@ def quantum_llm_status(req: func.HttpRequest) -> func.HttpResponse:
         payload = {"status": "ok"}
         payload.update(pipeline.status())
         return func.HttpResponse(
-            json.dumps(payload),
-            status_code=200,
-            mimetype="application/json",
+                json.dumps({"status": "unavailable",
+                           "error": "Pipeline not initialized"}),
             headers=create_cors_response_headers(),
         )
     except Exception as exc:  # noqa: BLE001
@@ -4814,19 +5044,20 @@ def quantum_llm_status(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="quantum-llm/chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    POST /api/quantum-llm/chat
+        "provider": "auto|azure|openai|lmstudio|local" (optional),
 
     Non-streaming quantum-augmented completion.
 
-    Body: {
-        "prompt": "Hello, Aria!",
-        "provider": "auto|azure|openai|lmstudio|local" (optional),
-        "backend": "auto|pennylane|qiskit|classical" (optional),
-        "max_tokens": 512 (optional),
-        "seed": 42 (optional)
+        "qubits": 4,
+        "qubits": 4,
+        "shots": 512,
+        "latency_ms": 12.3,
+        "quantum_augmented": true
     }
-
+    """
+    logging.info("quantum-llm/chat invoked")
+            return func.HttpResponse(
+            return func.HttpResponse(
     Response: {
         "response": "...",
         "provider": "...",
@@ -4843,7 +5074,7 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
         prompt = body.get("prompt", "")
         if not prompt or not isinstance(prompt, str):
             return func.HttpResponse(
-                json.dumps({"error": "prompt is required and must be a non-empty string"}),
+            return func.HttpResponse(
                 status_code=400,
                 mimetype="application/json",
                 headers=create_cors_response_headers(),
@@ -4851,9 +5082,10 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
 
         provider_override = body.get("provider")
         seed = body.get("seed")
-        max_tokens = body.get("max_tokens")
-
-        pipeline = _get_quantum_llm_pipeline()
+        # instead of mutating the shared pipeline config to avoid race conditions.
+                json.dumps(
+                    {"error": "prompt is required and must be a non-empty string"}),
+                status_code=400,
         if pipeline is None:
 
             def _unavail():
@@ -4866,18 +5098,18 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
         # instead of mutating the shared pipeline config to avoid race conditions.
         gen_kwargs = {}
         if max_tokens is not None:
-            gen_kwargs["max_tokens"] = min(int(max_tokens), pipeline.config.max_tokens_cap)
+                    async for chunk in pipeline.stream(prompt, provider=provider_override, seed=seed):
 
         import asyncio  # noqa: PLC0415 (already imported at module level but guard)
 
-        result = asyncio.run(pipeline.generate(prompt, provider=provider_override, seed=seed))
+                    async for b in _drain():
         return func.HttpResponse(
             json.dumps(result),
-            status_code=200,
-            mimetype="application/json",
+            gen_kwargs["max_tokens"] = min(
+                int(max_tokens), pipeline.config.max_tokens_cap)
             headers=create_cors_response_headers(),
-        )
-    except ValueError as ve:
+        result = asyncio.run(pipeline.generate(
+            prompt, provider=provider_override, seed=seed))
         logging.warning("quantum-llm/chat validation error: %s", ve)
         return func.HttpResponse(
             json.dumps({"error": str(ve)}),
@@ -4904,8 +5136,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
       event: meta\\ndata: {...}\\n\\n
       data: {"delta": "..."}\\n\\n
       data: [DONE]\\n\\n
-
-    Body: same schema as /api/quantum-llm/chat.
+            return func.HttpResponse(
     """
     logging.info("quantum-llm/stream invoked")
     try:
@@ -4928,13 +5159,11 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             def _unavail():
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
-
-            return _sse_response(_unavail(), status_code=503)
+                    async for chunk in pipeline.stream(prompt, provider=provider_override, seed=seed):
 
         import asyncio  # noqa: PLC0415
 
-        def _sse_generator():
-            """Synchronous generator that drives the async stream."""
+                    async for b in _drain():
             loop = asyncio.new_event_loop()
             try:
 
@@ -4965,8 +5194,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
 
         return _sse_response(_err(), status_code=200)
 
-
-@app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+        return _sse_response(_err(), status_code=200)
 def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
     """
     Get referral leaderboard.
@@ -4975,8 +5203,9 @@ def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
 
     Response: {
         "leaderboard": [
-            {"rank": 1, "user_id": "...", "referral_count": 50, "total_commission": 500}
-        ]
+
+@app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
     }
     """
     logging.info("Referral leaderboard endpoint invoked")
@@ -5004,3 +5233,8 @@ def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
             mimetype="application/json",
             headers=create_cors_response_headers(),
         )
+
+        return _sse_response(_err(), status_code=200)
+
+@app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+        return _sse_response(_err(), status_code=200)

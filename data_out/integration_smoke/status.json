@@ -67,32 +67,32 @@
     },
     {
       "name": "functions_ai_status_endpoint",
-      "status": "skipped",
+      "status": "failed",
       "critical": false,
-      "duration_sec": 0.02,
-      "detail": "functions host not running (non-strict mode)"
+      "duration_sec": 0.03,
+      "detail": "invalid_ai_status_payload"
     },
     {
       "name": "functions_ai_routes_endpoint",
-      "status": "skipped",
+      "status": "succeeded",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "functions host not running (non-strict mode)"
+      "detail": "routes=12"
     },
     {
       "name": "functions_agi_status_endpoint",
-      "status": "skipped",
+      "status": "succeeded",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "functions host not running (non-strict mode)"
+      "detail": "has_key=available"
     },
     {
       "name": "functions_agi_analyze_endpoint",
       "status": "skipped",
+      "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
       "detail": "functions host not running (non-strict mode)"
-    },
     {
       "name": "functions_agi_reason_endpoint",
       "status": "skipped",
@@ -100,11 +100,11 @@
       "duration_sec": 0.0,
       "detail": "functions host not running (non-strict mode)"
     },
-    {
       "name": "functions_agi_stream_endpoint",
       "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
+      "detail": "functions host not running (non-strict mode)"
       "detail": "functions host not running (non-strict mode)"
     },
     {
@@ -113,6 +113,5 @@
       "critical": false,
       "duration_sec": 0.0,
       "detail": "functions host not running (non-strict mode)"
-    }
   ]
 }

@@ -25,27 +25,26 @@
       "duration_sec": 0.07,
       "critical": true
     },
-    {
       "name": "evaluation_autorun",
       "cmd": [
         "/workspace/.venv/bin/python",
         "scripts/evaluation_autorun.py",
+        "scripts/evaluation_autorun.py",
         "--dry-run"
       ],
       "status": "succeeded",
-      "return_code": 0,
       "duration_sec": 0.06,
+      "duration_sec": 0.04,
       "critical": true
     },
     {
       "name": "quantum_autorun",
-      "cmd": [
+        "/usr/bin/python3",
         "/workspace/.venv/bin/python",
         "scripts/quantum_autorun.py",
         "--dry-run"
       ],
       "status": "succeeded",
-      "return_code": 0,
       "duration_sec": 0.08,
       "critical": true
     }

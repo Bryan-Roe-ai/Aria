@@ -273,47 +273,45 @@ class TestGetEndpoints:
         monkeypatch.setattr(
             type(app_module._settings),
             "active_provider",
-            lambda self: "lmstudio",
-        )
         monkeypatch.setattr(
             app_module,
             "_detect_provider_with_runtime_fallback",
             _fake_detect_provider_with_runtime_fallback,
         )
 
-        req = _mock_request("GET")
-        resp = app_module.ai_status(req)
+        req=_mock_request("GET")
+        resp=app_module.ai_status(req)
 
         assert resp.status_code == 200
         assert captured["explicit"] == "lmstudio"
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert data["active_provider"] == "lmstudio"
 
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
-        req = _mock_request("OPTIONS")
-        resp = app_module.chat_options(req)
+        req=_mock_request("OPTIONS")
+        resp=app_module.chat_options(req)
         assert resp.status_code == 200
 
     def test_chat_stream_options(self, app_module):
         """OPTIONS /api/chat/stream returns CORS headers."""
-        req = _mock_request("OPTIONS")
-        resp = app_module.chat_stream_options(req)
+        req=_mock_request("OPTIONS")
+        resp=app_module.chat_stream_options(req)
         assert resp.status_code == 200
 
     def test_subscription_pricing(self, app_module):
         """GET /api/subscription/pricing returns tier data."""
-        req = _mock_request("GET")
-        resp = app_module.subscription_pricing(req)
+        req=_mock_request("GET")
+        resp=app_module.subscription_pricing(req)
         assert resp.status_code == 200
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         # Should contain at least one tier
         assert isinstance(data, (dict, list))
 
     def test_quantum_info(self, app_module):
         """GET /api/quantum/info returns backend/version data."""
-        req = _mock_request("GET")
-        resp = app_module.quantum_info(req)
+        req=_mock_request("GET")
+        resp=app_module.quantum_info(req)
         assert resp.status_code == 200
 
 
@@ -325,45 +323,45 @@ class TestPostValidation:
 
     def test_chat_empty_messages(self, app_module):
         """POST /api/chat with empty messages → 400."""
-        req = _mock_request("POST", body={"messages": []})
-        resp = app_module.chat(req)
+        req=_mock_request("POST", body={"messages": []})
+        resp=app_module.chat(req)
         assert resp.status_code == 400
 
     def test_chat_no_body(self, app_module):
         """POST /api/chat with no JSON body → 400 or 500."""
-        req = _mock_request("POST")
-        resp = app_module.chat(req)
+        req=_mock_request("POST")
+        resp=app_module.chat(req)
         assert resp.status_code in (400, 500)
 
     def test_chat_invalid_json_body_returns_400(self, app_module):
         """POST /api/chat with malformed JSON should return 400."""
-        req = MagicMock()
-        req.method = "POST"
-        req.params = {}
-        req.route_params = {}
-        req.get_json.side_effect = ValueError("bad json")
-        req.get_body.return_value = b"{bad-json"
+        req=MagicMock()
+        req.method="POST"
+        req.params={}
+        req.route_params={}
+        req.get_json.side_effect=ValueError("bad json")
+        req.get_body.return_value=b"{bad-json"
 
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
 
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "invalid json body" in data["error"].lower()
 
     def test_chat_whitespace_only_message(self, app_module):
         """POST /api/chat with whitespace-only content should return 400."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "   \n\t  "}]},
         )
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_whitespace_only_text_block_message(self, app_module):
         """POST /api/chat with whitespace-only text block content should return 400."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -380,14 +378,14 @@ class TestPostValidation:
                 ]
             },
         )
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_whitespace_only_input_text_block_message(self, app_module):
         """POST /api/chat with whitespace-only input_text block content should return 400."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -404,14 +402,14 @@ class TestPostValidation:
                 ]
             },
         )
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_guardrail_blocks_prompt_injection(self, app_module):
         """POST /api/chat should return safe fallback when prompt injection is detected."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -422,9 +420,9 @@ class TestPostValidation:
                 ]
             },
         )
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
         assert resp.status_code == 200
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert data["provider"] == "local"
         assert data["safety"]["blocked"] is True
         assert data["safety"]["stage"] == "input"
@@ -432,11 +430,11 @@ class TestPostValidation:
     def test_chat_drops_compaction_placeholder_before_provider_call(self, app_module, monkeypatch):
         """Synthetic compaction placeholders should not be forwarded to providers."""
 
-        captured: dict = {}
+        captured: dict={}
 
         class _FakeProvider:
             def complete(self, messages, stream=False):
-                captured["messages"] = messages
+                captured["messages"]=messages
                 return "Recovered reply"
 
         monkeypatch.setattr(
@@ -456,7 +454,7 @@ class TestPostValidation:
         monkeypatch.setattr(app_module, "log_chat_message_safe", None)
         monkeypatch.setattr(app_module, "cosmos_client", None)
 
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -466,14 +464,14 @@ class TestPostValidation:
             },
         )
 
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
 
         assert resp.status_code == 200
         # prune_messages prepends a system prompt; verify the compaction placeholder
         # was dropped and the user message is present (ignoring the system message).
-        user_messages = [m for m in captured["messages"]
+        user_messages=[m for m in captured["messages"]
                          if m.get("role") == "user"]
-        assistant_messages = [m for m in captured["messages"]
+        assistant_messages=[m for m in captured["messages"]
                               if m.get("content") == "Compacted conversation"]
         assert user_messages == [
             {"role": "user", "content": "Continue with the fix"}]
@@ -482,7 +480,7 @@ class TestPostValidation:
     def test_chat_only_compaction_placeholder_messages_return_validation_error(self, app_module):
         """Placeholder-only histories should be rejected like other empty input."""
 
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -492,47 +490,47 @@ class TestPostValidation:
             },
         )
 
-        resp = app_module.chat(req)
+        resp=app_module.chat(req)
 
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_stream_empty_messages(self, app_module):
         """POST /api/chat/stream with empty messages → 400."""
-        req = _mock_request("POST", body={"messages": []})
-        resp = app_module.chat_stream(req)
+        req=_mock_request("POST", body={"messages": []})
+        resp=app_module.chat_stream(req)
         assert resp.status_code == 400
 
     def test_chat_stream_invalid_json_body_returns_400(self, app_module):
         """POST /api/chat/stream with malformed JSON should return 400."""
-        req = MagicMock()
-        req.method = "POST"
-        req.params = {}
-        req.route_params = {}
-        req.get_json.side_effect = ValueError("bad json")
-        req.get_body.return_value = b"{bad-json"
+        req=MagicMock()
+        req.method="POST"
+        req.params={}
+        req.route_params={}
+        req.get_json.side_effect=ValueError("bad json")
+        req.get_body.return_value=b"{bad-json"
 
-        resp = app_module.chat_stream(req)
+        resp=app_module.chat_stream(req)
 
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "invalid json body" in data["error"].lower()
 
     def test_chat_stream_whitespace_only_message(self, app_module):
         """POST /api/chat/stream with whitespace-only content should return 400."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "   "}]},
         )
-        resp = app_module.chat_stream(req)
+        resp=app_module.chat_stream(req)
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_stream_whitespace_only_text_block_message(self, app_module):
         """POST /api/chat/stream with whitespace-only text block content should return 400."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -549,14 +547,14 @@ class TestPostValidation:
                 ]
             },
         )
-        resp = app_module.chat_stream(req)
+        resp=app_module.chat_stream(req)
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_stream_whitespace_only_input_text_block_message(self, app_module):
         """POST /api/chat/stream with whitespace-only input_text blocks should return 400."""
-        req = _mock_request(
+        req=_mock_request(
             "POST",
             body={
                 "messages": [
@@ -573,14 +571,14 @@ class TestPostValidation:
                 ]
             },
         )
-        resp = app_module.chat_stream(req)
+        resp=app_module.chat_stream(req)
         assert resp.status_code == 400
-        data = json.loads(resp.get_body())
+        data=json.loads(resp.get_body())
         assert "validation error" in data["error"].lower()
 
     def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should emit safe fallback SSE when prompt is blocked."""
-        req = _mock_request(
+        """POST /api/chat/stream should emit safe fallback SSE when prompt is blocked."""
             "POST",
             body={
                 "messages": [
@@ -593,11 +591,12 @@ class TestPostValidation:
         )
         resp = app_module.chat_stream(req)
         assert resp.status_code == 200
-        body_text = resp.get_body().decode("utf-8")
+        assert resp.status_code == 200
         assert "data: [DONE]" in body_text
         assert "safely" in body_text.lower()
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
+        """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
         captured: dict = {"embedding": None, "session_id": None}
 
@@ -609,7 +608,7 @@ class TestPostValidation:
             captured["session_id"] = session_id
             return [{"content": "Previous answer about widgets", "similarity": 0.88}]
 
-        monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
+            return [{"content": "Previous answer about widgets", "similarity": 0.88}]
         monkeypatch.setattr(
             app_module, "fetch_similar_messages", _fake_similar)
 
@@ -643,7 +642,8 @@ class TestPostValidation:
 
     def test_chat_stream_emits_done_sentinel(self, app_module, monkeypatch):
         """POST /api/chat/stream should terminate SSE with data: [DONE]."""
-        class _FakeProvider:
+        """POST /api/chat/stream should terminate SSE with data: [DONE]."""
+
             def complete(self, messages, stream=False):
                 assert stream is True
                 yield "Hello"
@@ -663,10 +663,10 @@ class TestPostValidation:
             "fetch_similar_messages",
             lambda query_emb, top_k=5, session_id=None, min_similarity=0.0: [],
         )
-
+        )
         req = _mock_request(
             "POST",
-            body={"messages": [{"role": "user", "content": "say hi"}]},
+            body = {"messages": [{"role": "user", "content": "say hi"}]},
         )
         resp = app_module.chat_stream(req)
 
@@ -679,6 +679,8 @@ class TestPostValidation:
         """POST /api/tts with no text field → 400."""
         req = _mock_request("POST", body={})
         resp = app_module.tts(req)
+        assert resp.status_code in (400, 500)
+
         assert resp.status_code in (400, 500)
 
 
@@ -721,7 +723,7 @@ class TestAriaStageProxy:
 
         req = _mock_request(
             "POST",
-            body={"command": "[aria:gesture:wave]", "auto_execute": True},
+            body = {"command": "[aria:gesture:wave]", "auto_execute": True},
         )
         resp = app_module.aria_execute_proxy(req)
 
@@ -754,8 +756,6 @@ class TestAriaStageProxy:
         assert captured["url"].endswith("/api/aria/state")
         data = json.loads(resp.get_body())
         assert "aria" in data
-
-
 # ===========================================================================
 # AGI endpoint tests — /api/agi/analyze and /api/agi/status
 # ===========================================================================
@@ -780,13 +780,14 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="agi", model="agi-local-local-echo"),
+                types.SimpleNamespace(
+                    name="agi", model="agi-local-local-echo"),
             ),
         )
 
         req = _mock_request(
             "POST",
-            body={"query": "implement a safer routing layer"},
+            body = {"query": "implement a safer routing layer"},
         )
         resp = app_module.agi_analyze(req)
 
@@ -796,11 +797,13 @@ class TestAgiEndpoints:
         assert data["analysis"]["intent"] == "coding"
         assert data["routing"]["selected_agent"] == "code-specialist"
         assert data["provider"]["name"] == "agi"
+        assert data["provider"]["name"] == "agi"
         assert data["provider"]["wrapper_model"] == "agi-local-local-echo"
 
     def test_agi_provider_metadata_uses_base_choice(self, app_module):
         provider = types.SimpleNamespace(
-            _base_provider_choice=types.SimpleNamespace(name="local", model="local-echo")
+            _base_provider_choice = types.SimpleNamespace(
+                name="local", model="local-echo")
         )
         wrapper = types.SimpleNamespace(name="agi", model="agi-local-local-echo")
         meta = app_module._agi_provider_metadata(provider, wrapper)
@@ -815,7 +818,6 @@ class TestAgiEndpoints:
         assert app_module._normalize_agi_stream_delta({"type": "analysis", "data": "x"}) == {
             "type": "analysis",
             "data": "x",
-        }
 
     def test_agi_analyze_validation_error_when_missing_query(self, app_module):
         req = _mock_request("POST", body={})
@@ -828,9 +830,9 @@ class TestAgiEndpoints:
 
     def test_agi_status_returns_reasoning_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
-            _base_provider_choice = types.SimpleNamespace(name="azure", model="gpt-4o")
-
-            def get_reasoning_summary(self):
+        class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(
+                name="azure", model="gpt-4o")
                 return {
                     "total_reasoning_chains": 3,
                     "active_goals": ["improve reliability"],
@@ -859,9 +861,9 @@ class TestAgiEndpoints:
         assert data["status"] == "ok"
         assert data["available"] is True
         assert data["provider"]["name"] == "agi"
+        assert data["provider"]["name"] == "agi"
         assert data["provider"]["base_provider"] == "azure"
         assert data["provider"]["base_model"] == "gpt-4o"
-        assert data["reasoning"]["total_reasoning_chains"] == 3
         agent_tools = data.get("agent_tools") or {}
         lmstudio_tools = set(agent_tools.get("lmstudio-specialist") or [])
         assert {
@@ -872,9 +874,10 @@ class TestAgiEndpoints:
 
     def test_agi_reason_returns_response_and_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
-            _base_provider_choice = types.SimpleNamespace(name="local", model="local-echo")
-
-            def __init__(self):
+    def test_agi_reason_returns_response_and_summary(self, app_module, monkeypatch):
+        class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(
+                name="local", model="local-echo")
                 self.goals = []
 
             def set_goal(self, goal: str):
@@ -902,7 +905,9 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="agi", model="agi-local-local-echo"),
+                _FakeAgiProvider(),
+                types.SimpleNamespace(
+                    name="agi", model="agi-local-local-echo"),
             ),
         )
 
@@ -920,9 +925,9 @@ class TestAgiEndpoints:
         assert data["status"] == "ok"
         assert data["response"] == "Here is a reasoned response"
         assert data["reasoning"]["active_goals"] == ["be concise"]
+        assert data["reasoning"]["active_goals"] == ["be concise"]
         assert data["provider"]["base_provider"] == "local"
         assert data["provider"]["base_model"] == "local-echo"
-
     def test_agi_reason_validation_error_when_missing_input(self, app_module):
         req = _mock_request("POST", body={})
         resp = app_module.agi_reason(req)
@@ -933,10 +938,10 @@ class TestAgiEndpoints:
         assert "validation error" in data["error"].lower()
 
     def test_agi_stream_emits_done_sentinel(self, app_module, monkeypatch):
+    def test_agi_stream_emits_done_sentinel(self, app_module, monkeypatch):
         class _FakeAgiProvider:
-            _base_provider_choice = types.SimpleNamespace(name="local", model="local-echo")
-
-            def complete(self, messages, stream=False):
+            _base_provider_choice = types.SimpleNamespace(
+                name="local", model="local-echo")
                 assert stream is True
                 yield "Hello"
                 yield " world"
@@ -952,7 +957,7 @@ class TestAgiEndpoints:
                 types.SimpleNamespace(name="local", model="local-echo"),
             ),
         )
-
+                types.SimpleNamespace(name="local", model="local-echo"),
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},
@@ -960,12 +965,11 @@ class TestAgiEndpoints:
         resp = app_module.agi_stream(req)
 
         assert resp.status_code == 200
+        assert resp.status_code == 200
         body_text = resp.get_body().decode("utf-8")
         assert "event: meta" in body_text
         assert '"base_provider": "local"' in body_text
         assert '"type": "output"' in body_text
-        assert '"data": "Hello"' in body_text
-        assert '"data": " world"' in body_text
         assert "data: [DONE]" in body_text
 
     def test_agi_stream_validation_error_when_missing_input(self, app_module):
