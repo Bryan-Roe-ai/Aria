@@ -109,10 +109,12 @@ def ensure_server_running() -> subprocess.Popen | None:
         return None
 
     if ARIA_WEB is None:
-        pytest.skip("Aria web app not found in any known location: " + ", ".join(str(p) for p in _CANDIDATE_ARIA_DIRS))
+        pytest.skip("Aria web app not found in any known location: " +
+                    ", ".join(str(p) for p in _CANDIDATE_ARIA_DIRS))
 
     # If :8080 is occupied by something else, run Aria on a free port.
-    target_port = DEFAULT_PORT if not is_port_open(DEFAULT_PORT) else _find_free_port()
+    target_port = DEFAULT_PORT if not is_port_open(
+        DEFAULT_PORT) else _find_free_port()
     target_url = f"http://{DEFAULT_HOST}:{target_port}"
 
     env = os.environ.copy()
@@ -130,7 +132,8 @@ def ensure_server_running() -> subprocess.Popen | None:
     try:
         while time.monotonic() < deadline:
             if proc.poll() is not None:
-                raise RuntimeError(f"Aria server exited prematurely with code {proc.returncode}")
+                raise RuntimeError(
+                    f"Aria server exited prematurely with code {proc.returncode}")
             if is_aria_api_healthy(target_url):
                 SERVER_URL = target_url
                 return proc
@@ -140,7 +143,8 @@ def ensure_server_running() -> subprocess.Popen | None:
         raise
 
     _terminate_process(proc)
-    raise RuntimeError(f"Failed to start Aria server on {target_url} within {SERVER_BOOT_TIMEOUT:.1f}s")
+    raise RuntimeError(
+        f"Failed to start Aria server on {target_url} within {SERVER_BOOT_TIMEOUT:.1f}s")
 
 
 def _terminate_process(proc: subprocess.Popen, timeout: float = 2.0) -> None:
@@ -242,7 +246,8 @@ async def _run_pyppeteer_scenario() -> None:
     name = f"e2e_pypp_{int(time.time() * 1000)}"
     browser = None
     try:
-        chrome_path = os.getenv("CHROME_PATH") or os.getenv("PUPPETEER_EXECUTABLE_PATH")
+        chrome_path = os.getenv("CHROME_PATH") or os.getenv(
+            "PUPPETEER_EXECUTABLE_PATH")
         launch_kwargs: dict = {
             "headless": True,
             "args": [
@@ -267,7 +272,8 @@ async def _run_pyppeteer_scenario() -> None:
         await page.goto(SERVER_URL)
 
         if not await wait_for_client_helpers(page, timeout=8.0):
-            pytest.skip("UI helper functions were not available in page context")
+            pytest.skip(
+                "UI helper functions were not available in page context")
 
         # Add object via client code.
         try:
@@ -275,7 +281,8 @@ async def _run_pyppeteer_scenario() -> None:
         except Exception as exc:  # noqa: BLE001
             msg = str(exc).lower()
             if "addobject is not defined" in msg or "referenceerror" in msg:
-                pytest.skip(f"UI helper addObject unavailable in page context: {exc}")
+                pytest.skip(
+                    f"UI helper addObject unavailable in page context: {exc}")
             raise
         obj = await asyncio.to_thread(wait_for_object, name, 6.0)
         assert obj is not None, f"Server didn't report newly added object {name}"
