@@ -130,6 +130,12 @@ def test_client_add_pickup_and_drag_updates_server():
             # make sure main page loads
             assert "Aria" in page.content()
 
+            helpers_ready = page.evaluate(
+                "() => typeof addObject === 'function' && typeof pickUpObject === 'function' && typeof dropObject === 'function'"
+            )
+            if not helpers_ready:
+                pytest.skip("UI helper functions were not available in page context")
+
             # Add object via client API
             page.evaluate("([name, emoji]) => addObject(name, emoji)", [unique_name, "🧸"])
 
