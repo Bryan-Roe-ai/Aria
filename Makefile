@@ -29,7 +29,7 @@ GRADIO_SHARE ?= false
 
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
-	start-local-status start-qai validate-mcp validate-mcp-json help
+	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json help
 
 # Default target
 all: lint test
@@ -65,6 +65,22 @@ start:
 
 ## Start Azure Functions host locally (requires func CLI)
 start-functions:
+	@command -v func >/dev/null 2>&1 || { echo "❌ func CLI not found. Install: npm i -g azure-functions-core-tools@4"; exit 1; }
+	func host start --port $(FUNC_PORT)
+
+## Stop any listener on FUNC_PORT (deterministic, port-based)
+start-functions-clean:
+	@pids=$$(lsof -t -i:$(FUNC_PORT) -sTCP:LISTEN 2>/dev/null || true); \
+	if [ -n "$$pids" ]; then \
+		echo "🛑 Stopping process(es) on :$(FUNC_PORT): $$pids"; \
+		kill -9 $$pids; \
+	else \
+		echo "ℹ️ No listener on :$(FUNC_PORT)"; \
+	fi
+
+## Restart Azure Functions host using a clean, port-based stop/start flow
+restart-functions-clean: start-functions-clean
+	@echo "🚀 Restarting Functions host on :$(FUNC_PORT)..."
 	@command -v func >/dev/null 2>&1 || { echo "❌ func CLI not found. Install: npm i -g azure-functions-core-tools@4"; exit 1; }
 	func host start --port $(FUNC_PORT)
 
