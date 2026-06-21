@@ -46,7 +46,7 @@
       ],
       "status": "succeeded",
       "return_code": 0,
-      "duration_sec": 0.06,
+      "duration_sec": 0.05,
       "critical": true
     }
   ]
