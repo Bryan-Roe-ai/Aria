@@ -67,7 +67,7 @@ env:
   # Force colored output where supported.
   FORCE_COLOR: '1'
   # Integration endpoint used by the contract gate (override in workflows or runs)
-  INTEGRATION_AI_STATUS_ENDPOINT: 'http://localhost:7071/api/ai/status'
+  INTEGRATION_AI_STATUS_ENDPOINT: 'http://127.0.0.1:7071/api/ai/status'
   # Optional: command used to start a local Functions host (if desired in CI).
   # Keep this cwd-agnostic; the startup step adds --script-root when needed.
   START_FUNC_CMD: 'func start --cors "*"'
