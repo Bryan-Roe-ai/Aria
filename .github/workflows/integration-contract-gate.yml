@@ -103,7 +103,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          extra-packages: 'pytest pytest-timeout'
+          extra-packages: 'pytest pytest-timeout openai'
 
       - name: Determine gate mode
         id: mode
