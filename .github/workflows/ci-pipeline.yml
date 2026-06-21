@@ -104,8 +104,10 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          echo "## CI Validation Results" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## CI Validation Results"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
 
           if [ -f data_out/ci_orchestrator/status.json ]; then
             echo '```json' >> "$GITHUB_STEP_SUMMARY"
@@ -117,8 +119,10 @@ jobs:
           fi
 
           if [ "${{ job.status }}" != "success" ]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "### ❌ Validation failed — see logs above for details." >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo ""
+              echo "### ❌ Validation failed — see logs above for details."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload validation results
@@ -185,8 +189,10 @@ jobs:
           fi
 
           if [ "${{ job.status }}" != "success" ]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "### ❌ Training job failed — see logs above." >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo ""
+              echo "### ❌ Training job failed — see logs above."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload training results

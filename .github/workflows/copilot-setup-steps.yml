@@ -212,6 +212,7 @@ jobs:
             echo "Copilot Setup Report - $(date -u)"
             echo
           } > "$REPORT"
+          exec 3>>"$REPORT"
 
           files_to_check=(
             .github/copilot-instructions.full.md
@@ -222,36 +223,38 @@ jobs:
 
           for f in "${files_to_check[@]}"; do
             if [ -f "$f" ]; then
-              echo "FOUND: $f" >> "$REPORT"
+              echo "FOUND: $f" >&3
             else
-              echo "MISSING: $f" >> "$REPORT"
+              echo "MISSING: $f" >&3
             fi
           done
 
-          echo >> "$REPORT"
+          echo >&3
 
           MAIN=".github/copilot-instructions.full.md"
           if [ -f "$MAIN" ]; then
-            echo "Checking header and length of $MAIN..." >> "$REPORT"
-            head -n 10 "$MAIN" >> "$REPORT"
-            echo "----" >> "$REPORT"
-            wc -l "$MAIN" >> "$REPORT"
-            echo >> "$REPORT"
+            echo "Checking header and length of $MAIN..." >&3
+            head -n 10 "$MAIN" >&3
+            echo "----" >&3
+            wc -l "$MAIN" >&3
+            echo >&3
 
             if grep -qi "last updated" "$MAIN"; then
-              echo "OK: contains 'Last updated' entry" >> "$REPORT"
+              echo "OK: contains 'Last updated' entry" >&3
             else
-              echo "WARN: consider adding a 'Last updated:' date near the top of $MAIN" >> "$REPORT"
+              echo "WARN: consider adding a 'Last updated:' date near the top of $MAIN" >&3
             fi
 
             if grep -qi "copilot" "$MAIN"; then
-              echo "OK: file references Copilot" >> "$REPORT"
+              echo "OK: file references Copilot" >&3
             else
-              echo "WARN: $MAIN does not mention 'Copilot' — ensure the guide is Copilot-specific" >> "$REPORT"
+              echo "WARN: $MAIN does not mention 'Copilot' — ensure the guide is Copilot-specific" >&3
             fi
           else
-            echo "SKIP: $MAIN not present for deep checks" >> "$REPORT"
+            echo "SKIP: $MAIN not present for deep checks" >&3
           fi
+
+          exec 3>&-
 
           echo "report_path=$REPORT" >> "$GITHUB_OUTPUT"
 

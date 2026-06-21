@@ -67,20 +67,20 @@ jobs:
           fi
           KEEP=${PRUNE_KEEP_ROWS:-1000}
           DRY=${PRUNE_DRY_RUN:-true}
-          ARGS=""
+          ARGS=()
           if [ -n "${QAI_AGI_PERSIST_DB:-}" ]; then
-            ARGS="$ARGS --sqlite ${QAI_AGI_PERSIST_DB}"
+            ARGS+=("--sqlite" "${QAI_AGI_PERSIST_DB}")
           fi
           if [ -n "${QAI_AGI_PERSIST_PATH:-}" ]; then
-            ARGS="$ARGS --jsonl ${QAI_AGI_PERSIST_PATH}"
+            ARGS+=("--jsonl" "${QAI_AGI_PERSIST_PATH}")
           fi
           if [ -z "${QAI_AGI_PERSIST_DB:-}" ] && [ -z "${QAI_AGI_PERSIST_PATH:-}" ]; then
             echo "No persistence target configured (QAI_AGI_PERSIST_DB or QAI_AGI_PERSIST_PATH). Skipping."
             exit 0
           fi
-          ARGS="$ARGS --keep-rows ${KEEP}"
+          ARGS+=("--keep-rows" "${KEEP}")
           if [ "${DRY}" = "true" ] || [ "${DRY}" = "1" ]; then
-            ARGS="$ARGS --dry-run"
+            ARGS+=("--dry-run")
             echo "Dry-run enabled; prune will not modify data"
           fi
-          python scripts/agi_persistence_prune.py $ARGS
+          python scripts/agi_persistence_prune.py "${ARGS[@]}"

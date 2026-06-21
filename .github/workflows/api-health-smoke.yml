@@ -148,15 +148,19 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          echo "## API Health Smoke" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## API Health Smoke"
+            echo ""
+            echo "| Check | Result |"
+            echo "|-------|--------|"
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # integration_smoke
           if [ "${{ steps.integration_smoke.outcome }}" = "success" ]; then
-            echo "| integration_smoke.py --json | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| integration_smoke output | \`data_out/integration_smoke/status-standard.json\` |" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "| integration_smoke.py --json | ✅ passed |"
+              echo "| integration_smoke output | \`data_out/integration_smoke/status-standard.json\` |"
+            } >> "$GITHUB_STEP_SUMMARY"
           else
             echo "| integration_smoke.py --json | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
@@ -164,8 +168,10 @@ jobs:
           # strict_smoke (scheduled only)
           if [ "${{ github.event_name }}" = "schedule" ]; then
             if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
-              echo "| integration_smoke.py --strict-endpoints | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-              echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |" >> "$GITHUB_STEP_SUMMARY"
+              {
+                echo "| integration_smoke.py --strict-endpoints | ✅ passed |"
+                echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |"
+              } >> "$GITHUB_STEP_SUMMARY"
             else
               echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
             fi
@@ -181,9 +187,15 @@ jobs:
           fi
 
           # Evaluate overall status and fail if any required test failed
-          if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || \
-             ( [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.strict_smoke.outcome }}" != "success" ] ) || \
-             [ "${{ steps.contract_tests.outcome }}" != "success" ]; then
+          if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || [ "${{ steps.contract_tests.outcome }}" != "success" ]; then
+            failed=1
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.strict_smoke.outcome }}" != "success" ]; then
+            failed=1
+          else
+            failed=0
+          fi
+
+          if [ "$failed" -eq 1 ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo "### ❌ One or more API health checks failed." >> "$GITHUB_STEP_SUMMARY"
             echo "::error::API health checks failed. See artifacts and logs above."
