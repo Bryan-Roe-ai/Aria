@@ -23,7 +23,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 import pytest
 import requests
@@ -40,7 +39,7 @@ _CANDIDATE_ARIA_DIRS = (
     REPO_ROOT / "apps" / "aria",
     REPO_ROOT / "aria_web",
 )
-ARIA_WEB: Optional[Path] = next(
+ARIA_WEB: Path | None = next(
     (p for p in _CANDIDATE_ARIA_DIRS if (p / "server.py").is_file()),
     None,
 )
@@ -95,7 +94,7 @@ def is_aria_api_healthy(base_url: str) -> bool:
 # --- Server lifecycle ------------------------------------------------------
 
 
-def ensure_server_running() -> Optional[subprocess.Popen]:
+def ensure_server_running() -> subprocess.Popen | None:
     """Make sure an Aria server is reachable, starting one if necessary.
 
     Returns the spawned ``subprocess.Popen`` if this function started a server
@@ -160,7 +159,7 @@ def _terminate_process(proc: subprocess.Popen, timeout: float = 2.0) -> None:
 # --- State polling helpers -------------------------------------------------
 
 
-def _get_state() -> Optional[dict]:
+def _get_state() -> dict | None:
     try:
         r = requests.get(f"{SERVER_URL}/api/aria/state", timeout=HTTP_TIMEOUT)
         if not r.ok:
@@ -170,7 +169,7 @@ def _get_state() -> Optional[dict]:
         return None
 
 
-def wait_for_object(name: str, timeout: float = 4.0) -> Optional[dict]:
+def wait_for_object(name: str, timeout: float = 4.0) -> dict | None:
     """Poll the server state until an object with ``name`` exists or timeout."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -183,7 +182,7 @@ def wait_for_object(name: str, timeout: float = 4.0) -> Optional[dict]:
     return None
 
 
-async def wait_for_object_state(name: str, expected_states: tuple[str, ...], timeout: float = 4.0) -> Optional[dict]:
+async def wait_for_object_state(name: str, expected_states: tuple[str, ...], timeout: float = 4.0) -> dict | None:
     """Async variant: poll until the named object reaches one of ``expected_states``."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -204,9 +203,6 @@ async def wait_for_object_state(name: str, expected_states: tuple[str, ...], tim
 @pytest.mark.e2e
 def test_pyppeteer_add_pickup_drop() -> None:
     """Add an object, pick it up, drop it, and clean up — verifying server state."""
-    if sys.version_info >= (3, 12):
-        pytest.skip("pyppeteer is not reliable on Python >= 3.12 in this environment")
-
     try:
         from pyppeteer import launch  # noqa: F401  (import-time check)
     except ImportError:
@@ -247,6 +243,13 @@ async def _run_pyppeteer_scenario() -> None:
 
         page = await browser.newPage()
         await page.goto(SERVER_URL)
+
+        # Ensure helper functions are attached before invoking them.
+        # In CI, script loading can lag slightly after initial navigation.
+        await page.waitForFunction(
+            "() => typeof addObject === 'function' && typeof pickUpObject === 'function' && typeof dropObject === 'function'",
+            {"timeout": 8000},
+        )
 
         # Add object via client code.
         await page.evaluate("(n, e) => addObject(n, e)", name, "🧸")
