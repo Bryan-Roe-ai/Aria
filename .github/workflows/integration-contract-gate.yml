@@ -183,7 +183,7 @@ jobs:
               echo "AI status endpoint reachable: ${INTEGRATION_AI_STATUS_ENDPOINT}"
               exit 0
             fi
-            ((i++))
+            ((++i))
             echo "Attempt ${i}/${RETRY_COUNT} — endpoint not ready yet; sleeping ${RETRY_INTERVAL}s"
             sleep "${RETRY_INTERVAL}"
           done
