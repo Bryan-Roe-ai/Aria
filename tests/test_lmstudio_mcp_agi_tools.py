@@ -88,8 +88,9 @@ def test_run_agi_stream_returns_structured_deltas(monkeypatch):
     assert payload["success"] is True
     assert payload["response"] == "Hello world"
     assert payload["provider"]["base_provider"] == "local"
-    assert any(delta.get("type") == "output" for delta in payload["deltas"])
-    assert any(delta.get("type") == "analysis" for delta in payload["deltas"])
+    delta_types = {delta.get("type") for delta in payload["deltas"]}
+    assert "output" in delta_types
+    assert "analysis" in delta_types
 
 
 def test_lmstudio_mcp_server_exports_client_without_exit():

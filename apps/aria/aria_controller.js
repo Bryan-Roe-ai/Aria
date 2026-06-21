@@ -371,6 +371,7 @@ const expressions = {
 };
 
 function log(message, isError = false) {
+    if (!logContainer) return;
     const entry = document.createElement('div');
     entry.className = 'log-entry';
     if (isError) entry.classList.add('log-error');
@@ -1396,11 +1397,13 @@ function stopIdleAnimation() {
 
 // Limb movement helpers
 function moveArm(arm, angle, duration = 500) {
+    if (!arm) return;
     arm.style.transition = `transform ${duration}ms ease-in-out`;
     arm.style.transform = `rotate(${angle}deg)`;
 }
 
 function moveLeg(leg, angle, duration = 500) {
+    if (!leg) return;
     leg.style.transition = `transform ${duration}ms ease-in-out`;
     leg.style.transform = `rotate(${angle}deg)`;
 }

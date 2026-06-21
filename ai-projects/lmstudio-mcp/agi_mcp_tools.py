@@ -115,13 +115,14 @@ def run_agi_stream(
     provider, choice = create_agi_provider()
     gen = provider.complete(chat_messages, stream=True)
 
+    _non_output_types = frozenset({"analysis", "step", "payload", "error"})
     deltas: list[dict[str, Any]] = []
     text_parts: list[str] = []
     for chunk in gen:
         delta = _normalize_agi_stream_delta(chunk)
         if include_deltas:
             deltas.append(delta)
-        if delta.get("type") == "output":
+        if delta.get("type") not in _non_output_types:
             text_parts.append(str(delta.get("data", "")))
 
     payload: dict[str, Any] = {

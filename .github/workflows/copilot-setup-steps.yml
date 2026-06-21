@@ -222,33 +222,33 @@ jobs:
 
           for f in "${files_to_check[@]}"; do
             if [ -f "$f" ]; then
-              echo "FOUND: $f" >> "$REPORT"
+              echo "FOUND: $f"
             else
-              echo "MISSING: $f" >> "$REPORT"
+              echo "MISSING: $f"
             fi
-          done
+          done >> "$REPORT"
 
           echo >> "$REPORT"
 
           MAIN=".github/copilot-instructions.full.md"
           if [ -f "$MAIN" ]; then
-            echo "Checking header and length of $MAIN..." >> "$REPORT"
-            head -n 10 "$MAIN" >> "$REPORT"
-            echo "----" >> "$REPORT"
-            wc -l "$MAIN" >> "$REPORT"
-            echo >> "$REPORT"
-
-            if grep -qi "last updated" "$MAIN"; then
-              echo "OK: contains 'Last updated' entry" >> "$REPORT"
-            else
-              echo "WARN: consider adding a 'Last updated:' date near the top of $MAIN" >> "$REPORT"
-            fi
-
-            if grep -qi "copilot" "$MAIN"; then
-              echo "OK: file references Copilot" >> "$REPORT"
-            else
-              echo "WARN: $MAIN does not mention 'Copilot' — ensure the guide is Copilot-specific" >> "$REPORT"
-            fi
+            {
+              echo "Checking header and length of $MAIN..."
+              head -n 10 "$MAIN"
+              echo "----"
+              wc -l "$MAIN"
+              echo
+              if grep -qi "last updated" "$MAIN"; then
+                echo "OK: contains 'Last updated' entry"
+              else
+                echo "WARN: consider adding a 'Last updated:' date near the top of $MAIN"
+              fi
+              if grep -qi "copilot" "$MAIN"; then
+                echo "OK: file references Copilot"
+              else
+                echo "WARN: $MAIN does not mention 'Copilot' — ensure the guide is Copilot-specific"
+              fi
+            } >> "$REPORT"
           else
             echo "SKIP: $MAIN not present for deep checks" >> "$REPORT"
           fi

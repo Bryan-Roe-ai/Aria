@@ -157,7 +157,7 @@ jobs:
 
       - name: Start local Functions host (for endpoint checks)
         id: start-func
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && steps.mode.outputs.strict == 'true'
         env:
           INTEGRATION_AI_STATUS_ENDPOINT: ${{ env.INTEGRATION_AI_STATUS_ENDPOINT }}
           START_FUNC_CMD: ${{ env.START_FUNC_CMD }}
@@ -207,13 +207,8 @@ jobs:
               echo "Warning: func not available after install attempts — attempting to proceed, but endpoint checks may fail" >&2
             fi
 
-            # Start Functions host in background. Prefer explicit --script-root from
-            # repo root when ./functions exists, otherwise use START_FUNC_CMD as-is.
-            if [[ -d "./functions" ]]; then
-              start_cmd="${START_FUNC_CMD} --script-root ./functions"
-            else
-              start_cmd="${START_FUNC_CMD}"
-            fi
+            # Start Functions host from repo root (host.json + function_app.py live here).
+            start_cmd="func host start --port 7071 --cors \"*\""
 
             echo "Starting Functions host using: ${start_cmd}"
             # shellcheck disable=SC2086

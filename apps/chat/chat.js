@@ -581,8 +581,7 @@ async function streamResponse(typingIndicator) {
 
 function extractAgiOutputText(delta) {
     if (typeof delta === 'string') return delta;
-    if (!delta || typeof delta !== 'object') return '';
-    if (delta.type === 'output') return String(delta.data || '');
+    if (delta?.type === 'output') return String(delta.data || '');
     return '';
 }
 
