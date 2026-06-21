@@ -2,14 +2,13 @@
 Local Developer Adapter for Azure Functions endpoints
 
 This tiny adapter lets you run selected Azure Functions handlers locally without
-needing the Azure Functions Core Tools host. It's intentionally small and only
-exposes `/api/ai/status` and `/api/agi/status` for local health checks.
+needing the Azure Functions Core Tools host. It exposes ``GET /api/ai/status``
+and ``GET /api/agi/status`` for local health checks.
 
 Usage:
-  # Run server on port 7071 (default)
   python local_dev_adapter.py
-  # Run on a different port
   python local_dev_adapter.py --port 7072
+  python local_dev_adapter.py --check
 
 Design notes:
 - Imports the `function_app` module and calls `ai_status()` directly.
@@ -41,6 +40,11 @@ except ModuleNotFoundError:  # pragma: no cover - exercised in minimal envs
     HAS_FLASK = False
 
 logger = logging.getLogger(__name__)
+
+
+def _safe_log_label(value: str) -> str:
+    """Strip control chars from user-influenced values before logging."""
+    return str(value).split("?", 1)[0].replace("\n", "").replace("\r", "")[:120]
 
 # Ensure repo modules are importable when running from the repo root.
 repo_root = Path(__file__).resolve().parent
@@ -332,7 +336,7 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
             try:
                 body, status_code, mimetype, headers = parts_fn()
             except Exception as exc:  # noqa: BLE001
-                logger.exception("Failed to build %s response: %s", path, exc)
+                logger.exception("Failed to build %s response: %s", _safe_log_label(path), exc)
                 body = json.dumps({"error": str(exc)}).encode("utf-8")
                 status_code = 500
                 mimetype = "application/json"
@@ -368,6 +372,30 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
         server.server_close()
 
 
+def check_status_endpoints() -> int:
+    """Probe adapter handlers without starting an HTTP server."""
+    probes = (
+        ("GET /api/ai/status", get_ai_status_parts),
+        ("GET /api/agi/status", get_agi_status_parts),
+    )
+    errors: list[str] = []
+    for label, parts_fn in probes:
+        try:
+            _body, status_code, _mimetype, _headers = parts_fn()
+            if status_code != 200:
+                errors.append(f"{label}: http {status_code}")
+        except Exception as exc:  # noqa: BLE001
+            errors.append(f"{label}: {exc}")
+
+    if errors:
+        for line in errors:
+            print(line, file=sys.stderr)
+        return 1
+
+    print("ok: /api/ai/status, /api/agi/status")
+    return 0
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse local adapter CLI arguments."""
 
@@ -375,7 +403,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     default_port = int(os.getenv("LOCAL_DEV_ADAPTER_PORT", "7071"))
 
     parser = argparse.ArgumentParser(
-        description="Run the local dev adapter for /api/ai/status and /api/agi/status without Azure Functions Core Tools.",
+        description=(
+            "Run the local dev adapter for GET /api/ai/status and GET /api/agi/status "
+            "without Azure Functions Core Tools."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python local_dev_adapter.py\n"
+            "  python local_dev_adapter.py --port 7072\n"
+            "  python local_dev_adapter.py --check\n"
+            "  curl -s http://localhost:7071/api/agi/status | jq .backends\n"
+        ),
     )
     parser.add_argument(
         "--host",
@@ -388,11 +427,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=default_port,
         help=f"Bind port for the local adapter (default: {default_port}).",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Probe /api/ai/status and /api/agi/status handlers and exit (no server).",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> None:
     args = parse_args(argv)
+    if args.check:
+        raise SystemExit(check_status_endpoints())
+
     print(
         f"Starting local dev adapter for /api/ai/status and /api/agi/status on http://{args.host}:{args.port}")
 

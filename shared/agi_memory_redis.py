@@ -102,7 +102,18 @@ class RedisAGIMemory:
             self._client = redis.from_url(url, decode_responses=True)
 
         raw = self._client.get(self._state_key())
-        state = json.loads(raw) if raw else {}
+        if raw:
+            try:
+                state = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                _logger.warning(
+                    "Invalid Redis AGI state JSON for %s: %s",
+                    self._state_key(),
+                    exc,
+                )
+                state = {}
+        else:
+            state = {}
         self.conversation_history: List[Dict[str, Any]] = list(state.get("conversation_history", []))
         self.reasoning_chains: List[List[Any]] = list(state.get("reasoning_chains", []))
         self.learned_patterns: _PersistOnWriteDict = _PersistOnWriteDict(self, state.get("learned_patterns", {}))

@@ -224,7 +224,12 @@
                     var text = await res.text();
                     if (window.AGIStreamUtils) {
                         var deltas = window.AGIStreamUtils.parseSSEText(text);
-                        output.innerHTML = deltas.map(window.AGIStreamUtils.prettyPrintDelta).join('') || text;
+                        var html = deltas.map(window.AGIStreamUtils.prettyPrintDelta).join('');
+                        if (html) {
+                            output.innerHTML = html;
+                        } else {
+                            output.textContent = text;
+                        }
                     } else {
                         output.textContent = text;
                     }

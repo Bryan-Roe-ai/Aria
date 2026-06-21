@@ -64,3 +64,15 @@ def test_backend_status_redis_env(monkeypatch):
     assert status["memory"]["backend_env"] == "redis"
     assert status["memory"]["redis_url_configured"] is True
     assert status["memory"]["session_id"] == "test-session"
+
+
+def test_backend_status_infers_redis_from_provider_context(monkeypatch):
+    monkeypatch.delenv("QAI_AGI_MEMORY_BACKEND", raising=False)
+
+    class RedisAGIMemoryStub:
+        pass
+
+    provider = _FakeProvider(context=RedisAGIMemoryStub())
+    status = build_agi_backend_status(provider)
+    assert status["memory"]["type"] == "redis"
+    assert status["memory"]["backend_env"] is None

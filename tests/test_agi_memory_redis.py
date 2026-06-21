@@ -1,7 +1,6 @@
 """Tests for shared/agi_memory_redis.py using a dict-backed fake Redis client."""
 
-import agi_provider
-from agi_provider import MemoryInterface, ReasoningStep
+from agi_provider import MemoryInterface, ReasoningStep, create_agi_provider
 from shared.agi_memory_redis import RedisAGIMemory, create_redis_agi_memory
 
 
@@ -30,6 +29,20 @@ def test_redis_memory_bounded_history():
 
     assert len(mem.conversation_history) == 3
     assert mem.conversation_history[0]["content"] == "msg-2"
+
+
+def test_redis_memory_retains_system_messages_on_truncation():
+    client = FakeRedisClient()
+    mem = RedisAGIMemory(session_id="system-cap", client=client, max_history=3)
+
+    mem.add_message({"role": "system", "content": "core instructions"})
+    for i in range(4):
+        mem.add_message({"role": "user", "content": f"msg-{i}"})
+
+    roles = [m["role"] for m in mem.conversation_history]
+    assert roles.count("system") == 1
+    assert mem.conversation_history[0]["content"] == "core instructions"
+    assert len(mem.conversation_history) == 3
 
 
 def test_redis_memory_persists_across_instances():
@@ -85,7 +98,7 @@ def test_create_agi_provider_uses_redis_memory(monkeypatch):
         _fake_create,
     )
 
-    provider, _ = agi_provider.create_agi_provider(verbose=False)
+    provider, _ = create_agi_provider(verbose=False)
     assert type(provider.context).__name__ == "RedisAGIMemory"
 
     monkeypatch.delenv("QAI_AGI_MEMORY_BACKEND", raising=False)
