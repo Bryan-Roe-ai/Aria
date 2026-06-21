@@ -689,6 +689,7 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
 def agi_status(req: func.HttpRequest) -> func.HttpResponse:
     """Return AGI provider readiness and reasoning summary metadata."""
     try:
+        provider = None
         provider_choice = None
         agent_tools: dict[str, list[str]] = {}
         summary = {
@@ -725,6 +726,8 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception:
             agent_tools = {}
 
+        from shared.agi_backend_status import build_agi_backend_status
+
         payload = {
             "status": "ok",
             "available": available,
@@ -735,11 +738,13 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
             },
             "reasoning": summary,
             "agent_tools": agent_tools,
+            "backends": build_agi_backend_status(provider),
             "endpoints": [
                 "/api/agi/analyze",
                 "/api/agi/reason",
                 "/api/agi/stream",
                 "/api/agi/status",
+                "/api/agi/persistence",
             ],
         }
 
