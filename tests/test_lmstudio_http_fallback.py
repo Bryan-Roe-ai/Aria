@@ -128,3 +128,19 @@ def test_lmstudio_no_models_loaded_message():
 
     assert "no model is currently loaded" in result.lower()
     assert "LMSTUDIO_MODEL" in result
+
+
+def test_lmstudio_timeout_message_is_friendly():
+    from chat_providers import LMStudioProvider
+
+    with patch("chat_providers.OpenAI", None):
+        provider = LMStudioProvider(base_url="http://127.0.0.1:1234/v1", model="openai/gpt-oss-20b")
+
+    with patch("urllib.request.urlopen", side_effect=TimeoutError("timed out")):
+        result = provider.complete(
+            [{"role": "user", "content": "Reply with OK only."}],
+            stream=False,
+        )
+
+    assert "cannot connect to lm studio" in result.lower()
+    assert "timed out" in result.lower()

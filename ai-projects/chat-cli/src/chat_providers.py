@@ -989,7 +989,12 @@ class LMStudioProvider(BaseChatProvider):
             # Provide helpful error messages for common issues
             error_msg = str(e).lower()
 
-            if "connection" in error_msg or "refused" in error_msg or "timeout" in error_msg:
+            if (
+                "connection" in error_msg
+                or "refused" in error_msg
+                or "timeout" in error_msg
+                or "timed out" in error_msg
+            ):
                 suggestion = (
                     f"❌ Cannot connect to LM Studio at {self.base_url}\n\n"
                     f"Troubleshooting steps:\n"
@@ -997,6 +1002,7 @@ class LMStudioProvider(BaseChatProvider):
                     f"2. Check that the local server is started in LM Studio\n"
                     f"3. Verify the server is running on {self.base_url}\n"
                     f"4. Check your firewall settings\n\n"
+                            f"The request may have timed out or the server may be unreachable.\n\n"
                     f"Set LMSTUDIO_BASE_URL environment variable if using a different address."
                 )
                 if stream:
