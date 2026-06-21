@@ -129,7 +129,7 @@ jobs:
           p = Path("data_out/ci_orchestrator/ci_results.json")
           data = json.loads(p.read_text(encoding="utf-8"))
           assert isinstance(data, dict), "ci_results.json must be a JSON object"
-          for key in ("total_steps", "succeeded", "failed"):
+          for key in ("total_steps", "succeeded", "failed", "results"):
               assert key in data, f"ci_results.json missing required key: {key}"
           PY
 
