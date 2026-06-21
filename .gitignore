@@ -5,7 +5,7 @@ __pycache__/
 
 # Compiled extensions
 *.so
-/workspaces/Aria/.azure/PRE-DEPLOYMENT-CHECKLIST.md
+
 # Distribution / packaging
 .Python
 build/
