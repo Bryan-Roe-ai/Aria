@@ -97,6 +97,44 @@ function applyServerAriaState(ariaState) {
     }
 }
 
+function applyServerEnvironmentState(environment) {
+    if (!environment || typeof environment !== 'object') return;
+
+    const stageStyle = environment.stage_style;
+    if (stageStyle && stageStyle.background && stage) {
+        stage.style.background = stageStyle.background;
+    }
+    if (stageStyle && typeof window.aria3D?.setStageTheme === 'function') {
+        window.aria3D.setStageTheme(stageStyle);
+    }
+    if (stageStyle && stageStyle.label) {
+        const theme = environment.theme || 'quantum';
+        updateStageLabel(`${stageStyle.label} · ${theme}`);
+    }
+}
+
+function updateStageLabel(text) {
+    const label = document.getElementById('stage-label');
+    if (label && text) {
+        label.textContent = text;
+    }
+    if (typeof window.setQuantumLiveStatus === 'function' && text) {
+        window.setQuantumLiveStatus(text, true);
+    }
+}
+
+function syncWorldObjectsFromServer(objectsState) {
+    if (!objectsState || typeof objectsState !== 'object') return;
+
+    for (const [objectId, objState] of Object.entries(objectsState)) {
+        if (!document.getElementById(objectId)) {
+            const emoji = (objState && objState.emoji) ? objState.emoji : '🧸';
+            addObject(objectId, emoji);
+        }
+    }
+    applyServerObjectsState(objectsState);
+}
+
 function applyServerObjectsState(objectsState) {
     if (!objectsState || typeof objectsState !== 'object') return;
 
@@ -127,6 +165,41 @@ function applyServerObjectsState(objectsState) {
     }
 }
 
+async function loadQuantumStage(preset = 'intro') {
+    try {
+        const response = await fetch('/api/aria/quantum/setup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preset: preset || 'intro' }),
+        });
+        if (!response.ok) {
+            log(`⚠️ Quantum setup failed (${response.status})`);
+            return null;
+        }
+
+        const payload = await response.json();
+        const state = payload.state || payload;
+        applyServerAriaState(state.aria || {});
+        syncWorldObjectsFromServer(state.objects || {});
+        applyServerEnvironmentState(state.environment || {});
+
+        const presetName = payload.preset || preset || 'intro';
+        const style = (state.environment || {}).stage_style || {};
+        const label = style.label || 'Quantum Lab';
+        updateStageLabel(`${label} · preset ${presetName}`);
+        log(`⚛️ Quantum world loaded (preset: ${presetName})`);
+        showFeedback(`⚛️ Quantum Lab: ${presetName}`);
+        return payload;
+    } catch (err) {
+        console.warn('loadQuantumStage failed:', err);
+        log('⚠️ Could not load quantum stage');
+        if (typeof window.setQuantumLiveStatus === 'function') {
+            window.setQuantumLiveStatus('Quantum setup failed — is the Aria server running?', false);
+        }
+        return null;
+    }
+}
+
 async function hydrateStageFromServer() {
     try {
         const response = await fetch('/api/aria/state', { cache: 'no-store' });
@@ -137,7 +210,12 @@ async function hydrateStageFromServer() {
 
         const payload = await response.json();
         applyServerAriaState(payload.aria || {});
-        applyServerObjectsState(payload.objects || {});
+        syncWorldObjectsFromServer(payload.objects || {});
+        applyServerEnvironmentState(payload.environment || {});
+        const env = payload.environment || {};
+        if (env.theme === 'quantum' && env.stage_style && env.stage_style.label) {
+            updateStageLabel(`${env.stage_style.label} · ${env.theme}`);
+        }
         log('🔄 Stage synced from server');
     } catch (err) {
         console.warn('hydrateStageFromServer failed:', err);
@@ -2628,3 +2706,4 @@ window.ariaTest = {
     pose: (name) => applyPose(name)
 };
 window.simulateTags = (arr) => Array.isArray(arr) && executeTags(arr);
+window.loadQuantumStage = loadQuantumStage;
