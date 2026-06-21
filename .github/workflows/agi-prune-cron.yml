@@ -82,4 +82,6 @@ jobs:
             ARGS="$ARGS --dry-run"
             echo "Dry-run enabled; prune will not modify data"
           fi
+          # ARGS is intentionally unquoted so multiple flags expand into separate argv entries.
+          # shellcheck disable=SC2086
           python scripts/agi_persistence_prune.py $ARGS
