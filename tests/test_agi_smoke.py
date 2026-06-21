@@ -65,6 +65,16 @@ def test_agi_status_exposes_lmstudio_agent_tools(app_module):
     }.issubset(lmstudio_tools)
 
 
+def test_agi_status_exposes_mcp_agi_tools(app_module):
+    req = _mock_request("GET")
+    resp = app_module.agi_status(req)
+    assert resp.status_code == 200
+
+    data = json.loads(resp.get_body())
+    mcp_tools = set((data.get("agent_tools") or {}).get("mcp-agi") or [])
+    assert {"agi_analyze", "agi_reason"}.issubset(mcp_tools)
+
+
 def test_agi_analyze_requires_query_or_messages(app_module):
     req = _mock_request("POST", body={})
     resp = app_module.agi_analyze(req)

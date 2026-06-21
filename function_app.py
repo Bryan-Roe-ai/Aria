@@ -855,6 +855,9 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
         except Exception:
             agent_tools = {}
 
+        # MCP bridge tools (registered in lmstudio_mcp_server, not _AGENT_REGISTRY).
+        agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason"])
+
         payload = {
             "status": "ok",
             "available": available,

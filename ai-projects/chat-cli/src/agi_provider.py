@@ -1162,6 +1162,10 @@ class AGIProvider(BaseChatProvider):
             thoughts.append("AI/ML context: distinguish training, inference, and evaluation concerns.")
         elif domain == "technical":
             thoughts.append("Technical context: prefer concrete, runnable code examples.")
+        elif domain == "infrastructure":
+            thoughts.append(
+                "Infrastructure context: map runtime topology, auth, and rollback before proposing changes."
+            )
 
         # Surface which specialist will handle this query.
         selected_agent = analysis.get("selected_agent")
@@ -1333,6 +1337,13 @@ class AGIProvider(BaseChatProvider):
                 "Recommend concrete, actionable behavioural adjustments.",
                 "Close with a one-sentence executive summary of the overall insight.",
             ]
+        elif selected_agent == "infrastructure-specialist":
+            lines += [
+                "You are acting as the Infrastructure Specialist.",
+                "Map deployment topology, CI/CD stages, secrets handling, and rollback paths.",
+                "Prefer the smallest safe change with explicit verification steps.",
+                "Call out environment-specific constraints (Azure, GitHub Actions, containers).",
+            ]
         else:
             # General / fallback — keep existing aria domain guidance
             if domain == "aria":
@@ -1412,6 +1423,7 @@ class AGIProvider(BaseChatProvider):
                 "debate-specialist": 0.6,
                 "hypothesis-specialist": 0.5,
                 "reflection-specialist": 0.4,
+                "infrastructure-specialist": 0.25,
             }
             original_temp = getattr(provider, "temperature", None)
             if selected_agent in _AGENT_TEMPERATURES:
