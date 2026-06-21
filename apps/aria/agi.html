@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Aria — AGI Panel</title>
+        <style>
+            :root {
+                --bg: #f0f4f8;
+                --panel: #fff;
+                --text: #1a2332;
+                --muted: #5a6577;
+                --accent: #667eea;
+                --border: rgba(0, 0, 0, 0.08);
+                --radius: 12px;
+            }
+
+            [data-theme="dark"] {
+                --bg: #0f1219;
+                --panel: #1a1f2e;
+                --text: #e4e8f0;
+                --muted: #8892a4;
+                --accent: #7b8ff0;
+                --border: rgba(255, 255, 255, 0.08);
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                background: var(--bg);
+                color: var(--text);
+                min-height: 100vh;
+                padding: 16px;
+            }
+
+            .container {
+                max-width: 960px;
+                margin: 0 auto;
+            }
+
+            .top-bar {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+
+            .top-bar a {
+                color: var(--accent);
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+                margin-bottom: 8px;
+            }
+
+            .panel {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+
+            label {
+                display: block;
+                font-size: 0.85rem;
+                color: var(--muted);
+                margin-bottom: 6px;
+            }
+
+            input,
+            textarea,
+            select {
+                width: 100%;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                background: transparent;
+                color: var(--text);
+                margin-bottom: 12px;
+            }
+
+            textarea {
+                min-height: 96px;
+                resize: vertical;
+            }
+
+            button {
+                background: var(--accent);
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 16px;
+                cursor: pointer;
+                font-weight: 600;
+                margin-right: 8px;
+            }
+
+            button.secondary {
+                background: transparent;
+                color: var(--accent);
+                border: 1px solid var(--border);
+            }
+
+            pre,
+            .output {
+                background: rgba(0, 0, 0, 0.04);
+                border-radius: 8px;
+                padding: 12px;
+                overflow: auto;
+                font-size: 0.85rem;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+
+            .status-pill {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 999px;
+                font-size: 0.8rem;
+                background: rgba(102, 126, 234, 0.15);
+                color: var(--accent);
+            }
+
+            .agi-error {
+                color: #ef4444;
+            }
+        </style>
+        <script src="./agi_stream_utils.js"></script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="top-bar">
+                <div>
+                    <h1>🧠 AGI Panel</h1>
+                    <p style="color: var(--muted); font-size: 0.9rem;">Analyze, reason, and stream via Azure Functions
+                        AGI API.</p>
+                </div>
+                <div>
+                    <a href="./index.html">← Stage</a>
+                    <a href="./auto-execute.html" style="margin-left: 12px;">Auto-Execute</a>
+                </div>
+            </div>
+
+            <div class="panel">
+                <label for="apiBase">Functions API base</label>
+                <input id="apiBase" type="text" value="http://localhost:7071" />
+                <button type="button" id="refreshStatus">Refresh Status</button>
+                <span id="statusPill" class="status-pill" style="margin-left: 8px;">unknown</span>
+                <pre id="statusOutput" style="margin-top: 12px;">Loading…</pre>
+            </div>
+
+            <div class="panel">
+                <label for="query">Query</label>
+                <textarea id="query" placeholder="Ask the AGI provider…">What is a qubit?</textarea>
+                <label for="mode">Mode</label>
+                <select id="mode">
+                    <option value="analyze">Analyze</option>
+                    <option value="reason">Reason</option>
+                    <option value="stream">Stream (SSE)</option>
+                </select>
+                <button type="button" id="runBtn">Run</button>
+                <button type="button" id="clearBtn" class="secondary">Clear Output</button>
+                <div id="output" class="output" style="margin-top: 12px;">Ready.</div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                var apiBaseInput = document.getElementById('apiBase');
+                var statusOutput = document.getElementById('statusOutput');
+                var statusPill = document.getElementById('statusPill');
+                var output = document.getElementById('output');
+
+                function apiUrl(path) {
+                    return apiBaseInput.value.replace(/\/$/, '') + path;
+                }
+
+                async function refreshStatus() {
+                    statusPill.textContent = 'checking…';
+                    try {
+                        var res = await fetch(apiUrl('/api/agi/status'));
+                        var text = await res.text();
+                        statusOutput.textContent = text;
+                        statusPill.textContent = res.ok ? 'online' : 'error ' + res.status;
+                    } catch (err) {
+                        statusOutput.textContent = String(err);
+                        statusPill.textContent = 'offline';
+                    }
+                }
+
+                async function runAnalyzeOrReason(endpoint) {
+                    var query = document.getElementById('query').value.trim();
+                    if (!query) return;
+                    output.textContent = 'Running…';
+                    var res = await fetch(apiUrl(endpoint), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: query })
+                    });
+                    var text = await res.text();
+                    output.textContent = text;
+                }
+
+                async function runStream() {
+                    var query = document.getElementById('query').value.trim();
+                    if (!query) return;
+                    output.innerHTML = '';
+                    var res = await fetch(apiUrl('/api/agi/stream'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: query })
+                    });
+                    var text = await res.text();
+                    if (window.AGIStreamUtils) {
+                        var deltas = window.AGIStreamUtils.parseSSEText(text);
+                        output.innerHTML = deltas.map(window.AGIStreamUtils.prettyPrintDelta).join('') || text;
+                    } else {
+                        output.textContent = text;
+                    }
+                }
+
+                document.getElementById('refreshStatus').addEventListener('click', refreshStatus);
+                document.getElementById('clearBtn').addEventListener('click', function () {
+                    output.textContent = 'Ready.';
+                });
+                document.getElementById('runBtn').addEventListener('click', function () {
+                    var mode = document.getElementById('mode').value;
+                    if (mode === 'stream') return runStream().catch(function (e) { output.textContent = String(e); });
+                    var endpoint = mode === 'reason' ? '/api/agi/reason' : '/api/agi/analyze';
+                    runAnalyzeOrReason(endpoint).catch(function (e) { output.textContent = String(e); });
+                });
+
+                refreshStatus();
+            })();
+        </script>
+    </body>
+
+</html>
