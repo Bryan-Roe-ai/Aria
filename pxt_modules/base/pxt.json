@@ -43,8 +43,8 @@
     ],
     "public": true,
     "targetVersions": {
-        "target": "4.0.14",
-        "pxt": "12.2.34"
+        "target": "4.0.12",
+        "pxt": "12.2.32"
     },
     "partial": true,
     "yotta": {

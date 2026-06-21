@@ -18,7 +18,7 @@ public:
   CodalI2CProxy(DevicePin* _sda, DevicePin* _scl)
     : sda(_sda)
     , scl(_scl)
-    , i2c(*_sda, *_scl) 
+    , i2c(*_sda, *_scl)
     , next(NULL)
   {
 
@@ -27,7 +27,7 @@ public:
   CODAL_I2C* getI2C() {
     return &(this->i2c);
   }
-  
+
   bool matchPins(DevicePin* sda, DevicePin* scl) {
       return this->sda == sda && this->scl == scl;
   }

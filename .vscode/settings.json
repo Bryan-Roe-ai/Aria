@@ -205,8 +205,5 @@
     "editor.defaultFormatter": "GitHub.copilot-chat",
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
-    },
-    "[markdown]": {
-        "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
     }
 }

@@ -85,9 +85,9 @@ namespace pins {
         if (!_i2c) {
             const sda = pins.pinByCfg(DAL.CFG_PIN_SDA);
             const scl = pins.pinByCfg(DAL.CFG_PIN_SCL);
-            _i2c = pins.createI2C(sda, scl);    
+            _i2c = pins.createI2C(sda, scl);
         }
-        return _i2c;        
+        return _i2c;
     }
 
     export class I2CDevice {
@@ -133,6 +133,6 @@ namespace pins {
             if (response)
                 this.readInto(response, false, responseStart, responseEnd);
             this.end();
-        }    
+        }
     }
 }
