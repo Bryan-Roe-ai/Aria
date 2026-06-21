@@ -1103,3 +1103,31 @@ class TestNewSpecialistTemperatures:
         agi = AGIProvider(base_provider=mock)
         result = agi.complete([{"role": "user", "content": "summarize this AI paper"}], stream=False)
         assert isinstance(result, str) and len(result) > 0
+
+
+class TestCompleteQuantum:
+    """Tests for AGIProvider.complete_quantum (Aria quantum/ask path)."""
+
+    def test_complete_quantum_empty_query(self):
+        agi = AGIProvider(base_provider=MockBaseProvider())
+        result = agi.complete_quantum("   ")
+        assert result["agent"] == "quantum-specialist"
+        assert result["quantum"]["backend_ready"] is False
+        assert "quantum" in result["response"].lower() or "provide" in result["response"].lower()
+
+    def test_complete_quantum_forces_quantum_domain(self):
+        agi = AGIProvider(base_provider=MockBaseProvider())
+        result = agi.complete_quantum("Explain superposition", include_analysis=True)
+        assert result["agent"] == "quantum-specialist"
+        assert isinstance(result["response"], str) and result["response"]
+        assert result["analysis"]["domain"] == "quantum"
+        assert result["analysis"]["selected_agent"] == "quantum-specialist"
+        assert "backend_ready" in result["quantum"]
+
+    def test_complete_quantum_reasoning_chain_recorded(self):
+        agi = AGIProvider(base_provider=MockBaseProvider(), enable_self_reflection=False)
+        agi.complete_quantum("What is entanglement?")
+        assert len(agi.context.reasoning_chains) == 1
+        route_steps = [s for s in agi.context.reasoning_chains[0] if s.step_type == "route"]
+        assert route_steps
+        assert "quantum-specialist" in route_steps[0].content

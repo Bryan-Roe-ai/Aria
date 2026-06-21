@@ -4,6 +4,7 @@ Fast validation runner - minimal checks for rapid feedback
 Optimized for speed over completeness
 """
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -30,7 +31,8 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Build summary metadata for fast-validate checks."""
     total = len(results)
     ok_count = sum(1 for r in results if r.get("status") == "ok")
-    critical_failures = [r for r in results if is_critical_failure(str(r.get("check", "")), str(r.get("status", "")))]
+    critical_failures = [r for r in results if is_critical_failure(
+        str(r.get("check", "")), str(r.get("status", "")))]
     warning_count = total - ok_count - len(critical_failures)
 
     return {
@@ -127,7 +129,8 @@ def quick_check_configs() -> Dict[str, Any]:
     import importlib
     import importlib.util
 
-    yaml_mod = importlib.import_module("yaml") if importlib.util.find_spec("yaml") else None
+    yaml_mod = importlib.import_module(
+        "yaml") if importlib.util.find_spec("yaml") else None
 
     configs = [
         "config/autonomous_training.yaml",
@@ -293,7 +296,8 @@ def quick_check_dependencies() -> Dict[str, Any]:
         available_in_project_venv = False
         if not available_here and project_python is not None:
             try:
-                available_in_project_venv = _spec_exists_in_python(pkg, project_python)
+                available_in_project_venv = _spec_exists_in_python(
+                    pkg, project_python)
             except Exception:
                 available_in_project_venv = False
 
@@ -314,6 +318,44 @@ def quick_check_dependencies() -> Dict[str, Any]:
     return details
 
 
+def _registered_agent_names() -> set[str]:
+    """Collect agent names from scripts/agents without importing the registry."""
+    agents_dir = REPO_ROOT / "scripts" / "agents"
+    names: set[str] = set()
+    for path in agents_dir.glob("*_agent.py"):
+        match = re.search(
+            r'^\s*name\s*=\s*"([^"]+)"', path.read_text(encoding="utf-8"), re.MULTILINE)
+        if match:
+            names.add(match.group(1))
+    return names
+
+
+def quick_check_agents_md() -> Dict[str, Any]:
+    """Verify AGENTS.md run_repo_agents bullet only names registered agents."""
+    agents_md = REPO_ROOT / "AGENTS.md"
+    if not agents_md.exists():
+        return {"status": "missing", "speed": "instant"}
+
+    registered = _registered_agent_names()
+    unknown: List[str] = []
+    for line in agents_md.read_text(encoding="utf-8").splitlines():
+        if "run_repo_agents.py" not in line or "orchestrates" not in line:
+            continue
+        for name in re.findall(r"`([^`]+)`", line):
+            if name.endswith(".py") or "/" in name or name == "run_repo_agents.py":
+                continue
+            if name not in registered:
+                unknown.append(name)
+        break
+
+    return {
+        "status": "ok" if not unknown else "agents_md_drift",
+        "unknown_agents": unknown,
+        "registered": sorted(registered),
+        "speed": "instant",
+    }
+
+
 def main() -> None:
     """Run all fast checks (completes in <100ms)."""
     print("🚀 Fast Validation (no heavy imports, no parsing)")
@@ -327,6 +369,7 @@ def main() -> None:
         ("Configs", quick_check_configs),
         ("Providers", quick_check_providers),
         ("AI Tokens", quick_check_ai_tokens),
+        ("AGENTS.md", quick_check_agents_md),
         ("Dependencies", quick_check_dependencies),
     ]
 
@@ -366,7 +409,8 @@ def main() -> None:
             indent=2,
         )
 
-    print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
+    print(
+        f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
     sys.exit(0 if all_ok else 1)
 
 

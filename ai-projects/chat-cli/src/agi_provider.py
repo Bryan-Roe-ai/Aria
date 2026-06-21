@@ -709,6 +709,109 @@ class AGIProvider(BaseChatProvider):
 
         return self._stream_text(response) if stream else response
 
+    def complete_quantum(
+        self,
+        query: str,
+        *,
+        include_analysis: bool = False,
+    ) -> Dict[str, Any]:
+        """Answer *query* through the quantum-specialist routing path.
+
+        Used by ``POST /api/aria/quantum/ask`` on the Aria stage server so
+        quantum lab queries always route via ``quantum-specialist`` without
+        requiring the Azure Functions host.
+
+        Returns
+        -------
+        Dict[str, Any]
+            ``response``, ``agent``, ``quantum`` metadata; optional ``analysis``
+            when *include_analysis* is ``True``.
+        """
+        sanitized = _sanitize_input(str(query or ""))
+        if not sanitized.strip():
+            return {
+                "response": "Please provide a quantum computing question.",
+                "agent": "quantum-specialist",
+                "quantum": {
+                    "backend_ready": False,
+                    "model_path": None,
+                    "dispatched": False,
+                },
+            }
+
+        messages: List[RoleMessage] = [{"role": "user", "content": sanitized}]
+        analysis = self._analyze_query(sanitized)
+        analysis["domain"] = "quantum"
+        model_path = self._resolve_quantum_model_path(analysis)
+        if model_path:
+            analysis["quantum_model_path"] = model_path
+
+        reasoning_chain: List[ReasoningStep] = []
+        response = ""
+
+        try:
+            reasoning_chain = self._reason(
+                sanitized,
+                messages,
+                analysis=analysis,
+                force_agent="quantum-specialist",
+            )
+            response = self._generate_response(sanitized, reasoning_chain, messages)
+            if self.enable_self_reflection:
+                response = self._reflect_and_improve(sanitized, response, reasoning_chain)
+            self.context.add_reasoning_chain(reasoning_chain)
+            if getattr(self, "persistence", None) is not None:
+                try:
+                    serialized_chain = [
+                        {
+                            "step_type": step.step_type,
+                            "content": step.content,
+                            "confidence": step.confidence,
+                            "metadata": step.metadata,
+                        }
+                        for step in reasoning_chain
+                    ]
+                    meta = {
+                        "query": sanitized,
+                        "agent": "quantum-specialist",
+                        "ts": time.time(),
+                    }
+                    if hasattr(self.persistence, "write_reasoning_chain"):
+                        self.persistence.write_reasoning_chain(serialized_chain, meta)
+                    elif hasattr(self.persistence, "add_reasoning_chain"):
+                        self.persistence.add_reasoning_chain(serialized_chain)
+                except Exception as pers_exc:
+                    _logger.exception(
+                        "Failed to persist AGI reasoning chain: %s",
+                        _sanitize_for_logging(str(pers_exc)),
+                    )
+        except Exception as exc:
+            _logger.error(
+                "Quantum AGI processing error: %s",
+                _sanitize_for_logging(str(exc)),
+            )
+            response = self._generate_fallback_response(
+                sanitized, {"intent": "explanation", "domain": "quantum"}
+            )
+
+        final_analysis = reasoning_chain[0].metadata if reasoning_chain else analysis
+        quantum_meta = {
+            "backend_ready": bool(
+                final_analysis.get("quantum_backend_ready") or model_path
+            ),
+            "model_path": final_analysis.get("quantum_model_path") or model_path,
+            "dispatched": bool(final_analysis.get("specialist_dispatched")),
+        }
+
+        payload: Dict[str, Any] = {
+            "response": response,
+            "agent": "quantum-specialist",
+            "quantum": quantum_meta,
+        }
+        if include_analysis:
+            payload["analysis"] = final_analysis
+        return payload
+
     def _analyze_query(self, query: str) -> Dict[str, Any]:
         """Classify *query* by complexity, intent, and domain.
 
@@ -986,6 +1089,7 @@ class AGIProvider(BaseChatProvider):
             result = specialist.complete(messages, stream=False)
             response = result if isinstance(result, str) else "".join(result)
             _logger.debug("Agent dispatch: %s → %s chars", agent_name, len(response))
+            analysis["specialist_dispatched"] = True
             return response
         except Exception as exc:
             _logger.debug(
@@ -1142,7 +1246,14 @@ class AGIProvider(BaseChatProvider):
         thoughts.append(f"Approach: provide a {analysis['complexity']}-appropriate response.")
         return thoughts[: self.reasoning_depth]
 
-    def _reason(self, query: str, messages: List[RoleMessage]) -> List[ReasoningStep]:
+    def _reason(
+        self,
+        query: str,
+        messages: List[RoleMessage],
+        *,
+        analysis: Optional[Dict[str, Any]] = None,
+        force_agent: Optional[str] = None,
+    ) -> List[ReasoningStep]:
         """Build the full reasoning chain for *query*.
 
         Executes the reasoning pipeline in order:
@@ -1168,10 +1279,14 @@ class AGIProvider(BaseChatProvider):
             verbose display.
         """
         chain: List[ReasoningStep] = []
-        analysis = self._analyze_query(query)
+        if analysis is None:
+            analysis = self._analyze_query(query)
 
-        # Multi-agent: pick the best specialist for this query and record it.
-        selected_agent, agent_score = self._select_agent(analysis)
+        if force_agent is not None:
+            selected_agent = force_agent
+            _, agent_score = self._select_agent(analysis)
+        else:
+            selected_agent, agent_score = self._select_agent(analysis)
         analysis["selected_agent"] = selected_agent
         analysis["agent_score"] = round(agent_score, 3)
         self._last_agent_used = selected_agent
@@ -1810,6 +1925,17 @@ def create_agi_provider(
             provider.persistence = None
     else:
         provider.persistence = None
+
+    if os.getenv("QAI_AGI_MEMORY_BACKEND", "").strip().lower() == "redis":
+        try:
+            from shared.agi_memory_redis import create_redis_agi_memory
+
+            provider.context = create_redis_agi_memory()
+        except Exception as exc:  # pragma: no cover - best-effort memory backend
+            _logger.exception(
+                "Failed to initialise Redis AGI memory backend: %s",
+                _sanitize_for_logging(str(exc)),
+            )
 
     if base_choice:
         model_name = f"agi-{base_choice.name}-{base_choice.model}"
