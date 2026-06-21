@@ -38,32 +38,27 @@ except ModuleNotFoundError:  # pragma: no cover - exercised in minimal envs
     make_response = None  # type: ignore[assignment]
     HAS_FLASK = False
 
-# Ensure repo modules are importable when running from the repo root
+logger = logging.getLogger(__name__)
+
+# Ensure repo modules are importable when running from the repo root.
 repo_root = Path(__file__).resolve().parent
-# Make sure common src paths are on sys.path BEFORE importing function_app
-# function_app imports modules like token_utils at module-import time, so we
-    AzureHttpResponse = None
-    try:
-        from azure.functions import HttpResponse as AzureHttpResponse
-    except ModuleNotFoundError:
-        # Provide a lightweight shim for azure.functions when it's not installed.
-        logger.debug(
-            "azure.functions not found; installing lightweight shim for local dev adapter")
-        fake_mod = types.ModuleType("azure.functions")
-# must ensure those directories are available.
 sys.path.insert(0, str(repo_root / "ai-projects" / "chat-cli" / "src"))
 sys.path.insert(0, str(repo_root / "ai-projects" / "quantum-ml" / "src"))
 sys.path.insert(0, str(repo_root / "scripts"))
 sys.path.insert(0, str(repo_root))
 
-# Load .env file to ensure environment variables are set (for provider selection, etc.)
-env_file = repo_root / ".env"
-if env_file.exists():
+
+def _load_env_file() -> None:
+    """Load .env variables early so provider selection sees them."""
+    env_file = repo_root / ".env"
+    if not env_file.exists():
+        return
+
     try:
         from dotenv import load_dotenv
+
         load_dotenv(env_file)
     except ImportError:
-        # dotenv not available, manually load simple key=value lines
         with open(env_file) as f:
             for line in f:
                 line = line.strip()
@@ -72,15 +67,12 @@ if env_file.exists():
                     if key not in os.environ:
                         os.environ[key] = val
 
-logger = logging.getLogger(__name__)
 
-# Attempt to import the real function_app and the azure.functions HttpResponse
-# type. If azure.functions isn't available in the current dev/test environment
-except ModuleNotFoundError:
-    import function_app
-    # Provide a lightweight shim for azure.functions when it's not installed.
+def _install_azure_functions_shim() -> Any:
+    """Install a lightweight azure.functions shim for local development."""
     logger.debug(
-        "azure.functions not found; installing lightweight shim for local dev adapter")
+        "azure.functions not found; installing lightweight shim for local dev adapter"
+    )
     fake_mod = types.ModuleType("azure.functions")
 
     class AuthLevel:
@@ -100,10 +92,7 @@ except ModuleNotFoundError:
             self.url = url
             self.params = params or {}
             self.route_params = route_params or {}
-            # Normalize headers to lowercase keys for convenience
-            self.headers = {k.lower(): v for k, v in (
-                headers or {}).items()}
-            # Normalize body to bytes internally
+            self.headers = {k.lower(): v for k, v in (headers or {}).items()}
             if isinstance(body, bytes):
                 self._body = body
             elif isinstance(body, str):
@@ -121,11 +110,6 @@ except ModuleNotFoundError:
             return self._body
 
         def get_json(self, force: bool = False):
-            """Parse and return JSON body. Raises ValueError on parse failure.
-
-            Args:
-                force: If True, re-parse even if cached.
-            """
             if self._json_cache is not None and not force:
                 return self._json_cache
             try:
@@ -145,7 +129,6 @@ except ModuleNotFoundError:
             mimetype: str | None = None,
             headers: dict | None = None,
         ):
-            # Normalize to bytes to match real azure HttpResponse.get_body()
             if isinstance(body, str):
                 self._body = body.encode("utf-8")
             elif isinstance(body, bytes):
@@ -168,7 +151,6 @@ except ModuleNotFoundError:
 
         def route(self, *args, **kwargs):
             def decorator(fn):
-                # attach route metadata but otherwise return the original function
                 try:
                     fn.__qai_route__ = {"args": args, "kwargs": kwargs}
                 except Exception:
@@ -182,18 +164,22 @@ except ModuleNotFoundError:
     fake_mod.HttpResponse = HttpResponse
     fake_mod.FunctionApp = FunctionApp
 
-    # Insert into sys.modules so import statements in function_app succeed.
-    # We need both the package root (azure) and the submodule (azure.functions)
-    # because function_app imports them using `import azure.functions as func`.
     azure_pkg = sys.modules.setdefault("azure", types.ModuleType("azure"))
     if not hasattr(azure_pkg, "__path__"):
         azure_pkg.__path__ = []  # type: ignore[attr-defined]
     setattr(azure_pkg, "functions", fake_mod)
-    sys.modules.setdefault("azure.functions", fake_mod)
+    sys.modules["azure.functions"] = fake_mod
+    return fake_mod.HttpResponse
 
-    AzureHttpResponse = fake_mod.HttpResponse
 
-# Now import function_app (will use shim if azure.functions was unavailable)
+_load_env_file()
+
+try:
+    from azure.functions import HttpResponse as AzureHttpResponse  # type: ignore
+except ModuleNotFoundError:
+    AzureHttpResponse = _install_azure_functions_shim()
+
+# Import function_app only after sys.path, env, and shim setup.
 import function_app
 
 
