@@ -13,7 +13,7 @@ LMSTUDIO_MCP_DIR = REPO_ROOT / "ai-projects" / "lmstudio-mcp"
 if str(LMSTUDIO_MCP_DIR) not in sys.path:
     sys.path.insert(0, str(LMSTUDIO_MCP_DIR))
 
-from agi_mcp_tools import run_agi_analyze, run_agi_reason  # noqa: E402
+from agi_mcp_tools import run_agi_analyze, run_agi_reason, run_agi_stream  # noqa: E402
 
 
 class _FakeAgiProvider:
@@ -66,6 +66,30 @@ def test_run_agi_reason_with_query(monkeypatch):
     assert payload["success"] is True
     assert payload["response"] == "Reasoned AGI response"
     assert payload["reasoning"]["total_reasoning_chains"] == 1
+
+
+def test_run_agi_stream_returns_structured_deltas(monkeypatch):
+    class _StreamingProvider:
+        _base_provider_choice = SimpleNamespace(name="local", model="local-echo")
+
+        def complete(self, messages, stream=False):
+            assert stream is True
+            yield "Hello"
+            yield {"type": "analysis", "data": "intent=coding"}
+            yield " world"
+
+    def fake_factory(**kwargs):
+        return _StreamingProvider(), SimpleNamespace(name="agi", model="agi-local-local-echo")
+
+    monkeypatch.setattr("agi_mcp_tools._load_agi_factory", lambda: fake_factory)
+
+    payload = run_agi_stream(query="stream this")
+
+    assert payload["success"] is True
+    assert payload["response"] == "Hello world"
+    assert payload["provider"]["base_provider"] == "local"
+    assert any(delta.get("type") == "output" for delta in payload["deltas"])
+    assert any(delta.get("type") == "analysis" for delta in payload["deltas"])
 
 
 def test_lmstudio_mcp_server_exports_client_without_exit():

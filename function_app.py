@@ -749,6 +749,30 @@ def _create_agi_provider_for_api(
     return provider, provider_choice
 
 
+def _agi_provider_metadata(provider, provider_choice) -> dict:
+    """Return AGI wrapper metadata with the detected base provider exposed."""
+    base = getattr(provider, "_base_provider_choice", None)
+    if base is not None:
+        base_provider = getattr(base, "name", None)
+        base_model = getattr(base, "model", None)
+    else:
+        base_provider = getattr(provider_choice, "name", None)
+        base_model = getattr(provider_choice, "model", None)
+    return {
+        "name": "agi",
+        "base_provider": base_provider,
+        "base_model": base_model,
+        "wrapper_model": getattr(provider_choice, "model", None),
+    }
+
+
+def _normalize_agi_stream_delta(chunk) -> dict:
+    """Normalize AGI stream chunks to structured delta objects for SSE clients."""
+    if isinstance(chunk, dict):
+        return chunk
+    return {"type": "output", "data": str(chunk)}
+
+
 @app.route(route="agi/analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
     """Analyze a query using AGI reasoning classifier and agent routing preview."""
@@ -776,11 +800,7 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
                 "selected_agent": selected_agent,
                 "agent_score": float(agent_score),
             },
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": _agi_provider_metadata(provider, provider_choice),
         }
 
         return func.HttpResponse(
@@ -856,16 +876,16 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
             agent_tools = {}
 
         # MCP bridge tools (registered in lmstudio_mcp_server, not _AGENT_REGISTRY).
-        agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason"])
+        agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason", "agi_stream"])
+
+        provider_meta = {"name": "agi", "base_provider": None, "base_model": None, "wrapper_model": None}
+        if available:
+            provider_meta = _agi_provider_metadata(provider, provider_choice)
 
         payload = {
             "status": "ok",
             "available": available,
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": provider_meta,
             "reasoning": summary,
             "agent_tools": agent_tools,
             "endpoints": [
@@ -930,11 +950,7 @@ def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
             "status": "ok",
             "query": query,
             "response": str(result),
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": _agi_provider_metadata(provider, provider_choice),
         }
         if include_summary:
             payload["reasoning"] = provider.get_reasoning_summary()
@@ -1004,17 +1020,14 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
 
         def _sse_iterable():
             try:
-                pre = {
-                    "provider": "agi",
-                    "base_provider": getattr(provider_choice, "name", None),
-                    "base_model": getattr(provider_choice, "model", None),
-                }
+                pre = _agi_provider_metadata(provider, provider_choice)
                 yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
 
                 for chunk in gen:
                     if not chunk:
                         continue
-                    payload = json.dumps({"delta": chunk})
+                    delta = _normalize_agi_stream_delta(chunk)
+                    payload = json.dumps({"delta": delta})
                     yield (f"data: {payload}\n\n").encode("utf-8")
 
                 yield b"data: [DONE]\n\n"
@@ -1114,7 +1127,7 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
         sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv(
             "QAI_AGI_PERSIST_SQLITE")
         jsonl_path = os.getenv("QAI_AGI_PERSIST_PATH")
-        jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "").lower() in ("1", "true", "yes")
+        jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "true").lower() in ("1", "true", "yes")
         default_jsonl_path = _default_agi_persist_jsonl_path()
         if sqlite_path:
             try:

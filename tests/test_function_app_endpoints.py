@@ -778,7 +778,7 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="local", model="local-echo"),
+                types.SimpleNamespace(name="agi", model="agi-local-local-echo"),
             ),
         )
 
@@ -794,6 +794,26 @@ class TestAgiEndpoints:
         assert data["analysis"]["intent"] == "coding"
         assert data["routing"]["selected_agent"] == "code-specialist"
         assert data["provider"]["name"] == "agi"
+        assert data["provider"]["wrapper_model"] == "agi-local-local-echo"
+
+    def test_agi_provider_metadata_uses_base_choice(self, app_module):
+        provider = types.SimpleNamespace(
+            _base_provider_choice=types.SimpleNamespace(name="local", model="local-echo")
+        )
+        wrapper = types.SimpleNamespace(name="agi", model="agi-local-local-echo")
+        meta = app_module._agi_provider_metadata(provider, wrapper)
+        assert meta["name"] == "agi"
+        assert meta["base_provider"] == "local"
+        assert meta["base_model"] == "local-echo"
+        assert meta["wrapper_model"] == "agi-local-local-echo"
+
+    def test_normalize_agi_stream_delta_wraps_strings(self, app_module):
+        delta = app_module._normalize_agi_stream_delta("Hello")
+        assert delta == {"type": "output", "data": "Hello"}
+        assert app_module._normalize_agi_stream_delta({"type": "analysis", "data": "x"}) == {
+            "type": "analysis",
+            "data": "x",
+        }
 
     def test_agi_analyze_validation_error_when_missing_query(self, app_module):
         req = _mock_request("POST", body={})
@@ -806,6 +826,8 @@ class TestAgiEndpoints:
 
     def test_agi_status_returns_reasoning_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(name="azure", model="gpt-4o")
+
             def get_reasoning_summary(self):
                 return {
                     "total_reasoning_chains": 3,
@@ -823,7 +845,7 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="azure", model="gpt-4o"),
+                types.SimpleNamespace(name="agi", model="agi-azure-gpt-4o"),
             ),
         )
 
@@ -835,6 +857,8 @@ class TestAgiEndpoints:
         assert data["status"] == "ok"
         assert data["available"] is True
         assert data["provider"]["name"] == "agi"
+        assert data["provider"]["base_provider"] == "azure"
+        assert data["provider"]["base_model"] == "gpt-4o"
         assert data["reasoning"]["total_reasoning_chains"] == 3
         agent_tools = data.get("agent_tools") or {}
         lmstudio_tools = set(agent_tools.get("lmstudio-specialist") or [])
@@ -846,6 +870,8 @@ class TestAgiEndpoints:
 
     def test_agi_reason_returns_response_and_summary(self, app_module, monkeypatch):
         class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(name="local", model="local-echo")
+
             def __init__(self):
                 self.goals = []
 
@@ -874,7 +900,7 @@ class TestAgiEndpoints:
             "create_agi_provider",
             lambda **kwargs: (
                 _FakeAgiProvider(),
-                types.SimpleNamespace(name="openai", model="gpt-test"),
+                types.SimpleNamespace(name="agi", model="agi-local-local-echo"),
             ),
         )
 
@@ -892,6 +918,8 @@ class TestAgiEndpoints:
         assert data["status"] == "ok"
         assert data["response"] == "Here is a reasoned response"
         assert data["reasoning"]["active_goals"] == ["be concise"]
+        assert data["provider"]["base_provider"] == "local"
+        assert data["provider"]["base_model"] == "local-echo"
 
     def test_agi_reason_validation_error_when_missing_input(self, app_module):
         req = _mock_request("POST", body={})
@@ -910,6 +938,8 @@ class TestAgiEndpoints:
         captured: dict = {"sse_body": b""}
 
         class _FakeAgiProvider:
+            _base_provider_choice = types.SimpleNamespace(name="local", model="local-echo")
+
             def complete(self, messages, stream=False):
                 assert stream is True
                 yield "Hello"
@@ -948,7 +978,10 @@ class TestAgiEndpoints:
         assert resp.status_code == 200
         body_text = captured["sse_body"].decode("utf-8")
         assert "event: meta" in body_text
-        assert '"delta": "Hello"' in body_text or '"delta": " world"' in body_text
+        assert '"base_provider": "local"' in body_text
+        assert '"type": "output"' in body_text
+        assert '"data": "Hello"' in body_text
+        assert '"data": " world"' in body_text
         assert "data: [DONE]" in body_text
 
     def test_agi_stream_validation_error_when_missing_input(self, app_module):

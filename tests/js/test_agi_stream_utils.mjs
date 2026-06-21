@@ -56,4 +56,12 @@ describe('AGIStreamUtils', () => {
     assert.match(html, /agi-unknown/);
     assert.match(html, /foo/);
   });
+
+  it('parseSSEText handles normalized string output deltas', () => {
+    const sse = 'data: {"delta":{"type":"output","data":"Hi"}}\n\n';
+    const deltas = parseSSEText(sse);
+    assert.equal(deltas.length, 1);
+    assert.equal(deltas[0].type, 'output');
+    assert.equal(deltas[0].data, 'Hi');
+  });
 });

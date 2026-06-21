@@ -34,7 +34,7 @@ try:
 except ImportError:
     httpx = None  # type: ignore[assignment]
 
-from agi_mcp_tools import run_agi_analyze, run_agi_reason
+from agi_mcp_tools import run_agi_analyze, run_agi_reason, run_agi_stream
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -314,6 +314,35 @@ def _register_mcp_handlers(server: "Server") -> None:
                     },
                 },
             ),
+            Tool(
+                name="agi_stream",
+                description="Run AGI streaming completion and return structured deltas plus full text",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Single-turn user query",
+                        },
+                        "messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {"type": "string"},
+                                    "content": {"type": "string"},
+                                },
+                                "required": ["role", "content"],
+                            },
+                            "description": "Optional chat-style message history",
+                        },
+                        "include_deltas": {
+                            "type": "boolean",
+                            "description": "Include structured stream deltas in the response",
+                        },
+                    },
+                },
+            ),
         ]
 
     @server.call_tool()
@@ -347,6 +376,12 @@ def _register_mcp_handlers(server: "Server") -> None:
                     include_reasoning_summary=bool(
                         arguments.get("include_reasoning_summary", True)
                     ),
+                )
+            elif name == "agi_stream":
+                result = run_agi_stream(
+                    query=arguments.get("query"),
+                    messages=arguments.get("messages"),
+                    include_deltas=bool(arguments.get("include_deltas", True)),
                 )
             else:
                 result = {"error": f"Unknown tool: {name}"}

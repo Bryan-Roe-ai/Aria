@@ -72,7 +72,7 @@ def test_agi_status_exposes_mcp_agi_tools(app_module):
 
     data = json.loads(resp.get_body())
     mcp_tools = set((data.get("agent_tools") or {}).get("mcp-agi") or [])
-    assert {"agi_analyze", "agi_reason"}.issubset(mcp_tools)
+    assert {"agi_analyze", "agi_reason", "agi_stream"}.issubset(mcp_tools)
 
 
 def test_agi_analyze_requires_query_or_messages(app_module):

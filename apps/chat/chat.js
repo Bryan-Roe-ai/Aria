@@ -7,6 +7,7 @@ const API_BASE = `/api/chat`;
 const STREAM_API = `/api/chat/stream`;
 const AGI_STREAM_API = `/api/agi/stream`;
 const AGI_REASON_API = `/api/agi/reason`;
+const AGI_ANALYZE_API = `/api/agi/analyze`;
 const STATUS_API = `/api/ai/status`;
 const QUANTUM_CLASSIFY_API = '/api/quantum/classify';
 const QUANTUM_CIRCUIT_API = '/api/quantum/circuit';
@@ -579,9 +580,50 @@ async function streamResponse(typingIndicator) {
 }
 
 function extractAgiOutputText(delta) {
+    if (typeof delta === 'string') return delta;
     if (!delta || typeof delta !== 'object') return '';
     if (delta.type === 'output') return String(delta.data || '');
     return '';
+}
+
+function formatAgiProviderLabel(providerMeta) {
+    if (!providerMeta) return 'AGI';
+    const base = providerMeta.base_provider;
+    const model = providerMeta.base_model;
+    if (base && base !== 'agi') {
+        return 'AGI (' + String(base).toUpperCase() + (model ? ' · ' + model : '') + ')';
+    }
+    return 'AGI';
+}
+
+async function previewAgiRouting() {
+    const lastUser = [...messages].reverse().find(function (m) { return m.role === 'user'; });
+    const query = lastUser && lastUser.content ? String(lastUser.content).trim() : '';
+    if (!query) {
+        updateStatus('AGI reasoning enabled');
+        return;
+    }
+
+    try {
+        const response = await fetch(AGI_ANALYZE_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query }),
+        });
+        if (!response.ok) {
+            updateStatus('AGI reasoning enabled');
+            return;
+        }
+        const data = await response.json();
+        const agent = (data.routing && data.routing.selected_agent) || 'general';
+        const domain = (data.analysis && data.analysis.domain) || 'general';
+        updateStatus('AGI enabled → ' + agent + ' (' + domain + ')');
+        if (providerInfo) {
+            providerInfo.textContent = formatAgiProviderLabel(data.provider);
+        }
+    } catch (e) {
+        updateStatus('AGI reasoning enabled');
+    }
 }
 
 function renderAgiDeltaHtml(delta) {
@@ -618,13 +660,20 @@ async function agiOneShotResponse(typingIndicator) {
     typingIndicator.remove();
 
     const assistantMessage = data.response || 'No AGI response received.';
-    addMessage('assistant', assistantMessage, true);
+    let displayMessage = assistantMessage;
+    if (data.reasoning && data.reasoning.last_agent_used) {
+        const agent = data.reasoning.last_agent_used;
+        const chains = data.reasoning.total_reasoning_chains;
+        const chainSuffix = chains ? ' (' + chains + ' chain' + (chains === 1 ? '' : 's') + ')' : '';
+        displayMessage += '\n\n---\n*AGI routing: ' + agent + chainSuffix + '*';
+    }
+    addMessage('assistant', displayMessage, true);
     if (!isSyntheticCompactionPlaceholder(assistantMessage)) {
         messages.push({ role: 'assistant', content: assistantMessage });
     }
     updateMessageCount();
     if (providerInfo) {
-        providerInfo.textContent = 'AGI' + (data.provider?.base_provider ? ` (${String(data.provider.base_provider).toUpperCase()})` : '');
+        providerInfo.textContent = formatAgiProviderLabel(data.provider);
     }
     updateStatus('Ready (AGI)');
     saveToStorage();
@@ -705,7 +754,7 @@ async function streamAgiResponse(typingIndicator) {
                     try {
                         const meta = JSON.parse(dataStr);
                         if (providerInfo) {
-                            providerInfo.textContent = 'AGI' + (meta.base_provider ? ` (${String(meta.base_provider).toUpperCase()})` : '');
+                            providerInfo.textContent = formatAgiProviderLabel(meta);
                         }
                     } catch (e) { /* ignore malformed meta */ }
                     return;
@@ -1211,8 +1260,8 @@ function toggleAgiMode() {
             agiModeButton.classList.add('active');
         }
         currentProvider = 'agi';
-        updateStatus('AGI reasoning enabled');
         if (providerInfo) providerInfo.textContent = 'AGI';
+        previewAgiRouting();
         emitEmbeddedChatEvent('aria-agi-enabled', {});
     } else {
         if (agiModeButton) {
