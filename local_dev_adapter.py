@@ -18,6 +18,7 @@ Design notes:
 """
 
 from __future__ import annotations
+import function_app
 import argparse
 import json
 import logging
@@ -27,6 +28,8 @@ import types
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+
+from shared.local_settings import apply_local_settings
 
 try:
     from flask import Flask, Response, make_response
@@ -49,7 +52,9 @@ sys.path.insert(0, str(repo_root))
 
 
 def _load_env_file() -> None:
-    """Load .env variables early so provider selection sees them."""
+    """Load local dev settings early so provider selection sees them."""
+    apply_local_settings()
+
     env_file = repo_root / ".env"
     if not env_file.exists():
         return
@@ -57,9 +62,9 @@ def _load_env_file() -> None:
     try:
         from dotenv import load_dotenv
 
-        load_dotenv(env_file)
+        load_dotenv(env_file, override=False)
     except ImportError:
-        with open(env_file) as f:
+        with open(env_file, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
@@ -180,7 +185,6 @@ except ModuleNotFoundError:
     AzureHttpResponse = _install_azure_functions_shim()
 
 # Import function_app only after sys.path, env, and shim setup.
-import function_app
 
 
 def _azure_response_parts(

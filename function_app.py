@@ -2552,7 +2552,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
 
         # Detect active provider
         provider, info = _detect_provider_with_runtime_fallback(
-            explicit=os.getenv("DEFAULT_AI_PROVIDER", "auto"))
+            explicit=_settings.active_provider())
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()
