@@ -48,6 +48,22 @@ sys.path.insert(0, str(repo_root / "ai-projects" / "quantum-ml" / "src"))
 sys.path.insert(0, str(repo_root / "scripts"))
 sys.path.insert(0, str(repo_root))
 
+# Load .env file to ensure environment variables are set (for provider selection, etc.)
+env_file = repo_root / ".env"
+if env_file.exists():
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(env_file)
+    except ImportError:
+        # dotenv not available, manually load simple key=value lines
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    if key not in os.environ:
+                        os.environ[key] = val
+
 logger = logging.getLogger(__name__)
 
 # Attempt to import the real function_app and the azure.functions HttpResponse
