@@ -64,7 +64,6 @@ class SQLiteAGIPersistence:
     def add_reasoning_chain(self, chain: List[Dict[str, Any]]) -> str:
         """Backwards-compatible alias for :meth:`write_reasoning_chain`."""
         return self.write_reasoning_chain(chain)
-
     def add_message(self, message: Dict[str, Any]) -> str:
         """Persist one message row and return its generated id."""
         eid = uuid.uuid4().hex

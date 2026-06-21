@@ -227,7 +227,7 @@ jobs:
             else
               echo "MISSING: $f" >&3
             fi
-          done
+          done >> "$REPORT"
 
           echo >&3
 

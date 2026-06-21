@@ -8,4 +8,4 @@ isort>=6.1.0
 ruff>=0.15.18
 mypy>=1.19.1
 pre-commit>=4.3.0
-# Add any additional dev tools below
+tomli>=2.0.1; python_version < "3.11"

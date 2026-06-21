@@ -417,7 +417,7 @@ az monitor metrics alert create \
 ## Contact & Escalation
 
 | Role | Contact | Availability |
-|------|---------|--------------|
+| --- | --- | --- |
 | On-Call Engineer | #oncall Slack | 24/7 |
 | Platform Lead | — | Business hours |
 | Architecture | — | Business hours + on-call |

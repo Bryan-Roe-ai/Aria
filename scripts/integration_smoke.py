@@ -38,13 +38,21 @@ _REQUIRED_AI_STATUS_ENDPOINTS = {
     "/api/ai/status",
     "/api/chat",
     "/api/chat-web",
+    "/api/chat-web/static/agi_stream_utils.js",
     "/api/tts",
     "/api/quantum/run",
+    "/api/agi/status",
+    "/api/agi/analyze",
+    "/api/agi/reason",
+    "/api/agi/stream",
 }
 _REQUIRED_AI_ROUTE_NAMES = {
     "ai/status",
     "chat",
     "chat-web",
+    "agi/status",
+    "agi/analyze",
+    "agi/reason",
     "agi/stream",
 }
 
@@ -329,6 +337,14 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
             "sse": False,
         },
         {
+            "name": "functions_agi_reason_endpoint",
+            "url": "http://localhost:7071/api/agi/reason",
+            "method": "POST",
+            "payload": {"query": "integration smoke reason"},
+            "required_key": "response",
+            "sse": False,
+        },
+        {
             "name": "functions_agi_stream_endpoint",
             "url": "http://localhost:7071/api/agi/stream",
             "method": "POST",
@@ -427,6 +443,44 @@ def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
                 )
 
     return results
+
+
+def _probe_chat_web_assets(strict: bool) -> StepResult:
+    """Verify AGI stream utilities are served for chat-web clients."""
+    name = "functions_chat_web_agi_stream_utils"
+    start = time.perf_counter()
+    url = "http://localhost:7071/api/chat-web/static/agi_stream_utils.js"
+    try:
+        req = Request(url, method="GET")
+        with urlopen(req, timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC) as resp:
+            body = resp.read().decode("utf-8", errors="replace")
+        if "AGIStreamUtils" not in body:
+            raise ValueError("missing_AGIStreamUtils_marker")
+        duration = round(time.perf_counter() - start, 2)
+        return StepResult(
+            name=name,
+            status="succeeded",
+            critical=strict,
+            duration_sec=duration,
+            detail="has_marker=AGIStreamUtils",
+        )
+    except (URLError, TimeoutError, OSError, ValueError):
+        duration = round(time.perf_counter() - start, 2)
+        if strict:
+            return StepResult(
+                name=name,
+                status="failed",
+                critical=True,
+                duration_sec=duration,
+                detail=f"endpoint_unreachable={url}",
+            )
+        return StepResult(
+            name=name,
+            status="skipped",
+            critical=False,
+            duration_sec=duration,
+            detail="functions host not running (non-strict mode)",
+        )
 
 
 def _probe_functions_endpoint(strict: bool) -> StepResult:
@@ -718,6 +772,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
     steps.append(_probe_functions_endpoint(strict_endpoints))
     steps.append(_probe_ai_routes_endpoint(strict_endpoints))
     steps.extend(_probe_agi_endpoints(strict_endpoints))
+    steps.append(_probe_chat_web_assets(strict_endpoints))
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")

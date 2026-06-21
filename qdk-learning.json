@@ -3,11 +3,17 @@
   "position": {
     "courseId": "katas",
     "unitId": "complex_arithmetic",
-    "activityId": "complex_arithmetic__overview"
+    "activityId": "complex_arithmetic__powers_of_i"
   },
   "completions": {
     "katas__getting_started__getting_started__welcome": {
       "completedAt": "2026-06-20T04:32:17.076Z"
+    },
+    "katas__complex_arithmetic__complex_arithmetic__overview": {
+      "completedAt": "2026-06-21T06:20:44.386Z"
+    },
+    "katas__complex_arithmetic__complex_arithmetic__algebraic_perspective": {
+      "completedAt": "2026-06-21T06:20:45.051Z"
     }
   },
   "startedAt": "2026-06-20T04:32:10.098Z"
