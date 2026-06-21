@@ -279,7 +279,7 @@ jobs:
           compression-level: 9
           path: |
             data_out/integration_smoke/
-            data_out/ci_orchestrator/status.json
+            data_out/ci_orchestrator/ci_results.json
 
       - name: Generate summary
         if: always()
@@ -288,7 +288,7 @@ jobs:
           JOB_STATUS: ${{ job.status }}
         run: |
           set -euo pipefail
-          status_file='data_out/ci_orchestrator/status.json'
+          status_file='data_out/ci_orchestrator/ci_results.json'
 
           {
             echo "## Integration Contract Gate"
@@ -317,6 +317,6 @@ jobs:
               echo '```'
             } >> "${GITHUB_STEP_SUMMARY}"
           else
-            echo "_No orchestrator status file produced (`${status_file}` missing or empty)._" \
+            echo "_No orchestrator results file produced (`${status_file}` missing or empty)._" \
               >> "${GITHUB_STEP_SUMMARY}"
           fi
