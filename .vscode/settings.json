@@ -205,7 +205,5 @@
     "editor.defaultFormatter": "GitHub.copilot-chat",
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
-    },
-    "prompty.currentModelConfiguration": "default",
-    "mirrord.promptUsingBinary": false
+    }
 }
