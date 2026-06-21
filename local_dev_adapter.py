@@ -46,6 +46,7 @@ def _safe_log_label(value: str) -> str:
     """Strip control chars from user-influenced values before logging."""
     return str(value).split("?", 1)[0].replace("\n", "").replace("\r", "")[:120]
 
+
 # Ensure repo modules are importable when running from the repo root.
 repo_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(repo_root / "ai-projects" / "chat-cli" / "src"))
@@ -336,7 +337,8 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
             try:
                 body, status_code, mimetype, headers = parts_fn()
             except Exception as exc:  # noqa: BLE001
-                logger.exception("Failed to build %s response: %s", _safe_log_label(path), exc)
+                logger.exception("Failed to build %s response: %s",
+                                 _safe_log_label(path), exc)
                 body = json.dumps({"error": str(exc)}).encode("utf-8")
                 status_code = 500
                 mimetype = "application/json"

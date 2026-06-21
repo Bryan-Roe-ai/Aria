@@ -63,7 +63,8 @@ def _capture_sse_http_response(monkeypatch, app_module, captured: dict) -> None:
             captured["sse_body"] = bytes(body)
         return _real_HttpResponse(body, **kwargs)
 
-    monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
+    monkeypatch.setattr(app_module.func, "HttpResponse",
+                        _capturing_HttpResponse)
 
 
 def _install_fake_quantum_trainer_module(

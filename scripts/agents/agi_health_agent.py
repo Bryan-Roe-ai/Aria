@@ -86,7 +86,8 @@ class AgiHealthAgent(AutomationAgent):
 
                 try:
                     provider, info = create_agi_provider(temperature=0.0)
-                    metrics["base_provider"] = getattr(info, "name", None) or str(info)
+                    metrics["base_provider"] = getattr(
+                        info, "name", None) or str(info)
                     response = provider.complete(
                         [{"role": "user", "content": "health ping"}],
                         stream=False,
@@ -115,8 +116,10 @@ class AgiHealthAgent(AutomationAgent):
             from shared.agi_backend_status import build_agi_backend_status  # noqa: WPS433
 
             backend_status = build_agi_backend_status(provider)
-            metrics["persistence_type"] = backend_status.get("persistence", {}).get("type")
-            metrics["memory_type"] = backend_status.get("memory", {}).get("type")
+            metrics["persistence_type"] = backend_status.get(
+                "persistence", {}).get("type")
+            metrics["memory_type"] = backend_status.get(
+                "memory", {}).get("type")
             if backend_status.get("persistence", {}).get("type") == "none":
                 findings.append(
                     {
@@ -132,7 +135,8 @@ class AgiHealthAgent(AutomationAgent):
                 }
             )
 
-        error_issues = {"missing_path", "import_failed", "smoke_failed", "backend_status_failed"}
+        error_issues = {"missing_path", "import_failed",
+                        "smoke_failed", "backend_status_failed"}
         warning_issues = {"registry_small", "persistence_disabled"}
 
         if any(f["issue"] in error_issues for f in findings):
@@ -165,8 +169,10 @@ class AgiHealthAgent(AutomationAgent):
 def build_parser() -> argparse.ArgumentParser:
     """Build the command-line parser for the AGI health agent."""
     parser = argparse.ArgumentParser(description=AgiHealthAgent.description)
-    parser.add_argument("--dry-run", action="store_true", help="Compute results without writing status.json.")
-    parser.add_argument("--json", action="store_true", help="Print the full result as JSON.")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Compute results without writing status.json.")
+    parser.add_argument("--json", action="store_true",
+                        help="Print the full result as JSON.")
     parser.add_argument(
         "--fail-on-warning",
         action="store_true",

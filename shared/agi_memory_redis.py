@@ -94,11 +94,14 @@ class RedisAGIMemory:
             try:
                 import redis  # type: ignore[import-untyped]
             except ImportError as exc:
-                raise RuntimeError("redis package is required for RedisAGIMemory") from exc
+                raise RuntimeError(
+                    "redis package is required for RedisAGIMemory") from exc
 
-            url = redis_url or os.getenv("QAI_AGI_REDIS_URL") or os.getenv("REDIS_URL")
+            url = redis_url or os.getenv(
+                "QAI_AGI_REDIS_URL") or os.getenv("REDIS_URL")
             if not url:
-                raise RuntimeError("QAI_AGI_REDIS_URL or REDIS_URL must be set for Redis memory")
+                raise RuntimeError(
+                    "QAI_AGI_REDIS_URL or REDIS_URL must be set for Redis memory")
             self._client = redis.from_url(url, decode_responses=True)
 
         raw = self._client.get(self._state_key())
@@ -114,10 +117,14 @@ class RedisAGIMemory:
                 state = {}
         else:
             state = {}
-        self.conversation_history: List[Dict[str, Any]] = list(state.get("conversation_history", []))
-        self.reasoning_chains: List[List[Any]] = list(state.get("reasoning_chains", []))
-        self.learned_patterns: _PersistOnWriteDict = _PersistOnWriteDict(self, state.get("learned_patterns", {}))
-        self.goals: _PersistOnWriteList = _PersistOnWriteList(self, state.get("goals", []))
+        self.conversation_history: List[Dict[str, Any]] = list(
+            state.get("conversation_history", []))
+        self.reasoning_chains: List[List[Any]] = list(
+            state.get("reasoning_chains", []))
+        self.learned_patterns: _PersistOnWriteDict = _PersistOnWriteDict(
+            self, state.get("learned_patterns", {}))
+        self.goals: _PersistOnWriteList = _PersistOnWriteList(
+            self, state.get("goals", []))
 
     def _state_key(self) -> str:
         return f"agi:{self._session_id}:state"
@@ -130,7 +137,8 @@ class RedisAGIMemory:
                 "goals": list(self.goals),
                 "learned_patterns": dict(self.learned_patterns),
             }
-            self._client.set(self._state_key(), json.dumps(payload, separators=(",", ":"), ensure_ascii=False))
+            self._client.set(self._state_key(), json.dumps(
+                payload, separators=(",", ":"), ensure_ascii=False))
 
     def add_message(self, message: Dict[str, Any]) -> None:
         with self._lock:
@@ -141,10 +149,13 @@ class RedisAGIMemory:
                 }
             )
             if len(self.conversation_history) > self.max_history:
-                system_msgs = [m for m in self.conversation_history if m.get("role") == "system"]
-                other_msgs = [m for m in self.conversation_history if m.get("role") != "system"]
+                system_msgs = [
+                    m for m in self.conversation_history if m.get("role") == "system"]
+                other_msgs = [
+                    m for m in self.conversation_history if m.get("role") != "system"]
                 keep_count = max(0, self.max_history - len(system_msgs))
-                self.conversation_history = system_msgs + other_msgs[-keep_count:]
+                self.conversation_history = system_msgs + \
+                    other_msgs[-keep_count:]
             self._persist_state()
 
     def add_reasoning_chain(self, chain: List[Any]) -> None:
@@ -163,7 +174,8 @@ class RedisAGIMemory:
                 elif isinstance(step, dict):
                     serialized.append(step)
                 else:
-                    serialized.append({"step_type": "unknown", "content": str(step)})
+                    serialized.append(
+                        {"step_type": "unknown", "content": str(step)})
             self.reasoning_chains.append(serialized)
             if len(self.reasoning_chains) > MAX_REASONING_CHAINS:
                 self.reasoning_chains = self.reasoning_chains[-MAX_REASONING_CHAINS:]
