@@ -77,7 +77,10 @@ actions. Tag forms recognised include:
 - Fast unit tests: `python scripts/test_runner.py --unit`
 - Aria-specific unit tests: `pytest tests/unit/test_tags_to_actions.py`
 - Quick repo validation: `python scripts/fast_validate.py`
-- Repo automation agents: `python scripts/run_repo_agents.py` (writes `data_out/agents/status.json`; use `--run-agents` with `scripts/repo_health_automation.py`)
+- Repo automation agents: `python scripts/run_repo_agents.py` or `make agents` (writes `data_out/agents/status.json`; use `--run-agents` with `scripts/repo_health_automation.py`)
+- Shell wrapper: `./scripts/run_ai_automation.sh` (forwards to `run_repo_agents.py`)
+- Continual learning: run `/continual-learning` in Cursor to mine transcripts and update Learned sections below (delegates to `.cursor/agents/agents-memory-updater.md`)
+- Automation canvas: open `~/.cursor/projects/workspace/canvases/automation-status.canvas.tsx` beside chat for agent + memory metrics
 - System health: `curl http://localhost:7071/api/ai/status | jq`
 
 ## Conventions
@@ -94,6 +97,8 @@ The startup update script installs Python deps into `.venv` (Python 3.12). Use `
 - **Aria web UI** (flagship, port 8080): `.venv/bin/python apps/aria/server.py --port 8080` (or `make start`). The root page `/` is a static stage demo with **no command box**; the natural-language command UI is at **`/auto-execute.html`** (text input + "Execute Actions" → `POST /api/aria/execute`). Backend command/execute endpoints work via curl regardless (see AGENTS.md API table). `ARIA_RENDER_MODE` defaults to `ue5` but the browser falls back to Three.js, so the stage still renders without UE5.
 - **Azure Functions API** (port 7071): `func host start --port 7071` (or `make start-functions`). The `func` CLI (v4) is preinstalled in the VM snapshot at `~/.npm-global/bin` but is **not on the default PATH** — prepend it: `export PATH="$HOME/.npm-global/bin:$PATH"`. If `func` is ever missing, reinstall with `npm install -g azure-functions-core-tools@4 --unsafe-perm true`, then run `npm config delete prefix` to avoid an nvm/npmrc conflict. On startup the host logs `AzureWebJobsStorage ... Unhealthy` because Azurite isn't running; this is **expected and non-fatal** — HTTP-triggered endpoints (`/api/ai/status`, `/api/chat`, `/api/tts`, etc.) still respond. A lightweight fallback `make start-local-status` serves only `/api/ai/status`.
 - **Tests/lint:** `.venv/bin/python scripts/test_runner.py --unit` is the fast suite. All ~2700 unit tests now pass (0 failures, 50 skipped) — previous devcontainer-path failures were fixed in the automation runner PR. `make lint` (ruff + black) currently reports many pre-existing findings across the repo — treat lint failures as code-quality state, not an environment problem.
+- **Repo agents:** `make agents` or `./scripts/run_ai_automation.sh` runs all inspection agents; `make agents-dry` previews without writing status files.
+- **Continual learning:** invoke `/continual-learning` in Cursor chat (skill at `.cursor/skills/continual-learning/SKILL.md`) to update Learned sections via the `agents-memory-updater` subagent.
 
 ## Learned User Preferences
 
