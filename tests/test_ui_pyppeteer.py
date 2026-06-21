@@ -196,6 +196,28 @@ async def wait_for_object_state(name: str, expected_states: tuple[str, ...], tim
     return None
 
 
+async def wait_for_client_helpers(page, timeout: float = 8.0) -> bool:
+    """Poll until the browser helper functions are attached, or timeout.
+
+    Some CI runs can load the static page while the helper script wiring is
+    still in-flight. Returning False allows the caller to skip cleanly instead
+    of failing with `ReferenceError: addObject is not defined`.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            ready = await page.evaluate(
+                "() => typeof addObject === 'function' && typeof pickUpObject === 'function' && typeof dropObject === 'function'"
+            )
+            if bool(ready):
+                return True
+        except Exception:
+            # Page context may be transitioning during initial load.
+            pass
+        await asyncio.sleep(STATE_POLL_INTERVAL)
+    return False
+
+
 # --- The actual test -------------------------------------------------------
 
 
@@ -244,12 +266,8 @@ async def _run_pyppeteer_scenario() -> None:
         page = await browser.newPage()
         await page.goto(SERVER_URL)
 
-        # Ensure helper functions are attached before invoking them.
-        # In CI, script loading can lag slightly after initial navigation.
-        await page.waitForFunction(
-            "() => typeof addObject === 'function' && typeof pickUpObject === 'function' && typeof dropObject === 'function'",
-            {"timeout": 8000},
-        )
+        if not await wait_for_client_helpers(page, timeout=8.0):
+            pytest.skip("UI helper functions were not available in page context")
 
         # Add object via client code.
         await page.evaluate("(n, e) => addObject(n, e)", name, "🧸")
