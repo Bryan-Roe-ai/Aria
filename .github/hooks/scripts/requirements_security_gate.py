@@ -27,7 +27,10 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import tomllib
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11
+    import tomli as tomllib
 from typing import Any
 
 _REQ_PATTERN = re.compile(r"requirements[^/]*\.txt$|pyproject\.toml$", re.IGNORECASE)

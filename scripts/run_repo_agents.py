@@ -40,6 +40,7 @@ _AGENT_MODULES = (
     "scripts.agents.status_freshness_agent",
     "scripts.agents.marker_audit_agent",
     "scripts.agents.docstring_audit_agent",
+    "scripts.agents.agents_md_audit_agent",
 )
 
 SUMMARY_PATH = AGENTS_DATA_DIR / "status.json"
@@ -79,7 +80,12 @@ def run_agents(
     names = sorted(selected) if selected else sorted(registry)
     missing = [name for name in names if name not in registry]
     if missing:
-        raise SystemExit(f"Unknown agent(s): {', '.join(missing)}")
+        known = ", ".join(sorted(registry))
+        raise SystemExit(
+            f"Unknown agent(s): {', '.join(missing)}\n"
+            f"Available agents: {known}\n"
+            "List agents: python scripts/run_repo_agents.py --list-agents"
+        )
 
     results: list[AgentResult] = []
     for name in names:
@@ -113,7 +119,22 @@ def write_summary(summary: RunSummary) -> Path:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run repository automation agents.")
+    parser = argparse.ArgumentParser(
+        description="Run repository automation agents.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python scripts/run_repo_agents.py\n"
+            "  python scripts/run_repo_agents.py --list-agents\n"
+            "  python scripts/run_repo_agents.py --agent agi-health --dry-run\n"
+            "  python scripts/run_repo_agents.py --json --fail-on-warning\n"
+        ),
+    )
+    parser.add_argument(
+        "--list-agents",
+        action="store_true",
+        help="Print registered agent names and exit.",
+    )
     parser.add_argument(
         "--agent",
         action="append",
@@ -145,6 +166,18 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+
+    if args.list_agents:
+        registry = _load_agents()
+        for name in sorted(registry):
+            agent_cls = registry[name]
+            description = getattr(agent_cls, "description", "")
+            if description:
+                print(f"{name}\t{description}")
+            else:
+                print(name)
+        return 0
+
     _, summary = run_agents(selected=args.agents, dry_run=args.dry_run)
 
     if not args.dry_run:

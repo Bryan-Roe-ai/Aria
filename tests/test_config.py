@@ -127,12 +127,14 @@ class TestEnvVarPropagation:
     def test_blank_provider_priority_falls_back_to_default_chain(self):
         with patch.dict(os.environ, {"QAI_PROVIDER_PRIORITY": ""}):
             s = Settings()
-            assert s.provider_chain() == ["azure", "openai", "lmstudio", "local"]
+            assert s.provider_chain() == [
+                "azure", "openai", "lmstudio", "local"]
 
     def test_whitespace_provider_priority_falls_back_to_default_chain(self):
         with patch.dict(os.environ, {"QAI_PROVIDER_PRIORITY": " ,  ,   "}):
             s = Settings()
-            assert s.provider_chain() == ["azure", "openai", "lmstudio", "local"]
+            assert s.provider_chain() == [
+                "azure", "openai", "lmstudio", "local"]
 
 
 class TestActiveProvider:
@@ -174,6 +176,25 @@ class TestActiveProvider:
         with patch.dict(os.environ, env, clear=True):
             s = Settings()
             assert s.active_provider() == "lmstudio"
+
+    def test_lmstudio_whitespace_url_is_not_ready(self):
+        env = {
+            k: v
+            for k, v in os.environ.items()
+            if k
+            not in {
+                "AZURE_OPENAI_API_KEY",
+                "AZURE_OPENAI_ENDPOINT",
+                "AZURE_OPENAI_DEPLOYMENT",
+                "OPENAI_API_KEY",
+                "LMSTUDIO_BASE_URL",
+            }
+        }
+        env["LMSTUDIO_BASE_URL"] = "   "
+        with patch.dict(os.environ, env, clear=True):
+            s = Settings()
+            assert s.lmstudio_ready is False
+            assert s.active_provider() == "local"
 
 
 class TestSummary:
