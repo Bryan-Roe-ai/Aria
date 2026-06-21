@@ -14,7 +14,7 @@ This guide demonstrates how to use Aria's AGI Provider with LM Studio to perform
 
 When using cloud-based AI APIs (OpenAI, Anthropic, etc.) for sensitive data:
 
-```ini
+```
 Your Local Data
     ↓
 [Transmitted over internet]
@@ -29,7 +29,6 @@ Cloud Provider's Servers
 ```
 
 **Risks:**
-
 - ❌ Data leaves your control
 - ❌ No guaranteed deletion
 - ❌ Subject to third-party logging
@@ -41,7 +40,7 @@ Cloud Provider's Servers
 
 Local-only architecture keeps sensitive data completely private:
 
-```ini
+```
 Your Local Data
     ↓
 [LocalOnlyProcessor validates privacy]
@@ -61,7 +60,6 @@ Local Results Only
 ```
 
 **Benefits:**
-
 - ✅ Data never leaves local machine
 - ✅ Full privacy control
 - ✅ Comprehensive audit trails
@@ -73,7 +71,7 @@ Local Results Only
 
 ### Local-Only Processing Stack
 
-```ini
+```
 ┌─────────────────────────────────────────────┐
 │  Your Application                           │
 │  (Healthcare, Finance, Enterprise)          │
@@ -238,7 +236,6 @@ result = await processor.process_sensitive_data(
 ```
 
 **Benefits:**
-
 - ✅ HIPAA-compliant (no cloud exposure)
 - ✅ Full audit trail for compliance
 - ✅ Patient data stays in hospital
@@ -267,7 +264,6 @@ result = await processor.process_sensitive_data(
 ```
 
 **Benefits:**
-
 - ✅ PCI-DSS compliant
 - ✅ Account numbers never leave premises
 - ✅ Credit cards stay private
@@ -296,7 +292,6 @@ result = await processor.process_sensitive_data(
 ```
 
 **Benefits:**
-
 - ✅ Trade secrets stay in company
 - ✅ No competitor visibility
 - ✅ Patent-eligible work protected
@@ -325,7 +320,6 @@ result = await processor.process_sensitive_data(
 ```
 
 **Benefits:**
-
 - ✅ Classified documents stay classified
 - ✅ Attorney-client privilege maintained
 - ✅ Chain of custody documented
@@ -493,8 +487,6 @@ with open(KEY_PATH, "rb") as f:
 import shutil
 
 # Securely delete sensitive files
-
-
 def secure_delete(file_path):
     """Overwrite file content before deletion."""
     with open(file_path, "ba+") as f:
@@ -503,7 +495,6 @@ def secure_delete(file_path):
         f.write(os.urandom(length))
 
     os.remove(file_path)
-
 
 secure_delete("sensitive_data.txt")
 ```
@@ -519,7 +510,6 @@ BLOCKED_PATTERNS = [
     r"https?://api\.anthropic\.com",
     r"https?://(.*\.)?amazonaws\.com",
 ]
-
 
 def check_network_requests(log_data):
     for pattern in BLOCKED_PATTERNS:
@@ -549,7 +539,6 @@ def analyze_audit_log():
         )
         notify_security_team()
 
-
 analyze_audit_log()
 ```
 
@@ -558,14 +547,12 @@ analyze_audit_log()
 ### HIPAA (Healthcare)
 
 ✅ **Covered Entities can use for:**
-
 - Patient record analysis
 - Treatment recommendations
 - Medication interaction checking
 - Risk assessment
 
 **Requirements:**
-
 - Local-only processing (LM Studio)
 - Audit logging enabled
 - Data deletion policy implemented
@@ -574,14 +561,12 @@ analyze_audit_log()
 ### PCI-DSS (Payment Cards)
 
 ✅ **Can be used for:**
-
 - Cardholder data analysis
 - Fraud detection
 - Security assessment
 - Compliance verification
 
 **Requirements:**
-
 - Network isolation
 - Encryption at rest
 - Access logging
@@ -590,14 +575,12 @@ analyze_audit_log()
 ### GDPR (EU Data Protection)
 
 ✅ **Enables compliance for:**
-
 - EU resident data processing
 - Right to deletion
 - Data minimization
 - Purpose limitation
 
 **Requirements:**
-
 - Process locally (no third-party transfer)
 - Audit trail for transparency
 - Secure deletion capability
@@ -606,7 +589,6 @@ analyze_audit_log()
 ### SOC 2 / ISO 27001
 
 ✅ **Demonstrates control over:**
-
 - Data access (logged)
 - Data processing (local)
 - Data protection (encrypted)
@@ -627,7 +609,7 @@ analyze_audit_log()
 
 ### Resource Usage
 
-```md
+```
 LM Studio with Mistral 7B:
 - Memory: ~8GB RAM
 - Compute: GPU (recommended) or CPU
@@ -642,7 +624,7 @@ Typical deployment:
 
 ### LM Studio Not Available
 
-```md
+```
 Error: LM Studio not available for private processing
 
 Solution:
@@ -654,7 +636,7 @@ Solution:
 
 ### Privacy Violation Detected
 
-```md
+```
 Error: Cloud processing detected in audit trail
 
 Solution:
@@ -666,7 +648,7 @@ Solution:
 
 ### Slow Processing
 
-```md
+```
 Issue: Sensitive data takes too long to analyze
 
 Solution:
@@ -689,7 +671,7 @@ Solution:
 ## Resources
 
 - **LM Studio**: https://lmstudio.ai
-- __Privacy-First Code__: `privacy_first_ai.py`
+- **Privacy-First Code**: `privacy_first_ai.py`
 - **HIPAA Compliance**: https://www.hhs.gov/hipaa/
 - **PCI-DSS**: https://www.pcisecuritystandards.org/
 - **GDPR**: https://gdpr-info.eu/

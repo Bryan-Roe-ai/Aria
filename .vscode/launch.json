@@ -2,17 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Debugger: Pyramid Application",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "pyramid.scripts.pserve",
-            "args": [
-                "${workspaceFolder}/development.ini"
-            ],
-            "pyramid": true,
-            "jinja": true
-        },
-        {
             "name": "Python Debugger: FastAPI",
             "type": "debugpy",
             "request": "launch",
