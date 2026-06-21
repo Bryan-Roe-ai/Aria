@@ -1037,13 +1037,7 @@ def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield b"data: [DONE]\n\n"
 
         # Pass generator directly so SSE chunks stream incrementally.
-        return func.HttpResponse(
-            body=_sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
+        return _sse_response(_sse_iterable(), status_code=200)
     except ValueError as ve:
         return func.HttpResponse(
             json.dumps(
@@ -1614,24 +1608,32 @@ def _default_agi_persist_jsonl_path() -> str:
     return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
 
 
-def _materialize_sse_body(sse_generator) -> bytes:
-    """Join SSE byte chunks for azure.functions.HttpResponse.
+def _sse_body_bytes(chunks) -> bytes:
+    """Coerce SSE chunks into bytes for Azure Functions HttpResponse bodies."""
+    if isinstance(chunks, bytes):
+        return chunks
+    if isinstance(chunks, bytearray):
+        return bytes(chunks)
+    if isinstance(chunks, str):
+        return chunks.encode("utf-8")
 
-    azure-functions 1.x accepts only str/bytes/bytearray bodies, not generators.
-    """
-    if sse_generator is None:
-        return b""
-    if isinstance(sse_generator, (bytes, bytearray)):
-        return bytes(sse_generator)
-    if isinstance(sse_generator, str):
-        return sse_generator.encode("utf-8")
-    return b"".join(sse_generator)
+    out = bytearray()
+    for chunk in chunks:
+        if chunk is None:
+            continue
+        if isinstance(chunk, bytes):
+            out.extend(chunk)
+        elif isinstance(chunk, bytearray):
+            out.extend(chunk)
+        else:
+            out.extend(str(chunk).encode("utf-8"))
+    return bytes(out)
 
 
-def _make_sse_response(sse_generator, *, status_code: int = 200) -> func.HttpResponse:
-    """Build an SSE HttpResponse, materializing generator output when required."""
+def _sse_response(chunks, *, status_code: int = 200) -> func.HttpResponse:
+    """Create a text/event-stream response with safely serialized body."""
     return func.HttpResponse(
-        body=_materialize_sse_body(sse_generator),
+        body=_sse_body_bytes(chunks),
         status_code=status_code,
         mimetype="text/event-stream",
         headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
@@ -1911,13 +1913,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                     yield (f"data: {payload}\n\n").encode("utf-8")
                     yield b"data: [DONE]\n\n"
 
-                return func.HttpResponse(
-                    body=blocked_sse(),
-                    status_code=200,
-                    mimetype="text/event-stream",
-                    headers={**create_cors_response_headers(),
-                             "Cache-Control": "no-cache"},
-                )
+                return _sse_response(blocked_sse(), status_code=200)
         stream_memory_messages: list[dict] = []
         if stream_user_content:
             try:
@@ -2122,13 +2118,8 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 # Canonical SSE completion sentinel used by chat-web clients.
                 yield b"data: [DONE]\n\n"
 
-        return func.HttpResponse(
-            body=sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
+        return _sse_response(sse_iterable(), status_code=200)
+
     except ValueError as ve:
         logging.error(f"chat/stream validation error: {ve}")
         return func.HttpResponse(
@@ -4998,13 +4989,8 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(),
-                         "Cache-Control": "no-cache"},
-            )
+            return _sse_response(_unavail(), status_code=503)
+
         # Honour per-request max_tokens (within cap) — use a local override dict
         # instead of mutating the shared pipeline config to avoid race conditions.
         gen_kwargs = {}
@@ -5074,13 +5060,8 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(),
-                         "Cache-Control": "no-cache"},
-            )
+            return _sse_response(_unavail(), status_code=503)
+
         import asyncio  # noqa: PLC0415
 
         def _sse_generator():
@@ -5104,13 +5085,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             finally:
                 loop.close()
 
-        return func.HttpResponse(
-            body=_sse_generator(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
+        return _sse_response(_sse_generator(), status_code=200)
     except Exception as exc:  # noqa: BLE001
         logging.error("quantum-llm/stream error: %s", exc)
         _exc = exc  # capture before exception binding is deleted at end of except block
@@ -5119,13 +5094,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             yield f'data: {json.dumps({"error": str(_exc)})}\n\n'.encode("utf-8")
             yield b"data: [DONE]\n\n"
 
-        return func.HttpResponse(
-            body=_err(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
+        return _sse_response(_err(), status_code=200)
 
 @app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:

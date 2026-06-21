@@ -103,7 +103,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          extra-packages: 'pytest pytest-timeout'
+          extra-packages: 'pytest pytest-timeout openai'
 
       - name: Determine gate mode
         id: mode
@@ -160,58 +160,21 @@ jobs:
         if: runner.os == 'Linux' && steps.mode.outputs.strict == 'true'
         env:
           INTEGRATION_AI_STATUS_ENDPOINT: ${{ env.INTEGRATION_AI_STATUS_ENDPOINT }}
-          START_FUNC_CMD: ${{ env.START_FUNC_CMD }}
           RETRY_COUNT: ${{ env.RETRY_COUNT }}
           RETRY_INTERVAL: ${{ env.RETRY_INTERVAL }}
         run: |
           set -euo pipefail
           echo "INTEGRATION_AI_STATUS_ENDPOINT=${INTEGRATION_AI_STATUS_ENDPOINT}"
 
-          func_log="${RUNNER_TEMP:-/tmp}/func.log"
-          echo "Functions host log: ${func_log}"
+          adapter_log="${RUNNER_TEMP:-/tmp}/local_dev_adapter.log"
+          echo "Adapter log: ${adapter_log}"
 
-          # Prefer Docker if a Dockerfile is provided under ./functions for reliability.
-          if command -v docker >/dev/null 2>&1 && [[ -f "./functions/Dockerfile" ]]; then
-            echo "Docker detected and ./functions/Dockerfile found — building image..."
-            docker build -t integration-func-image ./functions
-            echo "Running container mapping port 7071..."
-            docker run -d --name integration-func -p 7071:7071 integration-func-image || true
+          # Robust CI path: use local_dev_adapter for /api/ai/status instead of
+          # installing Azure Functions Core Tools via npm (flaky with Node/ESM).
+          endpoint_port="7071"
 
-          else
-            echo "Docker not used or Dockerfile missing — falling back to Azure Functions Core Tools install/start"
-
-            # Try to install azure functions core tools with retries; rely on cached npm when available.
-            install_attempts=3
-            installed=false
-            for attempt in $(seq 1 ${install_attempts}); do
-              if command -v func >/dev/null 2>&1; then
-                echo "func already available"
-                installed=true
-                break
-              fi
-
-              echo "Attempt ${attempt}/${install_attempts} — installing azure-functions-core-tools@4 via npm..."
-              if npm install -g azure-functions-core-tools@4 --unsafe-perm true; then
-                echo "Installed azure-functions-core-tools successfully"
-                if command -v func >/dev/null 2>&1; then
-                  installed=true
-                  break
-                fi
-              else
-                echo "npm install failed on attempt ${attempt} — retrying in 2s..."
-                sleep 2
-              fi
-            done
-
-            if [[ "${installed}" != true ]]; then
-              echo "Warning: func not available after install attempts — attempting to proceed, but endpoint checks may fail" >&2
-            fi
-
-            # Start Functions host from repo root (host.json + function_app.py live here).
-            start_cmd=(func host start --port 7071 --cors '*')
-            echo "Starting Functions host using: ${start_cmd[*]}"
-            nohup "${start_cmd[@]}" &>"${func_log}" &
-          fi
+          echo "Starting local_dev_adapter on port ${endpoint_port}"
+          nohup python local_dev_adapter.py --port "${endpoint_port}" &>"${adapter_log}" &
 
           echo "Waiting for endpoint to become available: ${INTEGRATION_AI_STATUS_ENDPOINT}"
           i=0
@@ -226,16 +189,11 @@ jobs:
           done
 
           echo "AI status endpoint not reachable after ${RETRY_COUNT} attempts: ${INTEGRATION_AI_STATUS_ENDPOINT}" >&2
-          echo "If a function host was started, check ${func_log} (or the Docker container logs)."
+          echo "Check adapter logs: ${adapter_log}"
 
-          if [[ -f "${func_log}" ]]; then
-            echo "--- Last lines from ${func_log} ---"
-            tail -n 200 "${func_log}" || true
-          fi
-
-          if command -v docker >/dev/null 2>&1 && docker ps --filter "name=integration-func" --format '{{.ID}}' | grep -q .; then
-            echo "--- Last Docker container logs (integration-func) ---"
-            docker logs --tail 200 integration-func || true
+          if [[ -f "${adapter_log}" ]]; then
+            echo "--- Last lines from ${adapter_log} ---"
+            tail -n 200 "${adapter_log}" || true
           fi
 
           echo "--- Diagnostics: listening ports ---"
