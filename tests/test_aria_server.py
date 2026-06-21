@@ -634,6 +634,24 @@ def test_generate_world_with_llm_accepts_object_list_in_response():
     assert any(obj["emoji"] == "🐚" for obj in world["objects"].values())
 
 
+def test_generate_world_fallback_quantum_theme_includes_stage_style():
+    world = aria_server.generate_world_fallback("quantum", 6)
+    assert world["environment"]["theme"] == "quantum"
+    assert "stage_style" in world["environment"]
+    assert world["environment"]["stage_style"]["label"] == "Quantum Lab"
+    assert len(world["objects"]) >= 1
+    emojis = {obj.get("emoji") for obj in world["objects"].values()}
+    assert "⚛️" in emojis or "🔀" in emojis
+
+
+def test_setup_quantum_stage_loads_objects_and_runs_intro():
+    aria_server.stage_state["objects"] = {}
+    result = aria_server.setup_quantum_stage(preset="intro", count=4, run_actions=True)
+    assert result["status"] == "success"
+    assert "qubit" in aria_server.stage_state["objects"]
+    assert len(result["results"]) == len(aria_server.QUANTUM_STAGE_PRESETS["intro"])
+
+
 # ===== Sparkle Functionality Tests =====
 
 

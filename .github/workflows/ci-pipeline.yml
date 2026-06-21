@@ -107,19 +107,25 @@ jobs:
           {
             echo "## CI Validation Results"
             echo ""
-            if [ -f data_out/ci_orchestrator/status.json ]; then
-              echo '```json'
-              cat data_out/ci_orchestrator/status.json
-              echo ''
-              echo '```'
-            else
-              echo "⚠️ No ci_orchestrator status file found"
-            fi
-            if [ "${{ job.status }}" != "success" ]; then
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f data_out/ci_orchestrator/status.json ]; then
+              {
+                echo '```json'
+                cat data_out/ci_orchestrator/status.json
+                echo ''
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ No ci_orchestrator status file found" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ "${{ job.status }}" != "success" ]; then
+            {
               echo ""
               echo "### ❌ Validation failed — see logs above for details."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload validation results
         if: always()
@@ -174,21 +180,26 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          {
-            echo "## Training Results"
-            if [ -f data_out/master_orchestrator/status.json ]; then
-              echo '```json'
-              cat data_out/master_orchestrator/status.json
-              echo ''
-              echo '```'
-            else
-              echo "⚠️ No master_orchestrator status file found"
-            fi
-            if [ "${{ job.status }}" != "success" ]; then
+            {
+              echo "## Training Results"
+            } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f data_out/master_orchestrator/status.json ]; then
+              {
+                echo '```json'
+                cat data_out/master_orchestrator/status.json
+                echo ''
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ No master_orchestrator status file found" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ "${{ job.status }}" != "success" ]; then
+            {
               echo ""
               echo "### ❌ Training job failed — see logs above."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload training results
         if: always()

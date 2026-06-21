@@ -93,7 +93,7 @@ python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpo
 - `--strict-endpoints` — run integration gate in strict endpoint mode
 - `--full-pytest` — include `pytest tests -q --maxfail=1 --tb=short`
 - `--auto-fix-ruff` — run `ruff check --fix` on changed `.py` files before checks
-- `--run-agents` — run `scripts/run_repo_agents.py` before the integration contract gate
+- `--run-agents` — run `scripts/run_repo_agents.py` after the integration contract gate
 - `--continue-on-fail` — continue all steps even after a failed step
 
 **Status output:**
@@ -111,6 +111,7 @@ python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpo
 | `status-freshness` | Stale, failed, unparseable, or timestamp-less `data_out/**/status.json` files | `scripts/agents/status_freshness_agent.py` |
 | `marker-audit` | `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers in source-like files | `scripts/agents/marker_audit_agent.py` |
 | `docstring-audit` | Module/class/function docstring coverage for Python paths, defaulting to `shared` and `scripts/agents` | `scripts/agents/docstring_audit_agent.py` |
+| `agents-md-audit` | Structure and hygiene of `AGENTS.md` Learned sections (bullet limits, secrets, stale dates) | `scripts/agents/agents_md_audit_agent.py` |
 
 **Result contract:** Every agent returns an `AgentResult` with `name`, `status`, `summary`, `findings`, `metrics`, and `timestamp`. Valid statuses are `ok`, `warning`, and `error`; only `ok` makes `AgentResult.ok` true.
 
@@ -119,9 +120,14 @@ python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpo
 ```powershell
 # Run all registered agents and write status files
 python .\scripts\run_repo_agents.py
+make agents
 
 # Preview without writing data_out/agents/*
 python .\scripts\run_repo_agents.py --dry-run
+make agents-dry
+
+# Shell wrapper
+./scripts/run_ai_automation.sh --json
 
 # Run one agent, emit aggregate JSON, and fail CI on warnings
 python .\scripts\run_repo_agents.py --agent status-freshness --json --fail-on-warning

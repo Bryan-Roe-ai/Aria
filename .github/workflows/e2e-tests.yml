@@ -97,7 +97,7 @@ jobs:
           install-requirements: 'false'
           extra-packages: 'pytest playwright pytest-asyncio requests'
       - name: Install Playwright browsers
-        run: python -m playwright install chromium --with-deps
+        run: python -m playwright install chromium
       - name: Start server and run Playwright tests
         run: |
           python3 aria_web/server.py > /tmp/aria_server.log 2>&1 &

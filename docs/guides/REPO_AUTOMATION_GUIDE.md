@@ -232,6 +232,7 @@ Use `scripts/run_repo_agents.py` when you need deterministic repository checks t
 | `status-freshness` | Inspect `data_out/**/status.json` for stale, failed, timestamp-less, or unparseable runs | A health file has not updated within the configured max age |
 | `marker-audit` | Scan source-like files for `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers | Maintenance marker counts by file and marker type |
 | `docstring-audit` | Measure Python module/class/function docstring coverage | Public functions missing docstrings in audited paths |
+| `agents-md-audit` | Validate `AGENTS.md` Learned sections for structure, bullet limits, and secret patterns | Missing sections, over-limit bullets, or stale referenced dates |
 
 ### Contract and outputs
 
@@ -262,9 +263,16 @@ python scripts/run_repo_agents.py --agent status-freshness --json
 
 # Fail a CI/check step when any agent warns or errors
 python scripts/run_repo_agents.py --fail-on-warning
+
+# Shell wrapper (uses .venv/bin/python)
+./scripts/run_ai_automation.sh --json
+
+# Makefile shortcuts
+make agents
+make agents-dry
 ```
 
-`repo_health_automation.py --run-agents` inserts the agent runner before the integration contract gate. This is useful after orchestrator, status-file, or documentation-maintenance changes because it records repository inspection results in the same health-cycle status payload.
+`repo_health_automation.py --run-agents` inserts the agent runner **after** the integration contract gate. This is useful after orchestrator, status-file, or documentation-maintenance changes because it records repository inspection results in the same health-cycle status payload.
 
 ## Operational Smoke Flow
 

@@ -139,7 +139,7 @@ jobs:
       - name: Install Playwright browsers
         run: |
           set -euo pipefail
-          playwright install chromium --with-deps
+          playwright install chromium
 
       - name: Start Aria server (background)
         run: |

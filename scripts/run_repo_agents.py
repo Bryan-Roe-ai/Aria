@@ -40,6 +40,7 @@ _AGENT_MODULES = (
     "scripts.agents.status_freshness_agent",
     "scripts.agents.marker_audit_agent",
     "scripts.agents.docstring_audit_agent",
+    "scripts.agents.agents_md_audit_agent",
 )
 
 SUMMARY_PATH = AGENTS_DATA_DIR / "status.json"

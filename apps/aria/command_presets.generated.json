@@ -42,6 +42,16 @@
         "drop",
         "throw right"
       ]
+    },
+    {
+      "name": "Quantum Lab",
+      "commands": [
+        "wave and say welcome to the quantum lab",
+        "look at the qubit",
+        "pick up qubit",
+        "move to the gate and nod",
+        "bow and say measurement complete"
+      ]
     }
   ]
 }

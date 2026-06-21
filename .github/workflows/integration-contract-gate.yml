@@ -240,6 +240,7 @@ jobs:
         run: |
           set -euo pipefail
           status_file='data_out/ci_orchestrator/ci_results.json'
+          short_sha="${GITHUB_SHA::7}"
 
           {
             echo "## Integration Contract Gate"
@@ -249,7 +250,7 @@ jobs:
             echo "| **Mode** | ${MODE_LABEL} |"
             echo "| **Job status** | ${JOB_STATUS} |"
             echo "| **Run** | [#${GITHUB_RUN_NUMBER} (attempt ${GITHUB_RUN_ATTEMPT})](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
-            echo "| **Commit** | \`${GITHUB_SHA::7}\` |"
+            echo "| **Commit** | <code>${short_sha}</code> |"
             echo ""
           } >> "${GITHUB_STEP_SUMMARY}"
 
@@ -268,6 +269,6 @@ jobs:
               echo '```'
             } >> "${GITHUB_STEP_SUMMARY}"
           else
-            echo "_No orchestrator results file produced (\`${status_file}\` missing or empty)._" \
+            echo "_No orchestrator results file produced (<code>${status_file}</code> missing or empty)._" \
               >> "${GITHUB_STEP_SUMMARY}"
           fi
