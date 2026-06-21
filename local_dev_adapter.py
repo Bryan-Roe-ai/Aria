@@ -63,7 +63,7 @@ try:
     import function_app
 except ModuleNotFoundError as e:
     # Provide a lightweight shim for azure.functions when it's not installed.
-    if "azure.functions" in str(e):
+    if "azure" in str(e):
         logger.debug("azure.functions not found; installing lightweight shim for local dev adapter")
         fake_mod = types.ModuleType("azure.functions")
 
@@ -165,7 +165,11 @@ except ModuleNotFoundError as e:
         fake_mod.HttpResponse = HttpResponse
         fake_mod.FunctionApp = FunctionApp
 
-        # Insert into sys.modules so import statements in function_app succeed
+        # Insert into sys.modules so import statements in function_app succeed.
+        azure_pkg = sys.modules.setdefault("azure", types.ModuleType("azure"))
+        if not hasattr(azure_pkg, "__path__"):
+            azure_pkg.__path__ = []  # type: ignore[attr-defined]
+        setattr(azure_pkg, "functions", fake_mod)
         sys.modules.setdefault("azure.functions", fake_mod)
 
         # Now import function_app and reference the shim's HttpResponse
