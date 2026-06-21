@@ -216,6 +216,35 @@ def stream_assistant_reply(provider, messages: List[RoleMessage]) -> str:
     return reply_accum
 
 
+def non_stream_assistant_reply(provider, messages: List[RoleMessage]) -> str:
+    """Get full provider reply at once (non-streaming) and return it."""
+    print(Fore.GREEN + "assistant> " + Style.RESET_ALL, end="")
+    reply_accum = ""
+    try:
+        result = provider.complete(messages, stream=False)
+        # Handle both string and iterable results
+        if isinstance(result, str):
+            reply_accum = result
+        else:
+            # If provider ignores stream=False and returns iterable, consume it
+            try:
+                for chunk in result:
+                    reply_accum += chunk
+            except TypeError:
+                # Not iterable, treat as string
+                reply_accum = str(result)
+        print_assistant_chunk(reply_accum)
+    except (RuntimeError, ValueError, TypeError, Exception) as exc:
+        error_text = format_provider_error(exc)
+        if reply_accum and not reply_accum.endswith("\n"):
+            print_assistant_chunk("\n")
+            reply_accum += "\n"
+        print_assistant_chunk(error_text)
+        reply_accum += error_text
+    print_assistant_done()
+    return reply_accum
+
+
 def autonomous_chat(args: argparse.Namespace) -> int:
     """Run unattended chat turns until stopped or limited by max turns."""
     colorama_init()
@@ -463,7 +492,12 @@ def one_shot(args: argparse.Namespace) -> int:
     messages.append({"role": "user", "content": args.once})
 
     print_system(f"Provider: {info.name} | Model: {info.model}")
-    stream_assistant_reply(provider, messages)
+
+    # Check if streaming or non-streaming mode
+    if hasattr(args, 'no_stream') and args.no_stream:
+        non_stream_assistant_reply(provider, messages)
+    else:
+        stream_assistant_reply(provider, messages)
 
     return 0
 
@@ -495,6 +529,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--system", type=str, help="Custom system prompt")
     p.add_argument("--model", type=str, help="Model/deployment name override")
     p.add_argument("--once", type=str, help="Send a single message then exit")
+    p.add_argument(
+        "--no-stream",
+        action="store_true",
+        help="Disable streaming; get full response at once (only with --once)",
+    )
     p.add_argument(
         "--interactive",
         action="store_true",
