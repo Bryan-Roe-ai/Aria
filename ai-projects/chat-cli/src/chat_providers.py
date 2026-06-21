@@ -870,23 +870,87 @@ class LMStudioProvider(BaseChatProvider):
         temperature: float = 0.7,
         max_output_tokens: Optional[int] = None,
     ):
-        if OpenAI is None:
-            raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
-        # Newer LM Studio server configurations can require API token auth.
-        # Keep backward compatibility by using the legacy placeholder key when
-        # no token env var is provided.
-        lmstudio_api_key = _get_lmstudio_api_key() or "lm-studio"
-        self.client = OpenAI(
-            base_url=base_url,
-            api_key=lmstudio_api_key,
-        )
+        # Prefer official OpenAI SDK when available, but support a pure-HTTP
+        # fallback so LM Studio remains usable in minimal environments.
+        self.client = None
+        if OpenAI is not None:
+            # Newer LM Studio server configurations can require API token auth.
+            # Keep backward compatibility by using the legacy placeholder key when
+            # no token env var is provided.
+            lmstudio_api_key = _get_lmstudio_api_key() or "lm-studio"
+            self.client = OpenAI(
+                base_url=base_url,
+                api_key=lmstudio_api_key,
+            )
         self.model = model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
         self.base_url = base_url
 
+    def _chat_completions_url(self) -> str:
+        return self.base_url.rstrip("/") + "/chat/completions"
+
+    def _complete_via_http(self, messages: List[RoleMessage], stream: bool) -> Iterable[str] | str:
+        import json
+        import urllib.request
+
+        normalized_messages = self._normalize_messages_for_api(messages)
+        payload: Dict[str, Any] = {
+            "model": self.model,
+            "messages": normalized_messages,
+            "temperature": self.temperature,
+            "stream": stream,
+        }
+        if self.max_output_tokens is not None:
+            payload["max_tokens"] = self.max_output_tokens
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "QAI",
+        }
+        lmstudio_api_key = _get_lmstudio_api_key()
+        if lmstudio_api_key:
+            headers["Authorization"] = f"Bearer {lmstudio_api_key}"
+
+        req = urllib.request.Request(
+            self._chat_completions_url(),
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method="POST",
+        )
+
+        if stream:
+
+            def _gen() -> Generator[str, None, None]:
+                with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 - local configurable endpoint
+                    for raw_line in resp:
+                        line = raw_line.decode("utf-8", errors="replace").strip()
+                        if not line or not line.startswith("data:"):
+                            continue
+                        data = line[5:].strip()
+                        if data == "[DONE]":
+                            break
+                        try:
+                            obj = _json.loads(data)
+                            delta = obj.get("choices", [{}])[0].get("delta", {})
+                            content = delta.get("content")
+                            if content:
+                                yield content
+                        except Exception:
+                            continue
+
+            return _gen()
+
+        with urllib.request.urlopen(req, timeout=60) as resp:  # noqa: S310 - local configurable endpoint
+            body = resp.read().decode("utf-8", errors="replace")
+        obj = _json.loads(body)
+        return obj.get("choices", [{}])[0].get("message", {}).get("content", "") or ""
+
     def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         try:
+            if self.client is None:
+                return self._complete_via_http(messages, stream)
+
             normalized_messages = self._normalize_messages_for_api(messages)
             resp = self.client.chat.completions.create(
                 model=self.model,
