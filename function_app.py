@@ -452,7 +452,7 @@ def _detect_provider_with_runtime_fallback(
 
     In constrained test/runtime environments the optional ``openai`` package may
     be unavailable while env vars still point to OpenAI/Azure/LMStudio/Ollama.
-    In those cases, degrade to ``local`` provider instead of returning HTTP 500
+    In those cases, degrade to ``local-echo`` provider instead of returning HTTP 500
     from status/chat endpoints.
     """
 
@@ -462,7 +462,7 @@ def _detect_provider_with_runtime_fallback(
             explicit,
             model_override,
         )
-        return detect_provider(explicit="local", model_override="local-echo")
+        return detect_provider(explicit="local_echo", model_override="local-echo")
 
     try:
         return detect_provider(
@@ -478,15 +478,16 @@ def _detect_provider_with_runtime_fallback(
 
         logging.warning(
             "Provider detection failed due to missing optional openai package; "
-            "falling back to local provider. explicit=%s model_override=%s error=%s",
+            "falling back to local-echo provider. explicit=%s model_override=%s error=%s",
             explicit,
             model_override,
             provider_error,
         )
         try:
-            return detect_provider(explicit="local", model_override="local-echo")
+            return detect_provider(explicit="local_echo", model_override="local-echo")
         except Exception as fallback_error:
-            logging.error(f"Even fallback to local provider failed: {fallback_error}")
+            logging.error(
+                f"Even fallback to local provider failed: {fallback_error}")
             raise RuntimeError(
                 f"Provider detection failed with '{provider_error}' and fallback also failed: {fallback_error}"
             ) from fallback_error
@@ -2551,7 +2552,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
 
         # Detect active provider
         provider, info = _detect_provider_with_runtime_fallback(
-              explicit=os.getenv("DEFAULT_AI_PROVIDER", "auto"))
+            explicit=os.getenv("DEFAULT_AI_PROVIDER", "auto"))
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()

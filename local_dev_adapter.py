@@ -42,6 +42,14 @@ except ModuleNotFoundError:  # pragma: no cover - exercised in minimal envs
 repo_root = Path(__file__).resolve().parent
 # Make sure common src paths are on sys.path BEFORE importing function_app
 # function_app imports modules like token_utils at module-import time, so we
+    AzureHttpResponse = None
+    try:
+        from azure.functions import HttpResponse as AzureHttpResponse
+    except ModuleNotFoundError:
+        # Provide a lightweight shim for azure.functions when it's not installed.
+        logger.debug(
+            "azure.functions not found; installing lightweight shim for local dev adapter")
+        fake_mod = types.ModuleType("azure.functions")
 # must ensure those directories are available.
 sys.path.insert(0, str(repo_root / "ai-projects" / "chat-cli" / "src"))
 sys.path.insert(0, str(repo_root / "ai-projects" / "quantum-ml" / "src"))
@@ -68,15 +76,8 @@ logger = logging.getLogger(__name__)
 
 # Attempt to import the real function_app and the azure.functions HttpResponse
 # type. If azure.functions isn't available in the current dev/test environment
-# (common in lightweight test containers), create a minimal local shim so that
-# function_app can import and its ai_status handler can be invoked. The shim
-# implements only what the local adapter needs: FunctionApp decorator, simple
-# HttpRequest/HttpResponse types and an AuthLevel constant.
-
-AzureHttpResponse = None
-try:
-    from azure.functions import HttpResponse as AzureHttpResponse
 except ModuleNotFoundError:
+    import function_app
     # Provide a lightweight shim for azure.functions when it's not installed.
     logger.debug(
         "azure.functions not found; installing lightweight shim for local dev adapter")
