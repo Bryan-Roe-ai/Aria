@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "aria"
 version = "0.0.0"
 description = "Aria — Interactive AI Character Platform"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 dependencies = [
   "pydantic>=2.13.4",
   "pydantic-settings>=2.4.0",
@@ -42,7 +42,7 @@ ignore = ["E501"]  # E501 is redundant — Black auto-formats line length
 
 [tool.black]
 line-length = 120
-target-version = ["py314"]
+target-version = ["py310", "py311"]
 exclude = '''
 /(
     \.git
@@ -60,7 +60,7 @@ line_length = 120
 skip_glob = ["venv*", "data_out*", "mount*"]
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.10"
 ignore_missing_imports = true
 check_untyped_defs = true
 warn_unused_ignores = true
