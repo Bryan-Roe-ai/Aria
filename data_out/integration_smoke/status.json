@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-20T19:02:45Z",
-  "run_id": "20260620T190245Z",
+  "generated_at": "2026-06-22T10:05:03Z",
+  "run_id": "20260622T100503Z",
   "config_path": null,
   "config_paths": {
     "master_orchestrator": "config/master_orchestrator.yaml",
@@ -8,11 +8,11 @@
     "evaluation_autorun": "config/evaluation/evaluation_autorun.yaml"
   },
   "strict_endpoints": false,
-  "total_steps": 12,
-  "succeeded": 11,
+  "total_steps": 14,
+  "succeeded": 7,
   "warnings": 0,
-  "failed": 1,
-  "skipped": 0,
+  "failed": 0,
+  "skipped": 7,
   "errors": 0,
   "passed": true,
   "results": [
@@ -42,7 +42,7 @@
       "status": "succeeded",
       "critical": true,
       "duration_sec": 1.08,
-      "detail": "rc=0 | stdout=     \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    },\n    {\n      \"name\": \"aria_server_only\",\n      \"enabled\": false,\n      \"trigger\": \"manual\",\n      \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    }\n  ],\n  \"resource_usage\": {\n    \"available\": true,\n    \"cpu_percent\": 0.3,\n    \"memory_percent\": 10.9,\n    \"disk_percent\": 5.3\n  }\n}"
+      "detail": "rc=0 | stdout=      \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    },\n    {\n      \"name\": \"aria_server_only\",\n      \"enabled\": false,\n      \"trigger\": \"manual\",\n      \"schedule\": null,\n      \"orchestrators\": [\n        \"aria_automation\"\n      ]\n    }\n  ],\n  \"resource_usage\": {\n    \"available\": true,\n    \"cpu_percent\": 0.2,\n    \"memory_percent\": 5.8,\n    \"disk_percent\": 4.8\n  }\n}"
     },
     {
       "name": "quantum_autorun_dry_run",
@@ -62,43 +62,57 @@
       "name": "chat_cli_local_once",
       "status": "succeeded",
       "critical": true,
-      "duration_sec": 0.74,
-      "detail": "rc=0 | stdout=Provider: local | Model: local-echo\nassistant> I'm running in local fallback mode. Set AZURE_OPENAI_API_KEY, OPENAI_API_KEY, or start LM Studio / Ollama to enable full AI responses."
+      "duration_sec": 0.76,
+      "detail": "rc=0 | stdout=Provider: local | Model: local-echo\nassistant> No live model detected. Run with `--provider lmstudio` (LM Studio running locally), `--provider ollama`, `--provider openai`, or `--provider azure`."
     },
     {
       "name": "functions_ai_status_endpoint",
-      "status": "failed",
+      "status": "skipped",
       "critical": false,
-      "duration_sec": 0.03,
-      "detail": "invalid_ai_status_payload"
+      "duration_sec": 0.02,
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_ai_routes_endpoint",
-      "status": "succeeded",
+      "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "routes=12"
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_agi_status_endpoint",
-      "status": "succeeded",
+      "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "has_key=available"
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_agi_analyze_endpoint",
-      "status": "succeeded",
+      "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "has_key=analysis"
+      "detail": "functions host not running (non-strict mode)"
+    },
+    {
+      "name": "functions_agi_reason_endpoint",
+      "status": "skipped",
+      "critical": false,
+      "duration_sec": 0.0,
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_agi_stream_endpoint",
-      "status": "succeeded",
+      "status": "skipped",
       "critical": false,
-      "duration_sec": 0.37,
-      "detail": "sse=[DONE]+delta"
+      "duration_sec": 0.0,
+      "detail": "functions host not running (non-strict mode)"
+    },
+    {
+      "name": "functions_chat_web_agi_stream_utils",
+      "status": "skipped",
+      "critical": false,
+      "duration_sec": 0.0,
+      "detail": "functions host not running (non-strict mode)"
     }
   ]
 }
