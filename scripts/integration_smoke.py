@@ -32,15 +32,14 @@ DATA_OUT = REPO_ROOT / "data_out" / "integration_smoke"
 LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC = 25.0
 LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC = 10.0
 
-_REQUIRED_AI_STATUS_KEYS = {"active_provider",
-                            "settings", "endpoints", "status"}
+_REQUIRED_AI_STATUS_KEYS = {"active_provider", "settings", "endpoints", "status"}
 _REQUIRED_AI_STATUS_ENDPOINTS = {
     "/api/ai/status",
     "/api/chat",
     "/api/chat-web",
     "/api/chat-web/static/agi_stream_utils.js",
     "/api/tts",
-    "/api/quantum/run",
+    "/api/quantum/info",
     "/api/agi/status",
     "/api/agi/analyze",
     "/api/agi/reason",
@@ -133,8 +132,7 @@ def _check_config_paths() -> List[StepResult]:
         candidates = get_config_candidates(REPO_ROOT, config_key)
         canonical = canonical_config_path(REPO_ROOT, config_key)
         start = time.perf_counter()
-        found: Optional[Path] = next(
-            (p for p in candidates if p.exists()), None)
+        found: Optional[Path] = next((p for p in candidates if p.exists()), None)
         duration = round(time.perf_counter() - start, 2)
 
         if found is None:
@@ -166,8 +164,7 @@ def _check_config_paths() -> List[StepResult]:
                     status="warning",
                     critical=False,
                     duration_sec=duration,
-                    detail=(
-                        "using legacy path; prefer " f"{canonical.relative_to(REPO_ROOT)}"),
+                    detail=("using legacy path; prefer " f"{canonical.relative_to(REPO_ROOT)}"),
                 )
             )
 
@@ -582,8 +579,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
                 time.sleep(0.25)
                 try:
                     payload = _fetch_local_functions_payload(url)
-                    detail = _build_success_detail(
-                        payload, " | via=direct_retry")
+                    detail = _build_success_detail(payload, " | via=direct_retry")
                     duration = round(time.perf_counter() - start, 2)
                     if detail is not None:
                         return StepResult(
@@ -598,8 +594,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
 
             fallback_payload = _probe_with_local_dev_adapter(url)
             if fallback_payload is not None:
-                detail = _build_success_detail(
-                    fallback_payload, " | via=local_dev_adapter")
+                detail = _build_success_detail(fallback_payload, " | via=local_dev_adapter")
                 if detail is not None:
                     duration = round(time.perf_counter() - start, 2)
                     return StepResult(
@@ -614,8 +609,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
             # because another process is already bound to :7071.
             try:
                 payload = _fetch_local_functions_payload(url)
-                detail = _build_success_detail(
-                    payload, " | via=final_direct_retry")
+                detail = _build_success_detail(payload, " | via=final_direct_retry")
                 duration = round(time.perf_counter() - start, 2)
                 if detail is not None:
                     return StepResult(
@@ -652,8 +646,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
 
 
 def _validate_ai_status_payload(payload: Dict[str, Any]) -> tuple[bool, str]:
-    missing_keys = sorted(
-        k for k in _REQUIRED_AI_STATUS_KEYS if k not in payload)
+    missing_keys = sorted(k for k in _REQUIRED_AI_STATUS_KEYS if k not in payload)
     if missing_keys:
         return False, f"missing_keys={','.join(missing_keys)}"
 
@@ -688,8 +681,7 @@ def _probe_ai_routes_endpoint(strict: bool) -> StepResult:
     start = time.perf_counter()
     url = "http://localhost:7071/api/ai/routes"
     try:
-        payload = _fetch_local_functions_json(
-            url, method="GET", timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC)
+        payload = _fetch_local_functions_json(url, method="GET", timeout=LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC)
         detail = _validate_ai_routes_payload(payload)
         duration = round(time.perf_counter() - start, 2)
         if detail is not None:
@@ -773,8 +765,7 @@ def _resolved_config_paths() -> Dict[str, Optional[str]]:
     resolved: Dict[str, Optional[str]] = {}
     for key in config_keys:
         selected = resolve_existing_config_path(REPO_ROOT, key)
-        resolved[key] = str(selected.relative_to(
-            REPO_ROOT)) if selected else None
+        resolved[key] = str(selected.relative_to(REPO_ROOT)) if selected else None
     return resolved
 
 
@@ -829,8 +820,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
     total = len(steps)
     succeeded = sum(1 for s in steps if s.status == "succeeded")
-    failed_critical = [
-        s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
+    failed_critical = [s for s in steps if s.critical and s.status not in {"succeeded", "warning"}]
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     run_id = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
 
@@ -853,8 +843,7 @@ def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Run Aria integration smoke checks")
+    ap = argparse.ArgumentParser(description="Run Aria integration smoke checks")
     ap.add_argument(
         "--strict-endpoints",
         action="store_true",

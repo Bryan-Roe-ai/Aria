@@ -17,6 +17,7 @@ Design notes:
 """
 
 from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -80,9 +81,7 @@ def _load_env_file() -> None:
 
 def _install_azure_functions_shim() -> Any:
     """Install a lightweight azure.functions shim for local development."""
-    logger.debug(
-        "azure.functions not found; installing lightweight shim for local dev adapter"
-    )
+    logger.debug("azure.functions not found; installing lightweight shim for local dev adapter")
     fake_mod = types.ModuleType("azure.functions")
 
     class AuthLevel:
@@ -214,8 +213,7 @@ def _azure_response_parts(
     mimetype = getattr(resp, "mimetype", None)
     headers = dict(getattr(resp, "headers", None) or {})
     if not mimetype:
-        content_type = headers.get(
-            "Content-Type") or headers.get("content-type")
+        content_type = headers.get("Content-Type") or headers.get("content-type")
         if content_type:
             mimetype = content_type
         else:
@@ -244,8 +242,7 @@ def _azure_to_flask(resp: AzureHttpResponse) -> Response:
             flask_resp.headers[k] = v
     except Exception:
         # best-effort fallback for unexpected header shapes
-        logger.debug(
-            "Unexpected header shape when converting azure HttpResponse to Flask Response")
+        logger.debug("Unexpected header shape when converting azure HttpResponse to Flask Response")
 
     return flask_resp
 
@@ -285,9 +282,7 @@ def _call_function_handler(
             except TypeError:
                 fake_req = ShimHttpRequest(method=method, url=url)
         except Exception as exc:
-            raise RuntimeError(
-                "No HttpRequest implementation available for local dev adapter"
-            ) from exc
+            raise RuntimeError("No HttpRequest implementation available for local dev adapter") from exc
     else:
         try:
             fake_req = req_cls(**request_kwargs)
@@ -620,8 +615,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.check:
         raise SystemExit(check_status_endpoints())
 
-    print(
-        f"Starting local dev adapter strict smoke endpoints on http://{args.host}:{args.port}")
+    print(f"Starting local dev adapter strict smoke endpoints on http://{args.host}:{args.port}")
 
     if HAS_FLASK:
         app = create_app()
