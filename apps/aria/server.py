@@ -1015,6 +1015,13 @@ THEME_STAGE_STYLES = {
     },
 }
 
+THEME_REQUIRED_OBJECTS: dict[str, list[tuple[str, str]]] = {
+    "quantum": [
+        ("qubit", "⚛️"),
+        ("gate", "🔀"),
+    ],
+}
+
 QUANTUM_STAGE_PRESETS = {
     "intro": [
         {"action": "say", "text": "Welcome to the quantum lab!", "emotion": "happy"},
@@ -1111,9 +1118,18 @@ def _get_agi_provider(*, verbose: bool = False):
 
 def generate_world_fallback(theme: str, count: int) -> dict:
     """Generate a world procedurally without LLM."""
-    objects_catalog = THEME_OBJECT_LIBRARY.get(theme.lower(), THEME_OBJECT_LIBRARY["forest"])
-    random.shuffle(objects_catalog)
-    chosen = objects_catalog[: max(1, count)]
+    theme_key = theme.lower()
+    objects_catalog = list(
+        THEME_OBJECT_LIBRARY.get(theme_key, THEME_OBJECT_LIBRARY["forest"])
+    )
+    required = THEME_REQUIRED_OBJECTS.get(theme_key, [])
+    required_names = {name for name, _ in required}
+    remaining = [(name, emoji) for name, emoji in objects_catalog if name not in required_names]
+    random.shuffle(remaining)
+    chosen = list(required)
+    slots = max(1, count) - len(chosen)
+    if slots > 0:
+        chosen.extend(remaining[:slots])
     stage_objects = {}
     used_positions = []
     for name, emoji in chosen:
