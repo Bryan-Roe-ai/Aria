@@ -2933,6 +2933,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "/api/chat-web/static/agi_stream_utils.js",
             "/api/chat",
             "/api/chat/stream",
+            "/api/tts",
             "/api/health",
             "/api/ai/status",
             "/api/ai/capabilities",

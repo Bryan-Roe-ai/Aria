@@ -39,7 +39,7 @@ _REQUIRED_AI_STATUS_ENDPOINTS = {
     "/api/chat-web",
     "/api/chat-web/static/agi_stream_utils.js",
     "/api/tts",
-    "/api/quantum/run",
+    "/api/quantum-llm/chat",
     "/api/agi/status",
     "/api/agi/analyze",
     "/api/agi/reason",
