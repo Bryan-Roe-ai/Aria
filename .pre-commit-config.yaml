@@ -32,13 +32,13 @@ repos:
     hooks:
       - id: check-cli-sys-path
         name: Check CLI sys.path pattern
-        entry: scripts/check_cli_scripts_sys_path.py
+        entry: python scripts/check_cli_scripts_sys_path.py
         language: python
         files: ^scripts/.*\.py$
         description: "Ensure CLI scripts add repo root to sys.path before importing local packages"
       - id: check-docs-cli-note
         name: Check docs reference CLI sys.path note
-        entry: scripts/check_docs_for_cli_note.py
+        entry: python scripts/check_docs_for_cli_note.py
         language: python
         files: ^(docs/|.*\.md$)
         description: "If docs reference `scripts/`, ensure they include the CLI sys.path guidance"

@@ -165,13 +165,15 @@ jobs:
             echo "| integration_smoke.py --json | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-          # strict_smoke (scheduled only)
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
-              {
+          {
+            # strict_smoke (scheduled only)
+            if [ "${{ github.event_name }}" = "schedule" ]; then
+              if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
                 echo "| integration_smoke.py --strict-endpoints | ✅ passed |"
                 echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |"
-              } >> "$GITHUB_STEP_SUMMARY"
+              else
+                echo "| integration_smoke.py --strict-endpoints | ❌ failed |"
+              fi
             else
               echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |"
             fi
