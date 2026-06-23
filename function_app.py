@@ -887,6 +887,8 @@ def agi_status(req: func.HttpRequest) -> func.HttpResponse:
         # MCP bridge tools (registered in lmstudio_mcp_server, not _AGENT_REGISTRY).
         agent_tools["mcp-agi"] = sorted(["agi_analyze", "agi_reason", "agi_stream"])
 
+        from shared.agi_backend_status import build_agi_backend_status
+
         provider_meta = {"name": "agi", "base_provider": None, "base_model": None, "wrapper_model": None}
         if available:
             provider_meta = _agi_provider_metadata(provider, provider_choice)
