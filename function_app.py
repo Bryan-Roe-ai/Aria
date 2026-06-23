@@ -17,6 +17,7 @@ from pathlib import Path
 import azure.functions as func
 
 # Import AI projects via centralized registry (replaced scattered sys.path manipulation)
+from shared.agi_backend_status import build_agi_backend_status
 from shared.config import get_settings
 from shared.core.module_registry import AIProjectsRegistry
 from shared.import_helpers import create_stub_function, safe_import
