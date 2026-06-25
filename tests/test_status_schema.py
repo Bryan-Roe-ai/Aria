@@ -40,6 +40,18 @@ def test_repo_automation_save_status_includes_metadata(
 
 
 @pytest.mark.unit
+def test_repo_automation_components_use_resolved_python(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(repo_module.RepoAutomation, "_resolve_python_command", lambda self: "/tmp/custom-python")
+
+    automation = repo_module.RepoAutomation()
+
+    assert automation.components["aria"].command == ["/tmp/custom-python", "scripts/aria_automation.py", "--mode", "full"]
+    assert automation.components["training"].command == ["/tmp/custom-python", "scripts/autonomous_training_orchestrator.py"]
+    assert "/tmp/custom-python" in automation.components["quantum"].command[2]
+    assert "/tmp/custom-python" in automation.components["evaluation"].command[2]
+
+
+@pytest.mark.unit
 def test_master_get_status_includes_metadata() -> None:
     orchestrator = master_module.MasterOrchestrator.__new__(master_module.MasterOrchestrator)
     orchestrator.run_id = "20260313T000000Z"

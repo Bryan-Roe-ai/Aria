@@ -10,6 +10,7 @@ install Python package dependencies when needed.
 import argparse
 import importlib
 import json
+import shlex
 import signal
 import subprocess
 import sys
@@ -103,6 +104,7 @@ class RepoAutomation:
     """ """
 
     def __init__(self):
+        self.python_command = self._resolve_python_command()
         self.components: Dict[str, ComponentConfig] = self._init_components()
         self.processes: Dict[str, Any] = {}
         self.running = True
@@ -122,13 +124,32 @@ class RepoAutomation:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
+    def _resolve_python_command(self) -> str:
+        """Prefer the repo venv, then the active interpreter, then python3."""
+        venv_python = REPO_ROOT / ".venv" / "bin" / "python"
+        if venv_python.is_file():
+            return str(venv_python)
+        if sys.executable:
+            return sys.executable
+        return "python3"
+
+    def _python_loop_command(self, script_path: str, *, interval_seconds: int) -> List[str]:
+        """Build a shell loop that reuses the resolved Python interpreter."""
+        python_bin = shlex.quote(self.python_command)
+        script = shlex.quote(script_path)
+        return [
+            "bash",
+            "-lc",
+            f"while true; do {python_bin} {script} --dry-run >/dev/null 2>&1; sleep {interval_seconds}; done",
+        ]
+
     def _init_components(self) -> Dict[str, ComponentConfig]:
         """Initialize all automation components with dependency metadata"""
         return {
             "aria": ComponentConfig(
                 name="Aria Character Automation",
                 script="scripts/aria_automation.py",
-                command=["python3", "scripts/aria_automation.py", "--mode", "full"],
+                command=[self.python_command, "scripts/aria_automation.py", "--mode", "full"],
                 auto_restart=True,
                 health_check_interval=60,
                 required_packages=["psutil"],
@@ -136,7 +157,7 @@ class RepoAutomation:
             "training": ComponentConfig(
                 name="Autonomous Training System",
                 script="scripts/autonomous_training_orchestrator.py",
-                command=["python3", "scripts/autonomous_training_orchestrator.py"],
+                command=[self.python_command, "scripts/autonomous_training_orchestrator.py"],
                 auto_restart=True,
                 health_check_interval=300,
                 # Use proper pip/import mapping for PyYAML
@@ -150,11 +171,7 @@ class RepoAutomation:
             "quantum": ComponentConfig(
                 name="Quantum Computing Workflows",
                 script="scripts/quantum_autorun.py",
-                command=[
-                    "bash",
-                    "-lc",
-                    "while true; do python3 scripts/quantum_autorun.py --dry-run >/dev/null 2>&1; sleep 600; done",
-                ],
+                command=self._python_loop_command("scripts/quantum_autorun.py", interval_seconds=600),
                 auto_restart=True,
                 health_check_interval=600,
                 enabled=False,  # Will be enabled if quantum_autorun.yaml exists
@@ -163,11 +180,7 @@ class RepoAutomation:
             "evaluation": ComponentConfig(
                 name="Model Evaluation System",
                 script="scripts/evaluation_autorun.py",
-                command=[
-                    "bash",
-                    "-lc",
-                    "while true; do python3 scripts/evaluation_autorun.py --dry-run >/dev/null 2>&1; sleep 300; done",
-                ],
+                command=self._python_loop_command("scripts/evaluation_autorun.py", interval_seconds=300),
                 auto_restart=True,
                 health_check_interval=300,
                 dependencies=["training"],
@@ -177,7 +190,7 @@ class RepoAutomation:
             "datasets": ComponentConfig(
                 name="Dataset Auto-Discovery (Integrated in training)",
                 script="scripts/autonomous_training_orchestrator.py",
-                command=["python3", "scripts/autonomous_training_orchestrator.py"],
+                command=[self.python_command, "scripts/autonomous_training_orchestrator.py"],
                 auto_restart=False,
                 health_check_interval=3600,
                 enabled=False,  # Included in training component
@@ -185,7 +198,7 @@ class RepoAutomation:
             "monitoring": ComponentConfig(
                 name="Status Dashboard",
                 script="scripts/status_dashboard.py",
-                command=["python3", "scripts/status_dashboard.py"],
+                command=[self.python_command, "scripts/status_dashboard.py"],
                 auto_restart=False,
                 health_check_interval=60,
                 enabled=False,
@@ -199,7 +212,7 @@ class RepoAutomation:
             "backup": ComponentConfig(
                 name="Backup Manager",
                 script="scripts/backup_manager.py",
-                command=["python3", "scripts/backup_manager.py"],
+                command=[self.python_command, "scripts/backup_manager.py"],
                 auto_restart=False,
                 health_check_interval=3600,
                 enabled=False,
@@ -606,7 +619,7 @@ class RepoAutomation:
         for pkg in missing:
             try:
                 result = subprocess.run(
-                    [sys.executable, "-m", "pip", "install", pkg],
+                    [self.python_command, "-m", "pip", "install", pkg],
                     capture_output=True,
                     text=True,
                 )
