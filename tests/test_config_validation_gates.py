@@ -5,8 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -16,11 +14,16 @@ class TestConfigValidationGates:
     def test_autonomous_training_with_valid_config(self):
         """Test autonomous_training_orchestrator with valid config."""
         result = subprocess.run(
-            [sys.executable, "scripts/autonomous_training_orchestrator.py", "--status"],
+            [
+                sys.executable,
+                "scripts/autonomous_training_orchestrator.py",
+                "--status",
+            ],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
             timeout=10,
+            check=False,
         )
         # Should succeed with valid config
         assert result.returncode == 0
@@ -34,6 +37,7 @@ class TestConfigValidationGates:
             capture_output=True,
             text=True,
             timeout=10,
+            check=False,
         )
         # Should exit with 0 if configs are valid
         assert result.returncode == 0
@@ -47,14 +51,19 @@ class TestConfigValidationGates:
             capture_output=True,
             text=True,
             timeout=20,
+            check=False,
         )
         assert result.returncode == 0
-        assert "validate" in result.stdout.lower() or "valid" in result.stdout.lower()
+        assert (
+            "validate" in result.stdout.lower()
+            or "valid" in result.stdout.lower()
+        )
 
-    def test_repo_automation_wrapper_falls_back_to_python3_and_handles_missing_args_under_nounset(
-        self, tmp_path: Path
-    ):
-        """Wrapper should use python3 fallback and avoid raw unset positional args."""
+    def test_repo_automation_wrapper_python3_nounset(self, tmp_path: Path):
+        """Wrapper should use python3 fallback.
+
+        Also avoid raw unset positional args.
+        """
         repo_root = tmp_path
         scripts_dir = repo_root / "scripts"
         data_out_dir = repo_root / "data_out" / "repo_automation"
@@ -100,6 +109,7 @@ class TestConfigValidationGates:
             text=True,
             timeout=10,
             env=env,
+            check=False,
         )
         assert status_result.returncode == 0
 
@@ -110,21 +120,30 @@ class TestConfigValidationGates:
             text=True,
             timeout=10,
             env=env,
+            check=False,
         )
         assert components_result.returncode == 0
         assert "Available Components" in components_result.stdout
 
         log_lines = invocation_log.read_text().splitlines()
-        assert any("scripts/repo_automation.py --status" in line for line in log_lines)
+        assert any(
+            "scripts/repo_automation.py --status" in line
+            for line in log_lines
+        )
 
     def test_master_orchestrator_validation(self):
         """Test master_orchestrator.py validation gate."""
         result = subprocess.run(
-            [sys.executable, "scripts/master_orchestrator.py", "--list-orchestrators"],
+            [
+                sys.executable,
+                "scripts/master_orchestrator.py",
+                "--list-orchestrators",
+            ],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
             timeout=10,
+            check=False,
         )
         # Should succeed with valid config
         assert result.returncode == 0
@@ -135,17 +154,16 @@ class TestConfigValidationGates:
     def test_repo_automation_start_with_validation(self):
         """Test repo_automation.py --start with built-in validation."""
         # This should validate configs before starting anything
-        # We won't actually start anything, just test that the --start path works
+        # We won't actually start anything;
+        # this just tests that the --start path works.
         result = subprocess.run(
             [sys.executable, "scripts/repo_automation.py", "--status"],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
             timeout=10,
+            check=False,
         )
-        # Should succeed (status doesn't trigger validation, but setup should work)
+        # Should succeed
+        # (status doesn't trigger validation, but setup should work).
         assert result.returncode == 0 or "no status" in result.stdout.lower()
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-xvs"])
