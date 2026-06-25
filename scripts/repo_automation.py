@@ -10,6 +10,7 @@ install Python package dependencies when needed.
 import argparse
 import importlib
 import json
+import shlex
 import signal
 import subprocess
 import sys
@@ -90,6 +91,8 @@ class AutomationStatus:
     config_path: Optional[str] = None
     config_paths: Dict[str, Optional[str]] = field(default_factory=dict)
     uptime_seconds: float = 0
+    component_enabled: Dict[str, bool] = field(default_factory=dict)
+    component_states: Dict[str, str] = field(default_factory=dict)
     components_running: Dict[str, bool] = field(default_factory=dict)
     dependency_status: Dict[str, bool] = field(default_factory=dict)
     last_health_check: Optional[str] = None
@@ -101,6 +104,7 @@ class RepoAutomation:
     """ """
 
     def __init__(self):
+        self.python_command = self._resolve_python_command()
         self.components: Dict[str, ComponentConfig] = self._init_components()
         self.processes: Dict[str, Any] = {}
         self.running = True
@@ -120,13 +124,32 @@ class RepoAutomation:
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
+    def _resolve_python_command(self) -> str:
+        """Prefer the repo venv, then the active interpreter, then python3."""
+        venv_python = REPO_ROOT / ".venv" / "bin" / "python"
+        if venv_python.is_file():
+            return str(venv_python)
+        if sys.executable:
+            return sys.executable
+        return "python3"
+
+    def _python_loop_command(self, script_path: str, *, interval_seconds: int) -> List[str]:
+        """Build a shell loop that reuses the resolved Python interpreter."""
+        python_bin = shlex.quote(self.python_command)
+        script = shlex.quote(script_path)
+        return [
+            "bash",
+            "-lc",
+            f"while true; do {python_bin} {script} --dry-run >/dev/null 2>&1; sleep {interval_seconds}; done",
+        ]
+
     def _init_components(self) -> Dict[str, ComponentConfig]:
         """Initialize all automation components with dependency metadata"""
         return {
             "aria": ComponentConfig(
                 name="Aria Character Automation",
                 script="scripts/aria_automation.py",
-                command=["python3", "scripts/aria_automation.py", "--mode", "full"],
+                command=[self.python_command, "scripts/aria_automation.py", "--mode", "full"],
                 auto_restart=True,
                 health_check_interval=60,
                 required_packages=["psutil"],
@@ -134,7 +157,7 @@ class RepoAutomation:
             "training": ComponentConfig(
                 name="Autonomous Training System",
                 script="scripts/autonomous_training_orchestrator.py",
-                command=["python3", "scripts/autonomous_training_orchestrator.py"],
+                command=[self.python_command, "scripts/autonomous_training_orchestrator.py"],
                 auto_restart=True,
                 health_check_interval=300,
                 # Use proper pip/import mapping for PyYAML
@@ -148,11 +171,7 @@ class RepoAutomation:
             "quantum": ComponentConfig(
                 name="Quantum Computing Workflows",
                 script="scripts/quantum_autorun.py",
-                command=[
-                    "bash",
-                    "-lc",
-                    "while true; do python3 scripts/quantum_autorun.py --dry-run >/dev/null 2>&1; sleep 600; done",
-                ],
+                command=self._python_loop_command("scripts/quantum_autorun.py", interval_seconds=600),
                 auto_restart=True,
                 health_check_interval=600,
                 enabled=False,  # Will be enabled if quantum_autorun.yaml exists
@@ -161,11 +180,7 @@ class RepoAutomation:
             "evaluation": ComponentConfig(
                 name="Model Evaluation System",
                 script="scripts/evaluation_autorun.py",
-                command=[
-                    "bash",
-                    "-lc",
-                    "while true; do python3 scripts/evaluation_autorun.py --dry-run >/dev/null 2>&1; sleep 300; done",
-                ],
+                command=self._python_loop_command("scripts/evaluation_autorun.py", interval_seconds=300),
                 auto_restart=True,
                 health_check_interval=300,
                 dependencies=["training"],
@@ -175,7 +190,7 @@ class RepoAutomation:
             "datasets": ComponentConfig(
                 name="Dataset Auto-Discovery (Integrated in training)",
                 script="scripts/autonomous_training_orchestrator.py",
-                command=["python3", "scripts/autonomous_training_orchestrator.py"],
+                command=[self.python_command, "scripts/autonomous_training_orchestrator.py"],
                 auto_restart=False,
                 health_check_interval=3600,
                 enabled=False,  # Included in training component
@@ -183,7 +198,7 @@ class RepoAutomation:
             "monitoring": ComponentConfig(
                 name="Status Dashboard",
                 script="scripts/status_dashboard.py",
-                command=["python3", "scripts/status_dashboard.py"],
+                command=[self.python_command, "scripts/status_dashboard.py"],
                 auto_restart=False,
                 health_check_interval=60,
                 enabled=False,
@@ -197,7 +212,7 @@ class RepoAutomation:
             "backup": ComponentConfig(
                 name="Backup Manager",
                 script="scripts/backup_manager.py",
-                command=["python3", "scripts/backup_manager.py"],
+                command=[self.python_command, "scripts/backup_manager.py"],
                 auto_restart=False,
                 health_check_interval=3600,
                 enabled=False,
@@ -317,6 +332,18 @@ class RepoAutomation:
             except Exception:
                 continue
 
+    def _component_enabled_map(self) -> Dict[str, bool]:
+        """Return the configured enabled/disabled state for each component."""
+        return {name: bool(component.enabled) for name, component in self.components.items()}
+
+    def _component_state_map(self) -> Dict[str, str]:
+        """Return a stable state label for each component."""
+        enabled_map = self._component_enabled_map()
+        return {
+            name: ("disabled" if not enabled_map[name] else "running" if self._is_component_running(name) else "stopped")
+            for name in self.components
+        }
+
     def save_status(self):
         """Save current status to JSON"""
         status = AutomationStatus(
@@ -326,6 +353,8 @@ class RepoAutomation:
             config_path=None,
             config_paths=self._resolved_optional_config_paths(),
             uptime_seconds=(datetime.now(timezone.utc) - self.start_time).total_seconds(),
+            component_enabled=self._component_enabled_map(),
+            component_states=self._component_state_map(),
             components_running={name: self._is_component_running(name) for name in self.components.keys()},
             dependency_status=self.dependency_status,
             last_health_check=self._utc_now_str(),
@@ -590,7 +619,7 @@ class RepoAutomation:
         for pkg in missing:
             try:
                 result = subprocess.run(
-                    [sys.executable, "-m", "pip", "install", pkg],
+                    [self.python_command, "-m", "pip", "install", pkg],
                     capture_output=True,
                     text=True,
                 )
@@ -692,16 +721,25 @@ class RepoAutomation:
 
         # Prefer dynamic running info; fall back to status file content
         components_running = status.get("components_running", {}) if status else {}
+        component_enabled = status.get("component_enabled", {}) if status else {}
+        component_states = status.get("component_states", {}) if status else {}
 
         for name in self.components.keys():
+            component = self.components.get(name)
+            enabled = component_enabled.get(name, component.enabled if component else True)
             running = dynamic_running.get(name, components_running.get(name, False))
             component = self.components.get(name)
             if component:
-                status_icon = "✅" if running else "❌"
+                state = component_states.get(name, "running" if running else "stopped")
+                if not enabled:
+                    status_icon = "⏸️"
+                else:
+                    status_icon = "✅" if running else "❌"
                 dep_ok = status.get("dependency_status", {}).get(name, True) if status else True
-                dep_icon = "🧩" if dep_ok else "⚠️"
+                dep_icon = "—" if not enabled else "🧩" if dep_ok else "⚠️"
                 pid_info = f" (PID {pid_map.get(name)})" if name in pid_map else ""
-                print(f"  {status_icon} {component.name}{pid_info} ({dep_icon} deps)")
+                state_suffix = "disabled" if not enabled else state
+                print(f"  {status_icon} {component.name}{pid_info} ({dep_icon} deps, {state_suffix})")
 
         # Recent errors
         if status and status.get("errors"):

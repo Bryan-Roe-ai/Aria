@@ -14,7 +14,7 @@
   "skipped": 0,
   "results": [
     {
-      "name": "evaluation_autorun",
+      "name": "autotrain",
       "cmd": [
         "/workspace/.venv/bin/python",
         "scripts/evaluation_autorun.py",
@@ -22,7 +22,7 @@
       ],
       "status": "succeeded",
       "return_code": 0,
-      "duration_sec": 0.04,
+      "duration_sec": 0.07,
       "critical": true
     },
     {

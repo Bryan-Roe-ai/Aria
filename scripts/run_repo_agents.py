@@ -40,6 +40,7 @@ _AGENT_MODULES = (
     "scripts.agents.status_freshness_agent",
     "scripts.agents.marker_audit_agent",
     "scripts.agents.docstring_audit_agent",
+    "scripts.agents.agi_health_agent",
     "scripts.agents.agents_md_audit_agent",
 )
 
@@ -114,7 +115,8 @@ def run_agents(
 
 def write_summary(summary: RunSummary) -> Path:
     AGENTS_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    SUMMARY_PATH.write_text(json.dumps(asdict(summary), indent=2), encoding="utf-8")
+    SUMMARY_PATH.write_text(json.dumps(
+        asdict(summary), indent=2), encoding="utf-8")
     return SUMMARY_PATH
 
 
@@ -126,7 +128,8 @@ def build_parser() -> argparse.ArgumentParser:
             "Examples:\n"
             "  python scripts/run_repo_agents.py\n"
             "  python scripts/run_repo_agents.py --list-agents\n"
-            "  python scripts/run_repo_agents.py --agent agi-health --dry-run\n"
+            "  python scripts/run_repo_agents.py --agent "
+            "agi-health --dry-run\n"
             "  python scripts/run_repo_agents.py --json --fail-on-warning\n"
         ),
     )
@@ -139,7 +142,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--agent",
         action="append",
         dest="agents",
-        help="Run only the named agent (repeatable). Default: all registered agents.",
+        help=(
+            "Run only the named agent (repeatable). "
+            "Default: all registered agents."
+        ),
     )
     parser.add_argument(
         "--dry-run",

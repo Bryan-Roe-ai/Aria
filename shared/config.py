@@ -19,7 +19,7 @@ from functools import lru_cache
 from typing import Annotated, List, Optional
 
 _LOG = logging.getLogger(__name__)
-_DEFAULT_PROVIDER_PRIORITY = ["azure", "openai", "lmstudio", "local"]
+_DEFAULT_PROVIDER_PRIORITY = ["lmstudio", "ollama", "azure", "openai", "local"]
 
 
 def _normalize_provider_priority(value: object) -> List[str]:
@@ -124,14 +124,13 @@ if _PYDANTIC_AVAILABLE:
         # ------------------------------------------------------------------
         lmstudio_base_url: Optional[str] = Field(
             default=None, alias="LMSTUDIO_BASE_URL")
+        ollama_base_url: Optional[str] = Field(
+            default=None, alias="OLLAMA_BASE_URL")
 
         # ------------------------------------------------------------------
         # Provider selection
         # ------------------------------------------------------------------
-        provider_priority: ProviderPriority = Field(
-            default=["azure", "openai", "lmstudio", "local"],
-            alias="QAI_PROVIDER_PRIORITY",
-        )
+        provider_priority: ProviderPriority = _provider_priority_field()
 
         # ------------------------------------------------------------------
         # Database
@@ -246,12 +245,18 @@ if _PYDANTIC_AVAILABLE:
             """Return True when an LM Studio URL is configured."""
             return bool(self.lmstudio_base_url and str(self.lmstudio_base_url).strip())
 
+        @property
+        def ollama_ready(self) -> bool:
+            """Return True when an Ollama URL is configured."""
+            return bool(self.ollama_base_url and str(self.ollama_base_url).strip())
+
         def active_provider(self) -> str:
             """Return the name of the first ready provider in the priority list."""
             checks = {
+                "lmstudio": self.lmstudio_ready,
+                "ollama": self.ollama_ready,
                 "azure": self.azure_openai_ready,
                 "openai": self.openai_ready,
-                "lmstudio": self.lmstudio_ready,
             }
             for name in self.provider_chain():
                 if checks.get(name, False):
@@ -270,6 +275,7 @@ if _PYDANTIC_AVAILABLE:
                 "azure_openai_ready": self.azure_openai_ready,
                 "openai_ready": self.openai_ready,
                 "lmstudio_ready": self.lmstudio_ready,
+                "ollama_ready": self.ollama_ready,
                 "db_enabled": bool(self.db_connection_string),
                 "cosmos_enabled": self.enable_cosmos,
                 "keyvault_enabled": bool(self.keyvault_url),
@@ -293,9 +299,10 @@ else:
                 "AZURE_OPENAI_API_VERSION", "2024-02-01")
             self.openai_api_key = os.environ.get("OPENAI_API_KEY")
             self.lmstudio_base_url = os.environ.get("LMSTUDIO_BASE_URL")
+            self.ollama_base_url = os.environ.get("OLLAMA_BASE_URL")
             self.provider_priority = _normalize_provider_priority(
                 os.environ.get("QAI_PROVIDER_PRIORITY",
-                               "azure,openai,lmstudio,local")
+                               "lmstudio,ollama,azure,openai,local")
             )
             self.db_connection_string = os.environ.get("QAI_DB_CONN")
             self.sql_pool_size = int(os.environ.get("QAI_SQL_POOL_SIZE", "10"))
@@ -344,11 +351,16 @@ else:
         def lmstudio_ready(self) -> bool:
             return bool(self.lmstudio_base_url and str(self.lmstudio_base_url).strip())
 
+        @property
+        def ollama_ready(self) -> bool:
+            return bool(self.ollama_base_url and str(self.ollama_base_url).strip())
+
         def active_provider(self) -> str:
             checks = {
+                "lmstudio": self.lmstudio_ready,
+                "ollama": self.ollama_ready,
                 "azure": self.azure_openai_ready,
                 "openai": self.openai_ready,
-                "lmstudio": self.lmstudio_ready,
             }
             for name in self.provider_priority:
                 if checks.get(name, False):
@@ -365,6 +377,7 @@ else:
                 "azure_openai_ready": self.azure_openai_ready,
                 "openai_ready": self.openai_ready,
                 "lmstudio_ready": self.lmstudio_ready,
+                "ollama_ready": self.ollama_ready,
                 "db_enabled": bool(self.db_connection_string),
                 "cosmos_enabled": self.enable_cosmos,
                 "keyvault_enabled": bool(self.keyvault_url),
