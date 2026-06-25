@@ -9,7 +9,7 @@
     "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {},
     "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {},
     "ghcr.io/devcontainers-extra/features/actions-runner:1": {},
-    "ghcr.io/helpers4/devcontainer/github-dev:1": {}
+    "ghcr.io/helpers4/devcontainer/github-dev:": {}
   },
   "remoteUser": "vscode",
   "forwardPorts": [
