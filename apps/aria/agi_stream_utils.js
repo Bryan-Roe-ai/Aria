@@ -63,5 +63,6 @@
   global.AGIStreamUtils = {
     parseSSEText: parseSSEText,
     prettyPrintDelta: prettyPrintDelta,
+    escapeHtml: escapeHtml,
   };
 })(typeof window !== 'undefined' ? window : (typeof global !== 'undefined' ? global : this));

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -39,7 +40,8 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Build summary metadata for fast-validate checks."""
     total = len(results)
     ok_count = sum(1 for r in results if r.get("status") == "ok")
-    critical_failures = [r for r in results if is_critical_failure(str(r.get("check", "")), str(r.get("status", "")))]
+    critical_failures = [r for r in results if is_critical_failure(
+        str(r.get("check", "")), str(r.get("status", "")))]
     warning_count = total - ok_count - len(critical_failures)
 
     return {
@@ -136,7 +138,8 @@ def quick_check_configs() -> Dict[str, Any]:
     import importlib
     import importlib.util
 
-    yaml_mod = importlib.import_module("yaml") if importlib.util.find_spec("yaml") else None
+    yaml_mod = importlib.import_module(
+        "yaml") if importlib.util.find_spec("yaml") else None
 
     configs = [
         "config/autonomous_training.yaml",
@@ -302,7 +305,8 @@ def quick_check_dependencies() -> Dict[str, Any]:
         available_in_project_venv = False
         if not available_here and project_python is not None:
             try:
-                available_in_project_venv = _spec_exists_in_python(pkg, project_python)
+                available_in_project_venv = _spec_exists_in_python(
+                    pkg, project_python)
             except Exception:
                 available_in_project_venv = False
 
@@ -459,7 +463,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.quiet:
         print(f"all_ok={all_ok} results={output_path.relative_to(REPO_ROOT)}")
 
-    return 0 if all_ok else 1
+    print(
+        f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
+    sys.exit(0 if all_ok else 1)
 
 
 if __name__ == "__main__":
