@@ -36,6 +36,13 @@
       <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <SqlCmdVariable Include="var">
+      <Value>$(SqlCmdVar__1)</Value>
+      <DefaultValue>
+      </DefaultValue>
+    </SqlCmdVariable>
+  </ItemGroup>
   <Target Name="BeforeBuild">
     <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />
   </Target>

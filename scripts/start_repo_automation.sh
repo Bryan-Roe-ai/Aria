@@ -57,13 +57,26 @@ function show_menu() {
     read -p "Enter choice [0-7]: " choice
 }
 
-function check_dependencies() {
-    echo -e "${YELLOW}Checking dependencies...${NC}"
-
+function resolve_python_bin() {
     PYTHON_BIN="$REPO_ROOT/.venv/bin/python"
     if [ ! -x "$PYTHON_BIN" ]; then
         PYTHON_BIN="python3"
     fi
+}
+
+function run_repo_automation() {
+    "$PYTHON_BIN" "$REPO_ROOT/scripts/repo_automation.py" "$@"
+}
+
+function is_background_flag() {
+    local arg="${1:-}"
+    [ "$arg" = "--background" ] || [ "$arg" = "-b" ]
+}
+
+function check_dependencies() {
+    echo -e "${YELLOW}Checking dependencies...${NC}"
+
+    resolve_python_bin
 
     if ! command -v "$PYTHON_BIN" &> /dev/null; then
         echo -e "${RED}❌ Python 3 not found${NC}"
@@ -86,19 +99,19 @@ function check_dependencies() {
 function start_full_automation() {
     echo -e "${GREEN}🚀 Starting Full Repository Automation...${NC}"
     echo ""
-    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --daemon
+    run_repo_automation --start --daemon
 }
 
 function start_aria_only() {
     echo -e "${GREEN}🚀 Starting Aria Automation Only...${NC}"
     echo ""
-    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --components aria --daemon
+    run_repo_automation --start --components aria --daemon
 }
 
 function start_training_pipeline() {
     echo -e "${GREEN}🚀 Starting Training Pipeline...${NC}"
     echo ""
-    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --components training,evaluation --daemon
+    run_repo_automation --start --components training,evaluation --daemon
 }
 
 function start_custom() {
@@ -113,44 +126,44 @@ function start_custom() {
 
     echo -e "${GREEN}🚀 Starting selected components...${NC}"
     echo ""
-    python3 "$REPO_ROOT/scripts/repo_automation.py" --start --components "$components" --daemon
+    run_repo_automation --start --components "$components" --daemon
 }
 
 function show_status() {
-    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --status
+    run_repo_automation --status
 }
 
 function validate_repo_automation() {
     echo -e "${YELLOW}🔍 Validating repository automation...${NC}"
-    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --validate
+    run_repo_automation --validate
     echo -e "${GREEN}✅ Repository automation configuration is valid${NC}"
 }
 
 function stop_all() {
     echo -e "${YELLOW}🛑 Stopping all automation...${NC}"
-    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --stop
+    run_repo_automation --stop
     echo -e "${GREEN}✅ All automation stopped${NC}"
 }
 
 function run_background() {
-    local mode=$1
+    local mode="${1:-full}"
     echo -e "${GREEN}🚀 Starting in background mode...${NC}"
 
     case "$mode" in
         full)
-            nohup "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --daemon \
+            nohup "$PYTHON_BIN" "$REPO_ROOT/scripts/repo_automation.py" --start --daemon \
                 > "$REPO_ROOT/data_out/repo_automation/automation.log" 2>&1 &
             ;;
         aria)
-            nohup "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --components aria --daemon \
+            nohup "$PYTHON_BIN" "$REPO_ROOT/scripts/repo_automation.py" --start --components aria --daemon \
                 > "$REPO_ROOT/data_out/repo_automation/automation.log" 2>&1 &
             ;;
         training)
-            nohup "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --components training,evaluation --daemon \
+            nohup "$PYTHON_BIN" "$REPO_ROOT/scripts/repo_automation.py" --start --components training,evaluation --daemon \
                 > "$REPO_ROOT/data_out/repo_automation/automation.log" 2>&1 &
             ;;
         *)
-            nohup "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --components "$mode" --daemon \
+            nohup "$PYTHON_BIN" "$REPO_ROOT/scripts/repo_automation.py" --start --components "$mode" --daemon \
                 > "$REPO_ROOT/data_out/repo_automation/automation.log" 2>&1 &
             ;;
     esac
@@ -167,9 +180,12 @@ check_dependencies
 
 # Check for command line arguments
 if [ $# -gt 0 ]; then
+    second_arg="${2:-}"
+    third_arg="${3:-}"
+
     case "$1" in
         full|all)
-            if [ "$2" == "--background" ] || [ "$2" == "-b" ]; then
+            if is_background_flag "$second_arg"; then
                 run_background "full"
             else
                 start_full_automation
@@ -177,7 +193,7 @@ if [ $# -gt 0 ]; then
             exit 0
             ;;
         aria)
-            if [ "$2" == "--background" ] || [ "$2" == "-b" ]; then
+            if is_background_flag "$second_arg"; then
                 run_background "aria"
             else
                 start_aria_only
@@ -185,7 +201,7 @@ if [ $# -gt 0 ]; then
             exit 0
             ;;
         training)
-            if [ "$2" == "--background" ] || [ "$2" == "-b" ]; then
+            if is_background_flag "$second_arg"; then
                 run_background "training"
             else
                 start_training_pipeline
@@ -205,14 +221,14 @@ if [ $# -gt 0 ]; then
             exit 0
             ;;
         components)
-            if [ -z "$2" ]; then
+            if [ -z "$second_arg" ]; then
                 show_components
                 exit 0
             else
-                if [ "$3" == "--background" ] || [ "$3" == "-b" ]; then
-                    run_background "$2"
+                if is_background_flag "$third_arg"; then
+                    run_background "$second_arg"
                 else
-                    "$REPO_ROOT/.venv/bin/python" "$REPO_ROOT/scripts/repo_automation.py" --start --components "$2" --daemon
+                    run_repo_automation --start --components "$second_arg" --daemon
                 fi
                 exit 0
             fi

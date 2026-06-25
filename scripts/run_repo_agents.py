@@ -128,7 +128,8 @@ def build_parser() -> argparse.ArgumentParser:
             "Examples:\n"
             "  python scripts/run_repo_agents.py\n"
             "  python scripts/run_repo_agents.py --list-agents\n"
-            "  python scripts/run_repo_agents.py --agent agi-health --dry-run\n"
+            "  python scripts/run_repo_agents.py --agent "
+            "agi-health --dry-run\n"
             "  python scripts/run_repo_agents.py --json --fail-on-warning\n"
         ),
     )
@@ -141,7 +142,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--agent",
         action="append",
         dest="agents",
-        help="Run only the named agent (repeatable). Default: all registered agents.",
+        help=(
+            "Run only the named agent (repeatable). "
+            "Default: all registered agents."
+        ),
     )
     parser.add_argument(
         "--dry-run",
