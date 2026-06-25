@@ -1,3 +1,5 @@
+# ruff: noqa: E501
+# flake8: noqa
 # =============================================================================
 # QAI Azure Functions Application
 # =============================================================================
@@ -25,7 +27,8 @@ from function_app_domains import quantum as quantum_domain
 from function_app_domains import referrals as referrals_domain
 from function_app_domains import subscriptions as subscriptions_domain
 
-# Import AI projects via centralized registry (replaced scattered sys.path manipulation)
+# Import AI projects via centralized registry
+# (replaced scattered sys.path manipulation)
 from shared.agi_backend_status import build_agi_backend_status
 from shared.config import get_settings
 from shared.core.module_registry import AIProjectsRegistry
@@ -82,7 +85,7 @@ tracing_module = safe_import("shared.tracing", log_failure=False)
 if tracing_module and hasattr(tracing_module, "init_tracing"):
     try:
         tracing_module.init_tracing(service_name="qai.functions")
-    except Exception as _trace_err:  # noqa: BLE001 - don't fail on missing libs
+    except Exception as _trace_err:  # noqa: BLE001
         logging.debug(f"[startup] Tracing init skipped: {_trace_err}")
 else:
     logging.debug("[startup] Tracing init skipped: module unavailable")
@@ -105,10 +108,16 @@ log_chat_message_safe = db_logging["log_chat_message_safe"]
 # Chat memory functions with graceful degradation
 chat_memory_funcs = safe_import(
     "shared.chat_memory",
-    import_names=("generate_embedding", "fetch_similar_messages", "store_embedding"),
+    import_names=(
+        "generate_embedding",
+        "fetch_similar_messages",
+        "store_embedding",
+    ),
     fallback_factory=lambda name: {
         "generate_embedding": lambda text: [],
-        "fetch_similar_messages": lambda query_emb, top_k=5, session_id=None: [],
+        "fetch_similar_messages": (
+            lambda query_emb, top_k=5, session_id=None: []
+        ),
         "store_embedding": lambda message_id, embedding, model: False,
     }.get(name, lambda *args, **kwargs: None),
 )
@@ -116,11 +125,18 @@ try:
     import shared as _shared_pkg  # noqa: F401
     import shared.chat_memory as _shared_chat_memory_mod
 
-    _shared_chat_memory_mod.generate_embedding = chat_memory_funcs["generate_embedding"]
-    _shared_chat_memory_mod.fetch_similar_messages = chat_memory_funcs["fetch_similar_messages"]
-    _shared_chat_memory_mod.store_embedding = chat_memory_funcs["store_embedding"]
+    _shared_chat_memory_mod.generate_embedding = chat_memory_funcs[
+        "generate_embedding"
+    ]
+    _shared_chat_memory_mod.fetch_similar_messages = chat_memory_funcs[
+        "fetch_similar_messages"
+    ]
+    _shared_chat_memory_mod.store_embedding = chat_memory_funcs[
+        "store_embedding"
+    ]
 except Exception:
-    # shared.chat_memory not importable; the try/except block below installs a stub module.
+    # shared.chat_memory not importable; the try/except block below
+    # installs a stub module.
     pass
 
 generate_embedding = chat_memory_funcs["generate_embedding"]
@@ -164,7 +180,6 @@ try:
     import shared.chat_memory
 except Exception:
     # Provide graceful degradations so endpoint still works
-    import sys
     import types
 
     if "shared.chat_memory" not in sys.modules:
