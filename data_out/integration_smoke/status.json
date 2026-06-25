@@ -67,24 +67,24 @@
     },
     {
       "name": "functions_ai_status_endpoint",
-      "status": "failed",
+      "status": "skipped",
       "critical": false,
-      "duration_sec": 0.03,
-      "detail": "invalid_ai_status_payload"
+      "duration_sec": 0.02,
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_ai_routes_endpoint",
-      "status": "succeeded",
+      "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "routes=12"
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_agi_status_endpoint",
-      "status": "succeeded",
+      "status": "skipped",
       "critical": false,
       "duration_sec": 0.0,
-      "detail": "has_key=available"
+      "detail": "functions host not running (non-strict mode)"
     },
     {
       "name": "functions_agi_analyze_endpoint",
@@ -113,5 +113,6 @@
       "critical": false,
       "duration_sec": 0.0,
       "detail": "functions host not running (non-strict mode)"
+  ]
   ]
 }

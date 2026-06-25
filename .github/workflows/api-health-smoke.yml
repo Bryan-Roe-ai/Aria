@@ -173,16 +173,18 @@ jobs:
                 echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |"
               } >> "$GITHUB_STEP_SUMMARY"
             else
-              echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |"
+              echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
             fi
+          else
+            echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-            # contract_tests
-            if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
-              echo "| ci_orchestrator --integration-contract-tests | ✅ passed |"
-            else
-              echo "| ci_orchestrator --integration-contract-tests | ❌ failed |"
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+          # contract_tests
+          if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
+            echo "| ci_orchestrator --integration-contract-tests | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| ci_orchestrator --integration-contract-tests | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
           # Evaluate overall status and fail if any required test failed
           if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || [ "${{ steps.contract_tests.outcome }}" != "success" ]; then

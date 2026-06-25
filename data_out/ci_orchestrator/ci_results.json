@@ -35,6 +35,7 @@
       "duration_sec": 0.06,
       "duration_sec": 0.04,
       "critical": true
+      "critical": true
     },
     {
       "name": "quantum_autorun",
@@ -42,8 +43,10 @@
         "/workspace/.venv/bin/python",
       ],
       "status": "succeeded",
+      "status": "succeeded",
       "return_code": 0,
       "status": "succeeded",
       "duration_sec": 0.08,
   ]
+}
 }

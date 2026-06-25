@@ -15,7 +15,7 @@ This database project provides comprehensive tracking and analytics for the QAI 
 - **QuantumTrainingRuns** - Quantum ML training metadata, results, and hardware tracking
 - **LoRATrainingRuns** - LoRA fine-tuning runs with hyperparameters and metrics
 - **AzureQuantumJobs** - Azure Quantum job submissions, status, and cost tracking
-- __OrchestratorJobs__ - Orchestrator execution history (quantum_autorun, autotrain)
+- **OrchestratorJobs** - Orchestrator execution history (quantum_autorun, autotrain)
 
 #### Chat & Conversations
 
@@ -24,7 +24,7 @@ This database project provides comprehensive tracking and analytics for the QAI 
 
 #### Semantic Memory (Embeddings)
 
-- __ChatMessageEmbeddings__ - Per-message embedding vectors (VARBINARY float32 array) enabling semantic retrieval. Populated automatically by Azure Function `/api/chat` and the backfill script `scripts/ingest_chat_logs_to_sql.py`. Supports future migration to native `VECTOR` type when available.
+- **ChatMessageEmbeddings** - Per-message embedding vectors (VARBINARY float32 array) enabling semantic retrieval. Populated automatically by Azure Function `/api/chat` and the backfill script `scripts/ingest_chat_logs_to_sql.py`. Supports future migration to native `VECTOR` type when available.
 
 Memory retrieval flow:
 
@@ -74,16 +74,16 @@ Retrieval (Python-side cosine similarity) selects recent rows (TOP 500) optional
 
 ### Views
 
-- __vw_TrainingRunsSummary__ - Unified view of all training runs (Quantum + LoRA)
-- __vw_DatasetUsageStats__ - Dataset popularity and usage statistics
-- __vw_AzureQuantumCostTracking__ - Azure Quantum cost analysis by provider/target
+- **vw_TrainingRunsSummary** - Unified view of all training runs (Quantum + LoRA)
+- **vw_DatasetUsageStats** - Dataset popularity and usage statistics
+- **vw_AzureQuantumCostTracking** - Azure Quantum cost analysis by provider/target
 
 ### Stored Procedures
 
-- __sp_LogQuantumTrainingRun__ - Log quantum training with automatic dataset usage tracking
-- __sp_LogLoRATrainingRun__ - Log LoRA training with automatic dataset usage tracking
-- __sp_LogChatConversation__ - Log chat messages with automatic conversation management
-- __sp_RegisterDataset__ - Register or update dataset metadata
+- **sp_LogQuantumTrainingRun** - Log quantum training with automatic dataset usage tracking
+- **sp_LogLoRATrainingRun** - Log LoRA training with automatic dataset usage tracking
+- **sp_LogChatConversation** - Log chat messages with automatic conversation management
+- **sp_RegisterDataset** - Register or update dataset metadata
 
 ## Deployment
 
@@ -165,13 +165,13 @@ from datetime import datetime
 
 # Connection string (use Azure Key Vault in production)
 conn_str = (
-    "Driver={ODBC Driver 18 for SQL Server};"
-    "Server=tcp:qai-sql-server.database.windows.net,1433;"
-    "Database=qai-db;"
-    "Uid=qai-admin;"
-    "Pwd={your_password};"
-    "Encrypt=yes;"
-    "TrustServerCertificate=no;"
+  "Driver={ODBC Driver 18 for SQL Server};"
+  "Server=tcp:qai-sql-server.database.windows.net,1433;"
+  "Database=qai-db;"
+  "Uid=qai-admin;"
+  "Pwd={your_password};"
+  "Encrypt=yes;"
+  "TrustServerCertificate=no;"
 )
 
 # Log quantum training run
@@ -196,7 +196,7 @@ cursor.execute("""
     @RunId = @RunId OUTPUT;
   SELECT @RunId;
 """, 'heart_quick', 'heart_disease', 'qiskit_aer', 4, 2, 'linear',
-               0.01, 10, 16, 0.85, 45.2, 'completed')
+   0.01, 10, 16, 0.85, 45.2, 'completed')
 
 run_id = cursor.fetchone()[0]
 conn.commit()
@@ -211,12 +211,11 @@ Modify `scripts/quantum_autorun.py` and `scripts/autotrain.py` to log runs:
 # Add to quantum_autorun.py after successful training
 import pyodbc
 
-
 def log_to_database(job_config, results):
-    conn = pyodbc.connect(DB_CONNECTION_STRING)
-    cursor = conn.cursor()
+  conn = pyodbc.connect(DB_CONNECTION_STRING)
+  cursor = conn.cursor()
 
-    cursor.execute("""
+  cursor.execute("""
     DECLARE @RunId UNIQUEIDENTIFIER;
     EXEC sp_LogQuantumTrainingRun
       @JobName = ?, @DatasetName = ?, @Backend = ?,
@@ -226,12 +225,12 @@ def log_to_database(job_config, results):
       @StatusJsonPath = ?, @ResultsJsonPath = ?,
       @Status = ?, @RunId = @RunId OUTPUT;
   """, job_config['name'], job_config['dataset'], job_config['backend'],
-        job_config['n_qubits'], job_config['n_layers'], job_config['entanglement'],
-        job_config['learning_rate'], job_config['epochs'], job_config['batch_size'],
-        results['test_accuracy'], results['test_loss'], results['execution_time'],
-        results['status_json_path'], results['results_json_path'], 'completed')
+     job_config['n_qubits'], job_config['n_layers'], job_config['entanglement'],
+     job_config['learning_rate'], job_config['epochs'], job_config['batch_size'],
+     results['test_accuracy'], results['test_loss'], results['execution_time'],
+     results['status_json_path'], results['results_json_path'], 'completed')
 
-    conn.commit()
+  conn.commit()
 ```
 
 ### Azure Functions Integration
@@ -243,36 +242,33 @@ import pyodbc
 from azure.identity import DefaultAzureCredential
 
 # Use managed identity in production
-
-
 def get_db_connection():
-    credential = DefaultAzureCredential()
-    token = credential.get_token("https://database.windows.net/")
+  credential = DefaultAzureCredential()
+  token = credential.get_token("https://database.windows.net/")
 
-    conn_str = (
-        f"Driver={{ODBC Driver 18 for SQL Server}};"
-        f"Server=tcp:qai-sql-server.database.windows.net,1433;"
-        f"Database=qai-db;"
-        f"Authentication=ActiveDirectoryMsi;"
-    )
-    return pyodbc.connect(conn_str)
-
+  conn_str = (
+    f"Driver={{ODBC Driver 18 for SQL Server}};"
+    f"Server=tcp:qai-sql-server.database.windows.net,1433;"
+    f"Database=qai-db;"
+    f"Authentication=ActiveDirectoryMsi;"
+  )
+  return pyodbc.connect(conn_str)
 
 @app.route(route="chat", methods=["POST"])
 async def chat_endpoint(req: func.HttpRequest) -> func.HttpResponse:
-    # ... existing chat logic ...
+  # ... existing chat logic ...
 
-    # Log conversation
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
+  # Log conversation
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute("""
     DECLARE @ConvId UNIQUEIDENTIFIER, @MsgId UNIQUEIDENTIFIER;
     EXEC sp_LogChatConversation
       @SessionId = ?, @Provider = ?, @Model = ?,
       @Role = ?, @Content = ?, @TotalTokens = ?,
       @ConversationId = @ConvId OUTPUT, @MessageId = @MsgId OUTPUT;
   """, session_id, provider, model, 'user', user_message, token_count)
-    conn.commit()
+  conn.commit()
 ```
 
 ## Cost Optimization
