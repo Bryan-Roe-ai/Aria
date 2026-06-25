@@ -6,6 +6,7 @@ Supports dataclass-based config (no pydantic dependency required).
 
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from typing import Literal
@@ -28,9 +29,10 @@ def _read_float_env(name: str, default: float) -> float:
     if raw is None:
         return default
     try:
-        return float(raw)
+        parsed = float(raw)
     except (TypeError, ValueError):
         return default
+    return parsed if math.isfinite(parsed) else default
 
 
 def _read_backend_env(name: str, default: str = "auto") -> str:
@@ -52,9 +54,10 @@ def _coerce_int(value: object, default: int, minimum: int = 1) -> int:
 def _coerce_float(value: object, default: float) -> float:
     """Convert value to float with safe default."""
     try:
-        return float(value)
+        parsed = float(value)
     except (TypeError, ValueError):
         return default
+    return parsed if math.isfinite(parsed) else default
 
 
 @dataclass

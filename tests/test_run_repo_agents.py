@@ -14,6 +14,29 @@ from scripts.agents.base import AgentResult  # noqa: E402
 from scripts import run_repo_agents as runner  # noqa: E402
 
 
+def test_default_agent_modules_register_expected_agents():
+    expected_modules = {
+        "scripts.agents.status_freshness_agent",
+        "scripts.agents.marker_audit_agent",
+        "scripts.agents.docstring_audit_agent",
+        "scripts.agents.agi_health_agent",
+        "scripts.agents.agents_md_audit_agent",
+    }
+    expected_agents = {
+        "status-freshness",
+        "marker-audit",
+        "docstring-audit",
+        "agi-health",
+        "agents-md-audit",
+    }
+
+    assert expected_modules.issubset(set(runner._AGENT_MODULES))
+
+    registry = runner._load_agents()
+
+    assert expected_agents.issubset(set(registry))
+
+
 def test_run_agents_executes_registered_agents(tmp_path, monkeypatch):
     class _FakeAgent:
         name = "fake-agent"
@@ -77,3 +100,23 @@ def test_main_fail_on_warning(monkeypatch):
 
     assert runner.main(["--dry-run"]) == 0
     assert runner.main(["--dry-run", "--fail-on-warning"]) == 1
+
+
+def test_main_list_agents(monkeypatch, capsys):
+    class _ListedAgent:
+        name = "listed-agent"
+        description = "Example agent for listing."
+
+        def run(self) -> AgentResult:
+            return AgentResult(name=self.name, status="ok", summary="ok")
+
+        def write_status(self, _result: AgentResult) -> Path:
+            return Path("/dev/null")
+
+    monkeypatch.setattr(runner, "_AGENT_MODULES", ())
+    monkeypatch.setattr(runner, "get_registered_agents", lambda: {"listed-agent": _ListedAgent})
+
+    assert runner.main(["--list-agents"]) == 0
+    out = capsys.readouterr().out
+    assert "listed-agent" in out
+    assert "Example agent for listing." in out

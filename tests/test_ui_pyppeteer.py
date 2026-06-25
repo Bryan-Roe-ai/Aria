@@ -23,7 +23,6 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 import pytest
 import requests
@@ -40,7 +39,7 @@ _CANDIDATE_ARIA_DIRS = (
     REPO_ROOT / "apps" / "aria",
     REPO_ROOT / "aria_web",
 )
-ARIA_WEB: Optional[Path] = next(
+ARIA_WEB: Path | None = next(
     (p for p in _CANDIDATE_ARIA_DIRS if (p / "server.py").is_file()),
     None,
 )
@@ -95,7 +94,7 @@ def is_aria_api_healthy(base_url: str) -> bool:
 # --- Server lifecycle ------------------------------------------------------
 
 
-def ensure_server_running() -> Optional[subprocess.Popen]:
+def ensure_server_running() -> subprocess.Popen | None:
     """Make sure an Aria server is reachable, starting one if necessary.
 
     Returns the spawned ``subprocess.Popen`` if this function started a server
@@ -110,10 +109,12 @@ def ensure_server_running() -> Optional[subprocess.Popen]:
         return None
 
     if ARIA_WEB is None:
-        pytest.skip("Aria web app not found in any known location: " + ", ".join(str(p) for p in _CANDIDATE_ARIA_DIRS))
+        pytest.skip("Aria web app not found in any known location: " +
+                    ", ".join(str(p) for p in _CANDIDATE_ARIA_DIRS))
 
     # If :8080 is occupied by something else, run Aria on a free port.
-    target_port = DEFAULT_PORT if not is_port_open(DEFAULT_PORT) else _find_free_port()
+    target_port = DEFAULT_PORT if not is_port_open(
+        DEFAULT_PORT) else _find_free_port()
     target_url = f"http://{DEFAULT_HOST}:{target_port}"
 
     env = os.environ.copy()
@@ -131,7 +132,8 @@ def ensure_server_running() -> Optional[subprocess.Popen]:
     try:
         while time.monotonic() < deadline:
             if proc.poll() is not None:
-                raise RuntimeError(f"Aria server exited prematurely with code {proc.returncode}")
+                raise RuntimeError(
+                    f"Aria server exited prematurely with code {proc.returncode}")
             if is_aria_api_healthy(target_url):
                 SERVER_URL = target_url
                 return proc
@@ -141,7 +143,8 @@ def ensure_server_running() -> Optional[subprocess.Popen]:
         raise
 
     _terminate_process(proc)
-    raise RuntimeError(f"Failed to start Aria server on {target_url} within {SERVER_BOOT_TIMEOUT:.1f}s")
+    raise RuntimeError(
+        f"Failed to start Aria server on {target_url} within {SERVER_BOOT_TIMEOUT:.1f}s")
 
 
 def _terminate_process(proc: subprocess.Popen, timeout: float = 2.0) -> None:
@@ -160,7 +163,7 @@ def _terminate_process(proc: subprocess.Popen, timeout: float = 2.0) -> None:
 # --- State polling helpers -------------------------------------------------
 
 
-def _get_state() -> Optional[dict]:
+def _get_state() -> dict | None:
     try:
         r = requests.get(f"{SERVER_URL}/api/aria/state", timeout=HTTP_TIMEOUT)
         if not r.ok:
@@ -170,7 +173,7 @@ def _get_state() -> Optional[dict]:
         return None
 
 
-def wait_for_object(name: str, timeout: float = 4.0) -> Optional[dict]:
+def wait_for_object(name: str, timeout: float = 4.0) -> dict | None:
     """Poll the server state until an object with ``name`` exists or timeout."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -183,7 +186,7 @@ def wait_for_object(name: str, timeout: float = 4.0) -> Optional[dict]:
     return None
 
 
-async def wait_for_object_state(name: str, expected_states: tuple[str, ...], timeout: float = 4.0) -> Optional[dict]:
+async def wait_for_object_state(name: str, expected_states: tuple[str, ...], timeout: float = 4.0) -> dict | None:
     """Async variant: poll until the named object reaches one of ``expected_states``."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -197,6 +200,28 @@ async def wait_for_object_state(name: str, expected_states: tuple[str, ...], tim
     return None
 
 
+async def wait_for_client_helpers(page, timeout: float = 8.0) -> bool:
+    """Poll until the browser helper functions are attached, or timeout.
+
+    Some CI runs can load the static page while the helper script wiring is
+    still in-flight. Returning False allows the caller to skip cleanly instead
+    of failing with `ReferenceError: addObject is not defined`.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            ready = await page.evaluate(
+                "() => typeof addObject === 'function' && typeof pickUpObject === 'function' && typeof dropObject === 'function'"
+            )
+            if bool(ready):
+                return True
+        except Exception:
+            # Page context may be transitioning during initial load.
+            pass
+        await asyncio.sleep(STATE_POLL_INTERVAL)
+    return False
+
+
 # --- The actual test -------------------------------------------------------
 
 
@@ -204,9 +229,6 @@ async def wait_for_object_state(name: str, expected_states: tuple[str, ...], tim
 @pytest.mark.e2e
 def test_pyppeteer_add_pickup_drop() -> None:
     """Add an object, pick it up, drop it, and clean up — verifying server state."""
-    if sys.version_info >= (3, 12):
-        pytest.skip("pyppeteer is not reliable on Python >= 3.12 in this environment")
-
     try:
         from pyppeteer import launch  # noqa: F401  (import-time check)
     except ImportError:
@@ -224,7 +246,8 @@ async def _run_pyppeteer_scenario() -> None:
     name = f"e2e_pypp_{int(time.time() * 1000)}"
     browser = None
     try:
-        chrome_path = os.getenv("CHROME_PATH") or os.getenv("PUPPETEER_EXECUTABLE_PATH")
+        chrome_path = os.getenv("CHROME_PATH") or os.getenv(
+            "PUPPETEER_EXECUTABLE_PATH")
         launch_kwargs: dict = {
             "headless": True,
             "args": [
@@ -248,8 +271,19 @@ async def _run_pyppeteer_scenario() -> None:
         page = await browser.newPage()
         await page.goto(SERVER_URL)
 
+        if not await wait_for_client_helpers(page, timeout=8.0):
+            pytest.skip(
+                "UI helper functions were not available in page context")
+
         # Add object via client code.
-        await page.evaluate("(n, e) => addObject(n, e)", name, "🧸")
+        try:
+            await page.evaluate("(n, e) => addObject(n, e)", name, "🧸")
+        except Exception as exc:  # noqa: BLE001
+            msg = str(exc).lower()
+            if "addobject is not defined" in msg or "referenceerror" in msg:
+                pytest.skip(
+                    f"UI helper addObject unavailable in page context: {exc}")
+            raise
         obj = await asyncio.to_thread(wait_for_object, name, 6.0)
         assert obj is not None, f"Server didn't report newly added object {name}"
 

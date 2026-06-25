@@ -185,6 +185,7 @@ def _collect_gpu() -> List[Dict[str, Any]]:
         return gpus
     except (
         FileNotFoundError,
+        PermissionError,
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
     ):
