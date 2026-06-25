@@ -91,3 +91,22 @@ def test_agi_persistence_endpoint_sqlite(monkeypatch, tmp_path, app_module):
     assert any(e.get("meta", {}).get("source") == "test_sqlite" or e.get("chain") for e in entries)
 
     backend.close()
+
+
+def test_agi_persistence_endpoint_default_jsonl_path(monkeypatch, tmp_path, app_module):
+    monkeypatch.delenv("QAI_AGI_PERSIST_DB", raising=False)
+    monkeypatch.delenv("QAI_AGI_PERSIST_SQLITE", raising=False)
+    monkeypatch.delenv("QAI_AGI_PERSIST", raising=False)
+    monkeypatch.delenv("QAI_AGI_PERSIST_PATH", raising=False)
+
+    default_path = tmp_path / "data_out" / "agi_reasoning.jsonl"
+    monkeypatch.setattr(app_module, "_default_agi_persist_jsonl_path", lambda: str(default_path))
+
+    req = _mock_request("GET", params={"limit": "5"})
+    resp = app_module.agi_persistence(req)
+    assert resp.status_code == 200
+    data = json.loads(resp.get_body())
+    assert data.get("status") == "ok"
+    assert data.get("backend") == "jsonl"
+    assert data.get("path") == str(default_path)
+    assert data.get("entries") == []

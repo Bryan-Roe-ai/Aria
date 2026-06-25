@@ -23,5 +23,12 @@ def test_agi_persistence_sqlite(tmp_path, monkeypatch):
     assert last.get("type") == "reasoning_chain"
     assert isinstance(last.get("chain"), list)
 
+    alias_id = provider.persistence.add_reasoning_chain(
+        [{"step_type": "analyze", "content": "alias test", "confidence": 1.0, "metadata": {}}]
+    )
+    assert alias_id
+    alias_entries = provider.persistence.read_last(5)
+    assert any(entry.get("id") == alias_id for entry in alias_entries)
+
     # cleanup
     monkeypatch.delenv("QAI_AGI_PERSIST_DB", raising=False)

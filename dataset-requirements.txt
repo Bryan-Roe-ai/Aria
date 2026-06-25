@@ -2,14 +2,14 @@
 # Install with: pip install -r dataset-requirements.txt
 
 # Dataset downloading and processing
-datasets>=4.5.0        # Hugging Face datasets library
+datasets>=5.0.0        # Hugging Face datasets library
 tqdm>=4.68.3           # Progress bars for downloads
 
 # Optional: Data processing and analysis
 pandas>=2.2.0          # CSV/DataFrame operations
 numpy>=1.26.4          # Numerical operations
-scikit-learn>=1.6.1    # ML datasets and preprocessing
+scikit-learn>=1.7.2    # ML datasets and preprocessing
 
 # Optional: Advanced formats
-pyarrow>=21.0.0        # Parquet file support
-h5py>=3.14.0            # HDF5 file support
+pyarrow>=24.0.0        # Parquet file support
+h5py>=3.16.0            # HDF5 file support

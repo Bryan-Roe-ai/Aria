@@ -65,6 +65,16 @@ def test_agi_status_exposes_lmstudio_agent_tools(app_module):
     }.issubset(lmstudio_tools)
 
 
+def test_agi_status_exposes_mcp_agi_tools(app_module):
+    req = _mock_request("GET")
+    resp = app_module.agi_status(req)
+    assert resp.status_code == 200
+
+    data = json.loads(resp.get_body())
+    mcp_tools = set((data.get("agent_tools") or {}).get("mcp-agi") or [])
+    assert {"agi_analyze", "agi_reason", "agi_stream"}.issubset(mcp_tools)
+
+
 def test_agi_analyze_requires_query_or_messages(app_module):
     req = _mock_request("POST", body={})
     resp = app_module.agi_analyze(req)
@@ -82,6 +92,14 @@ def test_agi_stream_requires_query_or_messages(app_module):
     resp = app_module.agi_stream(req)
     assert resp.status_code == 400
 
+
+def test_materialize_sse_body_joins_generator_chunks(app_module):
+    def _chunks():
+        yield b"event: meta\n"
+        yield b"data: {}\n\n"
+
+    body = app_module._materialize_sse_body(_chunks())
+    assert body == b"event: meta\ndata: {}\n\n"
 
 def test_agi_status_response_schema(app_module):
     """Guard test: ensure agi/status response shape remains stable."""
