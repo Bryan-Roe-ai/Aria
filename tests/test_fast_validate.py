@@ -9,6 +9,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 def _load_fast_validate_module():
     script_path = Path(__file__).parent.parent / "scripts" / "fast_validate.py"
@@ -215,3 +217,18 @@ def test_quick_check_ai_tokens_marks_stale(tmp_path, monkeypatch):
 
     assert result["status"] == "token_status_stale"
     assert result["stale"] is True
+
+
+def test_main_list_checks():
+    mod = _load_fast_validate_module()
+
+    assert mod.main(["--list-checks"]) == 0
+
+
+def test_main_unknown_check_exits_nonzero():
+    mod = _load_fast_validate_module()
+
+    with pytest.raises(SystemExit) as exc:
+        mod.main(["--check", "NotARealCheck"])
+
+    assert "NotARealCheck" in str(exc.value)

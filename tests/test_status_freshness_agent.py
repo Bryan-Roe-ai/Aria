@@ -59,6 +59,45 @@ def test_failed_count_is_error(tmp_path):
     assert result.findings[0]["issue"] == "failed"
 
 
+def test_passed_status_allows_noncritical_failed_count(tmp_path):
+    write_status(
+        tmp_path,
+        "noncritical",
+        {
+            "generated_at": recent_timestamp(),
+            "passed": True,
+            "succeeded": 11,
+            "failed": 1,
+            "errors": 0,
+        },
+    )
+
+    result = StatusFreshnessAgent(data_dir=tmp_path).run()
+
+    assert result.status == "ok"
+    assert result.metrics["failed"] == 0
+    assert result.findings == []
+
+
+def test_errors_count_is_error_even_when_passed(tmp_path):
+    write_status(
+        tmp_path,
+        "errors",
+        {
+            "generated_at": recent_timestamp(),
+            "passed": True,
+            "failed": 0,
+            "errors": 1,
+        },
+    )
+
+    result = StatusFreshnessAgent(data_dir=tmp_path).run()
+
+    assert result.status == "error"
+    assert result.metrics["failed"] == 1
+    assert result.findings[0]["issue"] == "failed"
+
+
 def test_crashed_status_string_is_failed(tmp_path):
     write_status(tmp_path, "crashed", {"last_updated": recent_timestamp(), "status": "crashed"})
 

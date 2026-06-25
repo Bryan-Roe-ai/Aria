@@ -114,7 +114,8 @@ jobs:
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
-          disable-sudo: true
+          # Playwright --with-deps installs browser system packages via apt (sudo).
+          disable-sudo: false
 
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -237,7 +238,7 @@ jobs:
             libxfixes3 \
             libxrandr2 \
             libgbm1 \
-            libasound2
+            libasound2t64
 
       - name: Install Python dependencies
         run: |
@@ -315,7 +316,7 @@ jobs:
         ports:
           - 4444:4444
           - 5900:5900
-        options: --shm-size=2gb
+        options: --shm-size=2gb --add-host=host.docker.internal:host-gateway
     steps:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
@@ -350,6 +351,7 @@ jobs:
           echo $! > /tmp/aria_server.pid
         env:
           PYTHONPATH: ${{ github.workspace }}
+          ARIA_HOST: 0.0.0.0
 
       - name: Wait for server
         run: |
@@ -392,7 +394,7 @@ jobs:
           pytest tests/test_ui_selenium.py -v --tb=short
         env:
           PYTHONPATH: ${{ github.workspace }}
-          ARIA_SERVER_URL: http://localhost:8080
+          ARIA_SERVER_URL: http://host.docker.internal:8080
           SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
 
       - name: Stop Aria server

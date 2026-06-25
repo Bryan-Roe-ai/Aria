@@ -202,6 +202,13 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml:data_out/coverage-${{ matrix.os }}.xml
 
+      - name: Run ai-project tests
+        env:
+          CI: "true"
+        run: |
+          set -euo pipefail
+          python scripts/test_runner.py --ai-projects
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08

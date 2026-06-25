@@ -2,10 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/workspaces/Aria/.azure/PRODUCTION-RUNBOOK.md
 # Compiled extensions
 *.so
-
+/workspaces/Aria/.azure/PRE-DEPLOYMENT-CHECKLIST.md
 # Distribution / packaging
 .Python
 build/
@@ -164,3 +164,8 @@ $RECYCLE.BIN/
 
 # Additional ignores
 coverage.json
+.azure/PRE-DEPLOYMENT-CHECKLIST.md
+.azure/PRODUCTION-RUNBOOK.md
+
+# core dumps
+core.*

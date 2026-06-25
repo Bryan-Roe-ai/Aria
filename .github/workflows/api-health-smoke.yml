@@ -165,26 +165,26 @@ jobs:
             echo "| integration_smoke.py --json | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-          # strict_smoke (scheduled only)
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
-              {
+          {
+            # strict_smoke (scheduled only)
+            if [ "${{ github.event_name }}" = "schedule" ]; then
+              if [ "${{ steps.strict_smoke.outcome }}" = "success" ]; then
                 echo "| integration_smoke.py --strict-endpoints | ✅ passed |"
                 echo "| strict smoke output | \`data_out/integration_smoke/status-strict.json\` |"
-              } >> "$GITHUB_STEP_SUMMARY"
+              else
+                echo "| integration_smoke.py --strict-endpoints | ❌ failed |"
+              fi
             else
-              echo "| integration_smoke.py --strict-endpoints | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
+              echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |"
             fi
-          else
-            echo "| integration_smoke.py --strict-endpoints | ⊘ skipped (non-scheduled) |" >> "$GITHUB_STEP_SUMMARY"
-          fi
 
-          # contract_tests
-          if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
-            echo "| ci_orchestrator --integration-contract-tests | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "| ci_orchestrator --integration-contract-tests | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
-          fi
+            # contract_tests
+            if [ "${{ steps.contract_tests.outcome }}" = "success" ]; then
+              echo "| ci_orchestrator --integration-contract-tests | ✅ passed |"
+            else
+              echo "| ci_orchestrator --integration-contract-tests | ❌ failed |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
           # Evaluate overall status and fail if any required test failed
           if [ "${{ steps.integration_smoke.outcome }}" != "success" ] || [ "${{ steps.contract_tests.outcome }}" != "success" ]; then
@@ -202,5 +202,7 @@ jobs:
             exit 1
           fi
 
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### ✅ All API health checks passed." >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo ""
+            echo "### ✅ All API health checks passed."
+          } >> "$GITHUB_STEP_SUMMARY"

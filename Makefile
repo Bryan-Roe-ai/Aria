@@ -29,7 +29,8 @@ GRADIO_SHARE ?= false
 
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
-	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json help
+	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
+	agents agents-dry ai-automation help
 
 # Default target
 all: lint test
@@ -144,6 +145,21 @@ validate-mcp:
 ## Validate configured VS Code MCP stdio servers with JSON output
 validate-mcp-json:
 	@$(PYTHON) scripts/validate_mcp_setup.py --json
+
+# ---------------------------------------------------------------------------
+# Repository inspection agents
+# ---------------------------------------------------------------------------
+
+## Run all repository inspection agents
+agents:
+	$(PYTHON) scripts/run_repo_agents.py
+
+## Preview agent results without writing data_out/agents/*
+agents-dry:
+	$(PYTHON) scripts/run_repo_agents.py --dry-run
+
+## Alias for agents
+ai-automation: agents
 
 # ---------------------------------------------------------------------------
 # Code quality

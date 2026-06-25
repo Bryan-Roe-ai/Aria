@@ -39,7 +39,7 @@ jobs:
     mode: azure_hardware
     azure_backend: quantinuum.sim.h2-1sc  # FREE: Quantinuum cloud simulator
     azure_shots: 100
-    qubits: 3
+    n_qubits: 3
     enabled: true  # ENABLED for Azure testing
     # Note: Requires Azure credentials and quantum workspace
     # Run: az login before executing this job
