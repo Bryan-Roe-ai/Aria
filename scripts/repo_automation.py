@@ -90,6 +90,8 @@ class AutomationStatus:
     config_path: Optional[str] = None
     config_paths: Dict[str, Optional[str]] = field(default_factory=dict)
     uptime_seconds: float = 0
+    component_enabled: Dict[str, bool] = field(default_factory=dict)
+    component_states: Dict[str, str] = field(default_factory=dict)
     components_running: Dict[str, bool] = field(default_factory=dict)
     dependency_status: Dict[str, bool] = field(default_factory=dict)
     last_health_check: Optional[str] = None
@@ -317,6 +319,18 @@ class RepoAutomation:
             except Exception:
                 continue
 
+    def _component_enabled_map(self) -> Dict[str, bool]:
+        """Return the configured enabled/disabled state for each component."""
+        return {name: bool(component.enabled) for name, component in self.components.items()}
+
+    def _component_state_map(self) -> Dict[str, str]:
+        """Return a stable state label for each component."""
+        enabled_map = self._component_enabled_map()
+        return {
+            name: ("disabled" if not enabled_map[name] else "running" if self._is_component_running(name) else "stopped")
+            for name in self.components
+        }
+
     def save_status(self):
         """Save current status to JSON"""
         status = AutomationStatus(
@@ -326,6 +340,8 @@ class RepoAutomation:
             config_path=None,
             config_paths=self._resolved_optional_config_paths(),
             uptime_seconds=(datetime.now(timezone.utc) - self.start_time).total_seconds(),
+            component_enabled=self._component_enabled_map(),
+            component_states=self._component_state_map(),
             components_running={name: self._is_component_running(name) for name in self.components.keys()},
             dependency_status=self.dependency_status,
             last_health_check=self._utc_now_str(),
@@ -692,16 +708,25 @@ class RepoAutomation:
 
         # Prefer dynamic running info; fall back to status file content
         components_running = status.get("components_running", {}) if status else {}
+        component_enabled = status.get("component_enabled", {}) if status else {}
+        component_states = status.get("component_states", {}) if status else {}
 
         for name in self.components.keys():
+            component = self.components.get(name)
+            enabled = component_enabled.get(name, component.enabled if component else True)
             running = dynamic_running.get(name, components_running.get(name, False))
             component = self.components.get(name)
             if component:
-                status_icon = "✅" if running else "❌"
+                state = component_states.get(name, "running" if running else "stopped")
+                if not enabled:
+                    status_icon = "⏸️"
+                else:
+                    status_icon = "✅" if running else "❌"
                 dep_ok = status.get("dependency_status", {}).get(name, True) if status else True
-                dep_icon = "🧩" if dep_ok else "⚠️"
+                dep_icon = "—" if not enabled else "🧩" if dep_ok else "⚠️"
                 pid_info = f" (PID {pid_map.get(name)})" if name in pid_map else ""
-                print(f"  {status_icon} {component.name}{pid_info} ({dep_icon} deps)")
+                state_suffix = "disabled" if not enabled else state
+                print(f"  {status_icon} {component.name}{pid_info} ({dep_icon} deps, {state_suffix})")
 
         # Recent errors
         if status and status.get("errors"):

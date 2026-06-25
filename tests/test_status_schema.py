@@ -33,6 +33,8 @@ def test_repo_automation_save_status_includes_metadata(
     payload = json.loads(status_file.read_text(encoding="utf-8"))
     assert payload["run_id"] == automation.run_id
     assert payload["config_path"] is None
+    assert payload["component_enabled"]["datasets"] is False
+    assert payload["component_states"]["datasets"] == "disabled"
     assert payload["generated_at"].endswith("Z")
     assert payload["last_health_check"].endswith("Z")
 
