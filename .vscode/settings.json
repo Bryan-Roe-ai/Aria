@@ -205,5 +205,6 @@
     "editor.defaultFormatter": "GitHub.copilot-chat",
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
-    }
+    },
+    "karateRunner.reports.activityBarDisplayType": "Tree"
 }
