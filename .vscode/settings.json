@@ -198,7 +198,7 @@
             ]
         }
     },
-    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.defaultEnvManager": "ms-python.python:system",
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
     "iis.configDir": "",
@@ -206,5 +206,9 @@
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
     },
-    "karateRunner.reports.activityBarDisplayType": "Tree"
+    "karateRunner.reports.activityBarDisplayType": "Tree",
+    "mirrord.promptUsingBinary": false,
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    }
 }
