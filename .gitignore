@@ -2,10 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/workspaces/Aria/.azure/PRODUCTION-RUNBOOK.md
 # Compiled extensions
 *.so
-
+/workspaces/Aria/.azure/PRE-DEPLOYMENT-CHECKLIST.md
 # Distribution / packaging
 .Python
 build/
