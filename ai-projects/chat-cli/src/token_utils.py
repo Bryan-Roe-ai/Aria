@@ -24,6 +24,7 @@ MODEL_CONTEXT_DEFAULTS: Dict[str, int] = {
     "gpt-4o-mini": 128000,
     "gpt-4.1": 128000,
     "gpt-4.1-mini": 128000,
+    "gpt-5-chat": 128000,
     "gpt-3.5-turbo": 16385,
     # Azure OpenAI often uses custom deployment names; fall back to a safe default
     "azure-default": 16384,
