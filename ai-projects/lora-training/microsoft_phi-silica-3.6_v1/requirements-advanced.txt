@@ -17,10 +17,10 @@ bitsandbytes>=0.49.2
 # Visualization
 matplotlib>=3.11.0
 seaborn>=0.13.2
-scipy>=1.17.1
+scipy>=1.18.0
 
 # Model serving & deployment
-fastapi>=0.137.1
+fastapi>=0.138.0
 uvicorn[standard]>=0.49.0
 pydantic>=2.13.4
 

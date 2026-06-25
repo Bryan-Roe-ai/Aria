@@ -135,7 +135,15 @@ class QuantumLLMPipeline:
 
     def _get_provider(self, prompt: str, explicit_provider: str | None = None):
         """Resolve and return a chat provider instance."""
-        provider_name = explicit_provider or self.config.provider
+        provider_name = (explicit_provider or self.config.provider or "auto").strip()
+
+        # Keep the safest local smoke path fully self-contained. When callers
+        # explicitly request the local provider, bypass the shared provider
+        # detection stack and use the built-in no-dependency echo provider.
+        # This preserves broader fallback behavior for "auto" while making the
+        # dedicated local path deterministic and offline-friendly.
+        if provider_name.lower() in {"local", "local-echo"}:
+            return _make_local_provider()
 
         # Let the quantum router pick if "auto"
         if provider_name == "auto" and self._detect_provider is None:
@@ -263,8 +271,18 @@ class QuantumLLMPipeline:
                 return result
             if isinstance(result, bytes):
                 return result.decode("utf-8", errors="replace")
+            if isinstance(result, bytearray):
+                return bytes(result).decode("utf-8", errors="replace")
             try:
-                return "".join(str(chunk) for chunk in result)
+                parts = []
+                for chunk in result:
+                    if isinstance(chunk, bytes):
+                        parts.append(chunk.decode("utf-8", errors="replace"))
+                    elif isinstance(chunk, bytearray):
+                        parts.append(bytes(chunk).decode("utf-8", errors="replace"))
+                    else:
+                        parts.append(str(chunk))
+                return "".join(parts)
             except Exception:
                 return str(result)
 
@@ -340,31 +358,40 @@ class QuantumLLMPipeline:
         messages = [{"role": "user", "content": prompt}]
 
         def _stream_call():
-            try:
-                result = llm_provider.complete(messages, stream=True)
-                if isinstance(result, str):
-                    return [result]
-                return result
-            except Exception as exc:  # noqa: BLE001
-                return [f"[error: {exc}]"]
-
-        if self.config.use_thread:
-            chunks = await asyncio.to_thread(_stream_call)
-        else:
-            chunks = _stream_call()
+            return llm_provider.complete(messages, stream=True)
 
         full_text = ""
-        for chunk in chunks:
-            if isinstance(chunk, bytes):
-                chunk = chunk.decode("utf-8", errors="replace")
-            full_text += chunk
-            yield f'data: {json.dumps({"delta": chunk})}\n\n'
+        stream_failed = False
+        error_message: str | None = None
 
-        # Apply quantum re-sampling metadata (just signals to client that it happened)
-        _ = self._resample_response(full_text, seed=seed)
+        try:
+            result = await asyncio.to_thread(_stream_call) if self.config.use_thread else _stream_call()
+            if result is None:
+                chunks = []
+            elif isinstance(result, (str, bytes, bytearray)):
+                chunks = [result]
+            else:
+                chunks = result
+
+            for chunk in chunks:
+                if isinstance(chunk, bytes):
+                    chunk = chunk.decode("utf-8", errors="replace")
+                elif not isinstance(chunk, str):
+                    chunk = str(chunk)
+                full_text += chunk
+                yield f'data: {json.dumps({"delta": chunk})}\n\n'
+
+            # Apply quantum re-sampling metadata (just signals to client that it happened)
+            _ = self._resample_response(full_text, seed=seed)
+        except Exception as exc:  # noqa: BLE001
+            stream_failed = True
+            error_message = str(exc).replace("\r", " ").replace("\n", " ")
+            yield f"event: error\ndata: {error_message}\n\n"
 
         latency_ms = round((time.monotonic() - t0) * 1000, 1)
-        done_meta = {"latency_ms": latency_ms, "quantum_augmented": True}
+        done_meta = {"latency_ms": latency_ms, "quantum_augmented": not stream_failed}
+        if error_message is not None:
+            done_meta["error"] = error_message
         yield f"data: {json.dumps(done_meta)}\n\n"
         yield "data: [DONE]\n\n"
 

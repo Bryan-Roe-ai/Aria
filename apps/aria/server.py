@@ -131,6 +131,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+_STAGE_STATE_STORE_PATH = Path(__file__).resolve().with_name("stage_state_store.py")
+_STAGE_STATE_STORE_SPEC = importlib.util.spec_from_file_location("aria_stage_state_store", _STAGE_STATE_STORE_PATH)
+if _STAGE_STATE_STORE_SPEC is None or _STAGE_STATE_STORE_SPEC.loader is None:
+    raise RuntimeError("Failed to load stage_state_store.py")
+_stage_state_store_module = importlib.util.module_from_spec(_STAGE_STATE_STORE_SPEC)
+_STAGE_STATE_STORE_SPEC.loader.exec_module(_stage_state_store_module)
+StageStateStore = getattr(_stage_state_store_module, "StageStateStore")
+
 try:
     from shared.local_settings import apply_local_settings
 
@@ -234,8 +242,7 @@ _LIMB_KEYWORDS = frozenset(
     set(LEFT_ARM_KEYWORDS) | set(RIGHT_ARM_KEYWORDS) | set(LEFT_LEG_KEYWORDS) | set(RIGHT_LEG_KEYWORDS)
 )
 
-# Global stage state that AI can see
-stage_state = {
+_DEFAULT_STAGE_STATE = {
     "aria": {
         "position": {"x": 15, "y": 20},  # percentage coordinates
         "expression": "neutral",
@@ -254,6 +261,8 @@ stage_state = {
         "stage_bounds": {"width": 100, "height": 100},
     },
 }
+stage_state_store = StageStateStore(_DEFAULT_STAGE_STATE)
+stage_state = stage_state_store.state
 
 # Structured action schema for LLM-powered automatic execution
 ARIA_ACTIONS = {
@@ -1015,6 +1024,13 @@ THEME_STAGE_STYLES = {
     },
 }
 
+THEME_REQUIRED_OBJECTS: dict[str, list[tuple[str, str]]] = {
+    "quantum": [
+        ("qubit", "⚛️"),
+        ("gate", "🔀"),
+    ],
+}
+
 QUANTUM_STAGE_PRESETS = {
     "intro": [
         {"action": "say", "text": "Welcome to the quantum lab!", "emotion": "happy"},
@@ -1111,9 +1127,18 @@ def _get_agi_provider(*, verbose: bool = False):
 
 def generate_world_fallback(theme: str, count: int) -> dict:
     """Generate a world procedurally without LLM."""
-    objects_catalog = THEME_OBJECT_LIBRARY.get(theme.lower(), THEME_OBJECT_LIBRARY["forest"])
-    random.shuffle(objects_catalog)
-    chosen = objects_catalog[: max(1, count)]
+    theme_key = theme.lower()
+    objects_catalog = list(
+        THEME_OBJECT_LIBRARY.get(theme_key, THEME_OBJECT_LIBRARY["forest"])
+    )
+    required = THEME_REQUIRED_OBJECTS.get(theme_key, [])
+    required_names = {name for name, _ in required}
+    remaining = [(name, emoji) for name, emoji in objects_catalog if name not in required_names]
+    random.shuffle(remaining)
+    chosen = list(required)
+    slots = max(1, count) - len(chosen)
+    if slots > 0:
+        chosen.extend(remaining[:slots])
     stage_objects = {}
     used_positions = []
     for name, emoji in chosen:

@@ -146,6 +146,7 @@ def test_repo_automation_status_summary_reflects_live_status(monkeypatch):
         "load_repo_automation_status",
         lambda: {
             "components_running": {"aria": True, "training": True, "quantum": False},
+            "component_enabled": {"aria": True, "training": True, "quantum": True, "backup": False},
             "errors": ["example error"],
             "uptime_seconds": 3661,
             "generated_at": "2026-05-31T23:50:00Z",
@@ -154,10 +155,11 @@ def test_repo_automation_status_summary_reflects_live_status(monkeypatch):
     )
 
     summary = m.repo_automation_status_summary()
-    assert "Repo automation: 2/3 components running" in summary
+    assert "Repo automation: 2/3 enabled components running" in summary
     assert "uptime 1:01:01" in summary
     assert "errors 1" in summary
     assert "active: aria, training" in summary
+    assert "disabled: backup" in summary
     assert "updated: 2026-05-31T23:50:00Z" in summary
     assert "quantum: config/quantum/quantum_autorun.yaml" in summary
 
@@ -186,6 +188,7 @@ def test_repo_automation_next_step_reflects_status(monkeypatch):
         "load_repo_automation_status",
         lambda: {
             "components_running": {"aria": True, "training": True, "quantum": False},
+            "component_enabled": {"aria": True, "training": True, "quantum": True, "backup": False},
             "errors": [],
         },
     )
