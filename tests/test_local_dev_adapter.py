@@ -137,3 +137,26 @@ def test_azure_response_parts_coerces_non_bytes_body():
 
     assert body == b"string-body"
     assert isinstance(body, bytes)
+
+
+def test_check_status_endpoints_ok(monkeypatch):
+    monkeypatch.setattr(adapter, "get_ai_status_parts", lambda: (b"{}", 200, "application/json", {}))
+    monkeypatch.setattr(adapter, "get_agi_status_parts", lambda: (b"{}", 200, "application/json", {}))
+
+    assert adapter.check_status_endpoints() == 0
+
+
+def test_check_status_endpoints_failure(monkeypatch):
+    monkeypatch.setattr(adapter, "get_ai_status_parts", lambda: (b"{}", 500, "application/json", {}))
+    monkeypatch.setattr(adapter, "get_agi_status_parts", lambda: (b"{}", 200, "application/json", {}))
+
+    assert adapter.check_status_endpoints() == 1
+
+
+def test_main_check_flag_exits_without_server(monkeypatch):
+    monkeypatch.setattr(adapter, "check_status_endpoints", lambda: 0)
+
+    with pytest.raises(SystemExit) as exc:
+        adapter.main(["--check"])
+
+    assert exc.value.code == 0

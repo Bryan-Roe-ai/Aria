@@ -48,6 +48,12 @@ class TestFloatEnvReading:
         monkeypatch.setenv("TEST_FLOAT", "not_a_number")
         assert _read_float_env("TEST_FLOAT", 1.0) == 1.0
 
+    def test_non_finite_float_env_uses_default(self, monkeypatch):
+        """Should reject NaN and infinity environment values."""
+        for raw in ["NaN", "inf", "-inf"]:
+            monkeypatch.setenv("TEST_FLOAT", raw)
+            assert _read_float_env("TEST_FLOAT", 1.0) == 1.0
+
 
 class TestBackendEnvReading:
     """Test _read_backend_env helper."""
@@ -100,6 +106,12 @@ class TestCoercionHelpers:
         assert _coerce_float("not_a_number", 1.0) == 1.0
         assert _coerce_float(None, 1.0) == 1.0
 
+    def test_coerce_float_uses_default_on_non_finite_values(self):
+        """Should reject NaN and infinity values."""
+        assert _coerce_float(float("nan"), 1.0) == 1.0
+        assert _coerce_float(float("inf"), 1.0) == 1.0
+        assert _coerce_float(float("-inf"), 1.0) == 1.0
+
 
 class TestQuantumLLMConfigDefaults:
     """Test QuantumLLMConfig with default values."""
@@ -133,6 +145,17 @@ class TestQuantumLLMConfigDefaults:
         assert cfg.shots >= 1
         assert 0.0 <= cfg.temperature_blend <= 1.0
         assert cfg.temperature >= 0.0
+
+    def test_config_normalization_rejects_non_finite_floats(self):
+        """Should replace NaN and infinity with safe defaults."""
+        cfg = QuantumLLMConfig(
+            temperature_blend=float("inf"),
+            temperature=float("nan"),
+            cache_ttl_seconds=float("inf"),
+        )
+        assert cfg.temperature_blend == pytest.approx(0.3)
+        assert cfg.temperature == pytest.approx(0.7)
+        assert cfg.cache_ttl_seconds == pytest.approx(3600.0)
 
 
 class TestQuantumLLMConfigFromEnv:
@@ -195,6 +218,18 @@ class TestQuantumLLMConfigFromEnv:
         assert cfg.shots == 512
         assert cfg.cache_enabled is True
         assert cfg.cache_max_size == 256
+        assert cfg.cache_ttl_seconds == pytest.approx(3600.0)
+
+    def test_from_env_non_finite_float_values_use_defaults(self, monkeypatch):
+        """Should ignore NaN and infinity in float environment variables."""
+        monkeypatch.setenv("QUANTUM_LLM_TEMP_BLEND", "inf")
+        monkeypatch.setenv("QUANTUM_LLM_TEMPERATURE", "NaN")
+        monkeypatch.setenv("QUANTUM_LLM_CACHE_TTL_SECONDS", "-inf")
+
+        cfg = QuantumLLMConfig.from_env()
+
+        assert cfg.temperature_blend == pytest.approx(0.3)
+        assert cfg.temperature == pytest.approx(0.7)
         assert cfg.cache_ttl_seconds == pytest.approx(3600.0)
 
 

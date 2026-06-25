@@ -7,6 +7,7 @@ Provides tools for:
 - Querying available models
 - Sending chat completions to local LM Studio instance
 - Managing model context and parameters
+- AGI analyze/reason helpers for multi-agent routing
 """
 
 import asyncio
@@ -16,28 +17,28 @@ import os
 import sys
 from typing import Any, Dict, List, Optional
 
+MCP_AVAILABLE = True
 try:
     from mcp.server import Server  # type: ignore
     from mcp.server.stdio import stdio_server  # type: ignore
     from mcp.types import TextContent, Tool  # type: ignore
 except ImportError:
-    print("Error: MCP package not installed.")
-    print("Install with: pip install 'mcp>=0.9.0'")
-    sys.exit(1)
+    MCP_AVAILABLE = False
+    Server = None  # type: ignore[assignment,misc]
+    stdio_server = None  # type: ignore[assignment,misc]
+    TextContent = None  # type: ignore[assignment,misc]
+    Tool = None  # type: ignore[assignment,misc]
 
 try:
     import httpx
 except ImportError:
-    print("Error: httpx package not installed.")
-    print("Install with: pip install httpx")
-    sys.exit(1)
+    httpx = None  # type: ignore[assignment]
+
+from agi_mcp_tools import run_agi_analyze, run_agi_reason, run_agi_stream
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Initialize MCP server
-app = Server("lmstudio-mcp")
 
 # Default configuration
 DEFAULT_BASE_URL = "http://127.0.0.1:1234/v1"
@@ -57,6 +58,9 @@ class LMStudioClient:
         max_tokens: int = DEFAULT_MAX_TOKENS,
         timeout: float = 30.0,
     ):
+        if httpx is None:
+            raise RuntimeError("httpx package not installed. Install with: pip install httpx")
+
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.temperature = temperature
@@ -128,28 +132,26 @@ class LMStudioClient:
             data = response.json()
 
             if stream:
-                # For streaming, return the raw response data
                 return {
                     "success": True,
                     "stream": True,
                     "response": data,
                     "model": model,
                 }
-            else:
-                # Extract the message from non-streaming response
-                choice = data.get("choices", [{}])[0]
-                message = choice.get("message", {}).get("content", "")
-                stop_reason = choice.get("finish_reason", "unknown")
 
-                return {
-                    "success": True,
-                    "stream": False,
-                    "message": message,
-                    "stop_reason": stop_reason,
-                    "model": model,
-                    "usage": data.get("usage", {}),
-                    "response": data,
-                }
+            choice = data.get("choices", [{}])[0]
+            message = choice.get("message", {}).get("content", "")
+            stop_reason = choice.get("finish_reason", "unknown")
+
+            return {
+                "success": True,
+                "stream": False,
+                "message": message,
+                "stop_reason": stop_reason,
+                "model": model,
+                "usage": data.get("usage", {}),
+                "response": data,
+            }
         except httpx.HTTPError as e:
             return {
                 "success": False,
@@ -162,7 +164,6 @@ class LMStudioClient:
     async def get_server_status(self) -> Dict[str, Any]:
         """Get server status information."""
         try:
-            # Try to get models as a status check
             response = await self.client.get(f"{self.base_url}/models")
             response.raise_for_status()
             data = response.json()
@@ -194,7 +195,6 @@ def get_client() -> LMStudioClient:
     if _client is None:
         base_url = os.getenv("LMSTUDIO_BASE_URL", DEFAULT_BASE_URL)
         model = os.getenv("LMSTUDIO_MODEL", DEFAULT_MODEL)
-        # Ensure environment defaults are strings before casting
         temperature = float(os.getenv("LMSTUDIO_TEMPERATURE", str(DEFAULT_TEMPERATURE)))
         max_tokens = int(os.getenv("LMSTUDIO_MAX_TOKENS", str(DEFAULT_MAX_TOKENS)))
 
@@ -207,147 +207,207 @@ def get_client() -> LMStudioClient:
     return _client
 
 
-@app.list_tools()
-async def list_tools() -> List[Tool]:
-    """List available tools."""
-    return [
-        Tool(
-            name="list_models",
-            description="List all available models on the LM Studio server",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "required": [],
-            },
-        ),
-        Tool(
-            name="chat_completion",
-            description="Send a chat completion request to LM Studio",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "messages": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "role": {
-                                    "type": "string",
-                                    "enum": ["system", "user", "assistant"],
-                                    "description": "Message role",
+def _register_mcp_handlers(server: "Server") -> None:
+    @server.list_tools()
+    async def list_tools() -> List[Tool]:
+        """List available tools."""
+        return [
+            Tool(
+                name="list_models",
+                description="List all available models on the LM Studio server",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            ),
+            Tool(
+                name="chat_completion",
+                description="Send a chat completion request to LM Studio",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {
+                                        "type": "string",
+                                        "enum": ["system", "user", "assistant"],
+                                        "description": "Message role",
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "Message content",
+                                    },
                                 },
-                                "content": {
-                                    "type": "string",
-                                    "description": "Message content",
-                                },
+                                "required": ["role", "content"],
                             },
-                            "required": ["role", "content"],
+                            "description": "List of messages for the chat",
                         },
-                        "description": "List of messages for the chat",
+                        "model": {
+                            "type": "string",
+                            "description": "Model ID (uses default if not specified)",
+                        },
+                        "temperature": {
+                            "type": "number",
+                            "description": "Sampling temperature (0.0-2.0, default 0.7)",
+                        },
+                        "max_tokens": {
+                            "type": "integer",
+                            "description": "Maximum tokens in response (default 2048)",
+                        },
                     },
-                    "model": {
-                        "type": "string",
-                        "description": "Model ID (uses default if not specified)",
+                    "required": ["messages"],
+                },
+            ),
+            Tool(
+                name="server_status",
+                description="Get LM Studio server status and configuration",
+                inputSchema={
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            ),
+            Tool(
+                name="agi_analyze",
+                description="Analyze a query with the AGI provider (intent, domain, routing preview)",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "User query to analyze",
+                        }
                     },
-                    "temperature": {
-                        "type": "number",
-                        "description": "Sampling temperature (0.0-2.0, default 0.7)",
-                    },
-                    "max_tokens": {
-                        "type": "integer",
-                        "description": "Maximum tokens in response (default 2048)",
+                    "required": ["query"],
+                },
+            ),
+            Tool(
+                name="agi_reason",
+                description="Run full AGI reasoning completion for a query or message list",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Single-turn user query",
+                        },
+                        "messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {"type": "string"},
+                                    "content": {"type": "string"},
+                                },
+                                "required": ["role", "content"],
+                            },
+                            "description": "Optional chat-style message history",
+                        },
+                        "include_reasoning_summary": {
+                            "type": "boolean",
+                            "description": "Include AGI reasoning summary metadata",
+                        },
                     },
                 },
-                "required": ["messages"],
-            },
-        ),
-        Tool(
-            name="server_status",
-            description="Get LM Studio server status and configuration",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "required": [],
-            },
-        ),
-    ]
-
-
-@app.call_tool()
-async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
-    """Call a tool."""
-    client = get_client()
-
-    try:
-        if name == "list_models":
-            result = await client.list_models()
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps(result, indent=2),
-                )
-            ]
-
-        elif name == "chat_completion":
-            messages = arguments.get("messages", [])
-            if not messages:
-                return [
-                    TextContent(
-                        type="text",
-                        text=json.dumps({"error": "No messages provided"}, indent=2),
-                    )
-                ]
-
-            model = arguments.get("model")
-            temperature = arguments.get("temperature")
-            max_tokens = arguments.get("max_tokens")
-
-            result = await client.chat_completion(
-                messages=messages,
-                model=model,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=False,
-            )
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps(result, indent=2),
-                )
-            ]
-
-        elif name == "server_status":
-            result = await client.get_server_status()
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps(result, indent=2),
-                )
-            ]
-
-        else:
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps({"error": f"Unknown tool: {name}"}, indent=2),
-                )
-            ]
-
-    except Exception as e:
-        logger.error(f"Tool execution error: {e}")
-        return [
-            TextContent(
-                type="text",
-                text=json.dumps({"error": str(e)}, indent=2),
-            )
+            ),
+            Tool(
+                name="agi_stream",
+                description="Run AGI streaming completion and return structured deltas plus full text",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Single-turn user query",
+                        },
+                        "messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "role": {"type": "string"},
+                                    "content": {"type": "string"},
+                                },
+                                "required": ["role", "content"],
+                            },
+                            "description": "Optional chat-style message history",
+                        },
+                        "include_deltas": {
+                            "type": "boolean",
+                            "description": "Include structured stream deltas in the response",
+                        },
+                    },
+                },
+            ),
         ]
+
+    @server.call_tool()
+    async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+        """Call a tool."""
+        client = get_client()
+
+        try:
+            if name == "list_models":
+                result = await client.list_models()
+            elif name == "chat_completion":
+                messages = arguments.get("messages", [])
+                if not messages:
+                    result = {"error": "No messages provided"}
+                else:
+                    result = await client.chat_completion(
+                        messages=messages,
+                        model=arguments.get("model"),
+                        temperature=arguments.get("temperature"),
+                        max_tokens=arguments.get("max_tokens"),
+                        stream=False,
+                    )
+            elif name == "server_status":
+                result = await client.get_server_status()
+            elif name == "agi_analyze":
+                result = run_agi_analyze(str(arguments.get("query", "")))
+            elif name == "agi_reason":
+                result = run_agi_reason(
+                    query=arguments.get("query"),
+                    messages=arguments.get("messages"),
+                    include_reasoning_summary=bool(
+                        arguments.get("include_reasoning_summary", True)
+                    ),
+                )
+            elif name == "agi_stream":
+                result = run_agi_stream(
+                    query=arguments.get("query"),
+                    messages=arguments.get("messages"),
+                    include_deltas=bool(arguments.get("include_deltas", True)),
+                )
+            else:
+                result = {"error": f"Unknown tool: {name}"}
+
+            return [TextContent(type="text", text=json.dumps(result, indent=2))]
+        except Exception as e:
+            logger.error(f"Tool execution error: {e}")
+            return [TextContent(type="text", text=json.dumps({"error": str(e)}, indent=2))]
+
+
+if MCP_AVAILABLE:
+    app = Server("lmstudio-mcp")
+    _register_mcp_handlers(app)
+else:
+    app = None
 
 
 async def main():
     """Run the MCP server."""
+    if not MCP_AVAILABLE:
+        print("Error: MCP package not installed.")
+        print("Install with: pip install 'mcp>=0.9.0'")
+        sys.exit(1)
+
     client = get_client()
 
-    # Check connection on startup
     logger.info(f"Connecting to LM Studio at {client.base_url}")
     connected = await client.check_connection()
 
@@ -359,7 +419,6 @@ async def main():
         logger.warning(f"⚠ Could not connect to LM Studio at {client.base_url}")
         logger.info("Make sure LM Studio is running and the local server is enabled.")
 
-    # Start MCP server
     async with stdio_server() as (read_stream, write_stream):
         await app.run(read_stream, write_stream, app.create_initialization_options())
 

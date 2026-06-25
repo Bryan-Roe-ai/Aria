@@ -15,10 +15,10 @@
       "resolved": "ghcr.io/devcontainers/features/git-lfs@sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72",
       "integrity": "sha256:71c2b371cf12ab7fcec47cf17369c6f59156100dad9abf9e4c593049d789de72"
     },
-    "ghcr.io/helpers4/devcontainer/github-dev:1": {
-      "version": "1.0.4",
-      "resolved": "ghcr.io/helpers4/devcontainer/github-dev@sha256:882e16fc26bb451f3a14a07bfcc3d5e06bc9db7f742e5ac556f6dcdbcaf1109d",
-      "integrity": "sha256:882e16fc26bb451f3a14a07bfcc3d5e06bc9db7f742e5ac556f6dcdbcaf1109d"
+    "ghcr.io/helpers4/devcontainer/github-dev:": {
+      "version": "1.0.5",
+      "resolved": "ghcr.io/helpers4/devcontainer/github-dev@sha256:ce3a089d6107b2b979c75b1e37c56a260b81c5b6b9c416107396458b93a20a58",
+      "integrity": "sha256:ce3a089d6107b2b979c75b1e37c56a260b81c5b6b9c416107396458b93a20a58"
     },
     "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {
       "version": "2.0.0",

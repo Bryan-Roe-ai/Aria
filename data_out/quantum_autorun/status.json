@@ -45,9 +45,9 @@
       ]
     }
   ],
-  "last_updated": "2026-06-20T20:04:15.571436Z",
+  "last_updated": "2026-06-22T12:07:15.116547Z",
   "succeeded": 0,
-  "failed": 0,
+  "failed": 1,
   "running": 0,
   "avg_duration": null
 }
