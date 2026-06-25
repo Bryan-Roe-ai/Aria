@@ -1,30 +1,51 @@
 {
-  "total_jobs": 1,
+  "total_jobs": 4,
   "jobs": [
     {
-      "name": "broken_local",
+      "name": "heart_quick",
       "mode": "train_custom_dataset",
-      "enabled": true,
-      "preset": "not_a_preset",
-      "csv": null,
-      "label_col": null,
-      "drop_cols": null,
-      "epochs": null,
-      "batch_size": null,
-      "learning_rate": null,
-      "test_size": null,
-      "n_qubits": null,
-      "extra_args": [],
-      "azure_backend": null,
-      "azure_shots": null,
+      "preset": "heart",
+      "n_qubits": 4,
+      "epochs": 50,
+      "batch_size": 16,
+      "learning_rate": 0.001,
+      "test_size": 0.2,
+      "enabled": true
+    },
+    {
+      "name": "ionosphere_quick",
+      "mode": "train_custom_dataset",
+      "preset": "ionosphere",
+      "n_qubits": 4,
+      "epochs": 100,
+      "batch_size": 16,
+      "learning_rate": 0.001,
+      "test_size": 0.2,
+      "enabled": true
+    },
+    {
+      "name": "azure_quantinuum_simulator",
+      "mode": "azure_hardware",
+      "azure_backend": "quantinuum.sim.h2-1sc",
+      "azure_shots": 100,
+      "qubits": 3,
+      "enabled": true
+    },
+    {
+      "name": "azure_ionq_qpu_test",
+      "mode": "azure_hardware",
+      "azure_backend": "ionq.qpu",
+      "azure_shots": 100,
+      "n_qubits": 3,
       "azure_confirm_cost": false,
-      "status": "missing",
-      "missing": [
-        "Unknown preset: not_a_preset"
+      "enabled": false,
+      "extra_args": [
+        "--circuit-file",
+        "ai-projects/quantum-ml/results/sample_circuit.qasm"
       ]
     }
   ],
-  "last_updated": "2026-06-25T08:30:28.006464Z",
+  "last_updated": "2026-06-22T12:07:15.116547Z",
   "succeeded": 0,
   "failed": 1,
   "running": 0,
