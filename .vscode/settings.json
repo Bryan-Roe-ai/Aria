@@ -198,17 +198,12 @@
             ]
         }
     },
-    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
     "iis.configDir": "",
     "editor.defaultFormatter": "GitHub.copilot-chat",
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
-    },
-    "karateRunner.reports.activityBarDisplayType": "Tree",
-    "mirrord.promptUsingBinary": false,
-    "[json]": {
-        "editor.defaultFormatter": "vscode.json-language-features"
     }
 }
