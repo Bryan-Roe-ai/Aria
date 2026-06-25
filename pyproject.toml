@@ -9,24 +9,24 @@ description = "Aria — Interactive AI Character Platform"
 requires-python = ">=3.10"
 dependencies = [
   "pydantic>=2.13.4",
-  "pydantic-settings>=2.4.0",
-  "tenacity>=9.1.2",
+  "pydantic-settings>=2.14.2",
+  "tenacity>=9.1.4",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8.4.2",
+  "pytest>=9.1.1",
   "pytest-cov>=7.1.0",
-  "pytest-asyncio>=1.2.0",
+  "pytest-asyncio>=1.4.0",
   "watchdog>=6.0.0",
-  "pre-commit>=4.3.0",
-  "ruff>=0.15.18",
-  "black>=25.11.0",
-  "isort>=6.1.0",
-  "mypy>=1.19.1",
+  "pre-commit>=4.6.0",
+  "ruff>=0.15.19",
+  "black>=26.5.1",
+  "isort>=8.0.1",
+  "mypy>=2.1.0",
   "pydantic>=2.13.4",
-  "pydantic-settings>=2.0.0",
-  "tenacity>=9.1.2",
+  "pydantic-settings>=2.14.2",
+  "tenacity>=9.1.4",
 ]
 
 [tool.ruff]
