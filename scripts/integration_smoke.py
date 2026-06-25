@@ -213,9 +213,20 @@ def _fetch_local_functions_sse(
         return resp.read().decode("utf-8", errors="replace")
 
 
-def _fetch_local_functions_text(url: str, timeout: int = 5) -> str:
-    """Fetch raw text from a local Functions-compatible endpoint."""
-    req = Request(url=url, method="GET")
+def _fetch_local_functions_text(
+    url: str,
+    *,
+    method: str = "GET",
+    payload: Optional[Dict[str, Any]] = None,
+    timeout: int = 5,
+) -> str:
+    """Fetch a text response from local Functions endpoints."""
+    data = None
+    headers = {}
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = Request(url=url, data=data, headers=headers, method=method)
     with urlopen(req, timeout=timeout) as resp:  # noqa: S310 - local probe
         return resp.read().decode("utf-8", errors="replace")
 
@@ -271,6 +282,7 @@ def _probe_with_local_dev_adapter_request(
     method: str = "GET",
     payload: Optional[Dict[str, Any]] = None,
     sse: bool = False,
+    text: bool = False,
 ) -> Optional[Any]:
     """Best-effort adapter probe for arbitrary local Functions endpoints."""
     proc: Optional[subprocess.Popen[str]] = None
@@ -296,6 +308,13 @@ def _probe_with_local_dev_adapter_request(
                     return _fetch_local_functions_sse(
                         url,
                         payload=payload or {},
+                        timeout=int(request_timeout),
+                    )
+                if text:
+                    return _fetch_local_functions_text(
+                        url,
+                        method=method,
+                        payload=payload,
                         timeout=int(request_timeout),
                     )
                 return _fetch_local_functions_json(
@@ -508,8 +527,13 @@ def _probe_chat_web_assets(strict: bool) -> StepResult:
     except (URLError, TimeoutError, OSError, ValueError):
         duration = round(time.perf_counter() - start, 2)
         if strict:
-            fallback = _probe_with_local_dev_adapter_text(url)
-            if fallback is not None and "AGIStreamUtils" in fallback:
+            fallback = _probe_with_local_dev_adapter_request(
+                url=url,
+                method="GET",
+                payload=None,
+                text=True,
+            )
+            if isinstance(fallback, str) and "AGIStreamUtils" in fallback:
                 return StepResult(
                     name=name,
                     status="succeeded",

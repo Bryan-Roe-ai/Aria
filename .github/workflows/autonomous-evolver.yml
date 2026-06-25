@@ -48,7 +48,7 @@ jobs:
       - name: Validate numeric inputs
         run: |
           set -euo pipefail
-
+          
           validate_threshold() {
             local value=$1
             local name=$2
@@ -67,7 +67,7 @@ jobs:
               exit 1
             fi
           }
-
+          
           validate_threshold "${{ inputs.fitness_threshold }}" "fitness_threshold"
           validate_threshold "${{ inputs.stability_threshold }}" "stability_threshold"
           echo "✓ All inputs validated successfully"
@@ -110,20 +110,20 @@ jobs:
             // Parse and validate inputs
             const fitness = Math.random() * 100;
             const stability = Math.random() * 100;
-
+            
             const parsedFitnessThreshold = Number(process.env.FITNESS_THRESHOLD);
             const parsedStabilityThreshold = Number(process.env.STABILITY_THRESHOLD);
-
+            
             if (!Number.isFinite(parsedFitnessThreshold) || parsedFitnessThreshold < 0 || parsedFitnessThreshold > 100) {
               throw new Error(`Invalid FITNESS_THRESHOLD: ${process.env.FITNESS_THRESHOLD}. Must be a number between 0 and 100.`);
             }
             if (!Number.isFinite(parsedStabilityThreshold) || parsedStabilityThreshold < 0 || parsedStabilityThreshold > 100) {
               throw new Error(`Invalid STABILITY_THRESHOLD: ${process.env.STABILITY_THRESHOLD}. Must be a number between 0 and 100.`);
             }
-
+            
             const fitnessThreshold = parsedFitnessThreshold;
             const stabilityThreshold = parsedStabilityThreshold;
-
+            
             const forceEvolutionStr = (process.env.FORCE_EVOLUTION || 'false').toLowerCase().trim();
             if (!['true', 'false'].includes(forceEvolutionStr)) {
               throw new Error(`Invalid FORCE_EVOLUTION: ${process.env.FORCE_EVOLUTION}. Must be 'true' or 'false'.`);
@@ -150,7 +150,7 @@ jobs:
             out.push(`fitness=${fitness.toFixed(4)}`);
             out.push(`stability=${stability.toFixed(4)}`);
             out.push(`reason=${reason}`);
-
+            
             fs.appendFileSync(githubOutput, out.join('\n') + '\n');
             console.log('✓ Evaluation outputs written successfully');
           } catch (error) {

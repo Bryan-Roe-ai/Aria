@@ -34,7 +34,7 @@ def _clean():
 
 
 class TestProviderPriorityChain:
-    """Provider detection should follow: azure > openai > lmstudio > local."""
+    """Provider detection should follow: lmstudio > ollama > azure > openai > local."""
 
     def _clean_env(self) -> dict:
         """Return env with all provider keys stripped out."""
@@ -44,6 +44,7 @@ class TestProviderPriorityChain:
             "AZURE_OPENAI_DEPLOYMENT",
             "OPENAI_API_KEY",
             "LMSTUDIO_BASE_URL",
+            "OLLAMA_BASE_URL",
         }
         return {k: v for k, v in os.environ.items() if k not in strip}
 
@@ -62,11 +63,12 @@ class TestProviderPriorityChain:
                 "AZURE_OPENAI_API_VERSION": "2024-02-01",
                 "OPENAI_API_KEY": "sk-also-here",
                 "LMSTUDIO_BASE_URL": "http://localhost:1234",
+                "OLLAMA_BASE_URL": "http://localhost:11434/v1",
             }
         )
         with patch.dict(os.environ, env, clear=True):
             s = Settings()
-            assert s.active_provider() == "azure"
+            assert s.active_provider() == "lmstudio"
 
     def test_openai_when_azure_incomplete(self):
         env = self._clean_env()
@@ -88,6 +90,13 @@ class TestProviderPriorityChain:
         with patch.dict(os.environ, env, clear=True):
             s = Settings()
             assert s.active_provider() == "lmstudio"
+
+    def test_ollama_when_lmstudio_missing(self):
+        env = self._clean_env()
+        env["OLLAMA_BASE_URL"] = "http://localhost:11434/v1"
+        with patch.dict(os.environ, env, clear=True):
+            s = Settings()
+            assert s.active_provider() == "ollama"
 
     def test_azure_requires_all_four_vars(self):
         """Azure OpenAI is only 'ready' when all four required vars are set."""
@@ -202,3 +211,7 @@ class TestProviderReadinessFlags:
     def test_lmstudio_ready_is_bool(self):
         s = Settings()
         assert isinstance(s.lmstudio_ready, bool)
+
+    def test_ollama_ready_is_bool(self):
+        s = Settings()
+        assert isinstance(s.ollama_ready, bool)

@@ -78,6 +78,7 @@ class TestDefaultSettings:
                 "AZURE_OPENAI_DEPLOYMENT",
                 "OPENAI_API_KEY",
                 "LMSTUDIO_BASE_URL",
+                "OLLAMA_BASE_URL",
             }
         }
         with patch.dict(os.environ, env, clear=True):
@@ -128,13 +129,13 @@ class TestEnvVarPropagation:
         with patch.dict(os.environ, {"QAI_PROVIDER_PRIORITY": ""}):
             s = Settings()
             assert s.provider_chain() == [
-                "azure", "openai", "lmstudio", "local"]
+                "lmstudio", "ollama", "azure", "openai", "local"]
 
     def test_whitespace_provider_priority_falls_back_to_default_chain(self):
         with patch.dict(os.environ, {"QAI_PROVIDER_PRIORITY": " ,  ,   "}):
             s = Settings()
             assert s.provider_chain() == [
-                "azure", "openai", "lmstudio", "local"]
+                "lmstudio", "ollama", "azure", "openai", "local"]
 
 
 class TestActiveProvider:
@@ -147,14 +148,18 @@ class TestActiveProvider:
             "AZURE_OPENAI_DEPLOYMENT": "gpt-4",
             "AZURE_OPENAI_API_VERSION": "2024-02-01",
             "OPENAI_API_KEY": "sk-also-set",
+            "LMSTUDIO_BASE_URL": "",
+            "OLLAMA_BASE_URL": "",
         }
-        with patch.dict(os.environ, env):
+        with patch.dict(os.environ, env, clear=False):
             s = Settings()
             assert s.active_provider() == "azure"
 
     def test_openai_when_azure_missing(self):
         env = {k: v for k, v in os.environ.items() if "AZURE_OPENAI" not in k}
         env["OPENAI_API_KEY"] = "sk-test"
+        env["LMSTUDIO_BASE_URL"] = ""
+        env["OLLAMA_BASE_URL"] = ""
         with patch.dict(os.environ, env, clear=True):
             s = Settings()
             assert s.active_provider() == "openai"
@@ -170,12 +175,32 @@ class TestActiveProvider:
                 "AZURE_OPENAI_DEPLOYMENT",
                 "OPENAI_API_KEY",
                 "LMSTUDIO_BASE_URL",
+                "OLLAMA_BASE_URL",
             }
         }
         env["LMSTUDIO_BASE_URL"] = "http://localhost:1234"
         with patch.dict(os.environ, env, clear=True):
             s = Settings()
             assert s.active_provider() == "lmstudio"
+
+    def test_ollama_fallback_when_lmstudio_missing(self):
+        env = {
+            k: v
+            for k, v in os.environ.items()
+            if k
+            not in {
+                "AZURE_OPENAI_API_KEY",
+                "AZURE_OPENAI_ENDPOINT",
+                "AZURE_OPENAI_DEPLOYMENT",
+                "OPENAI_API_KEY",
+                "LMSTUDIO_BASE_URL",
+                "OLLAMA_BASE_URL",
+            }
+        }
+        env["OLLAMA_BASE_URL"] = "http://localhost:11434/v1"
+        with patch.dict(os.environ, env, clear=True):
+            s = Settings()
+            assert s.active_provider() == "ollama"
 
     def test_lmstudio_whitespace_url_is_not_ready(self):
         env = {
@@ -188,6 +213,7 @@ class TestActiveProvider:
                 "AZURE_OPENAI_DEPLOYMENT",
                 "OPENAI_API_KEY",
                 "LMSTUDIO_BASE_URL",
+                "OLLAMA_BASE_URL",
             }
         }
         env["LMSTUDIO_BASE_URL"] = "   "

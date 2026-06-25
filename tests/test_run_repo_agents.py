@@ -14,6 +14,29 @@ from scripts.agents.base import AgentResult  # noqa: E402
 from scripts import run_repo_agents as runner  # noqa: E402
 
 
+def test_default_agent_modules_register_expected_agents():
+    expected_modules = {
+        "scripts.agents.status_freshness_agent",
+        "scripts.agents.marker_audit_agent",
+        "scripts.agents.docstring_audit_agent",
+        "scripts.agents.agi_health_agent",
+        "scripts.agents.agents_md_audit_agent",
+    }
+    expected_agents = {
+        "status-freshness",
+        "marker-audit",
+        "docstring-audit",
+        "agi-health",
+        "agents-md-audit",
+    }
+
+    assert expected_modules.issubset(set(runner._AGENT_MODULES))
+
+    registry = runner._load_agents()
+
+    assert expected_agents.issubset(set(registry))
+
+
 def test_run_agents_executes_registered_agents(tmp_path, monkeypatch):
     class _FakeAgent:
         name = "fake-agent"

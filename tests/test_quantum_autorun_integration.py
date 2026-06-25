@@ -122,3 +122,65 @@ class TestDryRun:
         )
         assert proc.returncode != 0
         assert "not found" in proc.stderr.lower() or "not found" in proc.stdout.lower()
+
+    def test_disabled_qpu_job_is_skipped(self, tmp_path):
+        cfg = tmp_path / "quantum_autorun.yaml"
+        cfg.write_text(
+            """
+jobs:
+  - name: heart_quick
+    preset: heart
+    epochs: 1
+    n_qubits: 4
+  - name: paid_qpu_disabled
+    mode: azure_hardware
+    azure_backend: ionq.qpu
+    azure_confirm_cost: false
+    enabled: false
+""",
+            encoding="utf-8",
+        )
+        import sys
+
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(Q_SCRIPT),
+                "--config",
+                str(cfg),
+                "--dry-run",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+        )
+        assert proc.returncode == 0
+        assert "Skipped 1 disabled job(s): paid_qpu_disabled" in proc.stdout
+
+    def test_enabled_invalid_job_fails_dry_run(self, tmp_path):
+        cfg = tmp_path / "quantum_autorun.yaml"
+        cfg.write_text(
+            """
+jobs:
+  - name: broken_local
+    preset: not_a_preset
+    enabled: true
+""",
+            encoding="utf-8",
+        )
+        import sys
+
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(Q_SCRIPT),
+                "--config",
+                str(cfg),
+                "--dry-run",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(REPO_ROOT),
+        )
+        assert proc.returncode != 0
+        assert "broken_local" in proc.stderr
