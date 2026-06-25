@@ -1,3 +1,5 @@
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+# pylint: disable=broad-exception-caught,logging-fstring-interpolation,import-error,reimported,unused-argument,unnecessary-lambda,unspecified-encoding,redefined-outer-name,no-name-in-module,subprocess-run-check,unused-variable,protected-access,global-statement,unused-import
 # ruff: noqa: E501
 # flake8: noqa
 # =============================================================================
