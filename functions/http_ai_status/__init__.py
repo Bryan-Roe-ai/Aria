@@ -240,8 +240,14 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "endpoints": [
                 "/api/chat-web",
                 "/api/chat-web/chat.js",
+                "/api/chat-web/static/agi_stream_utils.js",
                 "/api/chat",
                 "/api/ai/status",
+                "/api/agi/analyze",
+                "/api/agi/reason",
+                "/api/agi/stream",
+                "/api/agi/status",
+                "/api/agi/persistence",
             ],
             "status": "ok",
         }

@@ -25,6 +25,11 @@ except ImportError:
     print("  pip install qiskit")
     sys.exit(1)
 
+try:
+    from qiskit import qasm2 as qiskit_qasm2
+except ImportError:
+    qiskit_qasm2 = None
+
 src_path = Path(__file__).parent / "src"
 if str(src_path) not in sys.path:
     sys.path.insert(0, str(src_path))
@@ -216,6 +221,24 @@ def _normalize_required_string(value: Any) -> Optional[str]:
 def _text_response(message: str) -> list[TextContent]:
     """Return a standard text response payload."""
     return [TextContent(type="text", text=message)]
+
+
+def _export_circuit_qasm(circuit: qiskit.QuantumCircuit) -> str:
+    """Export a circuit to OpenQASM with compatibility across Qiskit versions."""
+    if qiskit_qasm2 is not None and hasattr(qiskit_qasm2, "dumps"):
+        try:
+            return qiskit_qasm2.dumps(circuit)
+        except Exception as exc:
+            logger.warning("QASM2 export via qiskit.qasm2.dumps failed: %s", exc)
+
+    qasm_method = getattr(circuit, "qasm", None)
+    if callable(qasm_method):
+        try:
+            return qasm_method()
+        except Exception as exc:
+            logger.warning("QASM export via QuantumCircuit.qasm failed: %s", exc)
+
+    raise RuntimeError("OpenQASM export is unavailable for this Qiskit installation")
 
 
 def _require_string_arg(args: dict, key: str) -> tuple[Optional[str], Optional[list[TextContent]]]:
@@ -671,7 +694,7 @@ async def create_circuit_handler(args: dict) -> list[TextContent]:
         "circuit_type": circuit_type,
         "depth": circuit.depth(),
         "gate_count": sum(circuit.count_ops().values()),
-        "qasm": circuit.qasm(),
+        "qasm": _export_circuit_qasm(circuit),
         "diagram": str(circuit.draw(output="text")),
     }
 

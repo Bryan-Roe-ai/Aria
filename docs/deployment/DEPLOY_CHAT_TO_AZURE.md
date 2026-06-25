@@ -24,8 +24,8 @@ Use the helper script from the repo root:
 ```
 
 Outputs:
-- Chat UI: https://chat-web-app-123.azurewebsites.net/api/chat-web
-- Health:   https://chat-web-app-123.azurewebsites.net/api/ai/status
+- Chat UI: `https://<your-function-app>.azurewebsites.net/api/chat-web`
+- Health:   `https://<your-function-app>.azurewebsites.net/api/ai/status`
 
 If you use OpenAI instead of Azure OpenAI:
 ```powershell

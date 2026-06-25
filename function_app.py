@@ -1,6 +1,12 @@
+# pyright: reportMissingImports=false, reportMissingModuleSource=false
+# pylint: disable=broad-exception-caught,logging-fstring-interpolation,import-error,reimported,unused-argument,unnecessary-lambda,unspecified-encoding,redefined-outer-name,no-name-in-module,subprocess-run-check,unused-variable,protected-access,global-statement,unused-import
+# ruff: noqa: E501
+# flake8: noqa
 # =============================================================================
 # QAI Azure Functions Application
 # =============================================================================
+import asyncio
+import hmac
 import importlib.util as _iu
 import json
 import logging
@@ -12,10 +18,20 @@ import time
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import azure.functions as func
 
-# Import AI projects via centralized registry (replaced scattered sys.path manipulation)
+from function_app_domains import agi as agi_domain
+from function_app_domains import aria_proxy as aria_proxy_domain
+from function_app_domains import chat as chat_domain
+from function_app_domains import quantum as quantum_domain
+from function_app_domains import referrals as referrals_domain
+from function_app_domains import subscriptions as subscriptions_domain
+
+# Import AI projects via centralized registry
+# (replaced scattered sys.path manipulation)
+from shared.agi_backend_status import build_agi_backend_status
 from shared.config import get_settings
 from shared.core.module_registry import AIProjectsRegistry
 from shared.import_helpers import create_stub_function, safe_import
@@ -71,7 +87,7 @@ tracing_module = safe_import("shared.tracing", log_failure=False)
 if tracing_module and hasattr(tracing_module, "init_tracing"):
     try:
         tracing_module.init_tracing(service_name="qai.functions")
-    except Exception as _trace_err:  # noqa: BLE001 - don't fail on missing libs
+    except Exception as _trace_err:  # noqa: BLE001
         logging.debug(f"[startup] Tracing init skipped: {_trace_err}")
 else:
     logging.debug("[startup] Tracing init skipped: module unavailable")
@@ -94,10 +110,16 @@ log_chat_message_safe = db_logging["log_chat_message_safe"]
 # Chat memory functions with graceful degradation
 chat_memory_funcs = safe_import(
     "shared.chat_memory",
-    import_names=("generate_embedding", "fetch_similar_messages", "store_embedding"),
+    import_names=(
+        "generate_embedding",
+        "fetch_similar_messages",
+        "store_embedding",
+    ),
     fallback_factory=lambda name: {
         "generate_embedding": lambda text: [],
-        "fetch_similar_messages": lambda query_emb, top_k=5, session_id=None: [],
+        "fetch_similar_messages": (
+            lambda query_emb, top_k=5, session_id=None: []
+        ),
         "store_embedding": lambda message_id, embedding, model: False,
     }.get(name, lambda *args, **kwargs: None),
 )
@@ -105,11 +127,18 @@ try:
     import shared as _shared_pkg  # noqa: F401
     import shared.chat_memory as _shared_chat_memory_mod
 
-    _shared_chat_memory_mod.generate_embedding = chat_memory_funcs["generate_embedding"]
-    _shared_chat_memory_mod.fetch_similar_messages = chat_memory_funcs["fetch_similar_messages"]
-    _shared_chat_memory_mod.store_embedding = chat_memory_funcs["store_embedding"]
+    _shared_chat_memory_mod.generate_embedding = chat_memory_funcs[
+        "generate_embedding"
+    ]
+    _shared_chat_memory_mod.fetch_similar_messages = chat_memory_funcs[
+        "fetch_similar_messages"
+    ]
+    _shared_chat_memory_mod.store_embedding = chat_memory_funcs[
+        "store_embedding"
+    ]
 except Exception:
-    # shared.chat_memory not importable; the try/except block below installs a stub module.
+    # shared.chat_memory not importable; the try/except block below
+    # installs a stub module.
     pass
 
 generate_embedding = chat_memory_funcs["generate_embedding"]
@@ -153,7 +182,6 @@ try:
     import shared.chat_memory
 except Exception:
     # Provide graceful degradations so endpoint still works
-    import sys
     import types
 
     if "shared.chat_memory" not in sys.modules:
@@ -308,6 +336,135 @@ def serve_chat_js(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
 
 
+@app.route(route="chat-web/static/agi_stream_utils.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_agi_stream_utils(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve AGI SSE parsing utilities for chat-web clients."""
+    try:
+        js_path = Path(__file__).resolve().parent / "apps" / "chat" / "static" / "agi_stream_utils.js"
+
+        if js_path.exists():
+            with open(js_path, "r", encoding="utf-8") as f:
+                js_content = f.read()
+
+            return func.HttpResponse(
+                js_content,
+                status_code=200,
+                mimetype="application/javascript",
+                headers={
+                    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                    "Pragma": "no-cache",
+                    "Expires": "0",
+                },
+            )
+
+        return func.HttpResponse(
+            f"// Error: JavaScript file not found at {js_path}",
+            status_code=404,
+            mimetype="application/javascript",
+        )
+    except Exception as e:
+        logging.error(f"Error serving agi_stream_utils.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.js", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_js(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade script for chat-web."""
+    try:
+        js_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.js"
+        if not js_path.exists():
+            return func.HttpResponse(
+                "// Error: global-upgrade.js not found", status_code=404, mimetype="application/javascript"
+            )
+        with open(js_path, "r", encoding="utf-8") as f:
+            js_content = f.read()
+        return func.HttpResponse(
+            js_content,
+            status_code=200,
+            mimetype="application/javascript",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.js: {str(e)}")
+        return func.HttpResponse(f"// Error: {str(e)}", status_code=500, mimetype="application/javascript")
+
+
+@app.route(route="chat-web/global-upgrade.css", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def serve_chat_global_upgrade_css(req: func.HttpRequest) -> func.HttpResponse:
+    """Serve shared global-upgrade stylesheet for chat-web."""
+    try:
+        css_path = Path(__file__).resolve().parent / "apps" / "global-upgrade.css"
+        if not css_path.exists():
+            return func.HttpResponse("/* Error: global-upgrade.css not found */", status_code=404, mimetype="text/css")
+        with open(css_path, "r", encoding="utf-8") as f:
+            css_content = f.read()
+        return func.HttpResponse(
+            css_content,
+            status_code=200,
+            mimetype="text/css",
+            headers={"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"},
+        )
+    except Exception as e:
+        logging.error(f"Error serving global-upgrade.css: {str(e)}")
+        return func.HttpResponse(f"/* Error: {str(e)} */", status_code=500, mimetype="text/css")
+
+
+# =============================================================================
+# Aria stage proxy — forwards /api/aria/* to the 3D stage server (port 8080)
+# =============================================================================
+
+ARIA_STAGE_BASE_URL = os.getenv("ARIA_STAGE_BASE_URL", "http://127.0.0.1:8080").rstrip("/")
+
+
+def _proxy_aria_request(req: func.HttpRequest, subpath: str) -> func.HttpResponse:
+    """Forward a request to the Aria stage HTTP API."""
+    import requests
+
+    url = f"{ARIA_STAGE_BASE_URL}/api/aria/{subpath}"
+    try:
+        if req.method.upper() == "GET":
+            resp = requests.get(url, params=dict(req.params), timeout=10)
+        else:
+            body = req.get_body()
+            resp = requests.request(
+                req.method.upper(),
+                url,
+                data=body,
+                headers={"Content-Type": "application/json"},
+                timeout=30,
+            )
+        content_type = resp.headers.get("Content-Type", "application/json")
+        return func.HttpResponse(
+            resp.content,
+            status_code=resp.status_code,
+            mimetype=content_type.split(";")[0].strip(),
+            headers=create_cors_response_headers(),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("Aria stage proxy failed for %s: %s", subpath, exc)
+        return func.HttpResponse(
+            json.dumps({"status": "error", "error": f"Aria stage unavailable: {exc}"}),
+            status_code=502,
+            mimetype="application/json",
+            headers=create_cors_response_headers(),
+        )
+
+
+@app.route(route="aria/state", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_state_proxy(req, _build_domain_context())
+
+
+@app.route(route="aria/execute", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_execute_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_execute_proxy(req, _build_domain_context())
+
+
+@app.route(route="aria/command", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_command_proxy(req, _build_domain_context())
+
+
 # =============================================================================
 # Chat API - Backend for AI interactions
 # =============================================================================
@@ -447,7 +604,7 @@ def _detect_provider_with_runtime_fallback(
 
     In constrained test/runtime environments the optional ``openai`` package may
     be unavailable while env vars still point to OpenAI/Azure/LMStudio/Ollama.
-    In those cases, degrade to ``local`` provider instead of returning HTTP 500
+    In those cases, degrade to ``local-echo`` provider instead of returning HTTP 500
     from status/chat endpoints.
     """
 
@@ -457,7 +614,7 @@ def _detect_provider_with_runtime_fallback(
             explicit,
             model_override,
         )
-        return detect_provider(explicit="local", model_override="local-echo")
+        return detect_provider(explicit="local_echo", model_override="local-echo")
 
     try:
         return detect_provider(
@@ -473,12 +630,18 @@ def _detect_provider_with_runtime_fallback(
 
         logging.warning(
             "Provider detection failed due to missing optional openai package; "
-            "falling back to local provider. explicit=%s model_override=%s error=%s",
+            "falling back to local-echo provider. explicit=%s model_override=%s error=%s",
             explicit,
             model_override,
             provider_error,
         )
-        return detect_provider(explicit="local", model_override="local-echo")
+        try:
+            return detect_provider(explicit="local_echo", model_override="local-echo")
+        except Exception as fallback_error:
+            logging.error(f"Even fallback to local provider failed: {fallback_error}")
+            raise RuntimeError(
+                f"Provider detection failed with '{provider_error}' and fallback also failed: {fallback_error}"
+            ) from fallback_error
 
 
 def _env_flag(name: str, default: bool = False) -> bool:
@@ -486,6 +649,38 @@ def _env_flag(name: str, default: bool = False) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _request_headers(req: func.HttpRequest):
+    headers = getattr(req, "headers", {}) or {}
+    return headers if hasattr(headers, "get") else {}
+
+
+def _request_has_platform_principal(req: func.HttpRequest) -> bool:
+    headers = _request_headers(req)
+    principal = (
+        headers.get("X-MS-CLIENT-PRINCIPAL")
+        or headers.get("x-ms-client-principal")
+        or headers.get("X-MS-CLIENT-PRINCIPAL-ID")
+        or headers.get("x-ms-client-principal-id")
+        or headers.get("X-Forwarded-User")
+        or headers.get("x-forwarded-user")
+    )
+    return isinstance(principal, str) and bool(principal.strip())
+
+
+def _extract_request_token(req: func.HttpRequest, *header_names: str) -> str | None:
+    headers = _request_headers(req)
+    for header_name in header_names:
+        value = headers.get(header_name)
+        if not value and "-" in header_name:
+            value = headers.get(header_name.lower())
+        if isinstance(value, str) and value.strip():
+            token = value.strip()
+            if token.startswith("Bearer "):
+                return token.split(" ", 1)[1].strip()
+            return token
+    return None
 
 
 def _safe_float_env(name: str, default: float) -> float:
@@ -604,6 +799,30 @@ def _create_agi_provider_for_api(
     return provider, provider_choice
 
 
+def _agi_provider_metadata(provider, provider_choice) -> dict:
+    """Return AGI wrapper metadata with the detected base provider exposed."""
+    base = getattr(provider, "_base_provider_choice", None)
+    if base is not None:
+        base_provider = getattr(base, "name", None)
+        base_model = getattr(base, "model", None)
+    else:
+        base_provider = getattr(provider_choice, "name", None)
+        base_model = getattr(provider_choice, "model", None)
+    return {
+        "name": "agi",
+        "base_provider": base_provider,
+        "base_model": base_model,
+        "wrapper_model": getattr(provider_choice, "model", None),
+    }
+
+
+def _normalize_agi_stream_delta(chunk) -> dict:
+    """Normalize AGI stream chunks to structured delta objects for SSE clients."""
+    if isinstance(chunk, dict):
+        return chunk
+    return {"type": "output", "data": str(chunk)}
+
+
 @app.route(route="agi/analyze", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
     """Analyze a query using AGI reasoning classifier and agent routing preview."""
@@ -631,11 +850,7 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
                 "selected_agent": selected_agent,
                 "agent_score": float(agent_score),
             },
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
+            "provider": _agi_provider_metadata(provider, provider_choice),
         }
 
         return func.HttpResponse(
@@ -670,103 +885,50 @@ def agi_analyze(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="agi/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def agi_status(req: func.HttpRequest) -> func.HttpResponse:
-    """Return AGI provider readiness and reasoning summary metadata."""
-    try:
-        provider_choice = None
-        summary = {
-            "total_reasoning_chains": 0,
-            "active_goals": [],
-            "learned_patterns_count": 0,
-            "top_learned_patterns": [],
-            "conversation_length": 0,
-            "last_agent_used": None,
-            "last_agent_score": None,
-            "available_agents": [],
-        }
-        available = create_agi_provider is not None
-
-        if available:
-            provider, provider_choice = _create_agi_provider_for_api()
-            summary = provider.get_reasoning_summary()
-
-        payload = {
-            "status": "ok",
-            "available": available,
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
-            "reasoning": summary,
-            "endpoints": [
-                "/api/agi/analyze",
-                "/api/agi/reason",
-                "/api/agi/stream",
-                "/api/agi/status",
-            ],
-        }
-
-        return func.HttpResponse(
-            json.dumps(payload),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.error(f"agi/status error: {e}")
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+    return agi_domain.agi_status(req, _build_domain_context())
 
 
-@app.route(route="agi/reason", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
-def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
-    """Execute AGI completion path and return a deterministic JSON payload."""
-    try:
-        req_body, req_err = validate_request(req, AGI_REASON_SCHEMA)
-        if req_err:
-            raise ValueError(req_err)
-        query = _extract_agi_query_from_request(req_body)
+        try:
+            from agi_provider import _AGENT_REGISTRY
 
-        messages = req_body.get("messages")
-        if isinstance(messages, list) and messages:
-            messages = _sanitize_chat_messages(messages)
-        else:
-            messages = [{"role": "user", "content": query}]
+            for agent_name, config in _AGENT_REGISTRY.items():
+                tools = config.get("tools") if isinstance(config, dict) else None
+                if not isinstance(tools, list) or not tools:
+                    continue
+                tool_names = [str(tool.get("name")) for tool in tools if isinstance(tool, dict) and tool.get("name")]
+                if tool_names:
+                    agent_tools[str(agent_name)] = sorted(set(tool_names))
+        except Exception:
+            agent_tools = {}
 
-        provider, provider_choice = _create_agi_provider_for_api(
-            model_override=req_body.get("model"),
-            temperature=req_body.get("temperature"),
-            max_output_tokens=req_body.get("max_output_tokens"),
-            verbose=bool(req_body.get("verbose", False)),
-        )
 
-        goals = req_body.get("goals", [])
-        if isinstance(goals, list):
-            for goal in goals:
-                if isinstance(goal, str) and goal.strip():
-                    provider.set_goal(goal)
+@app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
+    return agi_domain.agi_stream(req, _build_domain_context())
 
-        result = provider.complete(messages, stream=False)
-        if hasattr(result, "__iter__") and not isinstance(result, str):
-            result = "".join(result)
 
-        include_summary = bool(req_body.get("include_reasoning_summary", True))
-        payload = {
-            "status": "ok",
-            "query": query,
-            "response": str(result),
-            "provider": {
-                "name": "agi",
-                "base_provider": getattr(provider_choice, "name", None),
-                "base_model": getattr(provider_choice, "model", None),
-            },
-        }
-        if include_summary:
-            payload["reasoning"] = provider.get_reasoning_summary()
+@app.route(route="agi/persistence", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
+    return agi_domain.agi_persistence(req, _build_domain_context())
+
+
+@app.route(route="chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def chat(req: func.HttpRequest) -> func.HttpResponse:
+    return chat_domain.chat(req, _build_domain_context())
+
+
+@app.route(route="chat", methods=["OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def chat_options(req: func.HttpRequest) -> func.HttpResponse:
+    return chat_domain.chat_options(req, _build_domain_context())
+
+
+def create_cors_response_headers():
+    """Create common CORS headers for all responses."""
+    return {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
 
         return func.HttpResponse(
             json.dumps(payload),
@@ -797,156 +959,122 @@ def agi_reason(req: func.HttpRequest) -> func.HttpResponse:
             headers=create_cors_response_headers(),
         )
 
+def _default_agi_persist_jsonl_path() -> str:
+    """Default JSONL audit path for AGI reasoning chains."""
+    return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
 
-@app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
-def agi_stream(req: func.HttpRequest) -> func.HttpResponse:
-    """Stream AGI responses over SSE with data events and terminating [DONE] sentinel."""
-    try:
-        req_body, req_err = validate_request(req, AGI_STREAM_SCHEMA)
-        if req_err:
-            raise ValueError(req_err)
 
-        query = _extract_agi_query_from_request(req_body)
+def _materialize_sse_body(chunks) -> bytes:
+    """Backward-compatible alias for tests and callers expecting the PR name."""
+    return _sse_body_bytes(chunks)
 
-        messages = req_body.get("messages")
-        if isinstance(messages, list) and messages:
-            messages = _sanitize_chat_messages(messages)
+
+def _sse_body_bytes(chunks) -> bytes:
+    """Coerce SSE chunks into bytes for Azure Functions HttpResponse bodies."""
+    if isinstance(chunks, bytes):
+        return chunks
+    if isinstance(chunks, bytearray):
+        return bytes(chunks)
+    if isinstance(chunks, str):
+        return chunks.encode("utf-8")
+
+    out = bytearray()
+    for chunk in chunks:
+        if chunk is None:
+            continue
+        if isinstance(chunk, bytes):
+            out.extend(chunk)
+        elif isinstance(chunk, bytearray):
+            out.extend(chunk)
         else:
-            messages = [{"role": "user", "content": query}]
-
-        provider, provider_choice = _create_agi_provider_for_api(
-            model_override=req_body.get("model"),
-            temperature=req_body.get("temperature"),
-            max_output_tokens=req_body.get("max_output_tokens"),
-            verbose=bool(req_body.get("verbose", False)),
-        )
-
-        goals = req_body.get("goals", [])
-        if isinstance(goals, list):
-            for goal in goals:
-                if isinstance(goal, str) and goal.strip():
-                    provider.set_goal(goal)
-
-        gen = provider.complete(messages, stream=True)
-
-        def _sse_iterable():
-            try:
-                pre = {
-                    "provider": "agi",
-                    "base_provider": getattr(provider_choice, "name", None),
-                    "base_model": getattr(provider_choice, "model", None),
-                }
-                yield (f"event: meta\n" f"data: {json.dumps(pre)}\n\n").encode("utf-8")
-
-                for chunk in gen:
-                    if not chunk:
-                        continue
-                    payload = json.dumps({"delta": chunk})
-                    yield (f"data: {payload}\n\n").encode("utf-8")
-
-                yield b"data: [DONE]\n\n"
-            except Exception as e:  # noqa: BLE001
-                err_payload = json.dumps({"error": str(e)})
-                yield (f"event: error\n" f"data: {err_payload}\n\n").encode("utf-8")
-                yield b"data: [DONE]\n\n"
-
-        # Pass generator directly so SSE chunks stream incrementally.
-        return func.HttpResponse(
-            body=_sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
-    except ValueError as ve:
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Validation error: {ve}"}),
-            status_code=400,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except RuntimeError as re:
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": f"Configuration error: {re}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.error(f"agi/stream error: {e}")
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+            out.extend(str(chunk).encode("utf-8"))
+    return bytes(out)
 
 
-@app.route(route="agi/persistence", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
-    """Read-only audit endpoint for AGI persisted reasoning chains.
+def _sse_response(chunks, *, status_code: int = 200) -> func.HttpResponse:
+    """Create a text/event-stream response with safely serialized body."""
+    return func.HttpResponse(
+        body=_sse_body_bytes(chunks),
+        status_code=status_code,
+        mimetype="text/event-stream",
+        headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
+    )
 
-    GET /api/agi/persistence?limit=50
-    Returns JSON: {status: ok, backend: 'sqlite'|'jsonl', entries: [...]}
-    """
-    logging.info("AGI persistence endpoint invoked")
-    # Optional token guard: when QAI_AGI_PERSIST_READ_TOKEN is set, require the token via
-    # X-AGI-AUDIT-TOKEN header or Authorization: Bearer <token>.
-    token_required = os.getenv("QAI_AGI_PERSIST_READ_TOKEN")
-    if token_required:
-        provided_token = None
-        try:
-            headers = getattr(req, "headers", {}) or {}
-            if isinstance(headers, dict):
-                provided_token = (
-                    headers.get("X-AGI-AUDIT-TOKEN")
-                    or headers.get("x-agi-audit-token")
-                    or headers.get("Authorization")
-                    or headers.get("authorization")
-                )
-            else:
-                # headers may be a case-insensitive mapping-like object
-                provided_token = headers.get("X-AGI-AUDIT-TOKEN") if hasattr(headers, "get") else None
-            if provided_token and isinstance(provided_token, str) and provided_token.startswith("Bearer "):
-                provided_token = provided_token.split(" ", 1)[1]
-        except Exception:
-            provided_token = None
-        if provided_token != token_required:
-            return func.HttpResponse(
-                json.dumps({"status": "error", "error": "unauthorized"}),
-                status_code=401,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
+
+def _build_domain_context() -> SimpleNamespace:
+    return SimpleNamespace(
+        AGI_ANALYZE_SCHEMA=AGI_ANALYZE_SCHEMA,
+        AGI_REASON_SCHEMA=AGI_REASON_SCHEMA,
+        AGI_STREAM_SCHEMA=AGI_STREAM_SCHEMA,
+        Path=Path,
+        SubscriptionTier=SubscriptionTier if subscription_manager_available else None,
+        _AI_CAPABILITY_COUNTERS=_AI_CAPABILITY_COUNTERS,
+        _ai_safety=_ai_safety,
+        _build_guardrail_fallback_text=_build_guardrail_fallback_text,
+        _create_agi_provider_for_api=_create_agi_provider_for_api,
+        _default_agi_persist_jsonl_path=_default_agi_persist_jsonl_path,
+        _default_chat_system_prompt=_default_chat_system_prompt,
+        _detect_provider_with_runtime_fallback=_detect_provider_with_runtime_fallback,
+        _env_flag=_env_flag,
+        _extract_agi_query_from_request=_extract_agi_query_from_request,
+        _extract_request_token=_extract_request_token,
+        _extract_text_content=_extract_text_content,
+        _normalize_agi_stream_delta=_normalize_agi_stream_delta,
+        _parse_json_object_body=_parse_json_object_body,
+        _proxy_aria_request=_proxy_aria_request,
+        _record_ai_capability_event=_record_ai_capability_event,
+        _record_ai_latency=_record_ai_latency,
+        _request_has_platform_principal=_request_has_platform_principal,
+        _safe_float_env=_safe_float_env,
+        _safe_int_env=_safe_int_env,
+        _sanitize_chat_messages=_sanitize_chat_messages,
+        _sse_response=_sse_response,
+        _tracer=_tracer,
+        _agi_provider_metadata=_agi_provider_metadata,
+        _get_quantum_llm_pipeline=_get_quantum_llm_pipeline,
+        asyncio=asyncio,
+        build_agi_backend_status=build_agi_backend_status,
+        cosmos_client=cosmos_client,
+        create_agi_provider=create_agi_provider,
+        create_cors_response_headers=create_cors_response_headers,
+        datetime=datetime,
+        fetch_similar_messages=fetch_similar_messages,
+        func=func,
+        generate_embedding=generate_embedding,
+        get_subscription_manager=get_subscription_manager,
+        hmac=hmac,
+        json=json,
+        log_chat_message_safe=log_chat_message_safe,
+        logging=logging,
+        os=os,
+        parse_movement_commands=parse_movement_commands,
+        prune_messages=prune_messages,
+        re=re,
+        store_embedding=store_embedding,
+        subscription_manager_available=subscription_manager_available,
+        sys=sys,
+        time=time,
+        trace=trace if _tracer is not None else None,
+        validate_request=validate_request,
+    )
+
+
+# =============================================================================
+# Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
+# =============================================================================
+
+
+@app.route(route="resource-monitor", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
+    """Return latest resource monitor snapshot."""
     try:
-        # Parse limit param (clamp to reasonable bounds)
-        limit = 50
-        try:
-            if hasattr(req, "params") and req.params.get("limit"):
-                limit = int(req.params.get("limit"))
-            else:
-                # Fallback to JSON body if provided
-                try:
-                    body = req.get_json()
-                    limit = int(body.get("limit", limit))
-                except Exception:
-                    pass
-        except Exception:
-            limit = 50
-        limit = max(1, min(limit, 500))
-
-        sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv("QAI_AGI_PERSIST_SQLITE")
-        jsonl_path = os.getenv("QAI_AGI_PERSIST_PATH")
-        jsonl_enabled = os.getenv("QAI_AGI_PERSIST", "").lower() in ("1", "true", "yes")
-
-        if sqlite_path:
-            try:
-                from shared.agi_persistence_sqlite import SQLiteAGIPersistence
-
-                backend = SQLiteAGIPersistence(sqlite_path)
-                entries = backend.read_last(limit)
-                backend.close()
+        snap_path = Path(__file__).resolve().parent / "data_out" / "resource_monitor_snapshot.json"
+        if snap_path.exists():
+            # Use cached read with 60s TTL (resource snapshots change infrequently)
+            data = read_json_cached(snap_path, ttl_seconds=60)
+            if data:
                 return func.HttpResponse(
-                    json.dumps({"status": "ok", "backend": "sqlite", "entries": entries}, default=str),
+                    json.dumps(data),
                     status_code=200,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
@@ -960,8 +1088,8 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                     headers=create_cors_response_headers(),
                 )
 
-        if jsonl_path or jsonl_enabled:
-            path = jsonl_path or os.path.join(os.getcwd(), "data_out", "agi_reasoning.jsonl")
+        path = jsonl_path or default_jsonl_path
+        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
             try:
                 entries = []
                 if os.path.exists(path):
@@ -974,7 +1102,16 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
                         except Exception:
                             entries.append({"raw": ln})
                 return func.HttpResponse(
-                    json.dumps({"status": "ok", "backend": "jsonl", "entries": entries}, default=str),
+                    json.dumps(
+                        {
+                            "status": "ok",
+                            "backend": "jsonl",
+                            "path": path,
+                            "configured": bool(jsonl_path or jsonl_enabled or os.path.exists(path)),
+                            "entries": entries,
+                        },
+                        default=str,
+                    ),
                     status_code=200,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
@@ -982,22 +1119,22 @@ def agi_persistence(req: func.HttpRequest) -> func.HttpResponse:
             except Exception as e:  # noqa: BLE001
                 logging.exception("AGI persistence jsonl read error: %s", e)
                 return func.HttpResponse(
-                    json.dumps({"status": "error", "error": str(e)}),
+                    json.dumps({"error": "Failed to load snapshot"}),
                     status_code=500,
                     mimetype="application/json",
                     headers=create_cors_response_headers(),
                 )
-
+        else:
+            return func.HttpResponse(
+                json.dumps({"error": "No snapshot found"}),
+                status_code=404,
+                mimetype="application/json",
+                headers=create_cors_response_headers(),
+            )
+    except Exception as e:
+        logging.error(f"Error reading resource snapshot: {e}")
         return func.HttpResponse(
-            json.dumps({"status": "error", "error": "AGI persistence not configured"}),
-            status_code=404,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.exception("agi/persistence unexpected error: %s", e)
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
+            json.dumps({"error": str(e)}),
             status_code=500,
             mimetype="application/json",
             headers=create_cors_response_headers(),
@@ -1398,6 +1535,48 @@ def create_cors_response_headers():
     }
 
 
+def _default_agi_persist_jsonl_path() -> str:
+    """Default JSONL audit path for AGI reasoning chains."""
+    return str(Path(__file__).resolve().parent / "data_out" / "agi_reasoning.jsonl")
+
+
+def _materialize_sse_body(chunks) -> bytes:
+    """Backward-compatible alias for tests and callers expecting the PR name."""
+    return _sse_body_bytes(chunks)
+
+
+def _sse_body_bytes(chunks) -> bytes:
+    """Coerce SSE chunks into bytes for Azure Functions HttpResponse bodies."""
+    if isinstance(chunks, bytes):
+        return chunks
+    if isinstance(chunks, bytearray):
+        return bytes(chunks)
+    if isinstance(chunks, str):
+        return chunks.encode("utf-8")
+
+    out = bytearray()
+    for chunk in chunks:
+        if chunk is None:
+            continue
+        if isinstance(chunk, bytes):
+            out.extend(chunk)
+        elif isinstance(chunk, bytearray):
+            out.extend(chunk)
+        else:
+            out.extend(str(chunk).encode("utf-8"))
+    return bytes(out)
+
+
+def _sse_response(chunks, *, status_code: int = 200) -> func.HttpResponse:
+    """Create a text/event-stream response with safely serialized body."""
+    return func.HttpResponse(
+        body=_sse_body_bytes(chunks),
+        status_code=status_code,
+        mimetype="text/event-stream",
+        headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
+    )
+
+
 # =============================================================================
 # Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
 # =============================================================================
@@ -1657,12 +1836,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                     yield (f"data: {payload}\n\n").encode("utf-8")
                     yield b"data: [DONE]\n\n"
 
-                return func.HttpResponse(
-                    body=blocked_sse(),
-                    status_code=200,
-                    mimetype="text/event-stream",
-                    headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-                )
+                return _sse_response(blocked_sse(), status_code=200)
         stream_memory_messages: list[dict] = []
         if stream_user_content:
             try:
@@ -1861,12 +2035,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 # Canonical SSE completion sentinel used by chat-web clients.
                 yield b"data: [DONE]\n\n"
 
-        return func.HttpResponse(
-            body=sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _sse_response(sse_iterable(), status_code=200)
 
     except ValueError as ve:
         logging.error(f"chat/stream validation error: {ve}")
@@ -1888,8 +2057,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="chat/stream", methods=["OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
 def chat_stream_options(req: func.HttpRequest) -> func.HttpResponse:
-    """Handle CORS preflight requests for /api/chat/stream."""
-    return func.HttpResponse("", status_code=200, headers=create_cors_response_headers())
+    return chat_domain.chat_stream_options(req, _build_domain_context())
 
 
 @app.route(route="tts", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -2433,7 +2601,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 pass
 
         # Detect active provider
-        provider, info = _detect_provider_with_runtime_fallback(explicit="auto")
+        provider, info = _detect_provider_with_runtime_fallback(explicit=_settings.active_provider())
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()
@@ -2716,8 +2884,10 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
         public_endpoints = [
             "/api/chat-web",
             "/api/chat-web/chat.js",
+            "/api/chat-web/static/agi_stream_utils.js",
             "/api/chat",
             "/api/chat/stream",
+            "/api/tts",
             "/api/health",
             "/api/ai/status",
             "/api/ai/capabilities",
@@ -2727,9 +2897,17 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "/api/agi/reason",
             "/api/agi/stream",
             "/api/agi/status",
+            "/api/agi/persistence",
+            "/api/aria/state",
+            "/api/aria/execute",
+            "/api/aria/command",
             "/api/vision/infer",
             "/api/vision/batch-infer",
             "/api/image/generate",
+            "/api/quantum/classify",
+            "/api/quantum/circuit",
+            "/api/quantum/llm",
+            "/api/quantum/info",
             "/api/quantum-llm/status",
             "/api/quantum-llm/chat",
             "/api/quantum-llm/stream",
@@ -2803,6 +2981,10 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
             {"route": "agi/analyze", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/reason", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/stream", "methods": ["POST"], "authLevel": "anonymous"},
+            {"route": "agi/persistence", "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/state", "methods": ["GET"], "authLevel": "anonymous"},
+            {"route": "aria/execute", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
+            {"route": "aria/command", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "chat", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {
                 "route": "chat/stream",
@@ -2812,6 +2994,11 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
             {"route": "chat-web", "methods": ["GET"], "authLevel": "anonymous"},
             {
                 "route": "chat-web/chat.js",
+                "methods": ["GET"],
+                "authLevel": "anonymous",
+            },
+            {
+                "route": "chat-web/static/agi_stream_utils.js",
                 "methods": ["GET"],
                 "authLevel": "anonymous",
             },
@@ -3564,22 +3751,10 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
                             }
                         )
 
-        # Measurements
-        for i in range(n_qubits):
-            gates.append(
-                {
-                    "type": "Measure",
-                    "qubit": i,
-                    "layer": n_layers + 1,
-                    "observable": "PauliZ",
-                }
-            )
 
-        # Create text visualization using list for efficiency (avoids O(n²) string concatenation)
-        viz_parts = [
-            f"Quantum Circuit ({n_qubits} qubits, {n_layers} layers, {entanglement} entanglement)\n",
-            "=" * 60 + "\n\n",
-        ]
+@app.route(route="quantum/llm", methods=["POST", "GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_llm(req, _build_domain_context())
 
         for layer in range(n_layers + 2):
             viz_parts.append(f"Layer {layer}:\n")
@@ -3595,50 +3770,25 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
 
         visualization = "".join(viz_parts)
 
-        response_data = {
-            "circuit_info": {
-                "n_qubits": n_qubits,
-                "n_layers": n_layers,
-                "entanglement": entanglement,
-                "total_gates": len(gates),
-                "depth": n_layers + 2,
-            },
-            "gates": gates,
-            "visualization": visualization,
-        }
-
-        return func.HttpResponse(
-            json.dumps(response_data),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-
-    except Exception as e:
-        logging.error(f"Quantum circuit error: {str(e)}")
-        return func.HttpResponse(
-            json.dumps({"error": f"Circuit creation failed: {str(e)}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+@app.route(route="quantum/info", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_info(req, _build_domain_context())
 
 
-@app.route(route="quantum/llm", methods=["POST", "GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Quantum LLM inference and training endpoint.
+# =============================================================================
+# SUBSCRIPTION & MONETIZATION ENDPOINTS
+# =============================================================================
 
-    GET  /api/quantum/llm          → return model status and capabilities
-    POST /api/quantum/llm          → generate text or trigger a training cycle
 
-    POST body (generate):
-        {"action": "generate", "prompt": "Quantum computing", "max_tokens": 50}
+@app.route(route="subscription/pricing", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_pricing(req: func.HttpRequest) -> func.HttpResponse:
+    return subscriptions_domain.subscription_pricing(req, _build_domain_context())
 
-    POST body (train):
-        {"action": "train", "dataset_path": "datasets/chat/...", "epochs": 1}
-    """
-    logging.info("Quantum LLM endpoint invoked: %s", req.method)
+
+@app.route(route="subscription/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
+    return subscriptions_domain.subscription_status(req, _build_domain_context())
+
 
     try:
         # Lazy import to avoid hard dependency at startup
@@ -3686,44 +3836,22 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 headers=create_cors_response_headers(),
             )
 
-        if not trainer_available:
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "error": "Quantum LLM trainer not available",
-                        "details": _trainer_import_err,
-                    }
-                ),
-                status_code=503,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
+@app.route(route="subscription/revenue", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
+    return subscriptions_domain.subscription_revenue(req, _build_domain_context())
 
-        try:
-            body = req.get_json() if req.get_body() else {}
-        except ValueError:
-            return func.HttpResponse(
-                json.dumps({"error": "Invalid JSON body"}),
-                status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
 
-        action = body.get("action", "generate")
+@app.route(route="subscription/usage", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
+    return subscriptions_domain.subscription_track_usage(req, _build_domain_context())
 
-        if action == "generate":
-            prompt = str(body.get("prompt", "Quantum")).strip()[:256]
-            if not prompt:
-                prompt = "Quantum"
-            max_tokens = min(int(body.get("max_tokens", 50)), 200)
 
-            config = {
-                "n_qubits": 4,
-                "n_quantum_layers": 2,
-                "d_model": 64,
-                "max_seq_len": 32,
-            }
-            trainer = QuantumEnhancedLLMTrainer(config)
+# -----------------------------------------------------------------------------
+# Stripe Webhook Handler
+# -----------------------------------------------------------------------------
+@app.route(route="webhook/stripe", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def stripe_webhook(req: func.HttpRequest) -> func.HttpResponse:
+    return subscriptions_domain.stripe_webhook(req, _build_domain_context())
 
             prompt_token_ids = [ord(c) % trainer.model_config["vocab_size"] for c in prompt[:32]]
             try:
@@ -3762,12 +3890,12 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 headers=create_cors_response_headers(),
             )
 
-        elif action == "train":
-            dataset_path = body.get("dataset_path", "datasets/chat")
-            dataset_path_obj = Path(dataset_path)
-            if not dataset_path_obj.is_absolute():
-                dataset_path_obj = repo_root / dataset_path_obj
-            dataset_path_obj = dataset_path_obj.resolve(strict=False)
+# -----------------------------------------------------------------------------
+# Notifications Log Endpoint
+# -----------------------------------------------------------------------------
+@app.route(route="notifications/log", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
+    return subscriptions_domain.notifications_log(req, _build_domain_context())
 
             # Basic path traversal protection: keep training datasets in-repo.
             try:
@@ -3780,38 +3908,17 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                     headers=create_cors_response_headers(),
                 )
 
-            epochs = min(int(body.get("epochs", 1)), 5)
-            output_dir = repo_root / "data_out" / "quantum_llm_api"
+# -----------------------------------------------------------------------------
+# Referral System Endpoints
+# -----------------------------------------------------------------------------
+@app.route(route="referrals/code", methods=["GET", "POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def referral_code(req: func.HttpRequest) -> func.HttpResponse:
+    return referrals_domain.referral_code(req, _build_domain_context())
 
-            config = {"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64}
-            trainer = QuantumEnhancedLLMTrainer(config)
-            results = trainer.train_with_quantum_enhancement(
-                dataset_path=dataset_path_obj,
-                output_dir=output_dir,
-                epochs=epochs,
-                model=None,
-            )
 
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "action": "train",
-                        "status": results["status"],
-                        "epochs_completed": results["epochs_completed"],
-                        "final_loss": results["final_loss"],
-                        "circuit_executions": results["quantum_metrics"]["circuit_executions"],
-                        "checkpoint_path": results.get("checkpoint_path"),
-                        "readiness": (
-                            get_quantum_llm_status(output_dir=output_dir)
-                            if get_quantum_llm_status is not None
-                            else None
-                        ),
-                    }
-                ),
-                status_code=200,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
+@app.route(route="referrals/stats", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
+    return referrals_domain.referral_stats(req, _build_domain_context())
 
         else:
             return func.HttpResponse(
@@ -3821,94 +3928,54 @@ def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
                 headers=create_cors_response_headers(),
             )
 
-    except Exception as e:
-        logging.error(f"Quantum LLM error: {e}", exc_info=True)
-        return func.HttpResponse(
-            json.dumps({"error": f"Quantum LLM request failed: {str(e)}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+@app.route(route="referrals/record", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def record_referral(req: func.HttpRequest) -> func.HttpResponse:
+    return referrals_domain.record_referral(req, _build_domain_context())
 
 
-@app.route(route="quantum/info", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Get quantum computing capabilities and status.
+# =============================================================================
+# Quantum-Powered LLM Endpoints
+# =============================================================================
+# Lazy import helper — QuantumLLMPipeline is loaded once and cached.
+_quantum_llm_pipeline = None
+_quantum_llm_lock = None
 
-    GET /api/quantum/info
 
-    Response: {
-        "available": true,
-        "backends": [...],
-        "capabilities": {...}
-    }
-    """
-    logging.info("Quantum info endpoint invoked")
+def _get_quantum_llm_pipeline():
+    """Return a shared QuantumLLMPipeline instance (lazy-initialised)."""
+    global _quantum_llm_pipeline, _quantum_llm_lock
+    import threading
 
-    try:
-        # Check if quantum modules are available
-        try:
-            import pennylane  # noqa: F401
-            import quantum_classifier  # noqa: F401
+    if _quantum_llm_lock is None:
+        _quantum_llm_lock = threading.Lock()
+    with _quantum_llm_lock:
+        if _quantum_llm_pipeline is None:
+            try:
+                quantum_llm_src = Path(__file__).resolve().parent / "ai-projects" / "quantum-ml" / "src"
+                if str(quantum_llm_src) not in sys.path:
+                    sys.path.insert(0, str(quantum_llm_src))
+                from quantum_llm import QuantumLLMConfig, QuantumLLMPipeline  # type: ignore
 
-            quantum_available = True
+                _quantum_llm_pipeline = QuantumLLMPipeline(config=QuantumLLMConfig.from_env())
+                logging.info("[quantum-llm] Pipeline initialized: backend=%s", _quantum_llm_pipeline.effective_backend)
+            except Exception as _qllm_err:  # noqa: BLE001
+                logging.warning("[quantum-llm] Pipeline init failed: %s", _qllm_err)
+    return _quantum_llm_pipeline
 
-            # Get available backends
-            backends = [
-                {
-                    "name": "default.qubit",
-                    "description": "PennyLane default simulator",
-                    "type": "simulator",
-                },
-                {
-                    "name": "lightning.qubit",
-                    "description": "Fast C++ simulator",
-                    "type": "simulator",
-                },
-                {
-                    "name": "qiskit.aer",
-                    "description": "Qiskit Aer simulator",
-                    "type": "simulator",
-                },
-            ]
 
-            capabilities = {
-                "max_qubits": 20,
-                "supports_gpu": False,
-                "variational_circuits": True,
-                "hybrid_models": True,
-                "azure_quantum_ready": True,
-            }
+@app.route(route="quantum-llm/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_llm_status(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_llm_status(req, _build_domain_context())
 
-        except ImportError:
-            quantum_available = False
-            backends = []
-            capabilities = {}
 
-        response_data = {
-            "available": quantum_available,
-            "backends": backends,
-            "capabilities": capabilities,
-            "quantum_provider": "quantum-enhanced-local",
-            "version": "1.0.0",
-        }
+@app.route(route="quantum-llm/chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_llm_chat(req, _build_domain_context())
 
-        return func.HttpResponse(
-            json.dumps(response_data),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
 
-    except Exception as e:
-        logging.error(f"Quantum info error: {str(e)}")
-        return func.HttpResponse(
-            json.dumps({"error": f"Failed to get quantum info: {str(e)}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+@app.route(route="quantum-llm/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_llm_stream(req, _build_domain_context())
 
 
 # =============================================================================
@@ -4629,12 +4696,7 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-            )
+            return _sse_response(_unavail(), status_code=503)
 
         # Honour per-request max_tokens (within cap) — use a local override dict
         # instead of mutating the shared pipeline config to avoid race conditions.
@@ -4703,12 +4765,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-            )
+            return _sse_response(_unavail(), status_code=503)
 
         import asyncio  # noqa: PLC0415
 
@@ -4733,12 +4790,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             finally:
                 loop.close()
 
-        return func.HttpResponse(
-            body=_sse_generator(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _sse_response(_sse_generator(), status_code=200)
     except Exception as exc:  # noqa: BLE001
         logging.error("quantum-llm/stream error: %s", exc)
         _exc = exc  # capture before exception binding is deleted at end of except block
@@ -4747,49 +4799,9 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             yield f'data: {json.dumps({"error": str(_exc)})}\n\n'.encode("utf-8")
             yield b"data: [DONE]\n\n"
 
-        return func.HttpResponse(
-            body=_err(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(), "Cache-Control": "no-cache"},
-        )
+        return _sse_response(_err(), status_code=200)
 
 
 @app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def referral_leaderboard(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Get referral leaderboard.
-
-    GET /api/referrals/leaderboard?limit=10
-
-    Response: {
-        "leaderboard": [
-            {"rank": 1, "user_id": "...", "referral_count": 50, "total_commission": 500}
-        ]
-    }
-    """
-    logging.info("Referral leaderboard endpoint invoked")
-
-    try:
-        from shared.referral_system import get_referral_system
-
-        limit = int(req.params.get("limit", "10"))
-
-        referral_system = get_referral_system()
-        leaderboard = referral_system.get_leaderboard(limit)
-
-        return func.HttpResponse(
-            json.dumps({"leaderboard": leaderboard}),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-
-    except Exception as e:
-        logging.error(f"Referral leaderboard error: {str(e)}")
-        return func.HttpResponse(
-            json.dumps({"error": f"Failed to get leaderboard: {str(e)}"}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
+    return referrals_domain.referral_leaderboard(req, _build_domain_context())

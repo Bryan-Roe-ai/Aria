@@ -5,6 +5,9 @@ console.log('chat.js loaded - v2025-11-21-qai - Provider: QAI auto-detect with q
 const AI_BASE = '';
 const API_BASE = `/api/chat`;
 const STREAM_API = `/api/chat/stream`;
+const AGI_STREAM_API = `/api/agi/stream`;
+const AGI_REASON_API = `/api/agi/reason`;
+const AGI_ANALYZE_API = `/api/agi/analyze`;
 const STATUS_API = `/api/ai/status`;
 const QUANTUM_CLASSIFY_API = '/api/quantum/classify';
 const QUANTUM_CIRCUIT_API = '/api/quantum/circuit';
@@ -17,6 +20,7 @@ let isProcessing = false;
 let messageCounter = 0;
 let currentProvider = 'auto'; // Always use auto-detect for best available
 let quantumMode = false; // Quantum enhancement toggle
+let agiMode = false; // AGI reasoning pipeline toggle
 let systemStatus = null;
 let retryCount = 0;
 const MAX_RETRIES = 3;
@@ -59,6 +63,7 @@ const exportButton = document.getElementById('exportButton');
 const importButton = document.getElementById('importButton');
 const toggleThemeButton = document.getElementById('toggleThemeButton');
 const quantumModeButton = document.getElementById('quantumModeButton');
+const agiModeButton = document.getElementById('agiModeButton');
 const quantumPanel = document.getElementById('quantumPanel');
 const quantumPanelClose = document.getElementById('quantumPanelClose');
 const quantumIndicator = document.getElementById('quantumIndicator');
@@ -85,13 +90,68 @@ let uploadedImageBase64 = null;
 let ariaAvatarGenerated = false;
 let ariaAvatarUrl = null;
 
+function emitEmbeddedChatEvent(name, detail) {
+    if (!window.ARIA_EMBEDDED) return;
+    try {
+        document.dispatchEvent(new CustomEvent(name, { detail: detail || {} }));
+    } catch (e) {
+        /* ignore */
+    }
+}
+
+function notifyEmbeddedAssistant(text) {
+    if (!text) return;
+    emitEmbeddedChatEvent('aria-chat-assistant', { text: String(text) });
+}
+
+function initEmbeddedTransport() {
+    console.log('chat.js: ARIA_EMBEDDED — wiring chat transport (send + AGI)');
+
+    if (messageInput) {
+        messageInput.addEventListener('input', () => {
+            messageInput.style.height = 'auto';
+            messageInput.style.height = Math.min(messageInput.scrollHeight, 150) + 'px';
+        });
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    if (sendButton) sendButton.addEventListener('click', sendMessage);
+    if (agiModeButton) agiModeButton.addEventListener('click', toggleAgiMode);
+    if (cancelStreamBtn) {
+        cancelStreamBtn.addEventListener('click', function () {
+            if (activeAbortController) {
+                activeAbortController.abort();
+                updateStatus('Streaming cancelled');
+            }
+            cancelStreamBtn.style.display = 'none';
+        });
+    }
+
+    loadFromStorage();
+    // Embedded page has no stream toggle UI — prefer AGI SSE streaming.
+    streamEnabled = true;
+    fetchSystemStatus();
+
+    window.__ariaChatTransport = {
+        sendMessage: sendMessage,
+        getAgiMode: function () {
+            return agiMode;
+        },
+        toggleAgiMode: toggleAgiMode,
+    };
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-        // When the Aria interactive page embeds chat, it provides its own
-        // send/receive wiring and should avoid double-wiring the controls
-        // in this script. A page can opt-in by setting window.ARIA_EMBEDDED=true
+        // Embedded Aria page keeps character/lip-sync in index.html but uses
+        // chat.js for send routing (including AGI stream) to avoid drift.
         if (window && window.ARIA_EMBEDDED) {
-            console.log('chat.js: ARIA_EMBEDDED detected — skipping default UI wiring');
+            initEmbeddedTransport();
             return;
         }
         if (cancelStreamBtn) {
@@ -137,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    sendButton.addEventListener('click', sendMessage);
+    if (sendButton) sendButton.addEventListener('click', sendMessage);
 
     // Vision upload handlers
     if (visionUploadButton) {
@@ -174,54 +234,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 2000);
 
-    newChatButton.addEventListener('click', () => {
-        console.log('New Chat button clicked');
-        newChat();
-    });
-    clearButton.addEventListener('click', () => {
-        console.log('Clear button clicked');
-        clearChat(false);
-    });
-    exportButton.addEventListener('click', exportChat);
-    importButton.addEventListener('click', importChat);
-    toggleThemeButton.addEventListener('click', toggleTheme);
-    quantumModeButton.addEventListener('click', toggleQuantumMode);
-    if (quantumPanelClose) {
+    if (newChatButton) {
+        newChatButton.addEventListener('click', () => {
+            console.log('New Chat button clicked');
+            newChat();
+        });
+    }
+    if (clearButton) {
+        clearButton.addEventListener('click', () => {
+            console.log('Clear button clicked');
+            clearChat(false);
+        });
+    }
+    if (exportButton) exportButton.addEventListener('click', exportChat);
+    if (importButton) importButton.addEventListener('click', importChat);
+    if (toggleThemeButton) toggleThemeButton.addEventListener('click', toggleTheme);
+    if (quantumModeButton) quantumModeButton.addEventListener('click', toggleQuantumMode);
+    if (agiModeButton) agiModeButton.addEventListener('click', toggleAgiMode);
+    if (quantumPanelClose && quantumPanel) {
         quantumPanelClose.addEventListener('click', () => {
             quantumPanel.style.display = 'none';
         });
     }
-    streamToggle.addEventListener('change', (e) => {
-        streamEnabled = !!e.target.checked;
-        saveToStorage();
-    });
-    tempSlider.addEventListener('input', (e) => {
-        temperature = parseFloat(e.target.value);
-        tempValue.textContent = temperature.toFixed(2);
-    });
-    tempSlider.addEventListener('change', () => saveToStorage());
-    maxTokensInput.addEventListener('change', (e) => {
-        const val = parseInt(e.target.value, 10);
-        if (!isNaN(val)) {
-            maxOutputTokens = Math.max(64, Math.min(40960, val));
-            e.target.value = String(maxOutputTokens);
+    if (streamToggle) {
+        streamToggle.addEventListener('change', (e) => {
+            streamEnabled = !!e.target.checked;
             saveToStorage();
-        }
-    });
-    toggleSystemButton.addEventListener('click', () => {
-        const show = systemPromptBox.style.display !== 'block';
-        systemPromptBox.style.display = show ? 'block' : 'none';
-    });
-    systemPromptInput.addEventListener('input', (e) => {
-        systemPrompt = e.target.value;
-        saveToStorage();
-    });
+        });
+    }
+    if (tempSlider) {
+        tempSlider.addEventListener('input', (e) => {
+            temperature = parseFloat(e.target.value);
+            if (tempValue) tempValue.textContent = temperature.toFixed(2);
+        });
+        tempSlider.addEventListener('change', () => saveToStorage());
+    }
+    if (maxTokensInput) {
+        maxTokensInput.addEventListener('change', (e) => {
+            const val = parseInt(e.target.value, 10);
+            if (!isNaN(val)) {
+                maxOutputTokens = Math.max(64, Math.min(40960, val));
+                e.target.value = String(maxOutputTokens);
+                saveToStorage();
+            }
+        });
+    }
+    if (toggleSystemButton && systemPromptBox) {
+        toggleSystemButton.addEventListener('click', () => {
+            const show = systemPromptBox.style.display !== 'block';
+            systemPromptBox.style.display = show ? 'block' : 'none';
+        });
+    }
+    if (systemPromptInput) {
+        systemPromptInput.addEventListener('input', (e) => {
+            systemPrompt = e.target.value;
+            saveToStorage();
+        });
+    }
 
     // Load saved conversations and settings
     loadFromStorage();
 
     // Focus input
-    messageInput.focus();
+    if (messageInput) messageInput.focus();
 
     // Fetch system status on load
     fetchSystemStatus();
@@ -246,7 +321,7 @@ function updateStatusFromSystem() {
     if (!systemStatus) return;
 
     // Show success message if everything looks good
-    if (systemStatus.status === 'ok') {
+    if (systemStatus.status === 'ok' && providerInfo) {
         const provider = systemStatus.data?.active_provider || 'local';
         const model = systemStatus.data?.model || 'unknown';
         updateStatus(`Ready - ${provider.toUpperCase()}`);
@@ -264,14 +339,17 @@ async function sendMessage() {
     const text = messageInput.value.trim();
     if (!text || isProcessing) return;
 
-    // Perform quantum analysis if enabled
-    if (quantumMode) {
+    emitEmbeddedChatEvent('aria-chat-send', { text });
+
+    // Perform quantum analysis if enabled (disabled while AGI mode is active)
+    if (quantumMode && !agiMode) {
         updateStatus('Performing quantum analysis...');
         await performQuantumAnalysis(text);
     }
 
     // Add user message to UI
     addMessage('user', text);
+    emitEmbeddedChatEvent('aria-chat-message', { role: 'user', content: text });
     messageInput.value = '';
     messageInput.style.height = 'auto';
     messageInput.disabled = true;
@@ -287,8 +365,15 @@ async function sendMessage() {
     const typingIndicator = showTypingIndicator();
 
     try {
-        // Choose streaming or one-shot
-        if (streamEnabled) {
+        // Choose AGI, streaming, or one-shot chat backends
+        if (agiMode) {
+            if (streamEnabled) {
+                if (cancelStreamBtn) cancelStreamBtn.style.display = 'inline-block';
+                await streamAgiResponse(typingIndicator);
+            } else {
+                await agiOneShotResponse(typingIndicator);
+            }
+        } else if (streamEnabled) {
             if (cancelStreamBtn) cancelStreamBtn.style.display = 'inline-block';
             await streamResponse(typingIndicator);
         } else {
@@ -373,11 +458,12 @@ async function oneShotResponse(typingIndicator) {
         messages.push({ role: 'assistant', content: assistantMessage });
     }
     updateMessageCount();
-    if (data.provider && data.model) {
+    if (data.provider && data.model && providerInfo) {
         providerInfo.textContent = `${data.provider.toUpperCase()} - ${data.model}`;
     }
     updateStatus('Ready');
     saveToStorage();
+    notifyEmbeddedAssistant(assistantMessage);
     messageInput.disabled = false;
     sendButton.disabled = false;
     isProcessing = false;
@@ -471,6 +557,7 @@ async function streamResponse(typingIndicator) {
         retryCount = 0;
         updateStatus('Ready');
         saveToStorage();
+        notifyEmbeddedAssistant(fullText);
     } catch (error) {
         typingIndicator.remove();
         assistantDiv.remove();
@@ -481,6 +568,247 @@ async function streamResponse(typingIndicator) {
             updateStatus('Cancelled');
         } else {
             throw error; // Re-throw to be handled by sendMessage
+        }
+    } finally {
+        if (cancelStreamBtn) cancelStreamBtn.style.display = 'none';
+        activeAbortController = null;
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        isProcessing = false;
+        messageInput.focus();
+    }
+}
+
+function extractAgiOutputText(delta) {
+    if (typeof delta === 'string') return delta;
+    if (delta?.type === 'output') return String(delta.data || '');
+    return '';
+}
+
+function formatAgiProviderLabel(providerMeta) {
+    if (!providerMeta) return 'AGI';
+    const base = providerMeta.base_provider;
+    const model = providerMeta.base_model;
+    if (base && base !== 'agi') {
+        return 'AGI (' + String(base).toUpperCase() + (model ? ' · ' + model : '') + ')';
+    }
+    return 'AGI';
+}
+
+async function previewAgiRouting() {
+    const lastUser = [...messages].reverse().find(function (m) { return m.role === 'user'; });
+    const query = lastUser && lastUser.content ? String(lastUser.content).trim() : '';
+    if (!query) {
+        updateStatus('AGI reasoning enabled');
+        return;
+    }
+
+    try {
+        const response = await fetch(AGI_ANALYZE_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: query }),
+        });
+        if (!response.ok) {
+            updateStatus('AGI reasoning enabled');
+            return;
+        }
+        const data = await response.json();
+        const agent = (data.routing && data.routing.selected_agent) || 'general';
+        const domain = (data.analysis && data.analysis.domain) || 'general';
+        updateStatus('AGI enabled → ' + agent + ' (' + domain + ')');
+        if (providerInfo) {
+            providerInfo.textContent = formatAgiProviderLabel(data.provider);
+        }
+    } catch (e) {
+        updateStatus('AGI reasoning enabled');
+    }
+}
+
+function renderAgiDeltaHtml(delta) {
+    if (typeof globalThis.AGIStreamUtils !== 'undefined' && globalThis.AGIStreamUtils.prettyPrintDelta) {
+        return globalThis.AGIStreamUtils.prettyPrintDelta(delta);
+    }
+    if (!delta || typeof delta !== 'object') return '';
+    return '<pre>' + String(JSON.stringify(delta)) + '</pre>';
+}
+
+async function agiOneShotResponse(typingIndicator) {
+    const apiMessages = sanitizeConversationMessages(systemPrompt ?
+        [{ role: 'system', content: systemPrompt }, ...messages] :
+        messages);
+
+    const response = await fetch(AGI_REASON_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            messages: apiMessages,
+            include_reasoning_summary: true,
+            temperature: temperature,
+            max_output_tokens: maxOutputTokens,
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+    }
+
+    const data = await response.json();
+    retryCount = 0;
+    typingIndicator.remove();
+
+    const assistantMessage = data.response || 'No AGI response received.';
+    let displayMessage = assistantMessage;
+    if (data.reasoning && data.reasoning.last_agent_used) {
+        const agent = data.reasoning.last_agent_used;
+        const chains = data.reasoning.total_reasoning_chains;
+        const chainSuffix = chains ? ' (' + chains + ' chain' + (chains === 1 ? '' : 's') + ')' : '';
+        displayMessage += '\n\n---\n*AGI routing: ' + agent + chainSuffix + '*';
+    }
+    addMessage('assistant', displayMessage, true);
+    if (!isSyntheticCompactionPlaceholder(assistantMessage)) {
+        messages.push({ role: 'assistant', content: assistantMessage });
+    }
+    updateMessageCount();
+    if (providerInfo) {
+        providerInfo.textContent = formatAgiProviderLabel(data.provider);
+    }
+    updateStatus('Ready (AGI)');
+    saveToStorage();
+    notifyEmbeddedAssistant(assistantMessage);
+    messageInput.disabled = false;
+    sendButton.disabled = false;
+    isProcessing = false;
+    messageInput.focus();
+}
+
+async function streamAgiResponse(typingIndicator) {
+    const assistantDiv = document.createElement('div');
+    assistantDiv.className = 'message assistant';
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.innerHTML = '';
+    assistantDiv.appendChild(contentDiv);
+    chatMessages.appendChild(assistantDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    activeAbortController = new AbortController();
+
+    const apiMessages = sanitizeConversationMessages(systemPrompt ?
+        [{ role: 'system', content: systemPrompt }, ...messages] :
+        messages);
+
+    try {
+        const response = await fetch(AGI_STREAM_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: apiMessages,
+                temperature: temperature,
+                max_output_tokens: maxOutputTokens,
+            }),
+            signal: activeAbortController.signal
+        });
+
+        if (!response.ok || !response.body) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        typingIndicator.remove();
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let reasoningHtml = '';
+        let outputText = '';
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const blocks = buffer.split('\n\n');
+            buffer = blocks.pop() || '';
+
+            blocks.forEach(function (block) {
+                if (!block.trim()) return;
+                const lines = block.split('\n');
+                let eventName = 'message';
+                const dataLines = [];
+                lines.forEach(function (line) {
+                    if (line.indexOf('event: ') === 0) {
+                        eventName = line.slice(6).trim();
+                    } else if (line.indexOf('data: ') === 0) {
+                        dataLines.push(line.slice(6));
+                    }
+                });
+
+                const dataStr = dataLines.join('\n').trim();
+                if (!dataStr || dataStr === '[DONE]') return;
+                if (eventName === 'error') {
+                    throw new Error(dataStr);
+                }
+                if (eventName === 'meta') {
+                    try {
+                        const meta = JSON.parse(dataStr);
+                        if (providerInfo) {
+                            providerInfo.textContent = formatAgiProviderLabel(meta);
+                        }
+                    } catch (e) { /* ignore malformed meta */ }
+                    return;
+                }
+
+                let payload;
+                try {
+                    payload = JSON.parse(dataStr);
+                } catch (e) {
+                    return;
+                }
+
+                const delta = payload && payload.delta;
+                if (!delta) return;
+
+                const chunkText = extractAgiOutputText(delta);
+                if (chunkText) {
+                    outputText += chunkText;
+                } else if (delta.type && delta.type !== 'output') {
+                    reasoningHtml += renderAgiDeltaHtml(delta);
+                }
+
+                contentDiv.innerHTML = reasoningHtml + '<div class="agi-final-output">' + outputText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</div>';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        }
+
+        if (outputText) {
+            try {
+                contentDiv.innerHTML = (reasoningHtml ? reasoningHtml : '') + marked.parse(outputText);
+                contentDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                    addCopyButton(block.parentElement);
+                });
+            } catch (e) {
+                contentDiv.textContent = outputText;
+            }
+        }
+
+        if (!isSyntheticCompactionPlaceholder(outputText)) {
+            messages.push({ role: 'assistant', content: outputText });
+        }
+        updateMessageCount();
+        retryCount = 0;
+        updateStatus('Ready (AGI stream)');
+        saveToStorage();
+        notifyEmbeddedAssistant(outputText);
+    } catch (error) {
+        typingIndicator.remove();
+        assistantDiv.remove();
+        if (error.name === 'AbortError') {
+            addMessage('system', '❌ AGI streaming cancelled by user.');
+            updateStatus('Cancelled');
+        } else {
+            throw error;
         }
     } finally {
         if (cancelStreamBtn) cancelStreamBtn.style.display = 'none';
@@ -658,12 +986,19 @@ function toggleTheme() {
     document.body.classList.toggle('dark-theme');
     const isDark = document.body.classList.contains('dark-theme');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    toggleThemeButton.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+    if (toggleThemeButton) {
+        toggleThemeButton.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+    }
 }
 
 function updateMessageCount() {
     const userMessages = messages.filter(m => m.role === 'user').length;
-    messageCount.textContent = userMessages;
+    const countEl = messageCount || document.getElementById('msgCount');
+    if (countEl) {
+        countEl.textContent = countEl.id === 'msgCount'
+            ? `Messages: ${userMessages}`
+            : userMessages;
+    }
 }
 
 // Aria AI Avatar functions
@@ -839,6 +1174,7 @@ function saveToStorage() {
     try {
         localStorage.setItem('chatMessages', JSON.stringify(sanitizeConversationMessages(messages)));
         localStorage.setItem('chatStream', streamEnabled ? '1' : '0');
+        localStorage.setItem('chatAgiMode', agiMode ? '1' : '0');
         localStorage.setItem('chatTemp', String(temperature));
         localStorage.setItem('chatMaxTokens', String(maxOutputTokens));
         localStorage.setItem('chatSystemPrompt', systemPrompt || '');
@@ -852,15 +1188,16 @@ function loadFromStorage() {
         const saved = localStorage.getItem('chatMessages');
         const savedTheme = localStorage.getItem('theme');
         const savedStream = localStorage.getItem('chatStream');
+        const savedAgiMode = localStorage.getItem('chatAgiMode');
         const savedTemp = localStorage.getItem('chatTemp');
         const savedMax = localStorage.getItem('chatMaxTokens');
         const savedSys = localStorage.getItem('chatSystemPrompt');
 
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-theme');
-            toggleThemeButton.textContent = '☀️ Light';
-                } else {
-                    toggleThemeButton.textContent = '🌙 Dark';
+            if (toggleThemeButton) toggleThemeButton.textContent = '☀️ Light';
+        } else if (toggleThemeButton) {
+            toggleThemeButton.textContent = '🌙 Dark';
         }
 
         if (saved) {
@@ -876,22 +1213,30 @@ function loadFromStorage() {
 
         // Restore settings
         streamEnabled = savedStream === '1';
-        streamToggle.checked = streamEnabled;
-        if (savedTemp) {
+        if (streamToggle) streamToggle.checked = streamEnabled;
+        if (savedAgiMode === '1') {
+            agiMode = true;
+            if (agiModeButton) {
+                agiModeButton.textContent = '🧠 AGI ON';
+                agiModeButton.classList.add('active');
+            }
+            currentProvider = 'agi';
+        }
+        if (savedTemp && tempSlider) {
             temperature = parseFloat(savedTemp);
             if (!isNaN(temperature)) {
                 tempSlider.value = String(temperature);
-                tempValue.textContent = temperature.toFixed(2);
+                if (tempValue) tempValue.textContent = temperature.toFixed(2);
             }
         }
-        if (savedMax) {
+        if (savedMax && maxTokensInput) {
             const v = parseInt(savedMax, 10);
             if (!isNaN(v)) {
                 maxOutputTokens = v;
                 maxTokensInput.value = String(v);
             }
         }
-        if (savedSys) {
+        if (savedSys && systemPromptInput) {
             systemPrompt = savedSys;
             systemPromptInput.value = systemPrompt;
         }
@@ -904,24 +1249,54 @@ function loadFromStorage() {
 // Quantum Mode Functions
 // =============================================================================
 
+function toggleAgiMode() {
+    agiMode = !agiMode;
+
+    if (agiMode) {
+        if (quantumMode) toggleQuantumMode();
+        if (agiModeButton) {
+            agiModeButton.textContent = '🧠 AGI ON';
+            agiModeButton.classList.add('active');
+        }
+        currentProvider = 'agi';
+        if (providerInfo) providerInfo.textContent = 'AGI';
+        previewAgiRouting();
+        emitEmbeddedChatEvent('aria-agi-enabled', {});
+    } else {
+        if (agiModeButton) {
+            agiModeButton.textContent = '🧠 AGI OFF';
+            agiModeButton.classList.remove('active');
+        }
+        currentProvider = 'auto';
+        updateStatus('AGI reasoning disabled');
+        fetchSystemStatus();
+    }
+
+    saveToStorage();
+}
+
 function toggleQuantumMode() {
     quantumMode = !quantumMode;
 
     if (quantumMode) {
-        quantumModeButton.textContent = '🔬 Quantum ON';
-        quantumModeButton.classList.add('active');
-        quantumIndicator.style.display = 'flex';
-        quantumPanel.style.display = 'block';
+        if (quantumModeButton) {
+            quantumModeButton.textContent = '🔬 Quantum ON';
+            quantumModeButton.classList.add('active');
+        }
+        if (quantumIndicator) quantumIndicator.style.display = 'flex';
+        if (quantumPanel) quantumPanel.style.display = 'block';
         currentProvider = 'quantum';
         updateStatus('Quantum mode enabled');
 
         // Fetch quantum info
         fetchQuantumInfo();
     } else {
-        quantumModeButton.textContent = '🔬 Quantum OFF';
-        quantumModeButton.classList.remove('active');
-        quantumIndicator.style.display = 'none';
-        quantumPanel.style.display = 'none';
+        if (quantumModeButton) {
+            quantumModeButton.textContent = '🔬 Quantum OFF';
+            quantumModeButton.classList.remove('active');
+        }
+        if (quantumIndicator) quantumIndicator.style.display = 'none';
+        if (quantumPanel) quantumPanel.style.display = 'none';
         currentProvider = 'auto';
         updateStatus('Quantum mode disabled');
     }

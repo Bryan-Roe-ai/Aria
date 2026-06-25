@@ -56,7 +56,8 @@ jobs:
               echo "::error::$name must be a valid number: $value"
               exit 1
             fi
-            local num=$(echo "$value" | bc 2>/dev/null || echo "$value")
+            local num
+            num=$(echo "$value" | bc 2>/dev/null || echo "$value")
             if (( $(echo "$num < 0" | bc -l 2>/dev/null || echo 0) )); then
               echo "::error::$name must be >= 0: $value"
               exit 1

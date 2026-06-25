@@ -366,6 +366,73 @@
             font-weight: bold;
         }
 
+        .preset-groups {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .preset-group h5 {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .preset-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .preset-chip {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .preset-chip:hover {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .quantum-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .btn-quantum {
+            flex: 0 0 auto;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .btn-quantum:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .quantum-status {
+            font-size: 0.88em;
+            color: var(--text-secondary);
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -437,8 +504,11 @@
 <body>
     <div class="container">
         <div class="top-bar">
-            <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <a href="./">← Aria</a>
+                <a href="./agi.html">🧠 AGI</a>
+                <a href="./agi-quantum.html">⚛ AGI Quantum</a>
+                <a href="./quantum-stage.html">🎭 Quantum Stage</a>
                 <a href="../chat/">💬 Chat</a>
                 <a href="../dashboard/">📊 Dashboard</a>
                 <a href="../store/">🛒 Store</a>
@@ -451,9 +521,14 @@
         </div>
 
         <div class="content">
+            <div class="quantum-toolbar">
+                <button type="button" class="btn-quantum" onclick="loadQuantumWorld('intro')">⚛ Load Quantum World</button>
+                <span id="quantum-status" class="quantum-status" aria-live="polite">Sets up qubit/gate on the server — open the main stage to see the themed world.</span>
+            </div>
+
             <div class="examples">
                 <h4>📝 Example Commands (click to use):</h4>
-                <ul class="example-list">
+                <ul class="example-list" id="fallback-examples">
                     <li onclick="setCommand('Walk to the table and pick up the apple')">Walk to the table and pick up
                         the apple</li>
                     <li onclick="setCommand('Say hello and wave at the audience')">Say hello and wave at the audience
@@ -467,6 +542,7 @@
                     <li onclick="setCommand('Throw the ball toward the right side of the stage')">Throw the ball toward
                         the right side of the stage</li>
                 </ul>
+                <div id="preset-groups" class="preset-groups" hidden></div>
             </div>
 
             <div class="control-panel">
@@ -567,9 +643,76 @@
         }
 
         restoreAutoExecuteSettings();
+        loadCommandPresets();
 
         function setCommand(cmd) {
             document.getElementById('command').value = cmd;
+        }
+
+        async function loadCommandPresets() {
+            const groupsEl = document.getElementById('preset-groups');
+            const fallbackEl = document.getElementById('fallback-examples');
+            try {
+                const response = await fetch('/api/aria/presets');
+                if (!response.ok) throw new Error('presets fetch failed');
+                const data = await response.json();
+                const presets = Array.isArray(data.presets) ? data.presets : [];
+                if (!presets.length) throw new Error('empty presets');
+
+                groupsEl.innerHTML = '';
+                presets.forEach(function (group) {
+                    const name = group.name || 'Presets';
+                    const commands = Array.isArray(group.commands) ? group.commands : [];
+                    if (!commands.length) return;
+
+                    const section = document.createElement('div');
+                    section.className = 'preset-group';
+                    const heading = document.createElement('h5');
+                    heading.textContent = name;
+                    section.appendChild(heading);
+
+                    const chips = document.createElement('div');
+                    chips.className = 'preset-chips';
+                    commands.forEach(function (cmd) {
+                        const chip = document.createElement('button');
+                        chip.type = 'button';
+                        chip.className = 'preset-chip';
+                        chip.textContent = cmd;
+                        chip.title = cmd;
+                        chip.onclick = function () { setCommand(cmd); };
+                        chips.appendChild(chip);
+                    });
+                    section.appendChild(chips);
+                    groupsEl.appendChild(section);
+                });
+
+                groupsEl.hidden = false;
+                if (fallbackEl) fallbackEl.hidden = true;
+            } catch (err) {
+                console.warn('loadCommandPresets failed, using fallback examples:', err);
+                if (groupsEl) groupsEl.hidden = true;
+                if (fallbackEl) fallbackEl.hidden = false;
+            }
+        }
+
+        async function loadQuantumWorld(preset) {
+            const statusEl = document.getElementById('quantum-status');
+            if (statusEl) statusEl.textContent = 'Loading quantum world…';
+            try {
+                const response = await fetch('/api/aria/quantum/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ preset: preset || 'intro' }),
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || data.message || 'setup failed');
+                const label = data.preset || preset || 'intro';
+                if (statusEl) {
+                    statusEl.textContent = 'Quantum world loaded (' + label + '). Open the main stage to see qubit/gate.';
+                }
+            } catch (err) {
+                if (statusEl) statusEl.textContent = 'Quantum setup failed: ' + err.message;
+            }
         }
 
         function clearResults() {
