@@ -42,11 +42,12 @@ _AGENT_MODULES = (
     "scripts.agents.docstring_audit_agent",
     "scripts.agents.agi_health_agent",
     "scripts.agents.agents_md_audit_agent",
+)
 
-SUMMARY_PATH=AGENTS_DATA_DIR / "status.json"
+SUMMARY_PATH = AGENTS_DATA_DIR / "status.json"
 
-class RunSummary:
 
+@dataclass
 class RunSummary:
     generated_at: str
     agents_run: int
@@ -71,42 +72,36 @@ def _aggregate_status(results: list[AgentResult]) -> str:
     return "ok"
 
 
-    selected: Sequence[str] | None=None,
-    dry_run: bool=False,
-    selected: Sequence[str] | None=None,
-    registry=_load_agents()
-    names=sorted(selected) if selected else sorted(registry)
-    missing=[name for name in names if name not in registry]
+def run_agents(
+    *,
+    selected: Sequence[str] | None = None,
+    dry_run: bool = False,
+) -> tuple[list[AgentResult], RunSummary]:
+    registry = _load_agents()
+    names = sorted(selected) if selected else sorted(registry)
+    missing = [name for name in names if name not in registry]
     if missing:
-    if missing:
-        known=", ".join(sorted(registry))
+        known = ", ".join(sorted(registry))
         raise SystemExit(
             f"Unknown agent(s): {', '.join(missing)}\n"
             f"Available agents: {known}\n"
             "List agents: python scripts/run_repo_agents.py --list-agents"
-    registry=_load_agents()
-    names=sorted(selected) if selected else sorted(registry)
-    missing=[name for name in names if name not in registry]
-    if missing:
-        known=", ".join(sorted(registry))
-        raise SystemExit(
-            f"Unknown agent(s): {', '.join(missing)}\n"
-            f"Available agents: {known}\n"
-            "List agents: python scripts/run_repo_agents.py --list-agents"
-    if missing:
-    results: list[AgentResult]=[]
+        )
+
+    results: list[AgentResult] = []
     for name in names:
-        agent=registry[name]()
-        agent=registry[name]()
-        result=agent.run()
+        agent = registry[name]()
+        result = agent.run()
         results.append(result)
         if not dry_run:
             agent.write_status(result)
         print(f"[{result.status}] {name}: {result.summary}")
 
-        counts[result.status]=counts.get(result.status, 0) + 1
+    counts = {"ok": 0, "warning": 0, "error": 0}
+    for result in results:
+        counts[result.status] = counts.get(result.status, 0) + 1
 
-    summary=RunSummary(
+    summary = RunSummary(
         generated_at=utc_now_iso(),
         agents_run=len(results),
         ok=counts["ok"],
@@ -118,29 +113,15 @@ def _aggregate_status(results: list[AgentResult]) -> str:
     return results, summary
 
 
-    SUMMARY_PATH.write_text(json.dumps(
+def write_summary(summary: RunSummary) -> Path:
     AGENTS_DATA_DIR.mkdir(parents=True, exist_ok=True)
     SUMMARY_PATH.write_text(json.dumps(
         asdict(summary), indent=2), encoding="utf-8")
     return SUMMARY_PATH
 
+
 def build_parser() -> argparse.ArgumentParser:
-    parser=argparse.ArgumentParser(
-        description="Run repository automation agents.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=(
-            "Examples:\n"
-            "  python scripts/run_repo_agents.py\n"
-            "  python scripts/run_repo_agents.py --list-agents\n"
-            "  python scripts/run_repo_agents.py --agent agi-health --dry-run\n"
-            "  python scripts/run_repo_agents.py --json --fail-on-warning\n"
-        ),
-    )
-    parser.add_argument(
-        "--list-agents",
-        action="store_true",
-        help="Print registered agent names and exit.",
-    parser=argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Run repository automation agents.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
@@ -183,39 +164,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="Exit with code 1 when any agent reports warning or error.",
     )
     return parser
-    return parser
 
 
-def main(argv: Sequence[str] | None=None) -> int:
-    args=build_parser().parse_args(argv)
-
-    if args.list_agents:
-        registry=_load_agents()
-        for name in sorted(registry):
-            agent_cls=registry[name]
-            description=getattr(agent_cls, "description", "")
-            if description:
-                print(f"{name}\t{description}")
-            else:
-                print(name)
-
-def main(argv: Sequence[str] | None=None) -> int:
-    args=build_parser().parse_args(argv)
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
 
     if args.list_agents:
-        registry=_load_agents()
+        registry = _load_agents()
         for name in sorted(registry):
-            agent_cls=registry[name]
-            description=getattr(agent_cls, "description", "")
+            agent_cls = registry[name]
+            description = getattr(agent_cls, "description", "")
             if description:
                 print(f"{name}\t{description}")
             else:
                 print(name)
         return 0
-    _, summary=run_agents(selected=args.agents, dry_run=args.dry_run)
-                print(name)
+
+    _, summary = run_agents(selected=args.agents, dry_run=args.dry_run)
+
     if not args.dry_run:
-        path=write_summary(summary)
+        path = write_summary(summary)
         print(f"[run_repo_agents] summary written to {path}")
 
     if args.json:

@@ -339,6 +339,22 @@
 			"type": "shell",
 			"command": "echo ${input:terminate}",
 			"problemMatcher": []
+		},
+		{
+			"label": "sqlproj: Build DatabaseProjectDatabase",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"/workspaces/Aria/database/DatabaseProjectDatabase/DatabaseProjectDatabase.sqlproj"
+			],
+			"problemMatcher": "$sqlproj-problem-matcher",
+			"isBackground": true,
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Builds the DatabaseProjectDatabase SQL project"
 		}
 	],
 	"inputs": [

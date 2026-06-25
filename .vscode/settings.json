@@ -206,5 +206,11 @@
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
     },
-    "karateRunner.reports.activityBarDisplayType": "Tree"
+    "karateRunner.reports.activityBarDisplayType": "Tree",
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "prompty.currentModelConfiguration": "default",
+    "mirrord.promptUsingDefaultConfig": false,
+    "mirrord.promptUsingBinary": false
 }
