@@ -166,3 +166,6 @@ $RECYCLE.BIN/
 coverage.json
 .azure/PRE-DEPLOYMENT-CHECKLIST.md
 .azure/PRODUCTION-RUNBOOK.md
+
+# core dumps
+core.*
