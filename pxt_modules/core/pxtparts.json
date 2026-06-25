@@ -160,7 +160,7 @@
     },
     "pixels": {
         "simulationBehavior": "pixels",
-        "visual": {
+        "visual": { 
             "builtIn": "pixels",
             "width": 58,
             "height": 113,
@@ -228,7 +228,7 @@
                 ]
             }
         ]
-    },
+    },    
     "buttons": {
         "simulationBehavior": "buttons",
         "visual": {

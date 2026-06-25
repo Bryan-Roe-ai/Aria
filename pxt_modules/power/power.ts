@@ -38,7 +38,7 @@ namespace power {
         init();
         const p = _poked || 0;
         const to = _timeout || 0;
-        if (to > 0 &&
+        if (to > 0 && 
             control.millis() - p > to &&
             !control.isUSBInitialized()) {
             // going to deep sleep

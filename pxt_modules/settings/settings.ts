@@ -51,7 +51,7 @@ namespace settings {
 
     initScopes()
 
-    /**
+    /** 
      * Delete all non-system settings.
      */
     export function clear(): void {

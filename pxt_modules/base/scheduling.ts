@@ -1,7 +1,7 @@
 /**
  * Calls a function with a fixed time delay between each call to that function.
- * @param func
- * @param delay
+ * @param func 
+ * @param delay 
  */
 //%
 function setInterval(func: () => void, delay: number): number {
@@ -11,7 +11,7 @@ function setInterval(func: () => void, delay: number): number {
 
 /**
  * Cancels repeated action which was set up using setInterval().
- * @param intervalId
+ * @param intervalId 
  */
 //%
 function clearInterval(intervalId: number) {
@@ -20,8 +20,8 @@ function clearInterval(intervalId: number) {
 
 /**
  * Calls a function after specified delay.
- * @param func
- * @param delay
+ * @param func 
+ * @param delay 
  */
 //%
 function setTimeout(func: () => void, delay: number): number {
@@ -30,7 +30,7 @@ function setTimeout(func: () => void, delay: number): number {
 
 /**
  * Clears the delay set by setTimeout().
- * @param intervalId
+ * @param intervalId 
  */
 //%
 function clearTimeout(intervalId: number) {
@@ -39,7 +39,7 @@ function clearTimeout(intervalId: number) {
 
 /**
  * Calls a function as soon as possible.
- * @param func
+ * @param func 
  */
 //%
 function setImmediate(func: () => void): number {
@@ -48,7 +48,7 @@ function setImmediate(func: () => void): number {
 
 /**
  * Cancels the immediate actions.
- * @param intervalId
+ * @param intervalId 
  */
 //%
 function clearImmediate(intervalId: number) {

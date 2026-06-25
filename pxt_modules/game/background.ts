@@ -37,7 +37,7 @@ namespace scene {
             }
             return this._image;
         }
-
+        
         set image(image: Image) {
             this._image = image;
         }

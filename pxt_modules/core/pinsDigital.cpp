@@ -74,7 +74,7 @@ void onPulsed(DigitalInOutPin pin, PulseValue pulse, Action body) {
 }
 
 /**
-* Register code to run when a pin event occurs.
+* Register code to run when a pin event occurs. 
 */
 //% help=pins/on-event weight=20 blockGap=8
 //% blockId=pinsonevent block="on|pin %pin|%event"
@@ -93,8 +93,8 @@ void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
         case PinEvent::Fall:
             pin->eventOn(DEVICE_PIN_EVENT_ON_EDGE);
             registerWithDal(pin->id, (int)event, body);
-            break;
-    }
+            break;    
+    }    
 }
 
 /**

@@ -13,7 +13,7 @@ Following system keys are used:
 * `#volume` - last music volume set explicitly by user using the game menu
 * `#scope` - keeps the name of the program; if the current name of the program
   doesn't match what is in that key, all non-system keys are cleared;
-  this happens for example when a new game (or rather a game with a new name)
+  this happens for example when a new game (or rather a game with a new name) 
   is uploaded to a hardware device
 
 The size of storage is typically limited to 16 kilobytes.
@@ -59,5 +59,5 @@ direction.
 Meta-data entries are 8 bytes each and contain hash of key name,
 value size, and points to key name and value in the data sections.
 When a key value is overwritten, a new meta-data section for it
-is created. When a key is to be found, it is searched for from the most
+is created. When a key is to be found, it is searched for from the most 
 recent meta-data entry.

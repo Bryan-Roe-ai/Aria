@@ -88,7 +88,7 @@ int ZFlash::erasePage(uintptr_t address) {
         NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
         waitForLast();
     }
-
+    
     return 0;
 }
 
@@ -102,7 +102,7 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
         if (((uint8_t *)dst)[i] != 0xff && ((uint8_t *)src)[i] != 0xff)
             return -3;
 
-
+    
     volatile uint32_t *sp = (uint32_t *)src;
     volatile uint32_t *dp = (uint32_t *)dst;
 
@@ -138,7 +138,7 @@ int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
                 dp++;
             }
         }
-
+        
         NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
         waitForLast();
     }
