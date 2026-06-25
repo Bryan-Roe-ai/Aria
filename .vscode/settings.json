@@ -202,8 +202,9 @@
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
     "iis.configDir": "",
-    "editor.defaultFormatter": "GitHub.copilot-chat",
+    "editor.defaultFormatter": null,
     "[html]": {
         "editor.defaultFormatter": "vscode.html-language-features"
-    }
+    },
+    "mirrord.promptUsingBinary": false
 }

@@ -11,7 +11,6 @@
     <!-- Configuration -->
     <None Include=".vscode\tasks.json" />
     <None Include="README.md" />
-
     <!-- Tables -->
     <Build Include="Tables\QuantumTrainingRuns.sql" />
     <Build Include="Tables\LoRATrainingRuns.sql" />
@@ -20,17 +19,30 @@
     <Build Include="Tables\AzureQuantumJobs.sql" />
     <Build Include="Tables\OrchestratorJobs.sql" />
     <Build Include="Tables\MCPServerSessions.sql" />
-
     <!-- Views -->
     <Build Include="Views\vw_TrainingRunsSummary.sql" />
     <Build Include="Views\vw_DatasetUsageStats.sql" />
     <Build Include="Views\vw_AzureQuantumCostTracking.sql" />
-
     <!-- Stored Procedures -->
     <Build Include="StoredProcedures\sp_LogQuantumTrainingRun.sql" />
     <Build Include="StoredProcedures\sp_LogLoRATrainingRun.sql" />
     <Build Include="StoredProcedures\sp_LogChatConversation.sql" />
     <Build Include="StoredProcedures\sp_RegisterDataset.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SqlServer.Dacpacs.Azure.Master">
+      <Version>170.0.2</Version>
+      <GeneratePathProperty>True</GeneratePathProperty>
+      <DatabaseVariableLiteralValue>master</DatabaseVariableLiteralValue>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\pxt_modules\settings\DatabaseProjectDatabase\DatabaseProjectDatabase.sqlproj">
+      <Name>DatabaseProjectDatabase</Name>
+      <Project>{723BD8DB-E164-4590-9AA0-4ABE8C44F59A}</Project>
+      <Private>True</Private>
+      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
+    </ProjectReference>
   </ItemGroup>
   <Target Name="BeforeBuild">
     <Delete Files="$(BaseIntermediateOutputPath)\project.assets.json" />

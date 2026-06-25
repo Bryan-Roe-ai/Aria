@@ -2,8 +2,8 @@
   "version": 1,
   "position": {
     "courseId": "katas",
-    "unitId": "complex_arithmetic",
-    "activityId": "complex_arithmetic__powers_of_i"
+    "unitId": "multi_qubit_measurements",
+    "activityId": "multi_qubit_measurements__full_measurements"
   },
   "completions": {
     "katas__getting_started__getting_started__welcome": {
@@ -14,6 +14,114 @@
     },
     "katas__complex_arithmetic__complex_arithmetic__algebraic_perspective": {
       "completedAt": "2026-06-21T06:20:45.051Z"
+    },
+    "katas__superdense_coding__superdense_coding__conclusion": {
+      "completedAt": "2026-06-21T12:55:39.152Z"
+    },
+    "katas__oracles__oracles__overview": {
+      "completedAt": "2026-06-21T12:55:40.438Z"
+    },
+    "katas__oracles__oracles__classical_oracles": {
+      "completedAt": "2026-06-21T12:55:41.509Z"
+    },
+    "katas__oracles__oracles__conclusion": {
+      "completedAt": "2026-06-21T12:55:53.746Z"
+    },
+    "katas__marking_oracles__marking_oracles__overview": {
+      "completedAt": "2026-06-21T12:55:54.261Z"
+    },
+    "katas__deutsch_algo__deutsch_algo__conclusion": {
+      "completedAt": "2026-06-21T12:56:01.697Z"
+    },
+    "katas__deutsch_jozsa__deutsch_jozsa__overview": {
+      "completedAt": "2026-06-21T12:56:02.177Z"
+    },
+    "katas__grovers_search__grovers_search__conclusion": {
+      "completedAt": "2026-06-21T12:56:09.997Z"
+    },
+    "katas__solving_sat__solving_sat__overview": {
+      "completedAt": "2026-06-21T12:56:10.659Z"
+    },
+    "katas__solving_sat__solving_sat__cnf": {
+      "completedAt": "2026-06-21T12:56:12.748Z"
+    },
+    "katas__solving_graph_coloring__solving_graph_coloring__conclusion": {
+      "completedAt": "2026-06-21T12:56:23.278Z"
+    },
+    "katas__qft__qft__overview": {
+      "completedAt": "2026-06-21T12:56:23.871Z"
+    },
+    "katas__qft__qft__implement": {
+      "completedAt": "2026-06-21T12:56:24.922Z"
+    },
+    "katas__phase_estimation__phase_estimation__conclusion": {
+      "completedAt": "2026-06-21T12:56:32.436Z"
+    },
+    "katas__qec_shor__qec_shor__overview": {
+      "completedAt": "2026-06-21T12:56:32.964Z"
+    },
+    "katas__qec_shor__qec_shor__noise": {
+      "completedAt": "2026-06-21T12:56:33.584Z"
+    },
+    "katas__qec_shor__qec_shor__joint_measurements": {
+      "completedAt": "2026-06-21T12:56:34.220Z"
+    },
+    "katas__distinguishing_unitaries__distinguishing_unitaries__conclusion": {
+      "completedAt": "2026-06-21T12:56:48.491Z"
+    },
+    "katas__random_numbers__random_numbers__overview": {
+      "completedAt": "2026-06-21T12:56:49.300Z"
+    },
+    "katas__key_distribution__key_distribution__conclusion": {
+      "completedAt": "2026-06-21T12:56:56.425Z"
+    },
+    "katas__teleportation__teleportation__overview": {
+      "completedAt": "2026-06-21T12:56:57.483Z"
+    },
+    "katas__linear_algebra__linear_algebra__overview": {
+      "completedAt": "2026-06-21T12:57:20.450Z"
+    },
+    "katas__qubit__qubit__overview": {
+      "completedAt": "2026-06-21T12:57:25.594Z"
+    },
+    "katas__single_qubit_gates__single_qubit_gates__overview": {
+      "completedAt": "2026-06-21T12:57:29.793Z"
+    },
+    "katas__single_qubit_gates__single_qubit_gates__basics": {
+      "completedAt": "2026-06-21T12:57:30.666Z"
+    },
+    "katas__multi_qubit_systems__multi_qubit_systems__overview": {
+      "completedAt": "2026-06-21T12:57:35.940Z"
+    },
+    "katas__preparing_states__preparing_states__overview": {
+      "completedAt": "2026-06-21T12:57:40.404Z"
+    },
+    "katas__preparing_states__preparing_states__even_superpositions": {
+      "completedAt": "2026-06-21T12:57:43.445Z"
+    },
+    "katas__multi_qubit_gates__multi_qubit_gates__overview": {
+      "completedAt": "2026-06-21T12:57:50.450Z"
+    },
+    "katas__single_qubit_measurements__single_qubit_measurements__overview": {
+      "completedAt": "2026-06-21T12:57:55.022Z"
+    },
+    "katas__single_qubit_measurements__single_qubit_measurements__computational_basis_measurements": {
+      "completedAt": "2026-06-21T12:57:55.372Z"
+    },
+    "katas__distinguishing_states__distinguishing_states__overview": {
+      "completedAt": "2026-06-21T12:58:02.324Z"
+    },
+    "katas__distinguishing_states__distinguishing_states__orthogonal_states": {
+      "completedAt": "2026-06-21T12:58:02.636Z"
+    },
+    "katas__multi_qubit_measurements__multi_qubit_measurements__overview": {
+      "completedAt": "2026-06-21T12:58:06.019Z"
+    },
+    "katas__multi_qubit_measurements__multi_qubit_measurements__full_measurements_lesson": {
+      "completedAt": "2026-06-21T12:58:06.554Z"
+    },
+    "katas__multi_qubit_measurements__multi_qubit_measurements__measurement_statistics": {
+      "completedAt": "2026-06-21T12:59:44.460Z"
     }
   },
   "startedAt": "2026-06-20T04:32:10.098Z"
