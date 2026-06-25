@@ -38,6 +38,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised in minimal envs
     Flask = None  # type: ignore[assignment]
     Response = Any  # type: ignore[assignment]
     make_response = None  # type: ignore[assignment]
+    request = None  # type: ignore[assignment]
     HAS_FLASK = False
 
 logger = logging.getLogger(__name__)
@@ -306,6 +307,30 @@ def _call_function_handler(
     return handler(fake_req)
 
 
+def _json_body(payload: Dict[str, Any]) -> bytes:
+    """Encode a small JSON payload for local handler probes."""
+    return json.dumps(payload).encode("utf-8")
+
+
+def _call_function_parts(
+    handler_name: str,
+    method: str,
+    url: str,
+    *,
+    body: bytes = b"",
+    headers: Optional[Dict[str, str]] = None,
+) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Call a function handler and return response components."""
+    azure_resp = _call_function_handler(
+        handler_name,
+        method,
+        url,
+        body=body,
+        headers=headers,
+    )
+    return _azure_response_parts(azure_resp)
+
+
 def get_ai_status_response() -> Tuple[Response, int]:
     """Call the function_app.ai_status handler and return a Flask response."""
     azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
@@ -352,16 +377,74 @@ def get_agi_stream_utils_response() -> Tuple[Response, int]:
     return _azure_to_flask(azure_resp)
 
 
+def _agi_json_response(handler_name: str, url: str) -> Tuple[Response, int]:
+    """Call a JSON AGI POST handler with the active Flask request body."""
+    assert request is not None
+    azure_resp = _call_function_handler(
+        handler_name,
+        "POST",
+        url,
+        body=request.get_data() or b"{}",
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+    return _azure_to_flask(azure_resp)
+
+
 def get_ai_status_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
     """Return endpoint response components for non-Flask fallback servers."""
-    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
-    return _azure_response_parts(azure_resp)
+    return _call_function_parts("ai_status", "GET", "/api/ai/status")
 
 
 def get_agi_status_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
     """Return /api/agi/status response components for non-Flask servers."""
-    azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
-    return _azure_response_parts(azure_resp)
+    return _call_function_parts("agi_status", "GET", "/api/agi/status")
+
+
+def get_ai_routes_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Return /api/ai/routes response components for non-Flask servers."""
+    return _call_function_parts("ai_routes", "GET", "/api/ai/routes")
+
+
+def get_agi_stream_utils_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Return AGI stream utility asset response components for non-Flask servers."""
+    return _call_function_parts(
+        "serve_agi_stream_utils",
+        "GET",
+        "/api/chat-web/static/agi_stream_utils.js",
+    )
+
+
+def get_agi_analyze_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Return /api/agi/analyze response components for non-Flask servers."""
+    return _call_function_parts(
+        "agi_analyze",
+        "POST",
+        "/api/agi/analyze",
+        body=body,
+        headers={"Content-Type": "application/json"},
+    )
+
+
+def get_agi_reason_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Return /api/agi/reason response components for non-Flask servers."""
+    return _call_function_parts(
+        "agi_reason",
+        "POST",
+        "/api/agi/reason",
+        body=body,
+        headers={"Content-Type": "application/json"},
+    )
+
+
+def get_agi_stream_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    """Return /api/agi/stream response components for non-Flask servers."""
+    return _call_function_parts(
+        "agi_stream",
+        "POST",
+        "/api/agi/stream",
+        body=body,
+        headers={"Content-Type": "application/json"},
+    )
 
 
 def get_ai_routes_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
@@ -418,15 +501,15 @@ def create_app() -> Flask:
 
     @app.post("/api/agi/analyze")
     def agi_analyze_route():
-        return get_agi_analyze_response(request.get_json(silent=True) or {})
+        return _agi_json_response("agi_analyze", "/api/agi/analyze")
 
     @app.post("/api/agi/reason")
     def agi_reason_route():
-        return get_agi_reason_response(request.get_json(silent=True) or {})
+        return _agi_json_response("agi_reason", "/api/agi/reason")
 
     @app.post("/api/agi/stream")
     def agi_stream_route():
-        return get_agi_stream_response(request.get_json(silent=True) or {})
+        return _agi_json_response("agi_stream", "/api/agi/stream")
 
     @app.get("/api/chat-web/static/agi_stream_utils.js")
     def agi_stream_utils_route():
@@ -521,7 +604,9 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
                 self.wfile.write(b'{"error":"not found"}')
                 return
 
-            self._serve_parts(parts_fn, payload=self._read_json_body())
+            length = int(self.headers.get("Content-Length", "0") or 0)
+            body = self.rfile.read(length) if length else _json_body({"query": "local dev adapter smoke"})
+            self._send_parts(path, parts_fn, body)
 
         def log_message(self, _fmt: str, *_args: Any) -> None:
             return
@@ -539,6 +624,20 @@ def check_status_endpoints() -> int:
     probes = (
         ("GET /api/ai/status", get_ai_status_parts),
         ("GET /api/agi/status", get_agi_status_parts),
+        ("GET /api/ai/routes", get_ai_routes_parts),
+        ("GET /api/chat-web/static/agi_stream_utils.js", get_agi_stream_utils_parts),
+        (
+            "POST /api/agi/analyze",
+            lambda: get_agi_analyze_parts(_json_body({"query": "adapter analyze check"})),
+        ),
+        (
+            "POST /api/agi/reason",
+            lambda: get_agi_reason_parts(_json_body({"query": "adapter reason check"})),
+        ),
+        (
+            "POST /api/agi/stream",
+            lambda: get_agi_stream_parts(_json_body({"query": "adapter stream check"})),
+        ),
     )
     errors: list[str] = []
     for label, parts_fn in probes:
@@ -554,7 +653,7 @@ def check_status_endpoints() -> int:
             print(line, file=sys.stderr)
         return 1
 
-    print("ok: /api/ai/status, /api/agi/status")
+    print("ok: local adapter strict smoke endpoints")
     return 0
 
 
@@ -592,7 +691,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="Probe /api/ai/status and /api/agi/status handlers and exit (no server).",
+        help="Probe local adapter handlers and exit (no server).",
     )
     return parser.parse_args(argv)
 

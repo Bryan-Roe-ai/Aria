@@ -224,7 +224,7 @@ def test_validate_ai_status_payload_requires_core_keys_and_endpoints() -> None:
                 "/api/chat-web",
                 "/api/chat-web/static/agi_stream_utils.js",
                 "/api/tts",
-                "/api/quantum/run",
+                "/api/quantum/info",
                 "/api/agi/status",
                 "/api/agi/analyze",
                 "/api/agi/reason",

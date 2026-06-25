@@ -39,7 +39,7 @@ _REQUIRED_AI_STATUS_ENDPOINTS = {
     "/api/chat-web",
     "/api/chat-web/static/agi_stream_utils.js",
     "/api/tts",
-    "/api/quantum/run",
+    "/api/quantum/info",
     "/api/agi/status",
     "/api/agi/analyze",
     "/api/agi/reason",
@@ -324,6 +324,43 @@ def _probe_with_local_dev_adapter_request(
                     timeout=int(request_timeout),
                 )
             except (URLError, TimeoutError, OSError, json.JSONDecodeError, ValueError):
+                time.sleep(0.25)
+
+        return None
+    except OSError:
+        return None
+    finally:
+        if proc is not None and proc.poll() is None:
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+
+def _probe_with_local_dev_adapter_text(url: str) -> Optional[str]:
+    """Best-effort adapter probe for non-JSON text endpoints."""
+    proc: Optional[subprocess.Popen[str]] = None
+    deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
+
+    try:
+        proc = subprocess.Popen(
+            _local_dev_adapter_command(url),
+            cwd=str(REPO_ROOT),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            text=True,
+        )
+
+        while time.time() < deadline:
+            try:
+                remaining = max(1.0, deadline - time.time())
+                request_timeout = min(
+                    LOCAL_DEV_ADAPTER_REQUEST_TIMEOUT_SEC,
+                    remaining,
+                )
+                return _fetch_local_functions_text(url, timeout=int(request_timeout))
+            except (URLError, TimeoutError, OSError, ValueError):
                 time.sleep(0.25)
 
         return None
