@@ -5,7 +5,7 @@ qiskit==2.4.2
 qiskit-aer==0.17.2
 
 # Quantum Machine Learning
-pennylane>=0.45.0,<1.0.0
+pennylane>=0.45.1,<1.0.0
 ## Pennylane-Qiskit adapter is optional.
 ## It currently conflicts with secure torch baselines because recent torch
 ## versions require sympy>=1.13.1 while pennylane-qiskit 0.39.x requires
@@ -21,7 +21,7 @@ azure-identity>=1.25.3,<2.0.0
 azure-core>=1.41.0,<2.0.0
 
 # Data Processing & Visualization
-pandas>=3.0.3,<4.0.0
+pandas>=3.0.4,<4.0.0
 matplotlib>=3.11.0,<4.0.0
 scikit-learn>=1.9.0,<2.0.0
 seaborn==0.13.2
@@ -36,7 +36,7 @@ pytest==9.1.1
 black>=26.5.1,<27.0.0
 
 # Model Context Protocol (MCP) Server
-mcp>=1.28.0
+mcp>=1.28.1
 pydantic>=2.13.4
 anyio>=4.14.1
 

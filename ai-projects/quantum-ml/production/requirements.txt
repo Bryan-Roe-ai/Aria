@@ -19,7 +19,7 @@ torch==2.12.1
 
 # === Quantum ML ===
 # Keep pennylane and pennylane-lightning versions compatible
-pennylane==0.45.0
+pennylane==0.45.1
 pennylane-lightning==0.45.0
 
 # === Production servers / deployment ===
