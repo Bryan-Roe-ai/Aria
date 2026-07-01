@@ -52,8 +52,8 @@ cd ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml
 TRAIN_SIZE=512 EVAL_SIZE=128 ./submit_sentence_transformer.sh
 ```
 
-**GitHub Actions:** workflow_dispatch **AzureML LoRA Train** with  
-`jobFile=ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/job-sentence-transformer-train.yml`  
+**GitHub Actions:** workflow_dispatch **AzureML LoRA Train** with
+`jobFile=ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/job-sentence-transformer-train.yml`
 (requires `AZURE_CREDENTIALS` repo/org secret).
 
 ## After submit
