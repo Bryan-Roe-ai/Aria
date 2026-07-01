@@ -17,6 +17,7 @@ from typing import Iterable, List, Sequence
 # encoded here (not just in YAML) so misconfiguration cannot disable them.
 _DEFAULT_PROTECTED_PREFIXES: tuple[str, ...] = (
     ".git/",
+    ".venv/",
     ".github/agents/",
     "datasets/",
     "data_out/",

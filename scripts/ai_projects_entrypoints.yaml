@@ -28,7 +28,7 @@ projects:
         path: ai-projects/chat-cli/src/chat_cli.py
         type: script
         description: Interactive chat CLI with /new, /save, /exit commands
-      
+
       provider_api:
         path: ai-projects/chat-cli/src/api.py
         type: module
@@ -38,17 +38,17 @@ projects:
           - prune_messages
           - count_tokens
           - create_agi
-      
+
       providers_module:
         path: ai-projects/chat-cli/src/chat_providers.py
         type: module
         description: Chat provider implementations and detection chain
-      
+
       token_utils:
         path: ai-projects/chat-cli/src/token_utils.py
         type: module
         description: Token counting and context pruning utilities
-      
+
       agi_provider:
         path: ai-projects/chat-cli/src/agi_provider.py
         type: module
@@ -64,13 +64,13 @@ projects:
         type: mcp
         port: 9999
         description: MCP server exposing 8 quantum tools (simulate, submit jobs, etc.)
-      
+
       web_dashboard:
         path: ai-projects/quantum-ml/web_app.py
         type: asgi
         port: 5000
         description: Web UI for quantum pipeline monitoring and job submission
-      
+
       api:
         path: ai-projects/quantum-ml/src/api.py
         type: module
@@ -81,7 +81,7 @@ projects:
           - AzureQuantumClient
           - submit_quantum_job
           - poll_quantum_job
-      
+
       integrated_pipeline:
         path: ai-projects/quantum-ml/src/quantum_llm_integrated.py
         type: module
@@ -96,7 +96,7 @@ projects:
         path: ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_lora.py
         type: script
         description: Main LoRA training script with dataset loading and checkpoint saving
-      
+
       inference:
         path: ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/infer_lora.py
         type: script
@@ -111,13 +111,13 @@ projects:
         path: ai-projects/llm-maker/src/tool_maker.py
         type: module
         description: Python tool generation with AST validation and sandboxing
-      
+
       web_server:
         path: ai-projects/llm-maker/web_server.py
         type: asgi
         port: 8000
         description: Web UI for interactive tool generation
-      
+
       mcp_server:
         path: ai-projects/llm-maker/llm_maker_mcp_server.py
         type: mcp
@@ -133,7 +133,7 @@ projects:
         path: ai-projects/cooking-ai/src/main.py
         type: script
         description: Command-line interface for recipe queries and meal planning
-      
+
       recipe_agent:
         path: ai-projects/cooking-ai/src/agents/recipe_agent.py
         type: module
