@@ -2,7 +2,7 @@
 # Date: 2026-05-14
 # NOTE: Validate these pinned versions in an isolated env (`pip install -r requirements.txt -c constraints.txt`)
 
-azure-monitor-opentelemetry==1.8.8
+azure-monitor-opentelemetry==1.8.9
 opentelemetry-api==1.43.0
 opentelemetry-sdk==1.43.0
 opentelemetry-instrumentation==0.64b0
@@ -34,7 +34,7 @@ scikit-learn==1.7.2
 matplotlib==3.10.9
 seaborn==0.13.2
 
-Pillow==12.2.0
+Pillow==12.3.0
 torch==2.12.1
 numpy==1.26.4
 
