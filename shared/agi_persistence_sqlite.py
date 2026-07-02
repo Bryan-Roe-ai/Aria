@@ -48,6 +48,7 @@ class SQLiteAGIPersistence:
         self._conn.commit()
 
     def write_reasoning_chain(self, chain: List[Dict[str, Any]], meta: Optional[Dict[str, Any]] = None) -> str:
+        """Persist one reasoning chain row and return its generated id."""
         eid = uuid.uuid4().hex
         ts = time.time()
         meta_j = json.dumps(meta or {}, separators=(",", ":"), ensure_ascii=False)
@@ -61,9 +62,10 @@ class SQLiteAGIPersistence:
         return eid
 
     def add_reasoning_chain(self, chain: List[Dict[str, Any]]) -> str:
+        """Backwards-compatible alias for :meth:`write_reasoning_chain`."""
         return self.write_reasoning_chain(chain)
-
     def add_message(self, message: Dict[str, Any]) -> str:
+        """Persist one message row and return its generated id."""
         eid = uuid.uuid4().hex
         ts = time.time()
         meta_j = json.dumps({}, separators=(",", ":"), ensure_ascii=False)
@@ -120,6 +122,7 @@ class SQLiteAGIPersistence:
         return out
 
     def close(self) -> None:
+        """Close the underlying SQLite connection."""
         try:
             self._conn.close()
         except Exception:

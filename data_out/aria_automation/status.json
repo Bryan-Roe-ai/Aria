@@ -1,6 +1,5 @@
 {
   "mode": "full",
-<<<<<<< Updated upstream
   "started": "2026-05-30T05:11:19.443701",
   "uptime_seconds": 223208.513977,
   "server_running": true,
@@ -13,20 +12,6 @@
       "pid": 17047,
       "command": "python server.py",
       "started": "2026-05-30T05:11:24.947232",
-=======
-  "started": "2026-05-28T12:54:25.171937",
-  "uptime_seconds": 124644.532903,
-  "server_running": true,
-  "backend_running": false,
-  "training_active": false,
-  "last_health_check": "2026-05-29T23:31:49.705068",
-  "processes": [
-    {
-      "name": "aria_server",
-      "pid": 2373,
-      "command": "python server.py",
-      "started": "2026-05-28T12:54:25.174982",
->>>>>>> Stashed changes
       "status": "running",
       "port": 8080,
       "health_url": "http://localhost:8080"
@@ -53,5 +38,6 @@
     "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
     "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
     "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n"
-  ]
+  ],
+  "updated_at": "2026-06-22T12:01:37.596424+00:00"
 }

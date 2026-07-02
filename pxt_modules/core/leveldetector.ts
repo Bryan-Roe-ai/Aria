@@ -83,7 +83,7 @@ namespace pins {
 
         private setState(state: number) {
             // not enough samples to change
-            if (this._state === state
+            if (this._state === state 
                 || (this.transition++ < this.transitionWindow)
                 || (control.millis() - this.transitionMs) < this.transitionInterval) {
                 return;

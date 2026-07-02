@@ -38,6 +38,8 @@ def test_check_lmstudio_available_true(monkeypatch):
 
     import urllib.request
 
+    monkeypatch.delenv("LMSTUDIO_BASE_URL", raising=False)
+
     captured = {}
 
     def fake_urlopen(request, timeout=None, *a, **k):
@@ -45,6 +47,7 @@ def test_check_lmstudio_available_true(monkeypatch):
         captured["timeout"] = timeout
         return _FakeResp(200)
 
+    monkeypatch.delenv("LMSTUDIO_BASE_URL", raising=False)
     monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
 
     assert mod._check_lmstudio_available() is True

@@ -84,12 +84,20 @@ def repo_automation_status_summary() -> str:
         )
 
     components = status.get("components_running", {}) or {}
-    running = sum(1 for value in components.values() if value)
-    total = len(components)
+    component_enabled = status.get("component_enabled", {}) or {}
+    enabled_components = {
+        name: value for name, value in components.items() if component_enabled.get(name, True)
+    }
+    running = sum(1 for value in enabled_components.values() if value)
+    total = len(enabled_components)
     active_components = [name for name, value in components.items() if value]
+    disabled_components = [name for name, enabled in component_enabled.items() if not enabled]
     active_text = ", ".join(active_components[:4]) if active_components else "none"
     if len(active_components) > 4:
         active_text += f" (+{len(active_components) - 4} more)"
+    disabled_text = ", ".join(disabled_components[:3]) if disabled_components else "none"
+    if len(disabled_components) > 3:
+        disabled_text += f" (+{len(disabled_components) - 3} more)"
     errors = status.get("errors", []) or []
     uptime_seconds = int(float(status.get("uptime_seconds", 0) or 0))
     uptime_text = str(timedelta(seconds=uptime_seconds))
@@ -103,8 +111,9 @@ def repo_automation_status_summary() -> str:
     config_text = " · ".join(config_bits) if config_bits else "no optional configs detected"
 
     return (
-        f"Repo automation: {running}/{total} components running · uptime {uptime_text} · "
-        f"errors {len(errors)} · active: {active_text} · updated: {refreshed_at} · {config_text}"
+        f"Repo automation: {running}/{total} enabled components running · uptime {uptime_text} · "
+        f"errors {len(errors)} · active: {active_text} · disabled: {disabled_text} · "
+        f"updated: {refreshed_at} · {config_text}"
     )
 
 
@@ -119,8 +128,12 @@ def repo_automation_next_step() -> str:
 
     errors = status.get("errors", []) or []
     components = status.get("components_running", {}) or {}
-    running = sum(1 for value in components.values() if value)
-    total = len(components)
+    component_enabled = status.get("component_enabled", {}) or {}
+    enabled_components = {
+        name: value for name, value in components.items() if component_enabled.get(name, True)
+    }
+    running = sum(1 for value in enabled_components.values() if value)
+    total = len(enabled_components)
     if errors:
         return (
             "**Next step:** run `python scripts/repo_automation.py --validate` to inspect the issues "
@@ -1375,13 +1388,22 @@ with gr.Blocks() as demo:
         export_json_btn.click(export_json, inputs=[hist_state, session_name], outputs=[export_file])
         export_md_btn.click(export_md, inputs=[hist_state, session_name], outputs=[export_file])
 
+        def _sanitize_session_name(name: Any) -> str:
+            raw = str(name or "session").strip()
+            sanitized = re.sub(r"[^A-Za-z0-9._-]+", "_", raw)
+            sanitized = sanitized.strip("._-")
+            return sanitized or "session"
+
         def export_txt(hist_state, session_name):
             if not hist_state:
                 return None
             ensure_conv_dir()
             ts = int(time.time())
-            safe_name = (session_name or "session").strip().replace(" ", "_")
-            filename = os.path.join(CONV_DIR, f"{safe_name}_{ts}.txt")
+            safe_name = _sanitize_session_name(session_name)
+            conv_root = os.path.realpath(CONV_DIR)
+            filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.txt"))
+            if os.path.commonpath([conv_root, filename]) != conv_root:
+                return None
             temp = filename + ".tmp"
             try:
                 with _conv_lock():
@@ -1407,8 +1429,11 @@ with gr.Blocks() as demo:
                 return None
             ensure_conv_dir()
             ts = int(time.time())
-            safe_name = (session_name or "session").strip().replace(" ", "_")
-            filename = os.path.join(CONV_DIR, f"{safe_name}_{ts}.jsonl")
+            safe_name = _sanitize_session_name(session_name)
+            conv_root = os.path.realpath(CONV_DIR)
+            filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.jsonl"))
+            if os.path.commonpath([conv_root, filename]) != conv_root:
+                return None
             temp = filename + ".tmp"
             try:
                 with _conv_lock():

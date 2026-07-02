@@ -5,10 +5,12 @@ This script is intended to reduce manual repetition when stabilizing the Aria
 workspace. It can run a one-shot health cycle or watch mode loops.
 
 Health cycle steps:
-1) Optional Ruff auto-fix on changed Python files
-2) pre_commit_check.py
-3) integration_contract_gate.sh (strict optional)
-4) Optional full pytest smoke (tests/ -q --maxfail=1)
+1) Repair data_out status.json merge conflicts (optional)
+2) Optional Ruff auto-fix on changed Python files
+3) pre_commit_check.py
+4) integration_contract_gate.sh (strict optional)
+5) run_repo_agents.py (optional; runs after gate so status files are fresh)
+6) Optional full pytest smoke (tests/ -q --maxfail=1)
 
 Outputs:
 - Console summary per cycle
@@ -116,7 +118,11 @@ def _changed_python_files() -> list[str]:
 def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps: list[tuple[str, list[str]]] = []
 
-    if args.auto_fix_ruff:
+    if args.repair_status:
+        repair_cmd = [sys.executable, "scripts/repair_data_out_status.py"]
+        if args.refresh_stale_status:
+            repair_cmd.append("--refresh-stale")
+        steps.append(("repair_data_out_status", repair_cmd))
         changed_py = _changed_python_files()
         if changed_py:
             steps.append(
@@ -129,12 +135,18 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps.append(
         ("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
-    gate_cmd = ["bash", "scripts/integration_contract_gate.sh"]
+    if args.run_agents:
+        steps.append(
+            ("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
     if args.strict_endpoints:
         gate_cmd.append("--strict-endpoints")
     steps.append(("integration_contract_gate", gate_cmd))
 
-    if args.full_pytest:
+    steps.append(("integration_contract_gate", gate_cmd))
+
+    if args.run_agents:
+        steps.append(
+            ("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
         steps.append(
             (
                 "pytest_full_smoke",
@@ -231,8 +243,15 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
-        description="Automate Aria repo health cycles")
-    mode = ap.add_mutually_exclusive_group()
+        description="Automate Aria repo health cycles",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python scripts/repo_health_automation.py --once\n"
+            "  python scripts/repo_health_automation.py --once --run-agents\n"
+            "  python scripts/repo_health_automation.py --once --repair-status --refresh-stale-status\n"
+            "  python scripts/repo_health_automation.py --watch --interval 300 --continue-on-fail\n"
+        ),
     mode.add_argument("--once", action="store_true",
                       help="Run a single cycle (default)")
     mode.add_argument("--watch", action="store_true",
@@ -254,11 +273,27 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Include full pytest smoke step after contract gate",
     )
+        help="Include full pytest smoke step after contract gate",
+    )
     ap.add_argument(
+        "--repair-status",
+        action="store_true",
+        help="Repair merge conflicts in data_out status.json files before checks",
+    )
+    ap.add_argument(
+        "--refresh-stale-status",
+        action="store_true",
+        help="With --repair-status, refresh timestamps older than 24 hours",
+        "--auto-fix-ruff",
         "--auto-fix-ruff",
         action="store_true",
         help="Run ruff --fix for changed Python files before checks",
+        help="Run ruff --fix for changed Python files before checks",
     )
+    ap.add_argument(
+        "--run-agents",
+        action="store_true",
+        help="Run repository automation agents after the integration contract gate",
     ap.add_argument(
         "--continue-on-fail",
         action="store_true",
@@ -269,17 +304,17 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    args = parse_args()
-    history: list[CycleResult] = []
+    args=parse_args()
+    history: list[CycleResult]=[]
 
-    watch = args.watch
+    watch=args.watch
     if not args.watch and not args.once:
         # Default behavior: one-shot cycle
-        watch = False
+        watch=False
 
-    cycle = 1
+    cycle=1
     while True:
-        result = run_cycle(cycle=cycle, args=args)
+        result=run_cycle(cycle=cycle, args=args)
         history.append(result)
         _write_status(history)
 

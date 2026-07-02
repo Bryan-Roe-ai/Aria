@@ -50,11 +50,21 @@ python .\scripts\ci_orchestrator.py --integration-contract-tests
 # One-command local gate script
 bash ./scripts/integration_contract_gate.sh
 
+# Use the repository venv when python3 is not the desired interpreter
+PYTHON_BIN=.venv/bin/python bash ./scripts/integration_contract_gate.sh
+
 # One-command local gate (VS Code task label)
 # integration:contract-gate
 
+# Run deterministic repository inspection agents
+python .\scripts\run_repo_agents.py --dry-run
+python .\scripts\run_repo_agents.py --json
+
 # Automate the repeated local fix/validate loop (one-shot)
 python .\scripts\repo_health_automation.py --once --strict-endpoints
+
+# Include repository inspection agents in the health cycle
+python .\scripts\repo_health_automation.py --once --run-agents
 
 # Same automation, but also run full pytest smoke
 python .\scripts\repo_health_automation.py --once --strict-endpoints --full-pytest
@@ -75,7 +85,7 @@ python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpo
 
 #### `repo_health_automation.py`
 
-**Purpose:** Automate repeated repo-health cycles (pre-commit + integration contract gate + optional full pytest) so fix/validation can run unattended.
+**Purpose:** Automate repeated repo-health cycles (pre-commit + optional repository agents + integration contract gate + optional full pytest) so fix/validation can run unattended.
 
 **Key options:**
 
@@ -83,11 +93,56 @@ python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpo
 - `--strict-endpoints` — run integration gate in strict endpoint mode
 - `--full-pytest` — include `pytest tests -q --maxfail=1 --tb=short`
 - `--auto-fix-ruff` — run `ruff check --fix` on changed `.py` files before checks
+- `--run-agents` — run `scripts/run_repo_agents.py` after the integration contract gate
 - `--continue-on-fail` — continue all steps even after a failed step
 
 **Status output:**
 
 - `data_out/repo_health_automation/status.json`
+
+#### Repository inspection agents
+
+**Purpose:** Run deterministic, side-effect-free repository checks and write structured status for dashboards or follow-up automation.
+
+**Current agents:**
+
+| Agent | Checks | Primary source |
+| --- | --- | --- |
+| `status-freshness` | Stale, failed, unparseable, or timestamp-less `data_out/**/status.json` files | `scripts/agents/status_freshness_agent.py` |
+| `marker-audit` | `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers in source-like files | `scripts/agents/marker_audit_agent.py` |
+| `docstring-audit` | Module/class/function docstring coverage for Python paths, defaulting to `shared` and `scripts/agents` | `scripts/agents/docstring_audit_agent.py` |
+| `agents-md-audit` | Structure and hygiene of `AGENTS.md` Learned sections (bullet limits, secrets, stale dates) | `scripts/agents/agents_md_audit_agent.py` |
+
+**Result contract:** Every agent returns an `AgentResult` with `name`, `status`, `summary`, `findings`, `metrics`, and `timestamp`. Valid statuses are `ok`, `warning`, and `error`; only `ok` makes `AgentResult.ok` true.
+
+**Usage:**
+
+```powershell
+# Run all registered agents and write status files
+python .\scripts\run_repo_agents.py
+make agents
+
+# Preview without writing data_out/agents/*
+python .\scripts\run_repo_agents.py --dry-run
+make agents-dry
+
+# Shell wrapper
+./scripts/run_ai_automation.sh --json
+
+# Run one agent, emit aggregate JSON, and fail CI on warnings
+python .\scripts\run_repo_agents.py --agent status-freshness --json --fail-on-warning
+
+# Run an individual agent CLI
+python .\scripts\agents\docstring_audit_agent.py --path scripts/agents --min-coverage 80 --json
+```
+
+**Status output:**
+
+- Per-agent status: `data_out/agents/<agent-name>/status.json`
+- Aggregate summary: `data_out/agents/status.json`
+- Health-cycle wrapper: `python .\scripts\repo_health_automation.py --once --run-agents`
+
+**Adding an agent:** Create a class that extends `AutomationAgent`, set a unique kebab-case `name`, implement `run()`, and decorate the class with `@register`. Import the module from `_AGENT_MODULES` in `scripts/run_repo_agents.py` so the registry can discover it.
 
 ### Quantum Operations
 
@@ -204,7 +259,7 @@ python .\scripts\autotrain.py --dry-run
 python .\scripts\autotrain.py
 
 # Single job
-python .\scripts\autotrain.py --job phi36_mixed_chat
+python .\scripts\autotrain.py --job phi35_mixed_chat
 ```
 
 ### Testing Infrastructure
@@ -215,10 +270,13 @@ python .\scripts\autotrain.py --job phi36_mixed_chat
 
 **Test Suites:**
 
-- `unit`: 40 fast tests (~0.5s)
-- `integration`: 30 external service tests (~3s)
-- `all_fast`: 83 tests excluding slow/azure (~10s)
-- `autotrain`, `quantum`, `database`, `chat`: Focused suites
+- `unit`: fast unit tests, excluding slow, Azure, integration, quantum, and GPU markers
+- `integration`: tests marked `integration`
+- `all_fast`: all tests except slow and Azure markers
+- `all`: the full suite
+- `autotrain`, `quantum`, `database`, `chat`: focused suites
+
+The exact test count changes as coverage grows. Use `python .\scripts\test_runner.py --list-suites` for the current suite list; Cursor Cloud agents should prefer `.venv/bin/python scripts/test_runner.py --unit`.
 
 **Usage:**
 
@@ -277,10 +335,19 @@ python .\scripts\ci_orchestrator.py --integration-contract-tests
 # Run full contract gate sequence (smoke + contract tests + validate-all)
 bash ./scripts/integration_contract_gate.sh
 
+# Use the repo virtualenv explicitly
+PYTHON_BIN=.venv/bin/python bash ./scripts/integration_contract_gate.sh
+
+# Strict endpoint mode: also require /api/ai/status reachability
+INTEGRATION_AI_STATUS_ENDPOINT=http://localhost:7071/api/ai/status \
+RETRY_COUNT=30 \
+RETRY_INTERVAL=1 \
+bash ./scripts/integration_contract_gate.sh --strict-endpoints
+
 # Or run the VS Code task: integration:contract-gate
 ```
 
-**Current Status:** 5/10 passing (all critical steps ✅)
+For current CI health, prefer the latest workflow result or a fresh local run over a fixed count in this guide.
 
 ### Evaluation & Analysis
 

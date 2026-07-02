@@ -1,0 +1,77 @@
+cells:
+  - kind: 1
+    languageId: markdown
+    value: >-
+      ## SQL + AI starter
+
+      Use this pattern to combine SQL retrieval with an AI-ready prompt.
+
+
+      1. Query structured records.
+
+      2. Aggregate them into context text.
+
+      3. Send context to your AI layer (app/service/UDF) for summarization or
+      Q&A.
+
+
+      > Tip: Keep SQL deterministic and do AI in an app layer unless your
+      database has native AI SQL functions.
+    metadata: {}
+  - kind: 2
+    languageId: sql
+    value: >-
+      -- SQL + AI-ready context builder
+
+      -- Replace table/column names with your schema.
+
+      WITH recent_events AS (
+          SELECT
+              event_id,
+              user_id,
+              event_type,
+              event_time,
+              details
+          FROM events
+          WHERE event_time >= CURRENT_DATE - INTERVAL '7 days'
+      ),
+
+      context_rows AS (
+          SELECT
+              user_id,
+              CONCAT(
+                  'event_id=', CAST(event_id AS VARCHAR),
+                  ', type=', event_type,
+                  ', time=', CAST(event_time AS VARCHAR),
+                  ', details=', COALESCE(details, 'n/a')
+              ) AS row_text
+          FROM recent_events
+      ),
+
+      context_payload AS (
+          SELECT
+              user_id,
+              STRING_AGG(row_text, ' || ') AS ai_context
+          FROM context_rows
+          GROUP BY user_id
+      )
+
+      SELECT
+          user_id,
+          ai_context
+      FROM context_payload
+
+      ORDER BY user_id;
+
+
+      -- Next step (outside SQL or with DB-native AI function):
+
+      -- Send ai_context to your local AI model for summary, anomaly detection,
+      or Q&A.
+    metadata: {}
+metadata:
+  conn:
+    id: RyRyyUe5pD5-Fb7f0PHqA
+    name: DuckDB
+  database: memory
+  schema: main

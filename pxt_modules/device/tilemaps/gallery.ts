@@ -55,54 +55,54 @@ namespace gallerytilemaps {
     //% fixedInstance jres whenUsed
     //% tags="ocean arena"
     export const arena = tiles.createTilemap(hex`10001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000006020500000000000000000000000000000000000000000000000000000000000000000000000b0000000000000000000000000000000602050000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010304000000000000000000000000000a0807000000000000000000010400000a08070304000006020500000a0700000a08070807000000000000000a0709090a08070807000000000000000a0808080808070807090909090909090a080808080807`, img`
-. . . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . . .
-. . 2 2 2 . . . . . . . . . . .
-. . . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . . .
-. . . . . . . . 2 2 2 . . . . .
-. . . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . . .
-. . . . . . . . . . . . . 2 2 2
-. . . . . . . . . . . . . 2 2 2
-. . . . . . . . . 2 2 . . 2 2 2
-2 2 . . 2 2 2 . . 2 2 . . 2 2 2
-2 2 . . . . . . . 2 2 . . 2 2 2
-2 2 . . . . . . . 2 2 2 2 2 2 2
-2 2 . . . . . . . 2 2 2 2 2 2 2
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . 2 2 2 . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . 2 2 2 . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . 2 2 2 
+. . . . . . . . . . . . . 2 2 2 
+. . . . . . . . . 2 2 . . 2 2 2 
+2 2 . . 2 2 2 . . 2 2 . . 2 2 2 
+2 2 . . . . . . . 2 2 . . 2 2 2 
+2 2 . . . . . . . 2 2 2 2 2 2 2 
+2 2 . . . . . . . 2 2 2 2 2 2 2 
 `, [gallerytilemaps.baseTransparency16,sprites.builtin.oceanSand5,sprites.builtin.oceanSand2,sprites.builtin.oceanSand6,sprites.builtin.oceanSand7,sprites.builtin.oceanSand3,sprites.builtin.oceanSand1,gallerytilemaps.myTile,gallerytilemaps.myTile0,sprites.builtin.coral4,gallerytilemaps.myTile1,sprites.builtin.coral0], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="island road"
     export const roadsandislands = tiles.createTilemap(hex`100010000000000000000000000000000000000000010202020300000000000102030000000b090e08080808080808080f0c0000000b0907090c00000000000407060000000b0907090c00000000000007000000000b0907090c00000102020207020300000b0907090c00000b0e0808110f0c00000b0907090c00000b07090909070c00000b0907090c00000407050505070600000b0907090c00000007000000070000000b090a08080808080d000000070000000b0909090c000000070000000700000004050505060000010702020207030000000000000000000b0a080808100c0000000000000000000b09090909090c0000000000000000000405050505050600`, img`
-2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-2 . . . . . 2 2 2 2 2 . . . 2 2
-2 . . . . . . . . . . . . . 2 2
-2 . . . . . 2 2 2 2 2 2 . 2 2 2
-2 . . . . . 2 2 2 2 2 2 . 2 2 2
-2 . . . . . 2 2 . . . . . . . 2
-2 . . . . . 2 2 . . . . . . . 2
-2 . . . . . 2 2 . . . . . . . 2
-2 . . . . . 2 2 2 . 2 2 2 . 2 2
-2 . . . . . 2 2 2 . 2 2 2 . 2 2
-2 . . . . . . . . . 2 2 2 . 2 2
-2 . . . . . 2 2 2 . 2 2 2 . 2 2
-2 2 2 2 2 2 2 2 . . . . . . . 2
-2 2 2 2 2 2 2 2 . . . . . . . 2
-2 2 2 2 2 2 2 2 . . . . . . . 2
-2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
+2 . . . . . 2 2 2 2 2 . . . 2 2 
+2 . . . . . . . . . . . . . 2 2 
+2 . . . . . 2 2 2 2 2 2 . 2 2 2 
+2 . . . . . 2 2 2 2 2 2 . 2 2 2 
+2 . . . . . 2 2 . . . . . . . 2 
+2 . . . . . 2 2 . . . . . . . 2 
+2 . . . . . 2 2 . . . . . . . 2 
+2 . . . . . 2 2 2 . 2 2 2 . 2 2 
+2 . . . . . 2 2 2 . 2 2 2 . 2 2 
+2 . . . . . . . . . 2 2 2 . 2 2 
+2 . . . . . 2 2 2 . 2 2 2 . 2 2 
+2 2 2 2 2 2 2 2 . . . . . . . 2 
+2 2 2 2 2 2 2 2 . . . . . . . 2 
+2 2 2 2 2 2 2 2 . . . . . . . 2 
+2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
 `, [gallerytilemaps.baseTransparency16,sprites.skillmap.islandTile0,sprites.skillmap.islandTile1,sprites.skillmap.islandTile2,sprites.skillmap.islandTile6,sprites.skillmap.islandTile7,sprites.skillmap.islandTile8,sprites.vehicle.roadVertical,sprites.vehicle.roadHorizontal,sprites.skillmap.islandTile4,sprites.vehicle.roadTurn3,sprites.skillmap.islandTile3,sprites.skillmap.islandTile5,sprites.vehicle.roadIntersection4,sprites.vehicle.roadTurn1,sprites.vehicle.roadTurn2,sprites.vehicle.roadTurn4,sprites.vehicle.roadIntersection1], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="sports"
     export const footballfield = tiles.createTilemap(hex`0a0008000a0b08020304050706090b08020304050706090a0c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c010c01`, img`
-2 2 2 2 2 2 2 2 2 2
-2 2 2 2 2 2 2 2 2 2
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
+2 2 2 2 2 2 2 2 2 2 
+2 2 2 2 2 2 2 2 2 2 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.builtin.field0,sprites.builtin.crowd2,sprites.builtin.crowd3,sprites.builtin.crowd4,sprites.builtin.crowd5,sprites.builtin.crowd7,sprites.builtin.crowd6,sprites.builtin.crowd1,sprites.builtin.crowd8,sprites.builtin.crowd9,sprites.builtin.crowd0,sprites.builtin.field1], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="platformer forest"
@@ -245,111 +245,111 @@ namespace gallerytilemaps {
     //% fixedInstance jres whenUsed
     //% tags="dungeon bridge"
     export const bridge = tiles.createTilemap(hex`14000c0008070f070707070707070707070707070710070905030303080707070707070707070709030303060503030305040404040404040404040603030306050303030504040404040404040404060303030605030303020404040404040404040402030303060503030303030303030404040403030303030306050303030303030d01040403030e030303030306050303030201010104040401010101020303030605030303050404040404040404040406030303060503030305040404040404040404040603030306050303030c0a0a0a0a0a0a0a0a0a0a0b030303060c0a110a0a0a0a0a0a0a0a0a0a0a0a0a0a110a0b`, img`
-2 2 . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 2 2
-2 . . . 2 2 2 2 2 2 2 2 2 2 2 2 . . . 2
-2 . . . 2 . . . . . . . . . . 2 . . . 2
-2 . . . 2 . . . . . . . . . . 2 . . . 2
-2 . . . 2 . . . . . . . . . . 2 . . . 2
-2 . . . . . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . . . . . 2
-2 . . . 2 . . . . . . . . . . 2 . . . 2
-2 . . . 2 . . . . . . . . . . 2 . . . 2
-2 . . . 2 . . . . . . . . . . 2 . . . 2
-2 . . . 2 2 2 2 2 2 2 2 2 2 2 2 . . . 2
-2 2 . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 2 2
+2 2 . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 2 2 
+2 . . . 2 2 2 2 2 2 2 2 2 2 2 2 . . . 2 
+2 . . . 2 . . . . . . . . . . 2 . . . 2 
+2 . . . 2 . . . . . . . . . . 2 . . . 2 
+2 . . . 2 . . . . . . . . . . 2 . . . 2 
+2 . . . . . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . . . . . 2 
+2 . . . 2 . . . . . . . . . . 2 . . . 2 
+2 . . . 2 . . . . . . . . . . 2 . . . 2 
+2 . . . 2 . . . . . . . . . . 2 . . . 2 
+2 . . . 2 2 2 2 2 2 2 2 2 2 2 2 . . . 2 
+2 2 . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 2 2 
 `, [gallerytilemaps.baseTransparency16,sprites.dungeon.hazardHole,sprites.dungeon.hazardSpike,sprites.dungeon.floorDark0,gallerytilemaps.myTile2,sprites.dungeon.purpleOuterWest0,sprites.dungeon.purpleOuterEast1,sprites.dungeon.purpleOuterNorth0,sprites.dungeon.purpleOuterNorthWest,sprites.dungeon.purpleOuterNorthEast,sprites.dungeon.purpleOuterSouth1,sprites.dungeon.purpleOuterSouthWest,sprites.dungeon.purpleOuterSouthEast,sprites.dungeon.floorDark3,sprites.dungeon.floorDark1,sprites.dungeon.doorOpenNorth,sprites.dungeon.doorLockedNorth,sprites.dungeon.doorOpenSouth], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="dungeon water"
     export const waterRoom = tiles.createTilemap(hex`0b000900080909090d110d090909070c0303030303030303030a0c0303031313130303030a100303131301131303030f120303130102011303030a100303131402131303030f0c0303031313130303030a0c0303030303030303040a050b0b0b0e0b0e0b0b0b06`, img`
-2 2 2 2 2 . 2 2 2 2 2
-2 . . . . . . . . . 2
-2 . . . . . . . . . 2
-2 . . . . 2 . . . . 2
-. . . . 2 2 2 . . . 2
-2 . . . . 2 . . . . 2
-2 . . . . . . . . . 2
-2 . . . . . . . . . 2
-2 2 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 . 2 2 2 2 2 
+2 . . . . . . . . . 2 
+2 . . . . . . . . . 2 
+2 . . . . 2 . . . . 2 
+. . . . 2 2 2 . . . 2 
+2 . . . . 2 . . . . 2 
+2 . . . . . . . . . 2 
+2 . . . . . . . . . 2 
+2 2 2 2 2 2 2 2 2 2 2 
 `, [gallerytilemaps.baseTransparency16,sprites.dungeon.hazardWater,gallerytilemaps.myTile3,sprites.dungeon.floorLight0,sprites.dungeon.stairLarge,sprites.dungeon.greenOuterSouthEast,sprites.dungeon.greenOuterSouthWest,sprites.dungeon.greenOuterNorthEast,sprites.dungeon.greenOuterNorthWest,sprites.dungeon.greenOuterNorth0,sprites.dungeon.greenOuterEast0,sprites.dungeon.greenOuterSouth1,sprites.dungeon.greenOuterWest0,sprites.dungeon.greenOuterNorth2,sprites.dungeon.greenOuterSouth2,sprites.dungeon.greenOuterEast2,sprites.dungeon.greenOuterWest2,sprites.dungeon.doorOpenNorth,sprites.dungeon.doorOpenWest,sprites.dungeon.floorLight2,sprites.dungeon.floorLight5], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="grass"
     export const grassday = tiles.createTilemap(hex`0a0008000505050505050504030505050304050505050505050505040504050502040504050505040505050505040405050504050505050501050504050305040503040504050505050405050505050505040505`, img`
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . 2 .
-. . . . . . . . . .
-. . . . . . . . . .
-. . 2 . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . 2 . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . 2 . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.castle.rock0,sprites.castle.rock1,sprites.castle.tileGrass2,sprites.castle.tileGrass1,sprites.castle.tileGrass3], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="grass night"
     export const grassnight = tiles.createTilemap(hex`0a0008000202020202020203010202020103020202020202020202030203020205030203020202030202020202030302020203020202020204020203020102030201030203020202020302020202020202030202`, img`
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . 2 .
-. . . . . . . . . .
-. . . . . . . . . .
-. . 2 . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . 2 . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . 2 . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.castle.tileDarkGrass2,sprites.castle.tileDarkGrass1,sprites.castle.tileDarkGrass3,sprites.castle.rock0,sprites.castle.rock1], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="path grass"
     export const crossroads = tiles.createTilemap(hex`0c000c000101010101050601010101010101010101050601010101010101010b020404070b01010101010b0204090904070b0101010102040a010108040701010303040601010101050403030909040601010101050409090101080407010102040a010101010b08040303040a0b01010101010b0804040a0b010101010101010105060101010101010101010105060101010101`, img`
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
-. . . . . . . . . . . .
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
+. . . . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.castle.tileGrass3,sprites.castle.tilePath1,sprites.castle.tilePath2,sprites.castle.tilePath5,sprites.castle.tilePath4,sprites.castle.tilePath6,sprites.castle.tilePath3,sprites.castle.tilePath7,sprites.castle.tilePath8,sprites.castle.tilePath9,sprites.castle.tileGrass2], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="dungeon entrance"
     export const dungeonentrance = tiles.createTilemap(hex`0f0010000e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0a0808080808080808080808090e0e070c0101120101010101010f0b0e0e070b161705050505050505070b0e0e070b050a08080808080905070b0e0e070b05070a080808090605070b0e0e070b0507130a08090b0b05070b0e0e070b0507070301040b0b05070b0e0e070b050703010101040b05070b0e0e0706050301110d11010405070b0e0e070b050505050505051715070b0e0e07020808091405140a0808100b0e0e030101120414051403010112040e0e0e0e0e0e0e0e140e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e`, img`
-. . . . . . . . . . . . . . .
-. 2 2 2 2 2 2 2 2 2 2 2 2 2 .
-. 2 2 . . . . . . . . . 2 2 .
-. 2 2 . . . . . . . . . 2 2 .
-. 2 2 . 2 2 2 2 2 2 2 . 2 2 .
-. 2 2 . 2 2 2 2 2 2 2 . 2 2 .
-. 2 2 . 2 2 2 2 2 2 2 . 2 2 .
-. 2 2 . 2 2 2 2 2 2 2 . 2 2 .
-. 2 2 . 2 2 2 2 2 2 2 . 2 2 .
-. 2 2 . . . . . . . . . 2 2 .
-. 2 2 . . . . . . . . . 2 2 .
-. 2 2 2 2 2 . . . 2 2 2 2 2 .
-. . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . .
-. . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . 
+. 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
+. 2 2 . . . . . . . . . 2 2 . 
+. 2 2 . . . . . . . . . 2 2 . 
+. 2 2 . 2 2 2 2 2 2 2 . 2 2 . 
+. 2 2 . 2 2 2 2 2 2 2 . 2 2 . 
+. 2 2 . 2 2 2 2 2 2 2 . 2 2 . 
+. 2 2 . 2 2 2 2 2 2 2 . 2 2 . 
+. 2 2 . 2 2 2 2 2 2 2 . 2 2 . 
+. 2 2 . . . . . . . . . 2 2 . 
+. 2 2 . . . . . . . . . 2 2 . 
+. 2 2 2 2 2 . . . 2 2 2 2 2 . 
+. . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.dungeon.purpleOuterNorth0,sprites.dungeon.purpleOuterSouthEast,sprites.dungeon.purpleInnerSouthWest,sprites.dungeon.purpleInnerSouthEast,sprites.dungeon.floorDark0,sprites.dungeon.purpleOuterWest1,sprites.dungeon.purpleOuterEast1,sprites.dungeon.purpleOuterSouth1,sprites.dungeon.purpleInnerNorthEast,sprites.dungeon.purpleInnerNorthWest,sprites.dungeon.purpleOuterWest0,sprites.dungeon.purpleOuterNorthWest,sprites.dungeon.doorOpenNorth,sprites.castle.tileDarkGrass1,sprites.dungeon.purpleOuterNorthEast,sprites.dungeon.purpleOuterSouthWest,sprites.dungeon.purpleOuterNorth2,sprites.dungeon.purpleOuterNorth1,sprites.dungeon.purpleOuterEast0,sprites.dungeon.floorDarkDiamond,sprites.dungeon.floorDark3,sprites.dungeon.floorDark1,sprites.dungeon.floorDark4], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="dungeon entrance"
     export const dungeonentrance2 = tiles.createTilemap(hex`0d001000020606060606060606060606030902060606060606060606030a09040e0e0e0e0e0e190e0e050a090c0e190e1110110e0e0e0d0a090a161616161616161616090a090a161717171717171716090a090a161717171717171516090a090a161616171717161616090a0907060316171717160206080a0902030a16171717160902030a0904050a16171718160904050a040e0e050f1616160f040e0e05120b0b0b0b12121212121212120113121214011b01010101011a0101010101010101011b010101011a01011b0101010101010101`, img`
-2 2 2 2 2 2 2 2 2 2 2 2 2
-2 2 2 2 2 2 2 2 2 2 2 2 2
-2 2 2 2 2 2 2 2 2 2 2 2 2
-2 2 . . . . . . . . . 2 2
-2 2 . . . . . . . . . 2 2
-2 2 . . . . . . . . . 2 2
-2 2 . . . . . . . . . 2 2
-2 2 . . . . . . . . . 2 2
-2 2 2 2 . . . . . 2 2 2 2
-2 2 2 2 . . . . . 2 2 2 2
-2 2 2 2 . . . . . 2 2 2 2
-. . . . 2 . . . 2 . . . .
-. . . . . . . . . . . . .
-. . . . . . . . . . . . .
-. . . . . . . . . . . . .
-. . . . . . . . . . . . .
+2 2 2 2 2 2 2 2 2 2 2 2 2 
+2 2 2 2 2 2 2 2 2 2 2 2 2 
+2 2 2 2 2 2 2 2 2 2 2 2 2 
+2 2 . . . . . . . . . 2 2 
+2 2 . . . . . . . . . 2 2 
+2 2 . . . . . . . . . 2 2 
+2 2 . . . . . . . . . 2 2 
+2 2 . . . . . . . . . 2 2 
+2 2 2 2 . . . . . 2 2 2 2 
+2 2 2 2 . . . . . 2 2 2 2 
+2 2 2 2 . . . . . 2 2 2 2 
+. . . . 2 . . . 2 . . . . 
+. . . . . . . . . . . . . 
+. . . . . . . . . . . . . 
+. . . . . . . . . . . . . 
+. . . . . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.castle.tileGrass1,sprites.dungeon.greenInnerNorthWest,sprites.dungeon.greenInnerNorthEast,sprites.dungeon.greenInnerSouthWest,sprites.dungeon.greenInnerSouthEast,sprites.dungeon.greenOuterSouth1,sprites.dungeon.greenOuterSouthEast,sprites.dungeon.greenOuterSouthWest,sprites.dungeon.greenOuterEast0,sprites.dungeon.greenOuterWest0,sprites.castle.tilePath5,sprites.dungeon.greenOuterNorthWest,sprites.dungeon.greenOuterNorthEast,sprites.dungeon.greenOuterNorth0,sprites.dungeon.hazardSpike,sprites.dungeon.doorOpenNorth,sprites.dungeon.greenOuterNorth2,sprites.castle.tilePath8,sprites.castle.tilePath7,sprites.castle.tilePath9,sprites.dungeon.floorDark3,sprites.dungeon.floorDarkDiamond,sprites.dungeon.floorDark0,sprites.dungeon.floorDark1,sprites.dungeon.greenOuterNorth1,sprites.castle.tileGrass2,sprites.castle.tileGrass3], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="platformer beach"
@@ -366,40 +366,40 @@ namespace gallerytilemaps {
     //% fixedInstance jres whenUsed
     //% tags="dungeon pits"
     export const pits = tiles.createTilemap(hex`100010000c12121212121212121212121212120b11010101010101010101010101010113110101010101010101010101010101131101010101010101010101010101011311010101060202020202020601010113110101010202030303030202010101130701010102030101010103020101010a02020202020101021401010202020202020202020201010204010102020202020903030302010103030101020303030811010101020201010101020201010110110101010602020501020206010101101101010103030303010303030101011011010101010101010101010101010110110101010101010101010101010101100d0f0f0f0f0f0f0f0f0f0f0f0f0f0f0e`, img`
-2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-2 . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . 2
-2 . . . 2 . . . . . . 2 . . . 2
-2 . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . 2
-. . . . . . . . 2 . . . . . . .
-. . . . . . . . . . . . . . . .
-2 . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . 2
-2 . . . 2 . . . . . . 2 . . . 2
-2 . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . 2
-2 . . . . . . . . . . . . . . 2
-2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . 2 . . . . . . 2 . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . 2 
+. . . . . . . . 2 . . . . . . . 
+. . . . . . . . . . . . . . . . 
+2 . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . 2 . . . . . . 2 . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 . . . . . . . . . . . . . . 2 
+2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
 `, [gallerytilemaps.baseTransparency16,gallerytilemaps.myTile2,sprites.dungeon.floorDark0,sprites.dungeon.hazardHole,sprites.dungeon.floorDark1,sprites.dungeon.floorDark3,sprites.dungeon.hazardSpike,sprites.dungeon.purpleInnerSouthEast,sprites.dungeon.purpleInnerNorthWest,sprites.dungeon.purpleInnerNorthEast,sprites.dungeon.purpleInnerSouthWest,sprites.dungeon.purpleOuterNorthEast,sprites.dungeon.purpleOuterNorthWest,sprites.dungeon.purpleOuterSouthEast,sprites.dungeon.purpleOuterSouthWest,sprites.dungeon.purpleOuterSouth1,sprites.dungeon.purpleOuterEast0,sprites.dungeon.purpleOuterWest0,sprites.dungeon.purpleOuterNorth0,sprites.dungeon.purpleOuterEast1,sprites.dungeon.chestClosed], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="road city"
     export const roundabout = tiles.createTilemap(hex`0e000e000c0b0c0c0c0c02020c0c0c0c0c0c0c0c0c0c0c0c02020c0c0c0c0c0c0c0c0c0c0a01050501030c0c0c0b0c0c0c0c020a010103020c0c0c0c0c0c0a0104020c0b020701030c0c0c0c020a01040c0c070103020c0c010109020c0c0c0c0c0c02080101010109020c0c0c0c0c0c020801010c0c020701030c0c0a0104020c0c0c0c070103020c0c020a01040c0c0c0c0c0c0207010104020c0c0c0c0c0b0c0c0701060601040c0c0c0c0c0c0c0c0c0c02020c0c0c0c0b0c0c0c0c0c0c0c02020c0c0c0c0c0c`, img`
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
-. . . . . . . . . . . . . .
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
+. . . . . . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.vehicle.roadHorizontal,sprites.vehicle.roadVertical,sprites.vehicle.roadTurn2,sprites.vehicle.roadTurn4,sprites.vehicle.roadIntersection1,sprites.vehicle.roadIntersection3,sprites.vehicle.roadTurn3,sprites.vehicle.roadIntersection2,sprites.vehicle.roadIntersection4,sprites.vehicle.roadTurn1,sprites.castle.tileDarkGrass2,sprites.castle.tileDarkGrass1], TileScale.Sixteen);
     //% fixedInstance jres whenUsed
     //% tags="desert pyramid"
@@ -428,14 +428,14 @@ namespace gallerytilemaps {
     //% fixedInstance jres whenUsed
     //% tags="swamp"
     export const swamp = tiles.createTilemap(hex`0a000800000b030c000000000000050202020400000000000101080101000b030c000601010107090a0a0a0d00000000000a0a0a0a0a00000000000e0a0a0a0f0000000000000000000000000000000000000000`, img`
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
+. . . . . . . . . . 
 `, [gallerytilemaps.baseTransparency16,sprites.swamp.swampTile9,sprites.swamp.swampTile7,sprites.swamp.swampTile1,sprites.swamp.swampTile8,sprites.swamp.swampTile6,sprites.swamp.swampTile12,sprites.swamp.swampTile14,sprites.swamp.swampTile13,sprites.swamp.swampTile10,sprites.swamp.swampTile16,sprites.swamp.swampTile0,sprites.swamp.swampTile2,sprites.swamp.swampTile11,sprites.swamp.swampTile18,sprites.swamp.swampTile19], TileScale.Sixteen);
 
 }

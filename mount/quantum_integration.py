@@ -134,6 +134,14 @@ class QuantumIntegration:
         """Train a quantum classifier"""
         try:
             train_script = self.quantum_path / "train_custom_dataset.py"
+            resolved_quantum_path = self.quantum_path.resolve()
+            resolved_train_script = train_script.resolve()
+
+            if resolved_train_script.parent != resolved_quantum_path or resolved_train_script.name != "train_custom_dataset.py":
+                return {
+                    "success": False,
+                    "error": "Invalid training script path.",
+                }
 
             datasets_path = self.workspace_root / "datasets" / "quantum"
             allowed_datasets = (
@@ -168,13 +176,20 @@ class QuantumIntegration:
                     "error": f"Invalid backend '{backend}'.",
                 }
 
+            if not isinstance(epochs, int) or isinstance(epochs, bool) or epochs < 1 or epochs > 10000:
+                return {
+                    "success": False,
+                    "error": f"Invalid epochs '{epochs}'.",
+                }
+            safe_epochs = epochs
+
             cmd = [
                 sys.executable,
-                str(train_script),
+                str(resolved_train_script),
                 "--preset",
                 dataset,
                 "--epochs",
-                str(epochs),
+                str(safe_epochs),
                 "--backend",
                 backend,
             ]
@@ -230,14 +245,21 @@ class QuantumIntegration:
             autorun_script = self.workspace_root / "scripts" / "quantum_autorun.py"
             normalized_job_name = (job_name or "").strip()
 
-            if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", normalized_job_name):
+            allowed_jobs = {
+                "baseline": "baseline",
+                "benchmark": "benchmark",
+                "nightly": "nightly",
+                "smoke": "smoke",
+            }
+            selected_job = allowed_jobs.get(normalized_job_name)
+            if selected_job is None:
                 return {
                     "success": False,
-                    "error": "Invalid job_name format. Allowed: letters, numbers, underscore, hyphen (max 64 chars).",
+                    "error": "Invalid job_name. Allowed values: baseline, benchmark, nightly, smoke.",
                 }
 
             cmd = [sys.executable, str(
-                autorun_script), "--job", normalized_job_name]
+                autorun_script), "--job", selected_job]
             if dry_run:
                 cmd.append("--dry-run")
 

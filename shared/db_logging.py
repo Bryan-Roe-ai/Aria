@@ -67,6 +67,7 @@ def log_chat_message_safe(
     finish_reason: Optional[str] = None,
     log_file_path: Optional[str] = None,
 ) -> Dict[str, Any]:
+    """Best-effort chat message logging; returns a skip/error dict on failure."""
     conn = _get_conn()
     if not conn:
         return {"success": False, "skipped": True}
@@ -134,6 +135,7 @@ def _parse_quantum_summary() -> Dict[str, Any]:
 def log_quantum_run_safe(
     job, result: Dict[str, Any], dataset_name: str, log_path: str
 ) -> Dict[str, Any]:  # noqa: ANN001
+    """Best-effort quantum run logging; returns a skip/error dict on failure."""
     conn = _get_conn()
     if not conn:
         return {"success": False, "skipped": True}
@@ -209,6 +211,7 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
 
 
 def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: ANN001
+    """Best-effort LoRA run logging; returns a skip/error dict on failure."""
     conn = _get_conn()
     if not conn:
         return {"success": False, "skipped": True}

@@ -1,28 +1,12 @@
 {
-<<<<<<< HEAD
-  "generated_at": "2026-06-01T22:37:54.194396+00:00",
-=======
-<<<<<<< Updated upstream
-  "generated_at": "2026-05-28T08:08:31.880054+00:00",
-=======
-  "generated_at": "2026-05-29T23:31:07.643042+00:00",
->>>>>>> Stashed changes
->>>>>>> a40f84a20 (hhh)
+  "generated_at": "2026-06-22T12:07:15.115448+00:00",
   "total_jobs": 12,
   "succeeded": 0,
   "failed": 0,
   "skipped": 0,
   "running": 0,
   "avg_duration": null,
-<<<<<<< HEAD
-  "last_updated": "2026-06-01T22:37:54.194405+00:00",
-=======
-<<<<<<< Updated upstream
-  "last_updated": "2026-05-28T08:08:31.880075+00:00",
-=======
-  "last_updated": "2026-05-29T23:31:07.643050+00:00",
->>>>>>> Stashed changes
->>>>>>> a40f84a20 (hhh)
+  "last_updated": "2026-06-22T12:07:15.115457+00:00",
   "jobs": [
     {
       "name": "phi35_comprehensive_full",
@@ -30,9 +14,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/comprehensive",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/comprehensive"
         ]
       },
       "dry_run": true
@@ -43,9 +25,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/comprehensive",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/comprehensive"
         ]
       },
       "dry_run": true
@@ -56,9 +36,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/mixed_chat"
         ]
       },
       "dry_run": true
@@ -69,9 +47,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/mixed_chat"
         ]
       },
       "dry_run": true
@@ -82,9 +58,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/dolly",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/dolly"
         ]
       },
       "dry_run": true
@@ -95,9 +69,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/app_repo_augmented",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/app_repo_augmented"
         ]
       },
       "dry_run": true
@@ -108,9 +80,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/app_repo_augmented",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/app_repo_augmented"
         ]
       },
       "dry_run": true
@@ -121,9 +91,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/mixed_chat"
         ]
       },
       "dry_run": true
@@ -134,9 +102,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/mixed_chat"
         ]
       },
       "dry_run": true
@@ -147,9 +113,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/mixed_chat"
         ]
       },
       "dry_run": true
@@ -160,9 +124,7 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/anime_avatar",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/anime_avatar"
         ]
       },
       "dry_run": true
@@ -173,12 +135,11 @@
       "validation": {
         "status": "missing",
         "missing": [
-          "dataset path not found: datasets/chat/mixed_chat",
-          "train script not found: AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py",
-          "lora config not found: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml"
+          "dataset path not found: datasets/chat/mixed_chat"
         ]
       },
       "dry_run": true
     }
-  ]
+  ],
+  "updated_at": "2026-06-22T09:01:03.966388+00:00"
 }

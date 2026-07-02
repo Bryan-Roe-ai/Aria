@@ -5,7 +5,7 @@ from shared.config import AppSettings
 
 def test_settings_provider_chain_default_order() -> None:
     settings = AppSettings()
-    assert settings.provider_chain() == ["azure", "openai", "lmstudio", "local"]
+    assert settings.provider_chain() == ["lmstudio", "ollama", "azure", "openai", "local"]
 
 
 def test_settings_summary_excludes_secret_values(monkeypatch) -> None:

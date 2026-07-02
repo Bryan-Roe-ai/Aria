@@ -266,14 +266,13 @@
 		},
 		{
 			"label": "Validate writer-reviewer debug prerequisites",
-			"type": "aitk",
-			"command": "debug-check-prerequisites",
-			"args": {
-				"portOccupancy": [
-					5679,
-					8088
-				]
-			}
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"for p in 5679 8088; do if lsof -iTCP:$p -sTCP:LISTEN -t >/dev/null 2>&1; then echo \"[prereq] Port $p already in use\"; exit 1; fi; done; echo \"[prereq] OK: required debug ports are available (5679, 8088).\""
+			],
+			"problemMatcher": []
 		},
 		{
 			"label": "Run writer-reviewer HTTP server",
@@ -301,14 +300,13 @@
 		},
 		{
 			"label": "Validate email-spam debug prerequisites",
-			"type": "aitk",
-			"command": "debug-check-prerequisites",
-			"args": {
-				"portOccupancy": [
-					5680,
-					8089
-				]
-			}
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"for p in 5680 8089; do if lsof -iTCP:$p -sTCP:LISTEN -t >/dev/null 2>&1; then echo \"[prereq] Port $p already in use\"; exit 1; fi; done; echo \"[prereq] OK: required debug ports are available (5680, 8089).\""
+			],
+			"problemMatcher": []
 		},
 		{
 			"label": "Run email-spam HTTP server",
@@ -339,6 +337,22 @@
 			"type": "shell",
 			"command": "echo ${input:terminate}",
 			"problemMatcher": []
+		},
+		{
+			"label": "sqlproj: Build DatabaseProjectDatabase",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"/workspaces/Aria/database/DatabaseProjectDatabase/DatabaseProjectDatabase.sqlproj"
+			],
+			"problemMatcher": "$sqlproj-problem-matcher",
+			"isBackground": true,
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Builds the DatabaseProjectDatabase SQL project"
 		}
 	],
 	"inputs": [

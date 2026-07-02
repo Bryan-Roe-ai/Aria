@@ -329,19 +329,21 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            echo "ref=$PR_HEAD_REF" >> "$GITHUB_OUTPUT"
-            echo "repo=$PR_HEAD_REPO" >> "$GITHUB_OUTPUT"
-            if [ "$PR_HEAD_REPO" = "$REPOSITORY" ]; then
-              echo "can_push=true" >> "$GITHUB_OUTPUT"
+          {
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              echo "ref=$PR_HEAD_REF"
+              echo "repo=$PR_HEAD_REPO"
+              if [ "$PR_HEAD_REPO" = "$REPOSITORY" ]; then
+                echo "can_push=true"
+              else
+                echo "can_push=false"
+              fi
             else
-              echo "can_push=false" >> "$GITHUB_OUTPUT"
+              echo "ref=$REF_NAME"
+              echo "repo=$REPOSITORY"
+              echo "can_push=false"
             fi
-          else
-            echo "ref=$REF_NAME" >> "$GITHUB_OUTPUT"
-            echo "repo=$REPOSITORY" >> "$GITHUB_OUTPUT"
-            echo "can_push=false" >> "$GITHUB_OUTPUT"
-          fi
+          } >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

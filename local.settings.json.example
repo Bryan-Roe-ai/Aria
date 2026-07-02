@@ -3,31 +3,37 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
-
     "# Remote TTS (Azure Cognitive Services) - set these to enable /api/tts": "",
     "AZURE_SPEECH_KEY": "<your-azure-speech-key-here>",
     "AZURE_SPEECH_REGION": "<your-azure-region-here>",
-
-    "# Optional: Azure/OpenAI or OpenAI credentials for streaming/model providers": "",
+    "# Optional: Azure OpenAI - set AZURE_OPENAI_API_KEY from Azure Portal; use your resource endpoint and deployment name": "",
+    "# Example deployment: gpt-4.1; API version must match your Azure OpenAI resource (e.g. 2024-08-01-preview)": "",
     "AZURE_OPENAI_API_KEY": "",
-    "AZURE_OPENAI_ENDPOINT": "",
-    "AZURE_OPENAI_DEPLOYMENT": "",
+    "AZURE_OPENAI_ENDPOINT": "https://your-resource.cognitiveservices.azure.com/",
+    "AZURE_OPENAI_DEPLOYMENT": "gpt-4.1",
+    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview",
     "OPENAI_API_KEY": "",
-
     "# Optional: Ollama local AI - install from https://ollama.ai and run 'ollama serve'": "",
     "# Then pull a model: ollama pull llama3.2  (or mistral, codellama, phi3, etc.)": "",
     "# Leave OLLAMA_BASE_URL blank to use default http://127.0.0.1:11434/v1 (auto-detected)": "",
     "OLLAMA_BASE_URL": "",
     "OLLAMA_MODEL": "llama3.2",
-
     "# Optional: LM Studio local AI - https://lmstudio.ai - enable local server in the app": "",
     "# Optional: LM Studio token auth (required if your LM Studio server has API authentication enabled)": "",
     "LM_API_TOKEN": "",
     "LMSTUDIO_API_KEY": "",
     "LMSTUDIO_BASE_URL": "",
     "LMSTUDIO_MODEL": "local-model",
-
     "# Optional local fallback for TTS. Set to true to allow server-side local synthesis when Azure Speech is not configured": "",
-    "QAI_ENABLE_LOCAL_TTS": "true"
+    "QAI_ENABLE_LOCAL_TTS": "true",
+    "# Default chat provider for Azure Functions endpoints (auto|ollama|lmstudio|local|azure|openai). Use azure when Azure OpenAI keys above are set": "",
+    "DEFAULT_AI_PROVIDER": "auto",
+    "# Aria web UI LLM provider (ollama|lmstudio|auto|local|azure|agi) - set azure to match Azure OpenAI; falls back to DEFAULT_AI_PROVIDER": "",
+    "ARIA_LLM_PROVIDER": "",
+    "# Aria 3D stage proxy target for /api/aria/* routes on the Functions host": "",
+    "ARIA_STAGE_BASE_URL": "http://127.0.0.1:8080",
+    "# AGI reasoning persistence (JSONL audit log written to data_out/agi_reasoning.jsonl by default)": "",
+    "QAI_AGI_PERSIST": "true",
+    "QAI_AGI_PERSIST_PATH": "data_out/agi_reasoning.jsonl"
   }
 }

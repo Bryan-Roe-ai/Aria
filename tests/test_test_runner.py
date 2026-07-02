@@ -97,6 +97,34 @@ def test_run_suite_builds_pytest_command_and_parses_summary(monkeypatch: pytest.
     }
 
 
+def test_run_suite_uses_explicit_ai_project_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+    monotonic_values = iter([2.0, 2.5])
+
+    def fake_run(cmd: list[str], capture_output: bool, text: bool, cwd: str):
+        captured["cmd"] = cmd
+        captured["cwd"] = cwd
+        return subprocess.CompletedProcess(cmd, 0, stdout="=== 31 passed, 3 skipped in 0.27s ===", stderr="")
+
+    monkeypatch.setattr(test_runner.subprocess, "run", fake_run)
+    monkeypatch.setattr(test_runner.time, "monotonic", lambda: next(monotonic_values))
+
+    summary, _, _ = test_runner.run_suite("ai_projects", coverage=False, verbose=0)
+
+    assert captured["cmd"] == [
+        sys.executable,
+        "-m",
+        "pytest",
+        *[str(path) for path in test_runner.AI_PROJECT_TEST_PATHS],
+        "-q",
+        "--tb=short",
+        "--no-header",
+    ]
+    assert captured["cwd"] == str(test_runner.REPO_ROOT)
+    assert summary["suite"] == "ai_projects"
+    assert summary["passed"] == 31
+
+
 def test_write_report_persists_json_and_markdown(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     class FixedDateTime(datetime):
         @classmethod

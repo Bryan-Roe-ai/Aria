@@ -6,7 +6,7 @@ namespace __internal {
      */
     //% blockId=spriteSpeedPicker block="%speed" shim=TD_ID
     //% speed.fieldEditor="speed" colorSecondary="#FFFFFF"
-    //% weight=0 blockHidden=1
+    //% weight=0 blockHidden=1 
     //% speed.fieldOptions.decompileLiterals=1
     //% speed.fieldOptions.format="{0}pix/s"
     export function __spriteSpeedPicker(speed: number): number {
@@ -19,7 +19,7 @@ namespace __internal {
      */
     //% blockId=spriteAccPicker block="%acceleration" shim=TD_ID
     //% speed.fieldEditor="speed" colorSecondary="#FFFFFF"
-    //% weight=0 blockHidden=1
+    //% weight=0 blockHidden=1 
     //% speed.fieldOptions.decompileLiterals=1
     //% speed.fieldOptions.format="{0}pix/s²"
     export function __accSpeedPicker(acceleration: number): number {

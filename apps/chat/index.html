@@ -58,15 +58,17 @@
             flex-direction: column;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 1;
-            pointer-events: auto;
-            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            z-index: 10002;
         }
 
         /* Speech bubble pointer removed - bottom centered chat */
 
         .chat-container.visible {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
             transform: translateX(-50%);
         }
@@ -978,6 +980,25 @@
 
         .quantum-mode-btn.active {
             background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+        }
+
+        .agi-mode-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .agi-mode-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.28);
+        }
+
+        .agi-mode-btn.active {
+            background: rgba(56, 189, 248, 0.45);
         }
 
         .quantum-indicator {
@@ -2187,6 +2208,76 @@
             border-top-color: #3a3a3a;
         }
 
+        /* Expression overlays (canonical [aria:expression:*] tags) */
+        .anime-character.expression-smile .character-mouth,
+        .anime-character.expression-happy .character-mouth {
+            height: 14px;
+            border-radius: 0 0 18px 18px;
+            background: #e85d8a;
+        }
+
+        .anime-character.expression-sad .character-head {
+            transform: rotate(8deg);
+        }
+
+        .anime-character.expression-sad .character-mouth {
+            height: 8px;
+            border-radius: 18px 18px 0 0;
+            margin-top: 6px;
+        }
+
+        .anime-character.expression-surprised .eye {
+            transform: scaleY(1.18);
+        }
+
+        .anime-character.expression-surprised .character-mouth {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-left: 32px;
+        }
+
+        .anime-character.expression-thinking .character-head {
+            transform: rotate(-6deg);
+        }
+
+        .anime-character.expression-wink .eye.left {
+            transform: scaleY(0.15);
+        }
+
+        .anime-character.expression-confused .character-head {
+            animation: ariaConfusedTilt 900ms ease-in-out 1;
+        }
+
+        @keyframes ariaConfusedTilt {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        .character-held-prop {
+            position: absolute;
+            right: -8px;
+            top: 72px;
+            font-size: 22px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+            opacity: 0;
+            transform: scale(0.6);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: none;
+            z-index: 12;
+        }
+
+        .character-held-prop.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .anime-character.facing-left {
+            transform: scaleX(-1);
+        }
+
         /* Interactive Objects */
         .game-object {
             position: fixed;
@@ -2731,7 +2822,7 @@
             display: none;
         }
     </style>
-    <link rel="stylesheet" href="../global-upgrade.css">
+    <link rel="stylesheet" href="/api/chat-web/global-upgrade.css">
 </head>
 
 <body>
@@ -2809,6 +2900,7 @@
 
             <!-- Message bubble -->
             <div class="character-message">Hi! I'm Aria! ✨</div>
+            <div class="character-held-prop" id="characterHeldProp" aria-hidden="true"></div>
         </div>
     </div>
 
@@ -2944,7 +3036,7 @@
         </div>
     </div>
 
-    <div class="chat-container">
+    <div class="chat-container visible">
         <div class="chat-header">
             <div style="display:flex;align-items:center;gap:12px">
                 <h1>🤖 QAI Chat</h1>
@@ -2977,6 +3069,8 @@
                     <button id="browserLlmReloadBtn" class="browser-llm-reload" type="button"
                         title="Reload browser model">↻</button>
                 </div>
+                <button id="agiModeButton" class="agi-mode-btn" type="button"
+                    title="Route prompts through the AGI reasoning pipeline">🧠 AGI OFF</button>
                 <button
                     onclick="document.body.classList.toggle('dark-theme');localStorage.setItem('chat-dark',document.body.classList.contains('dark-theme'))"
                     style="background:rgba(255,255,255,0.15);border:none;color:white;padding:4px 10px;border-radius:8px;cursor:pointer;font-size:14px;transition:background 0.2s"
@@ -3020,7 +3114,13 @@
     <script>
         // Allow chat.js to wire up vision and avatar features
         // The embedded controller will handle streaming chat separately
-        window.ARIA_EMBEDDED = false;
+        window.ARIA_EMBEDDED = true;
+        if (window.ARIA_STAGE_API_BASE == null) {
+            window.ARIA_STAGE_API_BASE = /\/api\/chat-web/i.test(window.location.pathname)
+                ? window.location.origin
+                : 'http://127.0.0.1:8080';
+        }
+        window.ARIA_STAGE_BRIDGE_ENABLED = window.ARIA_STAGE_BRIDGE_ENABLED !== false;
 
         // Pupil cursor tracking - both eyes
         document.addEventListener('DOMContentLoaded', function () {
@@ -3112,6 +3212,7 @@
             });
         })();
     </script>
+    <script src="/api/chat-web/static/agi_stream_utils.js"></script>
     <script src="/api/chat-web/chat.js"></script>
     <script>
         // Anime Character Controller with AI Chat
@@ -3125,6 +3226,7 @@
             var browserLlmToggle = document.getElementById('browserLlmToggle');
             var browserLlmModelSelect = document.getElementById('browserLlmModelSelect');
             var browserLlmReloadBtn = document.getElementById('browserLlmReloadBtn');
+            // AGI toggle + send routing handled by chat.js (initEmbeddedTransport)
 
             // ==== Avatar & Vision Handlers ====
             // Removed duplicate handlers - chat.js module now handles all vision upload and avatar generation
@@ -3923,6 +4025,7 @@
                         }
                     });
                 }
+            }
 
         // Initialize control panel UI, populate voice list, and wire settings
         function initAriaControls() {
@@ -4130,228 +4233,156 @@
             return messageDiv;
         }
 
-        // Stream helper: posts to /api/chat/stream and parses SSE events (data/meta/token/done/error)
-        function streamChat(messages, handlers) {
-            handlers = handlers || {};
-            var controller = new AbortController();
-            var signal = controller.signal;
+        // Send + AGI routing delegated to chat.js (__ariaChatTransport)
 
-            (async function () {
-                try {
-                    var resp = await fetch('/api/chat/stream', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: messages, stream: true }),
-                        signal: signal
-                    });
+        var ariaHeldObject = null;
+        var ariaExpressionTimer = null;
+        var OBJECT_EMOJI = {
+            apple: '🍎', book: '📚', cup: '☕', ball: '⚽', flower: '🌸', bear: '🧸',
+            box: '📦', star: '⭐', heart: '💖', key: '🔑', gem: '💎'
+        };
 
-                    if (!resp.ok) {
-                        var txt = '';
-                        try { txt = await resp.text(); } catch (e) { }
-                        handlers.onError && handlers.onError({ error: 'Stream fetch failed', detail: txt });
-                        return;
-                    }
-
-                    var reader = resp.body.getReader();
-                    var decoder = new TextDecoder('utf-8');
-                    var buf = '';
-                    var doneEmitted = false;
-
-                    function processBlock(block) {
-                        if (!block) return;
-                        var lines = block.split('\n');
-                        var event = null;
-                        var dataLines = [];
-                        for (var i = 0; i < lines.length; i++) {
-                            var line = lines[i];
-                            if (line.startsWith('event:')) { event = line.slice(6).trim(); }
-                            else if (line.startsWith('data:')) { dataLines.push(line.slice(5).trim()); }
-                        }
-                        var dataStr = dataLines.join('\n');
-                        if (!event) {
-                            // default data block
-                            try { var obj = JSON.parse(dataStr); if (obj && obj.delta !== undefined) { handlers.onData && handlers.onData(obj); } } catch (e) { }
-                        } else if (event === 'meta') {
-                            try { var meta = JSON.parse(dataStr); handlers.onMeta && handlers.onMeta(meta); } catch (e) { }
-                        } else if (event === 'token') {
-                            try { var tok = JSON.parse(dataStr); handlers.onToken && handlers.onToken(tok); } catch (e) { }
-                        } else if (event === 'movement') {
-                            try {
-                                var movement = JSON.parse(dataStr);
-                                if (movement.commands && movement.commands.length > 0) {
-                                    executeMovementCommands(movement.commands);
-                                }
-                            } catch (e) { console.error('Movement parse error:', e); }
-                        } else if (event === 'done') {
-                            doneEmitted = true;
-                            handlers.onDone && handlers.onDone();
-                        } else if (event === 'error') {
-                            try { var err = JSON.parse(dataStr); handlers.onError && handlers.onError(err); } catch (e) { handlers.onError && handlers.onError({ error: dataStr }); }
-                        }
-                    }
-
-                    while (true) {
-                        var r = await reader.read();
-                        if (r.done) break;
-                        buf += decoder.decode(r.value, { stream: true });
-                        // parse blocks separated by double newline
-                        var idx = buf.indexOf('\n\n');
-                        while (idx !== -1) {
-                            var block = buf.slice(0, idx);
-                            buf = buf.slice(idx + 2);
-                            processBlock(block.trim());
-                            idx = buf.indexOf('\n\n');
-                        }
-                    }
-
-                    // Process any leftover
-                    if (buf && buf.trim().length) processBlock(buf.trim());
-                    // completed stream
-                    if (!doneEmitted) handlers.onDone && handlers.onDone();
-                } catch (e) {
-                    if (e && e.name === 'AbortError') {
-                        handlers.onError && handlers.onError({ error: 'aborted' });
-                    } else {
-                        handlers.onError && handlers.onError({ error: (e && e.message) || String(e) });
-                    }
-                }
-            })();
-
-            return {
-                cancel: function () { try { controller.abort(); } catch (e) { } }
-            };
+        function shrugArms() {
+            setArmRotation('left', -5, 20);
+            setArmRotation('right', 5, 20);
+            setTimeout(function () { resetArms(); }, 700);
         }
 
-        async function sendMessage() {
-            var message = messageInput.value.trim();
-            if (!message) return;
+        function thumbsUpArms() {
+            setArmRotation('left', -10, 0);
+            setArmRotation('right', 75, -20);
+            setTimeout(function () { resetArms(); }, 900);
+        }
 
-            if (handleBrowserLLMCommand(message)) {
-                messageInput.value = '';
+        function setCharacterFacing(direction) {
+            if (!character) return;
+            if (direction === 'left') character.classList.add('facing-left');
+            else character.classList.remove('facing-left');
+        }
+
+        function setAriaExpression(expression) {
+            if (!character) return;
+            var expr = String(expression || 'neutral').toLowerCase().trim();
+            var aliases = { happy: 'smile', grin: 'smile', joy: 'smile', upset: 'sad', unhappy: 'sad', shock: 'surprised', shocked: 'surprised', ponder: 'thinking', think: 'thinking' };
+            expr = aliases[expr] || expr;
+            character.classList.remove('expression-smile', 'expression-happy', 'expression-sad', 'expression-surprised', 'expression-thinking', 'expression-wink', 'expression-confused');
+            if (expr && expr !== 'neutral') character.classList.add('expression-' + expr);
+            if (ariaExpressionTimer) clearTimeout(ariaExpressionTimer);
+            ariaExpressionTimer = setTimeout(function () {
+                character.classList.remove('expression-smile', 'expression-happy', 'expression-sad', 'expression-surprised', 'expression-thinking', 'expression-wink', 'expression-confused');
+            }, 4500);
+        }
+
+        function showCharacterMessage(text) {
+            if (!character) return;
+            var bubble = character.querySelector('.character-message');
+            if (!bubble) return;
+            bubble.textContent = String(text || '').slice(0, 120);
+            bubble.style.opacity = '1';
+            setTimeout(function () { bubble.style.opacity = ''; }, 3500);
+        }
+
+        function updateHeldPropDisplay() {
+            var propEl = document.getElementById('characterHeldProp');
+            if (!propEl) return;
+            if (!ariaHeldObject) {
+                propEl.textContent = '';
+                propEl.classList.remove('visible');
+                propEl.setAttribute('aria-hidden', 'true');
                 return;
             }
+            propEl.textContent = OBJECT_EMOJI[String(ariaHeldObject).toLowerCase()] || '📦';
+            propEl.classList.add('visible');
+            propEl.setAttribute('aria-hidden', 'false');
+        }
 
-            // interrupt any current speech/audio when user sends input
-            cancelSpeak();
-            addMessage('user', message);
-            messageInput.value = '';
-            pushConversationMessage('user', message);
+        function ariaPickup(objectId) {
+            if (!objectId) return;
+            ariaHeldObject = String(objectId).trim();
+            reachUp();
+            updateHeldPropDisplay();
+            try { showToast('Picked up ' + ariaHeldObject); } catch (e) { }
+        }
 
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var localReply = await generateBrowserReply(message);
-                    addMessage('assistant', localReply);
-                    pushConversationMessage('assistant', localReply);
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(localReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(localReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                    updateProviderLabel('Browser LLM error');
-                }
+        function ariaDrop() {
+            if (!ariaHeldObject) {
+                try { showToast('Not holding anything'); } catch (e) { }
                 return;
             }
+            var dropped = ariaHeldObject;
+            ariaHeldObject = null;
+            updateHeldPropDisplay();
+            resetArms();
+            try { showToast('Dropped ' + dropped); } catch (e) { }
+        }
 
+        function ariaLook(target) {
+            var value = String(target || '').trim().toLowerCase();
+            if (!value || value === 'center') { nodHead(); return; }
+            if (value === 'left') { setCharacterFacing('left'); pointDirection('left'); return; }
+            if (value === 'right') { setCharacterFacing('right'); pointDirection('right'); return; }
+            if (value === 'up') { pointDirection('up'); return; }
+            setCharacterFacing(value.charCodeAt(0) % 2 === 0 ? 'right' : 'left');
+            nodHead();
+            showCharacterMessage('Looking at ' + target);
+        }
+
+        function extractAriaTags(text) {
+            if (!text || typeof text !== 'string') return [];
+            return text.match(/\[aria:[^\]]+\]/gi) || [];
+        }
+
+        async function bridgeAssistantTextToStage(text) {
+            if (!window.ARIA_STAGE_BRIDGE_ENABLED || !text) return;
+            if (!extractAriaTags(text).length && text.indexOf('[aria:') === -1) return;
+            var base = window.ARIA_STAGE_API_BASE || window.location.origin || 'http://127.0.0.1:8080';
             try {
-                providerInfo.textContent = 'Thinking...';
-                // If token-mode lip-sync is chosen, stream the response and use token events to drive mouth
-                if (ariaSettings.lipSyncMode === 'token') {
-                    var assistantEl = addMessage('assistant', '', false); // create placeholder without mirroring
-                    var contentDiv = assistantEl.querySelector('.message-content');
-                    var replyAccum = '';
-                    var streamHandle = streamChat(sanitizeConversationHistory(conversationHistory), {
-                        onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
-                        onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; chatMessages.scrollTop = chatMessages.scrollHeight; } catch (e) { } },
-                        onToken: function (tok) {
-                            try {
-                                if (ariaSettings.lipSyncMode === 'token') {
-                                    var tokenText = (tok.token || '') + '';
-                                    var len = Math.max(1, tokenText.length);
-                                    var openness = Math.min(1, Math.max(0.18, len / 8)) * (parseFloat(ariaSettings.mouthStrength) || 1);
-                                    setMouthOpen(openness + (Math.random() * 0.18));
-                                    // schedule quick close
-                                    var closetime = 60 + Math.floor(Math.random() * 160);
-                                    var ttmp = setTimeout(function () { setMouthOpen(0.12); }, closetime);
-                                    currentSpeech.fallbackTimers.push(ttmp);
-                                }
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                // finalize
-                                addBubbleMessage('assistant', replyAccum);
-                                pushConversationMessage('assistant', replyAccum);
-                                // speak if auto-speak enabled
-                                if (ariaSettings.autoSpeak) {
-                                    try { speakWithLipSync(replyAccum).catch(function () { }); } catch (e) { }
-                                } else {
-                                    stopMouthTalking(350);
-                                }
-                                parseAriaCommands(replyAccum);
-                            } catch (e) { /* ignore */ }
-                        },
-                        onError: function (err) {
-                            addMessage('system', 'Error (stream): ' + (err && (err.error || err.message) || 'stream error'));
-                            stopMouthTalking();
-                            cancelSpeak();
-                        }
-                    });
-                } else {
-                    // start mouth animation while waiting for assistant reply
-                    startMouthTalking();
-                    var response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            messages: sanitizeConversationHistory(conversationHistory),
-                            stream: false
-                        })
-                    });
+                var resp = await fetch(base + '/api/aria/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: text.slice(0, 500), auto_execute: true, use_llm: false })
+                });
+                if (!resp.ok) return;
+                var data = await resp.json();
+                if (data && data.tags && data.tags.length) parseCanonicalAriaTags(data.tags.join(' '), true);
+            } catch (e) { }
+        }
 
-                    var data = await response.json();
-                    var reply = data.choices?.[0]?.message?.content || data.response || '';
-                    addMessage('assistant', reply);
-                    pushConversationMessage('assistant', reply);
-                    // speak with lip-sync if enabled, otherwise give the mouth a brief tail
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
-                    } else {
-                        stopMouthTalking(350);
-                    }
-                    providerInfo.textContent = data.provider || 'Connected';
-
-                    // Parse AI commands for Aria control
-                    parseAriaCommands(reply);
-                }
-            } catch (e) {
-                if (browserLLMState.autoFallback && !browserLLMState.enabled) {
-                    try {
-                        updateProviderLabel('Browser LLM fallback');
-                        var fallbackReply = await generateBrowserReply(message);
-                        addMessage('assistant', fallbackReply);
-                        pushConversationMessage('assistant', fallbackReply);
-                        if (ariaSettings.autoSpeak) {
-                            try { speakWithLipSync(fallbackReply).catch(function () { }); } catch (se) { }
-                        }
-                        parseAriaCommands(fallbackReply);
-                        return;
-                    } catch (fbErr) {
-                        // fall through to original error path
-                    }
-                }
-                addMessage('system', 'Error: ' + e.message);
-                providerInfo.textContent = 'Error';
-                // stop mouth if request failed
-                stopMouthTalking();
-                // cancel any running speech
-                cancelSpeak();
-            }
+        function parseCanonicalAriaTags(text, skipStageBridge) {
+            extractAriaTags(text).forEach(function (tag) {
+                var posPct = tag.match(/\[aria:position:(\d{1,3}):(\d{1,3})\]/i);
+                if (posPct) { moveAriaToPercent(parseInt(posPct[1], 10), parseInt(posPct[2], 10)); return; }
+                var posNamed = tag.match(/\[aria:position:([a-z_\-]+)\]/i);
+                if (posNamed) { moveAriaToNamedPosition(posNamed[1]); return; }
+                if (/\[aria:gesture:wave\]|\[aria:animation:wave\]/i.test(tag)) { ariaWave(); return; }
+                if (/\[aria:gesture:spin\]|\[aria:animation:spin\]/i.test(tag)) { ariaSpin(); return; }
+                if (/\[aria:gesture:bow\]/i.test(tag)) { bowArms(); return; }
+                if (/\[aria:gesture:nod\]/i.test(tag)) { nodHead(); return; }
+                if (/\[aria:gesture:clap\]/i.test(tag)) { clapArms(); return; }
+                if (/\[aria:gesture:shrug\]/i.test(tag)) { shrugArms(); return; }
+                if (/\[aria:gesture:thumbs_up\]/i.test(tag)) { thumbsUpArms(); return; }
+                if (/\[aria:gesture:jump\]|\[aria:animation:jump\]/i.test(tag)) { ariaJump(); return; }
+                if (/\[aria:gesture:dance\]|\[aria:animation:dance\]/i.test(tag)) { ariaDance(); return; }
+                var expr = tag.match(/\[aria:expression:([^\]]+)\]/i);
+                if (expr) { setAriaExpression(expr[1]); return; }
+                var pick = tag.match(/\[aria:pickup:([^\]]+)\]/i);
+                if (pick) { ariaPickup(pick[1]); return; }
+                if (/^\[aria:drop(?::[^\]]+)?\]$/i.test(tag)) { ariaDrop(); return; }
+                var look = tag.match(/\[aria:look(?::([^\]]+))?\]/i);
+                if (look) { ariaLook(look[1] || ''); return; }
+                var say = tag.match(/\[aria:say:([^\]]+)\]/i);
+                if (say) { showCharacterMessage(say[1]); return; }
+                var facing = tag.match(/\[aria:facing:(left|right)\]/i);
+                if (facing) { setCharacterFacing(facing[1]); return; }
+                if (/^\[aria:effect:(sparkle|hearts|glow)/i.test(tag)) { ariaWave(); return; }
+            });
+            if (!skipStageBridge) bridgeAssistantTextToStage(text);
         }
 
         // Parse AI responses for Aria movement commands
         function parseAriaCommands(text) {
+            if (!text || typeof text !== 'string') return;
+            parseCanonicalAriaTags(text);
             var lowerText = text.toLowerCase();
 
             // Movement commands with walking
@@ -4613,6 +4644,30 @@
             // visual position will be updated smoothly by the main animation loop
         }
 
+        function moveAriaToPercent(pctX, pctY) {
+            var clampedX = Math.max(0, Math.min(100, pctX));
+            var clampedY = Math.max(0, Math.min(100, pctY));
+            var x = Math.round((clampedX / 100) * Math.max(1, window.innerWidth - 140));
+            var minY = 50;
+            var maxY = window.innerHeight - 200;
+            var y = Math.round(minY + ((100 - clampedY) / 100) * Math.max(1, maxY - minY));
+            moveAriaTo(x, y);
+        }
+
+        function moveAriaToNamedPosition(name) {
+            var named = {
+                center: { x: 50, y: 50 },
+                left: { x: 20, y: 70 },
+                right: { x: 80, y: 70 },
+                front: { x: 50, y: 85 },
+                back: { x: 50, y: 15 },
+                top: { x: 50, y: 10 },
+                bottom: { x: 50, y: 90 }
+            };
+            var coords = named[(name || '').toLowerCase()];
+            if (coords) moveAriaToPercent(coords.x, coords.y);
+        }
+
         function moveAriaToCenter() {
             moveAriaTo(window.innerWidth / 2 - 70, window.innerHeight - 200);
         }
@@ -4649,6 +4704,18 @@
                     character.style.transform = '';
                 }
             }, 200);
+        }
+
+        function ariaSpin() {
+            var rotation = 0;
+            var spinInterval = setInterval(function () {
+                rotation += 24;
+                character.style.transform = 'rotate(' + rotation + 'deg)';
+                if (rotation >= 360) {
+                    clearInterval(spinInterval);
+                    character.style.transform = '';
+                }
+            }, 30);
         }
 
         // Arm joint control functions
@@ -4714,22 +4781,29 @@
             setArmRotation('right', 10, 0);
         }
 
-        // Animate character briefly on send, then send message
-        sendButton.addEventListener('click', function () {
+        function nodHead() {
             try {
-                character.style.transform = 'translateY(-20px)';
-                setTimeout(function () { character.style.transform = 'translateY(0)'; }, 300);
-            } catch (e) {
-                // character might not exist in some contexts
-            }
-            sendMessage();
-        });
-        messageInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+                var head = character.querySelector('.character-head');
+                if (head) {
+                    head.style.transform = 'rotate(12deg)';
+                    setTimeout(function () { head.style.transform = ''; }, 320);
+                }
+            } catch (e) { }
+        }
+
+        function bowArms() {
+            setArmRotation('left', -20, 35);
+            setArmRotation('right', 20, 35);
+            setTimeout(function () { resetArms(); }, 800);
+        }
+
+        function clapArms() {
+            setArmRotation('left', 15, -45);
+            setArmRotation('right', -15, 45);
+            setTimeout(function () { resetArms(); }, 520);
+        }
+
+        // Send button wired by chat.js (initEmbeddedTransport)
 
         // Character variables
         var chatBubble = document.getElementById('chatBubble');
@@ -4795,11 +4869,17 @@
         var isDraggingAria = false;
         var ariaDragOffsetX = 0;
         var ariaDragOffsetY = 0;
+        var ariaDragStartX = 0;
+        var ariaDragStartY = 0;
+        var ariaDidDrag = false;
 
         character.addEventListener('mousedown', function (e) {
             // Don't drag if clicking on eyes
             if (e.target.closest('.character-eyes')) return;
 
+            ariaDragStartX = e.clientX;
+            ariaDragStartY = e.clientY;
+            ariaDidDrag = false;
             isDraggingAria = true;
             character.style.cursor = 'grabbing';
 
@@ -4810,12 +4890,14 @@
 
             // Disable autonomous movement while dragging
             autonomousMode = false;
-
-            e.preventDefault();
         });
 
         document.addEventListener('mousemove', function (e) {
             if (isDraggingAria) {
+                if (Math.abs(e.clientX - ariaDragStartX) > 4 || Math.abs(e.clientY - ariaDragStartY) > 4) {
+                    ariaDidDrag = true;
+                }
+                if (!ariaDidDrag) return;
                 // Calculate new position
                 var newX = e.clientX - ariaDragOffsetX;
                 var newY = e.clientY - ariaDragOffsetY;
@@ -5019,110 +5101,17 @@
                 bubbleInput.value = '';
                 return;
             }
-            // cancel any running speech/audio
-            cancelSpeak();
-            // add to main chat history & UI (main addMessage will mirror to compact bubble)
-            addMessage('user', txt);
-            pushConversationMessage('user', txt);
-            bubbleInput.value = '';
 
-            if (browserLLMState.enabled) {
-                try {
-                    updateProviderLabel('Browser LLM (local)');
-                    var bubbleLocalReply = await generateBrowserReply(txt);
-                    addMessage('assistant', bubbleLocalReply);
-                    pushConversationMessage('assistant', bubbleLocalReply);
-                    addBubbleMessage('assistant', bubbleLocalReply);
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(bubbleLocalReply).catch(function () { }); } catch (e) { }
-                    }
-                    parseAriaCommands(bubbleLocalReply);
-                } catch (localErr) {
-                    addMessage('system', 'Browser LLM error: ' + (localErr && localErr.message ? localErr.message : String(localErr)));
-                }
+            bubbleInput.value = '';
+            if (messageInput) messageInput.value = txt;
+            cancelSpeak();
+
+            if (window.__ariaChatTransport && typeof window.__ariaChatTransport.sendMessage === 'function') {
+                await window.__ariaChatTransport.sendMessage();
                 return;
             }
 
-            // send to backend
-            try {
-                providerInfo.textContent = 'Thinking...';
-                // start mouth animation while waiting for assistant reply
-                // start mouth animation while waiting for assistant reply
-                if (ariaSettings.lipSyncMode === 'token') {
-                    var assistantEl = addMessage('assistant', '', false);
-                    var contentDiv = assistantEl.querySelector('.message-content');
-                    var replyAccum = '';
-                    streamChat(sanitizeConversationHistory(conversationHistory), {
-                        onMeta: function (meta) { try { providerInfo.textContent = meta.provider || (meta.model ? meta.model : 'Connected'); } catch (e) { } },
-                        onData: function (obj) { try { var delta = obj.delta || ''; replyAccum += delta; contentDiv.textContent = replyAccum; scrollBubbleToBottom(); } catch (e) { } },
-                        onToken: function (tok) {
-                            try {
-                                if (ariaSettings.lipSyncMode === 'token') {
-                                    var tokenText = (tok.token || '') + '';
-                                    var len = Math.max(1, tokenText.length);
-                                    var openness = Math.min(1, Math.max(0.18, len / 8)) * (parseFloat(ariaSettings.mouthStrength) || 1);
-                                    setMouthOpen(openness + (Math.random() * 0.18));
-                                    var closetime = 60 + Math.floor(Math.random() * 160);
-                                    var ttmp = setTimeout(function () { setMouthOpen(0.12); }, closetime);
-                                    currentSpeech.fallbackTimers.push(ttmp);
-                                }
-                            } catch (e) { }
-                        },
-                        onDone: function () {
-                            try {
-                                var reply = replyAccum || '...';
-                                addMessage('assistant', reply);
-                                pushConversationMessage('assistant', reply);
-                                addBubbleMessage('assistant', reply);
-                                providerInfo.textContent = 'Connected';
-                                if (ariaSettings.autoSpeak) { try { speakWithLipSync(reply).catch(function () { }); } catch (e) { } } else { stopMouthTalking(350); }
-                                parseAriaCommands(reply);
-                            } catch (e) { }
-                        },
-                        onError: function (err) { addMessage('system', 'Error: ' + (err && (err.error || err.message) || 'stream failure')); stopMouthTalking(); cancelSpeak(); }
-                    });
-                } else {
-                    startMouthTalking();
-                    var response = await fetch('/api/chat', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ messages: sanitizeConversationHistory(conversationHistory), stream: false })
-                    });
-                    var data = await response.json();
-                    var reply = data.choices?.[0]?.message?.content || '...';
-                    addMessage('assistant', reply);
-                    pushConversationMessage('assistant', reply);
-                    providerInfo.textContent = data.provider || 'Connected';
-                    // speak with lip-sync if enabled
-                    if (ariaSettings.autoSpeak) {
-                        try { speakWithLipSync(reply).catch(function () { }); } catch (e) { stopMouthTalking(350); }
-                    } else {
-                        // brief mouth tail
-                        stopMouthTalking(350);
-                    }
-                }
-            } catch (err) {
-                if (browserLLMState.autoFallback && !browserLLMState.enabled) {
-                    try {
-                        updateProviderLabel('Browser LLM fallback');
-                        var bubbleFallbackReply = await generateBrowserReply(txt);
-                        addMessage('assistant', bubbleFallbackReply);
-                        pushConversationMessage('assistant', bubbleFallbackReply);
-                        addBubbleMessage('assistant', bubbleFallbackReply);
-                        if (ariaSettings.autoSpeak) {
-                            try { speakWithLipSync(bubbleFallbackReply).catch(function () { }); } catch (e) { }
-                        }
-                        parseAriaCommands(bubbleFallbackReply);
-                        return;
-                    } catch (fbErr) {
-                        // fall through to original error handling
-                    }
-                }
-                addMessage('assistant', 'Error: ' + (err.message || 'request failed'));
-                providerInfo.textContent = 'Error';
-                // stop any speaking animation on error
-                stopMouthTalking();
-                cancelSpeak();
-            }
+            addMessage('system', 'Chat transport not ready yet — try again in a moment.');
         }
 
         // open full chat from bubble
@@ -5149,6 +5138,10 @@
 
         // Click character to open chat interface
         character.addEventListener('click', function (e) {
+            if (ariaDidDrag) {
+                ariaDidDrag = false;
+                return;
+            }
             e.stopPropagation();
 
             // Toggle chat container visibility
@@ -5341,7 +5334,46 @@
             });
             observer.observe(chatMessages, { childList: true, subtree: true });
         }
-    }) ();
+
+        document.addEventListener('aria-chat-send', function () {
+            try {
+                cancelSpeak();
+                character.style.transform = 'translateY(-20px)';
+                setTimeout(function () { character.style.transform = 'translateY(0)'; }, 300);
+            } catch (e) { }
+        });
+
+        document.addEventListener('aria-chat-message', function (e) {
+            var detail = (e && e.detail) || {};
+            if (detail.role === 'user') {
+                pushConversationMessage('user', detail.content || '');
+            }
+            if (detail.role === 'user' || detail.role === 'assistant') {
+                try { addBubbleMessage(detail.role, detail.content || ''); } catch (err) { }
+            }
+        });
+
+        document.addEventListener('aria-chat-assistant', function (e) {
+            var text = (e && e.detail && e.detail.text) || '';
+            if (!text) return;
+            pushConversationMessage('assistant', text);
+            if (ariaSettings.autoSpeak) {
+                try { speakWithLipSync(text).catch(function () { }); } catch (err) { }
+            } else {
+                stopMouthTalking(350);
+            }
+            parseAriaCommands(text);
+        });
+
+        document.addEventListener('aria-agi-enabled', function () {
+            if (browserLLMState.enabled) {
+                browserLLMState.enabled = false;
+                persistBrowserLLMState();
+                syncBrowserLLMControls();
+                publishBrowserLLMStatus();
+            }
+        });
+    })();
 
         // QAI Backend status check logic
         document.addEventListener('DOMContentLoaded', function () {
@@ -5641,7 +5673,7 @@
             sync();
         })();
     </script>
-    <script src="../global-upgrade.js"></script>
+    <script src="/api/chat-web/global-upgrade.js"></script>
 </body>
 
 </html>

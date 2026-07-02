@@ -406,7 +406,7 @@ bool FS::tryGC(int spaceNeeded, filename_filter filter) {
 
     if (spaceLeft > spaceNeeded + 32)
         return true;
-
+    
     int now = (int)system_timer_current_time();
     if (minGCSpacing) {
         gcHorizon += minGCSpacing;

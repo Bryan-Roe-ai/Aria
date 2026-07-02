@@ -1,11 +1,11 @@
 -r requirements.txt
-pytest>=8.4.2
+pytest>=9.1.1
 pytest-cov>=7.1.0
-pytest-asyncio>=1.2.0
+pytest-asyncio>=1.4.0
 watchdog>=6.0.0
-black>=25.11.0
-isort>=6.1.0
-ruff>=0.15.18
-mypy>=1.19.1
-pre-commit>=4.3.0
-# Add any additional dev tools below
+black>=26.5.1
+isort>=8.0.1
+ruff>=0.15.20
+mypy>=2.1.0
+pre-commit>=4.6.0
+tomli>=2.4.1; python_version < "3.11"

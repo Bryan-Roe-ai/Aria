@@ -14,9 +14,9 @@ name: E2E + Integration Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -85,7 +85,8 @@ jobs:
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
-          disable-sudo: true
+          # Playwright --with-deps installs browser system packages via apt (sudo).
+          disable-sudo: false
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
@@ -96,7 +97,7 @@ jobs:
           install-requirements: 'false'
           extra-packages: 'pytest playwright pytest-asyncio requests'
       - name: Install Playwright browsers
-        run: python -m playwright install chromium --with-deps
+        run: python -m playwright install chromium
       - name: Start server and run Playwright tests
         run: |
           python3 aria_web/server.py > /tmp/aria_server.log 2>&1 &

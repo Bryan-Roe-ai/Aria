@@ -140,6 +140,7 @@ def _ensure_table():
 
 
 def put_value(key: str, value: str) -> bool:
+    """Insert or update a key/value pair in the repository table."""
     if not _ensure_table():
         return False
 
@@ -203,6 +204,7 @@ def put_value(key: str, value: str) -> bool:
 
 
 def get_value(key: str) -> Optional[str]:
+    """Return the stored value for *key*, or ``None`` when missing."""
     if not _ensure_table():
         return None
 
@@ -233,6 +235,7 @@ def get_value(key: str) -> Optional[str]:
 
 
 def delete_value(key: str) -> bool:
+    """Delete *key* from the repository table."""
     if not _ensure_table():
         return False
 
@@ -263,6 +266,7 @@ def delete_value(key: str) -> bool:
 
 
 def list_values(limit: int = 100) -> list[dict]:  # noqa: ANN001
+    """Return up to *limit* key/value rows from the repository table."""
     if not _ensure_table():
         return []
 

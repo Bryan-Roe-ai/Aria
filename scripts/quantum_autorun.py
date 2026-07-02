@@ -24,7 +24,7 @@ import json
 import logging
 import sys
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -329,11 +329,48 @@ def load_config(path: Path) -> Dict[str, Any]:
     return data
 
 
-def filter_jobs(jobs: List[Dict[str, Any]], name: Optional[str]) -> List[Dict[str, Any]]:
+def filter_jobs(jobs: List[QJob], name: Optional[str]) -> List[QJob]:
     if not name:
         return jobs
-    filtered = [j for j in jobs if j.get("name") == name]
+    filtered = [j for j in jobs if j.name == name]
     return filtered
+
+
+def _summarize_job(job: QJob) -> Dict[str, Any]:
+    """Return a JSON-serializable summary for CLI output and status files."""
+    return asdict(job)
+
+
+def dry_run_jobs(jobs: List[QJob]) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Validate enabled jobs and mark disabled ones as skipped.
+
+    Returns:
+        (results, failures) where failures only contains enabled jobs that failed
+        validation. This keeps dry-runs safe by not surfacing disabled QPU jobs as
+        hard failures while still validating the active local/simulator path.
+    """
+    results: List[Dict[str, Any]] = []
+    failures: List[Dict[str, Any]] = []
+
+    for job in jobs:
+        summary = _summarize_job(job)
+        if not job.enabled:
+            summary["status"] = "skipped"
+            summary["reason"] = "disabled"
+            results.append(summary)
+            continue
+
+        validation = validate_job(job)
+        if validation["status"] == "ok":
+            summary["status"] = "validated"
+            summary["command"] = build_command(job)
+        else:
+            summary["status"] = "missing"
+            summary["missing"] = validation.get("missing", [])
+            failures.append(summary)
+        results.append(summary)
+
+    return results, failures
 
 
 def _write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
@@ -346,12 +383,14 @@ def _write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
 
 
 def write_status(jobs: List[Dict[str, Any]]) -> None:
+    succeeded = sum(1 for job in jobs if job.get("status") == "validated")
+    failed = sum(1 for job in jobs if job.get("status") == "missing")
     payload = {
         "total_jobs": len(jobs),
         "jobs": jobs,
         "last_updated": datetime.now().isoformat() + "Z",
-        "succeeded": 0,
-        "failed": 0,
+        "succeeded": succeeded,
+        "failed": failed,
         "running": 0,
         "avg_duration": None,
     }
@@ -367,8 +406,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     cfg_path = Path(args.config)
-    cfg = load_config(cfg_path)
-    jobs: List[Dict[str, Any]] = cfg.get("jobs", [])
+    jobs = load_jobs(cfg_path)
 
     if args.job:
         jobs = filter_jobs(jobs, args.job)
@@ -379,15 +417,27 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
 
     if args.list:
-        print(json.dumps(jobs, indent=2))
+        print(json.dumps([_summarize_job(job) for job in jobs], indent=2))
         return 0
 
     if args.dry_run:
-        write_status(jobs)
-        # Print summary to stdout for tests
-        names = ", ".join([j.get("name", "<unnamed>") for j in jobs])
-        print(f"Validated {len(jobs)} job(s): {names}")
-        return 0
+        results, failures = dry_run_jobs(jobs)
+        write_status(results)
+
+        validated = [job["name"] for job in results if job.get("status") == "validated"]
+        skipped = [job["name"] for job in results if job.get("status") == "skipped"]
+        if failures:
+            failed_names = ", ".join(job["name"] for job in failures)
+            print(f"Validation failed for enabled job(s): {failed_names}", file=sys.stderr)
+            for job in failures:
+                missing = ", ".join(job.get("missing", []))
+                print(f"- {job['name']}: {missing}", file=sys.stderr)
+
+        summary_bits = [f"Validated {len(validated)} enabled job(s): {', '.join(validated) if validated else '<none>'}"]
+        if skipped:
+            summary_bits.append(f"Skipped {len(skipped)} disabled job(s): {', '.join(skipped)}")
+        print(" | ".join(summary_bits))
+        return 1 if failures else 0
 
     # No operation requested; show help and exit 0
     parser.print_help()

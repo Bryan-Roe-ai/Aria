@@ -15,7 +15,7 @@ if __package__ in {None, ""}:
 
 from scripts.agents.base import REPO_ROOT, AgentResult, AutomationAgent, register  # noqa: E402
 
-TIMESTAMP_FIELDS = ("last_updated", "timestamp", "updated_at", "last_run", "completed_at")
+TIMESTAMP_FIELDS = ("last_updated", "timestamp", "updated_at", "last_run", "completed_at", "generated_at")
 FAILED_STATES = {"failed", "error", "crashed"}
 
 
@@ -134,14 +134,26 @@ class StatusFreshnessAgent(AutomationAgent):
         if not isinstance(payload, dict):
             return False
 
-        failed = payload.get("failed")
-        if isinstance(failed, (int, float)) and not isinstance(failed, bool) and failed > 0:
-            return True
+        explicit_success = False
+        for field in ("passed", "success", "succeeded"):
+            value = payload.get(field)
+            if value is True:
+                explicit_success = True
+            elif value is False:
+                return True
 
         for field in ("status", "state"):
             value = payload.get(field)
             if isinstance(value, str) and value.casefold() in FAILED_STATES:
                 return True
+
+        errors = payload.get("errors")
+        if isinstance(errors, (int, float)) and not isinstance(errors, bool) and errors > 0:
+            return True
+
+        failed = payload.get("failed")
+        if isinstance(failed, (int, float)) and not isinstance(failed, bool) and failed > 0:
+            return not explicit_success
         return False
 
     def _add_finding(

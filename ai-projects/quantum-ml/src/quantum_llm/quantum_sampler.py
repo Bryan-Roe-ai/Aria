@@ -337,6 +337,10 @@ class QuantumSampler:
         if k == 0:
             return 0
 
+        if not np.all(np.isfinite(logits_arr)):
+            logger.warning("QuantumSampler received non-finite logits; replacing invalid values with 0.0")
+            logits_arr = np.nan_to_num(logits_arr, nan=0.0, posinf=0.0, neginf=0.0)
+
         # Clamp blend_factor to its documented [0, 1] range. Values outside this
         # range can produce negative blended probabilities, which would make the
         # downstream rng.choice(p=...) call raise "probabilities are not non-negative".
@@ -345,7 +349,11 @@ class QuantumSampler:
         # Classical softmax distribution
         logits_arr -= logits_arr.max()  # numerical stability
         classical_probs = np.exp(logits_arr)
-        classical_probs /= classical_probs.sum()
+        classical_sum = classical_probs.sum()
+        if not np.isfinite(classical_sum) or classical_sum <= 0:
+            classical_probs = np.full(k, 1.0 / k)
+        else:
+            classical_probs /= classical_sum
 
         # Generate random circuit params from logit values (deterministic mapping)
         n_params = self.num_qubits * self.num_layers * 2
