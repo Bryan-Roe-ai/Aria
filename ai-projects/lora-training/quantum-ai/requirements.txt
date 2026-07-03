@@ -1,7 +1,7 @@
 # Python dependencies for Quantum AI project
 
 # Core quantum computing libraries
-qiskit>=2.4.2
+qiskit>=2.5.0
 qiskit-aer>=0.17.2
 qiskit-ibm-runtime>=0.47.0
 qiskit-algorithms>=0.4.0
