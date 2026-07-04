@@ -162,6 +162,12 @@ class QuantumIntegration:
                     "success": False,
                     "error": f"Invalid dataset '{dataset}'.",
                 }
+            safe_dataset = next((name for name in allowed_datasets if name == dataset), None)
+            if safe_dataset is None:
+                return {
+                    "success": False,
+                    "error": f"Invalid dataset '{dataset}'.",
+                }
 
             allowed_backends = set(self._get_available_backends())
             if not safe_arg_pattern.fullmatch(backend):
@@ -171,6 +177,12 @@ class QuantumIntegration:
                 }
 
             if backend not in allowed_backends:
+                return {
+                    "success": False,
+                    "error": f"Invalid backend '{backend}'.",
+                }
+            safe_backend = next((name for name in allowed_backends if name == backend), None)
+            if safe_backend is None:
                 return {
                     "success": False,
                     "error": f"Invalid backend '{backend}'.",
@@ -187,11 +199,11 @@ class QuantumIntegration:
                 sys.executable,
                 str(resolved_train_script),
                 "--preset",
-                dataset,
+                safe_dataset,
                 "--epochs",
                 str(safe_epochs),
                 "--backend",
-                backend,
+                safe_backend,
             ]
 
             result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(
