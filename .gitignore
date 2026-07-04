@@ -118,7 +118,7 @@ __azurite_db*__.json
 .python_packages/
 
 # Project-generated artifacts
-data_out/
+data_out/*
 deployed_models/
 checkpoints/
 outputs/

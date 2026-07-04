@@ -1,0 +1,66 @@
+{
+  "applied_paths": [],
+  "apply": false,
+  "commit": false,
+  "commit_sha": null,
+  "duration_seconds": 0.003,
+  "executions": [],
+  "findings": [],
+  "finished_at": "2026-06-02T19:36:36.415394+00:00",
+  "notes": [
+    "execution summary: 0 plan(s), 0 applied, 0 skipped",
+    "dry-run: no files were modified"
+  ],
+  "plans": [],
+  "skipped_paths": [],
+  "started_at": "2026-06-02T19:36:36.412524+00:00",
+  "status_text": "dry_run: 0 finding(s), 0 plan(s), 0 applied, 0 skipped",
+  "summary": {
+    "by_kind": {
+      "findings": {},
+      "plans": {}
+    },
+    "counts": {
+      "applied": 0,
+      "executions": 0,
+      "findings": 0,
+      "plans": 0,
+      "skipped": 0
+    },
+    "kind_summary": {
+      "findings": "none",
+      "plans": "none"
+    },
+    "paths": {
+      "applied": [],
+      "skipped": [],
+      "validated": []
+    },
+    "state": "dry_run",
+    "status_text": "dry_run: 0 finding(s), 0 plan(s), 0 applied, 0 skipped"
+  },
+  "totals": {
+    "applied": 0,
+    "executions": 0,
+    "findings": 0,
+    "plans": 0,
+    "skipped": 0
+  },
+  "validation": {
+    "ok": true,
+    "steps": [
+      {
+        "name": "ruff",
+        "reason": "no python files in changeset",
+        "status": "skipped"
+      },
+      {
+        "name": "black",
+        "reason": "no python files in changeset",
+        "status": "skipped"
+      }
+    ]
+  },
+  "validation_ok": true,
+  "validation_targets": []
+}
