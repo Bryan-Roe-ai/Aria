@@ -457,6 +457,16 @@ def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
     return _proxy_aria_request(req, "state")
 
 
+@app.route(route="aria/execute", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_execute_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_execute_proxy(req, _build_domain_context())
+
+
+@app.route(route="aria/command", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_command_proxy(req, _build_domain_context())
+
+
 def _extract_text_content(content) -> str:
     """Normalize mixed content payloads to plain text."""
     if isinstance(content, str):
@@ -491,6 +501,16 @@ def _extract_text_content(content) -> str:
             return text_value
 
     return str(content).strip() if content is not None else ""
+
+
+def _is_compaction_placeholder_message(content) -> bool:
+    """Detect synthetic placeholder messages inserted during chat compaction."""
+    if not isinstance(content, str):
+        return False
+
+    placeholder_lines = {"compacted conversation", "conversation compacted"}
+    normalized_lines = [line.strip().lower() for line in content.splitlines() if line.strip()]
+    return bool(normalized_lines) and all(line in placeholder_lines for line in normalized_lines)
 
 
 def _sanitize_chat_messages(messages) -> list[dict]:
@@ -3617,6 +3637,12 @@ def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="quantum/llm", methods=["POST", "GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
     return quantum_domain.quantum_llm(req, _build_domain_context())
+
+
+@app.route(route="quantum/info", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_info(req, _build_domain_context())
+
 
 @app.route(route="subscription/revenue", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
