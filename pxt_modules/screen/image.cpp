@@ -302,11 +302,12 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
       auto ptr = p;
       unsigned mask = 0x01 << (y & 7);
 
-      for (int i = 0; i < h; ++i) {
+      int i = 0;
+      while (i < h) {
         if (mask == 0x100) {
           if (h - i >= 8) {
             *++ptr = f;
-            i += 7;
+            i += 8;
             continue;
           } else {
             mask = 0x01;
@@ -318,6 +319,7 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
         else
           *ptr &= ~mask;
         mask <<= 1;
+        ++i;
       }
 
     } else if (img->bpp() == 4) {
@@ -326,11 +328,12 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
       if (y & 1)
         mask <<= 4;
 
-      for (int i = 0; i < h; ++i) {
+      int i = 0;
+      while (i < h) {
         if (mask == 0xf00) {
           if (h - i >= 2) {
             *++ptr = f;
-            i++;
+            i += 2;
             continue;
           } else {
             mask = 0x0f;
@@ -339,6 +342,7 @@ void fillRect(Image_ img, int x, int y, int w, int h, int c) {
         }
         *ptr = (*ptr & ~mask) | (f & mask);
         mask <<= 4;
+        ++i;
       }
     }
     p += bh;
