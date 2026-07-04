@@ -19,9 +19,9 @@ Safety guarantees (enforced by :mod:`aria_bot.risk_manager`):
 
 from __future__ import annotations
 
-from .defaults import DEFAULT_MAX_PLANS
 from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
+from .defaults import DEFAULT_MAX_PLANS
 from .executor import ExecutionResult, Executor
 from .orchestrator import Orchestrator, OrchestratorConfig, run_cycle
 from .planner import Planner, UpgradePlan

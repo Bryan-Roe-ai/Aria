@@ -540,8 +540,7 @@ class TestCreateAGIProvider:
             return base, ProviderChoice(name="local", model=model_override or "local-echo")
 
         monkeypatch.setenv("AGI_BASE_PROVIDER", "local")
-        monkeypatch.setitem(create_agi_provider.__globals__,
-                            "detect_provider", fake_detect_provider)
+        monkeypatch.setitem(create_agi_provider.__globals__, "detect_provider", fake_detect_provider)
 
         provider, info = create_agi_provider()
 

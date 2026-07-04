@@ -327,43 +327,51 @@ stage_state = {
 The auto-execute system includes a comprehensive test suite at `tests/test_aria_auto_execute.py` with 30+ test cases covering:
 
 **Schema & Contract Tests:**
+
 - Action schema validation
 - Required fields verification
 - Valid gesture type definitions
 
 **Plan Mode Tests:**
+
 - Simple move, pickup, say, gesture commands
 - Complex multi-step sequences
 - State immutability (plan doesn't modify state)
 
 **Execution Mode Tests:**
+
 - Simple move command execution
 - Updated state returns
 - Result structure validation
 - Tags output for UI integration
 
 **Validation Tests:**
+
 - Invalid action handling
 - Empty command handling
 - Very long command handling
 - Special character handling
 
 **State Management Tests:**
+
 - State endpoint structure
 - Position coordinate bounds
 - Expression validity
 - State consistency across sequences
 
 **Object Management Tests:**
+
 - Object list retrieval
 - Add object functionality
 - Object state tracking (on_table, held, dropped)
 
 **Provider Detection Tests:**
+
 - LLM provider detection
 - Fallback parsing validation
 
 **Integration Tests:**
+
 - Full workflow: plan → execute
 - Sequential command state maintenance
 - Response format consistency
@@ -385,6 +393,7 @@ pytest tests/test_aria_auto_execute.py --cov=apps/aria --cov-report=html
 ```
 
 **Test Structure:**
+
 - Tests automatically skip if Aria server not running on localhost:8080
 - All tests handle both plan and execute modes
 - Error handling tests verify graceful degradation

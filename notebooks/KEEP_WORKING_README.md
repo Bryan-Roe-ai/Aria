@@ -17,18 +17,18 @@ python notebooks/keep_working_launcher.py --task "Deep work" --repeat --notify -
 
 ## CLI Flags
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--task` | `Unnamed` | Task name logged in history |
-| `--work` | `1500` (25 min) | Work session duration in seconds |
-| `--short` | `300` (5 min) | Short break duration in seconds |
-| `--long` | `900` (15 min) | Long break duration in seconds |
-| `--cycles-per-long` | `4` | Work cycles before a long break |
-| `--cycles` | `1` | Total work cycles to run |
-| `--repeat` | off | Loop forever (Ctrl+C to stop) |
-| `--no-breaks` | off | Skip breaks between work sessions |
-| `--notify` | off | Desktop notification on session end |
-| `--sound` | off | Terminal bell on session end |
+| Flag                | Default         | Description                         |
+| ------------------- | --------------- | ----------------------------------- |
+| `--task`            | `Unnamed`       | Task name logged in history         |
+| `--work`            | `1500` (25 min) | Work session duration in seconds    |
+| `--short`           | `300` (5 min)   | Short break duration in seconds     |
+| `--long`            | `900` (15 min)  | Long break duration in seconds      |
+| `--cycles-per-long` | `4`             | Work cycles before a long break     |
+| `--cycles`          | `1`             | Total work cycles to run            |
+| `--repeat`          | off             | Loop forever (Ctrl+C to stop)       |
+| `--no-breaks`       | off             | Skip breaks between work sessions   |
+| `--notify`          | off             | Desktop notification on session end |
+| `--sound`           | off             | Terminal bell on session end        |
 
 ## Notebook UI
 
@@ -102,13 +102,12 @@ Or install to your user units directory:
 python notebooks/keep_working_launcher.py --install-systemd --task "Focus" --work 1500 --repeat --notify --sound
 ```
 
-
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `notebooks/keep_working_launcher.py` | CLI entry point |
-| `notebooks/keep_working.ipynb` | Interactive notebook with UI and tests |
-| `notebooks/keep_working_systemd.service.template` | systemd user service template |
-| `notebooks/keep_working_history.json` | JSON session log |
-| `notebooks/keep_working_history.db` | SQLite session log |
+| File                                              | Purpose                                |
+| ------------------------------------------------- | -------------------------------------- |
+| `notebooks/keep_working_launcher.py`              | CLI entry point                        |
+| `notebooks/keep_working.ipynb`                    | Interactive notebook with UI and tests |
+| `notebooks/keep_working_systemd.service.template` | systemd user service template          |
+| `notebooks/keep_working_history.json`             | JSON session log                       |
+| `notebooks/keep_working_history.db`               | SQLite session log                     |

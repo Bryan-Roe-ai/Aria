@@ -2,7 +2,7 @@
 
 # Aria — Copilot Quick Guide
 
-*Last updated: July 4, 2026*
+_Last updated: July 4, 2026_
 
 Short & actionable summary for AI agents editing Aria — an interactive AI character platform with autonomous learning, quantum ML integration, and multi-provider chat backends.
 

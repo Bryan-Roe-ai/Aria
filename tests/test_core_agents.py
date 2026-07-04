@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 
@@ -136,9 +136,7 @@ def test_human_feedback_agent_publishes_feedback_events() -> None:
     bus.subscribe("human_feedback", _make_feedback_recorder(published))
     agent = HumanFeedbackAgent(memory, bus)
 
-    result = agent.execute(
-        Task(type="feedback", payload={"message": "looks good"})
-    )
+    result = agent.execute(Task(type="feedback", payload={"message": "looks good"}))
 
     assert result["status"] == "recorded"
     assert result["feedback"]["message"] == "looks good"
@@ -151,9 +149,7 @@ def test_tool_agent_can_run_registered_tool() -> None:
     registry.register("echo", _make_echo_tool())
     agent = ToolAgent(registry)
 
-    result = agent.execute(
-        Task(type="tool", payload={"tool": "echo", "args": {"text": "hi"}})
-    )
+    result = agent.execute(Task(type="tool", payload={"tool": "echo", "args": {"text": "hi"}}))
 
     assert result["tool"] == "echo"
     assert result["output"] == "echo:hi"
@@ -200,29 +196,22 @@ def test_hypothesis_agent_uses_memory_events() -> None:
     result = agent.execute(Task(type="hypothesize", payload={"limit": 2}))
 
     assert result["agent"] == "hypothesis_agent"
-    assert result["hypotheses"][0]["statement"] == (
-        "Latency is tied to goal clarity"
-    )
-    assert "goal_created: {\"goal\": \"reduce latency\"}" in llm.messages[1][
-        "content"
-    ]
+    assert result["hypotheses"][0]["statement"] == ("Latency is tied to goal clarity")
+    assert 'goal_created: {"goal": "reduce latency"}' in llm.messages[1]["content"]
     assert memory.last_of_type("hypothesis_generated") is not None
 
 
 def test_hypothesis_agent_short_circuits_when_memory_is_empty() -> None:
     class _FailingLLM:
         def complete(self, _messages):  # pragma: no cover - defensive
-            raise AssertionError(
-                "LLM should not be called without observations"
-            )
+            raise AssertionError("LLM should not be called without observations")
 
     agent = HypothesisAgent(
-        MemoryStore(), llm=_FailingLLM()  # type: ignore[arg-type]
+        MemoryStore(),
+        llm=_FailingLLM(),  # type: ignore[arg-type]
     )
 
     result = agent.execute(Task(type="hypothesize", payload={"limit": 5}))
 
     assert result["hypotheses"] == []
-    assert result["summary"] == (
-        "No observations available to hypothesize from."
-    )
+    assert result["summary"] == ("No observations available to hypothesize from.")

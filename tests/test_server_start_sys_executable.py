@@ -40,10 +40,7 @@ def test_server_startable_with_sys_executable():
             except OSError:
                 time.sleep(0.1)
         else:
-            pytest.fail(
-                "aria_web/server.py did not open port 8080 when started with "
-                "sys.executable"
-            )
+            pytest.fail("aria_web/server.py did not open port 8080 when started with sys.executable")
     finally:
         proc.kill()
         proc.wait(timeout=2)

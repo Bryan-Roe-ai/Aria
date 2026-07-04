@@ -64,27 +64,42 @@ dashboard-friendly `summary` object with:
 
 ```json
 {
-  "status_text": "dry_run: 2 finding(s), 2 plan(s), 0 applied, 2 skipped",
-  "apply": false,
-  "commit": false,
-  "duration_seconds": 0.041,
-  "totals": { "findings": 2, "plans": 2, "executions": 2, "applied": 0, "skipped": 2 },
-  "applied_paths": [],
-  "skipped_paths": ["src/needs_fix.py", "src/needs_newline.md"],
-  "summary": {
-    "state": "dry_run",
     "status_text": "dry_run: 2 finding(s), 2 plan(s), 0 applied, 2 skipped",
-    "counts": { "findings": 2, "plans": 2, "executions": 2, "applied": 0, "skipped": 2 },
-    "by_kind": {
-      "findings": { "missing_final_newline": 1, "trailing_whitespace": 1 },
-      "plans":   { "missing_final_newline": 1, "trailing_whitespace": 1 }
+    "apply": false,
+    "commit": false,
+    "duration_seconds": 0.041,
+    "totals": {
+        "findings": 2,
+        "plans": 2,
+        "executions": 2,
+        "applied": 0,
+        "skipped": 2
     },
-    "kind_summary": {
-      "findings": "missing_final_newline=1, trailing_whitespace=1",
-      "plans":    "missing_final_newline=1, trailing_whitespace=1"
-    }
-  },
-  "validation_ok": null
+    "applied_paths": [],
+    "skipped_paths": ["src/needs_fix.py", "src/needs_newline.md"],
+    "summary": {
+        "state": "dry_run",
+        "status_text": "dry_run: 2 finding(s), 2 plan(s), 0 applied, 2 skipped",
+        "counts": {
+            "findings": 2,
+            "plans": 2,
+            "executions": 2,
+            "applied": 0,
+            "skipped": 2
+        },
+        "by_kind": {
+            "findings": {
+                "missing_final_newline": 1,
+                "trailing_whitespace": 1
+            },
+            "plans": { "missing_final_newline": 1, "trailing_whitespace": 1 }
+        },
+        "kind_summary": {
+            "findings": "missing_final_newline=1, trailing_whitespace=1",
+            "plans": "missing_final_newline=1, trailing_whitespace=1"
+        }
+    },
+    "validation_ok": null
 }
 ```
 

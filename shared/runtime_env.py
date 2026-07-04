@@ -3,18 +3,15 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from collections.abc import Iterable, Sequence
 from functools import lru_cache
 from pathlib import Path
 from textwrap import dedent
-from typing import Iterable, Sequence
-
 
 DEFAULT_PROBE_MODULES: tuple[str, ...] = ("torch", "transformers", "peft")
 
 
-def _candidate_venv_python_paths(
-    repo_root: Path, venv_names: Sequence[str]
-) -> list[Path]:
+def _candidate_venv_python_paths(repo_root: Path, venv_names: Sequence[str]) -> list[Path]:
     """Return likely Python executable locations for a repo-local venv."""
     if sys.platform == "win32":
         layout = (
@@ -38,9 +35,7 @@ def _candidate_venv_python_paths(
     return candidates
 
 
-def locate_project_python(
-    repo_root: Path, venv_names: Sequence[str] = (".venv", "venv")
-) -> Path:
+def locate_project_python(repo_root: Path, venv_names: Sequence[str] = (".venv", "venv")) -> Path:
     """Locate the repo-local Python executable if one exists.
 
     The returned path is the first existing candidate, ordered to prefer
@@ -153,9 +148,7 @@ def build_venv_info(
     }
 
     if venv_info["exists"]:
-        probe = probe_python_packages(
-            str(python_path), tuple(modules), timeout_seconds=timeout_seconds
-        )
+        probe = probe_python_packages(str(python_path), tuple(modules), timeout_seconds=timeout_seconds)
         venv_info["packages"] = {
             "available": probe.get("available", {}),
             "versions": probe.get("versions", {}),

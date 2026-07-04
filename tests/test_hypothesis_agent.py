@@ -14,18 +14,13 @@ class StubLLM:
             "hypotheses": [
                 {
                     "statement": "Bursty inputs create queue pressure",
-                    "rationale": (
-                        "The observation mentions bursty system behaviour."
-                    ),
+                    "rationale": ("The observation mentions bursty system behaviour."),
                     "testable": True,
                 }
             ],
             "summary": "Bursty inputs may be driving queue pressure.",
         }
-        return (
-            "Here is the hypothesis payload:\n"
-            f"```json\n{json.dumps(payload, ensure_ascii=False)}\n```"
-        )
+        return f"Here is the hypothesis payload:\n```json\n{json.dumps(payload, ensure_ascii=False)}\n```"
 
 
 def test_hypothesis_agent_handles_invalid_limit_and_fenced_json() -> None:
@@ -43,9 +38,7 @@ def test_hypothesis_agent_handles_invalid_limit_and_fenced_json() -> None:
 
     assert result["agent"] == "hypothesis_agent"
     assert result["summary"] == "Bursty inputs may be driving queue pressure."
-    assert result["hypotheses"][0]["statement"] == (
-        "Bursty inputs create queue pressure"
-    )
+    assert result["hypotheses"][0]["statement"] == ("Bursty inputs create queue pressure")
     assert result["hypotheses"][0]["testable"] is True
 
 
@@ -92,9 +85,7 @@ def test_hypothesis_agent_returns_empty_when_no_observations() -> None:
     result = agent.execute(Task(type="infer", payload={}))
 
     assert result["hypotheses"] == []
-    assert result["summary"] == (
-        "No observations available to hypothesize from."
-    )
+    assert result["summary"] == ("No observations available to hypothesize from.")
     assert result["agent"] == "hypothesis_agent"
 
 
@@ -144,9 +135,7 @@ def test_hypothesis_agent_falls_back_when_llm_fails() -> None:
 
     failing_llm: Any = FailingLLM()
     agent = HypothesisAgent(MemoryStore(), llm=failing_llm)
-    result = agent.execute(
-        Task(type="hypothesize", payload={"observation": "something odd"})
-    )
+    result = agent.execute(Task(type="hypothesize", payload={"observation": "something odd"}))
 
     assert result["summary"] == "Could not generate hypotheses."
     assert result["hypotheses"][0]["testable"] is False
@@ -161,14 +150,10 @@ def test_hypothesis_agent_falls_back_on_malformed_llm_output() -> None:
     memory = MemoryStore()
     agent = HypothesisAgent(memory, llm=malformed_llm)
 
-    result = agent.execute(
-        Task(type="hypothesize", payload={"observation": "something odd"})
-    )
+    result = agent.execute(Task(type="hypothesize", payload={"observation": "something odd"}))
 
     assert result["summary"] == "Could not generate hypotheses."
-    assert result["hypotheses"][0]["statement"].startswith(
-        "Hypothesis generation failed"
-    )
+    assert result["hypotheses"][0]["statement"].startswith("Hypothesis generation failed")
     stored = memory.last_of_type("hypothesis_generated")
     assert stored is not None
     assert stored["data"]["summary"] == "Could not generate hypotheses."
@@ -186,9 +171,7 @@ def test_hypothesis_agent_parses_unfenced_json_object() -> None:
 
     prose_llm: Any = ProseLLM()
     agent = HypothesisAgent(MemoryStore(), llm=prose_llm)
-    result = agent.execute(
-        Task(type="hypothesize", payload={"observation": "obs"})
-    )
+    result = agent.execute(Task(type="hypothesize", payload={"observation": "obs"}))
 
     assert result["summary"] == "bare object"
     assert result["hypotheses"][0]["statement"] == "x"
@@ -216,9 +199,7 @@ def test_hypothesis_agent_extracts_object_with_braces_inside_strings() -> None:
 
     tricky_llm: Any = TrickyLLM()
     agent = HypothesisAgent(MemoryStore(), llm=tricky_llm)
-    result = agent.execute(
-        Task(type="hypothesize", payload={"observation": "obs"})
-    )
+    result = agent.execute(Task(type="hypothesize", payload={"observation": "obs"}))
 
     assert result["summary"] == "edge } case"
     assert result["hypotheses"][0]["statement"] == tricky_statement

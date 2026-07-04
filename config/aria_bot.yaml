@@ -29,13 +29,13 @@ max_file_bytes: 262144 # 256 KiB — reduced to limit memory overhead
 # File suffixes the analyzer is allowed to consider. Add entries here to
 # expand scope; remove entries to narrow it.
 suffixes:
-  - .py
-  - .md
-  - .yaml
-  - .yml
-  - .txt
-  - .toml
-  - .cfg
+    - .py
+    - .md
+    - .yaml
+    - .yml
+    - .txt
+    - .toml
+    - .cfg
 
 # ---------------------------------------------------------------------------
 # Protected paths
@@ -45,28 +45,28 @@ suffixes:
 # Hard-coded defaults in aria_bot/risk_manager.py are ALWAYS merged with
 # this list — narrowing is respected, widening is silently ignored.
 protected_prefixes:
-  - .git/
-  - .github/
-  - .github/agents/
-  - config/
-  - datasets/
-  - data_out/
-  - secrets/
-  - AI/
-  - node_modules/
-  - .venv/
-  - venv/
-  - __pycache__/
-  - dist/
-  - build/
-  - .tox/
-  - .mypy_cache/
-  - .ruff_cache/
-  - .pytest_cache/
-  - htmlcov/
-  - coverage/
-  - logs/
-  - tests/fixtures/
+    - .git/
+    - .github/
+    - .github/agents/
+    - config/
+    - datasets/
+    - data_out/
+    - secrets/
+    - AI/
+    - node_modules/
+    - .venv/
+    - venv/
+    - __pycache__/
+    - dist/
+    - build/
+    - .tox/
+    - .mypy_cache/
+    - .ruff_cache/
+    - .pytest_cache/
+    - htmlcov/
+    - coverage/
+    - logs/
+    - tests/fixtures/
 
 # Hard-coded protected file names (enforced in code, not configurable here):
 # `.env`, `.env.local`, `local.settings.json`, `id_rsa`, `id_ed25519`.

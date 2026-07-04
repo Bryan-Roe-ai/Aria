@@ -2,144 +2,144 @@ name: "Setup Python Environment"
 description: "Reusable setup for Python with pip caching and common dependencies"
 
 inputs:
-  python-version:
-    description: 'Python version to use'
-    required: false
-    default: '3.11'
-  install-requirements:
-    description: 'Install requirements.txt'
-    required: false
-    default: 'true'
-  requirements-file:
-    description: 'Primary requirements file to install when install-requirements is true'
-    required: false
-    default: 'requirements.txt'
-  install-dev-requirements:
-    description: 'Install requirements-dev.txt (or fallback editable dev install)'
-    required: false
-    default: 'false'
-  dev-requirements-file:
-    description: 'Development requirements file to install when install-dev-requirements is true'
-    required: false
-    default: 'requirements-dev.txt'
-  constraints-file:
-    description: 'Optional constraints file applied to requirements installs when present'
-    required: false
-    default: 'constraints.txt'
-  cache-dependency-path:
-    description: 'Optional newline-delimited dependency files for setup-python cache invalidation'
-    required: false
-    default: ''
-  extra-requirement-files:
-    description: 'Optional newline-delimited requirements files to install after base/dev dependencies'
-    required: false
-    default: ''
-  extra-packages:
-    description: 'Space-separated list of extra pip packages to install'
-    required: false
-    default: ''
-  pip-check-mode:
-    description: 'Whether to skip, warn, or enforce python -m pip check after install'
-    required: false
-    default: 'skip'
+    python-version:
+        description: "Python version to use"
+        required: false
+        default: "3.11"
+    install-requirements:
+        description: "Install requirements.txt"
+        required: false
+        default: "true"
+    requirements-file:
+        description: "Primary requirements file to install when install-requirements is true"
+        required: false
+        default: "requirements.txt"
+    install-dev-requirements:
+        description: "Install requirements-dev.txt (or fallback editable dev install)"
+        required: false
+        default: "false"
+    dev-requirements-file:
+        description: "Development requirements file to install when install-dev-requirements is true"
+        required: false
+        default: "requirements-dev.txt"
+    constraints-file:
+        description: "Optional constraints file applied to requirements installs when present"
+        required: false
+        default: "constraints.txt"
+    cache-dependency-path:
+        description: "Optional newline-delimited dependency files for setup-python cache invalidation"
+        required: false
+        default: ""
+    extra-requirement-files:
+        description: "Optional newline-delimited requirements files to install after base/dev dependencies"
+        required: false
+        default: ""
+    extra-packages:
+        description: "Space-separated list of extra pip packages to install"
+        required: false
+        default: ""
+    pip-check-mode:
+        description: "Whether to skip, warn, or enforce python -m pip check after install"
+        required: false
+        default: "skip"
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
-      with:
-        python-version: ${{ inputs.python-version }}
-        cache: 'pip'
-        cache-dependency-path: |
-          ${{ inputs.cache-dependency-path }}
-          ${{ inputs.requirements-file }}
-          ${{ inputs.dev-requirements-file }}
-          ${{ inputs.constraints-file }}
-          pyproject.toml
+    using: "composite"
+    steps:
+        - name: Set up Python ${{ inputs.python-version }}
+          uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+          with:
+              python-version: ${{ inputs.python-version }}
+              cache: "pip"
+              cache-dependency-path: |
+                  ${{ inputs.cache-dependency-path }}
+                  ${{ inputs.requirements-file }}
+                  ${{ inputs.dev-requirements-file }}
+                  ${{ inputs.constraints-file }}
+                  pyproject.toml
 
-    - name: Install base dependencies
-      shell: bash
-      run: |
-        set -euo pipefail
-        python -m pip install --upgrade pip setuptools wheel
+        - name: Install base dependencies
+          shell: bash
+          run: |
+              set -euo pipefail
+              python -m pip install --upgrade pip setuptools wheel
 
-    - name: Install requirements
-      if: inputs.install-requirements == 'true'
-      shell: bash
-      env:
-        REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
-        CONSTRAINTS_FILE: ${{ inputs.constraints-file }}
-      run: |
-        set -euo pipefail
-        if [[ -f "$REQUIREMENTS_FILE" && -f "$CONSTRAINTS_FILE" ]]; then
-          python -m pip install -r "$REQUIREMENTS_FILE" -c "$CONSTRAINTS_FILE"
-        elif [[ -f "$REQUIREMENTS_FILE" ]]; then
-          python -m pip install -r "$REQUIREMENTS_FILE"
-        fi
+        - name: Install requirements
+          if: inputs.install-requirements == 'true'
+          shell: bash
+          env:
+              REQUIREMENTS_FILE: ${{ inputs.requirements-file }}
+              CONSTRAINTS_FILE: ${{ inputs.constraints-file }}
+          run: |
+              set -euo pipefail
+              if [[ -f "$REQUIREMENTS_FILE" && -f "$CONSTRAINTS_FILE" ]]; then
+                python -m pip install -r "$REQUIREMENTS_FILE" -c "$CONSTRAINTS_FILE"
+              elif [[ -f "$REQUIREMENTS_FILE" ]]; then
+                python -m pip install -r "$REQUIREMENTS_FILE"
+              fi
 
-    - name: Install dev requirements
-      if: inputs.install-dev-requirements == 'true'
-      shell: bash
-      env:
-        DEV_REQUIREMENTS_FILE: ${{ inputs.dev-requirements-file }}
-        CONSTRAINTS_FILE: ${{ inputs.constraints-file }}
-      run: |
-        set -euo pipefail
-        if [[ -f "$DEV_REQUIREMENTS_FILE" && -f "$CONSTRAINTS_FILE" ]]; then
-          python -m pip install -r "$DEV_REQUIREMENTS_FILE" -c "$CONSTRAINTS_FILE"
-        elif [[ -f "$DEV_REQUIREMENTS_FILE" ]]; then
-          python -m pip install -r "$DEV_REQUIREMENTS_FILE"
-        elif [[ -f pyproject.toml ]]; then
-          python -m pip install -e ".[dev]"
-        fi
+        - name: Install dev requirements
+          if: inputs.install-dev-requirements == 'true'
+          shell: bash
+          env:
+              DEV_REQUIREMENTS_FILE: ${{ inputs.dev-requirements-file }}
+              CONSTRAINTS_FILE: ${{ inputs.constraints-file }}
+          run: |
+              set -euo pipefail
+              if [[ -f "$DEV_REQUIREMENTS_FILE" && -f "$CONSTRAINTS_FILE" ]]; then
+                python -m pip install -r "$DEV_REQUIREMENTS_FILE" -c "$CONSTRAINTS_FILE"
+              elif [[ -f "$DEV_REQUIREMENTS_FILE" ]]; then
+                python -m pip install -r "$DEV_REQUIREMENTS_FILE"
+              elif [[ -f pyproject.toml ]]; then
+                python -m pip install -e ".[dev]"
+              fi
 
-    - name: Install extra requirements files
-      if: inputs.extra-requirement-files != ''
-      shell: bash
-      env:
-        EXTRA_REQUIREMENT_FILES: ${{ inputs.extra-requirement-files }}
-        CONSTRAINTS_FILE: ${{ inputs.constraints-file }}
-      run: |
-        set -euo pipefail
-        while IFS= read -r req_file; do
-          [[ -n "$req_file" ]] || continue
-          if [[ -f "$req_file" && -f "$CONSTRAINTS_FILE" ]]; then
-            python -m pip install -r "$req_file" -c "$CONSTRAINTS_FILE"
-          elif [[ -f "$req_file" ]]; then
-            python -m pip install -r "$req_file"
-          else
-            echo "::warning::Extra requirements file not found: $req_file"
-          fi
-        done <<< "$EXTRA_REQUIREMENT_FILES"
+        - name: Install extra requirements files
+          if: inputs.extra-requirement-files != ''
+          shell: bash
+          env:
+              EXTRA_REQUIREMENT_FILES: ${{ inputs.extra-requirement-files }}
+              CONSTRAINTS_FILE: ${{ inputs.constraints-file }}
+          run: |
+              set -euo pipefail
+              while IFS= read -r req_file; do
+                [[ -n "$req_file" ]] || continue
+                if [[ -f "$req_file" && -f "$CONSTRAINTS_FILE" ]]; then
+                  python -m pip install -r "$req_file" -c "$CONSTRAINTS_FILE"
+                elif [[ -f "$req_file" ]]; then
+                  python -m pip install -r "$req_file"
+                else
+                  echo "::warning::Extra requirements file not found: $req_file"
+                fi
+              done <<< "$EXTRA_REQUIREMENT_FILES"
 
-    - name: Install extra packages
-      if: inputs.extra-packages != ''
-      shell: bash
-      env:
-        EXTRA_PACKAGES: ${{ inputs.extra-packages }}
-      # Pass packages via env var to prevent shell-injection from the input value.
-      # Word-splitting on $EXTRA_PACKAGES is intentional (space-separated list).
-      # shellcheck disable=SC2086
-      run: |
-        set -euo pipefail
-        python -m pip install $EXTRA_PACKAGES
+        - name: Install extra packages
+          if: inputs.extra-packages != ''
+          shell: bash
+          env:
+              EXTRA_PACKAGES: ${{ inputs.extra-packages }}
+          # Pass packages via env var to prevent shell-injection from the input value.
+          # Word-splitting on $EXTRA_PACKAGES is intentional (space-separated list).
+          # shellcheck disable=SC2086
+          run: |
+              set -euo pipefail
+              python -m pip install $EXTRA_PACKAGES
 
-    - name: Run pip check
-      if: inputs.pip-check-mode != 'skip'
-      shell: bash
-      env:
-        PIP_CHECK_MODE: ${{ inputs.pip-check-mode }}
-      run: |
-        set -euo pipefail
-        if python -m pip check; then
-          exit 0
-        fi
+        - name: Run pip check
+          if: inputs.pip-check-mode != 'skip'
+          shell: bash
+          env:
+              PIP_CHECK_MODE: ${{ inputs.pip-check-mode }}
+          run: |
+              set -euo pipefail
+              if python -m pip check; then
+                exit 0
+              fi
 
-        if [[ "$PIP_CHECK_MODE" == 'warn' ]]; then
-          echo '::warning::python -m pip check reported dependency issues.'
-          exit 0
-        fi
+              if [[ "$PIP_CHECK_MODE" == 'warn' ]]; then
+                echo '::warning::python -m pip check reported dependency issues.'
+                exit 0
+              fi
 
-        echo '::error::python -m pip check reported dependency issues.'
-        exit 1
+              echo '::error::python -m pip check reported dependency issues.'
+              exit 1

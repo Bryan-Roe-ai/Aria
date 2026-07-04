@@ -5,9 +5,9 @@ Aria Async Task Queue
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from contextlib import suppress
-from typing import Any, Awaitable, Callable, Generic, TypeVar, cast
-
+from typing import Any, Generic, TypeVar, cast
 
 _STOP = object()
 TTask = TypeVar("TTask")
@@ -28,8 +28,7 @@ class TaskQueue(Generic[TTask]):
 
     async def add_task(self, task: TTask) -> None:
         if not self.running:
-            raise RuntimeError(
-                "TaskQueue is not running. Call start() before add_task().")
+            raise RuntimeError("TaskQueue is not running. Call start() before add_task().")
         await self.queue.put(task)
 
     async def worker(self, handler: TaskHandler[TTask]) -> None:
