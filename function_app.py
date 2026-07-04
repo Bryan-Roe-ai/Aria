@@ -12,6 +12,7 @@ import time
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any, cast
 
 import azure.functions as func
 
@@ -176,7 +177,7 @@ except Exception:
 
         import shared as shared_module
         if not hasattr(shared_module, 'chat_memory'):
-            shared_module.chat_memory = shared_chat_memory
+            setattr(shared_module, 'chat_memory', shared_chat_memory)
 
 
 # AI safety fallback if middleware import failed
@@ -227,7 +228,9 @@ try:  # pragma: no cover - defensive import
 except Exception as _sub_err:  # noqa: BLE001
     logging.info(f"[startup] Subscription manager unavailable: {_sub_err}")
     subscription_manager_available = False
-    get_subscription_manager = None  # type: ignore
+
+    def get_subscription_manager() -> object | None:
+        return None
 
 
 # OpenTelemetry tracer (optional)
@@ -4279,7 +4282,9 @@ def subscription_status(req: func.HttpRequest) -> func.HttpResponse:
 
         user_id = req.params.get("user_id", "demo_user")
 
-        manager = get_subscription_manager()
+        manager = cast(Any, get_subscription_manager())
+        if manager is None:
+            raise RuntimeError("Subscription manager unavailable")
         subscription = manager.get_subscription(user_id)
 
         return func.HttpResponse(
