@@ -8,7 +8,7 @@ import logging
 import secrets
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class ReferralSystem:
         self._save_referrals()
         return code
 
-    def get_referral_code(self, user_id: str) -> Optional[str]:
+    def get_referral_code(self, user_id: str) -> str | None:
         """Get user's referral code"""
         if user_id in self.referrals_data:
             return self.referrals_data[user_id].get("referral_code")
@@ -68,7 +68,7 @@ class ReferralSystem:
 
     def record_referral(
         self, referrer_code: str, new_user_id: str, tier: str, subscription_value: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Record a new referral
 
@@ -137,7 +137,7 @@ class ReferralSystem:
             "referral_count": count,
         }
 
-    def get_referral_stats(self, user_id: str) -> Dict[str, Any]:
+    def get_referral_stats(self, user_id: str) -> dict[str, Any]:
         """Get referral statistics for user"""
         if user_id not in self.referrals_data:
             return {
@@ -178,7 +178,7 @@ class ReferralSystem:
             "milestone_bonuses_earned": data.get("milestone_bonuses_earned", []),
         }
 
-    def process_payout(self, user_id: str) -> Dict[str, Any]:
+    def process_payout(self, user_id: str) -> dict[str, Any]:
         """
         Process payout for user's pending commissions
 
@@ -223,7 +223,7 @@ class ReferralSystem:
             "processed_at": payout["date"],
         }
 
-    def get_leaderboard(self, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_leaderboard(self, limit: int = 10) -> list[dict[str, Any]]:
         """Get top referrers leaderboard"""
         leaderboard = []
 
@@ -294,7 +294,7 @@ class ReferralSystem:
         except Exception as e:
             logger.error(f"Failed to send referral notification: {str(e)}")
 
-    def _load_referrals(self) -> Dict[str, Any]:
+    def _load_referrals(self) -> dict[str, Any]:
         """Load referrals from file"""
         if self.referrals_file.exists():
             try:
@@ -315,7 +315,7 @@ class ReferralSystem:
 
 
 # Global instance
-_referral_system: Optional[ReferralSystem] = None
+_referral_system: ReferralSystem | None = None
 
 
 def get_referral_system() -> ReferralSystem:

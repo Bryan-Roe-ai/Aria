@@ -62,10 +62,7 @@ class LocalSummaryTests(unittest.TestCase):
         self.assertLessEqual(len(summary), 90)
 
     def test_first_selected_sentence_over_budget_uses_ellipsis(self) -> None:
-        text = (
-            "Key details include launch readiness " + ("X" * 120) + ". "
-            "Short follow up sentence."
-        )
+        text = "Key details include launch readiness " + ("X" * 120) + ". Short follow up sentence."
         summary = summarize_text(text, max_chars=30)
         self.assertTrue(summary.endswith("..."))
         self.assertLessEqual(len(summary), 30)

@@ -28,12 +28,12 @@
 
 ## 📋 Quick Presets Comparison
 
-| Preset | Epochs | Samples | LoRA Rank | Time | Use Case |
-| -------- | -------- | --------- | ----------- | ------ | ---------- |
-| ⚡ Quick Test | 1 | 100 | 4 | ~2 min | Pipeline testing |
-| 📊 Standard | 3 | 1k | 8 | ~10 min | Iterative dev |
-| 🏆 Full | 5 | All | 16 | ~60 min | Thorough training |
-| 🚀 Production | 10 | All | 32 | ~4 hours | Production quality |
+| Preset        | Epochs | Samples | LoRA Rank | Time     | Use Case           |
+| ------------- | ------ | ------- | --------- | -------- | ------------------ |
+| ⚡ Quick Test | 1      | 100     | 4         | ~2 min   | Pipeline testing   |
+| 📊 Standard   | 3      | 1k      | 8         | ~10 min  | Iterative dev      |
+| 🏆 Full       | 5      | All     | 16        | ~60 min  | Thorough training  |
+| 🚀 Production | 10     | All     | 32        | ~4 hours | Production quality |
 
 ## 🎯 Common Workflows
 
@@ -167,12 +167,12 @@ LoRA rank 16
 
 ## ⌨️ Keyboard Shortcuts
 
-| Key | Action | Tab |
-| ----- | -------- | ----- |
+| Key | Action              | Tab |
+| --- | ------------------- | --- |
 | `6` | Switch to Train tab | Any |
-| `r` | Refresh data | Any |
+| `r` | Refresh data        | Any |
 | `a` | Toggle auto-refresh | Any |
-| `d` | Toggle dark mode | Any |
+| `d` | Toggle dark mode    | Any |
 
 ## 🐛 Troubleshooting
 

@@ -80,12 +80,10 @@ def test_redis_memory_get_relevant_context():
 def test_redis_memory_learned_patterns_persist():
     client = FakeRedisClient()
     mem = RedisAGIMemory(session_id="patterns", client=client)
-    mem.learned_patterns["route_key"] = {
-        "agent": "code-specialist", "count": 1}
+    mem.learned_patterns["route_key"] = {"agent": "code-specialist", "count": 1}
 
     mem2 = RedisAGIMemory(session_id="patterns", client=client)
-    assert mem2.learned_patterns.get(
-        "route_key", {}).get("agent") == "code-specialist"
+    assert mem2.learned_patterns.get("route_key", {}).get("agent") == "code-specialist"
 
 
 def test_create_agi_provider_uses_redis_memory(monkeypatch):

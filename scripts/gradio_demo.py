@@ -6,21 +6,21 @@ Run after installing dependencies:
 Then open the local URL printed by Gradio.
 """
 
+import html
 import importlib
-import gradio as gr
-import os
 import json
+import os
+import re
 import subprocess
 import sys
-import time
-import tempfile
 import threading
-import re
-import html
+import time
 from collections import Counter
-from datetime import datetime, timedelta
-from typing import Any, List, Tuple, Optional, cast
 from contextlib import contextmanager
+from datetime import datetime, timedelta
+from typing import Any, cast
+
+import gradio as gr
 
 # Request-scoped cancellation tokens are stored in a Gradio State (request_tokens) instead of a module-global flag.
 # See respond() and cancel_stream() implementations for details.
@@ -54,18 +54,18 @@ def provider_diagnostics_summary() -> str:
     return f"Provider: auto · {provider_readiness_note()}"
 
 
-def _read_json_dict(path: str) -> Optional[dict[str, Any]]:
+def _read_json_dict(path: str) -> dict[str, Any] | None:
     if not os.path.exists(path):
         return None
     try:
-        with open(path, "r", encoding="utf-8") as handle:
+        with open(path, encoding="utf-8") as handle:
             data = json.load(handle)
         return data if isinstance(data, dict) else None
     except Exception:
         return None
 
 
-def load_repo_automation_status() -> Optional[dict[str, Any]]:
+def load_repo_automation_status() -> dict[str, Any] | None:
     """Read the current repo automation status from canonical or legacy paths."""
     for candidate in (REPO_AUTOMATION_STATUS_PATH, REPO_AUTOMATION_LEGACY_STATUS_PATH):
         status = _read_json_dict(candidate)
@@ -85,9 +85,7 @@ def repo_automation_status_summary() -> str:
 
     components = status.get("components_running", {}) or {}
     component_enabled = status.get("component_enabled", {}) or {}
-    enabled_components = {
-        name: value for name, value in components.items() if component_enabled.get(name, True)
-    }
+    enabled_components = {name: value for name, value in components.items() if component_enabled.get(name, True)}
     running = sum(1 for value in enabled_components.values() if value)
     total = len(enabled_components)
     active_components = [name for name, value in components.items() if value]
@@ -129,9 +127,7 @@ def repo_automation_next_step() -> str:
     errors = status.get("errors", []) or []
     components = status.get("components_running", {}) or {}
     component_enabled = status.get("component_enabled", {}) or {}
-    enabled_components = {
-        name: value for name, value in components.items() if component_enabled.get(name, True)
-    }
+    enabled_components = {name: value for name, value in components.items() if component_enabled.get(name, True)}
     running = sum(1 for value in enabled_components.values() if value)
     total = len(enabled_components)
     if errors:
@@ -609,7 +605,7 @@ def _conv_lock():
             pass
 
 
-def save_conversation_json(hist_state: List[dict], session_name: str = "session") -> str:
+def save_conversation_json(hist_state: list[dict], session_name: str = "session") -> str:
     ensure_conv_dir()
     ts = int(time.time())
     safe_name = (session_name or "session").strip().replace(" ", "_")
@@ -640,7 +636,7 @@ def save_conversation_json(hist_state: List[dict], session_name: str = "session"
     return filename
 
 
-def save_conversation_markdown(hist_state: List[dict], session_name: str = "session") -> str:
+def save_conversation_markdown(hist_state: list[dict], session_name: str = "session") -> str:
     ensure_conv_dir()
     ts = int(time.time())
     safe_name = (session_name or "session").strip().replace(" ", "_")
@@ -668,12 +664,12 @@ def save_conversation_markdown(hist_state: List[dict], session_name: str = "sess
     return filename
 
 
-def load_latest_conversation() -> Tuple[List[Tuple[str, str]], List[dict]]:
+def load_latest_conversation() -> tuple[list[tuple[str, str]], list[dict]]:
     if not os.path.exists(LATEST_PATH):
         return [], []
     try:
         with _conv_lock():
-            with open(LATEST_PATH, "r", encoding="utf-8") as f:
+            with open(LATEST_PATH, encoding="utf-8") as f:
                 hist = json.load(f)
     except Exception:
         return [], []
@@ -687,7 +683,7 @@ def load_latest_conversation() -> Tuple[List[Tuple[str, str]], List[dict]]:
     return display, hist
 
 
-def hist_state_to_display(hist_state: List[dict]) -> List[Tuple[str, str]]:
+def hist_state_to_display(hist_state: list[dict]) -> list[tuple[str, str]]:
     if not hist_state:
         return []
     return [
@@ -699,7 +695,7 @@ def hist_state_to_display(hist_state: List[dict]) -> List[Tuple[str, str]]:
     ]
 
 
-def hist_state_to_messages(hist_state: List[dict]) -> Any:
+def hist_state_to_messages(hist_state: list[dict]) -> Any:
     """Convert structured history into Gradio Chatbot messages format."""
     if not hist_state:
         return []
@@ -722,7 +718,7 @@ def hist_state_to_messages(hist_state: List[dict]) -> Any:
 
 
 # Export conversation to HTML for sharing/viewing
-def generate_html_export(hist_state: List[dict], session_name: str = "session") -> str:
+def generate_html_export(hist_state: list[dict], session_name: str = "session") -> str:
     ensure_conv_dir()
     ts = int(time.time())
     safe_name = (session_name or "session").strip().replace(" ", "_")
@@ -759,10 +755,10 @@ def generate_html_export(hist_state: List[dict], session_name: str = "session") 
 
 
 # Simple summarizer to propose follow-ups or improvements
-def summarize_conversation_simple(hist_state: List[dict], top_n: int = 5) -> str:
+def summarize_conversation_simple(hist_state: list[dict], top_n: int = 5) -> str:
     if not hist_state:
         return "No conversation yet."
-    texts = " ".join(((e.get("user", "") or "") + " " + (e.get("assistant", "") or "") for e in hist_state))
+    texts = " ".join((e.get("user", "") or "") + " " + (e.get("assistant", "") or "") for e in hist_state)
     tokens = re.findall(r"\w+", texts.lower())
     stopwords = set(
         [
@@ -834,7 +830,7 @@ def load_suggestions():
         return []
     try:
         with _conv_lock():
-            with open(SUGGESTIONS_PATH, "r", encoding="utf-8") as f:
+            with open(SUGGESTIONS_PATH, encoding="utf-8") as f:
                 return json.load(f)
     except Exception:
         return []
@@ -847,7 +843,7 @@ def auto_improve_daemon():
         interval = 60
         try:
             if os.path.exists(AUTO_IMPROVE_CONFIG_PATH):
-                with open(AUTO_IMPROVE_CONFIG_PATH, "r", encoding="utf-8") as f:
+                with open(AUTO_IMPROVE_CONFIG_PATH, encoding="utf-8") as f:
                     cfg = json.load(f)
                 enabled = bool(cfg.get("enabled", False))
                 interval = int(cfg.get("interval", interval))
@@ -877,12 +873,12 @@ with gr.Blocks() as demo:
     # Theme injection element + toggle
     theme_css = gr.HTML(value=LIGHT_CSS)
     hero_banner = gr.HTML(
-        value="""
+        value=f"""
         <div class="hero-banner">
             <div class="hero-title">QAI Gradio Demo</div>
             <p class="hero-subtitle">A polished chat workspace for QAI session management, exports, and lightweight automation experiments.</p>
             <div class="pill-row">
-                <span class="pill">{provider_status}</span>
+                <span class="pill">{html.escape(provider_diagnostics_summary())}</span>
             </div>
             <div class="pill-row">
                 <span class="pill">Streaming chat</span>
@@ -891,9 +887,7 @@ with gr.Blocks() as demo:
                 <span class="pill">Auto-improve</span>
             </div>
         </div>
-        """.format(
-            provider_status=html.escape(provider_diagnostics_summary())
-        )
+        """
     )
     with gr.Row(elem_classes=["surface-card"]):
         with gr.Column(scale=4):
@@ -1478,8 +1472,8 @@ with gr.Blocks() as demo:
                     import gradio_webhook
                 except ModuleNotFoundError:
                     # attempt to load local scripts/gradio_webhook.py relative to this file
-                    from pathlib import Path
                     import importlib.util
+                    from pathlib import Path
 
                     p = Path(__file__).resolve().parent / "gradio_webhook.py"
                     if not p.exists():
@@ -1537,7 +1531,7 @@ with gr.Blocks() as demo:
             if not path:
                 return [], []
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     data = json.load(f)
                 display = hist_state_to_messages(data)
                 return display, data
@@ -1617,7 +1611,7 @@ with gr.Blocks() as demo:
 
         load_latest_btn.click(load_latest_click, outputs=[chatbot, hist_state])
 
-        def generate_tts_for_text(text: str, backend: Optional[str] = None) -> Optional[str]:
+        def generate_tts_for_text(text: str, backend: str | None = None) -> str | None:
             """Generate TTS audio file for text. Falls back to a short silent WAV if no TTS backends are available.
 
             Returns path to audio file or None on unrecoverable errors.
@@ -1653,7 +1647,7 @@ with gr.Blocks() as demo:
                     except Exception:
                         return None
 
-                def write_silent_wav(path: str, duration: float = 0.1) -> Optional[str]:
+                def write_silent_wav(path: str, duration: float = 0.1) -> str | None:
                     try:
                         import wave
 

@@ -9,6 +9,7 @@ Usage:
     python scripts/status_dashboard.py --export     # Export to JSON
     python scripts/status_dashboard.py --export dashboard_out.json
 """
+
 import argparse
 import json
 import os
@@ -16,7 +17,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure repository root is on sys.path before importing local shared modules.
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -46,7 +47,7 @@ ORCHESTRATORS = [
 # ─── helpers ────────────────────────────────────────────────────────────────
 
 
-def _load(rel: str) -> Dict[str, Any]:
+def _load(rel: str) -> dict[str, Any]:
     p = DATA_OUT / rel
     loaded = load_status_json(p)
     if loaded.get("_status_file_error"):
@@ -55,12 +56,12 @@ def _load(rel: str) -> Dict[str, Any]:
     return {k: v for k, v in loaded.items() if not k.startswith("_status_file_")}
 
 
-def _load_with_meta(rel: str, max_age_seconds: Optional[int] = None) -> Dict[str, Any]:
+def _load_with_meta(rel: str, max_age_seconds: int | None = None) -> dict[str, Any]:
     p = DATA_OUT / rel
     return load_status_json(p, max_age_seconds=max_age_seconds)
 
 
-def _status_hint(data: Dict[str, Any]) -> str:
+def _status_hint(data: dict[str, Any]) -> str:
     if data.get("_status_file_error"):
         return ""
     if data.get("_status_file_stale"):
@@ -68,11 +69,11 @@ def _status_hint(data: Dict[str, Any]) -> str:
     return ""
 
 
-def _trim_status_meta(data: Dict[str, Any]) -> Dict[str, Any]:
+def _trim_status_meta(data: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in data.items() if not k.startswith("_status_file_")}
 
 
-def _fmt_time(iso: Optional[str]) -> str:
+def _fmt_time(iso: str | None) -> str:
     if not iso:
         return "—"
     try:
@@ -85,10 +86,10 @@ def _fmt_time(iso: Optional[str]) -> str:
         if secs < 60:
             return f"{secs}s ago"
         if secs < 3600:
-            return f"{secs//60}m ago"
+            return f"{secs // 60}m ago"
         if secs < 86400:
-            return f"{secs//3600}h ago"
-        return f"{secs//86400}d ago"
+            return f"{secs // 3600}h ago"
+        return f"{secs // 86400}d ago"
     except Exception:
         return iso[:19] if len(iso) >= 19 else iso
 
@@ -116,7 +117,7 @@ def _row(label: str, value: str, width: int = 30) -> str:
 # ─── section printers ────────────────────────────────────────────────────────
 
 
-def _print_orchestrator(name: str, rel_path: str) -> Dict[str, Any]:
+def _print_orchestrator(name: str, rel_path: str) -> dict[str, Any]:
     data_with_meta = _load_with_meta(rel_path, max_age_seconds=24 * 3600)
     data = _trim_status_meta(data_with_meta)
     if data_with_meta.get("_status_file_error"):
@@ -201,7 +202,7 @@ def _print_services():
         _ = cmd  # suppress unused hint
 
 
-def print_dashboard() -> List[Dict[str, Any]]:
+def print_dashboard() -> list[dict[str, Any]]:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     width = 70
     print("\n" + "═" * width)

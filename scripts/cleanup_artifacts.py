@@ -11,6 +11,7 @@ Usage:
   python scripts/cleanup_artifacts.py --max-age 14     # Keep last 14 days
   python scripts/cleanup_artifacts.py --max-count 20   # Keep last 20 per dir
 """
+
 import argparse
 import json
 import time

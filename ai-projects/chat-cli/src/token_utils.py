@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple
 
-RoleMessage = Dict[str, str]
+RoleMessage = dict[str, str]
 
 try:
     import tiktoken  # type: ignore
@@ -18,7 +18,7 @@ except Exception:  # pragma: no cover - optional
 
 
 # Reasonable default context sizes by popular models/deployments
-MODEL_CONTEXT_DEFAULTS: Dict[str, int] = {
+MODEL_CONTEXT_DEFAULTS: dict[str, int] = {
     # OpenAI
     "gpt-4o": 128000,
     "gpt-4o-mini": 128000,
@@ -33,7 +33,7 @@ MODEL_CONTEXT_DEFAULTS: Dict[str, int] = {
 }
 
 
-def _match_model_default(model: Optional[str]) -> int:
+def _match_model_default(model: str | None) -> int:
     m = (model or "").lower()
     for key, ctx in MODEL_CONTEXT_DEFAULTS.items():
         if key in m:
@@ -50,7 +50,7 @@ class PruneStats:
     reserve_output_tokens: int
 
 
-def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], int]:
+def _get_text_encoder(provider: str, model: str | None) -> Callable[[str], int]:
     """Return a function that approximates token count for a given text.
 
     Priority: tiktoken (OpenAI/Azure) -> transformers tokenizer (if available) -> heuristic.
@@ -98,10 +98,10 @@ def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], in
 
 
 def count_messages_tokens(
-    messages: List[RoleMessage],
+    messages: list[RoleMessage],
     provider: str,
-    model: Optional[str],
-    system_prompt: Optional[str] = None,
+    model: str | None,
+    system_prompt: str | None = None,
 ) -> int:
     enc = _get_text_encoder(provider, model)
     total = 0
@@ -113,13 +113,13 @@ def count_messages_tokens(
 
 
 def prune_messages(
-    messages: List[RoleMessage],
+    messages: list[RoleMessage],
     provider: str,
-    model: Optional[str],
-    max_context_tokens: Optional[int],
+    model: str | None,
+    max_context_tokens: int | None,
     reserve_output_tokens: int = 1024,
-    system_prompt: Optional[str] = None,
-) -> Tuple[List[RoleMessage], PruneStats, Optional[RoleMessage]]:
+    system_prompt: str | None = None,
+) -> tuple[list[RoleMessage], PruneStats, RoleMessage | None]:
     """Prune conversation to fit within model context budget.
 
     Returns: (pruned_messages, stats, system_message)

@@ -13,18 +13,19 @@ tokens = count_messages_tokens(messages, provider, model, system_prompt)
 ```
 
 ### Counting Priority
+
 1. **tiktoken** — For OpenAI/Azure models (accurate, fast)
 2. **AutoTokenizer** — For Hugging Face models (transformers library)
 3. **Heuristic** — 1 token ≈ 4 characters (universal fallback)
 
 ## Context Window Defaults
 
-| Model | Context Window |
-| ------- | --------------- |
-| gpt-4o | 128,000 |
-| gpt-3.5-turbo | 16,384 |
-| Azure default | 16,384 |
-| Phi models | 4,096 |
+| Model         | Context Window |
+| ------------- | -------------- |
+| gpt-4o        | 128,000        |
+| gpt-3.5-turbo | 16,384         |
+| Azure default | 16,384         |
+| Phi models    | 4,096          |
 
 ## Message Pruning
 
@@ -40,12 +41,14 @@ pruned_msgs, stats, system_msg = prune_messages(
 ```
 
 ### Pruning Algorithm (O(n))
+
 1. Pre-compute per-message token counts
 2. Always keep system message + most recent messages
 3. Remove oldest messages first when over budget
 4. Return pruned list + stats
 
 ### PruneStats
+
 ```python
 {
     "original_tokens": int,       # Total before pruning

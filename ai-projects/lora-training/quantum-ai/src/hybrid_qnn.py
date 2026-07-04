@@ -4,7 +4,6 @@ Combines quantum circuits with classical deep learning
 """
 
 import logging
-from typing import Tuple
 
 import numpy as np
 import torch
@@ -258,7 +257,7 @@ class QuantumClassicalTrainer:
 
         return avg_loss
 
-    def evaluate(self, val_loader: torch.utils.data.DataLoader) -> Tuple[float, float]:
+    def evaluate(self, val_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
         """
         Evaluate model
 

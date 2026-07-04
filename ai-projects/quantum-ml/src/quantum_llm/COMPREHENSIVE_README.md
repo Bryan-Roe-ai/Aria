@@ -146,25 +146,25 @@ curl http://localhost:7071/api/quantum-llm/status | jq
 
 ```json
 {
-  "status": "ok",
-  "backend": "classical",
-  "fallback": false,
-  "num_qubits": 4,
-  "shots": 512,
-  "num_layers": 2,
-  "provider": "auto",
-  "cache": {
-    "enabled": true,
-    "stats": {
-      "size": 42,
-      "max_size": 256,
-      "hits": 127,
-      "misses": 35,
-      "hit_rate": 0.784,
-      "evictions": 0,
-      "expirations": 2
+    "status": "ok",
+    "backend": "classical",
+    "fallback": false,
+    "num_qubits": 4,
+    "shots": 512,
+    "num_layers": 2,
+    "provider": "auto",
+    "cache": {
+        "enabled": true,
+        "stats": {
+            "size": 42,
+            "max_size": 256,
+            "hits": 127,
+            "misses": 35,
+            "hit_rate": 0.784,
+            "evictions": 0,
+            "expirations": 2
+        }
     }
-  }
 }
 ```
 
@@ -176,11 +176,11 @@ Non-streaming quantum-augmented completion.
 
 ```json
 {
-  "prompt": "What is entanglement?",
-  "provider": "auto",
-  "backend": "auto",
-  "max_tokens": 512,
-  "seed": null
+    "prompt": "What is entanglement?",
+    "provider": "auto",
+    "backend": "auto",
+    "max_tokens": 512,
+    "seed": null
 }
 ```
 
@@ -188,13 +188,13 @@ Non-streaming quantum-augmented completion.
 
 ```json
 {
-  "response": "Quantum entanglement is...",
-  "provider": "local",
-  "backend": "classical",
-  "qubits": 4,
-  "shots": 512,
-  "latency_ms": 23.5,
-  "quantum_augmented": true
+    "response": "Quantum entanglement is...",
+    "provider": "local",
+    "backend": "classical",
+    "qubits": 4,
+    "shots": 512,
+    "latency_ms": 23.5,
+    "quantum_augmented": true
 }
 ```
 
@@ -206,9 +206,9 @@ SSE-based streaming quantum-augmented completion.
 
 ```json
 {
-  "prompt": "Explain superposition",
-  "provider": "auto",
-  "seed": 42
+    "prompt": "Explain superposition",
+    "provider": "auto",
+    "seed": 42
 }
 ```
 

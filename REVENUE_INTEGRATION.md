@@ -14,10 +14,10 @@ The main Aria character page (`aria_web/index.html`) now features:
 
 - **Navigation Bar:** Clean, responsive navigation at the top
 - **Monetization Links:**
-  - 🏠 Home (monetization hub)
-  - 💰 Pricing
-  - 📊 My Subscription
-  - 👑 Admin Dashboard
+    - 🏠 Home (monetization hub)
+    - 💰 Pricing
+    - 📊 My Subscription
+    - 👑 Admin Dashboard
 - **Subscription Badge:** Displays current tier (Free, Pro, Enterprise)
 - **Upgrade Button:** Prominent call-to-action for up/downgrade
 
@@ -67,17 +67,25 @@ graph LR
 
 ```css
 .nav-bar {
-  background: rgba(255,255,255,0.95);
-  border-radius: 50px;
-  padding: 10px 20px;
-  /* ...responsive design... */
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 50px;
+    padding: 10px 20px;
+    /* ...responsive design... */
 }
 .subscription-badge {
-  color: white; padding: 5px 12px; border-radius: 15px;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 15px;
 }
-.subscription-badge.free { background: #9e9e9e; }
-.subscription-badge.pro { background: linear-gradient(135deg, #667eea, #764ba2); }
-.subscription-badge.enterprise { background: linear-gradient(135deg, #ffd700, #ffed4e); }
+.subscription-badge.free {
+    background: #9e9e9e;
+}
+.subscription-badge.pro {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+.subscription-badge.enterprise {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+}
 ```
 
 **JavaScript Snippet:**
@@ -85,12 +93,12 @@ graph LR
 ```javascript
 // Fetch and display subscription dynamically
 async function loadSubscriptionStatus() {
-  const response = await fetch("/api/subscription/status?user_id=demo_user");
-  if (response.ok) {
-    const data = await response.json();
-    badge.textContent = `${data.tier_name} Tier`;
-    badge.className = `subscription-badge ${data.tier.toLowerCase()}`;
-  }
+    const response = await fetch("/api/subscription/status?user_id=demo_user")
+    if (response.ok) {
+        const data = await response.json()
+        badge.textContent = `${data.tier_name} Tier`
+        badge.className = `subscription-badge ${data.tier.toLowerCase()}`
+    }
 }
 ```
 
@@ -99,8 +107,8 @@ async function loadSubscriptionStatus() {
 ```html
 <a href="aria_web/index.html" class="button button-primary">👤 Try Aria</a>
 <a href="aria_web/index.html" class="page-link">
-  <h3>👤 Aria Character</h3>
-  <p>Interactive 3D AI character with natural language commands.</p>
+    <h3>👤 Aria Character</h3>
+    <p>Interactive 3D AI character with natural language commands.</p>
 </a>
 ```
 
@@ -110,25 +118,25 @@ async function loadSubscriptionStatus() {
 
 ### Subscription Tiers
 
-| Tier         | Price      | Target Users | Revenue     |
-|--------------|------------|--------------|-------------|
-| Free         | $0/mo      | Unlimited    | $0          |
-| Pro          | $49/mo     | 5            | $245        |
-| Enterprise   | $199/mo    | 10           | $1,990      |
-| **Total**    |            | 15           | **$2,235/mo**|
+| Tier       | Price   | Target Users | Revenue       |
+| ---------- | ------- | ------------ | ------------- |
+| Free       | $0/mo   | Unlimited    | $0            |
+| Pro        | $49/mo  | 5            | $245          |
+| Enterprise | $199/mo | 10           | $1,990        |
+| **Total**  |         | 15           | **$2,235/mo** |
 
 **Annualized Revenue:** $26,820
 
 ### Feature Gates
 
-| Feature               | Free     | Pro      | Enterprise   |
-|-----------------------|----------|----------|--------------|
-| Chat Messages         | 100/mo   | 10,000/mo| Unlimited    |
-| Aria Character        | Basic    | Full     | Full         |
-| Quantum Computing     | ❌       | 50/mo    | Unlimited    |
-| Model Training        | ❌       | 20 hrs/mo| Unlimited    |
-| API Access            | ❌       | 10K/mo   | Unlimited    |
-| Commercial License    | ❌       | ✅        | ✅           |
+| Feature            | Free   | Pro       | Enterprise |
+| ------------------ | ------ | --------- | ---------- |
+| Chat Messages      | 100/mo | 10,000/mo | Unlimited  |
+| Aria Character     | Basic  | Full      | Full       |
+| Quantum Computing  | ❌     | 50/mo     | Unlimited  |
+| Model Training     | ❌     | 20 hrs/mo | Unlimited  |
+| API Access         | ❌     | 10K/mo    | Unlimited  |
+| Commercial License | ❌     | ✅        | ✅         |
 
 ---
 
@@ -144,13 +152,13 @@ GET /api/subscription/status?user_id=demo_user
 
 ```json
 {
-  "user_id": "demo_user",
-  "tier": "pro",
-  "tier_name": "PRO",
-  "price": 49,
-  "is_active": true,
-  "usage": { "chat_messages": 150, "quantum_jobs": 5 },
-  "limits": { "chat_messages": 10000, "quantum_jobs": 50 }
+    "user_id": "demo_user",
+    "tier": "pro",
+    "tier_name": "PRO",
+    "price": 49,
+    "is_active": true,
+    "usage": { "chat_messages": 150, "quantum_jobs": 5 },
+    "limits": { "chat_messages": 10000, "quantum_jobs": 50 }
 }
 ```
 

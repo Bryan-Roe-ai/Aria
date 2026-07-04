@@ -8,9 +8,10 @@ import subprocess
 import sys
 import threading
 import time
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Generator, Iterable, List, Optional
+from typing import Any
 
 try:
     from shared.local_calc import evaluate_arithmetic, normalize_expression
@@ -77,7 +78,7 @@ except Exception:  # pragma: no cover - optional at runtime
 
 
 # Thread-safe cache for LM Studio availability checks
-_lm_studio_availability_cache: Dict[str, Any] = {
+_lm_studio_availability_cache: dict[str, Any] = {
     "available": None,
     "checked_at": 0.0,
     "url": None,
@@ -91,7 +92,7 @@ _lmstudio_cache = _lm_studio_availability_cache
 _LMSTUDIO_CACHE_TTL = _LM_STUDIO_CACHE_TTL_SECONDS
 
 # Thread-safe cache for Ollama availability checks
-_ollama_availability_cache: Dict[str, Any] = {
+_ollama_availability_cache: dict[str, Any] = {
     "available": None,
     "checked_at": 0.0,
     "url": None,
@@ -101,12 +102,12 @@ _OLLAMA_CACHE_TTL_SECONDS = 30
 
 
 # {"role": "system|user|assistant", "content": "..."}
-RoleMessage = Dict[str, str]
+RoleMessage = dict[str, str]
 
 
 # Backward-compatible provider aliases used by tests and scripts.
 # Keys should be lowercase and normalized with `-`/`_` variants where useful.
-_PROVIDER_ALIASES: Dict[str, str] = {
+_PROVIDER_ALIASES: dict[str, str] = {
     "azure_openai": "azure",
     "azure-openai": "azure",
     "open_ai": "openai",
@@ -135,7 +136,7 @@ _KNOWN_PROVIDER_CHOICES: set[str] = {
 }
 
 
-def _get_lmstudio_api_key() -> Optional[str]:
+def _get_lmstudio_api_key() -> str | None:
     """Resolve LM Studio API token from supported env var names."""
     return (
         os.getenv("LM_API_TOKEN")
@@ -214,15 +215,14 @@ def _normalize_message_content_for_openai_api(content: Any) -> Any:
     return normalized or None
 
 
-def _normalize_messages_for_openai_api(messages: List[dict[str, Any]]) -> List[dict[str, Any]]:
+def _normalize_messages_for_openai_api(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Drop empty messages and sanitize content for OpenAI-compatible APIs."""
     normalized_messages: list[dict[str, Any]] = []
     for msg in messages:
         if not isinstance(msg, dict):
             continue
 
-        normalized_content = _normalize_message_content_for_openai_api(
-            msg.get("content"))
+        normalized_content = _normalize_message_content_for_openai_api(msg.get("content"))
         if normalized_content is None:
             continue
 
@@ -256,8 +256,7 @@ def _check_lmstudio_available(url: str) -> bool:
 
             base_url = url.removesuffix("/v1")
             models_endpoint_url = base_url + "/v1/models"
-            request = urllib.request.Request(
-                models_endpoint_url, headers={"User-Agent": "QAI"})
+            request = urllib.request.Request(models_endpoint_url, headers={"User-Agent": "QAI"})
             urllib.request.urlopen(request, timeout=1)
             return True
         except Exception:
@@ -271,11 +270,11 @@ class ProviderChoice:
 
 
 class BaseChatProvider:
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         raise NotImplementedError
 
     @staticmethod
-    def _normalize_messages_for_api(messages: List[dict[str, Any]]) -> List[dict[str, Any]]:
+    def _normalize_messages_for_api(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Sanitize messages before forwarding them to external providers."""
         return _normalize_messages_for_openai_api(messages)
 
@@ -340,7 +339,7 @@ class LoraLocalProvider(BaseChatProvider):
         """
         self.adapter_dir = Path(adapter_dir)
         self.use_subprocess = False
-        self.bridge_python: Optional[str] = None
+        self.bridge_python: str | None = None
         self.temperature = float(temperature)
         self.max_new_tokens = int(max_new_tokens)
         self.top_p = float(top_p)
@@ -349,8 +348,7 @@ class LoraLocalProvider(BaseChatProvider):
         # Lazy import heavy deps on demand
         self._lazy_setup()
         if not self.use_subprocess:
-            self.device = device or (
-                "cuda" if self.torch.cuda.is_available() else "cpu")
+            self.device = device or ("cuda" if self.torch.cuda.is_available() else "cpu")
             self.model, self.tokenizer = self._load_model_and_tokenizer()
         else:
             # In subprocess mode we keep state minimal here
@@ -362,19 +360,16 @@ class LoraLocalProvider(BaseChatProvider):
 
         adapter_config_path = self.adapter_dir / "adapter_config.json"
         if not adapter_config_path.exists():
-            raise RuntimeError(
-                f"adapter_config.json not found in {self.adapter_dir}")
-        with open(adapter_config_path, "r", encoding="utf-8") as f:
+            raise RuntimeError(f"adapter_config.json not found in {self.adapter_dir}")
+        with open(adapter_config_path, encoding="utf-8") as f:
             adapter_cfg = _json.load(f)
-        base_model_id = adapter_cfg.get(
-            "base_model_name_or_path", "microsoft/Phi-3.5-mini-instruct")
+        base_model_id = adapter_cfg.get("base_model_name_or_path", "microsoft/Phi-3.5-mini-instruct")
         # Fallback mapping for Phi-3.6
         if base_model_id == "Phi-3.6-mini-instruct":
             base_model_id = "microsoft/Phi-3.5-mini-instruct"
         base_model = self.AutoModelForCausalLM.from_pretrained(
             base_model_id,
-            torch_dtype=(self.torch.float16 if self.device ==
-                         "cuda" else self.torch.float32),
+            torch_dtype=(self.torch.float16 if self.device == "cuda" else self.torch.float32),
             device_map="auto" if self.device == "cuda" else None,
         )
         tokenizer_source = self.adapter_dir.parent / "tokenizer"
@@ -386,7 +381,7 @@ class LoraLocalProvider(BaseChatProvider):
         model.eval()
         return model, tokenizer
 
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         if self.use_subprocess:
             response = self._complete_via_subprocess(messages)
             if not stream:
@@ -413,8 +408,7 @@ class LoraLocalProvider(BaseChatProvider):
                 pad_token_id=self.tokenizer.eos_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
             )
-        response = self.tokenizer.decode(
-            output[0][inputs["input_ids"].shape[-1]:], skip_special_tokens=True)
+        response = self.tokenizer.decode(output[0][inputs["input_ids"].shape[-1] :], skip_special_tokens=True)
         if not stream:
             return response
 
@@ -425,12 +419,10 @@ class LoraLocalProvider(BaseChatProvider):
 
         return gen()
 
-    def _complete_via_subprocess(self, messages: List[RoleMessage]) -> str:
+    def _complete_via_subprocess(self, messages: list[RoleMessage]) -> str:
         if not self.bridge_python:
-            raise RuntimeError(
-                "Subprocess bridge not configured for LoRA provider.")
-        bridge_script = Path(__file__).resolve().parent / \
-            "lora_infer_bridge.py"
+            raise RuntimeError("Subprocess bridge not configured for LoRA provider.")
+        bridge_script = Path(__file__).resolve().parent / "lora_infer_bridge.py"
         if not bridge_script.exists():
             raise RuntimeError(f"Bridge script not found at {bridge_script}")
         payload = {
@@ -452,8 +444,7 @@ class LoraLocalProvider(BaseChatProvider):
         if proc.returncode != 0:
             stderr = proc.stderr.decode("utf-8", errors="ignore")
             stdout = proc.stdout.decode("utf-8", errors="ignore")
-            msg = stderr.strip() or stdout.strip(
-            ) or f"exit code {proc.returncode}"
+            msg = stderr.strip() or stdout.strip() or f"exit code {proc.returncode}"
             # Truncate very long errors but keep start and end
             if len(msg) > 1000:
                 msg = msg[:500] + "\n...\n" + msg[-500:]
@@ -461,7 +452,7 @@ class LoraLocalProvider(BaseChatProvider):
         text = proc.stdout.decode("utf-8", errors="ignore").strip()
         return text
 
-    def _build_prompt(self, messages: List[RoleMessage]) -> str:
+    def _build_prompt(self, messages: list[RoleMessage]) -> str:
         """Build prompt string from messages.
 
         Uses list join instead of string += for O(n) instead of O(n²) complexity.
@@ -531,11 +522,11 @@ class LocalEchoProvider(BaseChatProvider):
     offline scenarios.
     """
 
-    def __init__(self, seed: Optional[int] = None):
+    def __init__(self, seed: int | None = None):
         self.rng = random.Random(seed)
         self._response_templates = self._initialize_templates()
 
-    def _initialize_templates(self) -> Dict[str, List[str]]:
+    def _initialize_templates(self) -> dict[str, list[str]]:
         """Initialize response templates categorized by intent."""
         return {
             "greeting": [
@@ -613,16 +604,14 @@ class LocalEchoProvider(BaseChatProvider):
 
         return "generic"
 
-    def _craft_autonomous_reply(self, messages: List[RoleMessage], last_user: str, turn_count: int) -> str:
+    def _craft_autonomous_reply(self, messages: list[RoleMessage], last_user: str, turn_count: int) -> str:
         """Generate more useful offline output for autonomous CLI loops."""
-        assistant_messages = [m["content"]
-                              for m in messages if m.get("role") == "assistant"]
+        assistant_messages = [m["content"] for m in messages if m.get("role") == "assistant"]
         last_assistant = assistant_messages[-1] if assistant_messages else ""
         user_topics = [
             m["content"].strip() for m in messages if m.get("role") == "user" and m.get("content", "").strip()
         ]
-        topic = user_topics[0][:120].rstrip(
-            ".,?!") if user_topics else "the current task"
+        topic = user_topics[0][:120].rstrip(".,?!") if user_topics else "the current task"
 
         if "message count exceeded limit" in last_assistant.lower():
             return (
@@ -660,15 +649,14 @@ class LocalEchoProvider(BaseChatProvider):
         ]
         return sequence[(turn_count - 1) % len(sequence)]
 
-    def _craft_reply(self, messages: List[RoleMessage]) -> str:
+    def _craft_reply(self, messages: list[RoleMessage]) -> str:
         """Generate a contextually appropriate response.
 
         The local echo provider has no real model, so responses are
         rule-based — but they should at least be informative and
         actionable rather than meaninglessly rephrasing the user's input.
         """
-        last_user = next((m["content"] for m in reversed(
-            messages) if m.get("role") == "user"), "").strip()
+        last_user = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "").strip()
 
         if not last_user:
             return (
@@ -692,8 +680,7 @@ class LocalEchoProvider(BaseChatProvider):
         # --- Arithmetic (real, deterministic answers even offline) ---
         calc_result = evaluate_arithmetic(last_user)
         if calc_result is not None:
-            expression = normalize_expression(
-                last_user) or last_user.strip().rstrip("?.! ")
+            expression = normalize_expression(last_user) or last_user.strip().rstrip("?.! ")
             return f"{expression} = {calc_result}"
 
         if is_summary_request(last_user):
@@ -786,7 +773,7 @@ class LocalEchoProvider(BaseChatProvider):
         ]
         return self.rng.choice(generic)
 
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         text = self._craft_reply(messages)
         if not stream:
             return text
@@ -804,19 +791,18 @@ class OpenAIProvider(BaseChatProvider):
     def __init__(
         self,
         model: str,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         temperature: float = 0.7,
-        max_output_tokens: Optional[int] = None,
+        max_output_tokens: int | None = None,
     ):
         if OpenAI is None:
-            raise RuntimeError(
-                "openai package not installed. Install 'openai' to use this provider.")
+            raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
         self.client = OpenAI(api_key=api_key)
         self.model = model
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
 
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         """Complete with OpenAI and handle quota/rate-limit errors gracefully.
 
         Behaviour mirrors AzureOpenAIProvider:
@@ -902,7 +888,7 @@ class LMStudioProvider(BaseChatProvider):
         base_url: str = "http://127.0.0.1:1234/v1",
         model: str = "local-model",
         temperature: float = 0.7,
-        max_output_tokens: Optional[int] = None,
+        max_output_tokens: int | None = None,
     ):
         # Prefer official OpenAI SDK when available, but support a pure-HTTP
         # fallback so LM Studio remains usable in minimal environments.
@@ -924,15 +910,14 @@ class LMStudioProvider(BaseChatProvider):
     def _chat_completions_url(self) -> str:
         return self.base_url.rstrip("/") + "/chat/completions"
 
-    def _complete_via_http(self, messages: List[RoleMessage], stream: bool) -> Iterable[str] | str:
+    def _complete_via_http(self, messages: list[RoleMessage], stream: bool) -> Iterable[str] | str:
         import json
         import urllib.request
 
-        timeout_seconds = _get_bounded_timeout_env(
-            "LMSTUDIO_HTTP_TIMEOUT", 60.0, minimum=1.0, maximum=600.0)
+        timeout_seconds = _get_bounded_timeout_env("LMSTUDIO_HTTP_TIMEOUT", 60.0, minimum=1.0, maximum=600.0)
 
         normalized_messages = self._normalize_messages_for_api(messages)
-        payload: Dict[str, Any] = {
+        payload: dict[str, Any] = {
             "model": self.model,
             "messages": normalized_messages,
             "temperature": self.temperature,
@@ -961,8 +946,7 @@ class LMStudioProvider(BaseChatProvider):
             def _gen() -> Generator[str, None, None]:
                 with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:  # noqa: S310 - local configurable endpoint
                     for raw_line in resp:
-                        line = raw_line.decode(
-                            "utf-8", errors="replace").strip()
+                        line = raw_line.decode("utf-8", errors="replace").strip()
                         if not line or not line.startswith("data:"):
                             continue
                         data = line[5:].strip()
@@ -970,8 +954,7 @@ class LMStudioProvider(BaseChatProvider):
                             break
                         try:
                             obj = _json.loads(data)
-                            delta = obj.get("choices", [{}])[
-                                0].get("delta", {})
+                            delta = obj.get("choices", [{}])[0].get("delta", {})
                             content = delta.get("content")
                             if content:
                                 yield content
@@ -985,7 +968,7 @@ class LMStudioProvider(BaseChatProvider):
         obj = _json.loads(body)
         return obj.get("choices", [{}])[0].get("message", {}).get("content", "") or ""
 
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         try:
             if self.client is None:
                 return self._complete_via_http(messages, stream)
@@ -1102,11 +1085,10 @@ class OllamaProvider(BaseChatProvider):
         base_url: str = "http://127.0.0.1:11434/v1",
         model: str = "llama3.2",
         temperature: float = 0.7,
-        max_output_tokens: Optional[int] = None,
+        max_output_tokens: int | None = None,
     ):
         if OpenAI is None:
-            raise RuntimeError(
-                "openai package not installed. Install 'openai' to use this provider.")
+            raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
         # Ollama doesn't require real key
         self.client = OpenAI(base_url=base_url, api_key="ollama")
         self.model = model
@@ -1114,7 +1096,7 @@ class OllamaProvider(BaseChatProvider):
         self.max_output_tokens = max_output_tokens
         self.base_url = base_url
 
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         try:
             normalized_messages = self._normalize_messages_for_api(messages)
             resp = self.client.chat.completions.create(
@@ -1189,11 +1171,10 @@ class AzureOpenAIProvider(BaseChatProvider):
         api_key: str,
         api_version: str = "2024-08-01-preview",
         temperature: float = 0.7,
-        max_output_tokens: Optional[int] = None,
+        max_output_tokens: int | None = None,
     ):
         if AzureOpenAI is None:
-            raise RuntimeError(
-                "openai package not installed. Install 'openai' to use this provider.")
+            raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
         self.client = AzureOpenAI(
             api_key=api_key,
             api_version=api_version,
@@ -1203,7 +1184,7 @@ class AzureOpenAIProvider(BaseChatProvider):
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
 
-    def complete(self, messages: List[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         """Complete with Azure OpenAI and handle quota/rate-limit errors gracefully.
 
         Behavior:
@@ -1327,9 +1308,7 @@ def _check_lm_studio_available(server_url: str) -> bool:
     # Perform HTTP check outside lock to avoid blocking other threads
     is_available = False
     lmstudio_api_key = _get_lmstudio_api_key()
-    healthcheck_timeout = _get_bounded_timeout_env(
-        "LMSTUDIO_HEALTHCHECK_TIMEOUT", 1.0, minimum=0.1, maximum=30.0
-    )
+    healthcheck_timeout = _get_bounded_timeout_env("LMSTUDIO_HEALTHCHECK_TIMEOUT", 1.0, minimum=0.1, maximum=30.0)
     try:
         import urllib.error
         import urllib.request
@@ -1394,8 +1373,7 @@ def _check_ollama_available(server_url: str) -> bool:
         base_url = server_url.removesuffix("/v1")
         # Ollama uses /api/tags to list models
         tags_endpoint_url = base_url + "/api/tags"
-        request = urllib.request.Request(
-            tags_endpoint_url, headers={"User-Agent": "QAI"})
+        request = urllib.request.Request(tags_endpoint_url, headers={"User-Agent": "QAI"})
         urllib.request.urlopen(request, timeout=1)
         is_available = True
     except Exception:
@@ -1406,8 +1384,7 @@ def _check_ollama_available(server_url: str) -> bool:
 
             base_url = server_url.removesuffix("/v1")
             models_endpoint_url = base_url + "/v1/models"
-            request = urllib.request.Request(
-                models_endpoint_url, headers={"User-Agent": "QAI"})
+            request = urllib.request.Request(models_endpoint_url, headers={"User-Agent": "QAI"})
             urllib.request.urlopen(request, timeout=1)
             is_available = True
         except Exception:
@@ -1423,10 +1400,10 @@ def _check_ollama_available(server_url: str) -> bool:
 
 
 def detect_provider(
-    explicit: Optional[str] = None,
-    model_override: Optional[str] = None,
-    temperature: Optional[float] = None,
-    max_output_tokens: Optional[int] = None,
+    explicit: str | None = None,
+    model_override: str | None = None,
+    temperature: float | None = None,
+    max_output_tokens: int | None = None,
 ) -> tuple[BaseChatProvider, ProviderChoice]:
     """Detect the best provider based on environment variables.
 
@@ -1444,12 +1421,10 @@ def detect_provider(
     explicit_requested = bool(explicit and str(explicit).strip())
     if explicit_requested and provider_choice not in _KNOWN_PROVIDER_CHOICES:
         valid = ", ".join(sorted(_KNOWN_PROVIDER_CHOICES))
-        raise ValueError(
-            f"Unknown provider '{explicit}'. Valid providers: {valid}")
+        raise ValueError(f"Unknown provider '{explicit}'. Valid providers: {valid}")
 
     # LM Studio config
-    lm_studio_base_url = os.getenv(
-        "LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
+    lm_studio_base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
     lm_studio_model_name = os.getenv("LMSTUDIO_MODEL", "local-model")
 
     # Ollama config
@@ -1461,10 +1436,8 @@ def detect_provider(
         try:
             from agi_provider import create_agi_provider
 
-            temperature_value = float(
-                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
-            max_tokens_limit = int(
-                max_output_tokens) if max_output_tokens is not None else 2048
+            temperature_value = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+            max_tokens_limit = int(max_output_tokens) if max_output_tokens is not None else 2048
             verbose = os.getenv("AGI_VERBOSE", "false").lower() == "true"
             provider, info = create_agi_provider(
                 model=model_override,
@@ -1484,10 +1457,8 @@ def detect_provider(
                 import_error,
             )
             # Recompute settings (import may have failed before they were set).
-            temperature_value = float(
-                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
-            max_tokens_limit = int(
-                max_output_tokens) if max_output_tokens is not None else 2048
+            temperature_value = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+            max_tokens_limit = int(max_output_tokens) if max_output_tokens is not None else 2048
             try:
                 from local_agi_provider import LocalAGIProvider
 
@@ -1507,8 +1478,7 @@ def detect_provider(
             from quantum_provider import create_quantum_llm_provider
 
             selected_model_path = (
-                model_override or os.getenv(
-                    "QAI_QUANTUM_MODEL_PATH") or os.getenv("QAI_QUANTUM_MODEL")
+                model_override or os.getenv("QAI_QUANTUM_MODEL_PATH") or os.getenv("QAI_QUANTUM_MODEL")
             )
             if not selected_model_path:
                 raise RuntimeError(
@@ -1517,10 +1487,8 @@ def detect_provider(
                     "Example: --provider quantum --model data_out/quantum_llm_training"
                 )
 
-            temperature_value = float(
-                temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.8"))
-            max_tokens_limit = int(
-                max_output_tokens) if max_output_tokens is not None else 200
+            temperature_value = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.8"))
+            max_tokens_limit = int(max_output_tokens) if max_output_tokens is not None else 200
 
             provider, info = create_quantum_llm_provider(
                 model_path=selected_model_path,
@@ -1535,12 +1503,9 @@ def detect_provider(
 
     if provider_choice == "lora":
         if not model_override:
-            raise RuntimeError(
-                "LoRA provider selected but model path not provided.")
-        temperature_value = float(
-            temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
-        max_new_tokens = int(
-            max_output_tokens) if max_output_tokens is not None else 256
+            raise RuntimeError("LoRA provider selected but model path not provided.")
+        temperature_value = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+        max_new_tokens = int(max_output_tokens) if max_output_tokens is not None else 256
         provider = LoraLocalProvider(
             adapter_dir=model_override,
             temperature=temperature_value,
@@ -1552,15 +1517,13 @@ def detect_provider(
     azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
     azure_openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     azure_openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
-    azure_openai_api_version = os.getenv(
-        "AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
+    azure_openai_api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
 
     # OpenAI config
     openai_api_key = os.getenv("OPENAI_API_KEY")
     openai_model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-    temperature_setting = float(
-        temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
+    temperature_setting = float(temperature if temperature is not None else os.getenv("CHAT_TEMPERATURE", "0.7"))
 
     # Resolve based on explicit choice first
     if provider_choice == "lmstudio":
@@ -1601,8 +1564,7 @@ def detect_provider(
 
     if provider_choice == "openai":
         if not openai_api_key:
-            raise RuntimeError(
-                "OpenAI selected but OPENAI_API_KEY is not set.")
+            raise RuntimeError("OpenAI selected but OPENAI_API_KEY is not set.")
         selected_model = model_override or openai_model_name
         provider = OpenAIProvider(
             model=selected_model,

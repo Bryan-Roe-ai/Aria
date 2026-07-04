@@ -8,31 +8,21 @@ namespace game {
     //% group="Gameplay" weight=10
     //% help=game/reset
     export function reset() {
-        control.reset();
+        control.reset()
     }
 }
 
 //% color="#4b6584"
-namespace scene {
-
-}
+namespace scene {}
 
 //% color="#cf6a87"
-namespace info {
-
-}
+namespace info {}
 
 //% color=#E30FC0
-namespace music {
-
-}
+namespace music {}
 
 //% color=#B09EFF
-namespace player {
-
-}
+namespace player {}
 
 //% color=#FF5722 weight=90 advanced=true
-namespace control {
-
-}
+namespace control {}

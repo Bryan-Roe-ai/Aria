@@ -18,7 +18,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -81,7 +81,7 @@ logger = logging.getLogger(__name__)
 class QuantumLLMConfig:
     """Configuration for quantum-enhanced LLM."""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         # Default configuration
         self.config = {
             # Model architecture
@@ -283,7 +283,7 @@ class IntegratedQuantumLLM(nn.Module):
 
         return logits
 
-    def get_quantum_stats(self) -> Dict[str, Any]:
+    def get_quantum_stats(self) -> dict[str, Any]:
         """Get quantum component statistics."""
         stats = {}
 
@@ -366,7 +366,7 @@ class QuantumLLMSystem:
         else:
             self.dashboard = None
 
-    def _create_training_stages(self) -> List[TrainingStage]:
+    def _create_training_stages(self) -> list[TrainingStage]:
         """Create curriculum training stages."""
         config = self.config
 
@@ -401,8 +401,8 @@ class QuantumLLMSystem:
     def train(
         self,
         train_dataset: Dataset,
-        val_dataset: Optional[Dataset] = None,
-    ) -> Dict[str, Any]:
+        val_dataset: Dataset | None = None,
+    ) -> dict[str, Any]:
         """
         Train the quantum LLM system.
 
@@ -448,7 +448,7 @@ class QuantumLLMSystem:
         logger.info("✅ Training complete")
         return report
 
-    def _simple_training(self, train_loader, val_loader) -> Dict[str, Any]:
+    def _simple_training(self, train_loader, val_loader) -> dict[str, Any]:
         """Fallback simple training loop."""
         optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.config["learning_rate"])
         criterion = nn.CrossEntropyLoss()
@@ -492,7 +492,7 @@ class QuantumLLMSystem:
         self.model.load_state_dict(checkpoint["model_state_dict"])
         logger.info(f"Model loaded from {path}")
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate comprehensive system report."""
         report = {
             "configuration": self.config.config,

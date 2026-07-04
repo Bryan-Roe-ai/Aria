@@ -5,6 +5,7 @@
 I've created a complete, production-ready chat website with:
 
 ### 1. **Frontend** (`chat-web/`)
+
 - Beautiful gradient UI with animations
 - Responsive design (works on mobile & desktop)
 - Real-time typing indicators
@@ -12,6 +13,7 @@ I've created a complete, production-ready chat website with:
 - New chat & clear functions
 
 ### 2. **Backend** (`function_app.py`)
+
 - Azure Functions HTTP endpoints
 - Chat API with multiple provider support
 - Static file serving
@@ -19,6 +21,7 @@ I've created a complete, production-ready chat website with:
 - Error handling & logging
 
 ### 3. **Integration**
+
 - Reuses existing `talk-to-ai` chat logic
 - Supports 3 providers: Local (free), OpenAI, Azure OpenAI
 - Auto-detects best available provider
@@ -26,6 +29,7 @@ I've created a complete, production-ready chat website with:
 ## 🚀 It's Already Running!
 
 The server is live at:
+
 - **Main Page**: http://localhost:7071/api/chat-web
 - **API Endpoint**: http://localhost:7071/api/chat
 
@@ -48,17 +52,20 @@ Ctrl+C in the terminal
 ## Provider Status
 
 Currently using: **Local (Free)**
+
 - No API keys required
 - Works offline
 - Perfect for testing
 
 To use OpenAI:
+
 ```powershell
 $env:OPENAI_API_KEY = "sk-..."
 # Restart server
 ```
 
 To use Azure OpenAI:
+
 ```powershell
 $env:AZURE_OPENAI_API_KEY = "your-key"
 $env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"

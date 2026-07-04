@@ -235,15 +235,15 @@ def agi_stream(req, ctx):
         def _sse_iterable():
             try:
                 prelude = ctx._agi_provider_metadata(provider, provider_choice)
-                yield (f"event: meta\n" f"data: {ctx.json.dumps(prelude)}\n\n").encode("utf-8")
+                yield (f"event: meta\ndata: {ctx.json.dumps(prelude)}\n\n").encode()
                 for chunk in generator:
                     if not chunk:
                         continue
                     payload = ctx.json.dumps({"delta": ctx._normalize_agi_stream_delta(chunk)})
-                    yield (f"data: {payload}\n\n").encode("utf-8")
+                    yield (f"data: {payload}\n\n").encode()
                 yield b"data: [DONE]\n\n"
             except Exception as exc:
-                yield (f"event: error\n" f"data: {ctx.json.dumps({'error': str(exc)})}\n\n").encode("utf-8")
+                yield (f"event: error\ndata: {ctx.json.dumps({'error': str(exc)})}\n\n").encode()
                 yield b"data: [DONE]\n\n"
 
         return ctx._sse_response(_sse_iterable(), status_code=200)
@@ -329,7 +329,7 @@ def agi_persistence(req, ctx):
             try:
                 entries = []
                 if ctx.os.path.exists(path):
-                    with open(path, "r", encoding="utf-8") as handle:
+                    with open(path, encoding="utf-8") as handle:
                         lines = handle.read().splitlines()
                     for line in lines[-limit:]:
                         try:

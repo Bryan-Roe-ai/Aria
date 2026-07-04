@@ -47,7 +47,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import psutil
 
@@ -70,8 +70,8 @@ class ProcessInfo:
     command: str
     started: str
     status: str = "running"
-    port: Optional[int] = None
-    health_url: Optional[str] = None
+    port: int | None = None
+    health_url: str | None = None
 
 
 @dataclass
@@ -84,7 +84,7 @@ class AriaAutomationStatus:
     server_running: bool = False
     backend_running: bool = False
     training_active: bool = False
-    last_health_check: Optional[str] = None
+    last_health_check: str | None = None
     processes: list[dict[str, Any]] = field(default_factory=list)
     training_cycles: int = 0
     errors: list[str] = field(default_factory=list)
@@ -456,9 +456,9 @@ class AriaAutomation:
 
     def start(self, once: bool = False):
         """Start automation based on mode"""
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"🤖 Aria Automation Starting - Mode: {self.mode}")
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
         if self.mode in ["full", "server"]:
             # Start Aria server

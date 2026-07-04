@@ -2,15 +2,15 @@
 name: vision-ai
 description: "Vision AI and expression classification agent. Handles image inference, CNN model training, checkpoint management, and visual emotion detection for the Aria character.\n\nTrigger phrases include:\n- 'vision inference'\n- 'classify expression'\n- 'emotion detection'\n- 'image classification'\n- 'train vision model'\n- 'CNN'\n- 'visual recognition'\n\nExamples:\n- User says 'classify Aria's facial expression' → invoke for TinyConvNet inference\n- User asks 'train a vision model on new expression data' → invoke for CNN training pipeline\n- User says 'add a new emotion category' → invoke for model architecture and label updates\n\nThis agent understands TinyConvNet architecture, PyTorch inference, checkpoint loading, and the preprocessing pipeline (64x64, normalized)."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - vscode/memory
-  - read/problems
-  - task_complete
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - vscode/memory
+    - read/problems
+    - task_complete
 ---
 
 # Vision AI Agent
@@ -93,10 +93,10 @@ The vision system feeds expression detection into Aria's character state:
 
 ## Key Files
 
-| File | Purpose |
+| File                          | Purpose                          |
 | ----------------------------- | -------------------------------- |
 | `scripts/vision_inference.py` | `VisionInference`, `TinyConvNet` |
-| `data_out/vision_training/` | Trained model checkpoints |
+| `data_out/vision_training/`   | Trained model checkpoints        |
 
 ## Training Guidelines
 

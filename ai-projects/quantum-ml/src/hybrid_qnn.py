@@ -452,7 +452,7 @@ class QuantumClassicalTrainer:
 
             if (batch_idx + 1) % 10 == 0:
                 progress = (batch_idx + 1) / n_batches * 100
-                logger.debug(f"Batch {batch_idx + 1}/{n_batches} ({progress:.1f}%), " f"Loss: {loss.item():.4f}")
+                logger.debug(f"Batch {batch_idx + 1}/{n_batches} ({progress:.1f}%), Loss: {loss.item():.4f}")
 
         avg_loss = total_loss / len(train_loader)
         self.train_losses.append(avg_loss)
@@ -594,7 +594,7 @@ def create_hybrid_model(
     Returns:
         Initialized hybrid model
     """
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     input_dim = config["ml"]["data"]["feature_dimension"]

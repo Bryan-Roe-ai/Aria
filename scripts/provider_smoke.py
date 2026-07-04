@@ -7,8 +7,8 @@ Exits 0 if a provider (real or fallback) is detected and callable.
 
 from __future__ import annotations
 
-import sys
 import json
+import sys
 from pathlib import Path
 
 # Ensure repo root is on sys.path so local imports work when run as a script

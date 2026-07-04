@@ -15,7 +15,7 @@ This database project provides comprehensive tracking and analytics for the QAI 
 - **QuantumTrainingRuns** - Quantum ML training metadata, results, and hardware tracking
 - **LoRATrainingRuns** - LoRA fine-tuning runs with hyperparameters and metrics
 - **AzureQuantumJobs** - Azure Quantum job submissions, status, and cost tracking
-- __OrchestratorJobs__ - Orchestrator execution history (quantum_autorun, autotrain)
+- **OrchestratorJobs** - Orchestrator execution history (quantum_autorun, autotrain)
 
 #### Chat & Conversations
 
@@ -24,7 +24,7 @@ This database project provides comprehensive tracking and analytics for the QAI 
 
 #### Semantic Memory (Embeddings)
 
-- __ChatMessageEmbeddings__ - Per-message embedding vectors (VARBINARY float32 array) enabling semantic retrieval. Populated automatically by Azure Function `/api/chat` and the backfill script `scripts/ingest_chat_logs_to_sql.py`. Supports future migration to native `VECTOR` type when available.
+- **ChatMessageEmbeddings** - Per-message embedding vectors (VARBINARY float32 array) enabling semantic retrieval. Populated automatically by Azure Function `/api/chat` and the backfill script `scripts/ingest_chat_logs_to_sql.py`. Supports future migration to native `VECTOR` type when available.
 
 Memory retrieval flow:
 
@@ -35,11 +35,11 @@ Memory retrieval flow:
 
 Embedding configuration:
 
-| Priority | Method | Env Vars Required |
-| ---------- | -------- | ------------------- |
-| 1 | Azure OpenAI Embeddings | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` |
-| 2 | OpenAI Embeddings | `OPENAI_API_KEY` |
-| 3 | Local Hash Fallback (dim=256) | None |
+| Priority | Method                        | Env Vars Required                                                                    |
+| -------- | ----------------------------- | ------------------------------------------------------------------------------------ |
+| 1        | Azure OpenAI Embeddings       | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` |
+| 2        | OpenAI Embeddings             | `OPENAI_API_KEY`                                                                     |
+| 3        | Local Hash Fallback (dim=256) | None                                                                                 |
 
 Backfill existing logs:
 
@@ -74,16 +74,16 @@ Retrieval (Python-side cosine similarity) selects recent rows (TOP 500) optional
 
 ### Views
 
-- __vw_TrainingRunsSummary__ - Unified view of all training runs (Quantum + LoRA)
-- __vw_DatasetUsageStats__ - Dataset popularity and usage statistics
-- __vw_AzureQuantumCostTracking__ - Azure Quantum cost analysis by provider/target
+- **vw_TrainingRunsSummary** - Unified view of all training runs (Quantum + LoRA)
+- **vw_DatasetUsageStats** - Dataset popularity and usage statistics
+- **vw_AzureQuantumCostTracking** - Azure Quantum cost analysis by provider/target
 
 ### Stored Procedures
 
-- __sp_LogQuantumTrainingRun__ - Log quantum training with automatic dataset usage tracking
-- __sp_LogLoRATrainingRun__ - Log LoRA training with automatic dataset usage tracking
-- __sp_LogChatConversation__ - Log chat messages with automatic conversation management
-- __sp_RegisterDataset__ - Register or update dataset metadata
+- **sp_LogQuantumTrainingRun** - Log quantum training with automatic dataset usage tracking
+- **sp_LogLoRATrainingRun** - Log LoRA training with automatic dataset usage tracking
+- **sp_LogChatConversation** - Log chat messages with automatic conversation management
+- **sp_RegisterDataset** - Register or update dataset metadata
 
 ## Deployment
 
@@ -98,9 +98,9 @@ Retrieval (Python-side cosine similarity) selects recent rows (TOP 500) optional
 1. Install the [SQL Database Projects extension](https://marketplace.visualstudio.com/items?itemName=ms-mssql.sql-database-projects-vscode)
 2. Open this folder in VS Code
 3. Use the SQL Database Projects view to:
-   - **Build**: Validate schema without deployment
-   - **Publish**: Deploy to Azure SQL or local SQL Server
-   - **Generate Script**: Create deployment SQL script
+    - **Build**: Validate schema without deployment
+    - **Publish**: Deploy to Azure SQL or local SQL Server
+    - **Generate Script**: Create deployment SQL script
 
 ### Manual Deployment
 

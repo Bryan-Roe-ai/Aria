@@ -11,12 +11,12 @@ follow-up node.
 from __future__ import annotations
 
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from agent_framework import WorkflowBuilder
 from agent_framework.azure import AzureAIClient
 from azure.identity.aio import DefaultAzureCredential
-
 
 CLASSIFIER_INSTRUCTIONS = """\
 You are an email spam classifier.

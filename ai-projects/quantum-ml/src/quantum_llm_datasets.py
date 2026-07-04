@@ -19,7 +19,7 @@ import json
 import logging
 import random
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -68,7 +68,7 @@ class CharacterTokenizer:
 
         logger.info(f"CharacterTokenizer initialized: vocab_size={self.vocab_size}")
 
-    def encode(self, text: str, add_special_tokens: bool = True) -> List[int]:
+    def encode(self, text: str, add_special_tokens: bool = True) -> list[int]:
         """
         Encode text to token IDs.
 
@@ -92,7 +92,7 @@ class CharacterTokenizer:
 
         return ids
 
-    def decode(self, ids: List[int], skip_special_tokens: bool = True) -> str:
+    def decode(self, ids: list[int], skip_special_tokens: bool = True) -> str:
         """
         Decode token IDs to text.
 
@@ -146,7 +146,7 @@ class TextDataset(Dataset):
 
     def __init__(
         self,
-        texts: List[str],
+        texts: list[str],
         tokenizer: CharacterTokenizer,
         max_seq_length: int = 512,
         stride: int = 256,
@@ -178,7 +178,7 @@ class TextDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Get a training sample.
 
@@ -221,10 +221,10 @@ class MultiSourceDataset(Dataset):
 
     def __init__(
         self,
-        data_sources: List[Dict[str, Any]],
+        data_sources: list[dict[str, Any]],
         tokenizer: CharacterTokenizer,
         max_seq_length: int = 512,
-        sampling_weights: Optional[List[float]] = None,
+        sampling_weights: list[float] | None = None,
     ):
         self.data_sources = data_sources
         self.tokenizer = tokenizer
@@ -245,7 +245,7 @@ class MultiSourceDataset(Dataset):
 
         logger.info(f"MultiSourceDataset: {len(data_sources)} sources, {self.total_samples} samples")
 
-    def _load_source(self, source: Dict[str, Any]) -> Dataset:
+    def _load_source(self, source: dict[str, Any]) -> Dataset:
         """Load a single data source."""
         source_type = source.get("type", "text")
         path = Path(source["path"])
@@ -270,7 +270,7 @@ class MultiSourceDataset(Dataset):
     def __len__(self) -> int:
         return self.total_samples
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         """Get sample from randomly selected source."""
         # Choose source based on sampling weights
         source_idx = np.random.choice(len(self.datasets), p=self.sampling_weights)
@@ -410,7 +410,7 @@ def create_train_val_split(
     dataset: Dataset,
     val_ratio: float = 0.1,
     seed: int = 42,
-) -> Tuple[Dataset, Dataset]:
+) -> tuple[Dataset, Dataset]:
     """
     Split dataset into train and validation.
 

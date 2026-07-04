@@ -88,8 +88,8 @@ Each component’s dependency set is verified just-in-time; missing packages are
 2. Missing modules trigger automatic `pip install` attempts.
 3. Post-install imports are re-validated; any remaining failures are logged and block component start.
 4. Dependency health per component appears in `status.json` under `dependency_status` and in `--status` output with an icon:
-   - `🧩` Dependencies satisfied
-   - `⚠️` Dependency issue (component may not have started)
+    - `🧩` Dependencies satisfied
+    - `⚠️` Dependency issue (component may not have started)
 
 ### Conditional Enabling
 
@@ -227,12 +227,12 @@ Use `scripts/run_repo_agents.py` when you need deterministic repository checks t
 
 ### Current agents
 
-| Agent | Intent | Typical finding |
-| --- | --- | --- |
-| `status-freshness` | Inspect `data_out/**/status.json` for stale, failed, timestamp-less, or unparseable runs | A health file has not updated within the configured max age |
-| `marker-audit` | Scan source-like files for `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers | Maintenance marker counts by file and marker type |
-| `docstring-audit` | Measure Python module/class/function docstring coverage | Public functions missing docstrings in audited paths |
-| `agents-md-audit` | Validate `AGENTS.md` Learned sections for structure, bullet limits, and secret patterns | Missing sections, over-limit bullets, or stale referenced dates |
+| Agent              | Intent                                                                                   | Typical finding                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `status-freshness` | Inspect `data_out/**/status.json` for stale, failed, timestamp-less, or unparseable runs | A health file has not updated within the configured max age     |
+| `marker-audit`     | Scan source-like files for `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers             | Maintenance marker counts by file and marker type               |
+| `docstring-audit`  | Measure Python module/class/function docstring coverage                                  | Public functions missing docstrings in audited paths            |
+| `agents-md-audit`  | Validate `AGENTS.md` Learned sections for structure, bullet limits, and secret patterns  | Missing sections, over-limit bullets, or stale referenced dates |
 
 ### Contract and outputs
 
@@ -380,10 +380,11 @@ ComponentConfig(
 )
 ```
 
-
 # Using Python directly
+
 python scripts/repo_automation.py --validate
-```
+
+````
 
 This runs the same config gate used before startup and exits without launching
 any components.
@@ -401,7 +402,7 @@ export QAI_DB_CONN="your-connection-string"
 export QAI_ENABLE_COSMOS=true
 export COSMOS_ENDPOINT="your-endpoint"
 export COSMOS_KEY="your-key"
-```
+````
 
 ## Troubleshooting
 

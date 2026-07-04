@@ -7,16 +7,14 @@ namespace sprites {
     //% group="Lifecycle" draggableParameters="reporter" weight=97
     //% blockId=spritesoncreated block="on created $sprite of kind $kind=spritekind"
     //% help=sprites/on-created
-    export function onCreated(kind: number, handler: (sprite: Sprite) => void): void {
-        if (!handler || kind == undefined) return;
+    export function onCreated(
+        kind: number,
+        handler: (sprite: Sprite) => void,
+    ): void {
+        if (!handler || kind == undefined) return
 
-        const sc = game.currentScene();
-        sc.createdHandlers.push(
-            new scene.SpriteHandler(
-                kind,
-                handler
-            )
-        )
+        const sc = game.currentScene()
+        sc.createdHandlers.push(new scene.SpriteHandler(kind, handler))
     }
 
     /**
@@ -28,16 +26,14 @@ namespace sprites {
     //% weight=96 draggableParameters="reporter"
     //% blockId=spritesondestroyed block="on destroyed $sprite of kind $kind=spritekind "
     //% help=sprites/on-destroyed
-    export function onDestroyed(kind: number, handler: (sprite: Sprite) => void) {
-        if (!handler || kind == undefined) return;
+    export function onDestroyed(
+        kind: number,
+        handler: (sprite: Sprite) => void,
+    ) {
+        if (!handler || kind == undefined) return
 
-        const sc = game.currentScene();
-        sc.destroyedHandlers.push(
-            new scene.SpriteHandler(
-                kind,
-                handler
-            )
-        );
+        const sc = game.currentScene()
+        sc.destroyedHandlers.push(new scene.SpriteHandler(kind, handler))
     }
 
     /**
@@ -48,30 +44,28 @@ namespace sprites {
     //% blockId=spritesoverlap block="on $sprite of kind $kind=spritekind overlaps $otherSprite of kind $otherKind=spritekind"
     //% help=sprites/on-overlap
     //% blockGap=8
-    export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
-        if (kind == undefined || otherKind == undefined || !handler) return;
-        const sc = game.currentScene();
-        const overlapHandlers = sc.overlapHandlers;
-        const overlapMap = sc.overlapMap;
+    export function onOverlap(
+        kind: number,
+        otherKind: number,
+        handler: (sprite: Sprite, otherSprite: Sprite) => void,
+    ) {
+        if (kind == undefined || otherKind == undefined || !handler) return
+        const sc = game.currentScene()
+        const overlapHandlers = sc.overlapHandlers
+        const overlapMap = sc.overlapMap
 
         function associate(a: number, b: number) {
             if (!overlapMap[a]) {
-                overlapMap[a] = [];
+                overlapMap[a] = []
             }
 
-            overlapMap[a].push(b);
+            overlapMap[a].push(b)
         }
 
-        associate(kind, otherKind);
-        associate(otherKind, kind);
+        associate(kind, otherKind)
+        associate(otherKind, kind)
 
-        overlapHandlers.push(
-            new scene.OverlapHandler(
-                kind,
-                otherKind,
-                handler
-            )
-        );
+        overlapHandlers.push(new scene.OverlapHandler(kind, otherKind, handler))
     }
 }
 
@@ -87,17 +81,17 @@ namespace scene {
     //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile at $location"
     //% tile.shadow=tileset_tile_picker
     //% help=scene/on-overlap-tile
-    export function onOverlapTile(kind: number, tile: Image, handler: (sprite: Sprite, location: tiles.Location) => void) {
-        if (kind == undefined || !tile || !handler) return;
+    export function onOverlapTile(
+        kind: number,
+        tile: Image,
+        handler: (sprite: Sprite, location: tiles.Location) => void,
+    ) {
+        if (kind == undefined || !tile || !handler) return
 
-        const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
+        const tileOverlapHandlers = game.currentScene().tileOverlapHandlers
         tileOverlapHandlers.push(
-            new scene.TileOverlapHandler(
-                kind,
-                tile,
-                handler
-            )
-        );
+            new scene.TileOverlapHandler(kind, tile, handler),
+        )
     }
 
     /**
@@ -109,15 +103,13 @@ namespace scene {
     //% weight=100 draggableParameters="reporter" blockGap=8
     //% blockId=spriteshitwall block="on $sprite of kind $kind=spritekind hits wall at $location"
     //% help=scene/on-hit-wall
-    export function onHitWall(kind: number, handler: (sprite: Sprite, location: tiles.Location) => void) {
-        if (kind == undefined || !handler) return;
+    export function onHitWall(
+        kind: number,
+        handler: (sprite: Sprite, location: tiles.Location) => void,
+    ) {
+        if (kind == undefined || !handler) return
 
-        const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
-        wallCollisionHandlers.push(
-            new scene.TileWallHandler(
-                kind,
-                handler
-            )
-        );
+        const wallCollisionHandlers = game.currentScene().wallCollisionHandlers
+        wallCollisionHandlers.push(new scene.TileWallHandler(kind, handler))
     }
 }

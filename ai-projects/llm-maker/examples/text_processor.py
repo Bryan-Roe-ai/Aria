@@ -4,10 +4,9 @@ Demonstrates string manipulation tool
 """
 
 import re
-from typing import List
 
 
-def extract_emails(text: str) -> List[str]:
+def extract_emails(text: str) -> list[str]:
     """
     Extract email addresses from text
 

@@ -9,113 +9,113 @@
 ### Step 1: Azure Account Setup (5 min)
 
 - [ ] **Sign up for Azure** (if you don't have an account)
-  - Go to: <https://azure.microsoft.com/free/>
-  - Get $200 free credit (valid for 30 days)
-  - No credit card required for free services
+    - Go to: <https://azure.microsoft.com/free/>
+    - Get $200 free credit (valid for 30 days)
+    - No credit card required for free services
 
 - [ ] **Install Azure CLI** (if not installed)
 
-  ```powershell
-  # Check if installed
-  az --version
+    ```powershell
+    # Check if installed
+    az --version
 
-  # If not installed, download from:
-  # https://aka.ms/installazurecliwindows
-  ```
+    # If not installed, download from:
+    # https://aka.ms/installazurecliwindows
+    ```
 
 - [ ] **Login to Azure**
 
-  ```powershell
-  az login
-  # Opens browser for authentication
-  ```
+    ```powershell
+    az login
+    # Opens browser for authentication
+    ```
 
 - [ ] **Get your subscription ID**
 
-  ```powershell
-  # View your subscriptions
-  az account list --output table
+    ```powershell
+    # View your subscriptions
+    az account list --output table
 
-  # Copy the SubscriptionId - you'll need this!
-  ```
+    # Copy the SubscriptionId - you'll need this!
+    ```
 
 ### Step 2: Deploy Azure Quantum Workspace (5 min)
 
 - [ ] **Navigate to Azure directory**
 
-  ```powershell
-  cd c:\Users\Bryan\OneDrive\AI\quantum-ai\azure
-  ```
+    ```powershell
+    cd c:\Users\Bryan\OneDrive\AI\quantum-ai\azure
+    ```
 
 - [ ] **Update parameters file**
 
-  Edit `quantum_workspace.parameters.json` and update:
-  - `workspaceName`: Must be globally unique (e.g., `quantum-ai-bryan-2025`)
-  - `storageAccountName`: Must be globally unique, lowercase, no hyphens (e.g., `quantumstoragebr2025`)
+    Edit `quantum_workspace.parameters.json` and update:
+    - `workspaceName`: Must be globally unique (e.g., `quantum-ai-bryan-2025`)
+    - `storageAccountName`: Must be globally unique, lowercase, no hyphens (e.g., `quantumstoragebr2025`)
 
-  **Example:**
+    **Example:**
 
-  ```json
-  {
-    "workspaceName": {
-      "value": "quantum-ai-bryan-2025"
-    },
-    "storageAccountName": {
-      "value": "quantumstoragebr2025"
+    ```json
+    {
+        "workspaceName": {
+            "value": "quantum-ai-bryan-2025"
+        },
+        "storageAccountName": {
+            "value": "quantumstoragebr2025"
+        }
     }
-  }
-  ```
+    ```
 
 - [ ] **Set your subscription**
 
-  ```powershell
-  az account set --subscription "<your-subscription-id>"
-  ```
+    ```powershell
+    az account set --subscription "<your-subscription-id>"
+    ```
 
 - [ ] **Create resource group**
 
-  ```powershell
-  az group create --name rg-quantum-ai --location eastus
-  ```
+    ```powershell
+    az group create --name rg-quantum-ai --location eastus
+    ```
 
 - [ ] **Deploy workspace**
 
-  ```powershell
-  az deployment group create `
-    --resource-group rg-quantum-ai `
-    --template-file quantum_workspace.bicep `
-    --parameters quantum_workspace.parameters.json `
-    --name quantum-deployment-$(Get-Date -Format 'yyyyMMddHHmmss')
-  ```
+    ```powershell
+    az deployment group create `
+      --resource-group rg-quantum-ai `
+      --template-file quantum_workspace.bicep `
+      --parameters quantum_workspace.parameters.json `
+      --name quantum-deployment-$(Get-Date -Format 'yyyyMMddHHmmss')
+    ```
 
-  ⏱️ **This takes 2-3 minutes** - wait for "Succeeded"
+    ⏱️ **This takes 2-3 minutes** - wait for "Succeeded"
 
 - [ ] **Verify deployment**
 
-  ```powershell
-  # Check workspace was created
-  az quantum workspace show `
-    --resource-group rg-quantum-ai `
-    --name quantum-ai-bryan-2025 `
-    --output table
-  ```
+    ```powershell
+    # Check workspace was created
+    az quantum workspace show `
+      --resource-group rg-quantum-ai `
+      --name quantum-ai-bryan-2025 `
+      --output table
+    ```
 
 ### Step 3: Update Configuration (2 min)
 
 - [ ] **Edit quantum config**
 
-  Open: `c:\Users\Bryan\OneDrive\AI\quantum-ai\config\quantum_config.yaml`
+    Open: `c:\Users\Bryan\OneDrive\AI\quantum-ai\config\quantum_config.yaml`
 
-  Update the `azure` section:
+    Update the `azure` section:
 
-  ```yaml
-  azure:
-    subscription_id: '<paste-your-subscription-id-here>'
-    resource_group: 'rg-quantum-ai'
-    workspace_name: 'quantum-ai-bryan-2025'  # Match what you deployed
-    location: 'eastus'
-    storage_account: 'quantumstoragebr2025'  # Match what you deployed
-  ```
+    ```yaml
+    azure:
+        subscription_id: "<paste-your-subscription-id-here>"
+        resource_group: "rg-quantum-ai"
+        workspace_name: "quantum-ai-bryan-2025" # Match what you deployed
+        location: "eastus"
+        storage_account: "quantumstoragebr2025" # Match what you deployed
+    ```
 
 - [ ] **Save the file** (Ctrl+S)
 
@@ -123,29 +123,29 @@
 
 - [ ] **Activate virtual environment**
 
-  ```powershell
-  cd c:\Users\Bryan\OneDrive\AI\quantum-ai
-  .\venv\Scripts\Activate.ps1
-  ```
+    ```powershell
+    cd c:\Users\Bryan\OneDrive\AI\quantum-ai
+    .\venv\Scripts\Activate.ps1
+    ```
 
 - [ ] **Install Azure Quantum packages**
 
-  ```powershell
-  pip install azure-quantum azure-identity qiskit-aer
-  ```
+    ```powershell
+    pip install azure-quantum azure-identity qiskit-aer
+    ```
 
 ### Step 5: Run Tests! (2 min)
 
 - [ ] **Start with connection test**
 
-  ```powershell
-  python test_azure_quantum.py
-  ```
+    ```powershell
+    python test_azure_quantum.py
+    ```
 
 - [ ] **Follow the interactive prompts**
-  - Test 1: Verifies connection ✓
-  - Test 2: Runs Bell state on hardware 🔔
-  - Test 3: Tests your optimized circuit 🏆
+    - Test 1: Verifies connection ✓
+    - Test 2: Runs Bell state on hardware 🔔
+    - Test 3: Tests your optimized circuit 🏆
 
 ---
 
@@ -344,7 +344,7 @@ python test_azure_quantum.py
 
 ---
 
-*Let's run quantum ML on real quantum computers!* 🎊
+_Let's run quantum ML on real quantum computers!_ 🎊
 
 ---
 

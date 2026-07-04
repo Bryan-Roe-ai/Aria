@@ -174,58 +174,58 @@ ai-projects/quantum-ml/
 
 1. **Experiment with parameters**
 
-   ```powershell
-   # Edit config/quantum_config.yaml
-   # Try: n_qubits=6, n_layers=3, entanglement="circular"
-   python .\src\quantum_classifier.py
-   ```
+    ```powershell
+    # Edit config/quantum_config.yaml
+    # Try: n_qubits=6, n_layers=3, entanglement="circular"
+    python .\src\quantum_classifier.py
+    ```
 
 2. **Try different datasets**
 
-   ```python
-   from sklearn.datasets import make_blobs, make_classification
-   ```
+    ```python
+    from sklearn.datasets import make_blobs, make_classification
+    ```
 
 3. **Optimize hyperparameters**
-   - Learning rates: 0.001 → 0.1
-   - Epochs: 100 → 200
-   - Batch sizes: 16 → 64
+    - Learning rates: 0.001 → 0.1
+    - Epochs: 100 → 200
+    - Batch sizes: 16 → 64
 
 ### Short-term (Local Development)
 
 1. **Implement new algorithms**
-   - VQE (Variational Quantum Eigensolver)
-   - QAOA (Quantum Approximate Optimization)
-   - Quantum GANs
+    - VQE (Variational Quantum Eigensolver)
+    - QAOA (Quantum Approximate Optimization)
+    - Quantum GANs
 
 2. **Extend ML capabilities**
-   - Multi-class classification
-   - Regression tasks
-   - Transfer learning
+    - Multi-class classification
+    - Regression tasks
+    - Transfer learning
 
 3. **Benchmark performance**
-   - Compare with classical NNs
-   - Test circuit depth impact
-   - Analyze convergence rates
+    - Compare with classical NNs
+    - Test circuit depth impact
+    - Analyze convergence rates
 
 ### Long-term (Azure Quantum)
 
 1. **Deploy to Azure**
 
-   ```powershell
-   # Follow: azure/DEPLOYMENT.md
-   az deployment group create --resource-group rg-quantum-ai ...
-   ```
+    ```powershell
+    # Follow: azure/DEPLOYMENT.md
+    az deployment group create --resource-group rg-quantum-ai ...
+    ```
 
 2. **Run on real hardware**
-   - Test on IonQ simulator (FREE)
-   - Submit to real quantum computers
-   - Compare noisy vs. ideal results
+    - Test on IonQ simulator (FREE)
+    - Submit to real quantum computers
+    - Compare noisy vs. ideal results
 
 3. **Production workflows**
-   - Automated job submission
-   - Cost monitoring
-   - Result tracking
+    - Automated job submission
+    - Cost monitoring
+    - Result tracking
 
 ---
 
@@ -317,14 +317,14 @@ ai-projects/quantum-ml/
 
 ## 🏆 Success Metrics
 
-| Metric | Target | Achieved | Status |
-| -------- | -------- | ---------- | -------- |
-| Circuit Creation | 5+ types | 6 types | ✅ |
-| Local Simulation | Working | Perfect | ✅ |
-| ML Training | >70% acc | 85% (Moons) | ✅ |
-| Azure Setup | Guide | Complete | ✅ |
-| Documentation | Complete | 4 READMEs | ✅ |
-| Examples | 3+ | 4 files | ✅ |
+| Metric           | Target   | Achieved    | Status |
+| ---------------- | -------- | ----------- | ------ |
+| Circuit Creation | 5+ types | 6 types     | ✅     |
+| Local Simulation | Working  | Perfect     | ✅     |
+| ML Training      | >70% acc | 85% (Moons) | ✅     |
+| Azure Setup      | Guide    | Complete    | ✅     |
+| Documentation    | Complete | 4 READMEs   | ✅     |
+| Examples         | 3+       | 4 files     | ✅     |
 
 ---
 

@@ -87,7 +87,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
             status_file = root_dir / "data_out" / "autotrain" / "status.json"
             try:
-                with open(status_file, "r") as f:
+                with open(status_file) as f:
                     data = json.load(f)
                 data["server_time"] = datetime.now().isoformat()
                 self.wfile.write(json.dumps(data).encode())
@@ -319,7 +319,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         root_dir = getattr(self.__class__, "root_dir", REPO_ROOT)
         status_file = root_dir / "data_out" / "autotrain" / "status.json"
         try:
-            with open(status_file, "r") as f:
+            with open(status_file) as f:
                 data = json.load(f)
             job = next((j for j in data.get("jobs", []) if j.get("name") == job_id), None)
             if not job:
@@ -365,7 +365,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         train_loss = []
         eval_loss = []
         try:
-            with open(status_file, "r") as f:
+            with open(status_file) as f:
                 data = json.load(f)
             job = next((j for j in data.get("jobs", []) if j.get("name") == job_id), None)
             if not job:
@@ -385,7 +385,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 log_file = job.get("log")
                 if log_file and Path(log_file).exists():
                     try:
-                        with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
+                        with open(log_file, encoding="utf-8", errors="ignore") as f:
                             for i, line in enumerate(f):
                                 m = re.search(
                                     r"step\s*(\d+).*?train_loss=([0-9\.]+).*?eval_loss=([0-9\.]+)",
@@ -466,7 +466,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         Falls back to loading full file if needed.
         """
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as f:
                 first_char = f.read(1)
                 f.seek(0)
 
@@ -484,7 +484,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         except Exception:
             # Fallback: try loading as JSON
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     data = json.load(f)
                 return len(data) if isinstance(data, list) else 1
             except Exception:
@@ -536,7 +536,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     est_time = (
                         f"{estimated_minutes}m"
                         if estimated_minutes < 60
-                        else f"{estimated_minutes//60}h {estimated_minutes % 60}m"
+                        else f"{estimated_minutes // 60}h {estimated_minutes % 60}m"
                     )
 
                     configs.append(
@@ -592,7 +592,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if job.get("name") == job_name and "log" in job:
                     log_file = Path(job["log"])
                     if log_file.exists():
-                        with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
+                        with open(log_file, encoding="utf-8", errors="ignore") as f:
                             # Efficiently tail last 500 lines without loading entire file
                             lines = []
                             for line in f:
@@ -914,7 +914,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "message": "Job queue not initialized",
                 }
 
-            with open(queue_file, "r") as f:
+            with open(queue_file) as f:
                 queue_data = json.load(f)
 
             jobs = queue_data.get("jobs", [])

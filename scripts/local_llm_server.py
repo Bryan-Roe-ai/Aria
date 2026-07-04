@@ -2,6 +2,7 @@
 """
 Local LLM server for development - provides Ollama-compatible API without installation
 """
+
 import json
 import threading
 import time

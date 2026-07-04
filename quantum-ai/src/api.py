@@ -18,10 +18,10 @@ try:
         QuantumCodeLLM,
         QuantumCodeLLMConfig,
         TrainConfig,
-        train,
         generate,
-        save_checkpoint,
         load_checkpoint,
+        save_checkpoint,
+        train,
     )
 except ImportError:
     # Top-level import (e.g., sys.path -> quantum-ai/src; import api)
@@ -31,10 +31,10 @@ except ImportError:
         QuantumCodeLLM,
         QuantumCodeLLMConfig,
         TrainConfig,
-        train,
         generate,
-        save_checkpoint,
         load_checkpoint,
+        save_checkpoint,
+        train,
     )
 
 __all__ = [

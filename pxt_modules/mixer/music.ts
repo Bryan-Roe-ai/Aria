@@ -125,17 +125,16 @@ enum BeatFraction {
     //% block="4",
     Breve = 64,
     //% block="1/3",
-    Triplet = 128
+    Triplet = 128,
 }
 
 namespace music {
-
-    let beatsPerMinute: number;
+    let beatsPerMinute: number
 
     /**
-    * Play a tone.
-    * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
-    */
+     * Play a tone.
+     * @param frequency pitch of the tone to play in Hertz (Hz), eg: Note.C
+     */
     //% help=music/ring-tone
     //% blockId=music_ring block="ring tone|at %note=device_note"
     //% parts="headphone" trackArgs=0
@@ -143,13 +142,13 @@ namespace music {
     //% weight=75 blockGap=8
     //% group="Tone"
     export function ringTone(frequency: number) {
-        playTone(frequency, 0);
+        playTone(frequency, 0)
     }
 
     /**
-    * Rest, or play silence, for some time (in milliseconds).
-    * @param ms rest duration in milliseconds (ms), eg: BeatFraction.Half
-    */
+     * Rest, or play silence, for some time (in milliseconds).
+     * @param ms rest duration in milliseconds (ms), eg: BeatFraction.Half
+     */
     //% help=music/rest
     //% blockId=music_rest block="rest|for %duration=device_beat"
     //% parts="headphone" trackArgs=0
@@ -157,11 +156,11 @@ namespace music {
     //% weight=74
     //% group="Tone"
     export function rest(ms: number) {
-        playTone(0, Math.max(ms, 20));
+        playTone(0, Math.max(ms, 20))
     }
 
     function init() {
-        if (!beatsPerMinute) beatsPerMinute = 120;
+        if (!beatsPerMinute) beatsPerMinute = 120
     }
 
     /**
@@ -173,19 +172,33 @@ namespace music {
     //% weight=9 blockGap=8
     //% group="Tempo"
     export function beat(fraction?: BeatFraction): number {
-        init();
-        if (fraction == null) fraction = BeatFraction.Whole;
-        let beat = 60000 / beatsPerMinute;
+        init()
+        if (fraction == null) fraction = BeatFraction.Whole
+        let beat = 60000 / beatsPerMinute
         switch (fraction) {
-            case BeatFraction.Half: beat /= 2; break;
-            case BeatFraction.Quarter: beat /= 4; break;
-            case BeatFraction.Eighth: beat /= 8; break;
-            case BeatFraction.Sixteenth: beat /= 16; break;
-            case BeatFraction.Double: beat *= 2; break;
-            case BeatFraction.Breve: beat *= 4; break;
-            case BeatFraction.Triplet: beat /= 3; break;
+            case BeatFraction.Half:
+                beat /= 2
+                break
+            case BeatFraction.Quarter:
+                beat /= 4
+                break
+            case BeatFraction.Eighth:
+                beat /= 8
+                break
+            case BeatFraction.Sixteenth:
+                beat /= 16
+                break
+            case BeatFraction.Double:
+                beat *= 2
+                break
+            case BeatFraction.Breve:
+                beat *= 4
+                break
+            case BeatFraction.Triplet:
+                beat /= 3
+                break
         }
-        return beat >> 0;
+        return beat >> 0
     }
 
     /**
@@ -197,8 +210,8 @@ namespace music {
     //% weight=64
     //% group="Tempo"
     export function tempo(): number {
-        init();
-        return beatsPerMinute;
+        init()
+        return beatsPerMinute
     }
 
     /**
@@ -210,8 +223,8 @@ namespace music {
     //% weight=66 blockGap=8
     //% group="Tempo"
     export function changeTempoBy(bpm: number): void {
-        init();
-        setTempo(beatsPerMinute + bpm);
+        init()
+        setTempo(beatsPerMinute + bpm)
     }
 
     /**
@@ -224,9 +237,9 @@ namespace music {
     //% weight=65 blockGap=8
     //% group="Tempo"
     export function setTempo(bpm: number): void {
-        init();
+        init()
         if (bpm > 0) {
-            beatsPerMinute = Math.max(1, bpm >> 0);
+            beatsPerMinute = Math.max(1, bpm >> 0)
         }
     }
 }

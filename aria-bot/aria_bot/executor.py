@@ -9,8 +9,8 @@ looks wrong we abort the plan and leave the file untouched.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Sequence
 
 from .planner import UpgradePlan
 from .risk_manager import RiskManager
@@ -32,7 +32,7 @@ def _ensure_final_newline(text: str) -> str:
     return text if text.endswith("\n") else text + "\n"
 
 
-_TRANSFORMS: Dict[str, Transform] = {
+_TRANSFORMS: dict[str, Transform] = {
     "trailing_whitespace": _strip_trailing_whitespace,
     "missing_final_newline": _ensure_final_newline,
 }
@@ -66,8 +66,8 @@ class Executor:
     risk_manager: RiskManager
     dry_run: bool = True
 
-    def execute(self, plans: Sequence[UpgradePlan]) -> List[ExecutionResult]:
-        results: List[ExecutionResult] = []
+    def execute(self, plans: Sequence[UpgradePlan]) -> list[ExecutionResult]:
+        results: list[ExecutionResult] = []
         for plan in plans:
             results.append(self._execute_one(plan))
         return results

@@ -28,6 +28,7 @@ python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datas
 Automatically evaluate fine-tuned models with multiple metrics.
 
 ### Features
+
 - **Perplexity**: Language model quality metric
 - **Inference Speed**: Tokens per second, latency
 - **Memory Usage**: GPU memory consumption
@@ -54,12 +55,13 @@ python scripts\auto_eval.py \
 ### Output
 
 Results saved to `data_out/evaluation_results/`:
+
 ```json
 {
-  "perplexity": 12.34,
-  "inference_time_ms": 45.67,
-  "tokens_per_second": 89.12,
-  "memory_usage_mb": 6789.0
+    "perplexity": 12.34,
+    "inference_time_ms": 45.67,
+    "tokens_per_second": 89.12,
+    "memory_usage_mb": 6789.0
 }
 ```
 
@@ -82,6 +84,7 @@ print(f"Perplexity: {metrics.perplexity:.2f}")
 Retrieval-Augmented Generation for enhanced model responses.
 
 ### Features
+
 - **Document Indexing**: Load documents from any directory
 - **Semantic Search**: Find relevant context using embeddings
 - **Context Integration**: Inject retrieved docs into prompts
@@ -125,9 +128,9 @@ Edit `scripts/rag_pipeline.py` or create `rag_config.yaml`:
 
 ```yaml
 embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
-chunk_size: 512          # Tokens per chunk
-chunk_overlap: 50        # Overlap between chunks
-top_k_retrieval: 3       # Number of docs to retrieve
+chunk_size: 512 # Tokens per chunk
+chunk_overlap: 50 # Overlap between chunks
+top_k_retrieval: 3 # Number of docs to retrieve
 retrieval_threshold: 0.7 # Minimum similarity score
 ```
 
@@ -155,6 +158,7 @@ print(result["answer"])
 Remove redundant and low-quality training samples to improve efficiency.
 
 ### Features
+
 - **Exact Deduplication**: Remove identical samples
 - **Semantic Deduplication**: Remove similar samples via embeddings
 - **Quality Filtering**: Score and filter low-quality data
@@ -182,10 +186,10 @@ python scripts\semantic_pruning.py \
 1. **Exact Duplicates**: Hash-based removal (fast)
 2. **Length Outliers**: Remove samples outside 10-2048 tokens
 3. **Quality Scoring**: Based on:
-   - Length appropriateness
-   - Character diversity
-   - Word diversity
-   - Punctuation presence
+    - Length appropriateness
+    - Character diversity
+    - Word diversity
+    - Punctuation presence
 4. **Semantic Similarity**: Embedding-based (requires sentence-transformers)
 5. **Diversity Sampling**: Keep highest quality from each cluster
 
@@ -235,6 +239,7 @@ python scripts\auto_eval.py --model data_out\lora_training --dataset data\test.j
 Automatically configure optimal training settings for your hardware.
 
 ### Features
+
 - **Hardware Detection**: Automatic GPU capability detection
 - **Memory Optimization**: Configure batch size, quantization
 - **Precision Selection**: FP16/BF16/8-bit/4-bit based on VRAM
@@ -258,6 +263,7 @@ python scripts\gpu_optimizer.py --model-size 7.0 --memory-usage 0.8
 ### Hardware Profiles
 
 #### High-End GPU (A100 80GB, RTX 4090 24GB)
+
 ```yaml
 batch_size: 4
 gradient_accumulation_steps: 1
@@ -270,6 +276,7 @@ compile_model: true
 ```
 
 #### Mid-Range GPU (RTX 3090 24GB, V100 16GB)
+
 ```yaml
 batch_size: 2
 gradient_accumulation_steps: 2
@@ -280,6 +287,7 @@ lora_rank: 16
 ```
 
 #### Budget GPU (RTX 3060 12GB, T4 16GB)
+
 ```yaml
 batch_size: 1
 gradient_accumulation_steps: 4
@@ -290,6 +298,7 @@ lora_rank: 8
 ```
 
 #### Limited VRAM (GTX 1080 Ti 11GB)
+
 ```yaml
 batch_size: 1
 gradient_accumulation_steps: 8
@@ -406,6 +415,7 @@ See `scripts\run_pipeline.py` for automated orchestration.
 ## 📦 Dependencies
 
 ### Core Requirements (already installed)
+
 ```
 torch>=2.0.0
 transformers>=4.36.0
@@ -433,6 +443,7 @@ pip install flash-attn --no-build-isolation
 ## 🎯 Performance Tips
 
 ### Training Speed
+
 1. Use GPU optimizer to find best batch size
 2. Enable gradient checkpointing only if OOM
 3. Use BF16 on Ampere+ GPUs (A100, RTX 30xx+)
@@ -440,6 +451,7 @@ pip install flash-attn --no-build-isolation
 5. Use compiled models (PyTorch 2.0+)
 
 ### Memory Efficiency
+
 1. Start with 4-bit quantization on limited VRAM
 2. Use gradient accumulation to simulate larger batches
 3. Reduce sequence length if still OOM
@@ -447,6 +459,7 @@ pip install flash-attn --no-build-isolation
 5. Prune dataset to reduce training time
 
 ### Data Quality
+
 1. Always prune training data first
 2. Use similarity threshold 0.90-0.95 for deduplication
 3. Set quality threshold based on your domain
@@ -454,6 +467,7 @@ pip install flash-attn --no-build-isolation
 5. Monitor perplexity during evaluation
 
 ### RAG Performance
+
 1. Build index once, reuse across runs
 2. Use smaller embedding models for speed
 3. Adjust chunk size based on your documents
@@ -463,6 +477,7 @@ pip install flash-attn --no-build-isolation
 ## 🐛 Troubleshooting
 
 ### Out of Memory
+
 ```bash
 # Run optimizer with conservative settings
 python scripts\gpu_optimizer.py --memory-usage 0.6
@@ -472,6 +487,7 @@ python scripts\train_lora.py --batch-size 1 --gradient-accumulation 8
 ```
 
 ### Slow Training
+
 ```bash
 # Check if using optimal settings
 python scripts\gpu_optimizer.py
@@ -481,6 +497,7 @@ python -m torch.utils.bottleneck scripts\train_lora.py ...
 ```
 
 ### Poor Evaluation Scores
+
 ```bash
 # Prune more aggressively
 python scripts\semantic_pruning.py --quality-threshold 0.5
@@ -490,6 +507,7 @@ python scripts\semantic_pruning.py --input data.jsonl --output /dev/null
 ```
 
 ### RAG Not Finding Context
+
 ```bash
 # Rebuild index with lower threshold
 python scripts\rag_pipeline.py --rebuild-index
@@ -501,6 +519,7 @@ python -c "from scripts.rag_pipeline import DocumentStore, RAGConfig; ds = Docum
 ## 📚 API Reference
 
 See individual script files for detailed API documentation:
+
 - `scripts/auto_eval.py` - Evaluation framework
 - `scripts/rag_pipeline.py` - RAG components
 - `scripts/semantic_pruning.py` - Data pruning
@@ -509,6 +528,7 @@ See individual script files for detailed API documentation:
 ## 🎓 Examples
 
 ### Example 1: Quick Training
+
 ```bash
 python scripts\gpu_optimizer.py --update-config lora\lora.yaml
 python scripts\train_lora.py --dataset data --config lora\lora.yaml --max-train-samples 1000
@@ -516,6 +536,7 @@ python scripts\auto_eval.py --model data_out\lora_training --dataset data\test.j
 ```
 
 ### Example 2: Production Pipeline
+
 ```bash
 # Full quality training
 python scripts\semantic_pruning.py --input raw.jsonl --output clean.jsonl --similarity-threshold 0.95
@@ -525,6 +546,7 @@ python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl 
 ```
 
 ### Example 3: RAG Deployment
+
 ```bash
 # Index all docs
 python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datasets --rebuild-index --index-dir data_out\rag_index
@@ -542,6 +564,7 @@ print(rag.query('What is quantum computing?')['answer'])
 ## 📈 Monitoring
 
 All tools output results to `data_out/`:
+
 ```
 data_out/
 ├── lora_training/           # Trained model

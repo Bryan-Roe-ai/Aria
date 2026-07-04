@@ -12,9 +12,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 def print_banner(text):
     """Print a colorful banner"""
-    print(f"\n\033[96m{'='*70}\033[0m")
+    print(f"\n\033[96m{'=' * 70}\033[0m")
     print(f"\033[96m{text.center(70)}\033[0m")
-    print(f"\033[96m{'='*70}\033[0m\n")
+    print(f"\033[96m{'=' * 70}\033[0m\n")
 
 
 print_banner("QUANTUM AI - QUICK EXPERIMENT DEMO")

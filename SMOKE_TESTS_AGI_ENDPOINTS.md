@@ -88,17 +88,19 @@ The `/api/agi/status` endpoint response includes:
 ## Troubleshooting
 
 <<<<<<< HEAD
-| Issue | Solution |
-| --- | --- |
-| `curl: (7) Failed to connect` | Ensure `func host start` is running on port 7071 |
-| `agent_tools` field missing | Check `agi_provider._AGENT_REGISTRY` is accessible |
-| Tool names not sorted | Verify `sorted(set(...))` logic in `function_app.py` agi_status |
-| Non-string tools in list | Check `agi_provider.py` tool configuration structure |
-=======
+
 | Issue                                | Solution                                                        |
 | ------------------------------------ | --------------------------------------------------------------- |
 | `curl: (7) Failed to connect`        | Ensure `func host start` is running on port 7071                |
 | `agent_tools` field missing          | Check `agi_provider._AGENT_REGISTRY` is accessible              |
 | Tool names not sorted                | Verify `sorted(set(...))` logic in `function_app.py` agi_status |
 | Non-string tools in list             | Check `agi_provider.py` tool configuration structure            |
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+| =======                              |
+| Issue                                | Solution                                                        |
+| ------------------------------------ | --------------------------------------------------------------- |
+| `curl: (7) Failed to connect`        | Ensure `func host start` is running on port 7071                |
+| `agent_tools` field missing          | Check `agi_provider._AGENT_REGISTRY` is accessible              |
+| Tool names not sorted                | Verify `sorted(set(...))` logic in `function_app.py` agi_status |
+| Non-string tools in list             | Check `agi_provider.py` tool configuration structure            |
+
+> > > > > > > 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)

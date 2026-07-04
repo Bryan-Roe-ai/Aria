@@ -18,13 +18,16 @@ ai-projects/cooking-ai/
 ## RecipeAgent Pattern
 
 ### Structural Typing
+
 ```python
 class ProviderProtocol:
     def complete(self, messages: List[Dict], json_mode: bool = False) -> str: ...
 ```
+
 The agent accepts any provider matching this protocol — no inheritance required.
 
 ### JSON Mode with Fallback
+
 ```python
 # _invoke() implements 2-retry:
 try:
@@ -39,28 +42,34 @@ except:
 ### Output Schemas
 
 **Recipe Search:**
+
 ```json
 {
-    "recipes": [{
-        "title": "string",
-        "ingredients": ["string"],
-        "instructions": ["string"],
-        "tags": ["string"],
-        "est_time_minutes": 30
-    }]
+    "recipes": [
+        {
+            "title": "string",
+            "ingredients": ["string"],
+            "instructions": ["string"],
+            "tags": ["string"],
+            "est_time_minutes": 30
+        }
+    ]
 }
 ```
 
 **Ingredient Extraction:**
+
 ```json
 {
-    "ingredients": [{
-        "raw": "string",
-        "name": "string",
-        "quantity": "string",
-        "unit": "string",
-        "notes": "string"
-    }]
+    "ingredients": [
+        {
+            "raw": "string",
+            "name": "string",
+            "quantity": "string",
+            "unit": "string",
+            "notes": "string"
+        }
+    ]
 }
 ```
 

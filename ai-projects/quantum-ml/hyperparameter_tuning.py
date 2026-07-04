@@ -127,7 +127,7 @@ def main(quick=True):
         results.append(res)
         if best is None or res["best_val_acc"] > best["best_val_acc"]:
             best = res
-        print(f"   Best Val Acc (this run): {res['best_val_acc']*100:.2f}%")
+        print(f"   Best Val Acc (this run): {res['best_val_acc'] * 100:.2f}%")
 
     # Save results
     results_dir = ROOT / "results"
@@ -144,7 +144,7 @@ def main(quick=True):
     print("\n" + "=" * 70)
     print("  ✅ TUNING COMPLETE")
     print("=" * 70)
-    print(f"Best Validation Accuracy: {best['best_val_acc']*100:.2f}%")
+    print(f"Best Validation Accuracy: {best['best_val_acc'] * 100:.2f}%")
     print(f"Best Config: {best['config']}")
     print(f"Saved results: {out_path}")
     print(f"Saved best config: {best_path}")

@@ -5,10 +5,9 @@ Provides real-time GPU metrics via nvidia-smi
 
 import json
 import subprocess
-from typing import Dict, List
 
 
-def get_gpu_info() -> Dict:
+def get_gpu_info() -> dict:
     """Get detailed GPU information using nvidia-smi"""
     try:
         result = subprocess.run(
@@ -55,7 +54,7 @@ def get_gpu_info() -> Dict:
         return {"error": str(e), "available": False}
 
 
-def get_gpu_processes() -> List[Dict]:
+def get_gpu_processes() -> list[dict]:
     """Get processes currently using GPU"""
     try:
         result = subprocess.run(
@@ -92,7 +91,7 @@ def get_gpu_processes() -> List[Dict]:
         return []
 
 
-def get_system_resources() -> Dict:
+def get_system_resources() -> dict:
     """Get CPU and memory information"""
     try:
         import psutil

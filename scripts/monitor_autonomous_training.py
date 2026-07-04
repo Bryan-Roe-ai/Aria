@@ -10,7 +10,6 @@ import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 # Color codes for terminal output
 
@@ -52,7 +51,7 @@ class TrainingMonitor:
             # If clearing fails, just print newlines
             print("\n" * 50)
 
-    def load_status(self) -> Optional[Dict]:
+    def load_status(self) -> dict | None:
         """Load current status from file"""
         if not self.status_file.exists():
             return None
@@ -63,7 +62,7 @@ class TrainingMonitor:
         except Exception as e:
             return {"error": str(e)}
 
-    def load_heartbeat(self) -> Optional[Dict]:
+    def load_heartbeat(self) -> dict | None:
         """Load lightweight heartbeat metadata if present."""
         if not self.heartbeat_file.exists():
             return None
@@ -73,7 +72,7 @@ class TrainingMonitor:
         except Exception:
             return None
 
-    def get_recent_logs(self, lines: int = 20) -> List[str]:
+    def get_recent_logs(self, lines: int = 20) -> list[str]:
         """Get recent log entries using streaming to avoid memory issues"""
         if not self.log_file.exists():
             return []
@@ -95,7 +94,7 @@ class TrainingMonitor:
         if seconds < 60:
             return f"{seconds:.1f}s"
         elif seconds < 3600:
-            return f"{seconds/60:.1f}m"
+            return f"{seconds / 60:.1f}m"
         else:
             hours = seconds / 3600
             return f"{hours:.1f}h"
@@ -114,14 +113,14 @@ class TrainingMonitor:
 
     def print_header(self):
         """Print dashboard header"""
-        print(f"\n{Colors.BOLD}{Colors.HEADER}{'='*80}{Colors.ENDC}")
+        print(f"\n{Colors.BOLD}{Colors.HEADER}{'=' * 80}{Colors.ENDC}")
         print(f"{Colors.BOLD}{Colors.HEADER}🤖 AUTONOMOUS AI TRAINING MONITOR{Colors.ENDC}")
-        print(f"{Colors.BOLD}{Colors.HEADER}{'='*80}{Colors.ENDC}\n")
+        print(f"{Colors.BOLD}{Colors.HEADER}{'=' * 80}{Colors.ENDC}\n")
         print(f"📊 Status File: {self.status_file}")
         print(f"📝 Log File: {self.log_file}")
         print(f"🕐 Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
-    def print_overview(self, status: Dict):
+    def print_overview(self, status: dict):
         """Print system overview"""
         print(f"{Colors.BOLD}SYSTEM OVERVIEW{Colors.ENDC}")
         print("─" * 80)
@@ -209,7 +208,7 @@ class TrainingMonitor:
             print(f"  Next Cycle ETA: {next_eta}")
         print()
 
-    def print_datasets(self, status: Dict):
+    def print_datasets(self, status: dict):
         """Print dataset information"""
         print(f"{Colors.BOLD}DATASET INVENTORY{Colors.ENDC}")
         print("─" * 80)
@@ -227,7 +226,7 @@ class TrainingMonitor:
         print(f"\n  {Colors.BOLD}Total Available: {total}{Colors.ENDC}")
         print()
 
-    def print_performance(self, status: Dict):
+    def print_performance(self, status: dict):
         """Print performance metrics"""
         print(f"{Colors.BOLD}PERFORMANCE METRICS{Colors.ENDC}")
         print("─" * 80)
@@ -252,8 +251,8 @@ class TrainingMonitor:
             successful = perf.get("successful_count", perf.get("datasets_trained", 0))
             cycle_display = perf.get("cycle", i)
 
-            mean_str = f"{mean_acc*100:.2f}%"
-            max_str = f"{max_acc*100:.2f}%"
+            mean_str = f"{mean_acc * 100:.2f}%"
+            max_str = f"{max_acc * 100:.2f}%"
 
             print(f"  #{cycle_display:<7} {str(epochs):<8} {mean_str:<12} {max_str:<12} {successful:<10}")
 
@@ -264,9 +263,9 @@ class TrainingMonitor:
             diff = curr_acc - prev_acc
 
             if diff > 0.01:
-                trend = f"{Colors.OKGREEN}↑ +{diff*100:.2f}% (Improving){Colors.ENDC}"
+                trend = f"{Colors.OKGREEN}↑ +{diff * 100:.2f}% (Improving){Colors.ENDC}"
             elif diff < -0.01:
-                trend = f"{Colors.FAIL}↓ {diff*100:.2f}% (Declining){Colors.ENDC}"
+                trend = f"{Colors.FAIL}↓ {diff * 100:.2f}% (Declining){Colors.ENDC}"
             else:
                 trend = f"{Colors.WARNING}→ Stable{Colors.ENDC}"
 
@@ -285,7 +284,7 @@ class TrainingMonitor:
 
         print()
 
-    def print_active_tasks(self, status: Dict):
+    def print_active_tasks(self, status: dict):
         """Print active and completed tasks"""
         print(f"{Colors.BOLD}TASK QUEUE{Colors.ENDC}")
         print("─" * 80)
@@ -337,7 +336,7 @@ class TrainingMonitor:
 
         print()
 
-    def print_alerts(self, status: Dict):
+    def print_alerts(self, status: dict):
         """Print any alerts or warnings"""
         alerts = []
 
@@ -396,7 +395,7 @@ class TrainingMonitor:
         self.print_active_tasks(status)
         self.print_recent_logs()
 
-        print(f"{Colors.BOLD}{'─'*80}{Colors.ENDC}")
+        print(f"{Colors.BOLD}{'─' * 80}{Colors.ENDC}")
         print("Press Ctrl+C to exit  |  Refreshing every 5 seconds...")
 
     def print_summary(self):
@@ -416,9 +415,9 @@ class TrainingMonitor:
             inventory = status.get("dataset_inventory", {})
             total = sum(v.get("count", 0) if isinstance(v, dict) else int(v) for v in inventory.values())
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print("AUTONOMOUS TRAINING STATUS")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(f"Phase: {phase.upper()}")
         print(f"Cycles: {cycles}")
         print(f"Best Accuracy: {best_acc:.2%}")
@@ -441,7 +440,7 @@ class TrainingMonitor:
             print(f"  Successful: {latest.get('successful_count', latest.get('datasets_trained', 0))}")
             print(f"  Exceptional: {latest.get('exceptional_models', 0)}")
 
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
     def monitor_continuous(self, refresh_seconds: int = 5):
         """Monitor in continuous mode with auto-refresh"""

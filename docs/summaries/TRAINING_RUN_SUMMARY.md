@@ -36,15 +36,15 @@ Dataset: datasets/chat/mixed_chat (290 samples)
 Training Mode: Quick (--quick flag)
 
 Hyperparameters:
-  - max_train_samples: 64
-  - max_eval_samples: 16
-  - epochs: 1
-  - device: cpu
-  - learning_rate: 0.0002
-  - lora_rank: 8
-  - lora_alpha: 16
-  - lora_dropout: 0.1
-  - batch_size: 4
+    - max_train_samples: 64
+    - max_eval_samples: 16
+    - epochs: 1
+    - device: cpu
+    - learning_rate: 0.0002
+    - lora_rank: 8
+    - lora_alpha: 16
+    - lora_dropout: 0.1
+    - batch_size: 4
 ```
 
 ## Training Results
@@ -75,48 +75,48 @@ Status: Completed Successfully
 - **Purpose:** End-to-end training pipeline with evaluation and promotion
 - **Usage:** `python scripts/train_and_promote.py --quick --dataset datasets/chat/mixed_chat`
 - **Features:**
-  - Automated training workflow
-  - Model evaluation
-  - Best model promotion
-  - Comprehensive reporting
+    - Automated training workflow
+    - Model evaluation
+    - Best model promotion
+    - Comprehensive reporting
 
 ### 2. **automated_training_pipeline.py**
 
 - **Purpose:** Multi-model training with Azure ML integration
 - **Usage:** `python scripts/automated_training_pipeline.py --quick --models phi,qwen`
 - **Features:**
-  - Multiple model support (Phi, Qwen, TinyLlama)
-  - Synthetic data generation
-  - Azure ML job spec emission
-  - Parallel training support
+    - Multiple model support (Phi, Qwen, TinyLlama)
+    - Synthetic data generation
+    - Azure ML job spec emission
+    - Parallel training support
 
 ### 3. **autotrain.py** (Orchestrator)
 
 - **Purpose:** YAML-driven training orchestration
 - **Usage:** `python scripts/autotrain.py --job phi35_comprehensive_full`
 - **Features:**
-  - Zero external dependencies (offline capable)
-  - Sequential job execution
-  - Machine-readable status tracking
-  - Supports HF and local runners
+    - Zero external dependencies (offline capable)
+    - Sequential job execution
+    - Machine-readable status tracking
+    - Supports HF and local runners
 
 ## Dataset Inventory
 
 Available chat datasets in `datasets/chat/`:
 
-| Dataset | Training Samples | Description |
-| --------- | ------------------ | ------------- |
-| dolly | 15,011 | Instruction-following dataset |
-| comprehensive | 13,749 | Comprehensive chat dataset |
-| app_repo_augmented | 1,350 | Repository-specific augmented data |
-| mega_synthetic | 1,260 | Synthetic conversation data |
-| aria_expanded | 757 | Expanded Aria movement data |
-| app_repo | 450 | Repository-specific conversations |
-| aria_simple | 337 | Simple Aria interactions |
-| **mixed_chat** | **290** | Mixed chat conversations (used) |
-| aria_movement | 242 | Aria movement training data |
-| auto_generated | 63 | Auto-generated training samples |
-| anime_avatar | 21 | Anime avatar interactions |
+| Dataset            | Training Samples | Description                        |
+| ------------------ | ---------------- | ---------------------------------- |
+| dolly              | 15,011           | Instruction-following dataset      |
+| comprehensive      | 13,749           | Comprehensive chat dataset         |
+| app_repo_augmented | 1,350            | Repository-specific augmented data |
+| mega_synthetic     | 1,260            | Synthetic conversation data        |
+| aria_expanded      | 757              | Expanded Aria movement data        |
+| app_repo           | 450              | Repository-specific conversations  |
+| aria_simple        | 337              | Simple Aria interactions           |
+| **mixed_chat**     | **290**          | Mixed chat conversations (used)    |
+| aria_movement      | 242              | Aria movement training data        |
+| auto_generated     | 63               | Auto-generated training samples    |
+| anime_avatar       | 21               | Anime avatar interactions          |
 
 **Total Available:** 33,531 training samples
 
@@ -146,9 +146,9 @@ Created a demonstration training script that simulates the complete training wor
 ### Fixed Issues
 
 1. **train_lora.py Syntax Error** (Line 681-683)
-   - **Issue:** Missing `pass` statement in exception handler
-   - **Fix:** Added proper exception handling
-   - **Status:** ✅ Resolved
+    - **Issue:** Missing `pass` statement in exception handler
+    - **Fix:** Added proper exception handling
+    - **Status:** ✅ Resolved
 
 ## Recommendations for Production Training
 
@@ -195,33 +195,33 @@ python scripts/autotrain.py --list
 
 ## Infrastructure Validation Results
 
-| Component | Status | Notes |
-| ----------- | -------- | ------- |
-| Python Environment | ✅ Pass | Python 3.12.3 |
-| PyTorch | ✅ Pass | 2.9.1+cpu installed |
-| Transformers | ✅ Pass | 4.57.6 installed |
-| PEFT | ✅ Pass | 0.18.1 installed |
-| Training Scripts | ✅ Pass | Syntax validated |
-| Dataset Access | ✅ Pass | 33,531 samples available |
-| Output Directories | ✅ Pass | Created successfully |
-| Configuration Files | ✅ Pass | Present and valid |
+| Component           | Status  | Notes                    |
+| ------------------- | ------- | ------------------------ |
+| Python Environment  | ✅ Pass | Python 3.12.3            |
+| PyTorch             | ✅ Pass | 2.9.1+cpu installed      |
+| Transformers        | ✅ Pass | 4.57.6 installed         |
+| PEFT                | ✅ Pass | 0.18.1 installed         |
+| Training Scripts    | ✅ Pass | Syntax validated         |
+| Dataset Access      | ✅ Pass | 33,531 samples available |
+| Output Directories  | ✅ Pass | Created successfully     |
+| Configuration Files | ✅ Pass | Present and valid        |
 
 ## Next Steps
 
 1. **For Immediate Training:**
-   - Run in environment with HuggingFace access
-   - Use `--quick` flag for fast iteration
-   - Monitor GPU memory usage
+    - Run in environment with HuggingFace access
+    - Use `--quick` flag for fast iteration
+    - Monitor GPU memory usage
 
 2. **For Production Deployment:**
-   - Set up Azure ML integration
-   - Configure Azure Quantum for hybrid quantum-AI
-   - Enable telemetry and monitoring
+    - Set up Azure ML integration
+    - Configure Azure Quantum for hybrid quantum-AI
+    - Enable telemetry and monitoring
 
 3. **For Continuous Training:**
-   - Set up automated training pipelines
-   - Configure model evaluation metrics
-   - Enable auto-promotion of best models
+    - Set up automated training pipelines
+    - Configure model evaluation metrics
+    - Enable auto-promotion of best models
 
 ## Conclusion
 

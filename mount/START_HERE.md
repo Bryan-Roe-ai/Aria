@@ -7,27 +7,32 @@ A **complete web-based control center** for your entire QAI workspace!
 ### 📦 Package Contents
 
 ✅ **Backend API** (FastAPI)
+
 - 20+ REST endpoints
 - Integration with quantum, chat, and training systems
 - Auto-serves web UI
 
 ✅ **Beautiful Web Interface**
+
 - 5 interactive tabs (Dashboard, Quantum, Chat, Training, Logs)
 - Real-time status updates
 - Modern gradient design
 - Responsive (works on all devices)
 
 ✅ **Integration Modules**
+
 - `quantum_integration.py` - Quantum AI operations
 - `chat_integration.py` - Multi-provider chat
 - `training_integration.py` - LoRA training & orchestration
 
 ✅ **Helper Scripts**
+
 - `launch.ps1` - One-click start + browser open
 - `start.ps1` - Quick start
 - `test-service.ps1` - API tests
 
 ✅ **Documentation**
+
 - `README.md` - Complete API docs
 - `WEB_UI_GUIDE.md` - Web UI guide
 - `SETUP_COMPLETE.md` - Feature overview
@@ -46,30 +51,35 @@ That's it! Your browser opens automatically to the control center.
 ## 🎯 What You Can Do
 
 ### 1️⃣ Train Quantum Models
+
 - Pick a dataset (heart, ionosphere, sonar, banknote)
 - Configure qubits and layers
 - Watch training in real-time
 - See accuracy results
 
 ### 2️⃣ Chat with AI
+
 - Use local provider (free, always works)
 - Or use Azure/OpenAI (with API keys)
 - Or use your trained LoRA model
 - Save conversation history
 
 ### 3️⃣ Train LoRA Adapters
+
 - Select chat datasets
 - Configure training parameters
 - Monitor progress
 - Use trained model in chat
 
 ### 4️⃣ Run Orchestrators
+
 - Quantum AutoRun jobs
 - AutoTrain jobs
 - Dry-run validation
 - Status monitoring
 
 ### 5️⃣ Monitor Everything
+
 - System health dashboard
 - Real-time logs
 - Recent activity feed
@@ -128,31 +138,34 @@ All with a modern purple gradient theme!
 
 ## 📊 Capabilities
 
-| Feature | Status | Notes |
-| ------- | ------ | ----- |
+| Feature          | Status   | Notes                  |
+| ---------------- | -------- | ---------------------- |
 | Quantum Training | ✅ Ready | All datasets available |
-| Chat (Local) | ✅ Ready | Always available, free |
-| Chat (Cloud) | ✅ Ready | Requires API keys |
-| LoRA Training | ✅ Ready | CPU/GPU supported |
-| AutoRun Jobs | ✅ Ready | Quantum orchestration |
-| AutoTrain Jobs | ✅ Ready | Training orchestration |
-| Web UI | ✅ Ready | 5 full-featured tabs |
-| API Docs | ✅ Ready | Swagger + ReDoc |
-| Real-time Logs | ✅ Ready | Color-coded |
+| Chat (Local)     | ✅ Ready | Always available, free |
+| Chat (Cloud)     | ✅ Ready | Requires API keys      |
+| LoRA Training    | ✅ Ready | CPU/GPU supported      |
+| AutoRun Jobs     | ✅ Ready | Quantum orchestration  |
+| AutoTrain Jobs   | ✅ Ready | Training orchestration |
+| Web UI           | ✅ Ready | 5 full-featured tabs   |
+| API Docs         | ✅ Ready | Swagger + ReDoc        |
+| Real-time Logs   | ✅ Ready | Color-coded            |
 
 ## 🎓 Learning Path
 
 **Beginner** (5 minutes):
+
 1. Launch the app
 2. Browse the dashboard
 3. Try local chat
 
 **Intermediate** (15 minutes):
+
 1. Train a quantum model (heart dataset, default settings)
 2. Check results
 3. Try different datasets
 
 **Advanced** (30+ minutes):
+
 1. Train a LoRA adapter
 2. Use it in chat
 3. Run orchestrator jobs
@@ -161,22 +174,26 @@ All with a modern purple gradient theme!
 ## 🌟 Highlights
 
 **🆓 Free Local Operations**:
+
 - Local chat provider (offline-capable)
 - Quantum training on simulators
 - All features work without cloud services
 
 **⚡ Fast & Responsive**:
+
 - Real-time updates
 - Auto-refresh (30s intervals)
 - Instant feedback
 
 **🎨 Beautiful Design**:
+
 - Modern gradient interface
 - Smooth animations
 - Color-coded status
 - Mobile-friendly
 
 **🔧 Fully Integrated**:
+
 - Direct access to all QAI components
 - Unified API
 - Consistent experience
@@ -199,6 +216,7 @@ All with a modern purple gradient theme!
 ## 💬 Support
 
 All features are documented:
+
 - Hover over UI elements for tooltips
 - Check the Logs tab for detailed output
 - See WEB_UI_GUIDE.md for troubleshooting

@@ -1,20 +1,20 @@
 import argparse
+import ipaddress
 import json
 import math
 import os
-import ipaddress
 import re
 import socket
-from urllib.parse import urlparse
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+from typing import Any
+from urllib.parse import urlparse
 
 try:
     import yaml  # type: ignore
 except Exception:
-    raise SystemExit(
-        "pyyaml is required. Install with: pip install pyyaml") from None
+    raise SystemExit("pyyaml is required. Install with: pip install pyyaml") from None
 try:
     # Optional: install torch if missing
     try:
@@ -51,7 +51,7 @@ except Exception as e:
     EarlyStoppingCallback = None  # type: ignore
 
 
-DEFAULT_MODEL_ALIASES: Dict[str, str] = {
+DEFAULT_MODEL_ALIASES: dict[str, str] = {
     "gpt-oss": "openai/gpt-oss-20b",
     "gpt-oss-20b": "openai/gpt-oss-20b",
     "gpt-oss-120b": "openai/gpt-oss-120b",
@@ -70,7 +70,7 @@ def resolve_hf_model_id(
     *,
     cli_model_id: str | None = None,
     env_model_id: str | None = None,
-    config_aliases: Dict[str, str] | None = None,
+    config_aliases: dict[str, str] | None = None,
 ) -> str:
     """Resolve the actual Hugging Face model id or local checkpoint path.
 
@@ -79,7 +79,7 @@ def resolve_hf_model_id(
     as ``gpt-oss`` to a concrete HF repo id.
     """
 
-    aliases: Dict[str, str] = dict(DEFAULT_MODEL_ALIASES)
+    aliases: dict[str, str] = dict(DEFAULT_MODEL_ALIASES)
     if isinstance(config_aliases, dict):
         aliases.update({str(k): str(v) for k, v in config_aliases.items()})
 
@@ -131,7 +131,7 @@ class Config:
     early_stopping_threshold: float
 
 
-def read_yaml(yaml_path: Path) -> Dict[str, Any]:
+def read_yaml(yaml_path: Path) -> dict[str, Any]:
     with yaml_path.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
@@ -141,7 +141,7 @@ def resolve_path(p: str) -> Path:
     return Path(p).expanduser()
 
 
-def iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
+def iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
     with path.open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -157,7 +157,7 @@ def count_records(path: Path) -> int:
     return n
 
 
-def validate_sample(path: Path) -> Dict[str, Any]:
+def validate_sample(path: Path) -> dict[str, Any]:
     for obj in iter_jsonl(path):
         msgs = obj.get("messages")
         if isinstance(msgs, list) and len(msgs) >= 2:
@@ -165,9 +165,9 @@ def validate_sample(path: Path) -> Dict[str, Any]:
     raise RuntimeError(f"No valid chat records found in {path}")
 
 
-def build_text_from_messages(messages: List[Dict[str, str]]) -> str:
+def build_text_from_messages(messages: list[dict[str, str]]) -> str:
     """Convert messages to training text with improved formatting and end tokens."""
-    parts: List[str] = []
+    parts: list[str] = []
     for m in messages:
         role = m.get("role", "").lower()
         content = m.get("content", "").strip()
@@ -182,7 +182,7 @@ def build_text_from_messages(messages: List[Dict[str, str]]) -> str:
     return "".join(parts)
 
 
-def make_hf_dataset_from_files(train_files: List[str], eval_files: List[str], streaming: bool = True):
+def make_hf_dataset_from_files(train_files: list[str], eval_files: list[str], streaming: bool = True):
     if load_dataset is None:
         raise RuntimeError("HuggingFace datasets not available. Install 'datasets' to load datasets.")
     data_files = {"train": train_files, "validation": eval_files}
@@ -193,24 +193,23 @@ def make_hf_dataset_from_files(train_files: List[str], eval_files: List[str], st
 def _validated_remote_url(path_or_url: str) -> str:
     parsed = urlparse(path_or_url)
     if parsed.scheme not in ("http", "https"):
-        raise ValueError(
-            f"Unsupported URL scheme for manifest source: {parsed.scheme!r}")
+        raise ValueError(f"Unsupported URL scheme for manifest source: {parsed.scheme!r}")
     if not parsed.hostname:
         raise ValueError("Remote manifest URL must include a hostname")
 
-    allowed_hosts = {h.strip().lower() for h in os.environ.get(
-        "LORA_MANIFEST_ALLOWED_HOSTS", "").split(",") if h.strip()}
+    allowed_hosts = {
+        h.strip().lower() for h in os.environ.get("LORA_MANIFEST_ALLOWED_HOSTS", "").split(",") if h.strip()
+    }
     host = parsed.hostname.lower()
     if allowed_hosts and host not in allowed_hosts:
-        raise ValueError(
-            f"Remote manifest host {host!r} is not in LORA_MANIFEST_ALLOWED_HOSTS")
+        raise ValueError(f"Remote manifest host {host!r} is not in LORA_MANIFEST_ALLOWED_HOSTS")
 
     try:
-        addrinfos = socket.getaddrinfo(parsed.hostname, parsed.port or (
-            443 if parsed.scheme == "https" else 80), type=socket.SOCK_STREAM)
+        addrinfos = socket.getaddrinfo(
+            parsed.hostname, parsed.port or (443 if parsed.scheme == "https" else 80), type=socket.SOCK_STREAM
+        )
     except socket.gaierror as e:
-        raise ValueError(
-            f"Could not resolve remote manifest host {parsed.hostname!r}: {e}") from e
+        raise ValueError(f"Could not resolve remote manifest host {parsed.hostname!r}: {e}") from e
 
     for ai in addrinfos:
         ip_str = ai[4][0]
@@ -223,8 +222,7 @@ def _validated_remote_url(path_or_url: str) -> str:
             or ip_obj.is_multicast
             or ip_obj.is_unspecified
         ):
-            raise ValueError(
-                f"Remote manifest host resolves to disallowed address: {ip_str}")
+            raise ValueError(f"Remote manifest host resolves to disallowed address: {ip_str}")
 
     return path_or_url
 
@@ -244,8 +242,8 @@ def _read_text_source(path_or_url: str) -> Iterable[str]:
                 yield line.rstrip("\n")
 
 
-def parse_manifest(path_or_url: str) -> List[str]:
-    urls: List[str] = []
+def parse_manifest(path_or_url: str) -> list[str]:
+    urls: list[str] = []
     lower = path_or_url.lower()
     if lower.endswith(".json"):
         import json as _json
@@ -288,7 +286,7 @@ def parse_manifest(path_or_url: str) -> List[str]:
                 urls.append(line.strip())
     # Dedupe
     seen = set()
-    uniq: List[str] = []
+    uniq: list[str] = []
     for u in urls:
         if u not in seen:
             seen.add(u)
@@ -300,8 +298,7 @@ def main():
     ap = argparse.ArgumentParser(description="Train LoRA on chat dataset using lora.yaml config")
     ap.add_argument(
         "--config",
-        default=str(Path(__file__).resolve(
-        ).parents[1] / "lora" / "lora.yaml"),
+        default=str(Path(__file__).resolve().parents[1] / "lora" / "lora.yaml"),
     )
     ap.add_argument("--dataset", default=str(Path(__file__).resolve().parents[1] / "data"))
     ap.add_argument(
@@ -379,8 +376,7 @@ def main():
         default=None,
         help="Override finetune_test_batch_size from config",
     )
-    ap.add_argument("--seed", type=int, default=None,
-                    help="Override seed from config")
+    ap.add_argument("--seed", type=int, default=None, help="Override seed from config")
     args = ap.parse_args()
 
     # Initialize tracing (best-effort). This allows the optional
@@ -397,37 +393,26 @@ def main():
     model_aliases = cfg_raw.get("model_aliases")
     cfg = Config(
         model=cfg_raw.get("model") or "Phi-3.6-mini-instruct",
-        finetune_dataset=cfg_raw.get(
-            "finetune_dataset") or str(Path(args.dataset)),
-        save_dir=(
-            args.save_dir
-            or cfg_raw.get("save_dir")
-            or str(Path(__file__).resolve().parents[1] / "outputs")
-        ),
+        finetune_dataset=cfg_raw.get("finetune_dataset") or str(Path(args.dataset)),
+        save_dir=(args.save_dir or cfg_raw.get("save_dir") or str(Path(__file__).resolve().parents[1] / "outputs")),
         finetune_train_nsamples=cfg_raw.get("finetune_train_nsamples"),
         finetune_test_nsamples=cfg_raw.get("finetune_test_nsamples"),
-        finetune_train_batch_size=int(
-            cfg_raw.get("finetune_train_batch_size") or 2),
-        finetune_test_batch_size=int(
-            cfg_raw.get("finetune_test_batch_size") or 2),
-        finetune_train_seqlen=int(cfg_raw.get(
-            "finetune_train_seqlen") or 1024),
+        finetune_train_batch_size=int(cfg_raw.get("finetune_train_batch_size") or 2),
+        finetune_test_batch_size=int(cfg_raw.get("finetune_test_batch_size") or 2),
+        finetune_train_seqlen=int(cfg_raw.get("finetune_train_seqlen") or 1024),
         finetune_test_seqlen=int(cfg_raw.get("finetune_test_seqlen") or 2048),
         learning_rate=float(cfg_raw.get("learning_rate") or 2e-4),
         lora_dropout=float(cfg_raw.get("lora_dropout") or 0.1),
         epochs=int(cfg_raw.get("epochs") or 1),
         eval_steps=int(cfg_raw.get("eval_steps", 64)),
         save_steps=int(cfg_raw.get("save_steps") or 64),
-        gradient_checkpointing=bool(cfg_raw.get(
-            "gradient_checkpointing") or False),
+        gradient_checkpointing=bool(cfg_raw.get("gradient_checkpointing") or False),
         seed=int(cfg_raw.get("seed") or 42),
         warmup_steps=int(cfg_raw.get("warmup_steps") or 100),
         gradient_accumulation_steps=int(cfg_raw.get("gradient_accumulation_steps") or 4),
         max_grad_norm=float(cfg_raw.get("max_grad_norm") or 1.0),
-        early_stopping_patience=int(
-            cfg_raw.get("early_stopping_patience") or 3),
-        early_stopping_threshold=float(
-            cfg_raw.get("early_stopping_threshold") or 0.01),
+        early_stopping_patience=int(cfg_raw.get("early_stopping_patience") or 3),
+        early_stopping_threshold=float(cfg_raw.get("early_stopping_threshold") or 0.01),
     )
 
     # Apply CLI overrides for HPO or cloud jobs
@@ -445,8 +430,8 @@ def main():
         cfg.seed = int(args.seed)
 
     # Resolve data sources: manifests or local files
-    train_files: List[str] = []
-    eval_files: List[str] = []
+    train_files: list[str] = []
+    eval_files: list[str] = []
     # CLI overrides take precedence
     train_manifest = getattr(args, "train_manifest", None)
     eval_manifest = getattr(args, "eval_manifest", None)
@@ -461,10 +446,7 @@ def main():
             # Fallback: use a small subset of train for eval
             eval_files = train_files[:1]
     else:
-        dataset_path = (
-            Path(args.dataset) if args.dataset else resolve_path(
-                cfg.finetune_dataset)
-        )
+        dataset_path = Path(args.dataset) if args.dataset else resolve_path(cfg.finetune_dataset)
         if dataset_path.is_file():
             # Allow direct file usage (.json or .jsonl)
             if dataset_path.suffix.lower() in (".json", ".jsonl"):
@@ -597,49 +579,27 @@ def main():
             try:
                 print(f"[preprocess] messages type: {type(msgs)}")
                 if isinstance(msgs, dict):
-                    print(
-                        f"[preprocess] messages dict keys: {list(msgs.keys())}")
+                    print(f"[preprocess] messages dict keys: {list(msgs.keys())}")
                     # Attempt to reconstruct per-sample conversations if messages is a dict of lists
                     # Expect shape: msgs[key][i] gives ith sample's list of that field
                     keys = list(msgs.keys())
-                    batch_size = (
-                        len(msgs[keys[0]])
-                        if keys and isinstance(msgs[keys[0]], list)
-                        else 0
-                    )
-                    print(
-                        f"[preprocess] inferred batch_size from dict: {batch_size}")
+                    batch_size = len(msgs[keys[0]]) if keys and isinstance(msgs[keys[0]], list) else 0
+                    print(f"[preprocess] inferred batch_size from dict: {batch_size}")
                     for i in range(batch_size):
                         # Reconstruct sample i as list of dicts using available fields
                         sample_messages = []
                         # Try common fields 'role' and 'content'
-                        roles = msgs.get("role", [])[
-                            i] if "role" in msgs else None
-                        contents = (
-                            msgs.get("content", [])[
-                                i] if "content" in msgs else None
-                        )
-                        if (
-                            isinstance(roles, list)
-                            and isinstance(contents, list)
-                            and len(roles) == len(contents)
-                        ):
+                        roles = msgs.get("role", [])[i] if "role" in msgs else None
+                        contents = msgs.get("content", [])[i] if "content" in msgs else None
+                        if isinstance(roles, list) and isinstance(contents, list) and len(roles) == len(contents):
                             for r, c in zip(roles, contents):
-                                sample_messages.append(
-                                    {"role": r, "content": c})
+                                sample_messages.append({"role": r, "content": c})
                         else:
                             # Fallback: try to rebuild from a generic list of dicts if present
                             # msgs may have a single key representing the full objects
                             for k in keys:
-                                candidate = (
-                                    msgs[k][i] if isinstance(
-                                        msgs[k], list) else None
-                                )
-                                if (
-                                    isinstance(candidate, list)
-                                    and candidate
-                                    and isinstance(candidate[0], dict)
-                                ):
+                                candidate = msgs[k][i] if isinstance(msgs[k], list) else None
+                                if isinstance(candidate, list) and candidate and isinstance(candidate[0], dict):
                                     sample_messages = candidate
                                     break
                         if sample_messages:
@@ -706,8 +666,7 @@ def main():
         try:
             n_in = len(texts)
             n_out = len(tokenized.get("input_ids", []))
-            print(
-                f"[preprocess] batch texts={n_in} -> tokenized input_ids={n_out}")
+            print(f"[preprocess] batch texts={n_in} -> tokenized input_ids={n_out}")
         except Exception:
             pass
         # Return as dict of lists for batched mapping
@@ -738,8 +697,7 @@ def main():
     # Load base model
     # DType selection: prefer bfloat16 on CUDA, else float32. (MPS/directml kept at float32 for stability.)
     use_cuda = chosen_device == "cuda" and torch.cuda.is_available()
-    dtype = torch.bfloat16 if use_cuda and hasattr(
-        torch, "bfloat16") else torch.float32
+    dtype = torch.bfloat16 if use_cuda and hasattr(torch, "bfloat16") else torch.float32
     # Use explicit device for single GPU to avoid meta device issues with device_map="auto"
     device_map_param = "cuda:0" if use_cuda and torch.cuda.device_count() == 1 else "auto"
     base_model = AutoModelForCausalLM.from_pretrained(
@@ -754,8 +712,7 @@ def main():
             base_model.config.use_cache = False
 
     # Use target_modules from config if present, else default to Phi-3.5 list
-    default_target_modules = ["q_proj", "v_proj",
-                              "k_proj", "o_proj", "fc1", "fc2"]
+    default_target_modules = ["q_proj", "v_proj", "k_proj", "o_proj", "fc1", "fc2"]
     config_target_modules = getattr(cfg, "target_modules", None)
     lora_config = LoraConfig(
         r=8,
@@ -802,20 +759,12 @@ def main():
     if streaming_train:
         # Steps per epoch based on desired sample count and batch size
         # Use max_train_samples if provided, else finetune_train_nsamples from config, else fallback to 1000
-        target_samples = (
-            args.max_train_samples
-            or getattr(cfg, "finetune_train_nsamples", None)
-            or 1000
-        )
-        steps_per_epoch = max(
-            1, math.ceil(target_samples /
-                         max(1, cfg.finetune_train_batch_size))
-        )
+        target_samples = args.max_train_samples or getattr(cfg, "finetune_train_nsamples", None) or 1000
+        steps_per_epoch = max(1, math.ceil(target_samples / max(1, cfg.finetune_train_batch_size)))
         max_steps_override = max(1, steps_per_epoch * max(1, cfg.epochs))
 
     # Precision flags: enable bf16 if supported, otherwise leave fp16 False on CPU to avoid errors
-    bf16_flag = use_cuda and getattr(
-        torch.cuda, "is_bf16_supported", lambda: False)()
+    bf16_flag = use_cuda and getattr(torch.cuda, "is_bf16_supported", lambda: False)()
     fp16_flag = use_cuda and not bf16_flag
     training_args = TrainingArguments(
         output_dir=str(out_dir),
@@ -903,17 +852,12 @@ def main():
     # Remove all non-model columns to avoid DataCollator confusion
     # Note: IterableDataset doesn't support column_names or remove_columns
     keep_cols = {"input_ids", "attention_mask"}
-    if (
-        hasattr(train_dataset, "column_names")
-        and train_dataset.column_names is not None
-    ):
-        drop_train = [
-            c for c in train_dataset.column_names if c not in keep_cols]
+    if hasattr(train_dataset, "column_names") and train_dataset.column_names is not None:
+        drop_train = [c for c in train_dataset.column_names if c not in keep_cols]
         if drop_train:
             train_dataset = train_dataset.remove_columns(drop_train)
     if hasattr(eval_dataset, "column_names") and eval_dataset.column_names is not None:
-        drop_eval = [
-            c for c in eval_dataset.column_names if c not in keep_cols]
+        drop_eval = [c for c in eval_dataset.column_names if c not in keep_cols]
         if drop_eval:
             eval_dataset = eval_dataset.remove_columns(drop_eval)
     # Debug dataset sizes and sample
@@ -926,8 +870,7 @@ def main():
             print(f"[debug] first train sample keys: {list(first.keys())}")
             for k in ("input_ids", "attention_mask"):
                 if k in first:
-                    print(
-                        f"[debug] first train sample {k} len: {len(first[k])}")
+                    print(f"[debug] first train sample {k} len: {len(first[k])}")
     except Exception as e:
         print(f"[debug] dataset inspection error: {e}")
 

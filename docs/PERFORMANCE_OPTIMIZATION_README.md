@@ -14,31 +14,31 @@ This README provides a quick reference for the performance optimization work com
 ### Phase 1: Critical Issues (High Impact)
 
 1. **Aria Web Server** (`aria_web/server.py`)
-   - **Issue**: 27 repeated `any()` calls with list comprehensions
-   - **Fix**: Pre-compiled frozenset keyword collections with O(1) lookups
-   - **Impact**: 2-5x speedup per command processing
+    - **Issue**: 27 repeated `any()` calls with list comprehensions
+    - **Fix**: Pre-compiled frozenset keyword collections with O(1) lookups
+    - **Impact**: 2-5x speedup per command processing
 
 2. **Chat Memory** (`shared/chat_memory.py`)
-   - **Issue**: New DB connection created for every operation
-   - **Fix**: Connection pool with max 5 connections and health checks
-   - **Impact**: 50-100ms → 0ms per operation
+    - **Issue**: New DB connection created for every operation
+    - **Fix**: Connection pool with max 5 connections and health checks
+    - **Impact**: 50-100ms → 0ms per operation
 
 3. **Batch Evaluator** (`scripts/batch_evaluator.py`)
-   - **Issue**: O(n²) linear search in model comparison
-   - **Fix**: Dict-based O(1) lookup index
-   - **Impact**: 10x faster for 100 models
+    - **Issue**: O(n²) linear search in model comparison
+    - **Fix**: Dict-based O(1) lookup index
+    - **Impact**: 10x faster for 100 models
 
 ### Phase 2: High Priority Improvements
 
 4. **File I/O** (`dashboard/serve.py`)
-   - **Issue**: Loading entire log files into memory
-   - **Fix**: Block-based streaming for large files (> 64KB)
-   - **Impact**: 100x memory reduction (GB → 64KB)
+    - **Issue**: Loading entire log files into memory
+    - **Fix**: Block-based streaming for large files (> 64KB)
+    - **Impact**: 100x memory reduction (GB → 64KB)
 
 5. **Dictionary Iteration** (6 files)
-   - **Issue**: Unnecessary `.keys()` calls
-   - **Fix**: Direct iteration (more Pythonic)
-   - **Impact**: 5-10% performance + cleaner code
+    - **Issue**: Unnecessary `.keys()` calls
+    - **Fix**: Direct iteration (more Pythonic)
+    - **Impact**: 5-10% performance + cleaner code
 
 ## Quick Validation
 
@@ -49,6 +49,7 @@ python scripts/validate_optimizations.py
 ```
 
 Expected output:
+
 ```
 ✅ Aria web server optimizations validated
 ✅ Chat memory pooling functions validated
@@ -64,13 +65,13 @@ Performance Benchmark:
 
 ## Performance Impact Summary
 
-| Optimization | Before | After | Improvement |
-| ------------- | -------- | ------- | ------------- |
-| **Keyword matching** | O(n×m) repeated | O(n) set intersection | 2-5x faster |
-| **DB connections** | New per operation | Pooled (max 5) | 50-100ms → 0ms |
-| **Model lookups** | O(n²) linear search | O(1) dict lookup | 10x for 100 models |
-| **Log file reads** | GB in memory | 64KB buffer | 100x memory |
-| **Dict iteration** | `.keys()` overhead | Direct iteration | 5-10% + cleaner |
+| Optimization         | Before              | After                 | Improvement        |
+| -------------------- | ------------------- | --------------------- | ------------------ |
+| **Keyword matching** | O(n×m) repeated     | O(n) set intersection | 2-5x faster        |
+| **DB connections**   | New per operation   | Pooled (max 5)        | 50-100ms → 0ms     |
+| **Model lookups**    | O(n²) linear search | O(1) dict lookup      | 10x for 100 models |
+| **Log file reads**   | GB in memory        | 64KB buffer           | 100x memory        |
+| **Dict iteration**   | `.keys()` overhead  | Direct iteration      | 5-10% + cleaner    |
 
 ## Code Patterns (Copy-Paste Ready)
 
@@ -176,11 +177,13 @@ for key in my_dict:
 ## Files Modified
 
 ### Phase 1 Changes
+
 - `aria_web/server.py` - Keyword set optimizations
 - `shared/chat_memory.py` - Connection pooling
 - `scripts/batch_evaluator.py` - Dict-based lookups
 
 ### Phase 2 Changes
+
 - `dashboard/serve.py` - File streaming
 - `dashboard/app.py` - Dict iteration
 - `ai-projects/quantum-ml/benchmark_all_datasets.py` - Dict iteration
@@ -189,6 +192,7 @@ for key in my_dict:
 - `scripts/test_aria_dataset.py` - Dict iteration
 
 ### Documentation & Tests
+
 - `docs/PERFORMANCE_OPTIMIZATION_SUMMARY.md` - Complete guide (NEW)
 - `docs/PERFORMANCE_IMPROVEMENTS.md` - Updated with new fixes
 - `docs/PERFORMANCE_OPTIMIZATION_README.md` - This file (NEW)
@@ -198,21 +202,25 @@ for key in my_dict:
 ## Monitoring Performance
 
 ### 1. Check Health Endpoint
+
 ```bash
 curl http://localhost:7071/api/ai/status | jq
 ```
 
 Look for:
+
 - SQL pool saturation (warns at ≥80%)
 - Active provider detection
 - Connection health
 
 ### 2. Run Validation
+
 ```bash
 python scripts/validate_optimizations.py
 ```
 
 ### 3. Performance Profiling
+
 ```bash
 # Profile a specific module
 python -m cProfile -o profile.stats aria_web/server.py
@@ -227,13 +235,13 @@ snakeviz profile.stats
 Not yet implemented but identified:
 
 1. **String concatenation in loops** (10+ files)
-   - Use `''.join(list)` instead of `+= string`
+    - Use `''.join(list)` instead of `+= string`
 
 2. **Regex compilation** (dashboard, llm-maker)
-   - Compile patterns at module level
+    - Compile patterns at module level
 
 3. **Repeated file checks** (function_app.py)
-   - Add caching with TTL
+    - Add caching with TTL
 
 See `PERFORMANCE_OPTIMIZATION_SUMMARY.md` for details.
 
@@ -247,7 +255,7 @@ See `PERFORMANCE_OPTIMIZATION_SUMMARY.md` for details.
 ## Changelog
 
 - **2024-02-17**: Phase 1 & 2 completed
-  - 5 critical optimizations implemented
-  - Comprehensive tests added
-  - Full documentation created
-  - All validations passing
+    - 5 critical optimizations implemented
+    - Comprehensive tests added
+    - Full documentation created
+    - All validations passing

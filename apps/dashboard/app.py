@@ -9,7 +9,7 @@ import time
 import traceback
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from flask import Flask, jsonify, render_template
@@ -272,12 +272,12 @@ def _compute_training_progress():
 
 
 RETRY_LOCK = threading.Lock()
-ACTIVE_RETRY: Optional[str] = None
-ACTIVE_JOB_PIDS: Dict[str, int] = {}
+ACTIVE_RETRY: str | None = None
+ACTIVE_JOB_PIDS: dict[str, int] = {}
 STATUS_PATH = DATA_OUT / "autotrain" / "status.json"
 
 
-def _read_status() -> Dict[str, Any]:
+def _read_status() -> dict[str, Any]:
     if STATUS_PATH.exists():
         try:
             return json.loads(STATUS_PATH.read_text(encoding="utf-8"))
@@ -286,7 +286,7 @@ def _read_status() -> Dict[str, Any]:
     return {"jobs": []}
 
 
-def _write_status(obj: Dict[str, Any]) -> None:
+def _write_status(obj: dict[str, Any]) -> None:
     try:
         STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
         STATUS_PATH.write_text(json.dumps(obj, indent=2), encoding="utf-8")
@@ -294,7 +294,7 @@ def _write_status(obj: Dict[str, Any]) -> None:
         pass
 
 
-def _find_job_entry(status_obj: Dict[str, Any], name: str) -> Optional[Dict[str, Any]]:
+def _find_job_entry(status_obj: dict[str, Any], name: str) -> dict[str, Any] | None:
     for j in status_obj.get("jobs", []):
         if j.get("name") == name:
             return j
@@ -457,7 +457,7 @@ def training_progress():
     return jsonify(_compute_training_progress())
 
 
-def _extract_job_metrics(job_rec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def _extract_job_metrics(job_rec: dict[str, Any]) -> dict[str, Any] | None:
     out_dir = job_rec.get("output_dir")
     if not out_dir:
         return None
@@ -501,7 +501,7 @@ def _extract_job_metrics(job_rec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _tail_lines(path: Path, max_lines: int) -> List[str]:
+def _tail_lines(path: Path, max_lines: int) -> list[str]:
     """Efficiently read the last max_lines from a potentially large file."""
     try:
         size = path.stat().st_size
@@ -515,7 +515,7 @@ def _tail_lines(path: Path, max_lines: int) -> List[str]:
                 return lines
         # Large file: read backwards in blocks
         block_size = 8192
-        lines: List[str] = []
+        lines: list[str] = []
         with path.open("rb") as f:
             pos = max(0, size - block_size)
             f.seek(pos)

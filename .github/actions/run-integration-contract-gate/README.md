@@ -15,18 +15,18 @@ The underlying script runs the same deterministic gate used locally:
 ## Inputs
 
 - `strict-endpoints` (default: `false`)
-  - `true`: passes `--strict-endpoints` to the shell wrapper after the prechecks above.
+    - `true`: passes `--strict-endpoints` to the shell wrapper after the prechecks above.
 
 ## Strict endpoint environment
 
 When `strict-endpoints` is `true`, the shell wrapper uses these optional environment variables:
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `INTEGRATION_AI_STATUS_ENDPOINT` | `http://localhost:7071/api/ai/status` | Endpoint that must become reachable |
-| `RETRY_COUNT` | `30` | Number of endpoint polling attempts |
-| `RETRY_INTERVAL` | `1` | Seconds between endpoint polling attempts |
-| `START_FUNC_CMD` | unset | Optional command to start a local Functions host before polling |
+| Variable                         | Default                               | Purpose                                                         |
+| -------------------------------- | ------------------------------------- | --------------------------------------------------------------- |
+| `INTEGRATION_AI_STATUS_ENDPOINT` | `http://localhost:7071/api/ai/status` | Endpoint that must become reachable                             |
+| `RETRY_COUNT`                    | `30`                                  | Number of endpoint polling attempts                             |
+| `RETRY_INTERVAL`                 | `1`                                   | Seconds between endpoint polling attempts                       |
+| `START_FUNC_CMD`                 | unset                                 | Optional command to start a local Functions host before polling |
 
 ## Example
 
@@ -35,8 +35,8 @@ When `strict-endpoints` is `true`, the shell wrapper uses these optional environ
 
 - uses: ./.github/actions/run-integration-contract-gate
   with:
-    strict-endpoints: 'true'
+      strict-endpoints: "true"
   env:
-    PYTHON_BIN: .venv/bin/python
-    INTEGRATION_AI_STATUS_ENDPOINT: http://localhost:7071/api/ai/status
+      PYTHON_BIN: .venv/bin/python
+      INTEGRATION_AI_STATUS_ENDPOINT: http://localhost:7071/api/ai/status
 ```

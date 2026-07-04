@@ -5,10 +5,11 @@ This document describes how to prepare a model-specific Python virtual environme
 
 Quick checklist
 ---------------
+
 1. Choose whether you'll use CPU-only training or a machine with CUDA GPUs.
-   - For CPU-only machines run: `bash scripts/setup_model_env.sh --cpu`
-   - For CUDA machines pick your CUDA runtime (e.g., `cu121` for CUDA 12.1) and run:
-     `bash scripts/setup_model_env.sh --cuda cu121`
+    - For CPU-only machines run: `bash scripts/setup_model_env.sh --cpu`
+    - For CUDA machines pick your CUDA runtime (e.g., `cu121` for CUDA 12.1) and run:
+      `bash scripts/setup_model_env.sh --cuda cu121`
 
 2. The script will create (or reuse) `AI/microsoft_phi-silica-3.6_v1/venv` and install packages from `AI/microsoft_phi-silica-3.6_v1/requirements.txt`.
 
@@ -23,6 +24,7 @@ break imports at runtime. If you need a newer `huggingface_hub` and upgraded `tr
 
 Activate and run a small training job
 ------------------------------------
+
 Once venv is ready, you can start lightweight training for testing:
 
 ```bash
@@ -32,6 +34,7 @@ python AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py --config AI/microsof
 
 Notes and troubleshooting
 -------------------------
+
 - On Windows the venv path created may be under `Scripts/python.exe`. The helper script and our runner scripts handle both `bin/python` and `Scripts/python.exe`.
 - If you see missing package errors, re-run the setup script with `--force` to recreate and reinstall.
 - For CUDA installations, ensure your driver supports the chosen CUDA runtime and that `nvidia-smi` is available.

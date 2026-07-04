@@ -5,6 +5,7 @@ A **local LLM-based code agent** that autonomously works on repository tasks usi
 ## Why This Matters
 
 Instead of:
+
 ```
 1. Issue description
 2. Manual code review
@@ -15,6 +16,7 @@ Instead of:
 ```
 
 With the autonomous agent:
+
 ```
 python scripts/autonomous_code_agent.py --task "Your task"
 ```
@@ -26,6 +28,7 @@ The agent handles: planning, file identification, implementation, testing, and c
 ### 1. Install Local LLM (Pick One)
 
 **Ollama (Recommended - Fastest Setup)**
+
 ```bash
 # macOS/Linux
 curl https://ollama.ai/install.sh | sh
@@ -36,6 +39,7 @@ ollama pull mistral
 ```
 
 **OR LM Studio**
+
 ```bash
 # Download from https://lmstudio.ai
 # Launch app → Download Model → Developer Tab → Start Server
@@ -101,7 +105,9 @@ tail -f data_out/autonomous_agent/agent.log
 ## How It Works
 
 ### Phase 1: Planning
+
 Uses local LLM to understand task and create structured plan
+
 ```
 Input: "Fix the auth system to handle JWT tokens"
 Output:
@@ -111,14 +117,18 @@ Output:
 ```
 
 ### Phase 2: File Identification
+
 Uses local LLM to identify relevant files in repo
+
 ```
 Input: Task description
 Output: [chat_providers.py, tests/test_chat_*.py, shared/...]
 ```
 
 ### Phase 3: Implementation
+
 (In real mode) Makes code changes based on plan
+
 ```
 - Reads relevant files
 - Applies code changes
@@ -127,7 +137,9 @@ Output: [chat_providers.py, tests/test_chat_*.py, shared/...]
 ```
 
 ### Phase 4: Testing
+
 Runs test suite to validate changes
+
 ```
 python scripts/test_runner.py --unit
 → Success: changes are good
@@ -135,7 +147,9 @@ python scripts/test_runner.py --unit
 ```
 
 ### Phase 5: Committing
+
 If tests pass, commits to git with meaningful message
+
 ```
 git commit -m "Task {id}: {description}"
 ```
@@ -143,12 +157,14 @@ git commit -m "Task {id}: {description}"
 ## Commands
 
 ### Quick Test (No LLM Required)
+
 ```bash
 # Uses built-in echo mode for testing
 python scripts/test_autonomous_agent.py
 ```
 
 ### With Ollama
+
 ```bash
 # Start Ollama (in separate terminal)
 ollama serve
@@ -161,6 +177,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### With LM Studio
+
 ```bash
 # Start LM Studio
 # 1. Open app
@@ -174,6 +191,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### Using Shell Launcher
+
 ```bash
 # Check if LLM is running
 bash scripts/agent.sh --check-llm
@@ -188,6 +206,7 @@ bash scripts/agent.sh --task "Your task" --dry-run
 ## Examples
 
 ### 1. Fix Failing Test
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Fix test_quantum_autorun_unit::test_valid_azure_ionq_provider_flow test in tests/" \
@@ -195,6 +214,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 2. Add Documentation
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add comprehensive docstrings to LocalLLMClient and RepositoryContext classes" \
@@ -203,6 +223,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 3. Improve Code Quality
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Refactor chat_providers.py to reduce duplication between OpenAIProvider and AzureOpenAIProvider" \
@@ -210,6 +231,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 4. Add Security Tests
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add security validation tests for whitespace-only inputs in quantum_mcp_server.py handlers" \
@@ -220,6 +242,7 @@ python scripts/autonomous_code_agent.py \
 ## Status & Monitoring
 
 ### Live Status
+
 ```bash
 # Watch status updates
 watch -n 2 'cat data_out/autonomous_agent/status.json | python -m json.tool'
@@ -229,27 +252,29 @@ tail -f data_out/autonomous_agent/agent.log
 ```
 
 ### Status File Format
+
 ```json
 {
-  "task_id": "20260320_143022",
-  "task_description": "Add docstrings...",
-  "status": "complete",
-  "llm_type": "ollama",
-  "files_modified": ["chat_providers.py"],
-  "tests_run": 42,
-  "tests_passed": 42,
-  "tests_failed": 0,
-  "reasoning": "...",
-  "commits": ["abc123"],
-  "errors": [],
-  "started_at": "2026-03-20T14:30:22",
-  "updated_at": "2026-03-20T14:32:15"
+    "task_id": "20260320_143022",
+    "task_description": "Add docstrings...",
+    "status": "complete",
+    "llm_type": "ollama",
+    "files_modified": ["chat_providers.py"],
+    "tests_run": 42,
+    "tests_passed": 42,
+    "tests_failed": 0,
+    "reasoning": "...",
+    "commits": ["abc123"],
+    "errors": [],
+    "started_at": "2026-03-20T14:30:22",
+    "updated_at": "2026-03-20T14:32:15"
 }
 ```
 
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Ollama
 export OLLAMA_BASE_URL="http://127.0.0.1:11434"
@@ -261,7 +286,9 @@ export LMSTUDIO_MODEL="local-model"
 ```
 
 ### Customize in Code
+
 Edit [autonomous_code_agent.py](./scripts/autonomous_code_agent.py):
+
 ```python
 MAX_FILE_SIZE = 100_000              # Max bytes to read
 MAX_CHANGES_PER_FILE = 5             # File modification limit
@@ -283,16 +310,16 @@ MIN_TEST_PASSING_RATE = 0.8          # 80% tests must pass
 
 ## Supported Task Types
 
-| Category | Example | Risk |
-| ---------- | --------- | ------ |
-| Bug Fix | "Fix failing test_chat.py" | Medium |
-| Feature | "Add OAuth2 support" | High |
-| Refactor | "Extract common code to utility" | Medium |
-| Test | "Add unit tests for edge cases" | Low |
-| Security | "Validate user inputs" | High |
-| Documentation | "Add docstrings to module" | Low |
-| Performance | "Optimize database queries" | Medium |
-| Cleanup | "Remove unused imports" | Low |
+| Category      | Example                          | Risk   |
+| ------------- | -------------------------------- | ------ |
+| Bug Fix       | "Fix failing test_chat.py"       | Medium |
+| Feature       | "Add OAuth2 support"             | High   |
+| Refactor      | "Extract common code to utility" | Medium |
+| Test          | "Add unit tests for edge cases"  | Low    |
+| Security      | "Validate user inputs"           | High   |
+| Documentation | "Add docstrings to module"       | Low    |
+| Performance   | "Optimize database queries"      | Medium |
+| Cleanup       | "Remove unused imports"          | Low    |
 
 ## AGI Smoke Prompt Toolkit
 
@@ -408,19 +435,19 @@ watch -n 2 'cat data_out/autonomous_agent/status.json | python -m json.tool'
 # .github/workflows/agent.yml
 - name: Run autonomous agent fix
   run: |
-    python scripts/autonomous_code_agent.py \
-      --task "Fix issues found by linters" \
-      --llm-type ollama
+      python scripts/autonomous_code_agent.py \
+        --task "Fix issues found by linters" \
+        --llm-type ollama
 ```
 
 ## Performance
 
-| Model | Speed | Quality | Memory | Recommendation |
-| ------- | ------- | --------- | -------- | ----------------- |
-| Mistral | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 4GB | **Best for agent** |
-| Neural-Chat | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 8GB | Good |
-| Llama-7B | ⭐⭐ | ⭐⭐⭐ | 8GB | Slower |
-| GPT-4 (cloud) | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | N/A | No - uses API |
+| Model         | Speed      | Quality    | Memory | Recommendation     |
+| ------------- | ---------- | ---------- | ------ | ------------------ |
+| Mistral       | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐   | 4GB    | **Best for agent** |
+| Neural-Chat   | ⭐⭐⭐⭐   | ⭐⭐⭐⭐   | 8GB    | Good               |
+| Llama-7B      | ⭐⭐       | ⭐⭐⭐     | 8GB    | Slower             |
+| GPT-4 (cloud) | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | N/A    | No - uses API      |
 
 ## Security
 

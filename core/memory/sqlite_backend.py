@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from typing import Any, Dict, List
+from typing import Any
 
-Event = Dict[str, Any]
+Event = dict[str, Any]
 
 
 class SQLiteMemoryBackend:
@@ -42,9 +42,9 @@ class SQLiteMemoryBackend:
         )
         self._conn.commit()
 
-    def load_all(self) -> List[Event]:
+    def load_all(self) -> list[Event]:
         cursor = self._conn.execute("SELECT id, timestamp, epoch, type, data FROM events ORDER BY epoch ASC")
-        events: List[Event] = []
+        events: list[Event] = []
         for row in cursor.fetchall():
             events.append(
                 {

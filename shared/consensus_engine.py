@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
 
 _SUCCESS_STATUSES = {"success", "complete", "completed", "ok", "passed"}
 
@@ -40,13 +39,13 @@ class ConsensusResult:
     """Outcome of consensus aggregation."""
 
     reached: bool
-    winner: Optional[str]
+    winner: str | None
     winner_ratio: float
     total_weight: float
     support_count: int
     vote_count: int
-    scores: Dict[str, float] = field(default_factory=dict)
-    ranking: List[Tuple[str, float]] = field(default_factory=list)
+    scores: dict[str, float] = field(default_factory=dict)
+    ranking: list[tuple[str, float]] = field(default_factory=list)
     reason: str = ""
 
 
@@ -86,8 +85,8 @@ def compute_consensus(
             reason="insufficient_votes",
         )
 
-    scores: Dict[str, float] = {}
-    support_counts: Dict[str, int] = {}
+    scores: dict[str, float] = {}
+    support_counts: dict[str, int] = {}
 
     for vote in vote_list:
         if not vote.choice:
@@ -159,7 +158,7 @@ def compute_consensus(
 
 
 def consensus_from_task_results(
-    task_results: Dict[str, Dict[str, str]],
+    task_results: dict[str, dict[str, str]],
     *,
     success_label: str = "success",
     failure_label: str = "failure",
@@ -177,7 +176,7 @@ def consensus_from_task_results(
         All other values are treated as ``failure_label``.
     """
 
-    votes: List[Vote] = []
+    votes: list[Vote] = []
     for agent, result in task_results.items():
         status = str(result.get("status", "")).lower()
         choice = success_label if status in _SUCCESS_STATUSES else failure_label

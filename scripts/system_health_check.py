@@ -12,6 +12,7 @@ Usage:
     python scripts/system_health_check.py --json  # JSON output
     python scripts/system_health_check.py --quiet # Errors/warnings only
 """
+
 from __future__ import annotations
 
 import argparse
@@ -89,14 +90,12 @@ def check_venvs() -> CheckResult:
             if parent.status == "ok":
                 parent.status = "warn"
         elif not py.exists() or py.stat().st_size == 0:
-            parent.sub.append(
-                _warn(label, f"python3 binary missing/empty — {py}"))
+            parent.sub.append(_warn(label, f"python3 binary missing/empty — {py}"))
             if parent.status == "ok":
                 parent.status = "warn"
         else:
             try:
-                ver = subprocess.check_output(
-                    [str(py), "--version"], text=True, timeout=5).strip()
+                ver = subprocess.check_output([str(py), "--version"], text=True, timeout=5).strip()
                 parent.sub.append(_ok(label, ver))
             except Exception as e:
                 parent.sub.append(_warn(label, f"python3 not executable: {e}"))
@@ -147,8 +146,7 @@ def check_data_out() -> CheckResult:
     for rel in required_dirs:
         p = REPO_ROOT / rel
         if not p.exists():
-            parent.sub.append(
-                _warn(rel, "missing — will be created on first run"))
+            parent.sub.append(_warn(rel, "missing — will be created on first run"))
             if parent.status == "ok":
                 parent.status = "warn"
         else:
@@ -188,8 +186,7 @@ def check_key_scripts() -> CheckResult:
                     timeout=10,
                 )
                 if result.returncode != 0:
-                    parent.sub.append(
-                        _warn(rel, f"syntax error: {result.stderr[:80]}"))
+                    parent.sub.append(_warn(rel, f"syntax error: {result.stderr[:80]}"))
                     if parent.status == "ok":
                         parent.status = "warn"
                 else:
@@ -217,7 +214,7 @@ def check_python_deps() -> CheckResult:
     ]
     parent = CheckResult("Python dependencies", "ok")
     for display, import_name, optional in packages:
-        script = f"import {import_name}; " f"v = getattr({import_name.split('.')[0]}, '__version__', '?'); " f"print(v)"
+        script = f"import {import_name}; v = getattr({import_name.split('.')[0]}, '__version__', '?'); print(v)"
         try:
             out = subprocess.check_output(
                 [sys.executable, "-c", script],
@@ -228,8 +225,7 @@ def check_python_deps() -> CheckResult:
             parent.sub.append(_ok(display, f"v{out}"))
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             if optional:
-                parent.sub.append(
-                    _warn(display, "not installed (optional ML lib)"))
+                parent.sub.append(_warn(display, "not installed (optional ML lib)"))
                 if parent.status == "ok":
                     parent.status = "warn"
             else:
@@ -244,8 +240,7 @@ def check_services() -> CheckResult:
         ("Azure Functions", 7071),
         ("Aria Character", 8080),
     ]
-    parent = CheckResult("Running services", "ok",
-                         "These are optional — start them as needed")
+    parent = CheckResult("Running services", "ok", "These are optional — start them as needed")
     for name, port in ports:
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.5):
@@ -262,8 +257,7 @@ def check_func_tools() -> CheckResult:
     func = shutil.which("func")
     if func:
         try:
-            out = subprocess.check_output(
-                [func, "--version"], text=True, timeout=5).strip()
+            out = subprocess.check_output([func, "--version"], text=True, timeout=5).strip()
             return _ok("Azure Functions Core Tools", f"v{out} at {func}")
         except Exception:
             return _warn("Azure Functions Core Tools", f"found at {func} but --version failed")
@@ -298,13 +292,11 @@ def check_mcp_servers() -> CheckResult:
             continue
         missing = []
         for imp in imports:
-            ret = subprocess.run(
-                [sys.executable, "-c", f"import {imp}"], capture_output=True, timeout=8)
+            ret = subprocess.run([sys.executable, "-c", f"import {imp}"], capture_output=True, timeout=8)
             if ret.returncode != 0:
                 missing.append(imp)
         if missing:
-            parent.sub.append(
-                _fail(name, f"missing imports: {', '.join(missing)}"))
+            parent.sub.append(_fail(name, f"missing imports: {', '.join(missing)}"))
             parent.status = "fail"
         else:
             parent.sub.append(_ok(name, "file exists & imports ok"))
@@ -314,8 +306,7 @@ def check_mcp_servers() -> CheckResult:
         try:
             cfg = load_mcp_config(mcp_cfg)
             count = len(cfg.get("servers", {}))
-            parent.sub.append(
-                _ok(".vscode/mcp.json", f"{count} servers configured"))
+            parent.sub.append(_ok(".vscode/mcp.json", f"{count} servers configured"))
         except Exception as e:
             parent.sub.append(_warn(".vscode/mcp.json", f"parse error: {e}"))
             if parent.status == "ok":
@@ -336,15 +327,14 @@ def check_mcp_servers() -> CheckResult:
         )
         output = (result.stdout or result.stderr).strip()
         if result.returncode == 0:
-            parent.sub.append(_ok("MCP stdio validation", output.splitlines(
-            )[-1] if output else "all servers responded"))
+            parent.sub.append(
+                _ok("MCP stdio validation", output.splitlines()[-1] if output else "all servers responded")
+            )
         else:
-            parent.sub.append(_fail("MCP stdio validation",
-                              output or "validation failed"))
+            parent.sub.append(_fail("MCP stdio validation", output or "validation failed"))
             parent.status = "fail"
     else:
-        parent.sub.append(_warn("MCP stdio validation",
-                          "validator script or .venv python missing"))
+        parent.sub.append(_warn("MCP stdio validation", "validator script or .venv python missing"))
         if parent.status == "ok":
             parent.status = "warn"
     return parent
@@ -365,8 +355,7 @@ def check_local_settings() -> CheckResult:
         data = json.loads(p.read_text(encoding="utf-8"))
         # Warn if it looks like keys are placeholder values
         vals = data.get("Values", {})
-        placeholders = [k for k, v in vals.items() if str(
-            v).startswith("<") and str(v).endswith(">")]
+        placeholders = [k for k, v in vals.items() if str(v).startswith("<") and str(v).endswith(">")]
         if placeholders:
             return _warn(
                 "local.settings.json",
@@ -421,20 +410,18 @@ def print_report(checks: List[CheckResult], quiet: bool = False):
     warns = sum(1 for c in checks if c.status == "warn")
     fails = sum(1 for c in checks if c.status == "fail")
 
-    print(f"\n{'═'*65}")
+    print(f"\n{'═' * 65}")
     print(f"  🩺 ARIA SYSTEM HEALTH CHECK   {now}")
-    print(f"{'═'*65}\n")
+    print(f"{'═' * 65}\n")
 
     for check in checks:
         _print_result(check, indent=0, quiet=quiet)
         print()
 
-    print(f"{'─'*65}")
-    summary_icon = "✅" if fails == 0 and warns == 0 else (
-        "⚠️ " if fails == 0 else "❌")
-    print(
-        f"  {summary_icon} Summary: {ok}/{total} OK  {warns} warnings  {fails} failures")
-    print(f"{'═'*65}\n")
+    print(f"{'─' * 65}")
+    summary_icon = "✅" if fails == 0 and warns == 0 else ("⚠️ " if fails == 0 else "❌")
+    print(f"  {summary_icon} Summary: {ok}/{total} OK  {warns} warnings  {fails} failures")
+    print(f"{'═' * 65}\n")
 
 
 def checks_to_json(checks: List[CheckResult]) -> dict:
@@ -457,10 +444,8 @@ def checks_to_json(checks: List[CheckResult]) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Aria System Health Check")
     parser.add_argument("--json", action="store_true", help="Output as JSON")
-    parser.add_argument("--quiet", action="store_true",
-                        help="Show warnings/failures only")
-    parser.add_argument("--export", metavar="FILE",
-                        help="Export JSON report to file")
+    parser.add_argument("--quiet", action="store_true", help="Show warnings/failures only")
+    parser.add_argument("--export", metavar="FILE", help="Export JSON report to file")
     args = parser.parse_args()
 
     checks = run_all_checks()

@@ -10,72 +10,95 @@ enum DialogLayout {
     //% block=center
     Center,
     //% block="full screen"
-    Full
+    Full,
 }
 
 namespace game {
     function padStr(len: number): string {
-        let str = "";
+        let str = ""
         for (let i = 0; i < len; ++i) {
-            str += " ";
+            str += " "
         }
-        return str;
+        return str
     }
 
-    function replaceRange(dst: string, src: string, start: number, len: number): string {
-        return dst.substr(0, start) + src.substr(0, len) + dst.substr(start + len);
+    function replaceRange(
+        dst: string,
+        src: string,
+        start: number,
+        len: number,
+    ): string {
+        return (
+            dst.substr(0, start) + src.substr(0, len) + dst.substr(start + len)
+        )
     }
 
     function screenColor(c: number): number {
-        return screen.isMono ? 1 : c;
+        return screen.isMono ? 1 : c
     }
 
-    let dialogFrame: Image;
-    let dialogCursor: Image;
-    let dialogTextColor: number;
-    const MAX_FRAME_UNIT = 12;
+    let dialogFrame: Image
+    let dialogCursor: Image
+    let dialogTextColor: number
+    const MAX_FRAME_UNIT = 12
 
     export class BaseDialog {
-        image: Image;
-        frame: Image;
-        cursor: Image;
+        image: Image
+        frame: Image
+        cursor: Image
 
-        columns: number;
-        rows: number;
-        unit: number;
+        columns: number
+        rows: number
+        unit: number
 
-        innerLeft: number;
-        innerTop: number;
-        cursorCount: number;
+        innerLeft: number
+        innerTop: number
+        cursorCount: number
 
-        font: image.Font;
-        textColor: number;
+        font: image.Font
+        textColor: number
 
-        constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
-            this.cursorCount = 0;
-            this.resize(width, height, frame, font, cursor);
+        constructor(
+            width: number,
+            height: number,
+            frame?: Image,
+            font?: image.Font,
+            cursor?: Image,
+        ) {
+            this.cursorCount = 0
+            this.resize(width, height, frame, font, cursor)
         }
 
-        resize(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
-            this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
-            this.unit = Math.floor(this.frame.width / 3);
-            this.columns = Math.floor(width / this.unit);
-            this.rows = Math.floor(height / this.unit);
-            this.innerLeft = (width - (this.columns * this.unit)) >> 1;
-            this.innerTop = (height - (this.rows * this.unit)) >> 1;
-            this.image = image.create(width, height);
-            this.font = font || image.font8;
-            this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
-            this.textColor = dialogTextColor == undefined ? dialogTextColor = 15 : dialogTextColor;
+        resize(
+            width: number,
+            height: number,
+            frame?: Image,
+            font?: image.Font,
+            cursor?: Image,
+        ) {
+            this.frame = frame || dialogFrame || (dialogFrame = defaultFrame())
+            this.unit = Math.floor(this.frame.width / 3)
+            this.columns = Math.floor(width / this.unit)
+            this.rows = Math.floor(height / this.unit)
+            this.innerLeft = (width - this.columns * this.unit) >> 1
+            this.innerTop = (height - this.rows * this.unit) >> 1
+            this.image = image.create(width, height)
+            this.font = font || image.font8
+            this.cursor =
+                cursor || dialogCursor || (dialogCursor = defaultCursorImage())
+            this.textColor =
+                dialogTextColor == undefined
+                    ? (dialogTextColor = 15)
+                    : dialogTextColor
 
-            this.drawBorder();
-            this.clearInterior();
+            this.drawBorder()
+            this.clearInterior()
         }
 
         update() {
-            this.clearInterior();
-            this.drawTextCore();
-            this.drawCursorRow();
+            this.clearInterior()
+            this.drawTextCore()
+            this.drawCursorRow()
         }
 
         setText(rawString: string) {
@@ -87,17 +110,25 @@ namespace game {
         }
 
         drawCursorRow() {
-            let offset = 0;
+            let offset = 0
             if (this.cursorCount > 20) {
-                offset = 1;
+                offset = 1
             }
 
-            this.cursorCount = (this.cursorCount + 1) % 40;
+            this.cursorCount = (this.cursorCount + 1) % 40
 
             this.image.drawTransparentImage(
                 this.cursor,
-                this.innerLeft + this.textAreaWidth() + this.unit + offset - this.cursor.width,
-                this.innerTop + this.unit + this.textAreaHeight() + 1 - this.cursorRowHeight()
+                this.innerLeft +
+                    this.textAreaWidth() +
+                    this.unit +
+                    offset -
+                    this.cursor.width,
+                this.innerTop +
+                    this.unit +
+                    this.textAreaHeight() +
+                    1 -
+                    this.cursorRowHeight(),
             )
         }
 
@@ -120,28 +151,38 @@ namespace game {
 
             for (let c = 0; c < this.columns; c++) {
                 if (c == 0) {
-                    this.drawPartial(0, 0, 0);
-                    this.drawPartial(6, 0, this.rows - 1);
-                }
-                else if (c === this.columns - 1) {
-                    this.drawPartial(2, c, 0);
-                    this.drawPartial(8, c, this.rows - 1);
-                }
-                else {
-                    this.drawPartial(1, c, 0);
-                    this.drawPartial(7, c, this.rows - 1);
+                    this.drawPartial(0, 0, 0)
+                    this.drawPartial(6, 0, this.rows - 1)
+                } else if (c === this.columns - 1) {
+                    this.drawPartial(2, c, 0)
+                    this.drawPartial(8, c, this.rows - 1)
+                } else {
+                    this.drawPartial(1, c, 0)
+                    this.drawPartial(7, c, this.rows - 1)
                 }
             }
 
             for (let r = 1; r < this.rows - 1; r++) {
-                this.drawPartial(3, 0, r);
-                this.drawPartial(5, this.columns - 1, r);
+                this.drawPartial(3, 0, r)
+                this.drawPartial(5, this.columns - 1, r)
             }
         }
 
-        private fastFill(index: number, x: number, y: number, w: number, h: number) {
+        private fastFill(
+            index: number,
+            x: number,
+            y: number,
+            w: number,
+            h: number,
+        ) {
             const color = this.frame.getPixel(index % 3, Math.idiv(index, 3))
-            this.image.fillRect(this.innerLeft + x, this.innerTop + y, w, h, color)
+            this.image.fillRect(
+                this.innerLeft + x,
+                this.innerTop + y,
+                w,
+                h,
+                color,
+            )
         }
 
         protected clearInterior() {
@@ -156,192 +197,262 @@ namespace game {
         }
 
         protected drawPartial(index: number, colTo: number, rowTo: number) {
-            const x0 = this.innerLeft + colTo * this.unit;
-            const y0 = this.innerTop + rowTo * this.unit;
+            const x0 = this.innerLeft + colTo * this.unit
+            const y0 = this.innerTop + rowTo * this.unit
 
-            const xf = (index % 3) * this.unit;
-            const yf = Math.idiv(index, 3) * this.unit;
+            const xf = (index % 3) * this.unit
+            const yf = Math.idiv(index, 3) * this.unit
 
             for (let e = 0; e < this.unit; e++) {
                 for (let t = 0; t < this.unit; t++) {
                     this.image.setPixel(
                         x0 + e,
                         y0 + t,
-                        this.frame.getPixel(xf + e, yf + t));
+                        this.frame.getPixel(xf + e, yf + t),
+                    )
                 }
             }
         }
 
         protected cursorRowHeight() {
-            return this.cursor.height + 1;
+            return this.cursor.height + 1
         }
 
         protected rowHeight() {
-            return this.font.charHeight + 1;
+            return this.font.charHeight + 1
         }
 
         protected textAreaWidth() {
-            return this.image.width - ((this.innerLeft + Math.min(this.unit, MAX_FRAME_UNIT)) << 1) - 2;
+            return (
+                this.image.width -
+                ((this.innerLeft + Math.min(this.unit, MAX_FRAME_UNIT)) << 1) -
+                2
+            )
         }
 
         protected textAreaHeight() {
-            return this.image.height - ((this.innerTop + Math.min(this.unit, MAX_FRAME_UNIT)) << 1) - 1;
+            return (
+                this.image.height -
+                ((this.innerTop + Math.min(this.unit, MAX_FRAME_UNIT)) << 1) -
+                1
+            )
         }
 
         protected setFont(font: image.Font) {
-            this.font = font;
+            this.font = font
         }
     }
 
     export class Dialog extends BaseDialog {
-        chunks: string[][];
-        chunkIndex: number;
+        chunks: string[][]
+        chunkIndex: number
 
-        constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
-            super(width, height, frame, font, cursor);
+        constructor(
+            width: number,
+            height: number,
+            frame?: Image,
+            font?: image.Font,
+            cursor?: Image,
+        ) {
+            super(width, height, frame, font, cursor)
 
-            this.chunkIndex = 0;
+            this.chunkIndex = 0
         }
 
         hasNext() {
-            if (!this.chunks || this.chunks.length === 0) return false;
-            return this.chunkIndex < this.chunks.length - 1;
+            if (!this.chunks || this.chunks.length === 0) return false
+            return this.chunkIndex < this.chunks.length - 1
         }
 
         hasPrev() {
-            if (!this.chunks || this.chunks.length === 0) return false;
-            return this.chunkIndex > 0;
+            if (!this.chunks || this.chunks.length === 0) return false
+            return this.chunkIndex > 0
         }
 
         nextPage() {
             if (this.hasNext()) {
-                this.chunkIndex++;
+                this.chunkIndex++
             }
         }
 
         prevPage() {
             if (this.hasPrev()) {
-                this.chunkIndex--;
+                this.chunkIndex--
             }
         }
 
         chunkText(str: string): string[][] {
-            const charactersPerRow = Math.floor(this.textAreaWidth() / this.font.charWidth);
-            const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
-            const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
-            const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
+            const charactersPerRow = Math.floor(
+                this.textAreaWidth() / this.font.charWidth,
+            )
+            const charactersPerCursorRow = Math.floor(
+                charactersPerRow - this.cursor.width / this.font.charWidth,
+            )
+            const rowsOfCharacters = Math.floor(
+                this.textAreaHeight() / this.rowHeight(),
+            )
+            const rowsWithCursor = Math.ceil(
+                this.cursor.height / this.rowHeight(),
+            )
 
-            let lineLengths: number[] = [];
+            let lineLengths: number[] = []
 
-            for (let i = 0; i < rowsOfCharacters - rowsWithCursor; i++) lineLengths.push(charactersPerRow);
-            for (let i = 0; i < rowsWithCursor; i++) lineLengths.push(charactersPerCursorRow);
+            for (let i = 0; i < rowsOfCharacters - rowsWithCursor; i++)
+                lineLengths.push(charactersPerRow)
+            for (let i = 0; i < rowsWithCursor; i++)
+                lineLengths.push(charactersPerCursorRow)
 
-            return breakIntoPages(str, lineLengths);
+            return breakIntoPages(str, lineLengths)
         }
 
         setText(rawString: string) {
-            this.setFont(image.getFontForText(rawString));
-            this.chunks = this.chunkText(rawString);
-            this.chunkIndex = 0;
+            this.setFont(image.getFontForText(rawString))
+            this.chunks = this.chunkText(rawString)
+            this.chunkIndex = 0
         }
 
         drawTextCore() {
-            if (!this.chunks || this.chunks.length === 0) return;
-            const lines = this.chunks[this.chunkIndex];
-            const availableWidth = this.textAreaWidth();
-            const availableHeight = this.textAreaHeight();
+            if (!this.chunks || this.chunks.length === 0) return
+            const lines = this.chunks[this.chunkIndex]
+            const availableWidth = this.textAreaWidth()
+            const availableHeight = this.textAreaHeight()
 
-            const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
-            const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
+            const charactersPerRow = Math.floor(
+                availableWidth / this.font.charWidth,
+            )
+            const rowsOfCharacters = Math.floor(
+                availableHeight / this.rowHeight(),
+            )
 
-            if (this.unit > MAX_FRAME_UNIT) this.drawBorder();
+            if (this.unit > MAX_FRAME_UNIT) this.drawBorder()
 
-            const textLeft = 1 + this.innerLeft + Math.min(this.unit, MAX_FRAME_UNIT) + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
-            const textTop = 1 + (this.image.height >> 1) - ((lines.length * this.rowHeight()) >> 1);
+            const textLeft =
+                1 +
+                this.innerLeft +
+                Math.min(this.unit, MAX_FRAME_UNIT) +
+                ((availableWidth - charactersPerRow * this.font.charWidth) >> 1)
+            const textTop =
+                1 +
+                (this.image.height >> 1) -
+                ((lines.length * this.rowHeight()) >> 1)
 
             for (let row = 0; row < lines.length; row++) {
                 this.image.print(
                     lines[row],
                     textLeft,
                     textTop + row * this.rowHeight(),
-                    this.textColor, this.font
+                    this.textColor,
+                    this.font,
                 )
             }
         }
     }
 
     export class SplashDialog extends game.BaseDialog {
-        text: string;
-        subtext: string;
+        text: string
+        subtext: string
 
-        timer: number;
-        offset: number;
-        maxOffset: number;
-        maxSubOffset: number;
+        timer: number
+        offset: number
+        maxOffset: number
+        maxSubOffset: number
 
         constructor(width: number, height: number) {
             super(width, height, defaultSplashFrame())
-            this.maxOffset = -1;
-            this.maxSubOffset = -1;
-            this.textColor = 1;
+            this.maxOffset = -1
+            this.maxSubOffset = -1
+            this.textColor = 1
         }
 
         private updateFont() {
-            this.setFont(image.getFontForText((this.text || "") + (this.subtext || "")));
+            this.setFont(
+                image.getFontForText((this.text || "") + (this.subtext || "")),
+            )
         }
 
         setText(text: string) {
-            this.text = text;
-            this.updateFont();
-            this.offset = 0;
-            this.maxOffset = text.length * this.font.charWidth - screen.width + (this.unit << 1);
-            this.timer = 2;
+            this.text = text
+            this.updateFont()
+            this.offset = 0
+            this.maxOffset =
+                text.length * this.font.charWidth -
+                screen.width +
+                (this.unit << 1)
+            this.timer = 2
         }
 
         setSubtext(sub: string) {
-            this.subtext = sub;
-            this.updateFont();
-            this.maxSubOffset = sub.length * (this.font.charWidth) - screen.width + (this.unit << 1);
+            this.subtext = sub
+            this.updateFont()
+            this.maxSubOffset =
+                sub.length * this.font.charWidth -
+                screen.width +
+                (this.unit << 1)
         }
 
         drawTextCore() {
-            const scrollMax = Math.max(this.maxOffset, this.maxSubOffset);
+            const scrollMax = Math.max(this.maxOffset, this.maxSubOffset)
             if (this.timer > 0) {
-                this.timer -= game.eventContext().deltaTime;
+                this.timer -= game.eventContext().deltaTime
                 if (this.timer <= 0) {
                     if (this.offset > 0) {
-                        this.offset = 0;
-                        this.timer = 2;
+                        this.offset = 0
+                        this.timer = 2
                     }
                 }
-            }
-            else {
-                this.offset++;
+            } else {
+                this.offset++
                 if (this.offset >= scrollMax) {
-                    this.offset = scrollMax;
-                    this.timer = 2;
+                    this.offset = scrollMax
+                    this.timer = 2
                 }
             }
-            const ytitle = 10;
+            const ytitle = 10
             if (this.maxOffset < 0) {
-                const left = (this.image.width >> 1) - (this.text.length * this.font.charWidth >> 1)
-                this.image.print(this.text, left, ytitle, this.textColor, this.font)
-            }
-            else {
-                this.image.print(this.text, this.unit - this.offset, ytitle, this.textColor, this.font)
+                const left =
+                    (this.image.width >> 1) -
+                    ((this.text.length * this.font.charWidth) >> 1)
+                this.image.print(
+                    this.text,
+                    left,
+                    ytitle,
+                    this.textColor,
+                    this.font,
+                )
+            } else {
+                this.image.print(
+                    this.text,
+                    this.unit - this.offset,
+                    ytitle,
+                    this.textColor,
+                    this.font,
+                )
             }
 
             if (this.subtext) {
-                const ysub = ytitle + this.font.charHeight + 2;
+                const ysub = ytitle + this.font.charHeight + 2
                 if (this.maxSubOffset < 0) {
-                    const left = (this.image.width >> 1) - (this.subtext.length * this.font.charWidth >> 1)
-                    this.image.print(this.subtext, left, ysub, this.textColor, this.font);
-                }
-                else {
-                    this.image.print(this.subtext, this.unit - (Math.min(this.offset, this.maxSubOffset)), ysub, this.textColor, this.font);
+                    const left =
+                        (this.image.width >> 1) -
+                        ((this.subtext.length * this.font.charWidth) >> 1)
+                    this.image.print(
+                        this.subtext,
+                        left,
+                        ysub,
+                        this.textColor,
+                        this.font,
+                    )
+                } else {
+                    this.image.print(
+                        this.subtext,
+                        this.unit - Math.min(this.offset, this.maxSubOffset),
+                        ysub,
+                        this.textColor,
+                        this.font,
+                    )
                 }
             }
-            this.drawBorder();
+            this.drawBorder()
         }
     }
 
@@ -354,7 +465,7 @@ namespace game {
     . . . 5 . . . 
     . . 4 5 1 . . 
     . . . . . . . 
-    `;
+    `
 
     const img_trophy_lg = img`
     . . . . . . . . . . . . . . . . 
@@ -373,7 +484,7 @@ namespace game {
     . . . . . . . 4 1 . . . . . . . 
     . . . . . 4 4 5 5 1 1 . . . . . 
     . . . . . . . . . . . . . . . . 
-    `;
+    `
 
     const img_sleepy_sim = img`
     . . . . . . . . . . . . . . . . 
@@ -392,14 +503,15 @@ namespace game {
     . . . 6 6 6 6 6 6 6 6 6 6 . . . 
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
-    `;
+    `
 
     export class GameOverPlayerScore {
-        public str: string;
+        public str: string
         constructor(
             public player: number,
             public value: number,
-            public winner: boolean) { }
+            public winner: boolean,
+        ) {}
     }
 
     enum GameOverDialogFlags {
@@ -407,20 +519,32 @@ namespace game {
         HAS_BEST = 2,
         NEW_BEST = 4,
         MULTIPLAYER = 8,
-        HAS_SCORES = 16
-    };
+        HAS_SCORES = 16,
+    }
 
     export class GameOverDialog extends game.BaseDialog {
-        protected cursorOn: boolean;
-        protected flags: GameOverDialogFlags;
-        protected height: number;
+        protected cursorOn: boolean
+        protected flags: GameOverDialogFlags
+        protected height: number
 
-        get isWinCondition() { return !!(this.flags & GameOverDialogFlags.WIN); }
-        get isJudgedGame() { return this.judged; }
-        get hasScores() { return !!(this.flags & GameOverDialogFlags.HAS_SCORES); }
-        get hasBestScore() { return !!(this.flags & GameOverDialogFlags.HAS_BEST); }
-        get isNewBestScore() { return !!(this.flags & GameOverDialogFlags.NEW_BEST); }
-        get isMultiplayerGame() { return !!(this.flags & GameOverDialogFlags.MULTIPLAYER); }
+        get isWinCondition() {
+            return !!(this.flags & GameOverDialogFlags.WIN)
+        }
+        get isJudgedGame() {
+            return this.judged
+        }
+        get hasScores() {
+            return !!(this.flags & GameOverDialogFlags.HAS_SCORES)
+        }
+        get hasBestScore() {
+            return !!(this.flags & GameOverDialogFlags.HAS_BEST)
+        }
+        get isNewBestScore() {
+            return !!(this.flags & GameOverDialogFlags.NEW_BEST)
+        }
+        get isMultiplayerGame() {
+            return !!(this.flags & GameOverDialogFlags.MULTIPLAYER)
+        }
 
         constructor(
             win: boolean,
@@ -428,44 +552,56 @@ namespace game {
             protected judged: boolean,
             protected scores: GameOverPlayerScore[],
             protected bestScore?: number,
-            protected winnerOverride?: number
+            protected winnerOverride?: number,
         ) {
-            super(screen.width, 46, defaultSplashFrame());
-            this.cursorOn = false;
-            this.flags = 0;
+            super(screen.width, 46, defaultSplashFrame())
+            this.cursorOn = false
+            this.flags = 0
 
             if (win) {
-                this.flags |= GameOverDialogFlags.WIN;
+                this.flags |= GameOverDialogFlags.WIN
             }
 
             // Fixup states in case of winner override
             if (winnerOverride) {
-                win = true;
-                this.flags |= GameOverDialogFlags.WIN;
+                win = true
+                this.flags |= GameOverDialogFlags.WIN
                 // For display purposes, treat this as a multiplayer game
-                this.flags |= GameOverDialogFlags.MULTIPLAYER;
-                const score = scores.find(score => score.player === winnerOverride);
+                this.flags |= GameOverDialogFlags.MULTIPLAYER
+                const score = scores.find(
+                    score => score.player === winnerOverride,
+                )
                 if (!score) {
-                    scores.push(new GameOverPlayerScore(winnerOverride, null, true));
-                    scores.sort((a, b) => a.player - b.player);
+                    scores.push(
+                        new GameOverPlayerScore(winnerOverride, null, true),
+                    )
+                    scores.sort((a, b) => a.player - b.player)
                 }
-                scores.forEach(score => score.winner = score.player === winnerOverride);
+                scores.forEach(
+                    score => (score.winner = score.player === winnerOverride),
+                )
             }
 
             if (scores.length) {
                 // If any score present is other than player 1, this is a multiplayer game
-                scores.forEach(score => score.player > 1 && (this.flags |= GameOverDialogFlags.MULTIPLAYER));
+                scores.forEach(
+                    score =>
+                        score.player > 1 &&
+                        (this.flags |= GameOverDialogFlags.MULTIPLAYER),
+                )
                 if (win) {
-                    let winner = scores.find(score => score.winner);
-                    if (!winner && scores.length === 1) winner = scores[0];
+                    let winner = scores.find(score => score.winner)
+                    if (!winner && scores.length === 1) winner = scores[0]
                     if (winner) {
                         if (winner.value != null) {
                             if (bestScore == null) {
-                                this.bestScore = winner.value;
-                                this.flags |= GameOverDialogFlags.NEW_BEST;
-                            } else if (info.isBetterScore(winner.value, bestScore)) {
-                                this.bestScore = winner.value;
-                                this.flags |= GameOverDialogFlags.NEW_BEST;
+                                this.bestScore = winner.value
+                                this.flags |= GameOverDialogFlags.NEW_BEST
+                            } else if (
+                                info.isBetterScore(winner.value, bestScore)
+                            ) {
+                                this.bestScore = winner.value
+                                this.flags |= GameOverDialogFlags.NEW_BEST
                             }
                         }
                         // Replace string tokens with resolved values
@@ -473,95 +609,130 @@ namespace game {
                             .replaceAll("${WINNER}", "PLAYER " + winner.player)
                             .replaceAll("${Winner}", "Player " + winner.player)
                             .replaceAll("${winner}", "player " + winner.player)
-                            .replaceAll("${winner_short}", "P" + winner.player);
+                            .replaceAll("${winner_short}", "P" + winner.player)
                     }
                 }
             }
 
-            const scoresWithValues = scores.filter(score => score.value != null);
-            if (scoresWithValues.length) this.flags |= GameOverDialogFlags.HAS_SCORES;
+            const scoresWithValues = scores.filter(score => score.value != null)
+            if (scoresWithValues.length)
+                this.flags |= GameOverDialogFlags.HAS_SCORES
 
-            if (this.isWinCondition && this.isJudgedGame && this.hasScores && (this.bestScore != null)) {
-                this.flags |= GameOverDialogFlags.HAS_BEST;
+            if (
+                this.isWinCondition &&
+                this.isJudgedGame &&
+                this.hasScores &&
+                this.bestScore != null
+            ) {
+                this.flags |= GameOverDialogFlags.HAS_BEST
             }
 
             // Two scores per row
-            const scoreRows = Math.max(0, scoresWithValues.length - 1) >> 1;
-            this.height = 47 + scoreRows * image.font5.charHeight;
-            this.resize(screen.width, this.height, defaultSplashFrame());
+            const scoreRows = Math.max(0, scoresWithValues.length - 1) >> 1
+            this.height = 47 + scoreRows * image.font5.charHeight
+            this.resize(screen.width, this.height, defaultSplashFrame())
         }
 
         displayCursor() {
-            this.cursorOn = true;
+            this.cursorOn = true
         }
 
         update() {
-            this.clearInterior();
-            this.drawTextCore();
+            this.clearInterior()
+            this.drawTextCore()
 
             if (this.cursorOn) {
-                this.drawCursorRow();
+                this.drawCursorRow()
             }
         }
 
         drawMessage() {
-            const currY = 5;
+            const currY = 5
             this.image.printCenter(
                 this.message,
                 currY,
                 screenColor(5),
-                image.font8
-            );
+                image.font8,
+            )
         }
 
         drawScores() {
             if (this.hasScores) {
-                const scores = this.scores.filter(score => score.value != null);
-                let currY = image.font5.charHeight + 16;
+                const scores = this.scores.filter(score => score.value != null)
+                let currY = image.font5.charHeight + 16
                 if (this.isMultiplayerGame) {
                     if (scores.length === 1) {
                         // Multiplayer special case: Only one player scored
-                        const score = scores[0];
-                        score.str = "P" + score.player + ":" + score.value;
+                        const score = scores[0]
+                        score.str = "P" + score.player + ":" + score.value
                         this.image.printCenter(
                             score.str,
                             currY,
                             screenColor(1),
-                            image.font5
-                        );
+                            image.font5,
+                        )
                         if (score.winner) {
                             // In multiplayer, the winning score gets a trophy
-                            const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
-                            this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
+                            const x =
+                                (this.image.width >> 1) -
+                                ((score.str.length * image.font5.charWidth) >>
+                                    1)
+                            this.image.drawTransparentImage(
+                                img_trophy_sm,
+                                x - img_trophy_sm.width - 3,
+                                currY - 2,
+                            )
                         }
                     } else {
                         // Multiplayer general case: Multiple players scored
                         // Compute max score width
-                        const strlens = [0, 0];
+                        const strlens = [0, 0]
                         for (let i = 0; i < scores.length; ++i) {
-                            const col = i % 2;
-                            const score = scores[i];
-                            score.str = "P" + score.player + ":" + score.value;
-                            strlens[col] = Math.max(strlens[col], score.str.length);
+                            const col = i % 2
+                            const score = scores[i]
+                            score.str = "P" + score.player + ":" + score.value
+                            strlens[col] = Math.max(
+                                strlens[col],
+                                score.str.length,
+                            )
                         }
                         // Print scores in a grid, two per row
                         for (let i = 0; i < scores.length; ++i) {
-                            const col = i % 2;
-                            const score = scores[i];
-                            let str = padStr(strlens[col]);
-                            str = replaceRange(str, score.str, 0, score.str.length);
-                            let x = 0;
+                            const col = i % 2
+                            const score = scores[i]
+                            let str = padStr(strlens[col])
+                            str = replaceRange(
+                                str,
+                                score.str,
+                                0,
+                                score.str.length,
+                            )
+                            let x = 0
                             if (col === 0) {
-                                x = (this.image.width >> 1) - strlens[col] * image.font5.charWidth - 3;
+                                x =
+                                    (this.image.width >> 1) -
+                                    strlens[col] * image.font5.charWidth -
+                                    3
                             } else {
-                                x = (this.image.width >> 1) + 3;
+                                x = (this.image.width >> 1) + 3
                             }
                             if (score.winner) {
                                 // In multiplayer, the winning score gets a trophy
                                 if (i % 2 === 0) {
-                                    this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
+                                    this.image.drawTransparentImage(
+                                        img_trophy_sm,
+                                        x - img_trophy_sm.width - 3,
+                                        currY - 2,
+                                    )
                                 } else {
-                                    this.image.drawTransparentImage(img_trophy_sm, x + score.str.length * image.font5.charWidth + 2, currY - 2);
+                                    this.image.drawTransparentImage(
+                                        img_trophy_sm,
+                                        x +
+                                            score.str.length *
+                                                image.font5.charWidth +
+                                            2,
+                                        currY - 2,
+                                    )
                                 }
                             }
                             this.image.print(
@@ -569,68 +740,88 @@ namespace game {
                                 x,
                                 currY,
                                 screenColor(1),
-                                image.font5
-                            );
+                                image.font5,
+                            )
                             if (i % 2 === 1) {
-                                currY += image.font5.charHeight + 2;
+                                currY += image.font5.charHeight + 2
                             }
                         }
                     }
                 } else {
                     // Single player case
-                    const score = scores[0];
-                    score.str = "Score:" + score.value;
+                    const score = scores[0]
+                    score.str = "Score:" + score.value
                     this.image.printCenter(
                         score.str,
                         currY - 1,
                         screenColor(1),
-                        image.font8 // Single player score gets a bigger font
-                    );
+                        image.font8, // Single player score gets a bigger font
+                    )
                 }
             } else if (this.isWinCondition) {
                 // No score, but there is a win condition. Show a trophy.
-                let currY = image.font5.charHeight + 14;
-                this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+                let currY = image.font5.charHeight + 14
+                this.image.drawTransparentImage(
+                    img_trophy_lg,
+                    (this.image.width >> 1) - (img_trophy_lg.width >> 1),
+                    currY,
+                )
             } else {
                 // No score, no win, show a generic game over icon (sleepy sim)
-                let currY = image.font5.charHeight + 14;
-                this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
+                let currY = image.font5.charHeight + 14
+                this.image.drawTransparentImage(
+                    img_sleepy_sim,
+                    (this.image.width >> 1) - (img_sleepy_sim.width >> 1),
+                    currY,
+                )
             }
         }
 
         drawBestScore() {
             if (this.hasBestScore) {
-                const currY = this.height - image.font8.charHeight - 5;
+                const currY = this.height - image.font8.charHeight - 5
                 if (this.isNewBestScore) {
-                    const label = "New Best Score!";
+                    const label = "New Best Score!"
                     this.image.printCenter(
                         label,
                         currY,
                         screenColor(9),
-                        image.font8
-                    );
+                        image.font8,
+                    )
                     // In single player draw trophy icons on either side of the label.
                     // In multiplayer a trophy icon is drawn next to the winning score instead.
                     if (!this.isMultiplayerGame) {
-                        const halfWidth = (label.length * image.font8.charWidth) >> 1;
-                        this.image.drawTransparentImage(img_trophy_sm, (this.image.width >> 1) - halfWidth - img_trophy_sm.width - 2, currY);
-                        this.image.drawTransparentImage(img_trophy_sm, (this.image.width >> 1) + halfWidth, currY);
+                        const halfWidth =
+                            (label.length * image.font8.charWidth) >> 1
+                        this.image.drawTransparentImage(
+                            img_trophy_sm,
+                            (this.image.width >> 1) -
+                                halfWidth -
+                                img_trophy_sm.width -
+                                2,
+                            currY,
+                        )
+                        this.image.drawTransparentImage(
+                            img_trophy_sm,
+                            (this.image.width >> 1) + halfWidth,
+                            currY,
+                        )
                     }
                 } else {
                     this.image.printCenter(
                         "Best:" + this.bestScore,
                         currY,
                         screenColor(9),
-                        image.font8
-                    );
+                        image.font8,
+                    )
                 }
             }
         }
 
         drawTextCore() {
-            this.drawMessage();
-            this.drawScores();
-            this.drawBestScore();
+            this.drawMessage()
+            this.drawScores()
+            this.drawBestScore()
         }
     }
 
@@ -648,109 +839,106 @@ namespace game {
     //% str.shadow=text
     //% help=game/show-long-text
     export function showLongText(str: any, layout: DialogLayout) {
-        str = console.inspect(str);
-        controller._setUserEventsEnabled(false);
-        game.pushScene();
-        game.currentScene().flags |= scene.Flag.SeeThrough;
+        str = console.inspect(str)
+        controller._setUserEventsEnabled(false)
+        game.pushScene()
+        game.currentScene().flags |= scene.Flag.SeeThrough
 
-        let width: number;
-        let height: number;
-        let top: number;
-        let left: number;
+        let width: number
+        let height: number
+        let top: number
+        let left: number
 
         switch (layout) {
             case DialogLayout.Bottom:
-                width = screen.width - 4;
-                height = Math.idiv(screen.height, 3) + 5;
-                top = screen.height - height;
-                left = screen.width - width >> 1;
-                break;
+                width = screen.width - 4
+                height = Math.idiv(screen.height, 3) + 5
+                top = screen.height - height
+                left = (screen.width - width) >> 1
+                break
             case DialogLayout.Top:
-                width = screen.width - 4;
-                height = Math.idiv(screen.height, 3) + 5;
-                top = 0;
-                left = screen.width - width >> 1;
-                break;
+                width = screen.width - 4
+                height = Math.idiv(screen.height, 3) + 5
+                top = 0
+                left = (screen.width - width) >> 1
+                break
             case DialogLayout.Left:
-                width = Math.idiv(screen.width, 3) + 5;
-                height = screen.height;
-                top = 0;
-                left = 0;
-                break;
+                width = Math.idiv(screen.width, 3) + 5
+                height = screen.height
+                top = 0
+                left = 0
+                break
             case DialogLayout.Right:
-                width = Math.idiv(screen.width, 3) + 5;
-                height = screen.height;
-                top = 0;
-                left = screen.width - width;
-                break;
+                width = Math.idiv(screen.width, 3) + 5
+                height = screen.height
+                top = 0
+                left = screen.width - width
+                break
             case DialogLayout.Center:
-                width = Math.idiv(screen.width << 1, 3);
-                height = Math.idiv(screen.width << 1, 3);
-                top = (screen.height - height) >> 1;
-                left = (screen.width - width) >> 1;
-                break;
+                width = Math.idiv(screen.width << 1, 3)
+                height = Math.idiv(screen.width << 1, 3)
+                top = (screen.height - height) >> 1
+                left = (screen.width - width) >> 1
+                break
             case DialogLayout.Full:
-                width = screen.width;
-                height = screen.height;
-                top = 0;
-                left = 0;
-                break;
+                width = screen.width
+                height = screen.height
+                top = 0
+                left = 0
+                break
         }
 
-        const dialog = new Dialog(width, height);
-        const s = sprites.create(dialog.image, -1);
-        s.top = top;
-        s.left = left;
+        const dialog = new Dialog(width, height)
+        const s = sprites.create(dialog.image, -1)
+        s.top = top
+        s.left = left
 
         dialog.setText(str)
-        let pressed = true;
-        let done = false;
+        let pressed = true
+        let done = false
 
-        let upPressed = true;
+        let upPressed = true
 
         game.onUpdate(() => {
-            dialog.update();
-            const currentState = controller.A.isPressed() || controller.down.isPressed();
+            dialog.update()
+            const currentState =
+                controller.A.isPressed() || controller.down.isPressed()
             if (currentState && !pressed) {
-                pressed = true;
+                pressed = true
                 if (dialog.hasNext()) {
-                    dialog.nextPage();
+                    dialog.nextPage()
+                } else {
+                    scene.setBackgroundImage(null) // GC it
+                    game.popScene()
+                    done = true
                 }
-                else {
-                    scene.setBackgroundImage(null); // GC it
-                    game.popScene();
-                    done = true;
-                }
-            }
-            else if (pressed && !currentState) {
-                pressed = false;
+            } else if (pressed && !currentState) {
+                pressed = false
             }
 
-            const moveBack = controller.up.isPressed();
+            const moveBack = controller.up.isPressed()
             if (moveBack && !upPressed) {
-                upPressed = true;
+                upPressed = true
                 if (dialog.hasPrev()) {
-                    dialog.prevPage();
+                    dialog.prevPage()
                 }
-            }
-            else if (upPressed && !moveBack) {
-                upPressed = false;
+            } else if (upPressed && !moveBack) {
+                upPressed = false
             }
         })
 
-        pauseUntil(() => done);
-        controller._setUserEventsEnabled(true);
+        pauseUntil(() => done)
+        controller._setUserEventsEnabled(true)
     }
 
     function defaultFrame() {
-        return screen.isMono ?
-            img`
+        return screen.isMono
+            ? img`
         1 1 1
         1 . 1
         1 1 1
         `
-            :
-            img`
+            : img`
         . . . . . . . . . . . .
         . b b b b b b b b b b .
         . b b b b b b b b b b c
@@ -767,14 +955,13 @@ namespace game {
     }
 
     function defaultSplashFrame() {
-        return screen.isMono ?
-            img`
+        return screen.isMono
+            ? img`
         1 1 1
         . . .
         1 1 1
         `
-            :
-            img`
+            : img`
         1 1 1
         f f f
         1 1 1
@@ -782,8 +969,8 @@ namespace game {
     }
 
     function defaultCursorImage() {
-        return screen.isMono ?
-            img`
+        return screen.isMono
+            ? img`
         1 1 1 1 1 1 1 . . .
         1 . . 1 . . . 1 . .
         1 . 1 . 1 . . . 1 .
@@ -793,8 +980,7 @@ namespace game {
         1 1 1 1 1 1 1 . . .
         . . . . . . . . . .
         `
-            :
-            img`
+            : img`
         0 0 0 6 6 6 6 6 0 0 0
         0 6 6 7 7 7 7 7 6 6 0
         0 6 7 7 1 1 1 7 7 6 0
@@ -820,7 +1006,7 @@ namespace game {
     //% block="set dialog frame to %frame=dialog_image_picker"
     //% help=game/set-dialog-frame
     export function setDialogFrame(frame: Image) {
-        dialogFrame = frame;
+        dialogFrame = frame
     }
 
     /**
@@ -833,7 +1019,7 @@ namespace game {
     //% block="set dialog cursor to %frame=screen_image_picker"
     //% help=game/set-dialog-cursor
     export function setDialogCursor(cursor: Image) {
-        dialogCursor = cursor;
+        dialogCursor = cursor
     }
 
     /**
@@ -845,13 +1031,12 @@ namespace game {
     //% block="set dialog text color to %color=colorindexpicker"
     //% help=game/set-dialog-text-color
     export function setDialogTextColor(color: number) {
-        dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)));
+        dialogTextColor = Math.floor(Math.min(15, Math.max(0, color)))
     }
 
     // this function is deprecated
     //% deprecated blockHidden
-    export function setDialogFont(font: image.Font) {
-    }
+    export function setDialogFont(font: image.Font) {}
 
     /**
      * Show a title and an optional subtitle menu
@@ -864,115 +1049,134 @@ namespace game {
     //% subtitle.shadow=text
     //% group="Prompt"
     export function splash(title: any, subtitle?: any) {
-        title = console.inspect(title);
-        subtitle = subtitle ? console.inspect(subtitle) : subtitle;
-        controller._setUserEventsEnabled(false);
-        game.pushScene();
-        game.currentScene().flags |= scene.Flag.SeeThrough;
+        title = console.inspect(title)
+        subtitle = subtitle ? console.inspect(subtitle) : subtitle
+        controller._setUserEventsEnabled(false)
+        game.pushScene()
+        game.currentScene().flags |= scene.Flag.SeeThrough
 
-        const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35);
-        dialog.setText(title);
-        if (subtitle) dialog.setSubtext(subtitle);
+        const dialog = new SplashDialog(screen.width, subtitle ? 42 : 35)
+        dialog.setText(title)
+        if (subtitle) dialog.setSubtext(subtitle)
 
-        const s = sprites.create(dialog.image, -1);
-        let pressed = true;
-        let done = false;
+        const s = sprites.create(dialog.image, -1)
+        let pressed = true
+        let done = false
 
         game.onUpdate(() => {
-            dialog.update();
-            const currentState = controller.A.isPressed();
+            dialog.update()
+            const currentState = controller.A.isPressed()
             if (currentState && !pressed) {
-                pressed = true;
-                scene.setBackgroundImage(null); // GC it
-                game.popScene();
-                done = true;
-            }
-            else if (pressed && !currentState) {
-                pressed = false;
+                pressed = true
+                scene.setBackgroundImage(null) // GC it
+                game.popScene()
+                done = true
+            } else if (pressed && !currentState) {
+                pressed = false
             }
         })
 
-        pauseUntil(() => done);
-        controller._setUserEventsEnabled(true);
+        pauseUntil(() => done)
+        controller._setUserEventsEnabled(true)
     }
 
     function isBreakCharacter(charCode: number) {
-        return charCode <= 32 ||
+        return (
+            charCode <= 32 ||
             (charCode >= 58 && charCode <= 64) ||
             (charCode >= 91 && charCode <= 96) ||
-            (charCode >= 123 && charCode <= 126) || 
+            (charCode >= 123 && charCode <= 126) ||
             (charCode >= 19968 && charCode <= 40869) ||
-            charCode == 12290 || 
-            charCode == 65292;
+            charCode == 12290 ||
+            charCode == 65292
+        )
     }
 
     function breakIntoPages(text: string, lineLengths: number[]): string[][] {
-        const result: string[][] = [];
+        const result: string[][] = []
 
-        let currentPage: string[] = [];
+        let currentPage: string[] = []
 
-        let lastBreakLocation = 0;
-        let lastBreak = 0;
-        let line = 0;
-        let lineLength = lineLengths[line];
+        let lastBreakLocation = 0
+        let lastBreak = 0
+        let line = 0
+        let lineLength = lineLengths[line]
 
         function nextLine() {
-            line++;
-            lineLength = lineLengths[line];
+            line++
+            lineLength = lineLengths[line]
         }
 
         for (let index = 0; index < text.length; index++) {
             if (text.charAt(index) === "\n") {
-                currentPage.push(formatLine(text.substr(lastBreak, index - lastBreak)));
-                index++;
-                lastBreak = index;
-                nextLine();
+                currentPage.push(
+                    formatLine(text.substr(lastBreak, index - lastBreak)),
+                )
+                index++
+                lastBreak = index
+                nextLine()
             }
             // Handle \\n in addition to \n because that's how it gets converted from blocks
-            else if (text.charAt(index) === "\\" && text.charAt(index + 1) === "n") {
-                currentPage.push(formatLine(text.substr(lastBreak, index - lastBreak)));
-                index += 2;
+            else if (
+                text.charAt(index) === "\\" &&
+                text.charAt(index + 1) === "n"
+            ) {
+                currentPage.push(
+                    formatLine(text.substr(lastBreak, index - lastBreak)),
+                )
+                index += 2
                 lastBreak = index
-                nextLine();
-            }
-            else if (isBreakCharacter(text.charCodeAt(index))) {
-                lastBreakLocation = index;
+                nextLine()
+            } else if (isBreakCharacter(text.charCodeAt(index))) {
+                lastBreakLocation = index
             }
 
             if (index - lastBreak === lineLength) {
-                if (lastBreakLocation === index || lastBreakLocation < lastBreak) {
-                    currentPage.push(formatLine(text.substr(lastBreak, lineLength)));
-                    lastBreak = index;
-                    nextLine();
-                }
-                else {
-                    currentPage.push(formatLine(text.substr(lastBreak, lastBreakLocation - lastBreak)));
-                    lastBreak = lastBreakLocation;
-                    nextLine();
+                if (
+                    lastBreakLocation === index ||
+                    lastBreakLocation < lastBreak
+                ) {
+                    currentPage.push(
+                        formatLine(text.substr(lastBreak, lineLength)),
+                    )
+                    lastBreak = index
+                    nextLine()
+                } else {
+                    currentPage.push(
+                        formatLine(
+                            text.substr(
+                                lastBreak,
+                                lastBreakLocation - lastBreak,
+                            ),
+                        ),
+                    )
+                    lastBreak = lastBreakLocation
+                    nextLine()
                 }
             }
 
             if (line >= lineLengths.length) {
-                line = 0;
-                lineLength = lineLengths[line];
-                result.push(currentPage);
-                currentPage = [];
+                line = 0
+                lineLength = lineLengths[line]
+                result.push(currentPage)
+                currentPage = []
             }
         }
 
-        currentPage.push(formatLine(text.substr(lastBreak, text.length - lastBreak)));
+        currentPage.push(
+            formatLine(text.substr(lastBreak, text.length - lastBreak)),
+        )
 
         if (currentPage.length > 1 || currentPage[0] !== "") {
-            result.push(currentPage);
+            result.push(currentPage)
         }
 
-        return result;
+        return result
     }
 
     function formatLine(text: string) {
-        let i = 0;
-        while (text.charAt(i) === " ") i++;
-        return text.substr(i, text.length);
+        let i = 0
+        while (text.charAt(i) === " ") i++
+        return text.substr(i, text.length)
     }
 }
-

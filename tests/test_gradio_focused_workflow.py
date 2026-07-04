@@ -34,9 +34,7 @@ def test_gradio_focused_workflow_uses_reusable_python_setup_without_repo_require
     workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
     setup_step = next(
-        step
-        for step in workflow["jobs"]["gradio-focused"]["steps"]
-        if step.get("uses") == EXPECTED_SETUP_PYTHON_ACTION
+        step for step in workflow["jobs"]["gradio-focused"]["steps"] if step.get("uses") == EXPECTED_SETUP_PYTHON_ACTION
     )
     assert setup_step["uses"] == EXPECTED_SETUP_PYTHON_ACTION
     assert setup_step["with"]["install-requirements"] == "false"

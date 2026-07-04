@@ -20,7 +20,12 @@ namespace pins {
     }
 
     //% deprecated=1
-    export function packIntoBuffer(format: string, buf: Buffer, offset: number, nums: number[]) {
+    export function packIntoBuffer(
+        format: string,
+        buf: Buffer,
+        offset: number,
+        nums: number[],
+    ) {
         buf.packAt(offset, format, nums)
     }
 
@@ -42,39 +47,46 @@ namespace pins {
 namespace msgpack {
     function tagFormat(tag: number) {
         switch (tag) {
-            case 0xCB: return NumberFormat.Float64BE
-            case 0xCC: return NumberFormat.UInt8BE
-            case 0xCD: return NumberFormat.UInt16BE
-            case 0xCE: return NumberFormat.UInt32BE
-            case 0xD0: return NumberFormat.Int8BE
-            case 0xD1: return NumberFormat.Int16BE
-            case 0xD2: return NumberFormat.Int32BE
+            case 0xcb:
+                return NumberFormat.Float64BE
+            case 0xcc:
+                return NumberFormat.UInt8BE
+            case 0xcd:
+                return NumberFormat.UInt16BE
+            case 0xce:
+                return NumberFormat.UInt32BE
+            case 0xd0:
+                return NumberFormat.Int8BE
+            case 0xd1:
+                return NumberFormat.Int16BE
+            case 0xd2:
+                return NumberFormat.Int32BE
             default:
                 return null
         }
     }
 
     function packNumberCore(buf: Buffer, offset: number, num: number) {
-        let tag = 0xCB
-        if (num == (num << 0) || num == (num >>> 0)) {
+        let tag = 0xcb
+        if (num == num << 0 || num == num >>> 0) {
             if (-31 <= num && num <= 127) {
                 if (buf) buf[offset] = num
                 return 1
             } else if (0 <= num) {
                 if (num <= 0xff) {
-                    tag = 0xCC
+                    tag = 0xcc
                 } else if (num <= 0xffff) {
-                    tag = 0xCD
+                    tag = 0xcd
                 } else {
-                    tag = 0xCE
+                    tag = 0xce
                 }
             } else {
                 if (-0x7f <= num) {
-                    tag = 0xD0
+                    tag = 0xd0
                 } else if (-0x7fff <= num) {
-                    tag = 0xD1
+                    tag = 0xd1
                 } else {
-                    tag = 0xD2
+                    tag = 0xd2
                 }
             }
         }
@@ -96,16 +108,14 @@ namespace msgpack {
             let fmt = tagFormat(buf[offset++])
             if (fmt === null) {
                 let v = buf.getNumber(NumberFormat.Int8BE, offset - 1)
-                if (-31 <= v && v <= 127)
-                    res.push(v)
-                else
-                    return null
+                if (-31 <= v && v <= 127) res.push(v)
+                else return null
             } else {
                 res.push(buf.getNumber(fmt, offset))
                 offset += pins.sizeOf(fmt)
             }
             // padding at the end
-            while (buf[offset] === 0xc1) offset++;
+            while (buf[offset] === 0xc1) offset++
         }
 
         return res
@@ -138,13 +148,12 @@ namespace helpers {
     }
 
     export function bufferEquals(l: Buffer, r: Buffer) {
-        if (!l || !r) return !!l == !!r;
-        if (l.length != r.length) return false;
+        if (!l || !r) return !!l == !!r
+        if (l.length != r.length) return false
         for (let i = 0; i < l.length; ++i) {
-            if (l[i] != r[i])
-                return false;
+            if (l[i] != r[i]) return false
         }
-        return true;
+        return true
     }
 
     export function bufferIndexOf(a: Buffer, b: Buffer) {
@@ -152,12 +161,10 @@ namespace helpers {
             if (a[i] == b[0]) {
                 let j = 0
                 while (j < b.length) {
-                    if (a[i + j] != b[j])
-                        break
+                    if (a[i + j] != b[j]) break
                     j++
                 }
-                if (j >= b.length)
-                    return i
+                if (j >= b.length) return i
             }
         }
         return -1
@@ -170,7 +177,12 @@ namespace helpers {
         return res
     }
 
-    export function bufferPackAt(buf: Buffer, offset: number, format: string, nums: number[]) {
+    export function bufferPackAt(
+        buf: Buffer,
+        offset: number,
+        format: string,
+        nums: number[],
+    ) {
         Buffer.__packUnpackCore(format, nums, buf, true, offset)
     }
 
@@ -188,12 +200,12 @@ namespace helpers {
         const sz = Buffer.sizeOfNumberFormat(format)
         const len = buf.length - sz
         const r: number[] = []
-        for (let i = 0; i <= len; i += sz)
-            r.push(buf.getNumber(format, i))
+        for (let i = 0; i <= len; i += sz) r.push(buf.getNumber(format, i))
         return r
     }
 
-    export const _b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    export const _b64 =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
     export function bufferToBase64(buf: Buffer) {
         const len = buf.length
         let r = ""
@@ -204,12 +216,12 @@ namespace helpers {
                 r += _b64[(x0 & 3) << 4] + "=="
             } else {
                 const x1 = buf[i + 1]
-                r += _b64[(x0 & 3) << 4 | (x1 >> 4)]
+                r += _b64[((x0 & 3) << 4) | (x1 >> 4)]
                 if (i + 2 >= len) {
                     r += _b64[(x1 & 15) << 2] + "="
                 } else {
                     const x2 = buf[i + 2]
-                    r += _b64[(x1 & 15) << 2 | (x2 >> 6)]
+                    r += _b64[((x1 & 15) << 2) | (x2 >> 6)]
                     r += _b64[x2 & 63]
                 }
             }
@@ -219,55 +231,55 @@ namespace helpers {
 }
 
 interface Buffer {
-    [index: number]: number;
+    [index: number]: number
 
     /**
      * Return concatenation of current buffer and the given buffer
      */
     //% helper=bufferConcat
-    concat(other: Buffer): Buffer;
+    concat(other: Buffer): Buffer
 
     /**
      * Return position of other buffer in current buffer
      */
     //% helper=bufferIndexOf
-    indexOf(other: Buffer): number;
+    indexOf(other: Buffer): number
 
     /**
      * Reads numbers from the buffer according to the format
      */
     //% helper=bufferUnpack
-    unpack(format: string, offset?: number): number[];
+    unpack(format: string, offset?: number): number[]
 
     /**
      * Writes numbers to the buffer according to the format
      */
     //% helper=bufferPackAt
-    packAt(offset: number, format: string, nums: number[]): void;
+    packAt(offset: number, format: string, nums: number[]): void
 
     /**
      * Returns true if this and the other buffer hold the same data
      */
     //% helper=bufferEquals
-    equals(other: Buffer): boolean;
+    equals(other: Buffer): boolean
 
     /**
      * Splits buffer into parts no larger than specified
      */
     //% helper=bufferChunked
-    chunked(maxSize: number): Buffer[];
+    chunked(maxSize: number): Buffer[]
 
     /**
      * Read contents of buffer as an array in specified format
      */
     //% helper=bufferToArray
-    toArray(format: NumberFormat): number[];
+    toArray(format: NumberFormat): number[]
 
     /**
      * Convert buffer to ASCII base64 encoding.
      */
     //% helper=bufferToBase64
-    toBase64(): string;
+    toBase64(): string
 
     // rest defined in buffer.cpp
 }
@@ -278,7 +290,7 @@ namespace Buffer {
      * @param size number of bytes in the buffer
      */
     //% shim=control::createBuffer
-    export declare function create(size: number): Buffer;
+    export declare function create(size: number): Buffer
 
     /**
      * Create a new buffer, decoding a hex string
@@ -290,8 +302,7 @@ namespace Buffer {
         for (let i = 0; i < hex.length; i += 2) {
             const p0 = hexStr.indexOf(hex.charAt(i))
             const p1 = hexStr.indexOf(hex.charAt(i + 1))
-            if (p0 < 0 || p1 < 0)
-                throw "Invalid hex"
+            if (p0 < 0 || p1 < 0) throw "Invalid hex"
             res[i >> 1] = (p0 << 4) | p1
         }
         return res
@@ -305,8 +316,7 @@ namespace Buffer {
         if (c == "_") return 63
 
         const r = helpers._b64.indexOf(c)
-        if (r < 0)
-            throw "Invalid Base64"
+        if (r < 0) throw "Invalid Base64"
         return r
     }
 
@@ -319,21 +329,17 @@ namespace Buffer {
             const x2 = b64Idx(b64[i + 2])
             const x3 = b64Idx(b64[i + 3])
             if (x0 < 0 || x1 < 0) throw "Invalid Base64"
-            if (trg)
-                trg[dp] = (x0 << 2) | (x1 >> 4)
+            if (trg) trg[dp] = (x0 << 2) | (x1 >> 4)
             dp++
             if (x2 >= 0) {
-                if (trg)
-                    trg[dp] = (x1 << 4) | (x2 >> 2)
+                if (trg) trg[dp] = (x1 << 4) | (x2 >> 2)
                 dp++
                 if (x3 >= 0) {
-                    if (trg)
-                        trg[dp] = (x2 << 6) | x3
+                    if (trg) trg[dp] = (x2 << 6) | x3
                     dp++
                 }
             } else {
-                if (x3 >= 0 || i + 4 < len)
-                    throw "Invalid Base64"
+                if (x3 >= 0 || i + 4 < len) throw "Invalid Base64"
             }
         }
         return dp
@@ -354,32 +360,27 @@ namespace Buffer {
      * @param str the string to put in the buffer
      */
     //% shim=control::createBufferFromUTF8
-    export declare function fromUTF8(str: string): Buffer;
+    export declare function fromUTF8(str: string): Buffer
 
     function chunkLen(s: string, off: number, maxlen: number) {
         let L = Math.idiv(maxlen, 3)
         let R = maxlen
 
-        if (fromUTF8(s.slice(off, off + R)).length <= maxlen)
-            return R
+        if (fromUTF8(s.slice(off, off + R)).length <= maxlen) return R
 
         while (L < R) {
             const m = (L + R) >> 1
-            if (m == L)
-                break
+            if (m == L) break
             const ll = fromUTF8(s.slice(off, off + m)).length
-            if (ll <= maxlen)
-                L = m
-            else
-                R = m
+            if (ll <= maxlen) L = m
+            else R = m
         }
 
         return L
     }
 
     export function chunkedFromUTF8(str: string, maxBytes: number) {
-        if (maxBytes < 3)
-            throw "Oops"
+        if (maxBytes < 3) throw "Oops"
         const chunks: Buffer[] = []
         let pos = 0
         while (pos < str.length) {
@@ -396,8 +397,7 @@ namespace Buffer {
      */
     export function fromArray(bytes: number[]) {
         let buf = Buffer.create(bytes.length)
-        for (let i = 0; i < bytes.length; ++i)
-            buf[i] = bytes[i]
+        for (let i = 0; i < bytes.length; ++i) buf[i] = bytes[i]
         return buf
     }
 
@@ -406,8 +406,7 @@ namespace Buffer {
      */
     export function concat(buffers: Buffer[]) {
         let len = 0
-        for (let b of buffers)
-            len += b.length
+        for (let b of buffers) len += b.length
         const r = Buffer.create(len)
         len = 0
         for (let b of buffers) {
@@ -431,23 +430,23 @@ namespace Buffer {
 
     function getFormat(pychar: string, isBig: boolean) {
         switch (pychar) {
-            case 'B':
+            case "B":
                 return NumberFormat.UInt8LE
-            case 'b':
+            case "b":
                 return NumberFormat.Int8LE
-            case 'H':
+            case "H":
                 return isBig ? NumberFormat.UInt16BE : NumberFormat.UInt16LE
-            case 'h':
+            case "h":
                 return isBig ? NumberFormat.Int16BE : NumberFormat.Int16LE
-            case 'I':
-            case 'L':
+            case "I":
+            case "L":
                 return isBig ? NumberFormat.UInt32BE : NumberFormat.UInt32LE
-            case 'i':
-            case 'l':
+            case "i":
+            case "l":
                 return isBig ? NumberFormat.Int32BE : NumberFormat.Int32LE
-            case 'f':
+            case "f":
                 return isBig ? NumberFormat.Float32BE : NumberFormat.Float32LE
-            case 'd':
+            case "d":
                 return isBig ? NumberFormat.Float64BE : NumberFormat.Float64LE
             default:
                 return null as NumberFormat
@@ -459,39 +458,45 @@ namespace Buffer {
         return 0x30 <= code && code <= 0x39
     }
 
-    export function __packUnpackCore(format: string, nums: number[], buf: Buffer, isPack: boolean, off = 0) {
+    export function __packUnpackCore(
+        format: string,
+        nums: number[],
+        buf: Buffer,
+        isPack: boolean,
+        off = 0,
+    ) {
         let isBig = false
         let idx = 0
         for (let i = 0; i < format.length; ++i) {
             switch (format[i]) {
-                case ' ':
-                case '<':
-                case '=':
+                case " ":
+                case "<":
+                case "=":
                     isBig = false
                     break
-                case '>':
-                case '!':
+                case ">":
+                case "!":
                     isBig = true
                     break
                 default:
                     const i0 = i
                     while (isDigit(format[i])) i++
                     let reps = 1
-                    if (i0 != i)
-                        reps = parseInt(format.slice(i0, i))
-                    if (format[i] == 'x')
-                        off += reps
+                    if (i0 != i) reps = parseInt(format.slice(i0, i))
+                    if (format[i] == "x") off += reps
                     else
                         while (reps--) {
                             let fmt = getFormat(format[i], isBig)
                             if (fmt === null) {
-                                control.fail("Unsupported format character: " + format[i])
+                                control.fail(
+                                    "Unsupported format character: " +
+                                        format[i],
+                                )
                             } else {
                                 if (buf) {
                                     if (isPack)
                                         buf.setNumber(fmt, off, nums[idx++])
-                                    else
-                                        nums.push(buf.getNumber(fmt, off))
+                                    else nums.push(buf.getNumber(fmt, off))
                                 }
 
                                 off += sizeOfNumberFormat(fmt)
@@ -512,23 +517,23 @@ namespace Buffer {
             case NumberFormat.UInt8LE:
             case NumberFormat.Int8BE:
             case NumberFormat.UInt8BE:
-                return 1;
+                return 1
             case NumberFormat.Int16LE:
             case NumberFormat.UInt16LE:
             case NumberFormat.Int16BE:
             case NumberFormat.UInt16BE:
-                return 2;
+                return 2
             case NumberFormat.Int32LE:
             case NumberFormat.Int32BE:
             case NumberFormat.UInt32BE:
             case NumberFormat.UInt32LE:
             case NumberFormat.Float32BE:
             case NumberFormat.Float32LE:
-                return 4;
+                return 4
             case NumberFormat.Float64BE:
             case NumberFormat.Float64LE:
-                return 8;
+                return 8
         }
-        return 0;
+        return 0
     }
 }

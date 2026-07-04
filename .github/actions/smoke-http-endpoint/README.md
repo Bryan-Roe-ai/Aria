@@ -14,12 +14,12 @@ Simple reusable endpoint smoke check for CI jobs.
 ```yaml
 - uses: ./.github/actions/smoke-http-endpoint
   with:
-    url: http://localhost:7071/api/ai/status
+      url: http://localhost:7071/api/ai/status
 
 - uses: ./.github/actions/smoke-http-endpoint
   with:
-    url: http://localhost:7071/api/ai/provider-probe
-    method: POST
-    body: '{"provider":"auto"}'
-    expected-status: '200'
+      url: http://localhost:7071/api/ai/provider-probe
+      method: POST
+      body: '{"provider":"auto"}'
+      expected-status: "200"
 ```

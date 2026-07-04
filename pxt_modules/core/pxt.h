@@ -3,22 +3,22 @@
 
 #include "pxtbase.h"
 
-#include "CodalConfig.h"
-#include "CodalHeapAllocator.h"
-#include "CodalDevice.h"
-#include "CodalDmesg.h"
-#include "ErrorNo.h"
-#include "Timer.h"
-#include "Matrix4.h"
+#include "Button.h"
 #include "CodalCompat.h"
 #include "CodalComponent.h"
-#include "ManagedType.h"
-#include "Event.h"
-#include "NotifyEvents.h"
-#include "Button.h"
+#include "CodalConfig.h"
+#include "CodalDevice.h"
+#include "CodalDmesg.h"
 #include "CodalFiber.h"
+#include "CodalHeapAllocator.h"
+#include "ErrorNo.h"
+#include "Event.h"
+#include "ManagedType.h"
+#include "Matrix4.h"
 #include "MessageBus.h"
 #include "MultiButton.h"
+#include "NotifyEvents.h"
+#include "Timer.h"
 
 using namespace codal;
 
@@ -75,9 +75,7 @@ void set_usb_strings(const char *uf2_info);
 extern void (*logJDFrame)(const uint8_t *data);
 extern void (*sendJDFrame)(const uint8_t *data);
 
-static inline void raiseEvent(int src, int val) {
-    Event(src, val);
-}
+static inline void raiseEvent(int src, int val) { Event(src, val); }
 
 } // namespace pxt
 
@@ -86,35 +84,36 @@ class CodalSPIProxy;
 class CodalI2CProxy;
 } // namespace pins
 
-typedef pins::CodalI2CProxy* I2C_;
-typedef pins::CodalSPIProxy* SPI_;
+typedef pins::CodalI2CProxy *I2C_;
+typedef pins::CodalSPIProxy *SPI_;
 
 namespace pxt {
 codal::LowLevelTimer *allocateTimer();
 
 #ifdef CODAL_I2C
-CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
+CODAL_I2C *getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 #endif
-CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sck);
+CODAL_SPI *getSPI(DigitalInOutPin mosi, DigitalInOutPin miso,
+                  DigitalInOutPin sck);
 #ifdef CODAL_JACDAC_WIRE_SERIAL
-LowLevelTimer* getJACDACTimer();
+LowLevelTimer *getJACDACTimer();
 #endif
 class PressureButton;
 uint32_t readButtonMultiplexer(int bits);
 void disableButtonMultiplexer();
-}
+} // namespace pxt
 
 namespace serial {
 class CodalSerialDeviceProxy;
 }
 
-typedef serial::CodalSerialDeviceProxy* SerialDevice;
+typedef serial::CodalSerialDeviceProxy *SerialDevice;
 
 namespace jacdac {
 class JDProxyDriver;
-} // namespace network
+} // namespace jacdac
 
-typedef jacdac::JDProxyDriver* JacDacDriverStatus;
+typedef jacdac::JDProxyDriver *JacDacDriverStatus;
 
 #define DEVICE_ID_BUTTON_SLIDE 3000
 #define DEVICE_ID_MICROPHONE 3001

@@ -31,13 +31,13 @@ Define evaluation jobs with:
 
 ### Supported Model Types & Metrics
 
-| Model Type | Metrics | Requirements |
-| ------------ | --------- | -------------- |
-| `lora` | accuracy, bleu, rouge, response_time, token_efficiency | LoRA adapter path |
-| `azure` | accuracy, bleu, rouge, response_time, cost_per_token | Azure OpenAI credentials |
-| `openai` | accuracy, bleu, rouge, response_time, cost_per_token | OpenAI API key |
-| `local` | response_time, determinism, rule_coverage | None (offline) |
-| `quantum` | accuracy, precision, recall, f1_score, circuit_depth | Quantum model results |
+| Model Type | Metrics                                                | Requirements             |
+| ---------- | ------------------------------------------------------ | ------------------------ |
+| `lora`     | accuracy, bleu, rouge, response_time, token_efficiency | LoRA adapter path        |
+| `azure`    | accuracy, bleu, rouge, response_time, cost_per_token   | Azure OpenAI credentials |
+| `openai`   | accuracy, bleu, rouge, response_time, cost_per_token   | OpenAI API key           |
+| `local`    | response_time, determinism, rule_coverage              | None (offline)           |
+| `quantum`  | accuracy, precision, recall, f1_score, circuit_depth   | Quantum model results    |
 
 ### Output Structure
 
@@ -63,10 +63,10 @@ data_out/evaluation_autorun/
   dataset: datasets/chat/dolly
   max_samples: 100
   metrics:
-    - accuracy
-    - bleu
-    - rouge
-    - response_time
+      - accuracy
+      - bleu
+      - rouge
+      - response_time
   output_format: json
   save_results: true
   batch_size: 4
@@ -82,9 +82,9 @@ data_out/evaluation_autorun/
   dataset: datasets/chat/mixed_chat
   max_samples: 50
   metrics:
-    - accuracy
-    - response_time
-    - cost_per_token
+      - accuracy
+      - response_time
+      - cost_per_token
   output_format: json
 ```
 
@@ -96,12 +96,12 @@ data_out/evaluation_autorun/
   model_type: quantum
   model_path: ai-projects/quantum-ml/results/heart_disease_model.json
   dataset: datasets/quantum/heart_disease.csv
-  max_samples: null  # Full test set
+  max_samples: null # Full test set
   metrics:
-    - accuracy
-    - precision
-    - recall
-    - f1_score
+      - accuracy
+      - precision
+      - recall
+      - f1_score
   output_format: json
 ```
 
@@ -114,8 +114,8 @@ data_out/evaluation_autorun/
   dataset: datasets/chat/mixed_chat
   max_samples: 20
   metrics:
-    - response_time
-    - determinism
+      - response_time
+      - determinism
   output_format: json
 ```
 
@@ -157,30 +157,30 @@ python .\scripts\evaluation_autorun.py --list
 
 ```json
 {
-  "generated_at": "2025-11-22T17:30:00Z",
-  "total_jobs": 5,
-  "succeeded": 3,
-  "failed": 0,
-  "validated": 2,
-  "missing": 0,
-  "jobs": [
-    {
-      "name": "eval_smoke_test",
-      "model_type": "lora",
-      "cmd": ["python", "..."],
-      "start_time": "20251122T173000Z",
-      "status": "succeeded",
-      "return_code": 0,
-      "duration_sec": 12.5,
-      "log": "data_out/.../stdout.log",
-      "results_file": "data_out/.../results.json",
-      "metrics_computed": ["accuracy", "response_time"],
-      "evaluation_summary": {
-        "accuracy": 0.85,
-        "avg_response_time_ms": 234
-      }
-    }
-  ]
+    "generated_at": "2025-11-22T17:30:00Z",
+    "total_jobs": 5,
+    "succeeded": 3,
+    "failed": 0,
+    "validated": 2,
+    "missing": 0,
+    "jobs": [
+        {
+            "name": "eval_smoke_test",
+            "model_type": "lora",
+            "cmd": ["python", "..."],
+            "start_time": "20251122T173000Z",
+            "status": "succeeded",
+            "return_code": 0,
+            "duration_sec": 12.5,
+            "log": "data_out/.../stdout.log",
+            "results_file": "data_out/.../results.json",
+            "metrics_computed": ["accuracy", "response_time"],
+            "evaluation_summary": {
+                "accuracy": 0.85,
+                "avg_response_time_ms": 234
+            }
+        }
+    ]
 }
 ```
 
@@ -232,29 +232,29 @@ $env:OPENAI_MODEL = "gpt-4o-mini"  # Optional
 ```yaml
 - name: Run evaluation suite
   run: |
-    python scripts/evaluation/evaluation_autorun.py --dry-run
-    python scripts/evaluation/evaluation_autorun.py --job eval_smoke_test
+      python scripts/evaluation/evaluation_autorun.py --dry-run
+      python scripts/evaluation/evaluation_autorun.py --job eval_smoke_test
 
 - name: Upload evaluation results
   uses: actions/upload-artifact@v3
   with:
-    name: evaluation-results
-    path: data_out/evaluation_autorun/
+      name: evaluation-results
+      path: data_out/evaluation_autorun/
 ```
 
 ### Azure Pipelines Example
 
 ```yaml
 - script: python scripts/evaluation/evaluation_autorun.py --dry-run
-  displayName: 'Validate evaluation config'
+  displayName: "Validate evaluation config"
 
 - script: python scripts/evaluation/evaluation_autorun.py
-  displayName: 'Run evaluation suite'
+  displayName: "Run evaluation suite"
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: 'data_out/evaluation_autorun'
-    artifactName: 'evaluation-results'
+      pathToPublish: "data_out/evaluation_autorun"
+      artifactName: "evaluation-results"
 ```
 
 ## Design Patterns Used

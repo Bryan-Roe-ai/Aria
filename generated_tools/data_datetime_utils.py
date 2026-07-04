@@ -6,8 +6,8 @@ and safe for reuse in API and CLI layers.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Iterable
 
 
 def parse_iso_datetime(value: str, default_tz_utc: bool = True) -> datetime:

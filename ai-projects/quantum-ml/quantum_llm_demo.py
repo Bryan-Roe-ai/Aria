@@ -28,13 +28,13 @@ from pathlib import Path
 repo_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(repo_root))
 
-from ai_projects.quantum_ml.src.quantum_llm import (
-    QuantumLLMPipeline,
-    QuantumLLMConfig,
-    QuantumSampler,
-    CircuitCache,
-)
 import numpy as np
+from ai_projects.quantum_ml.src.quantum_llm import (
+    CircuitCache,
+    QuantumLLMConfig,
+    QuantumLLMPipeline,
+    QuantumSampler,
+)
 
 
 async def demo_basic_generation():
@@ -107,7 +107,7 @@ async def demo_configuration():
     pipeline = QuantumLLMPipeline(config=config)
     result = await pipeline.generate("Hello!")
 
-    print(f"\n✓ Generated with custom config")
+    print("\n✓ Generated with custom config")
     print(f"  Backend: {result['backend']}")
     print(f"  Latency: {result['latency_ms']}ms")
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import importlib
 import json
 import os
-from typing import Dict, Iterable, List
+from collections.abc import Iterable
 
 
 class LLMClient:
@@ -18,7 +18,7 @@ class LLMClient:
         env_enabled = os.getenv("ARIA_USE_REAL_LLM") == "1"
         self.use_real_provider = bool(use_real_provider or env_enabled)
 
-    def complete(self, messages: List[Dict[str, str]]) -> str:
+    def complete(self, messages: list[dict[str, str]]) -> str:
         """
         Placeholder LLM call.
         Future: integrate real providers + function calling.
@@ -42,7 +42,7 @@ class LLMClient:
 
         return self._simulate(last_user_message, system_prompt)
 
-    def _complete_with_real_provider(self, messages: List[Dict[str, str]]) -> str | None:
+    def _complete_with_real_provider(self, messages: list[dict[str, str]]) -> str | None:
         try:
             module = importlib.import_module("agi_provider")
             if hasattr(module, "create_agi_provider"):

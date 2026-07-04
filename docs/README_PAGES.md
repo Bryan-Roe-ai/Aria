@@ -33,41 +33,41 @@ For complete functionality with AI, quantum computing, and training:
 
 1. **Clone the repository**
 
-   ```bash
-   git clone https://github.com/Bryan-Roe/Aria.git
-   cd Aria
-   ```
+    ```bash
+    git clone https://github.com/Bryan-Roe/Aria.git
+    cd Aria
+    ```
 
 2. **Install dependencies**
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 3. **Configure API keys** (optional)
 
-   ```bash
-   # For Azure OpenAI
-   export AZURE_OPENAI_API_KEY="..."
-   export AZURE_OPENAI_ENDPOINT="..."
-   export AZURE_OPENAI_DEPLOYMENT="..."
+    ```bash
+    # For Azure OpenAI
+    export AZURE_OPENAI_API_KEY="..."
+    export AZURE_OPENAI_ENDPOINT="..."
+    export AZURE_OPENAI_DEPLOYMENT="..."
 
-   # For OpenAI
-   export OPENAI_API_KEY="..."
-   ```
+    # For OpenAI
+    export OPENAI_API_KEY="..."
+    ```
 
 4. **Start services**
 
-   ```bash
-   # Aria web server
-   cd aria_web && python server.py
+    ```bash
+    # Aria web server
+    cd aria_web && python server.py
 
-   # Azure Functions (chat API)
-   func start
+    # Azure Functions (chat API)
+    func start
 
-   # Dashboard
-   cd dashboard && python app.py
-   ```
+    # Dashboard
+    cd dashboard && python app.py
+    ```
 
 ## 🚀 Deployment
 
@@ -103,7 +103,7 @@ The `_config.yml` file contains Jekyll settings:
 Each web app has a `DEMO_MODE` flag in its JavaScript:
 
 ```javascript
-const DEMO_MODE = true; // Set to false for local backend
+const DEMO_MODE = true // Set to false for local backend
 ```
 
 To test with local backend before deployment:
@@ -119,22 +119,22 @@ To test the GitHub Pages site locally:
 
 1. **Install Jekyll**
 
-   ```bash
-   gem install jekyll bundler
-   ```
+    ```bash
+    gem install jekyll bundler
+    ```
 
 2. **Serve locally**
 
-   ```bash
-   cd docs
-   jekyll serve
-   ```
+    ```bash
+    cd docs
+    jekyll serve
+    ```
 
 3. **Open browser**
 
-   ```text
-   http://localhost:4000
-   ```
+    ```text
+    http://localhost:4000
+    ```
 
 ## 📦 Adding New Applications
 
@@ -142,26 +142,26 @@ To add a new web application to GitHub Pages:
 
 1. **Create app directory**
 
-   ```bash
-   mkdir docs/myapp
-   ```
+    ```bash
+    mkdir docs/myapp
+    ```
 
 2. **Add HTML/CSS/JS files**
-   - Copy your application files
-   - Add demo mode configuration
-   - Update API calls to use mock responses
+    - Copy your application files
+    - Add demo mode configuration
+    - Update API calls to use mock responses
 
 3. **Update main index**
-   - Add a new card in `docs/index.html`
-   - Link to `/myapp/`
+    - Add a new card in `docs/index.html`
+    - Link to `/myapp/`
 
 4. **Test and commit**
 
-   ```bash
-   git add docs/myapp
-   git commit -m "Add myapp to GitHub Pages"
-   git push
-   ```
+    ```bash
+    git add docs/myapp
+    git commit -m "Add myapp to GitHub Pages"
+    git push
+    ```
 
 ## 🎨 Customization
 
@@ -180,13 +180,13 @@ Each app implements mock API responses in JavaScript:
 
 ```javascript
 async function mockApiCall(endpoint, options) {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 300))
 
-    if (endpoint === '/api/myendpoint') {
+    if (endpoint === "/api/myendpoint") {
         return {
             ok: true,
-            json: async () => ({ data: 'mock response' })
-        };
+            json: async () => ({ data: "mock response" }),
+        }
     }
 }
 ```

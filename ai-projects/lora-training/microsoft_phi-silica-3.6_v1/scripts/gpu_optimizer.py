@@ -6,7 +6,7 @@ Automatically configures optimal training settings based on available hardware
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -51,7 +51,7 @@ class OptimizationProfile:
     flash_attention: bool = False
     cpu_offload: bool = False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     def save(self, path: str):
@@ -65,7 +65,7 @@ class GPUOptimizer:
     """GPU training optimizer"""
 
     def __init__(self):
-        self.gpu_info: Optional[GPUInfo] = None
+        self.gpu_info: GPUInfo | None = None
 
     def detect_hardware(self) -> GPUInfo:
         """Detect GPU hardware capabilities"""

@@ -24,8 +24,7 @@ venv_python = (
 if venv_python.exists():
     # Prepend venv bin to PATH so subprocess uses venv Python
     venv_bin = venv_python.parent
-    os.environ["PATH"] = str(venv_bin) + os.pathsep + \
-        os.environ.get("PATH", "")
+    os.environ["PATH"] = str(venv_bin) + os.pathsep + os.environ.get("PATH", "")
     # Also explicitly use venv python for subprocess calls
     _PYTHON_EXECUTABLE = str(venv_python)
 else:
@@ -63,8 +62,7 @@ def get_marker(name: str) -> str:
 
 def print_section(title: str) -> None:
     """Print a section header."""
-    print(
-        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+    print(f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
     print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
 
@@ -168,16 +166,12 @@ class ContinuousAutomationDaemon:
             )
 
             if result.returncode == 0:
-                print_ok(
-                    f"Automation cycle #{self.run_count} completed successfully")
-                self.log_message(
-                    f"Automation cycle #{self.run_count} completed successfully")
+                print_ok(f"Automation cycle #{self.run_count} completed successfully")
+                self.log_message(f"Automation cycle #{self.run_count} completed successfully")
                 return True
             else:
-                print_warning(
-                    f"Automation cycle #{self.run_count} completed with warnings")
-                self.log_message(
-                    f"Automation cycle #{self.run_count} completed with warnings")
+                print_warning(f"Automation cycle #{self.run_count} completed with warnings")
+                self.log_message(f"Automation cycle #{self.run_count} completed with warnings")
                 if result.stdout:
                     self.log_message(f"Output: {result.stdout[:500]}")
                 return True  # Don't stop on failures
@@ -206,12 +200,9 @@ class ContinuousAutomationDaemon:
         print_section("Aria Continuous Automation Daemon")
         print_ok(f"Workspace: {self.workspace_root}")
         print_ok(f"Interval: {self.interval_minutes} minutes")
-        print_ok(
-            f"Auto-improve: {'enabled' if self.auto_improve else 'disabled'}")
-        print_ok(
-            f"Strict endpoints: {'enabled' if self.strict_endpoints else 'disabled'}")
-        print_ok(
-            f"Full pytest in improve cycle: {'enabled' if self.full_pytest else 'disabled'}")
+        print_ok(f"Auto-improve: {'enabled' if self.auto_improve else 'disabled'}")
+        print_ok(f"Strict endpoints: {'enabled' if self.strict_endpoints else 'disabled'}")
+        print_ok(f"Full pytest in improve cycle: {'enabled' if self.full_pytest else 'disabled'}")
         print_ok(f"Log file: {self.log_file}")
         print_info("Press Ctrl+C to stop the daemon")
 
@@ -219,8 +210,7 @@ class ContinuousAutomationDaemon:
 
         try:
             while self.running:
-                print_section(
-                    f"Automation Cycle #{self.run_count + 1} at {datetime.now().strftime('%H:%M:%S')}")
+                print_section(f"Automation Cycle #{self.run_count + 1} at {datetime.now().strftime('%H:%M:%S')}")
 
                 self.run_automation()
 

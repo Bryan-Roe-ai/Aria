@@ -5,7 +5,7 @@ Enables cloud-based GPU training with automatic scaling and monitoring
 
 import argparse
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 try:
     from azure.ai.ml import Input, MLClient, Output, command
@@ -186,8 +186,8 @@ class AzureMLLoRATrainer:
         compute_name: str = "phi36-gpu-cluster",
         dataset_name: str = "dolly-chat-dataset",
         config_path: str = "./lora/lora.yaml",
-        max_train_samples: Optional[int] = None,
-        display_name: Optional[str] = None,
+        max_train_samples: int | None = None,
+        display_name: str | None = None,
     ) -> Any:
         """
         Submit LoRA training job to Azure ML.

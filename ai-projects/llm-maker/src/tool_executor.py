@@ -7,7 +7,7 @@ import logging
 import signal
 import traceback
 from contextlib import contextmanager
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class ToolExecutor:
                 if timer:
                     timer.cancel()
 
-    def execute(self, code: str, function_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, code: str, function_name: str, args: dict[str, Any]) -> dict[str, Any]:
         """
         Execute tool code with given arguments
 

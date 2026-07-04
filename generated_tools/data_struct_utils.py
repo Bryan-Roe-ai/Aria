@@ -6,7 +6,8 @@ and safe for reuse in API and CLI layers.
 
 from __future__ import annotations
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 MISSING = object()
 

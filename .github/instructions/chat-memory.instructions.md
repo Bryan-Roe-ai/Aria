@@ -7,6 +7,7 @@ applyTo: "**/chat_memory.py"
 ## Embedding Generation
 
 Priority chain (first available wins):
+
 1. **Azure OpenAI** — checks 3 endpoint patterns for embedding API
 2. **OpenAI** — standard embedding API
 3. **Local hash** — deterministic, fixed 256-dim, L2-normalized (offline fallback)

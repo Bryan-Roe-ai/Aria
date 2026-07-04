@@ -27,14 +27,14 @@ import json
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Add shared module to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
 from evaluation_utils import load_dataset, naive_predict
 
 
-def compute_accuracy(preds: List[str], expects: List[str]) -> float:
+def compute_accuracy(preds: list[str], expects: list[str]) -> float:
     if not preds:
         return 0.0
     match = 0
@@ -46,7 +46,7 @@ def compute_accuracy(preds: List[str], expects: List[str]) -> float:
     return match / len(preds)
 
 
-def basic_bleu(preds: List[str], expects: List[str]) -> float:
+def basic_bleu(preds: list[str], expects: list[str]) -> float:
     # Simple unigram overlap score averaged across samples
     def score_one(p: str, e: str) -> float:
         p_tokens = p.split()
@@ -71,15 +71,15 @@ def basic_bleu(preds: List[str], expects: List[str]) -> float:
 def run_evaluation(
     dataset_path: Path,
     max_samples: int | None,
-    metrics: List[str],
+    metrics: list[str],
     save_dir: Path | None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     data = load_dataset(dataset_path, max_samples)
     if not data:
         raise ValueError("No data found for evaluation")
 
-    preds: List[str] = []
-    expects: List[str | None] = []
+    preds: list[str] = []
+    expects: list[str | None] = []
 
     # Warm run
     for ex in data:
@@ -91,7 +91,7 @@ def run_evaluation(
         else:
             expects.append(None)
 
-    results: Dict[str, Any] = {"samples": len(preds)}
+    results: dict[str, Any] = {"samples": len(preds)}
 
     if "determinism" in metrics:
         # run predictor twice and compare
@@ -100,7 +100,7 @@ def run_evaluation(
         results["determinism"] = identical / len(preds)
 
     if "response_time" in metrics:
-        times: List[float] = []
+        times: list[float] = []
         for ex in data:
             t0 = time.perf_counter()
             _ = naive_predict(ex)

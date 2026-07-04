@@ -14,28 +14,32 @@ Then open your browser to: **http://localhost:8000**
 ## 📱 Features
 
 ### 📊 Dashboard
+
 - Real-time system status
 - Quick action buttons
 - Recent activity feed
 - Health monitoring
 
 ### ⚛️ Quantum AI Tab
+
 - Train quantum classifiers with custom parameters
 - View available backends (Qiskit Aer, Lightning, Azure)
 - Monitor training results
 - Run AutoRun orchestrator jobs
 
 ### 💬 Chat Tab
+
 - Interactive chat interface
 - Multiple provider support:
-  - 🆓 Local (Free, offline)
-  - ☁️ Azure OpenAI
-  - 🤖 OpenAI
-  - 🎯 LoRA Adapter (if trained)
+    - 🆓 Local (Free, offline)
+    - ☁️ Azure OpenAI
+    - 🤖 OpenAI
+    - 🎯 LoRA Adapter (if trained)
 - Auto-detect best available provider
 - Conversation history
 
 ### 🎓 Training Tab
+
 - Train LoRA adapters on custom datasets
 - Run AutoTrain orchestrator jobs
 - Monitor training status
@@ -43,6 +47,7 @@ Then open your browser to: **http://localhost:8000**
 - Check LoRA adapter status
 
 ### 📝 Logs Tab
+
 - Real-time system logs
 - Color-coded by severity (info/warning/error/success)
 - Clear and refresh controls
@@ -60,12 +65,14 @@ Then open your browser to: **http://localhost:8000**
 ### Starting the Service
 
 **Option 1: PowerShell Script**
+
 ```powershell
 cd mount
 .\start.ps1
 ```
 
 **Option 2: Manual Start**
+
 ```powershell
 cd mount
 python -m venv venv
@@ -75,6 +82,7 @@ python app.py
 ```
 
 **Option 3: Production Mode**
+
 ```powershell
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
@@ -84,10 +92,10 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 1. Go to **⚛️ Quantum AI** tab
 2. Select a dataset (heart, ionosphere, sonar, etc.)
 3. Configure parameters:
-   - Number of qubits (2-20)
-   - Number of layers (1-10)
-   - Training epochs
-   - Backend (Qiskit Aer recommended for local)
+    - Number of qubits (2-20)
+    - Number of layers (1-10)
+    - Training epochs
+    - Backend (Qiskit Aer recommended for local)
 4. Click **🚀 Start Training**
 5. Monitor progress in the logs
 
@@ -100,6 +108,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 5. See response instantly
 
 Provider recommendations:
+
 - **Local**: Always available, free, offline
 - **Azure/OpenAI**: Best quality, requires API keys
 - **LoRA**: Use your trained model
@@ -109,21 +118,23 @@ Provider recommendations:
 1. Go to **🎓 Training** tab
 2. Select a chat dataset
 3. Configure:
-   - Max training samples (64 for quick test)
-   - Max eval samples (16 for quick test)
-   - Epochs (1 for testing)
+    - Max training samples (64 for quick test)
+    - Max eval samples (16 for quick test)
+    - Epochs (1 for testing)
 4. Click **🚀 Start Training**
 5. Monitor in logs tab
 
 ### Running Orchestrator Jobs
 
 **Quantum AutoRun:**
+
 1. Go to **⚛️ Quantum AI** tab
 2. Scroll to "Quantum AutoRun Jobs" section
 3. Select a predefined job
 4. Run directly or do a dry-run first
 
 **AutoTrain:**
+
 1. Go to **🎓 Training** tab
 2. Select an AutoTrain job
 3. Click **Dry Run** to validate
@@ -132,6 +143,7 @@ Provider recommendations:
 ## 🎯 Quick Examples
 
 ### Example 1: Quick Quantum Test
+
 1. Dashboard → Click "⚛️ Train Quantum Model"
 2. Select "heart" dataset
 3. Keep default parameters
@@ -139,12 +151,14 @@ Provider recommendations:
 5. Check results in Dashboard after completion
 
 ### Example 2: Free Local Chat
+
 1. Dashboard → Click "💬 Start Chat"
 2. Provider is already on "Local" (free!)
 3. Ask: "What is quantum computing?"
 4. Get instant response
 
 ### Example 3: Train a Quick LoRA
+
 1. Dashboard → Click "🎓 Train LoRA"
 2. Select "dolly" dataset
 3. Set samples to 64 (fast test)
@@ -156,17 +170,20 @@ Provider recommendations:
 ### Dashboard Indicators
 
 **Status Dot Colors:**
+
 - 🟢 Green = Online and healthy
 - 🟡 Yellow = Checking...
 - 🔴 Red = Offline or error
 
 **System Status:**
+
 - ✓ Green checkmark = Enabled and working
 - ✗ Red X = Disabled or error
 
 ### Logs Tab
 
 Watch real-time activity:
+
 - 🟢 **Info**: Normal operations
 - 🟡 **Warning**: Attention needed
 - 🔴 **Error**: Something failed
@@ -178,37 +195,44 @@ Edit `config.yaml` to customize:
 
 ```yaml
 service:
-  host: 0.0.0.0  # Change to 127.0.0.1 for localhost only
-  port: 8000      # Change port if needed
-  debug: true     # Set false for production
+    host: 0.0.0.0 # Change to 127.0.0.1 for localhost only
+    port: 8000 # Change port if needed
+    debug: true # Set false for production
 
 api:
-  cors_enabled: true
-  cors_origins:
-    - http://localhost:3000
-    - http://localhost:7071
+    cors_enabled: true
+    cors_origins:
+        - http://localhost:3000
+        - http://localhost:7071
 ```
 
 ## 🐛 Troubleshooting
 
 ### "Service Offline" Status
+
 **Solution:** Check if the backend is running
+
 ```powershell
 cd mount
 python app.py
 ```
 
 ### CORS Errors
+
 **Solution:** Add your URL to `config.yaml` under `cors_origins`
 
 ### Can't Load Data
+
 **Solution:** Make sure all paths in `config.yaml` point to correct locations
 
 ### Training Errors
+
 **Solution:** Check the Logs tab for detailed error messages
 
 ### Chat Not Working
+
 **Solution:**
+
 - Local provider always works (no setup needed)
 - For Azure/OpenAI: Set environment variables
 - For LoRA: Train an adapter first
@@ -220,7 +244,7 @@ python app.py
 If running the backend on a different host/port, edit `app.js`:
 
 ```javascript
-const API_BASE = 'http://your-server:8000';
+const API_BASE = "http://your-server:8000"
 ```
 
 ### Running on Network
@@ -261,10 +285,10 @@ Edit `static/styles.css` variables:
 
 ```css
 :root {
-    --primary: #667eea;      /* Main brand color */
-    --secondary: #48bb78;    /* Secondary color */
-    --success: #48bb78;      /* Success green */
-    --danger: #f56565;       /* Error red */
+    --primary: #667eea; /* Main brand color */
+    --secondary: #48bb78; /* Secondary color */
+    --success: #48bb78; /* Success green */
+    --danger: #f56565; /* Error red */
 }
 ```
 
@@ -278,11 +302,13 @@ Edit `static/styles.css` variables:
 ## 🔐 Security Notes
 
 **Development Mode:**
+
 - CORS is wide open
 - Debug mode enabled
 - No authentication
 
 **Production Recommendations:**
+
 - Set `debug: false` in config
 - Restrict CORS origins
 - Add authentication middleware
@@ -292,6 +318,7 @@ Edit `static/styles.css` variables:
 ## 📖 API Documentation
 
 While the UI is running, you can also access:
+
 - **Swagger UI**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
@@ -308,6 +335,7 @@ These provide full API documentation for programmatic access.
 ## 🤝 Need Help?
 
 Check the main README.md for:
+
 - Detailed system architecture
 - Backend API documentation
 - Integration module details

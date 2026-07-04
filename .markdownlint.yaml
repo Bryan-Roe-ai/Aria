@@ -1,17 +1,17 @@
 # MD013: Line length
 # Increased to accommodate long URLs and content descriptions in generated docs.
 MD013:
-  line_length: 400
-  code_blocks: false
-  tables: false
+    line_length: 400
+    code_blocks: false
+    tables: false
 
 # MD024: No duplicate headings – allow repeating names under different parent sections.
 MD024:
-  siblings_only: true
+    siblings_only: true
 
 # MD025: Single H1 – ignore front matter title field to allow # heading in body.
 MD025:
-  front_matter_title: ""
+    front_matter_title: ""
 
 # MD029: Ordered list item prefix – disabled to allow step-by-step lists that span
 # multiple code blocks (each code-block break is parsed as a new list by markdownlint).
@@ -32,4 +32,4 @@ MD051: false
 
 # MD060: Table column style – require compact style (single space around pipe content).
 MD060:
-  style: compact
+    style: compact

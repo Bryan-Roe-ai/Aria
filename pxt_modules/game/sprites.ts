@@ -20,8 +20,8 @@ namespace sprites {
             public self: Sprite,
             public target: Sprite,
             public rate: number,
-            public turnRate: number
-        ) { }
+            public turnRate: number,
+        ) {}
     }
 
     /**
@@ -34,15 +34,15 @@ namespace sprites {
     //% blockSetVariable=mySprite
     //% weight=100 help=sprites/create
     export function create(img: Image, kind?: number): Sprite {
-        const scene = game.currentScene();
+        const scene = game.currentScene()
         const sprite = new Sprite(img)
-        sprite.setKind(kind);
-        scene.physicsEngine.addSprite(sprite);
+        sprite.setKind(kind)
+        scene.physicsEngine.addSprite(sprite)
 
         // run on created handlers
         scene.createdHandlers
             .filter(h => h.kind == kind)
-            .forEach(h => h.handler(sprite));
+            .forEach(h => h.handler(sprite))
 
         return sprite
     }
@@ -58,7 +58,7 @@ namespace sprites {
     //% weight=99 help=sprites/create
     //% duplicateShadowOnDrag
     export function __create(img: Image, kind?: number): Sprite {
-        return sprites.create(img, kind);
+        return sprites.create(img, kind)
     }
 
     //% group="Effects"
@@ -69,9 +69,13 @@ namespace sprites {
     //% duration.shadow=timePicker
     //% expandableArgumentMode="toggle"
     //% help=sprites/sprite/destroy
-    export function destroy(sprite: Sprite, effect?: effects.ParticleEffect, duration?: number) {
-        if (!sprite) return;
-        sprite.destroy(effect, duration);
+    export function destroy(
+        sprite: Sprite,
+        effect?: effects.ParticleEffect,
+        duration?: number,
+    ) {
+        if (!sprite) return
+        sprite.destroy(effect, duration)
     }
 
     /**
@@ -81,9 +85,9 @@ namespace sprites {
     //% blockId=allOfKind block="array of sprites of kind %kind=spritekind"
     //% weight=87 help=sprites/all-of-kind
     export function allOfKind(kind: number): Sprite[] {
-        const spritesByKind = game.currentScene().spritesByKind;
-        if (!(kind >= 0) || !spritesByKind[kind]) return [];
-        else return spritesByKind[kind].sprites();
+        const spritesByKind = game.currentScene().spritesByKind
+        if (!(kind >= 0) || !spritesByKind[kind]) return []
+        else return spritesByKind[kind].sprites()
     }
 
     /**
@@ -96,9 +100,13 @@ namespace sprites {
     //% kind.shadow=spritekind
     //% duration.shadow=timePicker
     //% expandableArgumentMode="toggle"
-    export function destroyAllSpritesOfKind(kind: number, effect?: effects.ParticleEffect, duration?: number) {
+    export function destroyAllSpritesOfKind(
+        kind: number,
+        effect?: effects.ParticleEffect,
+        duration?: number,
+    ) {
         for (const sprite of allOfKind(kind)) {
-            sprite.destroy(effect, duration);
+            sprite.destroy(effect, duration)
         }
     }
 
@@ -113,8 +121,12 @@ namespace sprites {
     //% weight=99 help=sprites/create-projectile-from-side
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
-    export function createProjectileFromSide(img: Image, vx: number, vy: number) {
-        return createProjectile(img, vx, vy, SpriteKind.Projectile);
+    export function createProjectileFromSide(
+        img: Image,
+        vx: number,
+        vy: number,
+    ) {
+        return createProjectile(img, vx, vy, SpriteKind.Projectile)
     }
 
     /**
@@ -129,8 +141,13 @@ namespace sprites {
     //% weight=99 help=sprites/create-projectile-from-sprite
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
-    export function createProjectileFromSprite(img: Image, sprite: Sprite, vx: number, vy: number): Sprite {
-        return createProjectile(img, vx, vy, SpriteKind.Projectile, sprite);
+    export function createProjectileFromSprite(
+        img: Image,
+        sprite: Sprite,
+        vx: number,
+        vy: number,
+    ): Sprite {
+        return createProjectile(img, vx, vy, SpriteKind.Projectile, sprite)
     }
 
     /**
@@ -144,43 +161,49 @@ namespace sprites {
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
     //% deprecated=true blockHidden=true
-    export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
-        const s = sprites.create(img, kind || SpriteKind.Projectile);
-        const sc = game.currentScene();
+    export function createProjectile(
+        img: Image,
+        vx: number,
+        vy: number,
+        kind?: number,
+        sprite?: Sprite,
+    ) {
+        const s = sprites.create(img, kind || SpriteKind.Projectile)
+        const sc = game.currentScene()
 
-        s.vx = vx;
-        s.vy = vy;
+        s.vx = vx
+        s.vy = vy
 
         if (sprite) {
-            s.setPosition(sprite.x, sprite.y);
+            s.setPosition(sprite.x, sprite.y)
         } else {
             // put it at the edge of the screen so that it moves towards the middle
             // If the scene has a tile map, place the sprite fully on the screen
-            const xOff = sc.tileMap ? -(s.width >> 1) : (s.width >> 1) - 1;
-            const yOff = sc.tileMap ? -(s.height >> 1) : (s.height >> 1) - 1;
-            const cam = game.currentScene().camera;
+            const xOff = sc.tileMap ? -(s.width >> 1) : (s.width >> 1) - 1
+            const yOff = sc.tileMap ? -(s.height >> 1) : (s.height >> 1) - 1
+            const cam = game.currentScene().camera
 
-            let initialX = cam.offsetX;
-            let initialY = cam.offsetY;
+            let initialX = cam.offsetX
+            let initialY = cam.offsetY
 
             if (vx < 0) {
-                initialX += screen.width + xOff;
+                initialX += screen.width + xOff
             } else if (vx > 0) {
-                initialX += -xOff;
+                initialX += -xOff
             }
 
             if (vy < 0) {
-                initialY += screen.height + yOff;
+                initialY += screen.height + yOff
             } else if (vy > 0) {
-                initialY += -yOff;
+                initialY += -yOff
             }
 
-            s.setPosition(initialX, initialY);
+            s.setPosition(initialX, initialY)
         }
 
-        s.flags |= sprites.Flag.AutoDestroy | sprites.Flag.DestroyOnWall;
+        s.flags |= sprites.Flag.AutoDestroy | sprites.Flag.DestroyOnWall
 
-        return s;
+        return s
     }
 
     export enum Flag {
@@ -199,6 +222,8 @@ namespace sprites {
         GhostThroughWalls = 1 << 11, // No collisions with walls
         GhostThroughSprites = 1 << 12, // No overlaps with other sprites
         HitboxOverlaps = 1 << 13, // If set, overlaps with this sprite are based off of both sprites' hitboxes and not pixel perfect
-        Ghost = sprites.Flag.GhostThroughSprites | sprites.Flag.GhostThroughWalls | sprites.Flag.GhostThroughTiles, // doesn't collide with other sprites or walls
+        Ghost = sprites.Flag.GhostThroughSprites |
+            sprites.Flag.GhostThroughWalls |
+            sprites.Flag.GhostThroughTiles, // doesn't collide with other sprites or walls
     }
 }

@@ -4,6 +4,7 @@ Autonomous Training Orchestrator Demo
 Demonstrates continuous learning cycles with monitoring and reporting.
 This is a simplified version showing the autonomous training architecture.
 """
+
 import json
 import logging
 import math
@@ -177,7 +178,7 @@ def simulate_training_cycle(cycle_num, accuracy_baseline=0.65, plateau_cycles=0)
     for i in range(3):
         time.sleep(2)
         progress = (i + 1) / 3
-        logger.info(f"  Training progress: {progress*100:.0f}%")
+        logger.info(f"  Training progress: {progress * 100:.0f}%")
 
     cap = _accuracy_cap(n_cats)
 
@@ -259,9 +260,9 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
             if not infinite_mode and end_cycle is not None and cycle_num >= end_cycle:
                 break
 
-            logger.info(f"\n{'='*70}")
+            logger.info(f"\n{'=' * 70}")
             logger.info(f"CYCLE {cycle_num + 1}")
-            logger.info(f"{'='*70}")
+            logger.info(f"{'=' * 70}")
 
             status["status"] = "training"
             status["current_cycle"] = cycle_num + 1
@@ -328,9 +329,9 @@ def run_autonomously(max_cycles=3, cycle_interval_sec=10):
 
         # Final summary (bounded mode only)
         if not infinite_mode:
-            logger.info(f"\n{'='*70}")
+            logger.info(f"\n{'=' * 70}")
             logger.info("🎉 TRAINING COMPLETE")
-            logger.info(f"{'='*70}")
+            logger.info(f"{'=' * 70}")
             logger.info(f"Cycles completed: {status['cycles_completed']}")
             logger.info(f"Best accuracy: {status['best_accuracy']:.4f}")
             logger.info(f"Datasets discovered: {len(status['dataset_inventory'])}")

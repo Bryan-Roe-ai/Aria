@@ -49,7 +49,7 @@ DevicePin *lookupPin(int pinName);
 DevicePin *lookupPinCfg(int key);
 void linkPin(int from, int to);
 CodalComponent *lookupComponent(int id);
-}
+} // namespace pxt
 
 #define PINOP(op) name->op
 

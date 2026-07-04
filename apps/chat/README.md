@@ -36,16 +36,21 @@ The chat will work immediately with the free local provider!
 ## Provider Configuration
 
 ### Local (Free - Default)
+
 No configuration needed! Works offline.
 
 ### OpenAI
+
 Set environment variable:
+
 ```powershell
 $env:OPENAI_API_KEY = "sk-..."
 ```
 
 ### Azure OpenAI
+
 Set environment variables:
+
 ```powershell
 $env:AZURE_OPENAI_API_KEY = "your-key"
 $env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"
@@ -68,17 +73,17 @@ Auto-detection order in runtime:
 **POST** `/api/chat`
 
 Request:
+
 ```json
 {
-    "messages": [
-        {"role": "user", "content": "Hello!"}
-    ],
+    "messages": [{ "role": "user", "content": "Hello!" }],
     "provider": "auto",
     "model": null
 }
 ```
 
 Response:
+
 ```json
 {
     "response": "Hi! How can I help you?",
@@ -90,6 +95,7 @@ Response:
 ## Development
 
 ### Local Testing
+
 ```powershell
 # Terminal 1: Start Functions
 func start
@@ -105,28 +111,32 @@ Invoke-RestMethod -Uri http://localhost:7071/api/chat -Method POST -Body $body -
 ### Deployment to Azure
 
 1. **Create Function App** (Azure Portal or CLI):
-   ```powershell
-   az functionapp create --resource-group rg-chat --name chat-app-unique-name --consumption-plan-location eastus --runtime python --runtime-version 3.11 --functions-version 4 --storage-account mystorageaccount
-   ```
+
+    ```powershell
+    az functionapp create --resource-group rg-chat --name chat-app-unique-name --consumption-plan-location eastus --runtime python --runtime-version 3.11 --functions-version 4 --storage-account mystorageaccount
+    ```
 
 2. **Configure Settings** (if using cloud providers):
-   ```powershell
-   az functionapp config appsettings set --name chat-app-unique-name --resource-group rg-chat --settings OPENAI_API_KEY=sk-...
-   ```
+
+    ```powershell
+    az functionapp config appsettings set --name chat-app-unique-name --resource-group rg-chat --settings OPENAI_API_KEY=sk-...
+    ```
 
 3. **Deploy**:
-   ```powershell
-   cd http_chat
-   func azure functionapp publish chat-app-unique-name
-   ```
+
+    ```powershell
+    cd http_chat
+    func azure functionapp publish chat-app-unique-name
+    ```
 
 4. **Deploy Static Web** (optional):
-   - Upload `chat-web/` to Azure Static Web Apps or Blob Storage
-   - Update `chat.js` `API_BASE` to your Function App URL
+    - Upload `chat-web/` to Azure Static Web Apps or Blob Storage
+    - Update `chat.js` `API_BASE` to your Function App URL
 
 ## Troubleshooting
 
 **"Module not found" errors:**
+
 ```powershell
 pip install azure-functions colorama
 cd ai-projects/chat-cli
@@ -143,9 +153,9 @@ Check environment variables and ensure `ai-projects/chat-cli/src/chat_providers.
 
 - **Free tier**: Use local provider (default, unlimited)
 - **Paid tier**: OpenAI/Azure charges per token
-  - Monitor usage in provider dashboards
-  - Set rate limits on API keys
-  - Use cheaper models (gpt-4o-mini vs gpt-4)
+    - Monitor usage in provider dashboards
+    - Set rate limits on API keys
+    - Use cheaper models (gpt-4o-mini vs gpt-4)
 
 ## Files Structure
 

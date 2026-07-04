@@ -7,11 +7,16 @@ namespace keymap {
         left: number,
         right: number,
         A: number,
-        B: number
-    ): void;
+        B: number,
+    ): void
 
     //% shim=keymap::_setSystemKeys
-    declare function _setSystemKeys(screenshot: number, gif: number, menu: number, reset: number): void;
+    declare function _setSystemKeys(
+        screenshot: number,
+        gif: number,
+        menu: number,
+        reset: number,
+    ): void
 
     /**
      * Sets the keyboard input map for the given player.
@@ -30,9 +35,9 @@ namespace keymap {
         left: KeyCode,
         right: KeyCode,
         A: KeyCode,
-        B: KeyCode
+        B: KeyCode,
     ) {
-        _setPlayerKeys(player, up, down, left, right, A, B);
+        _setPlayerKeys(player, up, down, left, right, A, B)
     }
 
     /**
@@ -42,8 +47,13 @@ namespace keymap {
      * @param menu The key code for 'menu'
      * @param reset The key code for 'reset'
      */
-    export function setSystemKeys(screenshot: KeyCode, gif: KeyCode, menu: KeyCode, reset: KeyCode) {
-        _setSystemKeys(screenshot, gif, menu, reset);
+    export function setSystemKeys(
+        screenshot: KeyCode,
+        gif: KeyCode,
+        menu: KeyCode,
+        reset: KeyCode,
+    ) {
+        _setSystemKeys(screenshot, gif, menu, reset)
     }
 
     /**

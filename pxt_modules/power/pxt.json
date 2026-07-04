@@ -4,9 +4,7 @@
     "dependencies": {
         "core": "*"
     },
-    "files": [
-        "power.ts"
-    ],
+    "files": ["power.ts"],
     "testFiles": [],
     "public": true,
     "targetVersions": {

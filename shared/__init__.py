@@ -9,8 +9,8 @@ Heavy or optional modules (cosmos, telemetry, db_logging, sql_engine) are NOT
 eagerly imported here — import them directly when needed so startup stays fast.
 """
 
-from shared.file_cache import DEFAULT_TTL_SECONDS  # noqa: F401
 from shared.file_cache import (
+    DEFAULT_TTL_SECONDS,  # noqa: F401
     read_json_cached,
 )
 from shared.http_utils import validate_messages  # noqa: F401

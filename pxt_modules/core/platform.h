@@ -3,15 +3,15 @@
 
 // This is specific for SAMD21, to be replaced in other Codal targets.
 
+#include "CPlayI2C.h"
 #include "CapTouchButton.h"
 #include "Image.h"
-#include "MbedTimer.h"
 #include "MbedI2C.h"
 #include "MbedPin.h"
 #include "MbedSPI.h"
 #include "MbedSerial.h"
+#include "MbedTimer.h"
 #include "MultiButton.h"
-#include "CPlayI2C.h"
 
 #include "SAMD21DMAC.h"
 

@@ -48,10 +48,10 @@ enable_multi_scale_attention: true
 # Qubit counts for multi-scale attention heads
 # Each value represents qubits for one attention head
 n_qubits_per_head:
-  - 2  # Fine-grained patterns
-  - 3  # Mid-level structures
-  - 4  # Standard complexity
-  - 6  # Complex relationships
+    - 2 # Fine-grained patterns
+    - 3 # Mid-level structures
+    - 4 # Standard complexity
+    - 6 # Complex relationships
 
 # Enable adaptive entanglement topology selection
 enable_adaptive_entanglement: true
@@ -86,32 +86,32 @@ enable_curriculum: true
 
 # Curriculum stages (if enable_curriculum is true)
 curriculum_stages:
-  - name: "classical_warmup"
-    quantum_ratio: 0.0
-    num_epochs: 2
-    learning_rate: 0.0001
-    batch_size: 16
-    freeze_classical_layers: false
-    enable_quantum_layers: []
+    - name: "classical_warmup"
+      quantum_ratio: 0.0
+      num_epochs: 2
+      learning_rate: 0.0001
+      batch_size: 16
+      freeze_classical_layers: false
+      enable_quantum_layers: []
 
-  - name: "quantum_transition"
-    quantum_ratio: 0.3
-    num_epochs: 3
-    learning_rate: 0.00005
-    batch_size: 16
-    freeze_classical_layers: false
-    enable_quantum_layers:
-      - "attention"
+    - name: "quantum_transition"
+      quantum_ratio: 0.3
+      num_epochs: 3
+      learning_rate: 0.00005
+      batch_size: 16
+      freeze_classical_layers: false
+      enable_quantum_layers:
+          - "attention"
 
-  - name: "full_quantum"
-    quantum_ratio: 0.7
-    num_epochs: 10
-    learning_rate: 0.00001
-    batch_size: 8
-    freeze_classical_layers: false
-    enable_quantum_layers:
-      - "attention"
-      - "feedforward"
+    - name: "full_quantum"
+      quantum_ratio: 0.7
+      num_epochs: 10
+      learning_rate: 0.00001
+      batch_size: 8
+      freeze_classical_layers: false
+      enable_quantum_layers:
+          - "attention"
+          - "feedforward"
 
 # Enable adaptive quantum/classical routing
 enable_adaptive_routing: true
@@ -245,9 +245,9 @@ augmentation_noise_level: 0.1
 
 # Tokenizer configuration
 tokenizer:
-  type: "character"  # "character" or "subword"
-  vocab_size: 256
-  add_special_tokens: true
+    type: "character" # "character" or "subword"
+    vocab_size: 256
+    add_special_tokens: true
 
 # Multi-source dataset configuration (if using multiple datasets)
 multi_source_datasets: []

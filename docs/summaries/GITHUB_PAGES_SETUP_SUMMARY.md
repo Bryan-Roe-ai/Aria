@@ -9,49 +9,49 @@ The Aria 3D character interface is now ready for deployment to GitHub Pages!
 ### Core Files (in `docs/` directory)
 
 1. **`index.html`** (41KB)
-   - Main interface with 3D CSS character
-   - Purple gradient banner explaining static mode
-   - Links to full project repository
-   - Object manager panel
-   - Command input and chat interface
-   - Status/log display
+    - Main interface with 3D CSS character
+    - Purple gradient banner explaining static mode
+    - Links to full project repository
+    - Object manager panel
+    - Command input and chat interface
+    - Status/log display
 
 2. **`aria_controller.js`** (73KB)
-   - Complete client-side logic
-   - Animation system (jump, dance, wave, spin)
-   - 3D waypoint navigation
-   - Object interaction (pickup, drop, throw)
-   - Expression system
-   - Graceful API fallback (already present)
-   - Eye tracking and idle animations
+    - Complete client-side logic
+    - Animation system (jump, dance, wave, spin)
+    - 3D waypoint navigation
+    - Object interaction (pickup, drop, throw)
+    - Expression system
+    - Graceful API fallback (already present)
+    - Eye tracking and idle animations
 
 3. **`README.md`** (3.9KB)
-   - User-facing documentation
-   - Feature overview
-   - Quick command examples
-   - Usage tips
-   - Links to full project
+    - User-facing documentation
+    - Feature overview
+    - Quick command examples
+    - Usage tips
+    - Links to full project
 
 4. **`DEPLOYMENT_GUIDE.md`** (5.7KB)
-   - Complete deployment instructions
-   - Both automatic and manual methods
-   - Troubleshooting guide
-   - Verification checklist
-   - Customization options
+    - Complete deployment instructions
+    - Both automatic and manual methods
+    - Troubleshooting guide
+    - Verification checklist
+    - Customization options
 
 5. **`QAI_DOCS_INDEX.md`** (5.0KB)
-   - Preserved technical documentation
-   - Links to training guides
-   - Quantum computing docs
-   - Database setup guides
+    - Preserved technical documentation
+    - Links to training guides
+    - Quantum computing docs
+    - Database setup guides
 
 ### Deployment Infrastructure
 
 6. **`.github/workflows/pages.yml`**
-   - GitHub Actions workflow
-   - Automatic deployment on push
-   - Proper permissions configured
-   - Artifact upload and deployment
+    - GitHub Actions workflow
+    - Automatic deployment on push
+    - Proper permissions configured
+    - Artifact upload and deployment
 
 ## 🎯 Key Features
 
@@ -98,20 +98,20 @@ The Aria 3D character interface is now ready for deployment to GitHub Pages!
 
 1. **Merge this PR to `main`**
 
-   ```bash
-   git checkout main
-   git merge copilot/setup-git-pages-3d-world
-   git push origin main
-   ```
+    ```bash
+    git checkout main
+    git merge copilot/setup-git-pages-3d-world
+    git push origin main
+    ```
 
 2. **Enable GitHub Pages**
-   - Go to repository Settings → Pages
-   - Set Source to "GitHub Actions"
-   - Wait for workflow to complete
+    - Go to repository Settings → Pages
+    - Set Source to "GitHub Actions"
+    - Wait for workflow to complete
 
 3. **Visit Your Site**
-   - URL: <https://bryan-roe.github.io/Aria/>
-   - Should be live within 1-2 minutes
+    - URL: <https://bryan-roe.github.io/Aria/>
+    - Should be live within 1-2 minutes
 
 ### Verification Checklist
 
@@ -238,23 +238,23 @@ For developers setting up deployment:
 ## �� Known Limitations
 
 1. **Network Errors in Console**
-   - Expected behavior in static mode
-   - Gracefully falls back to local processing
-   - No impact on functionality
+    - Expected behavior in static mode
+    - Gracefully falls back to local processing
+    - No impact on functionality
 
 2. **No AI Processing**
-   - Commands parsed locally with simple rules
-   - Complex natural language may not work
-   - Use specific commands for best results
+    - Commands parsed locally with simple rules
+    - Complex natural language may not work
+    - Use specific commands for best results
 
 3. **No State Persistence**
-   - Page refresh resets everything
-   - No save/load functionality
-   - Objects return to default positions
+    - Page refresh resets everything
+    - No save/load functionality
+    - Objects return to default positions
 
 4. **Limited Multi-Command**
-   - Complex sequences may need manual chaining
-   - No backend coordination
+    - Complex sequences may need manual chaining
+    - No backend coordination
 
 ## 🎉 Success Metrics
 

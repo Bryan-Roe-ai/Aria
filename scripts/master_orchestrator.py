@@ -33,7 +33,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     from .config_paths import resolve_config_path
@@ -63,13 +63,13 @@ class OrchestratorConfig:
     name: str
     script: str
     enabled: bool = True
-    schedule: Optional[str] = None
+    schedule: str | None = None
     priority: int = 1
     retry_on_failure: int = 0
     timeout_minutes: int = 0
-    dependencies: List[str] = field(default_factory=list)
-    last_run: Optional[str] = None
-    last_status: Optional[str] = None
+    dependencies: list[str] = field(default_factory=list)
+    last_run: str | None = None
+    last_status: str | None = None
 
 
 @dataclass
@@ -77,11 +77,11 @@ class WorkflowConfig:
     name: str
     enabled: bool = True
     trigger: str = "manual"  # schedule | manual | webhook
-    schedule: Optional[str] = None
-    orchestrators: List[str] = field(default_factory=list)
-    flags: Dict[str, Any] = field(default_factory=dict)
-    on_success: List[str] = field(default_factory=list)
-    on_failure: List[str] = field(default_factory=list)
+    schedule: str | None = None
+    orchestrators: list[str] = field(default_factory=list)
+    flags: dict[str, Any] = field(default_factory=dict)
+    on_success: list[str] = field(default_factory=list)
+    on_failure: list[str] = field(default_factory=list)
 
 
 class MasterOrchestrator:
@@ -89,15 +89,15 @@ class MasterOrchestrator:
         self.config_path = config_path
         self.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         self.config = self._load_config()
-        self.orchestrators: Dict[str, OrchestratorConfig] = {}
-        self.workflows: Dict[str, WorkflowConfig] = {}
+        self.orchestrators: dict[str, OrchestratorConfig] = {}
+        self.workflows: dict[str, WorkflowConfig] = {}
         self.running = True
         self.status_file = DATA_OUT / "status.json"
-        self._last_schedule_run: Dict[str, str] = {}
+        self._last_schedule_run: dict[str, str] = {}
         self._parse_config()
         self._ensure_dirs()
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         if not self.config_path.exists():
             raise SystemExit(f"Config not found: {self.config_path}")
         with self.config_path.open("r") as f:
@@ -135,7 +135,7 @@ class MasterOrchestrator:
     def _ensure_dirs(self):
         DATA_OUT.mkdir(parents=True, exist_ok=True)
 
-    def run_orchestrator(self, name: str, flags: Dict[str, Any] = None) -> Dict[str, Any]:
+    def run_orchestrator(self, name: str, flags: dict[str, Any] = None) -> dict[str, Any]:
         """Run a single orchestrator."""
         if name not in self.orchestrators:
             return {"status": "error", "message": f"Unknown orchestrator: {name}"}
@@ -218,7 +218,7 @@ class MasterOrchestrator:
 
         return result
 
-    def run_workflow(self, name: str) -> Dict[str, Any]:
+    def run_workflow(self, name: str) -> dict[str, Any]:
         """Run a workflow pipeline."""
         if name not in self.workflows:
             return {"status": "error", "message": f"Unknown workflow: {name}"}
@@ -266,7 +266,7 @@ class MasterOrchestrator:
 
         return workflow_result
 
-    def _execute_handler(self, handler: str, result: Dict[str, Any]):
+    def _execute_handler(self, handler: str, result: dict[str, Any]):
         """Execute a success/failure handler."""
         if handler == "notify_slack":
             print("[master] Would notify Slack (not implemented)")
@@ -289,7 +289,7 @@ class MasterOrchestrator:
         else:
             print(f"[master] Unknown handler: {handler}")
 
-    def _save_workflow_result(self, result: Dict[str, Any]):
+    def _save_workflow_result(self, result: dict[str, Any]):
         """Save workflow result to disk."""
         wf_name = result["workflow"]
         ts = result["start_time"].replace(":", "").replace("-", "")
@@ -298,7 +298,7 @@ class MasterOrchestrator:
             json.dump(result, f, indent=2, default=str)
         print(f"[master] Workflow result saved: {result_file}")
 
-    def list_orchestrators(self) -> List[Dict[str, Any]]:
+    def list_orchestrators(self) -> list[dict[str, Any]]:
         """List all configured orchestrators."""
         return [
             {
@@ -314,7 +314,7 @@ class MasterOrchestrator:
             for orc in sorted(self.orchestrators.values(), key=lambda x: x.priority)
         ]
 
-    def list_workflows(self) -> List[Dict[str, Any]]:
+    def list_workflows(self) -> list[dict[str, Any]]:
         """List all configured workflows."""
         return [
             {
@@ -327,7 +327,7 @@ class MasterOrchestrator:
             for wf in self.workflows.values()
         ]
 
-    def get_status(self) -> Dict[str, Any]:
+    def get_status(self) -> dict[str, Any]:
         """Get overall status."""
         return {
             "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -338,7 +338,7 @@ class MasterOrchestrator:
             "resource_usage": self._get_resource_usage(),
         }
 
-    def _get_resource_usage(self) -> Dict[str, Any]:
+    def _get_resource_usage(self) -> dict[str, Any]:
         """Get current resource usage."""
         if not psutil:
             return {"available": False}

@@ -38,9 +38,7 @@
         "controlmessage.ts",
         "perfcounters.ts"
     ],
-    "testFiles": [
-        "test.ts"
-    ],
+    "testFiles": ["test.ts"],
     "public": true,
     "targetVersions": {
         "target": "4.0.14",

@@ -20,7 +20,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -40,7 +40,7 @@ class TrainingStage:
     num_epochs: int
     learning_rate: float
     batch_size: int
-    enable_quantum_layers: List[str] = field(default_factory=list)
+    enable_quantum_layers: list[str] = field(default_factory=list)
     freeze_classical_layers: bool = False
 
 
@@ -69,7 +69,7 @@ class CurriculumScheduler:
 
     def __init__(
         self,
-        stages: List[TrainingStage],
+        stages: list[TrainingStage],
         warmup_stages: int = 2,
     ):
         self.stages = stages
@@ -103,7 +103,7 @@ class CurriculumScheduler:
         """Get current quantum operation ratio."""
         return self.stages[self.current_stage_idx].quantum_ratio
 
-    def get_progress(self) -> Dict[str, Any]:
+    def get_progress(self) -> dict[str, Any]:
         """Get training progress."""
         return {
             "current_stage": self.current_stage_idx,
@@ -146,7 +146,7 @@ class AdaptiveQuantumRouter:
     def route(
         self,
         input_features: torch.Tensor,
-        context: Dict[str, float],
+        context: dict[str, float],
     ) -> bool:
         """
         Decide whether to use quantum or classical execution.
@@ -225,7 +225,7 @@ class AdaptiveQuantumRouter:
         loss_tensor.backward()
         self.optimizer.step()
 
-    def get_routing_stats(self) -> Dict[str, Any]:
+    def get_routing_stats(self) -> dict[str, Any]:
         """Get routing statistics."""
         if not self.routing_history:
             return {"quantum_ratio": 0.0, "total_decisions": 0}
@@ -256,7 +256,7 @@ class HybridTrainingOrchestrator:
     def __init__(
         self,
         model: nn.Module,
-        stages: List[TrainingStage],
+        stages: list[TrainingStage],
         output_dir: Path,
         device: str = "cpu",
     ):
@@ -270,7 +270,7 @@ class HybridTrainingOrchestrator:
         self.router = AdaptiveQuantumRouter()
 
         # Metrics
-        self.metrics_history: List[TrainingMetrics] = []
+        self.metrics_history: list[TrainingMetrics] = []
         self.best_loss = float("inf")
         self.global_step = 0
 
@@ -280,8 +280,8 @@ class HybridTrainingOrchestrator:
         self,
         stage: TrainingStage,
         train_loader: DataLoader,
-        val_loader: Optional[DataLoader] = None,
-    ) -> Dict[str, float]:
+        val_loader: DataLoader | None = None,
+    ) -> dict[str, float]:
         """
         Train for one curriculum stage.
 
@@ -407,7 +407,7 @@ class HybridTrainingOrchestrator:
                 if "quantum" not in name.lower():
                     param.requires_grad = False
 
-    def _validate(self, val_loader: DataLoader, criterion) -> Dict[str, float]:
+    def _validate(self, val_loader: DataLoader, criterion) -> dict[str, float]:
         """Run validation."""
         self.model.eval()
         total_loss = 0.0
@@ -431,7 +431,7 @@ class HybridTrainingOrchestrator:
             "perplexity": np.exp(avg_loss),
         }
 
-    def _save_checkpoint(self, stage_name: str, epoch: int, metrics: Dict):
+    def _save_checkpoint(self, stage_name: str, epoch: int, metrics: dict):
         """Save training checkpoint."""
         checkpoint_path = self.output_dir / f"checkpoint_{stage_name}_epoch{epoch}.pt"
 
@@ -452,8 +452,8 @@ class HybridTrainingOrchestrator:
     def run_full_curriculum(
         self,
         train_loader: DataLoader,
-        val_loader: Optional[DataLoader] = None,
-    ) -> Dict[str, Any]:
+        val_loader: DataLoader | None = None,
+    ) -> dict[str, Any]:
         """
         Run complete curriculum training.
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import os
-from typing import List
 
 from agents.recipe_agent import RecipeAgent
 from providers.local import LocalProvider
@@ -72,7 +71,7 @@ def build_parser():
     return p
 
 
-def main(argv: List[str] | None = None):
+def main(argv: list[str] | None = None):
     parser = build_parser()
     args = parser.parse_args(argv)
     provider = detect_provider(args.provider)

@@ -38,8 +38,11 @@ RESULTS_DIR = PROJECT_ROOT / "results" / "datasets"
 SRC_DIR = PROJECT_ROOT / "src"
 sys.path.insert(0, str(SRC_DIR))
 
-from quantum_classifier import HybridQuantumClassifier  # type: ignore
-from quantum_classifier import QuantumClassifier, train_quantum_model
+from quantum_classifier import (
+    HybridQuantumClassifier,  # type: ignore
+    QuantumClassifier,
+    train_quantum_model,
+)
 
 
 def load_dataset_from_csv(name: str, path: Path) -> tuple[np.ndarray, np.ndarray]:
@@ -115,7 +118,7 @@ def make_quick_config(
     batch_size: int | None = None,
     lr: float | None = None,
 ) -> Path:
-    with open(base_cfg_path, "r") as f:
+    with open(base_cfg_path) as f:
         cfg = yaml.safe_load(f)
     cfg["ml"]["training"]["epochs"] = int(epochs)
     if batch_size is not None:
@@ -144,7 +147,7 @@ def main():
     if not DATASETS_INDEX.exists():
         raise FileNotFoundError(f"Dataset index not found: {DATASETS_INDEX}")
 
-    with open(DATASETS_INDEX, "r") as f:
+    with open(DATASETS_INDEX) as f:
         index = json.load(f)
 
     if args.dataset not in index["datasets"]:
@@ -157,7 +160,7 @@ def main():
         raise FileNotFoundError(f"Dataset file not found: {data_path}")
 
     # Load config for model params
-    with open(DEFAULT_CONFIG, "r") as f:
+    with open(DEFAULT_CONFIG) as f:
         base_cfg = yaml.safe_load(f)
     n_qubits = int(base_cfg["ml"]["model"]["n_qubits"])
 

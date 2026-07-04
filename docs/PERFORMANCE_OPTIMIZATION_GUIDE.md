@@ -23,10 +23,12 @@ with open(log_file, 'r') as f:
 ```
 
 **Files Optimized**:
+
 - `scripts/monitor_autonomous_training.py` - Line 61-71
 - `dashboard/serve.py` - Line 525-531
 
 **Benefits**:
+
 - Reduces memory usage from O(n) to O(k) where k is the tail size
 - Faster for large log files (GB-sized files)
 - No change to external API
@@ -52,6 +54,7 @@ def load_records(file_path):
 ```
 
 **Already Implemented**:
+
 - `AI/microsoft_phi-silica-3.6_v1/scripts/prepare_dataset.py` - Uses generators throughout
 - All JSONL reading functions use `yield` pattern
 
@@ -60,6 +63,7 @@ def load_records(file_path):
 **Implementation**: `shared/sql_engine.py`
 
 **Features**:
+
 - Connection pooling with configurable size (`QAI_SQL_POOL_SIZE`)
 - Pre-ping to evict dead connections
 - Pool recycling every 30 minutes
@@ -67,6 +71,7 @@ def load_records(file_path):
 - Health monitoring via `/api/ai/status`
 
 **Configuration**:
+
 ```python
 # Set pool size via environment variable
 export QAI_SQL_POOL_SIZE=20  # Default: 10
@@ -81,6 +86,7 @@ curl http://localhost:7071/api/ai/status | jq '.sql'
 **Implementation**: `dashboard/app.py` - `_tail_lines()` function
 
 **Strategy**:
+
 - Small files (< 64KB): Read entire file
 - Large files: Read backwards in blocks until enough lines found
 
@@ -99,12 +105,14 @@ def _tail_lines(path: Path, max_lines: int) -> List[str]:
 ### 5. Subprocess Management
 
 **Best Practices**:
+
 - Use `ThreadPoolExecutor` for parallel subprocess execution
 - Set reasonable timeouts (30 min for training jobs)
 - Capture output only when needed
 - Use `text=True` to avoid manual decoding
 
 **Example**: `scripts/batch_evaluator.py`
+
 ```python
 with ThreadPoolExecutor(max_workers=3) as executor:
     futures = {
@@ -176,11 +184,13 @@ with ThreadPoolExecutor() as executor:
 ### 1. SQL Health Check
 
 Check database pool saturation:
+
 ```bash
 curl http://localhost:7071/api/ai/status | jq '.sql'
 ```
 
 Response includes:
+
 - `pool_size`: Total connections in pool
 - `checked_out`: Currently in use
 - `overflow`: Connections beyond pool limit
@@ -189,6 +199,7 @@ Response includes:
 ### 2. Resource Monitoring
 
 Use the resource monitor script:
+
 ```bash
 python scripts/resource_monitor.py --snapshot
 python scripts/resource_monitor.py --watch  # Continuous monitoring
@@ -197,6 +208,7 @@ python scripts/resource_monitor.py --watch  # Continuous monitoring
 ### 3. Training Analytics
 
 Monitor training performance trends:
+
 ```bash
 python scripts/training_analytics.py
 ```
@@ -204,11 +216,13 @@ python scripts/training_analytics.py
 ## When to Use Async/Await
 
 **Use async when**:
+
 - Multiple I/O operations can run concurrently
 - Network requests or file I/O dominate runtime
 - Clear dependencies between operations
 
 **Example**: Autonomous training orchestrator
+
 ```python
 async def run_training_cycle():
     # Concurrent dataset downloads
@@ -223,6 +237,7 @@ async def run_training_cycle():
 ```
 
 **Don't use async for**:
+
 - CPU-bound operations (use multiprocessing instead)
 - Simple monitoring loops with fixed intervals
 - Code that doesn't do I/O
@@ -232,6 +247,7 @@ async def run_training_cycle():
 ### 1. Disk Caching (Already Implemented)
 
 **Pattern**: Check if file exists before downloading/processing
+
 ```python
 output_path = QUANTUM_DIR / f"{name}.csv"
 if output_path.exists():
@@ -241,12 +257,14 @@ if output_path.exists():
 ```
 
 **Used in**:
+
 - `scripts/expand_quantum_datasets.py` - Dataset downloads
 - All training scripts - Model checkpoints
 
 ### 2. Memory Caching (Where Appropriate)
 
 **Pattern**: Use `functools.lru_cache` for expensive pure functions
+
 ```python
 from functools import lru_cache
 
@@ -257,11 +275,13 @@ def expensive_computation(param):
 ```
 
 **Good for**:
+
 - Configuration parsing
 - Data transformations
 - Feature engineering
 
 **Not good for**:
+
 - Large datasets (memory pressure)
 - Non-deterministic functions
 - Functions with side effects
@@ -269,6 +289,7 @@ def expensive_computation(param):
 ### 3. Singleton Pattern (Implemented)
 
 **Pattern**: Lazy initialization of expensive resources
+
 ```python
 class CosmosClient:
     _instance = None
@@ -281,6 +302,7 @@ class CosmosClient:
 ```
 
 **Used in**:
+
 - `shared/cosmos_client.py` - Cosmos DB connection
 - `shared/sql_engine.py` - SQL connection pools
 
@@ -289,6 +311,7 @@ class CosmosClient:
 ### Quick Performance Check
 
 Add timing to critical sections:
+
 ```python
 import time
 

@@ -361,49 +361,49 @@ print("Model saved!")
 
 1. **Standardization** - CRITICAL for quantum circuits
 
-   ```python
-   scaler = StandardScaler()
-   X = scaler.fit_transform(X)
-   ```
+    ```python
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    ```
 
 2. **Feature Scaling** - Map to quantum parameter range
-   - Quantum circuits work with angles (0 to 2π)
-   - StandardScaler handles this automatically
+    - Quantum circuits work with angles (0 to 2π)
+    - StandardScaler handles this automatically
 
 3. **Feature Dimension Matching**
-   - If features < qubits: Pad with zeros
-   - If features > qubits: Use PCA to reduce
+    - If features < qubits: Pad with zeros
+    - If features > qubits: Use PCA to reduce
 
 4. **Class Encoding**
-   - Binary: 0/1
-   - Multi-class: 0, 1, 2, ...
-   - Use LabelEncoder if needed
+    - Binary: 0/1
+    - Multi-class: 0, 1, 2, ...
+    - Use LabelEncoder if needed
 
 ✅ **Recommended Steps:**
 
 1. **Handle Missing Values**
 
-   ```python
-   from sklearn.impute import SimpleImputer
-   imputer = SimpleImputer(strategy='mean')
-   X = imputer.fit_transform(X)
-   ```
+    ```python
+    from sklearn.impute import SimpleImputer
+    imputer = SimpleImputer(strategy='mean')
+    X = imputer.fit_transform(X)
+    ```
 
 2. **Balance Classes** (if imbalanced)
 
-   ```python
-   from imblearn.over_sampling import SMOTE
-   smote = SMOTE(random_state=42)
-   X, y = smote.fit_resample(X, y)
-   ```
+    ```python
+    from imblearn.over_sampling import SMOTE
+    smote = SMOTE(random_state=42)
+    X, y = smote.fit_resample(X, y)
+    ```
 
 3. **Remove Outliers**
 
-   ```python
-   from sklearn.preprocessing import RobustScaler
-   scaler = RobustScaler()
-   X = scaler.fit_transform(X)
-   ```
+    ```python
+    from sklearn.preprocessing import RobustScaler
+    scaler = RobustScaler()
+    X = scaler.fit_transform(X)
+    ```
 
 ---
 
@@ -611,18 +611,18 @@ print(f"Quantum: {quantum_acc:.2%}")
 
 1. **Save model & scaler**
 
-   ```python
-   torch.save(model.state_dict(), 'model.pt')
-   joblib.dump(scaler, 'scaler.pkl')
-   ```
+    ```python
+    torch.save(model.state_dict(), 'model.pt')
+    joblib.dump(scaler, 'scaler.pkl')
+    ```
 
 2. **Create inference script**
 
-   ```python
-   def predict(new_data):
-       X = scaler.transform(new_data)
-       return model(torch.FloatTensor(X))
-   ```
+    ```python
+    def predict(new_data):
+        X = scaler.transform(new_data)
+        return model(torch.FloatTensor(X))
+    ```
 
 3. **Deploy to Azure Quantum** for real hardware
 

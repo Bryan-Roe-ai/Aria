@@ -140,8 +140,10 @@ def main() -> int:
     max_entropy = float(args.n_qubits)
 
     print("\n✓ Results received:")
-    print(f"  Unique states: {len(counts)} / {2 ** args.n_qubits}")
-    print(f"  Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy/max_entropy*100 if max_entropy>0 else 0):.1f}%)")
+    print(f"  Unique states: {len(counts)} / {2**args.n_qubits}")
+    print(
+        f"  Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy / max_entropy * 100 if max_entropy > 0 else 0):.1f}%)"
+    )
 
     # Save in same format as local simulations
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")

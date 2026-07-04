@@ -16,7 +16,6 @@ Classes:
 
 import logging
 import math
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -68,7 +67,7 @@ class ClassicalSelfAttention(nn.Module):
         self.W_O = nn.Linear(d_model, d_model)
         self.attn_dropout = nn.Dropout(dropout)
 
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
         batch, seq_len, _ = x.shape
 
         Q = self.W_Q(x).view(batch, seq_len, self.n_heads, self.d_head).transpose(1, 2)
@@ -182,7 +181,7 @@ class QuantumSelfAttention(nn.Module):
         x = F.normalize(x, p=2, dim=-1)
         return self.quantum_layers[head_idx](x)
 
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
         batch, seq_len, _ = x.shape
 
         Q = self.W_Q(x).view(batch, seq_len, self.n_heads, self.d_head)
@@ -317,7 +316,7 @@ class QuantumTransformerBlock(nn.Module):
             self.ffn = ClassicalFeedForward(d_model, d_ffn=d_model * 4, dropout=dropout)
             logger.info("Using ClassicalFeedForward (fallback)")
 
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
         x = x + self.drop1(self.attention(self.norm1(x), mask=mask))
         x = x + self.drop2(self.ffn(self.norm2(x)))
         return x
@@ -408,7 +407,7 @@ class QuantumLLM(nn.Module):
     def forward(
         self,
         input_ids: torch.Tensor,
-        mask: Optional[torch.Tensor] = None,
+        mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
         Args:
@@ -441,7 +440,7 @@ class QuantumLLM(nn.Module):
         input_ids: torch.Tensor,
         max_new_tokens: int = 20,
         temperature: float = 1.0,
-        top_k: Optional[int] = None,
+        top_k: int | None = None,
     ) -> torch.Tensor:
         """Autoregressive token-by-token generation."""
         self.eval()

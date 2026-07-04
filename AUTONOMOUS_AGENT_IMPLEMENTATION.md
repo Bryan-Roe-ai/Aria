@@ -20,46 +20,50 @@ A **complete, working autonomous code agent system** that:
 ## Files Created
 
 ### Core Implementation
+
 1. **[scripts/autonomous_code_agent.py](./scripts/autonomous_code_agent.py)** (700 lines)
-   - Main agent orchestrator
-   - LocalLLMClient for Ollama/LM Studio
-   - RepositoryContext for file/git operations
-   - 5-phase execution pipeline
-   - AgentState tracking
+    - Main agent orchestrator
+    - LocalLLMClient for Ollama/LM Studio
+    - RepositoryContext for file/git operations
+    - 5-phase execution pipeline
+    - AgentState tracking
 
 2. **[scripts/autonomous_agent_tasks.py](./scripts/autonomous_agent_tasks.py)** (400 lines)
-   - 8 task category definitions
-   - Specialized prompts for each category
-   - Task auto-detection from descriptions
-   - Success criteria and complexity assessment
+    - 8 task category definitions
+    - Specialized prompts for each category
+    - Task auto-detection from descriptions
+    - Success criteria and complexity assessment
 
 ### Launchers & Tools
+
 3. **[scripts/agent.sh](./scripts/agent.sh)** (200 lines)
-   - Convenient bash launcher
-   - Setup/installation helpers
-   - Environment configuration
-   - LLM availability checking
+    - Convenient bash launcher
+    - Setup/installation helpers
+    - Environment configuration
+    - LLM availability checking
 
 4. **[scripts/test_autonomous_agent.py](./scripts/test_autonomous_agent.py)** (50 lines)
-   - Validation test suite
-   - Verifies agent components work
+    - Validation test suite
+    - Verifies agent components work
 
 ### Documentation
+
 5. **[AGENT_QUICKSTART.md](./AGENT_QUICKSTART.md)**
-   - 30-second setup guide
-   - Visual architecture diagram
-   - 10+ practical examples
-   - Troubleshooting guide
+    - 30-second setup guide
+    - Visual architecture diagram
+    - 10+ practical examples
+    - Troubleshooting guide
 
 6. **[AUTONOMOUS_AGENT_GUIDE.md](./AUTONOMOUS_AGENT_GUIDE.md)**
-   - Comprehensive reference
-   - All configuration options
-   - Advanced usage patterns
-   - CI/CD integration examples
+    - Comprehensive reference
+    - All configuration options
+    - Advanced usage patterns
+    - CI/CD integration examples
 
 ## Quick Start
 
 ### 1. Install Local LLM (2 minutes)
+
 ```bash
 # Ollama (Recommended)
 curl https://ollama.ai/install.sh | sh
@@ -72,6 +76,7 @@ ollama pull mistral
 ```
 
 ### 2. Run Agent (30 seconds)
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add docstrings to chat_providers.py" \
@@ -80,6 +85,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### 3. Check Results
+
 ```bash
 cat data_out/autonomous_agent/status.json | python -m json.tool
 tail -f data_out/autonomous_agent/agent.log
@@ -103,21 +109,27 @@ AgentState saved to JSON + logs
 ## Core Components
 
 ### CodeAgent
+
 Main orchestrator that runs the 5-phase workflow:
+
 ```python
 agent = CodeAgent(llm_type="ollama")
 state = agent.execute_task("Your task description")
 ```
 
 ### LocalLLMClient
+
 HTTP wrapper for Ollama and LM Studio APIs:
+
 ```python
 client = LocalLLMClient("http://127.0.0.1:11434", "mistral")
 response = client.query("What files are affected by X?", max_tokens=500)
 ```
 
 ### RepositoryContext
+
 File operations and git integration:
+
 ```python
 repo = RepositoryContext()
 content = repo.read_file("chat_providers.py")
@@ -125,7 +137,9 @@ repo.commit_changes("My fix message")
 ```
 
 ### AgentState
+
 Progress tracking persisted to JSON:
+
 ```python
 state.mark_file_modified("file.py")
 state.add_error("Some error")
@@ -134,16 +148,16 @@ state.save()  # → data_out/autonomous_agent/status.json
 
 ## Task Categories (Auto-Detected)
 
-| Type | Keywords | Complexity | Example |
-| ------ | ---------- | ------------ | --------- |
-| Bug Fix | bug, fix, broken, failing | Moderate | "Fix test_chat.py test" |
-| Feature | feature, implement, add | Complex | "Add OAuth2 support" |
-| Refactor | refactor, improve, cleanup | Moderate | "Extract to util function" |
-| Test | test, coverage, unit test | Simple | "Write edge case tests" |
-| Security | security, vulnerable | Complex | "Validate inputs" |
-| Performance | performance, optimize, fast | Complex | "Speed up queries" |
-| Documentation | document, docstring, comment | Simple | "Add docstrings" |
-| Cleanup | cleanup, unused, dead code | Simple | "Remove old code" |
+| Type          | Keywords                     | Complexity | Example                    |
+| ------------- | ---------------------------- | ---------- | -------------------------- |
+| Bug Fix       | bug, fix, broken, failing    | Moderate   | "Fix test_chat.py test"    |
+| Feature       | feature, implement, add      | Complex    | "Add OAuth2 support"       |
+| Refactor      | refactor, improve, cleanup   | Moderate   | "Extract to util function" |
+| Test          | test, coverage, unit test    | Simple     | "Write edge case tests"    |
+| Security      | security, vulnerable         | Complex    | "Validate inputs"          |
+| Performance   | performance, optimize, fast  | Complex    | "Speed up queries"         |
+| Documentation | document, docstring, comment | Simple     | "Add docstrings"           |
+| Cleanup       | cleanup, unused, dead code   | Simple     | "Remove old code"          |
 
 Agent automatically chooses appropriate prompts based on task description.
 
@@ -169,6 +183,7 @@ Agent automatically chooses appropriate prompts based on task description.
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Ollama
 export OLLAMA_BASE_URL="http://127.0.0.1:11434"
@@ -180,7 +195,9 @@ export LMSTUDIO_MODEL="local-model"
 ```
 
 ### In Code
+
 Edit [autonomous_code_agent.py](./scripts/autonomous_code_agent.py):
+
 ```python
 MAX_FILE_SIZE = 100_000          # bytes
 MAX_CHANGES_PER_FILE = 5         # per file
@@ -191,6 +208,7 @@ MIN_TEST_PASSING_RATE = 0.8      # 80% required
 ## Usage Examples
 
 ### Dry-Run (Analyze Only)
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Fix failing test_quantum_autorun tests" \
@@ -199,6 +217,7 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### Full Run (Makes Changes)
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add comprehensive docstrings to shared/chat_memory.py" \
@@ -206,11 +225,13 @@ python scripts/autonomous_code_agent.py \
 ```
 
 ### Check LLM Status
+
 ```bash
 bash scripts/agent.sh --check-llm
 ```
 
 ### Get Setup Help
+
 ```bash
 bash scripts/agent.sh --setup-ollama
 bash scripts/agent.sh --setup-lmstudio
@@ -219,6 +240,7 @@ bash scripts/agent.sh --setup-lmstudio
 ## Monitoring
 
 ### Live Status
+
 ```bash
 # Watch updates
 watch -n 1 'cat data_out/autonomous_agent/status.json | python -m json.tool'
@@ -228,6 +250,7 @@ tail -f data_out/autonomous_agent/agent.log
 ```
 
 ### Multiple Agents
+
 ```bash
 # Run 3 agents in parallel on different tasks
 for task in "task1" "task2" "task3"; do
@@ -241,23 +264,25 @@ watch -n 2 'ls -la data_out/autonomous_agent/'
 ## Integration Examples
 
 ### GitHub Actions
+
 ```yaml
 name: Agent Fixes
 on: [push]
 jobs:
-  agent:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run agent
-        run: |
-          pip install -r requirements.txt
-          python scripts/autonomous_code_agent.py \
-            --task "Fix linting issues" \
-            --llm-type ollama
+    agent:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Run agent
+              run: |
+                  pip install -r requirements.txt
+                  python scripts/autonomous_code_agent.py \
+                    --task "Fix linting issues" \
+                    --llm-type ollama
 ```
 
 ### Cron Job
+
 ```bash
 # Run agent daily at 2 AM
 0 2 * * * python /repo/scripts/autonomous_code_agent.py \
@@ -266,6 +291,7 @@ jobs:
 ```
 
 ### As Part of Workflow
+
 ```python
 # In your script
 from scripts.autonomous_code_agent import CodeAgent
@@ -282,6 +308,7 @@ else:
 ## Troubleshooting
 
 ### Ollama Connection Error
+
 ```bash
 # Verify running
 ps aux | grep ollama
@@ -294,6 +321,7 @@ ollama pull mistral
 ```
 
 ### LM Studio Connection Error
+
 ```bash
 # Open LM Studio app
 # Developer tab → Select model → Start Server
@@ -301,12 +329,14 @@ ollama pull mistral
 ```
 
 ### Agent Process Hanging
+
 ```bash
 pkill -f autonomous_code_agent
 tail -50 data_out/autonomous_agent/agent.log
 ```
 
 ### Out of Memory
+
 - Use smaller model (Mistral recommended)
 - Close other apps
 - Reduce context window in LLM settings
@@ -314,12 +344,14 @@ tail -50 data_out/autonomous_agent/agent.log
 ## Next Steps
 
 ### Immediate
+
 1. ✅ Install Ollama or LM Studio
 2. ✅ Run first test: `python scripts/autonomous_code_agent.py --task "..." --dry-run`
 3. ✅ Review status: `cat data_out/autonomous_agent/status.json`
 4. ✅ Run full task if dry-run looks good
 
 ### Future Enhancements
+
 - [ ] Multi-agent coordination
 - [ ] Learning from past tasks
 - [ ] GitHub PR creation
@@ -346,15 +378,15 @@ tail -50 data_out/autonomous_agent/agent.log
 
 ## Performance Metrics
 
-| Metric | Value |
-| -------- | ------- |
-| Syntax Validation | <100ms |
-| LLM Planning | 5-10s (Mistral) |
-| File Identification | 2-5s |
-| Test Suite | 30-120s |
-| Total Task | 1-5 minutes |
-| Memory Usage | 4-8GB (with Mistral) |
-| CPU Usage | 2-4 cores |
+| Metric              | Value                |
+| ------------------- | -------------------- |
+| Syntax Validation   | <100ms               |
+| LLM Planning        | 5-10s (Mistral)      |
+| File Identification | 2-5s                 |
+| Test Suite          | 30-120s              |
+| Total Task          | 1-5 minutes          |
+| Memory Usage        | 4-8GB (with Mistral) |
+| CPU Usage           | 2-4 cores            |
 
 ## Security Considerations
 
@@ -368,6 +400,7 @@ tail -50 data_out/autonomous_agent/agent.log
 ## Support & Debugging
 
 For issues:
+
 1. Check logs: `tail -100 data_out/autonomous_agent/agent.log`
 2. View status: `cat data_out/autonomous_agent/status.json`
 3. Verify LLM: `bash scripts/agent.sh --check-llm`
@@ -394,6 +427,7 @@ python scripts/test_autonomous_agent.py
 **🎉 Your autonomous code agent system is ready!**
 
 Start with:
+
 ```bash
 python scripts/autonomous_code_agent.py \
   --task "Add better error messages to function_app.py" \

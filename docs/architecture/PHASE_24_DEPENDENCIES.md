@@ -7,10 +7,12 @@ pip install websockets watchdog
 ```
 
 **Purpose:**
+
 - `websockets`: WebSocket server for real-time dashboard updates
 - `watchdog`: File system monitoring for job status changes
 
 **Usage:**
+
 ```powershell
 # Start WebSocket server
 python dashboard/websocket_server.py
@@ -28,16 +30,19 @@ pip install win10toast
 ```
 
 **Purpose:**
+
 - Windows 10/11 native toast notifications
 - Only needed for Python CLI notification tool
 - Browser notifications require NO dependencies
 
 **Platforms:**
+
 - **Windows**: `pip install win10toast` (recommended)
 - **macOS**: No dependencies (uses built-in `osascript`)
 - **Linux**: No dependencies (uses built-in `notify-send`)
 
 **Usage:**
+
 ```powershell
 # Test notification
 python scripts/notification_system.py --test
@@ -53,16 +58,19 @@ python scripts/notification_system.py --monitor data_out/autotrain/status.json -
 The following Phase 24 features require **NO additional installations**:
 
 ✅ **Export Functionality** (PNG/CSV/TXT)
+
 - Browser-based export
 - Uses native canvas API and blob downloads
 - Works in all modern browsers
 
 ✅ **Backup Manager**
+
 - Pure Python implementation
 - Uses stdlib: `os`, `shutil`, `json`, `tarfile`, `hashlib`
 - Cross-platform compatible
 
 ✅ **Browser Notifications**
+
 - Uses Web Notifications API (built into browsers)
 - No npm packages or libraries needed
 - Supported in Chrome, Firefox, Edge, Safari
@@ -99,17 +107,17 @@ pip list | Select-String "websockets|watchdog|win10toast"
 
 ## Feature Dependency Matrix
 
-| Feature | Dependencies | Status |
-| --------- | -------------- | -------- |
-| WebSocket Server | websockets, watchdog | Required for Phase 23 |
-| Export (PNG/CSV/TXT) | None | Phase 24 ✅ |
-| Backup Manager | None | Phase 24 ✅ |
-| Browser Notifications | None | Phase 24 ✅ |
-| Python CLI Notifications | win10toast (Windows only) | Phase 24 ✅ Optional |
-| Analytics Dashboard | Chart.js (CDN) | Phase 23 ✅ |
-| Job Queue | None | Phase 23 ✅ |
-| Model Comparison | None | Phase 23 ✅ |
-| Config Templates | None | Phase 23 ✅ |
+| Feature                  | Dependencies              | Status                |
+| ------------------------ | ------------------------- | --------------------- |
+| WebSocket Server         | websockets, watchdog      | Required for Phase 23 |
+| Export (PNG/CSV/TXT)     | None                      | Phase 24 ✅           |
+| Backup Manager           | None                      | Phase 24 ✅           |
+| Browser Notifications    | None                      | Phase 24 ✅           |
+| Python CLI Notifications | win10toast (Windows only) | Phase 24 ✅ Optional  |
+| Analytics Dashboard      | Chart.js (CDN)            | Phase 23 ✅           |
+| Job Queue                | None                      | Phase 23 ✅           |
+| Model Comparison         | None                      | Phase 23 ✅           |
+| Config Templates         | None                      | Phase 23 ✅           |
 
 ---
 
@@ -120,6 +128,7 @@ pip list | Select-String "websockets|watchdog|win10toast"
 **Error**: `ModuleNotFoundError: No module named 'websockets'`
 
 **Fix**:
+
 ```powershell
 pip install websockets watchdog
 ```
@@ -129,6 +138,7 @@ pip install websockets watchdog
 **Error**: `ModuleNotFoundError: No module named 'win10toast'`
 
 **Fix** (optional):
+
 ```powershell
 pip install win10toast
 ```

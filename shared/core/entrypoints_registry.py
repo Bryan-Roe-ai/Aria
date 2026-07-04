@@ -9,7 +9,7 @@ Reads scripts/ai_projects_entrypoints.yaml and provides utilities for:
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     import yaml
@@ -20,7 +20,7 @@ except ImportError:
 class EntryPointsRegistry:
     """Load and query the AI projects entry points registry."""
 
-    def __init__(self, registry_path: Optional[Path] = None):
+    def __init__(self, registry_path: Path | None = None):
         """Initialize registry from YAML file.
 
         Args:
@@ -34,8 +34,8 @@ class EntryPointsRegistry:
             registry_path = repo_root / "scripts" / "ai_projects_entrypoints.yaml"
 
         self.registry_path = registry_path
-        self.data: Dict[str, Any] = {}
-        self.projects: Dict[str, Any] = {}
+        self.data: dict[str, Any] = {}
+        self.projects: dict[str, Any] = {}
 
         self._load()
 
@@ -57,15 +57,15 @@ class EntryPointsRegistry:
         except Exception as e:
             logging.error(f"Failed to load entry points registry: {e}")
 
-    def list_projects(self) -> List[str]:
+    def list_projects(self) -> list[str]:
         """Return list of all project names."""
         return list(self.projects.keys())
 
-    def get_project(self, project_name: str) -> Optional[Dict[str, Any]]:
+    def get_project(self, project_name: str) -> dict[str, Any] | None:
         """Get project metadata by name."""
         return self.projects.get(project_name)
 
-    def get_entry_point(self, project_name: str, entry_point_name: str) -> Optional[Dict[str, Any]]:
+    def get_entry_point(self, project_name: str, entry_point_name: str) -> dict[str, Any] | None:
         """Get entry point metadata."""
         project = self.get_project(project_name)
         if not project:
@@ -74,7 +74,7 @@ class EntryPointsRegistry:
         entry_points = project.get("entry_points", {})
         return entry_points.get(entry_point_name)
 
-    def list_entry_points(self, project_name: str) -> List[str]:
+    def list_entry_points(self, project_name: str) -> list[str]:
         """List all entry points for a project."""
         project = self.get_project(project_name)
         if not project:
@@ -82,7 +82,7 @@ class EntryPointsRegistry:
 
         return list(project.get("entry_points", {}).keys())
 
-    def get_dependencies(self, project_name: str) -> List[str]:
+    def get_dependencies(self, project_name: str) -> list[str]:
         """Get list of projects this one depends on."""
         project = self.get_project(project_name)
         if not project:
@@ -106,7 +106,7 @@ class EntryPointsRegistry:
 
         return project.get("description", "(no description)")
 
-    def list_by_type(self, entry_type: str) -> Dict[str, List[str]]:
+    def list_by_type(self, entry_type: str) -> dict[str, list[str]]:
         """List all entry points grouped by type.
 
         Args:
@@ -125,7 +125,7 @@ class EntryPointsRegistry:
 
         return result
 
-    def get_ports(self) -> Dict[str, int]:
+    def get_ports(self) -> dict[str, int]:
         """Get all server entry points and their ports.
 
         Returns:
@@ -142,7 +142,7 @@ class EntryPointsRegistry:
 
         return ports
 
-    def validate_dependencies(self, project_name: str) -> List[str]:
+    def validate_dependencies(self, project_name: str) -> list[str]:
         """Check if all dependencies for a project are available.
 
         Returns:
@@ -183,7 +183,7 @@ class EntryPointsRegistry:
 
 
 # Singleton instance (lazy-loaded)
-_registry_instance: Optional[EntryPointsRegistry] = None
+_registry_instance: EntryPointsRegistry | None = None
 
 
 def get_registry() -> EntryPointsRegistry:

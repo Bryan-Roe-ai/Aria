@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-
 MODULE_PATH = Path(__file__).parent.parent / "apps" / "aria" / "stage_state_store.py"
 MODULE_SPEC = importlib.util.spec_from_file_location("aria_stage_state_store_under_test", MODULE_PATH)
 assert MODULE_SPEC is not None and MODULE_SPEC.loader is not None

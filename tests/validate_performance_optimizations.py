@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Standalone performance validation for keyword set optimizations."""
+
 import sys
 import time
 from pathlib import Path

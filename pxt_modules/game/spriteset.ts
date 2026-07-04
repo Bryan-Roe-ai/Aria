@@ -1,38 +1,39 @@
 namespace sprites {
     /*
-    * A set of sprites
-    */
+     * A set of sprites
+     */
     export class SpriteSet {
-        private _sprites: Sprite[];
+        private _sprites: Sprite[]
 
         /**
          * Create a new set from an array of sprites
          * @param sprites
          */
         static createFromArray(sprites: Sprite[]): SpriteSet {
-            const sp = new SpriteSet();
-            const n = sprites.length;
-            for (let i = 0; i < n; ++i)
-                sp.add(sprites[i]);
-            return sp;
+            const sp = new SpriteSet()
+            const n = sprites.length
+            for (let i = 0; i < n; ++i) sp.add(sprites[i])
+            return sp
         }
 
         constructor() {
-            this._sprites = [];
+            this._sprites = []
         }
 
         /**
          * Gets the number of sprites in the set
          */
         get length() {
-            return this._sprites.length;
+            return this._sprites.length
         }
 
         /**
          * Gets the snapshot of the current list of sprites
          */
         sprites() {
-            return this._sprites.filter(s => !(s.flags & sprites.Flag.Destroyed));
+            return this._sprites.filter(
+                s => !(s.flags & sprites.Flag.Destroyed),
+            )
         }
 
         /**
@@ -40,13 +41,12 @@ namespace sprites {
          * @param sprite
          */
         add(sprite: Sprite): boolean {
-            if (!sprite) return false; // don't add nulls
+            if (!sprite) return false // don't add nulls
 
             // scan if in set
-            if (this.contains(sprite))
-                return false;
-            this._sprites.push(sprite);
-            return true;
+            if (this.contains(sprite)) return false
+            this._sprites.push(sprite)
+            return true
         }
 
         /**
@@ -55,9 +55,9 @@ namespace sprites {
          * @param sprite
          */
         addFrom(oldSet: SpriteSet, sprite: Sprite): boolean {
-            const removed = oldSet.remove(sprite);
-            const added = this.add(sprite);
-            return removed && added;
+            const removed = oldSet.remove(sprite)
+            const added = this.add(sprite)
+            return removed && added
         }
 
         /**
@@ -65,12 +65,12 @@ namespace sprites {
          * @param sprite
          */
         remove(sprite: Sprite): boolean {
-            const i = this._sprites.indexOf(sprite);
+            const i = this._sprites.indexOf(sprite)
             if (i > -1) {
-                this._sprites.splice(i, 1);
-                return true;
+                this._sprites.splice(i, 1)
+                return true
             }
-            return false;
+            return false
         }
 
         /**
@@ -78,21 +78,21 @@ namespace sprites {
          * @param sprite
          */
         contains(sprite: Sprite): boolean {
-            return this._sprites.indexOf(sprite) > -1;
+            return this._sprites.indexOf(sprite) > -1
         }
 
         /**
          * Removes all the sprites from the set
-        */
+         */
         clear() {
-            this._sprites.splice(0, this._sprites.length);
+            this._sprites.splice(0, this._sprites.length)
         }
 
         /**
          * Removes the last sprite in the set
          */
         pop(): Sprite {
-            return this._sprites.pop();
+            return this._sprites.pop()
         }
 
         toString() {

@@ -330,15 +330,15 @@ class QuantumLLMPipeline:
         seed : int, optional
         """
         if len(prompt) > self.config.max_prompt_chars:
-            yield f'data: {json.dumps({"error": "Prompt too long"})}\n\n'
+            yield f"data: {json.dumps({'error': 'Prompt too long'})}\n\n"
             yield "data: [DONE]\n\n"
             return
 
         # Empty / whitespace-only prompts are handled gracefully without calling
         # the LLM provider, which typically rejects empty message content.
         if not prompt.strip():
-            yield f'data: {json.dumps({"delta": ""})}\n\n'
-            yield f'data: {json.dumps({"latency_ms": 0.0, "quantum_augmented": False})}\n\n'
+            yield f"data: {json.dumps({'delta': ''})}\n\n"
+            yield f"data: {json.dumps({'latency_ms': 0.0, 'quantum_augmented': False})}\n\n"
             yield "data: [DONE]\n\n"
             return
 
@@ -379,7 +379,7 @@ class QuantumLLMPipeline:
                 elif not isinstance(chunk, str):
                     chunk = str(chunk)
                 full_text += chunk
-                yield f'data: {json.dumps({"delta": chunk})}\n\n'
+                yield f"data: {json.dumps({'delta': chunk})}\n\n"
 
             # Apply quantum re-sampling metadata (just signals to client that it happened)
             _ = self._resample_response(full_text, seed=seed)

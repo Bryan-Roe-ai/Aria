@@ -186,7 +186,7 @@ def test_run_tests_uses_agent_repo_root_instead_of_global(monkeypatch: pytest.Mo
     scripts_dir.mkdir()
     test_runner = scripts_dir / "test_runner.py"
     test_runner.write_text(
-        "print('collected 1 items')\n" "print('1 passed')\n",
+        "print('collected 1 items')\nprint('1 passed')\n",
         encoding="utf-8",
     )
 

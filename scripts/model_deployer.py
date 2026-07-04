@@ -20,7 +20,7 @@ import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEPLOYED_DIR = REPO_ROOT / "deployed_models"
@@ -28,7 +28,7 @@ REGISTRY_FILE = DEPLOYED_DIR / "model_registry.json"
 DATA_OUT = REPO_ROOT / "data_out"
 
 
-def _load_registry() -> Dict[str, Any]:
+def _load_registry() -> dict[str, Any]:
     if REGISTRY_FILE.exists():
         try:
             return json.loads(REGISTRY_FILE.read_text())
@@ -37,14 +37,14 @@ def _load_registry() -> Dict[str, Any]:
     return {"models": [], "active_model": None, "last_updated": None}
 
 
-def _save_registry(registry: Dict[str, Any]) -> None:
+def _save_registry(registry: dict[str, Any]) -> None:
     DEPLOYED_DIR.mkdir(parents=True, exist_ok=True)
     registry["last_updated"] = datetime.now(timezone.utc).isoformat()
     REGISTRY_FILE.write_text(json.dumps(registry, indent=2))
     print(f"📄 Registry saved to {REGISTRY_FILE}")
 
 
-def _scan_candidate_models() -> List[Dict[str, Any]]:
+def _scan_candidate_models() -> list[dict[str, Any]]:
     """Scan data_out/ for adapter checkpoints eligible for deployment."""
     candidates = []
 
@@ -91,7 +91,7 @@ def _scan_candidate_models() -> List[Dict[str, Any]]:
     return candidates
 
 
-def _select_best(candidates: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+def _select_best(candidates: list[dict[str, Any]]) -> dict[str, Any] | None:
     """Select the best model by accuracy, then recency."""
     if not candidates:
         return None
@@ -168,7 +168,7 @@ def cmd_deploy(args: argparse.Namespace) -> int:
     registry = _load_registry()
 
     # For canary: mark as canary and don't replace active immediately
-    entry: Dict[str, Any] = {
+    entry: dict[str, Any] = {
         "name": model["name"],
         "path": str(dest_path),
         "accuracy": model["accuracy"],

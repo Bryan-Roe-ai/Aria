@@ -10,7 +10,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 try:
     import yaml
@@ -26,7 +26,7 @@ class ValidationError:
     message: str
     severity: str = "error"  # error|warning
     # Path in config obj, e.g., "orchestrators[0].name"
-    path: Optional[str] = None
+    path: str | None = None
 
 
 @dataclass
@@ -35,8 +35,8 @@ class ValidationResult:
 
     config_path: Path
     valid: bool
-    errors: List[ValidationError] = field(default_factory=list)
-    warnings: List[ValidationError] = field(default_factory=list)
+    errors: list[ValidationError] = field(default_factory=list)
+    warnings: list[ValidationError] = field(default_factory=list)
 
     @property
     def has_critical_errors(self) -> bool:
@@ -85,7 +85,7 @@ class ConfigValidator:
         r"(\*|[0-7]|[0-9]-[0-9]|[0-9],[0-9]|[*/0-9,-]+)$"  # dow
     )
 
-    def __init__(self, repo_root: Optional[Path] = None):
+    def __init__(self, repo_root: Path | None = None):
         self.repo_root = repo_root or Path(__file__).resolve().parents[1]
 
     def validate_file(self, config_path: Path) -> ValidationResult:
@@ -142,9 +142,9 @@ class ConfigValidator:
         result.valid = not result.has_critical_errors
         return result
 
-    def _validate_orchestrators(self, orchestrators: List[Dict[str, Any]], result: ValidationResult):
+    def _validate_orchestrators(self, orchestrators: list[dict[str, Any]], result: ValidationResult):
         """Validate orchestrator list."""
-        defined_names: Set[str] = set()
+        defined_names: set[str] = set()
 
         for idx, orch in enumerate(orchestrators):
             if not isinstance(orch, dict):
@@ -284,8 +284,8 @@ class ConfigValidator:
 
     def _validate_dependencies(
         self,
-        orchestrators: List[Dict[str, Any]],
-        defined_names: Set[str],
+        orchestrators: list[dict[str, Any]],
+        defined_names: set[str],
         result: ValidationResult,
     ):
         """Validate orchestrator dependencies (no circular refs, all exist)."""
@@ -320,7 +320,7 @@ class ConfigValidator:
                     )
 
             # Check for circular deps
-            visited: Set[str] = set()
+            visited: set[str] = set()
             if self._has_circular_dep(name, orchestrators, visited):
                 result.errors.append(
                     ValidationError(
@@ -334,9 +334,9 @@ class ConfigValidator:
     def _has_circular_dep(
         self,
         orch_name: str,
-        orchestrators: List[Dict[str, Any]],
-        visited: Set[str],
-        rec_stack: Optional[Set[str]] = None,
+        orchestrators: list[dict[str, Any]],
+        visited: set[str],
+        rec_stack: set[str] | None = None,
     ) -> bool:
         """Check if orchestrator has circular dependency."""
         if rec_stack is None:
@@ -364,9 +364,9 @@ class ConfigValidator:
 
     def _validate_workflows(
         self,
-        workflows: List[Dict[str, Any]],
+        workflows: list[dict[str, Any]],
         result: ValidationResult,
-        orchestrators: List[Dict[str, Any]],
+        orchestrators: list[dict[str, Any]],
     ):
         """Validate workflow list."""
         defined_orch_names = {o.get("name") for o in orchestrators if isinstance(o, dict) and "name" in o}
@@ -421,13 +421,13 @@ class ConfigValidator:
                             )
                         )
 
-    def validate_master(self, config_path: Optional[Path] = None) -> ValidationResult:
+    def validate_master(self, config_path: Path | None = None) -> ValidationResult:
         """Validate master_orchestrator.yaml specifically."""
         if config_path is None:
             config_path = self.repo_root / "config" / "master_orchestrator.yaml"
         return self.validate_file(config_path)
 
-    def validate_autonomous_training(self, config_path: Optional[Path] = None) -> ValidationResult:
+    def validate_autonomous_training(self, config_path: Path | None = None) -> ValidationResult:
         """Validate autonomous_training.yaml specifically."""
         if config_path is None:
             config_path = self.repo_root / "config" / "autonomous_training.yaml"
@@ -435,8 +435,8 @@ class ConfigValidator:
 
 
 def validate_configs_before_daemon(
-    repo_root: Optional[Path] = None, exit_on_error: bool = True, verbose: bool = False
-) -> Tuple[bool, List[ValidationResult]]:
+    repo_root: Path | None = None, exit_on_error: bool = True, verbose: bool = False
+) -> tuple[bool, list[ValidationResult]]:
     """Validate all critical configs before starting daemon.
 
     Returns:

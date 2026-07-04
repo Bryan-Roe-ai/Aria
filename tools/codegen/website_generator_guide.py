@@ -4,7 +4,6 @@ Website Generator - Aria Platform
 Generate complete static websites with HTML, CSS, and JavaScript
 """
 
-import json
 import sys
 
 # ============================================================================
@@ -112,7 +111,7 @@ def show_website_options():
         print(f"   Description: {info['description']}")
         print(f"   Pages: {', '.join(info['pages'])}")
         print(f"   Best for: {info['best_for']}")
-        print(f"   Features:")
+        print("   Features:")
         for feature in info["features"]:
             print(f"     • {feature}")
 

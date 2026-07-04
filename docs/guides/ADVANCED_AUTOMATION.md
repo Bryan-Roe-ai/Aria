@@ -28,23 +28,27 @@ Comprehensive orchestration and automation layer for QAI workspace with multi-le
 ## Orchestrator Levels
 
 ### Level 1: Domain Orchestrators (Job Execution)
+
 - **autotrain.py** - LoRA fine-tuning jobs
 - **quantum_autorun.py** - Quantum training jobs
 - **evaluation_autorun.py** - Model evaluation jobs
 
 ### Level 2: Master Orchestrator (Workflow Coordination)
+
 - **master_orchestrator.py** - Coordinates workflows across orchestrators
 - Dependencies, priorities, timeouts
 - Success/failure handlers
 - Resource monitoring
 
 ### Level 3: CI/CD Orchestrator (Quality Gates)
+
 - **ci_orchestrator.py** - Parallel validation
 - Unit & integration tests
 - Code quality checks
 - Deployment preparation
 
 ### Level 4: Auto-Scheduler (Time-Based Automation)
+
 - **auto_scheduler.py** - Cron-based scheduling
 - Persistent state
 - Auto-retry logic
@@ -95,25 +99,25 @@ python .\scripts\ci_orchestrator.py --ci-pipeline
 
 All orchestrators available as VS Code tasks (Ctrl+Shift+P → "Run Task"):
 
-| Task | Command |
-| ------ | --------- |
-| **Run: Evaluation AutoRun (dry-run)** | Validate evaluation jobs |
-| **Run: Evaluation AutoRun (all)** | Run all evaluation jobs |
-| **Run: CI Validate All** | Validate all orchestrators in parallel |
-| **Run: CI Pipeline** | Full CI/CD pipeline execution |
-| **Run: Master Orchestrator - Quick Validation** | Quick workflow validation |
-| **Run: Master Orchestrator - Status** | Show orchestrator status |
-| **Run: Model Deployer - Scan** | Scan for deployable models |
-| **Run: Model Deployer - Deploy Best** | Auto-deploy best model |
-| **Run: Resource Monitor - Snapshot** | Capture resource snapshot |
-| **Run: Resource Monitor - Stream** | Real-time resource monitoring |
-| **Run: Batch Evaluator - Scan** | Scan and evaluate all models |
-| **Run: Results Exporter - Export to Markdown** | Export all results to Markdown |
-| **Run: Auto Scheduler - List** | List scheduled jobs |
-| **Run: CI Validate All** | Parallel validation of all orchestrators |
-| **Run: CI Pipeline** | Full CI/CD pipeline |
-| **Run: Master Orchestrator - Quick Validation** | Run quick_validation workflow |
-| **Run: Master Orchestrator - Status** | Show master orchestrator status |
+| Task                                            | Command                                  |
+| ----------------------------------------------- | ---------------------------------------- |
+| **Run: Evaluation AutoRun (dry-run)**           | Validate evaluation jobs                 |
+| **Run: Evaluation AutoRun (all)**               | Run all evaluation jobs                  |
+| **Run: CI Validate All**                        | Validate all orchestrators in parallel   |
+| **Run: CI Pipeline**                            | Full CI/CD pipeline execution            |
+| **Run: Master Orchestrator - Quick Validation** | Quick workflow validation                |
+| **Run: Master Orchestrator - Status**           | Show orchestrator status                 |
+| **Run: Model Deployer - Scan**                  | Scan for deployable models               |
+| **Run: Model Deployer - Deploy Best**           | Auto-deploy best model                   |
+| **Run: Resource Monitor - Snapshot**            | Capture resource snapshot                |
+| **Run: Resource Monitor - Stream**              | Real-time resource monitoring            |
+| **Run: Batch Evaluator - Scan**                 | Scan and evaluate all models             |
+| **Run: Results Exporter - Export to Markdown**  | Export all results to Markdown           |
+| **Run: Auto Scheduler - List**                  | List scheduled jobs                      |
+| **Run: CI Validate All**                        | Parallel validation of all orchestrators |
+| **Run: CI Pipeline**                            | Full CI/CD pipeline                      |
+| **Run: Master Orchestrator - Quick Validation** | Run quick_validation workflow            |
+| **Run: Master Orchestrator - Status**           | Show master orchestrator status          |
 
 ## Configuration Files
 
@@ -123,25 +127,26 @@ Defines workflows and orchestrator coordination:
 
 ```yaml
 workflows:
-  - name: daily_full_pipeline
-    enabled: true
-    trigger: schedule
-    schedule: "0 1 * * *"  # Daily at 1 AM
-    orchestrators:
-      - autotrain
-      - quantum_autorun
-      - evaluation_autorun
-    on_success:
-      - notify_slack
-      - deploy_best_models
-    on_failure:
-      - notify_slack
-      - create_issue
+    - name: daily_full_pipeline
+      enabled: true
+      trigger: schedule
+      schedule: "0 1 * * *" # Daily at 1 AM
+      orchestrators:
+          - autotrain
+          - quantum_autorun
+          - evaluation_autorun
+      on_success:
+          - notify_slack
+          - deploy_best_models
+      on_failure:
+          - notify_slack
+          - create_issue
 ```
 
 ### Workflow Patterns
 
 #### Quick Validation (CI/CD)
+
 Dry-run all orchestrators in sequence, fail fast on errors.
 
 ```powershell
@@ -149,6 +154,7 @@ python .\scripts\master_orchestrator.py --workflow quick_validation
 ```
 
 #### Daily Full Pipeline
+
 Run training → quantum → evaluation with notifications.
 
 ```powershell
@@ -156,6 +162,7 @@ python .\scripts\master_orchestrator.py --workflow daily_full_pipeline
 ```
 
 #### Weekly Comprehensive
+
 Full datasets, all jobs, comprehensive reports.
 
 ```powershell
@@ -172,57 +179,57 @@ name: QAI CI Pipeline
 on: [push, pull_request]
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-python@v4
+              with:
+                  python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install pyyaml pytest
+            - name: Install dependencies
+              run: pip install pyyaml pytest
 
-      - name: Validate All Orchestrators
-        run: python scripts/orchestrators/ci_orchestrator.py --validate-all
+            - name: Validate All Orchestrators
+              run: python scripts/orchestrators/ci_orchestrator.py --validate-all
 
-      - name: Run Unit Tests
-        run: python scripts/orchestrators/ci_orchestrator.py --quick-test
+            - name: Run Unit Tests
+              run: python scripts/orchestrators/ci_orchestrator.py --quick-test
 
-      - name: Upload Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: ci-results
-          path: data_out/ci_orchestrator/
+            - name: Upload Results
+              uses: actions/upload-artifact@v3
+              with:
+                  name: ci-results
+                  path: data_out/ci_orchestrator/
 ```
 
 ### Azure Pipelines Example
 
 ```yaml
 trigger:
-  - main
+    - main
 
 pool:
-  vmImage: 'windows-latest'
+    vmImage: "windows-latest"
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.11'
+    - task: UsePythonVersion@0
+      inputs:
+          versionSpec: "3.11"
 
-- script: pip install pyyaml pytest
-  displayName: 'Install dependencies'
+    - script: pip install pyyaml pytest
+      displayName: "Install dependencies"
 
-- script: python scripts/orchestrators/ci_orchestrator.py --validate-all
-  displayName: 'Validate orchestrators'
+    - script: python scripts/orchestrators/ci_orchestrator.py --validate-all
+      displayName: "Validate orchestrators"
 
-- script: python scripts/orchestrators/ci_orchestrator.py --ci-pipeline
-  displayName: 'Run CI pipeline'
+    - script: python scripts/orchestrators/ci_orchestrator.py --ci-pipeline
+      displayName: "Run CI pipeline"
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: 'data_out/ci_orchestrator'
-    artifactName: 'ci-results'
+    - task: PublishBuildArtifacts@1
+      inputs:
+          pathToPublish: "data_out/ci_orchestrator"
+          artifactName: "ci-results"
 ```
 
 ## Auto-Scheduler Commands
@@ -377,32 +384,36 @@ data_out/
 
 ```json
 {
-  "generated_at": "2025-11-22T17:30:00Z",
-  "orchestrators": [
-    {
-      "name": "autotrain",
-      "script": "scripts/training/autotrain.py",
-      "enabled": true,
-      "schedule": "0 2 * * *",
-      "priority": 1,
-      "dependencies": [],
-      "last_run": "20251122T173000Z",
-      "last_status": "succeeded"
+    "generated_at": "2025-11-22T17:30:00Z",
+    "orchestrators": [
+        {
+            "name": "autotrain",
+            "script": "scripts/training/autotrain.py",
+            "enabled": true,
+            "schedule": "0 2 * * *",
+            "priority": 1,
+            "dependencies": [],
+            "last_run": "20251122T173000Z",
+            "last_status": "succeeded"
+        }
+    ],
+    "workflows": [
+        {
+            "name": "quick_validation",
+            "enabled": true,
+            "trigger": "manual",
+            "orchestrators": [
+                "autotrain",
+                "quantum_autorun",
+                "evaluation_autorun"
+            ]
+        }
+    ],
+    "resource_usage": {
+        "cpu_percent": 25.3,
+        "memory_percent": 45.8,
+        "disk_percent": 62.1
     }
-  ],
-  "workflows": [
-    {
-      "name": "quick_validation",
-      "enabled": true,
-      "trigger": "manual",
-      "orchestrators": ["autotrain", "quantum_autorun", "evaluation_autorun"]
-    }
-  ],
-  "resource_usage": {
-    "cpu_percent": 25.3,
-    "memory_percent": 45.8,
-    "disk_percent": 62.1
-  }
 }
 ```
 
@@ -410,19 +421,19 @@ data_out/
 
 ```json
 {
-  "generated_at": "2025-11-22T17:30:00Z",
-  "total_steps": 7,
-  "succeeded": 6,
-  "failed": 0,
-  "skipped": 1,
-  "results": [
-    {
-      "name": "validate_orchestrators",
-      "status": "succeeded",
-      "duration_sec": 1.2,
-      "critical": true
-    }
-  ]
+    "generated_at": "2025-11-22T17:30:00Z",
+    "total_steps": 7,
+    "succeeded": 6,
+    "failed": 0,
+    "skipped": 1,
+    "results": [
+        {
+            "name": "validate_orchestrators",
+            "status": "succeeded",
+            "duration_sec": 1.2,
+            "critical": true
+        }
+    ]
 }
 ```
 
@@ -430,23 +441,23 @@ data_out/
 
 ```json
 {
-  "scheduler_running": true,
-  "total_jobs": 3,
-  "enabled_jobs": 2,
-  "disabled_jobs": 1,
-  "jobs": [
-    {
-      "name": "daily_training",
-      "workflow": "daily_full_pipeline",
-      "cron": "0 2 * * *",
-      "enabled": true,
-      "last_run": "2025-11-22T02:00:15Z",
-      "last_status": "succeeded",
-      "next_run": "2025-11-23 02:00:00",
-      "run_count": 15,
-      "consecutive_failures": 0
-    }
-  ]
+    "scheduler_running": true,
+    "total_jobs": 3,
+    "enabled_jobs": 2,
+    "disabled_jobs": 1,
+    "jobs": [
+        {
+            "name": "daily_training",
+            "workflow": "daily_full_pipeline",
+            "cron": "0 2 * * *",
+            "enabled": true,
+            "last_run": "2025-11-22T02:00:15Z",
+            "last_status": "succeeded",
+            "next_run": "2025-11-23 02:00:00",
+            "run_count": 15,
+            "consecutive_failures": 0
+        }
+    ]
 }
 ```
 
@@ -458,27 +469,27 @@ Master orchestrator handles dependencies automatically:
 
 ```yaml
 orchestrators:
-  - name: evaluation_autorun
-    dependencies: [autotrain, quantum_autorun]  # Wait for these
+    - name: evaluation_autorun
+      dependencies: [autotrain, quantum_autorun] # Wait for these
 ```
 
 ### Resource Limits
 
 ```yaml
 resource_limits:
-  max_concurrent_orchestrators: 2
-  max_cpu_percent: 80
-  max_memory_gb: 16
-  pause_on_resource_exhaustion: true
+    max_concurrent_orchestrators: 2
+    max_cpu_percent: 80
+    max_memory_gb: 16
+    pause_on_resource_exhaustion: true
 ```
 
 ### Auto-Retry Logic
 
 ```yaml
 orchestrators:
-  - name: autotrain
-    retry_on_failure: 3  # Retry up to 3 times
-    timeout_minutes: 240 # 4 hour timeout
+    - name: autotrain
+      retry_on_failure: 3 # Retry up to 3 times
+      timeout_minutes: 240 # 4 hour timeout
 ```
 
 ### Failure Handling
@@ -496,20 +507,20 @@ notify_on_failure: true      # Send notification
 
 ```yaml
 notifications:
-  slack_enabled: true
-  webhook_url: "${SLACK_WEBHOOK_URL}"
-  notify_on_failure: true
-  notify_on_success: false
+    slack_enabled: true
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    notify_on_failure: true
+    notify_on_success: false
 ```
 
 ### Email Notifications (Placeholder)
 
 ```yaml
 notifications:
-  email_enabled: true
-  to: "${ADMIN_EMAIL}"
-  notify_on_failure: true
-  notify_on_degradation: true
+    email_enabled: true
+    to: "${ADMIN_EMAIL}"
+    notify_on_failure: true
+    notify_on_degradation: true
 ```
 
 ## Troubleshooting
@@ -632,6 +643,7 @@ python .\scripts\model_deployer.py --rollback v1_20251122_123456
 ```
 
 **Features**:
+
 - Quality gate validation (accuracy > 0.75, loss < 0.5)
 - Model scoring and ranking
 - Deployment strategies: direct, canary, blue-green
@@ -660,6 +672,7 @@ python .\scripts\resource_monitor.py --set-threshold cpu_percent 85
 ```
 
 **Features**:
+
 - CPU, memory, disk, GPU monitoring
 - Threshold-based alerts
 - Historical data collection (JSONL format)
@@ -685,6 +698,7 @@ python .\scripts\batch_evaluator.py --export json
 ```
 
 **Features**:
+
 - Parallel evaluation (ThreadPoolExecutor)
 - Support for LoRA, Azure, OpenAI, Local, Quantum models
 - Result aggregation and ranking
@@ -710,6 +724,7 @@ python .\scripts\results_exporter.py --compare autotrain quantum_autorun --forma
 ```
 
 **Supported formats**:
+
 - JSON (machine-readable)
 - CSV (spreadsheet import)
 - Excel (requires openpyxl)
@@ -721,18 +736,21 @@ python .\scripts\results_exporter.py --compare autotrain quantum_autorun --forma
 **GitHub Actions workflow** - Automated CI on every commit:
 
 `.github/workflows/ci-pipeline.yml` includes:
+
 - Validation on push/PR
 - Daily training runs (scheduled)
 - Auto-deployment of best models
 - Artifact uploads
 
 **Trigger CI manually**:
+
 ```powershell
 # Run full CI pipeline locally
 python .\scripts\ci_orchestrator.py --ci-pipeline
 ```
 
 **Git hooks** - Pre-commit validation:
+
 ```powershell
 # Copy sample hook (manual installation)
 # .git\hooks\pre-commit.sample contains validation logic
@@ -747,16 +765,16 @@ Master orchestrator now supports more complex workflows:
 ```yaml
 # master_orchestrator.yaml
 workflows:
-  - name: full_ml_pipeline
-    description: "Complete ML pipeline with deployment"
-    trigger: manual
-    orchestrators:
-      - autotrain          # Step 1: Train models
-      - evaluation_autorun # Step 2: Evaluate models (depends on autotrain)
-      - model_deploy       # Step 3: Deploy best model
-    on_success:
-      - deploy_best_model
-      - send_notification
+    - name: full_ml_pipeline
+      description: "Complete ML pipeline with deployment"
+      trigger: manual
+      orchestrators:
+          - autotrain # Step 1: Train models
+          - evaluation_autorun # Step 2: Evaluate models (depends on autotrain)
+          - model_deploy # Step 3: Deploy best model
+      on_success:
+          - deploy_best_model
+          - send_notification
 ```
 
 ### Schedule Workflows with Cron

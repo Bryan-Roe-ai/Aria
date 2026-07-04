@@ -9,7 +9,6 @@ import statistics
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
 
 # Ensure repository root is on sys.path as early as possible so subprocess
 # invocations and test runners can import local packages reliably.
@@ -27,7 +26,7 @@ class TrainingAnalytics:
         self.status_file = Path(status_file)
         self.status = self.load_status()
 
-    def load_status(self) -> Dict:
+    def load_status(self) -> dict:
         """Load status from file"""
         loaded = load_status_json(self.status_file)
         if loaded.get("_status_file_error"):
@@ -35,7 +34,7 @@ class TrainingAnalytics:
         return {k: v for k, v in loaded.items() if not k.startswith("_status_file_")}
 
     @staticmethod
-    def _get_accuracy(perf: Dict) -> float:
+    def _get_accuracy(perf: dict) -> float:
         """Get accuracy from either modern or legacy status schema."""
         return perf.get("mean_accuracy", perf.get("accuracy", 0.0))
 
@@ -163,10 +162,10 @@ class TrainingAnalytics:
 
             report.append(f"Initial Accuracy: {first:.2%}")
             report.append(f"Current Accuracy: {last:.2%}")
-            report.append(f"Total Improvement: {improvement:.2%} (+{improvement*100:.2f} percentage points)")
+            report.append(f"Total Improvement: {improvement:.2%} (+{improvement * 100:.2f} percentage points)")
 
             improvement_rate = self.calculate_improvement_rate()
-            report.append(f"Improvement Rate: {improvement_rate*100:.3f}% per cycle")
+            report.append(f"Improvement Rate: {improvement_rate * 100:.3f}% per cycle")
             report.append("")
 
             # Predictions
@@ -202,8 +201,8 @@ class TrainingAnalytics:
             report.append("MODEL QUALITY BREAKDOWN (Latest Cycle)")
             report.append("-" * 80)
             denom = successful if successful > 0 else 1
-            report.append(f"Exceptional (≥95%): {exceptional} ({exceptional/denom*100:.1f}%)")
-            report.append(f"Excellent (85-95%): {excellent} ({excellent/denom*100:.1f}%)")
+            report.append(f"Exceptional (≥95%): {exceptional} ({exceptional / denom * 100:.1f}%)")
+            report.append(f"Excellent (85-95%): {excellent} ({excellent / denom * 100:.1f}%)")
             report.append(f"Total Successful: {successful}")
             report.append("")
 
@@ -293,15 +292,17 @@ class TrainingAnalytics:
   </head>
   <body>
     <h1>Autonomous Training Analytics Report</h1>
-    <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+    <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
     <h2>Overview</h2>
     <ul>
-      <li>Cycles completed: {self.status.get('cycles_completed', 0)}</li>
-      <li>Best accuracy: {self.status.get('best_accuracy', 0):.2%}</li>
-            <li>Total datasets: {self.status.get(
-                    'total_datasets_available',
-                    len(self.status.get('dataset_inventory', {})),
-            )}</li>
+      <li>Cycles completed: {self.status.get("cycles_completed", 0)}</li>
+      <li>Best accuracy: {self.status.get("best_accuracy", 0):.2%}</li>
+            <li>Total datasets: {
+            self.status.get(
+                "total_datasets_available",
+                len(self.status.get("dataset_inventory", {})),
+            )
+        }</li>
     </ul>
     <h2>Report</h2>
     <pre>{self.generate_report()}</pre>
@@ -316,11 +317,11 @@ class TrainingAnalytics:
             html += f"""
             <tr>
                 <td>#{i}</td>
-                <td>{perf.get('epochs', '-')}</td>
+                <td>{perf.get("epochs", "-")}</td>
                 <td>{row_mean:.2%}</td>
                 <td>{row_max:.2%}</td>
-                <td>{perf.get('exceptional_models', 0)}</td>
-                <td>{perf.get('successful_count', perf.get('datasets_trained', 0))}</td>
+                <td>{perf.get("exceptional_models", 0)}</td>
+                <td>{perf.get("successful_count", perf.get("datasets_trained", 0))}</td>
             </tr>
 """
 

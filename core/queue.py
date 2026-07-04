@@ -5,9 +5,9 @@ Aria Async Task Queue
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from contextlib import suppress
-from typing import Any, Awaitable, Callable, Generic, TypeVar
-
+from typing import Any, Generic, TypeVar
 
 _STOP = object()
 TTask = TypeVar("TTask")

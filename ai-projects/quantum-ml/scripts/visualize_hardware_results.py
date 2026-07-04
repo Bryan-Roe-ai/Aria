@@ -15,7 +15,6 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -32,24 +31,24 @@ VIZ_DIR.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"figure.autolayout": True, "figure.dpi": 120})
 
 
-def load_config() -> Dict:
-    with open(CONFIG_PATH, "r") as f:
+def load_config() -> dict:
+    with open(CONFIG_PATH) as f:
         return yaml.safe_load(f)
 
 
-def find_local_results(results_dir: Path) -> List[Path]:
+def find_local_results(results_dir: Path) -> list[Path]:
     # Look for files saved by test_azure_quantum.py (bell_state_results_*.json, optimized_circuit_results_*.json)
     patterns = [
         "bell_state_results_*.json",
         "optimized_circuit_results_*.json",
         "*results*.json",
     ]
-    found: List[Path] = []
+    found: list[Path] = []
     for pat in patterns:
         found.extend(results_dir.glob(pat))
     # De-duplicate while preserving order
     seen = set()
-    uniq: List[Path] = []
+    uniq: list[Path] = []
     for p in found:
         if p.name not in seen:
             uniq.append(p)
@@ -57,7 +56,7 @@ def find_local_results(results_dir: Path) -> List[Path]:
     return uniq
 
 
-def load_counts_from_json(p: Path) -> Optional[Dict[str, int]]:
+def load_counts_from_json(p: Path) -> dict[str, int] | None:
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         # Expecting {'job_id': str, 'counts': {bitstring: int}, 'success': bool}
@@ -70,7 +69,7 @@ def load_counts_from_json(p: Path) -> Optional[Dict[str, int]]:
     return None
 
 
-def try_load_metadata(p: Path) -> Optional[Dict]:
+def try_load_metadata(p: Path) -> dict | None:
     try:
         data = json.loads(p.read_text(encoding="utf-8"))
         meta = data.get("metadata", {})
@@ -109,7 +108,7 @@ def try_load_metadata(p: Path) -> Optional[Dict]:
         return None
 
 
-def compute_entanglement_ratio(counts: Dict[str, int]) -> Optional[float]:
+def compute_entanglement_ratio(counts: dict[str, int]) -> float | None:
     # Only meaningful for 2-qubit bell state
     if not counts:
         return None
@@ -129,7 +128,7 @@ def _abbr_label(label: str, max_len: int = 24) -> str:
     return f"{label[:8]}…{label[-8:]}"
 
 
-def plot_counts_bar(counts: Dict[str, int], title: str, out_path: Path, top_n: int = 10) -> None:
+def plot_counts_bar(counts: dict[str, int], title: str, out_path: Path, top_n: int = 10) -> None:
     total = sum(counts.values())
     items = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:top_n]
     labels = [k for k, _ in items]
@@ -149,7 +148,7 @@ def plot_counts_bar(counts: Dict[str, int], title: str, out_path: Path, top_n: i
     plt.close(fig)
 
 
-def plot_2qubit_heatmap(counts: Dict[str, int], title: str, out_path: Path) -> None:
+def plot_2qubit_heatmap(counts: dict[str, int], title: str, out_path: Path) -> None:
     # Build 2x2 matrix in order [00, 01, 10, 11]
     mat = [
         [counts.get("00", 0), counts.get("01", 0)],
@@ -171,7 +170,7 @@ def plot_2qubit_heatmap(counts: Dict[str, int], title: str, out_path: Path) -> N
     plt.close(fig)
 
 
-def plot_hamming_weight_hist(counts: Dict[str, int], out_path: Path) -> None:
+def plot_hamming_weight_hist(counts: dict[str, int], out_path: Path) -> None:
     if not counts:
         return
     bit_lengths = {len(k) for k in counts}
@@ -179,7 +178,7 @@ def plot_hamming_weight_hist(counts: Dict[str, int], out_path: Path) -> None:
         return
     n = bit_lengths.pop()
     # compute weight distribution
-    weight_counts: Dict[int, int] = {}
+    weight_counts: dict[int, int] = {}
     for bitstr, c in counts.items():
         w = bitstr.count("1")
         weight_counts[w] = weight_counts.get(w, 0) + int(c)
@@ -196,7 +195,7 @@ def plot_hamming_weight_hist(counts: Dict[str, int], out_path: Path) -> None:
     plt.close(fig)
 
 
-def try_fetch_azure_job_list(resource_group: str, workspace: str, location: str) -> Optional[pd.DataFrame]:
+def try_fetch_azure_job_list(resource_group: str, workspace: str, location: str) -> pd.DataFrame | None:
     cmd = [
         "az",
         "quantum",
@@ -265,8 +264,8 @@ def plot_provider_status_stacked(df: pd.DataFrame, out_path: Path) -> None:
     plt.close(fig)
 
 
-def build_summary_df(files: List[Path]) -> pd.DataFrame:
-    rows: List[Dict] = []
+def build_summary_df(files: list[Path]) -> pd.DataFrame:
+    rows: list[dict] = []
     for p in files:
         meta = try_load_metadata(p)
         if not meta:
@@ -312,7 +311,7 @@ def main() -> int:
         local_files = alt
         if alt:
             print(f"Found {len(alt)} local result file(s) in {ALT_RESULTS_DIR}")
-    entanglement_summary: List[Tuple[str, float]] = []
+    entanglement_summary: list[tuple[str, float]] = []
 
     if local_files:
         # If they came from RESULTS_DIR this message is accurate; otherwise a message was already printed.
@@ -376,7 +375,7 @@ def main() -> int:
                     ax.set_ylim(0, 100)
                     out = (
                         VIZ_DIR
-                        / f"summary_entropy_mps_n{nq}_L{L}_{nlbl.replace('=','').replace(',','_').replace('(','').replace(')','').replace(' ','')}.png"
+                        / f"summary_entropy_mps_n{nq}_L{L}_{nlbl.replace('=', '').replace(',', '_').replace('(', '').replace(')', '').replace(' ', '')}.png"
                     )
                     fig.savefig(out)
                     plt.close(fig)

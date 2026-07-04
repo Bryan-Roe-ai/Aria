@@ -1,10 +1,8 @@
 import os
 import time
-from datetime import datetime, timedelta
-from typing import List
 
 
-def list_conversation_files(conv_dir: str) -> List[str]:
+def list_conversation_files(conv_dir: str) -> list[str]:
     if not os.path.exists(conv_dir):
         return []
     files = [os.path.join(conv_dir, f) for f in os.listdir(conv_dir) if os.path.isfile(os.path.join(conv_dir, f))]

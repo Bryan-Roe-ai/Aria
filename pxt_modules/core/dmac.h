@@ -7,15 +7,15 @@ namespace pxt {
 
 #ifdef CODAL_DMAC
 class WDMAC {
-  public:
-    CODAL_DMAC dmac;
+public:
+  CODAL_DMAC dmac;
 
-    WDMAC() {}
+  WDMAC() {}
 };
 
-WDMAC* getWDMAC();
+WDMAC *getWDMAC();
 #endif
 
-}
+} // namespace pxt
 
 #endif

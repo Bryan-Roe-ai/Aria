@@ -14,7 +14,12 @@ The configs under `lora/` and `soft_prompt/` are Azure AI Toolkit–compatible. 
 Use JSONL where each line is a JSON object with a `messages` array:
 
 ```json
-{"messages": [{"role": "user", "content": "Hi"}, {"role": "assistant", "content": "Hello!"}]}
+{
+    "messages": [
+        { "role": "user", "content": "Hi" },
+        { "role": "assistant", "content": "Hello!" }
+    ]
+}
 ```
 
 This repo includes tiny samples in `data/train.json` and `data/test.json` (JSONL with `.json` extension).
@@ -94,6 +99,7 @@ The trainer computes and prints perplexity before and after training using the e
 ## Train at scale on Azure (optional)
 
 1. Provision resources using the bicep in `lora/infra/provision`. Fill in `finetuning.config.json` and run the documented deployment steps (see the top-level workspace docs).
+
 ## Train on Azure Machine Learning (Recommended for GPU Training)
 
 Azure ML provides managed GPU compute with auto-scaling for cost-effective training.
@@ -122,6 +128,7 @@ python azure_ml_training.py --action train `
 ```
 
 **Benefits:**
+
 - **GPU acceleration**: 1-4x V100 GPUs (Standard_NC6s_v3 @ ~$3/hour)
 - **Auto-scaling**: Scales to 0 when idle (no cost)
 - **Monitoring**: Real-time metrics in Azure ML Studio
@@ -130,6 +137,7 @@ python azure_ml_training.py --action train `
 See **[AZURE_ML_TRAINING_GUIDE.md](./AZURE_ML_TRAINING_GUIDE.md)** for complete documentation.
 
 ## Train at scale on Azure Container Apps (Alternative)
+
 2. Upload your dataset to the mounted file share path expected by the job (the infra uses `mount/<run_id>/dataset`).
 3. Ensure `lora.yaml` points to `finetune_dataset: "mount/<run_id>/dataset"` and `save_dir` is also under `mount/<run_id>/...`.
 4. Start the job. The standard runner will read `lora.yaml` and train using LoRA.
@@ -193,9 +201,9 @@ When using manifests, the trainer keeps streaming enabled by default for best sc
 
 - All evaluation metrics are appended to `<save_dir>/metrics.jsonl`.
 - If the following environment variables are set, the same metrics are also sent to Azure Log Analytics via the HTTP Data Collector API:
-  - `AZURE_LOG_ANALYTICS_WORKSPACE_ID`
-  - `AZURE_LOG_ANALYTICS_SHARED_KEY`
-  - Optional: `AZURE_LOG_TYPE` (default: `LLMTrainingMetrics`)
+    - `AZURE_LOG_ANALYTICS_WORKSPACE_ID`
+    - `AZURE_LOG_ANALYTICS_SHARED_KEY`
+    - Optional: `AZURE_LOG_TYPE` (default: `LLMTrainingMetrics`)
 
 Each record contains a UTC `timestamp` plus fields like `eval_loss`, `eval_perplexity`, and `step`.
 

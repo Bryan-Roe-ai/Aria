@@ -59,9 +59,7 @@ def test_resolve_workspace_value_substitutes_workspace_folder():
     workspace = Path("/tmp/example-workspace")
 
     assert (
-        resolve_workspace_value(
-            "${workspaceFolder}/scripts/tool.py", workspace
-        )
+        resolve_workspace_value("${workspaceFolder}/scripts/tool.py", workspace)
         == "/tmp/example-workspace/scripts/tool.py"
     )
 
@@ -73,20 +71,14 @@ def test_build_server_params_resolves_command_args_env_and_cwd():
         {
             "command": "${workspaceFolder}/.venv/bin/python",
             "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"],
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}"
-            },
+            "env": {"PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}"},
             "cwd": "${workspaceFolder}/scripts",
         },
     )
 
     assert params.command == "/tmp/example-workspace/.venv/bin/python"
-    assert params.args == [
-        "/tmp/example-workspace/scripts/task_complete_mcp_server.py"
-    ]
-    assert params.env == {
-        "PYTHONPATH": "/tmp/example-workspace/scripts:/tmp/example-workspace"
-    }
+    assert params.args == ["/tmp/example-workspace/scripts/task_complete_mcp_server.py"]
+    assert params.env == {"PYTHONPATH": "/tmp/example-workspace/scripts:/tmp/example-workspace"}
     assert params.cwd == "/tmp/example-workspace/scripts"
 
 

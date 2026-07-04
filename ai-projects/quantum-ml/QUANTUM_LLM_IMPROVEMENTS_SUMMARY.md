@@ -24,10 +24,10 @@ This comprehensive work package includes:
 ### New Features
 
 - **Circuit Caching Configuration**
-  - `cache_enabled: bool = True` — Enable/disable result caching
-  - `cache_max_size: int = 256` — LRU cache capacity
-  - `cache_ttl_seconds: float = 3600.0` — Cache entry TTL (1 hour default)
-  - Environment variable support: `QUANTUM_LLM_CACHE_*`
+    - `cache_enabled: bool = True` — Enable/disable result caching
+    - `cache_max_size: int = 256` — LRU cache capacity
+    - `cache_ttl_seconds: float = 3600.0` — Cache entry TTL (1 hour default)
+    - Environment variable support: `QUANTUM_LLM_CACHE_*`
 
 ### Improvements
 
@@ -102,29 +102,31 @@ stats = cache.stats()
 ### Enhancements
 
 - **Circuit Caching Integration**
-  ```python
-  sampler = QuantumSampler(
-      backend="classical",
-      num_qubits=4,
-      shots=512,
-      num_layers=2,
-      cache_enabled=True,
-      cache_max_size=256,
-      cache_ttl_seconds=3600,
-  )
-  ```
+
+    ```python
+    sampler = QuantumSampler(
+        backend="classical",
+        num_qubits=4,
+        shots=512,
+        num_layers=2,
+        cache_enabled=True,
+        cache_max_size=256,
+        cache_ttl_seconds=3600,
+    )
+    ```
 
 - **Cache Statistics Method**
-  ```python
-  stats = sampler.cache_stats()
-  if stats.get("hit_rate", 0) > 0.7:
-      print("Good cache performance!")
-  ```
+
+    ```python
+    stats = sampler.cache_stats()
+    if stats.get("hit_rate", 0) > 0.7:
+        print("Good cache performance!")
+    ```
 
 - **Improved `_get_circuit_probs()` Method**
-  - Checks cache before computing
-  - Stores results automatically
-  - Graceful fallback to computation
+    - Checks cache before computing
+    - Stores results automatically
+    - Graceful fallback to computation
 
 ### Code Quality
 
@@ -139,39 +141,41 @@ stats = cache.stats()
 ### Enhancements
 
 - **Cache Configuration Propagation**
-  ```python
-  self.sampler = QuantumSampler(
-      backend=cfg.backend,
-      num_qubits=cfg.num_qubits,
-      shots=cfg.shots,
-      num_layers=cfg.num_layers,
-      cache_enabled=cfg.cache_enabled,
-      cache_max_size=cfg.cache_max_size,
-      cache_ttl_seconds=cfg.cache_ttl_seconds,
-  )
-  ```
+
+    ```python
+    self.sampler = QuantumSampler(
+        backend=cfg.backend,
+        num_qubits=cfg.num_qubits,
+        shots=cfg.shots,
+        num_layers=cfg.num_layers,
+        cache_enabled=cfg.cache_enabled,
+        cache_max_size=cfg.cache_max_size,
+        cache_ttl_seconds=cfg.cache_ttl_seconds,
+    )
+    ```
 
 - **Enhanced Status Endpoint**
-  ```python
-  status = pipeline.status()
-  # Now includes:
-  # "cache": {
-  #   "enabled": true,
-  #   "stats": {
-  #     "size": 42,
-  #     "max_size": 256,
-  #     "hits": 127,
-  #     "misses": 35,
-  #     "hit_rate": 0.784,
-  #     "evictions": 0,
-  #     "expirations": 2,
-  #   }
-  # }
-  ```
+
+    ```python
+    status = pipeline.status()
+    # Now includes:
+    # "cache": {
+    #   "enabled": true,
+    #   "stats": {
+    #     "size": 42,
+    #     "max_size": 256,
+    #     "hits": 127,
+    #     "misses": 35,
+    #     "hit_rate": 0.784,
+    #     "evictions": 0,
+    #     "expirations": 2,
+    #   }
+    # }
+    ```
 
 - **Improved Error Messages**
-  - More descriptive exception handling
-  - Better logging context
+    - More descriptive exception handling
+    - Better logging context
 
 ---
 
@@ -180,6 +184,7 @@ stats = cache.stats()
 ### New Test Files
 
 #### `tests/unit/test_quantum_llm_config.py`
+
 - 30+ test cases for configuration management
 - Environment variable reading
 - Type coercion
@@ -187,6 +192,7 @@ stats = cache.stats()
 - Default handling
 
 #### `tests/unit/test_quantum_llm_components.py`
+
 - Sampler functionality tests
 - Embedding transformer tests
 - Router selection tests
@@ -194,6 +200,7 @@ stats = cache.stats()
 - 40+ test cases total
 
 #### `tests/unit/test_circuit_cache.py`
+
 - LRU eviction tests
 - TTL expiration tests
 - Cache statistics tests
@@ -201,6 +208,7 @@ stats = cache.stats()
 - 35+ test cases total
 
 #### `tests/integration/test_quantum_llm_pipeline.py`
+
 - End-to-end pipeline tests
 - Async generation/streaming tests
 - Error handling tests
@@ -237,6 +245,7 @@ pytest tests/ -k "quantum_llm" --cov=ai-projects/quantum-ml/src/quantum_llm --co
 ### New Files
 
 #### `COMPREHENSIVE_README.md`
+
 - 500+ lines of documentation
 - Architecture diagrams
 - Quick start guide
@@ -317,28 +326,28 @@ python ai-projects/quantum-ml/quantum_llm_demo.py
 
 ### Performance
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Repeated queries | ~10ms each | ~0.01ms (cache hit) | **1000x faster** |
-| Cache hit rate | N/A | 70-85% typical | **New feature** |
-| Memory overhead | Minimal | +1-2MB (256 entries) | **Bounded & tunable** |
+| Metric           | Before     | After                | Improvement           |
+| ---------------- | ---------- | -------------------- | --------------------- |
+| Repeated queries | ~10ms each | ~0.01ms (cache hit)  | **1000x faster**      |
+| Cache hit rate   | N/A        | 70-85% typical       | **New feature**       |
+| Memory overhead  | Minimal    | +1-2MB (256 entries) | **Bounded & tunable** |
 
 ### Code Quality
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Unit tests | ~10 | **120+** |
-| Documentation | README | **COMPREHENSIVE_README** |
-| Type hints | Partial | **Complete** |
-| Error handling | Basic | **Enhanced** |
+| Metric         | Before  | After                    |
+| -------------- | ------- | ------------------------ |
+| Unit tests     | ~10     | **120+**                 |
+| Documentation  | README  | **COMPREHENSIVE_README** |
+| Type hints     | Partial | **Complete**             |
+| Error handling | Basic   | **Enhanced**             |
 
 ### Observability
 
-| Metric | Before | After |
-|--------|--------|-------|
-| Status endpoint | Basic | **Includes cache stats** |
-| Logging | Standard | **Enhanced context** |
-| Metrics | None | **Cache performance** |
+| Metric          | Before   | After                    |
+| --------------- | -------- | ------------------------ |
+| Status endpoint | Basic    | **Includes cache stats** |
+| Logging         | Standard | **Enhanced context**     |
+| Metrics         | None     | **Cache performance**    |
 
 ---
 

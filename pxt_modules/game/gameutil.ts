@@ -2,7 +2,6 @@
  * Game transitions and dialog
  **/
 namespace game {
-
     /**
      * Update the position and velocities of sprites
      * @param body code to execute
@@ -12,8 +11,8 @@ namespace game {
     //% blockId=gameupdate block="on game update"
     //% blockAllowMultiple=1
     export function onUpdate(a: () => void): void {
-        if (!a) return;
-        game.eventContext().registerFrameHandler(scene.UPDATE_PRIORITY, a);
+        if (!a) return
+        game.eventContext().registerFrameHandler(scene.UPDATE_PRIORITY, a)
     }
 
     /**
@@ -25,15 +24,18 @@ namespace game {
     //% blockId=gameinterval block="on game update every %period=timePicker ms"
     //% blockAllowMultiple=1
     export function onUpdateInterval(period: number, a: () => void): void {
-        if (!a || period < 0) return;
-        let timer = 0;
-        game.eventContext().registerFrameHandler(scene.UPDATE_INTERVAL_PRIORITY, () => {
-            const time = game.currentScene().millis();
-            if (timer <= time) {
-                timer = time + period;
-                a();
-            }
-        });
+        if (!a || period < 0) return
+        let timer = 0
+        game.eventContext().registerFrameHandler(
+            scene.UPDATE_INTERVAL_PRIORITY,
+            () => {
+                const time = game.currentScene().millis()
+                if (timer <= time) {
+                    timer = time + period
+                    a()
+                }
+            },
+        )
     }
 
     /**
@@ -43,6 +45,6 @@ namespace game {
     //% group="Gameplay" weight=11
     //% help=game/runtime
     export function runtime(): number {
-        return currentScene().millis();
+        return currentScene().millis()
     }
 }

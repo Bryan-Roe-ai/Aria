@@ -10,16 +10,16 @@
 ## 📚 Documentation Files
 
 1. **[PERFORMANCE_OPTIMIZATION_GUIDE.md](PERFORMANCE_OPTIMIZATION_GUIDE.md)** (355 lines)
-   - Complete guide with examples
-   - Best practices and anti-patterns
-   - Monitoring and benchmarking
-   - Performance targets
+    - Complete guide with examples
+    - Best practices and anti-patterns
+    - Monitoring and benchmarking
+    - Performance targets
 
 2. **[PERFORMANCE_IMPLEMENTATION_SUMMARY.md](PERFORMANCE_IMPLEMENTATION_SUMMARY.md)** (246 lines)
-   - Detailed implementation overview
-   - Benchmark results
-   - Usage examples
-   - Future recommendations
+    - Detailed implementation overview
+    - Benchmark results
+    - Usage examples
+    - Future recommendations
 
 ## 🚀 Quick Start
 
@@ -64,6 +64,7 @@ def fetch_config():
 ### 1. File Tailing (1.9x faster, 5.1 MB saved)
 
 **Before:**
+
 ```python
 with open(log_file, 'r') as f:
     all_lines = f.readlines()  # Loads entire file!
@@ -71,6 +72,7 @@ with open(log_file, 'r') as f:
 ```
 
 **After:**
+
 ```python
 from shared.performance_utils import tail_file
 return tail_file(log_file, max_lines=20)  # Only keeps 20 lines in memory
@@ -79,6 +81,7 @@ return tail_file(log_file, max_lines=20)  # Only keeps 20 lines in memory
 ### 2. JSON Parsing (10.7x faster)
 
 **Before:**
+
 ```python
 for line in output.splitlines():  # Parse all lines
     if line.strip().startswith("{"):
@@ -88,6 +91,7 @@ for line in output.splitlines():  # Parse all lines
 ```
 
 **After:**
+
 ```python
 from shared.performance_utils import find_json_in_output
 return find_json_in_output(output, key='metrics', search_from_end=True)
@@ -96,6 +100,7 @@ return find_json_in_output(output, key='metrics', search_from_end=True)
 ### 3. JSONL Streaming (1.1x faster, 1.2 MB saved)
 
 **Before:**
+
 ```python
 with open('data.jsonl', 'r') as f:
     all_records = [json.loads(line) for line in f]  # Loads all into memory
@@ -104,6 +109,7 @@ for record in all_records:
 ```
 
 **After:**
+
 ```python
 from shared.performance_utils import stream_jsonl
 for record in stream_jsonl(Path('data.jsonl')):  # Streams one at a time
@@ -113,11 +119,13 @@ for record in stream_jsonl(Path('data.jsonl')):  # Streams one at a time
 ## 📦 Files Changed
 
 ### Modified (3 files)
+
 - `scripts/monitor_autonomous_training.py` - Use `tail_file()`
 - `dashboard/serve.py` - Use `tail_file()`
 - `scripts/batch_evaluator.py` - Use `find_json_in_output()`
 
 ### Created (4 files)
+
 - `shared/performance_utils.py` - Reusable utilities (473 lines)
 - `docs/PERFORMANCE_OPTIMIZATION_GUIDE.md` - Complete guide (355 lines)
 - `docs/PERFORMANCE_IMPLEMENTATION_SUMMARY.md` - Implementation details (246 lines)

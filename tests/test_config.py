@@ -9,7 +9,6 @@ These tests verify that:
 """
 
 from __future__ import annotations
-from shared.config import Settings, get_settings, reset_settings
 
 import os
 import sys
@@ -17,6 +16,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+
+from shared.config import Settings, get_settings, reset_settings
 
 # Ensure shared/ is importable when running from the repo root
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -128,14 +129,12 @@ class TestEnvVarPropagation:
     def test_blank_provider_priority_falls_back_to_default_chain(self):
         with patch.dict(os.environ, {"QAI_PROVIDER_PRIORITY": ""}):
             s = Settings()
-            assert s.provider_chain() == [
-                "lmstudio", "ollama", "azure", "openai", "local"]
+            assert s.provider_chain() == ["lmstudio", "ollama", "azure", "openai", "local"]
 
     def test_whitespace_provider_priority_falls_back_to_default_chain(self):
         with patch.dict(os.environ, {"QAI_PROVIDER_PRIORITY": " ,  ,   "}):
             s = Settings()
-            assert s.provider_chain() == [
-                "lmstudio", "ollama", "azure", "openai", "local"]
+            assert s.provider_chain() == ["lmstudio", "ollama", "azure", "openai", "local"]
 
 
 class TestActiveProvider:

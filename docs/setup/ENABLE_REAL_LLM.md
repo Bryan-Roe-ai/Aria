@@ -39,12 +39,12 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 
 ```json
 {
-  "Values": {
-    "AZURE_OPENAI_ENDPOINT": "https://your-resource.openai.azure.com/",
-    "AZURE_OPENAI_API_KEY": "your-api-key",
-    "AZURE_OPENAI_DEPLOYMENT": "deployment-name",
-    "AZURE_OPENAI_API_VERSION": "2024-02-15-preview"
-  }
+    "Values": {
+        "AZURE_OPENAI_ENDPOINT": "https://your-resource.openai.azure.com/",
+        "AZURE_OPENAI_API_KEY": "your-api-key",
+        "AZURE_OPENAI_DEPLOYMENT": "deployment-name",
+        "AZURE_OPENAI_API_VERSION": "2024-02-15-preview"
+    }
 }
 ```
 
@@ -69,9 +69,9 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 
 ```json
 {
-  "Values": {
-    "OPENAI_API_KEY": "sk-..."
-  }
+    "Values": {
+        "OPENAI_API_KEY": "sk-..."
+    }
 }
 ```
 

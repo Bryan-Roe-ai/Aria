@@ -21,30 +21,36 @@ Create a personal instruction file for your development preferences:
 **Location**: `~/.config/copilot/instructions.md` (Linux/Mac) or `%APPDATA%\GitHub\Copilot\instructions.md` (Windows)
 
 **Example**:
+
 ```markdown
 # My Development Preferences
 
 ## Code Style
+
 - Use type hints for all functions
 - Follow PEP 8 strictly
 - Prefer f-strings over .format()
 
 ## Architecture
+
 - Prefer composition over inheritance
 - Use dependency injection
 - Prefer async/await over callbacks
 
 ## Testing
+
 - Aim for >90% code coverage
 - Test edge cases and error paths
 - Use pytest for Python testing
 
 ## Performance
+
 - Always consider time complexity
 - Profile before optimizing
 - Document performance-critical sections
 
 ## Security
+
 - Validate all inputs
 - Never hardcode secrets
 - Use parameterized queries
@@ -56,15 +62,15 @@ Set your preferred models in VS Code settings:
 
 ```json
 {
-  "chat.mcp.serverSampling": {
-    "Aria/.vscode/mcp.json: my-preference": {
-      "allowedModels": [
-        "copilot/gpt-4o",           // Primary choice
-        "copilot/claude-opus-4.6",  // Fallback for reasoning
-        "copilot/auto"              // Last resort
-      ]
+    "chat.mcp.serverSampling": {
+        "Aria/.vscode/mcp.json: my-preference": {
+            "allowedModels": [
+                "copilot/gpt-4o", // Primary choice
+                "copilot/claude-opus-4.6", // Fallback for reasoning
+                "copilot/auto" // Last resort
+            ]
+        }
     }
-  }
 }
 ```
 
@@ -74,21 +80,21 @@ Add to `.vscode/keybindings.json`:
 
 ```json
 [
-  {
-    "key": "ctrl+alt+c",
-    "command": "workbench.action.quickOpen",
-    "args": "@chat-provider"
-  },
-  {
-    "key": "ctrl+alt+d",
-    "command": "workbench.action.quickOpen",
-    "args": "@full-stack-debugger"
-  },
-  {
-    "key": "ctrl+alt+t",
-    "command": "workbench.action.quickOpen",
-    "args": "@task-complete"
-  }
+    {
+        "key": "ctrl+alt+c",
+        "command": "workbench.action.quickOpen",
+        "args": "@chat-provider"
+    },
+    {
+        "key": "ctrl+alt+d",
+        "command": "workbench.action.quickOpen",
+        "args": "@full-stack-debugger"
+    },
+    {
+        "key": "ctrl+alt+t",
+        "command": "workbench.action.quickOpen",
+        "args": "@task-complete"
+    }
 ]
 ```
 
@@ -134,7 +140,7 @@ When asked to [trigger], [response].
 
 Create `.github/agents/custom-training.agent.md`:
 
-```yaml
+````yaml
 ---
 name: custom-training
 description: "Specialized training orchestration for custom datasets and models"
@@ -171,7 +177,7 @@ You specialize in training optimization for the Aria platform.
 python scripts/autotrain.py --config custom
 python scripts/evaluate_model.py --model latest
 python scripts/training_analytics.py --dataset [name]
-```
+````
 
 ## Decision Rules
 
@@ -179,7 +185,8 @@ python scripts/training_analytics.py --dataset [name]
 - If loss plateau: suggest learning rate reduction
 - If overfitting: suggest dropout or regularization
 - If underfitting: suggest more epochs or model capacity
-```
+
+````
 
 ### Example: Custom Debugging Agent
 
@@ -231,7 +238,7 @@ You are specialized in debugging our Aria platform issues.
 - Check server is running: `ps aux | grep aria`
 - Verify port 8080 is free
 - Check action parser: `@aria-character explain what you understand`
-```
+````
 
 ## Custom Skills & Workflows
 
@@ -241,7 +248,7 @@ Create skill workflows in `.github/skills/`:
 
 **Template**: `.github/skills/my-workflow/SKILL.md`
 
-```markdown
+````markdown
 # My Custom Workflow
 
 This workflow handles [specific task].
@@ -249,6 +256,7 @@ This workflow handles [specific task].
 ## When to Use
 
 Use this skill when:
+
 - [Condition 1]
 - [Condition 2]
 - [Condition 3]
@@ -256,15 +264,18 @@ Use this skill when:
 ## Workflow Steps
 
 ### Phase 1: Analysis
+
 1. [Step 1]
 2. [Step 2]
 3. [Step 3]
 
 ### Phase 2: Implementation
+
 1. [Step 1]
 2. [Step 2]
 
 ### Phase 3: Validation
+
 1. [Step 1]
 2. [Step 2]
 
@@ -277,19 +288,23 @@ Use this skill when:
 # Example 2
 [Example command or request]
 ```
+````
 
 ## Troubleshooting
 
 ### Issue: [Common problem]
+
 **Solution**: [How to resolve]
 
 ### Issue: [Common problem]
+
 **Solution**: [How to resolve]
 
 ## References
 
 - [Link 1]
 - [Link 2]
+
 ```
 
 ### Auto-Loading Skills
@@ -307,48 +322,60 @@ Skills load automatically based on file paths. To ensure loading:
 
 #### Pattern 1: Role Definition
 ```
+
 You are a [role] specialized in [domain].
 Your expertise includes:
+
 - [Expertise 1]
 - [Expertise 2]
 - [Expertise 3]
 
 When I ask you to [task], you:
+
 1. [Step 1]
 2. [Step 2]
 3. [Step 3]
+
 ```
 
 #### Pattern 2: Constraint-Based
 ```
+
 [Task description]
 
 Constraints:
+
 - [Constraint 1]
 - [Constraint 2]
 - [Constraint 3]
 
 Rules:
+
 - [Rule 1]
 - [Rule 2]
+
 ```
 
 #### Pattern 3: Reasoning with Examples
 ```
+
 I need you to [task].
 
 Example 1:
+
 - Input: [Example input]
 - Output: [Example output]
 - Reasoning: [Explanation]
 
 Example 2:
+
 - Input: [Example input]
 - Output: [Example output]
 - Reasoning: [Explanation]
 
 Now apply this reasoning to: [Your request]
-```
+
+````
 
 ### Testing Prompts
 
@@ -376,7 +403,7 @@ Test cases to validate prompt effectiveness:
 **Expected**: [Expected output]
 **Actual**: [Copilot response]
 **Pass**: [ ] Yes [ ] No
-```
+````
 
 ## Local Extensions
 
@@ -430,23 +457,23 @@ Add to `.vscode/tasks.json`:
 
 ```json
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Copilot: Analyze Code Quality",
-      "type": "shell",
-      "command": "python3 scripts/copilot_tools/custom_analyzer.py codebase",
-      "problemMatcher": [],
-      "presentation": { "echo": true, "reveal": "always" }
-    },
-    {
-      "label": "Copilot: Check Performance",
-      "type": "shell",
-      "command": "python3 scripts/copilot_tools/custom_analyzer.py performance",
-      "problemMatcher": [],
-      "presentation": { "echo": true, "reveal": "always" }
-    }
-  ]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Copilot: Analyze Code Quality",
+            "type": "shell",
+            "command": "python3 scripts/copilot_tools/custom_analyzer.py codebase",
+            "problemMatcher": [],
+            "presentation": { "echo": true, "reveal": "always" }
+        },
+        {
+            "label": "Copilot: Check Performance",
+            "type": "shell",
+            "command": "python3 scripts/copilot_tools/custom_analyzer.py performance",
+            "problemMatcher": [],
+            "presentation": { "echo": true, "reveal": "always" }
+        }
+    ]
 }
 ```
 
@@ -457,14 +484,16 @@ Add to `.vscode/tasks.json`:
 Enable detailed logging:
 
 **VS Code Settings**:
+
 ```json
 {
-  "github.copilot.debug": true,
-  "debug.console": "integratedTerminal"
+    "github.copilot.debug": true,
+    "debug.console": "integratedTerminal"
 }
 ```
 
 **Check Output**:
+
 1. Open Command Palette: `Ctrl+Shift+P`
 2. Type "Focus on Output"
 3. Select "GitHub Copilot Chat"
@@ -486,7 +515,9 @@ Create test prompts in `.github/test-prompts/`:
 
 ## Test Request
 ```
+
 @my-agent Help me [task]
+
 ```
 
 ## Expected Behavior
@@ -508,17 +539,17 @@ Optimize model choice for different tasks:
 
 ```json
 {
-  "chat.mcp.serverSampling": {
-    "quantum-tasks": {
-      "allowedModels": ["copilot/gpt-4o"]  // Best for logic
-    },
-    "creative-tasks": {
-      "allowedModels": ["copilot/claude-opus-4.6"]  // Best for creativity
-    },
-    "fast-responses": {
-      "allowedModels": ["copilot/auto"]  // Fastest
+    "chat.mcp.serverSampling": {
+        "quantum-tasks": {
+            "allowedModels": ["copilot/gpt-4o"] // Best for logic
+        },
+        "creative-tasks": {
+            "allowedModels": ["copilot/claude-opus-4.6"] // Best for creativity
+        },
+        "fast-responses": {
+            "allowedModels": ["copilot/auto"] // Fastest
+        }
     }
-  }
 }
 ```
 
@@ -528,10 +559,10 @@ For large projects:
 
 ```json
 {
-  "chat.agent.maxRequests": 100,           // Reduced for memory
-  "chat.mcp.serverSampling": {
-    "allowedModels": ["copilot/auto"]      // Lighter model
-  }
+    "chat.agent.maxRequests": 100, // Reduced for memory
+    "chat.mcp.serverSampling": {
+        "allowedModels": ["copilot/auto"] // Lighter model
+    }
 }
 ```
 
@@ -541,8 +572,8 @@ Enable caching for faster responses:
 
 ```json
 {
-  "github.copilot.cache.enabled": true,
-  "github.copilot.cache.ttl": 3600
+    "github.copilot.cache.enabled": true,
+    "github.copilot.cache.ttl": 3600
 }
 ```
 
@@ -557,12 +588,12 @@ export COPILOT_MAX_CONCURRENT_REQUESTS=3
 
 ## Workspace-Level vs User-Level
 
-| Setting | Workspace Level | User Level |
-| --------- | --- | --- |
+| Setting  | Workspace Level         | User Level                |
+| -------- | ----------------------- | ------------------------- |
 | Location | `.vscode/settings.json` | `~/.vscode/settings.json` |
-| Scope | This project only | All projects |
-| Override | User settings | Workspace settings |
-| Commit | Yes (in git) | No (local only) |
+| Scope    | This project only       | All projects              |
+| Override | User settings           | Workspace settings        |
+| Commit   | Yes (in git)            | No (local only)           |
 
 **Best Practice**: Use workspace-level for team settings, user-level for personal preferences.
 
@@ -573,6 +604,7 @@ export COPILOT_MAX_CONCURRENT_REQUESTS=3
 Validate Copilot configurations:
 
 `.git/hooks/pre-commit`:
+
 ```bash
 #!/bin/bash
 
@@ -622,6 +654,7 @@ You are executing a training job for the Aria platform.
 ## Reporting
 
 After completion, provide:
+
 - Final metrics (accuracy, loss, etc.)
 - Training time
 - GPU memory used

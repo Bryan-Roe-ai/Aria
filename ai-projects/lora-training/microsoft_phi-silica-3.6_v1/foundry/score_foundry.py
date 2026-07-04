@@ -14,7 +14,6 @@ Output JSON:
 import json
 import os
 from pathlib import Path
-from typing import Dict, List
 
 import torch
 from peft import PeftModel
@@ -48,7 +47,7 @@ def init():  # Azure ML entrypoint
     print("Model + adapter loaded.")
 
 
-def _apply_chat_template(messages: List[Dict[str, str]]) -> str:
+def _apply_chat_template(messages: list[dict[str, str]]) -> str:
     # Fallback simple format if tokenizer lacks chat template
     if hasattr(_tokenizer, "apply_chat_template"):
         return _tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)

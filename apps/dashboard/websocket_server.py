@@ -29,7 +29,7 @@ class JobFileHandler(FileSystemEventHandler):
     async def broadcast_status_update(self, file_path):
         """Broadcast status update to all connected clients"""
         try:
-            with open(file_path, "r") as f:
+            with open(file_path) as f:
                 status = json.load(f)
 
             message = {
@@ -108,7 +108,7 @@ def get_current_status():
     if status_dir.exists():
         for status_file in status_dir.glob("**/status.json"):
             try:
-                with open(status_file, "r") as f:
+                with open(status_file) as f:
                     job_data = json.load(f)
                     jobs.append(job_data)
             except Exception as e:

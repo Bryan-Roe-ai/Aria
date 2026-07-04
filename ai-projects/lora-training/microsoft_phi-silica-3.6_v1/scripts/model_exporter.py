@@ -5,7 +5,6 @@ Export models to ONNX, TensorRT, and other formats for deployment
 
 import time
 from pathlib import Path
-from typing import Dict, Optional
 
 import onnx
 import torch
@@ -193,11 +192,11 @@ class ModelExporter:
 
         print(f"  Original size: {original_size:.1f} MB")
         print(f"  Quantized size: {quantized_size:.1f} MB")
-        print(f"  Reduction: {(1 - quantized_size/original_size) * 100:.1f}%")
+        print(f"  Reduction: {(1 - quantized_size / original_size) * 100:.1f}%")
 
         return output_path
 
-    def export_to_huggingface(self, repo_name: str, organization: Optional[str] = None, private: bool = False):
+    def export_to_huggingface(self, repo_name: str, organization: str | None = None, private: bool = False):
         """
         Upload model to Hugging Face Hub
 
@@ -228,7 +227,7 @@ class ModelExporter:
         except Exception as e:
             print(f"  ⚠ Upload failed: {e}")
 
-    def benchmark_formats(self, num_runs: int = 10) -> Dict[str, Dict[str, float]]:
+    def benchmark_formats(self, num_runs: int = 10) -> dict[str, dict[str, float]]:
         """
         Benchmark different export formats
 
@@ -256,7 +255,7 @@ class ModelExporter:
 
         return results
 
-    def _benchmark_pytorch(self, num_runs: int) -> Dict[str, float]:
+    def _benchmark_pytorch(self, num_runs: int) -> dict[str, float]:
         """Benchmark PyTorch model"""
         self.model.eval()
 

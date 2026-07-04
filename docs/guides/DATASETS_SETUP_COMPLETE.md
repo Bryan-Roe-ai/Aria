@@ -9,6 +9,7 @@
 ## 📦 What's Been Set Up
 
 ### 1. Directory Structure ✅
+
 ```
 AI/
 ├── datasets/                    # Centralized data storage
@@ -33,17 +34,19 @@ AI/
 ```
 
 ### 2. Automated Tools ✅
+
 - **Downloader**: Downloads from UCI, Hugging Face, Kaggle
 - **Validator**: Checks format, integrity, counts samples
 - **Quick Setup**: One-command installation
 - **Index Manager**: Tracks metadata automatically
 
 ### 3. Documentation ✅
+
 - **AI_DATASETS_CATALOG.md**: 400+ line comprehensive guide
-  - Dataset sources (Hugging Face, UCI, Kaggle)
-  - License information
-  - Quality ratings
-  - Usage examples
+    - Dataset sources (Hugging Face, UCI, Kaggle)
+    - License information
+    - Quality ratings
+    - Usage examples
 - **datasets/README.md**: Full usage documentation
 - **DATASETS_QUICK_REF.md**: Fast command reference
 
@@ -52,6 +55,7 @@ AI/
 ## 🚀 Next Steps - Start Training Now!
 
 ### Option 1: Train Quantum AI (Fastest - 2 minutes)
+
 ```powershell
 cd quantum-ai
 python .\train_custom_dataset.py
@@ -68,6 +72,7 @@ return X, y
 ```
 
 ### Option 2: Download Chat Dataset & Fine-tune Phi-3.6
+
 ```powershell
 # Step 1: Download Dolly 15k (50 MB, 2 minutes)
 python .\scripts\download_datasets.py --category chat --dataset dolly
@@ -88,6 +93,7 @@ python .\scripts\train_lora.py `
 ```
 
 ### Option 3: One-Command Setup (Everything)
+
 ```powershell
 # Downloads quantum + Dolly 15k + validates all
 python .\scripts\quick_setup_datasets.py
@@ -98,32 +104,36 @@ python .\scripts\quick_setup_datasets.py
 ## 📊 Currently Available
 
 ### Quantum Datasets (Downloaded ✅)
-| Dataset | Size | Samples | Features | Use Case |
-| --------- | ------ | --------- | ---------- | ---------- |
-| Heart Disease | 20 KB | 303 | 14 | Medical diagnosis |
-| Ionosphere | 70 KB | 351 | 35 | Radar signal classification |
-| Sonar | 80 KB | 208 | 61 | Object detection (mines vs rocks) |
-| Banknote | 40 KB | 1,372 | 5 | Authentication (fraud detection) |
+
+| Dataset       | Size  | Samples | Features | Use Case                          |
+| ------------- | ----- | ------- | -------- | --------------------------------- |
+| Heart Disease | 20 KB | 303     | 14       | Medical diagnosis                 |
+| Ionosphere    | 70 KB | 351     | 35       | Radar signal classification       |
+| Sonar         | 80 KB | 208     | 61       | Object detection (mines vs rocks) |
+| Banknote      | 40 KB | 1,372   | 5        | Authentication (fraud detection)  |
 
 **Total**: 4 datasets, 210 KB, 2,234 samples
 
 ### Built-in Datasets (No Download Needed)
+
 - Iris (150 samples, 4 features) - via scikit-learn
 - Wine (178 samples, 13 features) - via scikit-learn
 - Breast Cancer (569 samples, 30 features) - via scikit-learn
 
 ### Chat Datasets (Ready to Download)
-| Dataset | Size | Quality | License | Command |
-| --------- | ------ | --------- | --------- | --------- |
-| Dolly 15k | 50 MB | ⭐⭐⭐⭐⭐ | Commercial ✅ | `--dataset dolly` |
-| OpenAssistant | 500 MB | ⭐⭐⭐⭐⭐ | Commercial ✅ | `--dataset openassistant` |
-| Alpaca | 100 MB | ⭐⭐⭐⭐ | Non-commercial ⚠️ | `--dataset alpaca` |
+
+| Dataset       | Size   | Quality    | License           | Command                   |
+| ------------- | ------ | ---------- | ----------------- | ------------------------- |
+| Dolly 15k     | 50 MB  | ⭐⭐⭐⭐⭐ | Commercial ✅     | `--dataset dolly`         |
+| OpenAssistant | 500 MB | ⭐⭐⭐⭐⭐ | Commercial ✅     | `--dataset openassistant` |
+| Alpaca        | 100 MB | ⭐⭐⭐⭐   | Non-commercial ⚠️ | `--dataset alpaca`        |
 
 ---
 
 ## 🎯 Recommended Workflow
 
 ### For Quantum AI Development:
+
 1. ✅ **Quantum datasets downloaded** - Ready to use!
 2. Train on built-in datasets first (Iris, Wine)
 3. Switch to UCI datasets for real-world testing
@@ -131,6 +141,7 @@ python .\scripts\quick_setup_datasets.py
 5. PCA recommended for >10 features
 
 ### For LLM Fine-tuning:
+
 1. Download Dolly 15k (commercial-safe, high quality)
 2. Test with `--max-train-samples 64` (quick iteration)
 3. Scale up to full dataset when ready
@@ -138,6 +149,7 @@ python .\scripts\quick_setup_datasets.py
 5. Use streaming for >5GB datasets
 
 ### For Both:
+
 1. Always validate after downloading
 2. Check `dataset_index.json` for metadata
 3. Monitor disk space (`Get-PSDrive C`)
@@ -149,16 +161,19 @@ python .\scripts\quick_setup_datasets.py
 ## 🔧 Maintenance Commands
 
 ### Check what's downloaded:
+
 ```powershell
 python .\scripts\download_datasets.py --list
 ```
 
 ### Validate everything:
+
 ```powershell
 python .\scripts\validate_datasets.py --verbose
 ```
 
 ### Download more datasets:
+
 ```powershell
 # See full catalog
 type AI_DATASETS_CATALOG.md
@@ -168,6 +183,7 @@ python .\scripts\download_datasets.py --category chat --dataset dolly
 ```
 
 ### Check storage usage:
+
 ```powershell
 Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
 ```
@@ -177,44 +193,47 @@ Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
 ## 📚 Documentation Index
 
 1. **AI_DATASETS_CATALOG.md** - Comprehensive guide
-   - All available datasets
-   - Sources and licenses
-   - Quality ratings
-   - Training examples
+    - All available datasets
+    - Sources and licenses
+    - Quality ratings
+    - Training examples
 
 2. **datasets/README.md** - Usage documentation
-   - Directory structure
-   - Download instructions
-   - Training commands
-   - Troubleshooting
+    - Directory structure
+    - Download instructions
+    - Training commands
+    - Troubleshooting
 
 3. **DATASETS_QUICK_REF.md** - Fast reference
-   - Common commands
-   - Size/quality table
-   - Quick tips
+    - Common commands
+    - Size/quality table
+    - Quick tips
 
 4. **dataset-requirements.txt** - Dependencies
-   - `datasets` (Hugging Face)
-   - `tqdm` (progress bars)
-   - `pandas`, `numpy`, `scikit-learn`
+    - `datasets` (Hugging Face)
+    - `tqdm` (progress bars)
+    - `pandas`, `numpy`, `scikit-learn`
 
 ---
 
 ## ✅ Verification Results
 
 ### Downloads: ✅ PASSED
+
 - Heart Disease: 303 samples, 14 features
 - Ionosphere: 351 samples, 35 features
 - Sonar: 208 samples, 61 features
 - Banknote: 1,372 samples, 5 features
 
 ### Validation: ✅ PASSED
+
 - All CSV files valid
 - No format errors
 - Feature counts consistent
 - Ready for training
 
 ### Scripts: ✅ TESTED
+
 - `download_datasets.py --help` ✅
 - `download_datasets.py --category quantum` ✅
 - `validate_datasets.py --category quantum --verbose` ✅
@@ -225,17 +244,20 @@ Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
 ## 🎓 Learning Resources
 
 ### Dataset Sources:
+
 - **Hugging Face**: 100,000+ datasets for ML/NLP
 - **UCI ML Repository**: Classic ML datasets (30+ years)
 - **Kaggle**: Competitions and community datasets
 - **Papers with Code**: Research-quality datasets
 
 ### Training Tutorials:
+
 - Quantum AI: `ai-projects/quantum-ml/README.md`
 - Phi-3.6 Fine-tuning: `AI/microsoft_phi-silica-3.6_v1/README.md`
 - Custom datasets: `ai-projects/quantum-ml/train_custom_dataset.py`
 
 ### Tools:
+
 - Hugging Face `datasets` library (streaming, caching)
 - Pandas (CSV/Excel processing)
 - Scikit-learn (built-in datasets, preprocessing)
@@ -246,23 +268,29 @@ Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
 ## 🚨 Important Notes
 
 ### Licenses:
+
 - **Commercial OK**: Dolly, OpenAssistant, UCI datasets
 - **Non-commercial**: Alpaca, some Kaggle datasets
 - Always check license before production use
 
 ### Storage:
+
 - Current: ~0.21 MB (quantum datasets)
 - Recommended: 10 GB for diverse datasets
 - Large-scale: 50-500 GB for production
 
 ### Dependencies:
+
 Some scripts require packages not in base environment:
+
 ```powershell
 pip install -r dataset-requirements.txt
 ```
 
 ### Git:
+
 Add to `.gitignore`:
+
 ```
 datasets/raw/
 datasets/chat/
@@ -272,6 +300,7 @@ datasets/vision/
 ```
 
 Keep in Git:
+
 ```
 datasets/README.md
 datasets/dataset_index.json
@@ -282,6 +311,7 @@ datasets/dataset_index.json
 ## 🎉 You're All Set!
 
 Your AI workspace now has:
+
 - ✅ Centralized dataset storage
 - ✅ Automated download tools
 - ✅ Validation scripts
@@ -292,6 +322,7 @@ Your AI workspace now has:
 **Start training now!** Choose an option from "Next Steps" above.
 
 For questions or issues, see the documentation files or run:
+
 ```powershell
 python .\scripts\download_datasets.py --help
 python .\scripts\validate_datasets.py --help

@@ -5,24 +5,19 @@ Provides utilities for code analysis, documentation generation, and
 testing via LM Studio.
 """
 
+import json
 import os
 import subprocess
-import json
 from pathlib import Path
-from typing import Optional
 
 
 class LMStudioAnalyzer:
     """Helper class for code analysis via LM Studio"""
 
-    def __init__(self, base_url: Optional[str] = None,
-                 model: Optional[str] = None,
-                 timeout: int = 90):
+    def __init__(self, base_url: str | None = None, model: str | None = None, timeout: int = 90):
         self.repo_root = self._find_repo_root()
         self._load_local_env_defaults()
-        self.base_url = base_url or os.getenv(
-            "LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1"
-        )
+        self.base_url = base_url or os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
         self.model = model or os.getenv("LMSTUDIO_MODEL")
         self.timeout = timeout
         self.chat_cli = self.repo_root / "ai-projects/chat-cli/src/chat_cli.py"
@@ -32,13 +27,12 @@ class LMStudioAnalyzer:
         """Find the Aria repository root."""
         current = Path(__file__).resolve()
         while current != current.parent:
-            if ((current / "ai-projects").exists() and
-                    (current / "function_app.py").exists()):
+            if (current / "ai-projects").exists() and (current / "function_app.py").exists():
                 return current
             current = current.parent
         raise RuntimeError("Could not find Aria repository root")
 
-    def _query_lmstudio(self, prompt: str, timeout: Optional[int] = None) -> str:
+    def _query_lmstudio(self, prompt: str, timeout: int | None = None) -> str:
         """Send query to LM Studio and return response"""
         env = os.environ.copy()
         env["LMSTUDIO_BASE_URL"] = self.base_url
@@ -49,19 +43,16 @@ class LMStudioAnalyzer:
         cmd = [
             str(self.venv_python),
             str(self.chat_cli),
-            "--provider", "lmstudio",
+            "--provider",
+            "lmstudio",
             "--no-stream",
-            "--once", prompt,
+            "--once",
+            prompt,
         ]
 
         try:
             result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=effective_timeout,
-                env=env,
-                cwd=str(self.repo_root)
+                cmd, capture_output=True, text=True, timeout=effective_timeout, env=env, cwd=str(self.repo_root)
             )
 
             if result.returncode != 0:
@@ -77,9 +68,7 @@ class LMStudioAnalyzer:
         """Load LM Studio defaults from .env/local.settings.json when unset."""
         env_path = self.repo_root / ".env"
         if env_path.exists():
-            for raw_line in env_path.read_text(
-                encoding="utf-8", errors="ignore"
-            ).splitlines():
+            for raw_line in env_path.read_text(encoding="utf-8", errors="ignore").splitlines():
                 line = raw_line.strip()
                 if not line or line.startswith("#") or "=" not in line:
                     continue
@@ -93,13 +82,10 @@ class LMStudioAnalyzer:
         settings_path = self.repo_root / "local.settings.json"
         if settings_path.exists():
             try:
-                payload = json.loads(
-                    settings_path.read_text(encoding="utf-8", errors="ignore")
-                )
+                payload = json.loads(settings_path.read_text(encoding="utf-8", errors="ignore"))
             except json.JSONDecodeError:
                 payload = {}
-            values = payload.get("Values", {}) if isinstance(
-                payload, dict) else {}
+            values = payload.get("Values", {}) if isinstance(payload, dict) else {}
             if isinstance(values, dict):
                 for key, value in values.items():
                     if isinstance(key, str) and isinstance(value, str):
@@ -158,8 +144,7 @@ Current Code:
 {code}"""
         return self._query_lmstudio(prompt)
 
-    def debug_error(self, error_msg: str,
-                    context: Optional[str] = None) -> str:
+    def debug_error(self, error_msg: str, context: str | None = None) -> str:
         """Help debug an error."""
         prompt = f"""Help me debug this error. Provide:
 1. Root cause analysis
@@ -184,8 +169,7 @@ Error: {error_msg}"""
 Problem: {problem}"""
         return self._query_lmstudio(prompt)
 
-    def explain_concept(self, concept: str,
-                        context: Optional[str] = None) -> str:
+    def explain_concept(self, concept: str, context: str | None = None) -> str:
         """Explain a concept in simple terms."""
         prompt = f"""Explain '{concept}' clearly:
 1. Simple explanation
@@ -228,24 +212,24 @@ Code:
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="LM Studio Code Analyzer"
+    parser = argparse.ArgumentParser(description="LM Studio Code Analyzer")
+    parser.add_argument(
+        "command",
+        choices=[
+            "analyze",
+            "docs",
+            "tests",
+            "refactor",
+            "debug",
+            "design",
+            "explain",
+            "review",
+            "summary",
+            "query",
+        ],
     )
-    parser.add_argument("command", choices=[
-        "analyze",
-        "docs",
-        "tests",
-        "refactor",
-        "debug",
-        "design",
-        "explain",
-        "review",
-        "summary",
-        "query",
-    ])
     parser.add_argument("input", help="Code/error/concept to analyze")
-    parser.add_argument("--language", default="python",
-                        help="Programming language")
+    parser.add_argument("--language", default="python", help="Programming language")
     parser.add_argument("--context", help="Additional context")
     parser.add_argument(
         "--url",

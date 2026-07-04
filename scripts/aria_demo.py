@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Interactive Aria Visual Command Demo"""
+
 import sys
 from pathlib import Path
 

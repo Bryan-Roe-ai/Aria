@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Dict, List
 
 # Pre-compile regex pattern for performance
 _RE_QUANTITY = re.compile(r"^(?P<qty>(\d+\/\d+|\d+(\.\d+)?))\s*(?P<unit>[a-zA-Z]+)?\s*(?P<name>.*)")
@@ -66,7 +65,7 @@ class LocalProvider:
     Returns JSON strings for predictable testing.
     """
 
-    def complete(self, messages: List[Dict[str, str]], json_mode: bool = False) -> str:  # noqa: D401
+    def complete(self, messages: list[dict[str, str]], json_mode: bool = False) -> str:  # noqa: D401
         last_user = next(
             (m["content"] for m in reversed(messages) if m.get("role") == "user"),
             "",

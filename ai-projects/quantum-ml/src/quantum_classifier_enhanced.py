@@ -5,7 +5,6 @@ Optimized for complex patterns and real quantum hardware deployment
 
 import logging
 from pathlib import Path
-from typing import List
 
 import numpy as np
 import pennylane as qml
@@ -39,7 +38,7 @@ class EnhancedQuantumClassifier:
             current_dir = Path(__file__).parent
             config_path = current_dir.parent / "config" / "quantum_config.yaml"
 
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             self.config = yaml.safe_load(f)
 
         # Override with enhanced settings
@@ -118,7 +117,7 @@ class EnhancedQuantumClassifier:
                 if i + self.n_qubits // 2 < self.n_qubits:
                     qml.CNOT(wires=[i, i + self.n_qubits // 2])
 
-    def _circuit(self, inputs: torch.Tensor, weights: torch.Tensor) -> List[float]:
+    def _circuit(self, inputs: torch.Tensor, weights: torch.Tensor) -> list[float]:
         """
         Enhanced quantum circuit with data re-uploading.
 

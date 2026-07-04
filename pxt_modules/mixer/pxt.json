@@ -22,9 +22,7 @@
         "pxtparts.json",
         "headphone.svg"
     ],
-    "testFiles": [
-        "test.ts"
-    ],
+    "testFiles": ["test.ts"],
     "public": true,
     "targetVersions": {
         "target": "4.0.14",

@@ -77,7 +77,7 @@ def main():
         print(qc.draw(output="text"))
     except Exception:
         # Fallback if Unicode rendering fails
-        print(f"GHZ circuit: {args.qubits} qubits, Hadamard + {args.qubits-1} CNOTs + measurement")
+        print(f"GHZ circuit: {args.qubits} qubits, Hadamard + {args.qubits - 1} CNOTs + measurement")
 
     # Submit job
     try:

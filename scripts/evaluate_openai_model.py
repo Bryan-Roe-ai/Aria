@@ -17,7 +17,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Ensure repository root is on sys.path before importing local shared modules.
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -35,7 +35,7 @@ except Exception:
     HAS_OPENAI = False
 
 
-def call_openai_completion(example: Dict[str, Any], deployment: str | None = None) -> str:
+def call_openai_completion(example: dict[str, Any], deployment: str | None = None) -> str:
     # Minimal safe wrapper; default to naive_predict when API unavailable
     if not HAS_OPENAI or not os.getenv("OPENAI_API_KEY"):
         return naive_predict(example)
@@ -73,10 +73,10 @@ def call_openai_completion(example: Dict[str, Any], deployment: str | None = Non
 def run(
     dataset: Path,
     max_samples: int | None,
-    metrics: List[str],
+    metrics: list[str],
     deployment: str | None,
     save_dir: Path | None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     data = load_jsonl(dataset, max_samples)
     preds = []
     expects = []
@@ -84,7 +84,7 @@ def run(
     # prefer OpenAI call when available
     use_openai = HAS_OPENAI and os.getenv("OPENAI_API_KEY")
 
-    timings: List[float] = []
+    timings: list[float] = []
     for ex in data:
         t0 = time.perf_counter()
         if use_openai:
@@ -95,7 +95,7 @@ def run(
         preds.append(p)
         expects.append(ex.get("expected") or ex.get("label"))
 
-    summary: Dict[str, Any] = {"samples": len(preds)}
+    summary: dict[str, Any] = {"samples": len(preds)}
     if "response_time" in metrics:
         summary["response_time_ms"] = round(sum(timings) / len(timings), 3) if timings else 0.0
     if "accuracy" in metrics:

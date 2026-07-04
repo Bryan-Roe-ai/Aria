@@ -140,19 +140,19 @@ Comprehensive test suite for the AutoTrain orchestration system.
 
 ## Coverage Summary
 
-| Component | Coverage |
-| ----------- | ---------- |
-| Job dataclass | ✅ Full |
-| YAML parsing | ✅ Full |
-| HF command builder | ✅ Full |
-| Local command builder | ✅ Full |
-| Validation logic | ✅ Core paths |
-| Status JSON generation | ✅ Full |
-| CLI argument parsing | ✅ Key options |
-| Dry-run mode | ✅ Full |
-| Multi-job execution | ✅ Sequential flow |
-| Error handling | ✅ Common cases |
-| Output structure | ✅ Directories and files |
+| Component              | Coverage                 |
+| ---------------------- | ------------------------ |
+| Job dataclass          | ✅ Full                  |
+| YAML parsing           | ✅ Full                  |
+| HF command builder     | ✅ Full                  |
+| Local command builder  | ✅ Full                  |
+| Validation logic       | ✅ Core paths            |
+| Status JSON generation | ✅ Full                  |
+| CLI argument parsing   | ✅ Key options           |
+| Dry-run mode           | ✅ Full                  |
+| Multi-job execution    | ✅ Sequential flow       |
+| Error handling         | ✅ Common cases          |
+| Output structure       | ✅ Directories and files |
 
 ## Test Execution Time
 
@@ -174,7 +174,7 @@ Example GitHub Actions workflow:
 ```yaml
 - name: Test AutoTrain
   run: |
-    python -m pytest tests/ -k "autotrain" -v -m "not slow" --junitxml=test-results.xml
+      python -m pytest tests/ -k "autotrain" -v -m "not slow" --junitxml=test-results.xml
 ```
 
 ## Future Test Improvements

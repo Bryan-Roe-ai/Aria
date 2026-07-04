@@ -279,9 +279,7 @@ class LocalLLMClient:
         self.model = model
         self.llm_type = llm_type
         self.request_timeout_seconds = int(os.getenv("QAI_LOCAL_LLM_TIMEOUT_SECONDS", "180"))
-        _LOGGER.info(
-            f"Initialized {llm_type} client: {base_url} model={model} " f"timeout={self.request_timeout_seconds}s"
-        )
+        _LOGGER.info(f"Initialized {llm_type} client: {base_url} model={model} timeout={self.request_timeout_seconds}s")
 
     def query(self, prompt: str, max_tokens: int = 2000) -> str:
         """Query the local LLM."""
@@ -723,7 +721,7 @@ No markdown fences. No explanation.
         try:
             if forced_files:
                 files = [f for f in forced_files if self.repo.file_exists(f)]
-                _LOGGER.info("Using forced files from task spec: " f"{files} (requested={forced_files})")
+                _LOGGER.info(f"Using forced files from task spec: {files} (requested={forced_files})")
             else:
                 files = self.identify_files(task_description)
             _LOGGER.info(f"Identified files: {files}")
@@ -791,7 +789,7 @@ No markdown fences. No explanation.
         self.state.duration_seconds = round(time.monotonic() - _start, 2)
         self.state.tokens_estimated = self._total_tokens
         self.state.save()
-        _LOGGER.info(f"Task {task_id} complete in {self.state.duration_seconds}s " f"(~{self._total_tokens} tokens)")
+        _LOGGER.info(f"Task {task_id} complete in {self.state.duration_seconds}s (~{self._total_tokens} tokens)")
         return self.state
 
 

@@ -151,19 +151,19 @@ Example status:
 
 ```json
 {
-  "task_id": "20260320_143022",
-  "task_description": "fix failing test",
-  "status": "complete",
-  "llm_type": "ollama",
-  "files_modified": ["tests/test_example.py"],
-  "tests_run": 42,
-  "tests_passed": 42,
-  "tests_failed": 0,
-  "reasoning": "...",
-  "commits": ["abc123def456"],
-  "errors": [],
-  "started_at": "2026-03-20T14:30:22",
-  "updated_at": "2026-03-20T14:32:15"
+    "task_id": "20260320_143022",
+    "task_description": "fix failing test",
+    "status": "complete",
+    "llm_type": "ollama",
+    "files_modified": ["tests/test_example.py"],
+    "tests_run": 42,
+    "tests_passed": 42,
+    "tests_failed": 0,
+    "reasoning": "...",
+    "commits": ["abc123def456"],
+    "errors": [],
+    "started_at": "2026-03-20T14:30:22",
+    "updated_at": "2026-03-20T14:32:15"
 }
 ```
 
@@ -334,17 +334,17 @@ watch -n 5 'cat data_out/autonomous_agent/status.json | python -m json.tool'
 
 1. ✅ [Basic Agent](./scripts/autonomous_code_agent.py) — DONE
 2. [Advanced Capabilities](./scripts/autonomous_agent_tasks.py) — In progress
-   - Specific task types (refactoring, bug fixes, tests)
-   - Multi-file coordinated changes
-   - Rollback on test failure
+    - Specific task types (refactoring, bug fixes, tests)
+    - Multi-file coordinated changes
+    - Rollback on test failure
 3. Agent Learning (planned module)
-   - Track success/failure of task types
-   - Learn which patterns work
-   - Improve prompts based on feedback
+    - Track success/failure of task types
+    - Learn which patterns work
+    - Improve prompts based on feedback
 4. Team Agents (planned module)
-   - Multiple agents coordinating work
-   - Task distribution and prioritization
-   - Conflict resolution
+    - Multiple agents coordinating work
+    - Task distribution and prioritization
+    - Conflict resolution
 
 ## See Also
 

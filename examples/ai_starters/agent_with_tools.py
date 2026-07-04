@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import ast
 import operator as op
 import re
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
 
 
 # ----- Tools -----
@@ -100,11 +100,7 @@ class ToolAgent:
         return (
             "help",
             lambda: (
-                "Try one of:\n"
-                "- search: <keyword>\n"
-                "- calc: <expression>\n"
-                "- read: <path>\n"
-                "- write: <path> | <content>"
+                "Try one of:\n- search: <keyword>\n- calc: <expression>\n- read: <path>\n- write: <path> | <content>"
             ),
             (),
         )

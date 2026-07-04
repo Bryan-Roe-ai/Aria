@@ -232,9 +232,9 @@ def _run_selected(suites: list[str], *, coverage: bool, verbose: int) -> bool:
     overall = True
 
     for name in suites:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  Running suite: {name}  ({SUITES[name]['description']})")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         summary, stdout, stderr = run_suite(name, coverage=coverage, verbose=verbose)
         results.append(summary)

@@ -83,7 +83,7 @@ class QuantumClassicalTrainer:
             self.val_accuracies.append(acc)
 
             if (epoch + 1) % 5 == 0:
-                print(f"    Epoch {epoch+1}/{num_epochs} - Loss: {self.train_losses[-1]:.4f}, Val Acc: {acc:.4f}")
+                print(f"    Epoch {epoch + 1}/{num_epochs} - Loss: {self.train_losses[-1]:.4f}, Val Acc: {acc:.4f}")
 
 
 import torch
@@ -182,7 +182,7 @@ for lr in learning_rates:
 
     # Manually set learning rate in config
     config_path = Path(__file__).parent.parent / "config" / "quantum_config.yaml"
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     original_lr = config["ml"]["training"]["learning_rate"]
@@ -250,7 +250,7 @@ for pattern in entanglement_patterns:
 
     # Update config
     config_path = Path(__file__).parent.parent / "config" / "quantum_config.yaml"
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     original_ent = config["ml"]["model"]["entanglement"]

@@ -11,10 +11,10 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 
-def load_json(path: Union[str, Path], default: Optional[Any] = None) -> Any:
+def load_json(path: str | Path, default: Any | None = None) -> Any:
     """
     Load JSON data from a file with optional default fallback.
 
@@ -49,11 +49,11 @@ def load_json(path: Union[str, Path], default: Optional[Any] = None) -> Any:
 
 
 def load_status_json(
-    path: Union[str, Path],
+    path: str | Path,
     *,
-    max_age_seconds: Optional[int] = None,
-    default: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    max_age_seconds: int | None = None,
+    default: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """
     Load a status JSON file safely with optional staleness metadata.
 
@@ -72,12 +72,12 @@ def load_status_json(
         Dictionary containing parsed JSON object (if valid) plus metadata.
     """
     file_path = Path(path)
-    result: Dict[str, Any] = dict(default or {})
+    result: dict[str, Any] = dict(default or {})
 
     exists = file_path.exists()
-    age_seconds: Optional[float] = None
-    stale: Optional[bool] = None
-    error: Optional[str] = None
+    age_seconds: float | None = None
+    stale: bool | None = None
+    error: str | None = None
 
     if exists:
         try:
@@ -106,7 +106,7 @@ def load_status_json(
 
 def save_json(
     data: Any,
-    path: Union[str, Path],
+    path: str | Path,
     indent: int = 2,
     ensure_ascii: bool = False,
     create_parents: bool = True,
@@ -137,9 +137,7 @@ def save_json(
         json.dump(data, f, indent=indent, ensure_ascii=ensure_ascii)
 
 
-def load_jsonl(
-    path: Union[str, Path], max_lines: Optional[int] = None, skip_empty: bool = True
-) -> List[Dict[str, Any]]:
+def load_jsonl(path: str | Path, max_lines: int | None = None, skip_empty: bool = True) -> list[dict[str, Any]]:
     """
     Load JSONL file (one JSON object per line).
 
@@ -167,7 +165,7 @@ def load_jsonl(
     if not path.exists():
         raise FileNotFoundError(f"File not found: {path}")
 
-    data: List[Dict[str, Any]] = []
+    data: list[dict[str, Any]] = []
     with path.open("r", encoding="utf-8") as f:
         for i, line in enumerate(f):
             if max_lines is not None and i >= max_lines:
@@ -183,8 +181,8 @@ def load_jsonl(
 
 
 def save_jsonl(
-    data: List[Any],
-    path: Union[str, Path],
+    data: list[Any],
+    path: str | Path,
     create_parents: bool = True,
     ensure_ascii: bool = False,
 ) -> None:
@@ -213,8 +211,8 @@ def save_jsonl(
 
 
 def merge_json_files(
-    input_paths: List[Union[str, Path]],
-    output_path: Union[str, Path],
+    input_paths: list[str | Path],
+    output_path: str | Path,
     merge_strategy: str = "extend",
 ) -> None:
     """
@@ -235,7 +233,7 @@ def merge_json_files(
         merge_json_files(["base.json", "override.json"], "final.json", merge_strategy="update")
     """
     if merge_strategy == "extend":
-        merged: List[Any] = []
+        merged: list[Any] = []
         for path in input_paths:
             data = load_json(path)
             if isinstance(data, list):
@@ -243,7 +241,7 @@ def merge_json_files(
             else:
                 merged.append(data)
     elif merge_strategy == "update":
-        merged: Dict[str, Any] = {}
+        merged: dict[str, Any] = {}
         for path in input_paths:
             data = load_json(path)
             if isinstance(data, dict):

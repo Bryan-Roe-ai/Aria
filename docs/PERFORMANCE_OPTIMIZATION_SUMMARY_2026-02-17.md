@@ -9,9 +9,11 @@ This document summarizes the performance optimizations implemented to address sl
 ## 🎯 Critical Issues Fixed (High Impact)
 
 ### 1. aria_web/server.py - Keyword Set Optimization
+
 **Problem**: Hot path contained 20+ consecutive `any()` calls checking keywords against lists, each requiring O(n) linear search.
 
 **Before**:
+
 ```python
 if any(k in cmd for k in ['jump', 'leap', 'hop']):
     return '[aria:position:50:60]'
@@ -21,6 +23,7 @@ elif any(k in cmd for k in ['dance', 'spin', 'twirl']):
 ```
 
 **After**:
+
 ```python
 # Pre-compiled keyword sets at module level
 JUMP_KEYWORDS = frozenset(['jump', 'leap', 'hop'])
@@ -37,6 +40,7 @@ if _contains_any_keyword(cmd, JUMP_KEYWORDS):
 ```
 
 **Impact**:
+
 - **Speedup**: 1.09x on benchmark (1600 iterations)
 - **Reduced complexity**: From O(n) to O(1) for set membership checks
 - **Affects**: Every command processed by Aria visual system (high-frequency code path)
@@ -45,9 +49,11 @@ if _contains_any_keyword(cmd, JUMP_KEYWORDS):
 ---
 
 ### 2. shared/chat_memory.py - Database Connection Pooling
+
 **Problem**: Every database operation created a new connection, incurring 50-100ms overhead per request.
 
 **Before**:
+
 ```python
 def _get_conn():
     conn_str = os.getenv("QAI_DB_CONN")
@@ -66,6 +72,7 @@ def store_embedding(...):
 ```
 
 **After**:
+
 ```python
 # Connection pool at module level
 _connection_pool = []
@@ -105,6 +112,7 @@ def store_embedding(...):
 ```
 
 **Impact**:
+
 - **Latency reduction**: Eliminates 50-100ms per request after pool warmup
 - **Throughput improvement**: Enables concurrent requests to reuse connections
 - **Thread-safe**: Lock mechanism prevents race conditions
@@ -114,9 +122,11 @@ def store_embedding(...):
 ---
 
 ### 3. aria_web/server.py - Regex Pattern Pre-compilation
+
 **Problem**: Regex patterns compiled on every call in hot paths.
 
 **Before**:
+
 ```python
 tags = re.findall(r'\[aria:[^\]]+\]', response)  # COMPILED EVERY TIME
 say_match = re.search(
@@ -126,6 +136,7 @@ say_match = re.search(
 ```
 
 **After**:
+
 ```python
 # Pre-compiled at module level
 _RE_JSON_BLOCK = re.compile(r'\[.*\]', re.DOTALL)
@@ -143,6 +154,7 @@ say_match = _RE_SAY_COMMAND.search(command)  # USES COMPILED PATTERN
 ```
 
 **Impact**:
+
 - **Compilation overhead eliminated**: Regex compiled once at module load
 - **Affects**: Command parsing, tag generation, coordinate extraction
 - **Patterns compiled**: 7 patterns used in hot paths
@@ -153,9 +165,11 @@ say_match = _RE_SAY_COMMAND.search(command)  # USES COMPILED PATTERN
 ## ✅ Medium Priority Issues Fixed
 
 ### 4. scripts/analyze_learning_progress.py - Memory-Efficient Generator
+
 **Problem**: Nested list comprehension materialized entire word list in memory.
 
 **Before**:
+
 ```python
 words = [w for msg in assistant_messages for w in msg.split()]  # FULL LIST IN MEMORY
 if words:
@@ -163,6 +177,7 @@ if words:
 ```
 
 **After**:
+
 ```python
 from itertools import chain
 words = list(chain.from_iterable(msg.split() for msg in assistant_messages))  # STREAMING
@@ -171,6 +186,7 @@ if words:
 ```
 
 **Impact**:
+
 - **Memory efficiency**: Reduces peak memory usage for large message sets
 - **Readability**: More explicit use of itertools
 - **Affects**: Learning progress analysis with large conversation logs
@@ -178,15 +194,18 @@ if words:
 ---
 
 ### 5. cooking-ai/src/providers/local.py - Tag Filter Optimization
+
 **Problem**: Nested `any()` + `all()` created O(filters × recipes × tags) complexity.
 
 **Before**:
+
 ```python
 if filters and not all(any(f in tag.lower() for tag in r["tags"]) for f in filters):
     continue  # O(n²) or worse
 ```
 
 **After**:
+
 ```python
 if filters:
     recipe_tags = {tag.lower() for tag in r["tags"]}  # Pre-compute set once
@@ -195,6 +214,7 @@ if filters:
 ```
 
 **Impact**:
+
 - **Complexity reduction**: From O(n×m×k) to O(n×m) where k = tags per recipe
 - **Set membership**: O(1) lookups instead of O(k) linear scans
 - **Affects**: Recipe search with tag filters
@@ -204,6 +224,7 @@ if filters:
 ## 📊 Performance Benchmarks
 
 ### Keyword Set Optimization Benchmark
+
 ```
 Test: 1600 iterations (8 commands × 200 loops) × 4 keyword checks each
 - Optimized time: 0.0031s
@@ -212,6 +233,7 @@ Test: 1600 iterations (8 commands × 200 loops) × 4 keyword checks each
 ```
 
 ### Connection Pooling Benefits
+
 ```
 Scenario: 100 consecutive embedding operations
 - Without pooling: ~5000-10000ms (50-100ms × 100)
@@ -220,7 +242,8 @@ Scenario: 100 consecutive embedding operations
 ```
 
 ### Regex Compilation Savings
-```
+
+````
 Pattern compilation cost (typical):
 - Single compile at module load: ~0.1ms × 7 patterns = ~0.7ms
 - Runtime cost without pre-compilation: ~0.1ms per search × N calls
@@ -248,13 +271,14 @@ python tests/validate_performance_optimizations.py
 
 # With pytest (if available)
 pytest tests/test_performance_keyword_sets.py -v
-```
+````
 
 ---
 
 ## 📝 Code Quality Improvements
 
 ### Best Practices Applied
+
 1. **frozenset for immutable keyword sets**: Signals intent and prevents accidental modification
 2. **Thread-safe connection pooling**: Uses threading.Lock for multi-threaded safety
 3. **Graceful degradation**: Connection pool falls back to dummy lock if threading unavailable
@@ -263,6 +287,7 @@ pytest tests/test_performance_keyword_sets.py -v
 6. **Comments**: Added performance notes explaining optimization rationale
 
 ### Code Statistics
+
 - **Lines optimized**: ~120 lines across 4 files
 - **Functions updated**: 12 functions
 - **New helper functions**: 3 (`_contains_any_keyword`, `_return_conn`, `_DummyLock`)
@@ -274,11 +299,13 @@ pytest tests/test_performance_keyword_sets.py -v
 ## 🔮 Future Optimization Opportunities
 
 ### Not Yet Implemented (Lower Priority)
+
 1. **function_app.py**: Image/API response caching with TTL
 2. **shared/chat_memory.py**: NumPy vectorized cosine similarity (already documented in docs/PERFORMANCE_IMPROVEMENTS.md)
 3. **scripts/job_queue.py**: Set-based dependency tracking (current O(n) is acceptable for typical use)
 
 ### Monitoring Recommendations
+
 1. Add performance metrics to `/api/ai/status` endpoint
 2. Log connection pool statistics periodically
 3. Track average response times for command processing
@@ -287,6 +314,7 @@ pytest tests/test_performance_keyword_sets.py -v
 ---
 
 ## 📚 Related Documentation
+
 - `docs/PERFORMANCE_IMPROVEMENTS.md` - Original performance analysis (comprehensive)
 - `.github/copilot-instructions.md` - Repository coding guidelines
 - Repository memories - Performance patterns and best practices
@@ -298,6 +326,7 @@ pytest tests/test_performance_keyword_sets.py -v
 **Total optimizations implemented**: 5 critical/high-impact fixes
 **Estimated aggregate speedup**: 1.5-2x for typical workloads
 **Key hot paths optimized**:
+
 - ✅ Command keyword matching (aria_web)
 - ✅ Database connection management (shared/chat_memory)
 - ✅ Regex pattern compilation (aria_web)

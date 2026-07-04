@@ -154,7 +154,7 @@ def test_alias_sources_exist_as_alternate_mode_agent_names() -> None:
     available = {n for n in (_extract_agent_name(p) for p in AGENTS_DIR.glob("*.agent.md")) if n}
     missing_sources = sorted({s for s in sources if s not in available})
     assert not missing_sources, (
-        "Alias source names should map to existing alternate-mode agent names: " f"{missing_sources}"
+        f"Alias source names should map to existing alternate-mode agent names: {missing_sources}"
     )
 
 

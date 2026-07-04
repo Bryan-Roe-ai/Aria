@@ -19,9 +19,9 @@ free local execution and cloud hardware submission.
 - `scripts/evaluation/quantum_autorun.py` – the orchestrator
 - `quantum_autorun.yaml` – declarative job definitions
 - Outputs under `data_out/quantum_autorun/`
-  - `<job>/<timestamp>/stdout.log`
-  - `<job>/last_run.json`
-  - `status.json` with a summary of the last invocation
+    - `<job>/<timestamp>/stdout.log`
+    - `<job>/last_run.json`
+    - `status.json` with a summary of the last invocation
 
 ## Quick start (PowerShell)
 
@@ -48,35 +48,35 @@ You can also use VS Code tasks:
 ```yaml
 version: 1
 jobs:
-  - name: heart_quick
-    mode: train_custom_dataset          # Local simulator
-    preset: heart                       # or use: csv: datasets/quantum/heart_disease.csv
-    n_qubits: 4
-    epochs: 1
-    batch_size: 16
-    learning_rate: 0.001
-    test_size: 0.2
-    enabled: true
+    - name: heart_quick
+      mode: train_custom_dataset # Local simulator
+      preset: heart # or use: csv: datasets/quantum/heart_disease.csv
+      n_qubits: 4
+      epochs: 1
+      batch_size: 16
+      learning_rate: 0.001
+      test_size: 0.2
+      enabled: true
 ```
 
 ### Azure Quantum hardware job
 
 ```yaml
-  - name: azure_ionq_simulator
-    mode: azure_hardware                # Azure Quantum submission
-    azure_backend: ionq.simulator       # FREE: IonQ cloud simulator
-    azure_shots: 100
-    n_qubits: 3
-    enabled: true
+- name: azure_ionq_simulator
+  mode: azure_hardware # Azure Quantum submission
+  azure_backend: ionq.simulator # FREE: IonQ cloud simulator
+  azure_shots: 100
+  n_qubits: 3
+  enabled: true
 
-  - name: azure_ionq_qpu
-    mode: azure_hardware
-    azure_backend: ionq.qpu             # PAID: Real quantum hardware
-    azure_shots: 100
-    n_qubits: 3
-    azure_confirm_cost: true            # REQUIRED for paid hardware
-    enabled: false
-    extra_args:
+- name: azure_ionq_qpu
+  mode: azure_hardware
+  azure_backend: ionq.qpu # PAID: Real quantum hardware
+  azure_shots: 100
+  n_qubits: 3
+  azure_confirm_cost: true # REQUIRED for paid hardware
+  enabled: false
+  extra_args:
       - --circuit-file
       - ai-projects/quantum-ml/results/circuit.qasm
 ```

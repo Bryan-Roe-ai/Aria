@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     margin: 0 !important;
 
     /* needed to fix buggy vw/vh behavior in safari:
@@ -11,7 +12,18 @@ html, body {
 body {
     font-size: 0.75rem;
     color: white;
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        Segoe UI,
+        Roboto,
+        Oxygen,
+        Ubuntu,
+        Cantarell,
+        Fira Sans,
+        Droid Sans,
+        Helvetica Neue,
+        sans-serif;
 }
 
 #wrap {
@@ -27,17 +39,17 @@ body {
 }
 
 .sprite {
-    fill:yellow;
-    stroke:#ccc;
+    fill: yellow;
+    stroke: #ccc;
     stroke-width: 0.1875rem;
 }
 
 canvas {
-	image-rendering: optimizeSpeed;
-	image-rendering: -moz-crisp-edges;
-	image-rendering: -webkit-optimize-contrast;
-	image-rendering: optimize-contrast;
-	image-rendering: pixelated;
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+    image-rendering: pixelated;
     -ms-interpolation-mode: nearest-neighbor;
 }
 
@@ -99,11 +111,11 @@ canvas {
 
 .no-select {
     -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none;   /* Chrome/Safari/Opera */
-    -khtml-user-select: none;    /* Konqueror */
-    -moz-user-select: none;      /* Firefox */
-    -ms-user-select: none;       /* Internet Explorer/Edge */
-    user-select: none;           /* Non-prefixed version, currently
+    -webkit-user-select: none; /* Chrome/Safari/Opera */
+    -khtml-user-select: none; /* Konqueror */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
                                     not supported by any browser */
 }
 
@@ -158,7 +170,6 @@ canvas {
     flex-grow: 1;
 }
 
-
 /* ----- screen css ----- */
 .game-embed {
     position: relative;
@@ -173,8 +184,16 @@ canvas {
     align-items: center;
     justify-content: center;
 
-    clip-path: polygon(0% 0.5rem, 0.5rem 0%, calc(100% - 0.5rem) 0%, 100% 0.5rem,
-        100% calc(100% - 0.5rem), calc(100% - 0.5rem) 100%, 0.5rem 100%, 0 calc(100% - 0.5rem));
+    clip-path: polygon(
+        0% 0.5rem,
+        0.5rem 0%,
+        calc(100% - 0.5rem) 0%,
+        100% 0.5rem,
+        100% calc(100% - 0.5rem),
+        calc(100% - 0.5rem) 100%,
+        0.5rem 100%,
+        0 calc(100% - 0.5rem)
+    );
 }
 
 .game-player.no-padding .game-embed {
@@ -224,7 +243,7 @@ canvas {
 
     position: absolute;
     width: 35%;
-    left: calc((100% - 35%)/2);
+    left: calc((100% - 35%) / 2);
     top: 63%;
     z-index: 30;
 }
@@ -240,7 +259,8 @@ canvas {
     margin-right: 0.25rem;
 }
 
-.game-reset-button:active, .game-menu-button:active {
+.game-reset-button:active,
+.game-menu-button:active {
     background-color: var(--sim-background-color);
 }
 
@@ -250,7 +270,8 @@ canvas {
     content: "\f021";
 }
 
-.game-player-logo, .game-player-msft {
+.game-player-logo,
+.game-player-msft {
     position: absolute;
     width: 100%;
     text-align: center;
@@ -365,8 +386,9 @@ canvas {
     cursor: pointer;
 }
 
-
-.blur .game-joystick, .blur .game-buttons, .blur .game-sys-button {
+.blur .game-joystick,
+.blur .game-buttons,
+.blur .game-sys-button {
     opacity: 0.3;
 }
 
@@ -406,7 +428,7 @@ html {
 ===== Landscape view
 (always height constrained)
 */
-@media (min-aspect-ratio: 5/3) and (min-width: 250px) and (min-height: 200px)  {
+@media (min-aspect-ratio: 5/3) and (min-width: 250px) and (min-height: 200px) {
     #wrap:not(.portrait-only) .game-player {
         width: 100%;
         height: 100%;
@@ -415,8 +437,8 @@ html {
 
     #wrap:not(.portrait-only) .game-joystick,
     #wrap:not(.portrait-only) .game-buttons {
-        width: calc((100vw - 130vh)/2);
-        height: calc((100vw - 130vh)/2);
+        width: calc((100vw - 130vh) / 2);
+        height: calc((100vw - 130vh) / 2);
         max-width: 80vh;
         max-height: 80vh;
     }
@@ -458,7 +480,7 @@ html {
 ===== Landscape view
 (always height constrained)
 */
-@media (min-aspect-ratio: 2/1) and (min-width: 250px) and (min-height: 200px)  {
+@media (min-aspect-ratio: 2/1) and (min-width: 250px) and (min-height: 200px) {
     #wrap:not(.portrait-only) .game-sys-button-group {
         flex-direction: row;
         left: calc(50% + 100vh - 32vh);
@@ -468,7 +490,10 @@ html {
 
 @media (min-aspect-ratio: 2/1) and (max-height: 300px) {
     /* hide controls */
-    #wrap.portrait-only .game-player-msft, #wrap.portrait-only .game-buttons, #wrap.portrait-only .game-joystick, #wrap.portrait-only .game-sys-button {
+    #wrap.portrait-only .game-player-msft,
+    #wrap.portrait-only .game-buttons,
+    #wrap.portrait-only .game-joystick,
+    #wrap.portrait-only .game-sys-button {
         display: none;
     }
     #wrap.portrait-only .game-embed {
@@ -492,11 +517,12 @@ html {
 /*
 ===== Mini view (no controls)
 */
-@media
-(max-width: 250px),
-(max-height: 200px) {
+@media (max-width: 250px), (max-height: 200px) {
     /* hide controls */
-    .game-player-msft, .game-buttons, .game-joystick, .game-sys-button {
+    .game-player-msft,
+    .game-buttons,
+    .game-joystick,
+    .game-sys-button {
         display: none;
     }
     .game-embed {
@@ -506,7 +532,7 @@ html {
         padding-bottom: 0;
     }
     .game-player-background {
-        height:0;
+        height: 0;
     }
     #debug-stats {
         display: none;
@@ -518,9 +544,8 @@ html {
     }
 }
 /* height constrained */
-@media
-(max-width: 250px) and (min-aspect-ratio: 26 / 20),
-(max-height: 200px) and (min-aspect-ratio: 26 / 20) {
+@media (max-width: 250px) and (min-aspect-ratio: 26 / 20),
+    (max-height: 200px) and (min-aspect-ratio: 26 / 20) {
     .game-player {
         height: 100vh;
         width: calc((26 / 20) * 100vh);
@@ -593,13 +618,18 @@ html {
     text-decoration: none;
     border-radius: 0.2em;
     user-select: none;
-    transition: opacity .1s ease, background-color .1s ease, box-shadow .1s ease, color .1s ease, background .1s ease;
+    transition:
+        opacity 0.1s ease,
+        background-color 0.1s ease,
+        box-shadow 0.1s ease,
+        color 0.1s ease,
+        background 0.1s ease;
     -webkit-tap-highlight-color: transparent;
     background-color: #e41b21;
 }
 
 .safari-mute-button:hover {
-    filter: grayscale(.15) brightness(.85) contrast(1.3);
+    filter: grayscale(0.15) brightness(0.85) contrast(1.3);
 }
 
 .safari-mute-button svg {

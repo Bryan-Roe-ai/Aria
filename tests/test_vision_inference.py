@@ -69,9 +69,8 @@ def dummy_checkpoint(tmp_path: Path) -> tuple[Path, list[str]]:
         pytest.skip("PyTorch not available")
     model = TinyConvNet(num_classes=3)  # type: ignore
     classes = ["happy", "sad", "neutral"]
-    from typing import Dict
 
-    checkpoint: Dict[str, Any] = {
+    checkpoint: dict[str, Any] = {
         "model": model.state_dict(),  # type: ignore
         "classes": classes,
     }

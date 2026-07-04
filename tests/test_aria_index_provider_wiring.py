@@ -39,9 +39,9 @@ def test_controller_persists_provider_settings_in_localstorage() -> None:
     assert "aria-model-input" in js, "Controller should persist model/path"
     assert "aria-use-llm-toggle" in js, "Controller should persist use_llm toggle"
     assert "restoreProviderSettings()" in js, "Controller should restore provider settings on load"
-    assert (
-        "persistProviderSettings(provider, model, useLlm)" in js
-    ), "Controller should persist settings before requests"
+    assert "persistProviderSettings(provider, model, useLlm)" in js, (
+        "Controller should persist settings before requests"
+    )
 
 
 def test_index_loads_stage_controller_and_threejs() -> None:
@@ -49,7 +49,7 @@ def test_index_loads_stage_controller_and_threejs() -> None:
 
     assert 'src="aria_controller.js"' in html, "Main stage should load aria_controller.js"
     assert 'src="aria_threejs.js"' in html, "Main stage should load aria_threejs.js"
-    assert 'three@0.152' in html, "Main stage should load Three.js r152 CDN"
+    assert "three@0.152" in html, "Main stage should load Three.js r152 CDN"
     assert 'id="commandInput"' in html, "Main stage should expose command input"
     assert 'id="aria"' in html, "Main stage should expose Aria character DOM"
     assert "loadQuantumStage(" in html, "Main stage should expose Load Quantum World controls"

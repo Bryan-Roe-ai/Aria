@@ -31,18 +31,21 @@ Then open your browser to: **http://localhost:5000**
 ## ✨ Features
 
 ### 🎨 Beautiful Modern UI
+
 - Gradient color themes with smooth animations
 - Responsive design (works on mobile)
 - Professional chart visualizations with Chart.js
 - Real-time status updates
 
 ### 📊 Real-Time Training Visualization
+
 - Live loss/accuracy charts that update every second
 - Training/validation metrics side-by-side
 - Progress bar showing time elapsed
 - Epoch counter and best accuracy tracker
 
 ### 🎛️ Interactive Configuration
+
 - **Dataset Selection**: heart, ionosphere, sonar, banknote
 - **Qubits**: 2-8 (controls feature dimensionality)
 - **Layers**: 1-5 (variational circuit depth)
@@ -51,6 +54,7 @@ Then open your browser to: **http://localhost:5000**
 - **Batch Size**: 8-128 (samples per batch)
 
 ### 💾 Session Management
+
 - Automatic saving of training results to JSON
 - Training history browser with all past sessions
 - Click any result to view detailed metrics
@@ -59,6 +63,7 @@ Then open your browser to: **http://localhost:5000**
 ### 🔧 Technical Architecture
 
 **Backend (Flask)**:
+
 - RESTful API with 8 endpoints
 - Threaded training execution (non-blocking)
 - Real-time metric streaming via polling
@@ -66,12 +71,14 @@ Then open your browser to: **http://localhost:5000**
 - Automatic result persistence
 
 **Frontend (HTML/CSS/JS)**:
+
 - Pure vanilla JavaScript (no build step)
 - Chart.js for smooth visualizations
 - 1-second polling interval for live updates
 - Responsive CSS Grid layout
 
 **Quantum ML Pipeline**:
+
 - PennyLane default.qubit simulator
 - AmplitudeEmbedding for classical→quantum encoding
 - Variational quantum circuits (Rot + CNOT)
@@ -81,6 +88,7 @@ Then open your browser to: **http://localhost:5000**
 ## 📊 Example Training Session
 
 **Configuration**:
+
 ```
 Dataset: heart_disease
 Qubits: 4
@@ -91,6 +99,7 @@ Batch Size: 32
 ```
 
 **Expected Results**:
+
 - ~20-30 epochs in 10 minutes
 - ~70-85% validation accuracy
 - Training loss decreases from ~0.65 to ~0.45
@@ -126,17 +135,20 @@ GET  /api/results/:file         # Get detailed results
 ## 💡 What Makes This Special
 
 ### For Learning
+
 - **No coding required** - Visual UI makes quantum ML accessible
 - **Instant feedback** - See results as model trains
 - **Experiment friendly** - Try different parameters easily
 
 ### For Development
+
 - **Non-blocking** - Server handles multiple requests
 - **Session isolation** - Each training run is independent
 - **Metric history** - Keep only recent data to prevent memory issues
 - **Error handling** - Graceful failures with user feedback
 
 ### For Production
+
 - **Threaded execution** - Training runs in background
 - **State management** - Thread-safe session tracking
 - **Result persistence** - JSON files for every session
@@ -145,11 +157,13 @@ GET  /api/results/:file         # Get detailed results
 ## 🚀 Next Steps
 
 ### Immediate Actions
+
 1. Open http://localhost:5000 in your browser
 2. Select "heart" dataset and click "Start Training"
 3. Watch the real-time charts update!
 
 ### Advanced Usage
+
 - Train on custom datasets (add CSV to `datasets/quantum/`)
 - Modify quantum circuits (edit `create_quantum_circuit()`)
 - Integrate with Azure Quantum (see main README)
@@ -158,6 +172,7 @@ GET  /api/results/:file         # Get detailed results
 ## 🎨 Screenshots
 
 ### Main Dashboard
+
 - Gradient header with project branding
 - Configuration panel with all hyperparameters
 - Status panel with real-time metrics
@@ -165,12 +180,14 @@ GET  /api/results/:file         # Get detailed results
 - Training history with clickable results
 
 ### Training In Progress
+
 - Spinning quantum icon (⚛️)
 - Live metrics updating every second
 - Progress bar showing % complete
 - Charts growing epoch by epoch
 
 ### Results Browser
+
 - List of all training sessions
 - Dataset name and best accuracy badge
 - Timestamp and epoch count
@@ -186,17 +203,22 @@ GET  /api/results/:file         # Get detailed results
 ## 🔧 Customization
 
 ### Change Port
+
 Edit `web_app.py` last line:
+
 ```python
 app.run(host='0.0.0.0', port=5001, debug=True, threaded=True)
 ```
 
 ### Add Custom Dataset
+
 1. Add CSV to `../datasets/quantum/your_dataset.csv`
 2. Refresh browser - it appears in dropdown automatically
 
 ### Modify Circuit
+
 Edit `create_quantum_circuit()` in `web_app.py`:
+
 ```python
 def create_quantum_circuit(n_qubits, n_layers):
     dev = qml.device('default.qubit', wires=n_qubits)
@@ -221,6 +243,7 @@ def create_quantum_circuit(n_qubits, n_layers):
 ## 🙏 Tech Stack
 
 Built with:
+
 - **PennyLane 0.43.1** - Quantum machine learning
 - **Flask 3.1.2** - Web framework
 - **Chart.js 4.4.0** - Data visualization

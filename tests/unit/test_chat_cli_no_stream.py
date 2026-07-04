@@ -7,14 +7,11 @@ import importlib.util
 import types
 from pathlib import Path
 
-
-MODULE_PATH = Path(__file__).resolve(
-).parents[2] / "ai-projects" / "chat-cli" / "src" / "chat_cli.py"
+MODULE_PATH = Path(__file__).resolve().parents[2] / "ai-projects" / "chat-cli" / "src" / "chat_cli.py"
 
 
 def _load_chat_cli_module():
-    spec = importlib.util.spec_from_file_location(
-        "chat_cli_for_tests", MODULE_PATH)
+    spec = importlib.util.spec_from_file_location("chat_cli_for_tests", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -57,8 +54,7 @@ def test_one_shot_uses_non_stream_path_when_flag_set(monkeypatch) -> None:
         called["stream"] = True
         return "should-not-be-called"
 
-    monkeypatch.setattr(module, "non_stream_assistant_reply",
-                        fake_non_stream_reply)
+    monkeypatch.setattr(module, "non_stream_assistant_reply", fake_non_stream_reply)
     monkeypatch.setattr(module, "stream_assistant_reply", fake_stream_reply)
 
     args = argparse.Namespace(
@@ -102,8 +98,7 @@ def test_one_shot_uses_stream_path_by_default(monkeypatch) -> None:
         called["stream"] = True
         return "OK"
 
-    monkeypatch.setattr(module, "non_stream_assistant_reply",
-                        fake_non_stream_reply)
+    monkeypatch.setattr(module, "non_stream_assistant_reply", fake_non_stream_reply)
     monkeypatch.setattr(module, "stream_assistant_reply", fake_stream_reply)
 
     args = argparse.Namespace(
@@ -134,13 +129,11 @@ def test_non_stream_reply_handles_api_error_gracefully(monkeypatch) -> None:
 
     captured: dict[str, str] = {}
 
-    monkeypatch.setattr(module, "print_assistant_chunk",
-                        lambda t: captured.update({"text": t}))
+    monkeypatch.setattr(module, "print_assistant_chunk", lambda t: captured.update({"text": t}))
     monkeypatch.setattr(module, "print_assistant_done", lambda: None)
     monkeypatch.setattr(module, "format_provider_error", lambda e: f"ERR:{e}")
 
-    result = module.non_stream_assistant_reply(
-        FakeProvider(), [{"role": "user", "content": "hi"}])
+    result = module.non_stream_assistant_reply(FakeProvider(), [{"role": "user", "content": "hi"}])
 
     assert "ERR:" in result
     assert "ERR:" in captured.get("text", "")

@@ -1,3 +1,1 @@
-namespace performance {
-
-}
+namespace performance {}

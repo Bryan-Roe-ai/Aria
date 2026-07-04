@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 QUANTUM_DIR = REPO_ROOT / "ai-projects" / "quantum-ml"
 if str(QUANTUM_DIR) not in sys.path:

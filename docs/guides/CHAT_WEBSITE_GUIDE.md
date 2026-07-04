@@ -11,6 +11,7 @@ The server is already running! Open your browser to:
 **http://localhost:7071/api/chat-web**
 
 Or run the startup script:
+
 ```powershell
 .\start-chat-web.ps1
 ```
@@ -47,43 +48,46 @@ Or run the startup script:
 ### Files Created/Modified:
 
 1. **Frontend** (`chat-web/`)
-   - `index.html` - Beautiful gradient UI
-   - `chat.js` - Client-side logic
-   - `README.md` - Documentation
+    - `index.html` - Beautiful gradient UI
+    - `chat.js` - Client-side logic
+    - `README.md` - Documentation
 
 2. **Backend** (`function_app.py`)
-   - Chat API endpoint (`/api/chat`)
-   - Static file serving (`/api/chat-web`, `/api/chat-web/chat.js`)
-   - CORS support for local testing
+    - Chat API endpoint (`/api/chat`)
+    - Static file serving (`/api/chat-web`, `/api/chat-web/chat.js`)
+    - CORS support for local testing
 
 3. **Utilities**
-   - `start-chat-web.ps1` - One-command startup script
-   - `test-chat-web.py` - Functionality tests
+    - `start-chat-web.ps1` - One-command startup script
+    - `test-chat-web.py` - Functionality tests
 
 ## 💰 Provider Options
 
 ### 1. Local (FREE - Default) ✅
+
 - **Cost**: $0
 - **Setup**: None required
 - **Best for**: Testing, demos, offline use
 - Works immediately without any configuration
 
 ### 2. OpenAI
+
 - **Cost**: Pay per token (~$0.002/1K tokens for GPT-4o-mini)
 - **Setup**:
-  ```powershell
-  $env:OPENAI_API_KEY = "sk-..."
-  ```
+    ```powershell
+    $env:OPENAI_API_KEY = "sk-..."
+    ```
 - **Best for**: Production quality responses
 
 ### 3. Azure OpenAI
+
 - **Cost**: Similar to OpenAI
 - **Setup**:
-  ```powershell
-  $env:AZURE_OPENAI_API_KEY = "your-key"
-  $env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"
-  $env:AZURE_OPENAI_DEPLOYMENT = "gpt-4o-mini"
-  ```
+    ```powershell
+    $env:AZURE_OPENAI_API_KEY = "your-key"
+    $env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"
+    $env:AZURE_OPENAI_DEPLOYMENT = "gpt-4o-mini"
+    ```
 - **Best for**: Enterprise with Azure integration
 
 ## 🔧 API Reference
@@ -91,11 +95,12 @@ Or run the startup script:
 ### POST /api/chat
 
 Request:
+
 ```json
 {
     "messages": [
-        {"role": "system", "content": "You are helpful"},
-        {"role": "user", "content": "Hello!"}
+        { "role": "system", "content": "You are helpful" },
+        { "role": "user", "content": "Hello!" }
     ],
     "provider": "auto",
     "model": "gpt-4o-mini"
@@ -103,6 +108,7 @@ Request:
 ```
 
 Response:
+
 ```json
 {
     "response": "Hi! How can I help you?",
@@ -122,11 +128,13 @@ Serves the JavaScript client
 ## 🧪 Testing
 
 Run the test suite:
+
 ```powershell
 python .\test-chat-web.py
 ```
 
 Expected output:
+
 ```
 ==================================================
 Chat Web - Functionality Test
@@ -175,6 +183,7 @@ az functionapp create `
 ### Step 2: Configure Environment (Optional)
 
 If using OpenAI or Azure OpenAI:
+
 ```powershell
 az functionapp config appsettings set `
   --name chat-web-app-unique-123 `
@@ -191,6 +200,7 @@ func azure functionapp publish chat-web-app-unique-123
 ### Step 4: Access Your App
 
 Your chat website will be available at:
+
 ```
 https://chat-web-app-unique-123.azurewebsites.net/api/chat-web
 ```
@@ -206,8 +216,9 @@ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 ```
 
 Replace with your colors:
+
 ```css
-background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
 ```
 
 ### Change System Prompt
@@ -247,6 +258,7 @@ Then pass `?code=YOUR_FUNCTION_KEY` in API calls.
 
 **Problem**: Python linting errors
 **Solution**: These are false positives. Run:
+
 ```powershell
 pip install azure-functions colorama
 cd talk-to-ai; pip install -r requirements.txt
@@ -261,6 +273,7 @@ cd talk-to-ai; pip install -r requirements.txt
 
 **Problem**: `func start` fails
 **Solution**:
+
 1. Check Python version: `python --version` (need 3.8-3.11)
 2. Install Core Tools: `npm install -g azure-functions-core-tools@4`
 3. Check `local.settings.json` exists
@@ -270,6 +283,7 @@ cd talk-to-ai; pip install -r requirements.txt
 ### Local Development
 
 Watch the terminal for logs:
+
 ```
 [2025-11-08T12:27:53.884Z] Chat function invoked
 [2025-11-08T12:27:53.891Z] Using provider: local, model: local-echo
@@ -278,6 +292,7 @@ Watch the terminal for logs:
 ### Production (Azure)
 
 View logs in Azure Portal:
+
 1. Navigate to Function App
 2. Click "Functions" > "chat"
 3. Click "Monitor"
@@ -303,10 +318,10 @@ View logs in Azure Portal:
 1. **Try Different Providers**: Set API keys and compare responses
 2. **Customize UI**: Change colors, fonts, layout
 3. **Add Features**:
-   - Message history persistence
-   - User authentication
-   - File upload support
-   - Voice input
+    - Message history persistence
+    - User authentication
+    - File upload support
+    - Voice input
 4. **Deploy to Production**: Follow the Azure deployment guide above
 
 ## 🆘 Support
@@ -318,6 +333,7 @@ View logs in Azure Portal:
 ## 🎉 Congratulations!
 
 You now have a fully functional AI chat website that:
+
 - ✅ Works locally without any API keys
 - ✅ Supports multiple AI providers
 - ✅ Has a beautiful, responsive UI

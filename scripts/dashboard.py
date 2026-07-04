@@ -3,10 +3,11 @@
 Aria Platform Autonomous Systems Dashboard
 Real-time monitoring of training orchestrators, quantum jobs, and AI services.
 """
+
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # Ensure repository root is on sys.path before importing local shared modules.
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -18,7 +19,7 @@ from shared.json_utils import load_status_json
 DATA_OUT = REPO_ROOT / "data_out"
 
 
-def load_json(path: Path) -> Dict[str, Any]:
+def load_json(path: Path) -> dict[str, Any]:
     """Safely load JSON file."""
     loaded = load_status_json(path)
     if loaded.get("_status_file_error"):
@@ -53,9 +54,9 @@ def print_status_badge(status: str) -> str:
 
 def print_header(title: str):
     """Print formatted header."""
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"  {title}")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
 
 def print_training_status():
@@ -106,7 +107,7 @@ def print_training_status():
             for p in paths[:2]:  # Show first 2
                 print(f"      └─ {p}")
             if len(paths) > 2:
-                print(f"      └─ ... and {len(paths)-2} more")
+                print(f"      └─ ... and {len(paths) - 2} more")
 
 
 def print_ai_services():
@@ -155,7 +156,7 @@ def print_quick_commands():
 
     for name, cmd, mode in commands:
         print(f"   {name:25} │ {mode:6}")
-        print(f"   {' '*25} $ {cmd}")
+        print(f"   {' ' * 25} $ {cmd}")
         print()
 
 

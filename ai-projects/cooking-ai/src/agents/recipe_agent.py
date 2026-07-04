@@ -10,7 +10,7 @@ Abstracts provider differences. Providers must implement:
   complete(messages: list[dict[str,str]], json_mode: bool=False) -> str
 """
 
-from typing import Any, Dict, List, Optional, Protocol
+from typing import Any, Protocol
 
 try:
     # When running tests that inject src/ into sys.path
@@ -21,7 +21,7 @@ except ImportError:  # pragma: no cover
 
 
 class ProviderProtocol(Protocol):  # Structural typing for providers
-    def complete(self, messages: List[Dict[str, str]], json_mode: bool = False) -> str:  # pragma: no cover
+    def complete(self, messages: list[dict[str, str]], json_mode: bool = False) -> str:  # pragma: no cover
         ...
 
 
@@ -76,7 +76,7 @@ class RecipeAgent:
     def __init__(self, provider: ProviderProtocol) -> None:
         self.provider = provider
 
-    def _invoke(self, user_content: str, json_schema: Dict[str, Any]) -> Dict[str, Any]:
+    def _invoke(self, user_content: str, json_schema: dict[str, Any]) -> dict[str, Any]:
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_content},
@@ -109,12 +109,12 @@ class RecipeAgent:
             return {"ingredients": []}
         return {"recipes": []}
 
-    def search_recipes(self, query: str, filters: Optional[List[str]] = None, limit: int = 5) -> Dict[str, Any]:
+    def search_recipes(self, query: str, filters: list[str] | None = None, limit: int = 5) -> dict[str, Any]:
         filters = filters or []
         prompt = SEARCH_PROMPT_TEMPLATE.format(query=query, filters=", ".join(filters), limit=limit)
         return self._invoke(prompt, RECIPE_SEARCH_SCHEMA)
 
-    def extract_ingredients(self, text: str) -> Dict[str, Any]:
+    def extract_ingredients(self, text: str) -> dict[str, Any]:
         prompt = EXTRACT_PROMPT_TEMPLATE.format(text=text)
         return self._invoke(prompt, INGREDIENT_EXTRACTION_SCHEMA)
 

@@ -26,20 +26,19 @@ import hashlib
 import json
 import random
 from pathlib import Path
-from typing import Dict, List
 
 LOGS_DIR = Path("ai-projects/chat-cli/logs")
 OUTPUT_DIR = Path("datasets/chat/chat_logs")
 
 
-def iter_logs() -> List[Path]:
+def iter_logs() -> list[Path]:
     if not LOGS_DIR.exists():
         return []
     return sorted([p for p in LOGS_DIR.glob("*.jsonl") if p.is_file()])
 
 
-def read_jsonl(path: Path) -> List[Dict]:
-    records: List[Dict] = []
+def read_jsonl(path: Path) -> list[dict]:
+    records: list[dict] = []
     with path.open("r", encoding="utf-8", errors="ignore") as f:
         for line in f:
             line = line.strip()
@@ -54,7 +53,7 @@ def read_jsonl(path: Path) -> List[Dict]:
     return records
 
 
-def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
+def build_examples(messages: list[dict], context_window: int) -> list[dict]:
     # Simple user->assistant pairs - build list directly
     pairs = []
     last_user = None
@@ -80,7 +79,7 @@ def build_examples(messages: List[Dict], context_window: int) -> List[Dict]:
     return pairs
 
 
-def hash_example(example: Dict) -> str:
+def hash_example(example: dict) -> str:
     concat = "\n".join([f"{m.get('role', '')}: {m.get('content', '')[:400]}" for m in example.get("messages", [])])
     return hashlib.sha256(concat.encode("utf-8")).hexdigest()[:24]
 
@@ -103,7 +102,7 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     log_files = iter_logs()
-    all_examples: List[Dict] = []
+    all_examples: list[dict] = []
     for lf in log_files:
         msgs = read_jsonl(lf)
         if not msgs:
@@ -159,7 +158,7 @@ def main():
     train = examples[:n_train]
     test = examples[n_train:] or examples[:1]
 
-    def write(path: Path, recs: List[Dict]):
+    def write(path: Path, recs: list[dict]):
         with path.open("w", encoding="utf-8") as f:
             for r in recs:
                 out = {

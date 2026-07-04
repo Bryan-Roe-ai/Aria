@@ -10,7 +10,6 @@
 // begin optional pin configurations
 #define CFG_PIN_CONFIG_ACTIVE_LO 0x10000
 
-
 #define CFG_MAGIC0 0x1e9e10f1
 #define CFG_MAGIC1 0x20227a79
 
@@ -393,7 +392,7 @@
 #define CFG_NUM_LCD_COLUMNS 1015
 #define CFG_NUM_LCD_ROWS 1016
 
-//RoboHAT MM1 pinout
+// RoboHAT MM1 pinout
 #define CFG_PIN_RCC0 1017
 #define CFG_PIN_RCC1 1018
 #define CFG_PIN_RCC2 1019
@@ -470,7 +469,6 @@
 #define CFG_PIN_CC_DEN2 286
 #define CFG_PIN_CC_CLK 287
 #define CFG_PIN_XCC_CLK 288
-
 
 #define CFG_PIN_JDPWR_PRE_SENSE 1100
 #define CFG_PIN_JDPWR_GND_SENSE 1101

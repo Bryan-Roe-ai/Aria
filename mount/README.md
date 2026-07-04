@@ -7,6 +7,7 @@ A unified microservice that integrates and orchestrates all QAI workspace compon
 ## 🎯 Purpose
 
 This service provides a single REST API to:
+
 - **Quantum AI**: Train quantum classifiers, manage backends, run autorun jobs
 - **Chat**: Interface with multiple providers (local, Azure OpenAI, LoRA), manage conversations
 - **Training**: Run LoRA training, orchestrate autotrain jobs, monitor training runs
@@ -25,6 +26,7 @@ pip install -r requirements.txt
 ### Configuration
 
 Edit `config.yaml` to customize:
+
 - Service settings (host, port, debug mode)
 - Paths to other QAI components
 - Enable/disable specific integrations
@@ -56,6 +58,7 @@ make start-qai
 ## 📚 API Documentation
 
 Once running, visit:
+
 - **🎨 Web UI**: <http://localhost:8000> (Main interface)
 - **Interactive API docs**: <http://localhost:8000/docs>
 - **ReDoc**: <http://localhost:8000/redoc>
@@ -81,6 +84,7 @@ Once running, visit:
 - `POST /quantum/autorun` - Run quantum autorun job
 
 Example:
+
 ```bash
 curl -X POST http://localhost:8000/quantum/train \
   -H "Content-Type: application/json" \
@@ -102,6 +106,7 @@ curl -X POST http://localhost:8000/quantum/train \
 - `GET /chat/conversations/{filename}` - Get specific conversation
 
 Example:
+
 ```bash
 curl -X POST http://localhost:8000/chat/message \
   -H "Content-Type: application/json" \
@@ -123,6 +128,7 @@ curl -X POST http://localhost:8000/chat/message \
 - `POST /training/autotrain` - Run autotrain orchestrator
 
 Example:
+
 ```bash
 curl -X POST http://localhost:8000/training/lora \
   -H "Content-Type: application/json" \
@@ -150,6 +156,7 @@ mount/
 ### Integration Modules
 
 Each integration module provides:
+
 - **Status checking**: Current state and availability
 - **Operation execution**: Run jobs, train models, send messages
 - **Data retrieval**: List datasets, conversations, results
@@ -169,11 +176,11 @@ Each integration module provides:
 
 ```yaml
 service:
-  name: qai-integration-service
-  version: 0.1.0
-  host: 0.0.0.0
-  port: 8000
-  debug: true
+    name: qai-integration-service
+    version: 0.1.0
+    host: 0.0.0.0
+    port: 8000
+    debug: true
 ```
 
 ### Path Configuration
@@ -182,12 +189,12 @@ All paths are relative to the workspace root:
 
 ```yaml
 paths:
-  workspace_root: ..
-  quantum_ai: ../ai-projects/quantum-ml
-  talk_to_ai: ../ai-projects/chat-cli
-  phi_training: ../ai-projects/lora-training/microsoft_phi-silica-3.6_v1
-  datasets: ../datasets
-  data_out: ../data_out
+    workspace_root: ..
+    quantum_ai: ../ai-projects/quantum-ml
+    talk_to_ai: ../ai-projects/chat-cli
+    phi_training: ../ai-projects/lora-training/microsoft_phi-silica-3.6_v1
+    datasets: ../datasets
+    data_out: ../data_out
 ```
 
 ### Feature Flags
@@ -196,11 +203,11 @@ Enable/disable integrations:
 
 ```yaml
 quantum:
-  enabled: true
+    enabled: true
 chat:
-  enabled: true
+    enabled: true
 training:
-  enabled: true
+    enabled: true
 ```
 
 ## 💡 Usage Examples
@@ -357,6 +364,7 @@ The `/status` endpoint provides comprehensive information:
 ## 🤝 Contributing
 
 Follow the QAI workspace patterns:
+
 - YAML-driven configuration
 - Async operations where possible
 - Comprehensive error handling

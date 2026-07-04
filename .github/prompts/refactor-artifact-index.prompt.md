@@ -8,28 +8,33 @@ agent: agent
 Create a canonical index of all artifacts produced in a refactor workflow.
 
 ### Inputs
+
 - Refactor scope and current stage
 - Completed prompts/steps
 - Known artifacts and references
 
 ### Required behavior
+
 - Normalize artifact names and categories.
 - Map each artifact to producer step, purpose, and current status.
 - Mark missing-but-required artifacts.
 - Provide one best next command to close the biggest gap.
 
 ### Non-goals unless explicitly requested
+
 - No renaming or relocating existing artifacts — index only.
 - No creating new artifacts outside of the established workflow steps.
 - No code changes or source file edits.
 
 ### Output format
+
 - **Artifact index table**: artifact, produced-by, status, location/reference, purpose
 - **Required missing artifacts**
 - **Stale/superseded artifacts**
 - **Optional next command**: one slash command
 
 ### Typical artifacts
+
 - Gate profile
 - Precheck notes
 - Verification report
@@ -43,6 +48,7 @@ Create a canonical index of all artifacts produced in a refactor workflow.
 - Done-check verdict
 
 ### Allowed next commands
+
 - `/refactor-evidence-log`
 - `/refactor-pr-summary`
 - `/refactor-reviewer-checklist`
@@ -58,5 +64,6 @@ Create a canonical index of all artifacts produced in a refactor workflow.
 - `/refactor-next-step`
 
 ### Example invocations
+
 - `artifact-index after verify + evidence-log + pr-summary`
 - `artifact-index before merge for contract-sensitive refactor`

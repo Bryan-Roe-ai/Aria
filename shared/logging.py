@@ -20,7 +20,7 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 __all__ = [
     "configure_logging",
@@ -75,7 +75,7 @@ class JsonFormatter(logging.Formatter):
         else:
             record.exc_text = None
 
-        doc: Dict[str, Any] = {
+        doc: dict[str, Any] = {
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z",
             "level": record.levelname,
             "logger": record.name,
@@ -115,8 +115,8 @@ _configured: bool = False
 
 
 def configure_logging(
-    level: Optional[str] = None,
-    structured: Optional[bool] = None,
+    level: str | None = None,
+    structured: bool | None = None,
     stream: Any = None,
 ) -> None:
     """Configure the root logger.
@@ -177,7 +177,7 @@ def configure_logging(
             h.setLevel(numeric_level)
 
 
-def configure_json_logging(level: Optional[str] = None, stream: Any = None) -> None:
+def configure_json_logging(level: str | None = None, stream: Any = None) -> None:
     """Backward-compatible helper used by legacy imports."""
     configure_logging(level=level, structured=True, stream=stream)
 

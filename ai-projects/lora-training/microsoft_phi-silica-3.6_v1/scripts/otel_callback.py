@@ -18,7 +18,7 @@ from __future__ import annotations
 import logging
 import os
 import sys
-from typing import Any, Optional
+from typing import Any
 
 # Transformers' TrainerCallback is optional at import time.
 try:  # pragma: no cover - optional dependency in some environments
@@ -119,8 +119,8 @@ class OpenTelemetryTrainerCallback:
     """
 
     def __init__(self):
-        self.tracer: Optional[Any] = None
-        self.training_span: Optional[Any] = None
+        self.tracer: Any | None = None
+        self.training_span: Any | None = None
 
         otel_endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
         if otel_endpoint and trace and TracerProvider and OTLPSpanExporter and BatchSpanProcessor:

@@ -24,10 +24,12 @@ Use the helper script from the repo root:
 ```
 
 Outputs:
+
 - Chat UI: `https://<your-function-app>.azurewebsites.net/api/chat-web`
-- Health:   `https://<your-function-app>.azurewebsites.net/api/ai/status`
+- Health: `https://<your-function-app>.azurewebsites.net/api/ai/status`
 
 If you use OpenAI instead of Azure OpenAI:
+
 ```powershell
 ./deploy-chat-to-azure.ps1 `
   -ResourceGroup rg-chat-web `
@@ -39,13 +41,15 @@ If you use OpenAI instead of Azure OpenAI:
 
 ## Manual steps (expanded)
 
-1) Resource Group and Storage
+1. Resource Group and Storage
+
 ```powershell
 az group create --name rg-chat-web --location eastus
 az storage account create --name chatwebstorage123 --resource-group rg-chat-web --location eastus --sku Standard_LRS
 ```
 
-2) Create Function App
+2. Create Function App
+
 ```powershell
 az functionapp create `
   --resource-group rg-chat-web `
@@ -58,9 +62,10 @@ az functionapp create `
   --os-type Linux
 ```
 
-3) Configure App Settings
+3. Configure App Settings
 
 Azure OpenAI:
+
 ```powershell
 az functionapp config appsettings set `
   --name chat-web-app-123 `
@@ -75,6 +80,7 @@ az functionapp config appsettings set `
 ```
 
 OpenAI:
+
 ```powershell
 az functionapp config appsettings set `
   --name chat-web-app-123 `
@@ -86,7 +92,8 @@ az functionapp config appsettings set `
     CHAT_TEMPERATURE="0.7"
 ```
 
-4) Publish
+4. Publish
+
 ```powershell
 func azure functionapp publish chat-web-app-123
 ```
@@ -95,7 +102,7 @@ func azure functionapp publish chat-web-app-123
 
 - Open the chat UI: `/api/chat-web`
 - Call the health endpoint: `/api/ai/status`
-  - Confirms the active provider and whether required env vars are detected
+    - Confirms the active provider and whether required env vars are detected
 
 ## Notes
 

@@ -37,17 +37,17 @@ def _stub_subprocess(returncode: int = 0, stdout: str = "ok", stderr: str = ""):
         ({"smoke": {"name": "smoke", "preset": "heart", "status": "completed"}}, "heart"),
     ],
 )
-def test_run_autorun_job_reads_status_for_list_and_dict_shapes(tmp_path: Path, monkeypatch, jobs_payload, expected_preset):
+def test_run_autorun_job_reads_status_for_list_and_dict_shapes(
+    tmp_path: Path, monkeypatch, jobs_payload, expected_preset
+):
     quantum_root = tmp_path / "quantum-ai"
     quantum_root.mkdir(parents=True, exist_ok=True)
     status_file = tmp_path / "data_out" / "quantum_autorun" / "status.json"
     status_file.parent.mkdir(parents=True, exist_ok=True)
-    status_file.write_text(json.dumps(
-        {"jobs": jobs_payload, "timestamp": "2026-06-20T00:00:00Z"}))
+    status_file.write_text(json.dumps({"jobs": jobs_payload, "timestamp": "2026-06-20T00:00:00Z"}))
 
     integration = QuantumIntegration(_make_config(tmp_path))
-    monkeypatch.setattr("mount.quantum_integration.subprocess.run",
-                        lambda *args, **kwargs: _stub_subprocess())
+    monkeypatch.setattr("mount.quantum_integration.subprocess.run", lambda *args, **kwargs: _stub_subprocess())
 
     result = asyncio.run(integration.run_autorun_job("smoke", dry_run=True))
 

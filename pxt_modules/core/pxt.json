@@ -41,9 +41,7 @@
         "leveldetector.ts",
         "pxtparts.json"
     ],
-    "testFiles": [
-        "test.ts"
-    ],
+    "testFiles": ["test.ts"],
     "public": true,
     "targetVersions": {
         "target": "4.0.14",
@@ -58,10 +56,7 @@
         }
     },
     "dalDTS": {
-        "includeDirs": [
-            "libraries/codal-core/inc",
-            "pxtapp"
-        ],
+        "includeDirs": ["libraries/codal-core/inc", "pxtapp"],
         "excludePrefix": [
             "JD_",
             "USB_",

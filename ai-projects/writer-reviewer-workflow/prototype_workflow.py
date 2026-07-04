@@ -44,7 +44,7 @@ class FunctionArgument:
     arg_type: str = "Any"
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "FunctionArgument":
+    def from_dict(cls, payload: dict[str, Any]) -> FunctionArgument:
         raw_name = str(payload.get("name", "arg")).strip()
         return cls(
             name=_sanitize_identifier(raw_name, fallback="arg"),
@@ -63,7 +63,7 @@ class PrototypeRequest:
     return_type: str = "Any"
 
     @classmethod
-    def from_dict(cls, payload: dict[str, Any]) -> "PrototypeRequest":
+    def from_dict(cls, payload: dict[str, Any]) -> PrototypeRequest:
         module_name = _sanitize_identifier(
             str(payload.get("module_name", "generated_module")),
             fallback="generated_module",

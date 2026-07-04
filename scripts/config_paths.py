@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 # Canonical path first, legacy fallback second when present.
-_CONFIG_CANDIDATES: Dict[str, Tuple[str, ...]] = {
+_CONFIG_CANDIDATES: dict[str, tuple[str, ...]] = {
     "master_orchestrator": (
         "config/master_orchestrator.yaml",
         "master_orchestrator.yaml",
@@ -26,12 +25,12 @@ _CONFIG_CANDIDATES: Dict[str, Tuple[str, ...]] = {
 }
 
 
-def known_config_keys() -> List[str]:
+def known_config_keys() -> list[str]:
     """Return supported config keys in stable sorted order."""
     return sorted(_CONFIG_CANDIDATES.keys())
 
 
-def get_config_candidates(repo_root: Path, key: str) -> List[Path]:
+def get_config_candidates(repo_root: Path, key: str) -> list[Path]:
     """Return candidate config paths for a key, canonical-first."""
     if key not in _CONFIG_CANDIDATES:
         raise KeyError(f"Unknown config key: {key}")
@@ -43,7 +42,7 @@ def canonical_config_path(repo_root: Path, key: str) -> Path:
     return get_config_candidates(repo_root, key)[0]
 
 
-def resolve_existing_config_path(repo_root: Path, key: str) -> Optional[Path]:
+def resolve_existing_config_path(repo_root: Path, key: str) -> Path | None:
     """Return first existing config path for key, or None if none exist."""
     candidates = get_config_candidates(repo_root, key)
     return next((path for path in candidates if path.exists()), None)

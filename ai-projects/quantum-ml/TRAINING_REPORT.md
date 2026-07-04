@@ -29,20 +29,20 @@
 
 ### Standard Datasets (Original Training)
 
-| Dataset | Accuracy | Grade | Use Case |
-| --------- | ---------- | ------- | ---------- |
-| **Moons** | 72.5% | ★★★★★★★ | Non-linear boundaries |
-| **Circles** | 52.5% | ★★★★★ | Concentric patterns |
-| **Iris** | 76.7% | ★★★★★★★ | Multi-class classification |
+| Dataset     | Accuracy | Grade   | Use Case                   |
+| ----------- | -------- | ------- | -------------------------- |
+| **Moons**   | 72.5%    | ★★★★★★★ | Non-linear boundaries      |
+| **Circles** | 52.5%    | ★★★★★   | Concentric patterns        |
+| **Iris**    | 76.7%    | ★★★★★★★ | Multi-class classification |
 
 ### Extended Datasets (Recent Experiments)
 
-| Dataset | Accuracy | Grade | Use Case |
-| --------- | ---------- | ------- | ---------- |
-| **XOR** | 57.5% | ★★★★★ | Linearly inseparable |
-| **Spiral** | 37.5% | ★★★ | Highly non-linear |
-| **Imbalanced** | 90.0% | ★★★★★★★★ | Class imbalance |
-| **Wine** | 88.9% | ★★★★★★★★ | Real-world data |
+| Dataset        | Accuracy | Grade    | Use Case             |
+| -------------- | -------- | -------- | -------------------- |
+| **XOR**        | 57.5%    | ★★★★★    | Linearly inseparable |
+| **Spiral**     | 37.5%    | ★★★      | Highly non-linear    |
+| **Imbalanced** | 90.0%    | ★★★★★★★★ | Class imbalance      |
+| **Wine**       | 88.9%    | ★★★★★★★★ | Real-world data      |
 
 ---
 
@@ -51,19 +51,19 @@
 ### Top 3 Achievements
 
 1. **Imbalanced Dataset: 90.0%** 🥇
-   - Demonstrates robustness to class imbalance
-   - Successfully handles 90/10 split
-   - No special weighting needed
+    - Demonstrates robustness to class imbalance
+    - Successfully handles 90/10 split
+    - No special weighting needed
 
 2. **Wine Classification: 88.9%** 🥈
-   - Real-world chemical analysis
-   - 13 features reduced via PCA
-   - Multi-class problem
+    - Real-world chemical analysis
+    - 13 features reduced via PCA
+    - Multi-class problem
 
 3. **Iris Classification: 76.7%** 🥉
-   - Classic ML benchmark
-   - Setosa vs. Other species
-   - Competitive with classical methods
+    - Classic ML benchmark
+    - Setosa vs. Other species
+    - Competitive with classical methods
 
 ---
 
@@ -93,28 +93,28 @@ Epoch  90: Loss 0.6486 → Val Loss 0.4941 (Acc: 76.7%)
 ### Where Quantum Excels ✅
 
 1. **Imbalanced Data** (90.0%)
-   - Quantum entanglement provides robustness
-   - Natural handling of rare classes
+    - Quantum entanglement provides robustness
+    - Natural handling of rare classes
 
 2. **Real-World Data** (88.9% on Wine)
-   - High-dimensional feature spaces
-   - Complex non-linear relationships
+    - High-dimensional feature spaces
+    - Complex non-linear relationships
 
 3. **Non-Linear Problems** (72.5% on Moons)
-   - Quantum circuits create feature spaces
-   - Classical linear models would fail
+    - Quantum circuits create feature spaces
+    - Classical linear models would fail
 
 ### Challenges ⚠️
 
 1. **Spiral Dataset** (37.5%)
-   - Highly intertwined patterns
-   - May need more qubits (6-8)
-   - Consider quantum data re-uploading
+    - Highly intertwined patterns
+    - May need more qubits (6-8)
+    - Consider quantum data re-uploading
 
 2. **Circles Dataset** (52.5%)
-   - Concentric patterns difficult
-   - Radial basis functions might help
-   - Explore different quantum encodings
+    - Concentric patterns difficult
+    - Radial basis functions might help
+    - Explore different quantum encodings
 
 ---
 
@@ -162,44 +162,44 @@ Epoch  90: Loss 0.6486 → Val Loss 0.4941 (Acc: 76.7%)
 ### Immediate Actions (High Priority)
 
 1. **Increase Qubits** (6-8 qubits)
-   - Better expressivity for complex patterns
-   - Target spiral dataset improvement
+    - Better expressivity for complex patterns
+    - Target spiral dataset improvement
 
 2. **Try Different Entanglement**
-   - Test "circular" and "full" patterns
-   - May improve circles dataset performance
+    - Test "circular" and "full" patterns
+    - May improve circles dataset performance
 
 3. **Implement Data Re-uploading**
-   - Multiple encoding layers
-   - Can boost accuracy by 10-15%
+    - Multiple encoding layers
+    - Can boost accuracy by 10-15%
 
 ### Medium-Term Goals
 
 1. **Quantum Feature Selection**
-   - Identify most quantum-advantageous features
-   - Optimize PCA components
+    - Identify most quantum-advantageous features
+    - Optimize PCA components
 
 2. **Ensemble Methods**
-   - Combine multiple quantum circuits
-   - Voting or averaging strategies
+    - Combine multiple quantum circuits
+    - Voting or averaging strategies
 
 3. **Hardware Deployment**
-   - Test on Azure Quantum real hardware
-   - Understand noise impact
+    - Test on Azure Quantum real hardware
+    - Understand noise impact
 
 ### Long-Term Research
 
 1. **Quantum Attention Mechanisms**
-   - Integrate with transformer architecture
-   - Quantum memory for sequence tasks
+    - Integrate with transformer architecture
+    - Quantum memory for sequence tasks
 
 2. **Error Mitigation**
-   - Implement zero-noise extrapolation
-   - Probabilistic error cancellation
+    - Implement zero-noise extrapolation
+    - Probabilistic error cancellation
 
 3. **Scalability Testing**
-   - Larger datasets (1000+ samples)
-   - More classes (>3)
+    - Larger datasets (1000+ samples)
+    - More classes (>3)
 
 ---
 
@@ -292,5 +292,5 @@ Your quantum AI has been successfully trained and validated across **7 different
 
 ---
 
-*Generated automatically by Quantum AI Training System*
-*For questions or improvements, see documentation in `examples/` and `experiments/` directories*
+_Generated automatically by Quantum AI Training System_
+_For questions or improvements, see documentation in `examples/` and `experiments/` directories_

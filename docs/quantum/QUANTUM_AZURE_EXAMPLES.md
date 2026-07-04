@@ -19,15 +19,15 @@ This example uses IonQ's cloud simulator which is free to use.
 
 ```yaml
 jobs:
-  - name: azure_free_test
-    mode: azure_hardware
-    azure_backend: ionq.simulator  # FREE
-    azure_shots: 100
-    n_qubits: 3
-    enabled: true
-    extra_args:
-      - --circuit-file
-      - ai-projects/quantum-ml/results/bell_state.qasm
+    - name: azure_free_test
+      mode: azure_hardware
+      azure_backend: ionq.simulator # FREE
+      azure_shots: 100
+      n_qubits: 3
+      enabled: true
+      extra_args:
+          - --circuit-file
+          - ai-projects/quantum-ml/results/bell_state.qasm
 ```
 
 ### Commands
@@ -51,16 +51,16 @@ This example targets real quantum hardware (IonQ QPU) with cost safety enabled.
 
 ```yaml
 jobs:
-  - name: ionq_hardware_run
-    mode: azure_hardware
-    azure_backend: ionq.qpu  # PAID: Real quantum hardware
-    azure_shots: 50          # Keep low to minimize cost
-    n_qubits: 3
-    azure_confirm_cost: true  # REQUIRED for paid hardware
-    enabled: false            # Keep disabled until ready
-    extra_args:
-      - --circuit-file
-      - ai-projects/quantum-ml/results/optimized_circuit.qasm
+    - name: ionq_hardware_run
+      mode: azure_hardware
+      azure_backend: ionq.qpu # PAID: Real quantum hardware
+      azure_shots: 50 # Keep low to minimize cost
+      n_qubits: 3
+      azure_confirm_cost: true # REQUIRED for paid hardware
+      enabled: false # Keep disabled until ready
+      extra_args:
+          - --circuit-file
+          - ai-projects/quantum-ml/results/optimized_circuit.qasm
 ```
 
 ### Safety Validation
@@ -93,38 +93,38 @@ Compare results across simulators and hardware.
 
 ```yaml
 jobs:
-  # Local simulator (baseline)
-  - name: compare_local
-    mode: train_custom_dataset
-    preset: heart
-    n_qubits: 3
-    epochs: 1
-    enabled: true
+    # Local simulator (baseline)
+    - name: compare_local
+      mode: train_custom_dataset
+      preset: heart
+      n_qubits: 3
+      epochs: 1
+      enabled: true
 
-  # Azure IonQ simulator
-  - name: compare_ionq_sim
-    mode: azure_hardware
-    azure_backend: ionq.simulator
-    azure_shots: 100
-    n_qubits: 3
-    enabled: true
+    # Azure IonQ simulator
+    - name: compare_ionq_sim
+      mode: azure_hardware
+      azure_backend: ionq.simulator
+      azure_shots: 100
+      n_qubits: 3
+      enabled: true
 
-  # Azure Rigetti simulator
-  - name: compare_rigetti_sim
-    mode: azure_hardware
-    azure_backend: rigetti.sim.qvm
-    azure_shots: 100
-    n_qubits: 3
-    enabled: true
+    # Azure Rigetti simulator
+    - name: compare_rigetti_sim
+      mode: azure_hardware
+      azure_backend: rigetti.sim.qvm
+      azure_shots: 100
+      n_qubits: 3
+      enabled: true
 
-  # IonQ hardware (disabled by default)
-  - name: compare_ionq_hardware
-    mode: azure_hardware
-    azure_backend: ionq.qpu
-    azure_shots: 50
-    n_qubits: 3
-    azure_confirm_cost: true
-    enabled: false
+    # IonQ hardware (disabled by default)
+    - name: compare_ionq_hardware
+      mode: azure_hardware
+      azure_backend: ionq.qpu
+      azure_shots: 50
+      n_qubits: 3
+      azure_confirm_cost: true
+      enabled: false
 ```
 
 ### Batch Execution
@@ -165,14 +165,14 @@ if __name__ == "__main__":
 
 ```yaml
 jobs:
-  - name: bell_state_ionq
-    mode: azure_hardware
-    azure_backend: ionq.simulator
-    azure_shots: 1000
-    enabled: true
-    extra_args:
-      - --circuit-file
-      - ai-projects/quantum-ml/results/bell_state.qasm
+    - name: bell_state_ionq
+      mode: azure_hardware
+      azure_backend: ionq.simulator
+      azure_shots: 1000
+      enabled: true
+      extra_args:
+          - --circuit-file
+          - ai-projects/quantum-ml/results/bell_state.qasm
 ```
 
 ## Troubleshooting
@@ -243,17 +243,17 @@ name: Quantum Tests
 on: [push]
 
 jobs:
-  quantum-validation:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run quantum autorun dry-run
-        run: |
-          python scripts/evaluation/quantum_autorun.py --dry-run
+    quantum-validation:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - name: Run quantum autorun dry-run
+              run: |
+                  python scripts/evaluation/quantum_autorun.py --dry-run
 
-      - name: Run simulator tests only
-        run: |
-          python scripts/evaluation/quantum_autorun.py --job azure_ionq_simulator
+            - name: Run simulator tests only
+              run: |
+                  python scripts/evaluation/quantum_autorun.py --job azure_ionq_simulator
 ```
 
 ## Advanced: Programmatic Job Submission

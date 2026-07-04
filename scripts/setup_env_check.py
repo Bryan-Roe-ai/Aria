@@ -11,7 +11,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 # Color codes for terminal output
 GREEN = "\033[92m"
@@ -400,7 +399,7 @@ def main() -> int:
         ("Test Suite", check_test_suite),
     ]
 
-    results: List[Tuple[str, bool]] = []
+    results: list[tuple[str, bool]] = []
     for check_name, check_fn in checks:
         try:
             result = check_fn()

@@ -38,9 +38,7 @@ def serve_chat_js(req: func.HttpRequest) -> func.HttpResponse:
 def serve_agi_stream_utils(req: func.HttpRequest) -> func.HttpResponse:
     """Serve AGI SSE parsing utilities for chat-web clients."""
     js_path = REPO_ROOT / "apps" / "chat" / "static" / "agi_stream_utils.js"
-    content, status_code, headers = serve_static_file(
-        js_path, "application/javascript", use_cache_headers=True
-    )
+    content, status_code, headers = serve_static_file(js_path, "application/javascript", use_cache_headers=True)
 
     return func.HttpResponse(
         content,

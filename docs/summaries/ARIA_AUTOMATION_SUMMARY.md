@@ -248,25 +248,25 @@ In `config/master_orchestrator.yaml`:
 
 ```yaml
 orchestrators:
-  - name: aria_automation
-    script: scripts/aria_automation.py
-    enabled: true
-    schedule: "*/30 * * * *"  # Every 30 minutes
-    priority: 5
-    retry_on_failure: 3
-    timeout_minutes: 15
-    flags:
-      mode: training
-      once: true
+    - name: aria_automation
+      script: scripts/aria_automation.py
+      enabled: true
+      schedule: "*/30 * * * *" # Every 30 minutes
+      priority: 5
+      retry_on_failure: 3
+      timeout_minutes: 15
+      flags:
+          mode: training
+          once: true
 
 workflows:
-  - name: aria_full_stack
-    enabled: false  # Enable for 24/7
-    trigger: "manual"
-    orchestrators:
-      - aria_automation
-    flags:
-      mode: full
+    - name: aria_full_stack
+      enabled: false # Enable for 24/7
+      trigger: "manual"
+      orchestrators:
+          - aria_automation
+      flags:
+          mode: full
 ```
 
 ### Running via Master Orchestrator
@@ -361,21 +361,21 @@ All documentation is comprehensive and complete:
 
 1. Test the automation:
 
-   ```bash
-   ./scripts/start_aria.sh full
-   ```
+    ```bash
+    ./scripts/start_aria.sh full
+    ```
 
 2. Access Aria web interface:
 
-   ```text
-   http://localhost:8080
-   ```
+    ```text
+    http://localhost:8080
+    ```
 
 3. Try auto-execute:
 
-   ```text
-   http://localhost:8080/auto-execute.html
-   ```
+    ```text
+    http://localhost:8080/auto-execute.html
+    ```
 
 ### Production Setup
 

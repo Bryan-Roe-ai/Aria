@@ -4,7 +4,6 @@ Quantum Classifier using PennyLane and Azure Quantum
 
 import logging
 from pathlib import Path
-from typing import List, Optional
 
 import numpy as np
 import pennylane as qml
@@ -35,7 +34,7 @@ class QuantumClassifier:
             current_dir = Path(__file__).parent
             config_path = current_dir.parent / "config" / "quantum_config.yaml"
 
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             self.config = yaml.safe_load(f)
 
         self.n_qubits = self.config["ml"]["model"]["n_qubits"]
@@ -50,7 +49,7 @@ class QuantumClassifier:
 
         logger.info(f"Initialized QuantumClassifier with {self.n_qubits} qubits and {self.n_layers} layers")
 
-    def _circuit(self, inputs: torch.Tensor, weights: torch.Tensor) -> List[float]:
+    def _circuit(self, inputs: torch.Tensor, weights: torch.Tensor) -> list[float]:
         """
         Define the quantum circuit architecture.
 
@@ -226,8 +225,8 @@ def train_quantum_model(
     model: HybridQuantumClassifier,
     X_train: np.ndarray,
     y_train: np.ndarray,
-    X_val: Optional[np.ndarray] = None,
-    y_val: Optional[np.ndarray] = None,
+    X_val: np.ndarray | None = None,
+    y_val: np.ndarray | None = None,
     config_path: str = None,
 ) -> dict:
     """
@@ -249,7 +248,7 @@ def train_quantum_model(
         current_dir = Path(__file__).parent
         config_path = current_dir.parent / "config" / "quantum_config.yaml"
 
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     # Training parameters

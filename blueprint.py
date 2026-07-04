@@ -6,6 +6,5 @@
 
 
 import azure.functions as func
-import logging
 
 blueprint = func.Blueprint()

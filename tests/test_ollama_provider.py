@@ -12,6 +12,13 @@ Covers:
 """
 
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 from chat_providers import (
     LMStudioProvider,
     LocalEchoProvider,
@@ -21,12 +28,6 @@ from chat_providers import (
     _ollama_cache_lock,
     detect_provider,
 )
-
-import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
 
 # Ensure chat_providers is importable from the source tree
 _CHAT_SRC = Path(__file__).parent.parent / "ai-projects" / "chat-cli" / "src"

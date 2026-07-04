@@ -8,9 +8,9 @@ treat the output as already vetted at the path level.
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Sequence
 
 from .analyzer import Finding
 from .risk_manager import RiskManager
@@ -46,13 +46,13 @@ class Planner:
     risk_manager: RiskManager
     max_plans: int = 50
 
-    def build_plans(self, findings: Sequence[Finding]) -> List[UpgradePlan]:
+    def build_plans(self, findings: Sequence[Finding]) -> list[UpgradePlan]:
         # Group findings by file so each plan is a single commit candidate.
         by_path: dict[Path, list[Finding]] = {}
         for finding in findings:
             by_path.setdefault(finding.path, []).append(finding)
 
-        plans: List[UpgradePlan] = []
+        plans: list[UpgradePlan] = []
         for path, file_findings in by_path.items():
             assessment = self.risk_manager.assess_file(path)
             if not assessment.allowed:

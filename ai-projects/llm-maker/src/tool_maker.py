@@ -5,7 +5,6 @@ Tool Maker - Generates tools using LLMs
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import yaml
 
@@ -43,7 +42,7 @@ Rules:
 
 Return ONLY the Python function code, starting with 'def'."""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         """
         Initialize tool maker
 
@@ -56,16 +55,16 @@ Return ONLY the Python function code, starting with 'def'."""
         self.temperature = self.config.get("tool_maker", {}).get("temperature", 0.7)
         self.max_tokens = self.config.get("tool_maker", {}).get("max_tokens", 2000)
 
-    def _load_config(self, config_path: Optional[Path]) -> dict:
+    def _load_config(self, config_path: Path | None) -> dict:
         """Load configuration from YAML file"""
         if config_path and config_path.exists():
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 return yaml.safe_load(f)
 
         # Try default config path
         default_config_path = Path(__file__).parent.parent / "llm_maker_config.yaml"
         if default_config_path.exists():
-            with open(default_config_path, "r") as f:
+            with open(default_config_path) as f:
                 return yaml.safe_load(f)
 
         return {}
@@ -86,11 +85,11 @@ Return ONLY the Python function code, starting with 'def'."""
         self,
         name: str,
         description: str,
-        parameters: Dict[str, str],
+        parameters: dict[str, str],
         return_type: str = "Any",
-        examples: Optional[List[Dict]] = None,
+        examples: list[dict] | None = None,
         max_attempts: int = 3,
-    ) -> Optional[Tool]:
+    ) -> Tool | None:
         """
         Create a tool from description using LLM
 
@@ -158,9 +157,9 @@ Return ONLY the Python function code, starting with 'def'."""
         self,
         name: str,
         description: str,
-        parameters: Dict[str, str],
+        parameters: dict[str, str],
         return_type: str,
-        examples: Optional[List[Dict]],
+        examples: list[dict] | None,
     ) -> str:
         """Build prompt for LLM code generation"""
         param_list = [f"{pname}: {ptype}" for pname, ptype in parameters.items()]
@@ -188,7 +187,7 @@ Description: {description}
 
         return prompt
 
-    def _generate_code(self, prompt: str) -> Optional[str]:
+    def _generate_code(self, prompt: str) -> str | None:
         """Generate code using LLM"""
         try:
             messages = [
@@ -257,7 +256,7 @@ Description: {description}
 
         return is_valid
 
-    def refine_tool(self, tool: Tool, feedback: str, max_attempts: int = 2) -> Optional[Tool]:
+    def refine_tool(self, tool: Tool, feedback: str, max_attempts: int = 2) -> Tool | None:
         """
         Refine an existing tool based on feedback
 

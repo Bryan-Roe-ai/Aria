@@ -6,7 +6,8 @@ Executes registered tools inside the Aria multi-agent runtime.
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Dict
+from collections.abc import Callable
+from typing import Any
 from urllib.request import Request, urlopen
 
 from core.agent import BaseAgent
@@ -15,14 +16,14 @@ from core.task import Task
 
 class ToolRegistry:
     def __init__(self):
-        self.tools: Dict[str, Callable[..., Any]] = {}
+        self.tools: dict[str, Callable[..., Any]] = {}
 
     def register(self, name: str, fn: Callable[..., Any]):
         if not name or not name.strip():
             raise ValueError("Tool name cannot be empty.")
         self.tools[name] = fn
 
-    def register_remote(self, name: str, url: str, timeout: int = 10, headers: Dict[str, str] | None = None) -> None:
+    def register_remote(self, name: str, url: str, timeout: int = 10, headers: dict[str, str] | None = None) -> None:
         def _remote_tool(**kwargs: Any) -> Any:
             request = Request(
                 url,
@@ -61,7 +62,7 @@ class ToolAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"tool", "action", "execute"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         tool_name = payload.get("tool")
         args = payload.get("args", {})

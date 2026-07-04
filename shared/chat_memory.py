@@ -16,7 +16,8 @@ import os
 import struct
 import threading
 import time
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from collections.abc import Sequence
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,8 @@ _LOCAL_DIM = 256  # dimension of the local hash-based embedding fallback
 # Connection cache (unchanged behavior)
 # ---------------------------------------------------------------------------
 
-_conn_cache: Dict[int, Any] = {}
-_conn_timestamps: Dict[int, float] = {}
+_conn_cache: dict[int, Any] = {}
+_conn_timestamps: dict[int, float] = {}
 _conn_lock = threading.Lock()
 
 _CONN_HEALTH_CHECK_SQL = "SELECT 1"
@@ -60,10 +61,10 @@ _MAX_CONN_AGE_SECONDS = int(os.getenv("QAI_DB_CONN_MAX_AGE", "300"))
 # a small pool (default 5) and the ability to return connections back to the pool.
 _connection_pool: list = []
 _POOL_MAX_SIZE: int = int(os.getenv("QAI_DB_CONN_POOL_SIZE", "5"))
-_last_connect_impl_id: Optional[int] = None
+_last_connect_impl_id: int | None = None
 
 
-def _conn_str() -> Optional[str]:
+def _conn_str() -> str | None:
     return os.getenv("QAI_DB_CONN") or os.getenv("DB_CONN_STRING") or os.getenv("CONN_STRING")
 
 
@@ -171,7 +172,7 @@ def _get_conn() -> Any:
 # ---------------------------------------------------------------------------
 
 
-def _hash_embedding(text: str, dim: int = _LOCAL_DIM) -> List[float]:
+def _hash_embedding(text: str, dim: int = _LOCAL_DIM) -> list[float]:
     """
     Deterministic, unit-normalized hash embedding used when no embedding API
     is configured. Returns a zero vector for empty/whitespace input.
@@ -194,7 +195,7 @@ def _hash_embedding(text: str, dim: int = _LOCAL_DIM) -> List[float]:
     return [v / norm for v in vec]
 
 
-def generate_embedding(text: str) -> List[float]:
+def generate_embedding(text: str) -> list[float]:
     """
     Generate an embedding using Azure OpenAI / OpenAI if configured; otherwise
     fall back to the local hash embedding. Never raises — returns a list.
@@ -241,7 +242,7 @@ def _serialize_f32(vec: Sequence[float]) -> bytes:
     return struct.pack(f"<{len(vec)}f", *(float(v) for v in vec))
 
 
-def _deserialize_f32(blob: bytes, dim: int) -> List[float]:
+def _deserialize_f32(blob: bytes, dim: int) -> list[float]:
     """
     Unpack little-endian float32 bytes back into a list of length `dim`.
     Tolerates empty or truncated blobs by zero-padding.
@@ -284,7 +285,7 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
 
 
 def store_embedding(
-    message_id: Optional[str],
+    message_id: str | None,
     embedding: Sequence[float],
     model: str,
 ) -> bool:
@@ -297,7 +298,7 @@ def store_embedding(
     if not _conn_str():
         return False
 
-    conn: Optional[Any] = None
+    conn: Any | None = None
     cur = None
     try:
         conn = _get_conn()
@@ -330,10 +331,10 @@ def store_embedding(
 def fetch_similar_messages(
     query_embedding: Sequence[float],
     top_k: int = 5,
-    session_id: Optional[str] = None,
-    min_similarity: Optional[float] = None,
-    limit: Optional[int] = None,
-) -> List[Dict[str, Any]]:
+    session_id: str | None = None,
+    min_similarity: float | None = None,
+    limit: int | None = None,
+) -> list[dict[str, Any]]:
     """Return relevant prior messages sorted by descending cosine similarity.
 
     Supports the newer ``top_k`` + ``session_id`` calling contract used by
@@ -352,7 +353,7 @@ def fetch_similar_messages(
         _memory_min_similarity_default() if min_similarity is None else max(-1.0, min(1.0, float(min_similarity)))
     )
 
-    conn: Optional[Any] = None
+    conn: Any | None = None
     cur = None
     try:
         conn = _get_conn()
@@ -397,7 +398,7 @@ def fetch_similar_messages(
             rows = cur.fetchall()
             has_joined_metadata = False
 
-        scored: List[Dict[str, Any]] = []
+        scored: list[dict[str, Any]] = []
         for row in rows:
             mid, blob, dim = row[0], row[1], int(row[2])
             content = ""
@@ -440,7 +441,7 @@ def fetch_similar_messages(
 
 
 def store_embeddings_batch(
-    rows: Sequence[Tuple[str, Sequence[float], str]],
+    rows: Sequence[tuple[str, Sequence[float], str]],
 ) -> int:
     """Store multiple embeddings.
 
@@ -458,7 +459,7 @@ def store_embeddings_batch(
         return 0
 
     inserted = 0
-    conn: Optional[Any] = None
+    conn: Any | None = None
     cur = None
     try:
         conn = _get_conn()

@@ -14,7 +14,8 @@ import json
 import os
 import re
 import sys
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 WRITE_TOOLS = {
     "write_file",
@@ -175,7 +176,7 @@ def _read_posttool_file(path: str) -> str:
     if not path or not path.lower().endswith((".yaml", ".yml")):
         return ""
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return f.read()
     except Exception:
         return ""

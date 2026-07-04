@@ -3,34 +3,39 @@
 ## Quick Wins (Immediate Impact)
 
 ### 1. Fast Validation Script (`scripts/fast_validate.py`)
+
 - **Speed**: Completes in <100ms (vs 5-10s for full validation)
 - **What**: Checks dataset dirs, critical scripts, venvs, output dirs exist
 - **Usage**: `python .\scripts\fast_validate.py`
 - **Use When**: Quick sanity check before starting work
 
 ### 2. Test Watch Mode Optimization (`test_runner.py`)
+
 - **Change**: Reduced polling interval 2s → 0.5s
 - **Impact**: 4x faster test feedback during development
 - **Usage**: `python .\scripts\test_runner.py --unit --watch`
 
 ### 3. Smart Orchestrator Speed Boost (`smart_orchestrator.py`)
+
 - **Changes**:
-  - Job polling: 1s → 0.1s (10x faster)
-  - Iteration delay: 10s → 3s (3.3x faster)
-  - Backoff capped at 10s (prevents excessive waits)
+    - Job polling: 1s → 0.1s (10x faster)
+    - Iteration delay: 10s → 3s (3.3x faster)
+    - Backoff capped at 10s (prevents excessive waits)
 - **Impact**: Orchestrator responds faster to job state changes
 
 ### 4. VS Code Workspace Optimization (`.vscode/settings_optimized.json`)
+
 - **Excluded from file watching**:
-  - `venv/`, `data_out/`, `__pycache__/`, `.pytest_cache/`
-  - `datasets/` (immutable, no need to watch)
+    - `venv/`, `data_out/`, `__pycache__/`, `.pytest_cache/`
+    - `datasets/` (immutable, no need to watch)
 - **Excluded from search**:
-  - `data_out/`, `datasets/massive_quantum/` (huge directories)
+    - `data_out/`, `datasets/massive_quantum/` (huge directories)
 - **Impact**: Faster file operations, search, IntelliSense
 
 ## Workflow Optimizations
 
 ### Before (Slow Path)
+
 ```powershell
 # Full validation (~10-15s)
 python .\scripts\validate_datasets.py --category all
@@ -41,6 +46,7 @@ python .\scripts\autotrain.py --job phi35_mixed_chat
 ```
 
 ### After (Fast Path)
+
 ```powershell
 # Lightning validation (<100ms)
 python .\scripts\fast_validate.py
@@ -54,12 +60,12 @@ python .\scripts\test_runner.py --unit --watch
 
 ## Benchmarks
 
-| Operation | Before | After | Speedup |
-| ----------- | -------- | ------- | --------- |
-| Fast validation | 10s | 0.1s | **100x** |
-| Test watch polling | 2s | 0.5s | **4x** |
-| Orchestrator iteration | 10s | 3s | **3.3x** |
-| VS Code file indexing | ~30s | ~10s | **3x** |
+| Operation              | Before | After | Speedup  |
+| ---------------------- | ------ | ----- | -------- |
+| Fast validation        | 10s    | 0.1s  | **100x** |
+| Test watch polling     | 2s     | 0.5s  | **4x**   |
+| Orchestrator iteration | 10s    | 3s    | **3.3x** |
+| VS Code file indexing  | ~30s   | ~10s  | **3x**   |
 
 ## Apply Settings
 
@@ -80,10 +86,12 @@ python .\scripts\test_runner.py --unit --watch
 ## Debugging (If Something Breaks)
 
 Revert changes:
+
 ```powershell
 git checkout HEAD -- scripts/test_runner.py scripts/smart_orchestrator.py
 ```
 
 Or disable watch exclusions in VS Code:
+
 1. `Ctrl+Shift+P` → "Preferences: Open Workspace Settings (JSON)"
 2. Remove `files.watcherExclude` entries

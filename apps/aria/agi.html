@@ -1,9 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="light">
-
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Aria — AGI Panel</title>
         <style>
             :root {
@@ -32,7 +31,7 @@
             }
 
             body {
-                font-family: 'Segoe UI', system-ui, sans-serif;
+                font-family: "Segoe UI", system-ui, sans-serif;
                 background: var(--bg);
                 color: var(--text);
                 min-height: 100vh;
@@ -143,12 +142,15 @@
             <div class="top-bar">
                 <div>
                     <h1>🧠 AGI Panel</h1>
-                    <p style="color: var(--muted); font-size: 0.9rem;">Analyze, reason, and stream via Azure Functions
-                        AGI API.</p>
+                    <p style="color: var(--muted); font-size: 0.9rem">
+                        Analyze, reason, and stream via Azure Functions AGI API.
+                    </p>
                 </div>
                 <div>
                     <a href="./index.html">← Stage</a>
-                    <a href="./auto-execute.html" style="margin-left: 12px;">Auto-Execute</a>
+                    <a href="./auto-execute.html" style="margin-left: 12px"
+                        >Auto-Execute</a
+                    >
                 </div>
             </div>
 
@@ -156,13 +158,19 @@
                 <label for="apiBase">Functions API base</label>
                 <input id="apiBase" type="text" value="http://localhost:7071" />
                 <button type="button" id="refreshStatus">Refresh Status</button>
-                <span id="statusPill" class="status-pill" style="margin-left: 8px;">unknown</span>
-                <pre id="statusOutput" style="margin-top: 12px;">Loading…</pre>
+                <span
+                    id="statusPill"
+                    class="status-pill"
+                    style="margin-left: 8px"
+                    >unknown</span
+                >
+                <pre id="statusOutput" style="margin-top: 12px">Loading…</pre>
             </div>
 
             <div class="panel">
                 <label for="query">Query</label>
-                <textarea id="query" placeholder="Ask the AGI provider…">What is a qubit?</textarea>
+                <textarea id="query" placeholder="Ask the AGI provider…">
+What is a qubit?</textarea>
                 <label for="mode">Mode</label>
                 <select id="mode">
                     <option value="analyze">Analyze</option>
@@ -170,85 +178,106 @@
                     <option value="stream">Stream (SSE)</option>
                 </select>
                 <button type="button" id="runBtn">Run</button>
-                <button type="button" id="clearBtn" class="secondary">Clear Output</button>
-                <div id="output" class="output" style="margin-top: 12px;">Ready.</div>
+                <button type="button" id="clearBtn" class="secondary">
+                    Clear Output
+                </button>
+                <div id="output" class="output" style="margin-top: 12px">
+                    Ready.
+                </div>
             </div>
         </div>
 
         <script>
-            (function () {
-                var apiBaseInput = document.getElementById('apiBase');
-                var statusOutput = document.getElementById('statusOutput');
-                var statusPill = document.getElementById('statusPill');
-                var output = document.getElementById('output');
+            ;(function () {
+                var apiBaseInput = document.getElementById("apiBase")
+                var statusOutput = document.getElementById("statusOutput")
+                var statusPill = document.getElementById("statusPill")
+                var output = document.getElementById("output")
 
                 function apiUrl(path) {
-                    return apiBaseInput.value.replace(/\/$/, '') + path;
+                    return apiBaseInput.value.replace(/\/$/, "") + path
                 }
 
                 async function refreshStatus() {
-                    statusPill.textContent = 'checking…';
+                    statusPill.textContent = "checking…"
                     try {
-                        var res = await fetch(apiUrl('/api/agi/status'));
-                        var text = await res.text();
-                        statusOutput.textContent = text;
-                        statusPill.textContent = res.ok ? 'online' : 'error ' + res.status;
+                        var res = await fetch(apiUrl("/api/agi/status"))
+                        var text = await res.text()
+                        statusOutput.textContent = text
+                        statusPill.textContent = res.ok
+                            ? "online"
+                            : "error " + res.status
                     } catch (err) {
-                        statusOutput.textContent = String(err);
-                        statusPill.textContent = 'offline';
+                        statusOutput.textContent = String(err)
+                        statusPill.textContent = "offline"
                     }
                 }
 
                 async function runAnalyzeOrReason(endpoint) {
-                    var query = document.getElementById('query').value.trim();
-                    if (!query) return;
-                    output.textContent = 'Running…';
+                    var query = document.getElementById("query").value.trim()
+                    if (!query) return
+                    output.textContent = "Running…"
                     var res = await fetch(apiUrl(endpoint), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ query: query })
-                    });
-                    var text = await res.text();
-                    output.textContent = text;
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ query: query }),
+                    })
+                    var text = await res.text()
+                    output.textContent = text
                 }
 
                 async function runStream() {
-                    var query = document.getElementById('query').value.trim();
-                    if (!query) return;
-                    output.innerHTML = '';
-                    var res = await fetch(apiUrl('/api/agi/stream'), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ query: query })
-                    });
-                    var text = await res.text();
+                    var query = document.getElementById("query").value.trim()
+                    if (!query) return
+                    output.innerHTML = ""
+                    var res = await fetch(apiUrl("/api/agi/stream"), {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ query: query }),
+                    })
+                    var text = await res.text()
                     if (window.AGIStreamUtils) {
-                        var deltas = window.AGIStreamUtils.parseSSEText(text);
-                        var html = deltas.map(window.AGIStreamUtils.prettyPrintDelta).join('');
+                        var deltas = window.AGIStreamUtils.parseSSEText(text)
+                        var html = deltas
+                            .map(window.AGIStreamUtils.prettyPrintDelta)
+                            .join("")
                         if (html) {
-                            output.innerHTML = html;
+                            output.innerHTML = html
                         } else {
-                            output.textContent = text;
+                            output.textContent = text
                         }
                     } else {
-                        output.textContent = text;
+                        output.textContent = text
                     }
                 }
 
-                document.getElementById('refreshStatus').addEventListener('click', refreshStatus);
-                document.getElementById('clearBtn').addEventListener('click', function () {
-                    output.textContent = 'Ready.';
-                });
-                document.getElementById('runBtn').addEventListener('click', function () {
-                    var mode = document.getElementById('mode').value;
-                    if (mode === 'stream') return runStream().catch(function (e) { output.textContent = String(e); });
-                    var endpoint = mode === 'reason' ? '/api/agi/reason' : '/api/agi/analyze';
-                    runAnalyzeOrReason(endpoint).catch(function (e) { output.textContent = String(e); });
-                });
+                document
+                    .getElementById("refreshStatus")
+                    .addEventListener("click", refreshStatus)
+                document
+                    .getElementById("clearBtn")
+                    .addEventListener("click", function () {
+                        output.textContent = "Ready."
+                    })
+                document
+                    .getElementById("runBtn")
+                    .addEventListener("click", function () {
+                        var mode = document.getElementById("mode").value
+                        if (mode === "stream")
+                            return runStream().catch(function (e) {
+                                output.textContent = String(e)
+                            })
+                        var endpoint =
+                            mode === "reason"
+                                ? "/api/agi/reason"
+                                : "/api/agi/analyze"
+                        runAnalyzeOrReason(endpoint).catch(function (e) {
+                            output.textContent = String(e)
+                        })
+                    })
 
-                refreshStatus();
-            })();
+                refreshStatus()
+            })()
         </script>
     </body>
-
 </html>

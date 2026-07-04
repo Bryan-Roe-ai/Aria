@@ -75,17 +75,9 @@ def build_server_params(
     server_config: dict[str, Any],
 ) -> Any:
     command = resolve_workspace_value(server_config["command"], workspace)
-    args = [
-        resolve_workspace_value(arg, workspace)
-        for arg in server_config.get("args", [])
-    ]
-    env = {
-        key: resolve_workspace_value(value, workspace)
-        for key, value in server_config.get("env", {}).items()
-    }
-    cwd = resolve_workspace_value(
-        server_config.get("cwd", str(workspace)), workspace
-    )
+    args = [resolve_workspace_value(arg, workspace) for arg in server_config.get("args", [])]
+    env = {key: resolve_workspace_value(value, workspace) for key, value in server_config.get("env", {}).items()}
+    cwd = resolve_workspace_value(server_config.get("cwd", str(workspace)), workspace)
     return LocalStdioServerParameters(
         command=command,
         args=args,
@@ -153,9 +145,7 @@ def results_to_json(results: list[ServerValidationResult]) -> dict[str, Any]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Validate stdio MCP servers configured in .vscode/mcp.json"
-    )
+    parser = argparse.ArgumentParser(description="Validate stdio MCP servers configured in .vscode/mcp.json")
     parser.add_argument(
         "--config",
         default=".vscode/mcp.json",
@@ -191,9 +181,7 @@ async def async_main() -> int:
                             "all_ok": False,
                         },
                         "servers": [],
-                        "error": (
-                            "No MCP servers matched the requested selection."
-                        ),
+                        "error": ("No MCP servers matched the requested selection."),
                     },
                     indent=2,
                 )

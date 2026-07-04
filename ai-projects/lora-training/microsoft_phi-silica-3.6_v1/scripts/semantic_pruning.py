@@ -6,7 +6,7 @@ Removes redundant and low-quality samples to improve training efficiency
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 
@@ -122,17 +122,17 @@ class SemanticPruner:
 
         return stats
 
-    def _load_dataset(self, path: str) -> List[Dict[str, Any]]:
+    def _load_dataset(self, path: str) -> list[dict[str, Any]]:
         """Load dataset from JSONL file"""
         samples = []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:
                     samples.append(json.loads(line))
         return samples
 
-    def _save_dataset(self, samples: List[Dict[str, Any]], path: str):
+    def _save_dataset(self, samples: list[dict[str, Any]], path: str):
         """Save dataset to JSONL file"""
         output_path = Path(path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -141,7 +141,7 @@ class SemanticPruner:
             for sample in samples:
                 f.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
-    def _remove_duplicates(self, samples: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
+    def _remove_duplicates(self, samples: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
         """Remove exact duplicate samples"""
         seen = set()
         unique_samples = []
@@ -159,7 +159,7 @@ class SemanticPruner:
 
         return unique_samples, removed
 
-    def _hash_sample(self, sample: Dict[str, Any]) -> str:
+    def _hash_sample(self, sample: dict[str, Any]) -> str:
         """Create hash of sample content"""
         if "messages" in sample:
             text = json.dumps(sample["messages"], sort_keys=True)
@@ -170,7 +170,7 @@ class SemanticPruner:
 
         return str(hash(text))
 
-    def _filter_by_length(self, samples: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
+    def _filter_by_length(self, samples: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
         """Filter samples by length"""
         filtered = []
         removed = 0
@@ -186,7 +186,7 @@ class SemanticPruner:
 
         return filtered, removed
 
-    def _filter_by_quality(self, samples: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
+    def _filter_by_quality(self, samples: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
         """Filter low quality samples"""
         filtered = []
         removed = 0
@@ -202,7 +202,7 @@ class SemanticPruner:
 
         return filtered, removed
 
-    def _compute_quality_score(self, sample: Dict[str, Any]) -> float:
+    def _compute_quality_score(self, sample: dict[str, Any]) -> float:
         """Compute quality score for sample"""
         text = self._extract_text(sample)
 
@@ -232,7 +232,7 @@ class SemanticPruner:
 
         return np.mean(scores) if scores else 0.0
 
-    def _semantic_deduplication(self, samples: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], int]:
+    def _semantic_deduplication(self, samples: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
         """Remove semantically similar samples"""
         try:
             from sentence_transformers import SentenceTransformer
@@ -286,7 +286,7 @@ class SemanticPruner:
             print("  ⚠ sentence-transformers not installed")
             return samples, 0
 
-    def _ensure_diversity(self, samples: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _ensure_diversity(self, samples: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Ensure diversity in final dataset"""
         # Sort by quality and keep top samples
         samples_with_quality = [(s, s.get("_quality_score", 0.5)) for s in samples]
@@ -301,7 +301,7 @@ class SemanticPruner:
 
         return clean_samples
 
-    def _extract_text(self, sample: Dict[str, Any]) -> str:
+    def _extract_text(self, sample: dict[str, Any]) -> str:
         """Extract text from sample"""
         if "messages" in sample:
             return " ".join([m.get("content", "") for m in sample["messages"]])

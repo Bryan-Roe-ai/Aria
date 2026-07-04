@@ -5,7 +5,7 @@ Automatically find optimal learning rate using the LR range test
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -49,7 +49,7 @@ class LearningRateFinder:
         num_iter: int = 100,
         smooth_f: float = 0.05,
         diverge_th: float = 5.0,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Perform LR range test
 
@@ -143,7 +143,7 @@ class LearningRateFinder:
 
         return results
 
-    def _analyze_results(self, lrs: List[float], losses: List[float], smooth_f: float) -> Dict[str, Any]:
+    def _analyze_results(self, lrs: list[float], losses: list[float], smooth_f: float) -> dict[str, Any]:
         """Analyze LR finder results"""
         # Smooth losses
         smoothed_losses = []
@@ -181,7 +181,7 @@ class LearningRateFinder:
             "smoothed_losses": smoothed_losses,
         }
 
-    def _create_plot(self, lrs: List[float], losses: List[float], suggested_lr: float):
+    def _create_plot(self, lrs: list[float], losses: list[float], suggested_lr: float):
         """Create LR finder plot"""
         try:
             plt.figure(figsize=(10, 6))
@@ -219,7 +219,7 @@ class LearningRateFinder:
         except Exception as e:
             print(f"⚠ Error creating plot: {e}")
 
-    def _save_results(self, results: Dict[str, Any]):
+    def _save_results(self, results: dict[str, Any]):
         """Save LR finder results"""
         # Remove large arrays for JSON
         save_results = results.copy()

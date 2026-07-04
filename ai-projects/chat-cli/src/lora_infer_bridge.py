@@ -62,7 +62,7 @@ def main() -> int:
         print(f"adapter_config.json not found in {adapter_dir}", file=sys.stderr)
         return 4
     try:
-        with open(adapter_cfg_path, "r", encoding="utf-8") as f:
+        with open(adapter_cfg_path, encoding="utf-8") as f:
             adapter_cfg = json.load(f)
     except Exception as e:
         print(f"Failed to read adapter_config.json: {e}", file=sys.stderr)

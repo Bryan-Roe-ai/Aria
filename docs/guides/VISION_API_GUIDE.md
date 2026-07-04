@@ -11,31 +11,34 @@ The Vision API provides endpoints for analyzing images using the trained TinyCon
 **Endpoint**: `POST /api/vision/infer`
 
 **Request Body**:
+
 ```json
 {
-  "image": "<base64-encoded-image>"
+    "image": "<base64-encoded-image>"
 }
 ```
 
 **Response**:
+
 ```json
 {
-  "label": "happy",
-  "confidence": 0.87,
-  "scores": {
-    "happy": 0.87,
-    "neutral": 0.08,
-    "sad": 0.03,
-    "angry": 0.02
-  },
-  "model_info": {
-    "checkpoint": "data_out/vision_training/checkpoints/best_model.pt",
-    "device": "cuda"
-  }
+    "label": "happy",
+    "confidence": 0.87,
+    "scores": {
+        "happy": 0.87,
+        "neutral": 0.08,
+        "sad": 0.03,
+        "angry": 0.02
+    },
+    "model_info": {
+        "checkpoint": "data_out/vision_training/checkpoints/best_model.pt",
+        "device": "cuda"
+    }
 }
 ```
 
 **Example (curl)**:
+
 ```bash
 # Encode image to base64
 $base64Image = [Convert]::ToBase64String([IO.File]::ReadAllBytes("test.jpg"))
@@ -51,31 +54,40 @@ curl -X POST http://localhost:7071/api/vision/infer `
 **Endpoint**: `POST /api/vision/batch-infer`
 
 **Request Body**:
+
 ```json
 {
-  "images": [
-    "<base64-encoded-image-1>",
-    "<base64-encoded-image-2>"
-  ]
+    "images": ["<base64-encoded-image-1>", "<base64-encoded-image-2>"]
 }
 ```
 
 **Response**:
+
 ```json
 {
-  "results": [
-    {
-      "label": "happy",
-      "confidence": 0.87,
-      "scores": { "happy": 0.87, "neutral": 0.08, "sad": 0.03, "angry": 0.02 }
-    },
-    {
-      "label": "sad",
-      "confidence": 0.92,
-      "scores": { "sad": 0.92, "neutral": 0.05, "happy": 0.02, "angry": 0.01 }
-    }
-  ],
-  "count": 2
+    "results": [
+        {
+            "label": "happy",
+            "confidence": 0.87,
+            "scores": {
+                "happy": 0.87,
+                "neutral": 0.08,
+                "sad": 0.03,
+                "angry": 0.02
+            }
+        },
+        {
+            "label": "sad",
+            "confidence": 0.92,
+            "scores": {
+                "sad": 0.92,
+                "neutral": 0.05,
+                "happy": 0.02,
+                "angry": 0.01
+            }
+        }
+    ],
+    "count": 2
 }
 ```
 
@@ -90,7 +102,12 @@ curl -X POST http://localhost:7071/api/vision/infer `
 <button id="visionUploadButton">🖼️ Upload Image</button>
 
 <!-- Hidden file input -->
-<input type="file" id="visionImageInput" accept="image/*" style="display: none;">
+<input
+    type="file"
+    id="visionImageInput"
+    accept="image/*"
+    style="display: none;"
+/>
 
 <!-- Preview container -->
 <div id="visionPreview" style="display: none;"></div>
@@ -100,52 +117,55 @@ curl -X POST http://localhost:7071/api/vision/infer `
 
 ```javascript
 // Constants
-const VISION_INFER_API = '/api/vision/infer';
+const VISION_INFER_API = "/api/vision/infer"
 
 // State
-let uploadedImageBase64 = null;
+let uploadedImageBase64 = null
 
 // Event handlers
-document.getElementById('visionUploadButton').addEventListener('click', () => {
-    document.getElementById('visionImageInput').click();
-});
+document.getElementById("visionUploadButton").addEventListener("click", () => {
+    document.getElementById("visionImageInput").click()
+})
 
-document.getElementById('visionImageInput').addEventListener('change', async (event) => {
-    const file = event.target.files[0];
-    if (!file || !file.type.startsWith('image/')) return;
+document
+    .getElementById("visionImageInput")
+    .addEventListener("change", async event => {
+        const file = event.target.files[0]
+        if (!file || !file.type.startsWith("image/")) return
 
-    // Read file as base64
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        uploadedImageBase64 = e.target.result.split(',')[1]; // Remove prefix
+        // Read file as base64
+        const reader = new FileReader()
+        reader.onload = async e => {
+            uploadedImageBase64 = e.target.result.split(",")[1] // Remove prefix
 
-        // Call Vision API
-        const response = await fetch(VISION_INFER_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: uploadedImageBase64 })
-        });
+            // Call Vision API
+            const response = await fetch(VISION_INFER_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: uploadedImageBase64 }),
+            })
 
-        const result = await response.json();
-        console.log('Vision result:', result);
+            const result = await response.json()
+            console.log("Vision result:", result)
 
-        // Display result in UI
-        displayVisionResult(result, file.name);
-    };
+            // Display result in UI
+            displayVisionResult(result, file.name)
+        }
 
-    reader.readAsDataURL(file);
-});
+        reader.readAsDataURL(file)
+    })
 
 function displayVisionResult(result, filename) {
-    const message = `🖼️ Image Analysis: ${filename}\n` +
+    const message =
+        `🖼️ Image Analysis: ${filename}\n` +
         `Expression: ${result.label} (${(result.confidence * 100).toFixed(1)}% confidence)\n\n` +
         `All Scores:\n${Object.entries(result.scores)
             .sort((a, b) => b[1] - a[1])
             .map(([label, score]) => `- ${label}: ${(score * 100).toFixed(1)}%`)
-            .join('\n')}`;
+            .join("\n")}`
 
     // Add to chat or display elsewhere
-    addChatMessage('assistant', message);
+    addChatMessage("assistant", message)
 }
 ```
 
@@ -199,6 +219,7 @@ python .\scripts\vision_inference.py --image test.jpg --checkpoint path/to/model
 ## Model Information
 
 **Architecture**: TinyConvNet
+
 - Input: 64×64 RGB images (3 channels)
 - Conv layers: 32 → 64 → 128 filters
 - Fully connected: 128 → 64 → num_classes
@@ -206,6 +227,7 @@ python .\scripts\vision_inference.py --image test.jpg --checkpoint path/to/model
 **Training**: See `scripts/train_vision.py` and `VISION_TRAINING_GUIDE.md`
 
 **Checkpoints**: Auto-detected from:
+
 1. `data_out/vision_training/checkpoints/best_model.pt` (recommended)
 2. `data_out/vision_training/checkpoints/latest_model.pt` (fallback)
 3. Custom path via `--checkpoint` argument
@@ -215,26 +237,27 @@ python .\scripts\vision_inference.py --image test.jpg --checkpoint path/to/model
 **Common Errors**:
 
 1. **Model not found** (`500`):
-   - Checkpoint file missing
-   - Solution: Train model first with `train_vision.py`
+    - Checkpoint file missing
+    - Solution: Train model first with `train_vision.py`
 
 2. **Invalid base64** (`400`):
-   - Malformed base64 string
-   - Solution: Ensure proper base64 encoding without data URI prefix
+    - Malformed base64 string
+    - Solution: Ensure proper base64 encoding without data URI prefix
 
 3. **Unsupported image format** (`400`):
-   - PIL cannot decode image
-   - Solution: Use JPEG, PNG, BMP, or other PIL-supported formats
+    - PIL cannot decode image
+    - Solution: Use JPEG, PNG, BMP, or other PIL-supported formats
 
 4. **Image too large** (`413`):
-   - Request body exceeds Azure Functions limit (100 MB default)
-   - Solution: Resize images before upload, or use batch API with smaller images
+    - Request body exceeds Azure Functions limit (100 MB default)
+    - Solution: Resize images before upload, or use batch API with smaller images
 
 **Example Error Response**:
+
 ```json
 {
-  "error": "Failed to load checkpoint: [Errno 2] No such file or directory: 'best_model.pt'",
-  "details": "Model checkpoint not found. Train model first."
+    "error": "Failed to load checkpoint: [Errno 2] No such file or directory: 'best_model.pt'",
+    "details": "Model checkpoint not found. Train model first."
 }
 ```
 
@@ -257,6 +280,7 @@ The vision API is integrated into the Aria chat interface (`chat-web/`):
 5. **Status Updates**: Real-time status in chat footer
 
 **User Flow**:
+
 1. User clicks "🖼️ Upload Image" button
 2. File picker opens (accepts image/*)
 3. Image loads and preview displays
@@ -275,11 +299,13 @@ The vision API is integrated into the Aria chat interface (`chat-web/`):
 ## Monitoring
 
 Check endpoint health:
+
 ```bash
 curl http://localhost:7071/api/ai/status
 ```
 
 Response includes vision endpoints:
+
 ```json
 {
   "endpoints": {

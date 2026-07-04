@@ -12,27 +12,27 @@ Existing logging uses stored procedures via `pyodbc` and `QAI_DB_CONN`. New laye
 - Pool metrics + slow query logging
 - Optional multi-vendor support with a single environment variable: `QAI_SQL_URL`
 
-| Feature | Legacy (Stored Proc) | New (Engine/Repository) |
-| --------- | ---------------------- | -------------------------- |
-| Training / Chat Logging | ✅ (sp_Log*) | ✅ (unchanged) |
-| Embeddings | ✅ | ✅ |
-| Ad-hoc Queries | ❌ | ✅ (`quick_query`) |
-| Multi-Vendor | Limited (SQL Server) | ✅ (Postgres, MySQL, SQLite) |
-| Health Surface | Cosmos only | ✅ (`sql` payload) |
-| Fault Tolerance | ✅ | ✅ |
-| Pool Metrics | ❌ | ✅ (`engine_stats`) |
-| Slow Query Warn | ❌ | ✅ (threshold env var) |
+| Feature                 | Legacy (Stored Proc) | New (Engine/Repository)      |
+| ----------------------- | -------------------- | ---------------------------- |
+| Training / Chat Logging | ✅ (sp_Log*)         | ✅ (unchanged)               |
+| Embeddings              | ✅                   | ✅                           |
+| Ad-hoc Queries          | ❌                   | ✅ (`quick_query`)           |
+| Multi-Vendor            | Limited (SQL Server) | ✅ (Postgres, MySQL, SQLite) |
+| Health Surface          | Cosmos only          | ✅ (`sql` payload)           |
+| Fault Tolerance         | ✅                   | ✅                           |
+| Pool Metrics            | ❌                   | ✅ (`engine_stats`)          |
+| Slow Query Warn         | ❌                   | ✅ (threshold env var)       |
 
 ## 2. Environment Variables
 
 Set **one** of:
 
 - `QAI_SQL_URL` – Preferred full SQLAlchemy URL.
-  - Examples:
-    - PostgreSQL: `postgresql+psycopg://user:pass@host/dbname`
-    - MySQL: `mysql+mysqlclient://user:pass@host/dbname`
-    - SQLite file: `sqlite:///data_out/dev.db`
-    - SQLite memory: `sqlite:///:memory:` (tests only)
+    - Examples:
+        - PostgreSQL: `postgresql+psycopg://user:pass@host/dbname`
+        - MySQL: `mysql+mysqlclient://user:pass@host/dbname`
+        - SQLite file: `sqlite:///data_out/dev.db`
+        - SQLite memory: `sqlite:///:memory:` (tests only)
 - `QAI_DB_CONN` – Existing ODBC string (auto-wrapped to SQLAlchemy URL internally).
 
 Optional:
@@ -240,13 +240,13 @@ func host start
 
 ## 16. Troubleshooting
 
-| Symptom | Cause | Action |
-| --------- | ------- | -------- |
-| `sql.enabled=false` | Missing env vars | Set `QAI_SQL_URL` or `QAI_DB_CONN` |
-| Slow query warnings too frequent | Threshold too low | Raise `QAI_SQL_SLOW_MS` |
-| Pool stats show `None` | Pool type lacks metrics (e.g., SQLite memory pool) | Accept defaults; switch to file-based SQLite or external DB |
-| Migration fails | SQL dialect mismatch | Adjust SQL syntax for target vendor |
-| `saturation_alert` appearing | Too many concurrent connections | Scale pool size or reduce workload concurrency |
+| Symptom                          | Cause                                              | Action                                                      |
+| -------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| `sql.enabled=false`              | Missing env vars                                   | Set `QAI_SQL_URL` or `QAI_DB_CONN`                          |
+| Slow query warnings too frequent | Threshold too low                                  | Raise `QAI_SQL_SLOW_MS`                                     |
+| Pool stats show `None`           | Pool type lacks metrics (e.g., SQLite memory pool) | Accept defaults; switch to file-based SQLite or external DB |
+| Migration fails                  | SQL dialect mismatch                               | Adjust SQL syntax for target vendor                         |
+| `saturation_alert` appearing     | Too many concurrent connections                    | Scale pool size or reduce workload concurrency              |
 
 ## 17. Advanced Monitoring Features
 
@@ -298,11 +298,11 @@ Engine tracks slow queries in a **rolling 60-second window** (in-memory):
 
 Slow query threshold automatically adjusts based on deployment environment:
 
-| Environment | Threshold | Rationale |
-| ------------- | ----------- | ----------- |
-| `development` (local) | 100ms | Fast feedback during development |
-| `staging` / `test` | 300ms | Balanced for integration testing |
-| `production` (default) | 500ms | Conservative for variable load |
+| Environment            | Threshold | Rationale                        |
+| ---------------------- | --------- | -------------------------------- |
+| `development` (local)  | 100ms     | Fast feedback during development |
+| `staging` / `test`     | 300ms     | Balanced for integration testing |
+| `production` (default) | 500ms     | Conservative for variable load   |
 
 **Override with explicit env var:**
 
@@ -359,12 +359,12 @@ $env:QAI_SQL_URL = "sqlite:///path/to/db.sqlite?timeout=30"
 
 ### Pool Size Guidelines
 
-| Scenario | Pool Size | Max Overflow | Rationale |
-| ---------- | ----------- | -------------- | ----------- |
-| Low traffic (< 10 req/s) | 10 | 5 | Minimize idle connections |
-| Medium traffic (10-50 req/s) | 20-30 | 10 | Balanced for burst capacity |
-| High traffic (> 50 req/s) | 30-50 | 20 | Prevent saturation under load |
-| Background workers | 5 | 2 | Dedicated small pool |
+| Scenario                     | Pool Size | Max Overflow | Rationale                     |
+| ---------------------------- | --------- | ------------ | ----------------------------- |
+| Low traffic (< 10 req/s)     | 10        | 5            | Minimize idle connections     |
+| Medium traffic (10-50 req/s) | 20-30     | 10           | Balanced for burst capacity   |
+| High traffic (> 50 req/s)    | 30-50     | 20           | Prevent saturation under load |
+| Background workers           | 5         | 2            | Dedicated small pool          |
 
 **Calculation formula:**
 
@@ -380,13 +380,13 @@ pool_size = (function_instances × avg_concurrent_requests_per_instance) × 1.2
 
 ### Additional URL Parameters
 
-| Parameter | Default | Description |
-| ----------- | --------- | ------------- |
-| `pool_size` | 5 | Core pool size (always open) |
-| `max_overflow` | 10 | Additional connections on demand |
-| `pool_timeout` | 30 | Seconds to wait for available connection |
-| `pool_recycle` | 1800 | Seconds before recycling connection (30 min) |
-| `pool_pre_ping` | false | Test connection before using (recommended: true, set in code) |
+| Parameter       | Default | Description                                                   |
+| --------------- | ------- | ------------------------------------------------------------- |
+| `pool_size`     | 5       | Core pool size (always open)                                  |
+| `max_overflow`  | 10      | Additional connections on demand                              |
+| `pool_timeout`  | 30      | Seconds to wait for available connection                      |
+| `pool_recycle`  | 1800    | Seconds before recycling connection (30 min)                  |
+| `pool_pre_ping` | false   | Test connection before using (recommended: true, set in code) |
 
 ### Code Override (Not Recommended)
 
@@ -458,4 +458,5 @@ For production deployments, integrate with Azure Monitor for automated alerting 
 - [ ] Review KQL dashboards weekly for performance trends
 
 ---
+
 Multi-database support is additive and non-invasive. If you do not set a URL, the system behaves exactly as before.

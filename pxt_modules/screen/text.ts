@@ -1,10 +1,9 @@
 namespace image {
-
     export interface Font {
-        charWidth: number;
-        charHeight: number;
-        data: Buffer;
-        multiplier?: number;
+        charWidth: number
+        charHeight: number
+        data: Buffer
+        multiplier?: number
     }
 
     //% whenUsed
@@ -123,7 +122,6 @@ f405100800100800 021e7c5455542800 031e007e48493000 0a1e007c45443800 0b1e00304948
 a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f22443800 9021103854101000
 912108047e040800 9221101054381000 932110207e201000 9421103810103810 95212844fe442800 
 `,
-
     }
 
     // A unicode 12x12 pixel font based on https://github.com/adobe-fonts/source-han-sans
@@ -131,14 +129,13 @@ a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f2244
     export const font12: Font = {
         charWidth: 12,
         charHeight: 12,
-        data: hex``
+        data: hex``,
     }
 
     export function getFontForText(text: string) {
         for (let i = 0; i < text.length; ++i) {
             // this is quite approximate
-            if (text.charCodeAt(i) > 0x2000)
-                return image.font12
+            if (text.charCodeAt(i) > 0x2000) return image.font12
         }
         return image.font8
     }
@@ -150,13 +147,12 @@ a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f2244
 
     export function scaledFont(f: Font, size: number): Font {
         size |= 0
-        if (size < 2)
-            return f
+        if (size < 2) return f
         return {
             charWidth: f.charWidth * size,
             charHeight: f.charHeight * size,
             data: f.data,
-            multiplier: f.multiplier ? size * f.multiplier : size
+            multiplier: f.multiplier ? size * f.multiplier : size,
         }
     }
 
@@ -190,32 +186,57 @@ f3000c12130d0000 04010e05051e1000 05010609191f0800 06010c1213131200 07010c121313
 
 namespace texteffects {
     export interface TextEffectState {
-        xOffset: number;
-        yOffset: number;
+        xOffset: number
+        yOffset: number
     }
 }
 
 interface Image {
     //% helper=imagePrint
-    print(text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]): void;
+    print(
+        text: string,
+        x: number,
+        y: number,
+        color?: number,
+        font?: image.Font,
+        offsets?: texteffects.TextEffectState[],
+    ): void
 
     //% helper=imagePrintCenter
-    printCenter(text: string, y: number, color?: number, font?: image.Font): void;
+    printCenter(
+        text: string,
+        y: number,
+        color?: number,
+        font?: image.Font,
+    ): void
 }
 
 namespace helpers {
-    export function imagePrintCenter(img: Image, text: string, y: number, color?: number, font?: image.Font) {
+    export function imagePrintCenter(
+        img: Image,
+        text: string,
+        y: number,
+        color?: number,
+        font?: image.Font,
+    ) {
         if (!font) font = image.getFontForText(text)
         let w = text.length * font.charWidth
         let x = (img.width - w) / 2
         imagePrint(img, text, x, y, color, font)
     }
 
-    export function imagePrint(img: Image, text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]) {
+    export function imagePrint(
+        img: Image,
+        text: string,
+        x: number,
+        y: number,
+        color?: number,
+        font?: image.Font,
+        offsets?: texteffects.TextEffectState[],
+    ) {
         x |= 0
         y |= 0
-        if (!font)
-            font = image.getFontForText(text)
+        if (!font) font = image.getFontForText(text)
         if (!color) color = 1
         let x0 = x
         let cp = 0
@@ -236,7 +257,8 @@ namespace helpers {
             imgBuf[4] = dataH
         }
         while (cp < text.length) {
-            let xOffset = 0, yOffset = 0;
+            let xOffset = 0,
+                yOffset = 0
             if (offsets && cp < offsets.length) {
                 xOffset = offsets[cp].xOffset
                 yOffset = offsets[cp].yOffset
@@ -248,8 +270,7 @@ namespace helpers {
                 x = x0
             }
 
-            if (ch < 32)
-                continue // skip control chars
+            if (ch < 32) continue // skip control chars
 
             let l = 0
             let r = lastchar
@@ -259,16 +280,17 @@ namespace helpers {
                 off = guess
             else {
                 while (l <= r) {
-                    let m = l + ((r - l) >> 1);
-                    let v = fontdata.getNumber(NumberFormat.UInt16LE, m * dataSize)
+                    let m = l + ((r - l) >> 1)
+                    let v = fontdata.getNumber(
+                        NumberFormat.UInt16LE,
+                        m * dataSize,
+                    )
                     if (v == ch) {
                         off = m * dataSize
                         break
                     }
-                    if (v < ch)
-                        l = m + 1
-                    else
-                        r = m - 1
+                    if (v < ch) l = m + 1
+                    else r = m - 1
                 }
             }
 
@@ -293,7 +315,13 @@ namespace helpers {
                             mask <<= 1
                         }
                         if (n) {
-                            img.fillRect(x + xOffset * mult, y + (j + yOffset) * mult, mult, mult * n, color)
+                            img.fillRect(
+                                x + xOffset * mult,
+                                y + (j + yOffset) * mult,
+                                mult,
+                                mult * n,
+                                color,
+                            )
                             j += n
                         } else {
                             mask <<= 1

@@ -3,13 +3,12 @@ Tests for AGI persistence endpoint auth gating.
 """
 
 import json
-import time
 import sys
+import time
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-
 
 # Ensure repo root is on sys.path
 REPO_ROOT = Path(__file__).parent.parent

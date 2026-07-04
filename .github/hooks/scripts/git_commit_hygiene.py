@@ -17,8 +17,9 @@ import os
 import re
 import subprocess
 import sys
+from collections.abc import Iterable
 from pathlib import PurePosixPath
-from typing import Any, Iterable
+from typing import Any
 
 EXEC_TOOLS = {"run_in_terminal", "execution_subagent", "terminal"}
 

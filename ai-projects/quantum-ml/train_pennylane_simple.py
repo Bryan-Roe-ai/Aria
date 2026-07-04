@@ -3,6 +3,7 @@
 Simple PennyLane-only quantum training (no PyTorch dependency)
 Trains for a specified duration using quantum circuits on CPU simulator
 """
+
 import argparse
 import json
 import time
@@ -223,7 +224,7 @@ def train_quantum_model(
         remaining = (end_time - time.time()) / 60
 
         print(
-            f"Epoch {epoch} ({elapsed/60:.1f}min elapsed, {remaining:.1f}min left) - "
+            f"Epoch {epoch} ({elapsed / 60:.1f}min elapsed, {remaining:.1f}min left) - "
             f"Loss: {avg_loss:.4f}, Val Acc: {val_acc:.4f}"
         )
 
@@ -233,7 +234,7 @@ def train_quantum_model(
 
     total_time = time.time() - start_time
     print("\n✅ Training completed!")
-    print(f"   Total time: {total_time/60:.2f} minutes")
+    print(f"   Total time: {total_time / 60:.2f} minutes")
     print(f"   Epochs: {epoch}")
     print(f"   Samples trained: {history['samples_trained']}")
     print(f"   Final val accuracy: {history['val_acc'][-1]:.4f}")

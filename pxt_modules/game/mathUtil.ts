@@ -9,12 +9,11 @@ namespace Math {
     //% help=math/percent-chance
     export function percentChance(percentage: number): boolean {
         if (percentage >= 100) {
-            return true;
+            return true
+        } else if (percentage <= 0) {
+            return false
         }
-        else if (percentage <= 0) {
-            return false;
-        }
-        return Math.randomRange(0, 99) < percentage;
+        return Math.randomRange(0, 99) < percentage
     }
 
     /**
@@ -24,9 +23,9 @@ namespace Math {
     //% weight=1
     export function pickRandom<T>(list: T[]) {
         if (!list || list.length == 0) {
-            return undefined;
+            return undefined
         }
-        return list[Math.randomRange(0, list.length - 1)];
+        return list[Math.randomRange(0, list.length - 1)]
     }
 
     /**
@@ -34,25 +33,25 @@ namespace Math {
      */
     export class FastRandom {
         // Implementation of the Galois Linear Feedback Shift Register
-        private lfsr: number;
+        private lfsr: number
         // A value between 0x0001 and 0xFFFF to generate random values from
-        public seed: number;
+        public seed: number
 
         /**
          * Create a new Fast Random generator
          * @param seed [Optional] initial seed between 0x0001 and 0xFFFF.
          */
         constructor(seed?: number) {
-            if (seed === undefined) seed = Math.randomRange(0x0001, 0xFFFF);
-            this.seed = seed;
-            this.lfsr = seed;
+            if (seed === undefined) seed = Math.randomRange(0x0001, 0xffff)
+            this.seed = seed
+            this.lfsr = seed
         }
 
         /**
          * @returns the next random number between 0x0001 and 0xFFFF inclusive
          */
         next(): number {
-            return this.lfsr = (this.lfsr >> 1) ^ ((-(this.lfsr & 1)) & 0xb400);
+            return (this.lfsr = (this.lfsr >> 1) ^ (-(this.lfsr & 1) & 0xb400))
         }
 
         /**
@@ -61,7 +60,7 @@ namespace Math {
          * @returns a random value between min and max (inclusive). If min is greater than or equal to max, returns min.
          */
         randomRange(min: number, max: number): number {
-            return min + (max > min ? this.next() % (max - min + 1) : 0);
+            return min + (max > min ? this.next() % (max - min + 1) : 0)
         }
 
         /**
@@ -70,16 +69,16 @@ namespace Math {
          */
         pickRandom<T>(list: T[]) {
             if (!list || list.length == 0) {
-                return undefined;
+                return undefined
             }
-            return list[this.randomRange(0, list.length - 1)];
+            return list[this.randomRange(0, list.length - 1)]
         }
 
         /**
          * @returns a random boolean value
          */
         randomBool(): boolean {
-            return !(this.next() & 1);
+            return !(this.next() & 1)
         }
 
         /**
@@ -87,14 +86,14 @@ namespace Math {
          * @returns a boolean with approximately the given percent chance to be true or false
          */
         percentChance(percent: number): boolean {
-            return this.randomRange(0, 100) < percent;
+            return this.randomRange(0, 100) < percent
         }
 
         /**
          * Reset the state to the current seed
          */
         reset() {
-            this.lfsr = this.seed;
+            this.lfsr = this.seed
         }
     }
 }

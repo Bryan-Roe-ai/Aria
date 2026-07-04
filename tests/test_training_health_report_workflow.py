@@ -7,7 +7,6 @@ import sys
 import textwrap
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "training-health-report.yml"
 

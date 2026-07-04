@@ -19,7 +19,7 @@ def test_generate_html_export(tmp_path):
     )
     assert os.path.exists(fname)
     assert fname.endswith(".html")
-    with open(fname, "r", encoding="utf-8") as f:
+    with open(fname, encoding="utf-8") as f:
         content = f.read()
     assert "User" in content and "Assistant" in content
 

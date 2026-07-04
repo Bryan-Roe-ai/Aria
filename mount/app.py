@@ -9,7 +9,6 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 from uuid import uuid4
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
@@ -40,19 +39,19 @@ DEFAULT_CHECK_TIMEOUT_SECONDS = 3.0
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=8000)
-    provider: Optional[str] = None
+    provider: str | None = None
     stream: bool = False
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
 
 class ChatResponse(BaseModel):
     success: bool
-    provider: Optional[str] = None
-    message: Optional[str] = None
-    response: Optional[str] = None
-    conversation_id: Optional[str] = None
-    timestamp: Optional[str] = None
-    error: Optional[str] = None
+    provider: str | None = None
+    message: str | None = None
+    response: str | None = None
+    conversation_id: str | None = None
+    timestamp: str | None = None
+    error: str | None = None
 
 
 class TrainQuantumRequest(BaseModel):
@@ -71,7 +70,7 @@ class TrainLoRARequest(BaseModel):
 
 
 class OrchestratorRequest(BaseModel):
-    job_name: Optional[str] = None
+    job_name: str | None = None
     dry_run: bool = False
 
 
@@ -173,6 +172,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
         headers={"X-Request-ID": request_id},
     )
 
+
 # CORS configuration
 if config["api"]["cors_enabled"]:
     app.add_middleware(
@@ -254,8 +254,7 @@ async def _run_component_check(
         logger.warning("component_check_timeout component=%s", name)
         return name, f"error: timeout>{timeout_seconds:.1f}s", None
     except Exception as exc:  # noqa: BLE001
-        logger.warning(
-            "component_check_failed component=%s error=%s", name, type(exc).__name__)
+        logger.warning("component_check_failed component=%s error=%s", name, type(exc).__name__)
         return name, f"error: {type(exc).__name__}", None
 
 

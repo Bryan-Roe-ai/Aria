@@ -2,16 +2,16 @@
 name: data-pipeline
 description: "Data pipeline and evaluation agent. Manages batch model evaluation, dataset curation, performance benchmarking, and training data quality.\n\nTrigger phrases include:\n- 'evaluate models'\n- 'benchmark'\n- 'batch evaluation'\n- 'dataset quality'\n- 'compare models'\n- 'curate datasets'\n- 'evaluation pipeline'\n\nExamples:\n- User says 'evaluate all my LoRA models' → invoke for parallel batch evaluation\n- User asks 'compare model A vs model B' → invoke for side-by-side benchmarking\n- User says 'clean up the training datasets' → invoke for dataset curation and validation\n\nThis agent uses BatchEvaluator for parallel evaluation, understands YAML configs, and enforces dataset immutability."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - vscode/memory
-  - read/problems
-  - todo
-  - task_complete
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - vscode/memory
+    - read/problems
+    - todo
+    - task_complete
 ---
 
 # Data Pipeline Agent
@@ -52,13 +52,13 @@ Results aggregation + export
 
 ```yaml
 evaluations:
-  - model_id: "my-lora-v1"
-    model_type: "lora"
-    model_path: "data_out/lora_training/my-lora-v1"
-    dataset: "datasets/chat/eval_set.jsonl"
-    metrics: ["accuracy", "perplexity", "f1"]
-    max_samples: 500
-    batch_size: 8
+    - model_id: "my-lora-v1"
+      model_type: "lora"
+      model_path: "data_out/lora_training/my-lora-v1"
+      dataset: "datasets/chat/eval_set.jsonl"
+      metrics: ["accuracy", "perplexity", "f1"]
+      max_samples: 500
+      batch_size: 8
 ```
 
 ### Timeout & Error Handling
@@ -96,29 +96,29 @@ data_out/                        # All outputs go here
 
 ## Evaluation Metrics
 
-| Metric | Description |
+| Metric            | Description                                |
 | ----------------- | ------------------------------------------ |
-| accuracy | Exact match ratio |
-| perplexity | Cross-entropy exponential (lower = better) |
-| f1 | Harmonic mean of precision/recall |
-| mean_accuracy | Average across evaluation samples |
-| improvement_rate | Accuracy delta between training cycles |
-| plateau_detection | Identifies stalled performance trends |
+| accuracy          | Exact match ratio                          |
+| perplexity        | Cross-entropy exponential (lower = better) |
+| f1                | Harmonic mean of precision/recall          |
+| mean_accuracy     | Average across evaluation samples          |
+| improvement_rate  | Accuracy delta between training cycles     |
+| plateau_detection | Identifies stalled performance trends      |
 
 ## Performance Analysis Tools
 
-| Script | Purpose |
+| Script                           | Purpose                                      |
 | -------------------------------- | -------------------------------------------- |
-| `scripts/batch_evaluator.py` | Parallel multi-model evaluation |
-| `scripts/training_analytics.py` | Trends, improvement rates, plateau detection |
-| `scripts/evaluate_lora_model.py` | Single model evaluation |
+| `scripts/batch_evaluator.py`     | Parallel multi-model evaluation              |
+| `scripts/training_analytics.py`  | Trends, improvement rates, plateau detection |
+| `scripts/evaluate_lora_model.py` | Single model evaluation                      |
 
 ## Key Files
 
-| File | Purpose |
+| File                            | Purpose                                             |
 | ------------------------------- | --------------------------------------------------- |
-| `scripts/batch_evaluator.py` | `BatchEvaluator` — parallel evaluation orchestrator |
-| `scripts/training_analytics.py` | Performance trend analysis |
-| `config/evaluation/` | Evaluation YAML configs |
-| `datasets/` | Source datasets (READ-ONLY) |
-| `data_out/batch_evaluator/` | Evaluation results output |
+| `scripts/batch_evaluator.py`    | `BatchEvaluator` — parallel evaluation orchestrator |
+| `scripts/training_analytics.py` | Performance trend analysis                          |
+| `config/evaluation/`            | Evaluation YAML configs                             |
+| `datasets/`                     | Source datasets (READ-ONLY)                         |
+| `data_out/batch_evaluator/`     | Evaluation results output                           |

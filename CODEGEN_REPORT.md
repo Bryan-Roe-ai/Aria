@@ -5,21 +5,27 @@
 - Mode: dry-run
 
 ## Goal
+
 Add a lightweight diagnostics helper
 
 ## Target Paths
+
 - `generated_tools/diagnostics_helper.py`
 - `generated_tools/diagnostics_helper.md`
 
 ## Created
+
 - (none)
 
 ## Skipped
+
 - (none)
 
 ## Preview
+
 - [DRY-RUN] would create/update: /workspaces/Aria/generated_tools/diagnostics_helper.py
 - [DRY-RUN] would create/update: /workspaces/Aria/generated_tools/diagnostics_helper.md
 
 ## Validation Commands
+
 - `python3 -m py_compile generated_tools/diagnostics_helper.py`

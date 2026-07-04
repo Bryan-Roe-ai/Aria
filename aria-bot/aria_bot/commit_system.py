@@ -10,9 +10,9 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Sequence
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class CommitSystem:
 
     repo_root: Path
 
-    def commit(self, paths: Sequence[Path], message: str) -> Optional[str]:
+    def commit(self, paths: Sequence[Path], message: str) -> str | None:
         """Stage ``paths`` and create a commit. Returns the new commit SHA.
 
         Returns ``None`` if there is nothing to commit, git is unavailable,

@@ -1,6 +1,7 @@
 # Validate Function Bindings (Composite Action)
 
 Validates Azure Functions `function.json` files for:
+
 - valid JSON
 - non-empty `bindings`
 - basic HTTP trigger requirements
@@ -17,6 +18,6 @@ Validates Azure Functions `function.json` files for:
 
 - uses: ./.github/actions/validate-function-bindings
   with:
-    functions-path: functions
-    require-http-route: 'true'
+      functions-path: functions
+      require-http-route: "true"
 ```

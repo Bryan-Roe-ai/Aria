@@ -9,10 +9,10 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 
-def _hash_record(record: Dict[str, Any]) -> str:
+def _hash_record(record: dict[str, Any]) -> str:
     """Compute a deterministic SHA-256 hash for a dataset record."""
     canonical = json.dumps(record, sort_keys=True, ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
@@ -20,7 +20,7 @@ def _hash_record(record: Dict[str, Any]) -> str:
 
 def collect_training_hashes_and_records(
     dataset_dir: Path,
-) -> Tuple[List[str], List[Dict[str, Any]]]:
+) -> tuple[list[str], list[dict[str, Any]]]:
     """Scan a dataset directory for JSONL/JSON files and collect all records.
 
     For each record, a content hash is computed and attached as a ``hash``
@@ -33,8 +33,8 @@ def collect_training_hashes_and_records(
     Returns:
         Tuple of (hash_list, record_list).
     """
-    hashes: List[str] = []
-    records: List[Dict[str, Any]] = []
+    hashes: list[str] = []
+    records: list[dict[str, Any]] = []
 
     for path in sorted(dataset_dir.iterdir()):
         if path.suffix not in (".json", ".jsonl"):

@@ -23,16 +23,16 @@ this repository. Human-oriented guidance lives in `README.md` and
 
 ## Aria HTTP API (port 8080)
 
-| Method | Path                  | Purpose |
-| ------ | --------------------- | ------- |
-| GET    | `/api/aria/state`     | Current stage state (aria, objects, environment) |
-| GET    | `/api/aria/objects`   | Object registry only |
-| GET    | `/api/aria/schema`    | **Action schema, valid gestures, limits** (use this to discover the contract) |
-| GET    | `/api/aria/health`    | Health snapshot: version, uptime, provider/model availability, entity counts, Aria pose |
-| POST   | `/api/aria/command`   | Natural language command → tags + inferred actions |
-| POST   | `/api/aria/execute`   | Execute structured action sequence (plan or execute mode) |
-| POST   | `/api/aria/object`    | Add/update/remove objects |
-| POST   | `/api/aria/world`     | LLM-powered themed world generation |
+| Method | Path                | Purpose                                                                                 |
+| ------ | ------------------- | --------------------------------------------------------------------------------------- |
+| GET    | `/api/aria/state`   | Current stage state (aria, objects, environment)                                        |
+| GET    | `/api/aria/objects` | Object registry only                                                                    |
+| GET    | `/api/aria/schema`  | **Action schema, valid gestures, limits** (use this to discover the contract)           |
+| GET    | `/api/aria/health`  | Health snapshot: version, uptime, provider/model availability, entity counts, Aria pose |
+| POST   | `/api/aria/command` | Natural language command → tags + inferred actions                                      |
+| POST   | `/api/aria/execute` | Execute structured action sequence (plan or execute mode)                               |
+| POST   | `/api/aria/object`  | Add/update/remove objects                                                               |
+| POST   | `/api/aria/world`   | LLM-powered themed world generation                                                     |
 
 ### Action contract summary
 

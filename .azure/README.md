@@ -4,16 +4,16 @@ This directory contains everything needed to deploy Aria to production on Azure.
 
 ## 📦 Contents
 
-| File | Purpose |
-|------|---------|
-| **QUICK-START.md** | ⭐ **Start here** — 45-minute deployment walkthrough |
-| **deployment-plan.md** | Comprehensive deployment strategy and architecture |
-| **PRE-DEPLOYMENT-CHECKLIST.md** | Sign-off checklist before going live |
-| **PRODUCTION-RUNBOOK.md** | Operational procedures, troubleshooting, on-call guide |
-| **main.bicep** | Infrastructure as Code (Azure Resources: Functions, SQL, Cosmos, etc.) |
-| **environments/prod.parameters.json** | Production environment parameters |
-| **deploy-prod.sh** | Automated deployment script |
-| **verify-deployment.sh** | Deployment verification and smoke tests |
+| File                                  | Purpose                                                                |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| **QUICK-START.md**                    | ⭐ **Start here** — 45-minute deployment walkthrough                   |
+| **deployment-plan.md**                | Comprehensive deployment strategy and architecture                     |
+| **PRE-DEPLOYMENT-CHECKLIST.md**       | Sign-off checklist before going live                                   |
+| **PRODUCTION-RUNBOOK.md**             | Operational procedures, troubleshooting, on-call guide                 |
+| **main.bicep**                        | Infrastructure as Code (Azure Resources: Functions, SQL, Cosmos, etc.) |
+| **environments/prod.parameters.json** | Production environment parameters                                      |
+| **deploy-prod.sh**                    | Automated deployment script                                            |
+| **verify-deployment.sh**              | Deployment verification and smoke tests                                |
 
 ## 🚀 Quick Deployment
 
@@ -41,10 +41,10 @@ bash deploy-prod.sh --resource-group aria-prod
          │
          └─ Option C: azd (Azure Developer CLI)
              └─ If using azd workflow
-         
+
 2. verify-deployment.sh
    └─ Run smoke tests after deployment
-   
+
 3. PRODUCTION-RUNBOOK.md
    └─ Monitor, troubleshoot, maintain
 ```
@@ -86,17 +86,20 @@ All items verified green ✅:
 ## 📖 Documentation
 
 **For First-Time Deployments**:
+
 1. Read `QUICK-START.md` (10 min)
 2. Run `deploy-prod.sh --dry-run` to preview
 3. Execute full deployment
 4. Verify with `verify-deployment.sh`
 
 **For Operations**:
+
 - `PRODUCTION-RUNBOOK.md` — Daily checks, troubleshooting, escalation
 - `PRE-DEPLOYMENT-CHECKLIST.md` — Release validation
 - `deployment-plan.md` — Architecture and detailed procedures
 
 **For Development**:
+
 - `main.bicep` — Infrastructure code (modify as needed)
 - `environments/prod.parameters.json` — Configuration overrides
 - `deploy-prod.sh` — Deployment orchestration
@@ -129,11 +132,13 @@ az functionapp config appsettings set \
 ## 💰 Cost Optimization
 
 ### Development/Testing
+
 - Use `EP1` (Elastic Premium tier): ~$80/month
 - Single SQL Database (Basic): ~$5/month
 - Optional: Disable Cosmos DB for dev
 
 ### Production
+
 - Recommended: `EP2` with 2-3 pre-warmed instances: ~$150-200/month
 - SQL Database (Standard or higher): ~$30-50/month
 - Cosmos DB (if enabled): ~$25/month + RU usage
@@ -175,43 +180,49 @@ az appservice plan update \
 ## 🚨 Troubleshooting
 
 ### "Deployment failed"
+
 1. Check prerequisite scripts: `az account show`
 2. Review error in Azure Portal
 3. Check `az deployment group list --resource-group <rg>`
 
 ### "Health endpoint returning 500"
+
 1. Check Function App logs: `az functionapp log tail --name aria-prod`
 2. Review Application Insights
 3. See PRODUCTION-RUNBOOK.md for common issues
 
 ### "Chat timeouts"
+
 1. Verify Ollama connectivity
 2. Check if provider is misconfigured
 3. Fall back to local: `DEFAULT_AI_PROVIDER=local`
 
 ## 📞 Support
 
-| Issue | Where to Look |
-|-------|---------------|
-| Deployment problems | QUICK-START.md troubleshooting section |
-| Runtime errors | PRODUCTION-RUNBOOK.md → Common Issues |
-| Performance | PRODUCTION-RUNBOOK.md → Performance Tuning |
-| Monitoring | Azure Portal → Application Insights |
-| Capacity | PRODUCTION-RUNBOOK.md → Capacity Planning |
+| Issue               | Where to Look                              |
+| ------------------- | ------------------------------------------ |
+| Deployment problems | QUICK-START.md troubleshooting section     |
+| Runtime errors      | PRODUCTION-RUNBOOK.md → Common Issues      |
+| Performance         | PRODUCTION-RUNBOOK.md → Performance Tuning |
+| Monitoring          | Azure Portal → Application Insights        |
+| Capacity            | PRODUCTION-RUNBOOK.md → Capacity Planning  |
 
 ## 🔄 Maintenance
 
 ### Weekly
+
 - [ ] Review Application Insights metrics
 - [ ] Check Azure Cost Management
 - [ ] Verify database backups
 
 ### Monthly
+
 - [ ] Test disaster recovery procedure
 - [ ] Update dependencies (security patches)
 - [ ] Review error logs and performance trends
 
 ### Quarterly
+
 - [ ] Capacity planning review
 - [ ] Security audit (Key Vault expiration, RBAC)
 - [ ] Disaster recovery drill

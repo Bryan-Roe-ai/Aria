@@ -8,10 +8,11 @@ Keys with names starting with `#` are _system keys_.
 User applications should not read or write these directly.
 
 Following system keys are used:
-* `#run` - current run number; incremented on each reset; it's also used to seed the
+
+- `#run` - current run number; incremented on each reset; it's also used to seed the
   random number generator; accessible via `settings.runNumber()`
-* `#volume` - last music volume set explicitly by user using the game menu
-* `#scope` - keeps the name of the program; if the current name of the program
+- `#volume` - last music volume set explicitly by user using the game menu
+- `#scope` - keeps the name of the program; if the current name of the program
   doesn't match what is in that key, all non-system keys are cleared;
   this happens for example when a new game (or rather a game with a new name)
   is uploaded to a hardware device

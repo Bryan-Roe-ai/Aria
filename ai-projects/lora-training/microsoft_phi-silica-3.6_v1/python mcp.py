@@ -8,7 +8,6 @@ import asyncio
 import json
 import os
 from contextlib import AsyncExitStack
-from typing import Dict
 
 from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import AssistantMessage, TextContentItem, ToolMessage, UserMessage
@@ -33,7 +32,7 @@ class MCPClient:
             api_version="2024-12-01-preview",
         )
 
-    async def connect_stdio_server(self, server_id: str, command: str, args: list[str], env: Dict[str, str]):
+    async def connect_stdio_server(self, server_id: str, command: str, args: list[str], env: dict[str, str]):
         """Connect to an MCP server using STDIO transport
 
         Args:
@@ -52,7 +51,7 @@ class MCPClient:
         # Register the server
         await self._register_server(server_id, session)
 
-    async def connect_sse_server(self, server_id: str, url: str, headers: Dict[str, str]):
+    async def connect_sse_server(self, server_id: str, url: str, headers: dict[str, str]):
         """Connect to an MCP server using SSE transport
 
         Args:
@@ -68,7 +67,7 @@ class MCPClient:
         # Register the server
         await self._register_server(server_id, session)
 
-    async def connect_http_server(self, server_id: str, url: str, headers: Dict[str, str]):
+    async def connect_http_server(self, server_id: str, url: str, headers: dict[str, str]):
         """Connect to an MCP server using HTTP transport
 
         Args:
@@ -131,7 +130,6 @@ class MCPClient:
                 )
 
         while True:
-
             # Call model
             response = self.azureai.complete(
                 messages=messages,

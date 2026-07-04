@@ -7,6 +7,7 @@ argument-hint: "Describe the symptom: wrong provider auto-selected, streaming br
 # Chat CLI Debug Workflow
 
 ## What This Skill Produces
+
 - Root cause for provider detection or fallback failures in `ai-projects/chat-cli/`
 - Diagnosis of SSE streaming format errors (missing `[DONE]` sentinel, bad JSON lines)
 - Verification of LoRA adapter file requirements
@@ -15,6 +16,7 @@ argument-hint: "Describe the symptom: wrong provider auto-selected, streaming br
 ## When to Use
 
 Trigger phrases:
+
 - "chat CLI picked the wrong provider"
 - "CLI fell back to local when it shouldn't"
 - "streaming output broken from chat CLI"
@@ -31,6 +33,7 @@ Trigger phrases:
 ## Procedure
 
 ### Step 1 — Run the smoke test first
+
 ```bash
 # Quickest sanity check — local provider, no API keys needed:
 python ai-projects/chat-cli/src/chat_cli.py --provider local --once "Hello"
@@ -40,16 +43,18 @@ python ai-projects/chat-cli/src/chat_cli.py --provider local --once "Hello"
 ```
 
 ### Step 2 — Verify provider detection order
+
 The detection chain in `shared/chat_providers.py:detect_provider()` runs in order (auto mode):
+
 1. **LM Studio** — if reachable at `LMSTUDIO_BASE_URL` (default `http://127.0.0.1:1234/v1`)
 2. **Ollama** — if reachable at `OLLAMA_BASE_URL` (default `http://127.0.0.1:11434/v1`)
 3. **Azure OpenAI** — requires ALL 4 env vars:
-   ```
-   AZURE_OPENAI_API_KEY
-   AZURE_OPENAI_ENDPOINT
-   AZURE_OPENAI_DEPLOYMENT
-   AZURE_OPENAI_API_VERSION
-   ```
+    ```
+    AZURE_OPENAI_API_KEY
+    AZURE_OPENAI_ENDPOINT
+    AZURE_OPENAI_DEPLOYMENT
+    AZURE_OPENAI_API_VERSION
+    ```
 4. **OpenAI** — requires `OPENAI_API_KEY`
 5. **Local** — always available, zero-dependency fallback
 
@@ -68,6 +73,7 @@ curl http://localhost:7071/api/ai/status | python -m json.tool
 ```
 
 ### Step 3 — Check LoRA adapter directory contents
+
 ```bash
 # LoRA adapter MUST contain BOTH files — missing either = load failure:
 ls -la <adapter_dir>/
@@ -80,6 +86,7 @@ python ai-projects/chat-cli/src/chat_cli.py --provider lora --model <adapter_dir
 ```
 
 ### Step 4 — Debug SSE streaming format
+
 ```python
 # Streaming providers must emit:
 # One SSE line per token chunk:
@@ -94,6 +101,7 @@ data: [DONE]
 ```
 
 ### Step 5 — Inspect JSONL persistence
+
 ```python
 # Conversations are saved to JSONL on /save:
 # Format: one JSON object per line, each with {"role": "...", "content": "..."}
@@ -105,6 +113,7 @@ data: [DONE]
 ```
 
 ### Step 6 — Verify web integration endpoints
+
 ```bash
 # The CLI providers are also exposed via Azure Functions:
 # /api/chat        → streaming chat SSE
@@ -120,22 +129,24 @@ curl -X POST http://localhost:7071/api/chat \
 ```
 
 ### Step 7 — Check local.settings.json vs real env vars
+
 ```json
 // local.settings.json (dev only — never commit real keys):
 {
-  "IsEncrypted": false,
-  "Values": {
-    "AZURE_OPENAI_API_KEY": "...",
-    "AZURE_OPENAI_ENDPOINT": "https://...",
-    "AZURE_OPENAI_DEPLOYMENT": "gpt-4o",
-    "AZURE_OPENAI_API_VERSION": "2024-02-01"
-  }
+    "IsEncrypted": false,
+    "Values": {
+        "AZURE_OPENAI_API_KEY": "...",
+        "AZURE_OPENAI_ENDPOINT": "https://...",
+        "AZURE_OPENAI_DEPLOYMENT": "gpt-4o",
+        "AZURE_OPENAI_API_VERSION": "2024-02-01"
+    }
 }
 // Azure Functions host reads this file automatically in local dev
 // CLI reads from OS env vars directly — local.settings.json has no effect on CLI
 ```
 
 ## Quality Checks
+
 - [ ] Smoke test passes: `--provider local --once "Hello"` produces output
 - [ ] All 4 Azure env vars present if Azure provider expected
 - [ ] LoRA adapter dir contains BOTH `adapter_config.json` + `adapter_model.safetensors`

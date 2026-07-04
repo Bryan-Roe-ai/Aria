@@ -3,16 +3,19 @@
 ## Core Commands
 
 ### Evaluate All Models
+
 ```powershell
 python .\scripts\batch_evaluator.py --scan-models --evaluate-all
 ```
 
 ### Evaluate and Promote Best Model
+
 ```powershell
 python .\scripts\batch_evaluator.py --scan-models --evaluate-all --promote-best
 ```
 
 ### Dry-Run Mode
+
 ```powershell
 python .\scripts\batch_evaluator.py --scan-models --evaluate-all --promote-best --dry-run
 ```
@@ -33,6 +36,7 @@ python .\scripts\batch_evaluator.py --scan-models --evaluate-all --promote-best 
 After promotion: `deployed_models/<model_id>_<timestamp>/`
 
 Contains:
+
 - All adapter files (adapter_model.safetensors, config, etc.)
 - `promotion_metadata.json` (metrics, rank, timestamp)
 - `../LATEST.txt` points to this directory

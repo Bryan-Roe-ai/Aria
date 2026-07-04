@@ -5,7 +5,6 @@ Aria Platform Code Generation System
 """
 
 import sys
-from pathlib import Path
 
 # ============================================================================
 # EXAMPLE 1: GENERATED PORTFOLIO WEBSITE

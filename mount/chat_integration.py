@@ -8,22 +8,22 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 
 class ChatIntegration:
     """Integration layer for chat operations"""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.workspace_root = Path(config["paths"]["workspace_root"])
         self.chat_path = Path(config["paths"]["talk_to_ai"])
         self.logs_dir = self.chat_path / "logs"
         self.logs_dir.mkdir(parents=True, exist_ok=True)
         configured_providers = config.get("chat", {}).get("providers", {})
-        self.allowed_providers: Set[str] = set(configured_providers.keys()) or {"local", "openai", "azure", "lora"}
+        self.allowed_providers: set[str] = set(configured_providers.keys()) or {"local", "openai", "azure", "lora"}
 
-    async def get_status(self) -> Dict[str, Any]:
+    async def get_status(self) -> dict[str, Any]:
         """Get current chat system status"""
         return {
             "enabled": self.config["chat"]["enabled"],
@@ -32,7 +32,7 @@ class ChatIntegration:
             "recent_conversations": self._get_recent_conversations(),
         }
 
-    def _get_provider_status(self) -> Dict[str, Dict[str, Any]]:
+    def _get_provider_status(self) -> dict[str, dict[str, Any]]:
         """Check status of all chat providers"""
         import os
 
@@ -81,7 +81,7 @@ class ChatIntegration:
 
         return providers
 
-    def _get_recent_conversations(self, limit: int = 5) -> List[Dict[str, Any]]:
+    def _get_recent_conversations(self, limit: int = 5) -> list[dict[str, Any]]:
         """Get recent conversation logs"""
         conversations = []
 
@@ -119,10 +119,10 @@ class ChatIntegration:
     async def chat(
         self,
         message: str,
-        provider: Optional[str] = None,
+        provider: str | None = None,
         stream: bool = False,
-        conversation_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        conversation_id: str | None = None,
+    ) -> dict[str, Any]:
         """Send a chat message and get response"""
         try:
             normalized_provider = (provider or self.config["chat"]["default_provider"]).strip().lower()
@@ -163,11 +163,11 @@ class ChatIntegration:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def list_conversations(self) -> List[Dict[str, Any]]:
+    async def list_conversations(self) -> list[dict[str, Any]]:
         """List all saved conversations"""
         return self._get_recent_conversations(limit=50)
 
-    async def get_conversation(self, filename: str) -> List[Dict[str, Any]]:
+    async def get_conversation(self, filename: str) -> list[dict[str, Any]]:
         """Get full conversation from a log file"""
         file_path = self.logs_dir / filename
 
@@ -182,7 +182,7 @@ class ChatIntegration:
 
         return messages
 
-    async def save_conversation(self, messages: List[Dict[str, Any]], filename: Optional[str] = None) -> Dict[str, Any]:
+    async def save_conversation(self, messages: list[dict[str, Any]], filename: str | None = None) -> dict[str, Any]:
         """Save conversation to JSONL file"""
         try:
             if not filename:

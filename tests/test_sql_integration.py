@@ -45,11 +45,11 @@ def _reset_sql_engine():
 
 
 def test_sql_engine_health():
-    from typing import Any, Dict
+    from typing import Any
 
     from shared.sql_engine import get_engine, sql_health
 
-    info: Dict[str, Any] = sql_health()  # Explicit type annotation for clarity
+    info: dict[str, Any] = sql_health()  # Explicit type annotation for clarity
     assert info["enabled"] is True
     assert info["vendor"] == "sqlite"
     assert info["connectivity"] is True

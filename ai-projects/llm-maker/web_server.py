@@ -453,7 +453,7 @@ class LLMMakerHandler(BaseHTTPRequestHandler):
                 for filename in website.get("files", []):
                     filepath = os.path.join(website["path"], filename)
                     if os.path.exists(filepath):
-                        with open(filepath, "r", encoding="utf-8") as f:
+                        with open(filepath, encoding="utf-8") as f:
                             files_content[filename] = f.read()
 
                 website["files_content"] = files_content

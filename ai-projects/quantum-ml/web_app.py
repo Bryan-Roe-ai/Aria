@@ -3,6 +3,7 @@
 Quantum AI Training Web Application
 Interactive dashboard for training and visualizing quantum machine learning models
 """
+
 from flask import Flask, jsonify, request, send_from_directory
 
 try:
@@ -706,7 +707,7 @@ def start_training():
             )
 
         # Create session
-        session_id = f"session_{int(time.time()*1000)}"
+        session_id = f"session_{int(time.time() * 1000)}"
         session = TrainingSession(session_id, config)
         training_sessions[session_id] = session
 

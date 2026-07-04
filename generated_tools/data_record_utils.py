@@ -6,7 +6,8 @@ and safe for reuse in API and CLI layers.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from typing import Any
 
 
 def select_fields(records: Iterable[dict[str, Any]], fields: Iterable[str]) -> list[dict[str, Any]]:

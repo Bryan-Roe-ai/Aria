@@ -25,6 +25,7 @@ ai-projects/llm-maker/
 `eval, exec, compile, __import__, open, input, breakpoint, exit`
 
 **Validation pipeline:**
+
 1. Parse code into AST
 2. Walk AST for import statements → reject banned modules
 3. Walk AST for function calls → reject dangerous builtins
@@ -33,6 +34,7 @@ ai-projects/llm-maker/
 6. Verify function signature matches requested spec
 
 ### Code Generation Pattern
+
 ```python
 # ToolMaker.create_tool() implements:
 for attempt in range(max_attempts):  # default: 3
@@ -47,6 +49,7 @@ for attempt in range(max_attempts):  # default: 3
 ```
 
 ### Website Generation Pattern
+
 ```python
 # WebsiteMaker.create_website() returns:
 {

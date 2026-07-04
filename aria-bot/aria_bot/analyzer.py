@@ -17,9 +17,9 @@ transform table; see :mod:`aria_bot.executor`.
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List, Sequence
 
 from .risk_manager import RiskManager
 
@@ -56,7 +56,7 @@ class Analyzer:
     risk_manager: RiskManager
     suffixes: Sequence[str] = (".py", ".md", ".yaml", ".yml", ".txt")
 
-    def scan(self, paths: Iterable[Path] | None = None) -> List[Finding]:
+    def scan(self, paths: Iterable[Path] | None = None) -> list[Finding]:
         """Return all findings for the requested files (or whole repo)."""
 
         if paths is None:
@@ -64,7 +64,7 @@ class Analyzer:
         else:
             candidates = [Path(p) for p in paths]
 
-        findings: List[Finding] = []
+        findings: list[Finding] = []
         for path in candidates:
             assessment = self.risk_manager.assess_file(path)
             if not assessment.allowed:
@@ -81,8 +81,8 @@ class Analyzer:
     # ------------------------------------------------------------------
     # Per-file inspections
     # ------------------------------------------------------------------
-    def _inspect(self, path: Path, data: bytes) -> List[Finding]:
-        results: List[Finding] = []
+    def _inspect(self, path: Path, data: bytes) -> list[Finding]:
+        results: list[Finding] = []
         # Skip likely-binary files. We treat the presence of a NUL byte in
         # the first 4 KiB as a strong binary signal.
         if b"\x00" in data[:4096]:

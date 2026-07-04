@@ -9,16 +9,13 @@ from pathlib import Path
 
 import pytest
 
-
-MODULE_PATH = Path(__file__).resolve(
-).parents[2] / "scripts" / "lm_studio_analyzer.py"
+MODULE_PATH = Path(__file__).resolve().parents[2] / "scripts" / "lm_studio_analyzer.py"
 
 
 @pytest.fixture()
 def analyzer_module():
     """Load lm_studio_analyzer as a module from scripts/."""
-    spec = importlib.util.spec_from_file_location(
-        "lm_studio_analyzer", MODULE_PATH)
+    spec = importlib.util.spec_from_file_location("lm_studio_analyzer", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -30,9 +27,7 @@ def test_loads_env_defaults_from_dotenv_and_local_settings(
 ) -> None:
     """Analyzer should bootstrap env defaults from local files when unset."""
     (tmp_path / ".env").write_text(
-        "LMSTUDIO_BASE_URL=http://host.docker.internal:1234/v1\n"
-        "LMSTUDIO_MODEL=from-env-file\n"
-        "LMSTUDIO_TIMEOUT=120\n",
+        "LMSTUDIO_BASE_URL=http://host.docker.internal:1234/v1\nLMSTUDIO_MODEL=from-env-file\nLMSTUDIO_TIMEOUT=120\n",
         encoding="utf-8",
     )
     (tmp_path / "local.settings.json").write_text(
@@ -106,9 +101,7 @@ def test_query_invokes_chat_cli_with_no_stream(
     assert kwargs["env"]["LMSTUDIO_MODEL"] == "local-model"
 
 
-def test_query_timeout_returns_friendly_error(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, analyzer_module
-) -> None:
+def test_query_timeout_returns_friendly_error(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, analyzer_module) -> None:
     """Timeouts should map to a user-friendly error string."""
     (tmp_path / "local.settings.json").write_text("{}", encoding="utf-8")
 
@@ -151,8 +144,7 @@ def capturing_analyzer(tmp_path, monkeypatch, analyzer_module):
         captured["prompt"] = prompt
         return "OK"
 
-    monkeypatch.setattr(analyzer_module.LMStudioAnalyzer,
-                        "_query_lmstudio", fake_query)
+    monkeypatch.setattr(analyzer_module.LMStudioAnalyzer, "_query_lmstudio", fake_query)
     analyzer = analyzer_module.LMStudioAnalyzer()
     return analyzer, captured
 
@@ -168,8 +160,7 @@ def test_generate_docstring_prompt_contains_code(capturing_analyzer) -> None:
     analyzer, captured = capturing_analyzer
     analyzer.generate_docstring("class Foo: pass")
     assert "class Foo: pass" in captured["prompt"]
-    assert "docstring" in captured["prompt"].lower(
-    ) or "documentation" in captured["prompt"].lower()
+    assert "docstring" in captured["prompt"].lower() or "documentation" in captured["prompt"].lower()
 
 
 def test_generate_tests_uses_pytest_for_python(capturing_analyzer) -> None:
@@ -180,8 +171,7 @@ def test_generate_tests_uses_pytest_for_python(capturing_analyzer) -> None:
 
 def test_generate_tests_uses_jest_for_js(capturing_analyzer) -> None:
     analyzer, captured = capturing_analyzer
-    analyzer.generate_tests(
-        "function add(a,b){return a+b}", language="javascript")
+    analyzer.generate_tests("function add(a,b){return a+b}", language="javascript")
     assert "jest" in captured["prompt"]
 
 
@@ -200,8 +190,7 @@ def test_debug_error_includes_error_text(capturing_analyzer) -> None:
 
 def test_debug_error_appends_context_when_given(capturing_analyzer) -> None:
     analyzer, captured = capturing_analyzer
-    analyzer.debug_error("KeyError: 'model'",
-                         context="during provider detection")
+    analyzer.debug_error("KeyError: 'model'", context="during provider detection")
     assert "during provider detection" in captured["prompt"]
 
 
@@ -233,6 +222,5 @@ def test_review_code_prompt_covers_security(capturing_analyzer) -> None:
 def test_summarize_file_prompt_asks_for_entry_points(capturing_analyzer) -> None:
     analyzer, captured = capturing_analyzer
     analyzer.summarize_file("def main(): pass")
-    assert "entry point" in captured["prompt"].lower(
-    ) or "exports" in captured["prompt"].lower()
+    assert "entry point" in captured["prompt"].lower() or "exports" in captured["prompt"].lower()
     assert "def main(): pass" in captured["prompt"]

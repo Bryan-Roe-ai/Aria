@@ -39,7 +39,7 @@ class ImplementationInput:
     notes: str = ""
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ImplementationInput":
+    def from_dict(cls, data: dict[str, Any]) -> ImplementationInput:
         return cls(
             goal=str(data.get("goal", "")).strip(),
             target_paths=[str(p).strip() for p in data.get("target_paths", []) if str(p).strip()],

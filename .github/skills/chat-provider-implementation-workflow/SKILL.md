@@ -37,32 +37,32 @@ Common trigger phrases:
 ## Procedure
 
 1. Preserve core detection semantics
-   - Keep documented detection order and explicit override behavior.
-   - Ensure readiness checks use the required env-var set per provider.
+    - Keep documented detection order and explicit override behavior.
+    - Ensure readiness checks use the required env-var set per provider.
 
 2. Implement provider contract faithfully
-   - `complete(messages, stream)` behavior must be consistent with shared abstractions.
-   - Keep return types/stream chunks aligned with downstream consumers.
+    - `complete(messages, stream)` behavior must be consistent with shared abstractions.
+    - Keep return types/stream chunks aligned with downstream consumers.
 
 3. Validate stream vs non-stream parity
-   - Non-stream should produce full coherent response.
-   - Stream should produce incremental events compatible with SSE consumers.
+    - Non-stream should produce full coherent response.
+    - Stream should produce incremental events compatible with SSE consumers.
 
 4. Keep LoRA constraints explicit
-   - Require adapter directory essentials and fail clearly when missing.
-   - Avoid silent fallback that masks adapter misconfiguration.
+    - Require adapter directory essentials and fail clearly when missing.
+    - Avoid silent fallback that masks adapter misconfiguration.
 
 5. Keep CLI and API integration aligned
-   - Confirm provider behavior in chat CLI and Functions surfaces matches expectations.
-   - Avoid codepath-specific schema drift between interfaces.
+    - Confirm provider behavior in chat CLI and Functions surfaces matches expectations.
+    - Avoid codepath-specific schema drift between interfaces.
 
 6. Add minimal readiness diagnostics
-   - Expose actionable reason when provider is skipped.
-   - Keep secrets out of logs while preserving debugging utility.
+    - Expose actionable reason when provider is skipped.
+    - Keep secrets out of logs while preserving debugging utility.
 
 7. Re-verify fallback chain
-   - Test explicit provider selection and auto-detection paths.
-   - Confirm fallback only occurs for real readiness/runtime failures.
+    - Test explicit provider selection and auto-detection paths.
+    - Confirm fallback only occurs for real readiness/runtime failures.
 
 ## Quality Checks
 

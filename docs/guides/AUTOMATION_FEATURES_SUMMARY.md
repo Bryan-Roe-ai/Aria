@@ -13,6 +13,7 @@ This document summarizes the advanced automation features added to the QAI works
 **Purpose:** Automatically deploy trained models with quality gates and version control.
 
 **Key Features:**
+
 - Quality gate validation (configurable thresholds)
 - Model scoring based on accuracy, loss, validation metrics
 - Deployment strategies: direct, canary, blue-green
@@ -20,12 +21,14 @@ This document summarizes the advanced automation features added to the QAI works
 - Model registry with metadata
 
 **Quality Gates (default):**
+
 - `min_accuracy`: 0.75
 - `max_loss`: 0.5
 - `min_f1_score`: 0.70
 - `min_validation_accuracy`: 0.70
 
 **Commands:**
+
 ```powershell
 # Scan for deployable models
 python .\scripts\model_deployer.py --scan
@@ -48,6 +51,7 @@ python .\scripts\model_deployer.py --set-quality-gate min_accuracy 0.80
 **Purpose:** Real-time system resource monitoring with alerts and historical tracking.
 
 **Key Features:**
+
 - CPU, memory, disk, GPU monitoring (uses psutil + GPUtil)
 - Configurable alert thresholds
 - Historical data collection (JSONL format)
@@ -55,6 +59,7 @@ python .\scripts\model_deployer.py --set-quality-gate min_accuracy 0.80
 - Streaming mode for continuous monitoring
 
 **Default Thresholds:**
+
 - `cpu_percent`: 90.0%
 - `memory_percent`: 90.0%
 - `disk_percent`: 90.0%
@@ -62,6 +67,7 @@ python .\scripts\model_deployer.py --set-quality-gate min_accuracy 0.80
 - `gpu_memory_percent`: 95.0%
 
 **Commands:**
+
 ```powershell
 # Single snapshot
 python .\scripts\resource_monitor.py --snapshot
@@ -84,6 +90,7 @@ python .\scripts\resource_monitor.py --set-threshold cpu_percent 85
 **Purpose:** Parallel evaluation of multiple models with comprehensive aggregation.
 
 **Key Features:**
+
 - ThreadPoolExecutor for parallel execution
 - Support for 5 model types (LoRA, Azure, OpenAI, Local, Quantum)
 - Result aggregation and ranking
@@ -91,6 +98,7 @@ python .\scripts\resource_monitor.py --set-threshold cpu_percent 85
 - Side-by-side comparison
 
 **Commands:**
+
 ```powershell
 # Scan and evaluate all models
 python .\scripts\batch_evaluator.py --scan-models --evaluate-all
@@ -110,6 +118,7 @@ python .\scripts\batch_evaluator.py --export markdown --output report.md
 **Purpose:** Export orchestrator results to multiple formats for reporting and analysis.
 
 **Supported Formats:**
+
 - JSON (machine-readable)
 - CSV (spreadsheet import)
 - Excel (requires openpyxl)
@@ -117,6 +126,7 @@ python .\scripts\batch_evaluator.py --export markdown --output report.md
 - HTML (web reports)
 
 **Commands:**
+
 ```powershell
 # Export single orchestrator
 python .\scripts\results_exporter.py --source autotrain --format csv
@@ -138,16 +148,19 @@ python .\scripts\results_exporter.py --source autotrain --format json --filter-s
 **File:** `.github/workflows/ci-pipeline.yml`
 
 **Triggers:**
+
 - Push to main/dev branches
 - Pull requests to main
 - Daily schedule (2 AM UTC)
 
 **Jobs:**
+
 1. **Validate:** Run CI validation and unit tests
 2. **Train:** Run daily training workflow (scheduled only)
 3. **Deploy:** Auto-deploy best model (scheduled only)
 
 **Artifacts:**
+
 - Validation results
 - Training outputs
 - Deployment manifest
@@ -155,6 +168,7 @@ python .\scripts\results_exporter.py --source autotrain --format json --filter-s
 ### Git Hooks
 
 **Pre-commit validation** (sample provided):
+
 - `.git/hooks/pre-commit.sample` contains validation logic
 - Runs `ci_orchestrator.py --validate-all` before commit
 - Prevents commits if validation fails
@@ -167,11 +181,11 @@ Master orchestrator now supports complex dependency chains:
 
 ```yaml
 workflows:
-  - name: full_pipeline
-    orchestrators:
-      - autotrain          # Step 1
-      - evaluation_autorun # Step 2 (depends on autotrain)
-      - model_deploy       # Step 3 (depends on evaluation)
+    - name: full_pipeline
+      orchestrators:
+          - autotrain # Step 1
+          - evaluation_autorun # Step 2 (depends on autotrain)
+          - model_deploy # Step 3 (depends on evaluation)
 ```
 
 ### Cron Scheduling
@@ -199,6 +213,7 @@ python .\scripts\master_orchestrator.py --status
 ```
 
 Output includes:
+
 - CPU percentage
 - Memory percentage
 - Disk usage
@@ -209,15 +224,15 @@ Output includes:
 
 **7 new tasks added:**
 
-| Task | Command |
-| ------ | --------- |
-| Run: Model Deployer - Scan | `python .\scripts\model_deployer.py --scan` |
-| Run: Model Deployer - Deploy Best | `python .\scripts\model_deployer.py --deploy best --strategy canary` |
-| Run: Resource Monitor - Snapshot | `python .\scripts\resource_monitor.py --snapshot` |
-| Run: Resource Monitor - Stream | `python .\scripts\resource_monitor.py --stream --duration 60` |
-| Run: Batch Evaluator - Scan | `python .\scripts\batch_evaluator.py --scan-models --evaluate-all` |
-| Run: Results Exporter - Export to Markdown | `python .\scripts\results_exporter.py --all --format markdown` |
-| Run: Auto Scheduler - List | `python .\scripts\auto_scheduler.py --list` |
+| Task                                       | Command                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------- |
+| Run: Model Deployer - Scan                 | `python .\scripts\model_deployer.py --scan`                          |
+| Run: Model Deployer - Deploy Best          | `python .\scripts\model_deployer.py --deploy best --strategy canary` |
+| Run: Resource Monitor - Snapshot           | `python .\scripts\resource_monitor.py --snapshot`                    |
+| Run: Resource Monitor - Stream             | `python .\scripts\resource_monitor.py --stream --duration 60`        |
+| Run: Batch Evaluator - Scan                | `python .\scripts\batch_evaluator.py --scan-models --evaluate-all`   |
+| Run: Results Exporter - Export to Markdown | `python .\scripts\results_exporter.py --all --format markdown`       |
+| Run: Auto Scheduler - List                 | `python .\scripts\auto_scheduler.py --list`                          |
 
 ## Configuration Files
 
@@ -226,15 +241,16 @@ Output includes:
 **File:** `batch_eval_config.yaml`
 
 Example structure:
+
 ```yaml
 evaluation_tasks:
-  - model_id: lora_phi35_mixed
-    model_type: lora
-    model_path: data_out/lora_training/phi35_mixed_chat
-    dataset: datasets/chat/mixed_chat
-    metrics: [accuracy, perplexity, bleu]
-    max_samples: 100
-    batch_size: 8
+    - model_id: lora_phi35_mixed
+      model_type: lora
+      model_path: data_out/lora_training/phi35_mixed_chat
+      dataset: datasets/chat/mixed_chat
+      metrics: [accuracy, perplexity, bleu]
+      max_samples: 100
+      batch_size: 8
 ```
 
 ## Usage Patterns
@@ -289,27 +305,30 @@ python .\scripts\results_exporter.py --source batch_evaluator --format excel
 ## Dependencies
 
 **Required (already installed):**
+
 - `pyyaml` - Configuration parsing
 - `psutil` - Resource monitoring
 
 **Optional:**
+
 - `croniter` - Cron expression parsing (for scheduler)
 - `GPUtil` - GPU monitoring
 - `openpyxl` - Excel export
 
 **Install optional dependencies:**
+
 ```powershell
 pip install croniter GPUtil openpyxl
 ```
 
 ## Output Locations
 
-| Tool | Output Directory |
-| ------ | ----------------- |
-| Model Deployer | `deployed_models/` |
+| Tool             | Output Directory             |
+| ---------------- | ---------------------------- |
+| Model Deployer   | `deployed_models/`           |
 | Resource Monitor | `data_out/resource_monitor/` |
-| Batch Evaluator | `data_out/batch_evaluator/` |
-| Results Exporter | `exports/` |
+| Batch Evaluator  | `data_out/batch_evaluator/`  |
+| Results Exporter | `exports/`                   |
 
 ## Integration with Existing Tools
 
@@ -324,6 +343,7 @@ All new tools integrate seamlessly with existing orchestrators:
 ## Next Steps
 
 ### Immediate (Ready to Use)
+
 - ✅ Model scanning and quality gate validation
 - ✅ Resource monitoring and alerting
 - ✅ Results export to multiple formats
@@ -331,11 +351,13 @@ All new tools integrate seamlessly with existing orchestrators:
 - ✅ Cron-based scheduling
 
 ### Short-term (Requires Implementation)
+
 - ⚠️ Implement actual evaluation scripts for batch evaluator
 - ⚠️ Add Slack/email notification handlers
 - ⚠️ Implement code quality/security scanning in CI
 
 ### Long-term (Future Enhancements)
+
 - Web dashboard for monitoring
 - Distributed execution across machines
 - GPU-aware scheduling
@@ -345,22 +367,26 @@ All new tools integrate seamlessly with existing orchestrators:
 ## Testing Performed
 
 **Model Deployer:**
+
 - ✅ Scanned data_out/lora_training/ successfully
 - ✅ Found 2 LoRA models
 - ✅ Quality gates validation working
 
 **Resource Monitor:**
+
 - ✅ Snapshot captured successfully
 - ✅ CPU: 23.7%, Memory: 25.4%, Disk: 61.5%
 - ✅ Process count: 372
 - ✅ JSON output formatted correctly
 
 **Results Exporter:**
+
 - ✅ Exported all orchestrators to JSON
 - ✅ Comparison format working
 - ✅ File created at exports/all_orchestrators.json
 
 **CI Pipeline:**
+
 - ✅ GitHub Actions workflow created
 - ✅ Validation, training, deployment jobs defined
 - ✅ Artifact upload configured
@@ -368,12 +394,14 @@ All new tools integrate seamlessly with existing orchestrators:
 ## Documentation Updates
 
 **Files Updated:**
+
 - `ADVANCED_AUTOMATION.md` - Added sections for all new tools
 - `.vscode/tasks.json` - Added 7 new VS Code tasks
 - `batch_eval_config.yaml` - Created sample configuration
 - `.github/workflows/ci-pipeline.yml` - Created CI workflow
 
 **New Files Created:**
+
 - `scripts/model_deployer.py` (470 lines)
 - `scripts/resource_monitor.py` (390 lines)
 - `scripts/batch_evaluator.py` (340 lines)

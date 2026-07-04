@@ -15,9 +15,8 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
-_OPTIONAL_IMPORT_ERROR: Optional[ImportError] = None
+_OPTIONAL_IMPORT_ERROR: ImportError | None = None
 
 # Add parent src to path for imports
 SCRIPT_DIR = Path(__file__).resolve().parent

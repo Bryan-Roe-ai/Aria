@@ -7,6 +7,7 @@ applyTo: "**/chat_providers.py"
 ## Provider Detection Chain
 
 Order matters — first match wins:
+
 1. **Explicit choice** — `--provider` flag or API parameter
 2. **LMStudio** — if `LMSTUDIO_BASE_URL` is set
 3. **Azure OpenAI** — needs ALL 4: `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`
@@ -27,16 +28,19 @@ class BaseChatProvider:
 ## Key Implementations
 
 ### LoraLocalProvider
+
 - Bridges torch + subprocess for local LoRA inference
 - Requires `adapter_config.json` + `adapter_model.safetensors`
 - Thread-safe response caching
 
 ### LocalEchoProvider
+
 - Zero external dependencies
 - Context-aware intent recognition (greetings, questions, coding)
 - Deterministic responses for testing
 
 ### Streaming Pattern
+
 ```python
 for chunk in provider.complete(messages, stream=True):
     yield f"data: {json.dumps({'content': chunk})}\n\n"
@@ -44,6 +48,7 @@ yield "data: [DONE]\n\n"
 ```
 
 ## Rate Limit Handling
+
 - Providers implement exponential backoff on rate limits
 - Automatic fallback to next provider in chain on persistent failures
 

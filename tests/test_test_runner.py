@@ -231,8 +231,9 @@ def test_main_defaults_to_unit_and_exits_success(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(
         test_runner,
         "_run_selected",
-        lambda suites, coverage, verbose: captured.update({"suites": suites, "coverage": coverage, "verbose": verbose})
-        or True,
+        lambda suites, coverage, verbose: (
+            captured.update({"suites": suites, "coverage": coverage, "verbose": verbose}) or True
+        ),
     )
 
     with pytest.raises(SystemExit) as excinfo:

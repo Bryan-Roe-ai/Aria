@@ -25,7 +25,7 @@ import random
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
@@ -37,10 +37,10 @@ class WorkflowInfo:
     name: str
     path: str
     content: str
-    parsed_yaml: Dict[str, Any]
-    triggers: List[str]
-    jobs: List[str]
-    uses_actions: List[str]
+    parsed_yaml: dict[str, Any]
+    triggers: list[str]
+    jobs: list[str]
+    uses_actions: list[str]
 
 
 def parse_workflow(path: Path) -> WorkflowInfo | None:
@@ -285,7 +285,7 @@ def generate_modification_qa(workflow: WorkflowInfo) -> tuple[str, str]:
 
     assistant = f"""To add a new step to the '{workflow.name}' workflow:
 
-1. Choose which job to modify (available: {', '.join(workflow.jobs) if workflow.jobs else 'none'})
+1. Choose which job to modify (available: {", ".join(workflow.jobs) if workflow.jobs else "none"})
 2. Locate the `steps` section within that job
 3. Add a new step with:
    - `name`: A descriptive name for the step
@@ -324,7 +324,7 @@ def generate_troubleshooting_qa(workflow: WorkflowInfo) -> tuple[str, str]:
 1. **Check the Actions tab**: Go to GitHub Actions tab to see run history
 2. **Review logs**: Click on the failed run and expand failed steps to see detailed logs
 3. **Look for error messages**: Red text usually indicates the failure point
-4. **Verify triggers**: Ensure the workflow triggered as expected (check triggers: {', '.join(workflow.triggers) if workflow.triggers else 'none'})
+4. **Verify triggers**: Ensure the workflow triggered as expected (check triggers: {", ".join(workflow.triggers) if workflow.triggers else "none"})
 5. **Test locally**: Try running the commands from failed steps on your local machine
 6. **Check dependencies**: Ensure all required dependencies are installed
 7. **Review permissions**: Verify the workflow has necessary permissions
@@ -356,7 +356,7 @@ PROMPT_TEMPLATES = {
 }
 
 
-def generate_general_qa_pairs() -> List[Dict[str, Any]]:
+def generate_general_qa_pairs() -> list[dict[str, Any]]:
     """Generate general GitHub Actions Q&A pairs"""
     general_qa = [
         {
@@ -470,10 +470,10 @@ def generate_general_qa_pairs() -> List[Dict[str, Any]]:
     return general_qa
 
 
-def build_records(workflows: List[WorkflowInfo], max_records: int, seed: int) -> List[Dict[str, Any]]:
+def build_records(workflows: list[WorkflowInfo], max_records: int, seed: int) -> list[dict[str, Any]]:
     """Build Q&A records from workflows"""
     random.seed(seed)
-    records: List[Dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
 
     # Add general Q&A pairs
     general_records = generate_general_qa_pairs()
@@ -516,7 +516,7 @@ def build_records(workflows: List[WorkflowInfo], max_records: int, seed: int) ->
     return records
 
 
-def write_jsonl(path: Path, records: List[Dict[str, Any]]):
+def write_jsonl(path: Path, records: list[dict[str, Any]]):
     """Write records to JSONL file"""
     with path.open("w", encoding="utf-8") as f:
         for rec in records:
@@ -548,7 +548,7 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Parse all workflow files
-    workflows: List[WorkflowInfo] = []
+    workflows: list[WorkflowInfo] = []
     if workflow_dir.exists():
         for pattern in ("*.yml", "*.yaml"):
             for workflow_file in workflow_dir.glob(pattern):
@@ -588,9 +588,9 @@ def main():
     with (out_dir / "metadata.json").open("w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Dataset generated successfully!")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(json.dumps(meta, indent=2))
     print(f"\nOutput directory: {out_dir}")
     print(f"Train dataset: {out_dir / 'train.json'}")

@@ -114,7 +114,7 @@ def main():
     print("🎯 Goal: Run trained quantum classifiers on Azure cloud\n")
 
     # Load config
-    with open("config/quantum_config.yaml", "r") as f:
+    with open("config/quantum_config.yaml") as f:
         config = yaml.safe_load(f)
 
     # Connect to Azure

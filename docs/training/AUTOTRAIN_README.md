@@ -24,16 +24,16 @@ Edit the top-level `autotrain.yaml` to declare one or more fine-tuning jobs:
 ```yaml
 version: 1
 jobs:
-  - name: phi36_mixed_chat
-    runner: hf
-    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
-    dataset: datasets/chat/mixed_chat
-    save_dir: data_out/lora_training
-    epochs: 1
-    max_train_samples: 64
-    max_eval_samples: 16
-    learning_rate: 0.0002
-    lora_dropout: 0.1
+    - name: phi36_mixed_chat
+      runner: hf
+      config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+      dataset: datasets/chat/mixed_chat
+      save_dir: data_out/lora_training
+      epochs: 1
+      max_train_samples: 64
+      max_eval_samples: 16
+      learning_rate: 0.0002
+      lora_dropout: 0.1
 ```
 
 **Key fields:**
@@ -86,14 +86,14 @@ python .\scripts\autotrain.py
 - **When to use:** Production-scale runs, multi-GPU, cloud storage integrations.
 - **Example job:**
 
-  ```yaml
-  - name: phi36_dolly_full
-    runner: hf
-    config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
-    dataset: datasets/chat/dolly
-    epochs: 3
-    hf_model_id: microsoft/Phi-3.5-mini-instruct
-  ```
+    ```yaml
+    - name: phi36_dolly_full
+      runner: hf
+      config: AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml
+      dataset: datasets/chat/dolly
+      epochs: 3
+      hf_model_id: microsoft/Phi-3.5-mini-instruct
+    ```
 
 ### Local Runner (`local`)
 
@@ -102,13 +102,13 @@ python .\scripts\autotrain.py
 - **When to use:** CPU-only or consumer GPU (RTX 3060, M1/M2), quick experiments, no Azure deps.
 - **Example job:**
 
-  ```yaml
-  - name: local_quick_test
-    runner: local
-    config: AI/microsoft_phi-silica-3.6_v1/local_train/local_config.yaml
-    epochs: 1
-    max_train_samples: 10
-  ```
+    ```yaml
+    - name: local_quick_test
+      runner: local
+      config: AI/microsoft_phi-silica-3.6_v1/local_train/local_config.yaml
+      epochs: 1
+      max_train_samples: 10
+    ```
 
 ---
 
@@ -263,17 +263,17 @@ gradient_accumulation_steps: 8
 
 ```yaml
 jobs:
-  - name: baseline
-    runner: hf
-    dataset: datasets/chat/mixed_chat
-    epochs: 1
-    max_train_samples: 64
+    - name: baseline
+      runner: hf
+      dataset: datasets/chat/mixed_chat
+      epochs: 1
+      max_train_samples: 64
 
-  - name: extended
-    runner: hf
-    dataset: datasets/chat/dolly
-    epochs: 3
-    max_train_samples: 500
+    - name: extended
+      runner: hf
+      dataset: datasets/chat/dolly
+      epochs: 3
+      max_train_samples: 500
 ```
 
 ```powershell
@@ -341,15 +341,15 @@ python .\scripts\autotrain.py --job my_local_job --reinstall
 ## Related Docs
 
 - **Training scripts:**
-  - `AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py` (HF runner)
-  - `scripts/run_local_lora_training.py` (local runner)
-  - `AI/microsoft_phi-silica-3.6_v1/local_train/README.md` (local setup details)
+    - `AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py` (HF runner)
+    - `scripts/run_local_lora_training.py` (local runner)
+    - `AI/microsoft_phi-silica-3.6_v1/local_train/README.md` (local setup details)
 - **Azure Functions:**
-  - `http_ai_status/__init__.py` (status endpoint integration)
-  - `function_app.py` (root function handler)
+    - `http_ai_status/__init__.py` (status endpoint integration)
+    - `function_app.py` (root function handler)
 - **Datasets:**
-  - `datasets/chat/mixed_chat/` (example chat dataset)
-  - `DATASETS_QUICK_REF.md` (catalog)
+    - `datasets/chat/mixed_chat/` (example chat dataset)
+    - `DATASETS_QUICK_REF.md` (catalog)
 
 ---
 
