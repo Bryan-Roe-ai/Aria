@@ -8,7 +8,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 
 class ChatIntegration:
@@ -20,6 +20,8 @@ class ChatIntegration:
         self.chat_path = Path(config["paths"]["talk_to_ai"])
         self.logs_dir = self.chat_path / "logs"
         self.logs_dir.mkdir(parents=True, exist_ok=True)
+        configured_providers = config.get("chat", {}).get("providers", {})
+        self.allowed_providers: Set[str] = set(configured_providers.keys()) or {"local", "openai", "azure", "lora"}
 
     async def get_status(self) -> Dict[str, Any]:
         """Get current chat system status"""
@@ -123,7 +125,17 @@ class ChatIntegration:
     ) -> Dict[str, Any]:
         """Send a chat message and get response"""
         try:
-            provider = provider or self.config["chat"]["default_provider"]
+            normalized_provider = (provider or self.config["chat"]["default_provider"]).strip().lower()
+            if normalized_provider not in self.allowed_providers:
+                return {"success": False, "error": f"Unsupported provider: {normalized_provider}"}
+
+            if not isinstance(message, str):
+                return {"success": False, "error": "Message must be a string"}
+            message = message.strip()
+            if not message:
+                return {"success": False, "error": "Message cannot be empty"}
+            if len(message) > 8000:
+                return {"success": False, "error": "Message is too long"}
 
             # For now, we'll use subprocess to call the chat CLI
             # In production, you'd import the provider classes directly
@@ -133,7 +145,7 @@ class ChatIntegration:
                 sys.executable,
                 str(chat_script),
                 "--provider",
-                provider,
+                normalized_provider,
                 "--once",
                 message,
             ]
@@ -142,7 +154,7 @@ class ChatIntegration:
 
             return {
                 "success": result.returncode == 0,
-                "provider": provider,
+                "provider": normalized_provider,
                 "message": message,
                 "response": result.stdout.strip(),
                 "conversation_id": conversation_id or f"conv_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
