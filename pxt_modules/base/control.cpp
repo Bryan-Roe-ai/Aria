@@ -67,7 +67,7 @@ int deviceSerialNumber() {
  * data.
  */
 //% blockId="control_device_long_serial_number" block="device long serial
-//number" weight=9 % help=control/device-long-serial-number
+// number" weight=9 % help=control/device-long-serial-number
 Buffer deviceLongSerialNumber() {
   uint64_t serial_num = pxt::getLongSerialNumber();
   return mkBuffer((uint8_t *)&serial_num, sizeof(uint64_t));

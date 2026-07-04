@@ -11368,14 +11368,12 @@ var ts,
                             output_folder: "build",
                             pxt_gitrepo: t.githubCorePackage,
                             pxt_gittag: t.gittag,
-                            libraries: n
-                                .values(ie)
-                                .map(e => ({
-                                    name: e.project,
-                                    url: "https://github.com/" + e.fullName,
-                                    branch: e.tag || "master",
-                                    type: "git",
-                                })),
+                            libraries: n.values(ie).map(e => ({
+                                name: e.project,
+                                url: "https://github.com/" + e.fullName,
+                                branch: e.tag || "master",
+                                type: "git",
+                            })),
                         }
                         ;(0 == r.libraries.length && delete r.libraries,
                             n.iterMap(n.jsonFlatten(oe), (e, t) => {
@@ -16080,15 +16078,13 @@ var ts,
                 return (
                     l
                         ? Promise.resolve(l)
-                        : h
-                              .talkAsync(1409050336)
-                              .then(
-                                  e =>
-                                      (l = {
-                                          numGlobals: s(e, 0),
-                                          globalsPtr: s(e, 4),
-                                      }),
-                              )
+                        : h.talkAsync(1409050336).then(
+                              e =>
+                                  (l = {
+                                      numGlobals: s(e, 0),
+                                      globalsPtr: s(e, 4),
+                                  }),
+                          )
                 )
                     .then(e => h.readWordsAsync(e.globalsPtr, e.numGlobals))
                     .then(e => ({ staticState: l, globals: e }))
@@ -30429,50 +30425,38 @@ var pxtmelody,
             constructor(t) {
                 ;((this.availablePowerPins = {
                     top: {
-                        fiveVolt: e
-                            .mkRange(26, 51)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        threeVolt: e
-                            .mkRange(26, 51)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        ground: e
-                            .mkRange(26, 51)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "-",
-                                col: `${e}`,
-                            })),
+                        fiveVolt: e.mkRange(26, 51).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        threeVolt: e.mkRange(26, 51).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        ground: e.mkRange(26, 51).map(e => ({
+                            type: "breadboard",
+                            row: "-",
+                            col: `${e}`,
+                        })),
                     },
                     bottom: {
-                        fiveVolt: e
-                            .mkRange(1, 26)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        threeVolt: e
-                            .mkRange(1, 26)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        ground: e
-                            .mkRange(1, 26)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "-",
-                                col: `${e}`,
-                            })),
+                        fiveVolt: e.mkRange(1, 26).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        threeVolt: e.mkRange(1, 26).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        ground: e.mkRange(1, 26).map(e => ({
+                            type: "breadboard",
+                            row: "-",
+                            col: `${e}`,
+                        })),
                     },
                 }),
                     (this.opts = t))
