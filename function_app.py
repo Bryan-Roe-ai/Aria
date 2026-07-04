@@ -957,91 +957,6 @@ def _build_domain_context() -> SimpleNamespace:
     )
 
 
-# =============================================================================
-# Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
-# =============================================================================
-
-
-@app.route(route="resource-monitor", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
-    """Return latest resource monitor snapshot."""
-                    headers=create_cors_response_headers(),
-                )
-
-        path = jsonl_path or default_jsonl_path
-        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
-        if jsonl_path or jsonl_enabled:
-            path = jsonl_path or os.path.join(
-                os.getcwd(), "data_out", "agi_reasoning.jsonl")
-            try:
-                entries = []
-                if os.path.exists(path):
-                    # Safe for expected small files; if large, consider streaming/tail
-                    with open(path, "r", encoding="utf-8") as fh:
-                        lines = fh.read().splitlines()
-                    for ln in lines[-limit:]:
-                        try:
-                            entries.append(json.loads(ln))
-                        except Exception:
-                            entries.append({"raw": ln})
-                return func.HttpResponse(
-<<<<<<< HEAD
-                    json.dumps(
-                        {
-                            "status": "ok",
-                            "backend": "jsonl",
-                            "path": path,
-                            "configured": bool(jsonl_path or jsonl_enabled or os.path.exists(path)),
-                            "entries": entries,
-                        },
-                        default=str,
-                    ),
-=======
-                    json.dumps({"status": "ok", "backend": "jsonl",
-                               "entries": entries}, default=str),
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
-                    status_code=200,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-            except Exception as e:  # noqa: BLE001
-                logging.exception("AGI persistence jsonl read error: %s", e)
-                return func.HttpResponse(
-                    json.dumps({"error": "Failed to load snapshot"}),
-                    status_code=500,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-        else:
-            return func.HttpResponse(
-                json.dumps({"error": "No snapshot found"}),
-                status_code=404,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-    except Exception as e:
-        logging.error(f"Error reading resource snapshot: {e}")
-        return func.HttpResponse(
-<<<<<<< HEAD
-            json.dumps({"error": str(e)}),
-=======
-            json.dumps(
-                {"status": "error", "error": "AGI persistence not configured"}),
-            status_code=404,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.exception("agi/persistence unexpected error: %s", e)
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-
-
 @app.route(route="chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def chat(req: func.HttpRequest) -> func.HttpResponse:
     """
@@ -1973,17 +1888,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 # Canonical SSE completion sentinel used by chat-web clients.
                 yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
         return _sse_response(sse_iterable(), status_code=200)
-=======
-        return func.HttpResponse(
-            body=sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
     except ValueError as ve:
         logging.error(f"chat/stream validation error: {ve}")
@@ -2968,7 +2873,6 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
                 "methods": ["GET", "POST"],
                 "authLevel": "anonymous",
             },
-<<<<<<< HEAD
             {"route": "agi/status", "methods": ["GET"], "authLevel": "anonymous"},
             {"route": "agi/analyze", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/reason", "methods": ["POST"], "authLevel": "anonymous"},
@@ -2978,18 +2882,6 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
             {"route": "aria/execute", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "aria/command", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "chat", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
-=======
-            {"route": "agi/status",
-                "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "agi/analyze",
-                "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/reason",
-                "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/stream",
-                "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "chat", "methods": [
-                "POST", "OPTIONS"], "authLevel": "anonymous"},
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
             {
                 "route": "chat/stream",
                 "methods": ["POST", "OPTIONS"],
@@ -4712,17 +4604,7 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
             return _sse_response(_unavail(), status_code=503)
-=======
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(),
-                         "Cache-Control": "no-cache"},
-            )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
         # Honour per-request max_tokens (within cap) — use a local override dict
         # instead of mutating the shared pipeline config to avoid race conditions.
@@ -4793,17 +4675,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
             return _sse_response(_unavail(), status_code=503)
-=======
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(),
-                         "Cache-Control": "no-cache"},
-            )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
         import asyncio  # noqa: PLC0415
 
@@ -4828,17 +4700,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             finally:
                 loop.close()
 
-<<<<<<< HEAD
         return _sse_response(_sse_generator(), status_code=200)
-=======
-        return func.HttpResponse(
-            body=_sse_generator(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
     except Exception as exc:  # noqa: BLE001
         logging.error("quantum-llm/stream error: %s", exc)
         _exc = exc  # capture before exception binding is deleted at end of except block
@@ -4847,17 +4709,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             yield f'data: {json.dumps({"error": str(_exc)})}\n\n'.encode("utf-8")
             yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
         return _sse_response(_err(), status_code=200)
-=======
-        return func.HttpResponse(
-            body=_err(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
 
 @app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
