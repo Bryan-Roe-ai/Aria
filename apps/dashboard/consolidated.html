@@ -1590,7 +1590,7 @@
                 )
             }
 
-            function loadConfig() {
+        function loadConfig() {
                 const input = document.createElement("input")
                 input.type = "file"
                 input.accept = ".json"
@@ -1615,7 +1615,7 @@
                                 "warn",
                                 5000,
                             )
-                        }
+        }
                     }
                     reader.readAsText(file)
                 }
@@ -1623,7 +1623,7 @@
             }
 
             // Phase 30: Hyperparameter Optimizer Functions
-            function startHyperparamOptimization() {
+        function startHyperparamOptimization() {
                 if (!window.hyperOptimizer) {
                     showToast(
                         "Hyperparameter optimizer not initialized",
@@ -1654,7 +1654,7 @@
                 window.hyperOptimizer.startOptimization({ strategy, maxTrials })
             }
 
-            function configureSearchSpace() {
+        function configureSearchSpace() {
                 showInfo(
                     "Search Space Configuration",
                     "Default search space:\n" +
@@ -1668,14 +1668,14 @@
             }
 
             // Phase 29: Model Comparison Functions
-            function toggleSelectAll() {
+        function toggleSelectAll() {
                 const selectAll = document.getElementById("selectAllHistory")
                 const checkboxes =
                     document.querySelectorAll(".compare-checkbox")
                 checkboxes.forEach(cb => (cb.checked = selectAll.checked))
             }
 
-            function compareSelectedModels() {
+        function compareSelectedModels() {
                 if (!window.modelComparator) {
                     showToast("Model comparator not initialized", "warn", 4000)
                     return
@@ -1716,7 +1716,7 @@
                 )
             }
 
-            function clearComparisonSelection() {
+        function clearComparisonSelection() {
                 document
                     .querySelectorAll(".compare-checkbox")
                     .forEach(cb => (cb.checked = false))
