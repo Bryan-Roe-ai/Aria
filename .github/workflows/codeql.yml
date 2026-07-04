@@ -399,7 +399,7 @@ jobs:
             npm install --global --no-fund --no-audit prettier@3
           fi
 
-          if git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' | grep -q .; then
+          if git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' ':(exclude).github/workflows/**' | grep -q .; then
             echo "::notice::C/C++ files detected; attempting to install clang-format"
             sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq || true
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-format || true
@@ -459,7 +459,7 @@ jobs:
         continue-on-error: true
         run: |
           set -euo pipefail
-          mapfile -t files < <(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' 2>/dev/null || true)
+          mapfile -t files < <(git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' ':(exclude).github/workflows/**' 2>/dev/null || true)
           if [ "${#files[@]}" -gt 0 ]; then
             clang-format -i --style=file --fallback-style=LLVM "${files[@]}" || true
           else
