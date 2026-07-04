@@ -1,5 +1,5 @@
 # Python bytecode and caches
-__pycache__/
+__pycache__/*
 *.py[cod]
 *$py.class
 /workspaces/Aria/.azure/PRODUCTION-RUNBOOK.md
@@ -81,8 +81,8 @@ ipython_config.py
 .python-version
 .env
 .env.*
-.venv/
-venv/
+.venv/*
+venv/*
 env/
 ENV/
 env.bak/
