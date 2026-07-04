@@ -182,7 +182,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           persist-credentials: false
-          submodules: recursive
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4e828ff8d448a8a6e532957b1811f387a63867e8
