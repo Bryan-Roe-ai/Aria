@@ -457,6 +457,62 @@ def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
     return _proxy_aria_request(req, "state")
 
 
+@app.route(route="aria/execute", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_execute_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_execute_proxy(req, _build_domain_context())
+
+
+@app.route(route="aria/command", methods=["POST", "OPTIONS"], auth_level=func.AuthLevel.ANONYMOUS)
+def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
+    return aria_proxy_domain.aria_command_proxy(req, _build_domain_context())
+
+
+def _extract_text_content(content) -> str:
+    """Normalize mixed content payloads to plain text."""
+    if isinstance(content, str):
+        return content.strip()
+
+    if isinstance(content, dict):
+        for key in ("text", "content", "value"):
+            value = content.get(key)
+            text = _extract_text_content(value)
+            if text:
+                return text
+        return ""
+
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            text = _extract_text_content(item)
+            if text:
+                parts.append(text)
+        return "\n".join(parts).strip()
+
+    value = getattr(content, "value", None)
+    if value is not None:
+        text = _extract_text_content(value)
+        if text:
+            return text
+
+    text = getattr(content, "text", None)
+    if text is not None:
+        text_value = _extract_text_content(text)
+        if text_value:
+            return text_value
+
+    return str(content).strip() if content is not None else ""
+
+
+def _is_compaction_placeholder_message(content) -> bool:
+    """Detect synthetic placeholder messages inserted during chat compaction."""
+    if not isinstance(content, str):
+        return False
+
+    placeholder_lines = {"compacted conversation", "conversation compacted"}
+    normalized_lines = [line.strip().lower() for line in content.splitlines() if line.strip()]
+    return bool(normalized_lines) and all(line in placeholder_lines for line in normalized_lines)
+
+
 def _sanitize_chat_messages(messages) -> list[dict]:
     """Normalize incoming chat messages and reject empty content.
 
@@ -955,91 +1011,6 @@ def _build_domain_context() -> SimpleNamespace:
         trace=trace if _tracer is not None else None,
         validate_request=validate_request,
     )
-
-
-# =============================================================================
-# Automation Tool Endpoints: Resource Monitor, Model Deployer, Results Exporter, Evaluation
-# =============================================================================
-
-
-@app.route(route="resource-monitor", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
-def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
-    """Return latest resource monitor snapshot."""
-                    headers=create_cors_response_headers(),
-                )
-
-        path = jsonl_path or default_jsonl_path
-        if jsonl_path or jsonl_enabled or os.path.exists(path) or not sqlite_path:
-        if jsonl_path or jsonl_enabled:
-            path = jsonl_path or os.path.join(
-                os.getcwd(), "data_out", "agi_reasoning.jsonl")
-            try:
-                entries = []
-                if os.path.exists(path):
-                    # Safe for expected small files; if large, consider streaming/tail
-                    with open(path, "r", encoding="utf-8") as fh:
-                        lines = fh.read().splitlines()
-                    for ln in lines[-limit:]:
-                        try:
-                            entries.append(json.loads(ln))
-                        except Exception:
-                            entries.append({"raw": ln})
-                return func.HttpResponse(
-<<<<<<< HEAD
-                    json.dumps(
-                        {
-                            "status": "ok",
-                            "backend": "jsonl",
-                            "path": path,
-                            "configured": bool(jsonl_path or jsonl_enabled or os.path.exists(path)),
-                            "entries": entries,
-                        },
-                        default=str,
-                    ),
-=======
-                    json.dumps({"status": "ok", "backend": "jsonl",
-                               "entries": entries}, default=str),
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
-                    status_code=200,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-            except Exception as e:  # noqa: BLE001
-                logging.exception("AGI persistence jsonl read error: %s", e)
-                return func.HttpResponse(
-                    json.dumps({"error": "Failed to load snapshot"}),
-                    status_code=500,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
-        else:
-            return func.HttpResponse(
-                json.dumps({"error": "No snapshot found"}),
-                status_code=404,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-    except Exception as e:
-        logging.error(f"Error reading resource snapshot: {e}")
-        return func.HttpResponse(
-<<<<<<< HEAD
-            json.dumps({"error": str(e)}),
-=======
-            json.dumps(
-                {"status": "error", "error": "AGI persistence not configured"}),
-            status_code=404,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.exception("agi/persistence unexpected error: %s", e)
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
 
 
 @app.route(route="chat", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
@@ -1973,17 +1944,7 @@ def chat_stream(req: func.HttpRequest) -> func.HttpResponse:
                 # Canonical SSE completion sentinel used by chat-web clients.
                 yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
         return _sse_response(sse_iterable(), status_code=200)
-=======
-        return func.HttpResponse(
-            body=sse_iterable(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
     except ValueError as ve:
         logging.error(f"chat/stream validation error: {ve}")
@@ -2968,7 +2929,6 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
                 "methods": ["GET", "POST"],
                 "authLevel": "anonymous",
             },
-<<<<<<< HEAD
             {"route": "agi/status", "methods": ["GET"], "authLevel": "anonymous"},
             {"route": "agi/analyze", "methods": ["POST"], "authLevel": "anonymous"},
             {"route": "agi/reason", "methods": ["POST"], "authLevel": "anonymous"},
@@ -2978,18 +2938,6 @@ def ai_routes(req: func.HttpRequest) -> func.HttpResponse:
             {"route": "aria/execute", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "aria/command", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
             {"route": "chat", "methods": ["POST", "OPTIONS"], "authLevel": "anonymous"},
-=======
-            {"route": "agi/status",
-                "methods": ["GET"], "authLevel": "anonymous"},
-            {"route": "agi/analyze",
-                "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/reason",
-                "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "agi/stream",
-                "methods": ["POST"], "authLevel": "anonymous"},
-            {"route": "chat", "methods": [
-                "POST", "OPTIONS"], "authLevel": "anonymous"},
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
             {
                 "route": "chat/stream",
                 "methods": ["POST", "OPTIONS"],
@@ -3683,152 +3631,18 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="quantum/circuit", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Create and visualize a quantum circuit.
-
-    POST /api/quantum/circuit
-    Body: {
-        "n_qubits": 4,
-        "n_layers": 2,
-        "entanglement": "linear|circular|full"
-    }
-
-    Response: {
-        "circuit_info": {...},
-        "gates": [...],
-        "visualization": "text representation"
-    }
-    """
-    logging.info("Quantum circuit endpoint invoked")
-
-    try:
-        req_body = req.get_json()
-        n_qubits = req_body.get("n_qubits", 4)
-        n_layers = req_body.get("n_layers", 2)
-        entanglement = req_body.get("entanglement", "linear")
-
-        # Create circuit description
-        gates = []
-
-        # Input encoding layer
-        for i in range(n_qubits):
-            gates.append({"type": "RY", "qubit": i,
-                         "layer": 0, "parameter": "input[i]"})
-
-        # Variational layers
-        for layer in range(n_layers):
-            # Rotation gates
-            for i in range(n_qubits):
-                gates.append(
-                    {
-                        "type": "RY",
-                        "qubit": i,
-                        "layer": layer + 1,
-                        "parameter": f"θ_{layer}_{i}_0",
-                    }
-                )
-                gates.append(
-                    {
-                        "type": "RZ",
-                        "qubit": i,
-                        "layer": layer + 1,
-                        "parameter": f"θ_{layer}_{i}_1",
-                    }
-                )
-
-            # Entanglement gates
-            if entanglement == "linear":
-                for i in range(n_qubits - 1):
-                    gates.append(
-                        {
-                            "type": "CNOT",
-                            "control": i,
-                            "target": i + 1,
-                            "layer": layer + 1,
-                        }
-                    )
-            elif entanglement == "circular":
-                for i in range(n_qubits):
-                    gates.append(
-                        {
-                            "type": "CNOT",
-                            "control": i,
-                            "target": (i + 1) % n_qubits,
-                            "layer": layer + 1,
-                        }
-                    )
-            elif entanglement == "full":
-                for i in range(n_qubits):
-                    for j in range(i + 1, n_qubits):
-                        gates.append(
-                            {
-                                "type": "CNOT",
-                                "control": i,
-                                "target": j,
-                                "layer": layer + 1,
-                            }
-                        )
+    return quantum_domain.quantum_circuit(req, _build_domain_context())
 
 
 @app.route(route="quantum/llm", methods=["POST", "GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
     return quantum_domain.quantum_llm(req, _build_domain_context())
-    try:
-        snap_path = Path(__file__).resolve().parent / "data_out" / "resource_monitor_snapshot.json"
-        if not snap_path.exists():
-            return func.HttpResponse(
-                json.dumps({"status": "error", "error": "No snapshot found"}),
-                status_code=404,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
 
-        data = read_json_cached(snap_path, ttl_seconds=60)
-        if data is None:
-            return func.HttpResponse(
-                json.dumps({"status": "error", "error": "Failed to load snapshot"}),
-                status_code=500,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
 
-        return func.HttpResponse(
-            json.dumps(data),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.error(f"Error reading resource snapshot: {e}")
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-                    output_dir=Path(__file__).resolve().parent /
-                    "data_out" / "quantum_llm_training"
-                )
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "available": trainer_available,
-                        "quantum_circuits": QUANTUM_AVAILABLE,
-                        "model": "QuantumLLM (hybrid quantum-classical transformer)",
-                        "capabilities": {
-                            "generate": trainer_available,
-                            "train": trainer_available,
-                            "n_qubits": 4,
-                            "backends": ["default.qubit", "lightning.qubit"],
-                        },
-                        "readiness": readiness,
-                        "import_error": (None if trainer_available else _trainer_import_err),
-                    }
-                ),
-                status_code=200,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
+@app.route(route="quantum/info", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
+def quantum_info(req: func.HttpRequest) -> func.HttpResponse:
+    return quantum_domain.quantum_info(req, _build_domain_context())
+
 
 @app.route(route="subscription/revenue", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
@@ -3847,66 +3661,12 @@ def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
 def stripe_webhook(req: func.HttpRequest) -> func.HttpResponse:
     return subscriptions_domain.stripe_webhook(req, _build_domain_context())
 
-            prompt_token_ids = [
-                ord(c) % trainer.model_config["vocab_size"] for c in prompt[:32]]
-            try:
-                import torch
-
-                prompt_ids = torch.tensor([prompt_token_ids], dtype=torch.long)
-            except Exception:
-                # Keep endpoint usable in lightweight environments where torch is
-                # intentionally absent; fake/alternate trainer implementations can
-                # still accept a nested token list.
-                prompt_ids = [prompt_token_ids]
-
-            generated = trainer.model.generate(
-                prompt_ids, max_new_tokens=max_tokens, temperature=0.8, top_k=20)
-            # Decode back to text using the simple char mapping
-            generated_row = generated[0]
-            tokens = generated_row.tolist() if hasattr(
-                generated_row, "tolist") else list(generated_row)
-            text = "".join(chr(t % 128) if 32 <= (t % 128)
-                           < 127 else "?" for t in tokens)
-
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "action": "generate",
-                        "prompt": prompt,
-                        "generated": text,
-                        "tokens": len(tokens),
-                        "quantum_available": QUANTUM_AVAILABLE,
-                        "readiness": (
-                            get_quantum_llm_status(
-                                output_dir=repo_root / "data_out" / "quantum_llm_training")
-                            if get_quantum_llm_status is not None
-                            else None
-                        ),
-                    }
-                ),
-                status_code=200,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-
 # -----------------------------------------------------------------------------
 # Notifications Log Endpoint
 # -----------------------------------------------------------------------------
 @app.route(route="notifications/log", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
     return subscriptions_domain.notifications_log(req, _build_domain_context())
-
-            # Basic path traversal protection: keep training datasets in-repo.
-            try:
-                dataset_path_obj.relative_to(repo_root.resolve())
-            except ValueError:
-                return func.HttpResponse(
-                    json.dumps(
-                        {"error": "dataset_path must point to a location inside the repository"}),
-                    status_code=400,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
 
 # -----------------------------------------------------------------------------
 # Referral System Endpoints
@@ -3919,15 +3679,6 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="referrals/stats", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
     return referrals_domain.referral_stats(req, _build_domain_context())
-
-        else:
-            return func.HttpResponse(
-                json.dumps(
-                    {"error": f"Unknown action: {action!r}. Use 'generate' or 'train'."}),
-                status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
 
 @app.route(route="referrals/record", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def record_referral(req: func.HttpRequest) -> func.HttpResponse:
@@ -4712,17 +4463,7 @@ def quantum_llm_chat(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
             return _sse_response(_unavail(), status_code=503)
-=======
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(),
-                         "Cache-Control": "no-cache"},
-            )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
         # Honour per-request max_tokens (within cap) — use a local override dict
         # instead of mutating the shared pipeline config to avoid race conditions.
@@ -4793,17 +4534,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
             return _sse_response(_unavail(), status_code=503)
-=======
-            return func.HttpResponse(
-                body=_unavail(),
-                status_code=503,
-                mimetype="text/event-stream",
-                headers={**create_cors_response_headers(),
-                         "Cache-Control": "no-cache"},
-            )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
         import asyncio  # noqa: PLC0415
 
@@ -4828,17 +4559,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             finally:
                 loop.close()
 
-<<<<<<< HEAD
         return _sse_response(_sse_generator(), status_code=200)
-=======
-        return func.HttpResponse(
-            body=_sse_generator(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
     except Exception as exc:  # noqa: BLE001
         logging.error("quantum-llm/stream error: %s", exc)
         _exc = exc  # capture before exception binding is deleted at end of except block
@@ -4847,17 +4568,7 @@ def quantum_llm_stream(req: func.HttpRequest) -> func.HttpResponse:
             yield f'data: {json.dumps({"error": str(_exc)})}\n\n'.encode("utf-8")
             yield b"data: [DONE]\n\n"
 
-<<<<<<< HEAD
         return _sse_response(_err(), status_code=200)
-=======
-        return func.HttpResponse(
-            body=_err(),
-            status_code=200,
-            mimetype="text/event-stream",
-            headers={**create_cors_response_headers(),
-                     "Cache-Control": "no-cache"},
-        )
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
 
 @app.route(route="referrals/leaderboard", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
