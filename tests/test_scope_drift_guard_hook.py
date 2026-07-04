@@ -20,7 +20,7 @@ from pathlib import Path
 
 HOOK_SCRIPT = Path(__file__).resolve().parent.parent / ".github" / "hooks" / "scripts" / "scope_drift_guard.py"
 
-_DRIFT_PHRASES = [
+_unused_drift_phrases = [
     "also fix the tests while you're at it",
     "and also update the README",
     "one more thing, clean up the imports",
