@@ -457,6 +457,42 @@ def aria_state_proxy(req: func.HttpRequest) -> func.HttpResponse:
     return _proxy_aria_request(req, "state")
 
 
+def _extract_text_content(content) -> str:
+    """Normalize mixed content payloads to plain text."""
+    if isinstance(content, str):
+        return content.strip()
+
+    if isinstance(content, dict):
+        for key in ("text", "content", "value"):
+            value = content.get(key)
+            text = _extract_text_content(value)
+            if text:
+                return text
+        return ""
+
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            text = _extract_text_content(item)
+            if text:
+                parts.append(text)
+        return "\n".join(parts).strip()
+
+    value = getattr(content, "value", None)
+    if value is not None:
+        text = _extract_text_content(value)
+        if text:
+            return text
+
+    text = getattr(content, "text", None)
+    if text is not None:
+        text_value = _extract_text_content(text)
+        if text_value:
+            return text_value
+
+    return str(content).strip() if content is not None else ""
+
+
 def _sanitize_chat_messages(messages) -> list[dict]:
     """Normalize incoming chat messages and reject empty content.
 
