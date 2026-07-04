@@ -431,6 +431,11 @@ class QuantumEnhancedLLMTrainer:
         self.config = config
         self.passive_mode = config.get("passive", False)
         self.interval = config.get("interval", 3600)
+        # When True, train_with_quantum_enhancement() runs real forward/backward
+        # passes through the quantum circuits (self.model) instead of the fast
+        # simulated-loss path. Defaults to False to preserve existing CLI/passive
+        # behavior for callers that only need a quick smoke run.
+        self.real_training = config.get("real_training", False)
         output_config = config.get("output", {}) if isinstance(config.get("output"), dict) else {}
         integration_config = (
             config.get("autonomous_integration", {}) if isinstance(config.get("autonomous_integration"), dict) else {}
@@ -544,6 +549,24 @@ class QuantumEnhancedLLMTrainer:
     # Dataset loading
     # ------------------------------------------------------------------
 
+    def _record_to_text(self, record: Dict[str, Any]) -> List[str]:
+        """Extract text fragments from a single dataset record.
+
+        Supports the repo-standard chat dataset schema
+        (``{"messages": [{"role": ..., "content": ...}]}``) in addition to
+        flat text-bearing keys used by simpler datasets.
+        """
+        parts: List[str] = []
+        messages = record.get("messages")
+        if isinstance(messages, list):
+            for msg in messages:
+                if isinstance(msg, dict) and msg.get("content"):
+                    parts.append(str(msg["content"]))
+        for key in ("text", "content", "message", "input", "output"):
+            if key in record:
+                parts.append(str(record[key]))
+        return parts
+
     def _extract_text(self, dataset_path: Path) -> str:
         """Extract raw text from various file formats."""
         text_parts = []
@@ -559,9 +582,7 @@ class QuantumEnhancedLLMTrainer:
                         if not line:
                             continue
                         record = json.loads(line)
-                        for key in ("text", "content", "message", "input", "output"):
-                            if key in record:
-                                text_parts.append(str(record[key]))
+                        text_parts.extend(self._record_to_text(record))
 
             elif dataset_path.suffix == ".json":
                 with open(dataset_path) as f:
@@ -574,15 +595,7 @@ class QuantumEnhancedLLMTrainer:
                         records = [json.loads(ln) for ln in f if ln.strip()]
                 for record in records:
                     if isinstance(record, dict):
-                        for key in (
-                            "text",
-                            "content",
-                            "message",
-                            "input",
-                            "output",
-                        ):
-                            if key in record:
-                                text_parts.append(str(record[key]))
+                        text_parts.extend(self._record_to_text(record))
                     elif isinstance(record, str):
                         text_parts.append(record)
 
@@ -1077,6 +1090,7 @@ class QuantumEnhancedLLMTrainer:
                             dataset_path=dataset_path,
                             output_dir=output_dir,
                             epochs=1,
+                            model=self.model if self.real_training else None,
                         )
                         logger.info(f"Cycle {cycle_count} complete: " f"Loss={results['final_loss']:.4f}")
                         write_quantum_llm_status(
@@ -1212,6 +1226,16 @@ def main():
     parser.add_argument("--passive", action="store_true")
     parser.add_argument("--interval", type=int, default=3600)
 
+    # Real training (actual gradient backprop through the quantum circuits,
+    # instead of the fast simulated-loss demo path)
+    parser.add_argument(
+        "--real",
+        action="store_true",
+        help="Run real forward/backward training through the QuantumLLM "
+        "(slower, produces a genuinely trained checkpoint) instead of the "
+        "default simulated-loss smoke test.",
+    )
+
     # Config file
     parser.add_argument("--config", type=str, help="Path to YAML config file")
 
@@ -1234,6 +1258,7 @@ def main():
         },
         "passive": args.passive,
         "interval": args.interval,
+        "real_training": args.real,
     }
 
     # Merge config file if provided
@@ -1258,6 +1283,7 @@ def main():
             dataset_path=Path(args.dataset),
             output_dir=Path(args.output_dir),
             epochs=args.epochs,
+            model=trainer.model if args.real else None,
         )
 
         logger.info("\nTraining Summary:")
