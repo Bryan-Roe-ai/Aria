@@ -11,7 +11,7 @@ import time
 import traceback
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from flask import Flask, abort, jsonify, render_template, send_file
@@ -29,7 +29,6 @@ from scripts.autotrain import (  # noqa: E402  (import after sys.path setup)
     load_jobs,
     validate_job,
 )
-
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -81,9 +80,7 @@ def resources():
 @app.route("/results")
 def results():
     # Load latest exported results
-    res_path = (
-        REPO_ROOT / "exports" / "all_orchestrators.json"
-    )
+    res_path = REPO_ROOT / "exports" / "all_orchestrators.json"
     if res_path.exists():
         with res_path.open() as f:
             return jsonify(json.load(f))
@@ -101,11 +98,7 @@ def _compute_training_progress():
     """
     cfg_path = DEFAULT_CONFIG
     try:
-        cfg = (
-            yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
-            if cfg_path.exists()
-            else {}
-        )
+        cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) if cfg_path.exists() else {}
         configured_jobs = [j.get("name") for j in cfg.get("jobs", []) if j.get("name")]
     except Exception:
         configured_jobs = []
@@ -199,9 +192,7 @@ def _compute_training_progress():
         avg = sum(succeeded_durations) / len(succeeded_durations)
         remaining_jobs = total_jobs - succeeded
         eta_seconds = avg * remaining_jobs
-        eta_iso = (
-            datetime.now(timezone.utc) + timedelta(seconds=eta_seconds)
-        ).isoformat() + "Z"
+        eta_iso = (datetime.now(timezone.utc) + timedelta(seconds=eta_seconds)).isoformat() + "Z"
     else:
         avg = None
         eta_seconds = None
@@ -240,9 +231,7 @@ def _compute_training_progress():
                     current_epoch = last_epoch
                     total_epochs = last_total_epochs
                     # Compute epoch-based percent if no steps
-                    current_job_percent = round(
-                        ((last_epoch - 1) / max(1, last_total_epochs)) * 100, 2
-                    )
+                    current_job_percent = round(((last_epoch - 1) / max(1, last_total_epochs)) * 100, 2)
                 # If we have steps and epochs, approximate total steps
                 if last_step is not None and total_epochs is not None:
                     # Heuristic: use max observed step as current_step; total steps unknown until training end.
@@ -251,9 +240,7 @@ def _compute_training_progress():
                     trainer_state = log_file.parent / "trainer_state.json"
                     if trainer_state.exists():
                         try:
-                            st_obj = json.loads(
-                                trainer_state.read_text(encoding="utf-8")
-                            )
+                            st_obj = json.loads(trainer_state.read_text(encoding="utf-8"))
                             opt = st_obj.get("trainer_state", st_obj)
                             max_steps = opt.get("max_steps")
                             if isinstance(max_steps, int) and max_steps > 0:
@@ -261,9 +248,7 @@ def _compute_training_progress():
                         except Exception:
                             pass
                     if total_steps:
-                        step_percent = round(
-                            (current_step / max(1, total_steps)) * 100, 2
-                        )
+                        step_percent = round((current_step / max(1, total_steps)) * 100, 2)
                         # Prefer finer-grained step percent when available
                         current_job_percent = step_percent
         except Exception:
@@ -305,8 +290,8 @@ def _compute_training_progress():
 
 
 RETRY_LOCK = threading.Lock()
-ACTIVE_RETRY: Optional[str] = None
-ACTIVE_JOB_PIDS: Dict[str, int] = {}
+ACTIVE_RETRY: str | None = None
+ACTIVE_JOB_PIDS: dict[str, int] = {}
 # Job names for which a cancellation has been explicitly requested via
 # /api/cancel_job. Used so the retry worker preserves the "cancelled" status
 # even when the subprocess handles SIGTERM and exits cleanly (return code 0).
@@ -314,7 +299,7 @@ CANCEL_REQUESTED: set = set()
 STATUS_PATH = DATA_OUT / "autotrain" / "status.json"
 
 
-def _read_status() -> Dict[str, Any]:
+def _read_status() -> dict[str, Any]:
     if STATUS_PATH.exists():
         try:
             return json.loads(STATUS_PATH.read_text(encoding="utf-8"))
@@ -323,7 +308,7 @@ def _read_status() -> Dict[str, Any]:
     return {"jobs": []}
 
 
-def _write_status(obj: Dict[str, Any]) -> None:
+def _write_status(obj: dict[str, Any]) -> None:
     try:
         STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
         STATUS_PATH.write_text(json.dumps(obj, indent=2), encoding="utf-8")
@@ -331,7 +316,7 @@ def _write_status(obj: Dict[str, Any]) -> None:
         pass
 
 
-def _find_job_entry(status_obj: Dict[str, Any], name: str) -> Optional[Dict[str, Any]]:
+def _find_job_entry(status_obj: dict[str, Any], name: str) -> dict[str, Any] | None:
     for j in status_obj.get("jobs", []):
         if j.get("name") == name:
             return j
@@ -361,7 +346,7 @@ def run_job(
     dry_run: bool = False,
     job_index: int = 0,
     total_jobs: int = 1,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Execute a single training job as a subprocess and return a result dict.
 
     This mirrors the orchestrator behaviour in ``scripts/autotrain.py`` but adds
@@ -371,7 +356,7 @@ def run_job(
     """
     start_dt = datetime.now(timezone.utc)
     start_time = start_dt.strftime("%Y%m%dT%H%M%SZ")
-    base: Dict[str, Any] = {
+    base: dict[str, Any] = {
         "name": job.name,
         "runner": job.runner,
         "start_time": start_time,
@@ -416,12 +401,12 @@ def run_job(
     log_path = log_dir / f"{_safe_name(job.name)}_{start_time}.log"
 
     perf = time.perf_counter()
-    return_code: Optional[int] = None
+    return_code: int | None = None
     try:
         with open(log_path, "w", encoding="utf-8") as log_fh:
             log_fh.write(f"# job: {job.name}\n# cmd: {cmd_display}\n# start: {start_time}\n\n")
             log_fh.flush()
-            popen_kwargs: Dict[str, Any] = {
+            popen_kwargs: dict[str, Any] = {
                 "cwd": str(REPO_ROOT),
                 "stdout": log_fh,
                 "stderr": subprocess.STDOUT,
@@ -459,7 +444,7 @@ def run_job(
     else:
         status = "failed"
 
-    result: Dict[str, Any] = {
+    result: dict[str, Any] = {
         **base,
         "status": status,
         "return_code": return_code,
@@ -514,9 +499,7 @@ def retry_job(job_name: str):
             {
                 "status": "retry_running",
                 "retry_count": retry_count,
-                "retry_start_time": datetime.now(timezone.utc).strftime(
-                    "%Y%m%dT%H%M%SZ"
-                ),
+                "retry_start_time": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"),
             }
         )
         status_obj["generated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
@@ -551,9 +534,7 @@ def retry_job(job_name: str):
                     # Preserve retry_count from placeholder
                     preserved_retry = entry.get("retry_count", retry_num)
                     result["retry_count"] = preserved_retry
-                    result["retry_completed_time"] = datetime.now(
-                        timezone.utc
-                    ).strftime("%Y%m%dT%H%M%SZ")
+                    result["retry_completed_time"] = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
                     # Mark as succeeded/failed/cancelled (no special
                     # retry_running state anymore). Diagnostic fields
                     # (reason/missing/error/trace) are propagated so a failed
@@ -578,15 +559,11 @@ def retry_job(job_name: str):
                         v = result.get(k)
                         if v is not None:
                             entry[k] = v
-                    current_status["generated_at"] = (
-                        datetime.now(timezone.utc).isoformat() + "Z"
-                    )
+                    current_status["generated_at"] = datetime.now(timezone.utc).isoformat() + "Z"
                     _write_status(current_status)
                 ACTIVE_RETRY = None
 
-        threading.Thread(
-            target=_do_retry, args=(job_obj, retry_count), daemon=True
-        ).start()
+        threading.Thread(target=_do_retry, args=(job_obj, retry_count), daemon=True).start()
 
         return jsonify({"accepted": True, "job": job_name, "retry_count": retry_count})
 
@@ -627,14 +604,10 @@ def cancel_job(job_name: str):
 
             # Update status to cancelled
             target_entry["status"] = "cancelled"
-            target_entry["cancelled_time"] = datetime.now(timezone.utc).strftime(
-                "%Y%m%dT%H%M%SZ"
-            )
+            target_entry["cancelled_time"] = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
             if "start_time" in target_entry:
                 try:
-                    start = datetime.strptime(
-                        target_entry["start_time"], "%Y%m%dT%H%M%SZ"
-                    )
+                    start = datetime.strptime(target_entry["start_time"], "%Y%m%dT%H%M%SZ")
                     elapsed = (datetime.now(timezone.utc) - start).total_seconds()
                     target_entry["duration_sec"] = round(elapsed, 2)
                 except Exception:
@@ -658,7 +631,7 @@ def training_progress():
     return jsonify(_compute_training_progress())
 
 
-def _extract_job_metrics(job_rec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def _extract_job_metrics(job_rec: dict[str, Any]) -> dict[str, Any] | None:
     out_dir = job_rec.get("output_dir")
     if not out_dir:
         return None
@@ -702,7 +675,7 @@ def _extract_job_metrics(job_rec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _tail_lines(path: Path, max_lines: int) -> List[str]:
+def _tail_lines(path: Path, max_lines: int) -> list[str]:
     """Efficiently read the last max_lines from a potentially large file."""
     try:
         size = path.stat().st_size
@@ -716,7 +689,7 @@ def _tail_lines(path: Path, max_lines: int) -> List[str]:
                 return lines
         # Large file: read backwards in blocks
         block_size = 8192
-        lines: List[str] = []
+        lines: list[str] = []
         with path.open("rb") as f:
             pos = max(0, size - block_size)
             f.seek(pos)

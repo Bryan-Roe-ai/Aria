@@ -6,18 +6,18 @@ Transforms Aria into a self-planning, self-improving multi-agent system.
 from __future__ import annotations
 
 import time
-from typing import Any, Dict
+from typing import Any
 
+from core.agents.critique_agent import CritiqueAgent
+from core.agents.debate_agent import DebateAgent
 from core.agents.goal_evolution_agent import GoalEvolutionAgent
 from core.agents.human_feedback_agent import HumanFeedbackAgent
+from core.agents.hypothesis_agent import HypothesisAgent
 from core.agents.llm_agent import LLMAgent
 from core.agents.planner_agent import PlannerAgent
-from core.agents.summarizer_agent import SummarizerAgent
-from core.agents.critique_agent import CritiqueAgent
 from core.agents.reasoning_agent import ReasoningAgent
-from core.agents.debate_agent import DebateAgent
-from core.agents.hypothesis_agent import HypothesisAgent
 from core.agents.reflection_agent import ReflectionAgent
+from core.agents.summarizer_agent import SummarizerAgent
 from core.agents.tool_agent import ToolAgent
 from core.agents.training_agent import TrainingAgent
 from core.bus import AgentBus
@@ -29,7 +29,7 @@ from core.task import Task
 
 
 class AriaRunner:
-    def __init__(self, config: Dict[str, Any] | None = None):
+    def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
         self.sleep_seconds = float(self.config.get("sleep_seconds", 2))
         self.max_cycles = self.config.get("max_cycles")
@@ -79,17 +79,17 @@ class AriaRunner:
         self.registry.register(hypothesis)
         self.registry.register(reflection)
 
-    def _inspect_context(self, goal: str = "") -> Dict[str, Any]:
+    def _inspect_context(self, goal: str = "") -> dict[str, Any]:
         return {
             "goal": goal,
             "event_counts": self.memory.count_by_type(),
             "recent_events": self.memory.last(5),
         }
 
-    def _recent_events(self, limit: int = 5) -> Dict[str, Any]:
+    def _recent_events(self, limit: int = 5) -> dict[str, Any]:
         return {"events": self.memory.last(limit)}
 
-    def _knowledge_neighbors(self, entity: str) -> Dict[str, Any]:
+    def _knowledge_neighbors(self, entity: str) -> dict[str, Any]:
         return {
             "entity": entity,
             "neighbors": self.knowledge_graph.neighbors(entity),
@@ -99,7 +99,7 @@ class AriaRunner:
         self,
         entity: str,
         max_depth: int = 2,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "entity": entity,
             "related": self.knowledge_graph.find_related(
@@ -108,7 +108,7 @@ class AriaRunner:
             ),
         }
 
-    def _knowledge_path(self, source: str, target: str) -> Dict[str, Any]:
+    def _knowledge_path(self, source: str, target: str) -> dict[str, Any]:
         return {
             "source": source,
             "target": target,
@@ -131,7 +131,7 @@ class AriaRunner:
         self,
         step: Any,
         index: int,
-    ) -> tuple[Task | None, Dict[str, Any] | None]:
+    ) -> tuple[Task | None, dict[str, Any] | None]:
         if not isinstance(step, dict):
             return None, {
                 "index": index,
@@ -176,16 +176,14 @@ class AriaRunner:
             "improve system performance",
         )
 
-    def _run_self_assess_loop(self, goal: str) -> Dict[str, Any] | None:
+    def _run_self_assess_loop(self, goal: str) -> dict[str, Any] | None:
         training_agent = self.registry.get("training_agent")
         if training_agent is None:
             return None
         assessor = getattr(training_agent, "self_assess", None)
         if not callable(assessor):
             return None
-        assessment = assessor(
-            target_score=float(self.config.get("target_score", 0.7))
-        )
+        assessment = assessor(target_score=float(self.config.get("target_score", 0.7)))
         self.memory.write(
             "training_self_assessment",
             {"goal": goal, **assessment},
@@ -228,9 +226,7 @@ class AriaRunner:
         failed_steps = sum(
             1
             for routed in executed
-            if isinstance(routed, dict)
-            and isinstance(routed.get("result"), dict)
-            and routed["result"].get("error")
+            if isinstance(routed, dict) and isinstance(routed.get("result"), dict) and routed["result"].get("error")
         )
 
         cycle_summary = {
@@ -248,7 +244,7 @@ class AriaRunner:
         self.memory.write("cycle_completed", cycle_summary)
         return cycle_summary
 
-    def run_once(self) -> Dict[str, Any]:
+    def run_once(self) -> dict[str, Any]:
         return self._autonomous_cycle()
 
     def run(self):
@@ -259,10 +255,7 @@ class AriaRunner:
             try:
                 self._autonomous_cycle()
                 cycle_count += 1
-                if (
-                    self.max_cycles is not None
-                    and cycle_count >= int(self.max_cycles)
-                ):
+                if self.max_cycles is not None and cycle_count >= int(self.max_cycles):
                     break
                 time.sleep(self.sleep_seconds)
             except KeyboardInterrupt:

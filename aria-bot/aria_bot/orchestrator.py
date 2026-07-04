@@ -25,8 +25,8 @@ from pathlib import Path
 
 from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
-from .executor import ExecutionResult, Executor
 from .defaults import DEFAULT_MAX_PLANS
+from .executor import ExecutionResult, Executor
 from .planner import Planner, UpgradePlan
 from .risk_manager import RiskManager
 from .validator import Validator
@@ -92,8 +92,7 @@ class CycleResult:
 
         finding_kinds: dict[str, int] = {}
         for finding in self.findings:
-            finding_kinds[finding.kind] = finding_kinds.get(
-                finding.kind, 0) + 1
+            finding_kinds[finding.kind] = finding_kinds.get(finding.kind, 0) + 1
 
         plan_kinds: dict[str, int] = {}
         for plan in self.plans:
@@ -187,8 +186,7 @@ class Orchestrator:
         notes: list[str] = []
 
         _logger.info("aria-bot: scanning repository at %s", repo_root)
-        scan_paths = self._resolve_paths(
-            analyzer) if self.config.paths else None
+        scan_paths = self._resolve_paths(analyzer) if self.config.paths else None
         findings = analyzer.scan(paths=scan_paths)
         _logger.info("aria-bot: %d finding(s)", len(findings))
 
@@ -218,8 +216,7 @@ class Orchestrator:
             message = self._commit_message(executions)
             commit_sha = commits.commit(applied_paths, message)
             if commit_sha is None:
-                notes.append(
-                    "commit step produced no SHA (nothing staged or git unavailable)")
+                notes.append("commit step produced no SHA (nothing staged or git unavailable)")
         elif not self.config.apply:
             notes.append("dry-run: no files were modified")
         elif not applied_paths:
@@ -289,8 +286,7 @@ class Orchestrator:
                 encoding="utf-8",
             )
         except OSError as exc:  # pragma: no cover - filesystem dependent
-            _logger.warning(
-                "unable to write status file %s: %s", status_path, exc)
+            _logger.warning("unable to write status file %s: %s", status_path, exc)
 
 
 def run_cycle(

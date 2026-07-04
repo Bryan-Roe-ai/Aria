@@ -1,5 +1,5 @@
 {
-  "python": "3.14.0",
-  "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.41",
-  "git_sha": "327b8dc5f"
+    "python": "3.14.0",
+    "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+    "git_sha": "327b8dc5f"
 }

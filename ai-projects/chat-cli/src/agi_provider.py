@@ -1905,7 +1905,7 @@ def create_agi_provider(
     # The base provider defaults to auto-detection, but operators can pin it via
     # the AGI_BASE_PROVIDER env var (e.g. "local" for a guaranteed-working
     # deterministic base in minimal environments, or "azure"/"openai" in prod).
-    base_explicit = (os.getenv("AGI_BASE_PROVIDER", "auto").strip() or "auto")
+    base_explicit = os.getenv("AGI_BASE_PROVIDER", "auto").strip() or "auto"
 
     try:
         base_provider, base_choice = detect_provider(

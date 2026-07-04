@@ -11,8 +11,7 @@ LAUNCHER_PATH = REPO_ROOT / "notebooks" / "keep_working_launcher.py"
 
 
 def _load_launcher_module():
-    spec = importlib.util.spec_from_file_location(
-        "keep_working_launcher", LAUNCHER_PATH)
+    spec = importlib.util.spec_from_file_location("keep_working_launcher", LAUNCHER_PATH)
     module = importlib.util.module_from_spec(spec)
     assert spec and spec.loader
     spec.loader.exec_module(module)
@@ -56,8 +55,7 @@ def test_load_config_returns_defaults_when_missing(kw, tmp_path) -> None:
 @pytest.mark.unit
 def test_save_config_round_trip_and_persists_to_disk(kw, tmp_path) -> None:
     path = tmp_path / "cfg.json"
-    cleaned = kw.save_config(
-        {"task": "Focus", "work": 60, "notify": True}, path)
+    cleaned = kw.save_config({"task": "Focus", "work": 60, "notify": True}, path)
     assert path.exists()
     # Known keys preserved, missing keys filled from defaults.
     assert cleaned["task"] == "Focus"
@@ -103,17 +101,10 @@ def test_notebook_uses_module_for_persistence() -> None:
     if not nb_path.exists():
         pytest.skip("keep_working.ipynb not present")
     nb = json.loads(nb_path.read_text(encoding="utf-8"))
-    code_cells = [
-        "".join(c["source"])
-        for c in nb["cells"]
-        if c["cell_type"] == "code"
-    ]
+    code_cells = ["".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code"]
     # Prefer a cell that references the launcher module and both helpers.
     preferred = [
-        src for src in code_cells
-        if "keep_working_launcher" in src
-        and "load_config" in src
-        and "save_config" in src
+        src for src in code_cells if "keep_working_launcher" in src and "load_config" in src and "save_config" in src
     ]
     if not preferred:
         pytest.skip("No launcher-based configuration cell found in notebook")

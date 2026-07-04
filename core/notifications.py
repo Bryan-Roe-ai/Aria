@@ -1,8 +1,9 @@
 """Notification adapter for sending structured webhook events."""
+
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -10,7 +11,7 @@ from urllib.request import Request, urlopen
 class NotificationAdapter:
     def __init__(
         self,
-        webhook_url: Optional[str] = None,
+        webhook_url: str | None = None,
         timeout: int = 10,
     ) -> None:
         self.webhook_url = webhook_url
@@ -19,8 +20,8 @@ class NotificationAdapter:
     def notify(
         self,
         message: str,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         payload = {"message": message, "metadata": metadata or {}}
         if not self.webhook_url:
             return {"status": "skipped", "payload": payload}

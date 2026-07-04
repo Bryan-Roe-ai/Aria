@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -48,7 +48,7 @@ class ReflectionAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
     ) -> None:
         self.memory = memory
         self.llm = llm or LLMClient()
@@ -56,14 +56,12 @@ class ReflectionAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"reflect", "retrospect", "meta_learn"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         cycle_limit = self._coerce_limit(payload.get("cycle_limit", _DEFAULT_CYCLE_LIMIT))
 
         # Prefer cycle_completed events; fall back to recent general events.
-        cycles: List[Dict[str, Any]] = self.memory.query(
-            event_type="cycle_completed", limit=cycle_limit
-        )
+        cycles: list[dict[str, Any]] = self.memory.query(event_type="cycle_completed", limit=cycle_limit)
         if not cycles:
             cycles = self.memory.last(cycle_limit)
 
@@ -89,7 +87,7 @@ class ReflectionAgent(BaseAgent):
 
         return result
 
-    def _reflect(self, history: str) -> Dict[str, Any]:
+    def _reflect(self, history: str) -> dict[str, Any]:
         truncated = history[:_MAX_INPUT_CHARS]
         messages = [
             {
@@ -120,8 +118,8 @@ class ReflectionAgent(BaseAgent):
 
         return self._parse(raw)
 
-    def _parse(self, raw: str) -> Dict[str, Any]:
-        fallback: Dict[str, Any] = {
+    def _parse(self, raw: str) -> dict[str, Any]:
+        fallback: dict[str, Any] = {
             "lessons": ["Reflection unavailable"],
             "patterns": [],
             "adjustments": [],
@@ -131,13 +129,13 @@ class ReflectionAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Dict[str, Any] | None:
+        def _extract(data: Any) -> dict[str, Any] | None:
             if not isinstance(data, dict):
                 return None
             if not any(k in data for k in ("lessons", "patterns", "adjustments", "overall")):
                 return None
 
-            def _to_list(val: Any) -> List[str]:
+            def _to_list(val: Any) -> list[str]:
                 if isinstance(val, list):
                     return [str(item) for item in val]
                 if val:
@@ -177,8 +175,8 @@ class ReflectionAgent(BaseAgent):
             return _DEFAULT_CYCLE_LIMIT
 
     @staticmethod
-    def _format_cycles(cycles: List[Dict[str, Any]]) -> str:
-        parts: List[str] = []
+    def _format_cycles(cycles: list[dict[str, Any]]) -> str:
+        parts: list[str] = []
         for i, cycle in enumerate(cycles, start=1):
             data = cycle.get("data", {})
             if isinstance(data, dict):
@@ -187,10 +185,7 @@ class ReflectionAgent(BaseAgent):
                 skipped = data.get("skipped_steps", "?")
                 assessment = data.get("self_assessment", {})
                 score = assessment.get("score", "N/A") if isinstance(assessment, dict) else "N/A"
-                parts.append(
-                    f"Cycle {i}: goal={goal}, "
-                    f"executed={executed}, skipped={skipped}, score={score}"
-                )
+                parts.append(f"Cycle {i}: goal={goal}, executed={executed}, skipped={skipped}, score={score}")
             else:
                 parts.append(f"Cycle {i}: {json.dumps(data, ensure_ascii=False)[:200]}")
         return "\n".join(parts)

@@ -13,8 +13,9 @@ shared_path = Path(__file__).resolve().parent.parent / "shared"
 if str(shared_path) not in sys.path:
     sys.path.insert(0, str(shared_path))
 
-from chat_providers import detect_provider  # noqa: E402
 from runtime_env import build_venv_info  # noqa: E402
+
+from chat_providers import detect_provider  # noqa: E402
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:

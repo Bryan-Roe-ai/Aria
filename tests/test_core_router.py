@@ -59,9 +59,7 @@ def test_router_prioritizes_matching_agent_types() -> None:
     registry.register(llm)
     router = TaskRouter(registry)
 
-    result = router.route(
-        Task(type="plan", payload={"goal": "Investigate files"})
-    )
+    result = router.route(Task(type="plan", payload={"goal": "Investigate files"}))
 
     assert result["agent"] == "planner_agent"
     assert result["candidates"][0]["agent"] == "planner_agent"
@@ -70,9 +68,7 @@ def test_router_prioritizes_matching_agent_types() -> None:
 def test_router_classifies_reflection_requests_for_reflection_agent() -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
 
-    result = runner.router.route_text(
-        "Reflect on the last cycle and identify lessons"
-    )
+    result = runner.router.route_text("Reflect on the last cycle and identify lessons")
 
     assert result["agent"] == "reflection_agent"
 

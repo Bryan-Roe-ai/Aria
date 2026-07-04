@@ -147,9 +147,7 @@ def test_reflection_agent_tolerates_invalid_cycle_limit() -> None:
     # A non-numeric cycle_limit must not crash execute(); it falls back to the
     # default rather than raising ValueError.
     agent = ReflectionAgent(MemoryStore(), llm=StubLLM())
-    result = agent.execute(
-        Task(type="reflect", payload={"cycle_limit": "not-a-number"})
-    )
+    result = agent.execute(Task(type="reflect", payload={"cycle_limit": "not-a-number"}))
 
     assert result["overall"] == "No cycle history available for reflection."
 

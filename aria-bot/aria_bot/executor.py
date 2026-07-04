@@ -9,9 +9,8 @@ looks wrong we abort the plan and leave the file untouched.
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Callable
 
 from .planner import UpgradePlan
 from .registry import SUPPORTED_FINDING_KINDS, TRANSFORM_ORDER

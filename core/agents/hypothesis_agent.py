@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -48,7 +48,7 @@ class HypothesisAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
     ) -> None:
         self.memory = memory
         self.llm = llm or LLMClient()
@@ -56,23 +56,19 @@ class HypothesisAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"hypothesize", "infer", "generate_hypothesis"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
-        observation = self._normalize_text(
-            payload.get("observation") or payload.get("text")
-        )
+        observation = self._normalize_text(payload.get("observation") or payload.get("text"))
         limit = self._coerce_limit(payload.get("limit", _DEFAULT_LIMIT))
 
         if not observation:
-            events: List[Dict[str, Any]] = self.memory.last(limit)
+            events: list[dict[str, Any]] = self.memory.last(limit)
             if not events:
                 return {
                     "agent": self.name,
                     "task_id": task.id,
                     "hypotheses": [],
-                    "summary": (
-                        "No observations available to hypothesize from."
-                    ),
+                    "summary": ("No observations available to hypothesize from."),
                 }
             observation = self._format_events(events)
 
@@ -87,7 +83,7 @@ class HypothesisAgent(BaseAgent):
 
         return result
 
-    def _hypothesize(self, observation: str) -> Dict[str, Any]:
+    def _hypothesize(self, observation: str) -> dict[str, Any]:
         truncated = observation[:_MAX_INPUT_CHARS]
         messages = [
             {
@@ -120,14 +116,11 @@ class HypothesisAgent(BaseAgent):
 
         return self._parse(raw)
 
-    def _parse(self, raw: str) -> Dict[str, Any]:
-        fallback: Dict[str, Any] = {
+    def _parse(self, raw: str) -> dict[str, Any]:
+        fallback: dict[str, Any] = {
             "hypotheses": [
                 {
-                    "statement": (
-                        "Hypothesis generation failed: no valid response "
-                        "from LLM"
-                    ),
+                    "statement": ("Hypothesis generation failed: no valid response from LLM"),
                     "rationale": "",
                     "testable": False,
                 }
@@ -138,7 +131,7 @@ class HypothesisAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Optional[Dict[str, Any]]:
+        def _extract(data: Any) -> dict[str, Any] | None:
             if not isinstance(data, dict):
                 return None
             if "hypotheses" not in data:
@@ -148,7 +141,7 @@ class HypothesisAgent(BaseAgent):
             if not isinstance(hypotheses, list):
                 return None
 
-            cleaned: List[Dict[str, Any]] = []
+            cleaned: list[dict[str, Any]] = []
             for h in hypotheses:
                 if not isinstance(h, dict):
                     continue
@@ -197,9 +190,9 @@ class HypothesisAgent(BaseAgent):
         return str(value).strip()
 
     @staticmethod
-    def _json_candidates(raw: str) -> List[str]:
+    def _json_candidates(raw: str) -> list[str]:
         text = raw.strip()
-        candidates: List[str] = []
+        candidates: list[str] = []
 
         fence = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.I | re.S)
         if fence:
@@ -215,7 +208,7 @@ class HypothesisAgent(BaseAgent):
         return candidates
 
     @staticmethod
-    def _extract_json_object(text: str) -> Optional[str]:
+    def _extract_json_object(text: str) -> str | None:
         start = text.find("{")
         while start != -1:
             depth = 0
@@ -240,15 +233,15 @@ class HypothesisAgent(BaseAgent):
                 elif char == "}":
                     depth -= 1
                     if depth == 0:
-                        return text[start:index + 1]
+                        return text[start : index + 1]
 
             start = text.find("{", start + 1)
 
         return None
 
     @staticmethod
-    def _format_events(events: List[Dict[str, Any]]) -> str:
-        parts: List[str] = []
+    def _format_events(events: list[dict[str, Any]]) -> str:
+        parts: list[str] = []
         for event in events:
             event_type = event.get("type", "event")
             data = event.get("data", "")

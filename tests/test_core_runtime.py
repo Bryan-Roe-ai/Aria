@@ -30,8 +30,8 @@ def test_runner_self_assess_loop_records_retrain_result() -> None:
             "result": {"ack": "training signal recorded"},
         }
 
-    setattr(training_agent, "self_assess", _self_assess)
-    setattr(runner.router, "route", _route)
+    training_agent.self_assess = _self_assess
+    runner.router.route = _route
 
     assessment = runner._run_self_assess_loop("improve reliability")
 
@@ -73,8 +73,8 @@ def test_runner_self_assess_loop_skips_retrain_when_not_needed() -> None:
             "result": {"ack": "training signal recorded"},
         }
 
-    setattr(training_agent, "self_assess", _self_assess)
-    setattr(runner.router, "route", _route)
+    training_agent.self_assess = _self_assess
+    runner.router.route = _route
 
     assessment = runner._run_self_assess_loop("improve throughput")
 
@@ -92,9 +92,7 @@ def test_runner_self_assess_loop_skips_retrain_when_not_needed() -> None:
 def test_runner_normalize_plan_step_falls_back_to_index_id() -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
 
-    task, skip_reason = runner._normalize_plan_step(
-        {"type": "tool", "payload": {"tool": "inspect_context"}}, 3
-    )
+    task, skip_reason = runner._normalize_plan_step({"type": "tool", "payload": {"tool": "inspect_context"}}, 3)
 
     assert skip_reason is None
     assert task is not None
@@ -186,7 +184,7 @@ def test_runner_skips_invalid_plan_steps_and_records_reason() -> None:
             ],
         }
 
-    setattr(planner, "execute", _bad_plan)
+    planner.execute = _bad_plan
 
     result = runner.run_once()
 
@@ -209,7 +207,7 @@ def test_runner_cycle_summary_counts_failed_steps() -> None:
             ],
         }
 
-    setattr(planner, "execute", _plan_with_failures)
+    planner.execute = _plan_with_failures
 
     result = runner.run_once()
 
