@@ -27,8 +27,8 @@ void analogWrite(AnalogOutPin name, int value) __attribute__((weak));
  */
 //% help=pins/analog-write weight=52
 //% blockId=device_set_analog_pin block="analog write|pin %name|to %value"
-//blockGap=8 % blockNamespace=pins % name.fieldEditor="gridpicker" %
-//name.fieldOptions.width=220 % name.fieldOptions.columns=4 % value.min=0
-//value.max=1023
+// blockGap=8 % blockNamespace=pins % name.fieldEditor="gridpicker" %
+// name.fieldOptions.width=220 % name.fieldOptions.columns=4 % value.min=0
+// value.max=1023
 void analogWrite(AnalogOutPin name, int value) { PINOP(setAnalogValue(value)); }
 } // namespace AnalogOutPinMethods
