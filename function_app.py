@@ -3575,152 +3575,12 @@ def quantum_classify(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="quantum/circuit", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def quantum_circuit(req: func.HttpRequest) -> func.HttpResponse:
-    """
-    Create and visualize a quantum circuit.
-
-    POST /api/quantum/circuit
-    Body: {
-        "n_qubits": 4,
-        "n_layers": 2,
-        "entanglement": "linear|circular|full"
-    }
-
-    Response: {
-        "circuit_info": {...},
-        "gates": [...],
-        "visualization": "text representation"
-    }
-    """
-    logging.info("Quantum circuit endpoint invoked")
-
-    try:
-        req_body = req.get_json()
-        n_qubits = req_body.get("n_qubits", 4)
-        n_layers = req_body.get("n_layers", 2)
-        entanglement = req_body.get("entanglement", "linear")
-
-        # Create circuit description
-        gates = []
-
-        # Input encoding layer
-        for i in range(n_qubits):
-            gates.append({"type": "RY", "qubit": i,
-                         "layer": 0, "parameter": "input[i]"})
-
-        # Variational layers
-        for layer in range(n_layers):
-            # Rotation gates
-            for i in range(n_qubits):
-                gates.append(
-                    {
-                        "type": "RY",
-                        "qubit": i,
-                        "layer": layer + 1,
-                        "parameter": f"θ_{layer}_{i}_0",
-                    }
-                )
-                gates.append(
-                    {
-                        "type": "RZ",
-                        "qubit": i,
-                        "layer": layer + 1,
-                        "parameter": f"θ_{layer}_{i}_1",
-                    }
-                )
-
-            # Entanglement gates
-            if entanglement == "linear":
-                for i in range(n_qubits - 1):
-                    gates.append(
-                        {
-                            "type": "CNOT",
-                            "control": i,
-                            "target": i + 1,
-                            "layer": layer + 1,
-                        }
-                    )
-            elif entanglement == "circular":
-                for i in range(n_qubits):
-                    gates.append(
-                        {
-                            "type": "CNOT",
-                            "control": i,
-                            "target": (i + 1) % n_qubits,
-                            "layer": layer + 1,
-                        }
-                    )
-            elif entanglement == "full":
-                for i in range(n_qubits):
-                    for j in range(i + 1, n_qubits):
-                        gates.append(
-                            {
-                                "type": "CNOT",
-                                "control": i,
-                                "target": j,
-                                "layer": layer + 1,
-                            }
-                        )
+    return quantum_domain.quantum_circuit(req, _build_domain_context())
 
 
 @app.route(route="quantum/llm", methods=["POST", "GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def quantum_llm(req: func.HttpRequest) -> func.HttpResponse:
     return quantum_domain.quantum_llm(req, _build_domain_context())
-    try:
-        snap_path = Path(__file__).resolve().parent / "data_out" / "resource_monitor_snapshot.json"
-        if not snap_path.exists():
-            return func.HttpResponse(
-                json.dumps({"status": "error", "error": "No snapshot found"}),
-                status_code=404,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-
-        data = read_json_cached(snap_path, ttl_seconds=60)
-        if data is None:
-            return func.HttpResponse(
-                json.dumps({"status": "error", "error": "Failed to load snapshot"}),
-                status_code=500,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-
-        return func.HttpResponse(
-            json.dumps(data),
-            status_code=200,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-    except Exception as e:  # noqa: BLE001
-        logging.error(f"Error reading resource snapshot: {e}")
-        return func.HttpResponse(
-            json.dumps({"status": "error", "error": str(e)}),
-            status_code=500,
-            mimetype="application/json",
-            headers=create_cors_response_headers(),
-        )
-                    output_dir=Path(__file__).resolve().parent /
-                    "data_out" / "quantum_llm_training"
-                )
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "available": trainer_available,
-                        "quantum_circuits": QUANTUM_AVAILABLE,
-                        "model": "QuantumLLM (hybrid quantum-classical transformer)",
-                        "capabilities": {
-                            "generate": trainer_available,
-                            "train": trainer_available,
-                            "n_qubits": 4,
-                            "backends": ["default.qubit", "lightning.qubit"],
-                        },
-                        "readiness": readiness,
-                        "import_error": (None if trainer_available else _trainer_import_err),
-                    }
-                ),
-                status_code=200,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
 
 @app.route(route="subscription/revenue", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def subscription_revenue(req: func.HttpRequest) -> func.HttpResponse:
@@ -3739,66 +3599,12 @@ def subscription_track_usage(req: func.HttpRequest) -> func.HttpResponse:
 def stripe_webhook(req: func.HttpRequest) -> func.HttpResponse:
     return subscriptions_domain.stripe_webhook(req, _build_domain_context())
 
-            prompt_token_ids = [
-                ord(c) % trainer.model_config["vocab_size"] for c in prompt[:32]]
-            try:
-                import torch
-
-                prompt_ids = torch.tensor([prompt_token_ids], dtype=torch.long)
-            except Exception:
-                # Keep endpoint usable in lightweight environments where torch is
-                # intentionally absent; fake/alternate trainer implementations can
-                # still accept a nested token list.
-                prompt_ids = [prompt_token_ids]
-
-            generated = trainer.model.generate(
-                prompt_ids, max_new_tokens=max_tokens, temperature=0.8, top_k=20)
-            # Decode back to text using the simple char mapping
-            generated_row = generated[0]
-            tokens = generated_row.tolist() if hasattr(
-                generated_row, "tolist") else list(generated_row)
-            text = "".join(chr(t % 128) if 32 <= (t % 128)
-                           < 127 else "?" for t in tokens)
-
-            return func.HttpResponse(
-                json.dumps(
-                    {
-                        "action": "generate",
-                        "prompt": prompt,
-                        "generated": text,
-                        "tokens": len(tokens),
-                        "quantum_available": QUANTUM_AVAILABLE,
-                        "readiness": (
-                            get_quantum_llm_status(
-                                output_dir=repo_root / "data_out" / "quantum_llm_training")
-                            if get_quantum_llm_status is not None
-                            else None
-                        ),
-                    }
-                ),
-                status_code=200,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
-
 # -----------------------------------------------------------------------------
 # Notifications Log Endpoint
 # -----------------------------------------------------------------------------
 @app.route(route="notifications/log", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def notifications_log(req: func.HttpRequest) -> func.HttpResponse:
     return subscriptions_domain.notifications_log(req, _build_domain_context())
-
-            # Basic path traversal protection: keep training datasets in-repo.
-            try:
-                dataset_path_obj.relative_to(repo_root.resolve())
-            except ValueError:
-                return func.HttpResponse(
-                    json.dumps(
-                        {"error": "dataset_path must point to a location inside the repository"}),
-                    status_code=400,
-                    mimetype="application/json",
-                    headers=create_cors_response_headers(),
-                )
 
 # -----------------------------------------------------------------------------
 # Referral System Endpoints
@@ -3811,15 +3617,6 @@ def referral_code(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="referrals/stats", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def referral_stats(req: func.HttpRequest) -> func.HttpResponse:
     return referrals_domain.referral_stats(req, _build_domain_context())
-
-        else:
-            return func.HttpResponse(
-                json.dumps(
-                    {"error": f"Unknown action: {action!r}. Use 'generate' or 'train'."}),
-                status_code=400,
-                mimetype="application/json",
-                headers=create_cors_response_headers(),
-            )
 
 @app.route(route="referrals/record", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 def record_referral(req: func.HttpRequest) -> func.HttpResponse:
