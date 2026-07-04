@@ -183,7 +183,7 @@ String toHex(Buffer buf) {
 void rotate(Buffer buf, int offset, int start = 0, int length = -1) {
     if (length < 0)
         length = buf->length - start;
-    if (start < 0 || start + length > buf->length || start + length < start || length == 0 ||
+    if (start < 0 || start > buf->length || length <= 0 || length > buf->length - start ||
         offset == 0 || offset == INT_MIN)
         return;
 
