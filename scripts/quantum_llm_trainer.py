@@ -549,14 +549,14 @@ class QuantumEnhancedLLMTrainer:
     # Dataset loading
     # ------------------------------------------------------------------
 
-    def _record_to_text(self, record: Dict[str, Any]) -> List[str]:
+    def _record_to_text(self, record: dict[str, Any]) -> list[str]:
         """Extract text fragments from a single dataset record.
 
         Supports the repo-standard chat dataset schema
         (``{"messages": [{"role": ..., "content": ...}]}``) in addition to
         flat text-bearing keys used by simpler datasets.
         """
-        parts: List[str] = []
+        parts: list[str] = []
         messages = record.get("messages")
         if isinstance(messages, list):
             for msg in messages:
