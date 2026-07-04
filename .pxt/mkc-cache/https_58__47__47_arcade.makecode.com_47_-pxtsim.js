@@ -132,50 +132,38 @@ var pxsim,
             constructor(t) {
                 ;((this.availablePowerPins = {
                     top: {
-                        fiveVolt: e
-                            .mkRange(26, 51)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        threeVolt: e
-                            .mkRange(26, 51)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        ground: e
-                            .mkRange(26, 51)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "-",
-                                col: `${e}`,
-                            })),
+                        fiveVolt: e.mkRange(26, 51).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        threeVolt: e.mkRange(26, 51).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        ground: e.mkRange(26, 51).map(e => ({
+                            type: "breadboard",
+                            row: "-",
+                            col: `${e}`,
+                        })),
                     },
                     bottom: {
-                        fiveVolt: e
-                            .mkRange(1, 26)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        threeVolt: e
-                            .mkRange(1, 26)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "+",
-                                col: `${e}`,
-                            })),
-                        ground: e
-                            .mkRange(1, 26)
-                            .map(e => ({
-                                type: "breadboard",
-                                row: "-",
-                                col: `${e}`,
-                            })),
+                        fiveVolt: e.mkRange(1, 26).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        threeVolt: e.mkRange(1, 26).map(e => ({
+                            type: "breadboard",
+                            row: "+",
+                            col: `${e}`,
+                        })),
+                        ground: e.mkRange(1, 26).map(e => ({
+                            type: "breadboard",
+                            row: "-",
+                            col: `${e}`,
+                        })),
                     },
                 }),
                     (this.opts = t))

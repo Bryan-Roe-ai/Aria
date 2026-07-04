@@ -16,7 +16,7 @@ namespace PwmOnlyPinMethods {
 //% help=pins/analog-set-period weight=51
 //% blockId=device_set_analog_period block="analog set period|pin %pin|to
 //(µs)%period" % blockNamespace=pins % name.fieldEditor="gridpicker" %
-//name.fieldOptions.width=220 % name.fieldOptions.columns=4
+// name.fieldOptions.width=220 % name.fieldOptions.columns=4
 void analogSetPeriod(PwmOnlyPin name, int period) {
   PINOP(setAnalogPeriodUs(period));
 }
@@ -33,8 +33,8 @@ void analogSetPeriod(PwmOnlyPin name, int period) {
 //% help=pins/servo-write weight=41 group="Servo"
 //% blockId=device_set_servo_pin block="servo write|pin %name|to
 //%value=protractorPicker" blockGap=8 % parts=microservo trackArgs=0 %
-//blockNamespace=pins % name.fieldEditor="gridpicker" %
-//name.fieldOptions.width=220 % name.fieldOptions.columns=4 % value.defl=90
+// blockNamespace=pins % name.fieldEditor="gridpicker" %
+// name.fieldOptions.width=220 % name.fieldOptions.columns=4 % value.defl=90
 void servoWrite(PwmOnlyPin name, int value) { PINOP(setServoValue(value)); }
 
 /**
@@ -47,8 +47,8 @@ void servoWrite(PwmOnlyPin name, int value) { PINOP(setServoValue(value)); }
 //% help=pins/servo-set-pulse weight=40 group="Servo" blockGap=8
 //% blockId=device_set_servo_pulse block="servo set pulse|pin %value|to (µs)
 //%duration" % parts=microservo blockNamespace=pins %
-//name.fieldEditor="gridpicker" % name.fieldOptions.width=220 %
-//name.fieldOptions.columns=4
+// name.fieldEditor="gridpicker" % name.fieldOptions.width=220 %
+// name.fieldOptions.columns=4
 void servoSetPulse(PwmOnlyPin name, int duration) {
   PINOP(setServoPulseUs(duration));
 }

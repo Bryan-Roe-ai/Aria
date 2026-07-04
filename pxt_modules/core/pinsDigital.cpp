@@ -48,7 +48,7 @@ bool digitalRead(DigitalInOutPin name) { return PINOP(getDigitalValue()) != 0; }
 //% help=pins/digital-write weight=60
 //% blockId=device_set_digital_pin block="digital write|pin %name|to
 //%value=toggleHighLow" % blockNamespace=pins % name.fieldEditor="gridpicker" %
-//name.fieldOptions.width=220 % name.fieldOptions.columns=4
+// name.fieldOptions.width=220 % name.fieldOptions.columns=4
 void digitalWrite(DigitalInOutPin name, bool value) {
   PINOP(setDigitalValue(value));
 }
@@ -101,8 +101,8 @@ void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
  */
 //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %high||timeout
 //%maxDuration (µs)" % weight=18 blockGap=8 % help="pins/pulse-in" %
-//blockNamespace=pins % pin.fieldEditor="gridpicker" %
-//pin.fieldOptions.width=220 % pin.fieldOptions.columns=4
+// blockNamespace=pins % pin.fieldEditor="gridpicker" %
+// pin.fieldOptions.width=220 % pin.fieldOptions.columns=4
 int pulseIn(DigitalInOutPin pin, PulseValue value, int maxDuration = 2000000) {
   int pulse = PulseValue::High == value ? 1 : 0;
   uint64_t tick = system_timer_current_time_us();
