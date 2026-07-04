@@ -1399,9 +1399,7 @@
                     '<div class="alert alert-info">Calculating VRAM requirements...</div>'
 
                 try {
-                    const resp = await fetch(
-                        `/api/vram-info?model=${encodeURIComponent(model)}&lora_rank=${rank}`,
-                    )
+                    const resp = await fetch(`/api/vram-info?model=${encodeURIComponent(model)}&lora_rank=${rank}`)
                     const data = await resp.json()
                     if (data.error && !data.available) {
                         resultsDiv.innerHTML = `<div class="alert alert-warning">⚠️ ${data.error}<br><small>${data.recommendation || ""}</small></div>`
@@ -1728,11 +1726,11 @@
             document.addEventListener("keydown", e => {
                 if (e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
                     const tabMap = {
-                        1: "overview",
-                        2: "training",
-                        3: "analytics",
-                        4: "history",
-                        5: "tools",
+                        '1': "overview",
+                        '2': "training",
+                        '3': "analytics",
+                        '4': "history",
+                        '5': "tools",
                     }
                     if (tabMap[e.key]) {
                         e.preventDefault()
