@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -30,14 +30,10 @@ class LLMAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"llm", "chat", "reason", "generate"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         prompt = payload.get("prompt") or payload.get("message") or ""
-        system_prompt = (
-            payload.get("system_prompt")
-            or payload.get("system")
-            or ""
-        )
+        system_prompt = payload.get("system_prompt") or payload.get("system") or ""
         reasoning_mode = bool(payload.get("reasoning_mode"))
 
         if reasoning_mode:
@@ -46,9 +42,7 @@ class LLMAgent(BaseAgent):
                 system_prompt=system_prompt,
             )
             parsed = self._parse_response(response)
-            steps = parsed.get("steps") or [
-                step.name for step in reasoning_chain
-            ]
+            steps = parsed.get("steps") or [step.name for step in reasoning_chain]
             return {
                 "output": parsed.get("output", response),
                 "analysis": parsed.get("analysis"),
@@ -76,7 +70,7 @@ class LLMAgent(BaseAgent):
         prompt: str,
         *,
         system_prompt: str = "",
-    ) -> tuple[str, List[ReasoningStep]]:
+    ) -> tuple[str, list[ReasoningStep]]:
         if not prompt:
             return (
                 "No input provided",
@@ -109,14 +103,13 @@ class LLMAgent(BaseAgent):
             [
                 {
                     "role": "system",
-                    "content": system_prompt
-                    or "You are a helpful core reasoning agent.",
+                    "content": system_prompt or "You are a helpful core reasoning agent.",
                 },
                 {"role": "user", "content": prompt},
             ]
         )
 
-    def _parse_response(self, response: str) -> Dict[str, Any]:
+    def _parse_response(self, response: str) -> dict[str, Any]:
         try:
             parsed = json.loads(response)
             if isinstance(parsed, dict):

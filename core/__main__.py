@@ -12,8 +12,8 @@ import json
 from collections.abc import Sequence
 
 if __package__ in (None, ""):
-    from pathlib import Path
     import sys
+    from pathlib import Path
 
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -21,9 +21,7 @@ from core.runner import AriaRunner
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Run Aria core autonomous runtime"
-    )
+    parser = argparse.ArgumentParser(description="Run Aria core autonomous runtime")
     parser.add_argument(
         "--cycles",
         type=int,
@@ -45,9 +43,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     if args.cycles < 1:
         raise SystemExit("--cycles must be at least 1")
 
-    runner = AriaRunner(
-        config={"max_cycles": args.cycles, "sleep_seconds": args.sleep}
-    )
+    runner = AriaRunner(config={"max_cycles": args.cycles, "sleep_seconds": args.sleep})
 
     if args.cycles == 1:
         summary = runner.run_once()

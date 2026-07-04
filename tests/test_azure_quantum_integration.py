@@ -151,6 +151,7 @@ def test_submit_circuit_uses_default_shots_when_none():
 # QuantumJobManager.check_status — string and enum shapes
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_check_status_tolerates_string_status():
     """check_status must not blow up when job.status() returns a string."""
@@ -202,6 +203,7 @@ def test_check_status_raises_for_unknown_job():
 # QuantumJobManager.get_all_results — partial failure tolerance
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_get_all_results_continues_after_failed_job():
     """Errors in one job must not suppress results from other jobs."""
@@ -224,15 +226,12 @@ def test_get_all_results_continues_after_failed_job():
 # AzureQuantumIntegration.save_results — directory creation and content
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_save_results_creates_directory_and_writes_json(tmp_path):
     module = _load_module()
-    inst = module.AzureQuantumIntegration.__new__(
-        module.AzureQuantumIntegration
-    )
-    inst.config = {
-        "logging": {"results_dir": str(tmp_path / "out" / "results")}
-    }
+    inst = module.AzureQuantumIntegration.__new__(module.AzureQuantumIntegration)
+    inst.config = {"logging": {"results_dir": str(tmp_path / "out" / "results")}}
 
     payload = {"counts": {"00": 1}, "success": True}
     inst.save_results(payload, "test_run.json")
@@ -240,5 +239,6 @@ def test_save_results_creates_directory_and_writes_json(tmp_path):
     written = tmp_path / "out" / "results" / "test_run.json"
     assert written.exists()
     import json
+
     data = json.loads(written.read_text())
     assert data["counts"] == {"00": 1}

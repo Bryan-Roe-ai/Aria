@@ -3,6 +3,7 @@
 Comprehensive tests for Aria Auto-Execute System
 Tests LLM-powered action generation, execution, and stage state management
 """
+
 import pytest
 import requests
 
@@ -31,36 +32,25 @@ class TestAriaAutoExecuteSchema:
 
     def test_schema_endpoint_exists(self):
         """Verify /api/aria/schema returns valid action definitions"""
-        response = requests.get(
-            f"{BASE_URL}/api/aria/schema", timeout=TIMEOUT
-        )
+        response = requests.get(f"{BASE_URL}/api/aria/schema", timeout=TIMEOUT)
         assert response.status_code == 200
         schema = response.json()
 
         # Verify required action types are defined
-        required_actions = {
-            "move", "say", "pickup", "drop",
-            "throw", "gesture", "look", "wait"
-        }
+        required_actions = {"move", "say", "pickup", "drop", "throw", "gesture", "look", "wait"}
         actual_actions = set(schema.keys())
         missing = required_actions - actual_actions
-        assert required_actions.issubset(actual_actions), \
-            f"Missing actions: {missing}"
+        assert required_actions.issubset(actual_actions), f"Missing actions: {missing}"
 
     def test_action_schema_has_required_fields(self):
         """Verify each action has params and description"""
-        response = requests.get(
-            f"{BASE_URL}/api/aria/schema", timeout=TIMEOUT
-        )
+        response = requests.get(f"{BASE_URL}/api/aria/schema", timeout=TIMEOUT)
         schema = response.json()
 
         for action_name, action_def in schema.items():
-            assert "params" in action_def, \
-                f"Action {action_name} missing params"
-            assert "description" in action_def, \
-                f"Action {action_name} missing description"
-            assert "example" in action_def, \
-                f"Action {action_name} missing example"
+            assert "params" in action_def, f"Action {action_name} missing params"
+            assert "description" in action_def, f"Action {action_name} missing description"
+            assert "example" in action_def, f"Action {action_name} missing example"
 
     def test_valid_gestures_defined(self):
         """Verify valid gesture types are available"""
@@ -81,11 +71,7 @@ class TestAriaAutoExecutePlanMode:
         """Test parsing a simple move command"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "move left",
-                "auto_execute": False,
-                "use_llm": False
-            },
+            json={"command": "move left", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -100,11 +86,7 @@ class TestAriaAutoExecutePlanMode:
         """Test parsing pickup command"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "pick up the apple",
-                "auto_execute": False,
-                "use_llm": False
-            },
+            json={"command": "pick up the apple", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -121,8 +103,7 @@ class TestAriaAutoExecutePlanMode:
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
             json={
-                "command": "walk to the table and pick up "
-                           "the apple",
+                "command": "walk to the table and pick up the apple",
                 "auto_execute": False,
                 "use_llm": False,
             },
@@ -142,11 +123,7 @@ class TestAriaAutoExecutePlanMode:
         """Test parsing say/speak commands"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "say hello world",
-                "auto_execute": False,
-                "use_llm": False
-            },
+            json={"command": "say hello world", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -159,11 +136,7 @@ class TestAriaAutoExecutePlanMode:
         """Test parsing gesture commands"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "wave at me",
-                "auto_execute": False,
-                "use_llm": False
-            },
+            json={"command": "wave at me", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -176,26 +149,18 @@ class TestAriaAutoExecutePlanMode:
         """Verify plan mode doesn't change stage state"""
         # Get initial state
         get_state_url = f"{BASE_URL}/api/aria/state"
-        state_before = requests.get(
-            get_state_url, timeout=TIMEOUT
-        ).json()
+        state_before = requests.get(get_state_url, timeout=TIMEOUT).json()
 
         # Run plan mode
         requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "move right and pick up the apple",
-                "auto_execute": False
-            },
+            json={"command": "move right and pick up the apple", "auto_execute": False},
             timeout=TIMEOUT,
         )
 
         # Verify state unchanged
-        state_after = requests.get(
-            get_state_url, timeout=TIMEOUT
-        ).json()
-        assert state_before == state_after, \
-            "Plan mode should not modify state"
+        state_after = requests.get(get_state_url, timeout=TIMEOUT).json()
+        assert state_before == state_after, "Plan mode should not modify state"
 
 
 class TestAriaAutoExecuteMode:
@@ -205,11 +170,7 @@ class TestAriaAutoExecuteMode:
         """Test executing a simple move command"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "move right",
-                "auto_execute": True,
-                "use_llm": False
-            },
+            json={"command": "move right", "auto_execute": True, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -224,11 +185,7 @@ class TestAriaAutoExecuteMode:
         """Verify execution returns updated stage state"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "say hello",
-                "auto_execute": True,
-                "use_llm": False
-            },
+            json={"command": "say hello", "auto_execute": True, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -261,11 +218,7 @@ class TestAriaAutoExecuteMode:
         """Verify execution generates tags for UI rendering"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "move left",
-                "auto_execute": True,
-                "use_llm": False
-            },
+            json={"command": "move left", "auto_execute": True, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -285,11 +238,7 @@ class TestAriaActionValidation:
         # This tests the system's robustness
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "invalid command xyz abc",
-                "auto_execute": False,
-                "use_llm": False
-            },
+            json={"command": "invalid command xyz abc", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         # System should either parse or gracefully handle
@@ -319,11 +268,7 @@ class TestAriaActionValidation:
         """Test handling of special characters"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={
-                "command": "say !@#$%^&*()",
-                "auto_execute": False,
-                "use_llm": False
-            },
+            json={"command": "say !@#$%^&*()", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code in [200, 400, 422]
@@ -334,9 +279,7 @@ class TestAriaStateManagement:
 
     def test_state_endpoint_returns_valid_state(self):
         """Verify /api/aria/state returns properly structured state"""
-        response = requests.get(
-            f"{BASE_URL}/api/aria/state", timeout=TIMEOUT
-        )
+        response = requests.get(f"{BASE_URL}/api/aria/state", timeout=TIMEOUT)
         assert response.status_code == 200
         state = response.json()
 
@@ -348,33 +291,23 @@ class TestAriaStateManagement:
 
     def test_aria_position_valid_coordinates(self):
         """Verify Aria position is always within valid bounds"""
-        response = requests.get(
-            f"{BASE_URL}/api/aria/state", timeout=TIMEOUT
-        )
+        response = requests.get(f"{BASE_URL}/api/aria/state", timeout=TIMEOUT)
         state = response.json()
 
         position = state["aria"]["position"]
         assert "x" in position
         assert "y" in position
-        assert 0 <= position["x"] <= 100, \
-            "X coordinate out of bounds"
-        assert 0 <= position["y"] <= 100, \
-            "Y coordinate out of bounds"
+        assert 0 <= position["x"] <= 100, "X coordinate out of bounds"
+        assert 0 <= position["y"] <= 100, "Y coordinate out of bounds"
 
     def test_aria_expression_valid(self):
         """Verify Aria expression is a valid emotion state"""
-        response = requests.get(
-            f"{BASE_URL}/api/aria/state", timeout=TIMEOUT
-        )
+        response = requests.get(f"{BASE_URL}/api/aria/state", timeout=TIMEOUT)
         state = response.json()
 
         expression = state["aria"].get("expression", "neutral")
-        valid_expressions = {
-            "neutral", "happy", "sad", "confused",
-            "excited", "calm"
-        }
-        assert expression in valid_expressions or \
-            isinstance(expression, str)
+        valid_expressions = {"neutral", "happy", "sad", "confused", "excited", "calm"}
+        assert expression in valid_expressions or isinstance(expression, str)
 
     def test_state_consistency_after_sequence(self):
         """Verify state remains consistent after multiple operations"""
@@ -382,11 +315,7 @@ class TestAriaStateManagement:
         for cmd in ["move right", "say hello", "move left"]:
             requests.post(
                 f"{BASE_URL}/api/aria/execute",
-                json={
-                    "command": cmd,
-                    "auto_execute": True,
-                    "use_llm": False
-                },
+                json={"command": cmd, "auto_execute": True, "use_llm": False},
                 timeout=TIMEOUT,
             )
 
@@ -406,8 +335,7 @@ class TestAriaObjectManagement:
 
     def test_objects_list_retrievable(self):
         """Verify /api/aria/objects endpoint returns object list"""
-        response = requests.get(
-            f"{BASE_URL}/api/aria/objects", timeout=TIMEOUT)
+        response = requests.get(f"{BASE_URL}/api/aria/objects", timeout=TIMEOUT)
         # 404 is okay if not implemented
         assert response.status_code in [200, 404]
         if response.status_code == 200:
@@ -418,27 +346,23 @@ class TestAriaObjectManagement:
         """Test adding a new object to the stage"""
         response = requests.post(
             f"{BASE_URL}/api/aria/object",
-            json={"action": "add", "name": "test_object",
-                  "position": {"x": 50, "y": 50}},
+            json={"action": "add", "name": "test_object", "position": {"x": 50, "y": 50}},
             timeout=TIMEOUT,
         )
         assert response.status_code in [200, 201, 400, 404]
 
     def test_object_state_tracking(self):
         """Verify objects have state tracking in various states"""
-        state_response = requests.get(
-            f"{BASE_URL}/api/aria/state", timeout=TIMEOUT)
+        state_response = requests.get(f"{BASE_URL}/api/aria/state", timeout=TIMEOUT)
         state = state_response.json()
 
         if "objects" in state and state["objects"]:
             for obj_name, obj_data in state["objects"].items():
-                assert isinstance(
-                    obj_data, dict), f"Object {obj_name} should be a dict"
+                assert isinstance(obj_data, dict), f"Object {obj_name} should be a dict"
                 # State tracking is optional but if present should be valid
                 if "state" in obj_data:
                     valid_states = {"on_table", "held", "dropped", "thrown"}
-                    assert obj_data["state"] in valid_states or isinstance(
-                        obj_data["state"], str)
+                    assert obj_data["state"] in valid_states or isinstance(obj_data["state"], str)
 
 
 class TestAriaProviderDetection:
@@ -446,8 +370,7 @@ class TestAriaProviderDetection:
 
     def test_ai_status_endpoint(self):
         """Verify /api/ai/status shows provider information"""
-        response = requests.get(
-            "http://localhost:7071/api/ai/status", timeout=TIMEOUT)
+        response = requests.get("http://localhost:7071/api/ai/status", timeout=TIMEOUT)
         if response.status_code == 200:
             status = response.json()
             # Provider info might be in various fields
@@ -457,8 +380,7 @@ class TestAriaProviderDetection:
         """Verify fallback parser works when LLM unavailable"""
         response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={"command": "move left",
-                  "auto_execute": False, "use_llm": False},
+            json={"command": "move left", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert response.status_code == 200
@@ -506,9 +428,7 @@ class TestAriaErrorHandling:
             timeout=TIMEOUT,
         )
         resp_json = response.json()
-        is_error = (response.status_code >= 400 or
-                    (response.status_code == 200 and
-                     resp_json.get("status") == "error"))
+        is_error = response.status_code >= 400 or (response.status_code == 200 and resp_json.get("status") == "error")
         if is_error:
             assert "message" in resp_json or "error" in resp_json
 
@@ -526,12 +446,10 @@ class TestAriaResponseFormats:
         data = response.json()
 
         # Required fields in response
-        required_fields = {"status", "message",
-                           "command", "actions", "executed"}
+        required_fields = {"status", "message", "command", "actions", "executed"}
         actual_keys = set(data.keys())
         missing = required_fields - actual_keys
-        assert required_fields.issubset(actual_keys), \
-            f"Missing fields: {missing}"
+        assert required_fields.issubset(actual_keys), f"Missing fields: {missing}"
 
     def test_state_response_format(self):
         """Verify /api/aria/state response matches documented format"""
@@ -562,8 +480,7 @@ class TestAriaIntegration:
         # Step 1: Plan
         plan_response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={"command": "wave hello",
-                  "auto_execute": False, "use_llm": False},
+            json={"command": "wave hello", "auto_execute": False, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert plan_response.status_code == 200
@@ -573,8 +490,7 @@ class TestAriaIntegration:
         # Step 2: Execute
         exec_response = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={"command": "wave hello",
-                  "auto_execute": True, "use_llm": False},
+            json={"command": "wave hello", "auto_execute": True, "use_llm": False},
             timeout=TIMEOUT,
         )
         assert exec_response.status_code == 200
@@ -586,8 +502,7 @@ class TestAriaIntegration:
         # Command 1
         resp1 = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={"command": "move left",
-                  "auto_execute": True, "use_llm": False},
+            json={"command": "move left", "auto_execute": True, "use_llm": False},
             timeout=TIMEOUT,
         )
         state1 = resp1.json().get("state", {}).get("aria", {}).get("position")
@@ -595,8 +510,7 @@ class TestAriaIntegration:
         # Command 2
         resp2 = requests.post(
             f"{BASE_URL}/api/aria/execute",
-            json={"command": "move right",
-                  "auto_execute": True, "use_llm": False},
+            json={"command": "move right", "auto_execute": True, "use_llm": False},
             timeout=TIMEOUT,
         )
         state2 = resp2.json().get("state", {}).get("aria", {}).get("position")

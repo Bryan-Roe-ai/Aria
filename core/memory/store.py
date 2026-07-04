@@ -14,15 +14,15 @@ Improvements over the original simple list-based store:
 - Utility methods: get, clear, to_list, len, iteration.
 """
 
-from collections import deque
-from copy import deepcopy
-from datetime import datetime, timezone
-from typing import Any, Dict, Iterable, List, Mapping, Optional
 import threading
 import uuid
+from collections import deque
+from collections.abc import Iterable, Mapping
+from copy import deepcopy
+from datetime import datetime, timezone
+from typing import Any
 
-
-Event = Dict[str, Any]
+Event = dict[str, Any]
 
 
 def _now_utc() -> datetime:
@@ -42,13 +42,11 @@ class MemoryStore:
 
     def __init__(
         self,
-        max_events: Optional[int] = None,
-        db_path: Optional[str] = None,
+        max_events: int | None = None,
+        db_path: str | None = None,
     ) -> None:
         self._lock = threading.RLock()
-        self._events: deque[Event] = (
-            deque(maxlen=max_events) if max_events else deque()
-        )
+        self._events: deque[Event] = deque(maxlen=max_events) if max_events else deque()
         self._backend = None
         if db_path:
             from core.memory.sqlite_backend import SQLiteMemoryBackend
@@ -61,7 +59,7 @@ class MemoryStore:
         self,
         event_type: str,
         data: Mapping[str, Any],
-        timestamp: Optional[datetime] = None,
+        timestamp: datetime | None = None,
     ) -> str:
         """
         Append a new event to the store.
@@ -87,32 +85,26 @@ class MemoryStore:
 
     def query(
         self,
-        event_type: Optional[str] = None,
-        since: Optional[datetime] = None,
-        until: Optional[datetime] = None,
-        limit: Optional[int] = None,
+        event_type: str | None = None,
+        since: datetime | None = None,
+        until: datetime | None = None,
+        limit: int | None = None,
         reverse: bool = False,
-    ) -> List[Event]:
+    ) -> list[Event]:
         """Query events with optional filters.
 
         Returned events are shallow copies of the stored events
         (data dict remains a deepcopy from write).
         """
-        since_epoch = (
-            since.astimezone(timezone.utc).timestamp() if since else None
-        )
-        until_epoch = (
-            until.astimezone(timezone.utc).timestamp() if until else None
-        )
+        since_epoch = since.astimezone(timezone.utc).timestamp() if since else None
+        until_epoch = until.astimezone(timezone.utc).timestamp() if until else None
 
         with self._lock:
             events_snapshot = list(self._events)
 
-        iterable: Iterable[Event] = (
-            reversed(events_snapshot) if reverse else events_snapshot
-        )
+        iterable: Iterable[Event] = reversed(events_snapshot) if reverse else events_snapshot
 
-        results: List[Event] = []
+        results: list[Event] = []
         for e in iterable:
             if event_type is not None and e.get("type") != event_type:
                 continue
@@ -127,7 +119,7 @@ class MemoryStore:
 
         return results
 
-    def last(self, n: int = 10) -> List[Event]:
+    def last(self, n: int = 10) -> list[Event]:
         """
         Return the last `n` events (newest last). If n <= 0, returns an empty
         list.
@@ -138,7 +130,7 @@ class MemoryStore:
             slice_events = list(self._events)[-n:]
             return [e.copy() for e in slice_events]
 
-    def get(self, event_id: str) -> Optional[Event]:
+    def get(self, event_id: str) -> Event | None:
         """
         Return an event by its id or None if not found.
         """
@@ -148,7 +140,7 @@ class MemoryStore:
                     return e.copy()
         return None
 
-    def clear(self, event_type: Optional[str] = None) -> int:
+    def clear(self, event_type: str | None = None) -> int:
         """
         Clear events from the store.
 
@@ -163,33 +155,31 @@ class MemoryStore:
                 self._events.clear()
                 return original_len
             maxlen = self._events.maxlen
-            new_events = [
-                e for e in self._events if e.get("type") != event_type
-            ]
+            new_events = [e for e in self._events if e.get("type") != event_type]
             self._events = deque(new_events, maxlen=maxlen)
             return original_len - len(self._events)
 
-    def to_list(self) -> List[Event]:
+    def to_list(self) -> list[Event]:
         """
         Return a snapshot list of all events (shallow copies).
         """
         with self._lock:
             return [e.copy() for e in self._events]
 
-    def count_by_type(self) -> Dict[str, int]:
+    def count_by_type(self) -> dict[str, int]:
         """Return a histogram of event counts grouped by ``type``.
 
         This helper is used by the core runner to build lightweight context
         summaries for tool calls and diagnostics.
         """
-        counts: Dict[str, int] = {}
+        counts: dict[str, int] = {}
         with self._lock:
             for event in self._events:
                 event_type = str(event.get("type", "unknown"))
                 counts[event_type] = counts.get(event_type, 0) + 1
         return counts
 
-    def last_of_type(self, event_type: str) -> Optional[Event]:
+    def last_of_type(self, event_type: str) -> Event | None:
         """Return the most recent event matching event_type or None."""
         with self._lock:
             for e in reversed(self._events):

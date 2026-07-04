@@ -65,8 +65,7 @@ def test_core_module_entrypoint_is_runnable() -> None:
 
 def test_core_main_can_be_run_directly() -> None:
     proc = subprocess.run(
-        [sys.executable, str(Path(__file__).resolve(
-        ).parents[1] / "core" / "__main__.py")],
+        [sys.executable, str(Path(__file__).resolve().parents[1] / "core" / "__main__.py")],
         capture_output=True,
         text=True,
     )
