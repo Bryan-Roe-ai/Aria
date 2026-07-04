@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -29,8 +30,34 @@ def test_codeql_autofix_ref_step_avoids_unbound_shell_vars() -> None:
 
 @pytest.mark.unit
 def test_codeql_autofix_excludes_workflow_files_from_formatting() -> None:
-    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
+    repo_root = Path(__file__).resolve().parents[1]
+    workflow_path = repo_root / ".github" / "workflows" / "codeql.yml"
     content = workflow_path.read_text(encoding="utf-8")
 
     assert "!**/.github/workflows/**" in content
-    assert "git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' ':(exclude).github/workflows/**'" in content
+    assert ":(exclude).github/workflows/**" in content
+
+    result = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "--",
+            "*.c",
+            "*.cc",
+            "*.cpp",
+            "*.cxx",
+            "*.h",
+            "*.hh",
+            "*.hpp",
+            "*.hxx",
+            ":(exclude).github/workflows/**",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+        cwd=repo_root,
+    )
+    files = result.stdout.splitlines()
+
+    assert ".github/workflows/stdio.cpp" not in files
+    assert "pxt_modules/base/advmath.cpp" in files
