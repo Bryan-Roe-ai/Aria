@@ -292,3 +292,27 @@ def test_probe_chat_web_assets_requires_agi_stream_utils_marker(
     assert result.status == "succeeded"
     assert result.name == "functions_chat_web_agi_stream_utils"
     assert "AGIStreamUtils" in result.detail
+
+
+@pytest.mark.unit
+def test_required_ai_status_endpoints_set_is_stable() -> None:
+    """Regression guard: pin the exact contents of _REQUIRED_AI_STATUS_ENDPOINTS.
+
+    This test failed in the nightly run of 2026-06-25 (issue #503) when the set
+    drifted away from the correct quantum endpoint.  Changing any entry here
+    should be intentional and paired with a matching update to the test payload
+    in test_validate_ai_status_payload_requires_core_keys_and_endpoints.
+    """
+    expected = {
+        "/api/ai/status",
+        "/api/chat",
+        "/api/chat-web",
+        "/api/chat-web/static/agi_stream_utils.js",
+        "/api/tts",
+        "/api/quantum/info",
+        "/api/agi/status",
+        "/api/agi/analyze",
+        "/api/agi/reason",
+        "/api/agi/stream",
+    }
+    assert smoke_module._REQUIRED_AI_STATUS_ENDPOINTS == expected
