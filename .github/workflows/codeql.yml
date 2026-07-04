@@ -452,7 +452,8 @@ jobs:
             "!**/vendor/**" \
             "!**/third_party/**" \
             "!**/third-party/**" \
-            "!**/*.min.*" || true
+            "!**/*.min.*" \
+            "!**/.github/workflows/**" || true
 
       - name: Run clang-format (C/C++)
         continue-on-error: true

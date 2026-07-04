@@ -1,4 +1,3 @@
-from typing import List, Optional
 from datetime import datetime
 
 
@@ -6,7 +5,7 @@ def timestamp_now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def edit_message_in_hist(hist_state: List[dict], index: int, side: str, new_text: str) -> List[dict]:
+def edit_message_in_hist(hist_state: list[dict], index: int, side: str, new_text: str) -> list[dict]:
     """Edit a message in hist_state at the given index.
     side must be 'user' or 'assistant'. Returns the modified hist_state (mutates a copy).
     """
@@ -30,7 +29,7 @@ def edit_message_in_hist(hist_state: List[dict], index: int, side: str, new_text
     return new_hist
 
 
-def delete_message_in_hist(hist_state: List[dict], index: int) -> List[dict]:
+def delete_message_in_hist(hist_state: list[dict], index: int) -> list[dict]:
     if hist_state is None:
         return []
     try:
