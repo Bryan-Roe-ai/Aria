@@ -1518,10 +1518,24 @@ with gr.Blocks() as demo:
 
         refresh_sessions_btn.click(list_sessions, outputs=[saved_sessions])
 
+        def _safe_session_path(filename):
+            if not filename or not isinstance(filename, str):
+                return None
+            if os.path.isabs(filename):
+                return None
+            base = os.path.realpath(CONV_DIR)
+            candidate = os.path.realpath(os.path.join(base, filename))
+            try:
+                if os.path.commonpath([base, candidate]) != base:
+                    return None
+            except ValueError:
+                return None
+            return candidate
+
         def load_session(filename):
-            if not filename:
+            path = _safe_session_path(filename)
+            if not path:
                 return [], []
-            path = os.path.join(CONV_DIR, filename)
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     data = json.load(f)
@@ -1533,9 +1547,9 @@ with gr.Blocks() as demo:
         load_session_btn.click(load_session, inputs=[saved_sessions], outputs=[chatbot, hist_state])
 
         def delete_session(filename):
-            if not filename:
+            path = _safe_session_path(filename)
+            if not path:
                 return gr.update()
-            path = os.path.join(CONV_DIR, filename)
             try:
                 os.remove(path)
             except Exception:
