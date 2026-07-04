@@ -65,7 +65,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # ── Path constants ────────────────────────────────────────────────────────────
 
@@ -101,7 +101,7 @@ def _info(msg: str) -> None:
 
 
 def _head(msg: str) -> None:
-    print(f"\n{_BOLD}{_BLUE}{'─'*56}\n  {msg}\n{'─'*56}{_RESET}")
+    print(f"\n{_BOLD}{_BLUE}{'─' * 56}\n  {msg}\n{'─' * 56}{_RESET}")
 
 
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
@@ -122,14 +122,14 @@ class ProviderResult:
     model: str = ""
     latency_ms: float = 0.0
     error: str = ""
-    env_written: Dict[str, str] = field(default_factory=dict)
-    notes: List[str] = field(default_factory=list)
+    env_written: dict[str, str] = field(default_factory=dict)
+    notes: list[str] = field(default_factory=list)
 
 
 # ── local.settings.json helpers ───────────────────────────────────────────────
 
 
-def _load_settings() -> Dict[str, Any]:
+def _load_settings() -> dict[str, Any]:
     if LOCAL_SETTINGS.exists():
         try:
             return json.loads(LOCAL_SETTINGS.read_text())
@@ -138,12 +138,12 @@ def _load_settings() -> Dict[str, Any]:
     return {"IsEncrypted": False, "Values": {}}
 
 
-def _save_settings(settings: Dict[str, Any]) -> None:
+def _save_settings(settings: dict[str, Any]) -> None:
     LOCAL_SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
     _ok(f"Wrote {LOCAL_SETTINGS}")
 
 
-def _get_setting(settings: Dict[str, Any], key: str, fallback: str = "") -> str:
+def _get_setting(settings: dict[str, Any], key: str, fallback: str = "") -> str:
     """Return value from settings 'Values' dict, then env, then fallback."""
     vals = settings.get("Values", {})
     val = vals.get(key, "") or os.environ.get(key, fallback)
@@ -153,9 +153,9 @@ def _get_setting(settings: Dict[str, Any], key: str, fallback: str = "") -> str:
     return val or fallback
 
 
-def _effective_env(settings: Dict[str, Any]) -> Dict[str, str]:
+def _effective_env(settings: dict[str, Any]) -> dict[str, str]:
     """Merge local.settings.json Values into current env (settings wins)."""
-    merged: Dict[str, str] = {}
+    merged: dict[str, str] = {}
     for k, v in (settings.get("Values") or {}).items():
         if v and not str(v).strip().startswith("#"):
             merged[k] = str(v)
@@ -168,7 +168,7 @@ def _effective_env(settings: Dict[str, Any]) -> Dict[str, str]:
 # ── HTTP probe helper ─────────────────────────────────────────────────────────
 
 
-def _probe_url(url: str, headers: Dict[str, str] | None = None, timeout: int = 5) -> Tuple[int, Any]:
+def _probe_url(url: str, headers: dict[str, str] | None = None, timeout: int = 5) -> tuple[int, Any]:
     """Return (status_code, parsed_json_or_None). Returns (-1, None) on connection error."""
     req = urllib.request.Request(url, headers=headers or {})
     try:
@@ -200,7 +200,7 @@ def _generate_local_token(prefix: str = "lm") -> str:
     return f"{prefix}-{rand}"
 
 
-def _az_cli_get_token(resource: str = "https://cognitiveservices.azure.com") -> Optional[str]:
+def _az_cli_get_token(resource: str = "https://cognitiveservices.azure.com") -> str | None:
     """Try to get an AAD access token via the Azure CLI."""
     try:
         result = subprocess.run(
@@ -217,7 +217,7 @@ def _az_cli_get_token(resource: str = "https://cognitiveservices.azure.com") -> 
     return None
 
 
-def _az_cli_get_account() -> Optional[Dict[str, str]]:
+def _az_cli_get_account() -> dict[str, str] | None:
     """Return Azure account info dict, or None if not logged in."""
     try:
         result = subprocess.run(
@@ -237,7 +237,7 @@ def _az_cli_get_account() -> Optional[Dict[str, str]]:
 
 
 def probe_ollama(
-    env: Dict[str, str],
+    env: dict[str, str],
     *,
     rotate: bool = False,
     pull_model: str = "",
@@ -309,7 +309,7 @@ def probe_ollama(
 
 
 def probe_lmstudio(
-    env: Dict[str, str],
+    env: dict[str, str],
     *,
     rotate: bool = False,
     write: bool = False,
@@ -324,7 +324,7 @@ def probe_lmstudio(
     token = env.get("LM_API_TOKEN") or env.get("LMSTUDIO_API_KEY") or env.get("LMSTUDIO_TOKEN") or ""
 
     # Try probing /v1/models
-    headers: Dict[str, str] = {"Accept": "application/json"}
+    headers: dict[str, str] = {"Accept": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
         result.token_present = True
@@ -388,7 +388,7 @@ def probe_lmstudio(
 
 
 def probe_azure_openai(
-    env: Dict[str, str],
+    env: dict[str, str],
     *,
     use_az_cli: bool = False,
     rotate: bool = False,
@@ -407,9 +407,7 @@ def probe_azure_openai(
         _info("Trying Azure CLI token exchange …")
         account = _az_cli_get_account()
         if account:
-            _ok(
-                f"Azure CLI — logged in as: {account.get('user', {}).get('name', '?')} " f"({account.get('name', '?')})"
-            )
+            _ok(f"Azure CLI — logged in as: {account.get('user', {}).get('name', '?')} ({account.get('name', '?')})")
             aad_token = _az_cli_get_token()
             if aad_token:
                 api_key = aad_token
@@ -505,7 +503,7 @@ def probe_azure_openai(
 
 
 def probe_openai(
-    env: Dict[str, str],
+    env: dict[str, str],
     *,
     rotate: bool = False,
     write: bool = False,
@@ -573,18 +571,18 @@ def probe_openai(
 
 
 def run(
-    providers: List[str],
-    settings: Dict[str, Any],
+    providers: list[str],
+    settings: dict[str, Any],
     *,
     rotate: bool = False,
     write: bool = False,
     interactive: bool = False,
     use_az_cli: bool = False,
     pull_model: str = "",
-) -> List[ProviderResult]:
+) -> list[ProviderResult]:
     env = _effective_env(settings)
-    results: List[ProviderResult] = []
-    pending_writes: Dict[str, str] = {}
+    results: list[ProviderResult] = []
+    pending_writes: dict[str, str] = {}
 
     for prov in providers:
         if prov in ("ollama",):
@@ -615,11 +613,11 @@ def run(
 # ── Summary rendering ─────────────────────────────────────────────────────────
 
 
-def _render_summary(results: List[ProviderResult]) -> None:
+def _render_summary(results: list[ProviderResult]) -> None:
     _head("Provider Token Status")
     width = 60
     print(f"  {'Provider':<18}{'Status':<10}{'Token':<8}{'Endpoint / Notes'}")
-    print(f"  {'─'*16}  {'─'*8}  {'─'*6}  {'─'*(width-36)}")
+    print(f"  {'─' * 16}  {'─' * 8}  {'─' * 6}  {'─' * (width - 36)}")
     for r in results:
         icon = {
             "ok": _GREEN + "✅ ok" + _RESET,
@@ -637,7 +635,7 @@ def _render_summary(results: List[ProviderResult]) -> None:
     print(f"\n  {_BOLD}Healthy providers: {healthy}/{len(results)}{_RESET}")
 
 
-def _write_json_status(results: List[ProviderResult]) -> None:
+def _write_json_status(results: list[ProviderResult]) -> None:
     """Write machine-readable status to data_out/ai_token_status.json."""
     STATUS_OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {

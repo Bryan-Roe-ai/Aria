@@ -7,6 +7,7 @@ argument-hint: "Describe the symptom: wrong expression label, low confidence sco
 # Vision Inference Debug Workflow
 
 ## What This Skill Produces
+
 - Root cause for checkpoint loading failures (search path, missing keys, class_names absent)
 - Diagnosis of preprocessing mismatches (wrong input size, missing normalization)
 - Verification that inference pipeline returns expected `{label, confidence, scores}` shape
@@ -15,6 +16,7 @@ argument-hint: "Describe the symptom: wrong expression label, low confidence sco
 ## When to Use
 
 Trigger phrases:
+
 - "vision inference returns wrong expression"
 - "TinyConvNet checkpoint not found"
 - "confidence score always low"
@@ -30,7 +32,9 @@ Trigger phrases:
 ## Procedure
 
 ### Step 1 — Verify checkpoint search paths
+
 `VisionInference()` auto-loads the latest `.pt` checkpoint in this order:
+
 ```
 1. data_out/vision_training/
 2. scripts/checkpoints/
@@ -48,6 +52,7 @@ ls -lt checkpoints/*.pt 2>/dev/null | head -5
 ```
 
 ### Step 2 — Validate checkpoint format
+
 ```python
 import torch
 
@@ -66,6 +71,7 @@ print(checkpoint.keys())
 ### Step 3 — Confirm preprocessing matches training
 
 All inputs are resized and normalized before inference:
+
 ```python
 # Required preprocessing pipeline:
 transform = transforms.Compose([
@@ -80,6 +86,7 @@ transform = transforms.Compose([
 ```
 
 ### Step 4 — Test each inference input method
+
 ```python
 from scripts.vision_inference import VisionInference
 
@@ -104,6 +111,7 @@ result = vi.predict_file("test.jpg")
 ```
 
 ### Step 5 — Review TinyConvNet architecture
+
 ```python
 # Architecture (must match checkpoint exactly):
 # Conv2d(3, 16, kernel_size=3)  → ReLU → MaxPool2d(2)
@@ -117,6 +125,7 @@ result = vi.predict_file("test.jpg")
 ```
 
 ### Step 6 — Check GPU/CPU device handling
+
 ```python
 # VisionInference auto-detects device at init:
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -130,6 +139,7 @@ vi = VisionInference()
 ```
 
 ### Step 7 — Adding a new emotion class
+
 ```
 ⚠ Adding a new class ALWAYS requires retraining — there is no hot-add path.
 
@@ -143,6 +153,7 @@ Steps:
 ```
 
 ## Quality Checks
+
 - [ ] Checkpoint found in one of the 3 search paths
 - [ ] Checkpoint contains `class_names` key — not just numeric label indices
 - [ ] Input images resized to 64×64 before passing to model

@@ -1,14 +1,14 @@
 trigger:
-- main
+    - main
 
 pool:
-  vmImage: 'windows-latest'
+    vmImage: "windows-latest"
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
+    - task: UsePythonVersion@0
+      inputs:
+          versionSpec: "3.x"
 
-- powershell: |
-    ./azure/quantum_master_orchestration.ps1
-  displayName: 'Run Quantum Orchestration'
+    - powershell: |
+          ./azure/quantum_master_orchestration.ps1
+      displayName: "Run Quantum Orchestration"

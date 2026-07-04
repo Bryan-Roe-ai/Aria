@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class PrivateData:
         """String representation that doesn't expose sensitive data."""
         return f"<{self.classification.value}:{self.privacy_level.value}>"
 
-    def to_audit_log(self) -> Dict[str, Any]:
+    def to_audit_log(self) -> dict[str, Any]:
         """Create audit log entry without exposing content."""
         return {
             "timestamp": self.accessed_at,
@@ -101,7 +101,7 @@ class PrivacyAuditLog:
         data: PrivateData,
         action: str,
         agent: str,
-        result: Optional[str] = None,
+        result: str | None = None,
     ) -> None:
         """Log data access for audit trail."""
         entry = {
@@ -161,8 +161,6 @@ class LocalOnlyProcessor:
     def _check_lmstudio(self) -> None:
         """Verify LM Studio is available for local processing."""
         try:
-            import asyncio
-
             from lmstudio_agent_integration import get_lmstudio_agent_client
 
             async def check():
@@ -266,7 +264,7 @@ class LocalOnlyProcessor:
             f"Provide analysis without reproducing or exposing the original content."
         )
 
-    async def verify_privacy_compliance(self) -> Dict[str, Any]:
+    async def verify_privacy_compliance(self) -> dict[str, Any]:
         """Verify all recent processing stayed local."""
         is_compliant = self.audit_log.verify_local_processing(hours_lookback=24)
 
@@ -295,7 +293,7 @@ class PrivacyAwareAGIProvider:
         self,
         private_data: PrivateData,
         analysis_type: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Analyze private data while maintaining strict privacy.
 
@@ -387,7 +385,7 @@ async def example_financial_analysis():
     print("=" * 70 + "\n")
 
     financial_data = PrivateData(
-        content="Portfolio: $500K in stocks, $200K bonds, Cash: $50K, " "Liabilities: Mortgage $300K at 3.5%",
+        content="Portfolio: $500K in stocks, $200K bonds, Cash: $50K, Liabilities: Mortgage $300K at 3.5%",
         classification=DataClassification.FINANCIAL,
         privacy_level=PrivacyLevel.RESTRICTED,
         source="financial_advisor",
@@ -482,7 +480,7 @@ async def example_compliance_monitoring():
         print(f"✓ Audit log created: {audit_file}")
 
         # Show sample entries
-        print(f"\nAudit Trail (last 2 entries):")
+        print("\nAudit Trail (last 2 entries):")
         with open(audit_file) as f:
             entries = f.readlines()[-2:]
             for entry in entries:

@@ -92,21 +92,22 @@ python scripts/lm_studio_analyzer.py query "Summarize this file" --timeout 180
 1. **Open Command Palette**: `Ctrl+Shift+P`
 2. **Run Task**: `Tasks: Run Task`
 3. **Select an LM Studio task**:
-   - `LM Studio: Check Connection` - Verify LM Studio is running
-   - `LM Studio: Start Chat` - Interactive conversation
-   - `LM Studio: Analyze Current File` - Analyze the open file
-   - `LM Studio: Generate Docs for File` - Create documentation
-   - `LM Studio: Generate Tests for File` - Create unit tests
-   - `LM Studio: Explain Selected Concept` - Explain any topic
-   - `LM Studio: Debug Error Message` - Help debug errors
-   - `LM Studio: Query Quick` - Send a quick query
+    - `LM Studio: Check Connection` - Verify LM Studio is running
+    - `LM Studio: Start Chat` - Interactive conversation
+    - `LM Studio: Analyze Current File` - Analyze the open file
+    - `LM Studio: Generate Docs for File` - Create documentation
+    - `LM Studio: Generate Tests for File` - Create unit tests
+    - `LM Studio: Explain Selected Concept` - Explain any topic
+    - `LM Studio: Debug Error Message` - Help debug errors
+    - `LM Studio: Query Quick` - Send a quick query
 
 Or add keyboard shortcut in `.vscode/keybindings.json`:
+
 ```json
 {
-  "key": "ctrl+shift+l",
-  "command": "workbench.action.tasks.runTask",
-  "args": "LM Studio: Start Chat"
+    "key": "ctrl+shift+l",
+    "command": "workbench.action.tasks.runTask",
+    "args": "LM Studio: Start Chat"
 }
 ```
 
@@ -173,19 +174,21 @@ source ~/.bashrc
 ### Connection Fails
 
 1. **Check LM Studio is running**:
-   ```bash
-   curl http://localhost:1234/v1/models
-   ```
+
+    ```bash
+    curl http://localhost:1234/v1/models
+    ```
 
 2. **Check LM Studio port** (if using non-default):
-   ```bash
-   export LMSTUDIO_BASE_URL="http://127.0.0.1:9999/v1"
-   bash scripts/llm_helper.sh check
-   ```
+
+    ```bash
+    export LMSTUDIO_BASE_URL="http://127.0.0.1:9999/v1"
+    bash scripts/llm_helper.sh check
+    ```
 
 3. **Check firewall**:
-   - Make sure port 1234 is not blocked
-   - LM Studio should be accessible from the dev container
+    - Make sure port 1234 is not blocked
+    - LM Studio should be accessible from the dev container
 
 ### Slow Responses
 
@@ -247,30 +250,33 @@ bash scripts/llm_helper.sh tests shared/subscription_manager.py
 ## Tips & Tricks
 
 1. **Create aliases** for quick access:
-   ```bash
-   alias llm='bash /workspaceFolder/scripts/llm_helper.sh'
-   llm query "your question"
-   ```
+
+    ```bash
+    alias llm='bash /workspaceFolder/scripts/llm_helper.sh'
+    llm query "your question"
+    ```
 
 2. **Pipe output to file**:
-   ```bash
-   bash scripts/llm_helper.sh analyze function_app.py > analysis.txt
-   ```
+
+    ```bash
+    bash scripts/llm_helper.sh analyze function_app.py > analysis.txt
+    ```
 
 3. **Combine with other tools**:
-   ```bash
-   # Analyze all Python files
-   for f in $(find . -name "*.py" -type f); do
-       echo "Analyzing $f..."
-       bash scripts/llm_helper.sh analyze "$f" > "${f%.py}_analysis.txt"
-   done
-   ```
+
+    ```bash
+    # Analyze all Python files
+    for f in $(find . -name "*.py" -type f); do
+        echo "Analyzing $f..."
+        bash scripts/llm_helper.sh analyze "$f" > "${f%.py}_analysis.txt"
+    done
+    ```
 
 4. **Interactive prompt design**:
-   ```bash
-   # Start chat to iterate on prompt before using it in code
-   bash scripts/llm_helper.sh chat
-   ```
+    ```bash
+    # Start chat to iterate on prompt before using it in code
+    bash scripts/llm_helper.sh chat
+    ```
 
 ## Files Created
 

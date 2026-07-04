@@ -26,8 +26,11 @@ try:
 except ModuleNotFoundError:
     # Fallback for environments without namespace package support
     sys.path.insert(0, str(project_root / "src"))
-    from quantum_classifier import HybridQuantumClassifier  # type: ignore
-    from quantum_classifier import QuantumClassifier, train_quantum_model
+    from quantum_classifier import (
+        HybridQuantumClassifier,  # type: ignore
+        QuantumClassifier,
+        train_quantum_model,
+    )
 
 # Results directory
 results_dir = Path(__file__).parent.parent / "results" / "experiments"
@@ -67,7 +70,7 @@ for n_layers in layer_configs:
 
     # Update config
     config_path = Path(__file__).parent.parent / "config" / "quantum_config.yaml"
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     config["ml"]["model"]["n_layers"] = n_layers

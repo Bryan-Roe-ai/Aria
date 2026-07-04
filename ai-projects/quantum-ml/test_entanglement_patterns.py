@@ -6,9 +6,8 @@ Patterns: linear, circular, full
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-_OPTIONAL_IMPORT_ERROR: Optional[ImportError] = None
+_OPTIONAL_IMPORT_ERROR: ImportError | None = None
 
 try:
     import matplotlib.pyplot as plt
@@ -129,7 +128,7 @@ def main():
             "val_acc": trainer.val_accuracies,
             "val_loss": trainer.val_losses,
         }
-        print(f"   Final Val Acc: {trainer.val_accuracies[-1]*100:.2f}%")
+        print(f"   Final Val Acc: {trainer.val_accuracies[-1] * 100:.2f}%")
 
     # Plot
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -169,7 +168,7 @@ def main():
     md.append(f"\nGenerated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     md.append("\n## Summary")
     for p in patterns:
-        md.append(f"- {p.title()}: Final Val Acc = {histories[p]['val_acc'][-1]*100:.2f}%")
+        md.append(f"- {p.title()}: Final Val Acc = {histories[p]['val_acc'][-1] * 100:.2f}%")
 
     report_path = results_dir / "entanglement_patterns_report.md"
     with open(report_path, "w", encoding="utf-8") as f:

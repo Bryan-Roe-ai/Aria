@@ -1,7 +1,6 @@
 // Auto-generated. Do not edit.
 
-
-    declare const enum NumberFormat {
+declare const enum NumberFormat {
     Int8LE = 1,
     UInt8LE = 2,
     Int16LE = 3,
@@ -19,11 +18,10 @@
     Float64LE = 14,
     Float32BE = 15,
     Float64BE = 16,
-    }
+}
 
-
-    declare const enum PerfCounters {
+declare const enum PerfCounters {
     GC = 0,
-    }
+}
 
 // Auto-generated. Do not edit. Really.

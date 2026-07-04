@@ -33,9 +33,9 @@ def print_banner(text, color="cyan"):
     c = colors.get(color, colors["cyan"])
     r = colors["reset"]
 
-    print(f"\n{c}{'='*70}{r}")
+    print(f"\n{c}{'=' * 70}{r}")
     print(f"{c}{text.center(70)}{r}")
-    print(f"{c}{'='*70}{r}\n")
+    print(f"{c}{'=' * 70}{r}\n")
 
 
 def print_section(number, title, description):
@@ -159,7 +159,7 @@ def generate_summary_report(results):
     print(f"   Total Experiments: {total}")
     print(f"   Successful: {successful}")
     print(f"   Failed: {total - successful}")
-    print(f"   Success Rate: {successful/total*100:.1f}%\n")
+    print(f"   Success Rate: {successful / total * 100:.1f}%\n")
 
     # Detail each experiment
     for name, result in results.items():
@@ -224,7 +224,7 @@ def save_report_to_file(filepath, results):
         successful = sum(1 for r in results.values() if r["success"])
         f.write(f"- Total Experiments: {total}\n")
         f.write(f"- Successful: {successful}\n")
-        f.write(f"- Success Rate: {successful/total*100:.1f}%\n\n")
+        f.write(f"- Success Rate: {successful / total * 100:.1f}%\n\n")
 
         f.write("## Experiment Results\n\n")
         for name, result in results.items():
@@ -319,7 +319,7 @@ def main():
 
     # Generate summary
     print_banner("ALL EXPERIMENTS COMPLETE", "green")
-    print(f"\n\033[96m⏱️  Total Time: {total_time/60:.1f} minutes\033[0m\n")
+    print(f"\n\033[96m⏱️  Total Time: {total_time / 60:.1f} minutes\033[0m\n")
 
     generate_summary_report(results)
 

@@ -1,4 +1,5 @@
 # 🚀 Production Deployment Guide
+
 ## Enhanced 8-Qubit Quantum AI with Azure Integration
 
 **Date:** October 31, 2025
@@ -11,20 +12,20 @@
 
 ### Enhanced 8-Qubit Classifier Results
 
-| Metric | Value | Improvement |
-| -------- | ------- | ------------- |
-| **Accuracy** | **97.5%** | +20% vs 4-qubit |
-| **Qubits** | 8 | 2x capacity |
-| **Layers** | 4 | Optimized depth |
-| **Parameters** | 473 | Efficient |
+| Metric            | Value     | Improvement      |
+| ----------------- | --------- | ---------------- |
+| **Accuracy**      | **97.5%** | +20% vs 4-qubit  |
+| **Qubits**        | 8         | 2x capacity      |
+| **Layers**        | 4         | Optimized depth  |
+| **Parameters**    | 473       | Efficient        |
 | **Training Time** | 20 epochs | Fast convergence |
 
 ### Comparison: 4-Qubit vs 8-Qubit
 
-| Configuration | Accuracy | Use Case |
-| -------------- | ---------- | ---------- |
-| 4 qubits, 2 layers | 77.5% | Simple patterns |
-| 4 qubits, 4 layers | 87.5% | Moderate complexity |
+| Configuration          | Accuracy     | Use Case             |
+| ---------------------- | ------------ | -------------------- |
+| 4 qubits, 2 layers     | 77.5%        | Simple patterns      |
+| 4 qubits, 4 layers     | 87.5%        | Moderate complexity  |
 | **8 qubits, 4 layers** | **97.5%** ⭐ | **Complex patterns** |
 
 ---
@@ -34,38 +35,40 @@
 ### ✅ Completed Tasks
 
 1. **✓ Azure CLI Installation**
-   - Already installed (v2.78.0)
-   - Quantum extension enabled (v1.0.0b10)
-   - PATH configured correctly
+    - Already installed (v2.78.0)
+    - Quantum extension enabled (v1.0.0b10)
+    - PATH configured correctly
 
 2. **✓ Enhanced Quantum Model (8 Qubits)**
-   - Created `quantum_classifier_enhanced.py`
-   - Supports 6-8 qubits for complex patterns
-   - Data re-uploading implemented
-   - Multiple entanglement patterns (linear, circular, full, ladder)
-   - Hardware-ready circuit compilation
+    - Created `quantum_classifier_enhanced.py`
+    - Supports 6-8 qubits for complex patterns
+    - Data re-uploading implemented
+    - Multiple entanglement patterns (linear, circular, full, ladder)
+    - Hardware-ready circuit compilation
 
 3. **✓ Azure Deployment Scripts**
-   - `deploy_to_azure_quantum.ps1` - Complete deployment automation
-   - Workspace creation and configuration
-   - Provider setup (IonQ, Quantinuum)
-   - Hardware testing workflows
+    - `deploy_to_azure_quantum.ps1` - Complete deployment automation
+    - Workspace creation and configuration
+    - Provider setup (IonQ, Quantinuum)
+    - Hardware testing workflows
 
 4. **✓ Azure ML Integration**
-   - `azure_ml_integration.py` - Production ML pipeline
-   - Training job submission
-   - Model registration and versioning
-   - REST API deployment for inference
-   - Compute cluster management
+    - `azure_ml_integration.py` - Production ML pipeline
+    - Training job submission
+    - Model registration and versioning
+    - REST API deployment for inference
+    - Compute cluster management
 
 ### 🔬 Experiment Results
 
 **Parameter Tuning:**
+
 - Optimal layers: 4 (87.5% accuracy)
 - Optimal learning rate: 0.01
 - Optimal entanglement: Circular
 
 **Extended Datasets:**
+
 - Imbalanced: 90.0% ⭐
 - Wine: 63.9%
 - XOR: 57.5%
@@ -86,6 +89,7 @@ cd C:\Users\Bryan\OneDrive\AI\quantum-ai
 ```
 
 **What this does:**
+
 - ✓ Authenticates to Azure
 - ✓ Creates resource group `rg-quantum-ai`
 - ✓ Deploys Azure Quantum workspace
@@ -109,6 +113,7 @@ python test_azure_quantum.py
 ```
 
 **Expected Results:**
+
 - Local test: 97.5% accuracy
 - Simulator test: Quantum entanglement verification
 - Cost: $0.00 (using free simulators)
@@ -124,11 +129,13 @@ python test_azure_quantum.py
 ```
 
 **Options:**
+
 1. **IonQ Simulator** (FREE) - Recommended for testing
 2. **IonQ QPU** (PAID) - Real ion-trap quantum computer
 3. **Quantinuum** (PAID) - Real quantum hardware
 
 **Costs:**
+
 - IonQ Simulator: **FREE**
 - IonQ QPU: ~$0.00003 per gate-shot
 - Quantinuum: ~$0.00015 per circuit execution
@@ -149,6 +156,7 @@ python src/azure_ml_integration.py
 ```
 
 **Features:**
+
 - ✓ Automated training pipelines
 - ✓ Model versioning and registry
 - ✓ REST API for inference
@@ -192,30 +200,30 @@ ai-projects/quantum-ml/
 
 ```yaml
 ml:
-  model:
-    n_qubits: 8        # Enhanced: 8 qubits (was 4)
-    n_layers: 4        # Optimized: 4 layers
-    entanglement: full # Best for complex patterns
+    model:
+        n_qubits: 8 # Enhanced: 8 qubits (was 4)
+        n_layers: 4 # Optimized: 4 layers
+        entanglement: full # Best for complex patterns
 
-  training:
-    epochs: 100
-    batch_size: 32
-    learning_rate: 0.01
+    training:
+        epochs: 100
+        batch_size: 32
+        learning_rate: 0.01
 
 azure:
-  subscription_id: '<your-subscription-id>'
-  resource_group: 'rg-quantum-ai'
-  workspace_name: 'quantum-ai-workspace'
-  location: 'eastus'
+    subscription_id: "<your-subscription-id>"
+    resource_group: "rg-quantum-ai"
+    workspace_name: "quantum-ai-workspace"
+    location: "eastus"
 
 quantum:
-  provider: ionq
-  simulator:
-    backend: default.qubit
-    shots: 1024
-  hardware:
-    shots: 500
-    optimization_level: 2
+    provider: ionq
+    simulator:
+        backend: default.qubit
+        shots: 1024
+    hardware:
+        shots: 500
+        optimization_level: 2
 ```
 
 ---
@@ -225,54 +233,56 @@ quantum:
 ### 8-Qubit Classifier Advantages
 
 1. **Higher Expressivity**
-   - 256 quantum states vs 16 (4-qubit)
-   - Better representation of complex patterns
-   - Achieved 97.5% accuracy on test data
+    - 256 quantum states vs 16 (4-qubit)
+    - Better representation of complex patterns
+    - Achieved 97.5% accuracy on test data
 
 2. **Data Re-uploading**
-   - Multiple encoding layers
-   - Richer feature representation
-   - 10-15% accuracy improvement
+    - Multiple encoding layers
+    - Richer feature representation
+    - 10-15% accuracy improvement
 
 3. **Advanced Entanglement**
-   - Ladder pattern for 8 qubits
-   - Better quantum correlations
-   - Optimized for hardware constraints
+    - Ladder pattern for 8 qubits
+    - Better quantum correlations
+    - Optimized for hardware constraints
 
 4. **Hardware-Ready**
-   - Barrier gates for compilation
-   - Optimized gate sequences
-   - Compatible with IonQ/Quantinuum
+    - Barrier gates for compilation
+    - Optimized gate sequences
+    - Compatible with IonQ/Quantinuum
 
 ### Azure ML Production Features
 
 1. **Training Pipelines**
-   ```python
-   deployer = QuantumAzureMLDeployment()
-   run = deployer.submit_training_job(
-       script_path='train_azure_ml.py',
-       experiment_name='quantum-8qubit',
-       arguments={'n_qubits': 8, 'epochs': 100}
-   )
-   ```
+
+    ```python
+    deployer = QuantumAzureMLDeployment()
+    run = deployer.submit_training_job(
+        script_path='train_azure_ml.py',
+        experiment_name='quantum-8qubit',
+        arguments={'n_qubits': 8, 'epochs': 100}
+    )
+    ```
 
 2. **Model Registry**
-   ```python
-   model = deployer.register_model(
-       model_path='outputs/quantum_model.pt',
-       model_name='quantum-classifier-8q',
-       tags={'qubits': '8', 'accuracy': '97.5%'}
-   )
-   ```
+
+    ```python
+    model = deployer.register_model(
+        model_path='outputs/quantum_model.pt',
+        model_name='quantum-classifier-8q',
+        tags={'qubits': '8', 'accuracy': '97.5%'}
+    )
+    ```
 
 3. **REST API Deployment**
-   ```python
-   service = deployer.deploy_inference_endpoint(
-       model_name='quantum-classifier-8q',
-       service_name='quantum-api'
-   )
-   # Access at: service.scoring_uri
-   ```
+    ```python
+    service = deployer.deploy_inference_endpoint(
+        model_name='quantum-classifier-8q',
+        service_name='quantum-api'
+    )
+    # Access at: service.scoring_uri
+    ```
 
 ---
 
@@ -280,20 +290,20 @@ quantum:
 
 ### Training Performance
 
-| Dataset | 4-Qubit | 8-Qubit | Improvement |
-| --------- | --------- | --------- | ------------- |
-| Moons | 77.5% | **97.5%** | +20.0% |
-| XOR | 57.5% | **85.0%** | +27.5% |
-| Spiral | 55.0% | **82.0%** | +27.0% |
-| Wine | 63.9% | **91.2%** | +27.3% |
+| Dataset | 4-Qubit | 8-Qubit   | Improvement |
+| ------- | ------- | --------- | ----------- |
+| Moons   | 77.5%   | **97.5%** | +20.0%      |
+| XOR     | 57.5%   | **85.0%** | +27.5%      |
+| Spiral  | 55.0%   | **82.0%** | +27.0%      |
+| Wine    | 63.9%   | **91.2%** | +27.3%      |
 
 ### Computational Cost
 
-| Configuration | Parameters | Training Time | Inference Time |
-| -------------- | ------------ | --------------- | ---------------- |
-| 4 qubits, 2 layers | 96 | 2 min | 10 ms |
-| 4 qubits, 4 layers | 192 | 4 min | 15 ms |
-| **8 qubits, 4 layers** | **473** | **6 min** | **20 ms** |
+| Configuration          | Parameters | Training Time | Inference Time |
+| ---------------------- | ---------- | ------------- | -------------- |
+| 4 qubits, 2 layers     | 96         | 2 min         | 10 ms          |
+| 4 qubits, 4 layers     | 192        | 4 min         | 15 ms          |
+| **8 qubits, 4 layers** | **473**    | **6 min**     | **20 ms**      |
 
 ---
 
@@ -302,68 +312,70 @@ quantum:
 ### Immediate Actions (High Priority)
 
 1. **Deploy to Azure Quantum**
-   ```powershell
-   .\deploy_to_azure_quantum.ps1 -SubscriptionId "your-id"
-   ```
-   - Start with free simulator
-   - Verify workspace configuration
-   - Test quantum entanglement
+
+    ```powershell
+    .\deploy_to_azure_quantum.ps1 -SubscriptionId "your-id"
+    ```
+    - Start with free simulator
+    - Verify workspace configuration
+    - Test quantum entanglement
 
 2. **Run Hardware Tests**
-   ```powershell
-   .\deploy_to_azure_quantum.ps1 -HardwareTest
-   ```
-   - Begin with Bell state test
-   - Progress to full 8-qubit circuits
-   - Compare simulator vs hardware results
+
+    ```powershell
+    .\deploy_to_azure_quantum.ps1 -HardwareTest
+    ```
+    - Begin with Bell state test
+    - Progress to full 8-qubit circuits
+    - Compare simulator vs hardware results
 
 3. **Set Up Production Pipeline**
-   ```powershell
-   .\deploy_to_azure_quantum.ps1 -SetupAzureML
-   ```
-   - Configure ML workspace
-   - Deploy compute cluster
-   - Register first model version
+    ```powershell
+    .\deploy_to_azure_quantum.ps1 -SetupAzureML
+    ```
+    - Configure ML workspace
+    - Deploy compute cluster
+    - Register first model version
 
 ### Medium-Term Goals (1-2 Weeks)
 
 1. **Optimize for Production**
-   - Fine-tune hyperparameters for your specific dataset
-   - Implement cross-validation
-   - Add monitoring and alerting
-   - Set up CI/CD pipeline
+    - Fine-tune hyperparameters for your specific dataset
+    - Implement cross-validation
+    - Add monitoring and alerting
+    - Set up CI/CD pipeline
 
 2. **Scale to Larger Datasets**
-   - Test with 1000+ samples
-   - Implement batch processing
-   - Optimize memory usage
-   - Parallelize training
+    - Test with 1000+ samples
+    - Implement batch processing
+    - Optimize memory usage
+    - Parallelize training
 
 3. **Explore Advanced Features**
-   - Quantum attention mechanisms
-   - Error mitigation techniques
-   - Hybrid quantum-classical ensembles
-   - Multi-class classification (>2 classes)
+    - Quantum attention mechanisms
+    - Error mitigation techniques
+    - Hybrid quantum-classical ensembles
+    - Multi-class classification (>2 classes)
 
 ### Long-Term Vision (1-3 Months)
 
 1. **Research Extensions**
-   - Quantum transfer learning
-   - Quantum GANs for data generation
-   - Quantum reinforcement learning
-   - Integration with Azure OpenAI
+    - Quantum transfer learning
+    - Quantum GANs for data generation
+    - Quantum reinforcement learning
+    - Integration with Azure OpenAI
 
 2. **Enterprise Deployment**
-   - Multi-region deployment
-   - High-availability setup
-   - Security hardening
-   - Compliance and audit logging
+    - Multi-region deployment
+    - High-availability setup
+    - Security hardening
+    - Compliance and audit logging
 
 3. **Cost Optimization**
-   - Reserved capacity pricing
-   - Spot instances for training
-   - Caching and result reuse
-   - Provider cost comparison
+    - Reserved capacity pricing
+    - Spot instances for training
+    - Caching and result reuse
+    - Provider cost comparison
 
 ---
 
@@ -394,6 +406,7 @@ quantum:
 - **Monthly Cost: ~$500**
 
 **Optimization Tips:**
+
 - Use simulators for development (FREE)
 - Batch quantum jobs for efficiency
 - Auto-scale compute to zero when idle
@@ -406,6 +419,7 @@ quantum:
 ### Common Issues
 
 **Issue 1: Azure CLI not found**
+
 ```powershell
 # Refresh PATH
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
@@ -415,6 +429,7 @@ az --version
 ```
 
 **Issue 2: Subscription not configured**
+
 ```powershell
 # List subscriptions
 az account list --output table
@@ -424,6 +439,7 @@ az account set --subscription "<subscription-id>"
 ```
 
 **Issue 3: Quantum workspace deployment fails**
+
 ```powershell
 # Verify resource group exists
 az group show --name rg-quantum-ai
@@ -433,6 +449,7 @@ az vm list-usage --location eastus --output table
 ```
 
 **Issue 4: Python dependencies missing**
+
 ```powershell
 cd quantum-ai
 .\venv\Scripts\Activate.ps1
@@ -502,42 +519,45 @@ pip install azureml-sdk  # For Azure ML
 ### What You Can Do Now
 
 1. **Train Advanced Quantum Models**
-   - 8-qubit classifier with 97.5% accuracy
-   - Supports complex pattern recognition
-   - Hardware-ready circuits
+    - 8-qubit classifier with 97.5% accuracy
+    - Supports complex pattern recognition
+    - Hardware-ready circuits
 
 2. **Deploy to Real Quantum Hardware**
-   - IonQ ion-trap quantum computers
-   - Quantinuum quantum processors
-   - Full Azure Quantum integration
+    - IonQ ion-trap quantum computers
+    - Quantinuum quantum processors
+    - Full Azure Quantum integration
 
 3. **Production ML Pipeline**
-   - Automated training workflows
-   - Model registry and versioning
-   - REST API for inference
-   - Auto-scaling infrastructure
+    - Automated training workflows
+    - Model registry and versioning
+    - REST API for inference
+    - Auto-scaling infrastructure
 
 4. **Enterprise-Grade Infrastructure**
-   - Infrastructure as Code (Bicep)
-   - Automated deployment scripts
-   - Cost monitoring and optimization
-   - Security and compliance ready
+    - Infrastructure as Code (Bicep)
+    - Automated deployment scripts
+    - Cost monitoring and optimization
+    - Security and compliance ready
 
 ---
 
 ## 📞 Support & Resources
 
 **Azure Quantum**
+
 - Portal: https://portal.azure.com
 - Documentation: https://aka.ms/quantum-docs
 - Pricing: https://azure.microsoft.com/pricing/details/azure-quantum/
 
 **Azure Machine Learning**
+
 - Portal: https://ml.azure.com
 - Documentation: https://aka.ms/azureml-docs
 - Examples: https://github.com/Azure/azureml-examples
 
 **Quantum Computing**
+
 - PennyLane: https://pennylane.ai
 - Qiskit: https://qiskit.org
 - Research Papers: https://arxiv.org/list/quant-ph/recent
@@ -553,6 +573,6 @@ pip install azureml-sdk  # For Azure ML
 
 ---
 
-*Generated: October 31, 2025*
-*Version: 1.0 - Production Ready*
-*Project: Quantum AI with Azure Integration*
+_Generated: October 31, 2025_
+_Version: 1.0 - Production Ready_
+_Project: Quantum AI with Azure Integration_

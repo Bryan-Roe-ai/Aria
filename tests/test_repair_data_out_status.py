@@ -96,7 +96,9 @@ def test_repair_all_skips_agent_output(tmp_path):
     agent = data_dir / "agents" / "self" / "status.json"
     orchestrator.parent.mkdir(parents=True)
     agent.parent.mkdir(parents=True)
-    orchestrator.write_text('{\n<<<<<<< HEAD\n  "ok": true\n=======\n  "ok": false\n>>>>>>> other\n}\n', encoding="utf-8")
+    orchestrator.write_text(
+        '{\n<<<<<<< HEAD\n  "ok": true\n=======\n  "ok": false\n>>>>>>> other\n}\n', encoding="utf-8"
+    )
     agent.write_text('{\n<<<<<<< HEAD\n  "ok": true\n=======\n  "ok": false\n>>>>>>> other\n}\n', encoding="utf-8")
 
     results = repair_all(data_dir)

@@ -244,13 +244,9 @@ def test_debate_happy_path_with_steelman():
 
 
 def test_debate_without_steelman_blanks_field():
-    raw = json.dumps(
-        {"counter_arguments": [], "weaknesses": [], "steelman": "ignored", "verdict": "v"}
-    )
+    raw = json.dumps({"counter_arguments": [], "weaknesses": [], "steelman": "ignored", "verdict": "v"})
     agent = DebateAgent(MemoryStore(), _StubLLM(raw))
-    result = agent.execute(
-        Task(type="debate", payload={"claim": "x", "steelman": False})
-    )
+    result = agent.execute(Task(type="debate", payload={"claim": "x", "steelman": False}))
     assert result["steelman"] == ""
 
 
@@ -282,9 +278,7 @@ def test_hypothesis_from_observation():
         }
     )
     agent = HypothesisAgent(memory, _StubLLM(raw))
-    result = agent.execute(
-        Task(type="hypothesize", payload={"observation": "things happened"})
-    )
+    result = agent.execute(Task(type="hypothesize", payload={"observation": "things happened"}))
     assert len(result["hypotheses"]) == 2
     assert result["hypotheses"][0]["testable"] is True
     assert result["summary"] == "narrative"
@@ -311,8 +305,6 @@ def test_hypothesis_derives_from_memory_events():
 def test_hypothesis_fallback_on_empty():
     memory = MemoryStore()
     agent = HypothesisAgent(memory, _StubLLM(""))
-    result = agent.execute(
-        Task(type="hypothesize", payload={"observation": "obs"})
-    )
+    result = agent.execute(Task(type="hypothesize", payload={"observation": "obs"}))
     assert result["hypotheses"][0]["testable"] is False
     assert result["summary"] == "Could not generate hypotheses."

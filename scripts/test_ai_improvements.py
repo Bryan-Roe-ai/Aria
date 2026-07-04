@@ -84,7 +84,6 @@ def test_chat_improvements():
     print("=" * 60)
 
     try:
-
         print("\n✅ Imports successful")
 
         # Test enhanced parameters (even if model not available)

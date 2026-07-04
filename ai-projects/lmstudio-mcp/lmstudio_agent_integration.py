@@ -20,8 +20,9 @@ import json
 import logging
 import os
 import sys
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Dict, Generator, Iterable, List, Optional
+from typing import Any
 
 # Add parent directory to path for imports
 _parent = Path(__file__).parent.parent / "lmstudio-mcp"
@@ -39,7 +40,7 @@ _logger = logging.getLogger(__name__)
 # LM Studio Agent Registry Entry
 # =============================================================================
 
-LMSTUDIO_AGENT_ENTRY: Dict[str, Any] = {
+LMSTUDIO_AGENT_ENTRY: dict[str, Any] = {
     "name": "lmstudio-local",
     "domains": ["technical", "coding", "ai", "general"],
     "intents": ["explanation", "coding", "question", "creation"],
@@ -93,7 +94,7 @@ class LMStudioAgentClient:
             max_tokens=max_tokens,
         )
 
-    async def complete(self, messages: List[Dict[str, str]], **kwargs) -> str:
+    async def complete(self, messages: list[dict[str, str]], **kwargs) -> str:
         """
         Complete a message sequence and return the response.
 
@@ -122,7 +123,7 @@ class LMStudioAgentClient:
             error = result.get("error", "Unknown error")
             raise RuntimeError(f"LM Studio error: {error}")
 
-    async def stream(self, messages: List[Dict[str, str]], **kwargs) -> Generator[str, None, None]:
+    async def stream(self, messages: list[dict[str, str]], **kwargs) -> Generator[str, None, None]:
         """
         Stream completion tokens.
 
@@ -156,7 +157,7 @@ class LMStudioAgentClient:
             error = result.get("error", "Unknown error")
             raise RuntimeError(f"LM Studio error: {error}")
 
-    async def list_models(self) -> List[str]:
+    async def list_models(self) -> list[str]:
         """List available models."""
         result = await self._client.list_models()
         if result.get("success"):
@@ -197,7 +198,7 @@ def get_lmstudio_agent_client() -> LMStudioAgentClient:
     )
 
 
-def register_lmstudio_agent(agent_registry: Dict[str, Dict[str, Any]]) -> None:
+def register_lmstudio_agent(agent_registry: dict[str, dict[str, Any]]) -> None:
     """
     Register LM Studio agent in an agent registry.
 
@@ -247,7 +248,7 @@ def should_use_lmstudio(query: str) -> bool:
     return False
 
 
-def get_lmstudio_agent_info() -> Dict[str, Any]:
+def get_lmstudio_agent_info() -> dict[str, Any]:
     """
     Get information about the LM Studio agent for help/info commands.
 

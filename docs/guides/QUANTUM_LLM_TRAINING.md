@@ -7,20 +7,23 @@ This feature integrates quantum computing capabilities into passive LLM training
 ## Key Features
 
 ### 🔬 Quantum Computing Integration
+
 - **Quantum Attention Optimization**: Uses quantum circuits to optimize attention weight distributions in transformer models
 - **Quantum Feature Encoding**: Encodes classical features into quantum states for enhanced representation learning
 - **Hybrid Quantum-Classical Architecture**: Seamlessly integrates quantum layers with classical neural networks
 
 ### 🤖 Passive Training Mode
+
 - **Continuous Background Training**: Runs autonomously in the background with configurable intervals
 - **Integration with Autonomous Orchestrator**: Works seamlessly with the existing autonomous training system
 - **Resource-Aware Execution**: Intelligently manages quantum circuit executions to balance performance and cost
 
 ### ⚛️ Quantum Backends
+
 - **Local Simulator**: Fast quantum simulation using PennyLane's default.qubit (free, unlimited use)
 - **Azure Quantum**: Production quantum computing via Azure Quantum service
-  - Free simulators: `ionq.simulator`, `quantinuum.sim.*`
-  - Paid QPU hardware: `ionq.qpu`, `quantinuum.qpu.*` (requires cost confirmation)
+    - Free simulators: `ionq.simulator`, `quantinuum.sim.*`
+    - Paid QPU hardware: `ionq.qpu`, `quantinuum.qpu.*` (requires cost confirmation)
 
 ## Architecture
 
@@ -112,30 +115,30 @@ The orchestrator will automatically run quantum-enhanced LLM training based on t
 
 ```yaml
 quantum_settings:
-  backend: "local"  # or "azure"
-  n_qubits: 4
-  n_quantum_layers: 2
-  entanglement: "circular"
+    backend: "local" # or "azure"
+    n_qubits: 4
+    n_quantum_layers: 2
+    entanglement: "circular"
 
 passive_training:
-  enabled: true
-  interval_seconds: 3600  # Run every hour
-  epochs_per_cycle: 1
+    enabled: true
+    interval_seconds: 3600 # Run every hour
+    epochs_per_cycle: 1
 
 llm_training:
-  model_name: "microsoft/phi-2"
-  learning_rate: 0.0001
-  batch_size: 4
+    model_name: "microsoft/phi-2"
+    learning_rate: 0.0001
+    batch_size: 4
 
-  lora:
-    enabled: true
-    r: 8
-    alpha: 16
+    lora:
+        enabled: true
+        r: 8
+        alpha: 16
 
 quantum_enhancement:
-  optimize_attention: true
-  attention_optimization_frequency: 10
-  quantum_feature_encoding: true
+    optimize_attention: true
+    attention_optimization_frequency: 10
+    quantum_feature_encoding: true
 ```
 
 ### Autonomous Integration: `config/autonomous_training.yaml`
@@ -143,13 +146,13 @@ quantum_enhancement:
 ```yaml
 # Enable quantum-enhanced LLM training
 quantum_llm:
-  enabled: true
-  passive_mode: true
-  backend: "local"
-  n_qubits: 4
-  training_interval_minutes: 60
-  optimize_attention: true
-  quantum_feature_encoding: true
+    enabled: true
+    passive_mode: true
+    backend: "local"
+    n_qubits: 4
+    training_interval_minutes: 60
+    optimize_attention: true
+    quantum_feature_encoding: true
 ```
 
 ## How It Works
@@ -164,6 +167,7 @@ The quantum attention optimizer uses quantum circuits to enhance attention mecha
 4. **Interference**: Quantum interference patterns enhance attention distribution
 
 **Benefits**:
+
 - More diverse attention patterns
 - Better capture of long-range dependencies
 - Potential for quantum speedup on quantum hardware
@@ -178,6 +182,7 @@ Classical features are encoded into quantum states using amplitude encoding:
 4. **Measurement**: Results are decoded back to classical features
 
 **Benefits**:
+
 - Exponential feature space (2^n for n qubits)
 - Quantum entanglement captures feature correlations
 - Novel feature representations
@@ -214,26 +219,26 @@ Classical features are encoded into quantum states using amplitude encoding:
 
 ```yaml
 quantum_settings:
-  backend: "local"
+    backend: "local"
 ```
 
 ### Azure Quantum
 
 - **Free Simulators**:
-  - `ionq.simulator` - IonQ quantum simulator
-  - `quantinuum.sim.h1-1e` - Quantinuum H1 emulator
+    - `ionq.simulator` - IonQ quantum simulator
+    - `quantinuum.sim.h1-1e` - Quantinuum H1 emulator
 - **Paid QPU Hardware**:
-  - `ionq.qpu` - IonQ trapped-ion quantum computer
-  - `quantinuum.qpu.h1-1` - Quantinuum H1-1 quantum computer
+    - `ionq.qpu` - IonQ trapped-ion quantum computer
+    - `quantinuum.qpu.h1-1` - Quantinuum H1-1 quantum computer
 
 ```yaml
 quantum_settings:
-  backend: "azure"
-  azure:
-    resource_id: "your-azure-quantum-workspace-id"
-    target_backend: "ionq.simulator"
-    shots: 100
-    confirm_cost: false  # Must be true for QPU
+    backend: "azure"
+    azure:
+        resource_id: "your-azure-quantum-workspace-id"
+        target_backend: "ionq.simulator"
+        shots: 100
+        confirm_cost: false # Must be true for QPU
 ```
 
 ## Monitoring and Metrics
@@ -242,22 +247,23 @@ quantum_settings:
 
 ```json
 {
-  "status": "success",
-  "epochs_completed": 3,
-  "final_loss": 1.234,
-  "quantum_metrics": {
-    "circuit_executions": 150,
-    "optimization_steps": 15,
-    "quantum_advantage_ratio": 1.05
-  },
-  "started_at": "2025-12-08T10:00:00",
-  "completed_at": "2025-12-08T10:15:00"
+    "status": "success",
+    "epochs_completed": 3,
+    "final_loss": 1.234,
+    "quantum_metrics": {
+        "circuit_executions": 150,
+        "optimization_steps": 15,
+        "quantum_advantage_ratio": 1.05
+    },
+    "started_at": "2025-12-08T10:00:00",
+    "completed_at": "2025-12-08T10:15:00"
 }
 ```
 
 ### Training Results: `data_out/quantum_llm_training/quantum_training_results.json`
 
 Detailed results including:
+
 - Loss history per epoch
 - Quantum circuit execution counts
 - Optimization metrics
@@ -266,6 +272,7 @@ Detailed results including:
 ### Logs
 
 Logs are written to:
+
 - Console output (INFO level)
 - Autonomous training log: `data_out/autonomous_training.log` (when integrated)
 
@@ -420,6 +427,7 @@ python scripts/quantum_llm_trainer.py \
 ## Support
 
 For issues and questions:
+
 1. Check troubleshooting section above
 2. Review logs in `data_out/quantum_llm_training.log`
 3. Test with local simulator first

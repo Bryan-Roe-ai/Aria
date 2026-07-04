@@ -227,7 +227,7 @@ def ensure_server_running():
     for i in range(30):
         if is_aria_api_healthy(target_url):
             SERVER_URL = target_url
-            logger.info(f"Server started successfully after {i+1} attempts")
+            logger.info(f"Server started successfully after {i + 1} attempts")
             return proc
         time.sleep(0.2)
 
@@ -307,7 +307,7 @@ def test_selenium_add_pickup_drop():
     started_proc = proc is not None
 
     # Generate unique object name
-    name = f"e2e_sel_{int(time.time()*1000)}"
+    name = f"e2e_sel_{int(time.time() * 1000)}"
 
     driver = None
     try:

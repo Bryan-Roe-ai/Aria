@@ -10,32 +10,32 @@ namespace game {
     //% subtitle.shadow=text
     //% group="Prompt"
     export function ask(title: any, subtitle?: any): boolean {
-        controller._setUserEventsEnabled(false);
-        game.eventContext(); // initialize the game
-        control.pushEventContext();
-        title = console.inspect(title);
-        subtitle = subtitle ? console.inspect(subtitle) : subtitle;
-        game.showDialog(title, subtitle, "A = OK, B = CANCEL");
+        controller._setUserEventsEnabled(false)
+        game.eventContext() // initialize the game
+        control.pushEventContext()
+        title = console.inspect(title)
+        subtitle = subtitle ? console.inspect(subtitle) : subtitle
+        game.showDialog(title, subtitle, "A = OK, B = CANCEL")
         // short pause so that players don't skip through prompt
-        pause(500);
+        pause(500)
 
-        let answer: boolean = null;
-        let aNotHeld = false;
-        let bNotHeld = false;
+        let answer: boolean = null
+        let aNotHeld = false
+        let bNotHeld = false
         pauseUntil(() => {
-            aNotHeld = aNotHeld || !controller.A.isPressed();
-            bNotHeld = bNotHeld || !controller.B.isPressed();
+            aNotHeld = aNotHeld || !controller.A.isPressed()
+            bNotHeld = bNotHeld || !controller.B.isPressed()
 
             if (aNotHeld && controller.A.isPressed()) {
-                answer = true;
+                answer = true
             } else if (bNotHeld && controller.B.isPressed()) {
-                answer = false;
+                answer = false
             }
-            return answer !== null;
-        });
+            return answer !== null
+        })
 
-        control.popEventContext();
-        controller._setUserEventsEnabled(true);
-        return answer;
+        control.popEventContext()
+        controller._setUserEventsEnabled(true)
+        return answer
     }
 }

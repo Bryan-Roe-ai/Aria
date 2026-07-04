@@ -6,10 +6,7 @@ class LocalChatModel:
         try:
             from transformers import pipeline
         except ImportError as exc:
-            raise RuntimeError(
-                "Missing dependency 'transformers'. "
-                "Install it before running this script."
-            ) from exc
+            raise RuntimeError("Missing dependency 'transformers'. Install it before running this script.") from exc
 
         # device_map="auto" uses GPU when available.
         self.generator = pipeline(
@@ -34,7 +31,7 @@ class LocalChatModel:
         generated = outputs[0]["generated_text"]
         # Return only the suffix when possible.
         if generated.startswith(prompt):
-            return generated[len(prompt):].strip() or generated.strip()
+            return generated[len(prompt) :].strip() or generated.strip()
         return generated.strip()
 
 

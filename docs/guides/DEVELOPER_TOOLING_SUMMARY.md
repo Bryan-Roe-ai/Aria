@@ -16,6 +16,7 @@ This iteration focused on building developer experience infrastructure and fixin
 **Purpose:** Comprehensive diagnostic tool to validate system health across all components.
 
 **Features:**
+
 - ✅ Validates 4 virtual environments (root, quantum-ai, ML, talk-to-ai)
 - ✅ Checks Azure Functions status (running/stopped)
 - ✅ Verifies documentation completeness (6 core docs)
@@ -26,12 +27,14 @@ This iteration focused on building developer experience infrastructure and fixin
 - ✅ Supports JSON and text output formats
 
 **Usage:**
+
 ```powershell
 python .\scripts\system_health_check.py              # Text output
 python .\scripts\system_health_check.py --json        # JSON output
 ```
 
 **Sample Output:**
+
 ```
 ======================================================================
 QAI SYSTEM HEALTH REPORT
@@ -81,6 +84,7 @@ Overall Health: GOOD
 **Purpose:** Automated code quality validation for CI/CD pipelines and local development.
 
 **Features:**
+
 - ✅ **Test runner:** Executes pytest suite with summary reporting
 - ✅ **Linter:** Checks code quality (placeholder for ruff/flake8)
 - ✅ **Security scanner:** Placeholder for bandit/safety (can be skipped)
@@ -91,6 +95,7 @@ Overall Health: GOOD
 - ✅ **Configurable checks:** Skip checks via CLI flags
 
 **Usage:**
+
 ```powershell
 python .\scripts\pre_commit_check.py                      # All checks
 python .\scripts\pre_commit_check.py --skip security      # Skip security scan
@@ -98,6 +103,7 @@ python .\scripts\pre_commit_check.py --skip tests lint    # Only hygiene + docs
 ```
 
 **Check Types:**
+
 1. **Tests:** Runs `pytest tests/ -q` and verifies exit code
 2. **Linting:** Placeholder for ruff/flake8 (currently passes)
 3. **Security:** Placeholder for bandit/safety (optional)
@@ -105,6 +111,7 @@ python .\scripts\pre_commit_check.py --skip tests lint    # Only hygiene + docs
 5. **Documentation:** Validates 6 core markdown files exist
 
 **Integration:**
+
 - Can be added to `.git/hooks/pre-commit` for automatic validation
 - Compatible with GitHub Actions/Azure Pipelines
 - See `PRE_COMMIT_GUIDE.md` for detailed integration steps
@@ -116,6 +123,7 @@ python .\scripts\pre_commit_check.py --skip tests lint    # Only hygiene + docs
 **Purpose:** Developer guide for using the pre-commit validation system.
 
 **Contents:**
+
 - ✅ Quick start commands
 - ✅ Detailed check descriptions
 - ✅ CI/CD integration examples
@@ -124,6 +132,7 @@ python .\scripts\pre_commit_check.py --skip tests lint    # Only hygiene + docs
 - ✅ Git hook setup instructions
 
 **Key Sections:**
+
 - **Overview:** Explains 5-check validation pipeline
 - **Quick Start:** Copy-paste commands for immediate use
 - **Check Details:** Deep dive into each validator
@@ -141,6 +150,7 @@ python .\scripts\pre_commit_check.py --skip tests lint    # Only hygiene + docs
 Line 333 used `glob("*")` which matched both timestamp directories AND the `last_run.json` file. The `max()` call alphabetically picked `last_run.json` (sorts after `20251121T...`), treating it as a directory and causing `stdout.log` path to fail.
 
 **Root Cause:**
+
 ```python
 # BROKEN: Matches files + dirs
 job_dirs = list((REPO_ROOT / "data_out" / "autotrain" / "fast_fail").glob("*"))
@@ -149,6 +159,7 @@ log_file = latest / "stdout.log"  # Path: fast_fail/last_run.json/stdout.log (in
 ```
 
 **Fix Applied:**
+
 ```python
 # FIXED: Filter to directories only
 job_dirs = [
@@ -167,6 +178,7 @@ log_file = latest / "stdout.log"  # Path: fast_fail/20251121T051213Z/stdout.log 
 Test referenced `phi36_mixed_chat` job which no longer exists in `autotrain.yaml` (config was updated to use `phi35_mixed_chat`, `mistral_7b_mixed_chat`, etc.).
 
 **Fix Applied:**
+
 ```python
 # BEFORE: Nonexistent job
 proc = subprocess.run([..., "--job", "phi36_mixed_chat", "--dry-run"], ...)
@@ -182,11 +194,13 @@ proc = subprocess.run([..., "--job", "phi35_mixed_chat", "--dry-run"], ...)
 ## 🧪 Validation Results
 
 ### Final Test Status
+
 ```
 =============================== 68 passed in 15.01s ================================
 ```
 
 **Test Breakdown:**
+
 - `test_autotrain.py`: 1 test (smoke test)
 - `test_autotrain_integration.py`: 15 tests (CLI, dry-run, execution, errors)
 - `test_autotrain_unit.py`: 24 tests (config parsing, command building)
@@ -197,6 +211,7 @@ proc = subprocess.run([..., "--job", "phi35_mixed_chat", "--dry-run"], ...)
 - `test_validate_qiskit_env.py`: 3 tests (quantum validation logic)
 
 ### Pre-Commit Check Status
+
 ```
 ═══════════════════════════════════════════════════════════════════
 RESULT: All checks passed ✓ (4/4)
@@ -209,6 +224,7 @@ RESULT: All checks passed ✓ (4/4)
 ```
 
 ### System Health Status
+
 ```
 Overall Health: GOOD
 
@@ -224,12 +240,14 @@ Overall Health: GOOD
 ## 📁 Files Created/Modified
 
 ### New Files
+
 1. `scripts/system_health_check.py` (~380 lines)
 2. `scripts/pre_commit_check.py` (~290 lines)
 3. `PRE_COMMIT_GUIDE.md` (~200 lines)
 4. `DEVELOPER_TOOLING_SUMMARY.md` (this file)
 
 ### Modified Files
+
 1. `tests/test_autotrain_integration.py` (line 333: added `if p.is_dir()` filter)
 2. `tests/test_autotrain.py` (line 19, 26, 33: `phi36_mixed_chat` → `phi35_mixed_chat`)
 
@@ -238,12 +256,14 @@ Overall Health: GOOD
 ## 🚀 Developer Workflow Improvements
 
 ### Before This Iteration
+
 - ❌ No automated validation (manual pytest runs)
 - ❌ No system health diagnostics
 - ❌ 2 failing integration tests blocking CI/CD
 - ❌ No pre-commit best practices documentation
 
 ### After This Iteration
+
 - ✅ One-command validation (`pre_commit_check.py`)
 - ✅ Comprehensive health diagnostics (`system_health_check.py`)
 - ✅ 100% test pass rate (68/68)
@@ -255,6 +275,7 @@ Overall Health: GOOD
 ## 🔧 Usage Examples
 
 ### Quick Validation Before Commit
+
 ```powershell
 # Run all checks (tests, lint, security, hygiene, docs)
 python .\scripts\pre_commit_check.py
@@ -267,6 +288,7 @@ python .\scripts\pre_commit_check.py --skip lint security hygiene
 ```
 
 ### System Health Diagnostics
+
 ```powershell
 # Generate human-readable health report
 python .\scripts\system_health_check.py
@@ -276,20 +298,21 @@ python .\scripts\system_health_check.py --json > health.json
 ```
 
 ### CI/CD Integration
+
 ```yaml
 # GitHub Actions example (.github/workflows/ci.yml)
 name: CI
 on: [push, pull_request]
 jobs:
-  validate:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install -r requirements.txt
-      - run: python .\scripts\pre_commit_check.py
+    validate:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+            - run: pip install -r requirements.txt
+            - run: python .\scripts\pre_commit_check.py
 ```
 
 ---
@@ -297,18 +320,21 @@ jobs:
 ## 📊 Impact Metrics
 
 ### Code Quality
+
 - **Test Coverage:** 68 tests covering 8 test files
 - **Pass Rate:** 100% (was 97% with 2 failures)
 - **Validation Time:** ~15s for full test suite
 - **Lint Status:** Clean (no issues detected)
 
 ### Developer Experience
+
 - **Validation Automation:** 5 automated checks in one command
 - **Diagnostic Capabilities:** 6-category health monitoring
 - **Documentation:** 3 new comprehensive guides
 - **CI/CD Readiness:** Exit code-based validation for pipelines
 
 ### System Reliability
+
 - **Environment Validation:** 4 venvs actively monitored
 - **Orchestrator Status:** 7 configured jobs (2 orchestrators)
 - **Dataset Integrity:** 33 datasets (2.1 GB) validated
@@ -329,19 +355,23 @@ jobs:
 ## 🔍 Technical Details
 
 ### Path Construction Fix
+
 **File:** `tests/test_autotrain_integration.py:333`
 **Change:** Added `if p.is_dir()` filter to glob results
 **Reason:** Prevent `last_run.json` file from being treated as directory
 
 ### Job Name Update
+
 **File:** `tests/test_autotrain.py:19,26,33`
 **Change:** `phi36_mixed_chat` → `phi35_mixed_chat`
 **Reason:** Align with current `autotrain.yaml` configuration
 
 ### Health Check Architecture
+
 **File:** `scripts/system_health_check.py`
 **Pattern:** `HealthChecker` class with 6 check methods
 **Methods:**
+
 - `check_python_environments()` - Validate venvs
 - `check_azure_functions()` - Check Functions status
 - `check_documentation()` - Verify core docs
@@ -350,9 +380,11 @@ jobs:
 - `check_datasets()` - Inventory datasets
 
 ### Pre-Commit Check Architecture
+
 **File:** `scripts/pre_commit_check.py`
 **Pattern:** Sequential validator execution with colored output
 **Validators:**
+
 1. `run_tests()` - Subprocess pytest execution
 2. `run_linter()` - Placeholder for ruff/flake8
 3. `run_security_check()` - Placeholder for bandit/safety
@@ -364,17 +396,20 @@ jobs:
 ## 🧭 Next Steps (Recommendations)
 
 ### Immediate (High Priority)
+
 1. ✅ **Add to git hooks:** Install pre-commit script for automatic validation
 2. ✅ **CI/CD integration:** Add to GitHub Actions workflow
 3. ✅ **Baseline health report:** Run system health check weekly
 
 ### Short-Term (Medium Priority)
+
 1. **Ruff integration:** Replace lint placeholder with actual ruff checks
 2. **Security scanning:** Add bandit/safety for dependency vulnerability checks
 3. **Coverage reporting:** Add pytest-cov for test coverage metrics
 4. **Markdown linting:** Address cosmetic MD031/MD032 warnings (optional)
 
 ### Long-Term (Low Priority)
+
 1. **Type checking:** Add mypy for static type validation
 2. **Performance benchmarks:** Track orchestrator execution times
 3. **Dataset versioning:** Add checksums to dataset_index.json
@@ -395,6 +430,7 @@ jobs:
 ## ✨ Summary
 
 This iteration successfully built a robust developer tooling ecosystem:
+
 - **3 new tools** (health check, pre-commit validator, documentation)
 - **2 critical bugs fixed** (test path construction, outdated job names)
 - **100% test pass rate** (68/68 tests passing)

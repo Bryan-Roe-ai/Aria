@@ -13,21 +13,21 @@ Successfully implemented quantum computing integration for passive LLM training 
 Main module providing quantum-enhanced LLM training:
 
 - **QuantumAttentionOptimizer**: Uses quantum circuits to optimize attention weight distributions
-  - Quantum phase encoding
-  - Interference pattern generation
-  - Fallback to classical softmax
+    - Quantum phase encoding
+    - Interference pattern generation
+    - Fallback to classical softmax
 
 - **QuantumFeatureEncoder**: Encodes classical features into quantum states
-  - Amplitude encoding
-  - Variational quantum circuits
-  - Dimension normalization
+    - Amplitude encoding
+    - Variational quantum circuits
+    - Dimension normalization
 
 - **QuantumEnhancedLLMTrainer**: Main training orchestrator
-  - Active training mode (single run)
-  - Passive training mode (continuous background)
-  - Dataset loading (JSON/JSONL)
-  - Quantum metrics tracking
-  - Integration with autonomous orchestrator
+    - Active training mode (single run)
+    - Passive training mode (continuous background)
+    - Dataset loading (JSON/JSONL)
+    - Quantum metrics tracking
+    - Integration with autonomous orchestrator
 
 **Key Features**:
 
@@ -96,16 +96,16 @@ Autonomous Cycle:
 Comprehensive test suite:
 
 - **Unit Tests**:
-  - QuantumAttentionOptimizer initialization and optimization
-  - QuantumFeatureEncoder initialization and encoding
-  - QuantumEnhancedLLMTrainer initialization
-  - Dataset loading (JSON/JSONL)
-  - Training epoch execution
+    - QuantumAttentionOptimizer initialization and optimization
+    - QuantumFeatureEncoder initialization and encoding
+    - QuantumEnhancedLLMTrainer initialization
+    - Dataset loading (JSON/JSONL)
+    - Training epoch execution
 
 - **Integration Tests**:
-  - Full training pipeline
-  - Multi-epoch training
-  - Loss progression validation
+    - Full training pipeline
+    - Multi-epoch training
+    - Loss progression validation
 
 ### 5. Documentation
 
@@ -151,8 +151,8 @@ Added quantum LLM training feature:
 
 - Fixed `np.random.uniform(low, high)` parameter order
 - Replaced `np.random.choice()` with `random.choice()` for Path objects
-✅ **Security Scan**: CodeQL analysis - 0 vulnerabilities found
-✅ **Integration Demo**: Successfully demonstrates complete feature
+  ✅ **Security Scan**: CodeQL analysis - 0 vulnerabilities found
+  ✅ **Integration Demo**: Successfully demonstrates complete feature
 
 ## 🎨 Architecture
 
@@ -218,39 +218,39 @@ Enable in `config/autonomous_training.yaml`:
 
 ```yaml
 quantum_llm:
-  enabled: true
-  passive_mode: true
-  backend: "local"
-  training_interval_minutes: 60
+    enabled: true
+    passive_mode: true
+    backend: "local"
+    training_interval_minutes: 60
 ```
 
 ## 🎯 Key Benefits
 
 1. **Quantum Advantage**
-   - Exponential feature space (2^n for n qubits)
-   - Novel attention optimization patterns
-   - Quantum interference for feature correlations
+    - Exponential feature space (2^n for n qubits)
+    - Novel attention optimization patterns
+    - Quantum interference for feature correlations
 
 2. **Passive Learning**
-   - Continuous background training
-   - Automatic dataset discovery
-   - No manual intervention required
+    - Continuous background training
+    - Automatic dataset discovery
+    - No manual intervention required
 
 3. **Flexible Backends**
-   - Local simulation (free, fast)
-   - Azure Quantum simulators (free)
-   - Azure Quantum QPU (paid, with cost confirmation)
+    - Local simulation (free, fast)
+    - Azure Quantum simulators (free)
+    - Azure Quantum QPU (paid, with cost confirmation)
 
 4. **Seamless Integration**
-   - Works with existing autonomous training
-   - No disruption to classical workflows
-   - Graceful fallback if quantum unavailable
+    - Works with existing autonomous training
+    - No disruption to classical workflows
+    - Graceful fallback if quantum unavailable
 
 5. **Production Ready**
-   - Comprehensive error handling
-   - Timeout protection
-   - Status tracking and metrics
-   - Security validated
+    - Comprehensive error handling
+    - Timeout protection
+    - Status tracking and metrics
+    - Security validated
 
 ## 📊 Metrics & Monitoring
 

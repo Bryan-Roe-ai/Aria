@@ -45,7 +45,12 @@ def main() -> None:
         check=True,
     )
     cmd = [
-        az, "ml", "job", "create", "-f", str(JOB_YAML),
+        az,
+        "ml",
+        "job",
+        "create",
+        "-f",
+        str(JOB_YAML),
         "--set",
         f"compute={args.compute}",
         f"inputs.train_size={args.train_size}",

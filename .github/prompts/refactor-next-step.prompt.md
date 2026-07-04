@@ -8,28 +8,33 @@ agent: agent
 Given the current refactor stage, recommend the **single best next slash prompt** and provide a ready-to-use invocation.
 
 ### Inputs
+
 - Current stage and what was already completed
 - Current artifact quality (precheck notes, diff quality, verification status, PR draft status)
 - Any blocker or uncertainty
 
 ### Required behavior
+
 - Recommend exactly one next prompt from `### Allowed next commands`.
 - Explain why this is the highest-value next move.
 - Provide one concrete invocation string tailored to the user's context.
 - If inputs are incomplete, infer conservatively and state assumptions.
 
 ### Non-goals unless explicitly requested
+
 - No executing the recommended command — recommend only.
 - No multi-step plans — one next step at a time.
 - No code changes or source file edits.
 
 ### Output format
+
 - **Optional next command**: one prompt only
 - **Why now**: 2-4 bullets
 - **Invocation template**: copy-ready command text
 - **Success criteria**: what “done” looks like for this step
 
 ### Allowed next commands
+
 - `/refactor-precheck`
 - `/refactor-safe`
 - `/refactor-verify`
@@ -51,6 +56,7 @@ Given the current refactor stage, recommend the **single best next slash prompt*
 - `/refactor-next-step`
 
 ### Example invocations
+
 - `finished precheck, have invariants, ready to edit`
 - `refactor complete, tests partly run, not sure if to verify or write pr-summary`
 - `workflow feels inconsistent across prompts; need the best next command to diagnose routing drift`

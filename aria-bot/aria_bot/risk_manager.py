@@ -9,9 +9,9 @@ should be a deliberate, reviewed change.
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List, Sequence
 
 # Paths that must never be touched by the autonomous loop. These are
 # encoded here (not just in YAML) so misconfiguration cannot disable them.
@@ -55,11 +55,11 @@ class RiskAssessment:
     reasons: tuple[str, ...] = ()
 
     @classmethod
-    def allow(cls) -> "RiskAssessment":
+    def allow(cls) -> RiskAssessment:
         return cls(allowed=True, reasons=())
 
     @classmethod
-    def deny(cls, *reasons: str) -> "RiskAssessment":
+    def deny(cls, *reasons: str) -> RiskAssessment:
         return cls(allowed=False, reasons=tuple(reasons))
 
 
@@ -68,10 +68,8 @@ class RiskManager:
     """Evaluate whether a proposed change is safe to apply."""
 
     repo_root: Path
-    protected_prefixes: Sequence[str] = field(
-        default_factory=lambda: list(_DEFAULT_PROTECTED_PREFIXES))
-    protected_names: Sequence[str] = field(
-        default_factory=lambda: list(_DEFAULT_PROTECTED_NAMES))
+    protected_prefixes: Sequence[str] = field(default_factory=lambda: list(_DEFAULT_PROTECTED_PREFIXES))
+    protected_names: Sequence[str] = field(default_factory=lambda: list(_DEFAULT_PROTECTED_NAMES))
     max_file_bytes: int = _MAX_FILE_BYTES
     max_plan_delta_bytes: int = _MAX_PLAN_DELTA_BYTES
 
@@ -79,11 +77,9 @@ class RiskManager:
         self.repo_root = Path(self.repo_root).resolve()
         # Always include the hard-coded defaults even if a caller passed in
         # a narrower list. This prevents accidental privilege widening.
-        merged_prefixes = set(self.protected_prefixes) | set(
-            _DEFAULT_PROTECTED_PREFIXES)
+        merged_prefixes = set(self.protected_prefixes) | set(_DEFAULT_PROTECTED_PREFIXES)
         self.protected_prefixes = tuple(sorted(merged_prefixes))
-        merged_names = set(self.protected_names) | set(
-            _DEFAULT_PROTECTED_NAMES)
+        merged_names = set(self.protected_names) | set(_DEFAULT_PROTECTED_NAMES)
         self.protected_names = tuple(sorted(merged_names))
 
     # ------------------------------------------------------------------
@@ -153,7 +149,7 @@ class RiskManager:
     # ------------------------------------------------------------------
     # Iteration helpers
     # ------------------------------------------------------------------
-    def iter_candidate_files(self, suffixes: Iterable[str] = (".py", ".md", ".yaml", ".yml")) -> List[Path]:
+    def iter_candidate_files(self, suffixes: Iterable[str] = (".py", ".md", ".yaml", ".yml")) -> list[Path]:
         """Yield repo files that pass the path-level safety filter.
 
         Used by the analyzer to scope its scan. We deliberately walk the
@@ -162,13 +158,12 @@ class RiskManager:
         """
 
         wanted = {s.lower() for s in suffixes}
-        results: List[Path] = []
+        results: list[Path] = []
         for root, dirs, files in os.walk(self.repo_root):
             # Prune protected directories early.
             pruned: list[str] = []
             for d in dirs:
-                rel = (Path(root, d).relative_to(
-                    self.repo_root)).as_posix() + "/"
+                rel = (Path(root, d).relative_to(self.repo_root)).as_posix() + "/"
                 if any(rel == p or rel.startswith(p) for p in self.protected_prefixes):
                     continue
                 pruned.append(d)

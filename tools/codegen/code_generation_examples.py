@@ -275,7 +275,7 @@ def example_7_batch_generation():
         elif name == "is_prime":
             print(f"  Test: is_prime(17) = {func(17)}")
         elif name == "reverse_list":
-            print(f"  Test: reverse([1,2,3]) = {func([1,2,3])}")
+            print(f"  Test: reverse([1,2,3]) = {func([1, 2, 3])}")
 
     return generated
 

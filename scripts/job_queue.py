@@ -7,7 +7,6 @@ from dataclasses import asdict, dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 class JobPriority(Enum):
@@ -36,18 +35,18 @@ class QueuedJob:
 
     id: str
     name: str
-    config: Dict
+    config: dict
     priority: JobPriority
     status: JobStatus
     created_at: str
-    started_at: Optional[str] = None
-    completed_at: Optional[str] = None
-    dependencies: List[str] = None
-    tags: List[str] = None
+    started_at: str | None = None
+    completed_at: str | None = None
+    dependencies: list[str] = None
+    tags: list[str] = None
     estimated_duration: int = 0  # seconds
     retry_count: int = 0
     max_retries: int = 3
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
     def __post_init__(self):
         if self.dependencies is None:
@@ -69,7 +68,7 @@ class JobQueue:
         self.queue_file = Path(queue_file)
         self.queue_file.parent.mkdir(parents=True, exist_ok=True)
 
-        self.jobs: Dict[str, QueuedJob] = {}
+        self.jobs: dict[str, QueuedJob] = {}
         self.priority_queue = []
 
         self.load_queue()
@@ -129,10 +128,10 @@ class JobQueue:
     def add_job(
         self,
         name: str,
-        config: Dict,
+        config: dict,
         priority: JobPriority = JobPriority.NORMAL,
-        dependencies: List[str] = None,
-        tags: List[str] = None,
+        dependencies: list[str] = None,
+        tags: list[str] = None,
         estimated_duration: int = 0,
     ) -> str:
         """Add a new job to the queue"""
@@ -158,7 +157,7 @@ class JobQueue:
         print(f"Added job {job_id}: {name} (priority: {priority.name})")
         return job_id
 
-    def get_next_job(self) -> Optional[QueuedJob]:
+    def get_next_job(self) -> QueuedJob | None:
         """Get the next job to execute (considering dependencies)"""
         while self.priority_queue:
             job = heapq.heappop(self.priority_queue)
@@ -237,7 +236,6 @@ class JobQueue:
                 and completed_job_id in job.dependencies
                 and self.check_dependencies(job)
             ):
-
                 job.status = JobStatus.PENDING
                 heapq.heappush(self.priority_queue, job)
                 print(f"Unblocked job {job.id}")
@@ -254,7 +252,7 @@ class JobQueue:
                 return True
         return False
 
-    def get_queue_status(self) -> Dict:
+    def get_queue_status(self) -> dict:
         """Get current queue status"""
         # Single-pass aggregation for efficiency
         ACTIVE_STATUSES = {JobStatus.PENDING, JobStatus.BLOCKED}
@@ -291,7 +289,7 @@ class JobQueue:
         counts["queue_length"] = len(self.priority_queue)
         return counts
 
-    def get_job_details(self, job_id: str) -> Optional[Dict]:
+    def get_job_details(self, job_id: str) -> dict | None:
         """Get detailed information about a job"""
         if job_id in self.jobs:
             job = self.jobs[job_id]
@@ -313,7 +311,7 @@ class JobQueue:
             }
         return None
 
-    def list_jobs(self, status: Optional[JobStatus] = None, tags: List[str] = None) -> List[Dict]:
+    def list_jobs(self, status: JobStatus | None = None, tags: list[str] = None) -> list[dict]:
         """List all jobs, optionally filtered by status or tags"""
         jobs = list(self.jobs.values())
 

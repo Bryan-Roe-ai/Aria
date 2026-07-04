@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -79,8 +79,8 @@ def _resolve_optional_path(
     *,
     config_dir: Path,
     workspace_root: Path,
-    default: Optional[Path] = None,
-) -> Optional[str]:
+    default: Path | None = None,
+) -> str | None:
     if isinstance(configured_value, str) and configured_value.strip():
         configured_text = configured_value.strip()
         candidate = _resolve_path(
@@ -97,7 +97,7 @@ def _resolve_optional_path(
     return str(default.resolve())
 
 
-def resolve_qai_config(raw_config: Dict[str, Any], config_path: Path) -> Dict[str, Any]:
+def resolve_qai_config(raw_config: dict[str, Any], config_path: Path) -> dict[str, Any]:
     config = deepcopy(raw_config)
     config_dir = config_path.resolve().parent
     repo_root = config_dir.parent
@@ -193,7 +193,7 @@ def resolve_qai_config(raw_config: Dict[str, Any], config_path: Path) -> Dict[st
     return config
 
 
-def load_qai_config(config_path: Path) -> Dict[str, Any]:
+def load_qai_config(config_path: Path) -> dict[str, Any]:
     with config_path.open(encoding="utf-8") as f:
         raw_config = yaml.safe_load(f) or {}
     return resolve_qai_config(raw_config, config_path)

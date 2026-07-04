@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Optional, Tuple
 
 from jsonschema import ValidationError, validate
 
@@ -67,7 +66,7 @@ def _coerce_json(text: str) -> str:
     return text
 
 
-def parse_and_validate(raw: str, schema: dict) -> Tuple[Optional[dict], Optional[str]]:
+def parse_and_validate(raw: str, schema: dict) -> tuple[dict | None, str | None]:
     candidate = _coerce_json(raw)
     try:
         data = json.loads(candidate)

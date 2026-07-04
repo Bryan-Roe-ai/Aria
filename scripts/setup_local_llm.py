@@ -268,8 +268,10 @@ def main() -> int:
 
     winner = healthy[0]
     provider_name = winner.name
-    model_name = winner.model or load_local_settings().get("OLLAMA_MODEL") or load_local_settings().get(
-        "LMSTUDIO_MODEL", "local-model"
+    model_name = (
+        winner.model
+        or load_local_settings().get("OLLAMA_MODEL")
+        or load_local_settings().get("LMSTUDIO_MODEL", "local-model")
     )
 
     patch = {
@@ -293,7 +295,9 @@ def main() -> int:
     preview = ""
     if hasattr(provider, "complete"):
         try:
-            preview = str(provider.complete([{"role": "user", "content": "Say hello in one short sentence."}], stream=False))
+            preview = str(
+                provider.complete([{"role": "user", "content": "Say hello in one short sentence."}], stream=False)
+            )
             preview = preview[:160]
         except Exception as exc:
             preview = f"(completion failed: {exc})"
@@ -303,7 +307,7 @@ def main() -> int:
     print(f"  Model    : {info.model}")
     print(f"  Preview  : {preview}")
     print("\nUse it:")
-    print(f"  uv run python ai-projects/chat-cli/src/chat_cli.py --provider {info.name} --once \"Hello\"")
+    print(f'  uv run python ai-projects/chat-cli/src/chat_cli.py --provider {info.name} --once "Hello"')
     print("  uv run python apps/aria/server.py")
     print("  func host start   # Azure Functions (loads local.settings.json automatically)")
     if not args.write:

@@ -6,7 +6,6 @@ Quick verification that LM Studio is properly integrated with Aria agents.
 """
 
 import asyncio
-import json
 import os
 import sys
 from pathlib import Path
@@ -19,9 +18,9 @@ if str(_mcp_path) not in sys.path:
 
 def print_section(title):
     """Print a formatted section header."""
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"  {title}")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
 
 def check_imports():
@@ -91,7 +90,7 @@ async def check_server_connection():
                 return False
         else:
             print(f"  ❌ Cannot connect to LM Studio at {client.base_url}")
-            print(f"     Ensure LM Studio is running and server is enabled")
+            print("     Ensure LM Studio is running and server is enabled")
             return False
 
     except Exception as e:
@@ -108,15 +107,15 @@ def check_agent_registration():
 
         info = get_lmstudio_agent_info()
 
-        print(f"  ✅ LM Studio Agent Available")
-        print(f"")
+        print("  ✅ LM Studio Agent Available")
+        print("")
         print(f"  Agent Name:     {info.get('name')}")
         print(f"  Status:         {info.get('status')}")
         print(f"  Domains:        {', '.join(info.get('domains', []))}")
         print(f"  Intents:        {', '.join(info.get('intents', []))}")
         print(f"  Description:    {info.get('description')}")
-        print(f"")
-        print(f"  Capabilities:")
+        print("")
+        print("  Capabilities:")
         for cap, enabled in info.get("capabilities", {}).items():
             status = "✅" if enabled else "⚠️"
             print(f"    {status} {cap}")
@@ -136,7 +135,7 @@ async def check_direct_usage():
         from lmstudio_agent_integration import get_lmstudio_agent_client
 
         client = get_lmstudio_agent_client()
-        print(f"  ✅ Created agent client")
+        print("  ✅ Created agent client")
 
         # List models
         try:
@@ -158,11 +157,11 @@ async def check_direct_usage():
                 max_tokens=50,
             )
             if response:
-                print(f"  ✅ Test message succeeded")
+                print("  ✅ Test message succeeded")
                 print(f"     Response: {response[:60]}...")
                 return True
             else:
-                print(f"  ❌ Empty response")
+                print("  ❌ Empty response")
                 return False
         except Exception as e:
             print(f"  ❌ Test message failed: {e}")

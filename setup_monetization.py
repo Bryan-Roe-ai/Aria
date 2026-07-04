@@ -22,9 +22,9 @@ class Colors:
 
 
 def print_header(text):
-    print(f"\n{Colors.HEADER}{Colors.BOLD}{'='*80}{Colors.END}")
+    print(f"\n{Colors.HEADER}{Colors.BOLD}{'=' * 80}{Colors.END}")
     print(f"{Colors.HEADER}{Colors.BOLD}{text:^80}{Colors.END}")
-    print(f"{Colors.HEADER}{Colors.BOLD}{'='*80}{Colors.END}\n")
+    print(f"{Colors.HEADER}{Colors.BOLD}{'=' * 80}{Colors.END}\n")
 
 
 def print_success(text):
@@ -142,12 +142,12 @@ def generate_demo_data():
 
         # Create 5 Pro subscribers
         for i in range(5):
-            manager.upgrade_subscription(f"pro_user_{i+1}", SubscriptionTier.PRO, 30, "demo")
+            manager.upgrade_subscription(f"pro_user_{i + 1}", SubscriptionTier.PRO, 30, "demo")
         print_success("  Created 5 Pro subscribers")
 
         # Create 10 Enterprise subscribers
         for i in range(10):
-            manager.upgrade_subscription(f"ent_user_{i+1}", SubscriptionTier.ENTERPRISE, 30, "demo")
+            manager.upgrade_subscription(f"ent_user_{i + 1}", SubscriptionTier.ENTERPRISE, 30, "demo")
         print_success("  Created 10 Enterprise subscribers")
 
         # Get final stats
@@ -156,7 +156,9 @@ def generate_demo_data():
         print_success(f"  Total ARR: ${stats['annual_recurring_revenue']}")
 
         if stats["monthly_recurring_revenue"] >= 2000:
-            print_success(f"  🎉 TARGET ACHIEVED! ({stats['monthly_recurring_revenue']/2000*100:.1f}% of $2,000 goal)")
+            print_success(
+                f"  🎉 TARGET ACHIEVED! ({stats['monthly_recurring_revenue'] / 2000 * 100:.1f}% of $2,000 goal)"
+            )
 
         return True
     except Exception as e:

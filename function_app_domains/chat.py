@@ -27,7 +27,11 @@ def chat(req, ctx):
         ctx._AI_CAPABILITY_COUNTERS["chat_requests"] += 1
 
         user_message_content = next(
-            (ctx._extract_text_content(message.get("content")) for message in reversed(messages) if message.get("role") == "user"),
+            (
+                ctx._extract_text_content(message.get("content"))
+                for message in reversed(messages)
+                if message.get("role") == "user"
+            ),
             None,
         )
         if guardrails_enabled and user_message_content:
@@ -242,7 +246,9 @@ def chat(req, ctx):
         if ctx.cosmos_client and ctx.os.getenv("QAI_ENABLE_COSMOS", "false").lower() == "true":
             try:
                 if ctx.os.getenv("QAI_COSMOS_PERSIST_STRATEGY", "messages") == "messages":
-                    last_user_msg = next((message for message in reversed(messages) if message.get("role") == "user"), None)
+                    last_user_msg = next(
+                        (message for message in reversed(messages) if message.get("role") == "user"), None
+                    )
                     if last_user_msg:
                         ctx.cosmos_client.record_chat_message(
                             user_id,
@@ -348,7 +354,11 @@ def chat_stream(req, ctx):
         ctx._AI_CAPABILITY_COUNTERS["chat_stream_requests"] += 1
 
         stream_user_content = next(
-            (ctx._extract_text_content(message.get("content")) for message in reversed(messages) if message.get("role") == "user"),
+            (
+                ctx._extract_text_content(message.get("content"))
+                for message in reversed(messages)
+                if message.get("role") == "user"
+            ),
             None,
         )
         if guardrails_enabled and stream_user_content:
@@ -372,9 +382,9 @@ def chat_stream(req, ctx):
                         "memory_messages": 0,
                         "safety": {"blocked": True, "stage": "input"},
                     }
-                    yield (f"event: meta\n" f"data: {ctx.json.dumps(pre)}\n\n").encode("utf-8")
+                    yield (f"event: meta\ndata: {ctx.json.dumps(pre)}\n\n").encode()
                     payload = ctx.json.dumps({"delta": ctx._build_guardrail_fallback_text()})
-                    yield (f"data: {payload}\n\n").encode("utf-8")
+                    yield (f"data: {payload}\n\n").encode()
                     yield b"data: [DONE]\n\n"
 
                 return ctx._sse_response(blocked_sse(), status_code=200)
@@ -459,7 +469,7 @@ def chat_stream(req, ctx):
                         "reserve_output_tokens": stats.reserve_output_tokens,
                     },
                 }
-                yield (f"event: meta\n" f"data: {ctx.json.dumps(pre)}\n\n").encode("utf-8")
+                yield (f"event: meta\ndata: {ctx.json.dumps(pre)}\n\n").encode()
 
                 enc = None
                 try:
@@ -500,18 +510,18 @@ def chat_stream(req, ctx):
                             )
                             chunk = ctx._build_guardrail_fallback_text()
                             payload = ctx.json.dumps({"delta": chunk})
-                            yield (f"data: {payload}\n\n").encode("utf-8")
+                            yield (f"data: {payload}\n\n").encode()
                             yield b"data: [DONE]\n\n"
                             return
 
                     payload = ctx.json.dumps({"delta": chunk})
-                    yield (f"data: {payload}\n\n").encode("utf-8")
+                    yield (f"data: {payload}\n\n").encode()
                     cumulative_text = next_text
 
                     if not movement_commands_sent and len(cumulative_text) > 20:
                         movement_data = ctx.parse_movement_commands(cumulative_text)
                         if movement_data.get("commands"):
-                            yield (f"event: movement\ndata: {ctx.json.dumps(movement_data)}\n\n").encode("utf-8")
+                            yield (f"event: movement\ndata: {ctx.json.dumps(movement_data)}\n\n").encode()
                             movement_commands_sent = True
 
                     if enc is not None:
@@ -527,7 +537,7 @@ def chat_stream(req, ctx):
                                     yield (
                                         f"event: token\n"
                                         f"data: {ctx.json.dumps({'token_index': token_index, 'token': token_text, 'cumulative': cumulative_text})}\n\n"
-                                    ).encode("utf-8")
+                                    ).encode()
                                     token_index += 1
                                 prev_token_count = len(token_ids)
                         except Exception:
@@ -540,13 +550,13 @@ def chat_stream(req, ctx):
                                 yield (
                                     f"event: token\n"
                                     f"data: {ctx.json.dumps({'token_index': token_index, 'token': word.group(0), 'cumulative': cumulative_text})}\n\n"
-                                ).encode("utf-8")
+                                ).encode()
                                 token_index += 1
                             prev_word_count = len(words)
 
                 yield b"event: done\ndata: {}\n\n"
             except Exception as exc:
-                yield (f"event: error\n" f"data: {ctx.json.dumps({'error': str(exc)})}\n\n").encode("utf-8")
+                yield (f"event: error\ndata: {ctx.json.dumps({'error': str(exc)})}\n\n").encode()
             finally:
                 ctx._record_ai_latency(int((ctx.time.perf_counter() - stream_started) * 1000))
                 yield b"data: [DONE]\n\n"

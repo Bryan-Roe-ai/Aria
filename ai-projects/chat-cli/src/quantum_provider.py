@@ -6,14 +6,18 @@ Integrates real quantum circuits in the attention mechanism
 
 import logging
 import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List
+from typing import Any
 
 import torch
 import torch.nn.functional as F
 
-from chat_providers import BaseChatProvider  # type: ignore[attr-defined]
-from chat_providers import ProviderChoice, RoleMessage
+from chat_providers import (
+    BaseChatProvider,  # type: ignore[attr-defined]
+    ProviderChoice,
+    RoleMessage,
+)
 
 # Add quantum-ml to path
 repo_root = Path(__file__).resolve().parent.parent.parent.parent
@@ -60,7 +64,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         # Load model
         self.model = None
-        self.model_config: Dict[str, Any] = {}
+        self.model_config: dict[str, Any] = {}
         self.char_to_idx = {}
         self.idx_to_char = {}
         self.vocab_size = 0
@@ -122,7 +126,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
             try:
                 import json
 
-                with open(status_file, "r", encoding="utf-8") as status_handle:
+                with open(status_file, encoding="utf-8") as status_handle:
                     status_payload = json.load(status_handle)
 
                 checkpoint_ref = (
@@ -156,7 +160,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         attempted = "\n  - " + "\n  - ".join(str(p) for p in candidates)
         raise FileNotFoundError(f"No Quantum LLM checkpoint found in {self.model_path}. Tried:{attempted}")
 
-    def _derive_model_config(self, checkpoint: Dict[str, Any]) -> Dict[str, Any]:
+    def _derive_model_config(self, checkpoint: dict[str, Any]) -> dict[str, Any]:
         """Normalize model config across legacy and modern checkpoint schemas."""
         model_cfg = checkpoint.get("model_config", {})
 
@@ -275,7 +279,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         if not text:
             return torch.tensor([0], dtype=torch.long, device=self.device)
 
-        indices: List[int] = []
+        indices: list[int] = []
         for c in text:
             if self.char_to_idx:
                 indices.append(self.char_to_idx.get(c, ord(c) % self.vocab_size))
@@ -361,7 +365,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         return "".join(generated)
 
-    def complete(self, messages: List[RoleMessage], stream: bool = False) -> str | Iterator[str]:
+    def complete(self, messages: list[RoleMessage], stream: bool = False) -> str | Iterator[str]:
         """
         Generate a response using the quantum LLM.
 

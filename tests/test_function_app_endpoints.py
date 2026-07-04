@@ -63,8 +63,7 @@ def _capture_sse_http_response(monkeypatch, app_module, captured: dict) -> None:
             captured["sse_body"] = bytes(body)
         return _real_HttpResponse(body, **kwargs)
 
-    monkeypatch.setattr(app_module.func, "HttpResponse",
-                        _capturing_HttpResponse)
+    monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
 
 
 def _install_fake_quantum_trainer_module(
@@ -253,8 +252,8 @@ class TestGetEndpoints:
         assert orch["autonomous_training"]["cycles_completed"] == 4
         assert orch["autonomous_training"]["heartbeat_running"] is False
         assert orch["autotrain"]["status"] == "ok"
-        assert not any(key.startswith("_status_file_")
-                       for key in orch["autonomous_training"])
+        assert not any(key.startswith("_status_file_") for key in orch["autonomous_training"])
+
     def test_ai_status_uses_settings_active_provider_for_detection(self, app_module, monkeypatch):
         """GET /api/ai/status should use the configured active provider explicitly."""
 
@@ -470,12 +469,9 @@ class TestPostValidation:
         assert resp.status_code == 200
         # prune_messages prepends a system prompt; verify the compaction placeholder
         # was dropped and the user message is present (ignoring the system message).
-        user_messages = [m for m in captured["messages"]
-                         if m.get("role") == "user"]
-        assistant_messages = [m for m in captured["messages"]
-                              if m.get("content") == "Compacted conversation"]
-        assert user_messages == [
-            {"role": "user", "content": "Continue with the fix"}]
+        user_messages = [m for m in captured["messages"] if m.get("role") == "user"]
+        assistant_messages = [m for m in captured["messages"] if m.get("content") == "Compacted conversation"]
+        assert user_messages == [{"role": "user", "content": "Continue with the fix"}]
         assert assistant_messages == [], "Compaction placeholder should have been dropped"
 
     def test_chat_only_compaction_placeholder_messages_return_validation_error(self, app_module):
@@ -593,8 +589,7 @@ class TestPostValidation:
                 return _real_HttpResponse(consumed, **kwargs)
             return _real_HttpResponse(body, **kwargs)
 
-        monkeypatch.setattr(app_module.func, "HttpResponse",
-                            _capturing_HttpResponse)
+        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         req = _mock_request(
             "POST",
             body={
@@ -638,11 +633,9 @@ class TestPostValidation:
                 return _real_HttpResponse(consumed, **kwargs)
             return _real_HttpResponse(body, **kwargs)
 
-        monkeypatch.setattr(app_module.func, "HttpResponse",
-                            _capturing_HttpResponse)
+        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
-        monkeypatch.setattr(
-            app_module, "fetch_similar_messages", _fake_similar)
+        monkeypatch.setattr(app_module, "fetch_similar_messages", _fake_similar)
 
         req = _mock_request(
             "POST",
@@ -674,6 +667,7 @@ class TestPostValidation:
 
     def test_chat_stream_emits_done_sentinel(self, app_module, monkeypatch):
         """POST /api/chat/stream should terminate SSE with data: [DONE]."""
+
         class _FakeProvider:
             def complete(self, messages, stream=False):
                 assert stream is True
@@ -704,8 +698,7 @@ class TestPostValidation:
                 return _real_HttpResponse(consumed, **kwargs)
             return _real_HttpResponse(body, **kwargs)
 
-        monkeypatch.setattr(app_module.func, "HttpResponse",
-                            _capturing_HttpResponse)
+        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         req = _mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "say hi"}]},
@@ -841,9 +834,7 @@ class TestAgiEndpoints:
         assert data["provider"]["wrapper_model"] == "agi-local-local-echo"
 
     def test_agi_provider_metadata_uses_base_choice(self, app_module):
-        provider = types.SimpleNamespace(
-            _base_provider_choice=types.SimpleNamespace(name="local", model="local-echo")
-        )
+        provider = types.SimpleNamespace(_base_provider_choice=types.SimpleNamespace(name="local", model="local-echo"))
         wrapper = types.SimpleNamespace(name="agi", model="agi-local-local-echo")
         meta = app_module._agi_provider_metadata(provider, wrapper)
         assert meta["name"] == "agi"
@@ -1004,8 +995,7 @@ class TestAgiEndpoints:
                 return _real_HttpResponse(consumed, **kwargs)
             return _real_HttpResponse(body, **kwargs)
 
-        monkeypatch.setattr(app_module.func, "HttpResponse",
-                            _capturing_HttpResponse)
+        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},
@@ -1139,8 +1129,7 @@ class TestQuantumLlmEndpoint:
         train_args = capture["train_args"]
         assert train_args["epochs"] == 5
         assert train_args["dataset_path"].is_absolute()
-        assert str(train_args["output_dir"]).endswith(
-            "data_out/quantum_llm_api")
+        assert str(train_args["output_dir"]).endswith("data_out/quantum_llm_api")
 
     def test_quantum_llm_post_unknown_action(self, app_module, monkeypatch):
         _install_fake_quantum_trainer_module(monkeypatch)
@@ -1261,8 +1250,7 @@ class TestRequestValidator:
         from shared.request_validator import validate_fields
 
         err = validate_fields(
-            {"messages": [{"role": "user", "content": "hi"}],
-                "temperature": 0.7},
+            {"messages": [{"role": "user", "content": "hi"}], "temperature": 0.7},
             {
                 "messages": {"type": list, "required": True, "min_length": 1},
                 "temperature": {"type": (int, float), "min": 0, "max": 2},

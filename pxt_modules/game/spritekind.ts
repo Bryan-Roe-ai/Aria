@@ -7,7 +7,7 @@ namespace sprites {
     //% kindNamespace=SpriteKind kindMemberName=kind kindPromptHint="e.g. Coin, Fireball, Asteroid..."
     //% help=sprites/sprite-kind
     export function _spriteKind(kind: number): number {
-        return kind;
+        return kind
     }
 
     /**
@@ -17,27 +17,27 @@ namespace sprites {
     //% blockId=spritetype block="$kind" enumInitialMembers="Player,Projectile,Food,Enemy"
     //% enumName=SpriteKindLegacy enumMemberName=kind enumPromptHint="e.g. Coin, Fireball, Asteroid..."
     export function _spriteType(kind: number): number {
-        return kind;
+        return kind
     }
 }
 
 namespace SpriteKind {
-    let nextKind: number;
+    let nextKind: number
 
     export function create() {
-        if (nextKind === undefined) nextKind = 1000;
-        return nextKind++;
+        if (nextKind === undefined) nextKind = 1000
+        return nextKind++
     }
 
     //% isKind
-    export const Player = create();
+    export const Player = create()
 
     //% isKind
-    export const Projectile = 1;
+    export const Projectile = 1
 
     //% isKind
-    export const Food = create();
+    export const Food = create()
 
     //% isKind
-    export const Enemy = create();
+    export const Enemy = create()
 }

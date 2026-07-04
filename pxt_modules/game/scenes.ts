@@ -14,7 +14,7 @@ enum CameraProperty {
     //% block="top"
     Top,
     //% block="bottom"
-    Bottom
+    Bottom,
 }
 
 //% weight=88 color="#4b6584" icon="\uf1bb"
@@ -29,7 +29,7 @@ namespace scene {
     //% weight=100 blockGap=8
     //% help=scene/screen-width
     export function screenWidth(): number {
-        return screen.width;
+        return screen.width
     }
 
     /**
@@ -40,7 +40,7 @@ namespace scene {
     //% weight=99
     //% help=scene/screen-width
     export function screenHeight(): number {
-        return screen.height;
+        return screen.height
     }
 
     /**
@@ -52,8 +52,8 @@ namespace scene {
     //% blockId=gamesetbackgroundcolor block="set background color to %color=colorindexpicker"
     //% help=scene/set-background-color
     export function setBackgroundColor(color: number) {
-        const scene = game.currentScene();
-        scene.background.color = color;
+        const scene = game.currentScene()
+        scene.background.color = color
     }
 
     /**
@@ -64,9 +64,9 @@ namespace scene {
     //% weight=22
     //% blockId=gamebackgroundcolor block="background color"
     //% help=scene/background-color
-    export function backgroundColor() : number {
-        const scene = game.currentScene();
-        return scene.background.color;
+    export function backgroundColor(): number {
+        const scene = game.currentScene()
+        return scene.background.color
     }
 
     /**
@@ -77,8 +77,8 @@ namespace scene {
     //% blockId=gamesetbackgroundimage block="set background image to %img=background_image_picker"
     //% help=scene/set-background-image
     export function setBackgroundImage(img: Image) {
-        const scene = game.currentScene();
-        scene.background.image = img;
+        const scene = game.currentScene()
+        scene.background.image = img
     }
 
     /**
@@ -89,8 +89,8 @@ namespace scene {
     //% blockId=gamebackgroundimage block="background image"
     //% help=scene/background-image
     export function backgroundImage(): Image {
-        const scene = game.currentScene();
-        return scene.background.image;
+        const scene = game.currentScene()
+        return scene.background.image
     }
 
     /**
@@ -100,10 +100,18 @@ namespace scene {
      */
     //% group="Screen"
     //% weight=10
-    export function addBackgroundLayer(image: Image, distance?: number, alignment?: BackgroundAlignment) {
-        const scene = game.currentScene();
+    export function addBackgroundLayer(
+        image: Image,
+        distance?: number,
+        alignment?: BackgroundAlignment,
+    ) {
+        const scene = game.currentScene()
         if (image)
-            scene.background.addLayer(image, distance || 100, alignment || BackgroundAlignment.Bottom);
+            scene.background.addLayer(
+                image,
+                distance || 100,
+                alignment || BackgroundAlignment.Bottom,
+            )
     }
 
     /**
@@ -112,13 +120,12 @@ namespace scene {
      * @param scale
      */
     export function setTileMapLevel(map: tiles.TileMapData) {
-        const scene = game.currentScene();
-        if (!scene.tileMap)
-            scene.tileMap = new tiles.TileMap();
-        scene.tileMap.setData(map);
+        const scene = game.currentScene()
+        if (!scene.tileMap) scene.tileMap = new tiles.TileMap()
+        scene.tileMap.setData(map)
     }
 
-     /**
+    /**
      * Shake the camera
      * @param sprite
      */
@@ -129,8 +136,8 @@ namespace scene {
     //% help=scene/camera-shake
     //% weight=90
     export function cameraShake(amplitude: number = 4, duration: number = 500) {
-        const scene = game.currentScene();
-        scene.camera.shake(amplitude, duration);
+        const scene = game.currentScene()
+        scene.camera.shake(amplitude, duration)
     }
 
     /**
@@ -143,9 +150,9 @@ namespace scene {
     //% help=scene/camera-follow-sprite
     //% weight=100
     export function cameraFollowSprite(sprite: Sprite) {
-        const scene = game.currentScene();
-        scene.camera.sprite = sprite;
-        scene.camera.update();
+        const scene = game.currentScene()
+        scene.camera.sprite = sprite
+        scene.camera.update()
     }
 
     /**
@@ -157,10 +164,10 @@ namespace scene {
     //% help=scene/center-camera-at
     //% weight=80
     export function centerCameraAt(x: number, y: number) {
-        const scene = game.currentScene();
-        scene.camera.sprite = undefined;
-        scene.camera.offsetX = x - (screen.width >> 1);
-        scene.camera.offsetY = y - (screen.height >> 1);
+        const scene = game.currentScene()
+        scene.camera.sprite = undefined
+        scene.camera.offsetX = x - (screen.width >> 1)
+        scene.camera.offsetY = y - (screen.height >> 1)
     }
 
     /**
@@ -171,8 +178,8 @@ namespace scene {
     //% help=scene/camera-left
     //% deprecated=true
     export function cameraLeft() {
-        const scene = game.currentScene();
-        return scene.camera.drawOffsetX;
+        const scene = game.currentScene()
+        return scene.camera.drawOffsetX
     }
 
     /**
@@ -183,8 +190,8 @@ namespace scene {
     //% help=scene/camera-top
     //% deprecated=true
     export function cameraTop() {
-        const scene = game.currentScene();
-        return scene.camera.drawOffsetY;
+        const scene = game.currentScene()
+        return scene.camera.drawOffsetY
     }
 
     /**
@@ -196,16 +203,21 @@ namespace scene {
     //% help=scene/camera-property
     //% weight=70
     export function cameraProperty(property: CameraProperty): number {
-        const scene = game.currentScene();
-        if (!scene.camera.isUpdated())
-            scene.camera.update();
+        const scene = game.currentScene()
+        if (!scene.camera.isUpdated()) scene.camera.update()
         switch (property) {
-            case CameraProperty.X: return scene.camera.x;
-            case CameraProperty.Y: return scene.camera.y;
-            case CameraProperty.Left: return scene.camera.left;
-            case CameraProperty.Right: return scene.camera.right;
-            case CameraProperty.Top: return scene.camera.top;
-            case CameraProperty.Bottom: return scene.camera.bottom;
+            case CameraProperty.X:
+                return scene.camera.x
+            case CameraProperty.Y:
+                return scene.camera.y
+            case CameraProperty.Left:
+                return scene.camera.left
+            case CameraProperty.Right:
+                return scene.camera.right
+            case CameraProperty.Top:
+                return scene.camera.top
+            case CameraProperty.Bottom:
+                return scene.camera.bottom
         }
     }
 }

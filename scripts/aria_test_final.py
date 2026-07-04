@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Test Aria model with proper generation constraints"""
+
 import sys
 from pathlib import Path
 

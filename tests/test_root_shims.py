@@ -38,9 +38,7 @@ def test_chat_providers_root_shim_reexports_core_symbols():
 
 
 def test_lora_infer_bridge_root_shim_reexports():
-    mod = _load_root_shim(
-        "lora_infer_bridge.py", "lora_infer_bridge_root_shim_under_test"
-    )
+    mod = _load_root_shim("lora_infer_bridge.py", "lora_infer_bridge_root_shim_under_test")
 
     # Symbols are copied from the canonical bridge into the shim namespace.
     assert hasattr(mod, "__all__")

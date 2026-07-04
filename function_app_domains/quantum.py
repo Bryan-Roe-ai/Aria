@@ -99,7 +99,9 @@ def quantum_circuit(req, ctx):
                     gates.append({"type": "CNOT", "control": index, "target": index + 1, "layer": layer + 1})
             elif entanglement == "circular":
                 for index in range(n_qubits):
-                    gates.append({"type": "CNOT", "control": index, "target": (index + 1) % n_qubits, "layer": layer + 1})
+                    gates.append(
+                        {"type": "CNOT", "control": index, "target": (index + 1) % n_qubits, "layer": layer + 1}
+                    )
             elif entanglement == "full":
                 for left in range(n_qubits):
                     for right in range(left + 1, n_qubits):
@@ -222,7 +224,9 @@ def quantum_llm(req, ctx):
         if action == "generate":
             prompt = str(body.get("prompt", "Quantum")).strip()[:256] or "Quantum"
             max_tokens = min(int(body.get("max_tokens", 50)), 200)
-            trainer = QuantumEnhancedLLMTrainer({"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64, "max_seq_len": 32})
+            trainer = QuantumEnhancedLLMTrainer(
+                {"n_qubits": 4, "n_quantum_layers": 2, "d_model": 64, "max_seq_len": 32}
+            )
             prompt_token_ids = [ord(char) % trainer.model_config["vocab_size"] for char in prompt[:32]]
             try:
                 import torch
@@ -289,7 +293,9 @@ def quantum_llm(req, ctx):
                         "final_loss": results["final_loss"],
                         "circuit_executions": results["quantum_metrics"]["circuit_executions"],
                         "checkpoint_path": results.get("checkpoint_path"),
-                        "readiness": get_quantum_llm_status(output_dir=output_dir) if get_quantum_llm_status is not None else None,
+                        "readiness": get_quantum_llm_status(output_dir=output_dir)
+                        if get_quantum_llm_status is not None
+                        else None,
                     }
                 ),
                 status_code=200,
@@ -418,6 +424,7 @@ def quantum_llm_chat(req, ctx):
 
         pipeline = ctx._get_quantum_llm_pipeline()
         if pipeline is None:
+
             def _unavail():
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
@@ -468,6 +475,7 @@ def quantum_llm_stream(req, ctx):
 
         pipeline = ctx._get_quantum_llm_pipeline()
         if pipeline is None:
+
             def _unavail():
                 yield b'data: {"error": "Quantum LLM pipeline unavailable"}\n\n'
                 yield b"data: [DONE]\n\n"
@@ -477,6 +485,7 @@ def quantum_llm_stream(req, ctx):
         def _sse_generator():
             loop = ctx.asyncio.new_event_loop()
             try:
+
                 async def _drain():
                     async for chunk in pipeline.stream(prompt, provider=body.get("provider"), seed=body.get("seed")):
                         yield chunk.encode("utf-8")
@@ -497,7 +506,7 @@ def quantum_llm_stream(req, ctx):
         ctx.logging.error("quantum-llm/stream error: %s", exc)
 
         def _err():
-            yield f'data: {ctx.json.dumps({"error": str(exc)})}\n\n'.encode("utf-8")
+            yield f"data: {ctx.json.dumps({'error': str(exc)})}\n\n".encode()
             yield b"data: [DONE]\n\n"
 
         return ctx._sse_response(_err(), status_code=200)

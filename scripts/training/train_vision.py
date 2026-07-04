@@ -20,7 +20,6 @@ import argparse
 import random
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 import numpy as np
 
@@ -187,7 +186,7 @@ def _train_epoch(
 # ---------------------------------------------------------------------------
 
 
-def main(args: Optional[List[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Train TinyConvNet vision classifier")
     parser.add_argument("--dataset", required=True, help="Path to dataset root directory")
     parser.add_argument("--epochs", type=int, default=5)
@@ -212,7 +211,7 @@ def main(args: Optional[List[str]] = None) -> int:
         return 1
 
     if parsed.dry_run:
-        print(f"[train_vision] dry-run OK — {len(ds)} images, " f"{len(ds.classes)} classes: {ds.classes}")
+        print(f"[train_vision] dry-run OK — {len(ds)} images, {len(ds.classes)} classes: {ds.classes}")
         return 0
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

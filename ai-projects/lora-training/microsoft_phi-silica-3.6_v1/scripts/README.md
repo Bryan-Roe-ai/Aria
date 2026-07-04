@@ -4,21 +4,22 @@ This directory contains all training and optimization scripts for the Phi-3.6 fi
 
 ## 📁 Script Overview
 
-| Script | Purpose | Usage |
-| -------- | --------- | ------- |
-| `train_lora.py` | LoRA fine-tuning | `python train_lora.py --dataset data --config ../lora/lora.yaml` |
-| `auto_eval.py` | Automatic evaluation | `python auto_eval.py --model path/to/model --dataset test.jsonl` |
-| `rag_pipeline.py` | RAG setup | `python rag_pipeline.py --model model --docs docs --interactive` |
-| `semantic_pruning.py` | Data pruning | `python semantic_pruning.py --input in.jsonl --output out.jsonl` |
-| `gpu_optimizer.py` | Hardware optimization | `python gpu_optimizer.py --update-config ../lora/lora.yaml` |
-| `run_pipeline.py` | Master orchestrator | `python run_pipeline.py --input-dataset train.jsonl` |
-| `prepare_dataset.py` | Dataset preparation | Helper for data formatting |
-| `metrics_logger.py` | Training metrics | Used by train_lora.py |
-| `otel_callback.py` | Telemetry | Optional observability |
+| Script                | Purpose               | Usage                                                            |
+| --------------------- | --------------------- | ---------------------------------------------------------------- |
+| `train_lora.py`       | LoRA fine-tuning      | `python train_lora.py --dataset data --config ../lora/lora.yaml` |
+| `auto_eval.py`        | Automatic evaluation  | `python auto_eval.py --model path/to/model --dataset test.jsonl` |
+| `rag_pipeline.py`     | RAG setup             | `python rag_pipeline.py --model model --docs docs --interactive` |
+| `semantic_pruning.py` | Data pruning          | `python semantic_pruning.py --input in.jsonl --output out.jsonl` |
+| `gpu_optimizer.py`    | Hardware optimization | `python gpu_optimizer.py --update-config ../lora/lora.yaml`      |
+| `run_pipeline.py`     | Master orchestrator   | `python run_pipeline.py --input-dataset train.jsonl`             |
+| `prepare_dataset.py`  | Dataset preparation   | Helper for data formatting                                       |
+| `metrics_logger.py`   | Training metrics      | Used by train_lora.py                                            |
+| `otel_callback.py`    | Telemetry             | Optional observability                                           |
 
 ## 🚀 Quick Commands
 
 ### One-Line Training
+
 ```bash
 # Full pipeline
 python run_pipeline.py --input-dataset ..\..\datasets\chat\dolly\train.jsonl --test-dataset ..\..\datasets\chat\dolly\test.jsonl
@@ -28,6 +29,7 @@ python run_pipeline.py --input-dataset ..\..\datasets\chat\dolly\train.jsonl --m
 ```
 
 ### Individual Tools
+
 ```bash
 # Optimize GPU settings
 python gpu_optimizer.py --update-config ..\lora\lora.yaml
@@ -69,6 +71,7 @@ Scripts use these config files:
 ## 📖 Documentation
 
 For detailed documentation:
+
 - **Complete Guide**: `../ADVANCED_TRAINING_GUIDE.md`
 - **Quick Reference**: `../ADVANCED_TRAINING_QUICKREF.md`
 - **Setup Summary**: `../ADVANCED_TRAINING_SETUP_COMPLETE.md`
@@ -76,12 +79,14 @@ For detailed documentation:
 ## 💻 Examples
 
 ### Example 1: CPU Test Run
+
 ```bash
 python gpu_optimizer.py  # Detect hardware
 python train_lora.py --dataset data --config ..\lora\lora.yaml --max-train-samples 64
 ```
 
 ### Example 2: GPU Production
+
 ```bash
 python semantic_pruning.py --input ..\..\datasets\chat\dolly\train.jsonl --output ..\data\clean.jsonl
 python gpu_optimizer.py --update-config ..\lora\lora.yaml --model-size 7.0
@@ -90,6 +95,7 @@ python auto_eval.py --model ..\data_out\lora_training --dataset ..\..\datasets\c
 ```
 
 ### Example 3: RAG Deployment
+
 ```bash
 python train_lora.py --dataset data --config ..\lora\lora.yaml
 python rag_pipeline.py --model ..\data_out\lora_training --docs ..\..\..\datasets --rebuild-index
@@ -99,11 +105,13 @@ python rag_pipeline.py --model ..\data_out\lora_training --docs ..\..\..\dataset
 ## 🎯 Workflow Recommendations
 
 ### For Quick Experiments
+
 1. `gpu_optimizer.py` - Get optimal settings
 2. `train_lora.py --max-train-samples 100` - Quick train
 3. `auto_eval.py` - Verify quality
 
 ### For Production
+
 1. `semantic_pruning.py` - Clean data
 2. `gpu_optimizer.py` - Optimize config
 3. `train_lora.py` - Full training
@@ -111,6 +119,7 @@ python rag_pipeline.py --model ..\data_out\lora_training --docs ..\..\..\dataset
 5. `rag_pipeline.py` - Production deployment
 
 ### For Research
+
 1. `run_pipeline.py` - Automated experiments
 2. Monitor `../data_out/pipeline_results.json`
 3. Compare multiple runs via `auto_eval.py`
@@ -118,6 +127,7 @@ python rag_pipeline.py --model ..\data_out\lora_training --docs ..\..\..\dataset
 ## 🛠️ Advanced Usage
 
 ### Custom Pipeline
+
 ```python
 # In your script
 from auto_eval import AutomaticEvaluator
@@ -129,6 +139,7 @@ from semantic_pruning import SemanticPruner
 ```
 
 ### Environment Variables
+
 ```bash
 # Set before running
 set CUDA_VISIBLE_DEVICES=0
@@ -139,9 +150,11 @@ set TOKENIZERS_PARALLELISM=false
 ## 📦 Dependencies
 
 Core (already installed):
+
 - torch, transformers, peft, accelerate
 
 Optional (for advanced features):
+
 ```bash
 pip install -r ..\requirements-advanced.txt
 ```
@@ -149,6 +162,7 @@ pip install -r ..\requirements-advanced.txt
 ## ✅ Testing
 
 Verify installation:
+
 ```bash
 python gpu_optimizer.py  # Should detect hardware
 python auto_eval.py --help  # Should show usage

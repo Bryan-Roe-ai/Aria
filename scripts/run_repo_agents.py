@@ -115,8 +115,7 @@ def run_agents(
 
 def write_summary(summary: RunSummary) -> Path:
     AGENTS_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    SUMMARY_PATH.write_text(json.dumps(
-        asdict(summary), indent=2), encoding="utf-8")
+    SUMMARY_PATH.write_text(json.dumps(asdict(summary), indent=2), encoding="utf-8")
     return SUMMARY_PATH
 
 
@@ -142,10 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--agent",
         action="append",
         dest="agents",
-        help=(
-            "Run only the named agent (repeatable). "
-            "Default: all registered agents."
-        ),
+        help=("Run only the named agent (repeatable). Default: all registered agents."),
     )
     parser.add_argument(
         "--dry-run",

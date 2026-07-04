@@ -15,7 +15,7 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 MCP_AVAILABLE = True
 try:
@@ -104,12 +104,12 @@ class LMStudioClient:
 
     async def chat_completion(
         self,
-        messages: List[Dict[str, str]],
-        model: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        messages: list[dict[str, str]],
+        model: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
         stream: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Send a chat completion request to LM Studio."""
         model = model or self.model
         temperature = temperature if temperature is not None else self.temperature
@@ -161,7 +161,7 @@ class LMStudioClient:
         except Exception as e:
             return {"success": False, "error": str(e), "model": model}
 
-    async def get_server_status(self) -> Dict[str, Any]:
+    async def get_server_status(self) -> dict[str, Any]:
         """Get server status information."""
         try:
             response = await self.client.get(f"{self.base_url}/models")
@@ -186,7 +186,7 @@ class LMStudioClient:
 
 
 # Global client instance
-_client: Optional[LMStudioClient] = None
+_client: LMStudioClient | None = None
 
 
 def get_client() -> LMStudioClient:
@@ -209,7 +209,7 @@ def get_client() -> LMStudioClient:
 
 def _register_mcp_handlers(server: "Server") -> None:
     @server.list_tools()
-    async def list_tools() -> List[Tool]:
+    async def list_tools() -> list[Tool]:
         """List available tools."""
         return [
             Tool(
@@ -346,7 +346,7 @@ def _register_mcp_handlers(server: "Server") -> None:
         ]
 
     @server.call_tool()
-    async def call_tool(name: str, arguments: Dict[str, Any]) -> List[TextContent]:
+    async def call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
         """Call a tool."""
         client = get_client()
 
@@ -373,9 +373,7 @@ def _register_mcp_handlers(server: "Server") -> None:
                 result = run_agi_reason(
                     query=arguments.get("query"),
                     messages=arguments.get("messages"),
-                    include_reasoning_summary=bool(
-                        arguments.get("include_reasoning_summary", True)
-                    ),
+                    include_reasoning_summary=bool(arguments.get("include_reasoning_summary", True)),
                 )
             elif name == "agi_stream":
                 result = run_agi_stream(

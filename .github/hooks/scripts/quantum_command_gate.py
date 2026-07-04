@@ -16,7 +16,8 @@ import json
 import os
 import re
 import sys
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 EXEC_TOOLS = {
     "run_in_terminal",

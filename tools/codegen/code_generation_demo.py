@@ -354,7 +354,7 @@ def demo_4_compound_interest():
     for principal, rate, years, compounds in scenarios:
         amount = calc(principal, rate, years, compounds)
         print(
-            f"${principal:>9.0f} {rate:>7.1f}% {years:>7.0f}  {'Monthly' if compounds==12 else 'Quarterly' if compounds==4 else 'Annual':>10} ${amount:>14.2f}"
+            f"${principal:>9.0f} {rate:>7.1f}% {years:>7.0f}  {'Monthly' if compounds == 12 else 'Quarterly' if compounds == 4 else 'Annual':>10} ${amount:>14.2f}"
         )
 
 

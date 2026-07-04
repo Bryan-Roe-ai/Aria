@@ -33,5 +33,5 @@ weight_decay: 0
 use_flash_attention: true
 dataloader_num_workers: 4
 pin_memory: true
-bf16: false  # disable by default for broad compatibility
+bf16: false # disable by default for broad compatibility
 optim: "adamw_torch_fused"

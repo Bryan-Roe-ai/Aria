@@ -13,7 +13,7 @@ import time
 from collections import OrderedDict
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 
@@ -103,7 +103,7 @@ class CircuitCache:
         self.ttl_seconds = ttl_seconds
         self.timestamps = {}
 
-    def get(self, key: str) -> Optional[qiskit.QuantumCircuit]:
+    def get(self, key: str) -> qiskit.QuantumCircuit | None:
         if key not in self.cache:
             return None
 
@@ -205,12 +205,12 @@ def _cleanup_cache_if_needed():
         quantum_state["last_cache_cleanup"] = current_time
 
 
-def _normalize_backend_name(backend_name: Optional[str]) -> str:
+def _normalize_backend_name(backend_name: str | None) -> str:
     """Normalize backend names for matching and pricing."""
     return (backend_name or "").strip().lower()
 
 
-def _normalize_required_string(value: Any) -> Optional[str]:
+def _normalize_required_string(value: Any) -> str | None:
     """Return a trimmed non-empty string, or None when invalid."""
     if not isinstance(value, str):
         return None
@@ -241,7 +241,7 @@ def _export_circuit_qasm(circuit: qiskit.QuantumCircuit) -> str:
     raise RuntimeError("OpenQASM export is unavailable for this Qiskit installation")
 
 
-def _require_string_arg(args: dict, key: str) -> tuple[Optional[str], Optional[list[TextContent]]]:
+def _require_string_arg(args: dict, key: str) -> tuple[str | None, list[TextContent] | None]:
     """Validate a required string argument from tool args."""
     value = _normalize_required_string(args.get(key))
     if value is None:
@@ -249,7 +249,7 @@ def _require_string_arg(args: dict, key: str) -> tuple[Optional[str], Optional[l
     return value, None
 
 
-def _parse_shots_arg(args: dict, *, default: int) -> tuple[Optional[int], Optional[list[TextContent]]]:
+def _parse_shots_arg(args: dict, *, default: int) -> tuple[int | None, list[TextContent] | None]:
     """Validate and normalize shots argument for bounded execution safety."""
     shots = args.get("shots", default)
     if isinstance(shots, bool) or not isinstance(shots, int) or not (1 <= shots <= MAX_SHOTS_PER_CALL):
@@ -260,7 +260,7 @@ def _parse_shots_arg(args: dict, *, default: int) -> tuple[Optional[int], Option
     return shots, None
 
 
-def _is_free_backend(backend_name: Optional[str]) -> bool:
+def _is_free_backend(backend_name: str | None) -> bool:
     """Return True when the backend is simulator-like and should not incur cost."""
     normalized = _normalize_backend_name(backend_name)
     if not normalized:
@@ -274,7 +274,7 @@ def _is_free_backend(backend_name: Optional[str]) -> bool:
     return any(keyword in normalized for keyword in FREE_BACKEND_KEYWORDS)
 
 
-def _requires_cost_confirmation(backend_name: Optional[str]) -> bool:
+def _requires_cost_confirmation(backend_name: str | None) -> bool:
     """Paid or unknown non-simulator backends require explicit confirmation."""
     normalized = _normalize_backend_name(backend_name)
     if not normalized:
@@ -336,7 +336,7 @@ def _backend_in_allowlist(normalized_backend: str, normalized_backends: set[str]
     return False
 
 
-async def _validate_backend_against_allowlist(backend_name: str) -> Optional[str]:
+async def _validate_backend_against_allowlist(backend_name: str) -> str | None:
     """Ensure a backend exists in the cached workspace allowlist, refreshing as needed."""
     loop = asyncio.get_event_loop()
 
@@ -706,9 +706,7 @@ async def create_circuit_handler(args: dict) -> list[TextContent]:
     ]
 
 
-def _create_circuit_sync(
-    n_qubits: int, circuit_type: str, gates: Optional[list] = None
-) -> Optional[qiskit.QuantumCircuit]:
+def _create_circuit_sync(n_qubits: int, circuit_type: str, gates: list | None = None) -> qiskit.QuantumCircuit | None:
     """Synchronous circuit creation (runs in thread pool)"""
     if circuit_type == "entanglement":
         return create_sample_circuit(n_qubits)
@@ -1184,8 +1182,8 @@ Results:
   - Final Validation Loss: {final_loss:.4f}
 
 Training History:
-  - Best Accuracy: {max(history['val_acc']):.2%}
-  - Best Loss: {min(history['val_loss']):.4f}
+  - Best Accuracy: {max(history["val_acc"]):.2%}
+  - Best Loss: {min(history["val_loss"]):.4f}
 """
 
     except Exception as e:
@@ -1238,11 +1236,11 @@ async def estimate_cost_handler(args: dict) -> list[TextContent]:
         cost_info = f"""Cost Estimate for {backend_name}:
 
 Shots: {shots}
-Estimated Time: {estimate.get('estimated_time_minutes', 'N/A')} minutes
+Estimated Time: {estimate.get("estimated_time_minutes", "N/A")} minutes
     Heuristic Price Estimate: ${heuristic_cost:.2f}
     Submission Guardrail Ceiling: ${safeguarded_cost:.2f}
 
-{estimate.get('note', '')}
+{estimate.get("note", "")}
 
 Note: Actual costs vary by provider:
   - IonQ: ~$0.00003 per gate-shot

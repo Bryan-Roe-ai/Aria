@@ -20,7 +20,7 @@ import logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -144,7 +144,7 @@ class CircuitCompiler:
 
         return stats
 
-    def get_optimization_report(self) -> Dict[str, Any]:
+    def get_optimization_report(self) -> dict[str, Any]:
         """Generate optimization report for all circuits."""
         report = {
             "total_circuits": len(self.stats),
@@ -192,9 +192,9 @@ class BatchCircuitExecutor:
 
     def execute_batch(
         self,
-        circuits: List[Tuple[Any, torch.Tensor]],
+        circuits: list[tuple[Any, torch.Tensor]],
         circuit_fn,
-    ) -> List[torch.Tensor]:
+    ) -> list[torch.Tensor]:
         """
         Execute a batch of circuits with the same structure.
 
@@ -214,7 +214,7 @@ class BatchCircuitExecutor:
 
         return results
 
-    def _execute_batch_internal(self, batch, circuit_fn) -> List[torch.Tensor]:
+    def _execute_batch_internal(self, batch, circuit_fn) -> list[torch.Tensor]:
         """Execute a single batch."""
         results = []
 
@@ -244,7 +244,7 @@ class BatchCircuitExecutor:
         data_rounded = torch.round(input_data * 100) / 100
         return f"{params_rounded.cpu().numpy().tobytes()}_{data_rounded.cpu().numpy().tobytes()}"
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get cache performance statistics."""
         total = self.cache_hits + self.cache_misses
         hit_rate = self.cache_hits / total if total > 0 else 0.0
@@ -320,7 +320,7 @@ class AdaptiveCircuitScheduler:
 
         return result
 
-    def get_stats(self) -> Dict[str, int]:
+    def get_stats(self) -> dict[str, int]:
         """Get scheduler statistics."""
         return {
             "active": self.active_circuits,
@@ -413,7 +413,7 @@ class QuantumClassicalPartitioner:
         variance = input_data.var().item()
         return min(1.0, (size * variance) / 1000.0)
 
-    def get_partition_report(self) -> Dict[str, Any]:
+    def get_partition_report(self) -> dict[str, Any]:
         """Get partitioning statistics."""
         quantum_count = sum(1 for d in self.partition_decisions if d["decision"] == "quantum")
         classical_count = len(self.partition_decisions) - quantum_count

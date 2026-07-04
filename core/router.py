@@ -5,12 +5,11 @@ Scores agents dynamically and selects best execution target.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.registry import AgentRegistry
 from core.task import Task
-
 
 _REFLECTION_TOKENS = (
     "reflect",
@@ -85,10 +84,10 @@ class TaskRouter:
     def route_text(
         self,
         text: str,
-        payload: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         task_type = self.classify_intent(text)
-        merged_payload: Dict[str, Any] = dict(payload or {})
+        merged_payload: dict[str, Any] = dict(payload or {})
         if task_type == "plan":
             merged_payload.setdefault("goal", text)
         elif task_type in {"feedback", "human_feedback"}:
@@ -100,7 +99,7 @@ class TaskRouter:
             merged_payload.setdefault("prompt", text)
         return self.route(Task(type=task_type, payload=merged_payload))
 
-    def route(self, task: Task) -> Dict[str, Any]:
+    def route(self, task: Task) -> dict[str, Any]:
         candidates = []
 
         for agent in self.registry.get_agents():
@@ -121,10 +120,7 @@ class TaskRouter:
         return {
             "agent": best_agent.name,
             "score": best_score,
-            "candidates": [
-                {"agent": agent.name, "score": score}
-                for score, agent in candidates
-            ],
+            "candidates": [{"agent": agent.name, "score": score} for score, agent in candidates],
             "result": result,
         }
 
@@ -136,76 +132,40 @@ class TaskRouter:
         else:
             return 0.0
 
-        if (
-            task.type in {"llm", "chat", "reason"}
-            and agent.name == "llm_agent"
-        ):
+        if task.type in {"llm", "chat", "reason"} and agent.name == "llm_agent":
             base += 0.5
 
-        if (
-            task.type in {"tool", "execute", "action"}
-            and agent.name == "tool_agent"
-        ):
+        if task.type in {"tool", "execute", "action"} and agent.name == "tool_agent":
             base += 0.5
 
-        if (
-            task.type in {"train", "feedback", "evaluate"}
-            and agent.name == "training_agent"
-        ):
+        if task.type in {"train", "feedback", "evaluate"} and agent.name == "training_agent":
             base += 0.5
 
-        if (
-            task.type in {"feedback", "human_feedback", "review"}
-            and agent.name == "human_feedback_agent"
-        ):
+        if task.type in {"feedback", "human_feedback", "review"} and agent.name == "human_feedback_agent":
             base += 0.55
 
-        if (
-            task.type in {"plan", "goal", "decompose"}
-            and agent.name == "planner_agent"
-        ):
+        if task.type in {"plan", "goal", "decompose"} and agent.name == "planner_agent":
             base += 0.6
 
-        if (
-            task.type in {"goal_evolve", "new_goal"}
-            and agent.name == "goal_evolution_agent"
-        ):
+        if task.type in {"goal_evolve", "new_goal"} and agent.name == "goal_evolution_agent":
             base += 0.6
 
-        if (
-            task.type in {"summarize", "compress", "condense"}
-            and agent.name == "summarizer_agent"
-        ):
+        if task.type in {"summarize", "compress", "condense"} and agent.name == "summarizer_agent":
             base += 0.6
 
-        if (
-            task.type in {"critique", "evaluate_response", "assess_quality"}
-            and agent.name == "critique_agent"
-        ):
+        if task.type in {"critique", "evaluate_response", "assess_quality"} and agent.name == "critique_agent":
             base += 0.6
 
-        if (
-            task.type in {"reason", "explain", "chain_of_thought"}
-            and agent.name == "reasoning_agent"
-        ):
+        if task.type in {"reason", "explain", "chain_of_thought"} and agent.name == "reasoning_agent":
             base += 0.6
 
-        if (
-            task.type in {"debate", "challenge", "stress_test"}
-            and agent.name == "debate_agent"
-        ):
+        if task.type in {"debate", "challenge", "stress_test"} and agent.name == "debate_agent":
             base += 0.6
 
-        if (
-            task.type in {"hypothesize", "infer", "generate_hypothesis"}
-            and agent.name == "hypothesis_agent"
-        ):
+        if task.type in {"hypothesize", "infer", "generate_hypothesis"} and agent.name == "hypothesis_agent":
             base += 0.6
 
-        if (
-            task.type in {"retrospect", "meta_learn"}
-            and agent.name == "reflection_agent"
-        ):
+        if task.type in {"retrospect", "meta_learn"} and agent.name == "reflection_agent":
             base += 0.6
 
         if task.type == "reflect" and agent.name == "reflection_agent":

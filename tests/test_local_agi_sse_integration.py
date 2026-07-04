@@ -6,15 +6,11 @@ These tests validate that LocalAGIProvider yields structured chunks and that
 {"delta": ...} payloads.
 """
 
-import json
 import importlib.util
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import MagicMock
+import json
 import sys
-
-import pytest
-
+from pathlib import Path
+from unittest.mock import MagicMock
 
 # Ensure repo root is on sys.path
 REPO_ROOT = Path(__file__).parent.parent

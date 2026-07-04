@@ -9,6 +9,7 @@ argument-hint: "Describe the policy to enforce: what should be blocked, warned a
 ## What This Skill Produces
 
 Use this skill to turn a policy need into a tested, production-ready hook. The expected output is:
+
 - a repo-wide policy scan covering root instructions, `.github/instructions/`, existing hooks, related scripts, and recent terminal/conversation signals
 - a Python companion script in `.github/hooks/scripts/` with correct exit-code semantics
 - a JSON manifest in `.github/hooks/` mapping lifecycle events to the script
@@ -18,6 +19,7 @@ Use this skill to turn a policy need into a tested, production-ready hook. The e
 ## When to Use
 
 Use this skill when you need to:
+
 - guard a protected path or resource from agent writes (e.g. `datasets/` is read-only)
 - run a compliance check before or after a file is saved (e.g. `pip-audit` on requirements files)
 - inject a context reminder when a prompt or tool call matches a pattern
@@ -25,6 +27,7 @@ Use this skill when you need to:
 - review an existing hook that isn't firing or is blocking too aggressively
 
 Common trigger phrases:
+
 - "create a hook"
 - "add a hook to block"
 - "write a PreToolUse guard"
@@ -38,13 +41,13 @@ Common trigger phrases:
 
 Before writing anything, choose the right event(s) and exit behavior:
 
-| Goal | Events | Exit on match |
-| ------ | -------- | --------------- |
-| Block file write to protected path | `PreToolUse` | 1 (hard block) |
-| Run audit before save, warn if fails | `PreToolUse`, `PostToolUse` | 0 (warn) or 1 (opt-in via env var) |
-| Inject reminder into conversation | `UserPromptSubmit` | 0 (always) |
-| Block agent from stopping prematurely | `Stop` | 1 (conditional) |
-| Check written file state after save | `PostToolUse` | 0 (warn) |
+| Goal                                  | Events                      | Exit on match                      |
+| ------------------------------------- | --------------------------- | ---------------------------------- |
+| Block file write to protected path    | `PreToolUse`                | 1 (hard block)                     |
+| Run audit before save, warn if fails  | `PreToolUse`, `PostToolUse` | 0 (warn) or 1 (opt-in via env var) |
+| Inject reminder into conversation     | `UserPromptSubmit`          | 0 (always)                         |
+| Block agent from stopping prematurely | `Stop`                      | 1 (conditional)                    |
+| Check written file state after save   | `PostToolUse`               | 0 (warn)                           |
 
 **Warn-first default:** Start with exit 0 (warn) unless the risk is catastrophic. Use an env var like `MY_HOOK_BLOCK=true` to let callers opt in to hard-blocking later. This avoids infinite agent retry loops where the agent keeps getting blocked on the fix it's trying to apply.
 
@@ -67,10 +70,10 @@ Before writing anything, choose the right event(s) and exit behavior:
 - Prefer hooks whose policy is supported by multiple repo sources, such as both instructions and automation scripts.
 - Pick the top 1–3 candidates; defer the rest.
 - For each candidate, answer:
-  - What tool names trigger it? (file writes, shell, etc.)
-  - What pattern in the payload identifies the unsafe case? (path regex, content search, JSON field)
-  - Should it block or warn?
-  - Does it need a `PostToolUse` companion to catch misses?
+    - What tool names trigger it? (file writes, shell, etc.)
+    - What pattern in the payload identifies the unsafe case? (path regex, content search, JSON field)
+    - Should it block or warn?
+    - Does it need a `PostToolUse` companion to catch misses?
 
 ### 3. Write the companion Python script
 
@@ -143,6 +146,7 @@ if __name__ == "__main__":
 ```
 
 **Key implementation rules:**
+
 - Always read from `stdin`, never from files or argv.
 - Always handle `json.JSONDecodeError` and empty stdin gracefully — exit 0.
 - Extract tool name from `payload.get("toolName") or payload.get("name")`, lowercased.
@@ -158,24 +162,26 @@ Place at `.github/hooks/<name>.json`:
 
 ```json
 {
-  "hooks": {
-    "PreToolUse": [
-      {
-        "type": "command",
-        "command": "python3 .github/hooks/scripts/<name>.py",
-        "timeout": 5
-      }
-    ]
-  }
+    "hooks": {
+        "PreToolUse": [
+            {
+                "type": "command",
+                "command": "python3 .github/hooks/scripts/<name>.py",
+                "timeout": 5
+            }
+        ]
+    }
 }
 ```
 
 **Timeout guidelines:**
+
 - Pure in-process checks (path regex, JSON search): `5` seconds
 - Subprocess calls (pip-audit, pytest, linters): `60`–`120` seconds
 - Network calls (API checks, Azure auth): `30`–`60` seconds
 
 **Event set recommendations:**
+
 - File-write guard: `PreToolUse` only
 - Compliance audit: `PreToolUse` + `PostToolUse` (belt-and-suspenders)
 - Reminder injection: `UserPromptSubmit` only
@@ -209,6 +215,7 @@ echo 'not json' | python3 .github/hooks/scripts/<name>.py; echo "exit=$?"
 ```
 
 Expected results:
+
 - Block case: exit 1, block message on stderr
 - Allow case: exit 0, no output
 - Inject case: exit 0, reminder on stdout
@@ -232,6 +239,7 @@ find .github/hooks -type f | sort
 ### 7. Summarize and surface ambiguities
 
 After the hook is created and tested, provide:
+
 1. **What it enforces** — in plain language, one sentence per event
 2. **How to test it** — copy-paste smoke-test commands
 3. **Ambiguous decisions** — at least two questions to refine behavior (e.g. "should this hard-block or warn?", "should Stop be gated too?")
@@ -240,6 +248,7 @@ After the hook is created and tested, provide:
 ## Quality Checks
 
 Before marking the task complete, confirm:
+
 - [ ] Policy signals were gathered from the entire repo scope, not just one instructions file or one prompt
 - [ ] Script exits 0 on empty stdin and malformed JSON
 - [ ] Script exits 1 only for confirmed block cases — never for errors or parse failures

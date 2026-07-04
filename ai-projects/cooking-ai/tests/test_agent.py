@@ -14,8 +14,11 @@ if str(SRC) not in sys.path:
 
 from agents.recipe_agent import RecipeAgent  # type: ignore
 from providers.local import LocalProvider  # type: ignore
-from utils.json_utils import INGREDIENT_EXTRACTION_SCHEMA  # type: ignore
-from utils.json_utils import RECIPE_SEARCH_SCHEMA, parse_and_validate
+from utils.json_utils import (
+    INGREDIENT_EXTRACTION_SCHEMA,  # type: ignore
+    RECIPE_SEARCH_SCHEMA,
+    parse_and_validate,
+)
 
 
 @pytest.mark.unit

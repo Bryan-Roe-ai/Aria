@@ -3,8 +3,8 @@ Tests for agi_persistence_prune utility.
 """
 
 import json
-import time
 import sys
+import time
 from pathlib import Path
 
 # Ensure repo root on path
@@ -12,8 +12,8 @@ REPO_ROOT = Path(__file__).parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from shared.agi_persistence_sqlite import SQLiteAGIPersistence
 import scripts.agi_persistence_prune as prune_mod
+from shared.agi_persistence_sqlite import SQLiteAGIPersistence
 
 
 def test_prune_jsonl(tmp_path):
@@ -27,7 +27,7 @@ def test_prune_jsonl(tmp_path):
     assert res["remaining"] == 2
     assert res["deleted"] == 3
     # file now has 2 lines
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
     assert len(lines) == 2
 

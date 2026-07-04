@@ -2,19 +2,19 @@
 name: ai-architect
 description: "AI systems architect for the Aria platform. Designs end-to-end AI pipelines, integrates providers, plans memory systems, and architects multi-agent workflows.\n\nTrigger phrases include:\n- 'design an AI pipeline'\n- 'architect a new AI feature'\n- 'integrate a new provider'\n- 'plan the AI system'\n- 'how should I structure this AI'\n- 'design multi-agent workflow'\n- 'memory architecture'\n\nExamples:\n- User says 'design a RAG pipeline for Aria' → invoke for retrieval-augmented generation architecture\n- User asks 'how should I add a new LLM provider?' → invoke for provider integration design\n- User says 'architect a multi-agent system for code review' → invoke for agent orchestration design\n\nThis agent understands the full Aria AI stack: providers, memory, embeddings, subscriptions, streaming, self-learning, and deployment."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - web/fetch
-  - vscode/memory
-  - agent
-  - read/problems
-  - todo
-  - search/changes
-  - task_complete
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - web/fetch
+    - vscode/memory
+    - agent
+    - read/problems
+    - todo
+    - search/changes
+    - task_complete
 ---
 
 # AI Architect Agent
@@ -36,6 +36,7 @@ Do not retain control after the scoped architecture work is finished; hand back 
 ## Platform Architecture
 
 ### Provider Layer
+
 ```
 User Request
     ↓
@@ -56,6 +57,7 @@ Response → Tags → Movement → TTS → UI
 ```
 
 ### Memory & Embedding Layer
+
 ```
 User Message → generate_embedding()
     ├── Azure OpenAI embeddings (preferred)
@@ -71,11 +73,13 @@ fetch_similar_messages(top_k=5)
 ```
 
 ### Self-Learning Loop
+
 ```
 Chat → Log to JSONL → Curate datasets → LoRA fine-tune → Promote adapter → Better chat
 ```
 
 ### AGI Reasoning Layer
+
 ```
 Query → AGIProvider._analyze_query()
     → Complexity (simple/moderate/complex)
@@ -94,6 +98,7 @@ Query → AGIProvider._analyze_query()
 ## Integration Points
 
 ### Provider Integration Pattern
+
 ```python
 # To add a new provider:
 class NewProvider(BaseChatProvider):
@@ -111,6 +116,7 @@ class NewProvider(BaseChatProvider):
 ```
 
 ### Endpoint Integration Pattern
+
 ```python
 # In function_app.py:
 @app.route(route="new-endpoint", methods=["POST"])
@@ -121,6 +127,7 @@ def new_endpoint(req: func.HttpRequest) -> func.HttpResponse:
 ```
 
 ### Memory Integration Pattern
+
 ```python
 from shared.chat_memory import generate_embedding, fetch_similar_messages
 
@@ -130,6 +137,7 @@ similar = fetch_similar_messages(embedding, top_k=5)
 ```
 
 ### Subscription Gating Pattern
+
 ```python
 from shared.subscription_manager import get_subscription_manager, Feature
 
@@ -150,17 +158,17 @@ if not sub.track_usage('quantum_jobs', amount=1):
 
 ## Key Files
 
-| Component | File |
-| ----------- | ------ |
+| Component          | File                                                                      |
+| ------------------ | ------------------------------------------------------------------------- |
 | Provider detection | `shared/chat_providers.py` → `ai-projects/chat-cli/src/chat_providers.py` |
-| AGI reasoning | `ai-projects/chat-cli/src/agi_provider.py` |
-| Memory/embeddings | `shared/chat_memory.py` |
-| Subscriptions | `shared/subscription_manager.py` |
-| Token management | `ai-projects/chat-cli/src/token_utils.py` |
-| DB logging | `shared/db_logging.py` |
-| Telemetry | `shared/telemetry.py` |
-| Azure Functions | `function_app.py` |
-| LLM tool maker | `ai-projects/llm-maker/src/tool_maker.py` |
-| Website maker | `ai-projects/llm-maker/src/website_maker.py` |
-| Cooking agent | `ai-projects/cooking-ai/src/agents/recipe_agent.py` |
-| Local dev | `local_dev_adapter.py` |
+| AGI reasoning      | `ai-projects/chat-cli/src/agi_provider.py`                                |
+| Memory/embeddings  | `shared/chat_memory.py`                                                   |
+| Subscriptions      | `shared/subscription_manager.py`                                          |
+| Token management   | `ai-projects/chat-cli/src/token_utils.py`                                 |
+| DB logging         | `shared/db_logging.py`                                                    |
+| Telemetry          | `shared/telemetry.py`                                                     |
+| Azure Functions    | `function_app.py`                                                         |
+| LLM tool maker     | `ai-projects/llm-maker/src/tool_maker.py`                                 |
+| Website maker      | `ai-projects/llm-maker/src/website_maker.py`                              |
+| Cooking agent      | `ai-projects/cooking-ai/src/agents/recipe_agent.py`                       |
+| Local dev          | `local_dev_adapter.py`                                                    |

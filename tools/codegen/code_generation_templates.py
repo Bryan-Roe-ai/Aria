@@ -359,7 +359,7 @@ def list_templates():
         for name, info in templates.items():
             print(f"  • {name:20} - {info['description']}")
 
-    print(f"\n\nWEBSITE TEMPLATES:")
+    print("\n\nWEBSITE TEMPLATES:")
     for name, info in WEBSITE_TEMPLATES_ALL.items():
         print(f"  • {name:20} - {info['description']}")
 

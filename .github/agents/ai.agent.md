@@ -67,19 +67,19 @@ Aria is an interactive AI character platform with:
 
 Delegate to specialist agents when the task requires deep domain expertise:
 
-| Agent | Use For |
+| Agent                 | Use For                                                        |
 | --------------------- | -------------------------------------------------------------- |
-| `agi-reasoning` | Chain-of-thought analysis, task decomposition, self-reflection |
-| `aria-character` | Character commands, actions, world generation, animations |
-| `autonomous-trainer` | LoRA training, dataset curation, model promotion |
-| `full-stack-debugger` | Cross-stack issue diagnosis |
-| `ai-architect` | AI pipeline design, provider integration, memory architecture |
-| `llm-maker` | Safe code/website generation via ToolMaker/WebsiteMaker |
-| `chat-provider` | Provider detection, streaming, memory injection, tokens |
-| `platform-ops` | Subscriptions, monitoring, deployment, dashboards |
-| `vision-ai` | Expression classification, CNN models, image inference |
-| `data-pipeline` | Batch evaluation, dataset management, benchmarking |
-| `qai-specialist` | Quantum-AI hybrid workflows |
+| `agi-reasoning`       | Chain-of-thought analysis, task decomposition, self-reflection |
+| `aria-character`      | Character commands, actions, world generation, animations      |
+| `autonomous-trainer`  | LoRA training, dataset curation, model promotion               |
+| `full-stack-debugger` | Cross-stack issue diagnosis                                    |
+| `ai-architect`        | AI pipeline design, provider integration, memory architecture  |
+| `llm-maker`           | Safe code/website generation via ToolMaker/WebsiteMaker        |
+| `chat-provider`       | Provider detection, streaming, memory injection, tokens        |
+| `platform-ops`        | Subscriptions, monitoring, deployment, dashboards              |
+| `vision-ai`           | Expression classification, CNN models, image inference         |
+| `data-pipeline`       | Batch evaluation, dataset management, benchmarking             |
+| `qai-specialist`      | Quantum-AI hybrid workflows                                    |
 
 ## Automatic Mode Switching
 
@@ -116,11 +116,11 @@ When users explicitly reference a mode name that differs from canonical agent ID
 1. Detect the best specialist mode from the task.
 2. Delegate only the specialist portion of the work.
 3. Require the specialist to return a concise handoff containing:
-   - what it did
-   - what it found
-   - files/systems touched
-   - blockers or risks
-   - recommended next step
+    - what it did
+    - what it found
+    - files/systems touched
+    - blockers or risks
+    - recommended next step
 4. Immediately resume as the primary `agent`.
 5. Integrate the specialist result with the rest of the task, continue execution, validate, and report back to the user from `agent` mode.
 

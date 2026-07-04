@@ -5,7 +5,8 @@ and safe for reuse in API and CLI layers.
 """
 
 from collections import defaultdict
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 
 def value_counts(values: Iterable[Any]) -> dict[str, int]:

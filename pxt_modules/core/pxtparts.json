@@ -57,15 +57,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    2
-                ]
+                "pinIndices": [2]
             },
             {
-                "pinIndices": [
-                    0,
-                    1
-                ]
+                "pinIndices": [0, 1]
             }
         ]
     },
@@ -142,25 +137,19 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1, 2
-                ]
+                "pinIndices": [1, 2]
             },
             {
-                "pinIndices": [
-                    3
-                ]
+                "pinIndices": [3]
             }
         ]
     },
     "pixels": {
         "simulationBehavior": "pixels",
-        "visual": { 
+        "visual": {
             "builtIn": "pixels",
             "width": 58,
             "height": 113,
@@ -213,22 +202,16 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1, 2
-                ]
+                "pinIndices": [1, 2]
             },
             {
-                "pinIndices": [
-                    3
-                ]
+                "pinIndices": [3]
             }
         ]
-    },    
+    },
     "buttons": {
         "simulationBehavior": "buttons",
         "visual": {
@@ -277,10 +260,7 @@
                 "part": true
             },
             {
-                "pinIndices": [
-                    0,
-                    1
-                ]
+                "pinIndices": [0, 1]
             }
         ]
     },
@@ -339,14 +319,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1
-                ]
+                "pinIndices": [1]
             }
         ]
     },
@@ -405,15 +381,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    2
-                ]
+                "pinIndices": [2]
             },
             {
-                "pinIndices": [
-                    0,
-                    1
-                ]
+                "pinIndices": [0, 1]
             }
         ]
     },
@@ -463,14 +434,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1
-                ]
+                "pinIndices": [1]
             }
         ]
     },
@@ -520,14 +487,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1
-                ]
+                "pinIndices": [1]
             }
         ]
     },
@@ -586,14 +549,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1
-                ]
+                "pinIndices": [1]
             }
         ]
     }

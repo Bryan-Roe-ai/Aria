@@ -5,7 +5,6 @@ Tool Validator - Validates generated code for safety
 import ast
 import logging
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 import yaml
 
@@ -74,7 +73,7 @@ class ToolValidator:
         "__mro__",
     }
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         """
         Initialize validator with configuration
 
@@ -85,21 +84,21 @@ class ToolValidator:
         self.allowed_imports = set(self.config.get("validation", {}).get("allowed_imports", []))
         self.strict_mode = self.config.get("validation", {}).get("strict_mode", True)
 
-    def _load_config(self, config_path: Optional[Path]) -> dict:
+    def _load_config(self, config_path: Path | None) -> dict:
         """Load configuration from YAML file"""
         if config_path and config_path.exists():
-            with open(config_path, "r") as f:
+            with open(config_path) as f:
                 return yaml.safe_load(f)
 
         # Default configuration if file not found
         default_config_path = Path(__file__).parent.parent / "llm_maker_config.yaml"
         if default_config_path.exists():
-            with open(default_config_path, "r") as f:
+            with open(default_config_path) as f:
                 return yaml.safe_load(f)
 
         return {}
 
-    def validate(self, code: str) -> Tuple[bool, List[str]]:
+    def validate(self, code: str) -> tuple[bool, list[str]]:
         """
         Validate tool code for safety
 
@@ -160,7 +159,7 @@ class ToolValidator:
 
         return is_valid, errors
 
-    def _check_imports(self, tree_or_nodes) -> List[str]:
+    def _check_imports(self, tree_or_nodes) -> list[str]:
         """Check for dangerous imports"""
         errors = []
         nodes = tree_or_nodes if isinstance(tree_or_nodes, list) else list(ast.walk(tree_or_nodes))
@@ -183,7 +182,7 @@ class ToolValidator:
 
         return errors
 
-    def _check_dangerous_calls(self, tree_or_nodes) -> List[str]:
+    def _check_dangerous_calls(self, tree_or_nodes) -> list[str]:
         """Check for calls to dangerous built-in functions"""
         errors = []
         nodes = tree_or_nodes if isinstance(tree_or_nodes, list) else list(ast.walk(tree_or_nodes))
@@ -201,7 +200,7 @@ class ToolValidator:
 
         return errors
 
-    def _check_dangerous_attributes(self, tree_or_nodes) -> List[str]:
+    def _check_dangerous_attributes(self, tree_or_nodes) -> list[str]:
         """Check for access to dangerous attributes"""
         errors = []
         nodes = tree_or_nodes if isinstance(tree_or_nodes, list) else list(ast.walk(tree_or_nodes))
@@ -212,7 +211,7 @@ class ToolValidator:
 
         return errors
 
-    def _check_file_operations(self, nodes: List[ast.AST], code: str) -> List[str]:
+    def _check_file_operations(self, nodes: list[ast.AST], code: str) -> list[str]:
         """AST-based check for file system operations; fallback regex available separately."""
         errors = []
 
@@ -237,14 +236,14 @@ class ToolValidator:
 
         return errors
 
-    def _check_file_operations_regex(self, code: str) -> List[str]:
+    def _check_file_operations_regex(self, code: str) -> list[str]:
         """Regex fallback for file ops (kept for broad coverage)."""
         errors = []
         # regex fallbacks were removed; keep this as a stub in case future
         # fuzzy detection is desired.
         return errors
 
-    def _check_network_operations(self, nodes: List[ast.AST], code: str) -> List[str]:
+    def _check_network_operations(self, nodes: list[ast.AST], code: str) -> list[str]:
         """AST-based check for network operations; fallback regex available separately."""
         errors = []
 
@@ -270,14 +269,14 @@ class ToolValidator:
 
         return errors
 
-    def _check_network_operations_regex(self, code: str) -> List[str]:
+    def _check_network_operations_regex(self, code: str) -> list[str]:
         """Regex fallback for network ops."""
         errors = []
         # regex fallbacks were removed; keep this as a stub in case future
         # fuzzy detection is desired.
         return errors
 
-    def _check_code_execution(self, nodes: List[ast.AST], code: str) -> List[str]:
+    def _check_code_execution(self, nodes: list[ast.AST], code: str) -> list[str]:
         """AST-based check for direct dynamic code execution calls."""
         errors = []
 
@@ -303,14 +302,14 @@ class ToolValidator:
 
         return errors
 
-    def _check_code_execution_regex(self, code: str) -> List[str]:
+    def _check_code_execution_regex(self, code: str) -> list[str]:
         """Regex fallback for dynamic code execution."""
         errors = []
         # regex fallbacks were removed; keep this as a stub in case future
         # fuzzy detection is desired.
         return errors
 
-    def _check_strict_mode(self, tree_or_nodes: ast.AST) -> List[str]:
+    def _check_strict_mode(self, tree_or_nodes: ast.AST) -> list[str]:
         """Additional checks for strict mode"""
         errors = []
         nodes = tree_or_nodes if isinstance(tree_or_nodes, list) else list(ast.walk(tree_or_nodes))
@@ -330,8 +329,8 @@ class ToolValidator:
         return errors
 
     def check_function_signature(
-        self, code: str, expected_name: str, expected_params: List[str]
-    ) -> Tuple[bool, List[str]]:
+        self, code: str, expected_name: str, expected_params: list[str]
+    ) -> tuple[bool, list[str]]:
         """
         Validate function signature matches expected
 

@@ -13,7 +13,6 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional
 
 import numpy as np
 import yaml
@@ -31,7 +30,7 @@ def create_variational_circuit(
     entanglement: str,
     noise_px: float = 0.0,
     noise_pz: float = 0.0,
-    rng: Optional[np.random.Generator] = None,
+    rng: np.random.Generator | None = None,
 ) -> QuantumCircuit:
     qc = QuantumCircuit(n_qubits, n_qubits)
 
@@ -90,7 +89,7 @@ def create_stabilizer_random_circuit(
     n_qubits: int,
     layers: int,
     twoq_density: float = 0.5,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> QuantumCircuit:
     """Random Clifford circuit using H, S, X, Z, and CX gates.
 
@@ -141,7 +140,7 @@ def create_stabilizer_random_circuit(
     return qc
 
 
-def compute_entropy(counts: Dict[str, int]) -> float:
+def compute_entropy(counts: dict[str, int]) -> float:
     total = sum(counts.values())
     if total == 0:
         return 0.0
@@ -284,7 +283,7 @@ def main() -> int:
     print("Circuit depth:", qc.depth(), " | gates:", sum(qc.count_ops().values()))
 
     # Build optional Aer NoiseModel
-    noise_model: Optional[NoiseModel] = None
+    noise_model: NoiseModel | None = None
     if (args.noise_depolarizing_p > 0.0) or (args.noise_amp_damp_gamma > 0.0):
         noise_model = NoiseModel()
         # Attach depolarizing to 1q and 2q gates used in circuits
@@ -331,8 +330,10 @@ def main() -> int:
     # Avoid huge integer exponentiation; max entropy in bits equals number of qubits
     max_entropy = float(args.n_qubits)
 
-    print("Unique states:", len(counts), f"/ {2 ** args.n_qubits}")
-    print(f"Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy/max_entropy*100 if max_entropy>0 else 0):.1f}%)")
+    print("Unique states:", len(counts), f"/ {2**args.n_qubits}")
+    print(
+        f"Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy / max_entropy * 100 if max_entropy > 0 else 0):.1f}%)"
+    )
 
     # Save JSON in the same schema as Azure results so the visualizer can pick it up
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")

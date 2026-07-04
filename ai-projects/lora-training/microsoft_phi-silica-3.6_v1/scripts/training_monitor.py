@@ -10,7 +10,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 @dataclass
@@ -22,11 +22,11 @@ class TrainingMetrics:
     loss: float
     learning_rate: float
     timestamp: str
-    grad_norm: Optional[float] = None
-    throughput: Optional[float] = None  # tokens/sec
-    gpu_memory_mb: Optional[float] = None
+    grad_norm: float | None = None
+    throughput: float | None = None  # tokens/sec
+    gpu_memory_mb: float | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -36,22 +36,22 @@ class TrainingSession:
 
     session_id: str
     start_time: str
-    end_time: Optional[str] = None
-    config: Dict[str, Any] = field(default_factory=dict)
-    metrics: List[TrainingMetrics] = field(default_factory=list)
+    end_time: str | None = None
+    config: dict[str, Any] = field(default_factory=dict)
+    metrics: list[TrainingMetrics] = field(default_factory=list)
     status: str = "running"  # running, completed, failed
     total_steps: int = 0
     best_loss: float = float("inf")
     best_step: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {**asdict(self), "metrics": [m.to_dict() for m in self.metrics]}
 
 
 class TrainingMonitor:
     """Monitor and track training progress"""
 
-    def __init__(self, session_id: Optional[str] = None):
+    def __init__(self, session_id: str | None = None):
         self.session_id = session_id or f"training_{int(time.time())}"
         self.session = TrainingSession(session_id=self.session_id, start_time=datetime.now().isoformat())
 
@@ -90,7 +90,7 @@ class TrainingMonitor:
         # Queue for async writing
         self.metrics_queue.put(metrics)
 
-    def update_config(self, config: Dict[str, Any]):
+    def update_config(self, config: dict[str, Any]):
         """Update training configuration"""
         self.session.config.update(config)
 
@@ -121,7 +121,7 @@ class TrainingMonitor:
         with open(self.summary_file, "w") as f:
             json.dump(self.session.to_dict(), f, indent=2)
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get current training statistics"""
         if not self.session.metrics:
             return {}
@@ -165,7 +165,7 @@ class TrainingMonitor:
         )
 
     @staticmethod
-    def load_session(session_id: str) -> Optional[TrainingSession]:
+    def load_session(session_id: str) -> TrainingSession | None:
         """Load a previous training session"""
         summary_file = Path(f"data_out/training_logs/{session_id}_summary.json")
 
@@ -193,7 +193,7 @@ class TrainingMonitor:
         return session
 
     @staticmethod
-    def list_sessions() -> List[str]:
+    def list_sessions() -> list[str]:
         """List all training sessions"""
         log_dir = Path("data_out/training_logs")
         if not log_dir.exists():
@@ -262,7 +262,7 @@ class LiveDashboard:
         if recent:
             print("\n📈 Recent Metrics:")
             print(f"  {'Step':<8} {'Loss':<10} {'LR':<12} {'Time':<12}")
-            print(f"  {'-'*8} {'-'*10} {'-'*12} {'-'*12}")
+            print(f"  {'-' * 8} {'-' * 10} {'-' * 12} {'-' * 12}")
             for m in recent:
                 timestamp = m.timestamp.split("T")[1][:8]
                 print(f"  {m.step:<8} {m.loss:<10.4f} {m.learning_rate:<12.6f} {timestamp:<12}")

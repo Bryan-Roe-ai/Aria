@@ -91,8 +91,7 @@ class DocstringAuditAgent(AutomationAgent):
         parse_failed = any(finding.get("reason") == "parse_failed" for finding in findings)
         status = "error" if parse_failed else "warning" if coverage_pct < 100.0 or missing_public else "ok"
         summary = (
-            f"Docstring coverage {coverage_pct:.1f}% "
-            f"({documented}/{documentable}); {missing_public} public missing."
+            f"Docstring coverage {coverage_pct:.1f}% ({documented}/{documentable}); {missing_public} public missing."
         )
         return self.make_result(
             status=status,

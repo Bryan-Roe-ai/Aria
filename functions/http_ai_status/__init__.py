@@ -98,7 +98,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     }
     if lora_info["adapter_config_exists"]:
         try:
-            with open(adapter_cfg, "r", encoding="utf-8") as f:
+            with open(adapter_cfg, encoding="utf-8") as f:
                 cfg = json.load(f)
             lora_info["base_model"] = cfg.get("base_model_name_or_path")
         except Exception:

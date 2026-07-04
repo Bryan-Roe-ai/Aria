@@ -6,11 +6,10 @@ Simple working version for immediate deployment
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-_OPTIONAL_IMPORT_ERROR: Optional[ImportError] = None
+_OPTIONAL_IMPORT_ERROR: ImportError | None = None
 
 try:
     from azure.quantum import Workspace

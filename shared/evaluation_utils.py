@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
-def load_jsonl(path: Path, max_samples: Optional[int] = None) -> List[Dict[str, Any]]:
+def load_jsonl(path: Path, max_samples: int | None = None) -> list[dict[str, Any]]:
     """Load records from a JSONL file.
 
     Args:
@@ -17,7 +17,7 @@ def load_jsonl(path: Path, max_samples: Optional[int] = None) -> List[Dict[str, 
     Returns:
         List of parsed JSON objects.
     """
-    records: List[Dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
     with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -29,7 +29,7 @@ def load_jsonl(path: Path, max_samples: Optional[int] = None) -> List[Dict[str, 
     return records
 
 
-def load_dataset(path: Path, max_samples: Optional[int] = None) -> List[Dict[str, Any]]:
+def load_dataset(path: Path, max_samples: int | None = None) -> list[dict[str, Any]]:
     """Load a dataset from either JSON array or JSONL format.
 
     Args:
@@ -54,7 +54,7 @@ def load_dataset(path: Path, max_samples: Optional[int] = None) -> List[Dict[str
     raise ValueError(f"Unsupported dataset format in {path}")
 
 
-def naive_predict(example: Dict[str, Any]) -> str:
+def naive_predict(example: dict[str, Any]) -> str:
     """Return a naive echo prediction for an example.
 
     Extracts the input text from ``example["input"]`` or the last user
@@ -79,7 +79,7 @@ def naive_predict(example: Dict[str, Any]) -> str:
     return "echo:"
 
 
-def load_labels_from_dataset(path: Path, max_samples: Optional[int] = None) -> List[Any]:
+def load_labels_from_dataset(path: Path, max_samples: int | None = None) -> list[Any]:
     """Load ground-truth labels from a dataset file.
 
     Looks for a ``label`` key in each record. Falls back to the last
@@ -93,7 +93,7 @@ def load_labels_from_dataset(path: Path, max_samples: Optional[int] = None) -> L
         List of label values (strings or numbers).
     """
     records = load_dataset(path, max_samples=max_samples)
-    labels: List[Any] = []
+    labels: list[Any] = []
     for rec in records:
         if "label" in rec:
             labels.append(rec["label"])

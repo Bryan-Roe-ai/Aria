@@ -5,12 +5,14 @@ Ollama is now fully integrated and running on **port 11434**. This guide shows y
 ## Quick Start
 
 **Use Ollama explicitly (recommended):**
+
 ```bash
 cd /workspaces/Aria/ai-projects/chat-cli
 python3 src/chat_cli.py --provider ollama --model tinyllama --once "Hello!"
 ```
 
 **Or via environment variable:**
+
 ```bash
 export OLLAMA_BASE_URL="http://127.0.0.1:11434/v1"
 export OLLAMA_MODEL="mistral"
@@ -20,10 +22,12 @@ python3 src/chat_cli.py --once "Your question"
 ## Available Models
 
 Current models in Ollama:
+
 - **tinyllama:latest** (1B) - Fast, good for quick responses
 - **mistral:latest** (7B) - Balanced quality & speed
 
 Add more models:
+
 ```bash
 ollama pull llama2          # Meta's Llama 2 (7B)
 ollama pull neural-chat     # Intel's optimized (7B)
@@ -34,13 +38,16 @@ ollama pull phi             # Microsoft's Phi (2.7B)
 ## Integration Points
 
 ### 1. Chat CLI
+
 **Direct usage:**
+
 ```bash
 cd /workspaces/Aria/ai-projects/chat-cli
 python3 src/chat_cli.py --provider ollama --model mistral --once "What is quantum computing?"
 ```
 
 **Interactive mode:**
+
 ```bash
 python3 src/chat_cli.py --provider ollama --interactive
 # Type messages and press Enter to chat
@@ -48,7 +55,9 @@ python3 src/chat_cli.py --provider ollama --interactive
 ```
 
 ### 2. Aria Web Interface
+
 Ollama is auto-detected and used automatically:
+
 ```bash
 cd /workspaces/Aria/apps/aria
 python3 server.py
@@ -57,6 +66,7 @@ python3 server.py
 ```
 
 ### 3. Azure Functions
+
 ```bash
 cd /workspaces/Aria
 func host start
@@ -65,6 +75,7 @@ func host start
 ```
 
 ### 4. Direct HTTP
+
 ```bash
 curl -s http://localhost:11434/v1/chat/completions \
   -H 'Content-Type: application/json' \
@@ -90,6 +101,7 @@ When `--provider` is **not** specified, the system auto-detects in this order:
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Custom Ollama endpoint
 export OLLAMA_BASE_URL="http://192.168.1.100:11434/v1"
@@ -102,19 +114,22 @@ export CHAT_TEMPERATURE="0.7"
 ```
 
 ### Local Settings (local.settings.json)
+
 Add to `local.settings.json` for Azure Functions:
+
 ```json
 {
-  "Values": {
-    "OLLAMA_BASE_URL": "http://127.0.0.1:11434/v1",
-    "OLLAMA_MODEL": "tinyllama"
-  }
+    "Values": {
+        "OLLAMA_BASE_URL": "http://127.0.0.1:11434/v1",
+        "OLLAMA_MODEL": "tinyllama"
+    }
 }
 ```
 
 ## Troubleshooting
 
 ### Ollama not responding
+
 ```bash
 # Check if Ollama is running
 ps aux | grep ollama
@@ -128,6 +143,7 @@ curl http://localhost:11434/api/tags | python3 -m json.tool
 ```
 
 ### Model not found
+
 ```bash
 # List available models
 curl http://localhost:11434/api/tags | python3 -m json.tool
@@ -137,6 +153,7 @@ ollama pull tinyllama
 ```
 
 ### Slow inference
+
 - Use smaller models: `tinyllama`, `orca-mini`, `phi`
 - Reduce `max_tokens` in queries
 - Check system resources: `top`, `nvidia-smi` (if GPU available)
@@ -144,25 +161,30 @@ ollama pull tinyllama
 ## Making Ollama Persistent
 
 ### Option A: systemd Service
+
 ```bash
 sudo systemctl enable ollama
 sudo systemctl start ollama
 ```
 
 ### Option B: Dev Container Startup
+
 Edit `.devcontainer/devcontainer.json`:
+
 ```json
 {
-  "postStartCommand": "nohup ollama serve > /tmp/ollama.log 2>&1 &"
+    "postStartCommand": "nohup ollama serve > /tmp/ollama.log 2>&1 &"
 }
 ```
 
 ### Option C: Background Process with nohup
+
 ```bash
 nohup ollama serve > /tmp/ollama.log 2>&1 &
 ```
 
 ### Option D: tmux Session
+
 ```bash
 tmux new-session -d -s ollama 'ollama serve'
 # Restore later: tmux attach -t ollama
@@ -200,6 +222,7 @@ print(response.choices[0].message.content)
 ## When to Use Ollama
 
 ✅ **Good for:**
+
 - Local development (no API keys needed)
 - Privacy-sensitive work (no cloud calls)
 - Testing chat integrations
@@ -207,6 +230,7 @@ print(response.choices[0].message.content)
 - Running offline
 
 ❌ **Limitations:**
+
 - Slower than commercial APIs (2-20x depending on model)
 - Results quality lower than GPT-4/Claude
 - Limited context window (typically 2K-4K tokens)

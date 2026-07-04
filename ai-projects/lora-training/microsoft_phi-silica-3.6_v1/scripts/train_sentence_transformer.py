@@ -34,8 +34,6 @@ from contextlib import nullcontext
 from pathlib import Path
 
 import torch
-from datasets import load_dataset
-
 from sentence_transformers import (
     SentenceTransformer,
     SentenceTransformerModelCardData,
@@ -45,6 +43,8 @@ from sentence_transformers import (
 from sentence_transformers.base.sampler import BatchSamplers
 from sentence_transformers.sentence_transformer.evaluation import NanoBEIREvaluator
 from sentence_transformers.sentence_transformer.losses import MultipleNegativesRankingLoss
+
+from datasets import load_dataset
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "data_out" / "sentence_transformer_training"
@@ -72,13 +72,10 @@ def log_trackio_dashboard():
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Train a SentenceTransformer bi-encoder")
-    parser.add_argument(
-        "--model", default="sentence-transformers/all-MiniLM-L6-v2")
+    parser = argparse.ArgumentParser(description="Train a SentenceTransformer bi-encoder")
+    parser.add_argument("--model", default="sentence-transformers/all-MiniLM-L6-v2")
     parser.add_argument("--dataset", default="sentence-transformers/all-nli")
-    parser.add_argument("--subset", default="triplet",
-                        help="Dataset config name (if any)")
+    parser.add_argument("--subset", default="triplet", help="Dataset config name (if any)")
     parser.add_argument("--train-split", default="train")
     parser.add_argument("--eval-split", default="dev")
     parser.add_argument("--train-size", type=int, default=50_000)
@@ -101,9 +98,7 @@ def parse_args() -> argparse.Namespace:
 
 def setup_logging(run_name: str, output_dir: str | None = None) -> None:
     log_dir = (
-        Path(output_dir) / "logs"
-        if output_dir
-        else REPO_ROOT / "data_out" / "sentence_transformer_training" / "logs"
+        Path(output_dir) / "logs" if output_dir else REPO_ROOT / "data_out" / "sentence_transformer_training" / "logs"
     )
     log_dir.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
@@ -177,13 +172,10 @@ def main() -> None:
     logging.info("Loading dataset: %s (%s)", args.dataset, args.subset)
     train_size = 50 if smoke_test else args.train_size
     eval_size = 20 if smoke_test else args.eval_size
-    train_dataset = load_split(
-        args.dataset, args.subset, args.train_split).select(range(train_size))
-    eval_dataset = load_split(
-        args.dataset, args.subset, args.eval_split).select(range(eval_size))
+    train_dataset = load_split(args.dataset, args.subset, args.train_split).select(range(train_size))
+    eval_dataset = load_split(args.dataset, args.subset, args.eval_split).select(range(eval_size))
     if smoke_test:
-        logging.info(
-            "SMOKE_TEST=1: trimmed dataset; max_steps=1; skip Hub push")
+        logging.info("SMOKE_TEST=1: trimmed dataset; max_steps=1; skip Hub push")
     logging.info("  train: %s examples", f"{len(train_dataset):,}")
     logging.info("  eval:  %s examples", f"{len(eval_dataset):,}")
 
@@ -193,11 +185,7 @@ def main() -> None:
     with autocast_ctx():
         baseline_eval = evaluator(model)[evaluator.primary_metric]
     metric_key = f"eval_{evaluator.primary_metric}"
-    hub_kwargs = (
-        {"push_to_hub": True, "hub_model_id": hub_model_id, "hub_strategy": "every_save"}
-        if hub_push
-        else {}
-    )
+    hub_kwargs = {"push_to_hub": True, "hub_model_id": hub_model_id, "hub_strategy": "every_save"} if hub_push else {}
 
     training_args = SentenceTransformerTrainingArguments(
         output_dir=output_dir,

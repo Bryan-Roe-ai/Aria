@@ -33,11 +33,13 @@ result = vi.predict_file(file_path)         # File path input
 ## Checkpoint Management
 
 Search order for `.pt` files:
+
 1. `data_out/vision_training/`
 2. `scripts/checkpoints/`
 3. `checkpoints/`
 
 Checkpoint format:
+
 ```python
 {
     'model_state_dict': OrderedDict,

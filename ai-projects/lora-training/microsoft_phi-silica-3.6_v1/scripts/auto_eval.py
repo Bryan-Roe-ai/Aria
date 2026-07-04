@@ -7,7 +7,7 @@ import json
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -35,14 +35,14 @@ class EvaluationMetrics:
     """Container for evaluation metrics"""
 
     perplexity: float
-    accuracy: Optional[float] = None
-    bleu_score: Optional[float] = None
-    rouge_scores: Optional[Dict[str, float]] = None
+    accuracy: float | None = None
+    bleu_score: float | None = None
+    rouge_scores: dict[str, float] | None = None
     inference_time_ms: float = 0.0
     tokens_per_second: float = 0.0
     memory_usage_mb: float = 0.0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -57,7 +57,7 @@ class AutomaticEvaluator:
         self.results_dir = Path("data_out/evaluation_results")
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
-    def _load_config(self) -> Dict[str, Any]:
+    def _load_config(self) -> dict[str, Any]:
         """Load evaluation config"""
         with open(self.config_path) as f:
             return yaml.safe_load(f)
@@ -66,7 +66,7 @@ class AutomaticEvaluator:
         self,
         model_path: str,
         test_dataset: str,
-        metrics: List[str] | None = None,
+        metrics: list[str] | None = None,
         num_samples: int = 100,
     ) -> EvaluationMetrics:
         """
@@ -94,7 +94,7 @@ class AutomaticEvaluator:
             try:
                 import json as _json
 
-                with open(adapter_dir / "adapter_config.json", "r", encoding="utf-8") as f:
+                with open(adapter_dir / "adapter_config.json", encoding="utf-8") as f:
                     adapter_cfg = _json.load(f)
                 base_model_id = adapter_cfg.get("base_model_name_or_path") or self.config.get("model")
                 # Fallback mapping similar to training script
@@ -145,7 +145,7 @@ class AutomaticEvaluator:
 
         return EvaluationMetrics(**results)
 
-    def _load_test_data(self, dataset_path: str, num_samples: int) -> List[Dict[str, Any]]:
+    def _load_test_data(self, dataset_path: str, num_samples: int) -> list[dict[str, Any]]:
         """Load test dataset"""
         dataset_path = Path(dataset_path)
 
@@ -170,7 +170,7 @@ class AutomaticEvaluator:
         self,
         model: AutoModelForCausalLM,
         tokenizer: AutoTokenizer,
-        dataset: List[Dict[str, Any]],
+        dataset: list[dict[str, Any]],
     ) -> float:
         """Compute perplexity on test set"""
         model.eval()
@@ -194,8 +194,8 @@ class AutomaticEvaluator:
         self,
         model: AutoModelForCausalLM,
         tokenizer: AutoTokenizer,
-        dataset: List[Dict[str, Any]],
-    ) -> Dict[str, float]:
+        dataset: list[dict[str, Any]],
+    ) -> dict[str, float]:
         """Compute inference speed metrics"""
         model.eval()
         total_time = 0.0
@@ -234,9 +234,9 @@ class AutomaticEvaluator:
         self,
         model: AutoModelForCausalLM,
         tokenizer: AutoTokenizer,
-        dataset: List[Dict[str, Any]],
-        metrics: List[str],
-    ) -> Dict[str, Any]:
+        dataset: list[dict[str, Any]],
+        metrics: list[str],
+    ) -> dict[str, Any]:
         """Compute generation quality metrics (BLEU, ROUGE)"""
         want_bleu = "bleu" in metrics
         want_rouge = "rouge" in metrics
@@ -251,12 +251,12 @@ class AutomaticEvaluator:
             print("[quality] rouge-score not installed; skipping ROUGE")
             want_rouge = False
 
-        prompts: List[str] = []
-        refs: List[str] = []
-        preds: List[str] = []
+        prompts: list[str] = []
+        refs: list[str] = []
+        preds: list[str] = []
 
         # Prepare small eval subset (already controlled by caller num_samples)
-        pairs: List[Tuple[str, str]] = []
+        pairs: list[tuple[str, str]] = []
         for ex in dataset:
             p, r = self._extract_prompt_and_reference(ex)
             if p and r:
@@ -277,7 +277,7 @@ class AutomaticEvaluator:
                 refs.append(r)
                 preds.append(text)
 
-        results: Dict[str, Any] = {"bleu_score": None, "rouge_scores": None}
+        results: dict[str, Any] = {"bleu_score": None, "rouge_scores": None}
 
         if want_bleu and preds and refs:
             try:
@@ -301,7 +301,7 @@ class AutomaticEvaluator:
 
         return results
 
-    def _extract_prompt_and_reference(self, example: Dict[str, Any]) -> Tuple[str, str]:
+    def _extract_prompt_and_reference(self, example: dict[str, Any]) -> tuple[str, str]:
         """Return (prompt, reference) for chat-style examples.
         Prompt: last user message; Reference: last assistant message.
         Fallbacks to text-only examples if needed.
@@ -323,7 +323,7 @@ class AutomaticEvaluator:
         t = self._extract_text(example)
         return t, t
 
-    def _extract_text(self, example: Dict[str, Any]) -> str:
+    def _extract_text(self, example: dict[str, Any]) -> str:
         """Extract text from dataset example"""
         if "text" in example:
             return example["text"]
@@ -346,8 +346,8 @@ class AutomaticEvaluator:
         print(f"✓ Results saved to {output_file}")
 
     def compare_models(
-        self, model_paths: List[str], test_dataset: str, num_samples: int = 100
-    ) -> Dict[str, EvaluationMetrics]:
+        self, model_paths: list[str], test_dataset: str, num_samples: int = 100
+    ) -> dict[str, EvaluationMetrics]:
         """Compare multiple models on same dataset"""
         results = {}
 

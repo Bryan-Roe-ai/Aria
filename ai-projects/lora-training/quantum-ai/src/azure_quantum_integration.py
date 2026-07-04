@@ -5,7 +5,7 @@ Connects quantum ML models with Azure Quantum services
 
 import logging
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from azure.quantum import Workspace
 from azure.quantum.qiskit import AzureQuantumProvider
@@ -23,11 +23,11 @@ class AzureQuantumManager:
 
     def __init__(
         self,
-        resource_id: Optional[str] = None,
-        location: Optional[str] = None,
-        subscription_id: Optional[str] = None,
-        resource_group: Optional[str] = None,
-        workspace_name: Optional[str] = None,
+        resource_id: str | None = None,
+        location: str | None = None,
+        subscription_id: str | None = None,
+        resource_group: str | None = None,
+        workspace_name: str | None = None,
     ):
         """
         Initialize Azure Quantum workspace connection
@@ -80,7 +80,7 @@ class AzureQuantumManager:
             logger.error(f"Failed to connect to Azure Quantum: {str(e)}")
             return False
 
-    def list_backends(self) -> List[str]:
+    def list_backends(self) -> list[str]:
         """List available quantum backends"""
         if not self.provider:
             logger.warning("Not connected. Call connect() first.")
@@ -92,7 +92,7 @@ class AzureQuantumManager:
         logger.info(f"Available backends: {backend_names}")
         return backend_names
 
-    def get_backend(self, backend_name: str = None) -> Optional[Backend]:
+    def get_backend(self, backend_name: str = None) -> Backend | None:
         """
         Get a specific backend or default simulator
 
@@ -127,8 +127,8 @@ class AzureQuantumManager:
         self,
         circuit: QuantumCircuit,
         shots: int = 1024,
-        backend_name: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        backend_name: str | None = None,
+    ) -> dict[str, Any]:
         """
         Execute a quantum circuit on Azure Quantum
 
@@ -184,7 +184,7 @@ class AzureQuantumManager:
         job = self.workspace.get_job(job_id)
         return job.details.status
 
-    def estimate_cost(self, circuit: QuantumCircuit, backend_name: str) -> Dict[str, Any]:
+    def estimate_cost(self, circuit: QuantumCircuit, backend_name: str) -> dict[str, Any]:
         """
         Estimate the cost of running a circuit
 
@@ -234,10 +234,10 @@ class QuantumJobManager:
 
     def submit_batch(
         self,
-        circuits: List[QuantumCircuit],
+        circuits: list[QuantumCircuit],
         shots: int = 1024,
-        backend_name: Optional[str] = None,
-    ) -> List[str]:
+        backend_name: str | None = None,
+    ) -> list[str]:
         """
         Submit multiple circuits as a batch
 
@@ -252,14 +252,14 @@ class QuantumJobManager:
         job_ids = []
 
         for i, circuit in enumerate(circuits):
-            logger.info(f"Submitting circuit {i+1}/{len(circuits)}")
+            logger.info(f"Submitting circuit {i + 1}/{len(circuits)}")
             result = self.azure_manager.run_circuit(circuit, shots, backend_name)
             job_ids.append(result["job_id"])
             self.jobs.append({"job_id": result["job_id"], "circuit_index": i, "status": "submitted"})
 
         return job_ids
 
-    def check_all_jobs(self) -> Dict[str, int]:
+    def check_all_jobs(self) -> dict[str, int]:
         """
         Check status of all submitted jobs
 

@@ -34,17 +34,21 @@ mount/
 ## 🚀 Quick Start
 
 ### Option 1: Full Launch (Recommended)
+
 ```powershell
 cd mount
 .\launch.ps1
 ```
+
 This will:
+
 - ✓ Check if service is running
 - ✓ Start service if needed
 - ✓ Wait for it to be ready
 - ✓ Open your browser automatically
 
 ### Option 2: Manual Start
+
 ```powershell
 cd mount
 .\start.ps1
@@ -52,6 +56,7 @@ cd mount
 ```
 
 ### Option 3: Development Mode
+
 ```powershell
 cd mount
 python app.py
@@ -60,12 +65,14 @@ python app.py
 ## 🎨 Features
 
 ### Dashboard Tab 📊
+
 - System health overview
 - Quick action buttons
 - Recent activity feed
 - Status indicators
 
 ### Quantum AI Tab ⚛️
+
 - Train quantum classifiers
 - Select datasets (heart, ionosphere, sonar, banknote)
 - Configure qubits, layers, epochs
@@ -74,16 +81,18 @@ python app.py
 - Run AutoRun jobs
 
 ### Chat Tab 💬
+
 - Interactive chat interface
 - Multiple providers:
-  - 🆓 Local (always available)
-  - ☁️ Azure OpenAI
-  - 🤖 OpenAI
-  - 🎯 LoRA (your trained model)
+    - 🆓 Local (always available)
+    - ☁️ Azure OpenAI
+    - 🤖 OpenAI
+    - 🎯 LoRA (your trained model)
 - Auto-detect best provider
 - Save conversations
 
 ### Training Tab 🎓
+
 - Train LoRA adapters
 - Select chat datasets
 - Configure training parameters
@@ -92,6 +101,7 @@ python app.py
 - Monitor LoRA adapter
 
 ### Logs Tab 📝
+
 - Real-time system logs
 - Color-coded by level
 - Clear and refresh controls
@@ -114,6 +124,7 @@ This tests all API endpoints to ensure everything works.
 ## 🎯 Example Workflows
 
 ### Train a Quantum Model
+
 1. Launch: `.\launch.ps1`
 2. Go to **⚛️ Quantum AI** tab
 3. Select "heart" dataset
@@ -122,6 +133,7 @@ This tests all API endpoints to ensure everything works.
 6. Watch logs for progress
 
 ### Chat with Local AI
+
 1. Launch: `.\launch.ps1`
 2. Go to **💬 Chat** tab
 3. Provider is already "Local" (free!)
@@ -130,6 +142,7 @@ This tests all API endpoints to ensure everything works.
 6. Get instant response!
 
 ### Train a LoRA Adapter
+
 1. Launch: `.\launch.ps1`
 2. Go to **🎓 Training** tab
 3. Select "dolly" dataset
@@ -150,6 +163,7 @@ This tests all API endpoints to ensure everything works.
 ## 🔧 Configuration
 
 Edit `config.yaml` to customize:
+
 - Server host/port
 - Enable/disable features
 - CORS settings
@@ -166,18 +180,21 @@ Edit `config.yaml` to customize:
 ## 🌟 What Makes It Special
 
 ### For Quantum AI:
+
 - Visual interface for complex quantum operations
 - Easy dataset selection and parameter tuning
 - Real-time result monitoring
 - No command-line needed!
 
 ### For Chat:
+
 - Beautiful chat interface like modern apps
 - Seamless provider switching
 - Works offline (local provider)
 - Conversation history
 
 ### For Training:
+
 - Simplified LoRA training workflow
 - Orchestrator job management
 - Dataset browsing
@@ -212,12 +229,14 @@ And your browser will open to the QAI Control Center!
 ---
 
 **Built with**:
+
 - FastAPI (Backend)
 - Vanilla JavaScript (Frontend)
 - CSS3 (Styling)
 - Python Integration Modules
 
 **Features**:
+
 - 20+ API endpoints
 - 5 interactive tabs
 - Real-time updates

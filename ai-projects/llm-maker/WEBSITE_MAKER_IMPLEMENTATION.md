@@ -9,6 +9,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 ### 1. Core Module (`src/website_maker.py` - 560 lines)
 
 **WebsiteMaker Class:**
+
 - `create_website()` - Generate complete websites from descriptions
 - `update_website()` - Modify existing websites with AI
 - `list_websites()` - Browse all generated sites
@@ -17,10 +18,12 @@ In response to the request "Implament ai automated website maker updater", I've 
 - `_extract_code_blocks()` - Parses generated code
 
 **WebsiteValidator Class:**
+
 - `validate_html()` - Check HTML structure and best practices
 - `validate_css()` - Verify CSS syntax and responsive design
 
 **Features:**
+
 - Uses existing chat provider infrastructure (Azure OpenAI/OpenAI/local)
 - Multi-attempt generation with feedback loop
 - Extracts HTML, CSS, and JavaScript from AI responses
@@ -31,12 +34,14 @@ In response to the request "Implament ai automated website maker updater", I've 
 ### 2. Web Interface (`website_maker_ui.html` - 890 lines)
 
 **User Experience:**
+
 - Modern gradient design matching LLM Maker style
 - Font Awesome icons throughout
 - Smooth animations and transitions
 - Mobile-responsive layout
 
 **Create Website Section:**
+
 - Name input field
 - Description textarea
 - Style selector (6 options)
@@ -46,6 +51,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 - Real-time status messages
 
 **Update Website Section:**
+
 - Website selector dropdown (auto-populated)
 - Update description textarea
 - Optional target file input
@@ -53,6 +59,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 - Status feedback
 
 **Website Library:**
+
 - Card-based grid layout
 - Shows name, description, style, file count, created date
 - Tags for pages
@@ -60,6 +67,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 - Empty state for no websites
 
 **Code Preview Modal:**
+
 - File tabs for switching between files
 - Syntax-highlighted code display
 - Dark theme code blocks
@@ -68,6 +76,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 ### 3. API Integration (`web_server.py` updates - 130 lines)
 
 **New Endpoints:**
+
 - `POST /api/websites` - Create website
 - `POST /api/websites/update` - Update website
 - `GET /api/websites` - List all websites
@@ -76,6 +85,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 - `GET /website-maker` - Serve website maker UI
 
 **Features:**
+
 - JSON request/response
 - Proper error handling
 - CORS headers
@@ -85,6 +95,7 @@ In response to the request "Implament ai automated website maker updater", I've 
 ### 4. Documentation (`WEBSITE_MAKER_README.md` - 580 lines)
 
 **Comprehensive Guide:**
+
 - Overview and features
 - Quick start with examples
 - Complete API reference
@@ -101,16 +112,19 @@ In response to the request "Implament ai automated website maker updater", I've 
 ### 5. Integration Updates
 
 **Main README (`README.md`):**
+
 - Added website maker overview
 - Updated quick start section
 - Added new feature bullets
 
 **Package Exports (`src/__init__.py`):**
+
 - Exported WebsiteMaker class
 - Exported WebsiteValidator class
 - Updated version to 0.2.0
 
 **Main UI (`web_ui.html`):**
+
 - Added "🌐 Website Maker" button in header
 - Links to `/website-maker`
 
@@ -157,6 +171,7 @@ llm-maker/
 ### AI Prompt Engineering
 
 **Website Creation Prompt Structure:**
+
 1. Project name and description
 2. Visual style specification
 3. Pages list
@@ -165,6 +180,7 @@ llm-maker/
 6. Code format instructions (markdown code blocks)
 
 **Update Prompt Structure:**
+
 1. Website name
 2. Update description
 3. Current file contents
@@ -174,6 +190,7 @@ llm-maker/
 ### Code Extraction
 
 Supports three patterns:
+
 1. ` ```language:filename ` (preferred)
 2. ` ```filename.ext ` (fallback)
 3. File mentions before code blocks (secondary fallback)
@@ -181,12 +198,14 @@ Supports three patterns:
 ### Validation
 
 **HTML Checks:**
+
 - DOCTYPE declaration
 - Basic structure (html, head, body tags)
 - Title tag
 - Viewport meta tag for responsiveness
 
 **CSS Checks:**
+
 - Media queries presence
 - Brace matching
 - Basic syntax validation
@@ -197,11 +216,11 @@ Supports three patterns:
 
 1. Navigate to http://localhost:8090/website-maker
 2. Fill in form:
-   - Name: "my-portfolio"
-   - Description: "Personal portfolio with hero, projects, skills, contact form"
-   - Style: Modern
-   - Pages: index, projects, contact
-   - Features: responsive design, smooth scrolling, contact form
+    - Name: "my-portfolio"
+    - Description: "Personal portfolio with hero, projects, skills, contact form"
+    - Style: Modern
+    - Pages: index, projects, contact
+    - Features: responsive design, smooth scrolling, contact form
 3. Click "Generate Website"
 4. Wait 20-30 seconds for AI generation
 5. View generated code in modal
@@ -210,20 +229,20 @@ Supports three patterns:
 ### API Example
 
 ```javascript
-const response = await fetch('http://localhost:8090/api/websites', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    name: 'my-site',
-    description: 'A modern landing page with hero, features, and CTA',
-    style: 'modern',
-    pages: ['index'],
-    features: ['responsive design', 'smooth animations']
-  })
-});
+const response = await fetch("http://localhost:8090/api/websites", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+        name: "my-site",
+        description: "A modern landing page with hero, features, and CTA",
+        style: "modern",
+        pages: ["index"],
+        features: ["responsive design", "smooth animations"],
+    }),
+})
 
-const result = await response.json();
-console.log(result.files); // Generated HTML, CSS, JS
+const result = await response.json()
+console.log(result.files) // Generated HTML, CSS, JS
 ```
 
 ### CLI Example
@@ -274,6 +293,7 @@ python src/website_maker.py create my-portfolio \
 ## Future Enhancements
 
 Potential additions (not included in current implementation):
+
 - Pre-built templates library
 - Reusable component library
 - Live preview server

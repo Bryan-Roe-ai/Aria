@@ -7,7 +7,7 @@ import json
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 @dataclass
@@ -31,7 +31,7 @@ class TextAugmenter:
         self.results_dir = Path("data_out/augmented_data")
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
-    def augment_dataset(self, input_path: str, output_path: str, techniques: List[str] = None) -> Dict[str, Any]:
+    def augment_dataset(self, input_path: str, output_path: str, techniques: list[str] = None) -> dict[str, Any]:
         """
         Augment entire dataset
 
@@ -86,7 +86,7 @@ class TextAugmenter:
 
         return stats
 
-    def _augment_text(self, text: str, techniques: List[str]) -> str:
+    def _augment_text(self, text: str, techniques: list[str]) -> str:
         """Apply augmentation techniques to text"""
         words = text.split()
 
@@ -104,7 +104,7 @@ class TextAugmenter:
 
         return " ".join(words)
 
-    def _synonym_replacement(self, words: List[str], n: int = None) -> List[str]:
+    def _synonym_replacement(self, words: list[str], n: int = None) -> list[str]:
         """Replace n random words with synonyms"""
         if n is None:
             n = max(1, int(len(words) * 0.1))
@@ -128,7 +128,7 @@ class TextAugmenter:
 
         return new_words
 
-    def _random_insertion(self, words: List[str], n: int = None) -> List[str]:
+    def _random_insertion(self, words: list[str], n: int = None) -> list[str]:
         """Randomly insert n words"""
         if n is None:
             n = max(1, int(len(words) * 0.1))
@@ -146,7 +146,7 @@ class TextAugmenter:
 
         return new_words
 
-    def _random_swap(self, words: List[str], n: int = None) -> List[str]:
+    def _random_swap(self, words: list[str], n: int = None) -> list[str]:
         """Randomly swap n pairs of words"""
         if n is None:
             n = max(1, int(len(words) * 0.1))
@@ -162,7 +162,7 @@ class TextAugmenter:
 
         return new_words
 
-    def _random_deletion(self, words: List[str], p: float = None) -> List[str]:
+    def _random_deletion(self, words: list[str], p: float = None) -> list[str]:
         """Randomly delete words with probability p"""
         if p is None:
             p = self.config.random_deletion_prob
@@ -203,16 +203,16 @@ class TextAugmenter:
 
         return word
 
-    def _load_dataset(self, path: str) -> List[Dict[str, Any]]:
+    def _load_dataset(self, path: str) -> list[dict[str, Any]]:
         """Load dataset from JSONL"""
         samples = []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     samples.append(json.loads(line))
         return samples
 
-    def _save_dataset(self, samples: List[Dict[str, Any]], path: str):
+    def _save_dataset(self, samples: list[dict[str, Any]], path: str):
         """Save dataset to JSONL"""
         output_path = Path(path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -221,7 +221,7 @@ class TextAugmenter:
             for sample in samples:
                 f.write(json.dumps(sample, ensure_ascii=False) + "\n")
 
-    def _extract_text(self, sample: Dict[str, Any]) -> str:
+    def _extract_text(self, sample: dict[str, Any]) -> str:
         """Extract text from sample"""
         if "messages" in sample:
             return " ".join([m.get("content", "") for m in sample["messages"]])
@@ -232,7 +232,7 @@ class TextAugmenter:
         else:
             return json.dumps(sample)
 
-    def _update_text(self, sample: Dict[str, Any], new_text: str):
+    def _update_text(self, sample: dict[str, Any], new_text: str):
         """Update text in sample"""
         if "text" in sample:
             sample["text"] = new_text

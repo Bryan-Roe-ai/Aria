@@ -13,7 +13,6 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 import numpy as np
 
@@ -62,7 +61,7 @@ def evaluate(
     img_size: int = 64,
     batch_size: int = 32,
     show_examples: int = 0,
-    device: Optional[torch.device] = None,
+    device: torch.device | None = None,
 ) -> dict:
     """Run evaluation and write results.json; returns the results dict."""
     if device is None:
@@ -141,7 +140,7 @@ def evaluate(
 # ---------------------------------------------------------------------------
 
 
-def run_eval(args: Optional[List[str]] = None) -> int:
+def run_eval(args: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Evaluate a TinyConvNet checkpoint")
     parser.add_argument("--checkpoint", required=True, help="Path to .pt checkpoint file")
     parser.add_argument("--dataset", required=True, help="Path to dataset root directory")

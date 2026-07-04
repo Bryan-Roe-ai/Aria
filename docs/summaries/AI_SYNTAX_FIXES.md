@@ -171,10 +171,10 @@ python scripts/test_ai_improvements.py
 **Results**:
 
 - ✅ **Chat improvements**: All tests passing
-  - top_p parameter (nucleus sampling)
-  - top_k parameter (top-k sampling)
-  - repetition_penalty parameter
-  - Proper EOS token handling
+    - top_p parameter (nucleus sampling)
+    - top_k parameter (top-k sampling)
+    - repetition_penalty parameter
+    - Proper EOS token handling
 - ⚠️ **Quantum improvements**: Requires `pennylane` dependency (expected in CI environment)
 - ⚠️ **Training improvements**: Requires `torch` dependency (expected in CI environment)
 
@@ -242,28 +242,28 @@ With syntax errors resolved, the following components are now ready for use:
 
 1. **Autonomous Training**: Can be started with proper Python syntax
 
-   ```bash
-   nohup python scripts/autonomous_training_orchestrator.py > data_out/autonomous_training.log 2>&1 &
-   ```
+    ```bash
+    nohup python scripts/autonomous_training_orchestrator.py > data_out/autonomous_training.log 2>&1 &
+    ```
 
 2. **Repository Automation**: Full system automation available
 
-   ```bash
-   ./scripts/start_repo_automation.sh full
-   ```
+    ```bash
+    ./scripts/start_repo_automation.sh full
+    ```
 
 3. **Dataset Validation**: Pre-training validation functional
 
-   ```bash
-   python scripts/validate_datasets.py --category chat
-   ```
+    ```bash
+    python scripts/validate_datasets.py --category chat
+    ```
 
 4. **Production APIs**: Quantum ML APIs deployable
 
-   ```bash
-   python ai-projects/quantum-ml/production/banknote_api.py
-   python ai-projects/quantum-ml/production/test_api.py
-   ```
+    ```bash
+    python ai-projects/quantum-ml/production/banknote_api.py
+    python ai-projects/quantum-ml/production/test_api.py
+    ```
 
 ## Conclusion
 

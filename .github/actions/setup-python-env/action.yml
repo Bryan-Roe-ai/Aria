@@ -1,67 +1,67 @@
-name: 'Setup Python Environment'
-description: 'Reusable setup for Python with pip caching and common dependencies'
+name: "Setup Python Environment"
+description: "Reusable setup for Python with pip caching and common dependencies"
 
 inputs:
-  python-version:
-    description: 'Python version to use'
-    required: false
-    default: '3.11'
-  install-requirements:
-    description: 'Install requirements.txt'
-    required: false
-    default: 'true'
-  install-dev-requirements:
-    description: 'Install requirements-dev.txt (or fallback editable dev install)'
-    required: false
-    default: 'false'
-  extra-packages:
-    description: 'Space-separated list of extra pip packages to install'
-    required: false
-    default: ''
+    python-version:
+        description: "Python version to use"
+        required: false
+        default: "3.11"
+    install-requirements:
+        description: "Install requirements.txt"
+        required: false
+        default: "true"
+    install-dev-requirements:
+        description: "Install requirements-dev.txt (or fallback editable dev install)"
+        required: false
+        default: "false"
+    extra-packages:
+        description: "Space-separated list of extra pip packages to install"
+        required: false
+        default: ""
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
-      with:
-        python-version: ${{ inputs.python-version }}
-        cache: 'pip'
+    using: "composite"
+    steps:
+        - name: Set up Python ${{ inputs.python-version }}
+          uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+          with:
+              python-version: ${{ inputs.python-version }}
+              cache: "pip"
 
-    - name: Install base dependencies
-      shell: bash
-      run: |
-        set -euo pipefail
-        python -m pip install --upgrade pip
+        - name: Install base dependencies
+          shell: bash
+          run: |
+              set -euo pipefail
+              python -m pip install --upgrade pip
 
-    - name: Install requirements
-      if: inputs.install-requirements == 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        if [ -f requirements.txt ]; then
-          python -m pip install -r requirements.txt
-        fi
+        - name: Install requirements
+          if: inputs.install-requirements == 'true'
+          shell: bash
+          run: |
+              set -euo pipefail
+              if [ -f requirements.txt ]; then
+                python -m pip install -r requirements.txt
+              fi
 
-    - name: Install dev requirements
-      if: inputs.install-dev-requirements == 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        if [ -f requirements-dev.txt ]; then
-          python -m pip install -r requirements-dev.txt
-        elif [ -f pyproject.toml ]; then
-          python -m pip install -e ".[dev]"
-        fi
+        - name: Install dev requirements
+          if: inputs.install-dev-requirements == 'true'
+          shell: bash
+          run: |
+              set -euo pipefail
+              if [ -f requirements-dev.txt ]; then
+                python -m pip install -r requirements-dev.txt
+              elif [ -f pyproject.toml ]; then
+                python -m pip install -e ".[dev]"
+              fi
 
-    - name: Install extra packages
-      if: inputs.extra-packages != ''
-      shell: bash
-      env:
-        EXTRA_PACKAGES: ${{ inputs.extra-packages }}
-      # Pass packages via env var to prevent shell-injection from the input value.
-      # Word-splitting on $EXTRA_PACKAGES is intentional (space-separated list).
-      # shellcheck disable=SC2086
-      run: |
-        set -euo pipefail
-        python -m pip install $EXTRA_PACKAGES
+        - name: Install extra packages
+          if: inputs.extra-packages != ''
+          shell: bash
+          env:
+              EXTRA_PACKAGES: ${{ inputs.extra-packages }}
+          # Pass packages via env var to prevent shell-injection from the input value.
+          # Word-splitting on $EXTRA_PACKAGES is intentional (space-separated list).
+          # shellcheck disable=SC2086
+          run: |
+              set -euo pipefail
+              python -m pip install $EXTRA_PACKAGES

@@ -25,7 +25,7 @@ def _unwrap(value: Any) -> Any:
 
 
 class PersistentDict(dict):
-    def __init__(self, store: "StageStateStore", initial: dict[str, Any] | None = None) -> None:
+    def __init__(self, store: StageStateStore, initial: dict[str, Any] | None = None) -> None:
         super().__init__()
         self._store = store
         for key, value in (initial or {}).items():
@@ -74,7 +74,7 @@ class PersistentDict(dict):
 
 
 class PersistentList(list):
-    def __init__(self, store: "StageStateStore", initial: list[Any] | None = None) -> None:
+    def __init__(self, store: StageStateStore, initial: list[Any] | None = None) -> None:
         super().__init__(store._wrap(item) for item in (initial or []))
         self._store = store
 

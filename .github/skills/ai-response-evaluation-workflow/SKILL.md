@@ -37,28 +37,28 @@ Common trigger phrases:
 ## Procedure
 
 1. Set evaluation objective
-   - Define decision to be made (ship, rollback, iterate).
-   - Choose metrics that directly support that decision.
+    - Define decision to be made (ship, rollback, iterate).
+    - Choose metrics that directly support that decision.
 
 2. Scope dataset and sampling
-   - Use representative scenarios and edge cases.
-   - Keep dataset immutable during a run; record version/source.
+    - Use representative scenarios and edge cases.
+    - Keep dataset immutable during a run; record version/source.
 
 3. Define scoring method
-   - Specify automatic checks vs manual review criteria.
-   - Establish thresholds for pass/warn/fail.
+    - Specify automatic checks vs manual review criteria.
+    - Establish thresholds for pass/warn/fail.
 
 4. Execute reproducibly
-   - Run evaluation with fixed config and documented command.
-   - Capture artifacts and summary metrics for comparison.
+    - Run evaluation with fixed config and documented command.
+    - Capture artifacts and summary metrics for comparison.
 
 5. Analyze deltas
-   - Compare against baseline and inspect worst failures.
-   - Separate systemic regressions from isolated outliers.
+    - Compare against baseline and inspect worst failures.
+    - Separate systemic regressions from isolated outliers.
 
 6. Recommend actions
-   - Propose prompt/model/config changes tied to evidence.
-   - Define next validation run to confirm improvements.
+    - Propose prompt/model/config changes tied to evidence.
+    - Define next validation run to confirm improvements.
 
 ## Quality Checks
 

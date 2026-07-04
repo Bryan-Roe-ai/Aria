@@ -91,9 +91,7 @@ class AgentResult:
 
     def __post_init__(self) -> None:
         if self.status not in VALID_STATUSES:
-            raise ValueError(
-                f"Invalid status {self.status!r}; expected one of {VALID_STATUSES}"
-            )
+            raise ValueError(f"Invalid status {self.status!r}; expected one of {VALID_STATUSES}")
 
     @property
     def ok(self) -> bool:
@@ -131,9 +129,7 @@ def iter_source_files(
     if extensions is None:
         normalized_exts = None
     else:
-        normalized_exts = {
-            ("." + e.lstrip(".")).lower() for e in extensions
-        }
+        normalized_exts = {("." + e.lstrip(".")).lower() for e in extensions}
 
     if not base.exists():
         return

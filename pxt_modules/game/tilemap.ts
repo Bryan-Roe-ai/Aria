@@ -6,101 +6,100 @@ enum TileScale {
     //% block="16x16"
     Sixteen = 4,
     //% block="32x32"
-    ThirtyTwo = 5
+    ThirtyTwo = 5,
 }
 
 namespace tiles {
-
     /**
      * A (col, row) location in the tilemap
      **/
     //% blockNamespace=scene color="#401255"
     export class Location {
-        protected _row: number;
-        protected _col: number;
+        protected _row: number
+        protected _col: number
 
         constructor(col: number, row: number, map: TileMap) {
-            this._col = col;
-            this._row = row;
+            this._col = col
+            this._row = row
         }
 
         get tileMap() {
-            return game.currentScene().tileMap;
+            return game.currentScene().tileMap
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="column"
         //% weight=100 blockCombineGetHelp=tiles/location
         get column() {
-            return this._col;
+            return this._col
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="row"
         //% weight=100 blockCombineGetHelp=tiles/location
         get row() {
-            return this._row;
+            return this._row
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="x"
         //% weight=100 blockCombineGetHelp=tiles/location
         get x(): number {
-            const scale = this.tileMap.scale;
-            return (this._col << scale) + (1 << (scale - 1));
+            const scale = this.tileMap.scale
+            return (this._col << scale) + (1 << (scale - 1))
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="y"
         //% weight=100 blockCombineGetHelp=tiles/location
         get y(): number {
-            const scale = this.tileMap.scale;
-            return (this._row << scale) + (1 << (scale - 1));
+            const scale = this.tileMap.scale
+            return (this._row << scale) + (1 << (scale - 1))
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="left"
         //% weight=100 blockCombineGetHelp=tiles/location
         get left(): number {
-            return (this._col << this.tileMap.scale);
+            return this._col << this.tileMap.scale
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="top"
         //% weight=100 blockCombineGetHelp=tiles/location
         get top(): number {
-            return (this._row << this.tileMap.scale);
+            return this._row << this.tileMap.scale
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="right"
         //% weight=100 blockCombineGetHelp=tiles/location
         get right(): number {
-            return this.left + (1 << this.tileMap.scale);
+            return this.left + (1 << this.tileMap.scale)
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="bottom"
         //% weight=100 blockCombineGetHelp=tiles/location
         get bottom(): number {
-            return this.top + (1 << this.tileMap.scale);
+            return this.top + (1 << this.tileMap.scale)
         }
 
         get tileSet(): number {
-            return this.tileMap.getTileIndex(this._col, this._row);
+            return this.tileMap.getTileIndex(this._col, this._row)
         }
 
         // deprecated
         get col() {
-            return this.column;
+            return this.column
         }
 
         public isWall(): boolean {
-            return this.tileMap.isObstacle(this._col, this._row);
+            return this.tileMap.isObstacle(this._col, this._row)
         }
 
         public getImage(): Image {
-            return this.tileMap.getTileImage(this.tileSet);
+            return this.tileMap.getTileImage(this.tileSet)
         }
 
         /**
@@ -116,13 +115,13 @@ namespace tiles {
         public getNeighboringLocation(direction: CollisionDirection): Location {
             switch (direction) {
                 case CollisionDirection.Top:
-                    return this.tileMap.getTile(this._col, this._row - 1);
+                    return this.tileMap.getTile(this._col, this._row - 1)
                 case CollisionDirection.Right:
-                    return this.tileMap.getTile(this._col + 1, this._row);
+                    return this.tileMap.getTile(this._col + 1, this._row)
                 case CollisionDirection.Bottom:
-                    return this.tileMap.getTile(this._col, this._row + 1);
+                    return this.tileMap.getTile(this._col, this._row + 1)
                 case CollisionDirection.Left:
-                    return this.tileMap.getTile(this._col - 1, this._row);
+                    return this.tileMap.getTile(this._col - 1, this._row)
             }
         }
 
@@ -131,13 +130,13 @@ namespace tiles {
          * @param sprite
          */
         place(mySprite: Sprite): void {
-            if (!mySprite) return;
-            mySprite.setPosition(this.x, this.y);
+            if (!mySprite) return
+            mySprite.setPosition(this.x, this.y)
         }
 
         // ## LEGACY: DO NOT USE ##
         _toTile(): Tile {
-            return new Tile(this._col, this._row, this.tileMap);
+            return new Tile(this._col, this._row, this.tileMap)
         }
     }
 
@@ -146,28 +145,28 @@ namespace tiles {
      **/
     //% blockNamespace=scene color="#401255" blockGap=8
     export class Tile {
-        protected _row: number;
-        protected _col: number;
-        protected tileMap: TileMap;
+        protected _row: number
+        protected _col: number
+        protected tileMap: TileMap
 
         constructor(col: number, row: number, map: TileMap) {
-            this._col = col;
-            this._row = row;
-            this.tileMap = map;
+            this._col = col
+            this._row = row
+            this.tileMap = map
         }
 
         get x(): number {
-            const scale = this.tileMap.scale;
-            return (this._col << scale) + (1 << (scale - 1));
+            const scale = this.tileMap.scale
+            return (this._col << scale) + (1 << (scale - 1))
         }
 
         get y(): number {
-            const scale = this.tileMap.scale;
-            return (this._row << scale) + (1 << (scale - 1));
+            const scale = this.tileMap.scale
+            return (this._row << scale) + (1 << (scale - 1))
         }
 
         get tileSet(): number {
-            return this.tileMap.getTileIndex(this._col, this._row);
+            return this.tileMap.getTileIndex(this._col, this._row)
         }
 
         /**
@@ -180,307 +179,344 @@ namespace tiles {
         //% help=tiles/place
         //% deprecated=1
         place(mySprite: Sprite): void {
-            if (!mySprite) return;
-            mySprite.setPosition(this.x, this.y);
+            if (!mySprite) return
+            mySprite.setPosition(this.x, this.y)
         }
     }
 
-    const TM_DATA_PREFIX_LENGTH = 4;
-    const TM_WALL = 2;
+    const TM_DATA_PREFIX_LENGTH = 4
+    const TM_WALL = 2
 
     //% snippet='tilemap` `'
     //% pySnippet='tilemap(""" """)'
     export class TileMapData {
         // The tile data for the map (indices into tileset)
-        protected data: Buffer;
+        protected data: Buffer
 
         // The metadata layers for the map. Currently only 1 is used for walls
-        protected layers: Image;
+        protected layers: Image
 
-        protected tileset: Image[];
-        protected cachedTileView: Image[];
+        protected tileset: Image[]
+        protected cachedTileView: Image[]
 
-        protected _scale: TileScale;
-        protected _width: number;
-        protected _height: number;
+        protected _scale: TileScale
+        protected _width: number
+        protected _height: number
 
-        constructor(data: Buffer, layers: Image, tileset: Image[], scale: TileScale) {
-            this.data = data;
-            this.layers = layers;
-            this.tileset = tileset;
-            this.scale = scale;
+        constructor(
+            data: Buffer,
+            layers: Image,
+            tileset: Image[],
+            scale: TileScale,
+        ) {
+            this.data = data
+            this.layers = layers
+            this.tileset = tileset
+            this.scale = scale
 
-            this._width = data.getNumber(NumberFormat.UInt16LE, 0);
-            this._height = data.getNumber(NumberFormat.UInt16LE, 2);
+            this._width = data.getNumber(NumberFormat.UInt16LE, 0)
+            this._height = data.getNumber(NumberFormat.UInt16LE, 2)
         }
 
         get width(): number {
-            return this._width;
+            return this._width
         }
 
         get height(): number {
-            return this._height;
+            return this._height
         }
 
         get scale(): TileScale {
-            return this._scale;
+            return this._scale
         }
 
         set scale(s: TileScale) {
-            this._scale = s;
-            this.cachedTileView = [];
+            this._scale = s
+            this.cachedTileView = []
         }
 
         getTile(col: number, row: number) {
-            if (this.isOutsideMap(col, row)) return 0;
+            if (this.isOutsideMap(col, row)) return 0
 
-            return this.data.getUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width);
+            return this.data.getUint8(
+                TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width,
+            )
         }
 
         setTile(col: number, row: number, tile: number) {
-            if (this.isOutsideMap(col, row)) return;
+            if (this.isOutsideMap(col, row)) return
 
             if (this.data.isReadOnly()) {
-                this.data = this.data.slice();
+                this.data = this.data.slice()
             }
 
-            this.data.setUint8(TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width, tile);
+            this.data.setUint8(
+                TM_DATA_PREFIX_LENGTH + (col | 0) + (row | 0) * this.width,
+                tile,
+            )
         }
 
         getTileset() {
-            return this.tileset;
+            return this.tileset
         }
 
         getTileImage(index: number) {
-            const size = 1 << this.scale;
-            let cachedImage = this.cachedTileView[index];
+            const size = 1 << this.scale
+            let cachedImage = this.cachedTileView[index]
             if (!cachedImage) {
-                const originalImage = this.tileset[index];
+                const originalImage = this.tileset[index]
 
                 if (originalImage) {
-                    if (originalImage.width <= size && originalImage.height <= size) {
-                        cachedImage = originalImage;
+                    if (
+                        originalImage.width <= size &&
+                        originalImage.height <= size
+                    ) {
+                        cachedImage = originalImage
                     } else {
-                        cachedImage = image.create(size, size);
-                        cachedImage.drawImage(originalImage, 0, 0);
+                        cachedImage = image.create(size, size)
+                        cachedImage.drawImage(originalImage, 0, 0)
                     }
-                    this.cachedTileView[index] = cachedImage;
+                    this.cachedTileView[index] = cachedImage
                 }
             }
-            return cachedImage;
+            return cachedImage
         }
 
         setWall(col: number, row: number, on: boolean) {
-            return this.layers.setPixel(col, row, on ? TM_WALL : 0);
+            return this.layers.setPixel(col, row, on ? TM_WALL : 0)
         }
 
         isWall(col: number, row: number) {
-            return this.layers.getPixel(col, row) === TM_WALL;
+            return this.layers.getPixel(col, row) === TM_WALL
         }
 
         isOutsideMap(col: number, row: number) {
-            return col < 0 || col >= this.width || row < 0 || row >= this.height;
+            return col < 0 || col >= this.width || row < 0 || row >= this.height
         }
     }
 
     export enum TileMapEvent {
         Loaded,
-        Unloaded
+        Unloaded,
     }
 
     export class TileMapEventHandler {
-        constructor(public event: TileMapEvent, public callback: (data: TileMapData) => void) {}
+        constructor(
+            public event: TileMapEvent,
+            public callback: (data: TileMapData) => void,
+        ) {}
     }
 
     export class TileMap {
-        protected _scale: TileScale;
+        protected _scale: TileScale
 
-        protected _layer: number;
-        protected _map: TileMapData;
-        renderable: scene.Renderable;
-        protected handlerState: TileMapEventHandler[];
+        protected _layer: number
+        protected _map: TileMapData
+        renderable: scene.Renderable
+        protected handlerState: TileMapEventHandler[]
 
         constructor(scale: TileScale = TileScale.Sixteen) {
-            this._layer = 1;
-            this.scale = scale;
+            this._layer = 1
+            this.scale = scale
 
-            this.renderable = scene.createRenderable(
-                scene.TILE_MAP_Z,
-                (t, c) => this.draw(t, c)
-            );
+            this.renderable = scene.createRenderable(scene.TILE_MAP_Z, (t, c) =>
+                this.draw(t, c),
+            )
         }
 
         get scale() {
-            return this._scale;
+            return this._scale
         }
 
         set scale(s: TileScale) {
-            this._scale = s;
+            this._scale = s
             if (this._map) {
-                this._map.scale = s;
+                this._map.scale = s
             }
         }
 
         get data(): TileMapData {
-            return this._map;
+            return this._map
         }
 
         offsetX(value: number) {
-            return Math.clamp(0, Math.max(this.areaWidth() - screen.width, 0), value);
+            return Math.clamp(
+                0,
+                Math.max(this.areaWidth() - screen.width, 0),
+                value,
+            )
         }
 
         offsetY(value: number) {
-            return Math.clamp(0, Math.max(this.areaHeight() - screen.height, 0), value);
+            return Math.clamp(
+                0,
+                Math.max(this.areaHeight() - screen.height, 0),
+                value,
+            )
         }
 
         areaWidth() {
-            return this._map ? (this._map.width << this.scale) : 0;
+            return this._map ? this._map.width << this.scale : 0
         }
 
         areaHeight() {
-            return this._map ? (this._map.height << this.scale) : 0;
+            return this._map ? this._map.height << this.scale : 0
         }
 
         get layer(): number {
-            return this._layer;
+            return this._layer
         }
 
         set layer(value: number) {
             if (this._layer != value) {
-                this._layer = value;
+                this._layer = value
             }
         }
 
         get enabled(): boolean {
-            return !!this._map;
+            return !!this._map
         }
 
         setData(map: TileMapData) {
-            const previous = this._map;
+            const previous = this._map
 
             if (this.handlerState && previous !== map && previous) {
                 for (const eventHandler of this.handlerState) {
                     if (eventHandler.event === TileMapEvent.Unloaded) {
-                        eventHandler.callback(previous);
+                        eventHandler.callback(previous)
                     }
                 }
             }
 
-            this._map = map;
+            this._map = map
             if (map) {
-                this._scale = map.scale;
+                this._scale = map.scale
             }
 
             if (this.handlerState && previous !== map && map) {
                 for (const eventHandler of this.handlerState) {
                     if (eventHandler.event === TileMapEvent.Loaded) {
-                        eventHandler.callback(map);
+                        eventHandler.callback(map)
                     }
                 }
             }
         }
 
         public getTile(col: number, row: number): Location {
-            return new Location(col, row, this);
+            return new Location(col, row, this)
         }
 
         public getTileIndex(col: number, row: number) {
-            return this.data.getTile(col, row);
+            return this.data.getTile(col, row)
         }
 
         public setTileAt(col: number, row: number, index: number): void {
-            if (!this._map.isOutsideMap(col, row) && !this.isInvalidIndex(index))
-                this._map.setTile(col, row, index);
+            if (
+                !this._map.isOutsideMap(col, row) &&
+                !this.isInvalidIndex(index)
+            )
+                this._map.setTile(col, row, index)
         }
 
         public getImageType(im: Image): number {
-            const tileset = this._map.getTileset();
+            const tileset = this._map.getTileset()
             for (let i = 0; i < tileset.length; i++)
-                if (tileset[i].equals(im)) return i;
+                if (tileset[i].equals(im)) return i
 
             // not found; append to the tileset if there are spots left.
-            const newIndex = tileset.length;
+            const newIndex = tileset.length
             if (!this.isInvalidIndex(newIndex)) {
-                tileset.push(im);
-                return newIndex;
+                tileset.push(im)
+                return newIndex
             }
 
-            return -1;
+            return -1
         }
 
         public setWallAt(col: number, row: number, on: boolean): void {
             if (!this._map.isOutsideMap(col, row))
-                this._map.setWall(col, row, on);
+                this._map.setWall(col, row, on)
         }
 
         public getTilesByType(index: number): Location[] {
-            if (this.isInvalidIndex(index) || !this.enabled) return [];
+            if (this.isInvalidIndex(index) || !this.enabled) return []
 
-            let output: Location[] = [];
+            let output: Location[] = []
             for (let col = 0; col < this._map.width; ++col) {
                 for (let row = 0; row < this._map.height; ++row) {
-                    let currTile = this._map.getTile(col, row);
+                    let currTile = this._map.getTile(col, row)
                     if (currTile === index) {
-                        output.push(new Location(col, row, this));
+                        output.push(new Location(col, row, this))
                     }
                 }
             }
-            return output;
+            return output
         }
 
         public sampleTilesByType(index: number, maxCount: number): Location[] {
-            if (this.isInvalidIndex(index) || !this.enabled || maxCount <= 0) return [];
+            if (this.isInvalidIndex(index) || !this.enabled || maxCount <= 0)
+                return []
 
-            let count = 0;
-            const reservoir: Location[] = [];
+            let count = 0
+            const reservoir: Location[] = []
             for (let col = 0; col < this._map.width; ++col) {
                 for (let row = 0; row < this._map.height; ++row) {
-                    let currTile = this._map.getTile(col, row);
+                    let currTile = this._map.getTile(col, row)
                     if (currTile === index) {
                         // first **maxCount** elements just enqueue
                         if (count < maxCount) {
-                            reservoir.push(new Location(col, row, this));
+                            reservoir.push(new Location(col, row, this))
                         } else {
-                            const potentialIndex = randint(0, count);
+                            const potentialIndex = randint(0, count)
                             if (potentialIndex < maxCount) {
-                                reservoir[potentialIndex] = new Location(col, row, this);
+                                reservoir[potentialIndex] = new Location(
+                                    col,
+                                    row,
+                                    this,
+                                )
                             }
                         }
-                        ++count;
+                        ++count
                     }
                 }
             }
 
-            return reservoir;
+            return reservoir
         }
 
         protected isInvalidIndex(index: number): boolean {
-            return index < 0 || index > 0xff;
+            return index < 0 || index > 0xff
         }
 
         protected draw(target: Image, camera: scene.Camera) {
-            if (!this.enabled) return;
+            if (!this.enabled) return
 
             // render tile map
-            const bitmask = (0x1 << this.scale) - 1;
-            const offsetX = camera.drawOffsetX & bitmask;
-            const offsetY = camera.drawOffsetY & bitmask;
+            const bitmask = (0x1 << this.scale) - 1
+            const offsetX = camera.drawOffsetX & bitmask
+            const offsetY = camera.drawOffsetY & bitmask
 
-            const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
-            const xn = Math.min(this._map.width, ((camera.drawOffsetX + target.width) >> this.scale) + 1);
-            const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
-            const yn = Math.min(this._map.height, ((camera.drawOffsetY + target.height) >> this.scale) + 1);
+            const x0 = Math.max(0, camera.drawOffsetX >> this.scale)
+            const xn = Math.min(
+                this._map.width,
+                ((camera.drawOffsetX + target.width) >> this.scale) + 1,
+            )
+            const y0 = Math.max(0, camera.drawOffsetY >> this.scale)
+            const yn = Math.min(
+                this._map.height,
+                ((camera.drawOffsetY + target.height) >> this.scale) + 1,
+            )
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
-                    const index = this._map.getTile(x, y);
-                    const tile = this._map.getTileImage(index);
+                    const index = this._map.getTile(x, y)
+                    const tile = this._map.getTileImage(index)
                     if (tile) {
                         target.drawTransparentImage(
                             tile,
                             ((x - x0) << this.scale) - offsetX,
-                            ((y - y0) << this.scale) - offsetY
-                        );
+                            ((y - y0) << this.scale) - offsetY,
+                        )
                     }
                 }
             }
@@ -488,91 +524,94 @@ namespace tiles {
             if (game.debug) {
                 // render debug grid overlay
                 for (let x = x0; x <= xn; ++x) {
-                    const xLine = ((x - x0) << this.scale) - offsetX;
+                    const xLine = ((x - x0) << this.scale) - offsetX
                     if (xLine >= 0 && xLine <= screen.width) {
-                        target.drawLine(
-                            xLine,
-                            0,
-                            xLine,
-                            target.height,
-                            1
-                        );
+                        target.drawLine(xLine, 0, xLine, target.height, 1)
                     }
                 }
 
                 for (let y = y0; y <= yn; ++y) {
-                    const yLine = ((y - y0) << this.scale) - offsetY;
+                    const yLine = ((y - y0) << this.scale) - offsetY
                     if (yLine >= 0 && yLine <= screen.height) {
-                        target.drawLine(
-                            0,
-                            yLine,
-                            target.width,
-                            yLine,
-                            1
-                        );
+                        target.drawLine(0, yLine, target.width, yLine, 1)
                     }
                 }
             }
         }
 
         public isObstacle(col: number, row: number) {
-            if (!this.enabled) return false;
-            if (this._map.isOutsideMap(col, row)) return true;
+            if (!this.enabled) return false
+            if (this._map.isOutsideMap(col, row)) return true
 
-            return this._map.isWall(col, row);
+            return this._map.isWall(col, row)
         }
 
         public getObstacle(col: number, row: number) {
-            const index = this._map.isOutsideMap(col, row) ? 0 : this._map.getTile(col, row);
-            const tile = this._map.getTileImage(index);
+            const index = this._map.isOutsideMap(col, row)
+                ? 0
+                : this._map.getTile(col, row)
+            const tile = this._map.getTileImage(index)
             return new sprites.StaticObstacle(
                 tile,
                 row << this.scale,
                 col << this.scale,
                 this.layer,
-                index
-            );
+                index,
+            )
         }
 
         public isOnWall(s: Sprite) {
-            const hbox = s._hitbox;
+            const hbox = s._hitbox
 
-            const left = Fx.toIntShifted(hbox.left, this.scale);
-            const right = Fx.toIntShifted(hbox.right, this.scale);
-            const top = Fx.toIntShifted(hbox.top, this.scale);
-            const bottom = Fx.toIntShifted(hbox.bottom, this.scale);
+            const left = Fx.toIntShifted(hbox.left, this.scale)
+            const right = Fx.toIntShifted(hbox.right, this.scale)
+            const top = Fx.toIntShifted(hbox.top, this.scale)
+            const bottom = Fx.toIntShifted(hbox.bottom, this.scale)
 
             for (let col = left; col <= right; ++col) {
                 for (let row = top; row <= bottom; ++row) {
                     if (this.isObstacle(col, row)) {
-                        return true;
+                        return true
                     }
                 }
             }
 
-            return false;
+            return false
         }
 
         public getTileImage(index: number) {
-            return this.data.getTileImage(index);
+            return this.data.getTileImage(index)
         }
 
-        public addEventListener(event: TileMapEvent, handler: (data: TileMapData) => void) {
-            if (!this.handlerState) this.handlerState = [];
+        public addEventListener(
+            event: TileMapEvent,
+            handler: (data: TileMapData) => void,
+        ) {
+            if (!this.handlerState) this.handlerState = []
 
             for (const eventHandler of this.handlerState) {
-                if (eventHandler.event === event && eventHandler.callback === handler) return;
+                if (
+                    eventHandler.event === event &&
+                    eventHandler.callback === handler
+                )
+                    return
             }
-            this.handlerState.push(new TileMapEventHandler(event, handler));
+            this.handlerState.push(new TileMapEventHandler(event, handler))
         }
 
-        public removeEventListener(event: TileMapEvent, handler: (data: TileMapData) => void) {
-            if (!this.handlerState) return;
+        public removeEventListener(
+            event: TileMapEvent,
+            handler: (data: TileMapData) => void,
+        ) {
+            if (!this.handlerState) return
 
             for (let i = 0; i < this.handlerState.length; i++) {
-                if (this.handlerState[i].event === event && this.handlerState[i].callback === handler) {
+                if (
+                    this.handlerState[i].event === event &&
+                    this.handlerState[i].callback === handler
+                ) {
                     this.handlerState.splice(i, 1)
-                    return;
+                    return
                 }
             }
         }
@@ -581,13 +620,18 @@ namespace tiles {
     function mkColorTile(index: number, scale: TileScale): Image {
         const size = 1 << scale
 
-        const i = image.create(size, size);
-        i.fill(index);
-        return i;
+        const i = image.create(size, size)
+        i.fill(index)
+        return i
     }
 
     //% scale.defl="TileScale.Sixteen"
-    export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): TileMapData {
+    export function createTilemap(
+        data: Buffer,
+        layer: Image,
+        tiles: Image[],
+        scale: TileScale,
+    ): TileMapData {
         return new TileMapData(data, layer, tiles, scale)
     }
 
@@ -601,7 +645,7 @@ namespace tiles {
     //% help=tiles/set-tilemap
     //% deprecated=1
     export function setTilemap(tilemap: TileMapData) {
-        setCurrentTilemap(tilemap);
+        setCurrentTilemap(tilemap)
     }
 
     /**
@@ -615,7 +659,7 @@ namespace tiles {
     //% blockNamespace="scene" group="Tilemaps" duplicateShadowOnDrag
     //% help=tiles/set-current-tilemap
     export function setCurrentTilemap(tilemap: TileMapData) {
-        scene.setTileMapLevel(tilemap);
+        scene.setTileMapLevel(tilemap)
     }
 
     /**
@@ -630,11 +674,11 @@ namespace tiles {
     //% help=tiles/set-tile-at
     //% weight=70
     export function setTileAt(loc: Location, tile: Image): void {
-        const scene = game.currentScene();
-        if (!loc || !tile || !scene.tileMap) return null;
-        const scale = scene.tileMap.scale;
-        const index = scene.tileMap.getImageType(tile);
-        scene.tileMap.setTileAt(loc.x >> scale, loc.y >> scale, index);
+        const scene = game.currentScene()
+        if (!loc || !tile || !scene.tileMap) return null
+        const scale = scene.tileMap.scale
+        const index = scene.tileMap.getImageType(tile)
+        scene.tileMap.setTileAt(loc.x >> scale, loc.y >> scale, index)
     }
 
     /**
@@ -648,10 +692,10 @@ namespace tiles {
     //% help=tiles/set-wall-at
     //% weight=60
     export function setWallAt(loc: Location, on: boolean): void {
-        const scene = game.currentScene();
-        if (!loc || !scene.tileMap) return null;
-        const scale = scene.tileMap.scale;
-        scene.tileMap.setWallAt(loc.x >> scale, loc.y >> scale, on);
+        const scene = game.currentScene()
+        if (!loc || !scene.tileMap) return null
+        const scale = scene.tileMap.scale
+        scene.tileMap.setWallAt(loc.x >> scale, loc.y >> scale, on)
     }
 
     /**
@@ -665,9 +709,9 @@ namespace tiles {
     //% weight=100 blockGap=8
     //% help=tiles/get-tile-location
     export function getTileLocation(col: number, row: number): Location {
-        const scene = game.currentScene();
-        if (col == undefined || row == undefined || !scene.tileMap) return null;
-        return scene.tileMap.getTile(col, row);
+        const scene = game.currentScene()
+        if (col == undefined || row == undefined || !scene.tileMap) return null
+        return scene.tileMap.getTile(col, row)
     }
 
     /**
@@ -675,9 +719,9 @@ namespace tiles {
      * @param loc
      */
     export function getTileImage(loc: Location): Image {
-        const scene = game.currentScene();
-        if (!loc || !scene.tileMap) return img``;
-        return scene.tileMap.getTileImage(loc.tileSet);
+        const scene = game.currentScene()
+        if (!loc || !scene.tileMap) return img``
+        return scene.tileMap.getTileImage(loc.tileSet)
     }
 
     /**
@@ -685,9 +729,11 @@ namespace tiles {
      * @param loc
      */
     export function getTileAt(col: number, row: number): Image {
-        const scene = game.currentScene();
-        if (col == undefined || row == undefined || !scene.tileMap) return img``;
-        return scene.tileMap.getTileImage(tiles.getTileLocation(col, row).tileSet);
+        const scene = game.currentScene()
+        if (col == undefined || row == undefined || !scene.tileMap) return img``
+        return scene.tileMap.getTileImage(
+            tiles.getTileLocation(col, row).tileSet,
+        )
     }
 
     /**
@@ -701,10 +747,13 @@ namespace tiles {
     //% tile.shadow=tileset_tile_picker tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Locations" blockGap=8
     //% weight=40 help=tiles/tile-at-location-equals
-    export function tileAtLocationEquals(location: Location, tile: Image): boolean {
-        const scene = game.currentScene();
-        if (!location || !tile || !scene.tileMap) return false;
-        return location.tileSet === scene.tileMap.getImageType(tile);
+    export function tileAtLocationEquals(
+        location: Location,
+        tile: Image,
+    ): boolean {
+        const scene = game.currentScene()
+        if (!location || !tile || !scene.tileMap) return false
+        return location.tileSet === scene.tileMap.getImageType(tile)
     }
 
     /**
@@ -718,8 +767,8 @@ namespace tiles {
     //% blockNamespace="scene" group="Locations" blockGap=8
     //% weight=30 help=tiles/tile-at-location-is-wall
     export function tileAtLocationIsWall(location: Location): boolean {
-        if (!location || !location.tileMap) return false;
-        return location.isWall();
+        if (!location || !location.tileMap) return false
+        return location.isWall()
     }
 
     /**
@@ -733,9 +782,9 @@ namespace tiles {
     //% weight=0 help=tiles/tile-image-at-location
     //% blockNamespace="scene" group="Locations"
     export function tileImageAtLocation(location: Location): Image {
-        const scene = game.currentScene();
-        if (!location || !scene.tileMap) return img``;
-        return location.getImage();
+        const scene = game.currentScene()
+        if (!location || !scene.tileMap) return img``
+        return location.getImage()
     }
 
     /**
@@ -750,8 +799,8 @@ namespace tiles {
     //% help=tiles/place-on-tile
     //% weight=100
     export function placeOnTile(sprite: Sprite, loc: Location): void {
-        if (!sprite || !loc || !loc.tileMap) return;
-        loc.place(sprite);
+        if (!sprite || !loc || !loc.tileMap) return
+        loc.place(sprite)
     }
 
     /**
@@ -767,10 +816,9 @@ namespace tiles {
     //% help=tiles/place-on-random-tile
     //% weight=90
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
-        if (!sprite || !game.currentScene().tileMap) return;
-        const loc = getRandomTileByType(tile);
-        if (loc)
-            loc.place(sprite);
+        if (!sprite || !game.currentScene().tileMap) return
+        const loc = getRandomTileByType(tile)
+        if (loc) loc.place(sprite)
     }
 
     /**
@@ -784,10 +832,10 @@ namespace tiles {
     //% help=tiles/get-tiles-by-type
     //% weight=10
     export function getTilesByType(tile: Image): Location[] {
-        const scene = game.currentScene();
-        if (!tile || !scene.tileMap) return [];
-        const index = scene.tileMap.getImageType(tile);
-        return scene.tileMap.getTilesByType(index);
+        const scene = game.currentScene()
+        if (!tile || !scene.tileMap) return []
+        const index = scene.tileMap.getImageType(tile)
+        return scene.tileMap.getTilesByType(index)
     }
 
     /**
@@ -795,12 +843,11 @@ namespace tiles {
      * @param tile the type of tile to get a random selection of
      */
     export function getRandomTileByType(tile: Image): Location {
-        const scene = game.currentScene();
-        if (!tile || !scene.tileMap)
-            return undefined;
-        const index = scene.tileMap.getImageType(tile);
-        const sample = scene.tileMap.sampleTilesByType(index, 1);
-        return sample[0];
+        const scene = game.currentScene()
+        if (!tile || !scene.tileMap) return undefined
+        const index = scene.tileMap.getImageType(tile)
+        const sample = scene.tileMap.sampleTilesByType(index, 1)
+        return sample[0]
     }
 
     /**
@@ -816,7 +863,7 @@ namespace tiles {
     //% blockNamespace="scene" group="Tilemaps" duplicateShadowOnDrag
     //% help=tiles/tilemap
     export function _tilemapEditor(tilemap: TileMapData): TileMapData {
-        return tilemap;
+        return tilemap
     }
 
     /**
@@ -828,16 +875,18 @@ namespace tiles {
      * @param event     The event to subscribe to
      * @param handler   The code to run when the event triggers
      */
-    export function addEventListener(event: TileMapEvent, callback: (data: TileMapData) => void) {
-        const scene = game.currentScene();
+    export function addEventListener(
+        event: TileMapEvent,
+        callback: (data: TileMapData) => void,
+    ) {
+        const scene = game.currentScene()
 
         if (!scene.tileMap) {
-            scene.tileMap = new TileMap();
+            scene.tileMap = new TileMap()
         }
 
-        scene.tileMap.addEventListener(event, callback);
+        scene.tileMap.addEventListener(event, callback)
     }
-
 
     /**
      * Removes an event handler registered with addEventListener.
@@ -845,11 +894,14 @@ namespace tiles {
      * @param event     The event that the handler was registered for
      * @param handler   The handler to remove
      */
-    export function removeEventListener(event: TileMapEvent, callback: (data: TileMapData) => void) {
-        const scene = game.currentScene();
+    export function removeEventListener(
+        event: TileMapEvent,
+        callback: (data: TileMapData) => void,
+    ) {
+        const scene = game.currentScene()
 
-        if (!scene.tileMap) return;
+        if (!scene.tileMap) return
 
-        scene.tileMap.removeEventListener(event, callback);
+        scene.tileMap.removeEventListener(event, callback)
     }
 }

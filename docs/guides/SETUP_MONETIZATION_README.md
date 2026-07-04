@@ -28,29 +28,31 @@ open http://localhost:8000/monetization-index.html
 
 ### User-Facing Pages
 
-| Page | URL | Description |
-| ------ | ----- | ------------- |
-| **Landing** | `monetization-index.html` | Main hub with all links and stats |
-| **Pricing** | `pricing.html` | 3-tier comparison with revenue model |
-| **Checkout** | `checkout.html?plan=pro` | Stripe-ready payment page |
-| **Success** | `subscription-success.html` | Post-payment confirmation |
-| **My Subscription** | `my-subscription.html` | User dashboard with usage tracking |
-| **Account** | `account.html` | Settings, billing, API keys, security |
+| Page                | URL                         | Description                           |
+| ------------------- | --------------------------- | ------------------------------------- |
+| **Landing**         | `monetization-index.html`   | Main hub with all links and stats     |
+| **Pricing**         | `pricing.html`              | 3-tier comparison with revenue model  |
+| **Checkout**        | `checkout.html?plan=pro`    | Stripe-ready payment page             |
+| **Success**         | `subscription-success.html` | Post-payment confirmation             |
+| **My Subscription** | `my-subscription.html`      | User dashboard with usage tracking    |
+| **Account**         | `account.html`              | Settings, billing, API keys, security |
 
 ### Admin Pages
 
-| Page | URL | Description |
-| ------ | ----- | ------------- |
+| Page                | URL                    | Description                                 |
+| ------------------- | ---------------------- | ------------------------------------------- |
 | **Admin Dashboard** | `admin_dashboard.html` | Revenue analytics and subscriber management |
 
 ## 💰 Subscription Tiers
 
 ### Free Tier - $0/month
+
 - 100 chat messages/month
 - Basic Aria character access
 - Perfect for trying out
 
 ### Pro Tier - $49/month ⭐ Popular
+
 - 10,000 chat messages/month
 - Full Aria character suite
 - Quantum computing (50 jobs/mo)
@@ -60,6 +62,7 @@ open http://localhost:8000/monetization-index.html
 - Commercial license
 
 ### Enterprise Tier - $199/month 👑
+
 - **Unlimited** everything
 - Custom model training
 - Priority support (24/7)
@@ -105,6 +108,7 @@ The `setup_monetization.py` script automatically:
 7. ✅ Offers to start test server
 
 **Usage:**
+
 ```bash
 python3 setup_monetization.py
 ```
@@ -112,6 +116,7 @@ python3 setup_monetization.py
 ## 🎨 Page Features
 
 ### 1. Landing Page (`monetization-index.html`)
+
 - Hero section with call-to-action buttons
 - Revenue achievement banner
 - Platform features showcase
@@ -123,6 +128,7 @@ python3 setup_monetization.py
 - Smooth animations
 
 ### 2. Pricing Page (`pricing.html`)
+
 - 3-tier comparison cards
 - Revenue projection model
 - Detailed feature comparison table
@@ -132,6 +138,7 @@ python3 setup_monetization.py
 - Upgrade buttons
 
 ### 3. Checkout Page (`checkout.html`)
+
 - Professional payment form
 - Card number formatting (4242 4242 4242 4242)
 - Expiry date formatting (MM / YY)
@@ -145,6 +152,7 @@ python3 setup_monetization.py
 - Supports URL parameters: `?plan=pro` or `?plan=enterprise`
 
 ### 4. Success Page (`subscription-success.html`)
+
 - Animated checkmark icon
 - Celebratory confetti animation
 - Subscription confirmation details
@@ -154,14 +162,15 @@ python3 setup_monetization.py
 - Plan badge display
 
 ### 5. My Subscription (`my-subscription.html`)
+
 - Current plan display with tier badge
 - Real-time usage statistics
 - 5 resource types tracked:
-  - Chat messages
-  - Quantum jobs
-  - Training hours
-  - API requests
-  - Websites created
+    - Chat messages
+    - Quantum jobs
+    - Training hours
+    - API requests
+    - Websites created
 - Visual progress bars (green/yellow/red)
 - Feature access list
 - Billing history table
@@ -169,17 +178,19 @@ python3 setup_monetization.py
 - API integration for live data
 
 ### 6. Account Settings (`account.html`)
+
 - Tabbed interface (5 tabs):
-  1. **Profile** - Name, email, company, bio
-  2. **Billing** - Payment methods, billing history
-  3. **API Keys** - Generate, view, revoke keys
-  4. **Notifications** - Email preferences
-  5. **Security** - Password, 2FA, sessions
+    1. **Profile** - Name, email, company, bio
+    2. **Billing** - Payment methods, billing history
+    3. **API Keys** - Generate, view, revoke keys
+    4. **Notifications** - Email preferences
+    5. **Security** - Password, 2FA, sessions
 - Form validation
 - Danger zone for account deletion
 - Active session management
 
 ### 7. Admin Dashboard (`admin_dashboard.html`)
+
 - Real-time MRR/ARR display
 - Subscriber count by tier
 - Revenue charts
@@ -264,6 +275,7 @@ python3 setup_monetization.py
 ```
 
 This creates:
+
 - 5 Pro subscribers @ $49 = $245
 - 10 Enterprise subscribers @ $199 = $1,990
 - Total MRR = $2,235
@@ -271,6 +283,7 @@ This creates:
 ## 🎨 Design Features
 
 ### Colors
+
 - Primary: `#667eea` to `#764ba2` (purple gradient)
 - Success: `#4caf50` (green)
 - Warning: `#ffa500` (orange)
@@ -278,11 +291,13 @@ This creates:
 - Background: White with gradient overlay
 
 ### Typography
+
 - Font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto
 - Headers: Bold, large sizes (2-4em)
 - Body: 1em, line-height 1.6
 
 ### Animations
+
 - Smooth transitions (0.3s ease)
 - Hover effects (translateY, scale, shadow)
 - Loading states
@@ -290,6 +305,7 @@ This creates:
 - Fade-in on page load
 
 ### Responsive Design
+
 - Mobile-first approach
 - Breakpoint: 768px
 - Grid layouts adapt to screen size
@@ -298,6 +314,7 @@ This creates:
 ## 🔒 Security Features
 
 ### Payment Security
+
 - Stripe integration structure (PCI compliant)
 - Never store card numbers
 - 256-bit SSL encryption
@@ -305,6 +322,7 @@ This creates:
 - Card validation on client side
 
 ### Account Security
+
 - Password requirements
 - Two-factor authentication setup
 - Session management
@@ -312,6 +330,7 @@ This creates:
 - Account deletion confirmation
 
 ### Data Protection
+
 - Usage data stored locally
 - API keys masked
 - Secure environment variables
@@ -319,16 +338,17 @@ This creates:
 
 ## 📚 Documentation
 
-| Document | Description |
-| ---------- | ------------- |
-| `MONETIZATION_GUIDE.md` | Complete technical guide (10,936 chars) |
-| `INCOME_STREAM_SUMMARY.md` | Executive summary with screenshots |
-| `QUICK_START_MONETIZATION.md` | Quick start guide (5,894 chars) |
-| `SETUP_MONETIZATION_README.md` | This file |
+| Document                       | Description                             |
+| ------------------------------ | --------------------------------------- |
+| `MONETIZATION_GUIDE.md`        | Complete technical guide (10,936 chars) |
+| `INCOME_STREAM_SUMMARY.md`     | Executive summary with screenshots      |
+| `QUICK_START_MONETIZATION.md`  | Quick start guide (5,894 chars)         |
+| `SETUP_MONETIZATION_README.md` | This file                               |
 
 ## 🚀 Production Deployment
 
 ### Prerequisites
+
 1. Stripe account and API keys
 2. Azure Functions App (or similar hosting)
 3. Domain name (optional)
@@ -337,6 +357,7 @@ This creates:
 ### Steps
 
 1. **Configure Stripe**
+
 ```bash
 # Add to local.settings.json or Azure App Settings
 {
@@ -347,12 +368,14 @@ This creates:
 ```
 
 2. **Deploy Backend**
+
 ```bash
 # Deploy Azure Functions
 func azure functionapp publish <function-app-name>
 ```
 
 3. **Deploy Frontend**
+
 ```bash
 # Upload HTML files to:
 # - Azure Static Web Apps
@@ -362,6 +385,7 @@ func azure functionapp publish <function-app-name>
 ```
 
 4. **Configure DNS**
+
 ```bash
 # Point your domain to hosting
 # Enable HTTPS
@@ -369,6 +393,7 @@ func azure functionapp publish <function-app-name>
 ```
 
 5. **Test Production**
+
 ```bash
 # Test all pages
 # Verify API endpoints
@@ -379,7 +404,9 @@ func azure functionapp publish <function-app-name>
 ## 💡 Customization
 
 ### Change Pricing
+
 Edit `shared/subscription_manager.py`:
+
 ```python
 TIER_PRICING = {
     SubscriptionTier.FREE: 0,
@@ -389,12 +416,15 @@ TIER_PRICING = {
 ```
 
 ### Change Features
+
 Edit `TIER_FEATURES` and `TIER_LIMITS` in `subscription_manager.py`
 
 ### Change Design
+
 Edit CSS in each HTML file's `<style>` section
 
 ### Add New Tier
+
 1. Add to `SubscriptionTier` enum
 2. Add pricing to `TIER_PRICING`
 3. Add features to `TIER_FEATURES`
@@ -404,6 +434,7 @@ Edit CSS in each HTML file's `<style>` section
 ## 🐛 Troubleshooting
 
 ### Setup Script Fails
+
 ```bash
 # Check Python version (3.7+)
 python3 --version
@@ -416,6 +447,7 @@ python3 setup_monetization.py
 ```
 
 ### Pages Not Loading
+
 ```bash
 # Verify all files exist
 ls -la *.html
@@ -428,6 +460,7 @@ python3 -m http.server 8001
 ```
 
 ### API Errors
+
 ```bash
 # Check Functions host is running
 func host start
@@ -442,6 +475,7 @@ curl http://localhost:7071/api/ai/status
 ## 📞 Support
 
 ### Resources
+
 - 📖 Documentation: See all `.md` files
 - 🐛 Issues: GitHub Issues
 - 💬 Discussions: GitHub Discussions
@@ -467,6 +501,7 @@ A: See the "Production Deployment" section above.
 ## 🎯 Success Metrics
 
 ### Current Status
+
 - ✅ 7 web pages created
 - ✅ Setup script functional
 - ✅ Demo data generating $2,235 MRR
@@ -476,6 +511,7 @@ A: See the "Production Deployment" section above.
 - ✅ Production-ready structure
 
 ### Next Milestones
+
 - [ ] Integrate Stripe for real payments
 - [ ] Add email notifications
 - [ ] Implement referral program
@@ -498,6 +534,7 @@ You now have a **complete, production-ready monetization system** for the Aria p
 - 🚀 **Ready for production** - just add Stripe keys!
 
 **Start exploring:**
+
 ```bash
 python3 setup_monetization.py
 ```

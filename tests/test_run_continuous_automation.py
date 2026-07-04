@@ -11,14 +11,10 @@ import importlib.util
 import subprocess
 from pathlib import Path
 
-import pytest
-
 
 def _load_module():
     script_path = Path(__file__).parent.parent / "run_continuous_automation.py"
-    spec = importlib.util.spec_from_file_location(
-        "run_continuous_automation", script_path
-    )
+    spec = importlib.util.spec_from_file_location("run_continuous_automation", script_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -116,9 +112,7 @@ def test_run_automation_nonzero_returncode_still_true(tmp_path, monkeypatch):
     daemon = _make_daemon(mod, tmp_path)
 
     def fake_run(*args, **kwargs):
-        return subprocess.CompletedProcess(
-            args[0], returncode=2, stdout="some output", stderr="warn"
-        )
+        return subprocess.CompletedProcess(args[0], returncode=2, stdout="some output", stderr="warn")
 
     monkeypatch.setattr(mod.subprocess, "run", fake_run)
 

@@ -54,18 +54,21 @@ Created `.github/workflows/pages.yml` for automatic deployment:
 All web applications run with **mock API responses**:
 
 **Aria Character:**
+
 - `DEMO_MODE = true` in `aria_controller.js`
 - `mockApiCall()` function simulates `/api/aria/command` and `/api/aria/object`
 - 300ms delay for realistic network simulation
 - Full UI functionality (animations, movements, object interactions)
 
 **AI Chat:**
+
 - `DEMO_MODE = true` in chat interface
 - 6 predefined responses that rotate
 - Simulated typing delay
 - Full chat UI with message bubbles
 
 **Dashboard & Quantum:**
+
 - Static HTML interfaces
 - All UI elements functional
 - Mock data can be added as needed
@@ -73,6 +76,7 @@ All web applications run with **mock API responses**:
 ### 4. Visual Design
 
 **Consistent across all pages:**
+
 - Gradient backgrounds with animations
 - Demo mode banners (prominent orange)
 - Card-based layouts
@@ -83,6 +87,7 @@ All web applications run with **mock API responses**:
 ### 5. Documentation
 
 **Created comprehensive guides:**
+
 - `README_PAGES.md` - GitHub Pages overview and usage
 - `DEPLOYMENT_GUIDE.md` - Detailed deployment procedures
 - `GITHUB_PAGES_SETUP.md` - This setup summary
@@ -123,6 +128,7 @@ Under "Build and deployment":
 ### Step 5: Test All Applications
 
 Visit and test each application:
+
 - Main landing: https://bryan-roe.github.io/Aria
 - Aria character: https://bryan-roe.github.io/Aria/aria/
 - AI chat: https://bryan-roe.github.io/Aria/chat/
@@ -136,6 +142,7 @@ Visit and test each application:
 ### What Works in Demo Mode
 
 ✅ **Full UI Functionality**
+
 - All buttons, inputs, and controls work
 - Character animations and movements
 - Object interactions (pickup, drop, throw)
@@ -143,12 +150,14 @@ Visit and test each application:
 - Command input and processing
 
 ✅ **Realistic Simulation**
+
 - 300ms network delay simulation
 - Mock API responses
 - Predefined chat responses
 - Full visual feedback
 
 ✅ **Interactive Elements**
+
 - Character movement on stage
 - Object management buttons
 - Chat input and display
@@ -158,18 +167,21 @@ Visit and test each application:
 ### What Requires Local Development
 
 ❌ **AI Features**
+
 - Real AI chat (Azure OpenAI, OpenAI)
 - Natural language processing
 - Contextual conversations
 - Multiple provider support
 
 ❌ **Backend Services**
+
 - Python server (aria_web/server.py)
 - Azure Functions (function_app.py)
 - Flask dashboard (dashboard/app.py)
 - Database connections
 
 ❌ **Training & Quantum**
+
 - LoRA fine-tuning
 - Model training
 - Quantum computing (Azure Quantum)
@@ -203,6 +215,7 @@ Visit and test each application:
 5. **Commit and push** to trigger deployment
 
 **Example:**
+
 ```bash
 # Update Aria character
 cp aria_web/index.html docs/aria/
@@ -228,6 +241,7 @@ See `docs/DEPLOYMENT_GUIDE.md` for detailed instructions on adding new web appli
 ### Local Testing
 
 **Option 1: Python HTTP Server**
+
 ```bash
 cd docs
 python3 -m http.server 8000
@@ -235,6 +249,7 @@ python3 -m http.server 8000
 ```
 
 **Option 2: Jekyll (Recommended)**
+
 ```bash
 gem install jekyll bundler
 cd docs
@@ -245,6 +260,7 @@ jekyll serve
 ### Validation
 
 Run the validation script:
+
 ```bash
 cd /home/runner/work/Aria/Aria
 bash /tmp/validate_pages.sh
@@ -267,18 +283,21 @@ bash /tmp/validate_pages.sh
 ## 🎯 Benefits
 
 ### For Users
+
 - ✅ Try Aria without installation
 - ✅ See features in action immediately
 - ✅ No API keys or setup required
 - ✅ Fast, browser-based demo
 
 ### For Developers
+
 - ✅ Visual reference for contributions
 - ✅ Easy UI testing
 - ✅ Quick onboarding for new contributors
 - ✅ Portfolio/showcase material
 
 ### For the Project
+
 - ✅ Increased visibility and accessibility
 - ✅ Professional presentation
 - ✅ Lower barrier to entry

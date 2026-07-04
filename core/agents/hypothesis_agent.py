@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -46,7 +46,7 @@ class HypothesisAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
     ) -> None:
         self.memory = memory
         self.llm = llm or LLMClient()
@@ -54,13 +54,13 @@ class HypothesisAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"hypothesize", "infer", "generate_hypothesis"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         observation: str = (payload.get("observation") or payload.get("text") or "").strip()
         limit: int = max(1, int(payload.get("limit", _DEFAULT_LIMIT)))
 
         if not observation:
-            events: List[Dict[str, Any]] = self.memory.last(limit)
+            events: list[dict[str, Any]] = self.memory.last(limit)
             if not events:
                 return {
                     "agent": self.name,
@@ -81,7 +81,7 @@ class HypothesisAgent(BaseAgent):
 
         return result
 
-    def _hypothesize(self, observation: str) -> Dict[str, Any]:
+    def _hypothesize(self, observation: str) -> dict[str, Any]:
         truncated = observation[:_MAX_INPUT_CHARS]
         messages = [
             {
@@ -111,8 +111,8 @@ class HypothesisAgent(BaseAgent):
 
         return self._parse(raw)
 
-    def _parse(self, raw: str) -> Dict[str, Any]:
-        fallback: Dict[str, Any] = {
+    def _parse(self, raw: str) -> dict[str, Any]:
+        fallback: dict[str, Any] = {
             "hypotheses": [
                 {
                     "statement": "Hypothesis generation failed: no valid response from LLM",
@@ -126,7 +126,7 @@ class HypothesisAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Dict[str, Any] | None:
+        def _extract(data: Any) -> dict[str, Any] | None:
             if not isinstance(data, dict):
                 return None
             if "hypotheses" not in data:
@@ -134,7 +134,7 @@ class HypothesisAgent(BaseAgent):
             hypotheses = data.get("hypotheses") or []
             if not isinstance(hypotheses, list):
                 return None
-            cleaned: List[Dict[str, Any]] = []
+            cleaned: list[dict[str, Any]] = []
             for h in hypotheses:
                 if not isinstance(h, dict):
                     continue
@@ -170,8 +170,8 @@ class HypothesisAgent(BaseAgent):
         return fallback
 
     @staticmethod
-    def _format_events(events: List[Dict[str, Any]]) -> str:
-        parts: List[str] = []
+    def _format_events(events: list[dict[str, Any]]) -> str:
+        parts: list[str] = []
         for e in events:
             event_type = e.get("type", "event")
             data = e.get("data", "")

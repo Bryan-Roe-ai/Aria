@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -116,10 +116,10 @@ class Subscription:
         self,
         user_id: str,
         tier: SubscriptionTier = SubscriptionTier.FREE,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-        payment_method: Optional[str] = None,
-        stripe_subscription_id: Optional[str] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+        payment_method: str | None = None,
+        stripe_subscription_id: str | None = None,
     ):
         self.user_id = user_id
         self._tier = tier  # Use private attribute
@@ -214,7 +214,7 @@ class Subscription:
         current = self.usage.get(resource, 0)
         return (current / limit) * 100
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert subscription to dictionary"""
         return {
             "user_id": self.user_id,
@@ -236,10 +236,10 @@ class Subscription:
 class SubscriptionManager:
     """Manages subscriptions and feature access"""
 
-    def __init__(self, storage_path: Optional[Path] = None):
+    def __init__(self, storage_path: Path | None = None):
         self.storage_path = storage_path or Path("data_out/subscriptions")
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        self.subscriptions: Dict[str, Subscription] = {}
+        self.subscriptions: dict[str, Subscription] = {}
         self._load_subscriptions()
 
     def _load_subscriptions(self):
@@ -292,8 +292,8 @@ class SubscriptionManager:
         user_id: str,
         tier: SubscriptionTier,
         duration_days: int = 30,
-        payment_method: Optional[str] = None,
-        stripe_subscription_id: Optional[str] = None,
+        payment_method: str | None = None,
+        stripe_subscription_id: str | None = None,
     ) -> Subscription:
         """Upgrade user subscription"""
         sub = self.get_subscription(user_id)
@@ -329,7 +329,7 @@ class SubscriptionManager:
             self._save_subscriptions()
         return result
 
-    def get_revenue_stats(self) -> Dict[str, Any]:
+    def get_revenue_stats(self) -> dict[str, Any]:
         """Calculate revenue statistics"""
         stats = {
             "total_subscribers": len(self.subscriptions),
@@ -350,13 +350,13 @@ class SubscriptionManager:
 
         return stats
 
-    def get_all_subscriptions(self) -> List[Dict[str, Any]]:
+    def get_all_subscriptions(self) -> list[dict[str, Any]]:
         """Get all subscriptions as dictionaries"""
         return [sub.to_dict() for sub in self.subscriptions.values()]
 
 
 # Global instance
-_subscription_manager: Optional[SubscriptionManager] = None
+_subscription_manager: SubscriptionManager | None = None
 
 
 def get_subscription_manager() -> SubscriptionManager:

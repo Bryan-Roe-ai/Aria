@@ -58,15 +58,15 @@ Returns current stage state including character position and all objects.
 
 ```json
 {
-  "position": { "x": 0, "y": 0, "z": 0 },
-  "objects": {
-    "apple": {
-      "id": "apple",
-      "emoji": "🍎",
-      "position": { "x": 100, "y": 200, "z": 0 },
-      "state": "on_stage"
+    "position": { "x": 0, "y": 0, "z": 0 },
+    "objects": {
+        "apple": {
+            "id": "apple",
+            "emoji": "🍎",
+            "position": { "x": 100, "y": 200, "z": 0 },
+            "state": "on_stage"
+        }
     }
-  }
 }
 ```
 
@@ -93,14 +93,18 @@ Lightweight health/status snapshot for monitoring and uptime probes.
 
 ```json
 {
-  "status": "ok",
-  "version": "1.0.0",
-  "uptime_seconds": 12.34,
-  "timestamp": "2026-06-01T18:55:15+00:00",
-  "llm_available": true,
-  "model_loaded": false,
-  "counts": { "objects": 5, "action_types": 8, "valid_gestures": 6 },
-  "aria": { "position": { "x": 15, "y": 20 }, "expression": "neutral", "held_object": null }
+    "status": "ok",
+    "version": "1.0.0",
+    "uptime_seconds": 12.34,
+    "timestamp": "2026-06-01T18:55:15+00:00",
+    "llm_available": true,
+    "model_loaded": false,
+    "counts": { "objects": 5, "action_types": 8, "valid_gestures": 6 },
+    "aria": {
+        "position": { "x": 15, "y": 20 },
+        "expression": "neutral",
+        "held_object": null
+    }
 }
 ```
 
@@ -112,12 +116,12 @@ Add, update, or remove an object.
 
 ```json
 {
-  "action": "add",
-  "object": {
-    "id": "apple",
-    "emoji": "🍎",
-    "position": { "x": 100, "y": 200, "z": 0 }
-  }
+    "action": "add",
+    "object": {
+        "id": "apple",
+        "emoji": "🍎",
+        "position": { "x": 100, "y": 200, "z": 0 }
+    }
 }
 ```
 
@@ -125,12 +129,12 @@ Add, update, or remove an object.
 
 ```json
 {
-  "action": "update",
-  "object": {
-    "id": "apple",
-    "position": { "x": 150, "y": 250, "z": 0 },
-    "state": "held"
-  }
+    "action": "update",
+    "object": {
+        "id": "apple",
+        "position": { "x": 150, "y": 250, "z": 0 },
+        "state": "held"
+    }
 }
 ```
 
@@ -138,10 +142,10 @@ Add, update, or remove an object.
 
 ```json
 {
-  "action": "remove",
-  "object": {
-    "id": "apple"
-  }
+    "action": "remove",
+    "object": {
+        "id": "apple"
+    }
 }
 ```
 
@@ -153,7 +157,7 @@ Process a chat command and return generated tags.
 
 ```json
 {
-  "command": "Say hello and move to center"
+    "command": "Say hello and move to center"
 }
 ```
 
@@ -161,7 +165,7 @@ Process a chat command and return generated tags.
 
 ```json
 {
-  "tags": "[aria:say:hello][aria:position:center]"
+    "tags": "[aria:say:hello][aria:position:center]"
 }
 ```
 
@@ -173,9 +177,9 @@ Generate (or regenerate) a themed world layout using the LLM (if available) or a
 
 ```json
 {
-  "theme": "forest", // optional (default: "forest")
-  "count": 7, // optional number of objects (default: 6)
-  "use_llm": true // optional, force fallback if false
+    "theme": "forest", // optional (default: "forest")
+    "count": 7, // optional number of objects (default: 6)
+    "use_llm": true // optional, force fallback if false
 }
 ```
 
@@ -183,29 +187,29 @@ Generate (or regenerate) a themed world layout using the LLM (if available) or a
 
 ```json
 {
-  "status": "success",
-  "theme": "forest",
-  "count": 6,
-  "used_llm": true,
-  "objects": {
-    "tree": {
-      "id": "tree",
-      "emoji": "🌲",
-      "position": { "x": 42, "y": 33 },
-      "state": "on_stage"
-    },
-    "rock": {
-      "id": "rock",
-      "emoji": "🪨",
-      "position": { "x": 55, "y": 61 },
-      "state": "on_stage"
-    }
-  },
-  "environment": {
+    "status": "success",
     "theme": "forest",
-    "generated_at": "2025-11-28T17:20:00Z",
-    "stage_bounds": { "width": 100, "height": 100 }
-  }
+    "count": 6,
+    "used_llm": true,
+    "objects": {
+        "tree": {
+            "id": "tree",
+            "emoji": "🌲",
+            "position": { "x": 42, "y": 33 },
+            "state": "on_stage"
+        },
+        "rock": {
+            "id": "rock",
+            "emoji": "🪨",
+            "position": { "x": 55, "y": 61 },
+            "state": "on_stage"
+        }
+    },
+    "environment": {
+        "theme": "forest",
+        "generated_at": "2025-11-28T17:20:00Z",
+        "stage_bounds": { "width": 100, "height": 100 }
+    }
 }
 ```
 

@@ -3,13 +3,14 @@
 **Current Status**: Stable (2+ days uptime, all tests passing, automation healthy)  
 **Last Validated**: June 1, 2026  
 **Deployment Target**: Azure Functions + Container Apps (optional)  
-**Version**: 1.0.0  
+**Version**: 1.0.0
 
 ---
 
 ## Pre-Deployment Checklist
 
 ### System Health Verification ✅
+
 - [x] Unit tests: 2354 passed (0 failures)
 - [x] Linting: Clean (0 issues)
 - [x] Security scan: Clean
@@ -20,6 +21,7 @@
 - [x] Watchdog supervisor: Running with 0 failures
 
 ### Code & Configuration
+
 - [x] Main branch: `737f19954` (latest commit)
 - [x] No uncommitted changes: `git status` clean
 - [x] All dependencies in requirements.txt
@@ -28,6 +30,7 @@
 - [x] Dockerfile production-ready (Python 3.14-slim)
 
 ### Azure Prerequisites
+
 - [ ] Azure subscription active with adequate quota
 - [ ] Azure Functions runtime v4+ available
 - [ ] Resource group created and ready
@@ -81,45 +84,45 @@ Create `Settings.json` in Azure Function App with production values:
 
 ```json
 {
-  "FUNCTIONS_WORKER_RUNTIME": "python",
-  "FUNCTIONS_EXTENSION_RUNTIME_VERSION": "~4",
-  
-  "# === Ollama / Local AI (production)": "",
-  "OLLAMA_BASE_URL": "http://ollama-service:11434/v1",
-  "OLLAMA_MODEL": "qwen2.5-coder:7b",
-  
-  "# === Optional: Azure OpenAI": "",
-  "AZURE_OPENAI_API_KEY": "vault://prod-openai-key",
-  "AZURE_OPENAI_ENDPOINT": "https://<resource>.openai.azure.com/",
-  "AZURE_OPENAI_DEPLOYMENT": "prod-deployment",
-  "AZURE_OPENAI_API_VERSION": "2024-08-01-preview",
-  
-  "# === Optional: Azure Speech TTS": "",
-  "AZURE_SPEECH_KEY": "vault://prod-speech-key",
-  "AZURE_SPEECH_REGION": "eastus",
-  
-  "# === Database": "",
-  "QAI_DB_CONN": "Server=prod-sql.database.windows.net;Database=aria_prod;User Id=funcapp;Password=vault://prod-sql-pwd;Encrypt=true;Connection Timeout=30;",
-  "QAI_SQL_POOL_SIZE": "20",
-  
-  "# === Optional: Cosmos DB": "",
-  "QAI_ENABLE_COSMOS": "true",
-  "COSMOS_ENDPOINT": "https://aria-prod.documents.azure.com:443/",
-  "COSMOS_KEY": "vault://prod-cosmos-key",
-  "COSMOS_DATABASE": "aria",
-  "COSMOS_CONTAINER": "chat-sessions",
-  
-  "# === Telemetry": "",
-  "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=prod-key;IngestionEndpoint=https://eastus-1.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/",
-  
-  "# === Chat Defaults": "",
-  "CHAT_TEMPERATURE": "0.7",
-  "CHAT_MAX_TOKENS": "2048",
-  "DEFAULT_AI_PROVIDER": "ollama",
-  
-  "# === Aria Web UI (optional)": "",
-  "ARIA_PORT": "8080",
-  "ARIA_RENDER_MODE": "ue5"
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "FUNCTIONS_EXTENSION_RUNTIME_VERSION": "~4",
+
+    "# === Ollama / Local AI (production)": "",
+    "OLLAMA_BASE_URL": "http://ollama-service:11434/v1",
+    "OLLAMA_MODEL": "qwen2.5-coder:7b",
+
+    "# === Optional: Azure OpenAI": "",
+    "AZURE_OPENAI_API_KEY": "vault://prod-openai-key",
+    "AZURE_OPENAI_ENDPOINT": "https://<resource>.openai.azure.com/",
+    "AZURE_OPENAI_DEPLOYMENT": "prod-deployment",
+    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview",
+
+    "# === Optional: Azure Speech TTS": "",
+    "AZURE_SPEECH_KEY": "vault://prod-speech-key",
+    "AZURE_SPEECH_REGION": "eastus",
+
+    "# === Database": "",
+    "QAI_DB_CONN": "Server=prod-sql.database.windows.net;Database=aria_prod;User Id=funcapp;Password=vault://prod-sql-pwd;Encrypt=true;Connection Timeout=30;",
+    "QAI_SQL_POOL_SIZE": "20",
+
+    "# === Optional: Cosmos DB": "",
+    "QAI_ENABLE_COSMOS": "true",
+    "COSMOS_ENDPOINT": "https://aria-prod.documents.azure.com:443/",
+    "COSMOS_KEY": "vault://prod-cosmos-key",
+    "COSMOS_DATABASE": "aria",
+    "COSMOS_CONTAINER": "chat-sessions",
+
+    "# === Telemetry": "",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=prod-key;IngestionEndpoint=https://eastus-1.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/",
+
+    "# === Chat Defaults": "",
+    "CHAT_TEMPERATURE": "0.7",
+    "CHAT_MAX_TOKENS": "2048",
+    "DEFAULT_AI_PROVIDER": "ollama",
+
+    "# === Aria Web UI (optional)": "",
+    "ARIA_PORT": "8080",
+    "ARIA_RENDER_MODE": "ue5"
 }
 ```
 
@@ -243,35 +246,35 @@ Create `.github/workflows/deploy-prod.yml`:
 name: Deploy to Production
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+    push:
+        branches: [main]
+    workflow_dispatch:
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Run tests
-        run: python scripts/test_runner.py --unit
-      
-      - name: Run pre-commit checks
-        run: python scripts/pre_commit_check.py
-      
-      - name: Build container
-        run: |
-          az acr build \
-            --registry ${{ secrets.REGISTRY_NAME }} \
-            --image functions:${{ github.sha }} \
-            --file function_app.Dockerfile .
-      
-      - name: Deploy to Azure Functions
-        run: |
-          az functionapp deployment container config \
-            --name aria-prod \
-            --resource-group aria-prod \
-            --enable-cd
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Run tests
+              run: python scripts/test_runner.py --unit
+
+            - name: Run pre-commit checks
+              run: python scripts/pre_commit_check.py
+
+            - name: Build container
+              run: |
+                  az acr build \
+                    --registry ${{ secrets.REGISTRY_NAME }} \
+                    --image functions:${{ github.sha }} \
+                    --file function_app.Dockerfile .
+
+            - name: Deploy to Azure Functions
+              run: |
+                  az functionapp deployment container config \
+                    --name aria-prod \
+                    --resource-group aria-prod \
+                    --enable-cd
 ```
 
 ---
@@ -331,18 +334,21 @@ az functionapp deployment slot swap \
 ## Production Runbook
 
 ### Daily Checks
+
 - [ ] `/api/ai/status` returning healthy (provider, orchestrators, DB pool)
 - [ ] Application Insights showing normal request/error rates
 - [ ] No alerts triggered
 - [ ] Automated training cycles completing (check `/data_out/autonomous_training_status.json`)
 
 ### Weekly Maintenance
+
 - [ ] Review Application Insights metrics for performance trends
 - [ ] Check cost trends in Azure Cost Management
 - [ ] Verify backup retention (SQL, Cosmos)
 - [ ] Test rollback procedure
 
 ### Monthly Review
+
 - [ ] Capacity planning (function execution time, storage, SQL pool)
 - [ ] Security audit (Key Vault expiration, role assignments, network rules)
 - [ ] Performance optimization (query execution, caching strategy)
@@ -363,6 +369,7 @@ az functionapp deployment slot swap \
 ## Success Criteria
 
 Deployment is **production-ready** when:
+
 - ✅ All 40 API endpoints respond within SLA (≤2 seconds typical)
 - ✅ Health check passes: `/api/ai/status` → HTTP 200 with full JSON
 - ✅ No orchestrator failures for 24+ hours
@@ -374,4 +381,3 @@ Deployment is **production-ready** when:
 ---
 
 **Next**: Deploy using `az deployment group create` with the provided Bicep template and follow Step 1–9 above.
-

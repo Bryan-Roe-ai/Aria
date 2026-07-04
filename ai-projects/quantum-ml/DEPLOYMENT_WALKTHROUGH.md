@@ -62,34 +62,34 @@ cd c:\Users\Bryan\OneDrive\AI\quantum-ai
 
 1. **Detect it's missing** and show you:
 
-   ```text
-   ✗ Azure CLI is not installed
+    ```text
+    ✗ Azure CLI is not installed
 
-   To install Azure CLI:
-     1. Download from: https://aka.ms/installazurecliwindows
-     2. Run the installer
-     3. Restart PowerShell
-     4. Run this script again
-   ```
+    To install Azure CLI:
+      1. Download from: https://aka.ms/installazurecliwindows
+      2. Run the installer
+      3. Restart PowerShell
+      4. Run this script again
+    ```
 
 2. **Ask if you want to open the download page:**
 
-   ```text
-   Would you like to open the download page now? (yes/no)
-   ```
+    ```text
+    Would you like to open the download page now? (yes/no)
+    ```
 
-   Type `yes` and press Enter
+    Type `yes` and press Enter
 
 3. **Download and install:**
-   - Click the downloaded installer
-   - Follow the installation wizard (Next → Next → Install)
-   - Wait 2-3 minutes for installation
+    - Click the downloaded installer
+    - Follow the installation wizard (Next → Next → Install)
+    - Wait 2-3 minutes for installation
 
 4. **Restart PowerShell:**
-   - Close PowerShell
-   - Open a new PowerShell window
-   - Navigate back: `cd c:\Users\Bryan\OneDrive\AI\quantum-ai`
-   - Run the script again: `.\deploy_azure_quantum.ps1`
+    - Close PowerShell
+    - Open a new PowerShell window
+    - Navigate back: `cd c:\Users\Bryan\OneDrive\AI\quantum-ai`
+    - Run the script again: `.\deploy_azure_quantum.ps1`
 
 ---
 
@@ -293,10 +293,10 @@ Updating quantum_config.yaml...
 **What's happening:**
 
 - Updates `config/quantum_config.yaml` with:
-  - Your subscription ID
-  - Workspace name
-  - Resource group
-  - Storage account name
+    - Your subscription ID
+    - Workspace name
+    - Resource group
+    - Storage account name
 - Now your quantum AI knows how to connect to Azure!
 
 ---

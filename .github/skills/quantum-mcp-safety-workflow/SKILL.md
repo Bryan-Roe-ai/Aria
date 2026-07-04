@@ -37,36 +37,36 @@ Common trigger phrases:
 ## Procedure
 
 1. Reproduce on the safest backend first
-   - Validate with local simulator or free Azure simulator before touching paid QPU.
-   - Confirm failure exists in minimal tool call path.
+    - Validate with local simulator or free Azure simulator before touching paid QPU.
+    - Confirm failure exists in minimal tool call path.
 
 2. Verify safety boundaries explicitly
-   - Respect local qubit/shot limits and per-call timeout.
-   - Confirm real hardware paths require `confirm_cost=true`.
-   - Keep orchestrator and tool-level cost gates aligned.
+    - Respect local qubit/shot limits and per-call timeout.
+    - Confirm real hardware paths require `confirm_cost=true`.
+    - Keep orchestrator and tool-level cost gates aligned.
 
 3. Isolate failing tool stage
-   - Circuit creation/simulation stage.
-   - Azure connect/list backend stage.
-   - Job submission/polling stage.
-   - Cost estimation/confirmation stage.
+    - Circuit creation/simulation stage.
+    - Azure connect/list backend stage.
+    - Job submission/polling stage.
+    - Cost estimation/confirmation stage.
 
 4. Validate backend semantics
-   - Free simulators should not require paid confirmation.
-   - Paid QPU targets must enforce confirmation and conservative initial shots.
-   - Avoid implicit backend fallthrough that hides misconfiguration.
+    - Free simulators should not require paid confirmation.
+    - Paid QPU targets must enforce confirmation and conservative initial shots.
+    - Avoid implicit backend fallthrough that hides misconfiguration.
 
 5. Audit cache behavior
-   - Confirm cache key includes fields that affect correctness.
-   - Verify TTL/LRU eviction works as intended.
-   - Ensure cache is a performance optimization, not a source of truth.
+    - Confirm cache key includes fields that affect correctness.
+    - Verify TTL/LRU eviction works as intended.
+    - Ensure cache is a performance optimization, not a source of truth.
 
 6. Apply minimal fix in failing layer
-   - Keep endpoint/tool contracts stable.
-   - Avoid broad refactors across unrelated tools in one change.
+    - Keep endpoint/tool contracts stable.
+    - Avoid broad refactors across unrelated tools in one change.
 
 7. Re-verify in progression order
-   - local simulator -> free Azure simulator -> paid QPU path (if explicitly requested).
+    - local simulator -> free Azure simulator -> paid QPU path (if explicitly requested).
 
 ## Quality Checks
 

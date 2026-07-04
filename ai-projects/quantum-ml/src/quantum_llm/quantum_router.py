@@ -198,13 +198,9 @@ class QuantumRouter:
             # make a provider's score depend on its position in the candidate list
             # (i.e. which other providers were excluded) rather than its identity.
             if self.effective_backend == "pennylane":
-                scores = _pennylane_qaoa_scores(
-                    features, self.providers, self._params, self.num_qubits
-                )
+                scores = _pennylane_qaoa_scores(features, self.providers, self._params, self.num_qubits)
             else:
-                scores = _classical_score_providers(
-                    features, self.providers, self._params
-                )
+                scores = _classical_score_providers(features, self.providers, self._params)
         except Exception as exc:  # noqa: BLE001
             logger.warning("QuantumRouter scoring failed (%s), using first provider", exc)
             return candidates[0]

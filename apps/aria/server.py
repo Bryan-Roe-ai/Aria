@@ -20,7 +20,6 @@ import urllib.request
 from datetime import timezone
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from typing import Optional
 
 # Pre-compile regex patterns for performance (avoid recompiling in loops)
 _RE_JSON_BLOCK = re.compile(r"\[.*\]", re.DOTALL)
@@ -107,7 +106,7 @@ def _provider_response_to_text(raw) -> str:
         return ""
 
 
-def _coerce_and_clamp_position(position, fallback: Optional[dict] = None) -> Optional[dict]:
+def _coerce_and_clamp_position(position, fallback: dict | None = None) -> dict | None:
     """Clamp x/y coordinates to [0,100] and return floats (e.g. {"x":150.0,"y":-10.0} -> {"x":100.0,"y":0.0}); else return fallback."""
     if not isinstance(position, dict):
         return fallback
@@ -137,7 +136,7 @@ if _STAGE_STATE_STORE_SPEC is None or _STAGE_STATE_STORE_SPEC.loader is None:
     raise RuntimeError("Failed to load stage_state_store.py")
 _stage_state_store_module = importlib.util.module_from_spec(_STAGE_STATE_STORE_SPEC)
 _STAGE_STATE_STORE_SPEC.loader.exec_module(_stage_state_store_module)
-StageStateStore = getattr(_stage_state_store_module, "StageStateStore")
+StageStateStore = _stage_state_store_module.StageStateStore
 
 try:
     from shared.local_settings import apply_local_settings
@@ -310,11 +309,11 @@ ARIA_ACTIONS = {
 
 
 def build_health_payload(
-    stage: Optional[dict] = None,
+    stage: dict | None = None,
     *,
-    llm_available: Optional[bool] = None,
-    model_loaded: Optional[bool] = None,
-    start_time: Optional[float] = None,
+    llm_available: bool | None = None,
+    model_loaded: bool | None = None,
+    start_time: float | None = None,
 ) -> dict:
     """Build a machine-readable health/status snapshot for the Aria server.
 
@@ -445,7 +444,7 @@ class AriaActionParser:
         self._initialize_provider()
 
     @staticmethod
-    def _normalize_provider_alias(explicit: Optional[str]) -> Optional[str]:
+    def _normalize_provider_alias(explicit: str | None) -> str | None:
         """Normalize provider aliases to canonical detect_provider values."""
         if explicit is None:
             return None
@@ -463,8 +462,8 @@ class AriaActionParser:
     def _resolve_provider_for_request(
         self,
         *,
-        explicit: Optional[str] = None,
-        model_override: Optional[str] = None,
+        explicit: str | None = None,
+        model_override: str | None = None,
     ) -> tuple[object | None, object | None]:
         """Resolve provider for a specific request while preserving cached default."""
         if not LLM_AVAILABLE:
@@ -492,9 +491,7 @@ class AriaActionParser:
 
         try:
             configured_explicit = os.getenv("ARIA_LLM_PROVIDER") or os.getenv("DEFAULT_AI_PROVIDER")
-            configured_model = os.getenv("ARIA_LLM_MODEL") or os.getenv("OLLAMA_MODEL") or os.getenv(
-                "LMSTUDIO_MODEL"
-            )
+            configured_model = os.getenv("ARIA_LLM_MODEL") or os.getenv("OLLAMA_MODEL") or os.getenv("LMSTUDIO_MODEL")
 
             # Convenience: if ARIA_QUANTUM_MODEL_PATH is set and no provider is
             # configured, default Aria LLM parsing to the quantum provider.
@@ -879,8 +876,8 @@ Rules:
         self,
         command: str,
         use_llm: bool = True,
-        provider_choice: Optional[str] = None,
-        model_override: Optional[str] = None,
+        provider_choice: str | None = None,
+        model_override: str | None = None,
     ) -> list[dict]:
         """
         Parse command into structured actions
@@ -1128,9 +1125,7 @@ def _get_agi_provider(*, verbose: bool = False):
 def generate_world_fallback(theme: str, count: int) -> dict:
     """Generate a world procedurally without LLM."""
     theme_key = theme.lower()
-    objects_catalog = list(
-        THEME_OBJECT_LIBRARY.get(theme_key, THEME_OBJECT_LIBRARY["forest"])
-    )
+    objects_catalog = list(THEME_OBJECT_LIBRARY.get(theme_key, THEME_OBJECT_LIBRARY["forest"]))
     required = THEME_REQUIRED_OBJECTS.get(theme_key, [])
     required_names = {name for name, _ in required}
     remaining = [(name, emoji) for name, emoji in objects_catalog if name not in required_names]
@@ -1265,12 +1260,12 @@ def get_stage_context() -> str:
             nearby_objects.append(obj_name)
 
     context = f"""STAGE VIEW:
-- Aria is at position ({aria_pos['x']}%, {aria_pos['y']}%), facing {aria['facing']}
-- Expression: {aria['expression']}
-- Held object: {aria['held_object'] or 'none'}
+- Aria is at position ({aria_pos["x"]}%, {aria_pos["y"]}%), facing {aria["facing"]}
+- Expression: {aria["expression"]}
+- Held object: {aria["held_object"] or "none"}
 - Table is at (60%, 20%) on the right side
-- Objects on table: {', '.join([k for k, v in objects.items() if isinstance(v, dict) and v.get('state') == 'on_table'])}
-- Objects nearby Aria (within reach): {', '.join(nearby_objects) if nearby_objects else 'none'}
+- Objects on table: {", ".join([k for k, v in objects.items() if isinstance(v, dict) and v.get("state") == "on_table"])}
+- Objects nearby Aria (within reach): {", ".join(nearby_objects) if nearby_objects else "none"}
 - Stage dimensions: 100% wide x 100% tall (0,0=top-left, 100,100=bottom-right)
 """
     return context
@@ -1308,7 +1303,7 @@ def determine_position_from_context(cmd: str) -> str:
                     obj_pos = obj_data["position"]
                     if isinstance(obj_pos, dict) and "x" in obj_pos and "y" in obj_pos:
                         # Position slightly to the left of object
-                        return f'[aria:position:{max(10, obj_pos["x"] - 10)}:{obj_pos["y"] + 10}]'
+                        return f"[aria:position:{max(10, obj_pos['x'] - 10)}:{obj_pos['y'] + 10}]"
 
     # Action-based positioning (using pre-compiled keyword sets for O(1) lookup)
     if _contains_any_keyword(cmd, JUMP_KEYWORDS):
@@ -1324,7 +1319,7 @@ def determine_position_from_context(cmd: str) -> str:
         return "[aria:position:20:40]"  # Left side for observing
     elif _contains_any_keyword(cmd, SIT_KEYWORDS):
         # Near table to sit
-        return f'[aria:position:{table_pos["x"] - 5}:{table_pos["y"] + 35}]'
+        return f"[aria:position:{table_pos['x'] - 5}:{table_pos['y'] + 35}]"
     elif _contains_any_keyword(cmd, RUN_KEYWORDS):
         return "[aria:position:85:70]"  # Far right for running space
     elif _contains_any_keyword(cmd, HIDE_KEYWORDS):
@@ -1339,7 +1334,7 @@ def determine_position_from_context(cmd: str) -> str:
         return "[aria:position:80:70]"  # Moving to right
     elif "add" in cmd or "create" in cmd or "spawn" in cmd:
         # For adding objects, position near table
-        return f'[aria:position:{table_pos["x"] - 15}:{table_pos["y"] + 20}]'
+        return f"[aria:position:{table_pos['x'] - 15}:{table_pos['y'] + 20}]"
     else:
         # Context-aware positioning: stay put if already in good position
         # or move to interesting area if idle
@@ -1669,8 +1664,8 @@ def execute_aria_action(action: dict) -> dict:
                 stage_state["aria"]["position"] = target
                 return {
                     "status": "success",
-                    "message": f'Moved to ({target["x"]}, {target["y"]})',
-                    "tags": [f'[aria:position:{target["x"]}:{target["y"]}]'],
+                    "message": f"Moved to ({target['x']}, {target['y']})",
+                    "tags": [f"[aria:position:{target['x']}:{target['y']}]"],
                 }
             elif isinstance(target, str) and target in stage_state["objects"]:
                 # Move to object

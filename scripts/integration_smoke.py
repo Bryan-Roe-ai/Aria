@@ -14,7 +14,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from urllib.error import URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -67,7 +67,7 @@ class StepResult:
 
 def _run_command(
     name: str,
-    cmd: List[str],
+    cmd: list[str],
     *,
     critical: bool = True,
     timeout: int = 180,
@@ -120,19 +120,19 @@ def _run_command(
         )
 
 
-def _check_config_paths() -> List[StepResult]:
+def _check_config_paths() -> list[StepResult]:
     checks = {
         "master_orchestrator_config": "master_orchestrator",
         "quantum_autorun_config": "quantum_autorun",
         "evaluation_autorun_config": "evaluation_autorun",
     }
 
-    results: List[StepResult] = []
+    results: list[StepResult] = []
     for name, config_key in checks.items():
         candidates = get_config_candidates(REPO_ROOT, config_key)
         canonical = canonical_config_path(REPO_ROOT, config_key)
         start = time.perf_counter()
-        found: Optional[Path] = next((p for p in candidates if p.exists()), None)
+        found: Path | None = next((p for p in candidates if p.exists()), None)
         duration = round(time.perf_counter() - start, 2)
 
         if found is None:
@@ -164,14 +164,14 @@ def _check_config_paths() -> List[StepResult]:
                     status="warning",
                     critical=False,
                     duration_sec=duration,
-                    detail=("using legacy path; prefer " f"{canonical.relative_to(REPO_ROOT)}"),
+                    detail=(f"using legacy path; prefer {canonical.relative_to(REPO_ROOT)}"),
                 )
             )
 
     return results
 
 
-def _fetch_local_functions_payload(url: str, timeout: int = 2) -> Dict[str, Any]:
+def _fetch_local_functions_payload(url: str, timeout: int = 2) -> dict[str, Any]:
     """Fetch and parse the local Functions status payload."""
     with urlopen(url, timeout=timeout) as resp:  # noqa: S310 - local probe
         return json.loads(resp.read().decode("utf-8"))
@@ -181,9 +181,9 @@ def _fetch_local_functions_json(
     url: str,
     *,
     method: str = "GET",
-    payload: Optional[Dict[str, Any]] = None,
+    payload: dict[str, Any] | None = None,
     timeout: int = 5,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Fetch and parse a JSON response from local Functions endpoints."""
     data = None
     headers = {}
@@ -198,7 +198,7 @@ def _fetch_local_functions_json(
 def _fetch_local_functions_sse(
     url: str,
     *,
-    payload: Dict[str, Any],
+    payload: dict[str, Any],
     timeout: int = 8,
 ) -> str:
     """Fetch raw SSE body text from local Functions endpoints."""
@@ -217,7 +217,7 @@ def _fetch_local_functions_text(
     url: str,
     *,
     method: str = "GET",
-    payload: Optional[Dict[str, Any]] = None,
+    payload: dict[str, Any] | None = None,
     timeout: int = 5,
 ) -> str:
     """Fetch a text response from local Functions endpoints."""
@@ -231,7 +231,7 @@ def _fetch_local_functions_text(
         return resp.read().decode("utf-8", errors="replace")
 
 
-def _local_dev_adapter_command(url: str) -> List[str]:
+def _local_dev_adapter_command(url: str) -> list[str]:
     """Build the adapter command for the target local Functions URL."""
 
     parsed = urlparse(url)
@@ -239,9 +239,9 @@ def _local_dev_adapter_command(url: str) -> List[str]:
     return [sys.executable, "local_dev_adapter.py", "--port", str(port)]
 
 
-def _probe_with_local_dev_adapter(url: str) -> Optional[Dict[str, Any]]:
+def _probe_with_local_dev_adapter(url: str) -> dict[str, Any] | None:
     """Best-effort fallback: start local adapter and retry endpoint probe."""
-    proc: Optional[subprocess.Popen[str]] = None
+    proc: subprocess.Popen[str] | None = None
     deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
 
     try:
@@ -280,12 +280,12 @@ def _probe_with_local_dev_adapter_request(
     *,
     url: str,
     method: str = "GET",
-    payload: Optional[Dict[str, Any]] = None,
+    payload: dict[str, Any] | None = None,
     sse: bool = False,
     text: bool = False,
-) -> Optional[Any]:
+) -> Any | None:
     """Best-effort adapter probe for arbitrary local Functions endpoints."""
-    proc: Optional[subprocess.Popen[str]] = None
+    proc: subprocess.Popen[str] | None = None
     deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
 
     try:
@@ -338,9 +338,9 @@ def _probe_with_local_dev_adapter_request(
                 proc.kill()
 
 
-def _probe_with_local_dev_adapter_text(url: str) -> Optional[str]:
+def _probe_with_local_dev_adapter_text(url: str) -> str | None:
     """Best-effort adapter probe for non-JSON text endpoints."""
-    proc: Optional[subprocess.Popen[str]] = None
+    proc: subprocess.Popen[str] | None = None
     deadline = time.time() + LOCAL_DEV_ADAPTER_PROBE_TIMEOUT_SEC
 
     try:
@@ -375,9 +375,9 @@ def _probe_with_local_dev_adapter_text(url: str) -> Optional[str]:
                 proc.kill()
 
 
-def _probe_agi_endpoints(strict: bool) -> List[StepResult]:
+def _probe_agi_endpoints(strict: bool) -> list[StepResult]:
     """Probe AGI HTTP routes with minimal contract checks."""
-    results: List[StepResult] = []
+    results: list[StepResult] = []
 
     endpoints = [
         {
@@ -562,7 +562,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
     start = time.perf_counter()
     url = "http://localhost:7071/api/ai/status"
 
-    def _build_success_detail(payload: Dict[str, Any], source: str = "") -> Optional[str]:
+    def _build_success_detail(payload: dict[str, Any], source: str = "") -> str | None:
         valid, detail = _validate_ai_status_payload(payload)
         if not valid:
             return None
@@ -669,7 +669,7 @@ def _probe_functions_endpoint(strict: bool) -> StepResult:
         )
 
 
-def _validate_ai_status_payload(payload: Dict[str, Any]) -> tuple[bool, str]:
+def _validate_ai_status_payload(payload: dict[str, Any]) -> tuple[bool, str]:
     missing_keys = sorted(k for k in _REQUIRED_AI_STATUS_KEYS if k not in payload)
     if missing_keys:
         return False, f"missing_keys={','.join(missing_keys)}"
@@ -766,7 +766,7 @@ def _probe_ai_routes_endpoint(strict: bool) -> StepResult:
         )
 
 
-def _validate_ai_routes_payload(payload: Dict[str, Any]) -> Optional[str]:
+def _validate_ai_routes_payload(payload: dict[str, Any]) -> str | None:
     functions = payload.get("functions")
     if not isinstance(functions, list):
         return None
@@ -779,22 +779,22 @@ def _validate_ai_routes_payload(payload: Dict[str, Any]) -> Optional[str]:
     return f"routes={len(functions)}"
 
 
-def _resolved_config_paths() -> Dict[str, Optional[str]]:
+def _resolved_config_paths() -> dict[str, str | None]:
     """Resolve key config paths for summary metadata."""
     config_keys = [
         "master_orchestrator",
         "quantum_autorun",
         "evaluation_autorun",
     ]
-    resolved: Dict[str, Optional[str]] = {}
+    resolved: dict[str, str | None] = {}
     for key in config_keys:
         selected = resolve_existing_config_path(REPO_ROOT, key)
         resolved[key] = str(selected.relative_to(REPO_ROOT)) if selected else None
     return resolved
 
 
-def run_smoke(strict_endpoints: bool) -> Dict[str, Any]:
-    steps: List[StepResult] = []
+def run_smoke(strict_endpoints: bool) -> dict[str, Any]:
+    steps: list[StepResult] = []
 
     steps.extend(_check_config_paths())
 

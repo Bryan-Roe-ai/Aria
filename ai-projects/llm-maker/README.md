@@ -5,6 +5,7 @@ LLM Maker is a comprehensive framework that enables Large Language Models to aut
 ## 🎨 New: Web Interfaces
 
 ### Tool Maker UI
+
 **User-friendly web interface for creating and testing AI tools!**
 
 ```bash
@@ -14,6 +15,7 @@ python web_server.py
 ```
 
 ### Website Maker UI
+
 **AI-powered automated website generator!**
 
 ```bash
@@ -27,6 +29,7 @@ See [WEB_UI_README.md](WEB_UI_README.md) and [WEBSITE_MAKER_README.md](WEBSITE_M
 ## 🎯 Overview
 
 LLM Maker allows LLMs to:
+
 - **Create Tools**: Generate Python functions from natural language descriptions
 - **Validate Tools**: Automatically verify generated code for safety and correctness
 - **Execute Tools**: Run tools in a sandboxed environment with resource limits
@@ -79,6 +82,7 @@ Start the LLM Maker MCP server:
 ```
 
 Available MCP tools:
+
 - `create_tool` - Generate a new tool from description
 - `validate_tool` - Check if a tool is safe to use
 - `execute_tool` - Run a registered tool
@@ -112,6 +116,7 @@ LLM Maker uses AI providers (Azure OpenAI, OpenAI, or local models) to generate 
 ### Safety Validation
 
 All generated tools are validated for:
+
 - **No dangerous imports** (os, subprocess, sys, etc.)
 - **No file system access** (open, write, delete)
 - **No network access** (requests, urllib, socket)
@@ -121,6 +126,7 @@ All generated tools are validated for:
 ### Sandboxed Execution
 
 Tools run in a restricted environment:
+
 - Limited execution time (default: 5 seconds)
 - Memory limits
 - No access to system resources

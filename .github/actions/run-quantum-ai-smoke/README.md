@@ -14,6 +14,6 @@ Wrapper around `quantum-ai/scripts/smoke_quantum_code_llm.py`.
 
 - uses: ./.github/actions/run-quantum-ai-smoke
   with:
-    backend: classical
-    epochs: '1'
+      backend: classical
+      epochs: "1"
 ```

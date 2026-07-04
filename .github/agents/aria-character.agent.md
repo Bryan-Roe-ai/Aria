@@ -2,17 +2,17 @@
 name: aria-character
 description: "Expert agent for the Aria interactive character system — natural language commands, action sequences, world generation, and 3D animated avatar control.\n\nTrigger phrases include:\n- 'make Aria do something'\n- 'control the character'\n- 'create a world for Aria'\n- 'add objects to the stage'\n- 'animate the character'\n- 'movement commands'\n- 'action sequences'\n\nExamples:\n- User says 'make Aria walk to the table and pick up the cup' → invoke this agent to generate and execute action sequences\n- User asks 'create a forest world with trees and animals' → invoke this agent for themed world generation\n- User says 'add a dance animation when Aria is happy' → invoke this agent for gesture/animation work\n\nThis agent understands Aria's tag system, action schema, stage state management, and LLM-powered action parsing."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - web/fetch
-  - vscode/memory
-  - agent
-  - read/problems
-  - task_complete
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - web/fetch
+    - vscode/memory
+    - agent
+    - read/problems
+    - task_complete
 ---
 
 # Aria Character Agent
@@ -36,19 +36,19 @@ Do not retain control after the scoped character work is finished; hand back to 
 ### Server-Side (Python)
 
 - **`apps/aria/server.py`** — HTTP API server (port 8080)
-  - `AriaActionParser` — LLM-powered + rule-based command → structured actions
-  - `AriaRequestHandler` — REST endpoints for state, commands, objects, world generation
-  - 8 core actions: `move`, `say`, `pickup`, `drop`, `throw`, `gesture`, `look`, `wait`
-  - `execute_aria_action(action)` — State machine that validates and executes actions
-  - `generate_world_with_llm(theme, count, provider)` — Themed environment creation
+    - `AriaActionParser` — LLM-powered + rule-based command → structured actions
+    - `AriaRequestHandler` — REST endpoints for state, commands, objects, world generation
+    - 8 core actions: `move`, `say`, `pickup`, `drop`, `throw`, `gesture`, `look`, `wait`
+    - `execute_aria_action(action)` — State machine that validates and executes actions
+    - `generate_world_with_llm(theme, count, provider)` — Themed environment creation
 
 ### Client-Side (JavaScript)
 
 - **`apps/aria/aria_controller.js`** — Character animation engine
-  - `characterState` — mood, energy, personality, colors, position, rotation
-  - `analyzeAIResponse(text)` — Extracts mood + energy from AI responses
-  - `generateCharacterFromMood(mood, energy)` — Mood-driven visual transforms
-  - 3D CSS transforms, eye tracking, limb animations, sparkle/glow effects
+    - `characterState` — mood, energy, personality, colors, position, rotation
+    - `analyzeAIResponse(text)` — Extracts mood + energy from AI responses
+    - `generateCharacterFromMood(mood, energy)` — Mood-driven visual transforms
+    - 3D CSS transforms, eye tracking, limb animations, sparkle/glow effects
 
 ### Aria Web Module
 
@@ -71,23 +71,23 @@ Aria uses `[aria:action:param]` tags embedded in text responses:
 
 ```json
 {
-  "move": {
-    "params": ["target", "speed"],
-    "example": { "action": "move", "target": "center", "speed": "walk" }
-  },
-  "say": {
-    "params": ["text", "emotion"],
-    "example": { "action": "say", "text": "Hello!", "emotion": "happy" }
-  },
-  "pickup": { "params": ["object_id"] },
-  "drop": { "params": ["position"] },
-  "throw": { "params": ["target", "force"] },
-  "gesture": {
-    "params": ["gesture_type"],
-    "valid": ["wave", "thumbs_up", "clap", "shrug", "bow", "nod"]
-  },
-  "look": { "params": ["target"] },
-  "wait": { "params": ["duration"] }
+    "move": {
+        "params": ["target", "speed"],
+        "example": { "action": "move", "target": "center", "speed": "walk" }
+    },
+    "say": {
+        "params": ["text", "emotion"],
+        "example": { "action": "say", "text": "Hello!", "emotion": "happy" }
+    },
+    "pickup": { "params": ["object_id"] },
+    "drop": { "params": ["position"] },
+    "throw": { "params": ["target", "force"] },
+    "gesture": {
+        "params": ["gesture_type"],
+        "valid": ["wave", "thumbs_up", "clap", "shrug", "bow", "nod"]
+    },
+    "look": { "params": ["target"] },
+    "wait": { "params": ["duration"] }
 }
 ```
 
@@ -103,14 +103,14 @@ stage_state = {
 
 ## API Endpoints
 
-| Method | Path | Purpose |
+| Method | Path                | Purpose                            |
 | ------ | ------------------- | ---------------------------------- |
-| GET | `/api/aria/state` | Full character + environment state |
-| GET | `/api/aria/objects` | Current objects |
-| POST | `/api/aria/command` | NL command → tags/actions |
-| POST | `/api/aria/execute` | Auto-execute action sequences |
-| POST | `/api/aria/object` | Add/update/remove objects |
-| POST | `/api/aria/world` | LLM-powered world generation |
+| GET    | `/api/aria/state`   | Full character + environment state |
+| GET    | `/api/aria/objects` | Current objects                    |
+| POST   | `/api/aria/command` | NL command → tags/actions          |
+| POST   | `/api/aria/execute` | Auto-execute action sequences      |
+| POST   | `/api/aria/object`  | Add/update/remove objects          |
+| POST   | `/api/aria/world`   | LLM-powered world generation       |
 
 ## Key Patterns
 
@@ -126,15 +126,15 @@ forest, space, ocean, lab, medieval, desert, garden, cyberpunk, arcade
 
 ## Files to Reference
 
-| Change | File |
+| Change                         | File                                                                |
 | ------------------------------ | ------------------------------------------------------------------- |
-| Server APIs & action execution | `apps/aria/server.py` |
-| Client animations & rendering | `apps/aria/aria_controller.js` |
-| Character UI | `apps/aria/index.html` |
-| Auto-execute UI | `apps/aria/auto-execute.html` |
-| Aria web module | `aria_web/server.py` |
-| E2E tests | `tests/test_ui_playwright.py`, `tests/test_ui_pyppeteer.py` |
-| Unit tests | `tests/test_aria_server.py`, `tests/test_object_api_integration.py` |
+| Server APIs & action execution | `apps/aria/server.py`                                               |
+| Client animations & rendering  | `apps/aria/aria_controller.js`                                      |
+| Character UI                   | `apps/aria/index.html`                                              |
+| Auto-execute UI                | `apps/aria/auto-execute.html`                                       |
+| Aria web module                | `aria_web/server.py`                                                |
+| E2E tests                      | `tests/test_ui_playwright.py`, `tests/test_ui_pyppeteer.py`         |
+| Unit tests                     | `tests/test_aria_server.py`, `tests/test_object_api_integration.py` |
 
 ## Safety Rules
 

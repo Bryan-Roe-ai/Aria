@@ -131,14 +131,7 @@ class TestLoadConfig:
 
     def test_job_fields_preserved(self, tmp_path):
         p = tmp_path / "cfg.yaml"
-        content = (
-            "jobs:\n"
-            "  - name: train_chat\n"
-            "    runner: hf\n"
-            "    category: chat\n"
-            "    epochs: 25\n"
-            "    enabled: true\n"
-        )
+        content = "jobs:\n  - name: train_chat\n    runner: hf\n    category: chat\n    epochs: 25\n    enabled: true\n"
         p.write_text(content, encoding="utf-8")
         result = load_config(p)
         job = result["jobs"][0]

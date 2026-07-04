@@ -101,33 +101,33 @@ Key Copilot-related settings:
 
 ```json
 {
-  // Copilot Chat Agent Configuration
-  "chat.agent.maxRequests": 200,
+    // Copilot Chat Agent Configuration
+    "chat.agent.maxRequests": 200,
 
-  // Python Analysis for Code Intelligence
-  "python.analysis.extraPaths": [
-    "./ai-projects/llm-maker/src",
-    "./aria_web",
-    "./tests/test_",
-    "./ai-projects/quantum-ml/src"
-  ],
-  "python.analysis.autoImportCompletions": true,
+    // Python Analysis for Code Intelligence
+    "python.analysis.extraPaths": [
+        "./ai-projects/llm-maker/src",
+        "./aria_web",
+        "./tests/test_",
+        "./ai-projects/quantum-ml/src"
+    ],
+    "python.analysis.autoImportCompletions": true,
 
-  // MCP Server Sampling (Model routing)
-  "chat.mcp.serverSampling": {
-    "Aria/.vscode/mcp.json: phi-model-server": {
-      "allowedModels": [
-        "copilot/auto",
-        "copilot/gpt-4o",
-        "copilot/claude-opus-4.6",
-        "copilot/gemini-2.5-pro"
-      ]
-    }
-  },
+    // MCP Server Sampling (Model routing)
+    "chat.mcp.serverSampling": {
+        "Aria/.vscode/mcp.json: phi-model-server": {
+            "allowedModels": [
+                "copilot/auto",
+                "copilot/gpt-4o",
+                "copilot/claude-opus-4.6",
+                "copilot/gemini-2.5-pro"
+            ]
+        }
+    },
 
-  // Testing Configuration for Copilot-aware test discovery
-  "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["-v", "--tb=short", "--no-header"]
+    // Testing Configuration for Copilot-aware test discovery
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": ["-v", "--tb=short", "--no-header"]
 }
 ```
 
@@ -137,36 +137,41 @@ The MCP (Model Context Protocol) configuration connects Copilot to specialized s
 
 ```json
 {
-  "servers": {
-    "quantum-ai": {
-      "description": "Quantum ML pipelines, circuit design, and Azure Quantum integration",
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml"
-      }
-    },
-    "llm-maker": {
-      "description": "Safe LLM-powered code generation and website creation",
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
-      }
-    },
-    "task-complete": {
-      "description": "Task completion tracking and artifact management",
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"]
+    "servers": {
+        "quantum-ai": {
+            "description": "Quantum ML pipelines, circuit design, and Azure Quantum integration",
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml"
+            }
+        },
+        "llm-maker": {
+            "description": "Safe LLM-powered code generation and website creation",
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
+            }
+        },
+        "task-complete": {
+            "description": "Task completion tracking and artifact management",
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"]
+        }
     }
-  }
 }
 ```
 
 **How MCP Servers Work**:
+
 - Copilot Chat automatically discovers and loads these servers
 - Each server exposes domain-specific tools and capabilities
 - Tools appear in Copilot Chat's tool suggestions
@@ -178,54 +183,63 @@ Aria includes **20+ specialized agents** for different development workflows. Ea
 
 ### Core Agents
 
-| Agent | Purpose | Trigger Phrases |
-| ------- | --------- | ---------------- |
-| `ai.agent.md` | Primary autonomous agent for task decomposition | "break this down", "reason through this" |
-| `aria-character.agent.md` | Aria interactive character control | "make Aria", "create a world", "action sequence" |
-| `autonomous-trainer.agent.md` | LoRA training & model lifecycle | "train a model", "fine-tune", "evaluate models" |
-| `ai-architect.agent.md` | AI system architecture & design | "design an AI pipeline", "plan the architecture" |
-| `full-stack-debugger.agent.md` | Cross-stack issue diagnosis | "debug this", "why is this failing", "troubleshoot" |
+| Agent                          | Purpose                                         | Trigger Phrases                                     |
+| ------------------------------ | ----------------------------------------------- | --------------------------------------------------- |
+| `ai.agent.md`                  | Primary autonomous agent for task decomposition | "break this down", "reason through this"            |
+| `aria-character.agent.md`      | Aria interactive character control              | "make Aria", "create a world", "action sequence"    |
+| `autonomous-trainer.agent.md`  | LoRA training & model lifecycle                 | "train a model", "fine-tune", "evaluate models"     |
+| `ai-architect.agent.md`        | AI system architecture & design                 | "design an AI pipeline", "plan the architecture"    |
+| `full-stack-debugger.agent.md` | Cross-stack issue diagnosis                     | "debug this", "why is this failing", "troubleshoot" |
 
 ### Specialized Agents
 
 **Training & ML**:
+
 - `AI_model_training.agent.md` — End-to-end training workflow
 - `autonomous-trainer.agent.md` — Autonomous training orchestration
 - `data-pipeline.agent.md` — Batch evaluation & dataset curation
 
 **Chat & Memory**:
+
 - `chat-provider.agent.md` — Multi-provider chat integration
 - `AI_chat_development.agent.md` — Chat system development
 
 **Quantum**:
+
 - `Quantum_ML_development.agent.md` — Quantum circuits & Azure Quantum
 
 **Character & UI**:
+
 - `Aria_character_development.agent.md` — Character system & animations
 - `aria-character.agent.md` — Real-time character control
 
 **Code Generation**:
+
 - `llm-maker.agent.md` — Safe tool & website generation
 - `automated-code-fixer.agent.md` — Autonomous code improvements
 
 **Platform Operations**:
+
 - `platform-ops.agent.md` — Subscriptions, monitoring, deployment
 - `vision-ai.agent.md` — Vision inference & expression classification
 
 ### How to Use Agents
 
 **In Copilot Chat:**
+
 ```
 @aria-character Walk Aria to the table and pick up the sphere
 ```
 
 **Or select from dropdown:**
+
 1. Open Copilot Chat (`Ctrl+Shift+I`)
 2. Click the agent dropdown
 3. Select the agent you want
 4. Type your request
 
 **Agent Selection Tips**:
+
 - **Unsure?** Start with `@ai` (primary agent) — it will route to specialists automatically
 - **Know the domain?** Pick the specialized agent directly for better context
 - **Complex task?** Use `@ai` for automatic task decomposition and delegat­ion
@@ -251,36 +265,45 @@ MCP servers start automatically when you open the project in VS Code. To manuall
 ### Available MCP Tools
 
 #### Quantum AI Server
+
 Provides quantum circuit design, simulation, and Azure Quantum integration:
+
 - Create quantum circuits (QASM format)
 - Simulate circuits locally (Qiskit Aer)
 - Submit jobs to Azure Quantum
 - Cost estimation and safety gates
 
 **Example**:
+
 ```
 @quantum-ai Design a Bell state circuit and simulate it
 ```
 
 #### LLM Maker Server
+
 Safe, validated code and website generation:
+
 - Generate Python functions with AST validation
 - Create complete HTML/CSS/JS websites
 - Built-in safety checks (no dangerous imports)
 - Retry & regeneration on validation failure
 
 **Example**:
+
 ```
 @llm-maker Create a Python function that validates email addresses
 ```
 
 #### Task Complete Server
+
 Task tracking and completion management:
+
 - Mark tasks as complete with summaries
 - Track task status and artifacts
 - Manage memory and history
 
 **Example**:
+
 ```
 @task-complete Mark this training run as complete with evaluation results
 ```
@@ -290,23 +313,28 @@ Task tracking and completion management:
 If MCP servers don't appear in Copilot Chat:
 
 1. **Check server status**:
-   ```bash
-   # Look for server processes
-   ps aux | grep "quantum_mcp_server\|llm_maker_mcp_server\|task_complete_mcp_server"
-   ```
+
+    ```bash
+    # Look for server processes
+    ps aux | grep "quantum_mcp_server\|llm_maker_mcp_server\|task_complete_mcp_server"
+    ```
 
 2. **Test individual server**:
-   ```bash
-  .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
-   ```
+    ```bash
+
+    ```
+
+.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
+
+```
 
 3. **Verify configuration**:
-   - Open VS Code settings: `Ctrl+,`
-   - Search for "mcp"
-   - Check `.vscode/mcp.json` exists and is valid JSON
+- Open VS Code settings: `Ctrl+,`
+- Search for "mcp"
+- Check `.vscode/mcp.json` exists and is valid JSON
 
 4. **Reload window**:
-   - `Ctrl+Shift+P` → "Developer: Reload Window"
+- `Ctrl+Shift+P` → "Developer: Reload Window"
 
 ## Skills & Workflows
 
@@ -342,9 +370,11 @@ Aria includes **34+ skill workflows** in `.github/skills/` for structured proble
 Copilot automatically applies relevant skills based on your request. You can also explicitly reference them:
 
 ```
+
 Use the safe-refactor-workflow to refactor the chat_providers module
 Use the test-first-bugfix-workflow to fix the failing token_utils tests
 Use the platform-health-triage-workflow to diagnose why services are degraded
+
 ```
 
 **Skills are loaded automatically** based on:
@@ -394,8 +424,10 @@ Aria includes **20+ specialized prompts** in `.github/prompts/` that guide Copil
 
 **Explicit reference**:
 ```
+
 Use the agi.prompt for autonomous long-running work requiring internal reasoning
 Use the debug.prompt to systematically diagnose this error
+
 ```
 
 **Implicit loading**:
@@ -416,12 +448,14 @@ Use the debug.prompt to systematically diagnose this error
 ### 2. Provide Context
 
 ```
+
 Good: "Make Aria walk to the table and pick up the sphere"
 Better: "In stage mode, make Aria walk to the table at coordinates (5,5) and pick up the blue sphere object"
 
 Good: "Fix the failing test"
 Better: "The test_chat_streaming test is failing with timeout in the SSE response handler. Use the test-first-bugfix-workflow to reproduce and fix it."
-```
+
+````
 
 ### 3. Use the Right Tools
 
@@ -514,23 +548,24 @@ Edit `.vscode/settings.json` to route requests to specific models:
     }
   }
 }
-```
+````
 
 ### Adding New Agents
 
 1. Create `/.github/agents/my-agent.agent.md`:
-   ```yaml
-   ---
-   name: my-agent
-   description: "What this agent does"
-   tools:
-     - edit
-     - vscode/runCommand
-     - execute/runInTerminal
-   ---
-   # My Custom Agent
-   Description and behavior...
-   ```
+
+    ```yaml
+    ---
+    name: my-agent
+    description: "What this agent does"
+    tools:
+        - edit
+        - vscode/runCommand
+        - execute/runInTerminal
+    ---
+    # My Custom Agent
+    Description and behavior...
+    ```
 
 2. Reload VS Code
 3. Agent appears in dropdown
@@ -539,16 +574,18 @@ Edit `.vscode/settings.json` to route requests to specific models:
 
 1. Create MCP server script (Python, Node.js, etc.)
 2. Add to `.vscode/mcp.json`:
-   ```json
-   {
-     "servers": {
-       "my-server": {
-         "type": "stdio",
-         "command": "${workspaceFolder}/.venv/bin/python",
-         "args": ["./path/to/server.py"]
-       }
-     }
-   }
+    ```json
+    {
+        "servers": {
+            "my-server": {
+                "type": "stdio",
+                "command": "${workspaceFolder}/.venv/bin/python",
+                "args": ["./path/to/server.py"]
+            }
+        }
+    }
+    ```
+
 ```
 
 3. Reload VS Code
@@ -572,3 +609,4 @@ For issues or questions:
 ---
 
 **Happy coding with Aria's Copilot integration! 🚀**
+```

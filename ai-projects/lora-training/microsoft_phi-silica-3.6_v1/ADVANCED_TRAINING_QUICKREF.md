@@ -12,7 +12,6 @@ python scripts\run_pipeline.py --input-dataset ..\..\datasets\chat\dolly\train.j
 
 ## 📊 Individual Tools
 
-
 ### GPU Optimizer
 
 ```bash
@@ -22,7 +21,6 @@ python scripts\gpu_optimizer.py --update-config lora\lora.yaml
 # Custom settings
 python scripts\gpu_optimizer.py --model-size 7.0 --memory-usage 0.8
 ```
-
 
 ### Semantic Pruning
 
@@ -34,7 +32,6 @@ python scripts\semantic_pruning.py --input raw.jsonl --output clean.jsonl
 python scripts\semantic_pruning.py --input raw.jsonl --output clean.jsonl --similarity-threshold 0.90 --quality-threshold 0.5
 ```
 
-
 ### Auto Evaluation
 
 ```bash
@@ -45,18 +42,11 @@ python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --metrics perplexity inference_time bleu rouge
 ```
 
-
-
-
-
-
-
 #### Quality Metrics (BLEU / ROUGE)
 
 BLEU and ROUGE are optional; they require extra packages. If the libraries are not installed the script will gracefully skip them and report `null`.
 
 Install (recommended):
-
 
 ```bash
 pip install rouge-score sacrebleu
@@ -64,8 +54,7 @@ pip install rouge-score sacrebleu
 
 Usage examples:
 
-
-```bash
+````bash
 # Minimal (only speed + perplexity)
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --metrics perplexity inference_time
 
@@ -111,7 +100,7 @@ Example with semantic retrieval (after installing sentence-transformers):
 ```bash
 pip install sentence-transformers
 python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datasets --rebuild-index --interactive
-```
+````
 
 ## 📁 Output Structure
 
@@ -130,7 +119,6 @@ data_out/
 
 ## 💡 Common Patterns
 
-
 ### Pattern 1: Quick Iteration
 
 ```bash
@@ -140,7 +128,6 @@ python scripts\gpu_optimizer.py --update-config lora\lora.yaml
 python scripts\train_lora.py --dataset data --config lora\lora.yaml --max-train-samples 64
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --num-samples 10
 ```
-
 
 ### Pattern 2: Production Training
 
@@ -153,9 +140,7 @@ python scripts\train_lora.py --dataset data --config lora\lora.yaml
 python scripts\auto_eval.py --model data_out\lora_training --dataset test.jsonl --num-samples 500 --metrics perplexity inference_time bleu rouge
 ```
 
-
 ### Pattern 3: RAG Deployment
-
 
 ```bash
 # Train + RAG
@@ -163,7 +148,6 @@ python scripts\train_lora.py --dataset data --config lora\lora.yaml
 python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datasets --rebuild-index
 python scripts\rag_pipeline.py --model data_out\lora_training --docs ..\..\datasets --interactive
 ```
-
 
 ### Pattern 4: Full Orchestrated Pipeline With Metrics
 
@@ -178,12 +162,12 @@ python scripts\run_pipeline.py \
 
 ## 🔧 Troubleshooting
 
-| Problem | Solution |
-| --------- | ---------- |
-| Out of memory | `python scripts\gpu_optimizer.py --memory-usage 0.6` |
-| Slow training | Check GPU profile, enable BF16/FP16 |
-| Poor eval scores | More aggressive pruning, longer training |
-| RAG not working | `pip install sentence-transformers` |
+| Problem          | Solution                                             |
+| ---------------- | ---------------------------------------------------- |
+| Out of memory    | `python scripts\gpu_optimizer.py --memory-usage 0.6` |
+| Slow training    | Check GPU profile, enable BF16/FP16                  |
+| Poor eval scores | More aggressive pruning, longer training             |
+| RAG not working  | `pip install sentence-transformers`                  |
 
 ## 📦 Optional Dependencies
 
@@ -214,4 +198,5 @@ pip install flash-attn --no-build-isolation
 See `ADVANCED_TRAINING_GUIDE.md` for complete details.
 
 ---
+
 Last updated: (auto) Added BLEU/ROUGE guidance, RAG tuning tips, pipeline metrics examples.

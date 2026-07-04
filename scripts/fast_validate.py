@@ -9,20 +9,21 @@ Examples:
   python scripts/fast_validate.py --check Dependencies --quiet
   python scripts/fast_validate.py --list-checks
 """
+
 from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 import time
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Sequence
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-_CRITICAL_FAILURES: Dict[str, set[str]] = {
+_CRITICAL_FAILURES: dict[str, set[str]] = {
     "Datasets": {"missing", "empty"},
     "Scripts": {"missing_scripts"},
     "Output Dirs": {"write_issues"},
@@ -36,12 +37,11 @@ def is_critical_failure(check_name: str, status: str) -> bool:
     return status in _CRITICAL_FAILURES.get(check_name, set())
 
 
-def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+def summarize_results(results: list[dict[str, Any]]) -> dict[str, Any]:
     """Build summary metadata for fast-validate checks."""
     total = len(results)
     ok_count = sum(1 for r in results if r.get("status") == "ok")
-    critical_failures = [r for r in results if is_critical_failure(
-        str(r.get("check", "")), str(r.get("status", "")))]
+    critical_failures = [r for r in results if is_critical_failure(str(r.get("check", "")), str(r.get("status", "")))]
     warning_count = total - ok_count - len(critical_failures)
 
     return {
@@ -53,7 +53,7 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def quick_check_datasets() -> Dict[str, Any]:
+def quick_check_datasets() -> dict[str, Any]:
     """Lightning-fast dataset existence check (no JSONL parsing)."""
     datasets_dir = REPO_ROOT / "datasets"
     if not datasets_dir.exists():
@@ -73,7 +73,7 @@ def quick_check_datasets() -> Dict[str, Any]:
     }
 
 
-def quick_check_scripts() -> Dict[str, Any]:
+def quick_check_scripts() -> dict[str, Any]:
     """Verify critical scripts exist without importing."""
     critical = [
         "autotrain.py",
@@ -92,7 +92,7 @@ def quick_check_scripts() -> Dict[str, Any]:
     }
 
 
-def quick_check_venv() -> Dict[str, Any]:
+def quick_check_venv() -> dict[str, Any]:
     """Check Python virtual environments exist without inspecting packages."""
     venv_markers = [
         ".venv/Scripts/python.exe",
@@ -113,7 +113,7 @@ def quick_check_venv() -> Dict[str, Any]:
     }
 
 
-def quick_check_outputs() -> Dict[str, Any]:
+def quick_check_outputs() -> dict[str, Any]:
     """Verify output directories writable without listing all files."""
     output_dirs = ["data_out", "deployed_models"]
     issues = []
@@ -133,19 +133,18 @@ def quick_check_outputs() -> Dict[str, Any]:
     }
 
 
-def quick_check_configs() -> Dict[str, Any]:
+def quick_check_configs() -> dict[str, Any]:
     """Verify critical YAML configs parse without error."""
     import importlib
     import importlib.util
 
-    yaml_mod = importlib.import_module(
-        "yaml") if importlib.util.find_spec("yaml") else None
+    yaml_mod = importlib.import_module("yaml") if importlib.util.find_spec("yaml") else None
 
     configs = [
         "config/autonomous_training.yaml",
         "config/master_orchestrator.yaml",
     ]
-    issues: List[str] = []
+    issues: list[str] = []
     for cfg in configs:
         path = REPO_ROOT / cfg
         if not path.exists():
@@ -165,11 +164,11 @@ def quick_check_configs() -> Dict[str, Any]:
     }
 
 
-def quick_check_providers() -> Dict[str, Any]:
+def quick_check_providers() -> dict[str, Any]:
     """Check which chat providers have required env vars present (no connections)."""
     import os
 
-    providers: Dict[str, bool] = {}
+    providers: dict[str, bool] = {}
     providers["azure_openai"] = all(
         os.environ.get(k)
         for k in [
@@ -192,7 +191,7 @@ def quick_check_providers() -> Dict[str, Any]:
     }
 
 
-def quick_check_ai_tokens() -> Dict[str, Any]:
+def quick_check_ai_tokens() -> dict[str, Any]:
     """Check token automation status produced by generate_ai_tokens.py.
 
     Reads data_out/ai_token_status.json (if present) and reports whether at
@@ -280,14 +279,14 @@ def _spec_exists_in_python(module_name: str, python_exe: Path) -> bool:
     cmd = [
         str(python_exe),
         "-c",
-        ("import importlib.util,sys; " "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"),
+        ("import importlib.util,sys; sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"),
         module_name,
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
     return proc.returncode == 0
 
 
-def quick_check_dependencies() -> Dict[str, Any]:
+def quick_check_dependencies() -> dict[str, Any]:
     """Verify key Python packages are importable (no heavy loads)."""
     import importlib.util
 
@@ -305,8 +304,7 @@ def quick_check_dependencies() -> Dict[str, Any]:
         available_in_project_venv = False
         if not available_here and project_python is not None:
             try:
-                available_in_project_venv = _spec_exists_in_python(
-                    pkg, project_python)
+                available_in_project_venv = _spec_exists_in_python(pkg, project_python)
             except Exception:
                 available_in_project_venv = False
 
@@ -315,7 +313,7 @@ def quick_check_dependencies() -> Dict[str, Any]:
         else:
             missing.append(pkg)
 
-    details: Dict[str, Any] = {
+    details: dict[str, Any] = {
         "status": "ok" if not missing else "missing_deps",
         "present": present,
         "missing": missing,
@@ -327,7 +325,7 @@ def quick_check_dependencies() -> Dict[str, Any]:
     return details
 
 
-CHECKS: dict[str, Callable[[], Dict[str, Any]]] = {
+CHECKS: dict[str, Callable[[], dict[str, Any]]] = {
     "Datasets": quick_check_datasets,
     "Scripts": quick_check_scripts,
     "Virtual Envs": quick_check_venv,
@@ -376,7 +374,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _resolve_checks(selected: Sequence[str] | None) -> list[tuple[str, Callable[[], Dict[str, Any]]]]:
+def _resolve_checks(selected: Sequence[str] | None) -> list[tuple[str, Callable[[], dict[str, Any]]]]:
     if not selected:
         return list(CHECKS.items())
     missing = [name for name in selected if name not in CHECKS]
@@ -463,8 +461,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     elif args.quiet:
         print(f"all_ok={all_ok} results={output_path.relative_to(REPO_ROOT)}")
 
-    print(
-        f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
+    print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
     sys.exit(0 if all_ok else 1)
 
 

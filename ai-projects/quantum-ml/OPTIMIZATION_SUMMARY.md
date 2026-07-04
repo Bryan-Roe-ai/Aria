@@ -12,12 +12,12 @@
 
 We ran comprehensive experiments testing different layer depths:
 
-| Configuration | Accuracy | Verdict |
-| --------------- | ---------- | --------- |
-| 1 layer | 67.5% | ❌ Too simple |
-| **2 layers** | **87.5%** | ✅ **OPTIMAL** |
-| 3 layers | 75.0% | ⚠️ Overfitting starts |
-| 4 layers | 67.5% | ❌ Clear overfitting |
+| Configuration | Accuracy  | Verdict               |
+| ------------- | --------- | --------------------- |
+| 1 layer       | 67.5%     | ❌ Too simple         |
+| **2 layers**  | **87.5%** | ✅ **OPTIMAL**        |
+| 3 layers      | 75.0%     | ⚠️ Overfitting starts |
+| 4 layers      | 67.5%     | ❌ Clear overfitting  |
 
 **Key Finding:** 2 layers is the sweet spot for your data!
 
@@ -29,16 +29,16 @@ Your quantum AI now uses these validated settings:
 
 ```yaml
 Quantum Circuit:
-- Qubits: 4
-- Layers: 2 (experimentally validated as optimal)
-- Entanglement: linear
-- Backend: PennyLane default.qubit
+    - Qubits: 4
+    - Layers: 2 (experimentally validated as optimal)
+    - Entanglement: linear
+    - Backend: PennyLane default.qubit
 
 Training Parameters:
-- Epochs: 100
-- Learning Rate: 0.01 (balanced convergence)
-- Batch Size: 32
-- Optimizer: Adam
+    - Epochs: 100
+    - Learning Rate: 0.01 (balanced convergence)
+    - Batch Size: 32
+    - Optimizer: Adam
 ```
 
 ---
@@ -47,12 +47,12 @@ Training Parameters:
 
 ### Current Training Results
 
-| Dataset | Accuracy | Status |
-| --------- | ---------- | -------- |
-| **Iris** | 67.5% | Good baseline |
-| **Imbalanced** | 90.0% | Excellent! |
-| **Wine** | 88.9% | Excellent! |
-| **Moons** | 57.5-87.5%* | Variable (data dependent) |
+| Dataset        | Accuracy    | Status                    |
+| -------------- | ----------- | ------------------------- |
+| **Iris**       | 67.5%       | Good baseline             |
+| **Imbalanced** | 90.0%       | Excellent!                |
+| **Wine**       | 88.9%       | Excellent!                |
+| **Moons**      | 57.5-87.5%* | Variable (data dependent) |
 
 \* Performance varies with random initialization and data splits
 
@@ -71,24 +71,24 @@ During parameter tuning experiments:
 ### What We Learned
 
 1. **Layer Depth is Critical**
-   - Too few layers (1): Underfitting, limited expressivity
-   - Just right (2): Optimal balance, best generalization
-   - Too many (3-4): Overfitting, worse performance
+    - Too few layers (1): Underfitting, limited expressivity
+    - Just right (2): Optimal balance, best generalization
+    - Too many (3-4): Overfitting, worse performance
 
 2. **Dataset Size Matters**
-   - For 100-200 samples: 2 layers ideal
-   - Rule of thumb: 1 layer per ~80-100 samples
-   - More layers need proportionally more data
+    - For 100-200 samples: 2 layers ideal
+    - Rule of thumb: 1 layer per ~80-100 samples
+    - More layers need proportionally more data
 
 3. **Training Stability**
-   - 2-layer model shows smooth convergence
-   - No gradient instability
-   - Consistent performance across runs
+    - 2-layer model shows smooth convergence
+    - No gradient instability
+    - Consistent performance across runs
 
 4. **Quantum Advantage**
-   - Works best on: Imbalanced data (90%), Real-world data (88.9%)
-   - Challenges: Highly non-linear spirals (37.5%)
-   - Sweet spot: Medium complexity classification tasks
+    - Works best on: Imbalanced data (90%), Real-world data (88.9%)
+    - Challenges: Highly non-linear spirals (37.5%)
+    - Sweet spot: Medium complexity classification tasks
 
 ---
 
@@ -126,17 +126,17 @@ Result: 2 layers optimal (87.5% accuracy)
 All plots saved to `results/experiments/`:
 
 1. **experiment1_layer_depth.png**
-   - Shows accuracy vs. number of layers
-   - Clear peak at 2 layers
-   - Visual confirmation of optimization
+    - Shows accuracy vs. number of layers
+    - Clear peak at 2 layers
+    - Visual confirmation of optimization
 
 2. **training_moons.png**
-   - Training and validation curves
-   - Convergence dynamics
+    - Training and validation curves
+    - Convergence dynamics
 
 3. **model_comparison.png**
-   - Cross-dataset performance
-   - Identifies quantum advantage areas
+    - Cross-dataset performance
+    - Identifies quantum advantage areas
 
 ---
 
@@ -146,51 +146,51 @@ All plots saved to `results/experiments/`:
 
 1. **Continue Parameter Tuning** 🔄
 
-   ```bash
-   python .\experiments\parameter_tuning.py
-   ```
+    ```bash
+    python .\experiments\parameter_tuning.py
+    ```
 
-   - Test learning rates: [0.001, 0.005, 0.01, 0.05]
-   - Test entanglement: [linear, circular, full]
-   - Potentially +5-10% more improvement
+    - Test learning rates: [0.001, 0.005, 0.01, 0.05]
+    - Test entanglement: [linear, circular, full]
+    - Potentially +5-10% more improvement
 
 2. **Scale Up Qubits** 📈
 
-   ```yaml
-   # Try in quantum_config.yaml:
-   n_qubits: 6  # or 8
-   ```
+    ```yaml
+    # Try in quantum_config.yaml:
+    n_qubits: 6 # or 8
+    ```
 
-   - More expressivity for complex patterns
-   - Target spiral dataset (currently 37.5%)
+    - More expressivity for complex patterns
+    - Target spiral dataset (currently 37.5%)
 
 3. **Implement Data Re-uploading** 🔁
-   - Advanced quantum ML technique
-   - Can boost accuracy 10-15%
-   - Particularly helps with non-linear problems
+    - Advanced quantum ML technique
+    - Can boost accuracy 10-15%
+    - Particularly helps with non-linear problems
 
 ### Medium-Term Goals
 
 1. **Deploy to Azure Quantum** ☁️
 
-   ```bash
-   # See deployment guide:
-   experiments/AZURE_QUICKSTART.md
-   ```
+    ```bash
+    # See deployment guide:
+    experiments/AZURE_QUICKSTART.md
+    ```
 
-   - Test on real quantum hardware
-   - Compare simulator vs. hardware results
-   - Understand noise impact
+    - Test on real quantum hardware
+    - Compare simulator vs. hardware results
+    - Understand noise impact
 
 2. **Ensemble Methods** 🎭
-   - Train multiple quantum circuits
-   - Combine predictions (voting/averaging)
-   - +5-10% accuracy improvement expected
+    - Train multiple quantum circuits
+    - Combine predictions (voting/averaging)
+    - +5-10% accuracy improvement expected
 
 3. **Custom Dataset Testing** 📊
-   - Apply to your specific use case
-   - Validate quantum advantage on real problems
-   - Iterate based on domain requirements
+    - Apply to your specific use case
+    - Validate quantum advantage on real problems
+    - Iterate based on domain requirements
 
 ---
 
@@ -247,22 +247,22 @@ All plots saved to `results/experiments/`:
 ### Best Practices
 
 1. **Always validate experimentally**
-   - Don't assume default settings are optimal
-   - Systematic testing reveals true optima
+    - Don't assume default settings are optimal
+    - Systematic testing reveals true optima
 
 2. **Match model complexity to data size**
-   - 2 layers for 100-200 samples
-   - Scale layers with more data
+    - 2 layers for 100-200 samples
+    - Scale layers with more data
 
 3. **Monitor convergence carefully**
-   - Stable plateau = good generalization
-   - Continuing decline = might need more epochs
-   - Erratic behavior = overfitting or bad hyperparams
+    - Stable plateau = good generalization
+    - Continuing decline = might need more epochs
+    - Erratic behavior = overfitting or bad hyperparams
 
 4. **Quantum circuits behave differently**
-   - More layers ≠ better (unlike classical deep learning)
-   - Quantum entanglement provides non-linearity
-   - Sweet spot is often shallower than expected
+    - More layers ≠ better (unlike classical deep learning)
+    - Quantum entanglement provides non-linearity
+    - Sweet spot is often shallower than expected
 
 ---
 
@@ -349,5 +349,5 @@ Your quantum AI is **optimized and ready for deployment**!
 
 ---
 
-*Generated October 31, 2025*
-*Quantum AI Optimization System*
+_Generated October 31, 2025_
+_Quantum AI Optimization System_

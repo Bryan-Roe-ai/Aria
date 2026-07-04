@@ -27,7 +27,7 @@ import tempfile
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     from .config_paths import resolve_config_path
@@ -73,31 +73,31 @@ class QJob:
     enabled: bool = True
 
     # Dataset / training args
-    preset: Optional[str] = None
-    csv: Optional[str] = None
-    label_col: Optional[str] = None
-    drop_cols: Optional[str] = None
-    epochs: Optional[int] = None
-    batch_size: Optional[int] = None
-    learning_rate: Optional[float] = None
-    test_size: Optional[float] = None
-    n_qubits: Optional[int] = None
+    preset: str | None = None
+    csv: str | None = None
+    label_col: str | None = None
+    drop_cols: str | None = None
+    epochs: int | None = None
+    batch_size: int | None = None
+    learning_rate: float | None = None
+    test_size: float | None = None
+    n_qubits: int | None = None
 
     # Extra arguments for CLI
-    extra_args: List[str] = field(default_factory=list)
+    extra_args: list[str] = field(default_factory=list)
 
     # Azure-specific
-    azure_backend: Optional[str] = None
-    azure_shots: Optional[int] = None
+    azure_backend: str | None = None
+    azure_shots: int | None = None
     azure_confirm_cost: bool = False
 
 
 # Backwards compatible alias expected by tests
-def read_yaml(path: Path) -> Dict[str, Any]:
+def read_yaml(path: Path) -> dict[str, Any]:
     return load_config(path)
 
 
-def _to_int(v: Any) -> Optional[int]:
+def _to_int(v: Any) -> int | None:
     if v is None:
         return None
     try:
@@ -106,7 +106,7 @@ def _to_int(v: Any) -> Optional[int]:
         return None
 
 
-def _to_float(v: Any) -> Optional[float]:
+def _to_float(v: Any) -> float | None:
     if v is None:
         return None
     try:
@@ -124,7 +124,7 @@ def _to_bool(v: Any) -> bool:
     return s in ("1", "true", "yes", "y", "on")
 
 
-def _normalize_list(v: Any) -> List[str]:
+def _normalize_list(v: Any) -> list[str]:
     if v is None:
         return []
     if isinstance(v, list):
@@ -133,7 +133,7 @@ def _normalize_list(v: Any) -> List[str]:
     return [p.strip() for p in str(v).split(",") if p.strip()]
 
 
-def load_jobs(path: Path) -> List[QJob]:
+def load_jobs(path: Path) -> list[QJob]:
     """Load jobs from a YAML path and return a list of QJob objects.
 
     This function accepts the same input used by the CLI and normalises
@@ -141,7 +141,7 @@ def load_jobs(path: Path) -> List[QJob]:
     (pyyaml) and the simple fallback loader used when pyyaml is missing.
     """
     data = read_yaml(path)
-    jobs: List[QJob] = []
+    jobs: list[QJob] = []
     for raw in data.get("jobs", []):
         # Ensure raw is a mapping-like object
         if not isinstance(raw, dict):
@@ -180,7 +180,7 @@ def _python_executable() -> str:
     return sys.executable or "python"
 
 
-def build_command(job: QJob) -> List[str]:
+def build_command(job: QJob) -> list[str]:
     """Build the command line (list form) to execute a QJob.
 
     The function returns an argument list appropriate for subprocess.run.
@@ -226,12 +226,12 @@ def build_command(job: QJob) -> List[str]:
     return cmd
 
 
-def validate_job(job: QJob) -> Dict[str, Any]:
+def validate_job(job: QJob) -> dict[str, Any]:
     """Validate a QJob definition and return a dict with status and missing items.
 
     The returned dict contains keys: status (ok/missing), missing (list).
     """
-    missing: List[str] = []
+    missing: list[str] = []
     # Mode-specific checks
     if job.mode == "train_custom_dataset":
         if not TRAIN_SCRIPT.exists():
@@ -263,7 +263,7 @@ def validate_job(job: QJob) -> Dict[str, Any]:
     return {"status": status, "missing": missing}
 
 
-def collect_status(jobs: List[Dict[str, Any]]) -> Dict[str, Any]:
+def collect_status(jobs: list[dict[str, Any]]) -> dict[str, Any]:
     """Construct status payload (in-memory) used by the CLI and tests."""
     return {
         "generated_at": datetime.now().isoformat() + "Z",
@@ -276,7 +276,7 @@ def collect_status(jobs: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def load_config(path: Path) -> Dict[str, Any]:
+def load_config(path: Path) -> dict[str, Any]:
     """Load YAML config from `path` and return a dict with a `jobs` list.
 
     If PyYAML is available it is used. Otherwise a minimal, conservative
@@ -289,8 +289,8 @@ def load_config(path: Path) -> Dict[str, Any]:
         # Minimal YAML loader fallback: handle a very small subset for tests
         # Prefer PyYAML when available.
         text = path.read_text(encoding="utf-8")
-        jobs: List[Dict[str, Any]] = []
-        current: Dict[str, Any] = {}
+        jobs: list[dict[str, Any]] = []
+        current: dict[str, Any] = {}
         in_jobs = False
         for line in text.splitlines():
             s = line.strip()
@@ -329,19 +329,19 @@ def load_config(path: Path) -> Dict[str, Any]:
     return data
 
 
-def filter_jobs(jobs: List[QJob], name: Optional[str]) -> List[QJob]:
+def filter_jobs(jobs: list[QJob], name: str | None) -> list[QJob]:
     if not name:
         return jobs
     filtered = [j for j in jobs if j.name == name]
     return filtered
 
 
-def _summarize_job(job: QJob) -> Dict[str, Any]:
+def _summarize_job(job: QJob) -> dict[str, Any]:
     """Return a JSON-serializable summary for CLI output and status files."""
     return asdict(job)
 
 
-def dry_run_jobs(jobs: List[QJob]) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+def dry_run_jobs(jobs: list[QJob]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Validate enabled jobs and mark disabled ones as skipped.
 
     Returns:
@@ -349,8 +349,8 @@ def dry_run_jobs(jobs: List[QJob]) -> tuple[List[Dict[str, Any]], List[Dict[str,
         validation. This keeps dry-runs safe by not surfacing disabled QPU jobs as
         hard failures while still validating the active local/simulator path.
     """
-    results: List[Dict[str, Any]] = []
-    failures: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
+    failures: list[dict[str, Any]] = []
 
     for job in jobs:
         summary = _summarize_job(job)
@@ -373,7 +373,7 @@ def dry_run_jobs(jobs: List[QJob]) -> tuple[List[Dict[str, Any]], List[Dict[str,
     return results, failures
 
 
-def _write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
+def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     # Use tempfile to ensure atomic write across filesystems
     with tempfile.NamedTemporaryFile("w", delete=False, dir=str(path.parent), encoding="utf-8") as t:
@@ -382,7 +382,7 @@ def _write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
     tmp.replace(path)
 
 
-def write_status(jobs: List[Dict[str, Any]]) -> None:
+def write_status(jobs: list[dict[str, Any]]) -> None:
     succeeded = sum(1 for job in jobs if job.get("status") == "validated")
     failed = sum(1 for job in jobs if job.get("status") == "missing")
     payload = {
@@ -397,7 +397,7 @@ def write_status(jobs: List[Dict[str, Any]]) -> None:
     _write_json_atomic(STATUS_FILE, payload)
 
 
-def main(argv: Optional[List[str]] = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Quantum AutoRun Orchestrator")
     parser.add_argument("--config", type=str, default=str(DEFAULT_CONFIG), help="Path to YAML config")
     parser.add_argument("--list", action="store_true", help="List jobs as JSON")

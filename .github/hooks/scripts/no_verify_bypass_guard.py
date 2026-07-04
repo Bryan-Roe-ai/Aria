@@ -21,7 +21,8 @@ import json
 import os
 import re
 import sys
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -165,8 +166,7 @@ def main() -> None:
     # For PostToolUse or other events — non-blocking audit warning.
     if event == "PostToolUse" and _has_no_verify(text):
         print(
-            "⚠️  Audit: a `--no-verify` git command was executed; "
-            "verify that all safety gates were satisfied manually.",
+            "⚠️  Audit: a `--no-verify` git command was executed; verify that all safety gates were satisfied manually.",
             file=sys.stderr,
         )
 

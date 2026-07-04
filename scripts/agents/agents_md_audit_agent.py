@@ -51,9 +51,7 @@ class AgentsMdAuditAgent(AutomationAgent):
         stale_date_days: int = STALE_DATE_DAYS,
     ) -> None:
         super().__init__(repo_root=repo_root)
-        self.agents_md_path = (
-            Path(agents_md_path) if agents_md_path is not None else self.repo_root / "AGENTS.md"
-        )
+        self.agents_md_path = Path(agents_md_path) if agents_md_path is not None else self.repo_root / "AGENTS.md"
         self.stale_date_days = stale_date_days
 
     def run(self) -> AgentResult:
@@ -113,8 +111,7 @@ class AgentsMdAuditAgent(AutomationAgent):
                         "kind": "bullet_limit",
                         "section": section_title,
                         "message": (
-                            f"Section has {bullet_count} bullets; "
-                            f"maximum allowed is {MAX_BULLETS_PER_SECTION}."
+                            f"Section has {bullet_count} bullets; maximum allowed is {MAX_BULLETS_PER_SECTION}."
                         ),
                     }
                 )
@@ -169,11 +166,7 @@ class AgentsMdAuditAgent(AutomationAgent):
         section_bullets: dict[str, list[str]] = {}
         ordered_sections = sorted(section_starts.items(), key=lambda item: item[1])
         for position, (section_title, start_index) in enumerate(ordered_sections):
-            end_index = (
-                ordered_sections[position + 1][1]
-                if position + 1 < len(ordered_sections)
-                else len(lines)
-            )
+            end_index = ordered_sections[position + 1][1] if position + 1 < len(ordered_sections) else len(lines)
             bullets: list[str] = []
             for line in lines[start_index + 1 : end_index]:
                 stripped = line.strip()

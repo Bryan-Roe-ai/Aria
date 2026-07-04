@@ -15,15 +15,15 @@ Go to **Settings → Rules → Rulesets → New branch ruleset** and configure:
 3. **Enforcement status**: `Active`
 4. **Branch targeting**: include `main`
 5. Enable rules:
-   - Restrict deletions
-   - Block force pushes
-   - Require a pull request before merging
-   - Require approvals: `1`
-   - Require review from Code Owners
-   - Dismiss stale pull request approvals when new commits are pushed
-   - Require review thread resolution before merge
-   - Require status checks to pass before merging
-   - Required status check: **`Merge Gate / All Gates Passed`**
+    - Restrict deletions
+    - Block force pushes
+    - Require a pull request before merging
+    - Require approvals: `1`
+    - Require review from Code Owners
+    - Dismiss stale pull request approvals when new commits are pushed
+    - Require review thread resolution before merge
+    - Require status checks to pass before merging
+    - Required status check: **`Merge Gate / All Gates Passed`**
 
 ## Option B: Apply JSON via GitHub CLI
 

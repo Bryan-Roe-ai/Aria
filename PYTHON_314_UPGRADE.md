@@ -4,6 +4,7 @@
 **Status**: Configuration Complete - Runtime Upgrade Pending
 
 ## Overview
+
 This document summarizes the complete Python 3.14 upgrade performed on the Aria repository.
 
 ## Changes Made
@@ -11,11 +12,13 @@ This document summarizes the complete Python 3.14 upgrade performed on the Aria 
 ### 1. Core Configuration Files
 
 #### `pyproject.toml`
+
 - ✅ Updated `requires-python` from `>=3.9` → `>=3.14`
 - ✅ Updated `target-version` from `["py310", "py311"]` → `["py314"]`
 - ✅ Updated mypy `python_version` from `3.10` → `3.14`
 
 ### 2. Python Version File
+
 - ✅ Created `.python-version` file with content `3.14.0`
 - This enables automatic Python version switching with `pyenv`, `uv`, and similar tools
 
@@ -23,34 +26,36 @@ This document summarizes the complete Python 3.14 upgrade performed on the Aria 
 
 **Updated 20 workflow files** to use Python 3.14:
 
-| Workflow | Change |
-|----------|--------|
-| ci-pipeline.yml | `3.11` → `3.14` |
-| pr-tests.yml | `3.11` → `3.14` |
-| ci.yml | `3.11` → `3.14` |
-| aria-tests.yml | `['3.10', '3.11', '3.12']` → `['3.12', '3.13', '3.14']` |
-| e2e-tests.yml | `3.11` → `3.14` |
-| quantum-ci.yml | `['3.10', '3.11']` → `['3.12', '3.13', '3.14']` |
-| nightly-regression.yml | `3.11` → `3.14` |
-| agi-smoke.yml | `3.11` → `3.14` |
-| llm-maker-tests.yml | `3.11` → `3.14` |
-| api-health-smoke.yml | `3.11` → `3.14` |
-| gradio-focused-tests.yml | `3.11` → `3.14` |
-| integration-contract-gate.yml | `3.11` → `3.14` |
-| aria-bot-tests.yml | `3.10` → `3.14` |
-| auto-fix.yml | `3.11` → `3.14` |
-| training-health-report.yml | `3.11` → `3.14` |
-| agi-prune-cron.yml | `3.11.x` → `3.14` |
-| test-watcher.yml | `3.11` → `3.14` |
-| codeql.yml | (checked - no explicit version pin, will use runner default) |
-| copilot-setup-steps.yml | (checked - no explicit version pin) |
+| Workflow                      | Change                                                       |
+| ----------------------------- | ------------------------------------------------------------ |
+| ci-pipeline.yml               | `3.11` → `3.14`                                              |
+| pr-tests.yml                  | `3.11` → `3.14`                                              |
+| ci.yml                        | `3.11` → `3.14`                                              |
+| aria-tests.yml                | `['3.10', '3.11', '3.12']` → `['3.12', '3.13', '3.14']`      |
+| e2e-tests.yml                 | `3.11` → `3.14`                                              |
+| quantum-ci.yml                | `['3.10', '3.11']` → `['3.12', '3.13', '3.14']`              |
+| nightly-regression.yml        | `3.11` → `3.14`                                              |
+| agi-smoke.yml                 | `3.11` → `3.14`                                              |
+| llm-maker-tests.yml           | `3.11` → `3.14`                                              |
+| api-health-smoke.yml          | `3.11` → `3.14`                                              |
+| gradio-focused-tests.yml      | `3.11` → `3.14`                                              |
+| integration-contract-gate.yml | `3.11` → `3.14`                                              |
+| aria-bot-tests.yml            | `3.10` → `3.14`                                              |
+| auto-fix.yml                  | `3.11` → `3.14`                                              |
+| training-health-report.yml    | `3.11` → `3.14`                                              |
+| agi-prune-cron.yml            | `3.11.x` → `3.14`                                            |
+| test-watcher.yml              | `3.11` → `3.14`                                              |
+| codeql.yml                    | (checked - no explicit version pin, will use runner default) |
+| copilot-setup-steps.yml       | (checked - no explicit version pin)                          |
 
 **Rationale for Matrix Updates**:
+
 - `aria-tests.yml` & `quantum-ci.yml`: Extended matrix to test 3.12, 3.13, and 3.14 for broader compatibility validation
 
 ### 4. Requirements Files
 
 **Status**: ✅ No changes needed
+
 - All `requirements*.txt` files use flexible version constraints (e.g., `>=X.Y.Z`, no explicit Python version pinning)
 - Dependencies should work with Python 3.14 out-of-the-box
 - No `setup.py` or `setup.cfg` files found requiring updates
@@ -58,6 +63,7 @@ This document summarizes the complete Python 3.14 upgrade performed on the Aria 
 ### 5. Sub-project Configurations
 
 **Located but not modified** (separate venvs maintain their own configs):
+
 - `ai-projects/chat-cli/`
 - `ai-projects/quantum-ml/`
 - `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/`
@@ -70,6 +76,7 @@ Each sub-project has its own `requirements.txt` that should be compatible with P
 ### 1. **Install Python 3.14**
 
 **On Windows (Recommended)**:
+
 ```powershell
 # Option A: Using Windows Package Manager
 winget install Python.Python.3.14
@@ -82,11 +89,13 @@ choco install python314
 ```
 
 **On macOS**:
+
 ```bash
 brew install python@3.14
 ```
 
 **On Linux (Ubuntu/Debian)**:
+
 ```bash
 sudo apt-get update
 sudo apt-get install python3.14 python3.14-venv python3.14-dev
@@ -134,6 +143,7 @@ python scripts/ci_orchestrator.py --validate-all
 ### 4. **GitHub Actions Self-Healing**
 
 On the next GitHub Actions run, workflows will automatically:
+
 - Use Python 3.14 from the runner's pre-installed versions
 - If 3.14 is not available on the runner, actions will attempt to install it via `actions/setup-python@v5`
 - Update the pip cache key based on the new `pyproject.toml` hash
@@ -141,6 +151,7 @@ On the next GitHub Actions run, workflows will automatically:
 ## Dependency Compatibility
 
 **Known Compatible Packages** (3.14 ready):
+
 - ✅ pydantic>=2.13.4
 - ✅ pytest>=8.4.2
 - ✅ torch>=2.8.0
@@ -150,10 +161,11 @@ On the next GitHub Actions run, workflows will automatically:
 - ✅ Flask & Flask-SocketIO
 
 **Packages to Monitor**:
+
 - If you encounter dependency conflicts, add explicit upper bounds to `requirements.txt`:
-  ```
-  package_name>=min_version,<next_major_version
-  ```
+    ```
+    package_name>=min_version,<next_major_version
+    ```
 
 ## Reverting if Needed
 
@@ -175,10 +187,12 @@ If issues arise and you need to revert to Python 3.11:
 ## Files Modified
 
 **Configuration Files** (2):
+
 1. `pyproject.toml`
 2. `.python-version` (created)
 
 **GitHub Actions Workflows** (20):
+
 1. `.github/workflows/ci-pipeline.yml`
 2. `.github/workflows/pr-tests.yml`
 3. `.github/workflows/ci.yml`

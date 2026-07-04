@@ -21,13 +21,13 @@ import logging
 import sys
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 # Lazily initialized runtime dependencies. This keeps `--help` fast and avoids
 # importing heavy ML modules unless an execution mode actually needs them.
 torch = None  # type: ignore[assignment]
-TORCH_AVAILABLE: Optional[bool] = None
-TORCH_IMPORT_ERROR: Optional[Exception] = None
+TORCH_AVAILABLE: bool | None = None
+TORCH_IMPORT_ERROR: Exception | None = None
 
 # Placeholders for lazily imported runtime classes/functions. These are updated
 # by `_load_runtime_dependencies()` before any training/generation path uses
@@ -46,10 +46,10 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 # Lazily imported quantum LLM components.
-INTEGRATED_AVAILABLE: Optional[bool] = None
-DATASETS_AVAILABLE: Optional[bool] = None
-INTEGRATED_IMPORT_ERROR: Optional[Exception] = None
-DATASETS_IMPORT_ERROR: Optional[Exception] = None
+INTEGRATED_AVAILABLE: bool | None = None
+DATASETS_AVAILABLE: bool | None = None
+INTEGRATED_IMPORT_ERROR: Exception | None = None
+DATASETS_IMPORT_ERROR: Exception | None = None
 
 
 def _load_runtime_dependencies(
@@ -115,7 +115,7 @@ DEFAULT_QUANTUM_QUICKSTART_OUTPUT_DIR = Path("data_out/quantum_llm_quickstart")
 DEFAULT_QUANTUM_FULL_OUTPUT_DIR = Path("data_out/quantum_llm_full")
 
 
-def _resolve_generate_model_path(model_path: Optional[str], output_dir: Optional[str]) -> Optional[Path]:
+def _resolve_generate_model_path(model_path: str | None, output_dir: str | None) -> Path | None:
     """Resolve model path for generate mode.
 
     Priority:
@@ -260,7 +260,7 @@ def quick_start_example():
     return system, tokenizer
 
 
-def full_training_example(config_path: Optional[Path] = None):
+def full_training_example(config_path: Path | None = None):
     """
     Full training: Complete quantum LLM training with all features.
     """

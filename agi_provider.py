@@ -77,7 +77,7 @@ def _load_canonical_module(path: Path) -> ModuleType:
         else:
             sys.modules.pop(_MODULE_NAME, None)
         raise ImportError(
-            f"Failed to import canonical AGI provider from {path!s}: " f"{exc.__class__.__name__}: {exc}"
+            f"Failed to import canonical AGI provider from {path!s}: {exc.__class__.__name__}: {exc}"
         ) from exc
 
     return module
@@ -88,7 +88,7 @@ def _export(module: ModuleType, name: str) -> Any:
         return getattr(module, name)
     except AttributeError as exc:
         raise ImportError(
-            f"Canonical AGI provider is missing expected export {name!r} " f"from {_CANONICAL_PATH!s}"
+            f"Canonical AGI provider is missing expected export {name!r} from {_CANONICAL_PATH!s}"
         ) from exc
 
 
@@ -97,7 +97,7 @@ def _validate_expected_exports(module: ModuleType) -> None:
     if not missing:
         return
     missing_str = ", ".join(repr(name) for name in missing)
-    raise ImportError("Canonical AGI provider is missing expected exports: " f"{missing_str} from {_CANONICAL_PATH!s}")
+    raise ImportError(f"Canonical AGI provider is missing expected exports: {missing_str} from {_CANONICAL_PATH!s}")
 
 
 _mod = _load_canonical_module(_CANONICAL_PATH)

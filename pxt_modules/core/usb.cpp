@@ -6,7 +6,8 @@
 namespace pxt {
 CodalUSB usb;
 
-// share the buffer; we will crash anyway if someone talks to us over both at the same time
+// share the buffer; we will crash anyway if someone talks to us over both at
+// the same time
 HF2_Buffer hf2buf;
 HF2 hf2(hf2buf);
 #ifdef HF2_HID
@@ -42,77 +43,77 @@ static const DeviceDescriptor device_desc = {
 };
 
 static void start_usb() {
-    // start USB with a delay, so that user code can add new interfaces if needed
-    // (eg USB HID keyboard, or MSC)
-    fiber_sleep(500);
-    usb.start();
+  // start USB with a delay, so that user code can add new interfaces if needed
+  // (eg USB HID keyboard, or MSC)
+  fiber_sleep(500);
+  usb.start();
 }
 
 void platform_usb_init() __attribute__((weak));
 void platform_usb_init() {}
 
 void set_usb_strings(const char *uf2_info) {
-    static const char *string_descriptors[3];
-    static char serial[12];
-    itoa(target_get_serial() & 0x7fffffff, serial);
+  static const char *string_descriptors[3];
+  static char serial[12];
+  itoa(target_get_serial() & 0x7fffffff, serial);
 
-    auto model = strstr(uf2_info, "Model: ");
-    if (model) {
-        model += 7;
-        auto end = model;
-        while (*end && *end != '\n' && *end != '\r')
-            end++;
-        auto len = end - model;
-        auto dev = (char *)app_alloc(len + 10);
-        memcpy(dev, model, len);
-        strcpy(dev + len, " (app)");
-        // try to split into manufacturer and
-        auto sep = strstr(dev, " / ");
-        if (sep) {
-            *sep = '\0';
-            string_descriptors[0] = dev;
-            string_descriptors[1] = sep + 3;
-        } else {
-            string_descriptors[0] = dev;
-            string_descriptors[1] = dev;
-        }
+  auto model = strstr(uf2_info, "Model: ");
+  if (model) {
+    model += 7;
+    auto end = model;
+    while (*end && *end != '\n' && *end != '\r')
+      end++;
+    auto len = end - model;
+    auto dev = (char *)app_alloc(len + 10);
+    memcpy(dev, model, len);
+    strcpy(dev + len, " (app)");
+    // try to split into manufacturer and
+    auto sep = strstr(dev, " / ");
+    if (sep) {
+      *sep = '\0';
+      string_descriptors[0] = dev;
+      string_descriptors[1] = sep + 3;
     } else {
-        string_descriptors[0] = "Unknown Corp.";
-        string_descriptors[1] = "PXT Device (app)";
+      string_descriptors[0] = dev;
+      string_descriptors[1] = dev;
     }
+  } else {
+    string_descriptors[0] = "Unknown Corp.";
+    string_descriptors[1] = "PXT Device (app)";
+  }
 
-    string_descriptors[2] = serial;
-    usb.stringDescriptors = string_descriptors;
+  string_descriptors[2] = serial;
+  usb.stringDescriptors = string_descriptors;
 }
 
 void usb_init() {
-    usb.deviceDescriptor = &device_desc;
-    set_usb_strings(UF2_INFO_TXT);
+  usb.deviceDescriptor = &device_desc;
+  set_usb_strings(UF2_INFO_TXT);
 
-    platform_usb_init();
+  platform_usb_init();
 
-    usb.add(hf2);
+  usb.add(hf2);
 
 #ifdef HF2_HID
-    hf2hid.useHID = true;
-    usb.add(hf2hid);
+  hf2hid.useHID = true;
+  usb.add(hf2hid);
 #else
-    // the WINUSB descriptors don't seem to work if there's only one interface
-    // so we add a dummy interface
-    usb.add(dummyIface);
+  // the WINUSB descriptors don't seem to work if there's only one interface
+  // so we add a dummy interface
+  usb.add(dummyIface);
 #endif
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
-    usb.add(mouse);
+  usb.add(mouse);
 #endif
 #if CONFIG_ENABLED(DEVICE_KEYBOARD)
-    usb.add(keyboard);
+  usb.add(keyboard);
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
-    usb.add(joystick);
+  usb.add(joystick);
 #endif
 
-    create_fiber(start_usb);
+  create_fiber(start_usb);
 }
 
 } // namespace pxt
@@ -130,34 +131,32 @@ namespace control {
 //%
 bool isUSBInitialized() {
 #if CONFIG_ENABLED(DEVICE_USB)
-    return pxt::usb.isInitialised();
+  return pxt::usb.isInitialised();
 #else
-    return false;
+  return false;
 #endif
 }
 } // namespace control
 
 namespace pxt {
 static void (*pSendToUART)(const char *data, int len) = NULL;
-void setSendToUART(void (*f)(const char *, int)) {
-    pSendToUART = f;
-}
+void setSendToUART(void (*f)(const char *, int)) { pSendToUART = f; }
 
 void sendSerial(const char *data, int len) {
 #if CONFIG_ENABLED(DEVICE_USB)
-    hf2.sendSerial(data, len);
+  hf2.sendSerial(data, len);
 #if HF2_HID
-    hf2hid.sendSerial(data, len);
+  hf2hid.sendSerial(data, len);
 #endif
 #endif
-    if (pSendToUART)
-        pSendToUART(data, len);
+  if (pSendToUART)
+    pSendToUART(data, len);
 }
 
 void dumpDmesg() {
-    sendSerial("\nDMESG:\n", 8);
-    sendSerial(codalLogStore.buffer, codalLogStore.ptr);
-    sendSerial("\n\n", 2);
+  sendSerial("\nDMESG:\n", 8);
+  sendSerial(codalLogStore.buffer, codalLogStore.ptr);
+  sendSerial("\n\n", 2);
 }
 
 void (*logJDFrame)(const uint8_t *data);

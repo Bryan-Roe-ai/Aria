@@ -35,14 +35,10 @@
         "assembly": [
             {
                 "part": true,
-                "pinIndices": [
-                    0
-                ]
+                "pinIndices": [0]
             },
             {
-                "pinIndices": [
-                    1
-                ]
+                "pinIndices": [1]
             }
         ]
     }

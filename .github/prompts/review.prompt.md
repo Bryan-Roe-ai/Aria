@@ -8,11 +8,13 @@ agent: agent
 Perform a thorough code review of the specified code, evaluating these dimensions:
 
 **1. Correctness**
+
 - Logic errors, off-by-one, race conditions
 - Null/undefined handling, edge cases
 - API contract compliance (request/response shapes)
 
 **2. Security (OWASP Top 10)**
+
 - Input validation at system boundaries
 - No hardcoded secrets (use `local.settings.json` or env vars)
 - SQL injection prevention (parameterized queries in `shared/sql_engine.py`)
@@ -20,12 +22,14 @@ Perform a thorough code review of the specified code, evaluating these dimension
 - SSRF checks on external URLs
 
 **3. Performance**
+
 - Unnecessary allocations or copies
 - N+1 query patterns
 - Missing caching where appropriate
 - Frozenset usage for O(1) keyword lookups (Aria convention)
 
 **4. Conventions**
+
 - Provider detection chain (`detect_provider()` auto mode): LM Studio → Ollama → Azure → OpenAI → Local (LoRA explicit-only)
 - Config precedence: YAML < CLI < per-job YAML < env vars
 - Data immutability: read-only `datasets/`, write-only `data_out/`
@@ -33,12 +37,14 @@ Perform a thorough code review of the specified code, evaluating these dimension
 - Error handling: graceful degradation, non-blocking telemetry
 
 **5. Testing**
+
 - Are new code paths covered by tests?
 - Can it be validated with `python scripts/test_runner.py --unit`?
 - E2E coverage for UI changes: `pytest tests/test_ui_playwright.py`
 
 **Output format:**
 For each finding:
+
 - Severity: critical | warning | suggestion
 - Location: file and line
 - Issue description

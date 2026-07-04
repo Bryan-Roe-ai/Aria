@@ -3,14 +3,13 @@
 namespace loops {
 
 /**
- * Repeats the code forever in the background. On each iteration, allows other codes to run.
+ * Repeats the code forever in the background. On each iteration, allows other
+ * codes to run.
  * @param body code to execute
  */
 //% help=loops/forever weight=100 afterOnStart=true deprecated=true
 //% blockId=forever_deprecated block="forever" blockAllowMultiple=1
-void forever(Action a) {
-    runForever(a);
-}
+void forever(Action a) { runForever(a); }
 
 /**
  * Pause for the specified time in milliseconds
@@ -20,8 +19,9 @@ void forever(Action a) {
 //% async block="pause %pause=timePicker|ms"
 //% blockId=device_pause_deprecated
 void pause(int ms) {
-    if (ms < 0) return;
-    sleep_ms(ms);
+  if (ms < 0)
+    return;
+  sleep_ms(ms);
 }
 
-}
+} // namespace loops

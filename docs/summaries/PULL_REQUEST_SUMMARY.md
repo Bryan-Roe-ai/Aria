@@ -152,16 +152,16 @@ Future opportunities including:
 ### Repository Memories Stored
 
 1. **Keyword set optimization pattern**
-   - Use frozenset for repeated membership checks
-   - O(1) vs O(n) performance
+    - Use frozenset for repeated membership checks
+    - O(1) vs O(n) performance
 
 2. **Database connection pooling pattern**
-   - Thread-safe pool with staleness checks
-   - 50-100ms latency reduction per request
+    - Thread-safe pool with staleness checks
+    - 50-100ms latency reduction per request
 
 3. **Regex pre-compilation pattern**
-   - Compile at module level for hot paths
-   - 2-5x speedup on pattern matching
+    - Compile at module level for hot paths
+    - 2-5x speedup on pattern matching
 
 ---
 
@@ -198,13 +198,13 @@ Future opportunities including:
 
 ### Performance Improvements
 
-| Metric | Before | After | Improvement |
-| -------- | -------- | ------- | ------------- |
-| Keyword checks | O(n) scan | O(1) lookup | 1.14x faster |
-| DB connections | New per request | Pooled | 50-100x (batch) |
-| Regex operations | Compile each call | Pre-compiled | 2-5x faster |
-| Tag filtering | O(n²) | O(n) | Complexity reduced |
-| Memory usage | Full list | Generator | Lower footprint |
+| Metric           | Before            | After        | Improvement        |
+| ---------------- | ----------------- | ------------ | ------------------ |
+| Keyword checks   | O(n) scan         | O(1) lookup  | 1.14x faster       |
+| DB connections   | New per request   | Pooled       | 50-100x (batch)    |
+| Regex operations | Compile each call | Pre-compiled | 2-5x faster        |
+| Tag filtering    | O(n²)             | O(n)         | Complexity reduced |
+| Memory usage     | Full list         | Generator    | Lower footprint    |
 
 ---
 

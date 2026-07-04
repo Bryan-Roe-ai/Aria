@@ -9,10 +9,10 @@ import json
 import time
 from pathlib import Path
 from threading import Lock
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 # Cache structure: {path: (data, timestamp)}
-_file_cache: Dict[str, Tuple[Any, float]] = {}
+_file_cache: dict[str, tuple[Any, float]] = {}
 _cache_lock = Lock()
 
 # Default TTL: 60 seconds
@@ -22,7 +22,7 @@ DEFAULT_TTL_SECONDS = 60
 def read_json_cached(
     file_path: str | Path,
     ttl_seconds: float = DEFAULT_TTL_SECONDS,
-) -> Optional[Dict[str, Any]]:
+) -> dict[str, Any] | None:
     """Read JSON file with TTL-based caching.
 
     Args:
@@ -62,7 +62,7 @@ def read_json_cached(
             return None
 
 
-def clear_cache(file_path: Optional[str | Path] = None) -> None:
+def clear_cache(file_path: str | Path | None = None) -> None:
     """Clear cache for specific file or entire cache.
 
     Args:

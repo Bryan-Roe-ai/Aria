@@ -7,15 +7,12 @@ boolean. These tests mock urllib so no network access is required.
 from __future__ import annotations
 
 import importlib.util
-from contextlib import contextmanager
 from pathlib import Path
 
 
 def _load_module():
     script_path = Path(__file__).parent.parent / "LMSTUDIO_AGI_INTEGRATION_IMPL.py"
-    spec = importlib.util.spec_from_file_location(
-        "lmstudio_agi_integration_impl", script_path
-    )
+    spec = importlib.util.spec_from_file_location("lmstudio_agi_integration_impl", script_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -79,9 +76,7 @@ def test_check_lmstudio_available_non_200(monkeypatch):
 
     import urllib.request
 
-    monkeypatch.setattr(
-        urllib.request, "urlopen", lambda *a, **k: _FakeResp(500)
-    )
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: _FakeResp(500))
 
     assert mod._check_lmstudio_available() is False
 

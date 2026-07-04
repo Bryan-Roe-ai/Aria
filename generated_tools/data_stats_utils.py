@@ -6,7 +6,7 @@ and safe for reuse in API and CLI layers.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 Number = int | float
 

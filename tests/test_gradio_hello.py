@@ -3,9 +3,7 @@ import os
 
 
 def load_module():
-    path = os.path.join(
-        os.path.dirname(__file__), "..", "scripts", "gradio_hello.py"
-    )
+    path = os.path.join(os.path.dirname(__file__), "..", "scripts", "gradio_hello.py")
     path = os.path.abspath(path)
     spec = importlib.util.spec_from_file_location("gradio_hello", path)
     if spec is None or spec.loader is None:
@@ -47,8 +45,7 @@ def test_llm_smoke_test_uses_fixed_prompt(monkeypatch):
     )
 
     assert captured["user_message"] == (
-        "LLM smoke test: reply with a short friendly confirmation "
-        "that the model is working."
+        "LLM smoke test: reply with a short friendly confirmation that the model is working."
     )
     assert result[3] == "provider"
     assert result[4] == "Complete."

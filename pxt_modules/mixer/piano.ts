@@ -13,6 +13,6 @@ namespace music {
     //% weight=10 blockGap=8
     //% group="Tone"
     export function noteFrequency(name: Note): number {
-        return name;
+        return name
     }
 }

@@ -143,7 +143,7 @@ def _acquire_pidfile(*, force: bool = False) -> None:
             try:
                 os.kill(int(existing_pid), 0)
                 raise RuntimeError(
-                    f"Another orchestrator instance is running (pid={existing_pid}). " "Use --force-run to take over."
+                    f"Another orchestrator instance is running (pid={existing_pid}). Use --force-run to take over."
                 )
             except ProcessLookupError:
                 logger.warning("Stale pidfile detected (pid=%s); replacing", existing_pid)

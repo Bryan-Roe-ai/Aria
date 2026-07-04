@@ -8,8 +8,8 @@ This module intentionally supports two invocation modes:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
+from datetime import datetime, timezone
 
 try:  # Normal package import
     from core.memory.store import MemoryStore

@@ -6,13 +6,13 @@ This document details performance optimizations implemented in February 2026, in
 
 Five high-impact optimizations targeting hot paths in data processing, command parsing, and quantum ML training:
 
-| File | Optimization | Estimated Speedup | Lines Changed |
-| ------ | -------------- | ------------------- | --------------- |
-| `scripts/extract_chat_logs_dataset.py` | Single-pass role checking | 2x | 3 |
-| `scripts/job_queue.py` | Set intersection for tag filtering | 5-50x | 3 |
-| `function_app.py` | Command pattern table | 5-20x | 30 |
-| `scripts/generate_evaluation_set.py` | Single-pass file reading | 2-3x | 35 |
-| `ai-projects/quantum-ml/web_app.py` | PennyLane autograd gradients | 10-100x | 40 |
+| File                                   | Optimization                       | Estimated Speedup | Lines Changed |
+| -------------------------------------- | ---------------------------------- | ----------------- | ------------- |
+| `scripts/extract_chat_logs_dataset.py` | Single-pass role checking          | 2x                | 3             |
+| `scripts/job_queue.py`                 | Set intersection for tag filtering | 5-50x             | 3             |
+| `function_app.py`                      | Command pattern table              | 5-20x             | 30            |
+| `scripts/generate_evaluation_set.py`   | Single-pass file reading           | 2-3x              | 35            |
+| `ai-projects/quantum-ml/web_app.py`    | PennyLane autograd gradients       | 10-100x           | 40            |
 
 **Total estimated impact:** 24-175x cumulative speedup across affected code paths.
 
@@ -178,28 +178,28 @@ The original code read the same dataset files multiple times:
 
 1. **First pass (line 74-75):** Collect training hashes
 
-   ```python
-   for src in args.sources:
-       training_hashes |= collect_training_hashes(Path(src))
-   ```
+    ```python
+    for src in args.sources:
+        training_hashes |= collect_training_hashes(Path(src))
+    ```
 
-   This reads `train.json` and `test.json` for each source.
+    This reads `train.json` and `test.json` for each source.
 
 2. **Second pass (line 84-92):** Read files again to build candidates
 
-   ```python
-   for cf in candidate_files:
-       for rec in read_jsonl(cf):  # Re-reads same files
-           h = rec.get("hash") or hash_messages(...)
-   ```
+    ```python
+    for cf in candidate_files:
+        for rec in read_jsonl(cf):  # Re-reads same files
+            h = rec.get("hash") or hash_messages(...)
+    ```
 
 3. **Third pass (line 95-99):** If no candidates, read files yet again
 
-   ```python
-   if not candidates:
-       for cf in candidate_files:
-           for rec in read_jsonl(cf):  # Third time reading!
-   ```
+    ```python
+    if not candidates:
+        for cf in candidate_files:
+            for rec in read_jsonl(cf):  # Third time reading!
+    ```
 
 For large datasets (1000s of records), this meant:
 
@@ -340,20 +340,20 @@ The implementation includes a fallback to the original manual parameter-shift im
 These optimizations follow established patterns from the repository:
 
 1. **Single-pass collection checks** (Memory: "single-pass collection optimization")
-   - Build set once, check membership O(1)
-   - Used in `extract_chat_logs_dataset.py` and `job_queue.py`
+    - Build set once, check membership O(1)
+    - Used in `extract_chat_logs_dataset.py` and `job_queue.py`
 
 2. **Pre-compiled data structures** (Memory: "frozenset keyword matching")
-   - Define lookup tables at module level
-   - Used in `function_app.py` command patterns
+    - Define lookup tables at module level
+    - Used in `function_app.py` command patterns
 
 3. **Caching repeated operations** (Memory: "dictionary index for lookups")
-   - Read files once, cache results
-   - Used in `generate_evaluation_set.py`
+    - Read files once, cache results
+    - Used in `generate_evaluation_set.py`
 
 4. **Library-native optimizations** (Memory: "best practices")
-   - Use framework features (PennyLane autograd)
-   - Used in `ai-projects/quantum-ml/web_app.py`
+    - Use framework features (PennyLane autograd)
+    - Used in `ai-projects/quantum-ml/web_app.py`
 
 ---
 
@@ -380,19 +380,19 @@ All tests pass with 100% success rate.
 Additional optimizations identified but not yet implemented:
 
 1. **aria_web/server.py** (lines 220-263)
-   - Repeated `any()` calls with generators
-   - Opportunity: Pre-compile keyword sets as frozensets
-   - Estimated impact: 2-10x speedup
+    - Repeated `any()` calls with generators
+    - Opportunity: Pre-compile keyword sets as frozensets
+    - Estimated impact: 2-10x speedup
 
 2. **ai-projects/quantum-ml/web_app.py** (lines 516-518)
-   - Repeated list slicing in loops
-   - Opportunity: Slice once, reuse
-   - Estimated impact: 1.5-2x speedup
+    - Repeated list slicing in loops
+    - Opportunity: Slice once, reuse
+    - Estimated impact: 1.5-2x speedup
 
 3. **Multiple files**
-   - Regex compilation in loops
-   - Opportunity: Pre-compile at module level
-   - Estimated impact: 2-5x speedup (see Memory: "regex pattern compilation")
+    - Regex compilation in loops
+    - Opportunity: Pre-compile at module level
+    - Estimated impact: 2-5x speedup (see Memory: "regex pattern compilation")
 
 ---
 

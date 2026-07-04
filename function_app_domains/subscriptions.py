@@ -251,7 +251,9 @@ def test_notifications(req, ctx):
             )
 
         return ctx.func.HttpResponse(
-            ctx.json.dumps({"success": success, "message": f"Test notification sent to {email}", "type": notification_type}),
+            ctx.json.dumps(
+                {"success": success, "message": f"Test notification sent to {email}", "type": notification_type}
+            ),
             status_code=200,
             mimetype="application/json",
             headers=ctx.create_cors_response_headers(),

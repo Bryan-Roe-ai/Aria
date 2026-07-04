@@ -143,8 +143,7 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
                 )
             )
 
-    steps.append(
-        ("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
+    steps.append(("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
     if args.run_agents:
         steps.append(
@@ -186,10 +185,7 @@ def _write_status(history: list[CycleResult]) -> None:
     try:
         DATA_OUT.mkdir(parents=True, exist_ok=True)
     except OSError as exc:  # pragma: no cover - defensive filesystem guard
-        print(
-            "[repo_health_automation] warning: cannot create status dir "
-            f"{DATA_OUT}: {exc}"
-        )
+        print(f"[repo_health_automation] warning: cannot create status dir {DATA_OUT}: {exc}")
         return
 
     payload = {
@@ -203,10 +199,7 @@ def _write_status(history: list[CycleResult]) -> None:
     try:
         STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     except OSError as exc:  # pragma: no cover - defensive filesystem guard
-        print(
-            "[repo_health_automation] warning: cannot write status file "
-            f"{STATUS_PATH}: {exc}"
-        )
+        print(f"[repo_health_automation] warning: cannot write status file {STATUS_PATH}: {exc}")
 
 
 def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
@@ -224,10 +217,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
         result = _run_command(name, cmd)
         steps_out.append(result)
         icon = "PASS" if result.succeeded else "FAIL"
-        print(
-            f"[{icon}] {name} rc={result.returncode} "
-            f"duration={result.duration_sec:.2f}s"
-        )
+        print(f"[{icon}] {name} rc={result.returncode} duration={result.duration_sec:.2f}s")
 
         if not result.succeeded and not args.continue_on_fail:
             break
@@ -246,10 +236,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
     )
 
     print("\n" + "-" * 78)
-    print(
-        f"[repo_health_automation] cycle={cycle} "
-        f"succeeded={succeeded} duration={duration_sec:.2f}s"
-    )
+    print(f"[repo_health_automation] cycle={cycle} succeeded={succeeded} duration={duration_sec:.2f}s")
     print("-" * 78)
 
     if not succeeded:
@@ -312,10 +299,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument(
         "--repair-status",
         action="store_true",
-        help=(
-            "Repair merge conflicts in data_out status.json files before "
-            "checks"
-        ),
+        help=("Repair merge conflicts in data_out status.json files before checks"),
     )
     ap.add_argument(
         "--refresh-stale-status",
@@ -330,10 +314,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument(
         "--run-agents",
         action="store_true",
-        help=(
-            "Run repository automation agents after the integration contract "
-            "gate"
-        ),
+        help=("Run repository automation agents after the integration contract gate"),
     )
     ap.add_argument(
         "--continue-on-fail",

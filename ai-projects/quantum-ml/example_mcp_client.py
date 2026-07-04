@@ -6,7 +6,6 @@ Demonstrates how to use the Quantum AI MCP server from Python
 import asyncio
 import os
 from contextlib import AsyncExitStack
-from typing import Optional
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -14,8 +13,12 @@ from mcp.client.stdio import stdio_client
 # Optional: Azure AI for chat with tools
 try:
     from azure.ai.inference import ChatCompletionsClient  # type: ignore
-    from azure.ai.inference.models import AssistantMessage  # type: ignore
-    from azure.ai.inference.models import SystemMessage, ToolMessage, UserMessage
+    from azure.ai.inference.models import (
+        AssistantMessage,  # type: ignore
+        SystemMessage,
+        ToolMessage,
+        UserMessage,
+    )
     from azure.core.credentials import AzureKeyCredential  # type: ignore
 
     HAS_AZURE_AI = True
@@ -31,7 +34,7 @@ class QuantumMCPClient:
 
     def __init__(self, server_script_path: str = "quantum_mcp_server.py"):
         self.server_script_path = server_script_path
-        self.session: Optional[ClientSession] = None
+        self.session: ClientSession | None = None
         self.exit_stack = AsyncExitStack()
 
     async def connect(self):

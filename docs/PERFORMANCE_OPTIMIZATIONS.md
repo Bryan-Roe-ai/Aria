@@ -164,14 +164,14 @@ for r in results:
 
 ## Files Modified
 
-| File | Optimizations | Impact |
-| ------ | -------------- | -------- |
-| `scripts/autonomous_training_orchestrator.py` | Debounced writes, glob caching | 70-80% I/O reduction |
-| `scripts/aria_automation.py` | Port/process caching, exponential backoff | 90% scanning reduction |
-| `scripts/repo_automation.py` | Improved polling intervals | 90% faster startup |
-| `scripts/batch_evaluator.py` | O(1) lookups, single-pass aggregation | 99% faster comparisons |
-| `scripts/parallel_train.py` | Single-pass aggregation | 67% fewer iterations |
-| `scripts/quantum_llm_trainer.py` | Combined glob operations | 50% fewer filesystem ops |
+| File                                          | Optimizations                             | Impact                   |
+| --------------------------------------------- | ----------------------------------------- | ------------------------ |
+| `scripts/autonomous_training_orchestrator.py` | Debounced writes, glob caching            | 70-80% I/O reduction     |
+| `scripts/aria_automation.py`                  | Port/process caching, exponential backoff | 90% scanning reduction   |
+| `scripts/repo_automation.py`                  | Improved polling intervals                | 90% faster startup       |
+| `scripts/batch_evaluator.py`                  | O(1) lookups, single-pass aggregation     | 99% faster comparisons   |
+| `scripts/parallel_train.py`                   | Single-pass aggregation                   | 67% fewer iterations     |
+| `scripts/quantum_llm_trainer.py`              | Combined glob operations                  | 50% fewer filesystem ops |
 
 ## Testing
 
@@ -185,24 +185,24 @@ All optimizations have been validated:
 ## Future Recommendations
 
 1. **Apply Similar Patterns**: Look for similar inefficiency patterns in other scripts:
-   - Repeated file reads in loops
-   - Missing caching for expensive operations
-   - Multiple passes over data structures
-   - Linear searches that could use dictionaries
+    - Repeated file reads in loops
+    - Missing caching for expensive operations
+    - Multiple passes over data structures
+    - Linear searches that could use dictionaries
 
 2. **Monitor Performance**: Add timing instrumentation to identify new bottlenecks:
 
-   ```python
-   import time
-   start = time.time()
-   # expensive operation
-   logger.debug(f"Operation took {time.time() - start:.2f}s")
-   ```
+    ```python
+    import time
+    start = time.time()
+    # expensive operation
+    logger.debug(f"Operation took {time.time() - start:.2f}s")
+    ```
 
 3. **Consider Async/Await**: For I/O-heavy operations, consider converting to async patterns:
-   - File operations with `aiofiles`
-   - HTTP requests with `aiohttp`
-   - Database queries with async drivers
+    - File operations with `aiofiles`
+    - HTTP requests with `aiohttp`
+    - Database queries with async drivers
 
 4. **Profile Before Optimizing**: Use `cProfile` or `py-spy` to identify actual bottlenecks before optimizing.
 

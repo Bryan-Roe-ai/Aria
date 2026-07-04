@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Dict
 import uuid
+from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass(slots=True)
@@ -12,7 +12,7 @@ class Task:
     """Structured task envelope for routing and execution."""
 
     type: str
-    payload: Dict[str, Any] = field(default_factory=dict)
+    payload: dict[str, Any] = field(default_factory=dict)
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     priority: int = 0
 
@@ -30,7 +30,7 @@ class Task:
         if not isinstance(self.priority, int):
             raise ValueError("Task priority must be an integer")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable representation of the task."""
         return {
             "id": self.id,

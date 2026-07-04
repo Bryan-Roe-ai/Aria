@@ -241,11 +241,11 @@ def train_quantum_llm(args):
             if (batch_idx + 1) % 10 == 0:
                 avg_loss = total_loss / n_batches
                 logger.info(
-                    f"  Epoch {epoch+1}/{args.epochs} | Batch {batch_idx+1}/{display_total_batches} | Loss: {avg_loss:.4f}"
+                    f"  Epoch {epoch + 1}/{args.epochs} | Batch {batch_idx + 1}/{display_total_batches} | Loss: {avg_loss:.4f}"
                 )
 
         avg_epoch_loss = total_loss / max(n_batches, 1)
-        logger.info(f"Epoch {epoch+1}/{args.epochs} completed | Avg Loss: {avg_epoch_loss:.4f}")
+        logger.info(f"Epoch {epoch + 1}/{args.epochs} completed | Avg Loss: {avg_epoch_loss:.4f}")
 
     # Save model
     output_dir = Path("data_out") / args.output

@@ -26,7 +26,7 @@ import yaml
 config_path = Path(__file__).parent.parent / "config" / "quantum_config.yaml"
 
 try:
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     azure_config = config.get("azure", {})

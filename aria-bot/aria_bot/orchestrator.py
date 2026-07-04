@@ -21,7 +21,6 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
 
 from .analyzer import Analyzer, Finding
 from .commit_system import CommitSystem
@@ -45,7 +44,7 @@ class OrchestratorConfig:
     apply: bool = False
     commit: bool = False
     max_plans: int = 50
-    status_path: Optional[Path] = None
+    status_path: Path | None = None
 
     def resolve_status_path(self) -> Path:
         if self.status_path is not None:
@@ -62,13 +61,13 @@ class CycleResult:
     duration_seconds: float
     apply: bool
     commit: bool
-    findings: List[Finding] = field(default_factory=list)
-    plans: List[UpgradePlan] = field(default_factory=list)
-    executions: List[ExecutionResult] = field(default_factory=list)
+    findings: list[Finding] = field(default_factory=list)
+    plans: list[UpgradePlan] = field(default_factory=list)
+    executions: list[ExecutionResult] = field(default_factory=list)
     validation_ok: bool = True
     validation: dict = field(default_factory=dict)
-    commit_sha: Optional[str] = None
-    notes: List[str] = field(default_factory=list)
+    commit_sha: str | None = None
+    notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         applied = [e for e in self.executions if e.applied]
@@ -111,7 +110,7 @@ class Orchestrator:
         validator = Validator(repo_root=repo_root)
         commits = CommitSystem(repo_root=repo_root)
 
-        notes: List[str] = []
+        notes: list[str] = []
 
         _logger.info("aria-bot: scanning repository at %s", repo_root)
         findings = analyzer.scan()
@@ -127,7 +126,7 @@ class Orchestrator:
         if not validation.ok:
             notes.append("validation failed; skipping commit")
 
-        commit_sha: Optional[str] = None
+        commit_sha: str | None = None
         if self.config.apply and self.config.commit and validation.ok and applied_paths:
             message = self._commit_message(executions)
             commit_sha = commits.commit(applied_paths, message)
@@ -158,7 +157,7 @@ class Orchestrator:
         return result
 
     # ------------------------------------------------------------------
-    def _commit_message(self, executions: List[ExecutionResult]) -> str:
+    def _commit_message(self, executions: list[ExecutionResult]) -> str:
         # Only called when at least one execution applied; defend against
         # accidental misuse by future callers.
         applied = [e for e in executions if e.applied]
@@ -188,7 +187,7 @@ def run_cycle(
     apply: bool = False,
     commit: bool = False,
     max_plans: int = 50,
-    status_path: Optional[Path] = None,
+    status_path: Path | None = None,
 ) -> CycleResult:
     """Convenience wrapper used by the CLI and tests."""
 

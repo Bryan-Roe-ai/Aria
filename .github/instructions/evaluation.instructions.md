@@ -7,6 +7,7 @@ applyTo: "scripts/batch_evaluator.py,scripts/evaluate_*,scripts/training_analyti
 ## Batch Evaluator
 
 ### Pipeline
+
 ```
 load_config(YAML) or scan_models() → List[EvaluationTask]
     ↓
@@ -18,6 +19,7 @@ List[EvaluationResult] → aggregation → export
 ```
 
 ### EvaluationTask Fields
+
 - `model_id` — unique identifier
 - `model_type` — "lora", "base", etc.
 - `model_path` — path to model/adapter
@@ -27,6 +29,7 @@ List[EvaluationResult] → aggregation → export
 - `batch_size` — inference batch size
 
 ### Constraints
+
 - Timeout: 30 minutes per evaluation
 - Max parallel workers: 3 (configurable)
 - Output directory: `data_out/batch_evaluator/`
@@ -35,6 +38,7 @@ List[EvaluationResult] → aggregation → export
 ## Training Analytics
 
 ### Tracked Metrics
+
 - `mean_accuracy` — average across evaluation samples
 - `median_accuracy` — middle value (robust to outliers)
 - `max_accuracy` — best single result
@@ -43,9 +47,11 @@ List[EvaluationResult] → aggregation → export
 - `exceptional_models` — models with accuracy > 0.90
 
 ### Plateau Detection
+
 Identifies when accuracy improvement rate drops below threshold across consecutive cycles.
 
 ### Degradation Alerts
+
 Auto-detect > 5% accuracy drops between training cycles.
 
 ## Coding Conventions

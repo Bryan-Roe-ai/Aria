@@ -7,33 +7,37 @@ All integration tests pass successfully. LM Studio is now fully integrated with 
 ## What Was Done
 
 ### 1. Added LM Studio Agent to Registry ✅
+
 - **File**: `ai-projects/chat-cli/src/agi_provider.py`
 - **Agent Name**: `lmstudio-specialist`
 - **Role**: Fallback for general-purpose queries with local LM Studio inference
 - **Configuration**:
-  - Domains: [] (handles all as fallback)
-  - Intents: explanation, question, coding, creation
-  - Provider: lmstudio
-  - Confidence boost: 0.05 (lower priority)
+    - Domains: [] (handles all as fallback)
+    - Intents: explanation, question, coding, creation
+    - Provider: lmstudio
+    - Confidence boost: 0.05 (lower priority)
 
 ### 2. Verified Provider Detection ✅
+
 - **File**: `ai-projects/chat-cli/src/chat_providers.py`
 - **Status**: Already supported `detect_provider(explicit="lmstudio")`
 - **Returns**: LMStudioProvider instance with proper configuration
 
 ### 3. Environment Configuration ✅
+
 - **File**: `.env`
 - **Settings**:
-  - LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
-  - LMSTUDIO_MODEL=local-model
+    - LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
+    - LMSTUDIO_MODEL=local-model
 
 ### 4. Integration Testing ✅
+
 - **Test File**: `tests/test_lmstudio_agi_integration.py`
 - **Results**: 4/4 tests passing
-  - ✓ Agent Registration
-  - ✓ Provider Detection
-  - ✓ AGI Provider Initialization
-  - ✓ Environment Configuration
+    - ✓ Agent Registration
+    - ✓ Provider Detection
+    - ✓ AGI Provider Initialization
+    - ✓ Environment Configuration
 
 ## How It Works
 
@@ -48,6 +52,7 @@ All integration tests pass successfully. LM Studio is now fully integrated with 
 ### When LM Studio is Selected
 
 LM Studio specialist will be selected when:
+
 - Query matches intents: explanation, question, coding, creation
 - Other agents don't score higher (specialists have better domain matches)
 - Used as fallback for general queries without domain match
@@ -55,11 +60,13 @@ LM Studio specialist will be selected when:
 ### Easy Usage
 
 **Explicit LM Studio:**
+
 ```bash
 python3 src/chat_cli.py --provider lmstudio --once "Your question"
 ```
 
 **Auto-routing via agent selection:**
+
 ```bash
 python3 src/chat_cli.py --once "Explain machine learning"
 ```
@@ -133,6 +140,7 @@ User Query
 ## Quick Start
 
 ### 1. Verify Integration
+
 ```bash
 cd /workspaces/Aria
 python3 tests/test_lmstudio_agi_integration.py
@@ -140,6 +148,7 @@ python3 tests/test_lmstudio_agi_integration.py
 ```
 
 ### 2. Start LM Studio Server
+
 ```bash
 # Option A: GUI
 lm-studio
@@ -149,12 +158,14 @@ lm-studio serve --host 127.0.0.1 --port 1234
 ```
 
 ### 3. Chat with LM Studio
+
 ```bash
 cd ai-projects/chat-cli
 python3 src/chat_cli.py --provider lmstudio --once "Explain neural networks"
 ```
 
 ### 4. Let Agent System Route to LM Studio
+
 ```bash
 python3 src/chat_cli.py --once "What is machine learning?"
 # System will analyze, score agents, route to best match (possibly lmstudio-specialist)
@@ -162,14 +173,14 @@ python3 src/chat_cli.py --once "What is machine learning?"
 
 ## Benefits of This Integration
 
-| Feature | Benefit |
-| --------- | --------- |
-| **Local Inference** | Privacy - no cloud data transmission |
-| **Fast Responses** | No network latency to APIs |
-| **Cost-Free** | No per-query API charges |
+| Feature                 | Benefit                                         |
+| ----------------------- | ----------------------------------------------- |
+| **Local Inference**     | Privacy - no cloud data transmission            |
+| **Fast Responses**      | No network latency to APIs                      |
+| **Cost-Free**           | No per-query API charges                        |
 | **Intelligent Routing** | Automatically selects best agent for query type |
-| **Reliable Fallback** | Works when cloud APIs unavailable |
-| **Full Compatibility** | Works alongside all other providers |
+| **Reliable Fallback**   | Works when cloud APIs unavailable               |
+| **Full Compatibility**  | Works alongside all other providers             |
 
 ## Troubleshooting
 
@@ -192,6 +203,7 @@ Error: "Model not available"
 ### Agent Not Selected
 
 If lmstudio-specialist isn't selected:
+
 - Use `--provider lmstudio` to force it
 - Check query intent matches one of: explanation, question, coding, creation
 - Check confidence_boost (0.05 is intentionally low for fallback behavior)

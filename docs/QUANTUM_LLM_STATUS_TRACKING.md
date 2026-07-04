@@ -118,13 +118,13 @@ Response includes:
 
 ```json
 {
-  "quantum": {
-    "enabled": true,
-    "llm_model_available": true,
-    "llm_checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
-    "inference_ready": true,
-    "trainer_status": "completed"
-  }
+    "quantum": {
+        "enabled": true,
+        "llm_model_available": true,
+        "llm_checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
+        "inference_ready": true,
+        "trainer_status": "completed"
+    }
 }
 ```
 
@@ -132,25 +132,25 @@ The `/api/quantum-llm` endpoint returns readiness in responses:
 
 ```json
 {
-  "readiness": {
-    "available": true,
-    "status": "completed",
-    "checkpoint_exists": true,
-    "inference_ready": true
-  }
+    "readiness": {
+        "available": true,
+        "status": "completed",
+        "checkpoint_exists": true,
+        "inference_ready": true
+    }
 }
 ```
 
 ## Training Status States
 
-| State | Meaning | Inference Ready |
-| ------- | --------- | ----------------- |
-| `not_started` | No training attempted | ✗ |
-| `idle` | Training available, not running | ✓ (if checkpoint exists) |
-| `running` | Training in progress | ✗ |
-| `completed` | Training finished successfully | ✓ (if checkpoint valid) |
-| `failed` | Training completed with errors | ✗ |
-| `error` | Status read failed | ✗ |
+| State         | Meaning                         | Inference Ready          |
+| ------------- | ------------------------------- | ------------------------ |
+| `not_started` | No training attempted           | ✗                        |
+| `idle`        | Training available, not running | ✓ (if checkpoint exists) |
+| `running`     | Training in progress            | ✗                        |
+| `completed`   | Training finished successfully  | ✓ (if checkpoint valid)  |
+| `failed`      | Training completed with errors  | ✗                        |
+| `error`       | Status read failed              | ✗                        |
 
 ## Checkpoint Resolution
 

@@ -17,9 +17,9 @@ the most appropriate agent. LM Studio can handle technical, coding, and AI domai
 import asyncio
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from lmstudio_agent_integration import LMStudioAgentClient, get_lmstudio_agent_client, get_lmstudio_agent_info
+from lmstudio_agent_integration import get_lmstudio_agent_client
 
 _logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ _logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-def get_lmstudio_agent_registry_entry() -> Dict[str, Any]:
+def get_lmstudio_agent_registry_entry() -> dict[str, Any]:
     """
     Get the LM Studio agent entry for the AGI provider's agent registry.
 
@@ -66,7 +66,7 @@ class AGILMStudioRouter:
     and manages fallback to other providers if LM Studio is unavailable.
     """
 
-    def __init__(self, fallback_provider: Optional[str] = "agi"):
+    def __init__(self, fallback_provider: str | None = "agi"):
         """
         Initialize the router.
 
@@ -103,7 +103,7 @@ class AGILMStudioRouter:
 
         return self._healthy
 
-    def should_use_lmstudio(self, query_analysis: Dict[str, Any]) -> bool:
+    def should_use_lmstudio(self, query_analysis: dict[str, Any]) -> bool:
         """
         Determine if LM Studio should handle this query based on analysis.
 
@@ -139,9 +139,9 @@ class AGILMStudioRouter:
     async def route_query(
         self,
         query: str,
-        messages: List[Dict[str, str]],
-        query_analysis: Dict[str, Any],
-    ) -> Optional[str]:
+        messages: list[dict[str, str]],
+        query_analysis: dict[str, Any],
+    ) -> str | None:
         """
         Route a query to LM Studio if appropriate.
 
@@ -164,8 +164,7 @@ class AGILMStudioRouter:
 
         try:
             _logger.info(
-                f"Routing to LM Studio: domain={query_analysis.get('domain')}, "
-                f"intent={query_analysis.get('intent')}"
+                f"Routing to LM Studio: domain={query_analysis.get('domain')}, intent={query_analysis.get('intent')}"
             )
 
             # Use the LM Studio client
@@ -190,7 +189,7 @@ class AGILMStudioRouter:
 
 async def complete_with_lmstudio_routing(
     agi_provider: Any,
-    messages: List[Dict[str, str]],
+    messages: list[dict[str, str]],
     stream: bool = True,
     prefer_lmstudio: bool = False,
 ) -> str:
@@ -256,7 +255,7 @@ async def complete_with_lmstudio_routing(
 async def decompose_task_with_lmstudio(
     task: str,
     domain: str = "technical",
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """
     Decompose a complex task into subtasks, using LM Studio if available.
 
@@ -331,7 +330,7 @@ Return only valid JSON."""
 async def reason_with_lmstudio_chain_of_thought(
     query: str,
     depth: int = 3,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Generate a chain-of-thought reasoning using LM Studio.
 

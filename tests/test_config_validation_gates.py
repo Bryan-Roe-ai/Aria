@@ -54,10 +54,7 @@ class TestConfigValidationGates:
             check=False,
         )
         assert result.returncode == 0
-        assert (
-            "validate" in result.stdout.lower()
-            or "valid" in result.stdout.lower()
-        )
+        assert "validate" in result.stdout.lower() or "valid" in result.stdout.lower()
 
     def test_repo_automation_wrapper_python3_nounset(self, tmp_path: Path):
         """Wrapper should use python3 fallback.
@@ -80,20 +77,19 @@ class TestConfigValidationGates:
         wrapper_dst.chmod(0o755)
 
         (scripts_dir / "repo_automation.py").write_text(
-            "import sys\n"
-            "print('repo_automation stub', ' '.join(sys.argv[1:]))\n"
+            "import sys\nprint('repo_automation stub', ' '.join(sys.argv[1:]))\n"
         )
 
         (fake_bin_dir / "python3").write_text(
             "#!/bin/sh\n"
-            "if [ \"$1\" = \"--version\" ]; then\n"
+            'if [ "$1" = "--version" ]; then\n'
             "  echo 'Python 3.11.9'\n"
             "  exit 0\n"
             "fi\n"
-            "if [ \"$1\" = \"-c\" ]; then\n"
+            'if [ "$1" = "-c" ]; then\n'
             "  exit 0\n"
             "fi\n"
-            "printf '%s\\n' \"$*\" >> \"$PYTHON3_LOG\"\n"
+            'printf \'%s\\n\' "$*" >> "$PYTHON3_LOG"\n'
             "exit 0\n"
         )
         (fake_bin_dir / "python3").chmod(0o755)
@@ -126,10 +122,7 @@ class TestConfigValidationGates:
         assert "Available Components" in components_result.stdout
 
         log_lines = invocation_log.read_text().splitlines()
-        assert any(
-            "scripts/repo_automation.py --status" in line
-            for line in log_lines
-        )
+        assert any("scripts/repo_automation.py --status" in line for line in log_lines)
 
     def test_master_orchestrator_validation(self):
         """Test master_orchestrator.py validation gate."""

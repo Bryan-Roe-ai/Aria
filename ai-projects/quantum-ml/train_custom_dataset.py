@@ -265,7 +265,7 @@ def plot_training_results(history, save_path="results/custom_training.png"):
         y=max(history["val_acc"]),
         color="red",
         linestyle="--",
-        label=f'Best: {max(history["val_acc"]):.4f}',
+        label=f"Best: {max(history['val_acc']):.4f}",
     )
     ax2.set_xlabel("Epoch")
     ax2.set_ylabel("Accuracy")
@@ -361,7 +361,7 @@ def train_quantum_model(
 def _default_n_qubits(config_path: str = "config/quantum_config.yaml", fallback: int = 4) -> int:
     """Read default n_qubits from YAML config if available."""
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             cfg = yaml.safe_load(f)
         return int(cfg.get("ml", {}).get("model", {}).get("n_qubits", fallback))
     except Exception:
@@ -498,8 +498,8 @@ def main(argv: list[str] | None = None):
     print("\n📊 Final Results:")
     print(f"   Training Loss:        {final_train_loss:.4f}")
     print(f"   Validation Loss:      {final_val_loss:.4f}")
-    print(f"   Validation Accuracy:  {final_val_acc:.4f} ({final_val_acc*100:.2f}%)")
-    print(f"   Best Val Accuracy:    {best_val_acc:.4f} ({best_val_acc*100:.2f}%)")
+    print(f"   Validation Accuracy:  {final_val_acc:.4f} ({final_val_acc * 100:.2f}%)")
+    print(f"   Best Val Accuracy:    {best_val_acc:.4f} ({best_val_acc * 100:.2f}%)")
 
     # Determine performance level
     if best_val_acc >= 0.90:

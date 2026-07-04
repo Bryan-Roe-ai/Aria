@@ -6,7 +6,6 @@ Run this to verify your LM Studio connection and test the MCP tools.
 """
 
 import asyncio
-import json
 import os
 import sys
 from pathlib import Path
@@ -84,7 +83,7 @@ async def main():
         print(f"\nStop reason: {result['stop_reason']}")
         if "usage" in result:
             usage = result["usage"]
-            print(f"\nTokens used:")
+            print("\nTokens used:")
             print(f"  • Prompt: {usage.get('prompt_tokens', 'N/A')}")
             print(f"  • Completion: {usage.get('completion_tokens', 'N/A')}")
             print(f"  • Total: {usage.get('total_tokens', 'N/A')}")

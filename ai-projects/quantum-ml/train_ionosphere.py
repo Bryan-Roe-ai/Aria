@@ -155,7 +155,7 @@ def plot_training_results(history, save_path="results/ionosphere_training.png"):
         y=max(history["val_acc"]),
         color="red",
         linestyle="--",
-        label=f'Best: {max(history["val_acc"]):.4f}',
+        label=f"Best: {max(history['val_acc']):.4f}",
     )
     ax2.set_xlabel("Epoch")
     ax2.set_ylabel("Accuracy")
@@ -324,8 +324,8 @@ def main():
     print("\n📊 Final Results:")
     print(f"   Training Loss:        {final_train_loss:.4f}")
     print(f"   Validation Loss:      {final_val_loss:.4f}")
-    print(f"   Validation Accuracy:  {final_val_acc:.4f} ({final_val_acc*100:.2f}%)")
-    print(f"   Best Val Accuracy:    {best_val_acc:.4f} ({best_val_acc*100:.2f}%)")
+    print(f"   Validation Accuracy:  {final_val_acc:.4f} ({final_val_acc * 100:.2f}%)")
+    print(f"   Best Val Accuracy:    {best_val_acc:.4f} ({best_val_acc * 100:.2f}%)")
 
     # Determine performance level
     if best_val_acc >= 0.90:

@@ -7,7 +7,7 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class StripeWebhookHandler:
         self.webhook_log.parent.mkdir(parents=True, exist_ok=True)
         self.processed_events = set()
 
-    def handle_webhook(self, payload: str, signature: str, webhook_secret: Optional[str] = None) -> Dict[str, Any]:
+    def handle_webhook(self, payload: str, signature: str, webhook_secret: str | None = None) -> dict[str, Any]:
         """
         Handle incoming Stripe webhook
 
@@ -82,7 +82,7 @@ class StripeWebhookHandler:
         }
         return handlers.get(event_type)
 
-    def _handle_subscription_created(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_subscription_created(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle subscription.created event"""
         subscription = event["data"]["object"]
 
@@ -129,7 +129,7 @@ class StripeWebhookHandler:
             "status": status,
         }
 
-    def _handle_subscription_updated(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_subscription_updated(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle subscription.updated event"""
         subscription = event["data"]["object"]
 
@@ -155,7 +155,7 @@ class StripeWebhookHandler:
 
         return {"subscription_id": subscription_id, "status": status}
 
-    def _handle_subscription_deleted(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_subscription_deleted(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle subscription.deleted event"""
         subscription = event["data"]["object"]
 
@@ -185,7 +185,7 @@ class StripeWebhookHandler:
             "action": "cancelled",
         }
 
-    def _handle_payment_succeeded(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_payment_succeeded(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle invoice.payment_succeeded event"""
         invoice = event["data"]["object"]
 
@@ -207,7 +207,7 @@ class StripeWebhookHandler:
 
         return {"invoice_id": invoice_id, "amount": amount, "status": "paid"}
 
-    def _handle_payment_failed(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_payment_failed(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle invoice.payment_failed event"""
         invoice = event["data"]["object"]
 
@@ -229,7 +229,7 @@ class StripeWebhookHandler:
 
         return {"invoice_id": invoice_id, "amount": amount, "status": "failed"}
 
-    def _handle_charge_succeeded(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_charge_succeeded(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle charge.succeeded event"""
         charge = event["data"]["object"]
 
@@ -240,7 +240,7 @@ class StripeWebhookHandler:
 
         return {"charge_id": charge_id, "amount": amount, "status": "succeeded"}
 
-    def _handle_charge_failed(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_charge_failed(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle charge.failed event"""
         charge = event["data"]["object"]
 
@@ -257,7 +257,7 @@ class StripeWebhookHandler:
             "reason": failure_message,
         }
 
-    def _handle_customer_created(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_customer_created(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle customer.created event"""
         customer = event["data"]["object"]
 
@@ -268,7 +268,7 @@ class StripeWebhookHandler:
 
         return {"customer_id": customer_id, "email": email}
 
-    def _handle_customer_updated(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_customer_updated(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle customer.updated event"""
         customer = event["data"]["object"]
 
@@ -296,7 +296,7 @@ class StripeWebhookHandler:
         # For demo, return placeholder
         return f"{customer_id}@example.com"
 
-    def _log_event(self, event: Dict[str, Any]) -> None:
+    def _log_event(self, event: dict[str, Any]) -> None:
         """Log webhook event to file"""
         try:
             # Load existing log
@@ -329,7 +329,7 @@ class StripeWebhookHandler:
 
 
 # Global instance
-_webhook_handler: Optional[StripeWebhookHandler] = None
+_webhook_handler: StripeWebhookHandler | None = None
 
 
 def get_webhook_handler() -> StripeWebhookHandler:

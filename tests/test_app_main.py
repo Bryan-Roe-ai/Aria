@@ -65,9 +65,7 @@ def test_main_auto_provider_falls_back_to_local_without_remote_env(capsys):
 
 
 def test_main_openai_without_api_key_and_no_local_fallback_returns_auth(capsys):
-    exit_code = app.main(
-        ["--provider", "openai", "--no-local-fallback", "a prompt here"]
-    )
+    exit_code = app.main(["--provider", "openai", "--no-local-fallback", "a prompt here"])
 
     captured = capsys.readouterr()
     assert exit_code == app.EXIT_AUTH
@@ -78,15 +76,11 @@ def test_main_quantum_http_error_without_local_fallback_returns_api(monkeypatch,
     monkeypatch.setenv("QUANTUM_LLM_BASE_URL", "http://localhost:7071")
 
     def raise_http_error(*args, **kwargs):
-        raise app.urllib_error.HTTPError(
-            url="u", code=500, msg="err", hdrs=None, fp=None
-        )
+        raise app.urllib_error.HTTPError(url="u", code=500, msg="err", hdrs=None, fp=None)
 
     monkeypatch.setattr(app, "ask_quantum", raise_http_error)
 
-    exit_code = app.main(
-        ["--provider", "quantum", "--no-local-fallback", "a prompt here"]
-    )
+    exit_code = app.main(["--provider", "quantum", "--no-local-fallback", "a prompt here"])
 
     captured = capsys.readouterr()
     assert exit_code == app.EXIT_API
@@ -97,9 +91,7 @@ def test_main_quantum_http_error_with_local_fallback_returns_ok(monkeypatch, cap
     monkeypatch.setenv("QUANTUM_LLM_BASE_URL", "http://localhost:7071")
 
     def raise_http_error(*args, **kwargs):
-        raise app.urllib_error.HTTPError(
-            url="u", code=500, msg="err", hdrs=None, fp=None
-        )
+        raise app.urllib_error.HTTPError(url="u", code=500, msg="err", hdrs=None, fp=None)
 
     monkeypatch.setattr(app, "ask_quantum", raise_http_error)
 

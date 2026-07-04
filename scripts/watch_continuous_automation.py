@@ -23,7 +23,6 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 CONTINUOUS_DIR = REPO_ROOT / "data_out" / "continuous_automation"
@@ -42,12 +41,12 @@ GATE_FAIL_RE = re.compile(r"\[integration_contract_gate\]\s+failed")
 @dataclass
 class ProcessStatus:
     name: str
-    pid: Optional[int]
+    pid: int | None
     running: bool
     detail: str
 
 
-def _read_pid(path: Path) -> Optional[int]:
+def _read_pid(path: Path) -> int | None:
     if not path.exists():
         return None
     try:
@@ -56,7 +55,7 @@ def _read_pid(path: Path) -> Optional[int]:
         return None
 
 
-def _pid_running(pid: Optional[int]) -> bool:
+def _pid_running(pid: int | None) -> bool:
     if pid is None:
         return False
     try:
@@ -93,7 +92,7 @@ def _safe_read_lines(path: Path, max_lines: int = 4000) -> list[str]:
     return lines
 
 
-def _parse_iso(ts: str) -> Optional[datetime]:
+def _parse_iso(ts: str) -> datetime | None:
     try:
         parsed = datetime.fromisoformat(ts.strip())
     except ValueError:
@@ -103,7 +102,7 @@ def _parse_iso(ts: str) -> Optional[datetime]:
     return parsed
 
 
-def _format_age(when: Optional[datetime]) -> str:
+def _format_age(when: datetime | None) -> str:
     if when is None:
         return "n/a"
     now = datetime.now(timezone.utc)
@@ -136,9 +135,9 @@ def _analyze_loop_log(lines: list[str]) -> dict[str, object]:
     raw_end_lines = 0
     start_times: set[str] = set()
     end_times: set[str] = set()
-    last_start: Optional[datetime] = None
-    last_end: Optional[datetime] = None
-    last_pytest_summary: Optional[str] = None
+    last_start: datetime | None = None
+    last_end: datetime | None = None
+    last_pytest_summary: str | None = None
     last_gate_status = "unknown"
 
     for line in lines:
@@ -240,8 +239,8 @@ def _print_snapshot(lines_to_show: int) -> None:
         f"ends={analysis['cycle_ends']} "
         f"in_progress={'yes' if analysis['in_progress'] else 'no'}"
     )
-    print("last cycle start: " f"{last_start_dt or 'n/a'} " f"(age {_format_age(last_start_dt)})")
-    print("last cycle end:   " f"{last_end_dt or 'n/a'} " f"(age {_format_age(last_end_dt)})")
+    print(f"last cycle start: {last_start_dt or 'n/a'} (age {_format_age(last_start_dt)})")
+    print(f"last cycle end:   {last_end_dt or 'n/a'} (age {_format_age(last_end_dt)})")
     print(f"last gate status:  {analysis['last_gate_status']}")
     print(f"last pytest:       {analysis['last_pytest_summary'] or 'n/a'}")
 

@@ -12,13 +12,13 @@ Usage:
     python scripts/pre_commit_check.py --checks tests,lint
     python scripts/pre_commit_check.py --skip security
 """
+
 import argparse
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 # ANSI color codes
 GREEN = "\033[92m"
@@ -31,7 +31,7 @@ BOLD = "\033[1m"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
-def _staged_files(*pathspecs: str) -> List[str]:
+def _staged_files(*pathspecs: str) -> list[str]:
     """Return staged files filtered by optional git pathspecs."""
     cmd = ["git", "diff", "--cached", "--name-only"]
     if pathspecs:
@@ -72,7 +72,7 @@ def print_error(text: str):
     print(f"{RED}✗ {text}{RESET}")
 
 
-def run_command(cmd: List[str], cwd: Path = REPO_ROOT, timeout_seconds: int = 120) -> Tuple[int, str, str]:
+def run_command(cmd: list[str], cwd: Path = REPO_ROOT, timeout_seconds: int = 120) -> tuple[int, str, str]:
     """Run a command and return (exit_code, stdout, stderr)."""
     try:
         result = subprocess.run(
@@ -161,8 +161,7 @@ def check_linting() -> bool:
     else:
         issues = [line for line in stdout.splitlines() if line.strip()]
         print_error(
-            "Found critical linting issues "
-            f"({','.join(critical_rules)}) in {len(staged_python_files)} staged file(s)"
+            f"Found critical linting issues ({','.join(critical_rules)}) in {len(staged_python_files)} staged file(s)"
         )
         for issue in issues[:10]:
             print(f"  {issue}")

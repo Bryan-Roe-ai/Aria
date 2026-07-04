@@ -22,7 +22,7 @@ import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 
@@ -69,7 +69,7 @@ class MetricsAggregator:
         self.loss_history = deque(maxlen=window_size)
         self.perplexity_history = deque(maxlen=window_size)
         self.quantum_time_history = deque(maxlen=window_size)
-        self.snapshots: List[TrainingSnapshot] = []
+        self.snapshots: list[TrainingSnapshot] = []
 
         logger.info(f"MetricsAggregator initialized: window_size={window_size}")
 
@@ -80,7 +80,7 @@ class MetricsAggregator:
         self.quantum_time_history.append(snapshot.quantum_metrics.circuit_execution_time)
         self.snapshots.append(snapshot)
 
-    def get_moving_average(self, metric: str, window: Optional[int] = None) -> float:
+    def get_moving_average(self, metric: str, window: int | None = None) -> float:
         """Compute moving average for a metric."""
         window = window or self.window_size
 
@@ -128,7 +128,7 @@ class MetricsAggregator:
         else:
             return "stable"
 
-    def detect_anomalies(self, threshold: float = 3.0) -> List[Dict[str, Any]]:
+    def detect_anomalies(self, threshold: float = 3.0) -> list[dict[str, Any]]:
         """
         Detect anomalous metrics using z-score.
 
@@ -164,7 +164,7 @@ class MetricsAggregator:
 
         return anomalies
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get complete metrics summary."""
         return {
             "total_snapshots": len(self.snapshots),
@@ -207,7 +207,7 @@ class PerformanceMonitor:
 
         logger.info(f"PerformanceMonitor: CPU={self.psutil_available}, GPU={self.torch_available}")
 
-    def get_current_performance(self) -> Dict[str, float]:
+    def get_current_performance(self) -> dict[str, float]:
         """Get current system performance metrics."""
         metrics = {
             "cpu_percent": 0.0,
@@ -238,7 +238,7 @@ class PerformanceMonitor:
 
         return metrics
 
-    def get_resource_report(self) -> Dict[str, Any]:
+    def get_resource_report(self) -> dict[str, Any]:
         """Get comprehensive resource usage report."""
         if not self.performance_history:
             return {"status": "no_data"}
@@ -284,7 +284,7 @@ class QuantumCircuitProfiler:
             }
         )
 
-    def get_circuit_stats(self, circuit_id: str) -> Dict[str, Any]:
+    def get_circuit_stats(self, circuit_id: str) -> dict[str, Any]:
         """Get statistics for a specific circuit."""
         profiles = self.circuit_profiles.get(circuit_id, [])
 
@@ -303,7 +303,7 @@ class QuantumCircuitProfiler:
             "avg_depth": np.mean([p["depth"] for p in profiles]),
         }
 
-    def get_all_stats(self) -> Dict[str, Any]:
+    def get_all_stats(self) -> dict[str, Any]:
         """Get statistics for all circuits."""
         return {circuit_id: self.get_circuit_stats(circuit_id) for circuit_id in self.circuit_profiles.keys()}
 
@@ -331,7 +331,7 @@ class TrainingDashboard:
 
         # State
         self.last_update = time.time()
-        self.alerts: List[Dict[str, Any]] = []
+        self.alerts: list[dict[str, Any]] = []
 
         logger.info(f"TrainingDashboard initialized: output_dir={output_dir}")
 
@@ -427,7 +427,7 @@ class TrainingDashboard:
                 }
             )
 
-    def get_full_report(self) -> Dict[str, Any]:
+    def get_full_report(self) -> dict[str, Any]:
         """Generate complete training report."""
         return {
             "metrics_summary": self.metrics_aggregator.get_summary(),
@@ -460,7 +460,7 @@ class VisualizationExporter:
 
         logger.info(f"VisualizationExporter: output_dir={output_dir}")
 
-    def export_loss_curve(self, snapshots: List[TrainingSnapshot], filename: str = "loss_curve.json"):
+    def export_loss_curve(self, snapshots: list[TrainingSnapshot], filename: str = "loss_curve.json"):
         """Export loss curve data."""
         data = {
             "steps": [s.global_step for s in snapshots],
@@ -475,7 +475,7 @@ class VisualizationExporter:
         logger.info(f"Loss curve exported: {path}")
         return path
 
-    def export_quantum_metrics(self, snapshots: List[TrainingSnapshot], filename: str = "quantum_metrics.json"):
+    def export_quantum_metrics(self, snapshots: list[TrainingSnapshot], filename: str = "quantum_metrics.json"):
         """Export quantum-specific metrics."""
         data = {
             "steps": [s.global_step for s in snapshots],
@@ -491,7 +491,7 @@ class VisualizationExporter:
         logger.info(f"Quantum metrics exported: {path}")
         return path
 
-    def export_all(self, snapshots: List[TrainingSnapshot]):
+    def export_all(self, snapshots: list[TrainingSnapshot]):
         """Export all available visualization data."""
         self.export_loss_curve(snapshots)
         self.export_quantum_metrics(snapshots)

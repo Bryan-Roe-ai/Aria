@@ -3,12 +3,12 @@
 Local LoRA fine-tuning script - simplified for rapid local iteration.
 No Azure dependencies, focused on consumer hardware (single GPU or CPU).
 """
+
 import argparse
 import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
 
 try:
     import yaml
@@ -78,7 +78,7 @@ def load_config(config_path: Path) -> LocalConfig:
     return LocalConfig()
 
 
-def format_chat_messages(messages: List[Dict[str, str]], tokenizer) -> str:
+def format_chat_messages(messages: list[dict[str, str]], tokenizer) -> str:
     """Format chat messages using tokenizer template or fallback"""
     if hasattr(tokenizer, "apply_chat_template"):
         return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
@@ -131,15 +131,15 @@ def main():
     output_dir = Path(cfg.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("LOCAL LORA FINE-TUNING")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Model: {cfg.model_id}")
     print(f"Train: {train_path}")
     print(f"Eval: {eval_path}")
     print(f"Output: {output_dir}")
     print(f"Device: {'CUDA' if torch.cuda.is_available() else 'CPU'}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     # Load tokenizer
     print("Loading tokenizer...")
@@ -326,10 +326,10 @@ def main():
         with metrics_file.open("w") as f:
             json.dump(post_metrics, f, indent=2)
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("Training complete!")
         print(f"Model saved to: {final_dir}")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

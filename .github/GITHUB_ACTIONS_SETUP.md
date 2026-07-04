@@ -18,17 +18,17 @@ This update adds comprehensive GitHub Actions workflows to the Aria repository, 
 ### Configuration Files
 
 1. **labeler.yml** - Auto-labels PRs based on changed files
-   - Categories: documentation, tests, dependencies, github-actions, aria-character, chat-interface, quantum-ai, training, azure-functions, config, scripts, security
+    - Categories: documentation, tests, dependencies, github-actions, aria-character, chat-interface, quantum-ai, training, azure-functions, config, scripts, security
 
 ### Documentation
 
 1. **WORKFLOWS.md** - Comprehensive documentation covering:
-   - All 12 workflows (6 existing + 6 new)
-   - Status badges
-   - Usage instructions
-   - Configuration details
-   - Troubleshooting guide
-   - Best practices
+    - All 12 workflows (6 existing + 6 new)
+    - Status badges
+    - Usage instructions
+    - Configuration details
+    - Troubleshooting guide
+    - Best practices
 
 2. **README.md** - Updated with workflow status badges
 
@@ -308,8 +308,8 @@ Edit `.github/labeler.yml` to add/modify labels:
 
 ```yaml
 "my-label":
-  - changed-files:
-      - any-glob-to-any-file: ["path/to/files/**/*"]
+    - changed-files:
+          - any-glob-to-any-file: ["path/to/files/**/*"]
 ```
 
 ## Testing

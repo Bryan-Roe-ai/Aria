@@ -5,7 +5,7 @@ Production deployment with enhanced 8-qubit classifier
 
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # Azure ML imports (install with: pip install azureml-sdk)
 try:
@@ -146,7 +146,7 @@ class QuantumAzureMLDeployment:
 
         return env
 
-    def submit_training_job(self, script_path: str, experiment_name: str, arguments: Dict[str, Any] = None) -> Any:
+    def submit_training_job(self, script_path: str, experiment_name: str, arguments: dict[str, Any] = None) -> Any:
         """
         Submit quantum model training job to Azure ML.
 
@@ -192,7 +192,7 @@ class QuantumAzureMLDeployment:
         model_path: str,
         model_name: str,
         description: str = None,
-        tags: Dict[str, str] = None,
+        tags: dict[str, str] = None,
     ) -> Model:
         """
         Register trained quantum model in Azure ML.

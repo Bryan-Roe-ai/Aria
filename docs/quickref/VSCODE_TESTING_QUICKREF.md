@@ -16,12 +16,12 @@
 
 ## ⌨️ Keyboard Shortcuts
 
-| Shortcut | Action |
-| ---------- | -------- |
-| `Ctrl+; Ctrl+A` | Run all tests |
+| Shortcut        | Action           |
+| --------------- | ---------------- |
+| `Ctrl+; Ctrl+A` | Run all tests    |
 | `Ctrl+; Ctrl+F` | Run failed tests |
-| `Ctrl+; Ctrl+L` | Run last test |
-| `Ctrl+; Ctrl+D` | Debug last test |
+| `Ctrl+; Ctrl+L` | Run last test    |
+| `Ctrl+; Ctrl+D` | Debug last test  |
 
 ## 🎯 Test Profiles
 
@@ -51,10 +51,10 @@ The exact count changes as coverage grows. Run `python .\scripts\test_runner.py 
 - **Coverage:** Run with coverage profile, then open `htmlcov/index.html`
 - **Filters:** Use Test Explorer search box to find specific tests
 - **Test Status:**
-  - ✅ = Passed
-  - ❌ = Failed
-  - ⏭️ = Skipped
-  - 🔄 = Running
+    - ✅ = Passed
+    - ❌ = Failed
+    - ⏭️ = Skipped
+    - 🔄 = Running
 
 ## 💡 Pro Tips
 

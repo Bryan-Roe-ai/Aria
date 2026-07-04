@@ -32,6 +32,7 @@ python azure_foundry_deploy.py `
 ```
 
 Output includes:
+
 - Endpoint scoring URL
 - Primary key for auth
 

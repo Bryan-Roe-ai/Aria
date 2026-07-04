@@ -2,15 +2,15 @@
 name: llm-maker
 description: "LLM-powered code and website generation agent. Uses ToolMaker for safe Python function generation and WebsiteMaker for full HTML/CSS/JS site creation.\n\nTrigger phrases include:\n- 'generate a tool'\n- 'create a function'\n- 'build a website'\n- 'make a web page'\n- 'generate code safely'\n- 'tool maker'\n- 'website maker'\n\nExamples:\n- User says 'generate a calculator tool' → invoke for safe Python function generation via ToolMaker\n- User asks 'build a portfolio website' → invoke for multi-page HTML/CSS/JS generation via WebsiteMaker\n- User says 'create a data processing function with validation' → invoke for validated code generation\n\nThis agent enforces strict safety: no os/sys/subprocess/socket imports, no eval/exec/open, AST-validated output."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - vscode/memory
-  - read/problems
-  - task_complete
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - vscode/memory
+    - read/problems
+    - task_complete
 ---
 
 # LLM Maker Agent
@@ -32,6 +32,7 @@ Do not retain control after the scoped generation work is finished; hand back to
 ## Architecture
 
 ### Tool Generation Pipeline
+
 ```
 User spec (name, description, params, return_type, examples)
     ↓
@@ -51,6 +52,7 @@ Safe, validated Python function
 ```
 
 ### Website Generation Pipeline
+
 ```
 User spec (name, description, style, pages, features)
     ↓
@@ -68,17 +70,20 @@ metadata.json (timestamp, pages, features)
 ## Safety Rules — MANDATORY
 
 ### Banned Imports (DANGEROUS_IMPORTS)
+
 ```
 os, sys, subprocess, shutil, pathlib, socket, urllib, requests, http,
 pickle, threading, multiprocessing, ctypes, cffi
 ```
 
 ### Banned Builtins (DANGEROUS_BUILTINS)
+
 ```
 eval, exec, compile, __import__, open, input, breakpoint, exit
 ```
 
 ### Validation Checks (ToolValidator)
+
 1. **AST-based import scanning** — rejects any banned module import
 2. **Dangerous call detection** — flags eval/exec/compile usage
 3. **File operation regex** — catches file I/O patterns
@@ -87,17 +92,18 @@ eval, exec, compile, __import__, open, input, breakpoint, exit
 6. **Function signature verification** — ensures output matches requested spec
 
 ### Strict Mode (additional)
+
 - No lambda expressions
 - No complex comprehensions
 - Restricted to ALLOWED_IMPORTS only
 
 ## Key Files
 
-| File | Purpose |
-| ------ | --------- |
-| `ai-projects/llm-maker/src/tool_maker.py` | `ToolMaker` — iterative safe code generation |
-| `ai-projects/llm-maker/src/website_maker.py` | `WebsiteMaker` — full site generation with metadata |
-| `ai-projects/llm-maker/src/tool_validator.py` | `ToolValidator` — AST + regex safety validation |
+| File                                          | Purpose                                             |
+| --------------------------------------------- | --------------------------------------------------- |
+| `ai-projects/llm-maker/src/tool_maker.py`     | `ToolMaker` — iterative safe code generation        |
+| `ai-projects/llm-maker/src/website_maker.py`  | `WebsiteMaker` — full site generation with metadata |
+| `ai-projects/llm-maker/src/tool_validator.py` | `ToolValidator` — AST + regex safety validation     |
 
 ## When Generating Tools
 

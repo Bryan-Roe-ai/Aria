@@ -27,7 +27,6 @@ import io
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import numpy as np
 from PIL import Image
@@ -75,8 +74,8 @@ class VisionInference:
 
     def __init__(
         self,
-        checkpoint_path: Optional[str] = None,
-        device: Optional[str] = None,
+        checkpoint_path: str | None = None,
+        device: str | None = None,
         img_size: int = 64,
     ):
         """Initialize vision inference.
@@ -114,7 +113,7 @@ class VisionInference:
 
         logging.info(f"Model loaded successfully. Classes: {self.classes}")
 
-    def _find_latest_checkpoint(self) -> Optional[Path]:
+    def _find_latest_checkpoint(self) -> Path | None:
         """Search default locations for the most recent checkpoint."""
         repo_root = Path(__file__).resolve().parent.parent
 
@@ -149,7 +148,7 @@ class VisionInference:
 
         return tensor.to(self.device)
 
-    def predict(self, img: Image.Image) -> Dict[str, Union[str, float, Dict[str, float]]]:
+    def predict(self, img: Image.Image) -> dict[str, str | float | dict[str, float]]:
         """Run inference on a PIL Image.
 
         Args:
@@ -181,7 +180,7 @@ class VisionInference:
             "scores": scores,
         }
 
-    def predict_base64(self, b64_str: str) -> Dict[str, Union[str, float, Dict[str, float]]]:
+    def predict_base64(self, b64_str: str) -> dict[str, str | float | dict[str, float]]:
         """Run inference on a base64-encoded image.
 
         Args:
@@ -198,7 +197,7 @@ class VisionInference:
 
         return self.predict(img)
 
-    def predict_file(self, file_path: str) -> Dict[str, Union[str, float, Dict[str, float]]]:
+    def predict_file(self, file_path: str) -> dict[str, str | float | dict[str, float]]:
         """Run inference on an image file.
 
         Args:
@@ -210,7 +209,7 @@ class VisionInference:
         img = Image.open(file_path)
         return self.predict(img)
 
-    def predict_batch(self, images: List[Image.Image]) -> List[Dict[str, Union[str, float, Dict[str, float]]]]:
+    def predict_batch(self, images: list[Image.Image]) -> list[dict[str, str | float | dict[str, float]]]:
         """Run inference on a batch of PIL Images.
 
         Args:
@@ -245,7 +244,7 @@ class VisionInference:
 
         return results
 
-    def get_model_info(self) -> Dict[str, Union[str, List[str], int]]:
+    def get_model_info(self) -> dict[str, str | list[str] | int]:
         """Get metadata about the loaded model.
 
         Returns:

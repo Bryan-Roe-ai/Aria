@@ -37,28 +37,28 @@ Common trigger phrases:
 ## Procedure
 
 1. Define contract first
-   - Lock input/output schema and required fields.
-   - Clarify what is best-effort vs required behavior.
+    - Lock input/output schema and required fields.
+    - Clarify what is best-effort vs required behavior.
 
 2. Constrain tool boundaries
-   - List which tools can be called and for what reasons.
-   - Keep side-effecting actions explicit and auditable.
+    - List which tools can be called and for what reasons.
+    - Keep side-effecting actions explicit and auditable.
 
 3. Implement minimal orchestration
-   - Prefer small deterministic control flow over deep branching.
-   - Make retries bounded and reason-aware.
+    - Prefer small deterministic control flow over deep branching.
+    - Make retries bounded and reason-aware.
 
 4. Handle degraded mode intentionally
-   - Return actionable errors when hard requirements are missing.
-   - Use safe fallback only when it preserves contract meaning.
+    - Return actionable errors when hard requirements are missing.
+    - Use safe fallback only when it preserves contract meaning.
 
 5. Verify behavior incrementally
-   - Add focused tests/smokes for primary path + fallback path.
-   - Confirm output schema is stable across paths.
+    - Add focused tests/smokes for primary path + fallback path.
+    - Confirm output schema is stable across paths.
 
 6. Validate integration surface
-   - Ensure consuming endpoints/UI can parse new outputs.
-   - Avoid silent breaking changes in event/JSON structure.
+    - Ensure consuming endpoints/UI can parse new outputs.
+    - Avoid silent breaking changes in event/JSON structure.
 
 ## Quality Checks
 

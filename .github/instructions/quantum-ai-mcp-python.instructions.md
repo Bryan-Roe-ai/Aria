@@ -3,14 +3,17 @@ name: "Quantum-AI-MCP-Python"
 description: "Python-specific guidance for quantum-ai MCP server"
 applyTo: "ai-projects/quantum-ml/quantum_mcp_server.py"
 ---
+
 # Quantum AI MCP Server – Python file
 
 ## Cost Awareness
-- **Azure simulators (ionq.simulator, quantinuum.sim.*) are FREE** – no cost confirmation needed
-- **Real QPU hardware (ionq.qpu, quantinuum.qpu.*) is PAID** – requires `confirm_cost=true` parameter
+
+- **Azure simulators (ionq.simulator, quantinuum.sim.\*) are FREE** – no cost confirmation needed
+- **Real QPU hardware (ionq.qpu, quantinuum.qpu.\*) is PAID** – requires `confirm_cost=true` parameter
 - Always test on FREE simulators before using paid QPU
 
 ## MCP Tools & Safety
+
 - Start MCP server: `.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py`.
 - Available tools: `create_quantum_circuit`, `simulate_quantum_circuit`, `get_quantum_circuit_properties`, `connect_azure_quantum`, `list_quantum_backends`, `submit_quantum_job`, `estimate_quantum_cost`, `train_quantum_classifier`.
 - Safety limits enforced: ≤10 local qubits, default ≤1000 shots, 60s timeout per call, CircuitCache (LRU + TTL) to avoid recomputation.

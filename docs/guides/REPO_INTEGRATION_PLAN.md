@@ -222,16 +222,16 @@ Exit Criteria:
 ## Risk Register
 
 1. Risk: Legacy scripts fail after path normalization.
-Mitigation: Keep fallback lookup and compatibility file writes.
+   Mitigation: Keep fallback lookup and compatibility file writes.
 
 2. Risk: Docs and runtime diverge again over time.
-Mitigation: CI check for key path strings and provider-order assertions.
+   Mitigation: CI check for key path strings and provider-order assertions.
 
 3. Risk: Scheduler changes cause unintentional workflow execution.
-Mitigation: Add dry-run schedule simulation before enabling live schedules.
+   Mitigation: Add dry-run schedule simulation before enabling live schedules.
 
 4. Risk: Optional dependencies fail in clean environments.
-Mitigation: Keep dependency checks explicit and fail with actionable errors.
+   Mitigation: Keep dependency checks explicit and fail with actionable errors.
 
 ## Rollout and Rollback
 

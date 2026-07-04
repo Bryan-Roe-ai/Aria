@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 
 def normalize_whitespace(text: str) -> str:

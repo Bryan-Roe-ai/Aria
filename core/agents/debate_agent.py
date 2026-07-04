@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -45,7 +45,7 @@ class DebateAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
     ) -> None:
         self.memory = memory
         self.llm = llm or LLMClient()
@@ -53,13 +53,13 @@ class DebateAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"debate", "challenge", "stress_test"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         claim: str = (payload.get("claim") or payload.get("proposal") or payload.get("text") or "").strip()
         include_steelman: bool = bool(payload.get("steelman", True))
 
         if not claim:
-            result: Dict[str, Any] = {
+            result: dict[str, Any] = {
                 "agent": self.name,
                 "task_id": task.id,
                 "counter_arguments": [],
@@ -80,7 +80,7 @@ class DebateAgent(BaseAgent):
 
         return debate
 
-    def _debate(self, claim: str, include_steelman: bool) -> Dict[str, Any]:
+    def _debate(self, claim: str, include_steelman: bool) -> dict[str, Any]:
         truncated = claim[:_MAX_INPUT_CHARS]
         steelman_instruction = (
             'Include "steelman" (string): the strongest possible defence of the claim. ' if include_steelman else ""
@@ -100,7 +100,7 @@ class DebateAgent(BaseAgent):
             {
                 "role": "user",
                 "content": (
-                    f"Challenge the following claim or proposal from a devil's advocate " f"perspective:\n{truncated}"
+                    f"Challenge the following claim or proposal from a devil's advocate perspective:\n{truncated}"
                 ),
             },
         ]
@@ -113,8 +113,8 @@ class DebateAgent(BaseAgent):
 
         return self._parse_debate(raw, include_steelman)
 
-    def _parse_debate(self, raw: str, include_steelman: bool) -> Dict[str, Any]:
-        fallback: Dict[str, Any] = {
+    def _parse_debate(self, raw: str, include_steelman: bool) -> dict[str, Any]:
+        fallback: dict[str, Any] = {
             "counter_arguments": ["Debate unavailable"],
             "weaknesses": [],
             "steelman": "" if not include_steelman else "Steelman unavailable.",
@@ -124,7 +124,7 @@ class DebateAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Dict[str, Any] | None:
+        def _extract(data: Any) -> dict[str, Any] | None:
             if not isinstance(data, dict):
                 return None
             if not any(k in data for k in ("counter_arguments", "weaknesses", "verdict")):

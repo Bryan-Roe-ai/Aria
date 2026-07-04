@@ -25,8 +25,11 @@ try:
 except ModuleNotFoundError:
     # Fallback for environments without namespace package support
     sys.path.insert(0, str(project_root / "src"))
-    from quantum_classifier import HybridQuantumClassifier  # type: ignore
-    from quantum_classifier import QuantumClassifier, train_quantum_model
+    from quantum_classifier import (
+        HybridQuantumClassifier,  # type: ignore
+        QuantumClassifier,
+        train_quantum_model,
+    )
 
 results_dir = Path(__file__).parent.parent / "results" / "extended_datasets"
 results_dir.mkdir(parents=True, exist_ok=True)
@@ -96,7 +99,7 @@ ax2.plot(history_xor["val_acc"], linewidth=2, color="#e74c3c")
 ax2.set_xlabel("Epoch", fontsize=12)
 ax2.set_ylabel("Validation Accuracy", fontsize=12)
 ax2.set_title(
-    f'XOR Training (Final: {history_xor["val_acc"][-1]:.1%})',
+    f"XOR Training (Final: {history_xor['val_acc'][-1]:.1%})",
     fontsize=14,
     fontweight="bold",
 )
@@ -169,7 +172,7 @@ ax2.plot(history_spiral["val_acc"], linewidth=2, color="#9b59b6")
 ax2.set_xlabel("Epoch", fontsize=12)
 ax2.set_ylabel("Validation Accuracy", fontsize=12)
 ax2.set_title(
-    f'Spiral Training (Final: {history_spiral["val_acc"][-1]:.1%})',
+    f"Spiral Training (Final: {history_spiral['val_acc'][-1]:.1%})",
     fontsize=14,
     fontweight="bold",
 )
@@ -264,7 +267,7 @@ print("\nFinal Accuracies:")
 print("-" * 70)
 for dataset, acc in results_summary.items():
     stars = "★" * int(acc * 10)
-    print(f"  {dataset:12s}: {acc:.4f} ({acc*100:.1f}%) {stars}")
+    print(f"  {dataset:12s}: {acc:.4f} ({acc * 100:.1f}%) {stars}")
 
 # Create summary plot
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -277,7 +280,7 @@ colors = ["#e74c3c", "#9b59b6", "#3498db", "#2ecc71"]
 for i, (dataset, history, color) in enumerate(zip(datasets, histories, colors)):
     axes[i].plot(history["train_loss"], label="Train Loss", alpha=0.7, linewidth=2)
     axes[i].plot(history["val_loss"], label="Val Loss", linewidth=2)
-    axes[i].set_title(f'{dataset}: Acc={history["val_acc"][-1]:.3f}', fontsize=12, fontweight="bold")
+    axes[i].set_title(f"{dataset}: Acc={history['val_acc'][-1]:.3f}", fontsize=12, fontweight="bold")
     axes[i].set_xlabel("Epoch")
     axes[i].set_ylabel("Loss")
     axes[i].legend()

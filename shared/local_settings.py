@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SETTINGS_PATH = REPO_ROOT / "local.settings.json"

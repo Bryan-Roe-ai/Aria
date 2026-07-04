@@ -23,8 +23,7 @@ venv_python = (
 if venv_python.exists():
     # Prepend venv bin to PATH so subprocess uses venv Python
     venv_bin = venv_python.parent
-    os.environ["PATH"] = str(venv_bin) + os.pathsep + \
-        os.environ.get("PATH", "")
+    os.environ["PATH"] = str(venv_bin) + os.pathsep + os.environ.get("PATH", "")
     # Also explicitly use venv python for subprocess calls
     _PYTHON_EXECUTABLE = str(venv_python)
 else:
@@ -50,8 +49,7 @@ BOLD = "\033[1m"
 
 def print_section(title: str) -> None:
     """Print a section header."""
-    print(
-        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
+    print(f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
     print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
 
@@ -202,8 +200,7 @@ class AutomationRunner:
                 print_ok("All tests passed")
                 return True
             if "No module named pytest" in (result.stderr or ""):
-                print_error(
-                    "pytest is not installed in the active Python environment")
+                print_error("pytest is not installed in the active Python environment")
                 return False
             if result.returncode == 5:
                 print_warning("pytest collected no tests")
@@ -370,8 +367,7 @@ class AutomationRunner:
             if overall_ok:
                 print_ok("All automated tasks completed successfully!")
             else:
-                print_warning(
-                    "Automation finished with issues. Review the warnings/errors above.")
+                print_warning("Automation finished with issues. Review the warnings/errors above.")
             self.display_status()
             return overall_ok
 

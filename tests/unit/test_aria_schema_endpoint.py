@@ -25,9 +25,7 @@ SERVER_PATH = REPO_ROOT / "apps" / "aria" / "server.py"
 
 def _load_server_module():
     """Load apps/aria/server.py as a module without executing main()."""
-    spec = importlib.util.spec_from_file_location(
-        "aria_server_under_test", SERVER_PATH
-    )
+    spec = importlib.util.spec_from_file_location("aria_server_under_test", SERVER_PATH)
     assert spec and spec.loader, "Could not create import spec for server.py"
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -52,9 +50,7 @@ def aria_server_fixture():
 
 
 def _get_json(port: int, path: str):
-    with urllib.request.urlopen(
-        f"http://127.0.0.1:{port}{path}", timeout=5
-    ) as resp:
+    with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=5) as resp:
         assert resp.status == 200
         return json.loads(resp.read().decode("utf-8"))
 

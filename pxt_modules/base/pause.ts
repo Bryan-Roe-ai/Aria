@@ -6,7 +6,7 @@
 //% async block="pause %pause=timePicker|ms"
 //% blockId=device_pause blockNamespace="loops"
 function pause(ms: number): void {
-    loops.pause(ms);
+    loops.pause(ms)
 }
 
 // micro:bit compatibility
@@ -14,6 +14,6 @@ function pause(ms: number): void {
 // between micro:bit and other maker-style editors
 namespace basic {
     export function pause(millis: number) {
-        loops.pause(millis);
+        loops.pause(millis)
     }
 }

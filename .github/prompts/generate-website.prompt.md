@@ -4,6 +4,7 @@ name: "Generate Website"
 argument-hint: "Site spec + purpose (example: site purpose + pages + style preferences + any required sections)"
 agent: llm-maker
 ---
+
 # Generate Website
 
 Create a complete website (HTML + CSS + JS) using the WebsiteMaker system.
@@ -21,6 +22,7 @@ Describe your website with:
 ## Output
 
 WebsiteMaker generates:
+
 - `index.html` — Main page with semantic HTML
 - `style.css` — Complete stylesheet
 - `script.js` — Interactive functionality

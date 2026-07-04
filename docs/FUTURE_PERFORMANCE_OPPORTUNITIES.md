@@ -11,6 +11,7 @@ This document identifies potential performance improvements found during code an
 **Severity**: Low
 
 **Current Pattern**:
+
 ```python
 for c in classes:
     folder = self.root / c
@@ -20,6 +21,7 @@ for c in classes:
 ```
 
 **Recommendation**:
+
 ```python
 # Use rglob for cleaner recursive traversal
 for img_path in self.root.rglob('*'):
@@ -30,6 +32,7 @@ for img_path in self.root.rglob('*'):
 ```
 
 **Benefits**:
+
 - Cleaner, more Pythonic code
 - Handles nested directory structures
 - Minimal performance impact (already fairly optimal)
@@ -45,6 +48,7 @@ for img_path in self.root.rglob('*'):
 **Severity**: Medium
 
 **Current Pattern**:
+
 ```python
 for xi, yi in zip(X_val, y_val):
     expectation = circuit(xi, weights)  # Circuit executed for every sample
@@ -53,6 +57,7 @@ for xi, yi in zip(X_val, y_val):
 
 **Recommendation**:
 Implement circuit result caching for identical inputs:
+
 ```python
 from functools import lru_cache
 import hashlib
@@ -72,11 +77,13 @@ for xi, yi in zip(X_val, y_val):
 ```
 
 **Benefits**:
+
 - Avoids recomputing identical circuit evaluations
 - Significant speedup if same inputs appear multiple times
 - Especially valuable for batch evaluation
 
 **Challenges**:
+
 - Cache invalidation complexity
 - Memory overhead for cache storage
 - NumPy array hashing overhead
@@ -92,22 +99,26 @@ for xi, yi in zip(X_val, y_val):
 **Severity**: Low
 
 **Current Pattern**:
+
 ```python
 return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
 ```
 
 **Recommendation**:
 Use generator if full list not needed:
+
 ```python
 # If caller only needs to iterate once:
 return (qml.expval(qml.PauliZ(i)) for i in range(n_qubits))
 ```
 
 **Benefits**:
+
 - Reduces memory allocation
 - Lazy evaluation
 
 **Challenges**:
+
 - Need to verify all callers can handle generator
 - May not provide significant benefit for small n_qubits
 
@@ -119,11 +130,13 @@ return (qml.expval(qml.PauliZ(i)) for i in range(n_qubits))
 
 **Files**: Multiple quantum circuit implementations
 **Examples**:
+
 - `ai-projects/quantum-ml/src/hybrid_qnn.py:72-74`
 - `ai-projects/quantum-ml/web_app.py:193-197`
 - `ai-projects/quantum-ml/train_pennylane_simple.py:107-115`
 
 **Pattern**:
+
 ```python
 elif self.entanglement == "full":
     for i in range(self.n_qubits):
@@ -134,6 +147,7 @@ elif self.entanglement == "full":
 **Status**: **Already Addressed with Documentation**
 
 The O(n²) complexity for full entanglement is algorithmically necessary and intentional. This has been addressed by adding comprehensive documentation:
+
 - Constructor docstring explains performance trade-offs
 - Circuit method includes performance warnings
 - Users can choose `linear` or `circular` patterns for O(n) complexity
@@ -162,15 +176,18 @@ The O(n²) complexity for full entanglement is algorithmically necessary and int
 ## Prioritization Recommendations
 
 ### Immediate (High ROI, Low Effort)
+
 - ✅ SQL LIMIT clause - **COMPLETED**
 - ✅ String concatenation - **COMPLETED**
 - ✅ Dictionary comprehension - **COMPLETED**
 
 ### Next Wave (Medium ROI, Medium Effort)
+
 - Quantum circuit evaluation caching (if profiling confirms as bottleneck)
 - Vision training file I/O cleanup (code quality improvement)
 
 ### Future Consideration (Low ROI or High Effort)
+
 - Generator usage for quantum circuit outputs
 - Any additional patterns identified through profiling
 
@@ -181,31 +198,35 @@ The O(n²) complexity for full entanglement is algorithmically necessary and int
 To identify additional optimization opportunities:
 
 1. **CPU Profiling**: Use `cProfile` or `py-spy` to identify hot spots
-   ```bash
-   python -m cProfile -o profile.stats script.py
-   python -m pstats profile.stats
-   ```
+
+    ```bash
+    python -m cProfile -o profile.stats script.py
+    python -m pstats profile.stats
+    ```
 
 2. **Memory Profiling**: Use `memory_profiler` to track allocations
-   ```bash
-   python -m memory_profiler script.py
-   ```
+
+    ```bash
+    python -m memory_profiler script.py
+    ```
 
 3. **Line Profiling**: Use `line_profiler` for detailed line-by-line analysis
-   ```bash
-   kernprof -l -v script.py
-   ```
+
+    ```bash
+    kernprof -l -v script.py
+    ```
 
 4. **Real-world Metrics**: Monitor production systems for actual bottlenecks
-   - Application Insights metrics
-   - Database slow query logs
-   - Training pipeline execution times
+    - Application Insights metrics
+    - Database slow query logs
+    - Training pipeline execution times
 
 ---
 
 ## Conclusion
 
 The high-priority performance issues have been identified and fixed. The remaining opportunities are either:
+
 - Low-impact improvements (file I/O patterns)
 - Dependent on profiling data (circuit caching)
 - Already addressed through documentation (quantum complexity)

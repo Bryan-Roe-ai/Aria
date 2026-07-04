@@ -2,7 +2,7 @@ enum ControllerEvent {
     //% block="connected"
     Connected = 1,
     //% block="disconnected"
-    Disconnected = 2
+    Disconnected = 2,
 }
 
 /**
@@ -12,107 +12,114 @@ enum ControllerEvent {
 //% groups='["Single Player", "Multiplayer"]'
 //% blockGap=8
 namespace controller {
-    let _players: Controller[];
+    let _players: Controller[]
     game.addScenePopHandler(() => {
-        const stateWhenPushed = game.currentScene().controllerConnectionState;
-        if (!stateWhenPushed)
-            return;
+        const stateWhenPushed = game.currentScene().controllerConnectionState
+        if (!stateWhenPushed) return
         for (let i = 0; i < stateWhenPushed.length; i++) {
-            const p = _players[i];
-            if (p && (!!stateWhenPushed[i] != !!p.connected)) {
+            const p = _players[i]
+            if (p && !!stateWhenPushed[i] != !!p.connected) {
                 // connection state changed while in another scene; raise the event.
                 control.raiseEvent(
                     p.id,
-                    p.connected ? ControllerEvent.Connected : ControllerEvent.Disconnected
-                );
+                    p.connected
+                        ? ControllerEvent.Connected
+                        : ControllerEvent.Disconnected,
+                )
             }
         }
-
     })
     game.addScenePushHandler(oldScene => {
-        oldScene.controllerConnectionState = [];
+        oldScene.controllerConnectionState = []
         for (let i = 0; i < _players.length; i++) {
             if (_players[i]) {
-                oldScene.controllerConnectionState[i] = _players[i].connected;
+                oldScene.controllerConnectionState[i] = _players[i].connected
             }
         }
     })
 
     function addController(ctrl: Controller) {
         if (!_players) {
-            _players = [];
+            _players = []
         }
-        _players[ctrl.playerIndex - 1] = ctrl;
+        _players[ctrl.playerIndex - 1] = ctrl
     }
 
     export function _player1(): Controller {
         if (!_players || !_players[0])
-            new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]);
-        return _players[0];
+            new Controller(1, [
+                controller.left,
+                controller.up,
+                controller.right,
+                controller.down,
+                controller.A,
+                controller.B,
+                controller.menu,
+            ])
+        return _players[0]
     }
 
     export function players(): Controller[] {
-        _player1(); // ensure player1 is present
-        return _players.filter(ctrl => !!ctrl);
+        _player1() // ensure player1 is present
+        return _players.filter(ctrl => !!ctrl)
     }
 
     export class ControlledSprite {
-        public _inputLastFrame: boolean;
+        public _inputLastFrame: boolean
         constructor(
             public s: Sprite,
             public vx: number,
-            public vy: number
-        ) { }
+            public vy: number,
+        ) {}
     }
 
     export function _moveSprites() {
         // todo: move to current scene
         control.enablePerfCounter("controller")
-        players().forEach(ctrl => ctrl.__preUpdate());
+        players().forEach(ctrl => ctrl.__preUpdate())
     }
 
     //% fixedInstances
     export class Controller {
-        playerIndex: number;
-        buttons: Button[];
-        analog: boolean;
-        private _id: number;
-        private _connected: boolean;
+        playerIndex: number
+        buttons: Button[]
+        analog: boolean
+        private _id: number
+        private _connected: boolean
 
         // array of left,up,right,down,a,b,menu buttons
         constructor(playerIndex: number, buttons: Button[]) {
-            this._id = control.allocateNotifyEvent();
-            this._connected = false;
-            this.playerIndex = playerIndex;
-            this.analog = false;
-            if (buttons)
-                this.buttons = buttons;
+            this._id = control.allocateNotifyEvent()
+            this._connected = false
+            this.playerIndex = playerIndex
+            this.analog = false
+            if (buttons) this.buttons = buttons
             else {
-                this.buttons = [];
-                const leftId = 1 + (this.playerIndex - 1) * 7;
+                this.buttons = []
+                const leftId = 1 + (this.playerIndex - 1) * 7
                 for (let i = 0; i < 7; ++i) {
-                    this.buttons.push(new Button(leftId + i, -1));
+                    this.buttons.push(new Button(leftId + i, -1))
                 }
             }
             for (let i = 0; i < this.buttons.length; ++i)
-                this.buttons[i]._owner = this;
-            addController(this);
+                this.buttons[i]._owner = this
+            addController(this)
         }
 
         get _controlledSprites(): ControlledSprite[] {
-            return game.currentScene().controlledSprites[this.playerIndex];
+            return game.currentScene().controlledSprites[this.playerIndex]
         }
 
         set _controlledSprites(cps: ControlledSprite[]) {
-            game.currentScene().controlledSprites[this.playerIndex] = cps;
+            game.currentScene().controlledSprites[this.playerIndex] = cps
         }
 
         get id() {
-            return this._id;
+            return this._id
         }
 
         dump() {
-            this.buttons.forEach(b => console.log(b.toString()));
+            this.buttons.forEach(b => console.log(b.toString()))
         }
 
         /**
@@ -120,7 +127,7 @@ namespace controller {
          */
         //%
         get left() {
-            return this.button(ControllerButton.Left);
+            return this.button(ControllerButton.Left)
         }
 
         /**
@@ -128,7 +135,7 @@ namespace controller {
          */
         //%
         get right() {
-            return this.button(ControllerButton.Right);
+            return this.button(ControllerButton.Right)
         }
 
         /**
@@ -136,7 +143,7 @@ namespace controller {
          */
         //%
         get up() {
-            return this.button(ControllerButton.Up);
+            return this.button(ControllerButton.Up)
         }
 
         /**
@@ -144,7 +151,7 @@ namespace controller {
          */
         //%
         get down() {
-            return this.button(ControllerButton.Down);
+            return this.button(ControllerButton.Down)
         }
 
         /**
@@ -152,7 +159,7 @@ namespace controller {
          */
         //%
         get A() {
-            return this.button(ControllerButton.A);
+            return this.button(ControllerButton.A)
         }
 
         /**
@@ -160,7 +167,7 @@ namespace controller {
          */
         //%
         get B() {
-            return this.button(ControllerButton.B);
+            return this.button(ControllerButton.B)
         }
 
         /**
@@ -168,7 +175,7 @@ namespace controller {
          */
         //%
         get menu() {
-            return this.button(7);
+            return this.button(7)
         }
 
         /**
@@ -191,23 +198,29 @@ namespace controller {
         //% vy.shadow="spriteSpeedPicker"
         //% parts="multiplayer"
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-            this._moveSpriteInternal(sprite, vx, vy);
+            this._moveSpriteInternal(sprite, vx, vy)
         }
 
         stopControllingSprite(sprite: Sprite) {
-            if (!sprite) return;
-            this._controlledSprites = this._controlledSprites.filter(s => s.s.id !== sprite.id);
+            if (!sprite) return
+            this._controlledSprites = this._controlledSprites.filter(
+                s => s.s.id !== sprite.id,
+            )
         }
 
         // use this instead of movesprite internally to avoid adding the "multiplayer" part
         // to the compiled program
-        _moveSpriteInternal(sprite: Sprite, vx: number = 100, vy: number = 100) {
-            if (!sprite) return;
-            if (!this._controlledSprites) this._controlledSprites = [];
-            let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
+        _moveSpriteInternal(
+            sprite: Sprite,
+            vx: number = 100,
+            vy: number = 100,
+        ) {
+            if (!sprite) return
+            if (!this._controlledSprites) this._controlledSprites = []
+            let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id)
             if (!cp) {
-                cp = new ControlledSprite(sprite, vx, vy);
-                this._controlledSprites.push(cp);
+                cp = new ControlledSprite(sprite, vx, vy)
+                this._controlledSprites.push(cp)
             }
             if (cp.vx && vx == 0) {
                 cp.s.vx = 0
@@ -215,12 +228,12 @@ namespace controller {
             if (cp.vy && vy == 0) {
                 cp.s.vy = 0
             }
-            cp.vx = vx;
-            cp.vy = vy;
+            cp.vx = vx
+            cp.vy = vy
         }
 
         private button(button: ControllerButton): Button {
-            return this.buttons[button - 1];
+            return this.buttons[button - 1]
         }
 
         /**
@@ -231,8 +244,12 @@ namespace controller {
         //% group="Multiplayer"
         //% help=controller/on-button-event
         //% parts="multiplayer"
-        onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
-            this.button(btn).onEvent(event, handler);
+        onButtonEvent(
+            btn: ControllerButton,
+            event: ControllerButtonEvent,
+            handler: () => void,
+        ) {
+            this.button(btn).onEvent(event, handler)
         }
 
         /**
@@ -246,29 +263,34 @@ namespace controller {
         //% help=controller/on-event
         //% parts="multiplayer"
         onEvent(event: ControllerEvent, handler: () => void) {
-            control.onEvent(this.id, event, handler);
+            control.onEvent(this.id, event, handler)
         }
 
         get connected() {
-            return this._connected;
+            return this._connected
         }
 
         set connected(value: boolean) {
             if (value != this._connected) {
-                this._connected = value;
-                control.raiseEvent(this.id, this._connected ? ControllerEvent.Connected : ControllerEvent.Disconnected);
+                this._connected = value
+                control.raiseEvent(
+                    this.id,
+                    this._connected
+                        ? ControllerEvent.Connected
+                        : ControllerEvent.Disconnected,
+                )
             }
         }
 
         /**
          * Indicates if the button is currently pressed
-        */
+         */
         //% weight=96 blockGap=8 help=controller/button/is-pressed
         //% blockId=ctrlispressed block="is %controller %button **button** pressed"
         //% group="Multiplayer"
         //% parts="multiplayer"
         isPressed(btn: ControllerButton): boolean {
-            return this.button(btn).isPressed();
+            return this.button(btn).isPressed()
         }
 
         /**
@@ -281,22 +303,26 @@ namespace controller {
         //% group="Multiplayer"
         //% parts="multiplayer"
         dx(step: number = 100) {
-            return this._dxInternal(step);
+            return this._dxInternal(step)
         }
 
         // use this instead of dx internally to avoid adding the "multiplayer" part
         // to the compiled program
         _dxInternal(step: number = 100) {
-            const ctx = control.eventContext();
-            if (!ctx) return 0;
+            const ctx = control.eventContext()
+            if (!ctx) return 0
 
             if (this.analog)
-                return (this.right.pressureLevel() - this.left.pressureLevel()) / 512 * ctx.deltaTime * step
+                return (
+                    ((this.right.pressureLevel() - this.left.pressureLevel()) /
+                        512) *
+                    ctx.deltaTime *
+                    step
+                )
             if (this.left.isPressed()) {
                 if (this.right.isPressed()) return 0
-                else return -step * ctx.deltaTime;
-            }
-            else if (this.right.isPressed()) return step * ctx.deltaTime
+                else return -step * ctx.deltaTime
+            } else if (this.right.isPressed()) return step * ctx.deltaTime
             else return 0
         }
 
@@ -310,39 +336,49 @@ namespace controller {
         //% group="Multiplayer"
         //% parts="multiplayer"
         dy(step: number = 100) {
-            return this._dyInternal(step);
+            return this._dyInternal(step)
         }
 
         // use this instead of dy internally to avoid adding the "multiplayer" part
         // to the compiled program
         _dyInternal(step: number = 100) {
-            const ctx = control.eventContext();
-            if (!ctx) return 0;
+            const ctx = control.eventContext()
+            if (!ctx) return 0
 
             if (this.analog)
-                return (this.down.pressureLevel() - this.up.pressureLevel()) / 512 * ctx.deltaTime * step
+                return (
+                    ((this.down.pressureLevel() - this.up.pressureLevel()) /
+                        512) *
+                    ctx.deltaTime *
+                    step
+                )
             if (this.up.isPressed()) {
                 if (this.down.isPressed()) return 0
-                else return -step * ctx.deltaTime;
-            }
-            else if (this.down.isPressed()) return step * ctx.deltaTime
+                else return -step * ctx.deltaTime
+            } else if (this.down.isPressed()) return step * ctx.deltaTime
             else return 0
         }
 
         __preUpdate() {
-            if (!this._controlledSprites) return;
+            if (!this._controlledSprites) return
 
-            let deadSprites = false;
+            let deadSprites = false
 
             let svx = 0
             let svy = 0
 
             if (this.analog) {
-                svx = (this.right.pressureLevel() - this.left.pressureLevel()) >> 1
+                svx =
+                    (this.right.pressureLevel() - this.left.pressureLevel()) >>
+                    1
                 svy = (this.down.pressureLevel() - this.up.pressureLevel()) >> 1
             } else {
-                svx = (this.right.isPressed() ? 256 : 0) - (this.left.isPressed() ? 256 : 0)
-                svy = (this.down.isPressed() ? 256 : 0) - (this.up.isPressed() ? 256 : 0)
+                svx =
+                    (this.right.isPressed() ? 256 : 0) -
+                    (this.left.isPressed() ? 256 : 0)
+                svy =
+                    (this.down.isPressed() ? 256 : 0) -
+                    (this.up.isPressed() ? 256 : 0)
             }
 
             let svxInCricle = svx
@@ -356,20 +392,20 @@ namespace controller {
             if (sq > max) {
                 // if so, store the vector scaled down to fit in the circle
                 const scale = Math.sqrt(max / sq)
-                svxInCricle = scale * svx | 0
-                svyInCircle = scale * svy | 0
+                svxInCricle = (scale * svx) | 0
+                svyInCircle = (scale * svy) | 0
             }
 
             this._controlledSprites.forEach(controlledSprite => {
-                const { s, vx, vy } = controlledSprite;
+                const { s, vx, vy } = controlledSprite
                 if (s.flags & sprites.Flag.Destroyed) {
-                    deadSprites = true;
-                    return;
+                    deadSprites = true
+                    return
                 }
 
                 if (controlledSprite._inputLastFrame) {
-                    if (vx) s._vx = Fx.zeroFx8;
-                    if (vy) s._vy = Fx.zeroFx8;
+                    if (vx) s._vx = Fx.zeroFx8
+                    if (vy) s._vy = Fx.zeroFx8
                 }
 
                 if (svx || svy) {
@@ -383,30 +419,30 @@ namespace controller {
                     } else if (vy) {
                         s._vy = Fx.imul(svy as any as Fx8, vy)
                     }
-                    controlledSprite._inputLastFrame = true;
+                    controlledSprite._inputLastFrame = true
+                } else {
+                    controlledSprite._inputLastFrame = false
                 }
-                else {
-                    controlledSprite._inputLastFrame = false;
-                }
-            });
+            })
 
             if (deadSprites)
-                this._controlledSprites = this._controlledSprites
-                    .filter(s => !(s.s.flags & sprites.Flag.Destroyed));
+                this._controlledSprites = this._controlledSprites.filter(
+                    s => !(s.s.flags & sprites.Flag.Destroyed),
+                )
         }
 
         __update(dtms: number) {
-            dtms = dtms | 0;
-            this.buttons.forEach(btn => btn.__update(dtms));
+            dtms = dtms | 0
+            this.buttons.forEach(btn => btn.__update(dtms))
         }
 
         serialize(offset: number): Buffer {
-            const buf = control.createBuffer(offset + 1);
-            let b = 0;
+            const buf = control.createBuffer(offset + 1)
+            let b = 0
             for (let i = 0; this.buttons.length; ++i)
-                b |= (this.buttons[i].isPressed() ? 1 : 0) << i;
+                b |= (this.buttons[i].isPressed() ? 1 : 0) << i
             buf[offset] = b
-            return buf;
+            return buf
         }
     }
 
@@ -415,11 +451,11 @@ namespace controller {
      */
     export function __update(dt: number) {
         const dtms = (dt * 1000) | 0
-        players().forEach(ctrl => ctrl.__update(dtms));
+        players().forEach(ctrl => ctrl.__update(dtms))
     }
 
     export function serialize(offset: number): Buffer {
-        return _player1().serialize(offset);
+        return _player1().serialize(offset)
     }
 
     /**
@@ -440,8 +476,12 @@ namespace controller {
     //% group="Single Player"
     //% vx.shadow=spriteSpeedPicker
     //% vy.shadow=spriteSpeedPicker
-    export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        _player1()._moveSpriteInternal(sprite, vx, vy);
+    export function moveSprite(
+        sprite: Sprite,
+        vx: number = 100,
+        vy: number = 100,
+    ) {
+        _player1()._moveSpriteInternal(sprite, vx, vy)
     }
 
     /**
@@ -453,7 +493,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dx(step: number = 100) {
-        return _player1()._dxInternal(step);
+        return _player1()._dxInternal(step)
     }
 
     /**
@@ -465,20 +505,20 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dy(step: number = 100) {
-        return _player1()._dyInternal(step);
+        return _player1()._dyInternal(step)
     }
 
     class AnyButton extends Button {
         isPressed(): boolean {
-            const ctrl = _player1();
+            const ctrl = _player1()
 
             for (const b of ctrl.buttons) {
-                if (b.isPressed()) return true;
+                if (b.isPressed()) return true
             }
-            return false;
+            return false
         }
     }
 
     //% fixedInstance block="any"
-    export const anyButton: Button = new AnyButton(0, -1);
+    export const anyButton: Button = new AnyButton(0, -1)
 }

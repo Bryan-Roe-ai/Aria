@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "shared"))
 from chat_providers import detect_provider  # noqa: E402
 
 
-def _parse_body(req: func.HttpRequest) -> Dict[str, Any]:
+def _parse_body(req: func.HttpRequest) -> dict[str, Any]:
     try:
         return req.get_json() or {}
     except ValueError:

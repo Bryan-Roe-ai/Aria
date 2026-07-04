@@ -7,6 +7,7 @@ but does not include the REPO_ROOT + sys.path insertion pattern.
 
 Run by pre-commit with `files` only including `scripts/*.py` by default.
 """
+
 import re
 import sys
 from pathlib import Path

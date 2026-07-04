@@ -8,20 +8,17 @@ namespace JSON {
         let r = 0
         for (let i = 0; i < s.length; ++i) {
             let c = s.charCodeAt(i)
-            if (c == 0x20 || c == 10 || c == 13 || c == 9)
-                continue
+            if (c == 0x20 || c == 10 || c == 13 || c == 9) continue
             if (r == 0 && !m && c == 0x2d) {
                 m = true
                 continue
             }
 
             let v = -1
-            if (0x30 <= c && c <= 0x39)
-                v = c - 0x30
+            if (0x30 <= c && c <= 0x39) v = c - 0x30
             else {
                 c |= 0x20
-                if (0x61 <= c && c <= 0x7a)
-                    v = c - 0x61 + 10
+                if (0x61 <= c && c <= 0x7a) v = c - 0x61 + 10
             }
 
             if (0 <= v && v < base) {
@@ -34,7 +31,6 @@ namespace JSON {
 
         return m ? -r : r
     }
-
 
     class Parser {
         ptr: number
@@ -49,7 +45,7 @@ namespace JSON {
         }
 
         skipWS() {
-            for (; ;) {
+            for (;;) {
                 const c = this.nextChar()
                 if (c == 0x20 || c == 0x0a || c == 0x0d || c == 0x09) {
                     // OK
@@ -61,18 +57,16 @@ namespace JSON {
         }
 
         nextChar() {
-            if (this.ptr < this.s.length)
-                return this.s.charCodeAt(this.ptr++)
+            if (this.ptr < this.s.length) return this.s.charCodeAt(this.ptr++)
             return 0
         }
 
         doString() {
             let r = ""
             this.ptr++
-            for (; ;) {
+            for (;;) {
                 const c = this.s.charAt(this.ptr++)
-                if (c == "\"")
-                    return r
+                if (c == '"') return r
                 if (c == "\\") {
                     let q = this.s.charAt(this.ptr++)
                     if (q == "b") q = "\b"
@@ -80,7 +74,12 @@ namespace JSON {
                     else if (q == "r") q = "\r"
                     else if (q == "t") q = "\t"
                     else if (q == "u") {
-                        q = String.fromCharCode(parseIntRadix(this.s.slice(this.ptr, this.ptr + 4), 16))
+                        q = String.fromCharCode(
+                            parseIntRadix(
+                                this.s.slice(this.ptr, this.ptr + 4),
+                                16,
+                            ),
+                        )
                         this.ptr += 4
                     }
                     r += q
@@ -93,23 +92,21 @@ namespace JSON {
         doArray(): any[] {
             const r = []
             this.ptr++
-            for (; ;) {
+            for (;;) {
                 let c = this.skipWS()
                 if (c == 0x5d) {
                     this.ptr++
                     return r
                 }
                 const v = this.value()
-                if (this.errorMsg)
-                    return null
+                if (this.errorMsg) return null
                 r.push(v)
                 c = this.skipWS()
                 if (c == 0x2c) {
                     this.ptr++
                     continue
                 }
-                if (c == 0x5d)
-                    continue
+                if (c == 0x5d) continue
                 this.error("expecting comma")
             }
         }
@@ -117,7 +114,7 @@ namespace JSON {
         doObject() {
             const r: any = {}
             this.ptr++
-            for (; ;) {
+            for (;;) {
                 let c = this.skipWS()
                 if (c == 0x7d) {
                     this.ptr++
@@ -135,25 +132,30 @@ namespace JSON {
                 }
                 this.ptr++
                 const v = this.value()
-                if (this.errorMsg)
-                    return null
+                if (this.errorMsg) return null
                 r[k] = v
                 c = this.skipWS()
                 if (c == 0x2c) {
                     this.ptr++
                     continue
                 }
-                if (c == 0x7d)
-                    continue
+                if (c == 0x7d) continue
                 this.error("expecting comma, got " + String.fromCharCode(c))
             }
         }
 
         doNumber() {
             const beg = this.ptr
-            for (; ;) {
+            for (;;) {
                 const c = this.nextChar()
-                if ((0x30 <= c && c <= 0x39) || c == 0x2b || c == 0x2d || c == 0x2e || c == 0x45 || c == 0x65) {
+                if (
+                    (0x30 <= c && c <= 0x39) ||
+                    c == 0x2b ||
+                    c == 0x2d ||
+                    c == 0x2e ||
+                    c == 0x45 ||
+                    c == 0x65
+                ) {
                     // one more
                 } else {
                     this.ptr--
@@ -177,24 +179,17 @@ namespace JSON {
         }
 
         value() {
-            if (this.errorMsg)
-                return null
+            if (this.errorMsg) return null
 
             const c = this.skipWS()
-            if (c == 0x7b)
-                return this.doObject()
-            else if (c == 0x5b)
-                return this.doArray()
+            if (c == 0x7b) return this.doObject()
+            else if (c == 0x5b) return this.doArray()
             else if ((0x30 <= c && c <= 0x39) || c == 0x2d)
                 return this.doNumber()
-            else if (c == 0x22)
-                return this.doString()
-            else if (c == 0x74 && this.checkKw("true"))
-                return true
-            else if (c == 0x66 && this.checkKw("false"))
-                return false
-            else if (c == 0x6e && this.checkKw("null"))
-                return null
+            else if (c == 0x22) return this.doString()
+            else if (c == 0x74 && this.checkKw("true")) return true
+            else if (c == 0x66 && this.checkKw("false")) return false
+            else if (c == 0x6e && this.checkKw("null")) return null
 
             this.error("unexpected token")
             return null
@@ -207,7 +202,7 @@ namespace JSON {
         indent: number
 
         doString(s: string) {
-            let r = "\""
+            let r = '"'
             for (let i = 0; i < s.length; ++i) {
                 let c = s[i]
                 if (c == "\n") c = "\\n"
@@ -215,22 +210,19 @@ namespace JSON {
                 else if (c == "\t") c = "\\t"
                 else if (c == "\b") c = "\\b"
                 else if (c == "\\") c = "\\\\"
-                else if (c == "\"") c = "\\\""
+                else if (c == '"') c = '\\"'
                 r += c
             }
-            return r + "\""
+            return r + '"'
         }
 
         go(v: any) {
             const t = typeof v
-            if (t == "string")
-                return this.doString(v)
-            else if (t == "boolean" || t == "number" || v == null)
-                return "" + v
+            if (t == "string") return this.doString(v)
+            else if (t == "boolean" || t == "number" || v == null) return "" + v
             else if (Array.isArray(v)) {
                 const arr = v as any[]
-                if (arr.length == 0)
-                    return "[]"
+                if (arr.length == 0) return "[]"
                 else {
                     let r = "["
                     if (this.indent) {
@@ -239,10 +231,8 @@ namespace JSON {
                     }
                     for (let i = 0; i < arr.length; ++i) {
                         r += this.currIndent + this.go(arr[i])
-                        if (i != arr.length - 1)
-                            r += ","
-                        if (this.indent)
-                            r += "\n"
+                        if (i != arr.length - 1) r += ","
+                        if (this.indent) r += "\n"
                     }
                     if (this.indent)
                         this.currIndent = this.currIndent.slice(this.indent)
@@ -251,8 +241,7 @@ namespace JSON {
                 }
             } else {
                 const keys = Object.keys(v)
-                if (keys.length == 0)
-                    return "{}"
+                if (keys.length == 0) return "{}"
 
                 let r = "{"
                 if (this.indent) {
@@ -262,15 +251,11 @@ namespace JSON {
                 for (let i = 0; i < keys.length; ++i) {
                     const k = keys[i]
                     r += this.currIndent + this.doString(k)
-                    if (this.indent)
-                        r += ": "
-                    else
-                        r += ":"
+                    if (this.indent) r += ": "
+                    else r += ":"
                     r += this.go(v[k])
-                    if (i != keys.length - 1)
-                        r += ","
-                    if (this.indent)
-                        r += "\n"
+                    if (i != keys.length - 1) r += ","
+                    if (this.indent) r += "\n"
                 }
                 if (this.indent)
                     this.currIndent = this.currIndent.slice(this.indent)
@@ -286,7 +271,11 @@ namespace JSON {
      * @param replacer Not supported; use null.
      * @param indent Adds indentation, white space, and line break characters to the return-value JSON text to make it easier to read.
      */
-    export function stringify(value: any, replacer: any = null, indent: number = 0) {
+    export function stringify(
+        value: any,
+        replacer: any = null,
+        indent: number = 0,
+    ) {
         const ss = new Stringifier()
         ss.currIndent = ""
         indent |= 0
@@ -295,11 +284,9 @@ namespace JSON {
         ss.indentStep = ""
         ss.currIndent = ""
         ss.indent = indent
-        while (indent-- > 0)
-            ss.indentStep += " "
+        while (indent-- > 0) ss.indentStep += " "
         return ss.go(value)
     }
-
 
     /**
      * Converts a JavaScript Object Notation (JSON) string into an object.

@@ -23,7 +23,6 @@ import subprocess
 import sys
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # PR Checklist (from .github/copilot-instructions.md)
 # ---------------------------------------------------------------------------

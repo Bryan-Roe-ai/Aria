@@ -93,7 +93,7 @@ lora_dropout: 0.05
 # Memory optimization
 use_bf16: true
 gradient_checkpointing: true
-use_4bit: false  # Enable for QLoRA (saves VRAM)
+use_4bit: false # Enable for QLoRA (saves VRAM)
 ```
 
 ## Common Scenarios
@@ -213,12 +213,12 @@ gradient_accumulation_steps: 2
 
 ## Differences from Azure Setup
 
-| Feature | Local Setup | Azure Setup (../scripts/) |
-| --------- | ------------- | --------------------------- |
-| Dependencies | Minimal (no Azure SDKs) | Full (Azure Blob, Log Analytics, App Insights) |
-| Data Loading | Local files only | Blob Storage manifests, streaming |
-| Multi-GPU | Manual Accelerate launch | Built-in DeepSpeed support |
-| Observability | File logging only | OpenTelemetry, App Insights, Log Analytics |
-| Deployment | Local use | Container Apps Jobs |
+| Feature       | Local Setup              | Azure Setup (../scripts/)                      |
+| ------------- | ------------------------ | ---------------------------------------------- |
+| Dependencies  | Minimal (no Azure SDKs)  | Full (Azure Blob, Log Analytics, App Insights) |
+| Data Loading  | Local files only         | Blob Storage manifests, streaming              |
+| Multi-GPU     | Manual Accelerate launch | Built-in DeepSpeed support                     |
+| Observability | File logging only        | OpenTelemetry, App Insights, Log Analytics     |
+| Deployment    | Local use                | Container Apps Jobs                            |
 
 For production-scale training with multi-GPU, observability, and cloud storage, use the Azure setup in `../scripts/`.

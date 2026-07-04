@@ -190,9 +190,7 @@ class TestQuantumSampler:
         """Clamping blend_factor=1.5 yields the same draw as blend_factor=1.0."""
         s = self._make_sampler()
         logits = [3.0, 1.0, 0.5, 0.2]
-        assert s.sample(logits, blend_factor=1.5, seed=11) == s.sample(
-            logits, blend_factor=1.0, seed=11
-        )
+        assert s.sample(logits, blend_factor=1.5, seed=11) == s.sample(logits, blend_factor=1.0, seed=11)
 
 
 # ===========================================================================

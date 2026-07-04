@@ -4,6 +4,7 @@ name: "Generate Tool"
 argument-hint: "Tool spec + safety requirements (example: function purpose + input/output types + allowed operations)"
 agent: llm-maker
 ---
+
 # Generate Tool
 
 Generate a safe, validated Python function using the ToolMaker system.
@@ -29,7 +30,7 @@ Examples:
 ## Safety Rules (enforced by ToolValidator)
 
 - **Banned imports**: os, sys, subprocess, shutil, pathlib, socket, urllib, requests, http, pickle, threading, multiprocessing, ctypes, cffi
-- **Banned calls**: eval, exec, compile, __import__, open, input, breakpoint, exit
+- **Banned calls**: eval, exec, compile, **import**, open, input, breakpoint, exit
 - **No file I/O, no network access, no dynamic code execution**
 - Functions must be pure — no side effects
 

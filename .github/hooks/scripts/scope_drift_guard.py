@@ -29,8 +29,8 @@ import json
 import os
 import re
 import sys
-from typing import Any, Iterable
-
+from collections.abc import Iterable
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Patterns

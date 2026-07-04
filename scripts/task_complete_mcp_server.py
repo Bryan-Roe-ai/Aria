@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Minimal MCP server providing a task_complete tool."""
+
 import json
 import sys
 

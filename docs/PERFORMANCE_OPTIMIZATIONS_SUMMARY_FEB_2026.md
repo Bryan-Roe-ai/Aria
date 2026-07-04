@@ -4,13 +4,13 @@ Quick reference for the 5 major performance optimizations completed in February 
 
 ## At a Glance
 
-| # | File | Problem | Solution | Impact |
-| --- | ------ | --------- | ---------- | -------- |
-| 1 | `scripts/extract_chat_logs_dataset.py:72` | Double `any()` traversal | Single-pass set comprehension | **2x faster** |
-| 2 | `scripts/job_queue.py:295` | Nested `any()` in list comprehension | Set intersection | **5-50x faster** |
-| 3 | `function_app.py:560` | 12 separate `if` statements | Command pattern table | **5-20x faster** |
-| 4 | `scripts/generate_evaluation_set.py:74` | Reading same files 2-3 times | Cache file contents | **2-3x faster** |
-| 5 | `ai-projects/quantum-ml/web_app.py:217` | Manual parameter-shift loops | PennyLane autograd | **10-100x faster** |
+| #   | File                                      | Problem                              | Solution                      | Impact             |
+| --- | ----------------------------------------- | ------------------------------------ | ----------------------------- | ------------------ |
+| 1   | `scripts/extract_chat_logs_dataset.py:72` | Double `any()` traversal             | Single-pass set comprehension | **2x faster**      |
+| 2   | `scripts/job_queue.py:295`                | Nested `any()` in list comprehension | Set intersection              | **5-50x faster**   |
+| 3   | `function_app.py:560`                     | 12 separate `if` statements          | Command pattern table         | **5-20x faster**   |
+| 4   | `scripts/generate_evaluation_set.py:74`   | Reading same files 2-3 times         | Cache file contents           | **2-3x faster**    |
+| 5   | `ai-projects/quantum-ml/web_app.py:217`   | Manual parameter-shift loops         | PennyLane autograd            | **10-100x faster** |
 
 **Cumulative Impact:** 24-175x speedup across affected code paths
 
@@ -118,13 +118,13 @@ python -m pytest tests/test_performance_optimizations.py -v
 
 ## When to Apply These Patterns
 
-| Pattern | Use When | Avoid When |
-| --------- | ---------- | ------------ |
-| Single-pass checks | Multiple conditions on same collection | Single condition check |
-| Set intersection | Filtering by tags/keywords | Small lists (<10 items) |
-| Pattern tables | 5+ similar if statements | Dynamic patterns |
-| File caching | Reading same file 2+ times | Single read or huge files |
-| Framework autograd | Manual gradient loops exist | Framework doesn't support |
+| Pattern            | Use When                               | Avoid When                |
+| ------------------ | -------------------------------------- | ------------------------- |
+| Single-pass checks | Multiple conditions on same collection | Single condition check    |
+| Set intersection   | Filtering by tags/keywords             | Small lists (<10 items)   |
+| Pattern tables     | 5+ similar if statements               | Dynamic patterns          |
+| File caching       | Reading same file 2+ times             | Single read or huge files |
+| Framework autograd | Manual gradient loops exist            | Framework doesn't support |
 
 ## References
 

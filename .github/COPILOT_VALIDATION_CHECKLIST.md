@@ -15,24 +15,27 @@ Use this checklist to verify that GitHub Copilot is fully integrated and working
 ### Required Extensions
 
 - [ ] GitHub Copilot (GitHub.copilot)
-  ```bash
-  code --install-extension GitHub.copilot
-  ```
+
+    ```bash
+    code --install-extension GitHub.copilot
+    ```
 
 - [ ] GitHub Copilot Chat (GitHub.copilot-chat)
-  ```bash
-  code --install-extension GitHub.copilot-chat
-  ```
+
+    ```bash
+    code --install-extension GitHub.copilot-chat
+    ```
 
 - [ ] Azure Functions (ms-azuretools.vscode-azurefunctions)
-  ```bash
-  code --install-extension ms-azuretools.vscode-azurefunctions
-  ```
+
+    ```bash
+    code --install-extension ms-azuretools.vscode-azurefunctions
+    ```
 
 - [ ] Python (ms-python.python)
-  ```bash
-  code --install-extension ms-python.python
-  ```
+    ```bash
+    code --install-extension ms-python.python
+    ```
 
 ### Verification
 
@@ -42,6 +45,7 @@ code --list-extensions | grep -E "copilot|azure|python"
 ```
 
 Expected output:
+
 ```
 GitHub.copilot
 GitHub.copilot-chat
@@ -57,47 +61,47 @@ ms-windows-ai-studio.windows-ai-studio
 - [ ] File exists: `test -f .vscode/settings.json`
 - [ ] Valid JSON: `python3 -m json.tool .vscode/settings.json > /dev/null`
 - [ ] Contains Copilot settings:
-  ```bash
-  grep -q "chat.agent.maxRequests\|python.analysis.extraPaths" .vscode/settings.json
-  ```
+    ```bash
+    grep -q "chat.agent.maxRequests\|python.analysis.extraPaths" .vscode/settings.json
+    ```
 
 ### `.vscode/mcp.json`
 
 - [ ] File exists: `test -f .vscode/mcp.json`
 - [ ] Valid JSON: `python3 -m json.tool .vscode/mcp.json > /dev/null`
 - [ ] Contains all three servers:
-  ```bash
-  grep -q "quantum-ai\|llm-maker\|task-complete" .vscode/mcp.json
-  ```
+    ```bash
+    grep -q "quantum-ai\|llm-maker\|task-complete" .vscode/mcp.json
+    ```
 
 ### `.vscode/extensions.json`
 
 - [ ] File exists: `test -f .vscode/extensions.json`
 - [ ] Valid JSON: `python3 -m json.tool .vscode/extensions.json > /dev/null`
 - [ ] Recommends Copilot:
-  ```bash
-  grep -q "GitHub.copilot" .vscode/extensions.json
-  ```
+    ```bash
+    grep -q "GitHub.copilot" .vscode/extensions.json
+    ```
 
 ## Custom Agents
 
 Test that custom agents are discoverable:
 
 - [ ] **Primary Agent** (`ai.agent.md`)
-  - [ ] File exists: `test -f .github/agents/ai.agent.md`
-  - [ ] Can reference via `@ai` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/ai.agent.md`
+    - [ ] Can reference via `@ai` in Copilot Chat
 
 - [ ] **Aria Character Agent** (`aria-character.agent.md`)
-  - [ ] File exists: `test -f .github/agents/aria-character.agent.md`
-  - [ ] Can reference via `@aria-character` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/aria-character.agent.md`
+    - [ ] Can reference via `@aria-character` in Copilot Chat
 
 - [ ] **Training Agent** (`autonomous-trainer.agent.md`)
-  - [ ] File exists: `test -f .github/agents/autonomous-trainer.agent.md`
-  - [ ] Can reference via `@autonomous-trainer` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/autonomous-trainer.agent.md`
+    - [ ] Can reference via `@autonomous-trainer` in Copilot Chat
 
 - [ ] **Debug Agent** (`full-stack-debugger.agent.md`)
-  - [ ] File exists: `test -f .github/agents/full-stack-debugger.agent.md`
-  - [ ] Can reference via `@full-stack-debugger` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/full-stack-debugger.agent.md`
+    - [ ] Can reference via `@full-stack-debugger` in Copilot Chat
 
 ### Count all agents
 
@@ -156,43 +160,46 @@ test -f scripts/task_complete_mcp_server.py
 ### Copilot Instructions
 
 - [ ] `copilot-instructions.md` exists
-  ```bash
-  test -f .github/copilot-instructions.md
-  ```
+
+    ```bash
+    test -f .github/copilot-instructions.md
+    ```
 
 - [ ] `copilot-instructions.full.md` exists
-  ```bash
-  test -f .github/copilot-instructions.full.md
-  ```
+
+    ```bash
+    test -f .github/copilot-instructions.full.md
+    ```
 
 - [ ] Both files contain practical guidance
-  ```bash
-  grep -q "Quick Guide\|Architecture\|Agents" .github/copilot-instructions.md
-  ```
+    ```bash
+    grep -q "Quick Guide\|Architecture\|Agents" .github/copilot-instructions.md
+    ```
 
 ### Component Instructions
 
 - [ ] Directory exists: `test -d .github/instructions/`
 - [ ] Contains 25+ instruction files:
-  ```bash
-  ls .github/instructions/*.instructions.md | wc -l
-  # Should show 25+
-  ```
+    ```bash
+    ls .github/instructions/*.instructions.md | wc -l
+    # Should show 25+
+    ```
 
 ### Skills & Workflows
 
 - [ ] Skills directory exists: `test -d .github/skills/`
 - [ ] Contains 30+ skill workflows:
-  ```bash
-  ls .github/skills/*/SKILL.md | wc -l
-  # Should show 30+
-  ```
+    ```bash
+    ls .github/skills/*/SKILL.md | wc -l
+    # Should show 30+
+    ```
 
 ## Functional Testing
 
 ### Test 1: Chat Responsiveness
 
 In Copilot Chat:
+
 ```
 @ai What are the main components of this project?
 ```
@@ -204,6 +211,7 @@ In Copilot Chat:
 ### Test 2: Agent Routing
 
 In Copilot Chat:
+
 ```
 @aria-character Describe what you can do
 ```
@@ -215,6 +223,7 @@ In Copilot Chat:
 ### Test 3: MCP Tool Availability
 
 In Copilot Chat:
+
 ```
 @quantum-ai What quantum tools are available?
 ```
@@ -225,6 +234,7 @@ In Copilot Chat:
 ### Test 4: Code Assistance
 
 In Copilot Chat:
+
 ```
 @ai Review the architecture of function_app.py
 ```
@@ -236,6 +246,7 @@ In Copilot Chat:
 ### Test 5: Skill Application
 
 In Copilot Chat:
+
 ```
 @full-stack-debugger Explain the debugging workflow for this project
 ```
@@ -321,6 +332,7 @@ test -f .github/COPILOT_ADVANCED_CUSTOMIZATION.md
 ### Test Agent to MCP Communication
 
 In Copilot Chat:
+
 ```
 @quantum-ai Create a simple Bell state circuit
 ```
@@ -332,6 +344,7 @@ In Copilot Chat:
 ### Test Custom Instructions
 
 In Copilot Chat:
+
 ```
 @ai Help me implement a feature following Aria patterns
 ```
@@ -343,6 +356,7 @@ In Copilot Chat:
 ### Test Skill Application
 
 In Copilot Chat:
+
 ```
 I'm getting test failures. Help me debug.
 ```
@@ -372,9 +386,9 @@ I'm getting test failures. Help me debug.
 - [ ] Python files are executable (chmod +x)
 - [ ] PYTHONPATH environment variables are set
 - [ ] Try starting servers manually:
-  ```bash
-  .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py
-  ```
+    ```bash
+    .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py
+    ```
 
 ### Slow Performance
 
@@ -419,6 +433,7 @@ print('Status: Ready ✓' if all(checks.values()) else 'Status: Setup Needed ✗
 ```
 
 Expected output:
+
 ```
 Copilot Integration Status:
 ========================================

@@ -3,16 +3,16 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 from urllib.request import Request, urlopen
 
 
 class NotificationAdapter:
-    def __init__(self, webhook_url: Optional[str] = None, timeout: int = 10) -> None:
+    def __init__(self, webhook_url: str | None = None, timeout: int = 10) -> None:
         self.webhook_url = webhook_url
         self.timeout = timeout
 
-    def notify(self, message: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def notify(self, message: str, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
         payload = {"message": message, "metadata": metadata or {}}
         if not self.webhook_url:
             return {"status": "skipped", "payload": payload}

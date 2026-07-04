@@ -3,6 +3,7 @@
 Quick validation script for Phase 1 & 2 optimizations.
 Runs basic checks without requiring pytest.
 """
+
 import sys
 import time
 from pathlib import Path
@@ -160,7 +161,7 @@ def performance_benchmark():
             _any_word_in_text(_MOVE_KEYWORDS, cmd)
         elapsed = time.perf_counter() - start
 
-        print(f"  Keyword matching (300 calls): {elapsed*1000:.2f}ms")
+        print(f"  Keyword matching (300 calls): {elapsed * 1000:.2f}ms")
 
     except Exception as e:
         print(f"  ⚠️ Benchmark skipped: {e}")

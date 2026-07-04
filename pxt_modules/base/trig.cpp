@@ -10,7 +10,7 @@ namespace Math_ {
 
 //%
 TNumber atan2(TNumber y, TNumber x) {
-    return fromDouble(::atan2(toDouble(y), toDouble(x)));
+  return fromDouble(::atan2(toDouble(y), toDouble(x)));
 }
 
 //%
@@ -32,6 +32,8 @@ TNumber asin(TNumber x){SINGLE(asin)}
 TNumber acos(TNumber x){SINGLE(acos)}
 
 //%
-TNumber sqrt(TNumber x){SINGLE(sqrt)}
-
+TNumber sqrt(TNumber x) {
+  SINGLE(sqrt)
 }
+
+} // namespace Math_

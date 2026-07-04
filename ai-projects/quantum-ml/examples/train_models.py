@@ -24,8 +24,11 @@ try:
 except ModuleNotFoundError:
     # Fallback for environments without namespace package support
     sys.path.insert(0, str(project_root / "src"))
-    from quantum_classifier import HybridQuantumClassifier  # type: ignore
-    from quantum_classifier import QuantumClassifier, train_quantum_model
+    from quantum_classifier import (
+        HybridQuantumClassifier,  # type: ignore
+        QuantumClassifier,
+        train_quantum_model,
+    )
 
 # Create results directory
 results_dir = Path(__file__).parent.parent / "results"
@@ -166,7 +169,7 @@ print("\nQuantum Classifier Performance Summary:")
 print("-" * 40)
 for dataset, accuracy in results.items():
     stars = "★" * int(accuracy * 10)
-    print(f"  {dataset:12s}: {accuracy:.4f} ({accuracy*100:.1f}%) {stars}")
+    print(f"  {dataset:12s}: {accuracy:.4f} ({accuracy * 100:.1f}%) {stars}")
 
 # Plot comparison
 fig, ax = plt.subplots(figsize=(10, 6))

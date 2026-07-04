@@ -93,7 +93,7 @@ namespace images {
     //% deprecated
     //% help=images/image
     export function _image(image: Image): Image {
-        return image;
+        return image
     }
 
     //% blockId=colorindexpicker block="%index" blockHidden=true shim=TD_ID
@@ -101,7 +101,7 @@ namespace images {
     //% index.fieldOptions.valueMode="index"
     //% index.fieldOptions.decompileLiterals="true"
     export function __colorIndexPicker(index: number) {
-        return index;
+        return index
     }
 
     /**
@@ -111,6 +111,6 @@ namespace images {
     //% index.fieldEditor="position" color="#ffffff" colorSecondary="#ffffff"
     //% index.fieldOptions.decompileLiterals="true"
     export function __positionPicker(index: number) {
-        return index;
+        return index
     }
 }

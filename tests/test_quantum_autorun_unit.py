@@ -102,11 +102,7 @@ class TestCommandBuilder:
         cmd = build_command(j)
         assert len(cmd) >= 2
         # Check for python executable variants.
-        assert (
-            cmd[0].endswith("python.exe")
-            or cmd[0].endswith("python")
-            or "python3" in cmd[0]
-        )
+        assert cmd[0].endswith("python.exe") or cmd[0].endswith("python") or "python3" in cmd[0]
         assert "train_custom_dataset.py" in cmd[1]
         assert "--preset" in cmd
         assert "heart" in cmd
@@ -166,10 +162,7 @@ class TestValidation:
         j = QJob(name="t", preset="heart")
         res = validate_job(j)
         assert res["status"] == "missing"
-        assert any(
-            "train_custom_dataset.py" in m
-            for m in res.get("missing", [])
-        )
+        assert any("train_custom_dataset.py" in m for m in res.get("missing", []))
 
     def test_invalid_preset(self):
         j = QJob(name="t", preset="not_a_preset")
@@ -195,10 +188,7 @@ class TestValidation:
         )
         res = validate_job(j)
         assert res["status"] == "missing"
-        assert any(
-            "deploy_to_azure_quantum.py" in m
-            for m in res.get("missing", [])
-        )
+        assert any("deploy_to_azure_quantum.py" in m for m in res.get("missing", []))
 
     def test_azure_qpu_without_cost_confirm(self):
         j = QJob(
@@ -224,10 +214,7 @@ class TestValidation:
         res = validate_job(j)
         # Either validated or missing script, but not cost error
         if res["status"] == "missing":
-            assert not any(
-                "azure_confirm_cost" in m
-                for m in res.get("missing", [])
-            )
+            assert not any("azure_confirm_cost" in m for m in res.get("missing", []))
 
 
 class TestStatusJSON:

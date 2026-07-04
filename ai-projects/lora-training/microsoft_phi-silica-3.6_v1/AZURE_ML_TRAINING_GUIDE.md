@@ -5,10 +5,12 @@ This guide shows how to train Phi-3.6 LoRA models on Azure Machine Learning with
 ## Prerequisites
 
 ### 1. Azure Subscription
+
 - Active Azure subscription
 - Contributor or Owner role on the subscription/resource group
 
 ### 2. Azure CLI (Recommended)
+
 ```powershell
 # Install Azure CLI
 winget install Microsoft.AzureCLI
@@ -21,6 +23,7 @@ az account set --subscription "<your-subscription-id>"
 ```
 
 ### 3. Python Dependencies
+
 ```powershell
 cd AI\microsoft_phi-silica-3.6_v1
 pip install azure-ai-ml azure-identity azure-core
@@ -31,17 +34,19 @@ pip install azure-ai-ml azure-identity azure-core
 ### Step 1: Create Azure ML Workspace
 
 **Option A: Azure Portal** (Easiest)
+
 1. Go to [Azure Portal](https://portal.azure.com)
 2. Search for "Machine Learning"
 3. Click "+ Create"
 4. Fill in:
-   - Subscription: Your subscription
-   - Resource group: Create new "rg-phi36-ml"
-   - Workspace name: "phi36-ml-workspace"
-   - Region: "East US" or "West US 2" (GPU availability)
+    - Subscription: Your subscription
+    - Resource group: Create new "rg-phi36-ml"
+    - Workspace name: "phi36-ml-workspace"
+    - Region: "East US" or "West US 2" (GPU availability)
 5. Click "Review + Create"
 
 **Option B: Azure CLI**
+
 ```powershell
 # Create resource group
 az group create --name rg-phi36-ml --location eastus
@@ -68,6 +73,7 @@ python azure_ml_training.py `
 ```
 
 This creates:
+
 - GPU compute cluster (auto-scales 0-4 nodes)
 - Python environment with all dependencies
 - Cost: ~$0/hour when idle (auto-scales to 0)
@@ -87,6 +93,7 @@ python azure_ml_training.py `
 ### Step 4: Submit Training Job
 
 **Quick Test (64 samples, ~5 minutes)**
+
 ```powershell
 python azure_ml_training.py `
   --action train `
@@ -97,6 +104,7 @@ python azure_ml_training.py `
 ```
 
 **Full Training (8000 samples, ~2-4 hours)**
+
 ```powershell
 python azure_ml_training.py `
   --action train `
@@ -108,11 +116,13 @@ python azure_ml_training.py `
 ### Step 5: Monitor Training
 
 After submitting, you'll get a URL like:
+
 ```
 Monitor at: https://ml.azure.com/runs/<job-name>?wsid=/subscriptions/...
 ```
 
 Open this in your browser to see:
+
 - Real-time metrics (loss, perplexity)
 - GPU utilization
 - Training logs
@@ -134,13 +144,14 @@ python azure_ml_training.py `
 
 ### Compute Costs
 
-| VM Size | GPU | Cost/hour | Best For |
-| --------- | ----- | ----------- | ---------- |
-| Standard_NC6s_v3 | 1x V100 (16GB) | ~$3.06 | Default (good balance) |
-| Standard_NC12s_v3 | 2x V100 (32GB) | ~$6.12 | Faster training |
-| Standard_NC24s_v3 | 4x V100 (64GB) | ~$12.24 | Large batches |
+| VM Size           | GPU            | Cost/hour | Best For               |
+| ----------------- | -------------- | --------- | ---------------------- |
+| Standard_NC6s_v3  | 1x V100 (16GB) | ~$3.06    | Default (good balance) |
+| Standard_NC12s_v3 | 2x V100 (32GB) | ~$6.12    | Faster training        |
+| Standard_NC24s_v3 | 4x V100 (64GB) | ~$12.24   | Large batches          |
 
 **💰 Cost-saving tips:**
+
 1. **Auto-scale to 0**: Cluster scales down when idle (included in setup)
 2. **Low-priority VMs**: Add `--tier low_priority` (70-80% discount, may be preempted)
 3. **Stop after training**: Compute auto-stops after job completes
@@ -148,10 +159,10 @@ python azure_ml_training.py `
 
 ### Example Costs
 
-| Scenario | Duration | Cost |
-| ---------- | ---------- | ------ |
-| Quick test (64 samples) | ~5 min | ~$0.25 |
-| Medium run (1000 samples) | ~30 min | ~$1.50 |
+| Scenario                     | Duration | Cost   |
+| ---------------------------- | -------- | ------ |
+| Quick test (64 samples)      | ~5 min   | ~$0.25 |
+| Medium run (1000 samples)    | ~30 min  | ~$1.50 |
 | Full training (8000 samples) | ~3 hours | ~$9.00 |
 
 ## Advanced Configuration
@@ -198,6 +209,7 @@ python azure_ml_training.py `
 ## Troubleshooting
 
 ### Authentication Errors
+
 ```powershell
 # Re-authenticate
 az login
@@ -205,13 +217,16 @@ az account show  # Verify correct subscription
 ```
 
 ### Quota Errors
+
 If you see "insufficient quota for NC-series VMs":
+
 1. Go to Azure Portal
 2. Search "Quotas"
 3. Filter by "Compute" and your region
 4. Request quota increase for "NC-series" VMs
 
 ### Dataset Upload Issues
+
 ```powershell
 # Verify dataset structure
 ls ..\..\datasets\chat\dolly\*.json
@@ -220,7 +235,9 @@ ls ..\..\datasets\chat\dolly\*.json
 ```
 
 ### Training Failures
+
 Check the Azure ML Studio logs:
+
 1. Open the training job URL
 2. Go to "Outputs + logs" tab
 3. Check `user_logs/std_log.txt`
@@ -279,6 +296,7 @@ az group delete --name rg-phi36-ml --yes
 ## Next Steps
 
 After training:
+
 1. **Test locally**: Download model and test with `scripts/test_lora_model.py`
 2. **Deploy to Azure**: Use Azure ML endpoints for production inference
 3. **Fine-tune further**: Adjust `lora.yaml` and retrain

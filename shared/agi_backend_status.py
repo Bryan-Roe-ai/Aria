@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict
+from typing import Any
 
 
 def _env_truthy(name: str) -> bool:
     return os.getenv(name, "").lower() in ("1", "true", "yes")
 
 
-def build_agi_backend_status(provider: Any | None = None) -> Dict[str, Any]:
+def build_agi_backend_status(provider: Any | None = None) -> dict[str, Any]:
     """Return a JSON-safe summary of configured AGI backends (no secret values)."""
-    sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv(
-        "QAI_AGI_PERSIST_SQLITE")
+    sqlite_path = os.getenv("QAI_AGI_PERSIST_DB") or os.getenv("QAI_AGI_PERSIST_SQLITE")
     jsonl_path = os.getenv("QAI_AGI_PERSIST_PATH")
     jsonl_enabled = _env_truthy("QAI_AGI_PERSIST")
 
@@ -24,8 +23,7 @@ def build_agi_backend_status(provider: Any | None = None) -> Dict[str, Any]:
     else:
         persist_type = "none"
 
-    attached = getattr(provider, "persistence",
-                       None) is not None if provider is not None else False
+    attached = getattr(provider, "persistence", None) is not None if provider is not None else False
 
     memory_env = os.getenv("QAI_AGI_MEMORY_BACKEND", "").strip().lower()
     memory_type = "redis" if memory_env == "redis" else "in_process"

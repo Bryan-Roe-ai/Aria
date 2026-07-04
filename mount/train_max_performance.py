@@ -7,7 +7,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import psutil
 import torch
@@ -62,7 +62,7 @@ def check_system_resources():
     return device, cpu_count
 
 
-def get_optimal_settings(device: str, cpu_count: int, memory_gb: float) -> Dict[str, Any]:
+def get_optimal_settings(device: str, cpu_count: int, memory_gb: float) -> dict[str, Any]:
     """Calculate optimal training settings based on hardware"""
     settings = {}
 
@@ -107,7 +107,7 @@ def monitor_resources():
     return status
 
 
-def setup_environment_variables(settings: Dict[str, Any]):
+def setup_environment_variables(settings: dict[str, Any]):
     """Set environment variables for maximum performance"""
 
     # PyTorch optimizations

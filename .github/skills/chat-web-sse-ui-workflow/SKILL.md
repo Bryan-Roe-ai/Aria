@@ -37,33 +37,33 @@ Common trigger phrases:
 ## Procedure
 
 1. Verify producer/consumer contract
-   - Confirm exact event JSON fields emitted by `/api/chat`.
-   - Confirm client parser consumes those fields and skips `[DONE]` appropriately.
+    - Confirm exact event JSON fields emitted by `/api/chat`.
+    - Confirm client parser consumes those fields and skips `[DONE]` appropriately.
 
 2. Reproduce with raw event visibility
-   - Inspect line-by-line stream events before touching render logic.
-   - Separate transport failures from rendering bugs.
+    - Inspect line-by-line stream events before touching render logic.
+    - Separate transport failures from rendering bugs.
 
 3. Validate frontend parser robustness
-   - Handle keepalive/blank lines safely.
-   - Ignore malformed lines without breaking full stream session.
-   - Preserve partial content accumulation correctly.
+    - Handle keepalive/blank lines safely.
+    - Ignore malformed lines without breaking full stream session.
+    - Preserve partial content accumulation correctly.
 
 4. Keep completion semantics explicit
-   - `[DONE]` must terminate stream state cleanly.
-   - UI should finalize message state exactly once.
+    - `[DONE]` must terminate stream state cleanly.
+    - UI should finalize message state exactly once.
 
 5. Check TTS integration boundary
-   - Ensure streamed text aggregation matches what is sent to `/api/tts`.
-   - Avoid race conditions between final message state and audio playback triggers.
+    - Ensure streamed text aggregation matches what is sent to `/api/tts`.
+    - Avoid race conditions between final message state and audio playback triggers.
 
 6. Apply smallest-side fix
-   - Fix backend only if wire format is wrong.
-   - Fix frontend only if parser/render assumptions are wrong.
-   - Avoid changing both unless contract evolution is intentional.
+    - Fix backend only if wire format is wrong.
+    - Fix frontend only if parser/render assumptions are wrong.
+    - Avoid changing both unless contract evolution is intentional.
 
 7. Re-test end to end
-   - raw stream check -> frontend rendering check -> optional TTS path check.
+    - raw stream check -> frontend rendering check -> optional TTS path check.
 
 ## Quality Checks
 

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List
-
 from shared.token_utils import MODEL_CONTEXT_DEFAULTS, PruneStats, RoleMessage, count_messages_tokens, prune_messages
 
 # ---------------------------------------------------------------------------
@@ -15,7 +13,7 @@ def _msg(role: str, content: str) -> RoleMessage:
     return {"role": role, "content": content}
 
 
-def _chat(*pairs: tuple[str, str]) -> List[RoleMessage]:
+def _chat(*pairs: tuple[str, str]) -> list[RoleMessage]:
     """Build a message list from (role, content) pairs."""
     return [_msg(r, c) for r, c in pairs]
 

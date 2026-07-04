@@ -10,7 +10,6 @@ import json
 import os
 import re
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
 
 # Import chat providers using the pattern from tool_maker.py
 try:
@@ -27,7 +26,7 @@ class WebsiteMaker:
     Generates and updates complete HTML websites using AI.
     """
 
-    def __init__(self, provider_name: Optional[str] = None):
+    def __init__(self, provider_name: str | None = None):
         """
         Initialize the WebsiteMaker.
 
@@ -46,9 +45,9 @@ class WebsiteMaker:
         name: str,
         description: str,
         style: str = "modern",
-        pages: Optional[List[str]] = None,
-        features: Optional[List[str]] = None,
-    ) -> Dict:
+        pages: list[str] | None = None,
+        features: list[str] | None = None,
+    ) -> dict:
         """
         Generate a complete website from natural language description.
 
@@ -132,7 +131,7 @@ class WebsiteMaker:
                 "path": None,
             }
 
-    def update_website(self, name: str, update_description: str, target_file: Optional[str] = None) -> Dict:
+    def update_website(self, name: str, update_description: str, target_file: str | None = None) -> dict:
         """
         Update an existing website based on natural language instructions.
 
@@ -157,7 +156,7 @@ class WebsiteMaker:
         # Load metadata
         metadata_path = os.path.join(project_path, "metadata.json")
         if os.path.exists(metadata_path):
-            with open(metadata_path, "r") as f:
+            with open(metadata_path) as f:
                 metadata = json.load(f)
         else:
             metadata = {"files": []}
@@ -181,7 +180,7 @@ class WebsiteMaker:
         for filename in files_to_update:
             filepath = os.path.join(project_path, filename)
             if os.path.exists(filepath):
-                with open(filepath, "r", encoding="utf-8") as f:
+                with open(filepath, encoding="utf-8") as f:
                     current_files[filename] = f.read()
 
         # Create update prompt
@@ -238,7 +237,7 @@ class WebsiteMaker:
                 "path": project_path,
             }
 
-    def list_websites(self) -> List[Dict]:
+    def list_websites(self) -> list[dict]:
         """
         List all generated websites.
 
@@ -257,14 +256,14 @@ class WebsiteMaker:
 
             metadata_path = os.path.join(project_path, "metadata.json")
             if os.path.exists(metadata_path):
-                with open(metadata_path, "r") as f:
+                with open(metadata_path) as f:
                     metadata = json.load(f)
                     metadata["path"] = project_path
                     websites.append(metadata)
 
         return websites
 
-    def delete_website(self, name: str) -> Dict:
+    def delete_website(self, name: str) -> dict:
         """
         Delete a generated website.
 
@@ -295,8 +294,8 @@ class WebsiteMaker:
         name: str,
         description: str,
         style: str,
-        pages: List[str],
-        features: List[str],
+        pages: list[str],
+        features: list[str],
     ) -> str:
         """Build prompt for website generation."""
         prompt = f"""Create a complete, modern, responsive website with the following specifications:
@@ -304,8 +303,8 @@ class WebsiteMaker:
 **Project Name:** {name}
 **Description:** {description}
 **Visual Style:** {style}
-**Pages:** {', '.join(pages)}
-**Features:** {', '.join(features)}
+**Pages:** {", ".join(pages)}
+**Features:** {", ".join(features)}
 
 Generate a fully functional website with:
 1. Clean, semantic HTML5
@@ -337,7 +336,7 @@ body {{
 """
         return prompt
 
-    def _build_update_prompt(self, name: str, update_description: str, current_files: Dict[str, str]) -> str:
+    def _build_update_prompt(self, name: str, update_description: str, current_files: dict[str, str]) -> str:
         """Build prompt for website update."""
         files_section = "\n\n".join(
             [f"**{filename}:**\n```\n{content}\n```" for filename, content in current_files.items()]
@@ -362,7 +361,7 @@ Only include files that need to be updated. Keep the same structure and style un
 """
         return prompt
 
-    def _extract_code_blocks(self, text: str) -> Dict[str, str]:
+    def _extract_code_blocks(self, text: str) -> dict[str, str]:
         """
         Extract code blocks from AI response.
 
@@ -419,7 +418,7 @@ class WebsiteValidator:
     """
 
     @staticmethod
-    def validate_html(html: str) -> Tuple[bool, List[str]]:
+    def validate_html(html: str) -> tuple[bool, list[str]]:
         """
         Validate HTML content.
 
@@ -452,7 +451,7 @@ class WebsiteValidator:
         return is_valid, warnings
 
     @staticmethod
-    def validate_css(css: str) -> Tuple[bool, List[str]]:
+    def validate_css(css: str) -> tuple[bool, list[str]]:
         """
         Validate CSS content.
 

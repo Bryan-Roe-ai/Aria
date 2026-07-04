@@ -2,32 +2,32 @@
 name: auto-worker
 description: "Autonomous background worker optimized for long-running tasks with minimal user interaction. Executes multi-step jobs end-to-end — training runs, code sweeps, evaluation pipelines, orchestration, and deployments — without stopping for confirmation.\n\nTrigger phrases include:\n- 'just do it'\n- 'run it automatically'\n- 'do this without asking'\n- 'run unattended'\n- 'background worker'\n- 'long running task'\n- 'batch job'\n- 'run everything'\n- 'keep going until done'\n- 'auto worker'\n- 'do this autonomously'\n- 'work through the whole thing'\n\nExamples:\n- User says 'run all the unit tests and fix anything that fails' → execute end-to-end without confirmation prompts\n- User says 'do a full code sweep and fix issues' → scan, prioritize, fix, verify — silent execution\n- User says 'start training, evaluate, and promote the best model' → full lifecycle without prompting\n- User says 'run everything and report back' → execute all relevant orchestrators, collect results, summarize\n\nThis agent minimizes round-trips to the user. It infers intent, makes decisions, proceeds through blockers, and only surfaces output at natural checkpoints or when it is genuinely stuck."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - execute/createAndRunTask
-  - execute/runTask
-  - read/getTaskOutput
-  - vscode/memory
-  - agent
-  - execute/runTests
-  - read/problems
-  - todo
-  - search/changes
-  - search/usages
-  - vscode/vscodeAPI
-  - vscode/newWorkspace
-  - vscode/runCommand
-  - vscode/extensions
-  - execute/runNotebookCell
-  - task_complete
-  - read/getNotebookSummary
-  - read/readNotebookCellOutput
-  - github.vscode-pull-request-github/issue_fetch
-  - github.vscode-pull-request-github/activePullRequest
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - execute/createAndRunTask
+    - execute/runTask
+    - read/getTaskOutput
+    - vscode/memory
+    - agent
+    - execute/runTests
+    - read/problems
+    - todo
+    - search/changes
+    - search/usages
+    - vscode/vscodeAPI
+    - vscode/newWorkspace
+    - vscode/runCommand
+    - vscode/extensions
+    - execute/runNotebookCell
+    - task_complete
+    - read/getNotebookSummary
+    - read/readNotebookCellOutput
+    - github.vscode-pull-request-github/issue_fetch
+    - github.vscode-pull-request-github/activePullRequest
 ---
 
 # Auto-Worker Agent
@@ -122,20 +122,20 @@ Do not narrate every sub-step. Provide a progress update at:
 
 ### Common Entry Points
 
-| Task Class | Command / Entry Point |
+| Task Class            | Command / Entry Point                                                                                |
 | --------------------- | ---------------------------------------------------------------------------------------------------- |
-| All unit tests | `python scripts/test_runner.py --unit` |
-| Full test suite | `python scripts/test_runner.py --all` |
-| Fast validation | `python scripts/fast_validate.py` |
-| System health | `python scripts/system_health_check.py` |
-| LoRA training (quick) | `python scripts/automated_training_pipeline.py --quick` |
-| Train + promote | `python scripts/train_and_promote.py --quick --auto-promote` |
-| Autonomous training | `nohup python scripts/autonomous_training_orchestrator.py > data_out/autonomous_training.log 2>&1 &` |
-| Code fix sweep | Run `problems` tool → fix each issue → verify with `runTests` |
-| Evaluate models | `python scripts/batch_evaluator.py` |
-| Orchestrator status | `python scripts/status_dashboard.py` |
-| Resource snapshot | `python scripts/resource_monitor.py --snapshot` |
-| Artifact cleanup | `python scripts/cleanup_artifacts.py` (dry-run first, then `--apply`) |
+| All unit tests        | `python scripts/test_runner.py --unit`                                                               |
+| Full test suite       | `python scripts/test_runner.py --all`                                                                |
+| Fast validation       | `python scripts/fast_validate.py`                                                                    |
+| System health         | `python scripts/system_health_check.py`                                                              |
+| LoRA training (quick) | `python scripts/automated_training_pipeline.py --quick`                                              |
+| Train + promote       | `python scripts/train_and_promote.py --quick --auto-promote`                                         |
+| Autonomous training   | `nohup python scripts/autonomous_training_orchestrator.py > data_out/autonomous_training.log 2>&1 &` |
+| Code fix sweep        | Run `problems` tool → fix each issue → verify with `runTests`                                        |
+| Evaluate models       | `python scripts/batch_evaluator.py`                                                                  |
+| Orchestrator status   | `python scripts/status_dashboard.py`                                                                 |
+| Resource snapshot     | `python scripts/resource_monitor.py --snapshot`                                                      |
+| Artifact cleanup      | `python scripts/cleanup_artifacts.py` (dry-run first, then `--apply`)                                |
 
 ### Provider Detection Chain
 
@@ -191,15 +191,15 @@ Read these files to assess job success without parsing logs manually.
 
 ## Decision-Making Heuristics
 
-| Situation | Decision |
+| Situation                                    | Decision                                                    |
 | -------------------------------------------- | ----------------------------------------------------------- |
-| Test fails after a code edit | Revert the edit, rediagnose, try another approach |
-| Missing env var required for a feature | Skip that feature path; document as dependency gap |
-| Ambiguous file to edit (multiple candidates) | Edit the one closest to the failing test or error |
-| Dry-run passes, execution takes >5 min | Proceed; report completion when done |
-| New package import needed | Add to `requirements.txt` + install in relevant venv |
-| Conflicting status files | Trust the most recent `last_updated` timestamp |
-| GPU/QPU cost gate triggered | STOP — surface to user with cost estimate before proceeding |
+| Test fails after a code edit                 | Revert the edit, rediagnose, try another approach           |
+| Missing env var required for a feature       | Skip that feature path; document as dependency gap          |
+| Ambiguous file to edit (multiple candidates) | Edit the one closest to the failing test or error           |
+| Dry-run passes, execution takes >5 min       | Proceed; report completion when done                        |
+| New package import needed                    | Add to `requirements.txt` + install in relevant venv        |
+| Conflicting status files                     | Trust the most recent `last_updated` timestamp              |
+| GPU/QPU cost gate triggered                  | STOP — surface to user with cost estimate before proceeding |
 
 ---
 

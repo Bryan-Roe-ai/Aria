@@ -10,9 +10,9 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Sequence
 
 _logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class ValidationResult:
     """Aggregate result of all validation steps."""
 
     ok: bool
-    steps: List[dict] = field(default_factory=list)
+    steps: list[dict] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {"ok": self.ok, "steps": list(self.steps)}
@@ -36,7 +36,7 @@ class Validator:
     timeout_seconds: int = 120
 
     def validate(self, changed_paths: Sequence[Path] | None = None) -> ValidationResult:
-        steps: List[dict] = []
+        steps: list[dict] = []
         ok = True
 
         ruff_step = self._run_ruff(changed_paths)

@@ -444,8 +444,8 @@ def benchmark_dataset(dataset_name):
     final_loss = trainer.train_losses[-1]
 
     print("\n📊 Results:")
-    print(f"   Best Accuracy:  {best_acc:.4f} ({best_acc*100:.2f}%)")
-    print(f"   Final Accuracy: {final_acc:.4f} ({final_acc*100:.2f}%)")
+    print(f"   Best Accuracy:  {best_acc:.4f} ({best_acc * 100:.2f}%)")
+    print(f"   Final Accuracy: {final_acc:.4f} ({final_acc * 100:.2f}%)")
     print(f"   Final Loss:     {final_loss:.4f}")
 
     return {

@@ -79,9 +79,7 @@ def test_goal_evolution_agent_returns_goal() -> None:
 def test_llm_agent_uses_structured_core_client_output() -> None:
     agent = LLMAgent()
 
-    result = agent.execute(
-        Task(type="llm", payload={"prompt": "Verify this design"})
-    )
+    result = agent.execute(Task(type="llm", payload={"prompt": "Verify this design"}))
 
     assert result["output"] == "Simulated result for: Verify this design"
     assert result["analysis"] == "Processed: Verify this design"
@@ -93,9 +91,7 @@ def test_tool_agent_reports_available_tools_on_error() -> None:
     registry.register("echo", lambda text: text)
     agent = ToolAgent(registry)
 
-    result = agent.execute(
-        Task(type="tool", payload={"tool": "missing", "args": {}})
-    )
+    result = agent.execute(Task(type="tool", payload={"tool": "missing", "args": {}}))
 
     assert result["error"] == "Tool not found: missing"
     assert result["available_tools"] == ["echo"]
@@ -104,9 +100,7 @@ def test_tool_agent_reports_available_tools_on_error() -> None:
 def test_tool_agent_rejects_non_mapping_args() -> None:
     agent = ToolAgent()
 
-    result = agent.execute(
-        Task(type="tool", payload={"tool": "anything", "args": ["x"]})
-    )
+    result = agent.execute(Task(type="tool", payload={"tool": "anything", "args": ["x"]}))
 
     assert result["error"] == "Tool args must be a dictionary"
 
@@ -120,9 +114,7 @@ def test_router_prioritizes_matching_agent_types() -> None:
     registry.register(llm)
     router = TaskRouter(registry)
 
-    result = router.route(
-        Task(type="plan", payload={"goal": "Investigate files"})
-    )
+    result = router.route(Task(type="plan", payload={"goal": "Investigate files"}))
 
     assert result["agent"] == "planner_agent"
     assert result["candidates"][0]["agent"] == "planner_agent"
@@ -145,7 +137,7 @@ def test_router_route_text_populates_plan_goal() -> None:
             "plan": [],
         }
 
-    setattr(planner, "execute", _capture_plan)
+    planner.execute = _capture_plan
 
     result = runner.router.route_text("Plan the next runtime steps")
 
@@ -215,9 +207,7 @@ def test_router_route_text_preserves_caller_payload() -> None:
 def test_router_classifies_reflection_requests_for_reflection_agent() -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
 
-    result = runner.router.route_text(
-        "Reflect on the last cycle and identify lessons"
-    )
+    result = runner.router.route_text("Reflect on the last cycle and identify lessons")
 
     assert result["agent"] == "reflection_agent"
 
@@ -241,9 +231,7 @@ def test_router_classifies_reflection_requests_for_reflection_agent() -> None:
         ("", "llm"),
     ],
 )
-def test_router_classify_intent_maps_tokens_to_types(
-    text: str, expected: str
-) -> None:
+def test_router_classify_intent_maps_tokens_to_types(text: str, expected: str) -> None:
     router = TaskRouter(AgentRegistry())
 
     assert router.classify_intent(text) == expected
@@ -276,9 +264,7 @@ def test_router_route_text_normalizes_feedback_payload() -> None:
 def test_runner_normalize_plan_step_accepts_valid_step() -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
 
-    task, skip_reason = runner._normalize_plan_step(
-        {"type": "tool", "payload": {"tool": "cleanup"}, "priority": 3}, 0
-    )
+    task, skip_reason = runner._normalize_plan_step({"type": "tool", "payload": {"tool": "cleanup"}, "priority": 3}, 0)
 
     assert skip_reason is None
     assert task is not None
@@ -307,9 +293,7 @@ def test_runner_normalize_plan_step_defaults_missing_payload() -> None:
         ({"type": "tool", "payload": ["bad"]}, "payload must be a dictionary"),
     ],
 )
-def test_runner_normalize_plan_step_rejects_invalid_steps(
-    step: object, expected_error_fragment: str
-) -> None:
+def test_runner_normalize_plan_step_rejects_invalid_steps(step: object, expected_error_fragment: str) -> None:
     runner = AriaRunner(config={"sleep_seconds": 0})
 
     task, skip_reason = runner._normalize_plan_step(step, 4)
@@ -323,9 +307,7 @@ def test_runner_normalize_plan_step_rejects_invalid_steps(
 def test_training_agent_summary_tracks_signal_counts() -> None:
     agent = TrainingAgent()
 
-    train_result = agent.execute(
-        Task(type="train", payload={"goal": "improve"})
-    )
+    train_result = agent.execute(Task(type="train", payload={"goal": "improve"}))
     eval_result = agent.execute(Task(type="evaluate", payload={"score": 0.8}))
 
     assert train_result["summary"]["counts"]["train"] == 1
@@ -394,7 +376,7 @@ def test_runner_skips_invalid_plan_steps_and_records_reason() -> None:
             ],
         }
 
-    setattr(planner, "execute", _bad_plan)
+    planner.execute = _bad_plan
 
     result = runner.run_once()
 

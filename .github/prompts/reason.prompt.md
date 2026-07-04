@@ -10,32 +10,33 @@ Apply the AGI reasoning framework to analyze and solve the following task.
 **Process:**
 
 1. **Analyze** — Classify the query:
-   - Complexity: simple | moderate | complex
-   - Intent: coding | architecture | debugging | optimization | explanation | creation
-   - Domain: quantum | ai | aria | infrastructure | general
+    - Complexity: simple | moderate | complex
+    - Intent: coding | architecture | debugging | optimization | explanation | creation
+    - Domain: quantum | ai | aria | infrastructure | general
 
 2. **Decompose** — Break into ordered subtasks:
-   - List each subtask with its dependencies
-   - Identify which subtasks can be parallelized
-   - Estimate confidence for each subtask
+    - List each subtask with its dependencies
+    - Identify which subtasks can be parallelized
+    - Estimate confidence for each subtask
 
 3. **Execute** — Work through each subtask:
-   - Show your reasoning at each step
-   - Verify assumptions before proceeding
-   - Cross-reference with existing codebase patterns
+    - Show your reasoning at each step
+    - Verify assumptions before proceeding
+    - Cross-reference with existing codebase patterns
 
 4. **Reflect** — Self-evaluate:
-   - Is the solution complete and correct?
-   - Does it follow existing codebase conventions?
-   - Are there edge cases or failure modes?
-   - Am I over-engineering?
+    - Is the solution complete and correct?
+    - Does it follow existing codebase conventions?
+    - Are there edge cases or failure modes?
+    - Am I over-engineering?
 
 5. **Synthesize** — Deliver the result:
-   - Clear, actionable output
-   - Include verification steps
-   - Note any remaining uncertainties
+    - Clear, actionable output
+    - Include verification steps
+    - Note any remaining uncertainties
 
 **Codebase context:**
+
 - Provider chain (`detect_provider()` auto mode): LM Studio → Ollama → Azure OpenAI → OpenAI → Local (LoRA explicit-only)
 - Config: YAML < CLI < per-job YAML < env vars
 - Data: read-only `datasets/`, write-only `data_out/`

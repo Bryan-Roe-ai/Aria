@@ -5,23 +5,23 @@ All imports from chat-cli should come through this module.
 """
 
 # Re-export main APIs from internal modules
+from .agi_provider import (
+    AGIProvider,
+    create_agi,
+)
 from .chat_providers import (
-    detect_provider,
+    AzureOpenAIChatProvider,
     BaseChatProvider,
-    RoleMessage,
+    LMStudioChatProvider,
     LocalChatProvider,
     OpenAIChatProvider,
-    AzureOpenAIChatProvider,
-    LMStudioChatProvider,
+    RoleMessage,
+    detect_provider,
 )
 from .token_utils import (
-    prune_messages,
     count_tokens,
     estimate_tokens,
-)
-from .agi_provider import (
-    create_agi,
-    AGIProvider,
+    prune_messages,
 )
 
 __all__ = [

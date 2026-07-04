@@ -17,6 +17,7 @@ This PR identifies and implements performance improvements across the Aria codeb
 **Solution**: Pre-compile all frequently-used regex patterns at module level.
 
 **Files Modified**:
+
 - `scripts/final_validation.py` - 5 patterns pre-compiled
 - `scripts/validate_dashboard.py` - 9 patterns pre-compiled
 - `function_app.py` - 1 pattern pre-compiled, 4 local imports removed
@@ -24,12 +25,14 @@ This PR identifies and implements performance improvements across the Aria codeb
 - `cooking-ai/src/providers/local.py` - 1 pattern pre-compiled
 
 **Impact**:
+
 - **17+ regex patterns** moved to module level
 - Eliminated repeated compilation overhead in hot paths
 - Typical speedup: 2-5x for regex-heavy operations
 - Reduced memory allocations
 
 **Example**:
+
 ```python
 # Before (inefficient)
 def validate():
@@ -67,6 +70,7 @@ return [{"k": row[0], "v": row[1], "updated_at": row[2]} for row in res.fetchall
 ```
 
 **Impact**:
+
 - C-level optimization
 - Pre-allocation of list size
 - Reduced function call overhead
@@ -91,6 +95,7 @@ fieldnames = sorted(set().union(*(job.keys() for job in jobs)))
 ```
 
 **Impact**:
+
 - Single-pass operation
 - More Pythonic and readable
 - Slightly faster for large datasets
@@ -117,6 +122,7 @@ for kw in keywords:
 ```
 
 **Impact**:
+
 - Avoids repeated string allocations
 - Particularly important for large strings
 - Reduces memory churn
@@ -126,6 +132,7 @@ for kw in keywords:
 ### Test Coverage
 
 Created comprehensive test suite in `tests/test_regex_optimizations.py`:
+
 - 10 tests covering all regex optimizations
 - Functionality tests to ensure correctness
 - Performance benchmarks
@@ -144,19 +151,20 @@ All optimizations validated to maintain correct functionality.
 ### Files Created
 
 1. **`docs/REGEX_OPTIMIZATION_2026-02-17.md`**
-   - Detailed explanation of regex optimizations
-   - Before/after code examples
-   - Best practices guide
-   - Pattern naming conventions
+    - Detailed explanation of regex optimizations
+    - Before/after code examples
+    - Best practices guide
+    - Pattern naming conventions
 
 2. **`tests/test_regex_optimizations.py`**
-   - Comprehensive test suite
-   - Performance benchmarks
-   - Validation tests
+    - Comprehensive test suite
+    - Performance benchmarks
+    - Validation tests
 
 ### Repository Memories Stored
 
 Three new optimization patterns stored for future reference:
+
 1. List comprehension for dict building from database rows
 2. Set union for efficient key collection
 3. String method caching for repeated transformations
@@ -166,19 +174,20 @@ Three new optimization patterns stored for future reference:
 ### Regex Compilation Savings
 
 For a file with 10 regex operations executed 1000 times:
+
 - **Before**: 10,000 pattern compilations
 - **After**: 10 pattern compilations
 - **Improvement**: 1000x reduction in compilation overhead
 
 ### Expected Impact by Module
 
-| Module | Optimizations | Expected Speedup |
-| -------- | -------------- | ------------------ |
-| `final_validation.py` | 9+ regex patterns | 2-5x for validation |
-| `validate_dashboard.py` | 10+ regex patterns | 2-5x for validation |
-| `function_app.py` | TTS word timing | 10-20% for TTS calls |
-| `email_notifications.py` | HTML stripping | 5-10x for email generation |
-| `sql_repository.py` | List comprehension | 10-30% for queries |
+| Module                   | Optimizations      | Expected Speedup           |
+| ------------------------ | ------------------ | -------------------------- |
+| `final_validation.py`    | 9+ regex patterns  | 2-5x for validation        |
+| `validate_dashboard.py`  | 10+ regex patterns | 2-5x for validation        |
+| `function_app.py`        | TTS word timing    | 10-20% for TTS calls       |
+| `email_notifications.py` | HTML stripping     | 5-10x for email generation |
+| `sql_repository.py`      | List comprehension | 10-30% for queries         |
 
 ## Code Quality Improvements
 
@@ -192,6 +201,7 @@ For a file with 10 regex operations executed 1000 times:
 ### Coding Standards
 
 All optimizations follow established patterns:
+
 - Pre-compiled regex patterns use `_RE_` prefix
 - List comprehensions preferred over manual append
 - String operations cached when used multiple times
@@ -211,6 +221,7 @@ These are documented for future optimization efforts.
 ## Related Work
 
 This PR builds on existing performance optimizations documented in:
+
 - `docs/PERFORMANCE_OPTIMIZATIONS_FEB_2026.md`
 - `docs/PERFORMANCE_IMPROVEMENTS.md`
 - `docs/PERFORMANCE_OPTIMIZATION_SUMMARY.md`
@@ -219,6 +230,7 @@ This PR builds on existing performance optimizations documented in:
 ## Conclusion
 
 This PR successfully identifies and implements targeted performance improvements across the codebase:
+
 - ✅ 8 files optimized
 - ✅ 20+ individual optimizations
 - ✅ 10 tests added

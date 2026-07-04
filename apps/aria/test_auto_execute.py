@@ -3,9 +3,9 @@
 Test script for Aria Auto-Execute System
 Tests the new LLM-powered action generation and execution
 """
+
 import json
 import sys
-from typing import Dict
 
 import pytest
 import requests
@@ -42,7 +42,7 @@ def print_result(success: bool, message: str):
     print(f"{color}{symbol}{reset} {message}")
 
 
-def plan_mode(command: str) -> Dict:
+def plan_mode(command: str) -> dict:
     """Run plan mode (no execution)."""
     print(f"📋 Planning: '{command}'")
 
@@ -64,7 +64,7 @@ def plan_mode(command: str) -> Dict:
     return data
 
 
-def execute_mode(command: str) -> Dict:
+def execute_mode(command: str) -> dict:
     """Run execute mode."""
     print(f"▶️  Executing: '{command}'")
 
@@ -91,7 +91,7 @@ def execute_mode(command: str) -> Dict:
     return data
 
 
-def get_state() -> Dict:
+def get_state() -> dict:
     """Get current stage state"""
     response = requests.get(f"{BASE_URL}/api/aria/state")
     return response.json()

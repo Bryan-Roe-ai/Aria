@@ -8,7 +8,6 @@ chain-of-thought analysis.
 """
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
@@ -29,9 +28,9 @@ except ImportError as e:
 
 def print_section(title):
     """Print a formatted section."""
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"  {title}")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
 
 async def example_1_basic_routing():
@@ -202,7 +201,7 @@ async def example_4_reasoning_chain():
             print(f"  Step {step_num} - {step_name}:")
             print(f"    {content}...")
 
-        print(f"\n  Conclusion:")
+        print("\n  Conclusion:")
         conclusion = reasoning.get("conclusion", "")[:200]
         print(f"    {conclusion}...\n")
 

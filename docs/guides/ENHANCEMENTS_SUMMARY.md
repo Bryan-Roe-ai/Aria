@@ -16,11 +16,13 @@ Four major enhancements completed to improve quantum environment management, pro
 ### Changes Made
 
 **File: `function_app.py` (ai/status endpoint)**
+
 - Added `quantum` section to status JSON payload
 - Includes: qiskit version, pennylane version, conflict flag, optional Azure Quantum backend probe
 - Gated by `QAI_STATUS_CONNECT_AZURE_QUANTUM` environment variable (defaults to false to avoid latency)
 
 **File: `ai-projects/quantum-ml/scripts/validate_qiskit_env.py`**
+
 - Extracted `detect_conflict()` function for unit-testable logic
 - Refactored `main()` to use structured metadata return
 
@@ -28,18 +30,18 @@ Four major enhancements completed to improve quantum environment management, pro
 
 ```json
 {
-  "quantum": {
-    "enabled": true,
-    "qiskit": "0.46.0",
-    "pennylane": "0.43.0",
-    "azure_quantum": {
-      "workspace_connected": false,
-      "backends": [],
-      "attempted": false,
-      "error": null
-    },
-    "conflict": false
-  }
+    "quantum": {
+        "enabled": true,
+        "qiskit": "0.46.0",
+        "pennylane": "0.43.0",
+        "azure_quantum": {
+            "workspace_connected": false,
+            "backends": [],
+            "attempted": false,
+            "error": null
+        },
+        "conflict": false
+    }
 }
 ```
 
@@ -105,24 +107,27 @@ python .\scripts\validate_qiskit_env.py
 ### Post-Upgrade Checklist
 
 1. **Smoke test local training**:
-   ```powershell
-   python train_custom_dataset.py --preset heart --epochs 1
-   ```
+
+    ```powershell
+    python train_custom_dataset.py --preset heart --epochs 1
+    ```
 
 2. **Verify no conflicts**:
-   ```powershell
-   python .\scripts\validate_qiskit_env.py
-   # Should show: ✓ Environment conflict: False
-   ```
+
+    ```powershell
+    python .\scripts\validate_qiskit_env.py
+    # Should show: ✓ Environment conflict: False
+    ```
 
 3. **Test Azure Quantum integration** (if using):
-   ```powershell
-   python .\src\test_azure_quantum.py
-   ```
+
+    ```powershell
+    python .\src\test_azure_quantum.py
+    ```
 
 4. **Check for deprecated imports**:
-   - `qiskit.algorithms` → `qiskit_algorithms` (separate package in 1.x)
-   - `qiskit.providers.aer` → `qiskit_aer` (separate package)
+    - `qiskit.algorithms` → `qiskit_algorithms` (separate package in 1.x)
+    - `qiskit.providers.aer` → `qiskit_aer` (separate package)
 
 ---
 
@@ -135,12 +140,14 @@ python .\scripts\validate_qiskit_env.py
 ### Key Features Documented
 
 **Telemetry (Application Insights):**
+
 - Distributed tracing for `/api/chat` and other endpoints
 - Custom spans with provider, model, duration attributes
 - Exception tracking and dependency instrumentation
 - Feature flag: `APPLICATIONINSIGHTS_CONNECTION_STRING`
 
 **Cosmos DB Persistence:**
+
 - Two strategies: per-message writes or session-level batches
 - Feature flags: `QAI_ENABLE_COSMOS`, `QAI_COSMOS_PERSIST_STRATEGY`
 - Lazy initialization (no startup failure if disabled)
@@ -170,18 +177,18 @@ curl http://localhost:7071/api/ai/status | jq '.telemetry, .cosmos'
 
 ```json
 {
-  "telemetry": {
-    "enabled": true
-  },
-  "cosmos": {
-    "enabled": true,
-    "settings_present": true,
-    "initialized": true,
-    "container_id": "chat_sessions",
-    "database": "qai",
-    "container": "chat_sessions",
-    "error": null
-  }
+    "telemetry": {
+        "enabled": true
+    },
+    "cosmos": {
+        "enabled": true,
+        "settings_present": true,
+        "initialized": true,
+        "container_id": "chat_sessions",
+        "database": "qai",
+        "container": "chat_sessions",
+        "error": null
+    }
 }
 ```
 
@@ -196,16 +203,16 @@ curl http://localhost:7071/api/ai/status | jq '.telemetry, .cosmos'
 ### Test Cases
 
 1. **`test_pre_1x_environment_no_conflict`**:
-   - Scenario: `qiskit: 0.46.0` + `qiskit_aer: 0.12.2`
-   - Expected: `conflict: false`, recommendation mentions "Pre-1.0"
+    - Scenario: `qiskit: 0.46.0` + `qiskit_aer: 0.12.2`
+    - Expected: `conflict: false`, recommendation mentions "Pre-1.0"
 
 2. **`test_mixed_environment_conflict`**:
-   - Scenario: `qiskit: 1.0.2` + `qiskit_aer: 0.12.2`
-   - Expected: `conflict: true`, recommendation mentions "mixes Qiskit >=1.x"
+    - Scenario: `qiskit: 1.0.2` + `qiskit_aer: 0.12.2`
+    - Expected: `conflict: true`, recommendation mentions "mixes Qiskit >=1.x"
 
 3. **`test_error_import_conflict`**:
-   - Scenario: `qiskit: 1.0.2` + `qiskit_aer: "error: ImportError..."`
-   - Expected: `conflict: true`, recommendation mentions "failed to import"
+    - Scenario: `qiskit: 1.0.2` + `qiskit_aer: "error: ImportError..."`
+    - Expected: `conflict: true`, recommendation mentions "failed to import"
 
 ### Running Tests
 
@@ -257,20 +264,24 @@ ls quantum-ai\scripts\upgrade_qiskit_to_1x.py
 ### Known Observations
 
 **Root venv shows conflict (expected):**
+
 ```json
 "quantum": {
   "qiskit": "1.4.5",
   "conflict": true
 }
 ```
+
 - **Cause**: Root Functions venv has Qiskit 1.x (possibly from transitive deps or prior install)
 - **Impact**: None for quantum-ai training (uses isolated `ai-projects/quantum-ml/venv` with 0.46.0)
 - **Resolution**: Either ignore (if quantum endpoints unused) or upgrade root venv using upgrade script
 
 **Telemetry disabled (expected):**
+
 ```json
 "telemetry": {"enabled": false}
 ```
+
 - **Cause**: `APPLICATIONINSIGHTS_CONNECTION_STRING` not set in `local.settings.json`
 - **Impact**: No distributed tracing (development default)
 - **Resolution**: See `TELEMETRY_COSMOS_ENABLEMENT.md` to enable
@@ -347,16 +358,17 @@ ls quantum-ai\scripts\upgrade_qiskit_to_1x.py
 ### Immediate (Optional)
 
 1. **Resolve root venv conflict** (if quantum endpoints are used in production):
-   ```powershell
-   cd quantum-ai
-   python .\scripts\upgrade_qiskit_to_1x.py --dry-run  # preview
-   python .\scripts\upgrade_qiskit_to_1x.py --install  # apply
-   ```
+
+    ```powershell
+    cd quantum-ai
+    python .\scripts\upgrade_qiskit_to_1x.py --dry-run  # preview
+    python .\scripts\upgrade_qiskit_to_1x.py --install  # apply
+    ```
 
 2. **Enable telemetry for development** (if you want distributed tracing):
-   - Add `APPLICATIONINSIGHTS_CONNECTION_STRING` to `local.settings.json`
-   - Restart Functions host (`func host start`)
-   - Verify: `curl http://localhost:7071/api/ai/status | jq .telemetry.enabled` → `true`
+    - Add `APPLICATIONINSIGHTS_CONNECTION_STRING` to `local.settings.json`
+    - Restart Functions host (`func host start`)
+    - Verify: `curl http://localhost:7071/api/ai/status | jq .telemetry.enabled` → `true`
 
 ### Future Enhancements
 
@@ -382,18 +394,23 @@ ls quantum-ai\scripts\upgrade_qiskit_to_1x.py
 ## Success Criteria Met
 
 ✅ **Quantum status integrated into /api/ai/status**
+
 - New `quantum` section with versions, conflict flag, optional Azure backends
 
 ✅ **Scripted upgrade path to Qiskit 1.x**
+
 - `upgrade_qiskit_to_1x.py` with dry-run, install, revert modes
 
 ✅ **Telemetry/Cosmos enablement steps**
+
 - Comprehensive `TELEMETRY_COSMOS_ENABLEMENT.md` guide
 
 ✅ **Unit tests for validation logic**
+
 - `tests/test_validate_qiskit_env.py` with 3 scenarios (all passing)
 
 ✅ **All changes non-breaking**
+
 - Existing workflows unchanged (telemetry/Cosmos behind feature flags)
 - Quantum-ai venv isolation maintained
 - Status endpoint backward-compatible (only additions)
@@ -403,6 +420,7 @@ ls quantum-ai\scripts\upgrade_qiskit_to_1x.py
 ## Support
 
 For questions or issues:
+
 1. Check `TELEMETRY_COSMOS_ENABLEMENT.md` for detailed troubleshooting
 2. Run `pytest tests/test_validate_qiskit_env.py -v` to verify test infrastructure
 3. Use `upgrade_qiskit_to_1x.py --dry-run` to preview upgrade impact

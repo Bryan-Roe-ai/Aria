@@ -159,8 +159,10 @@ def main() -> int:
     out_path = results_dir / f"azure_ghz_{args.n_qubits}q_results_{ts}.json"
     out_path.write_text(json.dumps(out, indent=2), encoding="utf-8")
     print(f"\nResults saved to {out_path}")
-    print(f"Unique states: {len(counts)} / {2 ** args.n_qubits}")
-    print(f"Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy/max_entropy*100 if max_entropy>0 else 0):.1f}%)")
+    print(f"Unique states: {len(counts)} / {2**args.n_qubits}")
+    print(
+        f"Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy / max_entropy * 100 if max_entropy > 0 else 0):.1f}%)"
+    )
     print("\nTip: Now run the visualizer to see side-by-side comparison:")
     print("  python .\\quantum-ai\\scripts\\visualize_hardware_results.py")
 

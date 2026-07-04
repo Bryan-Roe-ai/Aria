@@ -8,6 +8,7 @@ agent: agent
 Validate that a completed refactor preserved required behavior and did not introduce regressions.
 
 Suggested next step:
+
 - Run `/refactor-pr-summary` to convert verification evidence into a reviewer-ready PR description.
 - Run `/refactor-reviewer-checklist` to generate role-based merge review gates.
 - If flow is unclear, run `/refactor-next-step` for a single recommended next command.
@@ -19,23 +20,27 @@ Suggested next step:
 - Run `/refactor-routing-matrix` to inspect stage-transition topology and routing gaps.
 
 ### Inputs
+
 - Refactored code (selected diff or files)
 - Declared expectations for unchanged behavior
 - Required checks to run (unit tests, type check, contract parity, integration)
 - Existing project contracts and testing conventions
 
 ### Required behavior
+
 - Compare expected invariants vs observed changes.
 - Flag any contract drift (API, schema, route, streaming/status behavior).
 - Prioritize findings by severity and confidence.
 - Propose minimal remediation steps for each high-priority issue.
 
 ### Non-goals unless explicitly requested
+
 - No making code changes to fix discovered regressions — verify and report only.
 - No approving merge readiness without complete evidence for all required checks.
 - No suppressing or downgrading findings to achieve a passing result.
 
 ### Output format
+
 - **Verification summary**: pass/fail by area
 - **Contract parity table**: invariant, status, evidence
 - **Regression findings**: severity + location + suggested fix
@@ -44,6 +49,7 @@ Suggested next step:
 - **Optional next command**: one slash command
 
 ### Optional next commands
+
 - `/refactor-pr-summary`
 - `/refactor-reviewer-checklist`
 - `/refactor-merge-gate`
@@ -56,5 +62,6 @@ Suggested next step:
 - `/refactor-routing-matrix`
 
 ### Example invocations
+
 - `verify recent /api/chat refactor: SSE event schema must remain identical`
 - `verify chat provider cleanup: fallback order and readiness checks unchanged`

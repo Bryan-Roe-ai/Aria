@@ -15,5 +15,5 @@ This action is intentionally non-failing for marker hits; it is intended as a re
 ```yaml
 - uses: ./.github/actions/scan-todo-fixme
   with:
-    base-ref: ${{ github.base_ref }}
+      base-ref: ${{ github.base_ref }}
 ```

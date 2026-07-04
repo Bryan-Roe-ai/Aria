@@ -1,1 +1,20 @@
-{"DataverseEndpoint":"https://org640a2151.crm.dynamics.com/","EnvironmentId":"Default-1c1abf36-424a-493c-9638-3fad12323684","AccountInfo":{"AccountId":"05f8fde2-1cb3-437f-8565-09a94957a915.1c1abf36-424a-493c-9638-3fad12323684","TenantId":"1c1abf36-424a-493c-9638-3fad12323684","AccountEmail":"admin@bryanroe.com","clusterCategory":5},"AgentId":"ef044713-dfe6-ee11-904d-000d3a33715b","ComponentCollectionId":null,"SolutionVersions":{"SolutionVersions":{"msft_AIPlatformExtensionsComponents":"1.0.0.363","msdyn_RelevanceSearch":"1.0.3379.1"},"CopilotStudioSolutionVersion":"2026.4.1.19568070"},"AgentManagementEndpoint":"https://powervamg.us-il106.gateway.prod.island.powerapps.com"}
+{
+    "DataverseEndpoint": "https://org640a2151.crm.dynamics.com/",
+    "EnvironmentId": "Default-1c1abf36-424a-493c-9638-3fad12323684",
+    "AccountInfo": {
+        "AccountId": "05f8fde2-1cb3-437f-8565-09a94957a915.1c1abf36-424a-493c-9638-3fad12323684",
+        "TenantId": "1c1abf36-424a-493c-9638-3fad12323684",
+        "AccountEmail": "admin@bryanroe.com",
+        "clusterCategory": 5
+    },
+    "AgentId": "ef044713-dfe6-ee11-904d-000d3a33715b",
+    "ComponentCollectionId": null,
+    "SolutionVersions": {
+        "SolutionVersions": {
+            "msft_AIPlatformExtensionsComponents": "1.0.0.363",
+            "msdyn_RelevanceSearch": "1.0.3379.1"
+        },
+        "CopilotStudioSolutionVersion": "2026.4.1.19568070"
+    },
+    "AgentManagementEndpoint": "https://powervamg.us-il106.gateway.prod.island.powerapps.com"
+}

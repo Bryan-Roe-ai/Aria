@@ -3,21 +3,27 @@
 ## One-Command Training Pipelines
 
 ### Quick Training & Auto-Promote
+
 ```powershell
 python .\scripts\train_and_promote.py --quick --auto-promote
 ```
+
 **What it does**: Train 64 samples, 1 epoch → Evaluate → Promote best model (~7 min)
 
 ### Standard Training & Auto-Promote
+
 ```powershell
 python .\scripts\train_and_promote.py --standard --auto-promote
 ```
+
 **What it does**: Train 500 samples, 3 epochs → Evaluate → Promote (~30 min)
 
 ### Full Training & Auto-Promote
+
 ```powershell
 python .\scripts\train_and_promote.py --full --auto-promote
 ```
+
 **What it does**: Train all samples, 5 epochs → Evaluate → Promote (~2-4 hours)
 
 ---
@@ -25,16 +31,19 @@ python .\scripts\train_and_promote.py --full --auto-promote
 ## Scheduled Automation
 
 ### Nightly Training (Runs at 2 AM daily)
+
 ```powershell
 python .\scripts\training_scheduler.py --start nightly
 ```
 
 ### Continuous Training (Retrains when data changes)
+
 ```powershell
 python .\scripts\training_scheduler.py --start continuous --check-interval 3600
 ```
 
 ### One-Off Scheduled Job
+
 ```powershell
 python .\scripts\training_scheduler.py --run-once --preset standard
 ```
@@ -44,11 +53,13 @@ python .\scripts\training_scheduler.py --run-once --preset standard
 ## Hyperparameter Optimization
 
 ### Grid Search (Auto-tune hyperparameters)
+
 ```powershell
 python .\scripts\training_scheduler.py --grid-search
 ```
 
 ### Custom Grid Search
+
 ```powershell
 python .\scripts\training_scheduler.py --grid-search `
     --learning-rates 1e-5 2e-5 5e-5 `
@@ -73,20 +84,25 @@ Press `Ctrl+Shift+P` → "Tasks: Run Task" → Select:
 ## Output Locations
 
 ### Trained Models
+
 `data_out/lora_training/<timestamp>/`
 
 ### Deployed Models
+
 `deployed_models/<model_id>_<timestamp>/`
 
 Latest: Read `deployed_models/LATEST.txt`
 
 ### Pipeline Reports
+
 `data_out/train_and_promote/pipeline_<timestamp>.json`
 
 ### Evaluation Results
+
 `data_out/batch_evaluator/results_<timestamp>.json`
 
 ### Scheduler State
+
 `data_out/training_scheduler/scheduler_state.json`
 
 ---
@@ -94,6 +110,7 @@ Latest: Read `deployed_models/LATEST.txt`
 ## Advanced Usage
 
 ### Custom Training + Promotion
+
 ```powershell
 python .\scripts\train_and_promote.py `
     --dataset datasets/chat/coding `
@@ -105,16 +122,19 @@ python .\scripts\train_and_promote.py `
 ```
 
 ### Dry-Run (Preview without deploying)
+
 ```powershell
 python .\scripts\train_and_promote.py --quick --auto-promote --dry-run
 ```
 
 ### Skip Evaluation (Training only)
+
 ```powershell
 python .\scripts\train_and_promote.py --standard --skip-eval
 ```
 
 ### With Webhook Notification
+
 ```powershell
 python .\scripts\train_and_promote.py --quick --auto-promote `
     --webhook https://hooks.slack.com/services/YOUR/WEBHOOK/URL
@@ -125,6 +145,7 @@ python .\scripts\train_and_promote.py --quick --auto-promote `
 ## Typical Workflows
 
 ### Development Workflow
+
 ```powershell
 # 1. Quick validation (7 min)
 python .\scripts\train_and_promote.py --quick --auto-promote
@@ -135,6 +156,7 @@ $latest = Get-Content .\deployed_models\LATEST.txt
 ```
 
 ### Production Deployment
+
 ```powershell
 # 1. Full training with grid search
 python .\scripts\training_scheduler.py --grid-search
@@ -148,6 +170,7 @@ Get-Content ".\deployed_models\$(Get-Content .\deployed_models\LATEST.txt)\promo
 ```
 
 ### Continuous Improvement
+
 ```powershell
 # Start background daemon (retrains when data updated)
 python .\scripts\training_scheduler.py --start continuous --check-interval 1800
@@ -158,16 +181,19 @@ python .\scripts\training_scheduler.py --start continuous --check-interval 1800
 ## Monitoring
 
 ### Check Pipeline Status
+
 ```powershell
 Get-ChildItem .\data_out\train_and_promote\pipeline_*.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content | ConvertFrom-Json
 ```
 
 ### Check Latest Evaluation
+
 ```powershell
 Get-ChildItem .\data_out\batch_evaluator\results_*.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1 | Get-Content | ConvertFrom-Json
 ```
 
 ### Check Scheduler State
+
 ```powershell
 Get-Content .\data_out\training_scheduler\scheduler_state.json | ConvertFrom-Json
 ```
@@ -177,19 +203,23 @@ Get-Content .\data_out\training_scheduler\scheduler_state.json | ConvertFrom-Jso
 ## Troubleshooting
 
 ### Pipeline fails at training
+
 - Check dataset exists: `Test-Path .\datasets\chat\mixed_chat`
 - Check venv active: `python --version`
 - Check dependencies: `pip list | Select-String "transformers|peft|torch"`
 
 ### Evaluation succeeds but metrics empty
+
 - Check `evaluate_lora_model.py` ran successfully
 - Look in `data_out/batch_evaluator/<model_id>/results.json`
 
 ### Promotion fails with permissions error
+
 - Normal on Windows (symlink requires admin)
 - Uses `LATEST.txt` fallback automatically
 
 ### Scheduler doesn't run jobs
+
 - Check scheduler state: `Get-Content .\data_out\training_scheduler\scheduler_state.json`
 - Verify job schedule matches current time
 - Check logs in terminal output

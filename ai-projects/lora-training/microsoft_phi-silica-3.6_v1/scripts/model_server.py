@@ -7,7 +7,7 @@ import asyncio
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 import uvicorn
@@ -26,7 +26,7 @@ class GenerationRequest(BaseModel):
     top_p: float = Field(0.9, description="Top-p sampling")
     top_k: int = Field(50, description="Top-k sampling")
     stream: bool = Field(False, description="Stream response")
-    stop_sequences: Optional[List[str]] = Field(None, description="Stop sequences")
+    stop_sequences: list[str] | None = Field(None, description="Stop sequences")
 
 
 class GenerationResponse(BaseModel):
@@ -42,7 +42,7 @@ class GenerationResponse(BaseModel):
 class BatchRequest(BaseModel):
     """Batch generation request"""
 
-    prompts: List[str]
+    prompts: list[str]
     max_tokens: int = 100
     temperature: float = 0.7
 
@@ -112,8 +112,8 @@ class ModelServer:
         temperature: float = 0.7,
         top_p: float = 0.9,
         top_k: int = 50,
-        stop_sequences: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
+        stop_sequences: list[str] | None = None,
+    ) -> dict[str, Any]:
         """Generate text from prompt"""
         start_time = time.perf_counter()
 
@@ -158,8 +158,8 @@ class ModelServer:
         }
 
     def generate_batch(
-        self, prompts: List[str], max_tokens: int = 100, temperature: float = 0.7
-    ) -> List[Dict[str, Any]]:
+        self, prompts: list[str], max_tokens: int = 100, temperature: float = 0.7
+    ) -> list[dict[str, Any]]:
         """Batch generation for multiple prompts"""
         results = []
 
@@ -205,7 +205,7 @@ class ModelServer:
 
         return results
 
-    def get_health(self) -> Dict[str, Any]:
+    def get_health(self) -> dict[str, Any]:
         """Get server health status"""
         return {
             "status": "healthy" if self.model is not None else "unhealthy",
@@ -223,7 +223,7 @@ app = FastAPI(
 )
 
 # Global model server instance
-model_server: Optional[ModelServer] = None
+model_server: ModelServer | None = None
 
 
 @app.on_event("startup")

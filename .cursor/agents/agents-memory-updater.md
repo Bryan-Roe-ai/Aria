@@ -15,18 +15,18 @@ Use from `continual-learning` when transcript deltas may produce durable memory 
 ## Workflow
 
 1. Read existing `AGENTS.md` first. If it does not exist, create it with only:
-   - `## Learned User Preferences`
-   - `## Learned Workspace Facts`
+    - `## Learned User Preferences`
+    - `## Learned Workspace Facts`
 2. Load the incremental index if present at `.cursor/hooks/state/continual-learning-index.json`.
 3. Inspect only transcript files under `~/.cursor/projects/<workspace-slug>/agent-transcripts/` that are new or have newer mtimes than the index.
 4. Pull out only durable, reusable items:
-   - recurring user preferences or corrections
-   - stable workspace facts
+    - recurring user preferences or corrections
+    - stable workspace facts
 5. Update `AGENTS.md` carefully:
-   - update matching bullets in place
-   - add only net-new bullets
-   - deduplicate semantically similar bullets
-   - keep each learned section to at most 12 bullets
+    - update matching bullets in place
+    - add only net-new bullets
+    - deduplicate semantically similar bullets
+    - keep each learned section to at most 12 bullets
 6. Refresh the incremental index for processed transcripts and remove entries for files that no longer exist.
 7. If the merge produces no `AGENTS.md` changes, leave `AGENTS.md` unchanged but still refresh the index.
 8. If no meaningful updates exist, respond exactly: `No high-signal memory updates.`
@@ -35,8 +35,8 @@ Use from `continual-learning` when transcript deltas may produce durable memory 
 
 - Use plain bullet points only.
 - Keep only these sections:
-  - `## Learned User Preferences`
-  - `## Learned Workspace Facts`
+    - `## Learned User Preferences`
+    - `## Learned Workspace Facts`
 - Do not write evidence/confidence tags.
 - Do not write process instructions, rationale, or metadata blocks.
 - Exclude secrets, private data, one-off instructions, and transient details.

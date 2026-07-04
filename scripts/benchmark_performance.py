@@ -51,9 +51,9 @@ def benchmark_tail_file():
     # Verify results match
     assert [line.strip() for line in result1] == [line.strip() for line in result2]
 
-    print(f"Old method (readlines):  {t_old*1000:.2f}ms")
-    print(f"New method (deque):      {t_new*1000:.2f}ms")
-    print(f"Speedup:                 {t_old/t_new:.1f}x faster")
+    print(f"Old method (readlines):  {t_old * 1000:.2f}ms")
+    print(f"New method (deque):      {t_new * 1000:.2f}ms")
+    print(f"Speedup:                 {t_old / t_new:.1f}x faster")
     print(f"Memory savings:          ~{size_mb:.1f} MB (entire file vs 20 lines)")
 
     temp_path.unlink()
@@ -100,9 +100,9 @@ def benchmark_json_parsing():
     # Verify results match
     assert result1 == result2
 
-    print(f"Old method (forward):    {t_old*1000:.3f}ms")
-    print(f"New method (reverse):    {t_new*1000:.3f}ms")
-    print(f"Speedup:                 {t_old/t_new:.1f}x faster")
+    print(f"Old method (forward):    {t_old * 1000:.3f}ms")
+    print(f"New method (reverse):    {t_new * 1000:.3f}ms")
+    print(f"Speedup:                 {t_old / t_new:.1f}x faster")
 
     return t_old / t_new
 
@@ -138,9 +138,9 @@ def benchmark_jsonl_streaming():
     # Verify results match
     assert count1 == count2 == 5000
 
-    print(f"Old method (load all):   {t_old*1000:.2f}ms")
-    print(f"New method (streaming):  {t_new*1000:.2f}ms")
-    print(f"Speedup:                 {t_old/t_new:.1f}x faster")
+    print(f"Old method (load all):   {t_old * 1000:.2f}ms")
+    print(f"New method (streaming):  {t_new * 1000:.2f}ms")
+    print(f"Speedup:                 {t_old / t_new:.1f}x faster")
     print(f"Memory savings:          ~{size_mb:.1f} MB (streaming vs full load)")
 
     temp_path.unlink()
@@ -163,8 +163,8 @@ def main():
     print("\n" + "=" * 80)
     print("SUMMARY")
     print("=" * 80)
-    print(f"Average speedup: {sum(speedups)/len(speedups):.1f}x")
-    print(f"Total time saved: {sum(speedups)/len(speedups) - 1:.1%} faster")
+    print(f"Average speedup: {sum(speedups) / len(speedups):.1f}x")
+    print(f"Total time saved: {sum(speedups) / len(speedups) - 1:.1%} faster")
     print("\nThese optimizations are now available in shared/performance_utils.py")
     print("and have been integrated into monitoring and evaluation scripts.")
     print("\nFor more details, see docs/PERFORMANCE_OPTIMIZATION_GUIDE.md")

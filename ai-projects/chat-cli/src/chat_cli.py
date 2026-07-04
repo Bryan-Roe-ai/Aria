@@ -10,7 +10,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, TypedDict, cast
+from typing import Any, TypedDict, cast
 
 try:
     from colorama import Fore, Style
@@ -40,17 +40,14 @@ class RoleMessage(TypedDict):
 
 
 _chat_providers = importlib.import_module("chat_providers")
-detect_provider = cast(Any, getattr(_chat_providers, "detect_provider"))
+detect_provider = cast(Any, _chat_providers.detect_provider)
 
 
 def _find_repo_root(start: Path) -> Path | None:
     """Find repository root by looking for config files used by local
     development."""
     for candidate in (start, *start.parents):
-        if (
-            (candidate / ".env").exists()
-            or (candidate / "local.settings.json").exists()
-        ):
+        if (candidate / ".env").exists() or (candidate / "local.settings.json").exists():
             return candidate
     return None
 
@@ -90,19 +87,13 @@ def load_local_env_defaults() -> None:
     settings_path = repo_root / "local.settings.json"
     if settings_path.exists():
         try:
-            payload = json.loads(
-                settings_path.read_text(encoding="utf-8", errors="ignore")
-            )
+            payload = json.loads(settings_path.read_text(encoding="utf-8", errors="ignore"))
         except json.JSONDecodeError:
             payload = {}
         values = payload.get("Values", {}) if isinstance(payload, dict) else {}
         if isinstance(values, dict):
             for key, value in values.items():
-                if (
-                    not isinstance(key, str)
-                    or not key.strip()
-                    or key.strip().startswith("#")
-                ):
+                if not isinstance(key, str) or not key.strip() or key.strip().startswith("#"):
                     continue
                 if isinstance(value, str):
                     os.environ.setdefault(key.strip(), value)
@@ -119,12 +110,7 @@ def provider_readiness_summary() -> str:
     azure_endpoint = bool(os.getenv("AZURE_OPENAI_ENDPOINT"))
     azure_deployment = bool(os.getenv("AZURE_OPENAI_DEPLOYMENT"))
     azure_version = bool(os.getenv("AZURE_OPENAI_API_VERSION"))
-    azure_ready = (
-        azure_key
-        and azure_endpoint
-        and azure_deployment
-        and azure_version
-    )
+    azure_ready = azure_key and azure_endpoint and azure_deployment and azure_version
 
     openai_ready = bool(os.getenv("OPENAI_API_KEY"))
     lmstudio_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
@@ -146,7 +132,7 @@ def provider_readiness_summary() -> str:
     return "\n".join(lines)
 
 
-def save_conversation(messages: List[RoleMessage], logs_dir: Path) -> Path:
+def save_conversation(messages: list[RoleMessage], logs_dir: Path) -> Path:
     """Persist a conversation as a JSONL file and return the saved path."""
     logs_dir.mkdir(parents=True, exist_ok=True)
     base_name = f"chat_{now_ts()}"
@@ -192,7 +178,7 @@ def format_provider_error(exc: Exception) -> str:
     return f"[provider error: {message}]"
 
 
-def stream_assistant_reply(provider, messages: List[RoleMessage]) -> str:
+def stream_assistant_reply(provider, messages: list[RoleMessage]) -> str:
     """Stream a provider reply to stdout and return the accumulated text."""
     print(Fore.GREEN + "assistant> " + Style.RESET_ALL, end="")
     reply_accum = ""
@@ -216,7 +202,7 @@ def stream_assistant_reply(provider, messages: List[RoleMessage]) -> str:
     return reply_accum
 
 
-def non_stream_assistant_reply(provider, messages: List[RoleMessage]) -> str:
+def non_stream_assistant_reply(provider, messages: list[RoleMessage]) -> str:
     """Get full provider reply at once (non-streaming) and return it."""
     print(Fore.GREEN + "assistant> " + Style.RESET_ALL, end="")
     reply_accum = ""
@@ -251,10 +237,7 @@ def autonomous_chat(args: argparse.Namespace) -> int:
 
     system_prompt = args.system or os.getenv(
         "SYSTEM_PROMPT",
-        (
-            "You are a concise, friendly assistant. "
-            "Be helpful and brief by default."
-        ),
+        ("You are a concise, friendly assistant. Be helpful and brief by default."),
     )
     seed_prompt = args.auto_seed or os.getenv(
         "AUTONOMOUS_CHAT_SEED",
@@ -279,14 +262,12 @@ def autonomous_chat(args: argparse.Namespace) -> int:
         model_override=args.model,
     )
 
-    messages: List[RoleMessage] = []
+    messages: list[RoleMessage] = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
 
     print_system(f"Provider: {info.name} | Model: {info.model}")
-    print_system(
-        "Autonomous mode active. Press Ctrl+C to stop."
-    )
+    print_system("Autonomous mode active. Press Ctrl+C to stop.")
 
     turn_count = 0
     next_user_message = seed_prompt
@@ -323,21 +304,16 @@ def interactive_chat(args: argparse.Namespace) -> int:
         model_override=args.model,
     )
 
-    messages: List[RoleMessage] = []
+    messages: list[RoleMessage] = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
 
     print_system(f"Provider: {info.name} | Model: {info.model}")
-    print_system(
-        "Type your message. Commands: /help, /new, /save, /history, "
-        "/model, /providers, /reasoning, /exit"
-    )
+    print_system("Type your message. Commands: /help, /new, /save, /history, /model, /providers, /reasoning, /exit")
 
     while True:
         try:
-            user = input(
-                Fore.CYAN + "you> " + Style.RESET_ALL
-            )
+            user = input(Fore.CYAN + "you> " + Style.RESET_ALL)
         except (EOFError, KeyboardInterrupt):
             print()
             return 0
@@ -388,8 +364,7 @@ def _print_reasoning_summary(provider) -> None:
 
         if top_patterns:
             pattern_lines = "\n".join(
-                f"    {p.get('domain', '?')}/{p.get('intent', '?')} "
-                f"→ {p.get('agent', '?')} (×{p.get('count', 0)})"
+                f"    {p.get('domain', '?')}/{p.get('intent', '?')} → {p.get('agent', '?')} (×{p.get('count', 0)})"
                 for p in top_patterns
             )
             pattern_section = f"\n  Top routing patterns    :\n{pattern_lines}"
@@ -412,16 +387,13 @@ def _print_reasoning_summary(provider) -> None:
             f"  Available agents        : {available}"
         )
     else:
-        print_system(
-            "Reasoning summary is only available with "
-            "the AGI provider (--provider agi)."
-        )
+        print_system("Reasoning summary is only available with the AGI provider (--provider agi).")
 
 
 def _handle_interactive_command(
     *,
     user: str,
-    messages: List[RoleMessage],
+    messages: list[RoleMessage],
     system_prompt: str,
     logs_dir: Path,
     provider,
@@ -447,10 +419,7 @@ def _handle_interactive_command(
     if cmd == "/history":
         user_msgs = [m for m in messages if m.get("role") == "user"]
         asst_msgs = [m for m in messages if m.get("role") == "assistant"]
-        print_system(
-            f"Conversation: {len(user_msgs)} user message(s), "
-            f"{len(asst_msgs)} assistant reply(ies)."
-        )
+        print_system(f"Conversation: {len(user_msgs)} user message(s), {len(asst_msgs)} assistant reply(ies).")
         if user_msgs:
             last = user_msgs[-1]["content"]
             preview = last[:120] + "..." if len(last) > 120 else last
@@ -486,7 +455,7 @@ def one_shot(args: argparse.Namespace) -> int:
         model_override=args.model,
     )
 
-    messages: List[RoleMessage] = []
+    messages: list[RoleMessage] = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": args.once})
@@ -494,7 +463,7 @@ def one_shot(args: argparse.Namespace) -> int:
     print_system(f"Provider: {info.name} | Model: {info.model}")
 
     # Check if streaming or non-streaming mode
-    if hasattr(args, 'no_stream') and args.no_stream:
+    if hasattr(args, "no_stream") and args.no_stream:
         non_stream_assistant_reply(provider, messages)
     else:
         stream_assistant_reply(provider, messages)
@@ -504,12 +473,7 @@ def one_shot(args: argparse.Namespace) -> int:
 
 def build_arg_parser() -> argparse.ArgumentParser:
     """Build the command-line argument parser."""
-    p = argparse.ArgumentParser(
-        description=(
-            "Simple terminal chat app with local/OpenAI/Azure "
-            "providers"
-        )
-    )
+    p = argparse.ArgumentParser(description=("Simple terminal chat app with local/OpenAI/Azure providers"))
     p.add_argument(
         "--provider",
         choices=[
@@ -579,7 +543,7 @@ def should_run_autonomous(args: argparse.Namespace) -> bool:
     return not args.once
 
 
-def main(argv: List[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     """CLI entry point."""
     load_local_env_defaults()
     args = build_arg_parser().parse_args(argv)

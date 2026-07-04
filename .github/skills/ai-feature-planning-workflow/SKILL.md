@@ -37,28 +37,28 @@ Common trigger phrases:
 ## Procedure
 
 1. Clarify intent and constraints
-   - Define who the user is, what success means, and what failure looks like.
-   - Capture latency/cost/privacy constraints and expected interaction mode.
+    - Define who the user is, what success means, and what failure looks like.
+    - Capture latency/cost/privacy constraints and expected interaction mode.
 
 2. Map system boundaries
-   - Identify all touched layers (frontend, API, provider adapters, memory, telemetry).
-   - Note public contracts that must remain stable.
+    - Identify all touched layers (frontend, API, provider adapters, memory, telemetry).
+    - Note public contracts that must remain stable.
 
 3. Choose model/provider strategy
-   - Select primary execution path and fallback order.
-   - Document readiness checks and degraded-mode behavior.
+    - Select primary execution path and fallback order.
+    - Document readiness checks and degraded-mode behavior.
 
 4. Break into implementation phases
-   - Phase by dependency order: contract → backend logic → UI wiring → validation.
-   - Keep each phase testable in isolation.
+    - Phase by dependency order: contract → backend logic → UI wiring → validation.
+    - Keep each phase testable in isolation.
 
 5. Define validation gates
-   - Add smoke checks, targeted tests, and health signals per phase.
-   - Ensure behavior is measurable in logs/status artifacts.
+    - Add smoke checks, targeted tests, and health signals per phase.
+    - Ensure behavior is measurable in logs/status artifacts.
 
 6. Specify rollout and rollback
-   - Include feature-flag path where relevant.
-   - Define rollback conditions and recovery actions.
+    - Include feature-flag path where relevant.
+    - Define rollback conditions and recovery actions.
 
 ## Quality Checks
 

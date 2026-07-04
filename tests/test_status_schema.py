@@ -45,8 +45,16 @@ def test_repo_automation_components_use_resolved_python(monkeypatch: pytest.Monk
 
     automation = repo_module.RepoAutomation()
 
-    assert automation.components["aria"].command == ["/tmp/custom-python", "scripts/aria_automation.py", "--mode", "full"]
-    assert automation.components["training"].command == ["/tmp/custom-python", "scripts/autonomous_training_orchestrator.py"]
+    assert automation.components["aria"].command == [
+        "/tmp/custom-python",
+        "scripts/aria_automation.py",
+        "--mode",
+        "full",
+    ]
+    assert automation.components["training"].command == [
+        "/tmp/custom-python",
+        "scripts/autonomous_training_orchestrator.py",
+    ]
     assert "/tmp/custom-python" in automation.components["quantum"].command[2]
     assert "/tmp/custom-python" in automation.components["evaluation"].command[2]
 

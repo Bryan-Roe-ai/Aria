@@ -10,8 +10,8 @@ BaseChatProvider consumers.
 from __future__ import annotations
 
 import json
-import time
-from typing import Any, Dict, Iterable, List, Optional
+from collections.abc import Iterable
+from typing import Any
 
 
 class LocalAGIProvider:
@@ -22,7 +22,7 @@ class LocalAGIProvider:
     - Uses the simulator's structured JSON output to provide useful chunks.
     """
 
-    def __init__(self, model: str = "local-llm", temperature: float = 0.7, max_output_tokens: Optional[int] = None):
+    def __init__(self, model: str = "local-llm", temperature: float = 0.7, max_output_tokens: int | None = None):
         # Lazy import to avoid heavy startup and circular imports
         try:
             from core.llm.client import LLMClient
@@ -35,7 +35,7 @@ class LocalAGIProvider:
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
 
-    def complete(self, messages: List[Dict[str, Any]], stream: bool = True) -> Iterable[str] | str:
+    def complete(self, messages: list[dict[str, Any]], stream: bool = True) -> Iterable[str] | str:
         # The core LLMClient expects a list of messages with roles 'system'/'user'.
         if self._llm is None:
             text = "[LocalAGI fallback] No simulator available."

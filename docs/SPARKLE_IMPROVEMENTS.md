@@ -35,11 +35,11 @@ HEARTS_KEYWORDS = frozenset(['hearts', 'heart', 'love'])
 
 Added three intensity levels for all effects (sparkle, glow, hearts):
 
-| Intensity | Count | Spread | Duration | Delay | Keywords |
-| ----------- | ------- | -------- | ---------- | ------- | ---------- |
-| **Light** | 3 | 60% | 1200ms | 150ms | light, subtle, gentle |
-| **Normal** | 5 | 80% | 1500ms | 100ms | *(default)* |
-| **Heavy** | 10 | 90% | 1800ms | 60ms | heavy, intense, lots, many |
+| Intensity  | Count | Spread | Duration | Delay | Keywords                   |
+| ---------- | ----- | ------ | -------- | ----- | -------------------------- |
+| **Light**  | 3     | 60%    | 1200ms   | 150ms | light, subtle, gentle      |
+| **Normal** | 5     | 80%    | 1500ms   | 100ms | _(default)_                |
+| **Heavy**  | 10    | 90%    | 1800ms   | 60ms  | heavy, intense, lots, many |
 
 **Usage Examples**:
 
@@ -87,16 +87,16 @@ Added 12 new tests to `tests/test_aria_server.py`:
 ## Files Modified
 
 1. **aria_web/server.py**
-   - Added effect keyword frozensets (lines 75-77)
-   - Enhanced effect detection with intensity support (lines 779-791)
+    - Added effect keyword frozensets (lines 75-77)
+    - Enhanced effect detection with intensity support (lines 779-791)
 
 2. **aria_web/aria_controller.js**
-   - Replaced `createEffect` function with enhanced version (lines 1490-1557)
-   - Added intensity parameter parsing in `executeTags` (line 817)
-   - Added intensity detection in direct command handler (lines 691-710)
+    - Replaced `createEffect` function with enhanced version (lines 1490-1557)
+    - Added intensity parameter parsing in `executeTags` (line 817)
+    - Added intensity detection in direct command handler (lines 691-710)
 
 3. **tests/test_aria_server.py**
-   - Added 12 comprehensive sparkle functionality tests (lines 21-152)
+    - Added 12 comprehensive sparkle functionality tests (lines 21-152)
 
 ## Performance Impact
 
@@ -160,19 +160,19 @@ Added 12 new tests to `tests/test_aria_server.py`:
 Potential improvements identified but not implemented:
 
 1. **Custom Colors**: Allow users to specify sparkle colors
-   - Example: `[aria:effect:sparkle:heavy:gold]`
+    - Example: `[aria:effect:sparkle:heavy:gold]`
 
 2. **Pattern Types**: Different sparkle patterns (circle, star, random)
-   - Example: `[aria:effect:sparkle:normal:star]`
+    - Example: `[aria:effect:sparkle:normal:star]`
 
 3. **Position Control**: Target sparkles at specific locations
-   - Example: `[aria:effect:sparkle:heavy:50:30]` (at x:50%, y:30%)
+    - Example: `[aria:effect:sparkle:heavy:50:30]` (at x:50%, y:30%)
 
 4. **Persistence**: Keep effects visible longer or loop continuously
-   - Example: `[aria:effect:sparkle:normal:loop]`
+    - Example: `[aria:effect:sparkle:normal:loop]`
 
 5. **Sound Effects**: Optional audio feedback for effects
-   - Requires TTS/audio integration
+    - Requires TTS/audio integration
 
 ## Testing
 

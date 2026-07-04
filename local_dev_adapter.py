@@ -26,7 +26,7 @@ import sys
 import types
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from shared.local_settings import apply_local_settings
 
@@ -176,7 +176,7 @@ def _install_azure_functions_shim() -> Any:
     azure_pkg = sys.modules.setdefault("azure", types.ModuleType("azure"))
     if not hasattr(azure_pkg, "__path__"):
         azure_pkg.__path__ = []  # type: ignore[attr-defined]
-    setattr(azure_pkg, "functions", fake_mod)
+    azure_pkg.functions = fake_mod
     sys.modules["azure.functions"] = fake_mod
     return fake_mod.HttpResponse
 
@@ -200,7 +200,7 @@ def _get_function_app() -> Any:
 
 def _azure_response_parts(
     resp: AzureHttpResponse,
-) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Extract body/status/mimetype/headers from azure.functions.HttpResponse."""
     body_bytes = resp.get_body()
     # Ensure bytes
@@ -253,7 +253,7 @@ def _call_function_handler(
     url: str,
     *,
     body: Any = None,
-    headers: Optional[Dict[str, str]] = None,
+    headers: dict[str, str] | None = None,
 ) -> AzureHttpResponse:
     """Invoke a function_app HTTP handler with a minimal HttpRequest."""
     function_app = _get_function_app()
@@ -307,7 +307,7 @@ def _call_function_handler(
     return handler(fake_req)
 
 
-def _json_body(payload: Dict[str, Any]) -> bytes:
+def _json_body(payload: dict[str, Any]) -> bytes:
     """Encode a small JSON payload for local handler probes."""
     return json.dumps(payload).encode("utf-8")
 
@@ -318,8 +318,8 @@ def _call_function_parts(
     url: str,
     *,
     body: bytes = b"",
-    headers: Optional[Dict[str, str]] = None,
-) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+    headers: dict[str, str] | None = None,
+) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Call a function handler and return response components."""
     azure_resp = _call_function_handler(
         handler_name,
@@ -331,43 +331,43 @@ def _call_function_parts(
     return _azure_response_parts(azure_resp)
 
 
-def get_ai_status_response() -> Tuple[Response, int]:
+def get_ai_status_response() -> tuple[Response, int]:
     """Call the function_app.ai_status handler and return a Flask response."""
     azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
     return _azure_to_flask(azure_resp)
 
 
-def get_agi_status_response() -> Tuple[Response, int]:
+def get_agi_status_response() -> tuple[Response, int]:
     """Call function_app.agi_status and return a Flask response."""
     azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
     return _azure_to_flask(azure_resp)
 
 
-def get_ai_routes_response() -> Tuple[Response, int]:
+def get_ai_routes_response() -> tuple[Response, int]:
     """Call function_app.ai_routes and return a Flask response."""
     azure_resp = _call_function_handler("ai_routes", "GET", "/api/ai/routes")
     return _azure_to_flask(azure_resp)
 
 
-def get_agi_analyze_response(payload: Dict[str, Any]) -> Tuple[Response, int]:
+def get_agi_analyze_response(payload: dict[str, Any]) -> tuple[Response, int]:
     """Call function_app.agi_analyze and return a Flask response."""
     azure_resp = _call_function_handler("agi_analyze", "POST", "/api/agi/analyze", body=payload)
     return _azure_to_flask(azure_resp)
 
 
-def get_agi_reason_response(payload: Dict[str, Any]) -> Tuple[Response, int]:
+def get_agi_reason_response(payload: dict[str, Any]) -> tuple[Response, int]:
     """Call function_app.agi_reason and return a Flask response."""
     azure_resp = _call_function_handler("agi_reason", "POST", "/api/agi/reason", body=payload)
     return _azure_to_flask(azure_resp)
 
 
-def get_agi_stream_response(payload: Dict[str, Any]) -> Tuple[Response, int]:
+def get_agi_stream_response(payload: dict[str, Any]) -> tuple[Response, int]:
     """Call function_app.agi_stream and return a Flask response."""
     azure_resp = _call_function_handler("agi_stream", "POST", "/api/agi/stream", body=payload)
     return _azure_to_flask(azure_resp)
 
 
-def get_agi_stream_utils_response() -> Tuple[Response, int]:
+def get_agi_stream_utils_response() -> tuple[Response, int]:
     """Call function_app.serve_agi_stream_utils and return a Flask response."""
     azure_resp = _call_function_handler(
         "serve_agi_stream_utils",
@@ -377,7 +377,7 @@ def get_agi_stream_utils_response() -> Tuple[Response, int]:
     return _azure_to_flask(azure_resp)
 
 
-def _agi_json_response(handler_name: str, url: str) -> Tuple[Response, int]:
+def _agi_json_response(handler_name: str, url: str) -> tuple[Response, int]:
     """Call a JSON AGI POST handler with the active Flask request body."""
     assert request is not None
     azure_resp = _call_function_handler(
@@ -390,22 +390,22 @@ def _agi_json_response(handler_name: str, url: str) -> Tuple[Response, int]:
     return _azure_to_flask(azure_resp)
 
 
-def get_ai_status_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_ai_status_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return endpoint response components for non-Flask fallback servers."""
     return _call_function_parts("ai_status", "GET", "/api/ai/status")
 
 
-def get_agi_status_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_status_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/status response components for non-Flask servers."""
     return _call_function_parts("agi_status", "GET", "/api/agi/status")
 
 
-def get_ai_routes_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_ai_routes_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/ai/routes response components for non-Flask servers."""
     return _call_function_parts("ai_routes", "GET", "/api/ai/routes")
 
 
-def get_agi_stream_utils_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_stream_utils_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return AGI stream utility asset response components for non-Flask servers."""
     return _call_function_parts(
         "serve_agi_stream_utils",
@@ -414,7 +414,7 @@ def get_agi_stream_utils_parts() -> Tuple[bytes, int, Optional[str], Dict[str, A
     )
 
 
-def get_agi_analyze_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_analyze_parts(body: bytes) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/analyze response components for non-Flask servers."""
     return _call_function_parts(
         "agi_analyze",
@@ -425,7 +425,7 @@ def get_agi_analyze_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[
     )
 
 
-def get_agi_reason_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_reason_parts(body: bytes) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/reason response components for non-Flask servers."""
     return _call_function_parts(
         "agi_reason",
@@ -436,7 +436,7 @@ def get_agi_reason_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[s
     )
 
 
-def get_agi_stream_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_stream_parts(body: bytes) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/stream response components for non-Flask servers."""
     return _call_function_parts(
         "agi_stream",
@@ -447,31 +447,31 @@ def get_agi_stream_parts(body: bytes) -> Tuple[bytes, int, Optional[str], Dict[s
     )
 
 
-def get_ai_routes_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_ai_routes_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/ai/routes response components for non-Flask servers."""
     azure_resp = _call_function_handler("ai_routes", "GET", "/api/ai/routes")
     return _azure_response_parts(azure_resp)
 
 
-def get_agi_analyze_parts(payload: Dict[str, Any]) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_analyze_parts(payload: dict[str, Any]) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/analyze response components for non-Flask servers."""
     azure_resp = _call_function_handler("agi_analyze", "POST", "/api/agi/analyze", body=payload)
     return _azure_response_parts(azure_resp)
 
 
-def get_agi_reason_parts(payload: Dict[str, Any]) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_reason_parts(payload: dict[str, Any]) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/reason response components for non-Flask servers."""
     azure_resp = _call_function_handler("agi_reason", "POST", "/api/agi/reason", body=payload)
     return _azure_response_parts(azure_resp)
 
 
-def get_agi_stream_parts(payload: Dict[str, Any]) -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_stream_parts(payload: dict[str, Any]) -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return /api/agi/stream response components for non-Flask servers."""
     azure_resp = _call_function_handler("agi_stream", "POST", "/api/agi/stream", body=payload)
     return _azure_response_parts(azure_resp)
 
 
-def get_agi_stream_utils_parts() -> Tuple[bytes, int, Optional[str], Dict[str, Any]]:
+def get_agi_stream_utils_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return AGI stream utility JavaScript response components."""
     azure_resp = _call_function_handler(
         "serve_agi_stream_utils",
@@ -522,7 +522,7 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
     """Serve selected local Functions endpoints using stdlib HTTP server."""
 
     class _Handler(BaseHTTPRequestHandler):
-        def _read_json_body(self) -> Dict[str, Any]:
+        def _read_json_body(self) -> dict[str, Any]:
             length = int(self.headers.get("Content-Length") or 0)
             if length <= 0:
                 return {}
@@ -536,7 +536,7 @@ def run_stdlib_server(host: str = "0.0.0.0", port: int = 7071) -> None:
             self,
             parts_fn,
             *,
-            payload: Optional[Dict[str, Any]] = None,
+            payload: dict[str, Any] | None = None,
         ) -> None:
             path = self.path.split("?", 1)[0]
             try:

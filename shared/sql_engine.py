@@ -32,7 +32,7 @@ import os
 import time
 import urllib.parse
 from collections import deque
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Configuration constants
 SQL_POOL_RECYCLE_SECONDS = 1800  # Refresh idle connections every 30 minutes
@@ -157,7 +157,7 @@ def _build_url_from_odbc(conn_str: str) -> str:
     return f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote_plus(conn_str)}"
 
 
-def resolve_sql_url() -> Optional[str]:
+def resolve_sql_url() -> str | None:
     """Resolve the SQLAlchemy URL from environment variables."""
     url = os.getenv("QAI_SQL_URL")
     if url:
@@ -278,13 +278,13 @@ def _safe_call(obj: Any, name: str) -> Any:
         return None
 
 
-def engine_stats() -> Dict[str, Any]:
+def engine_stats() -> dict[str, Any]:
     """Return pool and connection statistics for the active SQL engine."""
     engine = get_engine()
     if not engine:
         return {"enabled": False}
     pool = getattr(engine, "pool", None)
-    stats: Dict[str, Any] = {
+    stats: dict[str, Any] = {
         "enabled": True,
         "type": pool.__class__.__name__ if pool else None,
         "vendor": getattr(engine.dialect, "name", "unknown"),

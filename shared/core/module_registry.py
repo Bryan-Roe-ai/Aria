@@ -18,7 +18,7 @@ Usage:
 import importlib.util
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class _LazyModule:
@@ -68,8 +68,8 @@ class AIProjectsRegistry:
     Import paths are managed centrally here.
     """
 
-    _cache: Dict[str, Any] = {}
-    _repo_root: Optional[Path] = None
+    _cache: dict[str, Any] = {}
+    _repo_root: Path | None = None
 
     @classmethod
     def _get_repo_root(cls) -> Path:
@@ -190,7 +190,7 @@ class AIProjectsRegistry:
                 ns.chat_providers = None
                 ns.detect_provider = _detect_provider
                 ns.prune_messages = ns.token_utils.prune_messages
-                ns.create_agi_provider = lambda *args, **kwargs: (_AGIProviderStub())
+                ns.create_agi_provider = lambda *args, **kwargs: _AGIProviderStub()
 
                 cls._cache[cache_key] = ns
 
@@ -285,7 +285,7 @@ class AIProjectsRegistry:
         return cls._get_repo_root()
 
     @classmethod
-    def register_paths(cls, projects: list[str] = None) -> Dict[str, Path]:
+    def register_paths(cls, projects: list[str] = None) -> dict[str, Path]:
         """Register sys.path entries for specified projects.
 
         Returns a dict of {project_name: path_added} for verification.

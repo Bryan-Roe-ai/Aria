@@ -5,6 +5,7 @@ This document provides step-by-step instructions for integrating the QAI databas
 ## Overview
 
 The database integration adds automatic logging of:
+
 - **Quantum training runs** → `QuantumTrainingRuns` table
 - **LoRA training runs** → `LoRATrainingRuns` table
 - **Chat messages** → `ChatConversations` + `ChatMessages` tables
@@ -12,6 +13,7 @@ The database integration adds automatic logging of:
 ## Files Created
 
 ✅ **Database Schema** (in `database/`):
+
 - `Tables/*.sql` - 7 tables for core data
 - `Views/*.sql` - 3 views for analytics
 - `StoredProcedures/*.sql` - 4 SPs for easy logging
@@ -19,14 +21,17 @@ The database integration adds automatic logging of:
 - `database.sqlproj` - VS Code SQL Database Project
 
 ✅ **Shared Module**:
+
 - `shared/db_logging.py` - Safe, fault-tolerant logging helpers
 
 ✅ **Configuration**:
+
 - `requirements.txt` - Added `pyodbc` and `sqlalchemy`
 - `local.settings.json` - Added `QAI_DB_CONN` placeholder
 - `.env` - Environment variable template
 
 ✅ **Script Patches**:
+
 - `scripts/evaluation/quantum_autorun.py` - Logs quantum runs after success
 - `scripts/training/autotrain.py` - Logs LoRA runs after success
 
@@ -62,6 +67,7 @@ sys.path.insert(0, str(talk_to_ai_path))
 **Step 2:** In the `chat()` function (around line 200), replace the response_data section:
 
 **FIND:**
+
 ```python
         # Get completion (non-streaming for HTTP simplicity)
         result = provider.complete(pruned_messages, stream=False)
@@ -85,6 +91,7 @@ sys.path.insert(0, str(talk_to_ai_path))
 ```
 
 **REPLACE WITH:**
+
 ```python
         # Get completion (non-streaming for HTTP simplicity)
         result = provider.complete(pruned_messages, stream=False)
@@ -143,6 +150,7 @@ sys.path.insert(0, str(talk_to_ai_path))
 **Step 3:** In the `chat_stream()` function (around line 280), add session handling:
 
 **FIND:**
+
 ```python
         gen = provider.complete(pruned_messages, stream=True)
 
@@ -172,6 +180,7 @@ sys.path.insert(0, str(talk_to_ai_path))
 ```
 
 **REPLACE WITH:**
+
 ```python
         gen = provider.complete(pruned_messages, stream=True)
         session_id = body.get("session_id") or req.headers.get("X-Session-Id") or str(uuid4())

@@ -46,9 +46,7 @@ def test_training_analytics_report_pipe_head_exits_zero() -> None:
         timeout=30,
     )
 
-    assert proc.returncode == 0, (
-        f"expected zero exit when piped to head, got {proc.returncode}; " f"stderr={proc.stderr!r}"
-    )
+    assert proc.returncode == 0, f"expected zero exit when piped to head, got {proc.returncode}; stderr={proc.stderr!r}"
 
 
 @pytest.mark.unit
@@ -69,7 +67,7 @@ def test_training_analytics_report_pipe_head_with_pipefail_exits_zero() -> None:
     )
 
     assert proc.returncode == 0, (
-        f"expected zero exit with pipefail enabled, got {proc.returncode}; " f"stderr={proc.stderr!r}"
+        f"expected zero exit with pipefail enabled, got {proc.returncode}; stderr={proc.stderr!r}"
     )
 
 
@@ -176,7 +174,7 @@ def test_training_analytics_chart_pipe_head_with_pipefail_exits_zero() -> None:
     )
 
     assert proc.returncode == 0, (
-        f"expected zero exit for chart mode under pipefail, got {proc.returncode}; " f"stderr={proc.stderr!r}"
+        f"expected zero exit for chart mode under pipefail, got {proc.returncode}; stderr={proc.stderr!r}"
     )
 
 
@@ -197,5 +195,5 @@ def test_training_analytics_default_mode_pipe_head_with_pipefail_exits_zero() ->
     )
 
     assert proc.returncode == 0, (
-        f"expected zero exit for default mode under pipefail, got {proc.returncode}; " f"stderr={proc.stderr!r}"
+        f"expected zero exit for default mode under pipefail, got {proc.returncode}; stderr={proc.stderr!r}"
     )

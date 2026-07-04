@@ -62,11 +62,11 @@ Edit `config/quantum_config.yaml`:
 
 ```yaml
 azure:
-  subscription_id: "YOUR-SUBSCRIPTION-ID-HERE"  # From az account show
-  resource_group: "rg-quantum-ai"
-  workspace_name: "quantum-ai-workspace"
-  location: "eastus"  # or westus, westeurope
-  storage_account: "quantumstorage"  # Must be globally unique
+    subscription_id: "YOUR-SUBSCRIPTION-ID-HERE" # From az account show
+    resource_group: "rg-quantum-ai"
+    workspace_name: "quantum-ai-workspace"
+    location: "eastus" # or westus, westeurope
+    storage_account: "quantumstorage" # Must be globally unique
 ```
 
 **Important:** Change `YOUR-SUBSCRIPTION-ID-HERE` to your actual subscription ID!

@@ -9,13 +9,13 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 class PipelineOrchestrator:
     """Orchestrates the complete training pipeline"""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.results = {}
         self.start_time = time.time()
@@ -36,9 +36,9 @@ class PipelineOrchestrator:
 
         for i, (name, func) in enumerate(steps, 1):
             if not self.config.get(f"skip_{name.lower().replace(' ', '_')}", False):
-                print(f"\n{'='*60}")
+                print(f"\n{'=' * 60}")
                 print(f"STEP {i}/{len(steps)}: {name}")
-                print(f"{'='*60}\n")
+                print(f"{'=' * 60}\n")
 
                 try:
                     result = func()
@@ -58,7 +58,7 @@ class PipelineOrchestrator:
         self.print_summary()
         return True
 
-    def step_gpu_optimization(self) -> Dict[str, Any]:
+    def step_gpu_optimization(self) -> dict[str, Any]:
         """Step 1: GPU optimization"""
         cmd = [
             sys.executable,
@@ -87,7 +87,7 @@ class PipelineOrchestrator:
         print(result.stdout)
         return {"profile_path": "data_out/gpu_profile.yaml"}
 
-    def step_data_pruning(self) -> Dict[str, Any]:
+    def step_data_pruning(self) -> dict[str, Any]:
         """Step 2: Data pruning"""
         input_path = self.config.get("input_dataset")
         if not input_path:
@@ -120,7 +120,7 @@ class PipelineOrchestrator:
         print(result.stdout)
         return {"input_path": input_path, "output_path": output_path}
 
-    def step_training(self) -> Dict[str, Any]:
+    def step_training(self) -> dict[str, Any]:
         """Step 3: Model training"""
         dataset_path = self.config.get("pruned_dataset", "data")
         if not Path(dataset_path).exists():
@@ -153,7 +153,7 @@ class PipelineOrchestrator:
 
         return {"model_path": self.config.get("model_output", "data_out/lora_training")}
 
-    def step_evaluation(self) -> Dict[str, Any]:
+    def step_evaluation(self) -> dict[str, Any]:
         """Step 4: Model evaluation"""
         model_path = self.config.get("model_output", "data_out/lora_training")
         test_dataset = self.config.get("test_dataset")
@@ -194,7 +194,7 @@ class PipelineOrchestrator:
 
         return eval_results
 
-    def step_rag_setup(self) -> Dict[str, Any]:
+    def step_rag_setup(self) -> dict[str, Any]:
         """Step 5: RAG setup"""
         if not self.config.get("rag_docs_path"):
             print("⚠️  No RAG docs path specified, skipping RAG setup")
@@ -239,7 +239,7 @@ class PipelineOrchestrator:
             emoji = "✅" if status == "success" else "❌" if status == "failed" else "⏭️"
             print(f"{emoji} {step}: {status.upper()}")
 
-        print(f"\nTotal time: {elapsed:.1f}s ({elapsed/60:.1f}m)")
+        print(f"\nTotal time: {elapsed:.1f}s ({elapsed / 60:.1f}m)")
 
         # Save results
         results_file = Path("data_out/pipeline_results.json")

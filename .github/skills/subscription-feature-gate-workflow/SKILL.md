@@ -7,11 +7,13 @@ argument-hint: "Describe the gap: wrong tier accessing a feature, quota not bloc
 # Subscription Feature Gate Workflow
 
 ## What This Skill Produces
+
 Correct, consistent feature-gate and usage-limit enforcement across all API endpoints — with proper 403 vs 429 responses, ENTERPRISE exemptions, and counter tracking aligned to the subscription tier model.
 
 ## When to Use
 
 Trigger phrases:
+
 - "FREE user accessing paid feature"
 - "quota not enforcing"
 - "usage counter wrong"
@@ -26,25 +28,30 @@ Trigger phrases:
 
 ## Tier Reference
 
-| Tier | Price | Chat Msgs | Quantum Jobs | Training Hrs |
-| ------ | ------- | ----------- | ------------- | ------------- |
-| FREE | $0/mo | 100/mo | 0 | 0 |
-| PRO | $49/mo | 10,000/mo | 50/mo | 20 hrs/mo |
-| ENTERPRISE | $199/mo | Unlimited | Unlimited | Unlimited |
+| Tier       | Price   | Chat Msgs | Quantum Jobs | Training Hrs |
+| ---------- | ------- | --------- | ------------ | ------------ |
+| FREE       | $0/mo   | 100/mo    | 0            | 0            |
+| PRO        | $49/mo  | 10,000/mo | 50/mo        | 20 hrs/mo    |
+| ENTERPRISE | $199/mo | Unlimited | Unlimited    | Unlimited    |
 
 ## Gatable Features (10 total)
+
 `BASIC_CHAT`, `ARIA_CHARACTER`, `QUANTUM_COMPUTING`, `ADVANCED_TRAINING`, `WEBSITE_MAKER`, `API_ACCESS`, `CUSTOM_MODELS`, `PRIORITY_SUPPORT`, `ANALYTICS_DASHBOARD`, `BATCH_PROCESSING`
 
 ## Procedure
 
 ### Step 1 — Audit Existing Gate for the Endpoint
+
 Search for the endpoint in `function_app.py` and check whether it calls both `has_feature()` and `check_limit()`:
+
 ```bash
 grep -n "has_feature\|check_limit\|increment_usage" function_app.py
 ```
+
 Both checks are required. Missing `check_limit` allows feature access without quota enforcement.
 
 ### Step 2 — Correct Gate Pattern
+
 ```python
 from shared.subscription_manager import get_subscription_manager, Feature
 
@@ -67,7 +74,9 @@ sub.increment_usage('quantum_jobs')
 Never increment usage before confirming the limit check passes.
 
 ### Step 3 — ENTERPRISE Exemption
+
 ENTERPRISE tier has no limits — `check_limit()` always returns `True` for ENTERPRISE. Never add special-case ENTERPRISE bypass code; the tier model handles it automatically. Verify:
+
 ```python
 sub = mgr.get_subscription("enterprise-user-id")
 print(sub.tier)  # → "ENTERPRISE"
@@ -75,26 +84,32 @@ print(sub.check_limit('quantum_jobs'))  # → True (unlimited)
 ```
 
 ### Step 4 — Verify Response Codes
+
 - 403 → user lacks the feature (wrong tier, needs upgrade)
 - 429 → user has the feature but exceeded their monthly quota
 
 Do not swap these — clients and monitoring tools distinguish them for billing and UX flows.
 
 ### Step 5 — Inspect Subscription Data File
+
 ```bash
 cat data_out/subscriptions/subscriptions.json | python -m json.tool
 ```
+
 Subscription data lives in `data_out/subscriptions/subscriptions.json` — never in `datasets/`.
 Check fields: `tier`, `usage_counts`, `active`, `reset_date`.
 
 ### Step 6 — Monthly Reset
+
 ```python
 sub.reset_usage()  # Resets all counters; called monthly
 sub.is_active()    # Returns False if subscription expired
 ```
+
 If counters are stuck after month rollover, call `reset_usage()` manually or restart the host to trigger reload.
 
 ### Step 7 — Adding a New Feature Gate
+
 1. Add the feature to the `Feature` enum in `subscription_manager.py`
 2. Update `TIER_FEATURES` dict: assign feature to correct tier(s)
 3. Update `TIER_LIMITS` if the feature has a numeric quota
@@ -105,6 +120,7 @@ If counters are stuck after month rollover, call `reset_usage()` manually or res
 **Never modify tier definitions without updating all endpoint gates.**
 
 ## Quality Checks
+
 - [ ] `has_feature()` called before `check_limit()` — feature gate always comes first
 - [ ] 403 returned for missing features, 429 for exceeded limits (not swapped)
 - [ ] `increment_usage()` called only after both checks pass
