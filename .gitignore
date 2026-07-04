@@ -180,3 +180,6 @@ task_complete.json
 
 # core dumps
 core.*
+
+# Empty/stale submodule directory
+LMStudio-MCP/
