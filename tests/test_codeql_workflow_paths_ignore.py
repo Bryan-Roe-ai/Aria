@@ -25,3 +25,12 @@ def test_codeql_autofix_ref_step_avoids_unbound_shell_vars() -> None:
     assert 'echo "ref=$ref_value"' not in content
     assert 'echo "repo=$repo_value"' not in content
     assert 'echo "can_push=$can_push_value"' not in content
+
+
+@pytest.mark.unit
+def test_codeql_autofix_excludes_workflow_files_from_formatting() -> None:
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
+    content = workflow_path.read_text(encoding="utf-8")
+
+    assert "!**/.github/workflows/**" in content
+    assert "git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' ':(exclude).github/workflows/**'" in content
