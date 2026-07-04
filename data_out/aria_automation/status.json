@@ -1,43 +1,26 @@
 {
   "mode": "full",
-  "started": "2026-05-30T05:11:19.443701",
-  "uptime_seconds": 223208.513977,
+  "started": "2026-07-01T15:43:20.857971",
+  "uptime_seconds": 665.463454,
   "server_running": true,
   "backend_running": false,
   "training_active": false,
-  "last_health_check": "2026-06-01T19:11:27.957776",
+  "last_health_check": "2026-07-01T15:54:26.321574",
   "processes": [
     {
       "name": "aria_server",
-      "pid": 17047,
+      "pid": 8319,
       "command": "python server.py",
-      "started": "2026-05-30T05:11:24.947232",
+      "started": "2026-07-01T15:43:26.366470",
       "status": "running",
       "port": 8080,
       "health_url": "http://localhost:8080"
-    },
-    {
-      "name": "functions_backend",
-      "pid": 344882,
-      "command": "func host start",
-      "started": "2026-06-01T15:57:28.489860",
-      "status": "running",
-      "port": 7071,
-      "health_url": "http://localhost:7071/api/ai/status"
     }
   ],
   "training_cycles": 0,
   "errors": [
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
-    "Training cycle failed: /usr/local/bin/python3: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n"
-  ],
-  "updated_at": "2026-06-22T12:01:37.596424+00:00"
+    "Training cycle failed: /workspaces/Aria/.venv/bin/python: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
+    "Training cycle failed: /workspaces/Aria/.venv/bin/python: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n",
+    "Training cycle failed: /workspaces/Aria/.venv/bin/python: can't open file '/workspaces/Aria/scripts/automate_aria_movement.py': [Errno 2] No such file or directory\n"
+  ]
 }

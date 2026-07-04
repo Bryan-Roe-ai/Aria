@@ -369,22 +369,26 @@ Result: Online store ready for products
 
 1. **Run Demo**
 
-   ```bash
-   python3 website_generator_demo.py
-   ```
+```bash
+python3 website_generator_demo.py
+```
 
 2. **Choose Your Type**
+
    - Portfolio? Landing? Blog? Docs? Store?
 
 3. **Generate**
+
    - Use @llm-maker in Copilot Chat
    - Copy command from examples above
 
 4. **Customize**
+
    - Edit HTML/CSS/JS as needed
    - Add your content
 
 5. **Deploy**
+
    - Push to GitHub Pages
    - Deploy to Netlify
    - Upload to S3

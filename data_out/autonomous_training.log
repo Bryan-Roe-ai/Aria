@@ -1369,3 +1369,106 @@ Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_train
 Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_training/quantum_training_results.json
 2026-05-31 22:53:50,051 - INFO - Cycle complete. Next cycle in 1800s...
 2026-06-01 16:53:42,061 - INFO - Received signal 10; immediate training cycle requested
+2026-07-01 14:36:34,954 - WARNING - Stale pidfile detected (pid=15713); replacing
+2026-07-01 14:36:34,961 - INFO - ======================================================================
+2026-07-01 14:36:34,961 - INFO - 🤖 AUTONOMOUS AI TRAINING ORCHESTRATOR
+2026-07-01 14:36:34,962 - INFO - ======================================================================
+2026-07-01 14:36:34,962 - INFO - Starting continuous training mode (infinite cycles)...
+2026-07-01 14:36:34,962 - INFO - Cycle interval: 1800s
+2026-07-01 14:36:34,962 - INFO - 
+======================================================================
+2026-07-01 14:36:34,962 - INFO - CYCLE 445
+2026-07-01 14:36:34,962 - INFO - ======================================================================
+2026-07-01 14:36:34,980 - INFO - Starting training cycle #445...
+2026-07-01 14:36:34,981 - INFO - Found 4 dataset categories: ['chat', 'synthetic:python_help', 'synthetic:aria_commands', 'synthetic:quantum']
+2026-07-01 14:36:36,979 - INFO -   Training progress: 33%
+2026-07-01 14:36:38,980 - INFO -   Training progress: 67%
+2026-07-01 14:36:40,980 - INFO -   Training progress: 100%
+2026-07-01 14:36:40,980 - INFO - Current accuracy: 0.9542 (best: 0.9569, plateau: 90 cycles)
+2026-07-01 14:36:40,980 - INFO - 📦 Plateau reached 90 stable cycles — promoting model...
+2026-07-01 14:36:40,981 - INFO - 🚀 Model v20 promoted → /workspaces/Aria/deployed_models/chat_model_v20.json (accuracy=0.9569)
+2026-07-01 14:36:40,981 - INFO - 🔬 Running scheduled Quantum LLM training step...
+2026-07-01 14:36:43,281 - INFO - QuantumLayer loaded successfully
+2026-07-01 14:36:43,347 - INFO - Using QuantumSelfAttention
+2026-07-01 14:36:43,347 - INFO - Using QuantumFeedForward
+2026-07-01 14:36:43,349 - INFO - Using QuantumSelfAttention
+2026-07-01 14:36:43,349 - INFO - Using QuantumFeedForward
+2026-07-01 14:36:43,351 - INFO - QuantumLLM initialised: 55,312 parameters
+2026-07-01 14:36:43,351 - INFO -   vocab=256, d_model=64, heads=4, blocks=2, qubits=4, seq_len=32
+2026-07-01 14:36:44,556 - INFO - Initialized quantum feature encoder
+2026-07-01 14:36:44,556 - INFO - Initialized QuantumAttentionOptimizer
+2026-07-01 14:36:44,556 - INFO - Initialized QuantumEnhancedLLMTrainer
+2026-07-01 14:36:44,556 - INFO -   Device: cpu
+2026-07-01 14:36:44,556 - INFO -   Parameters: 55,312
+2026-07-01 14:36:44,557 - INFO -   Quantum available: True
+2026-07-01 14:36:44,557 - INFO -   Model config: {'vocab_size': 256, 'd_model': 64, 'n_heads': 4, 'n_transformer_layers': 2, 'n_qubits': 4, 'n_quantum_layers': 2, 'max_seq_len': 32, 'entanglement': 'circular', 'dropout': 0.1, 'use_quantum_attention': True, 'use_quantum_ffn': True, 'tie_embeddings': True}
+2026-07-01 14:36:44,557 - INFO - Starting quantum-enhanced LLM training
+2026-07-01 14:36:44,557 - INFO -   Dataset: /workspaces/Aria/datasets/chat/github_actions/train.json
+2026-07-01 14:36:44,557 - INFO -   Output: /workspaces/Aria/data_out/quantum_llm_training
+2026-07-01 14:36:44,557 - INFO -   Epochs: 1
+2026-07-01 14:36:44,557 - INFO -   Mode: simulated
+2026-07-01 14:36:44,558 - INFO - 
+--- Epoch 1/1 (simulated) ---
+2026-07-01 14:36:44,636 - INFO -   Epoch 1 complete | Avg Loss: 0.9171
+2026-07-01 14:36:44,639 - INFO - 
+Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_training/quantum_training_results.json
+2026-07-01 14:36:44,642 - INFO - Cycle complete. Next cycle in 1800s...
+2026-07-01 15:12:56,961 - WARNING - Stale pidfile detected (pid=16845); replacing
+2026-07-01 15:12:56,965 - INFO - ======================================================================
+2026-07-01 15:12:56,965 - INFO - 🤖 AUTONOMOUS AI TRAINING ORCHESTRATOR
+2026-07-01 15:12:56,965 - INFO - ======================================================================
+2026-07-01 15:12:56,965 - INFO - Starting continuous training mode (infinite cycles)...
+2026-07-01 15:12:56,965 - INFO - Cycle interval: 1800s
+2026-07-01 15:12:56,965 - INFO - 
+======================================================================
+2026-07-01 15:12:56,965 - INFO - CYCLE 446
+2026-07-01 15:12:56,965 - INFO - ======================================================================
+2026-07-01 15:12:56,977 - INFO - Starting training cycle #446...
+2026-07-01 15:12:56,978 - INFO - Found 4 dataset categories: ['chat', 'synthetic:python_help', 'synthetic:aria_commands', 'synthetic:quantum']
+2026-07-01 15:12:58,978 - INFO -   Training progress: 33%
+2026-07-01 15:13:00,978 - INFO -   Training progress: 67%
+2026-07-01 15:13:02,979 - INFO -   Training progress: 100%
+2026-07-01 15:13:02,979 - INFO - Current accuracy: 0.9569 (best: 0.9569, plateau: 91 cycles)
+2026-07-01 15:13:02,980 - INFO - 🔬 Running scheduled Quantum LLM training step...
+2026-07-01 15:13:05,201 - INFO - QuantumLayer loaded successfully
+2026-07-01 15:13:05,208 - INFO - Using QuantumSelfAttention
+2026-07-01 15:13:05,209 - INFO - Using QuantumFeedForward
+2026-07-01 15:13:05,210 - INFO - Using QuantumSelfAttention
+2026-07-01 15:13:05,210 - INFO - Using QuantumFeedForward
+2026-07-01 15:13:05,211 - INFO - QuantumLLM initialised: 55,312 parameters
+2026-07-01 15:13:05,211 - INFO -   vocab=256, d_model=64, heads=4, blocks=2, qubits=4, seq_len=32
+2026-07-01 15:13:06,016 - INFO - Initialized quantum feature encoder
+2026-07-01 15:13:06,017 - INFO - Initialized QuantumAttentionOptimizer
+2026-07-01 15:13:06,017 - INFO - Initialized QuantumEnhancedLLMTrainer
+2026-07-01 15:13:06,017 - INFO -   Device: cpu
+2026-07-01 15:13:06,017 - INFO -   Parameters: 55,312
+2026-07-01 15:13:06,017 - INFO -   Quantum available: True
+2026-07-01 15:13:06,017 - INFO -   Model config: {'vocab_size': 256, 'd_model': 64, 'n_heads': 4, 'n_transformer_layers': 2, 'n_qubits': 4, 'n_quantum_layers': 2, 'max_seq_len': 32, 'entanglement': 'circular', 'dropout': 0.1, 'use_quantum_attention': True, 'use_quantum_ffn': True, 'tie_embeddings': True}
+2026-07-01 15:13:06,017 - INFO - Starting quantum-enhanced LLM training
+2026-07-01 15:13:06,017 - INFO -   Dataset: /workspaces/Aria/datasets/chat/github_actions/train.json
+2026-07-01 15:13:06,017 - INFO -   Output: /workspaces/Aria/data_out/quantum_llm_training
+2026-07-01 15:13:06,017 - INFO -   Epochs: 1
+2026-07-01 15:13:06,017 - INFO -   Mode: simulated
+2026-07-01 15:13:06,018 - INFO - 
+--- Epoch 1/1 (simulated) ---
+2026-07-01 15:13:06,044 - INFO -   Epoch 1 complete | Avg Loss: 1.0079
+2026-07-01 15:13:06,047 - INFO - 
+Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_training/quantum_training_results.json
+2026-07-01 15:13:06,050 - INFO - Cycle complete. Next cycle in 1800s...
+2026-07-01 15:43:22,266 - WARNING - Stale pidfile detected (pid=39983); replacing
+2026-07-01 15:43:22,270 - INFO - ======================================================================
+2026-07-01 15:43:22,270 - INFO - 🤖 AUTONOMOUS AI TRAINING ORCHESTRATOR
+2026-07-01 15:43:22,270 - INFO - ======================================================================
+2026-07-01 15:43:22,270 - INFO - Starting continuous training mode (infinite cycles)...
+2026-07-01 15:43:22,270 - INFO - Cycle interval: 1800s
+2026-07-01 15:43:22,270 - INFO - 
+======================================================================
+2026-07-01 15:43:22,270 - INFO - CYCLE 447
+2026-07-01 15:43:22,270 - INFO - ======================================================================
+2026-07-01 15:43:22,275 - INFO - Starting training cycle #447...
+2026-07-01 15:43:22,276 - INFO - Found 4 dataset categories: ['chat', 'synthetic:python_help', 'synthetic:aria_commands', 'synthetic:quantum']
+2026-07-01 15:43:24,276 - INFO -   Training progress: 33%
+2026-07-01 15:43:26,276 - INFO -   Training progress: 67%
+2026-07-01 15:43:28,277 - INFO -   Training progress: 100%
+2026-07-01 15:43:28,277 - INFO - Current accuracy: 0.9569 (best: 0.9569, plateau: 92 cycles)
+2026-07-01 15:43:28,280 - INFO - Cycle complete. Next cycle in 1800s...

@@ -1,7 +1,7 @@
 {
-  "cycles_completed": 444,
+  "cycles_completed": 447,
   "best_accuracy": 0.956931,
-  "last_updated": "2026-06-01T19:05:34.471678",
+  "last_updated": "2026-07-01T15:43:28.277817",
   "performance_history": [
     {
       "cycle": 1,
@@ -3554,6 +3554,30 @@
       "samples_processed": 74968,
       "training_time_sec": 6,
       "timestamp": "2026-06-01T19:05:34.414888"
+    },
+    {
+      "cycle": 445,
+      "accuracy": 0.954207,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-07-01T14:36:40.980687"
+    },
+    {
+      "cycle": 446,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-07-01T15:13:02.979445"
+    },
+    {
+      "cycle": 447,
+      "accuracy": 0.956931,
+      "datasets_trained": 4,
+      "samples_processed": 74968,
+      "training_time_sec": 6,
+      "timestamp": "2026-07-01T15:43:28.277308"
     }
   ],
   "dataset_inventory": {
@@ -3561,12 +3585,6 @@
       "count": 1,
       "paths": [
         "datasets/chat/github_actions/train.json"
-      ]
-    },
-    "synthetic:quantum": {
-      "count": 1,
-      "paths": [
-        "data_out/autonomous_datasets/quantum/train.jsonl"
       ]
     },
     "synthetic:python_help": {
@@ -3580,15 +3598,21 @@
       "paths": [
         "data_out/autonomous_datasets/aria_commands/train.jsonl"
       ]
+    },
+    "synthetic:quantum": {
+      "count": 1,
+      "paths": [
+        "data_out/autonomous_datasets/quantum/train.jsonl"
+      ]
     }
   },
   "status": "running",
   "started_at": "2026-03-17T16:46:53.488027",
   "run_mode": "infinite",
   "cycle_interval_sec": 1800,
-  "current_cycle": 444,
-  "next_cycle_eta": "2026-06-01T19:35:34.471665",
-  "plateau_cycles": 89,
+  "current_cycle": 447,
+  "next_cycle_eta": "2026-07-01T16:13:28.277811",
+  "plateau_cycles": 92,
   "promotions": [
     {
       "version": 1,
@@ -3703,20 +3727,26 @@
       "cycle": 440,
       "accuracy": 0.956931,
       "promoted_at": "2026-06-01T17:05:09.288088"
+    },
+    {
+      "version": 20,
+      "cycle": 445,
+      "accuracy": 0.956931,
+      "promoted_at": "2026-07-01T14:36:40.981212"
     }
   ],
   "quantum_llm": {
     "enabled": true,
-    "status": "completed",
-    "last_run": "2026-06-01T19:05:34.415683",
+    "status": "idle",
+    "last_run": "2026-07-01T15:13:02.980119",
     "last_error": null,
     "checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
     "inference_ready": true,
-    "runs": 51,
+    "runs": 53,
     "dataset_path": "datasets/chat/github_actions/train.json",
     "epochs_completed": 1,
-    "final_loss": 0.9585350640186827,
-    "best_loss": 0.9585350640186827,
+    "final_loss": 1.0079004250570902,
+    "best_loss": 1.0079004250570902,
     "trainer_status": "completed"
   }
 }

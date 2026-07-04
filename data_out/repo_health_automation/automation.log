@@ -6404,3 +6404,163 @@ FAILED tests/test_function_app_endpoints.py::TestAgiEndpoints::test_agi_stream_e
 [91m[1mRESULT: Some checks failed (4/5 passed)[0m
 [1m═══════════════════════════════════════════════════════════════════[0m
 
+
+==============================================================================
+[repo_health_automation] cycle=1 started_at=2026-07-01T15:43:21.745956+00:00
+==============================================================================
+
+--> pre_commit_check: /workspaces/Aria/.venv/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=10.19s
+
+--> integration_contract_gate: bash ./scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=0.79s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=1 succeeded=False duration=10.98s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+ttpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    self.loader.exec_module(module)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_agi_smoke.py
+ERROR tests/test_function_app_endpoints.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+=================== 1 skipped, 1 warning, 2 errors in 5.66s ====================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=2 started_at=2026-07-01T15:48:32.697882+00:00
+==============================================================================
+
+--> pre_commit_check: /workspaces/Aria/.venv/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=10.68s
+
+--> integration_contract_gate: bash ./scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=0.82s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=2 succeeded=False duration=11.49s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[1m[96mQAI PRE-COMMIT VALIDATION[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+[96m[1m[1/5] Running unit tests...[0m
+[91m✗ Tests failed[0m
+ttpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    self.loader.exec_module(module)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_agi_smoke.py
+ERROR tests/test_function_app_endpoints.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+=================== 1 skipped, 1 warning, 2 errors in 5.95s ====================
+
+
+[96m[1m[2/5] Linting code...[0m
+[92m✓ No staged Python files to lint[0m
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[92m✓ Git staging area looks clean[0m
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (4/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...
+
+==============================================================================
+[repo_health_automation] cycle=3 started_at=2026-07-01T15:53:44.166358+00:00
+==============================================================================
+
+--> pre_commit_check: /workspaces/Aria/.venv/bin/python scripts/pre_commit_check.py
+[FAIL] pre_commit_check rc=1 duration=189.52s
+
+--> integration_contract_gate: bash ./scripts/integration_contract_gate.sh
+[PASS] integration_contract_gate rc=0 duration=0.93s
+
+------------------------------------------------------------------------------
+[repo_health_automation] cycle=3 succeeded=False duration=190.45s
+------------------------------------------------------------------------------
+First failed step: pre_commit_check
+--- stdout tail ---
+py::test_orchestrator_health_last_checked_utc_z
+ERROR tests/test_orchestrator_health_integration.py::test_orchestrator_heartbeat_completed_not_running
+ERROR tests/test_orchestrator_health_integration.py::test_orchestrator_heartbeat_training_running
+ERROR tests/test_orchestrator_health_integration.py::test_orchestrator_heartbeat_stale_not_running
+= 8 failed, 2839 passed, 70 skipped, 1 warning, 8 errors in 183.25s (0:03:03) ==
+
+
+[96m[1m[2/5] Linting code...[0m
+[91m✗ Found critical linting issues (E9,F63,F7,F82,B904) in 4 staged file(s)[0m
+  invalid-syntax: Unexpected indentation
+     --> function_app.py:968:1
+      |
+  966 | def resource_monitor_status(req: func.HttpRequest) -> func.HttpResponse:
+  967 |     """Return latest resource monitor snapshot."""
+  968 |                     headers=create_cors_response_headers(),
+      | ^^^^^^^^^^^^^^^^^^^^
+  969 |                 )
+      |
+  invalid-syntax: unindent does not match any outer indentation level
+
+[96m[1m[3/5] Security scan...[0m
+[92m✓ No security issues detected[0m
+
+[96m[1m[4/5] Git hygiene...[0m
+[93m⚠ Found 25 git hygiene issues:[0m
+  Unwanted file: __pycache__/chat_providers.cpython-314.pyc
+  Unwanted file: __pycache__/run_automation.cpython-314.pyc
+  Unwanted file: ai-projects/chat-cli/src/__pycache__/chat_providers.cpython-314.pyc
+  Unwanted file: ai-projects/cooking-ai/src/agents/__pycache__/recipe_agent.cpython-314.pyc
+  Unwanted file: ai-projects/cooking-ai/src/utils/__pycache__/json_utils.cpython-314.pyc
+
+[96m[1m[5/5] Checking documentation...[0m
+[92m✓ All key documentation present[0m
+
+[1m═══════════════════════════════════════════════════════════════════[0m
+[91m[1mRESULT: Some checks failed (3/5 passed)[0m
+[1m═══════════════════════════════════════════════════════════════════[0m
+
+
+Sleeping 300s before next cycle...

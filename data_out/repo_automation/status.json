@@ -1,6 +1,47 @@
 {
-  "updated_at": "2026-06-22T12:01:37.598545+00:00",
-  "last_updated": "2026-06-22T12:01:37.598545+00:00",
-  "status": "reset",
-  "note": "Reset by repair_data_out_status after unresolvable merge conflicts"
+  "generated_at": "2026-07-01T15:56:23Z",
+  "run_id": "20260701T154320Z",
+  "started": "2026-07-01T15:43:20Z",
+  "config_path": null,
+  "config_paths": {
+    "quantum": "config/quantum/quantum_autorun.yaml",
+    "evaluation": "config/evaluation/evaluation_autorun.yaml"
+  },
+  "uptime_seconds": 782.343053,
+  "component_enabled": {
+    "aria": true,
+    "training": true,
+    "quantum": true,
+    "evaluation": true,
+    "datasets": false,
+    "monitoring": false,
+    "backup": false
+  },
+  "component_states": {
+    "aria": "running",
+    "training": "running",
+    "quantum": "running",
+    "evaluation": "running",
+    "datasets": "disabled",
+    "monitoring": "disabled",
+    "backup": "disabled"
+  },
+  "components_running": {
+    "aria": true,
+    "training": true,
+    "quantum": true,
+    "evaluation": true,
+    "datasets": false,
+    "monitoring": false,
+    "backup": false
+  },
+  "dependency_status": {
+    "aria": true,
+    "training": true,
+    "quantum": true,
+    "evaluation": true
+  },
+  "last_health_check": "2026-07-01T15:56:23Z",
+  "total_cycles": 13,
+  "errors": []
 }

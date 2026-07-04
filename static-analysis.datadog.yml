@@ -8,3 +8,7 @@ rulesets:
   - javascript-inclusive
   - javascript-node-security
   - jsx-react
+  - csharp-best-practices
+  - csharp-code-style
+  - csharp-security
+  - csharp-inclusive

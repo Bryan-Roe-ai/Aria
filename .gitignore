@@ -57,7 +57,6 @@ release-artifacts/
 .dmypy.json
 dmypy.json
 .pyre/
-
 # Translations
 *.mo
 *.pot
@@ -125,6 +124,9 @@ checkpoints/
 outputs/
 config/autogen/
 .push-worktrees/
+df
+dotnet/
+tools/codegen/sk-process-framework/
 
 # Project-specific generated results
 quantum-ai/results/
@@ -166,6 +168,15 @@ $RECYCLE.BIN/
 coverage.json
 .azure/PRE-DEPLOYMENT-CHECKLIST.md
 .azure/PRODUCTION-RUNBOOK.md
+processes.json
+.github/hooks/data/advisory_cache.json
+
+# Time-updating state files
+automation_status.json
+task_complete.json
+*_heartbeat.json
+*_state.json
+*_status.json
 
 # core dumps
 core.*

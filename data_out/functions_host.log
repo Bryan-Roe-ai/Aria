@@ -4063,3 +4063,1178 @@ For detailed output, run func with --verbose flag.
 [2026-06-01T17:12:59.266Z] {"timestamp": "2026-06-01T17:12:59.260Z", "level": "INFO", "logger": "proxy_worker", "message": "Received WorkerLoadRequest, request ID 1b4a79c4-c525-4752-8325-f38379cc894e, function_id: aa67cfc8-4f4e-5c02-af54-30114ef6da5e, function_name: vision_infer, worker_id: 54a4b583-91f4-4634-8be0-7f9624422945", "taskName": "Task-47"}
 [2026-06-01T17:12:59.266Z] {"timestamp": "2026-06-01T17:12:59.260Z", "level": "INFO", "logger": "proxy_worker", "message": "Received WorkerLoadRequest, request ID 1b4a79c4-c525-4752-8325-f38379cc894e, function_id: e84897e6-0533-5e41-a400-0967b044b032, function_name: vision_infer_options, worker_id: 54a4b583-91f4-4634-8be0-7f9624422945", "taskName": "Task-48"}
 [2026-06-01T17:13:01.157Z] [Tag=''] Process reporting unhealthy: Unhealthy. Health check entries are {"azure.functions.web_host.lifecycle":{"status":"Healthy","description":null},"azure.functions.script_host.lifecycle":{"status":"Healthy","description":null},"azure.functions.webjobs.storage":{"status":"Unhealthy","description":"Unable to access AzureWebJobsStorage","errorCode":null}}
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:43:32,654] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:43:32,660] ERROR in app: Exception on /api/ai/routes [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 500, in ai_routes_route
+    return get_ai_routes_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 348, in get_ai_routes_response
+    azure_resp = _call_function_handler("ai_routes", "GET", "/api/ai/routes")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "GET /api/ai/routes HTTP/1.1" 500 -
+[2026-07-01 15:43:32,663] ERROR in app: Exception on /api/agi/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 496, in agi_status_route
+    return get_agi_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 342, in get_agi_status_response
+    azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "GET /api/agi/status HTTP/1.1" 500 -
+[2026-07-01 15:43:32,667] ERROR in app: Exception on /api/agi/analyze [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 504, in agi_analyze_route
+    return _agi_json_response("agi_analyze", "/api/agi/analyze")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "POST /api/agi/analyze HTTP/1.1" 500 -
+[2026-07-01 15:43:32,670] ERROR in app: Exception on /api/agi/reason [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 508, in agi_reason_route
+    return _agi_json_response("agi_reason", "/api/agi/reason")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "POST /api/agi/reason HTTP/1.1" 500 -
+[2026-07-01 15:43:32,674] ERROR in app: Exception on /api/agi/stream [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 512, in agi_stream_route
+    return _agi_json_response("agi_stream", "/api/agi/stream")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "POST /api/agi/stream HTTP/1.1" 500 -
+[2026-07-01 15:43:32,677] ERROR in app: Exception on /api/chat-web/static/agi_stream_utils.js [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 516, in agi_stream_utils_route
+    return get_agi_stream_utils_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 372, in get_agi_stream_utils_response
+    azure_resp = _call_function_handler(
+        "serve_agi_stream_utils",
+        "GET",
+        "/api/chat-web/static/agi_stream_utils.js",
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:43:32] "GET /api/chat-web/static/agi_stream_utils.js HTTP/1.1" 500 -
+[2026-07-01 15:44:53,630] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:44:53] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:45:23,703] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:45:23] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:45:53,781] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:45:53] "GET /api/ai/status HTTP/1.1" 500 -
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:46:24,869] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:46:24] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:46:54,952] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:46:54] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:47:25,035] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:47:25] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:47:55,117] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:47:55] "GET /api/ai/status HTTP/1.1" 500 -
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:48:26,212] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:26] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:48:44,125] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:48:44,128] ERROR in app: Exception on /api/ai/routes [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 500, in ai_routes_route
+    return get_ai_routes_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 348, in get_ai_routes_response
+    azure_resp = _call_function_handler("ai_routes", "GET", "/api/ai/routes")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "GET /api/ai/routes HTTP/1.1" 500 -
+[2026-07-01 15:48:44,131] ERROR in app: Exception on /api/agi/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 496, in agi_status_route
+    return get_agi_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 342, in get_agi_status_response
+    azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "GET /api/agi/status HTTP/1.1" 500 -
+[2026-07-01 15:48:44,135] ERROR in app: Exception on /api/agi/analyze [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 504, in agi_analyze_route
+    return _agi_json_response("agi_analyze", "/api/agi/analyze")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "POST /api/agi/analyze HTTP/1.1" 500 -
+[2026-07-01 15:48:44,138] ERROR in app: Exception on /api/agi/reason [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 508, in agi_reason_route
+    return _agi_json_response("agi_reason", "/api/agi/reason")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "POST /api/agi/reason HTTP/1.1" 500 -
+[2026-07-01 15:48:44,140] ERROR in app: Exception on /api/agi/stream [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 512, in agi_stream_route
+    return _agi_json_response("agi_stream", "/api/agi/stream")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "POST /api/agi/stream HTTP/1.1" 500 -
+[2026-07-01 15:48:44,144] ERROR in app: Exception on /api/chat-web/static/agi_stream_utils.js [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 516, in agi_stream_utils_route
+    return get_agi_stream_utils_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 372, in get_agi_stream_utils_response
+    azure_resp = _call_function_handler(
+        "serve_agi_stream_utils",
+        "GET",
+        "/api/chat-web/static/agi_stream_utils.js",
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:44] "GET /api/chat-web/static/agi_stream_utils.js HTTP/1.1" 500 -
+[2026-07-01 15:48:56,322] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:48:56] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:49:26,414] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:49:26] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:49:56,495] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:49:56] "GET /api/ai/status HTTP/1.1" 500 -
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:50:27,578] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:50:27] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:50:57,662] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:50:57] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:51:27,752] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 122
+    >>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+                ^
+SyntaxError: invalid decimal literal
+127.0.0.1 - - [01/Jul/2026 15:51:27] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:51:57,834] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 976
+    @app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+SyntaxError: expected 'except' or 'finally' block
+127.0.0.1 - - [01/Jul/2026 15:51:57] "GET /api/ai/status HTTP/1.1" 500 -
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:52:28,924] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 459
+    content = msg.get("content")
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:52:28] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:52:59,009] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 459
+    content = msg.get("content")
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:52:59] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:53:29,091] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 906
+    @app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+SyntaxError: expected 'except' or 'finally' block
+127.0.0.1 - - [01/Jul/2026 15:53:29] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:53:59,184] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 892
+    @app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+SyntaxError: expected 'except' or 'finally' block
+127.0.0.1 - - [01/Jul/2026 15:53:59] "GET /api/ai/status HTTP/1.1" 500 -
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:54:30,315] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 892
+    @app.route(route="agi/stream", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+SyntaxError: expected 'except' or 'finally' block
+127.0.0.1 - - [01/Jul/2026 15:54:30] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:55:00,434] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 857
+    return func.HttpResponse(
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:55:00] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:55:30,578] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 857
+    return func.HttpResponse(
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:55:30] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:56:00,663] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 903
+    <<<<<<< HEAD
+    ^^
+SyntaxError: invalid syntax
+127.0.0.1 - - [01/Jul/2026 15:56:00] "GET /api/ai/status HTTP/1.1" 500 -
+nohup: ignoring input
+Starting local dev adapter for /api/ai/status and /api/agi/status on http://0.0.0.0:7071
+ * Serving Flask app 'local_dev_adapter'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:7071
+ * Running on http://172.17.0.3:7071
+Press CTRL+C to quit
+[2026-07-01 15:56:31,782] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:31] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:56:54,490] ERROR in app: Exception on /api/ai/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 492, in ai_status_route
+    return get_ai_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 336, in get_ai_status_response
+    azure_resp = _call_function_handler("ai_status", "GET", "/api/ai/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "GET /api/ai/status HTTP/1.1" 500 -
+[2026-07-01 15:56:54,498] ERROR in app: Exception on /api/ai/routes [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 500, in ai_routes_route
+    return get_ai_routes_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 348, in get_ai_routes_response
+    azure_resp = _call_function_handler("ai_routes", "GET", "/api/ai/routes")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "GET /api/ai/routes HTTP/1.1" 500 -
+[2026-07-01 15:56:54,508] ERROR in app: Exception on /api/agi/status [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 496, in agi_status_route
+    return get_agi_status_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 342, in get_agi_status_response
+    azure_resp = _call_function_handler("agi_status", "GET", "/api/agi/status")
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "GET /api/agi/status HTTP/1.1" 500 -
+[2026-07-01 15:56:54,517] ERROR in app: Exception on /api/agi/analyze [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 504, in agi_analyze_route
+    return _agi_json_response("agi_analyze", "/api/agi/analyze")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "POST /api/agi/analyze HTTP/1.1" 500 -
+[2026-07-01 15:56:54,526] ERROR in app: Exception on /api/agi/reason [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 508, in agi_reason_route
+    return _agi_json_response("agi_reason", "/api/agi/reason")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "POST /api/agi/reason HTTP/1.1" 500 -
+[2026-07-01 15:56:54,536] ERROR in app: Exception on /api/agi/stream [POST]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 512, in agi_stream_route
+    return _agi_json_response("agi_stream", "/api/agi/stream")
+  File "/workspaces/Aria/local_dev_adapter.py", line 383, in _agi_json_response
+    azure_resp = _call_function_handler(
+        handler_name,
+    ...<3 lines>...
+        headers={"Content-Type": request.headers.get("Content-Type", "application/json")},
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "POST /api/agi/stream HTTP/1.1" 500 -
+[2026-07-01 15:56:54,546] ERROR in app: Exception on /api/chat-web/static/agi_stream_utils.js [GET]
+Traceback (most recent call last):
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/workspaces/Aria/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/workspaces/Aria/local_dev_adapter.py", line 516, in agi_stream_utils_route
+    return get_agi_stream_utils_response()
+  File "/workspaces/Aria/local_dev_adapter.py", line 372, in get_agi_stream_utils_response
+    azure_resp = _call_function_handler(
+        "serve_agi_stream_utils",
+        "GET",
+        "/api/chat-web/static/agi_stream_utils.js",
+    )
+  File "/workspaces/Aria/local_dev_adapter.py", line 259, in _call_function_handler
+    function_app = _get_function_app()
+  File "/workspaces/Aria/local_dev_adapter.py", line 196, in _get_function_app
+    import function_app as fa
+  File "/workspaces/Aria/function_app.py", line 968
+    headers=create_cors_response_headers(),
+IndentationError: unexpected indent
+127.0.0.1 - - [01/Jul/2026 15:56:54] "GET /api/chat-web/static/agi_stream_utils.js HTTP/1.1" 500 -

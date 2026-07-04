@@ -1,7 +1,7 @@
 {
   "output_dir": "data_out/quantum_llm_training",
   "status_file": "data_out/quantum_llm_training/status.json",
-  "last_updated": "2026-06-22T12:01:37.598387+00:00",
+  "last_updated": "2026-07-01T15:13:06.047512",
   "available": true,
   "status": "completed",
   "mode": "simulated",
@@ -9,26 +9,25 @@
   "dataset_path": "datasets/chat/github_actions/train.json",
   "epochs_requested": 1,
   "epochs_completed": 1,
-  "best_loss": 0.9585350640186827,
-  "final_loss": 0.9585350640186827,
+  "best_loss": 1.0079004250570902,
+  "final_loss": 1.0079004250570902,
   "checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
   "best_checkpoint_path": "data_out/quantum_llm_training/best_quantum_llm.pt",
   "last_checkpoint_path": "data_out/quantum_llm_training/final_model.pt",
-  "quantum_available": false,
+  "quantum_available": true,
   "training_history": [
     {
       "epoch": 0,
-      "loss": 0.9585350640186827,
+      "loss": 1.0079004250570902,
       "quantum_executions": 1
     }
   ],
   "quantum_metrics": {
     "circuit_executions": 1,
     "optimization_steps": 1,
-    "quantum_available": false
+    "quantum_available": true
   },
   "results_file": "data_out/quantum_llm_training/quantum_training_results.json",
-  "started_at": "2026-06-01T19:05:34.448270",
-  "completed_at": "2026-06-22T12:01:37.598387+00:00",
-  "updated_at": "2026-06-22T12:01:37.598387+00:00"
+  "started_at": "2026-07-01T15:13:06.018010",
+  "completed_at": "2026-07-01T15:13:06.046972"
 }

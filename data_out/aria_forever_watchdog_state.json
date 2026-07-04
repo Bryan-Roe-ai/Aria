@@ -1,9 +1,1 @@
-<<<<<<< HEAD
-{"watchdog_pid":342436,"timestamp_utc":"2026-06-01T19:14:10Z","active_aria_port":"8080","aria_failures":0,"functions_failures":0,"last_aria_restart_epoch":0,"last_functions_restart_epoch":1780331088,"enable_autonomous_training":"0"}
-=======
-<<<<<<< Updated upstream
-{"watchdog_pid":9582,"timestamp_utc":"2026-05-28T07:34:57Z","status":"stopped","enable_autonomous_training":"0"}
-=======
-{"watchdog_pid":2309,"timestamp_utc":"2026-05-29T23:36:19Z","active_aria_port":"8080","aria_failures":0,"functions_failures":0,"last_aria_restart_epoch":0,"last_functions_restart_epoch":0,"enable_autonomous_training":"0"}
->>>>>>> Stashed changes
->>>>>>> a40f84a20 (hhh)
+{"watchdog_pid":9853,"timestamp_utc":"2026-07-01T15:56:31Z","active_aria_port":"8080","aria_failures":0,"functions_failures":1,"last_aria_restart_epoch":0,"last_functions_restart_epoch":1782921360,"enable_autonomous_training":"0"}

@@ -255,8 +255,6 @@ class TestGetEndpoints:
         assert orch["autotrain"]["status"] == "ok"
         assert not any(key.startswith("_status_file_")
                        for key in orch["autonomous_training"])
-<<<<<<< HEAD
-
     def test_ai_status_uses_settings_active_provider_for_detection(self, app_module, monkeypatch):
         """GET /api/ai/status should use the configured active provider explicitly."""
 
@@ -289,8 +287,6 @@ class TestGetEndpoints:
         assert captured["explicit"] == "lmstudio"
         data = json.loads(resp.get_body())
         assert data["active_provider"] == "lmstudio"
-=======
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
 
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
@@ -583,8 +579,6 @@ class TestPostValidation:
 
     def test_chat_stream_guardrail_blocks_prompt_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should emit safe fallback SSE when prompt is blocked."""
-<<<<<<< HEAD
-=======
         import inspect
 
         import azure.functions as _af
@@ -601,8 +595,6 @@ class TestPostValidation:
 
         monkeypatch.setattr(app_module.func, "HttpResponse",
                             _capturing_HttpResponse)
-
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
         req = _mock_request(
             "POST",
             body={
@@ -622,16 +614,11 @@ class TestPostValidation:
 
     def test_chat_stream_memory_injection(self, app_module, monkeypatch):
         """POST /api/chat/stream should call memory helpers and include count in meta SSE event."""
-<<<<<<< HEAD
-        captured: dict = {"embedding": None, "session_id": None}
-=======
         import inspect
 
         import azure.functions as _af
 
-        captured: dict = {"embedding": None,
-                          "session_id": None, "sse_body": b""}
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
+        captured: dict = {"embedding": None, "session_id": None, "sse_body": b""}
 
         def _fake_embedding(text: str):
             captured["embedding"] = text
@@ -641,8 +628,6 @@ class TestPostValidation:
             captured["session_id"] = session_id
             return [{"content": "Previous answer about widgets", "similarity": 0.88}]
 
-<<<<<<< HEAD
-=======
         # Patch func.HttpResponse inside function_app so streaming body (generator) is consumed
         _real_HttpResponse = _af.HttpResponse
 
@@ -655,7 +640,6 @@ class TestPostValidation:
 
         monkeypatch.setattr(app_module.func, "HttpResponse",
                             _capturing_HttpResponse)
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
         monkeypatch.setattr(app_module, "generate_embedding", _fake_embedding)
         monkeypatch.setattr(
             app_module, "fetch_similar_messages", _fake_similar)
@@ -711,8 +695,6 @@ class TestPostValidation:
             lambda query_emb, top_k=5, session_id=None, min_similarity=0.0: [],
         )
 
-<<<<<<< HEAD
-=======
         _real_HttpResponse = _af.HttpResponse
 
         def _capturing_HttpResponse(body=None, **kwargs):
@@ -724,8 +706,6 @@ class TestPostValidation:
 
         monkeypatch.setattr(app_module.func, "HttpResponse",
                             _capturing_HttpResponse)
-
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
         req = _mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "say hi"}]},
@@ -1015,8 +995,6 @@ class TestAgiEndpoints:
             ),
         )
 
-<<<<<<< HEAD
-=======
         _real_HttpResponse = _af.HttpResponse
 
         def _capturing_HttpResponse(body=None, **kwargs):
@@ -1028,8 +1006,6 @@ class TestAgiEndpoints:
 
         monkeypatch.setattr(app_module.func, "HttpResponse",
                             _capturing_HttpResponse)
-
->>>>>>> 33223a88c (feat(agi): add schema and determinism guards for agent_tools metadata)
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},

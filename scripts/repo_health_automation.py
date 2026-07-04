@@ -19,7 +19,8 @@ Outputs:
 Examples:
   python scripts/repo_health_automation.py --once
   python scripts/repo_health_automation.py --once --strict-endpoints --full-pytest
-  python scripts/repo_health_automation.py --watch --interval 300 --auto-fix-ruff
+    python scripts/repo_health_automation.py --watch --interval 300 \
+        --auto-fix-ruff
 """
 
 from __future__ import annotations
@@ -77,6 +78,7 @@ def _run_command(name: str, command: Sequence[str]) -> StepResult:
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
+        check=False,
     )
     duration = round(time.perf_counter() - started, 2)
     return StepResult(
@@ -104,6 +106,7 @@ def _changed_python_files() -> list[str]:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            check=False,
         )
         if proc.returncode != 0:
             continue
@@ -117,6 +120,7 @@ def _changed_python_files() -> list[str]:
 
 def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
     steps: list[tuple[str, list[str]]] = []
+    gate_cmd = ["bash", "./scripts/integration_contract_gate.sh"]
 
     if args.repair_status:
         repair_cmd = [sys.executable, "scripts/repair_data_out_status.py"]
@@ -128,7 +132,14 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
             steps.append(
                 (
                     "ruff_fix_changed_python",
-                    [sys.executable, "-m", "ruff", "check", "--fix", *changed_py],
+                    [
+                        sys.executable,
+                        "-m",
+                        "ruff",
+                        "check",
+                        "--fix",
+                        *changed_py,
+                    ],
                 )
             )
 
@@ -137,16 +148,22 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
 
     if args.run_agents:
         steps.append(
-            ("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
+            (
+                "run_repo_agents",
+                [sys.executable, "scripts/run_repo_agents.py"],
+            )
+        )
     if args.strict_endpoints:
         gate_cmd.append("--strict-endpoints")
     steps.append(("integration_contract_gate", gate_cmd))
 
-    steps.append(("integration_contract_gate", gate_cmd))
-
     if args.run_agents:
         steps.append(
-            ("run_repo_agents", [sys.executable, "scripts/run_repo_agents.py"]))
+            (
+                "run_repo_agents",
+                [sys.executable, "scripts/run_repo_agents.py"],
+            )
+        )
         steps.append(
             (
                 "pytest_full_smoke",
@@ -168,9 +185,11 @@ def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
 def _write_status(history: list[CycleResult]) -> None:
     try:
         DATA_OUT.mkdir(parents=True, exist_ok=True)
-    except Exception as exc:  # pragma: no cover - defensive filesystem guard
+    except OSError as exc:  # pragma: no cover - defensive filesystem guard
         print(
-            f"[repo_health_automation] warning: cannot create status dir {DATA_OUT}: {exc}")
+            "[repo_health_automation] warning: cannot create status dir "
+            f"{DATA_OUT}: {exc}"
+        )
         return
 
     payload = {
@@ -183,9 +202,11 @@ def _write_status(history: list[CycleResult]) -> None:
     }
     try:
         STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    except Exception as exc:  # pragma: no cover - defensive filesystem guard
+    except OSError as exc:  # pragma: no cover - defensive filesystem guard
         print(
-            f"[repo_health_automation] warning: cannot write status file {STATUS_PATH}: {exc}")
+            "[repo_health_automation] warning: cannot write status file "
+            f"{STATUS_PATH}: {exc}"
+        )
 
 
 def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
@@ -204,7 +225,9 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
         steps_out.append(result)
         icon = "PASS" if result.succeeded else "FAIL"
         print(
-            f"[{icon}] {name} rc={result.returncode} duration={result.duration_sec:.2f}s")
+            f"[{icon}] {name} rc={result.returncode} "
+            f"duration={result.duration_sec:.2f}s"
+        )
 
         if not result.succeeded and not args.continue_on_fail:
             break
@@ -224,7 +247,9 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
 
     print("\n" + "-" * 78)
     print(
-        f"[repo_health_automation] cycle={cycle} " f"succeeded={succeeded} duration={duration_sec:.2f}s")
+        f"[repo_health_automation] cycle={cycle} "
+        f"succeeded={succeeded} duration={duration_sec:.2f}s"
+    )
     print("-" * 78)
 
     if not succeeded:
@@ -249,13 +274,24 @@ def parse_args() -> argparse.Namespace:
             "Examples:\n"
             "  python scripts/repo_health_automation.py --once\n"
             "  python scripts/repo_health_automation.py --once --run-agents\n"
-            "  python scripts/repo_health_automation.py --once --repair-status --refresh-stale-status\n"
-            "  python scripts/repo_health_automation.py --watch --interval 300 --continue-on-fail\n"
+            "  python scripts/repo_health_automation.py --once "
+            "--repair-status --refresh-stale-status\n"
+            "  python scripts/repo_health_automation.py --watch --interval "
+            "300\n"
+            "    --continue-on-fail\n"
         ),
-    mode.add_argument("--once", action="store_true",
-                      help="Run a single cycle (default)")
-    mode.add_argument("--watch", action="store_true",
-                      help="Run cycles continuously")
+    )
+    mode = ap.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--once",
+        action="store_true",
+        help="Run a single cycle (default)",
+    )
+    mode.add_argument(
+        "--watch",
+        action="store_true",
+        help="Run cycles continuously",
+    )
 
     ap.add_argument(
         "--interval",
@@ -273,27 +309,32 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Include full pytest smoke step after contract gate",
     )
-        help="Include full pytest smoke step after contract gate",
-    )
     ap.add_argument(
         "--repair-status",
         action="store_true",
-        help="Repair merge conflicts in data_out status.json files before checks",
+        help=(
+            "Repair merge conflicts in data_out status.json files before "
+            "checks"
+        ),
     )
     ap.add_argument(
         "--refresh-stale-status",
         action="store_true",
         help="With --repair-status, refresh timestamps older than 24 hours",
-        "--auto-fix-ruff",
+    )
+    ap.add_argument(
         "--auto-fix-ruff",
         action="store_true",
-        help="Run ruff --fix for changed Python files before checks",
         help="Run ruff --fix for changed Python files before checks",
     )
     ap.add_argument(
         "--run-agents",
         action="store_true",
-        help="Run repository automation agents after the integration contract gate",
+        help=(
+            "Run repository automation agents after the integration contract "
+            "gate"
+        ),
+    )
     ap.add_argument(
         "--continue-on-fail",
         action="store_true",
@@ -304,17 +345,17 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
-    args=parse_args()
-    history: list[CycleResult]=[]
+    args = parse_args()
+    history: list[CycleResult] = []
 
-    watch=args.watch
+    watch = args.watch
     if not args.watch and not args.once:
         # Default behavior: one-shot cycle
-        watch=False
+        watch = False
 
-    cycle=1
+    cycle = 1
     while True:
-        result=run_cycle(cycle=cycle, args=args)
+        result = run_cycle(cycle=cycle, args=args)
         history.append(result)
         _write_status(history)
 

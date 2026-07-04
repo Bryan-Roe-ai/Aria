@@ -26,11 +26,11 @@ Tokens → Embedding + Positional Encoding
 ## Quick Start
 
 ```python
+from api import generate, train
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path("quantum-ai/src").resolve()))
-from api import generate, train
 
 # Train on built-in Python code snippets
 model, tokenizer = train(
@@ -85,11 +85,11 @@ python3 -m pip install -r quantum-ai/requirements-smoke.txt
 ## Train with Custom Code
 
 ```python
+from api import generate, train
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path("quantum-ai/src").resolve()))
-from api import generate, train
 
 MY_CODE = [
     "def hello(name):\n    print('Hi ' + name)\n",
@@ -103,11 +103,11 @@ print(generate(model, tok, "def greet("))
 ## Checkpoints
 
 ```python
+from api import load_checkpoint, save_checkpoint
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path("quantum-ai/src").resolve()))
-from api import load_checkpoint, save_checkpoint
 
 checkpoint = Path("data_out/quantum_code_llm/checkpoint.pt")
 save_checkpoint(model, tok, checkpoint, extra={"run": "quickstart"})
@@ -119,10 +119,12 @@ print(metadata["path"], metadata["backend"])
 
 The compatibility wrapper expects NumPy checkpoint files placed in `quantum-ai/checkpoints/`.
 Supported checkpoint containers:
+
 - `.npz` archives with keys `weights`, `epoch`, optional `config`.
 - NumPy object arrays that contain dict-like checkpoint objects (legacy).
 
 To run the unit test locally:
+
 1. Create a virtual environment:
    python -m venv .venv
    source .venv/bin/activate  # Windows: .venv\Scripts\activate
@@ -130,7 +132,7 @@ To run the unit test locally:
    pip install -r requirements-dev.txt
 3. Run pytest:
    pytest tests/test_quantum_web_app.py -q
-   
+
 ## Files
 
 | File | Description |

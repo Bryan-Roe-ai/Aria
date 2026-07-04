@@ -176,11 +176,12 @@ while true; do
     functions_failures="$(grep -o '"functions_failures":[0-9]*' "$STATE_FILE" 2>/dev/null | cut -d: -f2)"
     last_aria_restart_epoch="$(grep -o '"last_aria_restart_epoch":[0-9]*' "$STATE_FILE" 2>/dev/null | cut -d: -f2)"
     last_functions_restart_epoch="$(grep -o '"last_functions_restart_epoch":[0-9]*' "$STATE_FILE" 2>/dev/null | cut -d: -f2)"
-    aria_failures="${aria_failures:-0}"
-    functions_failures="${functions_failures:-0}"
-    last_aria_restart_epoch="${last_aria_restart_epoch:-0}"
-    last_functions_restart_epoch="${last_functions_restart_epoch:-0}"
   fi
+
+  if ! [[ "$aria_failures" =~ ^[0-9]+$ ]]; then aria_failures=0; fi
+  if ! [[ "$functions_failures" =~ ^[0-9]+$ ]]; then functions_failures=0; fi
+  if ! [[ "$last_aria_restart_epoch" =~ ^[0-9]+$ ]]; then last_aria_restart_epoch=0; fi
+  if ! [[ "$last_functions_restart_epoch" =~ ^[0-9]+$ ]]; then last_functions_restart_epoch=0; fi
 
   now_utc="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   now_epoch="$(date +%s)"
