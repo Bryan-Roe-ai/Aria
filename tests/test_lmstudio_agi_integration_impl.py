@@ -12,9 +12,7 @@ from pathlib import Path
 
 def _load_module():
     script_path = Path(__file__).parent.parent / "LMSTUDIO_AGI_INTEGRATION_IMPL.py"
-    spec = importlib.util.spec_from_file_location(
-        "lmstudio_agi_integration_impl", script_path
-    )
+    spec = importlib.util.spec_from_file_location("lmstudio_agi_integration_impl", script_path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -37,6 +35,8 @@ def test_check_lmstudio_available_true(monkeypatch):
 
     import urllib.request
 
+    monkeypatch.delenv("LMSTUDIO_BASE_URL", raising=False)
+
     captured = {}
 
     def fake_urlopen(request, timeout=None, *a, **k):
@@ -44,6 +44,7 @@ def test_check_lmstudio_available_true(monkeypatch):
         captured["timeout"] = timeout
         return _FakeResp(200)
 
+    monkeypatch.delenv("LMSTUDIO_BASE_URL", raising=False)
     monkeypatch.setattr(urllib.request, "urlopen", fake_urlopen)
 
     assert mod._check_lmstudio_available() is True
@@ -75,9 +76,7 @@ def test_check_lmstudio_available_non_200(monkeypatch):
 
     import urllib.request
 
-    monkeypatch.setattr(
-        urllib.request, "urlopen", lambda *a, **k: _FakeResp(500)
-    )
+    monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: _FakeResp(500))
 
     assert mod._check_lmstudio_available() is False
 

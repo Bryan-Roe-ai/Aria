@@ -16,7 +16,7 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 try:
     import yaml  # type: ignore
@@ -29,7 +29,7 @@ STATUS_DIR = REPO_ROOT / "data_out" / "evaluation_autorun"
 STATUS_FILE = STATUS_DIR / "status.json"
 
 
-def _load_config(path: Path) -> Dict[str, Any]:
+def _load_config(path: Path) -> dict[str, Any]:
     """Load and return the YAML config."""
     if yaml is None:
         raise RuntimeError("PyYAML is required: pip install pyyaml")
@@ -37,7 +37,7 @@ def _load_config(path: Path) -> Dict[str, Any]:
         return yaml.safe_load(f) or {}
 
 
-def _get_jobs(cfg: Dict[str, Any], job_filter: str | None = None) -> List[Dict[str, Any]]:
+def _get_jobs(cfg: dict[str, Any], job_filter: str | None = None) -> list[dict[str, Any]]:
     """Extract job list from config, optionally filtering by name."""
     jobs = cfg.get("jobs", [])
     if job_filter:
@@ -45,7 +45,7 @@ def _get_jobs(cfg: Dict[str, Any], job_filter: str | None = None) -> List[Dict[s
     return jobs
 
 
-def _write_status(jobs: List[Dict[str, Any]], dry_run: bool = False) -> None:
+def _write_status(jobs: list[dict[str, Any]], dry_run: bool = False) -> None:
     """Write status.json to data_out."""
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
     status = {
@@ -59,13 +59,13 @@ def _write_status(jobs: List[Dict[str, Any]], dry_run: bool = False) -> None:
     STATUS_FILE.write_text(json.dumps(status, indent=2), encoding="utf-8")
 
 
-def cmd_list(cfg: Dict[str, Any], job_filter: str | None = None) -> None:
+def cmd_list(cfg: dict[str, Any], job_filter: str | None = None) -> None:
     """Print jobs as JSON to stdout."""
     jobs = _get_jobs(cfg, job_filter)
     print(json.dumps(jobs, indent=2))
 
 
-def cmd_dry_run(cfg: Dict[str, Any], job_filter: str | None = None) -> None:
+def cmd_dry_run(cfg: dict[str, Any], job_filter: str | None = None) -> None:
     """Validate config and print summary."""
     jobs = _get_jobs(cfg, job_filter)
     if not jobs:

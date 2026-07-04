@@ -7,7 +7,7 @@ import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
@@ -21,21 +21,21 @@ class Tool:
     name: str
     description: str
     code: str
-    parameters: Dict[str, str]
+    parameters: dict[str, str]
     return_type: str
     created_at: str
     validated: bool = False
     execution_count: int = 0
-    last_executed: Optional[str] = None
-    examples: List[Dict[str, Any]] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
+    last_executed: str | None = None
+    examples: list[dict[str, Any]] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """Convert to dictionary"""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> "Tool":
+    def from_dict(cls, data: dict) -> "Tool":
         """Create from dictionary"""
         return cls(**data)
 
@@ -43,7 +43,7 @@ class Tool:
 class ToolRegistry:
     """Registry for managing generated tools"""
 
-    def __init__(self, tools_dir: Optional[Path] = None):
+    def __init__(self, tools_dir: Path | None = None):
         """
         Initialize tool registry
 
@@ -53,14 +53,14 @@ class ToolRegistry:
         self.tools_dir = tools_dir or Path("./tools")
         self.tools_dir.mkdir(parents=True, exist_ok=True)
         self.index_file = self.tools_dir / "index.json"
-        self._tools: Dict[str, Tool] = {}
+        self._tools: dict[str, Tool] = {}
         self._load_index()
 
     def _load_index(self):
         """Load tool index from disk"""
         if self.index_file.exists():
             try:
-                with open(self.index_file, "r") as f:
+                with open(self.index_file) as f:
                     index = json.load(f)
                     for tool_data in index.get("tools", []):
                         tool = Tool.from_dict(tool_data)
@@ -115,7 +115,7 @@ class ToolRegistry:
         logger.info(f"Registered tool '{tool.name}' with ID {tool.id}")
         return tool.id
 
-    def get(self, tool_id: str) -> Optional[Tool]:
+    def get(self, tool_id: str) -> Tool | None:
         """
         Get a tool by ID
 
@@ -127,7 +127,7 @@ class ToolRegistry:
         """
         return self._tools.get(tool_id)
 
-    def get_by_name(self, name: str) -> Optional[Tool]:
+    def get_by_name(self, name: str) -> Tool | None:
         """
         Get a tool by name
 
@@ -142,7 +142,7 @@ class ToolRegistry:
                 return tool
         return None
 
-    def list_tools(self, tags: Optional[List[str]] = None) -> List[Tool]:
+    def list_tools(self, tags: list[str] | None = None) -> list[Tool]:
         """
         List all registered tools
 
@@ -196,7 +196,7 @@ class ToolRegistry:
             tool.last_executed = datetime.now(timezone.utc).isoformat()
             self._save_index()
 
-    def search(self, query: str) -> List[Tool]:
+    def search(self, query: str) -> list[Tool]:
         """
         Search tools by name or description
 
@@ -210,15 +210,12 @@ class ToolRegistry:
         results = []
 
         for tool in self._tools.values():
-            if (
-                query_lower in tool.name.lower()
-                or query_lower in tool.description.lower()
-            ):
+            if query_lower in tool.name.lower() or query_lower in tool.description.lower():
                 results.append(tool)
 
         return results
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get registry statistics
 
@@ -233,11 +230,7 @@ class ToolRegistry:
             "validated_tools": validated_count,
             "total_executions": total_executions,
             "most_used": (
-                max(
-                    self._tools.values(), key=lambda t: t.execution_count, default=None
-                ).name
-                if self._tools
-                else None
+                max(self._tools.values(), key=lambda t: t.execution_count, default=None).name if self._tools else None
             ),
             "registry_path": str(self.tools_dir),
         }

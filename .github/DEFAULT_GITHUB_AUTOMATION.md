@@ -5,29 +5,29 @@ This repository uses a default GitHub automation baseline for quality, safety, a
 ## Included automation
 
 1. **CI + PR quality gate**
-   - Workflow: `.github/workflows/merge-gate.yml`
-   - Fan-in required check: **`Merge Gate / All Gates Passed`**
+    - Workflow: `.github/workflows/merge-gate.yml`
+    - Fan-in required check: **`Merge Gate / All Gates Passed`**
 
 2. **Auto-label pull requests by file paths**
-   - Workflow: `.github/workflows/labeler.yml`
-   - Rules: `.github/labeler.yml`
+    - Workflow: `.github/workflows/labeler.yml`
+    - Rules: `.github/labeler.yml`
 
 3. **Stale issue/PR management**
-   - Workflow: `.github/workflows/stale.yml`
+    - Workflow: `.github/workflows/stale.yml`
 
 4. **Dependency update automation**
-   - Config: `.github/dependabot.yml`
+    - Config: `.github/dependabot.yml`
 
 5. **Dependency security review**
-   - Workflow: `.github/workflows/dependency-review.yml`
+    - Workflow: `.github/workflows/dependency-review.yml`
 
 6. **Baseline verifier (this package)**
-   - Workflow: `.github/workflows/default-github-automation.yml`
-   - Ensures the baseline files exist and parse correctly.
+    - Workflow: `.github/workflows/default-github-automation.yml`
+    - Ensures the baseline files exist and parse correctly.
 
 7. **Ruleset template validator**
-   - Workflow: `.github/workflows/ruleset-json-validation.yml`
-   - Verifies `.github/rulesets/*.json` structure and required status-check context.
+    - Workflow: `.github/workflows/ruleset-json-validation.yml`
+    - Verifies `.github/rulesets/*.json` structure and required status-check context.
 
 ## One-time GitHub settings (manual)
 

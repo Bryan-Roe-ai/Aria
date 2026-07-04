@@ -17,11 +17,13 @@ This PR identifies and implements improvements to slow or inefficient code in th
 **Solution:** Implemented `collections.deque` with `maxlen` parameter for tail operations.
 
 **Results:**
+
 - **1.9x faster** for typical log tailing
 - **5.1 MB memory saved** per operation on 100K line files
 - Scales linearly with file size (O(k) vs O(n) complexity)
 
 **Files Modified:**
+
 - `scripts/monitor_autonomous_training.py`
 - `dashboard/serve.py`
 
@@ -32,11 +34,13 @@ This PR identifies and implements improvements to slow or inefficient code in th
 **Solution:** Search from end using `rsplit()` and reversed iteration, limiting to last 50 lines.
 
 **Results:**
+
 - **10.7x faster** for typical command output
 - Avoids parsing thousands of unnecessary lines
 - Graceful degradation with try/except per line
 
 **Files Modified:**
+
 - `scripts/batch_evaluator.py`
 
 ### 3. Reusable Performance Utilities
@@ -44,6 +48,7 @@ This PR identifies and implements improvements to slow or inefficient code in th
 **Created:** `shared/performance_utils.py` (285 lines, 7 utilities)
 
 **Functions:**
+
 1. **`tail_file()`** - Memory-efficient log tailing with deque
 2. **`tail_file_smart()`** - Adaptive strategy for small vs large files
 3. **`stream_jsonl()`** - Generator-based JSONL processing with filtering
@@ -53,6 +58,7 @@ This PR identifies and implements improvements to slow or inefficient code in th
 7. **`@memoize_with_ttl`** - Time-based memoization with TTL expiration
 
 **Benefits:**
+
 - All utilities include docstrings, examples, and validation
 - Tested with comprehensive example suite
 - Ready for reuse across the codebase
@@ -62,6 +68,7 @@ This PR identifies and implements improvements to slow or inefficient code in th
 **Created:** `docs/PERFORMANCE_OPTIMIZATION_GUIDE.md` (430+ lines)
 
 **Contents:**
+
 - Recent optimizations with before/after examples
 - Performance anti-patterns to avoid
 - Best practices for memory, I/O, caching, async
@@ -73,12 +80,14 @@ This PR identifies and implements improvements to slow or inefficient code in th
 **Created:** `scripts/benchmark_performance.py`
 
 **Demonstrates:**
+
 - File tailing: 1.9x speedup
 - JSON parsing: 10.7x speedup
 - JSONL streaming: 1.1x speedup
 - Average: 4.6x speedup
 
 **Usage:**
+
 ```bash
 python scripts/benchmark_performance.py
 ```
@@ -88,36 +97,39 @@ python scripts/benchmark_performance.py
 The following components were already well-optimized and required no changes:
 
 1. **Database Connection Pooling** (`shared/sql_engine.py`)
-   - Connection pooling with pre-ping
-   - Pool recycling and saturation monitoring
-   - Health checks via `/api/ai/status`
+    - Connection pooling with pre-ping
+    - Pool recycling and saturation monitoring
+    - Health checks via `/api/ai/status`
 
 2. **Dataset Loading** (`scripts/expand_quantum_datasets.py`)
-   - Disk caching of downloads
-   - Single reads per file
-   - Proper error handling
+    - Disk caching of downloads
+    - Single reads per file
+    - Proper error handling
 
 3. **Dataset Processing** (`AI/microsoft_phi-silica-3.6_v1/scripts/prepare_dataset.py`)
-   - Generator-based reading throughout
-   - Iterator patterns for memory efficiency
+    - Generator-based reading throughout
+    - Iterator patterns for memory efficiency
 
 4. **Smart File Reading** (`dashboard/app.py`)
-   - Adaptive strategy based on file size
-   - Block-based backward reading for large files
+    - Adaptive strategy based on file size
+    - Block-based backward reading for large files
 
 ## Performance Improvements by Category
 
 ### Memory Optimization
+
 - Log tailing: O(n) → O(k) complexity
 - JSONL streaming: 1.2 MB saved per file
 - Total: ~6+ MB saved per typical operation
 
 ### Speed Optimization
+
 - JSON parsing: 10.7x faster
 - File tailing: 1.9x faster
 - Overall: 4.6x average speedup
 
 ### Code Quality
+
 - Created 7 reusable utilities
 - Added comprehensive documentation
 - Established performance benchmarks
@@ -125,14 +137,18 @@ The following components were already well-optimized and required no changes:
 ## Testing & Validation
 
 ### Unit Tests
+
 All utilities validated with working examples:
+
 ```bash
 python shared/performance_utils.py
 # ✅ All examples completed successfully!
 ```
 
 ### Benchmarks
+
 Performance improvements verified:
+
 ```bash
 python scripts/benchmark_performance.py
 # Average speedup: 4.6x
@@ -140,7 +156,9 @@ python scripts/benchmark_performance.py
 ```
 
 ### Import Tests
+
 All modified scripts import successfully:
+
 ```bash
 python -c "from monitor_autonomous_training import TrainingMonitor"
 python -c "from batch_evaluator import BatchEvaluator"
@@ -150,11 +168,13 @@ python -c "from batch_evaluator import BatchEvaluator"
 ## Files Changed
 
 ### Modified (3 files)
+
 1. `scripts/monitor_autonomous_training.py` - Use `tail_file()` utility
 2. `dashboard/serve.py` - Use `tail_file()` utility
 3. `scripts/batch_evaluator.py` - Use `find_json_in_output()` utility
 
 ### Created (3 files)
+
 1. `shared/performance_utils.py` - Reusable performance utilities
 2. `docs/PERFORMANCE_OPTIMIZATION_GUIDE.md` - Comprehensive guide
 3. `scripts/benchmark_performance.py` - Performance validation suite
@@ -195,16 +215,19 @@ def fetch_config():
 ## Impact Assessment
 
 ### Immediate Benefits
+
 - ✅ Reduced memory usage in monitoring scripts
 - ✅ Faster JSON extraction in batch evaluations
 - ✅ Reusable utilities available for all developers
 
 ### Long-Term Benefits
+
 - ✅ Comprehensive documentation for future optimizations
 - ✅ Benchmark suite for regression testing
 - ✅ Established patterns for performance-critical code
 
 ### No Breaking Changes
+
 - ✅ All changes are internal optimizations
 - ✅ External APIs unchanged
 - ✅ Backward compatible
@@ -212,16 +235,19 @@ def fetch_config():
 ## Recommendations for Future Work
 
 ### High Priority
+
 1. Apply `stream_jsonl()` to other JSONL processing scripts
 2. Use `@memoize_with_ttl` for config file loading
 3. Add `@timeit` to identify new bottlenecks
 
 ### Medium Priority
+
 1. Implement async/await for concurrent I/O operations
 2. Add connection pooling to external API clients
 3. Profile CPU-bound operations for multiprocessing opportunities
 
 ### Low Priority
+
 1. Centralize configuration loading across scripts
 2. Add more sophisticated caching strategies
 3. Implement distributed caching for multi-node setups
@@ -241,6 +267,7 @@ The optimizations are **production-ready** and provide immediate benefits while 
 ---
 
 **For questions or suggestions, see:**
+
 - `docs/PERFORMANCE_OPTIMIZATION_GUIDE.md` - Complete guide
 - `shared/performance_utils.py` - Utility documentation
 - `scripts/benchmark_performance.py` - Validation benchmarks

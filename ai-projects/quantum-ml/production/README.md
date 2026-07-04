@@ -26,12 +26,14 @@ This is a production-ready REST API for banknote fraud detection using a hybrid 
 ### Installation
 
 **Production:**
+
 ```bash
 cd production
 pip install -r requirements.txt
 ```
 
 **Development (includes testing tools):**
+
 ```bash
 cd production
 pip install -r requirements.txt -r dev-requirements.txt
@@ -48,11 +50,13 @@ The API will start on `http://localhost:8080`
 ### Test the API
 
 **Health Check:**
+
 ```bash
 curl http://localhost:8080/api/health
 ```
 
 **Single Prediction:**
+
 ```bash
 curl -X POST http://localhost:8080/api/predict \
      -H "Content-Type: application/json" \
@@ -60,20 +64,22 @@ curl -X POST http://localhost:8080/api/predict \
 ```
 
 **Expected Response:**
+
 ```json
 {
-  "prediction": "GENUINE",
-  "confidence": 0.9987,
-  "probabilities": {
-    "genuine": 0.9987,
-    "forged": 0.0013
-  },
-  "features_received": [3.5, 0.5, -1.2, 0.8],
-  "timestamp": "2025-11-16T10:30:45.123456"
+    "prediction": "GENUINE",
+    "confidence": 0.9987,
+    "probabilities": {
+        "genuine": 0.9987,
+        "forged": 0.0013
+    },
+    "features_received": [3.5, 0.5, -1.2, 0.8],
+    "timestamp": "2025-11-16T10:30:45.123456"
 }
 ```
 
 **Batch Prediction:**
+
 ```bash
 curl -X POST http://localhost:8080/api/predict_batch \
      -H "Content-Type: application/json" \
@@ -92,6 +98,7 @@ curl -X POST http://localhost:8080/api/predict_batch \
 Classify a single banknote.
 
 **Request Body:**
+
 ```json
 {
   "features": [variance, skewness, curtosis, entropy]
@@ -99,6 +106,7 @@ Classify a single banknote.
 ```
 
 **Response:**
+
 ```json
 {
   "prediction": "GENUINE" | "FORGED",
@@ -117,6 +125,7 @@ Classify a single banknote.
 Classify multiple banknotes.
 
 **Request Body:**
+
 ```json
 {
   "batch": [
@@ -127,6 +136,7 @@ Classify multiple banknotes.
 ```
 
 **Response:**
+
 ```json
 {
   "results": [
@@ -153,13 +163,14 @@ Classify multiple banknotes.
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
-  "status": "healthy",
-  "service": "banknote-fraud-detector",
-  "version": "1.0.0",
-  "model_loaded": true,
-  "timestamp": "ISO8601"
+    "status": "healthy",
+    "service": "banknote-fraud-detector",
+    "version": "1.0.0",
+    "model_loaded": true,
+    "timestamp": "ISO8601"
 }
 ```
 
@@ -168,25 +179,26 @@ Health check endpoint.
 Get model metadata and performance metrics.
 
 **Response:**
+
 ```json
 {
-  "model": "Hybrid Quantum-Classical Neural Network",
-  "task": "Binary classification: Genuine vs Forged banknotes",
-  "architecture": {
-    "qubits": 4,
-    "quantum_layers": 2,
-    "hidden_dim": 16,
-    "output_classes": 2
-  },
-  "performance": {
-    "validation_accuracy": 1.0,
-    "training_loss": 0.0657
-  },
-  "features": {
-    "names": ["variance", "skewness", "curtosis", "entropy"],
-    "count": 4,
-    "preprocessing": "StandardScaler normalization"
-  }
+    "model": "Hybrid Quantum-Classical Neural Network",
+    "task": "Binary classification: Genuine vs Forged banknotes",
+    "architecture": {
+        "qubits": 4,
+        "quantum_layers": 2,
+        "hidden_dim": 16,
+        "output_classes": 2
+    },
+    "performance": {
+        "validation_accuracy": 1.0,
+        "training_loss": 0.0657
+    },
+    "features": {
+        "names": ["variance", "skewness", "curtosis", "entropy"],
+        "count": 4,
+        "preprocessing": "StandardScaler normalization"
+    }
 }
 ```
 
@@ -223,6 +235,7 @@ Output (2 classes: Genuine/Forged)
 ```
 
 **Quantum Circuit Details:**
+
 - **Qubits**: 4
 - **Entanglement**: Linear (chain topology)
 - **Variational Gates**: RY, RZ rotations
@@ -260,12 +273,12 @@ docker-compose up
 
 ### Benchmark
 
-| Metric | Value |
-| -------- | ------- |
-| Accuracy | 100% |
-| Precision | 100% |
-| Recall | 100% |
-| F1 Score | 100% |
+| Metric         | Value |
+| -------------- | ----- |
+| Accuracy       | 100%  |
+| Precision      | 100%  |
+| Recall         | 100%  |
+| F1 Score       | 100%  |
 | Inference Time | ~50ms |
 
 ## Production Considerations
@@ -303,6 +316,7 @@ python train_custom_dataset.py --preset banknote --epochs 25
 ### Port Already in Use
 
 Change port in `banknote_api.py`:
+
 ```python
 app.run(host='0.0.0.0', port=8081)  # Use different port
 ```
@@ -310,6 +324,7 @@ app.run(host='0.0.0.0', port=8081)  # Use different port
 ### Import Errors
 
 Ensure all dependencies are installed:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -342,6 +357,7 @@ MIT License - See LICENSE file
 ## Support
 
 For issues or questions:
+
 - Open an issue on GitHub
 - Check documentation at `/api/model_info`
 - Review training logs in `../results/`

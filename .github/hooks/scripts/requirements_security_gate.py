@@ -27,7 +27,11 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11
+    import tomli as tomllib
 from typing import Any
 
 _REQ_PATTERN = re.compile(r"requirements[^/]*\.txt$|pyproject\.toml$", re.IGNORECASE)
@@ -55,12 +59,7 @@ def _walk(obj: Any):
 
 
 def _get_tool_name(payload: dict) -> str:
-    return (
-        payload.get("toolName")
-        or payload.get("tool_name")
-        or payload.get("name")
-        or ""
-    ).lower()
+    return (payload.get("toolName") or payload.get("tool_name") or payload.get("name") or "").lower()
 
 
 def _get_file_path(payload: dict) -> str:
@@ -129,9 +128,7 @@ def _run_audit(req_content: str, filename: str) -> tuple[bool, str]:
             return False, "No dependency declarations found in pyproject.toml"
 
     suffix = ".txt"
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=suffix, delete=False, prefix="hook_audit_"
-    ) as tmp:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False, prefix="hook_audit_") as tmp:
         tmp.write(req_content)
         tmp_path = tmp.name
 

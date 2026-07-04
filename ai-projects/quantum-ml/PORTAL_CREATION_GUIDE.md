@@ -26,7 +26,7 @@ Navigate to: <https://portal.azure.com>
 
 1. **Subscription**: Select `Azure subscription 1` (a07fbd16-e722-446d-8efd-0681e85b725c)
 2. **Resource Group**:
-   - Select existing: `rg-quantum-ai` ✓ (already created)
+    - Select existing: `rg-quantum-ai` ✓ (already created)
 3. **Workspace Name**: `quantum-ai-workspace`
 4. **Region**: `East US`
 5. **Storage Account**: Let Azure create automatically
@@ -49,15 +49,15 @@ Navigate to: <https://portal.azure.com>
 
 1. Go to **Resource Groups** → `rg-quantum-ai`
 2. You should see:
-   - `quantum-ai-workspace` (Azure Quantum workspace)
-   - Storage account (auto-generated name like `quantumstorage...`)
+    - `quantum-ai-workspace` (Azure Quantum workspace)
+    - Storage account (auto-generated name like `quantumstorage...`)
 3. Click on `quantum-ai-workspace`
 4. In the left menu, click **Providers** tab
 5. Verify these providers are listed:
-   - IonQ
-   - Quantinuum
-   - Rigetti
-   - Microsoft Quantum Computing
+    - IonQ
+    - Quantinuum
+    - Rigetti
+    - Microsoft Quantum Computing
 
 ## After Creation: Update Config
 

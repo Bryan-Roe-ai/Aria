@@ -38,15 +38,15 @@ Aria/
 
 ### Demo Mode vs Local Development
 
-| Feature | GitHub Pages (Demo) | Local Development |
-| --------- | ------------------- | ------------------- |
-| UI Functionality | ✅ Full | ✅ Full |
-| Character Animations | ✅ Full | ✅ Full |
-| API Responses | 🔸 Mock | ✅ Real |
-| AI Chat | 🔸 Simulated | ✅ Multi-provider |
-| Quantum Computing | ❌ No backend | ✅ Azure Quantum |
-| Training | ❌ No backend | ✅ LoRA fine-tuning |
-| Cost | 🆓 Free | 💰 API usage |
+| Feature              | GitHub Pages (Demo) | Local Development   |
+| -------------------- | ------------------- | ------------------- |
+| UI Functionality     | ✅ Full             | ✅ Full             |
+| Character Animations | ✅ Full             | ✅ Full             |
+| API Responses        | 🔸 Mock             | ✅ Real             |
+| AI Chat              | 🔸 Simulated        | ✅ Multi-provider   |
+| Quantum Computing    | ❌ No backend       | ✅ Azure Quantum    |
+| Training             | ❌ No backend       | ✅ LoRA fine-tuning |
+| Cost                 | 🆓 Free             | 💰 API usage        |
 
 ## 🚀 Deployment Process
 
@@ -66,46 +66,46 @@ GitHub Pages automatically deploys when changes are pushed:
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - "docs/**"
-      - "aria_web/**"
-      - "generated_sites/**"
-      - "scripts/validate_site_bundles.py"
-      - ".github/workflows/pages.yml"
-  workflow_dispatch:
+    push:
+        branches: [main]
+        paths:
+            - "docs/**"
+            - "aria_web/**"
+            - "generated_sites/**"
+            - "scripts/validate_site_bundles.py"
+            - ".github/workflows/pages.yml"
+    workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./docs
-          destination: ./_site
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Setup Pages
+              uses: actions/configure-pages@v4
+            - name: Build with Jekyll
+              uses: actions/jekyll-build-pages@v1
+              with:
+                  source: ./docs
+                  destination: ./_site
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+    deploy:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        needs: build
+        steps:
+            - name: Deploy to GitHub Pages
+              uses: actions/deploy-pages@v4
 ```
 
 ### Manual Deployment
@@ -128,8 +128,8 @@ theme: jekyll-theme-minimal
 
 markdown: kramdown
 plugins:
-  - jekyll-seo-tag
-  - jekyll-sitemap
+    - jekyll-seo-tag
+    - jekyll-sitemap
 
 baseurl: ""
 url: "https://bryan-roe.github.io/Aria"
@@ -140,36 +140,38 @@ url: "https://bryan-roe.github.io/Aria"
 Each web app has demo mode configured in JavaScript:
 
 **aria_controller.js:**
+
 ```javascript
-const DEMO_MODE = true; // Set to false for local backend
-const DEMO_API_DELAY = 300; // Simulate network delay in ms
+const DEMO_MODE = true // Set to false for local backend
+const DEMO_API_DELAY = 300 // Simulate network delay in ms
 
 async function mockApiCall(endpoint, options) {
     if (!DEMO_MODE) {
-        return fetch(endpoint, options);
+        return fetch(endpoint, options)
     }
 
-    await new Promise(resolve => setTimeout(resolve, DEMO_API_DELAY));
+    await new Promise(resolve => setTimeout(resolve, DEMO_API_DELAY))
 
-    if (endpoint === '/api/aria/command') {
+    if (endpoint === "/api/aria/command") {
         return {
             ok: true,
             json: async () => ({
                 success: true,
-                response: "Mock response in demo mode"
-            })
-        };
+                response: "Mock response in demo mode",
+            }),
+        }
     }
 }
 ```
 
 **chat/index.html:**
+
 ```javascript
-const DEMO_MODE = true;
+const DEMO_MODE = true
 const DEMO_RESPONSES = [
     "Hello! I'm Aria in demo mode...",
-    "In demo mode, I use pre-programmed responses..."
-];
+    "In demo mode, I use pre-programmed responses...",
+]
 ```
 
 ## 📝 Updating Content
@@ -177,36 +179,39 @@ const DEMO_RESPONSES = [
 ### Adding a New Web Application
 
 1. **Create app directory in docs/**
-   ```bash
-   mkdir docs/myapp
-   ```
+
+    ```bash
+    mkdir docs/myapp
+    ```
 
 2. **Add HTML/CSS/JS files with demo mode**
-   ```javascript
-   const DEMO_MODE = true;
 
-   async function mockApiCall(endpoint, options) {
-       await new Promise(resolve => setTimeout(resolve, 300));
-       return { ok: true, json: async () => ({ demo: true }) };
-   }
-   ```
+    ```javascript
+    const DEMO_MODE = true
+
+    async function mockApiCall(endpoint, options) {
+        await new Promise(resolve => setTimeout(resolve, 300))
+        return { ok: true, json: async () => ({ demo: true }) }
+    }
+    ```
 
 3. **Update main index.html**
-   ```html
-   <a href="myapp/" class="app-card">
-       <div class="app-icon">🎨</div>
-       <div class="app-title">My App</div>
-       <div class="app-description">Description here</div>
-       <span class="app-status status-demo">Demo Mode</span>
-   </a>
-   ```
+
+    ```html
+    <a href="myapp/" class="app-card">
+        <div class="app-icon">🎨</div>
+        <div class="app-title">My App</div>
+        <div class="app-description">Description here</div>
+        <span class="app-status status-demo">Demo Mode</span>
+    </a>
+    ```
 
 4. **Commit and push**
-   ```bash
-   git add docs/myapp
-   git commit -m "Add myapp to GitHub Pages"
-   git push
-   ```
+    ```bash
+    git add docs/myapp
+    git commit -m "Add myapp to GitHub Pages"
+    git push
+    ```
 
 ### Updating Existing Applications
 
@@ -238,20 +243,22 @@ git push
 ### Local Testing with Jekyll
 
 1. **Install Jekyll**
-   ```bash
-   gem install jekyll bundler
-   ```
+
+    ```bash
+    gem install jekyll bundler
+    ```
 
 2. **Serve locally**
-   ```bash
-   cd docs
-   jekyll serve
-   ```
+
+    ```bash
+    cd docs
+    jekyll serve
+    ```
 
 3. **Open browser**
-   ```
-   http://localhost:4000
-   ```
+    ```
+    http://localhost:4000
+    ```
 
 ### Local Testing with Python HTTP Server
 
@@ -282,31 +289,39 @@ Before pushing changes:
 All GitHub Pages applications should include:
 
 1. **Demo Mode Banner**
-   ```html
-   <div class="demo-notice">
-       <strong>🌐 Demo Mode:</strong> Running in demo mode...
-       <a href="https://github.com/Bryan-Roe/Aria">View on GitHub</a>
-   </div>
-   ```
+
+    ```html
+    <div class="demo-notice">
+        <strong>🌐 Demo Mode:</strong> Running in demo mode...
+        <a href="https://github.com/Bryan-Roe/Aria">View on GitHub</a>
+    </div>
+    ```
 
 2. **Gradient Backgrounds**
-   ```css
-   body {
-       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-       background-size: 200% 200%;
-       animation: gradientShift 15s ease infinite;
-   }
-   ```
+
+    ```css
+    body {
+        background: linear-gradient(
+            135deg,
+            #667eea 0%,
+            #764ba2 50%,
+            #f093fb 100%
+        );
+        background-size: 200% 200%;
+        animation: gradientShift 15s ease infinite;
+    }
+    ```
 
 3. **Card-Based Layouts**
-   ```css
-   .app-card {
-       background: rgba(255, 255, 255, 0.98);
-       border-radius: 20px;
-       padding: 30px;
-       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-   }
-   ```
+
+    ```css
+    .app-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+    ```
 
 4. **GitHub Links**
    Always include links back to the repository
@@ -318,6 +333,7 @@ All GitHub Pages applications should include:
 **Problem**: Workflow fails to build
 
 **Solution**:
+
 - Check workflow logs in Actions tab
 - Verify Jekyll syntax in _config.yml
 - Ensure all files referenced exist
@@ -325,6 +341,7 @@ All GitHub Pages applications should include:
 **Problem**: 404 errors on GitHub Pages
 
 **Solution**:
+
 - Verify files are in `docs/` directory
 - Check file paths are relative (no leading `/`)
 - Ensure branch is set to `main` in Settings > Pages
@@ -332,6 +349,7 @@ All GitHub Pages applications should include:
 **Problem**: Styles not loading
 
 **Solution**:
+
 - Check CSS file paths
 - Verify .nojekyll file exists
 - Clear browser cache
@@ -341,6 +359,7 @@ All GitHub Pages applications should include:
 **Problem**: API calls failing
 
 **Solution**:
+
 - Verify `DEMO_MODE = true`
 - Check mockApiCall implementation
 - Test with browser console open
@@ -348,6 +367,7 @@ All GitHub Pages applications should include:
 **Problem**: Features not working
 
 **Solution**:
+
 - Ensure mock responses match expected format
 - Check for JavaScript errors in console
 - Verify all dependencies loaded
@@ -365,8 +385,8 @@ All GitHub Pages applications should include:
 To add Google Analytics or similar:
 
 1. **Get tracking code**
-2. **Add to docs/_includes/head.html**
-3. **Configure in _config.yml**
+2. **Add to docs/\_includes/head.html**
+3. **Configure in \_config.yml**
 
 ## 🔐 Security
 
@@ -383,8 +403,8 @@ To add Google Analytics or similar:
 ```yaml
 # In _config.yml
 webrick:
-  headers:
-    Content-Security-Policy: "default-src 'self' https: 'unsafe-inline' 'unsafe-eval'"
+    headers:
+        Content-Security-Policy: "default-src 'self' https: 'unsafe-inline' 'unsafe-eval'"
 ```
 
 ## 📚 Resources

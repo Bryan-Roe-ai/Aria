@@ -1,7 +1,7 @@
 # Python dependencies for Quantum AI project
 
 # Core quantum computing libraries
-qiskit>=2.4.1
+qiskit>=2.5.0
 qiskit-aer>=0.17.2
 qiskit-ibm-runtime>=0.47.0
 qiskit-algorithms>=0.4.0
@@ -12,32 +12,32 @@ azure-quantum>=3.10.0
 azure-identity>=1.25.3
 
 # Deep learning frameworks
-torch>=2.12.0
-torchvision>=0.27.0
+torch>=2.12.1
+torchvision>=0.27.1
 
 # Classical ML
-scikit-learn>=1.8.0
-numpy>=2.4.6
-pandas>=3.0.3
+scikit-learn>=1.9.0
+numpy>=2.5.0
+pandas>=3.0.4
 
 # Visualization
-matplotlib>=3.10.9
+matplotlib>=3.11.0
 seaborn>=0.13.2
-plotly>=6.7.0
+plotly>=6.8.0
 
 # Jupyter notebooks
 jupyter>=1.1.1
-jupyterlab>=4.5.7
-ipykernel>=7.2.0
+jupyterlab>=4.6.1
+ipykernel>=7.3.0
 ipywidgets>=8.1.8
 
 # Configuration and utilities
 pyyaml>=6.0.3
 python-dotenv>=1.2.2
-tqdm>=4.67.3
+tqdm>=4.68.3
 
 # Testing
-pytest>=9.0.3
+pytest>=9.1.1
 pytest-cov>=7.1.0
 pytest-mock>=3.15.1
 

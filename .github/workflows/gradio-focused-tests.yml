@@ -11,11 +11,27 @@ on:
       - 'tests/**'
       - 'scripts/**'
 
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   gradio-focused:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
 
       - name: Set up Python and minimal dependencies
         uses: ./.github/actions/setup-python-env

@@ -41,7 +41,6 @@ import warnings
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -105,7 +104,7 @@ def train_single_dataset(
     batch_size: int = 32,
     learning_rate: float = 0.001,
     quick_test: bool = False,
-) -> Dict:
+) -> dict:
     """
     Train on a single dataset (worker function).
 
@@ -301,14 +300,14 @@ class DistributedBenchmark:
         self.checkpoint_file = self.output_dir / "checkpoint.json"
         self.results_file = self.output_dir / "distributed_results.json"
 
-    def load_checkpoint(self) -> Dict:
+    def load_checkpoint(self) -> dict:
         """Load checkpoint if exists."""
         if self.checkpoint_file.exists():
             with open(self.checkpoint_file) as f:
                 return json.load(f)
         return {"completed": [], "results": []}
 
-    def save_checkpoint(self, checkpoint: Dict):
+    def save_checkpoint(self, checkpoint: dict):
         """Save checkpoint."""
         with open(self.checkpoint_file, "w") as f:
             json.dump(checkpoint, f, indent=2)
@@ -404,7 +403,7 @@ class DistributedBenchmark:
         # Generate summary
         self.generate_summary(checkpoint["results"], total_time)
 
-    def generate_summary(self, results: List[Dict], total_time: float):
+    def generate_summary(self, results: list[dict], total_time: float):
         """Generate benchmark summary report."""
         print("\n" + "=" * 70)
         print("📊 BENCHMARK SUMMARY")
@@ -415,8 +414,8 @@ class DistributedBenchmark:
 
         print(f"\n✅ Completed: {len(successful)}/{len(results)}")
         print(f"❌ Failed: {len(failed)}")
-        print(f"⏱️  Total time: {total_time/60:.1f} minutes")
-        print(f"⚡ Avg time per dataset: {total_time/len(results):.1f} seconds")
+        print(f"⏱️  Total time: {total_time / 60:.1f} minutes")
+        print(f"⚡ Avg time per dataset: {total_time / len(results):.1f} seconds")
 
         if successful:
             accuracies = [r["best_accuracy"] for r in successful]

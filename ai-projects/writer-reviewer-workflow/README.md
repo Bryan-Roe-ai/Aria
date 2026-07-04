@@ -21,7 +21,7 @@ User request
 1. **Writer** receives the user request and drafts the initial content.
 2. **Reviewer** receives the Writer's content (full conversation history) and
    delivers a polished, refined final version.
-3. Both agents are *output executors* — the workflow yields their responses so
+3. Both agents are _output executors_ — the workflow yields their responses so
    you can observe the full collaboration. The Reviewer's output is the final
    refined text.
 
@@ -108,18 +108,16 @@ Example request format:
 
 ```json
 {
-  "module_name": "math_helpers",
-  "function_name": "add_numbers",
-  "description": "Add two integers and return the sum.",
-  "arguments": [
-    {"name": "left", "type": "int"},
-    {"name": "right", "type": "int"}
-  ],
-  "return_type": "int",
-  "expression": "left + right",
-  "examples": [
-    {"inputs": {"left": 2, "right": 3}, "output": 5}
-  ]
+    "module_name": "math_helpers",
+    "function_name": "add_numbers",
+    "description": "Add two integers and return the sum.",
+    "arguments": [
+        { "name": "left", "type": "int" },
+        { "name": "right", "type": "int" }
+    ],
+    "return_type": "int",
+    "expression": "left + right",
+    "examples": [{ "inputs": { "left": 2, "right": 3 }, "output": 5 }]
 }
 ```
 

@@ -21,16 +21,16 @@ except ImportError:
     AzureQuantumClient = None
 
 try:
-    from .automate_quantum_job import submit_quantum_job, poll_quantum_job
+    from .automate_quantum_job import poll_quantum_job, submit_quantum_job
 except ImportError:
     submit_quantum_job = None
     poll_quantum_job = None
 
 
 __all__ = [
-    'QuantumLLMPipeline',
-    'QuantumClassifier',
-    'AzureQuantumClient',
-    'submit_quantum_job',
-    'poll_quantum_job',
+    "QuantumLLMPipeline",
+    "QuantumClassifier",
+    "AzureQuantumClient",
+    "submit_quantum_job",
+    "poll_quantum_job",
 ]

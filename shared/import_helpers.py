@@ -5,7 +5,8 @@ dependencies that may not be available in all runtime environments.
 """
 
 import logging
-from typing import Any, Callable, Dict, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,8 +14,8 @@ _LOGGER = logging.getLogger(__name__)
 def safe_import(
     module_path: str,
     *,
-    import_names: Optional[Tuple[str, ...]] = None,
-    fallback_factory: Optional[Callable[[str], Any]] = None,
+    import_names: tuple[str, ...] | None = None,
+    fallback_factory: Callable[[str], Any] | None = None,
     log_failure: bool = True,
 ) -> Any:
     """Safely import a module or specific names, with optional fallbacks.
@@ -54,7 +55,7 @@ def safe_import(
             return module
 
         # Extract specific names
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
         for name in import_names:
             if hasattr(module, name):
                 result[name] = getattr(module, name)
@@ -74,7 +75,7 @@ def safe_import(
             return None
 
         # Build fallback dict
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
         for name in import_names:
             if fallback_factory:
                 result[name] = fallback_factory(name)
@@ -84,7 +85,7 @@ def safe_import(
         return result
 
 
-def create_stub_function(name: str, error_key: str = "error") -> Callable[..., Dict[str, Any]]:
+def create_stub_function(name: str, error_key: str = "error") -> Callable[..., dict[str, Any]]:
     """Create a stub function that returns a dict indicating unavailability.
 
     Args:
@@ -99,7 +100,8 @@ def create_stub_function(name: str, error_key: str = "error") -> Callable[..., D
         # sql_health() returns {"enabled": False, "error": "sql_health_unavailable"}
     """
 
-    def stub(*args, **kwargs) -> Dict[str, Any]:
+    def stub(*args, **kwargs) -> dict[str, Any]:
+        """Return a disabled stub payload for unavailable optional dependencies."""
         return {"enabled": False, error_key: f"{name}_unavailable"}
 
     stub.__name__ = name

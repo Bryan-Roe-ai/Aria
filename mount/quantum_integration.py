@@ -8,7 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import yaml
 
@@ -16,29 +16,23 @@ import yaml
 class QuantumIntegration:
     """Integration layer for quantum AI operations"""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.workspace_root = Path(config["paths"]["workspace_root"])
         self.quantum_path = Path(config["paths"]["quantum_ai"])
-        self.results_dir = Path(
-            config["quantum"].get("results_dir") or (self.quantum_path / "results")
-        )
+        self.results_dir = Path(config["quantum"].get("results_dir") or (self.quantum_path / "results"))
         self.quantum_config = self._load_quantum_config()
 
-    def _load_quantum_config(self) -> Dict[str, Any]:
+    def _load_quantum_config(self) -> dict[str, Any]:
         """Load quantum configuration from YAML"""
         configured = self.config["quantum"].get("config_file")
-        config_path = (
-            Path(configured)
-            if configured
-            else self.quantum_path / "config" / "quantum_config.yaml"
-        )
+        config_path = Path(configured) if configured else self.quantum_path / "config" / "quantum_config.yaml"
         if config_path.exists():
             with open(config_path) as f:
                 return yaml.safe_load(f)
         return {}
 
-    async def get_status(self) -> Dict[str, Any]:
+    async def get_status(self) -> dict[str, Any]:
         """Get current quantum system status"""
         return {
             "enabled": self.config["quantum"]["enabled"],
@@ -58,14 +52,14 @@ class QuantumIntegration:
             and azure_config.get("workspace_name")
         )
 
-    def _get_available_backends(self) -> List[str]:
+    def _get_available_backends(self) -> list[str]:
         """Get list of available quantum backends"""
         backends = ["qiskit_aer", "lightning.qubit"]
         if self._check_azure_connection():
             backends.extend(["rigetti.sim.qvm", "ionq.simulator"])
         return backends
 
-    def _get_recent_results(self, limit: int = 5) -> List[Dict[str, Any]]:
+    def _get_recent_results(self, limit: int = 5) -> list[dict[str, Any]]:
         """Get recent quantum training results"""
         results = []
         results_path = self.results_dir
@@ -74,9 +68,7 @@ class QuantumIntegration:
             return results
 
         # Find all JSON result files
-        json_files = sorted(
-            results_path.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True
-        )[:limit]
+        json_files = sorted(results_path.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)[:limit]
 
         for json_file in json_files:
             try:
@@ -96,6 +88,37 @@ class QuantumIntegration:
 
         return results
 
+    @staticmethod
+    def _find_job_status(status_data: dict[str, Any], job_name: str) -> dict[str, Any]:
+        """Return the most relevant job entry from a status payload.
+
+        The quantum autorun status file has historically used both list- and
+        dict-shaped ``jobs`` payloads.  This helper keeps the bridge resilient
+        to either format while preserving the per-job details callers expect.
+        """
+        jobs = status_data.get("jobs")
+        if isinstance(jobs, dict):
+            entry = jobs.get(job_name)
+            return entry if isinstance(entry, dict) else {}
+
+        if isinstance(jobs, list):
+            normalized_job_name = job_name.strip().lower()
+            for index, entry in enumerate(jobs):
+                if not isinstance(entry, dict):
+                    continue
+
+                candidate_names = [entry.get("name"), entry.get("job_name"), entry.get("preset")]
+                for candidate in candidate_names:
+                    if isinstance(candidate, str) and candidate.strip().lower() == normalized_job_name:
+                        return entry
+
+                if len(jobs) == 1:
+                    # Preserve backward compatibility with single-job snapshots
+                    # even when the stored name is absent or slightly different.
+                    return entry
+
+        return {}
+
     async def train_classifier(
         self,
         dataset: str,
@@ -103,43 +126,85 @@ class QuantumIntegration:
         n_layers: int = 2,
         epochs: int = 10,
         backend: str = "qiskit_aer",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Train a quantum classifier"""
         try:
             train_script = self.quantum_path / "train_custom_dataset.py"
+            resolved_quantum_path = self.quantum_path.resolve()
+            resolved_train_script = train_script.resolve()
+
+            if (
+                resolved_train_script.parent != resolved_quantum_path
+                or resolved_train_script.name != "train_custom_dataset.py"
+            ):
+                return {
+                    "success": False,
+                    "error": "Invalid training script path.",
+                }
 
             datasets_path = self.workspace_root / "datasets" / "quantum"
-            allowed_datasets = {
-                csv_file.stem for csv_file in datasets_path.glob("*.csv")
-            } if datasets_path.exists() else set()
+            allowed_datasets = (
+                {csv_file.stem for csv_file in datasets_path.glob("*.csv")} if datasets_path.exists() else set()
+            )
+
+            safe_arg_pattern = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+            if not safe_arg_pattern.fullmatch(dataset):
+                return {
+                    "success": False,
+                    "error": f"Invalid dataset '{dataset}'.",
+                }
 
             if dataset not in allowed_datasets:
                 return {
                     "success": False,
                     "error": f"Invalid dataset '{dataset}'.",
                 }
+            safe_dataset = next((name for name in allowed_datasets if name == dataset), None)
+            if safe_dataset is None:
+                return {
+                    "success": False,
+                    "error": f"Invalid dataset '{dataset}'.",
+                }
 
             allowed_backends = set(self._get_available_backends())
-            if backend not in allowed_backends:
+            if not safe_arg_pattern.fullmatch(backend):
                 return {
                     "success": False,
                     "error": f"Invalid backend '{backend}'.",
                 }
 
+            if backend not in allowed_backends:
+                return {
+                    "success": False,
+                    "error": f"Invalid backend '{backend}'.",
+                }
+            safe_backend = next((name for name in allowed_backends if name == backend), None)
+            if safe_backend is None:
+                return {
+                    "success": False,
+                    "error": f"Invalid backend '{backend}'.",
+                }
+
+            if not isinstance(epochs, int) or isinstance(epochs, bool) or epochs < 1 or epochs > 10000:
+                return {
+                    "success": False,
+                    "error": f"Invalid epochs '{epochs}'.",
+                }
+            safe_epochs = epochs
+
             cmd = [
                 sys.executable,
-                str(train_script),
+                str(resolved_train_script),
                 "--preset",
-                dataset,
+                safe_dataset,
                 "--epochs",
-                str(epochs),
+                str(safe_epochs),
                 "--backend",
-                backend,
+                safe_backend,
             ]
 
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, cwd=str(self.quantum_path)
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.quantum_path), shell=False)
 
             return {
                 "success": result.returncode == 0,
@@ -150,7 +215,7 @@ class QuantumIntegration:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def list_datasets(self) -> List[Dict[str, Any]]:
+    async def list_datasets(self) -> list[dict[str, Any]]:
         """List available quantum datasets"""
         datasets_path = self.workspace_root / "datasets" / "quantum"
 
@@ -169,9 +234,7 @@ class QuantumIntegration:
 
         return datasets
 
-    async def get_circuit_info(
-        self, circuit_type: str = "variational"
-    ) -> Dict[str, Any]:
+    async def get_circuit_info(self, circuit_type: str = "variational") -> dict[str, Any]:
         """Get information about quantum circuit types"""
         return {
             "circuit_type": circuit_type,
@@ -185,21 +248,26 @@ class QuantumIntegration:
             },
         }
 
-    async def run_autorun_job(
-        self, job_name: str, dry_run: bool = False
-    ) -> Dict[str, Any]:
+    async def run_autorun_job(self, job_name: str, dry_run: bool = False) -> dict[str, Any]:
         """Run a quantum autorun job"""
         try:
             autorun_script = self.workspace_root / "scripts" / "quantum_autorun.py"
             normalized_job_name = (job_name or "").strip()
 
-            if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", normalized_job_name):
+            allowed_jobs = {
+                "baseline": "baseline",
+                "benchmark": "benchmark",
+                "nightly": "nightly",
+                "smoke": "smoke",
+            }
+            selected_job = allowed_jobs.get(normalized_job_name)
+            if selected_job is None:
                 return {
                     "success": False,
-                    "error": "Invalid job_name format. Allowed: letters, numbers, underscore, hyphen (max 64 chars).",
+                    "error": "Invalid job_name. Allowed values: baseline, benchmark, nightly, smoke.",
                 }
 
-            cmd = [sys.executable, str(autorun_script), "--job", normalized_job_name]
+            cmd = [sys.executable, str(autorun_script), "--job", selected_job]
             if dry_run:
                 cmd.append("--dry-run")
 
@@ -212,9 +280,7 @@ class QuantumIntegration:
             )
 
             # Load status file if it exists
-            status_file = (
-                self.workspace_root / "data_out" / "quantum_autorun" / "status.json"
-            )
+            status_file = self.workspace_root / "data_out" / "quantum_autorun" / "status.json"
             status_data = {}
             if status_file.exists():
                 with open(status_file) as f:
@@ -226,7 +292,7 @@ class QuantumIntegration:
                 "dry_run": dry_run,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
-                "status": status_data.get("jobs", {}).get(normalized_job_name, {}),
+                "status": self._find_job_status(status_data, normalized_job_name),
             }
         except Exception as e:
             return {"success": False, "error": str(e)}

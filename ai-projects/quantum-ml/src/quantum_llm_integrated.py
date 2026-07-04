@@ -18,7 +18,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import torch
 import torch.nn as nn
@@ -27,11 +27,13 @@ from torch.utils.data import DataLoader, Dataset
 
 # Import all quantum LLM components
 try:
-    from quantum_llm_advanced import (AdaptiveQuantumLayer,
-                                      MultiScaleQuantumAttention,
-                                      QuantumCircuitCache,
-                                      QuantumErrorMitigation,
-                                      QuantumPromptTuning)
+    from quantum_llm_advanced import (
+        AdaptiveQuantumLayer,
+        MultiScaleQuantumAttention,
+        QuantumCircuitCache,
+        QuantumErrorMitigation,
+        QuantumPromptTuning,
+    )
 
     ADVANCED_AVAILABLE = True
 except ImportError:
@@ -39,11 +41,13 @@ except ImportError:
     logging.warning("Advanced quantum components not available")
 
 try:
-    from quantum_circuit_optimizer import (AdaptiveCircuitScheduler,
-                                           BatchCircuitExecutor,
-                                           CircuitCompiler,
-                                           OptimizationStrategy,
-                                           QuantumClassicalPartitioner)
+    from quantum_circuit_optimizer import (
+        AdaptiveCircuitScheduler,
+        BatchCircuitExecutor,
+        CircuitCompiler,
+        OptimizationStrategy,
+        QuantumClassicalPartitioner,
+    )
 
     OPTIMIZER_AVAILABLE = True
 except ImportError:
@@ -51,10 +55,12 @@ except ImportError:
     logging.warning("Circuit optimizer not available")
 
 try:
-    from quantum_llm_hybrid_trainer import (AdaptiveQuantumRouter,
-                                            CurriculumScheduler,
-                                            HybridTrainingOrchestrator,
-                                            TrainingStage)
+    from quantum_llm_hybrid_trainer import (
+        AdaptiveQuantumRouter,
+        CurriculumScheduler,
+        HybridTrainingOrchestrator,
+        TrainingStage,
+    )
 
     TRAINER_AVAILABLE = True
 except ImportError:
@@ -62,8 +68,7 @@ except ImportError:
     logging.warning("Hybrid trainer not available")
 
 try:
-    from quantum_llm_monitor import (QuantumMetrics, TrainingDashboard,
-                                     TrainingSnapshot, VisualizationExporter)
+    from quantum_llm_monitor import QuantumMetrics, TrainingDashboard, TrainingSnapshot, VisualizationExporter
 
     MONITOR_AVAILABLE = True
 except ImportError:
@@ -76,7 +81,7 @@ logger = logging.getLogger(__name__)
 class QuantumLLMConfig:
     """Configuration for quantum-enhanced LLM."""
 
-    def __init__(self, config_path: Optional[Path] = None):
+    def __init__(self, config_path: Path | None = None):
         # Default configuration
         self.config = {
             # Model architecture
@@ -160,14 +165,10 @@ class IntegratedQuantumLLM(nn.Module):
         )
 
         # Positional encoding
-        self.pos_encoding = nn.Parameter(
-            torch.randn(1, config["max_seq_length"], config["d_model"]) * 0.02
-        )
+        self.pos_encoding = nn.Parameter(torch.randn(1, config["max_seq_length"], config["d_model"]) * 0.02)
 
         # Build transformer layers
-        self.layers = nn.ModuleList(
-            [self._build_layer(i) for i in range(config["n_layers"])]
-        )
+        self.layers = nn.ModuleList([self._build_layer(i) for i in range(config["n_layers"])])
 
         # Output head
         self.output_head = nn.Linear(config["d_model"], config["vocab_size"])
@@ -274,9 +275,7 @@ class IntegratedQuantumLLM(nn.Module):
             x = layer["norm1"](x + attn_out)
 
             # Feedforward with residual
-            ffn_out = (
-                layer["ffn"](x) if callable(layer["ffn"]) else layer["ffn"].forward(x)
-            )
+            ffn_out = layer["ffn"](x) if callable(layer["ffn"]) else layer["ffn"].forward(x)
             x = layer["norm2"](x + ffn_out)
 
         # Output projection
@@ -284,7 +283,7 @@ class IntegratedQuantumLLM(nn.Module):
 
         return logits
 
-    def get_quantum_stats(self) -> Dict[str, Any]:
+    def get_quantum_stats(self) -> dict[str, Any]:
         """Get quantum component statistics."""
         stats = {}
 
@@ -367,7 +366,7 @@ class QuantumLLMSystem:
         else:
             self.dashboard = None
 
-    def _create_training_stages(self) -> List[TrainingStage]:
+    def _create_training_stages(self) -> list[TrainingStage]:
         """Create curriculum training stages."""
         config = self.config
 
@@ -402,8 +401,8 @@ class QuantumLLMSystem:
     def train(
         self,
         train_dataset: Dataset,
-        val_dataset: Optional[Dataset] = None,
-    ) -> Dict[str, Any]:
+        val_dataset: Dataset | None = None,
+    ) -> dict[str, Any]:
         """
         Train the quantum LLM system.
 
@@ -449,11 +448,9 @@ class QuantumLLMSystem:
         logger.info("✅ Training complete")
         return report
 
-    def _simple_training(self, train_loader, val_loader) -> Dict[str, Any]:
+    def _simple_training(self, train_loader, val_loader) -> dict[str, Any]:
         """Fallback simple training loop."""
-        optimizer = torch.optim.AdamW(
-            self.model.parameters(), lr=self.config["learning_rate"]
-        )
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.config["learning_rate"])
         criterion = nn.CrossEntropyLoss()
 
         total_loss = 0.0
@@ -472,9 +469,7 @@ class QuantumLLMSystem:
                 total_loss += loss.item()
 
                 if batch_idx % 10 == 0:
-                    logger.info(
-                        f"Epoch {epoch} | Batch {batch_idx} | Loss: {loss.item():.4f}"
-                    )
+                    logger.info(f"Epoch {epoch} | Batch {batch_idx} | Loss: {loss.item():.4f}")
 
         return {"total_loss": total_loss, "epochs": self.config["num_epochs"]}
 
@@ -497,7 +492,7 @@ class QuantumLLMSystem:
         self.model.load_state_dict(checkpoint["model_state_dict"])
         logger.info(f"Model loaded from {path}")
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate comprehensive system report."""
         report = {
             "configuration": self.config.config,
@@ -509,9 +504,7 @@ class QuantumLLMSystem:
             report["training_dashboard"] = self.dashboard.get_full_report()
 
         if self.circuit_compiler and OPTIMIZER_AVAILABLE:
-            report["circuit_optimization"] = (
-                self.circuit_compiler.get_optimization_report()
-            )
+            report["circuit_optimization"] = self.circuit_compiler.get_optimization_report()
 
         if self.batch_executor and OPTIMIZER_AVAILABLE:
             report["batch_execution"] = self.batch_executor.get_cache_stats()
@@ -527,17 +520,11 @@ class QuantumLLMSystem:
 
 def main():
     """Main entry point for integrated quantum LLM training."""
-    parser = argparse.ArgumentParser(
-        description="Integrated Quantum LLM Training System"
-    )
+    parser = argparse.ArgumentParser(description="Integrated Quantum LLM Training System")
     parser.add_argument("--config", type=str, help="Path to configuration YAML")
-    parser.add_argument(
-        "--output-dir", type=str, default="data_out/quantum_llm_integrated"
-    )
+    parser.add_argument("--output-dir", type=str, default="data_out/quantum_llm_integrated")
     parser.add_argument("--device", type=str, default="cpu", choices=["cpu", "cuda"])
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Test configuration without training"
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Test configuration without training")
 
     args = parser.parse_args()
 
@@ -560,9 +547,7 @@ def main():
     logger.info("=" * 80)
     logger.info("QUANTUM LLM INTEGRATED SYSTEM")
     logger.info("=" * 80)
-    logger.info(
-        f"Model parameters: {sum(p.numel() for p in system.model.parameters()):,}"
-    )
+    logger.info(f"Model parameters: {sum(p.numel() for p in system.model.parameters()):,}")
     logger.info("Quantum components available:")
     logger.info(f"  - Advanced layers: {ADVANCED_AVAILABLE}")
     logger.info(f"  - Circuit optimizer: {OPTIMIZER_AVAILABLE}")

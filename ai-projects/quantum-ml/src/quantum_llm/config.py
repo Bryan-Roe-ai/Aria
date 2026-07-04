@@ -6,6 +6,7 @@ Supports dataclass-based config (no pydantic dependency required).
 
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from typing import Literal
@@ -28,9 +29,10 @@ def _read_float_env(name: str, default: float) -> float:
     if raw is None:
         return default
     try:
-        return float(raw)
+        parsed = float(raw)
     except (TypeError, ValueError):
         return default
+    return parsed if math.isfinite(parsed) else default
 
 
 def _read_backend_env(name: str, default: str = "auto") -> str:
@@ -52,9 +54,10 @@ def _coerce_int(value: object, default: int, minimum: int = 1) -> int:
 def _coerce_float(value: object, default: float) -> float:
     """Convert value to float with safe default."""
     try:
-        return float(value)
+        parsed = float(value)
     except (TypeError, ValueError):
         return default
+    return parsed if math.isfinite(parsed) else default
 
 
 @dataclass
@@ -100,14 +103,10 @@ class QuantumLLMConfig:
         self.num_layers = _coerce_int(self.num_layers, default=2, minimum=1)
         self.top_k = _coerce_int(self.top_k, default=10, minimum=1)
 
-        self.temperature_blend = min(
-            1.0, max(0.0, _coerce_float(self.temperature_blend, default=0.3))
-        )
+        self.temperature_blend = min(1.0, max(0.0, _coerce_float(self.temperature_blend, default=0.3)))
         self.temperature = max(0.0, _coerce_float(self.temperature, default=0.7))
 
-        self.max_prompt_chars = _coerce_int(
-            self.max_prompt_chars, default=8000, minimum=1
-        )
+        self.max_prompt_chars = _coerce_int(self.max_prompt_chars, default=8000, minimum=1)
         self.max_tokens_cap = _coerce_int(self.max_tokens_cap, default=2048, minimum=1)
         self.max_tokens = _coerce_int(self.max_tokens, default=512, minimum=1)
         self.max_tokens = min(self.max_tokens, self.max_tokens_cap)

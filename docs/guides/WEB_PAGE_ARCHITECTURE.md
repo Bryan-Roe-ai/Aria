@@ -3,6 +3,7 @@
 ## Overview
 
 The QAI chat interface (`chat-web/`) implements a dual-mode architecture that supports both:
+
 - **Standalone UI mode**: Full-featured chat interface with `chat.js` handling all UI interactions
 - **Embedded mode** (reserved for future use): Minimal inline controller for streaming chat only
 
@@ -11,20 +12,20 @@ The QAI chat interface (`chat-web/`) implements a dual-mode architecture that su
 ### Files
 
 - **`index.html`** (4,300+ lines): Main HTML shell containing:
-  - CSS styles for anime character, chat UI, vision preview, avatar display
-  - Aria anime character container with animation
-  - Chat interface (messages, input, send button)
-  - Vision upload UI (button, file input, preview)
-  - Avatar display container (image, close, regenerate buttons)
-  - Minimal embedded controller script (streaming chat + character animation)
+    - CSS styles for anime character, chat UI, vision preview, avatar display
+    - Aria anime character container with animation
+    - Chat interface (messages, input, send button)
+    - Vision upload UI (button, file input, preview)
+    - Avatar display container (image, close, regenerate buttons)
+    - Minimal embedded controller script (streaming chat + character animation)
 
 - **`chat.js`** (900+ lines): ES6 module responsible for:
-  - All UI event wiring (send, vision upload, avatar buttons)
-  - Vision image analysis via `/api/vision/infer`
-  - AI avatar generation via `/api/image/generate`
-  - Chat message handling (one-shot and streaming via SSE)
-  - Markdown rendering with syntax highlighting
-  - localStorage persistence for chat history
+    - All UI event wiring (send, vision upload, avatar buttons)
+    - Vision image analysis via `/api/vision/infer`
+    - AI avatar generation via `/api/image/generate`
+    - Chat message handling (one-shot and streaming via SSE)
+    - Markdown rendering with syntax highlighting
+    - localStorage persistence for chat history
 
 ### Backend Endpoints
 
@@ -46,31 +47,35 @@ The `window.ARIA_EMBEDDED` flag controls which code path handles UI interactions
 <script>
     // Allow chat.js to wire up vision and avatar features
     // The embedded controller will handle streaming chat separately
-    window.ARIA_EMBEDDED = false;
+    window.ARIA_EMBEDDED = false
 </script>
 ```
 
 ### Behavior
 
 **When `ARIA_EMBEDDED = false` (current/default)**:
+
 - `chat.js` DOMContentLoaded handler executes normally
 - All UI elements wired up by `chat.js`:
-  - Send button → `sendMessage()`
-  - Vision upload button → `handleImageUpload()`
-  - Vision clear button → `clearVisionUpload()`
-  - Avatar regenerate button → `generateAriaAvatar(true)`
-  - Avatar close button → `hideAriaAvatar()`
+    - Send button → `sendMessage()`
+    - Vision upload button → `handleImageUpload()`
+    - Vision clear button → `clearVisionUpload()`
+    - Avatar regenerate button → `generateAriaAvatar(true)`
+    - Avatar close button → `hideAriaAvatar()`
 - Embedded controller only handles character animation (`ariaDance()`)
 - **Recommended for standard deployment**
 
 **When `ARIA_EMBEDDED = true` (reserved)**:
+
 - `chat.js` detects flag and returns early from DOMContentLoaded:
-  ```javascript
-  if (window && window.ARIA_EMBEDDED) {
-      console.log('chat.js: ARIA_EMBEDDED detected — skipping default UI wiring');
-      return;
-  }
-  ```
+    ```javascript
+    if (window && window.ARIA_EMBEDDED) {
+        console.log(
+            "chat.js: ARIA_EMBEDDED detected — skipping default UI wiring",
+        )
+        return
+    }
+    ```
 - Embedded inline controller would need to implement all UI handlers
 - **Use case**: Future scenarios requiring custom inline implementation
 - **Current status**: Not recommended; duplicate handlers were removed from embedded script
@@ -87,17 +92,20 @@ The `window.ARIA_EMBEDDED` flag controls which code path handles UI interactions
 ### Why Remove Duplicate Handlers?
 
 Originally, both `chat.js` and the embedded script implemented vision/avatar handlers. This caused:
+
 - **Duplicate API calls**: Same action triggered twice (e.g., avatar generation)
 - **State conflicts**: Two code paths managing same UI elements
 - **Maintenance burden**: Changes required in two places
 
 **Solution**: Removed duplicate handlers from embedded script. `chat.js` is now the single source of truth for:
+
 - Vision upload/analysis (`handleImageUpload`, `clearVisionUpload`)
 - Avatar generation/display (`generateAriaAvatar`, `hideAriaAvatar`)
 - Chat send button (`sendMessage`)
 - Markdown rendering (`renderMarkdown`)
 
 Embedded script focuses solely on:
+
 - Character animation (`ariaDance()`, movement, positioning)
 - Chat bubble visibility (drag-and-drop if needed)
 
@@ -143,13 +151,13 @@ Embedded script focuses solely on:
 ### Processing (chat.js)
 
 1. POSTs to `/api/image/generate` with anime-style prompt:
-   ```json
-   {
-     "prompt": "Portrait of Aria, anime-style AI assistant character, purple gradient hair, cute anime girl, friendly expression, digital art, high quality, detailed, vibrant colors, soft lighting",
-     "size": "512x512",
-     "style": "anime"
-   }
-   ```
+    ```json
+    {
+        "prompt": "Portrait of Aria, anime-style AI assistant character, purple gradient hair, cute anime girl, friendly expression, digital art, high quality, detailed, vibrant colors, soft lighting",
+        "size": "512x512",
+        "style": "anime"
+    }
+    ```
 2. Displays loading state (optional)
 3. Receives image URL or base64 data
 4. Sets `<img id="ariaAvatarImage" src="...">`
@@ -158,6 +166,7 @@ Embedded script focuses solely on:
 ### Fallback (SVG Gradient)
 
 If OpenAI Images API fails (no key, quota exceeded, network error):
+
 1. Backend generates purple gradient SVG with emoji
 2. Returns as base64 data URI
 3. `chat.js` displays gracefully without user-facing error
@@ -194,16 +203,19 @@ If OpenAI Images API fails (no key, quota exceeded, network error):
 **Diagnosis**: ARIA_EMBEDDED flag may be set incorrectly
 
 **Fix**: Check `chat-web/index.html` around line 2507:
+
 ```html
 <script>
-    window.ARIA_EMBEDDED = false;  // Must be false for chat.js to wire up UI
+    window.ARIA_EMBEDDED = false // Must be false for chat.js to wire up UI
 </script>
 ```
 
 **Verify**: Open browser console (F12) and check for:
+
 ```
 chat.js: ARIA_EMBEDDED detected — skipping default UI wiring
 ```
+
 If you see this message, flag is incorrectly `true`.
 
 ### Issue: Vision upload or avatar generation not working
@@ -211,12 +223,14 @@ If you see this message, flag is incorrectly `true`.
 **Symptom**: Clicking buttons does nothing or throws JavaScript errors
 
 **Common Causes**:
+
 1. **ARIA_EMBEDDED flag true**: See above fix
 2. **Missing DOM elements**: Check HTML has `#visionUploadButton`, `#visionImageInput`, `#ariaAvatarRegenerate`
 3. **Backend endpoint down**: Verify Functions host running with `func start`
 4. **CORS errors**: Check browser console for cross-origin errors
 
 **Debugging**:
+
 1. Open browser console (F12)
 2. Check for JavaScript errors
 3. Verify network tab shows requests to `/api/vision/infer` or `/api/image/generate`
@@ -229,16 +243,18 @@ If you see this message, flag is incorrectly `true`.
 **Cause**: OpenAI Images API failed (expected fallback behavior)
 
 **Common Reasons**:
+
 1. **No API key**: `OPENAI_API_KEY` not set in environment
 2. **Quota exceeded**: Billing limit reached or rate limited
 3. **Network error**: Timeout or connectivity issue
 
 **Solution**: Check `local.settings.json` or Azure App Settings for API key:
+
 ```json
 {
-  "Values": {
-    "OPENAI_API_KEY": "sk-..."
-  }
+    "Values": {
+        "OPENAI_API_KEY": "sk-..."
+    }
 }
 ```
 
@@ -249,11 +265,13 @@ If you see this message, flag is incorrectly `true`.
 **Symptom**: Assistant responses don't type out incrementally
 
 **Causes**:
+
 1. **Browser doesn't support EventSource**: Rare, but check compatibility
 2. **Backend not streaming**: Provider doesn't support streaming (e.g., local echo)
 3. **Network buffering**: Proxy or CDN buffering SSE chunks
 
 **Debugging**:
+
 1. Check browser console for EventSource errors
 2. Inspect network tab: `/api/chat/stream` should show "event-stream" type
 3. Check provider in `/api/ai/status`: Azure OpenAI and OpenAI support streaming, LoRA and Local do not
@@ -263,14 +281,16 @@ If you see this message, flag is incorrectly `true`.
 **Symptom**: Messages show `**bold**` instead of **bold**
 
 **Causes**:
+
 1. **marked.js not loaded**: Check `<script src="https://cdn.jsdelivr.net/npm/marked@12.0.1/marked.min.js">`
 2. **highlight.js not loaded**: Check syntax highlighting library
 3. **renderMarkdown() not called**: Logic error in chat.js
 
 **Fix**: Verify in browser console:
+
 ```javascript
-typeof marked  // Should be "function"
-typeof hljs    // Should be "object"
+typeof marked // Should be "function"
+typeof hljs // Should be "object"
 ```
 
 ## Development Workflow
@@ -278,35 +298,40 @@ typeof hljs    // Should be "object"
 ### Local Testing
 
 1. Start Functions host:
-   ```powershell
-   func start
-   ```
+
+    ```powershell
+    func start
+    ```
 
 2. Open browser to http://localhost:7071/api/chat-web
 
 3. Open DevTools (F12) → Console tab
 
 4. Test features:
-   - Send message → verify streaming or one-shot response
-   - Upload image → verify vision analysis appears in chat
-   - Check avatar → should auto-generate after 2 seconds
-   - Click regenerate → should fetch new avatar and show message
+    - Send message → verify streaming or one-shot response
+    - Upload image → verify vision analysis appears in chat
+    - Check avatar → should auto-generate after 2 seconds
+    - Click regenerate → should fetch new avatar and show message
 
 ### Making Changes
 
 **To modify UI behavior**:
+
 1. Edit `chat-web/chat.js`
 2. Reload page (no restart needed, served on-demand)
 
 **To modify HTML/CSS**:
+
 1. Edit `chat-web/index.html`
 2. Reload page
 
 **To modify backend**:
+
 1. Edit `function_app.py` or shared modules
 2. Functions host auto-reloads (watch for reload message)
 
 **To disable ARIA_EMBEDDED mode**:
+
 1. Never needed in normal development
 2. Only set `true` if implementing custom embedded controller
 
@@ -314,15 +339,16 @@ typeof hljs    // Should be "object"
 
 1. Ensure `ARIA_EMBEDDED = false` in production HTML
 2. Set environment variables in Azure App Settings:
-   - `AZURE_OPENAI_API_KEY` (or `OPENAI_API_KEY`)
-   - `AZURE_OPENAI_ENDPOINT`
-   - `AZURE_OPENAI_DEPLOYMENT`
-   - Optional: `QAI_SQL_URL`, `APPLICATIONINSIGHTS_CONNECTION_STRING`
+    - `AZURE_OPENAI_API_KEY` (or `OPENAI_API_KEY`)
+    - `AZURE_OPENAI_ENDPOINT`
+    - `AZURE_OPENAI_DEPLOYMENT`
+    - Optional: `QAI_SQL_URL`, `APPLICATIONINSIGHTS_CONNECTION_STRING`
 
 3. Deploy via:
-   ```powershell
-   func azure functionapp publish <app-name>
-   ```
+
+    ```powershell
+    func azure functionapp publish <app-name>
+    ```
 
 4. Test deployed app: `https://<app-name>.azurewebsites.net/api/chat-web`
 
@@ -331,6 +357,7 @@ typeof hljs    // Should be "object"
 ### Unit Tests (chat.js)
 
 Currently, chat.js doesn't have dedicated unit tests. Consider adding:
+
 - Mock EventSource for streaming tests
 - Mock fetch for API call tests
 - DOM manipulation tests with JSDOM
@@ -338,6 +365,7 @@ Currently, chat.js doesn't have dedicated unit tests. Consider adding:
 ### Integration Tests (backend)
 
 Located in `tests/test_*_integration.py`:
+
 - **test_avatar_integration.py**: Tests vision model + avatar inference
 - **test_autotrain_integration.py**: Tests orchestrator with 24 passing tests
 - **test_database_integration.py**: Tests memory persistence
@@ -345,6 +373,7 @@ Located in `tests/test_*_integration.py`:
 - **test_sql_integration.py**: Tests SQL engine (skips without SQLAlchemy)
 
 Run via:
+
 ```powershell
 python .\scripts\test_runner.py --integration
 ```
@@ -385,6 +414,7 @@ python .\scripts\test_runner.py --integration
 ## Summary
 
 The QAI chat web page uses a clean separation of concerns:
+
 - **HTML**: Structure and embedded character animation
 - **chat.js**: All UI logic, API calls, and user interactions
 - **function_app.py**: Backend endpoints, AI providers, model inference

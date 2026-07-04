@@ -1,13 +1,13 @@
-import os
 import json
+import os
 import time
-from typing import List, Dict
-
 
 DEFAULT_WEBHOOK_DIR = "data_out/gradio_conversations/webhooks"
 
 
-def post_conversation_to_webhook(hist_state: List[dict], webhook_name: str = "webhook", webhook_dir: str | None = None) -> str:
+def post_conversation_to_webhook(
+    hist_state: list[dict], webhook_name: str = "webhook", webhook_dir: str | None = None
+) -> str:
     """Simulated webhook delivery: save payload to webhook_dir (local) with timestamp. Returns path written."""
     target_dir = webhook_dir or DEFAULT_WEBHOOK_DIR
     os.makedirs(target_dir, exist_ok=True)

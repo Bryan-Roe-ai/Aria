@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Test trained Aria model - instant feedback"""
+
 import sys
 from pathlib import Path
 from typing import Any

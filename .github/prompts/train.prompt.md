@@ -8,11 +8,13 @@ agent: autonomous-trainer
 Handle the following training-related task using the autonomous training framework.
 
 **Before any training:**
+
 1. Validate orchestrator config: `python scripts/autotrain.py --dry-run`
 2. Check dataset integrity: `python scripts/validate_datasets.py --category chat`
 3. Verify system resources: `python scripts/resource_monitor.py --snapshot`
 
 **Training execution options:**
+
 ```bash
 # Quick LoRA (TinyLlama, fast iteration)
 python scripts/automated_training_pipeline.py --models tinyllama --quick
@@ -25,6 +27,7 @@ nohup python scripts/autonomous_training_orchestrator.py > data_out/autonomous_t
 ```
 
 **Monitor progress:**
+
 ```bash
 python scripts/monitor_autonomous_training.py --watch   # Real-time dashboard
 python scripts/training_analytics.py                     # Performance trends
@@ -32,6 +35,7 @@ cat data_out/autonomous_training_status.json             # Cycle status
 ```
 
 **Key rules:**
+
 - ALWAYS `--dry-run` before GPU execution
 - NEVER modify files in `datasets/` (read-only)
 - All outputs write to `data_out/<orchestrator>/`

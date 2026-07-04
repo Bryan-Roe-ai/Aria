@@ -33,8 +33,30 @@ def test_repo_automation_save_status_includes_metadata(
     payload = json.loads(status_file.read_text(encoding="utf-8"))
     assert payload["run_id"] == automation.run_id
     assert payload["config_path"] is None
+    assert payload["component_enabled"]["datasets"] is False
+    assert payload["component_states"]["datasets"] == "disabled"
     assert payload["generated_at"].endswith("Z")
     assert payload["last_health_check"].endswith("Z")
+
+
+@pytest.mark.unit
+def test_repo_automation_components_use_resolved_python(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(repo_module.RepoAutomation, "_resolve_python_command", lambda self: "/tmp/custom-python")
+
+    automation = repo_module.RepoAutomation()
+
+    assert automation.components["aria"].command == [
+        "/tmp/custom-python",
+        "scripts/aria_automation.py",
+        "--mode",
+        "full",
+    ]
+    assert automation.components["training"].command == [
+        "/tmp/custom-python",
+        "scripts/autonomous_training_orchestrator.py",
+    ]
+    assert "/tmp/custom-python" in automation.components["quantum"].command[2]
+    assert "/tmp/custom-python" in automation.components["evaluation"].command[2]
 
 
 @pytest.mark.unit

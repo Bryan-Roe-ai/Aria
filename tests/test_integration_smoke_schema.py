@@ -70,6 +70,28 @@ def test_run_smoke_summary_includes_run_and_config_metadata(
     )
     monkeypatch.setattr(
         smoke_module,
+        "_probe_ai_routes_endpoint",
+        lambda strict: smoke_module.StepResult(
+            name="functions_ai_routes_endpoint",
+            status="skipped",
+            critical=False,
+            duration_sec=0.0,
+            detail="functions host not running (non-strict mode)",
+        ),
+    )
+    monkeypatch.setattr(
+        smoke_module,
+        "_probe_chat_web_assets",
+        lambda strict: smoke_module.StepResult(
+            name="functions_chat_web_agi_stream_utils",
+            status="skipped",
+            critical=False,
+            duration_sec=0.0,
+            detail="functions host not running (non-strict mode)",
+        ),
+    )
+    monkeypatch.setattr(
+        smoke_module,
         "resolve_existing_config_path",
         lambda _repo_root, key: config_map.get(key),
     )
@@ -200,8 +222,13 @@ def test_validate_ai_status_payload_requires_core_keys_and_endpoints() -> None:
                 "/api/ai/status",
                 "/api/chat",
                 "/api/chat-web",
+                "/api/chat-web/static/agi_stream_utils.js",
                 "/api/tts",
-                "/api/quantum/run",
+                "/api/quantum/info",
+                "/api/agi/status",
+                "/api/agi/analyze",
+                "/api/agi/reason",
+                "/api/agi/stream",
             ],
         }
     )
@@ -222,6 +249,9 @@ def test_probe_ai_routes_endpoint_uses_functions_contract(monkeypatch: pytest.Mo
                 {"route": "ai/status"},
                 {"route": "chat"},
                 {"route": "chat-web"},
+                {"route": "agi/status"},
+                {"route": "agi/analyze"},
+                {"route": "agi/reason"},
                 {"route": "agi/stream"},
             ],
         },
@@ -231,4 +261,34 @@ def test_probe_ai_routes_endpoint_uses_functions_contract(monkeypatch: pytest.Mo
 
     assert result.status == "succeeded"
     assert result.name == "functions_ai_routes_endpoint"
-    assert "routes=4" in result.detail
+    assert "routes=7" in result.detail
+
+
+@pytest.mark.unit
+def test_probe_chat_web_assets_requires_agi_stream_utils_marker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _FakeResponse:
+        def __init__(self, body: str):
+            self._body = body.encode("utf-8")
+
+        def read(self) -> bytes:
+            return self._body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(
+        smoke_module,
+        "urlopen",
+        lambda *_args, **_kwargs: _FakeResponse("global.AGIStreamUtils = {}"),
+    )
+
+    result = smoke_module._probe_chat_web_assets(strict=True)
+
+    assert result.status == "succeeded"
+    assert result.name == "functions_chat_web_agi_stream_utils"
+    assert "AGIStreamUtils" in result.detail

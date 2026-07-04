@@ -9,13 +9,13 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 class PipelineOrchestrator:
     """Orchestrates the complete training pipeline"""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.results = {}
         self.start_time = time.time()
@@ -36,9 +36,9 @@ class PipelineOrchestrator:
 
         for i, (name, func) in enumerate(steps, 1):
             if not self.config.get(f"skip_{name.lower().replace(' ', '_')}", False):
-                print(f"\n{'='*60}")
+                print(f"\n{'=' * 60}")
                 print(f"STEP {i}/{len(steps)}: {name}")
-                print(f"{'='*60}\n")
+                print(f"{'=' * 60}\n")
 
                 try:
                     result = func()
@@ -58,7 +58,7 @@ class PipelineOrchestrator:
         self.print_summary()
         return True
 
-    def step_gpu_optimization(self) -> Dict[str, Any]:
+    def step_gpu_optimization(self) -> dict[str, Any]:
         """Step 1: GPU optimization"""
         cmd = [
             sys.executable,
@@ -87,7 +87,7 @@ class PipelineOrchestrator:
         print(result.stdout)
         return {"profile_path": "data_out/gpu_profile.yaml"}
 
-    def step_data_pruning(self) -> Dict[str, Any]:
+    def step_data_pruning(self) -> dict[str, Any]:
         """Step 2: Data pruning"""
         input_path = self.config.get("input_dataset")
         if not input_path:
@@ -120,7 +120,7 @@ class PipelineOrchestrator:
         print(result.stdout)
         return {"input_path": input_path, "output_path": output_path}
 
-    def step_training(self) -> Dict[str, Any]:
+    def step_training(self) -> dict[str, Any]:
         """Step 3: Model training"""
         dataset_path = self.config.get("pruned_dataset", "data")
         if not Path(dataset_path).exists():
@@ -153,7 +153,7 @@ class PipelineOrchestrator:
 
         return {"model_path": self.config.get("model_output", "data_out/lora_training")}
 
-    def step_evaluation(self) -> Dict[str, Any]:
+    def step_evaluation(self) -> dict[str, Any]:
         """Step 4: Model evaluation"""
         model_path = self.config.get("model_output", "data_out/lora_training")
         test_dataset = self.config.get("test_dataset")
@@ -194,7 +194,7 @@ class PipelineOrchestrator:
 
         return eval_results
 
-    def step_rag_setup(self) -> Dict[str, Any]:
+    def step_rag_setup(self) -> dict[str, Any]:
         """Step 5: RAG setup"""
         if not self.config.get("rag_docs_path"):
             print("⚠️  No RAG docs path specified, skipping RAG setup")
@@ -239,7 +239,7 @@ class PipelineOrchestrator:
             emoji = "✅" if status == "success" else "❌" if status == "failed" else "⏭️"
             print(f"{emoji} {step}: {status.upper()}")
 
-        print(f"\nTotal time: {elapsed:.1f}s ({elapsed/60:.1f}m)")
+        print(f"\nTotal time: {elapsed:.1f}s ({elapsed / 60:.1f}m)")
 
         # Save results
         results_file = Path("data_out/pipeline_results.json")
@@ -277,12 +277,8 @@ Examples:
     )
 
     # Input/Output
-    parser.add_argument(
-        "--input-dataset", type=str, help="Input training dataset (JSONL)"
-    )
-    parser.add_argument(
-        "--test-dataset", type=str, help="Test dataset for evaluation (JSONL)"
-    )
+    parser.add_argument("--input-dataset", type=str, help="Input training dataset (JSONL)")
+    parser.add_argument("--test-dataset", type=str, help="Test dataset for evaluation (JSONL)")
     parser.add_argument(
         "--training-config",
         type=str,
@@ -297,9 +293,7 @@ Examples:
     )
 
     # GPU Optimization
-    parser.add_argument(
-        "--model-size-gb", type=float, default=7.0, help="Model size in GB"
-    )
+    parser.add_argument("--model-size-gb", type=float, default=7.0, help="Model size in GB")
     parser.add_argument(
         "--memory-usage",
         type=float,
@@ -331,25 +325,15 @@ Examples:
         default=0.3,
         help="Quality threshold for pruning",
     )
-    parser.add_argument(
-        "--no-embeddings", action="store_true", help="Skip semantic deduplication"
-    )
+    parser.add_argument("--no-embeddings", action="store_true", help="Skip semantic deduplication")
 
     # Training
-    parser.add_argument(
-        "--max-train-samples", type=int, help="Maximum training samples (for testing)"
-    )
-    parser.add_argument(
-        "--no-stream", action="store_true", help="Disable streaming during training"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Dry run (validate config only)"
-    )
+    parser.add_argument("--max-train-samples", type=int, help="Maximum training samples (for testing)")
+    parser.add_argument("--no-stream", action="store_true", help="Disable streaming during training")
+    parser.add_argument("--dry-run", action="store_true", help="Dry run (validate config only)")
 
     # Evaluation
-    parser.add_argument(
-        "--eval-samples", type=int, default=100, help="Number of samples for evaluation"
-    )
+    parser.add_argument("--eval-samples", type=int, default=100, help="Number of samples for evaluation")
     parser.add_argument(
         "--eval-metrics",
         nargs="+",
@@ -371,23 +355,13 @@ Examples:
         default="data_out/rag_index",
         help="Path for RAG index",
     )
-    parser.add_argument(
-        "--no-rebuild-rag-index", action="store_true", help="Don't rebuild RAG index"
-    )
+    parser.add_argument("--no-rebuild-rag-index", action="store_true", help="Don't rebuild RAG index")
 
     # Pipeline Control
-    parser.add_argument(
-        "--skip-optimization", action="store_true", help="Skip GPU optimization step"
-    )
-    parser.add_argument(
-        "--skip-pruning", action="store_true", help="Skip data pruning step"
-    )
-    parser.add_argument(
-        "--skip-training", action="store_true", help="Skip training step"
-    )
-    parser.add_argument(
-        "--skip-evaluation", action="store_true", help="Skip evaluation step"
-    )
+    parser.add_argument("--skip-optimization", action="store_true", help="Skip GPU optimization step")
+    parser.add_argument("--skip-pruning", action="store_true", help="Skip data pruning step")
+    parser.add_argument("--skip-training", action="store_true", help="Skip training step")
+    parser.add_argument("--skip-evaluation", action="store_true", help="Skip evaluation step")
     parser.add_argument("--skip-rag", action="store_true", help="Skip RAG setup step")
     parser.add_argument(
         "--continue-on-error",

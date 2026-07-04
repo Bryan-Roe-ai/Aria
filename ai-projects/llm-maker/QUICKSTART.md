@@ -3,6 +3,7 @@
 ## What is LLM Maker?
 
 LLM Maker is an autonomous tool creation system that allows Large Language Models to:
+
 - Generate Python functions from natural language descriptions
 - Validate generated code for safety
 - Execute tools in a sandboxed environment
@@ -67,6 +68,7 @@ Start the MCP server:
 ```
 
 Then connect with an MCP client to use these tools:
+
 - `create_tool` - Generate tools
 - `execute_tool` - Run tools
 - `list_registered_tools` - Browse tools
@@ -120,17 +122,19 @@ tool = maker.create_tool(
 LLM Maker enforces strict security:
 
 ### ✅ Allowed
+
 - Safe built-in functions (len, max, min, sum, etc.)
 - Safe imports (math, json, re, datetime, collections)
 - Pure computation
 - Type hints and docstrings
 
 ### ❌ Blocked
+
 - Dangerous imports (os, sys, subprocess)
 - File operations (open, read, write)
 - Network access (socket, urllib, requests)
 - Code execution (eval, exec, compile)
-- System access (__import__, breakpoint)
+- System access (**import**, breakpoint)
 
 ## Configuration
 
@@ -138,20 +142,20 @@ Edit `llm_maker_config.yaml`:
 
 ```yaml
 tool_maker:
-  provider: azure  # or openai, local
-  temperature: 0.7
-  max_tokens: 2000
+    provider: azure # or openai, local
+    temperature: 0.7
+    max_tokens: 2000
 
 validation:
-  strict_mode: true
-  allowed_imports:
-    - math
-    - json
-    - re
+    strict_mode: true
+    allowed_imports:
+        - math
+        - json
+        - re
 
 execution:
-  timeout_seconds: 5
-  max_memory_mb: 512
+    timeout_seconds: 5
+    max_memory_mb: 512
 ```
 
 ## Testing
@@ -192,6 +196,7 @@ Or continue with basic sandboxing (less secure but functional).
 ### Tool execution fails
 
 Check the error message:
+
 - **Syntax error**: Code generation failed, try again
 - **Validation error**: Code violates security rules
 - **Runtime error**: Bug in generated code

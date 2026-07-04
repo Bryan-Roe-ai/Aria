@@ -3,35 +3,23 @@
 namespace Keyboard {
 
 //%
-void promptForText(int maxLength, bool numberOnly) {
-}
+void promptForText(int maxLength, bool numberOnly) {}
 
 //%
-void cancelTextPrompt() {
-}
+void cancelTextPrompt() {}
 
 //%
-char* getTextPromptString() {
-    return NULL;
-}
+char *getTextPromptString() { return NULL; }
 
 //%
-char* getLocalizedInstructions() {
-    return NULL;
-}
+char *getLocalizedInstructions() { return NULL; }
 
 //%
-int getTextPromptSelectionStart() {
-    return 0;
-}
+int getTextPromptSelectionStart() { return 0; }
 
 //%
-int getTextPromptSelectionEnd() {
-    return 0;
-}
+int getTextPromptSelectionEnd() { return 0; }
 
 //%
-bool isSystemKeyboardSupported() {
-    return false;
-}
-}
+bool isSystemKeyboardSupported() { return false; }
+} // namespace Keyboard

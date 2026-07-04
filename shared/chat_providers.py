@@ -16,6 +16,10 @@ import importlib.util
 import sys
 from pathlib import Path
 
+from shared.local_settings import apply_local_settings
+
+apply_local_settings()
+
 # Load the canonical chat_providers module directly from ai-projects/chat-cli/src
 _canonical_path = Path(__file__).resolve().parent.parent / "ai-projects" / "chat-cli" / "src" / "chat_providers.py"
 _spec = importlib.util.spec_from_file_location("_canonical_chat_providers", _canonical_path)

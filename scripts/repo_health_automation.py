@@ -5,10 +5,12 @@ This script is intended to reduce manual repetition when stabilizing the Aria
 workspace. It can run a one-shot health cycle or watch mode loops.
 
 Health cycle steps:
-1) Optional Ruff auto-fix on changed Python files
-2) pre_commit_check.py
-3) integration_contract_gate.sh (strict optional)
-4) Optional full pytest smoke (tests/ -q --maxfail=1)
+1) Repair data_out status.json merge conflicts (optional)
+2) Optional Ruff auto-fix on changed Python files
+3) pre_commit_check.py
+4) integration_contract_gate.sh (strict optional)
+5) run_repo_agents.py (optional; runs after gate so status files are fresh)
+6) Optional full pytest smoke (tests/ -q --maxfail=1)
 
 Outputs:
 - Console summary per cycle
@@ -17,7 +19,8 @@ Outputs:
 Examples:
   python scripts/repo_health_automation.py --once
   python scripts/repo_health_automation.py --once --strict-endpoints --full-pytest
-  python scripts/repo_health_automation.py --watch --interval 300 --auto-fix-ruff
+    python scripts/repo_health_automation.py --watch --interval 300 \
+        --auto-fix-ruff
 """
 
 from __future__ import annotations
@@ -31,7 +34,6 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_OUT = REPO_ROOT / "data_out" / "repo_health_automation"
@@ -41,7 +43,7 @@ STATUS_PATH = DATA_OUT / "status.json"
 @dataclass
 class StepResult:
     name: str
-    command: List[str]
+    command: list[str]
     returncode: int
     duration_sec: float
     succeeded: bool
@@ -56,7 +58,7 @@ class CycleResult:
     finished_at: str
     duration_sec: float
     succeeded: bool
-    steps: List[StepResult]
+    steps: list[StepResult]
 
 
 def _now_iso() -> str:
@@ -76,6 +78,7 @@ def _run_command(name: str, command: Sequence[str]) -> StepResult:
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
+        check=False,
     )
     duration = round(time.perf_counter() - started, 2)
     return StepResult(
@@ -89,7 +92,7 @@ def _run_command(name: str, command: Sequence[str]) -> StepResult:
     )
 
 
-def _changed_python_files() -> List[str]:
+def _changed_python_files() -> list[str]:
     """Return changed tracked Python files (staged + unstaged)."""
     commands = [
         ["git", "diff", "--name-only", "--", "*.py"],
@@ -103,6 +106,7 @@ def _changed_python_files() -> List[str]:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            check=False,
         )
         if proc.returncode != 0:
             continue
@@ -114,27 +118,51 @@ def _changed_python_files() -> List[str]:
     return sorted(files)
 
 
-def _build_steps(args: argparse.Namespace) -> List[tuple[str, List[str]]]:
-    steps: List[tuple[str, List[str]]] = []
+def _build_steps(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
+    steps: list[tuple[str, list[str]]] = []
+    gate_cmd = ["bash", "./scripts/integration_contract_gate.sh"]
 
-    if args.auto_fix_ruff:
+    if args.repair_status:
+        repair_cmd = [sys.executable, "scripts/repair_data_out_status.py"]
+        if args.refresh_stale_status:
+            repair_cmd.append("--refresh-stale")
+        steps.append(("repair_data_out_status", repair_cmd))
         changed_py = _changed_python_files()
         if changed_py:
             steps.append(
                 (
                     "ruff_fix_changed_python",
-                    [sys.executable, "-m", "ruff", "check", "--fix", *changed_py],
+                    [
+                        sys.executable,
+                        "-m",
+                        "ruff",
+                        "check",
+                        "--fix",
+                        *changed_py,
+                    ],
                 )
             )
 
     steps.append(("pre_commit_check", [sys.executable, "scripts/pre_commit_check.py"]))
 
-    gate_cmd = ["bash", "scripts/integration_contract_gate.sh"]
+    if args.run_agents:
+        steps.append(
+            (
+                "run_repo_agents",
+                [sys.executable, "scripts/run_repo_agents.py"],
+            )
+        )
     if args.strict_endpoints:
         gate_cmd.append("--strict-endpoints")
     steps.append(("integration_contract_gate", gate_cmd))
 
-    if args.full_pytest:
+    if args.run_agents:
+        steps.append(
+            (
+                "run_repo_agents",
+                [sys.executable, "scripts/run_repo_agents.py"],
+            )
+        )
         steps.append(
             (
                 "pytest_full_smoke",
@@ -153,8 +181,13 @@ def _build_steps(args: argparse.Namespace) -> List[tuple[str, List[str]]]:
     return steps
 
 
-def _write_status(history: List[CycleResult]) -> None:
-    DATA_OUT.mkdir(parents=True, exist_ok=True)
+def _write_status(history: list[CycleResult]) -> None:
+    try:
+        DATA_OUT.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:  # pragma: no cover - defensive filesystem guard
+        print(f"[repo_health_automation] warning: cannot create status dir {DATA_OUT}: {exc}")
+        return
+
     payload = {
         "updated_at": _now_iso(),
         "total_cycles": len(history),
@@ -163,7 +196,10 @@ def _write_status(history: List[CycleResult]) -> None:
         "last_cycle": asdict(history[-1]) if history else None,
         "recent_cycles": [asdict(c) for c in history[-20:]],
     }
-    STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    try:
+        STATUS_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    except OSError as exc:  # pragma: no cover - defensive filesystem guard
+        print(f"[repo_health_automation] warning: cannot write status file {STATUS_PATH}: {exc}")
 
 
 def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
@@ -174,7 +210,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
     print(f"[repo_health_automation] cycle={cycle} started_at={started_at}")
     print("=" * 78)
 
-    steps_out: List[StepResult] = []
+    steps_out: list[StepResult] = []
 
     for name, cmd in _build_steps(args):
         print(f"\n--> {name}: {' '.join(cmd)}")
@@ -200,7 +236,7 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
     )
 
     print("\n" + "-" * 78)
-    print(f"[repo_health_automation] cycle={cycle} " f"succeeded={succeeded} duration={duration_sec:.2f}s")
+    print(f"[repo_health_automation] cycle={cycle} succeeded={succeeded} duration={duration_sec:.2f}s")
     print("-" * 78)
 
     if not succeeded:
@@ -218,10 +254,31 @@ def run_cycle(cycle: int, args: argparse.Namespace) -> CycleResult:
 
 
 def parse_args() -> argparse.Namespace:
-    ap = argparse.ArgumentParser(description="Automate Aria repo health cycles")
+    ap = argparse.ArgumentParser(
+        description="Automate Aria repo health cycles",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python scripts/repo_health_automation.py --once\n"
+            "  python scripts/repo_health_automation.py --once --run-agents\n"
+            "  python scripts/repo_health_automation.py --once "
+            "--repair-status --refresh-stale-status\n"
+            "  python scripts/repo_health_automation.py --watch --interval "
+            "300\n"
+            "    --continue-on-fail\n"
+        ),
+    )
     mode = ap.add_mutually_exclusive_group()
-    mode.add_argument("--once", action="store_true", help="Run a single cycle (default)")
-    mode.add_argument("--watch", action="store_true", help="Run cycles continuously")
+    mode.add_argument(
+        "--once",
+        action="store_true",
+        help="Run a single cycle (default)",
+    )
+    mode.add_argument(
+        "--watch",
+        action="store_true",
+        help="Run cycles continuously",
+    )
 
     ap.add_argument(
         "--interval",
@@ -240,9 +297,24 @@ def parse_args() -> argparse.Namespace:
         help="Include full pytest smoke step after contract gate",
     )
     ap.add_argument(
+        "--repair-status",
+        action="store_true",
+        help=("Repair merge conflicts in data_out status.json files before checks"),
+    )
+    ap.add_argument(
+        "--refresh-stale-status",
+        action="store_true",
+        help="With --repair-status, refresh timestamps older than 24 hours",
+    )
+    ap.add_argument(
         "--auto-fix-ruff",
         action="store_true",
         help="Run ruff --fix for changed Python files before checks",
+    )
+    ap.add_argument(
+        "--run-agents",
+        action="store_true",
+        help=("Run repository automation agents after the integration contract gate"),
     )
     ap.add_argument(
         "--continue-on-fail",
@@ -255,7 +327,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    history: List[CycleResult] = []
+    history: list[CycleResult] = []
 
     watch = args.watch
     if not args.watch and not args.once:

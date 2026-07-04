@@ -2,15 +2,15 @@
 name: chat-provider
 description: "Multi-provider chat management agent. Handles provider detection, streaming, memory injection, token management, and self-learning pipelines.\n\nTrigger phrases include:\n- 'chat provider'\n- 'streaming chat'\n- 'switch provider'\n- 'add memory to chat'\n- 'token budget'\n- 'context window'\n- 'provider fallback'\n- 'self-learning'\n\nExamples:\n- User says 'why is my chat falling back to local?' → invoke to diagnose provider detection chain\n- User asks 'add semantic memory to the chat endpoint' → invoke for embedding integration\n- User says 'the context window is overflowing' → invoke for token pruning and budget management\n\nThis agent understands the full chat pipeline: provider detection → memory injection → token pruning → streaming → self-learning JSONL collection."
 tools:
-  - edit
-  - azure-mcp/search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - vscode/memory
-  - read/problems
-  - task_complete
+    - edit
+    - azure-mcp/search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - vscode/memory
+    - read/problems
+    - task_complete
 ---
 
 # Chat Provider Agent
@@ -65,14 +65,16 @@ Log to self-learning JSONL → future training data
 ## Token Management
 
 ### Context Window Defaults
-| Model | Context |
-| ------- | --------- |
-| gpt-4o | 128,000 |
-| gpt-3.5-turbo | 16,384 |
-| Azure default | 16,384 |
-| Phi models | 4,096 |
+
+| Model         | Context |
+| ------------- | ------- |
+| gpt-4o        | 128,000 |
+| gpt-3.5-turbo | 16,384  |
+| Azure default | 16,384  |
+| Phi models    | 4,096   |
 
 ### Pruning Algorithm (O(n))
+
 1. Pre-compute per-message token counts
 2. Maintain running total against budget
 3. Remove oldest messages first when over budget
@@ -80,6 +82,7 @@ Log to self-learning JSONL → future training data
 5. Returns `PruneStats`: original_tokens, pruned_tokens, removed_count
 
 ### Token Counting Priority
+
 1. `tiktoken` (OpenAI/Azure models — accurate)
 2. `AutoTokenizer` from transformers (Hugging Face models)
 3. Heuristic: 1 token ≈ 4 characters (fallback)
@@ -87,17 +90,20 @@ Log to self-learning JSONL → future training data
 ## Memory / Embeddings
 
 ### Embedding Generation Priority
+
 1. Azure OpenAI embeddings (3 endpoint patterns checked)
 2. OpenAI embeddings
 3. Local hash-based (deterministic, 256-dim, L2-normalized)
 
 ### Storage
+
 - Table: `[dbo].[ChatMessageEmbeddings]`
 - Format: Float32 little-endian binary
 - Retrieval: Cosine similarity via `heapq` (O(n log k))
 - Connection pool: Thread-per-connection + shared pool (MAX_POOL_SIZE=5)
 
 ## Self-Learning Loop
+
 ```
 Chat conversation → Log to data_out/self_learning/*.jsonl
     ↓
@@ -112,14 +118,14 @@ Better responses → more training data → cycle continues
 
 ## Key Files
 
-| File | Purpose |
-| ------ | --------- |
-| `shared/chat_providers.py` | Provider re-exports + `detect_provider()` |
-| `ai-projects/chat-cli/src/chat_providers.py` | Full provider implementations |
-| `shared/chat_memory.py` | Embedding generation, storage, similarity search |
-| `ai-projects/chat-cli/src/token_utils.py` | Token counting + context pruning |
-| `function_app.py` | `/api/chat`, `/api/chat/stream` endpoints |
-| `shared/db_logging.py` | `log_chat_message_safe()` |
+| File                                         | Purpose                                          |
+| -------------------------------------------- | ------------------------------------------------ |
+| `shared/chat_providers.py`                   | Provider re-exports + `detect_provider()`        |
+| `ai-projects/chat-cli/src/chat_providers.py` | Full provider implementations                    |
+| `shared/chat_memory.py`                      | Embedding generation, storage, similarity search |
+| `ai-projects/chat-cli/src/token_utils.py`    | Token counting + context pruning                 |
+| `function_app.py`                            | `/api/chat`, `/api/chat/stream` endpoints        |
+| `shared/db_logging.py`                       | `log_chat_message_safe()`                        |
 
 ## Diagnosing Provider Issues
 

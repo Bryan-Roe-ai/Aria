@@ -37,17 +37,17 @@ Edit `config/autonomous_training.yaml` to customize behavior:
 
 ```yaml
 autonomous_mode:
-  continuous: true          # Run continuously
-  cycle_interval_minutes: 30  # Time between cycles
+    continuous: true # Run continuously
+    cycle_interval_minutes: 30 # Time between cycles
 
 training:
-  epochs_progression:       # Progressive training
-    - 25
-    - 50
-    - 100
-    - 200
-  workers: 20              # Parallel workers
-  adaptive_epochs: true    # Auto-adjust epochs
+    epochs_progression: # Progressive training
+        - 25
+        - 50
+        - 100
+        - 200
+    workers: 20 # Parallel workers
+    adaptive_epochs: true # Auto-adjust epochs
 ```
 
 ## How It Works
@@ -57,36 +57,36 @@ training:
 Each cycle consists of:
 
 1. **Discovery Phase** (2-5 min)
-   - Scans local dataset directories
-   - Catalogs available datasets
-   - Checks dataset counts against thresholds
+    - Scans local dataset directories
+    - Catalogs available datasets
+    - Checks dataset counts against thresholds
 
 2. **Collection Phase** (10-30 min, if needed)
-   - Downloads new datasets if below minimum
-   - Validates and preprocesses data
-   - Updates dataset inventory
+    - Downloads new datasets if below minimum
+    - Validates and preprocesses data
+    - Updates dataset inventory
 
 3. **Training Phase** (5-10 min per cycle)
-   - Selects optimal epoch count based on history
-   - Trains quantum models on all datasets
-   - Uses 20 parallel workers for speed
-   - Checkpoints every 10 datasets
+    - Selects optimal epoch count based on history
+    - Trains quantum models on all datasets
+    - Uses 20 parallel workers for speed
+    - Checkpoints every 10 datasets
 
 4. **Analysis Phase** (1-2 min)
-   - Evaluates model performance
-   - Tracks accuracy trends
-   - Identifies best performers
-   - Alerts on degradation
+    - Evaluates model performance
+    - Tracks accuracy trends
+    - Identifies best performers
+    - Alerts on degradation
 
 5. **Optimization Phase** (5-10 min)
-   - Tunes hyperparameters
-   - Explores architecture variations
-   - Prunes underperforming models
+    - Tunes hyperparameters
+    - Explores architecture variations
+    - Prunes underperforming models
 
 6. **Deployment Phase** (2-5 min)
-   - Deploys models meeting accuracy threshold
-   - Updates production endpoints
-   - Creates model artifacts
+    - Deploys models meeting accuracy threshold
+    - Updates production endpoints
+    - Creates model artifacts
 
 ### Progressive Training Strategy
 
@@ -152,9 +152,9 @@ Run scheduled training sessions:
 ```yaml
 # config/autonomous_training.yaml
 autonomous_mode:
-  continuous: true
-  cycle_interval_minutes: 1440  # Once per day
-  max_cycles: 7  # One week
+    continuous: true
+    cycle_interval_minutes: 1440 # Once per day
+    max_cycles: 7 # One week
 ```
 
 ### 3. Dataset-Driven Training
@@ -163,9 +163,9 @@ Automatically train when new data arrives:
 
 ```yaml
 data_collection:
-  auto_discover: true
-  min_datasets: 1000  # Will download if below
-  quality_threshold: 70  # Higher quality only
+    auto_discover: true
+    min_datasets: 1000 # Will download if below
+    quality_threshold: 70 # Higher quality only
 ```
 
 ### 4. Production Deployment Pipeline
@@ -174,9 +174,9 @@ Automatically deploy best models:
 
 ```yaml
 deployment:
-  auto_deploy_best: true
-  min_accuracy_for_deployment: 0.92
-  azure_quantum_enabled: true
+    auto_deploy_best: true
+    min_accuracy_for_deployment: 0.92
+    azure_quantum_enabled: true
 ```
 
 ## Advanced Features
@@ -330,14 +330,14 @@ python -c "import json; data=json.load(open('data_out/autonomous_training_status
 
 Typical performance on 552 datasets:
 
-| Metric | Value |
-| -------- | ------- |
-| Cycle Duration | 5-10 minutes |
-| Datasets/Second | 1-2 datasets |
-| Memory Usage | 2-4 GB |
-| CPU Usage | 80-100% (20 workers) |
-| Disk I/O | Medium |
-| Accuracy Improvement | 1-3% per cycle |
+| Metric               | Value                |
+| -------------------- | -------------------- |
+| Cycle Duration       | 5-10 minutes         |
+| Datasets/Second      | 1-2 datasets         |
+| Memory Usage         | 2-4 GB               |
+| CPU Usage            | 80-100% (20 workers) |
+| Disk I/O             | Medium               |
+| Accuracy Improvement | 1-3% per cycle       |
 
 ## Future Enhancements
 

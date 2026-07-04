@@ -47,31 +47,31 @@ To achieve $2,000+ MRR:
 #### Frontend
 
 - **Pricing Page** (`pricing.html`) - Beautiful, responsive pricing page with:
-  - 3-tier comparison
-  - Revenue projection model
-  - Detailed feature comparison table
-  - FAQ section
-  - Call-to-action buttons
+    - 3-tier comparison
+    - Revenue projection model
+    - Detailed feature comparison table
+    - FAQ section
+    - Call-to-action buttons
 
 - **Admin Dashboard** (`admin_dashboard.html`) - Revenue management dashboard with:
-  - Real-time MRR/ARR metrics
-  - Subscriber list and management
-  - Revenue charts by tier
-  - Export functionality
-  - Quick actions
+    - Real-time MRR/ARR metrics
+    - Subscriber list and management
+    - Revenue charts by tier
+    - Export functionality
+    - Quick actions
 
 ### 4. Premium Features Gated
 
-| Feature | Free | Pro | Enterprise |
-| --------- | ------ | ----- | ------------ |
-| Chat Messages | 100/mo | 10,000/mo | Unlimited |
-| Quantum Computing | ❌ | 50 jobs/mo | Unlimited |
-| Model Training | ❌ | 20 hrs/mo | Unlimited |
-| Website Maker | ❌ | 10 sites/mo | Unlimited |
-| API Access | ❌ | 10K req/mo | Unlimited |
-| Commercial License | ❌ | ✅ | ✅ |
-| Custom Models | ❌ | ❌ | ✅ |
-| Priority Support | ❌ | ❌ | ✅ 24/7 |
+| Feature            | Free   | Pro         | Enterprise |
+| ------------------ | ------ | ----------- | ---------- |
+| Chat Messages      | 100/mo | 10,000/mo   | Unlimited  |
+| Quantum Computing  | ❌     | 50 jobs/mo  | Unlimited  |
+| Model Training     | ❌     | 20 hrs/mo   | Unlimited  |
+| Website Maker      | ❌     | 10 sites/mo | Unlimited  |
+| API Access         | ❌     | 10K req/mo  | Unlimited  |
+| Commercial License | ❌     | ✅          | ✅         |
+| Custom Models      | ❌     | ❌          | ✅         |
+| Priority Support   | ❌     | ❌          | ✅ 24/7    |
 
 ## Screenshots
 
@@ -191,27 +191,27 @@ else:
 ## Next Steps for Deployment
 
 1. **Configure Stripe:**
-   - Set `STRIPE_SECRET_KEY` environment variable
-   - Set `STRIPE_PUBLISHABLE_KEY` environment variable
-   - Configure webhook endpoints
+    - Set `STRIPE_SECRET_KEY` environment variable
+    - Set `STRIPE_PUBLISHABLE_KEY` environment variable
+    - Configure webhook endpoints
 
 2. **Deploy to Production:**
 
-   ```bash
-   func azure functionapp publish <function-app-name>
-   ```
+    ```bash
+    func azure functionapp publish <function-app-name>
+    ```
 
 3. **Marketing Setup:**
-   - Add pricing link to main navigation
-   - Create email campaigns
-   - Set up conversion tracking
-   - Launch social media promotion
+    - Add pricing link to main navigation
+    - Create email campaigns
+    - Set up conversion tracking
+    - Launch social media promotion
 
 4. **Monitor & Optimize:**
-   - Track conversion rates
-   - Monitor churn
-   - Optimize pricing tiers
-   - Gather customer feedback
+    - Track conversion rates
+    - Monitor churn
+    - Optimize pricing tiers
+    - Gather customer feedback
 
 ## Conclusion
 

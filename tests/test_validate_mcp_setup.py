@@ -26,8 +26,29 @@ def test_strip_jsonc_comments_preserves_urls_and_strings():
     assert "value // still string" in cleaned
 
 
-def test_load_mcp_config_parses_workspace_config():
-    config = load_mcp_config(Path("/workspaces/Aria/.vscode/mcp.json"))
+def test_load_mcp_config_parses_workspace_config(tmp_path: Path):
+    config_path = tmp_path / "mcp.json"
+    config_path.write_text(
+        """
+        {
+          "servers": {
+            "quantum-ai": {
+              "type": "stdio",
+              "command": "${workspaceFolder}/.venv/bin/python",
+              "args": ["${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"]
+            },
+            "llm-maker": {
+              "type": "stdio",
+              "command": "${workspaceFolder}/.venv/bin/python",
+              "args": ["${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"]
+            }
+          }
+        }
+        """,
+        encoding="utf-8",
+    )
+
+    config = load_mcp_config(config_path)
 
     assert "servers" in config
     assert "quantum-ai" in config["servers"]
@@ -38,9 +59,7 @@ def test_resolve_workspace_value_substitutes_workspace_folder():
     workspace = Path("/tmp/example-workspace")
 
     assert (
-        resolve_workspace_value(
-            "${workspaceFolder}/scripts/tool.py", workspace
-        )
+        resolve_workspace_value("${workspaceFolder}/scripts/tool.py", workspace)
         == "/tmp/example-workspace/scripts/tool.py"
     )
 
@@ -52,20 +71,14 @@ def test_build_server_params_resolves_command_args_env_and_cwd():
         {
             "command": "${workspaceFolder}/.venv/bin/python",
             "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"],
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}"
-            },
+            "env": {"PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}"},
             "cwd": "${workspaceFolder}/scripts",
         },
     )
 
     assert params.command == "/tmp/example-workspace/.venv/bin/python"
-    assert params.args == [
-        "/tmp/example-workspace/scripts/task_complete_mcp_server.py"
-    ]
-    assert params.env == {
-        "PYTHONPATH": "/tmp/example-workspace/scripts:/tmp/example-workspace"
-    }
+    assert params.args == ["/tmp/example-workspace/scripts/task_complete_mcp_server.py"]
+    assert params.env == {"PYTHONPATH": "/tmp/example-workspace/scripts:/tmp/example-workspace"}
     assert params.cwd == "/tmp/example-workspace/scripts"
 
 

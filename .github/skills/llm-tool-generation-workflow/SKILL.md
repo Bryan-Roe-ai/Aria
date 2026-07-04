@@ -7,6 +7,7 @@ argument-hint: "Describe what you need: a Python tool name + parameters, or a we
 # LLM Tool Generation Workflow
 
 ## What This Skill Produces
+
 - Safe Python function generated through the ToolMaker retry pipeline
 - Complete multi-file website via WebsiteMaker
 - Root cause for ToolValidator rejections (banned import, dangerous builtin, signature mismatch, regex scan hit)
@@ -15,6 +16,7 @@ argument-hint: "Describe what you need: a Python tool name + parameters, or a we
 ## When to Use
 
 Trigger phrases:
+
 - "generate a Python tool with LLM"
 - "ToolMaker failing validation"
 - "banned import rejected"
@@ -31,6 +33,7 @@ Trigger phrases:
 ## Procedure
 
 ### Step 1 — Understand the project structure
+
 ```
 ai-projects/llm-maker/
     src/
@@ -42,12 +45,14 @@ ai-projects/llm-maker/
 ### Step 2 — Know the banned lists (NEVER include these)
 
 **Banned imports (DANGEROUS_IMPORTS):**
+
 ```
 os, sys, subprocess, shutil, pathlib, socket, urllib, requests,
 http, pickle, threading, multiprocessing, ctypes, cffi
 ```
 
 **Banned builtins (DANGEROUS_BUILTINS):**
+
 ```
 eval, exec, compile, __import__, open, input, breakpoint, exit
 ```
@@ -55,6 +60,7 @@ eval, exec, compile, __import__, open, input, breakpoint, exit
 Any generated code containing these will be rejected by `ToolValidator.validate()`. The prompt for regeneration should explicitly say "do not import or call: [list]".
 
 ### Step 3 — Trace the ToolMaker validation pipeline
+
 ```python
 # ToolMaker.create_tool() retry loop (up to 3 attempts by default):
 for attempt in range(max_attempts):  # default: 3
@@ -69,6 +75,7 @@ for attempt in range(max_attempts):  # default: 3
 ```
 
 Validation steps in order:
+
 1. Parse code AST — reject if syntax error
 2. Walk AST imports — reject if any `DANGEROUS_IMPORTS` found
 3. Walk AST function calls — reject if any `DANGEROUS_BUILTINS` used
@@ -77,6 +84,7 @@ Validation steps in order:
 6. Verify function signature matches requested name + parameter list
 
 ### Step 4 — Debug a ToolValidator rejection
+
 ```python
 from ai_projects.llm_maker.src.tool_validator import ToolValidator
 
@@ -93,6 +101,7 @@ print(errors)  # ['Import of "os" is not allowed', ...]
 ```
 
 ### Step 5 — Generate a website
+
 ```python
 from ai_projects.llm_maker.src.website_maker import WebsiteMaker
 
@@ -114,13 +123,16 @@ result = maker.create_website(
 For updates, use `update_website()` — this preserves `metadata.json` and doesn't overwrite unchanged files.
 
 ### Step 6 — Handle exhausted retries
+
 If all 3 attempts fail:
+
 1. Inspect `errors` from the last attempt
 2. Rewrite the prompt spec to explicitly prohibit the failing pattern
 3. Consider breaking the function into smaller pieces (one purpose each)
 4. For signature mismatches: ensure parameter names in the spec use simple Python-safe identifiers (no reserved words)
 
 ### Step 7 — Validate generated output is pure
+
 ```python
 # Generated functions must be pure — no side effects:
 # ✅ Pure: input → computation → return value
@@ -132,6 +144,7 @@ assert is_valid, f"Generated code failed validation: {errors}"
 ```
 
 ## Quality Checks
+
 - [ ] Generated code passes `ToolValidator.validate()` — no banned imports or builtins
 - [ ] Function signature matches the spec (name + parameter names)
 - [ ] No file I/O, no network calls, no `eval`/`exec` in generated output

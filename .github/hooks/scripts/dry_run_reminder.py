@@ -25,7 +25,8 @@ import json
 import os
 import re
 import sys
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 # ── Tunable constants ────────────────────────────────────────────────────────
 
@@ -90,6 +91,7 @@ _REMINDER = (
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _walk_strings(obj: Any) -> Iterator[str]:
     if isinstance(obj, str):
         yield obj
@@ -118,6 +120,7 @@ def _extract_command(payload: dict[str, Any]) -> str:
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     if _SKIP:

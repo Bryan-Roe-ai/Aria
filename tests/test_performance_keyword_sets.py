@@ -72,6 +72,11 @@ class TestKeywordSetPerformance:
         if optimized_time > 0:
             print(f"Speedup: {old_time / optimized_time:.2f}x")
 
+        # Should be faster or similar (within 50% tolerance to account for system variance)
+        assert optimized_time <= old_time * 1.5, (
+            f"Optimized version significantly slower: {optimized_time:.4f}s vs {old_time:.4f}s"
+        )
+
 
 class TestConnectionPooling:
     """Test connection pooling in chat_memory."""
@@ -89,7 +94,10 @@ class TestConnectionPooling:
 
     def test_connection_pool_basic(self):
         """Test that connection pooling works correctly."""
-        pytest.importorskip("pyodbc")
+        try:
+            import pyodbc  # noqa: F401
+        except ImportError:
+            pytest.skip("pyodbc is not installed")
 
         from shared.chat_memory import _connection_pool, _get_conn, _return_conn
 

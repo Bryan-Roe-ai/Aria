@@ -261,11 +261,7 @@ class TestCheckMcpServers:
         monkeypatch.setattr(
             mod,
             "import_module",
-            lambda name: SimpleNamespace(
-                load_mcp_config=lambda path: {
-                    "servers": {"quantum-ai": {}, "llm-maker": {}}
-                }
-            ),
+            lambda name: SimpleNamespace(load_mcp_config=lambda path: {"servers": {"quantum-ai": {}, "llm-maker": {}}}),
         )
 
         venv_bin = tmp_path / ".venv/bin"
@@ -280,17 +276,13 @@ class TestCheckMcpServers:
             stdout = "quantum-ai: OK\nllm-maker: OK\ntask-complete: OK"
             stderr = ""
 
-        monkeypatch.setattr(mod.subprocess, "run",
-                            lambda *args, **kwargs: Result())
+        monkeypatch.setattr(mod.subprocess, "run", lambda *args, **kwargs: Result())
 
         result = mod.check_mcp_servers()
 
         assert result.status == "ok"
         assert any(sub.name == ".vscode/mcp.json" for sub in result.sub)
-        assert any(
-            sub.name == "MCP stdio validation" and sub.status == "ok"
-            for sub in result.sub
-        )
+        assert any(sub.name == "MCP stdio validation" and sub.status == "ok" for sub in result.sub)
 
     def test_reports_stdio_validation_failure(self, monkeypatch, tmp_path):
         mod = self.mod
@@ -311,9 +303,7 @@ class TestCheckMcpServers:
         monkeypatch.setattr(
             mod,
             "import_module",
-            lambda name: SimpleNamespace(
-                load_mcp_config=lambda path: {"servers": {"quantum-ai": {}}}
-            ),
+            lambda name: SimpleNamespace(load_mcp_config=lambda path: {"servers": {"quantum-ai": {}}}),
         )
 
         venv_bin = tmp_path / ".venv/bin"
@@ -328,15 +318,12 @@ class TestCheckMcpServers:
             stdout = ""
             stderr = "quantum-ai: FAIL - handshake error"
 
-        monkeypatch.setattr(mod.subprocess, "run",
-                            lambda *args, **kwargs: Result())
+        monkeypatch.setattr(mod.subprocess, "run", lambda *args, **kwargs: Result())
 
         result = mod.check_mcp_servers()
 
         assert result.status == "fail"
         assert any(
-            sub.name == "MCP stdio validation"
-            and sub.status == "fail"
-            and "handshake error" in sub.detail
+            sub.name == "MCP stdio validation" and sub.status == "fail" and "handshake error" in sub.detail
             for sub in result.sub
         )

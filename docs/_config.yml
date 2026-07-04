@@ -6,16 +6,16 @@ description: Hybrid quantum-AI/ML platform with 3D animated character, multi-pro
 # Build settings
 markdown: kramdown
 plugins:
-  - jekyll-seo-tag
-  - jekyll-sitemap
+    - jekyll-seo-tag
+    - jekyll-sitemap
 
 # Exclude from processing
 exclude:
-  - README.md
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor
+    - README.md
+    - Gemfile
+    - Gemfile.lock
+    - node_modules
+    - vendor
 
 # GitHub Pages settings
 baseurl: ""
@@ -23,13 +23,13 @@ url: "https://bryan-roe.github.io/Aria"
 
 # Collection settings
 collections:
-  apps:
-    output: true
-    permalink: /:collection/:name/
+    apps:
+        output: true
+        permalink: /:collection/:name/
 
 # Defaults
 defaults:
-  - scope:
-      path: ""
-    values:
-      layout: default
+    - scope:
+          path: ""
+      values:
+          layout: default

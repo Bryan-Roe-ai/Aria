@@ -2,10 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/workspaces/Aria/.azure/PRODUCTION-RUNBOOK.md
 # Compiled extensions
 *.so
-
+/workspaces/Aria/.azure/PRE-DEPLOYMENT-CHECKLIST.md
 # Distribution / packaging
 .Python
 build/
@@ -57,14 +57,13 @@ release-artifacts/
 .dmypy.json
 dmypy.json
 .pyre/
-
 # Translations
 *.mo
 *.pot
 
 # Framework / app artifacts
 *.log
-local_settings.py
+/local_settings.py
 db.sqlite3
 instance/
 .webassets-cache
@@ -107,15 +106,6 @@ celerybeat-schedule
 *.swo
 *~
 talk-to-ai/src/Untitled-*.json
-# Scratch/untitled notebook artifacts (created by editors, not source)
-Untitled-*.ipynb
-Untitled-*.json
-.github/Untitled-*
-# keep_working launcher runtime state (not source)
-keep_working_history.db
-keep_working_history.json
-keep_working_config.json
-keep_working_status.json
 
 # Azure Functions / Azurite
 bin/
@@ -125,7 +115,6 @@ local.settings.json
 __blobstorage__/
 __queuestorage__/
 __azurite_db*__.json
-.azurite/
 .python_packages/
 
 # Project-generated artifacts
@@ -135,6 +124,9 @@ checkpoints/
 outputs/
 config/autogen/
 .push-worktrees/
+df
+dotnet/
+tools/codegen/sk-process-framework/
 
 # Project-specific generated results
 quantum-ai/results/
@@ -174,4 +166,20 @@ $RECYCLE.BIN/
 
 # Additional ignores
 coverage.json
+.azure/PRE-DEPLOYMENT-CHECKLIST.md
+.azure/PRODUCTION-RUNBOOK.md
+processes.json
+.github/hooks/data/advisory_cache.json
 
+# Time-updating state files
+automation_status.json
+task_complete.json
+*_heartbeat.json
+*_state.json
+*_status.json
+
+# core dumps
+core.*
+
+# Empty/stale submodule directory
+LMStudio-MCP/

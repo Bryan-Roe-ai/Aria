@@ -16,8 +16,8 @@ This refactoring effort focused on identifying and eliminating code duplication 
 **Solution**:
 
 - Created helper methods in `BaseChatProvider`:
-  - `_handle_openai_streaming_response()` - Extracts content from streaming responses
-  - `_handle_openai_non_streaming_response()` - Extracts content from non-streaming responses
+    - `_handle_openai_streaming_response()` - Extracts content from streaming responses
+    - `_handle_openai_non_streaming_response()` - Extracts content from non-streaming responses
 - Refactored OpenAIProvider and LMStudioProvider to use these helpers
 - Kept AzureOpenAIProvider's custom quota handling logic intact
 
@@ -38,8 +38,8 @@ This refactoring effort focused on identifying and eliminating code duplication 
 **Solution**:
 
 - Created `shared/import_helpers.py` with:
-  - `safe_import()` - Safely imports modules/functions with fallback support
-  - `create_stub_function()` - Generates stub functions that return error dicts
+    - `safe_import()` - Safely imports modules/functions with fallback support
+    - `create_stub_function()` - Generates stub functions that return error dicts
 - Refactored function_app.py to use these utilities
 
 **Files Modified**:
@@ -68,11 +68,11 @@ This refactoring effort focused on identifying and eliminating code duplication 
 **Solution**:
 
 - Created `shared/http_utils.py` with utilities:
-  - `validate_messages()` - Common message format validation
-  - `create_cors_headers()` - Consistent CORS header generation
-  - `create_no_cache_headers()` - Cache control headers
-  - `validate_provider_choice()` - Provider validation logic
-  - `serve_static_file()` - DRY file serving with error handling
+    - `validate_messages()` - Common message format validation
+    - `create_cors_headers()` - Consistent CORS header generation
+    - `create_no_cache_headers()` - Cache control headers
+    - `validate_provider_choice()` - Provider validation logic
+    - `serve_static_file()` - DRY file serving with error handling
 - Refactored http_chat/function_app.py to use validation utilities
 - Refactored http_chat_web/function_app.py to use file serving utility
 
@@ -97,22 +97,22 @@ This refactoring effort focused on identifying and eliminating code duplication 
 Created comprehensive test suites to validate refactored code:
 
 1. **test_provider_response_handling.py** (5 tests)
-   - Tests streaming and non-streaming response handlers
-   - Validates resilience to malformed data
-   - All tests passing ✅
+    - Tests streaming and non-streaming response handlers
+    - Validates resilience to malformed data
+    - All tests passing ✅
 
 2. **test_import_helpers.py** (9 tests)
-   - Tests safe_import with various scenarios
-   - Tests stub function generation
-   - Tests real-world patterns from function_app.py
-   - All tests passing ✅
+    - Tests safe_import with various scenarios
+    - Tests stub function generation
+    - Tests real-world patterns from function_app.py
+    - All tests passing ✅
 
 3. **test_http_utils.py** (16 tests)
-   - Tests message validation
-   - Tests CORS and cache headers
-   - Tests provider validation
-   - Tests file serving (success, error, and not found cases)
-   - All tests passing ✅
+    - Tests message validation
+    - Tests CORS and cache headers
+    - Tests provider validation
+    - Tests file serving (success, error, and not found cases)
+    - All tests passing ✅
 
 **Total**: 30 new unit tests, all passing
 
@@ -155,18 +155,18 @@ Created comprehensive test suites to validate refactored code:
 ### Additional Refactoring Opportunities
 
 1. **sys.path Manipulation** (60+ instances)
-   - Create `shared/path_utils.py` with `ensure_repo_paths()` utility
-   - Pattern appears in 12+ script files with inconsistent implementations
-   - Estimated impact: ~120 lines reduction
+    - Create `shared/path_utils.py` with `ensure_repo_paths()` utility
+    - Pattern appears in 12+ script files with inconsistent implementations
+    - Estimated impact: ~120 lines reduction
 
 2. **Configuration Loading** (80+ instances)
-   - Create `shared/config.py` with typed configuration classes
-   - Replace direct `os.getenv()` calls with validated config access
-   - Estimated impact: Improved type safety and validation
+    - Create `shared/config.py` with typed configuration classes
+    - Replace direct `os.getenv()` calls with validated config access
+    - Estimated impact: Improved type safety and validation
 
 3. **Logging Patterns** (40+ files)
-   - Already consistent with `logging.getLogger(__name__)`
-   - Consider structured logging wrapper for better observability
+    - Already consistent with `logging.getLogger(__name__)`
+    - Consider structured logging wrapper for better observability
 
 ### Guidelines for New Code
 

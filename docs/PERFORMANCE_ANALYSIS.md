@@ -11,6 +11,7 @@
 This report identifies **15 performance improvement opportunities** across the Aria codebase, categorized by severity and impact. The analysis found issues ranging from critical O(n²) complexity problems to minor optimization opportunities. Implementing these recommendations could yield significant performance improvements, particularly in high-traffic code paths.
 
 **Key Metrics:**
+
 - Files analyzed: 150+ Python files
 - Issues identified: 15 distinct patterns
 - Critical issues: 3
@@ -29,6 +30,7 @@ This report identifies **15 performance improvement opportunities** across the A
 **Impact:** High - This function is called for every user command
 
 **Problem:**
+
 ```python
 # Current implementation - creates new list for EVERY check
 if any(k in cmd for k in ['jump', 'leap', 'hop']):
@@ -41,12 +43,14 @@ elif any(k in cmd for k in ['wave', 'greet', 'hello', 'hi']):
 ```
 
 **Why it's slow:**
+
 - Creates 20+ temporary lists on EVERY function call
 - Each `any()` call iterates through list and checks substring containment
 - O(n*m) complexity where n=list size, m=string length
 - Function is called multiple times per user interaction
 
 **Recommended fix:**
+
 ```python
 # Pre-compile action keywords at module level (computed once)
 _ACTION_KEYWORDS = {
@@ -90,6 +94,7 @@ def _extract_action_position(cmd: str, ...) -> Optional[str]:
 **Impact:** High - Affects all chat embedding storage
 
 **Problem:**
+
 ```python
 def store_embedding(message_id: Optional[str], embedding: Sequence[float], model: str) -> bool:
     if not message_id or not embedding:
@@ -111,12 +116,14 @@ def store_embedding(message_id: Optional[str], embedding: Sequence[float], model
 ```
 
 **Why it's slow:**
+
 - Opens and closes connection for EVERY embedding (expensive TCP handshake)
 - No connection pooling or reuse
 - Transaction overhead per call
 - When storing N embeddings: N * (connect + auth + insert + commit + close)
 
 **Recommended fix:**
+
 ```python
 def store_embeddings_batch(embeddings: List[Tuple[str, Sequence[float], str]]) -> int:
     """Store multiple embeddings in a single transaction (bulk insert).
@@ -171,6 +178,7 @@ def store_embedding(message_id: Optional[str], embedding: Sequence[float], model
 **Impact:** High - O(n²) complexity when comparing multiple models
 
 **Problem:**
+
 ```python
 def compare_models(self, model_ids: List[str]) -> Dict:
     """Compare specific models side-by-side."""
@@ -185,11 +193,13 @@ def compare_models(self, model_ids: List[str]) -> Dict:
 ```
 
 **Why it's slow:**
+
 - Linear search through all results for each model
 - With 100 models, 50 comparisons = 5,000 iterations
 - Memory contains already stored in `self.results` but accessed inefficiently
 
 **Recommended fix:**
+
 ```python
 class BatchEvaluator:
     def __init__(self):
@@ -239,6 +249,7 @@ class BatchEvaluator:
 **Impact:** Medium - Called during analytics generation
 
 **Problem:**
+
 ```python
 for epochs, accuracies in epoch_performance.items():
     avg = sum(accuracies) / len(accuracies)  # Recalculates sum every iteration
@@ -248,10 +259,12 @@ for epochs, accuracies in epoch_performance.items():
 ```
 
 **Why it's slow:**
+
 - `sum()` is O(n) operation repeated for each epoch configuration
 - For 4 epoch configs with 20 runs each: 80 additions instead of using built-in
 
 **Recommended fix:**
+
 ```python
 import statistics
 
@@ -263,6 +276,7 @@ for epochs, accuracies in epoch_performance.items():
 ```
 
 **Alternative (single-pass):**
+
 ```python
 # Even better: find max in one pass
 best_epochs, best_avg = max(
@@ -282,6 +296,7 @@ best_epochs, best_avg = max(
 **Impact:** Low - Only affects report generation
 
 **Problem:**
+
 ```python
 report = []
 report.append("\n" + "="*80)
@@ -290,6 +305,7 @@ report.append("="*80 + "\n")
 ```
 
 Later in the code (not shown but referenced in analysis):
+
 ```python
 # Building strings character by character
 line = ""
@@ -298,11 +314,13 @@ for i in range(width):
 ```
 
 **Why it's slow:**
+
 - Strings are immutable in Python
 - Each `+=` creates a new string object
 - For 80 characters: creates 80 intermediate strings
 
 **Recommended fix:**
+
 ```python
 # Use list and join (O(n))
 line = "█" * width  # Even simpler for repeated character
@@ -325,6 +343,7 @@ line = "".join(chars)
 **Impact:** Medium - Duplicates work already done
 
 **Problem:**
+
 ```python
 def aggregate_results(self) -> Dict:
     # Lines 230-236: First pass builds succeeded/failed lists
@@ -342,11 +361,13 @@ def aggregate_results(self) -> Dict:
 ```
 
 **Why it's slow:**
+
 - Iterates through all results twice
 - `failed` list was already built in first pass but gets overwritten
 - Wastes memory and CPU
 
 **Recommended fix:**
+
 ```python
 def aggregate_results(self) -> Dict:
     """Aggregate all evaluation results (optimized - single pass)."""
@@ -397,15 +418,16 @@ def aggregate_results(self) -> Dict:
 **Problem:**
 Functions with complexity > 10 are difficult to optimize and maintain:
 
-| Line | Function | Complexity | Issues |
-| ------ | ---------- | ----------- | -------- |
-| 762 | `tts` | 34 | Multiple nested conditionals, hard to follow control flow |
-| 1041 | `ai_status` | 28 | Many sequential checks, could be refactored |
-| 195 | `chat` | 27 | Complex logic mixing validation, provider detection, streaming |
-| 606 | `chat_stream` | 18 | Nested error handling and streaming logic |
-| 1852 | `quantum_circuit` | 18 | Complex parameter validation and circuit building |
+| Line | Function          | Complexity | Issues                                                         |
+| ---- | ----------------- | ---------- | -------------------------------------------------------------- |
+| 762  | `tts`             | 34         | Multiple nested conditionals, hard to follow control flow      |
+| 1041 | `ai_status`       | 28         | Many sequential checks, could be refactored                    |
+| 195  | `chat`            | 27         | Complex logic mixing validation, provider detection, streaming |
+| 606  | `chat_stream`     | 18         | Nested error handling and streaming logic                      |
+| 1852 | `quantum_circuit` | 18         | Complex parameter validation and circuit building              |
 
 **Why it's slow:**
+
 - Branch misprediction in CPU
 - Hard to optimize by compiler/interpreter
 - Difficult to cache results
@@ -502,6 +524,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
 **Impact:** Medium - Called for every similarity search
 
 **Problem:**
+
 ```python
 for r in rows:
     dim = r.EmbeddingDim
@@ -512,11 +535,13 @@ for r in rows:
 ```
 
 **Why it's slow:**
+
 - Deserializes and computes similarity one vector at a time
 - Cannot leverage SIMD instructions
 - No batch processing
 
 **Recommended fix:**
+
 ```python
 import numpy as np
 
@@ -572,15 +597,18 @@ def retrieve_similar(query_embedding: Sequence[float], top_k: int = 5) -> List[D
 **Impact:** Low - Only affects data collection metadata
 
 **Problem:**
+
 ```python
 "sources": list(set(item.get("source", "unknown") for item in all_data))
 ```
 
 **Why it's inefficient:**
+
 - Builds generator → set → list (3 data structures)
 - Set is fine for deduplication, but list conversion unnecessary if used once
 
 **Recommended fix:**
+
 ```python
 # If only used for counting/iteration
 sources = {item.get("source", "unknown") for item in all_data}
@@ -602,6 +630,7 @@ sources = {item.get("source", "unknown") for item in all_data}
 **Impact:** Low - Not in hot path
 
 **Problem:**
+
 ```python
 # aria_automation.py:368
 if not health["aria_server"] and self.mode in ["full", "server"]:
@@ -611,11 +640,13 @@ if result["status"] not in ["succeeded", "skipped"]:
 ```
 
 **Why it's inefficient:**
+
 - Creates new list for every check
 - Tuple is faster and immutable
 - Set is O(1) for membership
 
 **Recommended fix:**
+
 ```python
 # Use tuple for small, fixed sets (faster creation than list)
 if not health["aria_server"] and self.mode in ("full", "server"):
@@ -636,6 +667,7 @@ if result["status"] not in SUCCESSFUL_STATUSES:
 **Impact:** Medium - Called on every /api/ai/status request
 
 **Problem:**
+
 ```python
 # Every status request spawns subprocess to check venv
 proc = subprocess.run(
@@ -647,11 +679,13 @@ proc = subprocess.run(
 ```
 
 **Why it's slow:**
+
 - Subprocess creation is expensive (fork + exec)
 - Checks don't change frequently
 - 12-second timeout per request
 
 **Recommended fix:**
+
 ```python
 import time
 from functools import lru_cache
@@ -690,16 +724,19 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
 **Impact:** Low - Only affects plateau detection
 
 **Problem:**
+
 ```python
 avg = sum(accuracies) / len(accuracies)
 variance = sum((x - avg) ** 2 for x in accuracies) / len(accuracies)
 ```
 
 **Why it's inefficient:**
+
 - Iterates list twice (once for avg, once for variance)
 - Can be computed in single pass using Welford's algorithm
 
 **Recommended fix:**
+
 ```python
 import statistics
 
@@ -723,6 +760,7 @@ variance = statistics.pvariance(accuracies, mu=avg)
 **Impact:** Low - Monitoring only
 
 **Problem:**
+
 ```python
 'temperature': float(parts[2]) if parts[2] not in ['N/A', '[N/A]'] else 0,
 'utilization': float(parts[3]) if parts[3] not in ['N/A', '[N/A]'] else 0,
@@ -730,10 +768,12 @@ variance = statistics.pvariance(accuracies, mu=avg)
 ```
 
 **Why it's inefficient:**
+
 - Creates temporary list `['N/A', '[N/A]']` 7 times per GPU
 - String comparison repeated
 
 **Recommended fix:**
+
 ```python
 _NA_VALUES = frozenset(['N/A', '[N/A]'])
 
@@ -758,15 +798,18 @@ def _safe_float(value: str) -> float:
 **Impact:** Low - Development tool only
 
 **Problem:**
+
 ```python
 if any(pattern in file_path for pattern in ["__pycache__", ".pyc", "venv/", ".venv/", "__azurite_db"]):
 ```
 
 **Why it's inefficient:**
+
 - Creates list every check
 - Linear search for each file
 
 **Recommended fix:**
+
 ```python
 # Module-level constant
 _IGNORE_PATTERNS = ("__pycache__", ".pyc", "venv/", ".venv/", "__azurite_db")
@@ -786,16 +829,19 @@ if any(pattern in file_path for pattern in _IGNORE_PATTERNS):
 **Impact:** Low - Startup only
 
 **Problem:**
+
 ```python
 if dataset_name in ['wine_red', 'wine_white']:
     # ... repeated in multiple files
 ```
 
 **Why it's inefficient:**
+
 - Creates list every check
 - Duplicated logic across files
 
 **Recommended fix:**
+
 ```python
 # In shared module or at module level
 WINE_DATASETS = frozenset(['wine_red', 'wine_white'])
@@ -826,21 +872,25 @@ The analysis found several excellent performance patterns already in use:
 ## Implementation Priority
 
 ### Immediate (Week 1)
+
 1. Fix `aria_web/server.py` keyword lookups (Critical #1)
 2. Add `batch_evaluator.py` result indexing (Critical #3)
 3. Remove redundant iteration in `batch_evaluator.py` (High #6)
 
 ### Short-term (Weeks 2-3)
+
 4. Implement `chat_memory.py` batch embedding API (Critical #2)
 5. Refactor high-complexity functions in `function_app.py` (High #7)
 6. Add venv info caching in `ai_status` (Medium #11)
 
 ### Medium-term (Month 2)
+
 7. Vectorize cosine similarity in `chat_memory.py` (High #8)
 8. Fix training_analytics.py calculations (High #4, Medium #12)
 9. Address remaining medium-priority issues
 
 ### Ongoing
+
 10. Apply tuple/frozenset optimizations across codebase
 11. Add performance tests for critical paths
 12. Monitor with profiling tools
@@ -858,6 +908,7 @@ To validate improvements, add benchmarks for:
 5. **Report generation** - String building optimizations
 
 Example benchmark structure:
+
 ```python
 import time
 
@@ -894,6 +945,7 @@ Add performance monitoring for:
 4. **Cache hit rates** - Validate caching effectiveness
 
 Example instrumentation:
+
 ```python
 import functools
 import time
@@ -938,6 +990,7 @@ This analysis identified **15 performance improvement opportunities** with estim
 The codebase already demonstrates several strong performance patterns, particularly in the use of efficient data structures and algorithms. Building on these foundations with the recommended fixes will significantly improve overall system performance.
 
 **Next Steps:**
+
 1. Review and prioritize recommendations
 2. Implement critical fixes (1-3)
 3. Add performance benchmarks

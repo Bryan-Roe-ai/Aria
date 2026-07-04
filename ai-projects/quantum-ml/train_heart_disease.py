@@ -45,9 +45,7 @@ def load_heart_disease_data():
         y: numpy array of shape (n_samples,) with class labels
     """
     # Path to dataset
-    dataset_path = (
-        Path(__file__).parent.parent / "datasets" / "quantum" / "heart_disease.csv"
-    )
+    dataset_path = Path(__file__).parent.parent / "datasets" / "quantum" / "heart_disease.csv"
 
     print(f"📁 Loading heart disease dataset from: {dataset_path}")
 
@@ -96,9 +94,7 @@ def preprocess_data(X, y, n_qubits=4, test_size=0.2):
     print(f"   Original shape: {X.shape}")
 
     # Split data
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=test_size, random_state=42, stratify=y
-    )
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=test_size, random_state=42, stratify=y)
 
     # Standardize
     scaler = StandardScaler()
@@ -150,14 +146,12 @@ def plot_training_results(history, save_path="results/heart_disease_training.png
     ax1.grid(True, alpha=0.3)
 
     # Accuracy curve
-    ax2.plot(
-        history["val_acc"], label="Validation Accuracy", linewidth=2, color="green"
-    )
+    ax2.plot(history["val_acc"], label="Validation Accuracy", linewidth=2, color="green")
     ax2.axhline(
         y=max(history["val_acc"]),
         color="red",
         linestyle="--",
-        label=f'Best: {max(history["val_acc"]):.4f}',
+        label=f"Best: {max(history['val_acc']):.4f}",
     )
     ax2.set_xlabel("Epoch")
     ax2.set_ylabel("Accuracy")
@@ -214,12 +208,8 @@ def train_quantum_model(
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
     val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, drop_last=True
-    )
-    val_loader = DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, drop_last=True
-    )
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, drop_last=True)
 
     # Create trainer
     trainer = QuantumClassicalTrainer(model, learning_rate=learning_rate)
@@ -311,8 +301,8 @@ def main():
     print("\n📊 Final Results:")
     print(f"   Training Loss:        {final_train_loss:.4f}")
     print(f"   Validation Loss:      {final_val_loss:.4f}")
-    print(f"   Validation Accuracy:  {final_val_acc:.4f} ({final_val_acc*100:.2f}%)")
-    print(f"   Best Val Accuracy:    {best_val_acc:.4f} ({best_val_acc*100:.2f}%)")
+    print(f"   Validation Accuracy:  {final_val_acc:.4f} ({final_val_acc * 100:.2f}%)")
+    print(f"   Best Val Accuracy:    {best_val_acc:.4f} ({best_val_acc * 100:.2f}%)")
 
     # Determine performance level
     if best_val_acc >= 0.85:

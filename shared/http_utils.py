@@ -6,7 +6,7 @@ duplication across Azure Functions endpoints.
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ def _has_non_whitespace_text_content(content: Any) -> bool:
     return bool(str(content).strip())
 
 
-def validate_messages(messages: Any) -> Tuple[bool, Optional[str]]:
+def validate_messages(messages: Any) -> tuple[bool, str | None]:
     """Validate chat messages format.
 
     Args:
@@ -83,7 +83,7 @@ def validate_messages(messages: Any) -> Tuple[bool, Optional[str]]:
 
         if not _has_non_whitespace_text_content(msg.get("content")):
             return False, (
-                f"Message {idx} has empty or whitespace-only content. " "Text content must contain non-whitespace text."
+                f"Message {idx} has empty or whitespace-only content. Text content must contain non-whitespace text."
             )
 
         # Validate role is one of the expected values
@@ -102,7 +102,7 @@ def create_cors_headers(
     allow_origin: str = "*",
     allow_methods: str = "POST, GET, OPTIONS",
     allow_headers: str = "Content-Type",
-) -> Dict[str, str]:
+) -> dict[str, str]:
     """Create standard CORS headers for HTTP responses.
 
     Args:
@@ -120,7 +120,7 @@ def create_cors_headers(
     }
 
 
-def create_no_cache_headers() -> Dict[str, str]:
+def create_no_cache_headers() -> dict[str, str]:
     """Create headers that prevent caching.
 
     Useful for serving dynamic content that should always be fresh.
@@ -136,8 +136,8 @@ def create_no_cache_headers() -> Dict[str, str]:
 
 
 def validate_provider_choice(
-    provider_choice: Optional[str], model_override: Optional[str] = None
-) -> Tuple[bool, Optional[str], Optional[Dict[str, Any]]]:
+    provider_choice: str | None, model_override: str | None = None
+) -> tuple[bool, str | None, dict[str, Any] | None]:
     """Validate provider choice and model override.
 
     Args:
@@ -181,7 +181,7 @@ def validate_provider_choice(
 
 def serve_static_file(
     file_path: Path, mimetype: str, use_cache_headers: bool = False
-) -> Tuple[Optional[str], int, Dict[str, str]]:
+) -> tuple[str | None, int, dict[str, str]]:
     """Serve a static file with appropriate headers.
 
     Args:

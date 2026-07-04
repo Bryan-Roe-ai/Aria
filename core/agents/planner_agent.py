@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from typing import Any, Dict, List
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -25,7 +25,7 @@ class PlannerAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"plan", "goal", "decompose"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         goal = (payload.get("goal") or payload.get("input") or "").strip()
 
@@ -47,7 +47,7 @@ class PlannerAgent(BaseAgent):
 
         return {"agent": self.name, "task_id": task.id, "goal": goal, "plan": plan}
 
-    def _create_plan(self, goal: str, history: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _create_plan(self, goal: str, history: list[dict[str, Any]]) -> list[dict[str, Any]]:
         context_summary = self._summarize_history(history)
 
         messages = [
@@ -76,14 +76,16 @@ Return a JSON list of tasks in this format:
         except Exception:
             pass
 
-        return self._attach_ids([
-            {"type": "llm", "payload": {"prompt": goal}},
-            {"type": "tool", "payload": {"tool": "inspect_context", "args": {"goal": goal}}},
-        ])
+        return self._attach_ids(
+            [
+                {"type": "llm", "payload": {"prompt": goal}},
+                {"type": "tool", "payload": {"tool": "inspect_context", "args": {"goal": goal}}},
+            ]
+        )
 
-    def _attach_ids(self, steps: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _attach_ids(self, steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
         confidence_map = {"llm": 0.8, "tool": 0.9, "train": 0.7}
-        attached: List[Dict[str, Any]] = []
+        attached: list[dict[str, Any]] = []
         for raw_step in steps:
             if not isinstance(raw_step, dict):
                 continue
@@ -101,7 +103,7 @@ Return a JSON list of tasks in this format:
         attached.sort(key=lambda item: item.get("priority", 0), reverse=True)
         return attached
 
-    def _summarize_history(self, history: List[Dict[str, Any]]) -> str:
+    def _summarize_history(self, history: list[dict[str, Any]]) -> str:
         if not history:
             return "No prior context"
 

@@ -13,7 +13,7 @@ import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 
@@ -33,7 +33,7 @@ class ParallelTrainer:
         self,
         config_path: str,
         max_parallel: int = 3,
-        min_train_samples: Optional[int] = None,
+        min_train_samples: int | None = None,
         generate_samples: int = 3,
         perform_evaluation: bool = True,
         cleanup: bool = False,
@@ -63,7 +63,7 @@ class ParallelTrainer:
             self.config = yaml.safe_load(f) or {}
 
         self.jobs = self.config.get("jobs", [])
-        self.results: List[Dict[str, Any]] = []
+        self.results: list[dict[str, Any]] = []
 
     def _validate_cmd_arg(self, value: Any, arg_name: str) -> str:
         """Validate and sanitize command argument for subprocess_exec.
@@ -80,16 +80,16 @@ class ParallelTrainer:
         """
         str_value = str(value)
         # Check for null bytes which could truncate paths
-        if '\x00' in str_value:
+        if "\x00" in str_value:
             raise ValueError(f"Invalid null byte in {arg_name}")
         # Check for shell metacharacters that might indicate injection attempt
         # These aren't interpreted by subprocess_exec, but their presence is suspicious
-        dangerous_patterns = re.compile(r'[;&|`$]|\$\(|`.*`')
+        dangerous_patterns = re.compile(r"[;&|`$]|\$\(|`.*`")
         if dangerous_patterns.search(str_value):
             raise ValueError(f"Suspicious characters in {arg_name}: {str_value!r}")
         return str_value
 
-    async def run_job(self, job: Dict[str, Any], device_id: int) -> Dict[str, Any]:
+    async def run_job(self, job: dict[str, Any], device_id: int) -> dict[str, Any]:
         """
         Run a single training job.
 
@@ -205,15 +205,19 @@ class ParallelTrainer:
             env["CUDA_VISIBLE_DEVICES"] = str(device_id)
 
         if job.get("max_train_samples"):
-            cmd.extend([
-                "--max-train-samples",
-                self._validate_cmd_arg(job["max_train_samples"], "max_train_samples"),
-            ])
+            cmd.extend(
+                [
+                    "--max-train-samples",
+                    self._validate_cmd_arg(job["max_train_samples"], "max_train_samples"),
+                ]
+            )
         if job.get("max_eval_samples"):
-            cmd.extend([
-                "--max-eval-samples",
-                self._validate_cmd_arg(job["max_eval_samples"], "max_eval_samples"),
-            ])
+            cmd.extend(
+                [
+                    "--max-eval-samples",
+                    self._validate_cmd_arg(job["max_eval_samples"], "max_eval_samples"),
+                ]
+            )
         # Note: lora_rank should be set in config YAML, not via CLI
         if job.get("no_stream"):
             cmd.append("--no-stream")
@@ -239,7 +243,7 @@ class ParallelTrainer:
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
 
-            result: Dict[str, Any] = {
+            result: dict[str, Any] = {
                 "name": job_name,
                 "status": "succeeded" if returncode == 0 else "failed",
                 "return_code": returncode,
@@ -288,14 +292,14 @@ class ParallelTrainer:
 
         return result
 
-    def _perform_evaluation(self, job: Dict[str, Any], result: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _perform_evaluation(self, job: dict[str, Any], result: dict[str, Any]) -> dict[str, Any] | None:
         """Quick evaluation: parse metrics.jsonl & generate sample outputs.
 
         Returns evaluation dict or None if unavailable.
         """
         save_dir = self.root / job["save_dir"]
         metrics_file = save_dir / "metrics.jsonl"
-        eval_info: Dict[str, Any] = {}
+        eval_info: dict[str, Any] = {}
 
         # Parse metrics file for pre/post perplexity
         try:
@@ -337,12 +341,12 @@ class ParallelTrainer:
             "List two potential risks in rapid fine-tuning.",
             "Give one improvement suggestion for dataset quality.",
         ]
-        samples: List[Dict[str, Any]] = []
+        samples: list[dict[str, Any]] = []
         if self.generate_samples > 0:
             try:
                 from peft import PeftModel  # type: ignore
-                from transformers import AutoModelForCausalLM  # type: ignore
                 from transformers import (
+                    AutoModelForCausalLM,  # type: ignore
                     AutoTokenizer,
                 )
 
@@ -378,7 +382,7 @@ class ParallelTrainer:
                 eval_info["generation_error"] = f"generation_failed: {g_err}"
         if samples:
             # Diversity metrics (Distinct-1/2) & echo ratio
-            def _distinct_1_2(texts: List[str]) -> Dict[str, float]:
+            def _distinct_1_2(texts: list[str]) -> dict[str, float]:
                 unigrams_total = 0
                 unigrams_set = set()
                 bigrams_total = 0
@@ -415,7 +419,7 @@ class ParallelTrainer:
             }
         return eval_info or None
 
-    def _perform_cleanup(self, job: Dict[str, Any], result: Dict[str, Any]) -> None:
+    def _perform_cleanup(self, job: dict[str, Any], result: dict[str, Any]) -> None:
         """Remove intermediate checkpoints to slim output directory."""
         save_dir = self.root / job["save_dir"]
         if not save_dir.exists():
@@ -436,7 +440,7 @@ class ParallelTrainer:
         except Exception as c_err:
             result["cleanup"] = f"error: {c_err}"
 
-    def _compute_ranking(self, results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def _compute_ranking(self, results: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Compute ranking of jobs based on selected metric.
 
         Supported metrics:
@@ -446,7 +450,7 @@ class ParallelTrainer:
             - distinct_diversity: alias of diversity_avg
             - combined_improvement: weighted combo of perplexity_improvement (70%) + diversity_avg (30%)
         """
-        ranked: List[Dict[str, Any]] = []
+        ranked: list[dict[str, Any]] = []
         for r in results:
             ev = r.get("evaluation") or {}
             pre_ppl = ev.get("pre_eval_perplexity")

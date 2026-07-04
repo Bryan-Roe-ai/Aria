@@ -111,7 +111,7 @@ def run_validation() -> bool:
         if "cdn.jsdelivr.net/npm/chart.js" in content:
             print(" Chart.js loaded from CDN")
 
-    print(f'\n{"=" * 50}')
+    print(f"\n{'=' * 50}")
     if not issues_found:
         print(" Dashboard validation complete - No critical issues found!")
         print(f"\n Dashboard is ready for use at {html_file}")

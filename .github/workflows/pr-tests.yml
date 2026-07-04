@@ -103,7 +103,16 @@ jobs:
             echo "::notice::pre-commit not installed; skipping"
             exit 0
           fi
-          pre-commit run --all-files --show-diff-on-failure --color=always
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            mapfile -t changed_files < <(git diff --name-only --diff-filter=ACMRT HEAD^ HEAD --)
+          else
+            mapfile -t changed_files < <(git diff-tree --no-commit-id --name-only -r HEAD)
+          fi
+          if [ "${#changed_files[@]}" -eq 0 ]; then
+            echo "::notice::No changed files for pre-commit"
+            exit 0
+          fi
+          pre-commit run --files "${changed_files[@]}" --show-diff-on-failure --color=always
 
       - name: Run tests
         uses: ./.github/actions/run-pytest-suite

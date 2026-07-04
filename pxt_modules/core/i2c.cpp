@@ -1,7 +1,7 @@
-#include "pxt.h"
-#include "ErrorNo.h"
 #include "CodalDmesg.h"
+#include "ErrorNo.h"
 #include "configkeys.h"
+#include "pxt.h"
 
 #ifdef CODAL_I2C
 
@@ -9,31 +9,24 @@ namespace pins {
 
 class CodalI2CProxy {
 private:
-  DevicePin* sda;
-  DevicePin* scl;
+  DevicePin *sda;
+  DevicePin *scl;
   CODAL_I2C i2c;
+
 public:
-  CodalI2CProxy* next;
+  CodalI2CProxy *next;
+
 public:
-  CodalI2CProxy(DevicePin* _sda, DevicePin* _scl)
-    : sda(_sda)
-    , scl(_scl)
-    , i2c(*_sda, *_scl)
-    , next(NULL)
-  {
+  CodalI2CProxy(DevicePin *_sda, DevicePin *_scl)
+      : sda(_sda), scl(_scl), i2c(*_sda, *_scl), next(NULL) {}
 
+  CODAL_I2C *getI2C() { return &(this->i2c); }
+
+  bool matchPins(DevicePin *sda, DevicePin *scl) {
+    return this->sda == sda && this->scl == scl;
   }
 
-  CODAL_I2C* getI2C() {
-    return &(this->i2c);
-  }
-
-  bool matchPins(DevicePin* sda, DevicePin* scl) {
-      return this->sda == sda && this->scl == scl;
-  }
-
-  Buffer readBuffer(int address, int size, bool repeat = false)
-  {
+  Buffer readBuffer(int address, int size, bool repeat = false) {
     Buffer buf = mkBuffer(NULL, size);
     registerGCObj(buf);
     int status = this->i2c.read(address << 1, buf->data, size, repeat);
@@ -44,41 +37,38 @@ public:
     return buf;
   }
 
-  int writeBuffer(int address, Buffer buf, bool repeat = false)
-  {
+  int writeBuffer(int address, Buffer buf, bool repeat = false) {
     return this->i2c.write(address << 1, buf->data, buf->length, repeat);
   }
 };
 
-}
+} // namespace pins
 
 namespace I2CMethods {
 /**
-  * Read `size` bytes from a 7-bit I2C `address`.
-  */
+ * Read `size` bytes from a 7-bit I2C `address`.
+ */
 //%
-Buffer readBuffer(I2C_ i2c, int address, int size, bool repeat = false)
-{
+Buffer readBuffer(I2C_ i2c, int address, int size, bool repeat = false) {
   return i2c->readBuffer(address, size, repeat);
 }
 
 /**
-  * Write bytes to a 7-bit I2C `address`.
-  */
+ * Write bytes to a 7-bit I2C `address`.
+ */
 //%
-int writeBuffer(I2C_ i2c, int address, Buffer buf, bool repeat = false)
-{
+int writeBuffer(I2C_ i2c, int address, Buffer buf, bool repeat = false) {
   return i2c->writeBuffer(address, buf, repeat);
 }
 
-}
+} // namespace I2CMethods
 
 namespace pins {
 
 static I2C_ i2cs(NULL);
 /**
-* Opens a Serial communication driver
-*/
+ * Opens a Serial communication driver
+ */
 //% help=pins/create-i2c
 //% parts=i2c
 I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
@@ -91,7 +81,7 @@ I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
 
   // lookup existing devices
   auto dev = i2cs;
-  while(dev) {
+  while (dev) {
     if (dev->matchPins(sda, scl)) {
       DMESG("i2c: found existing i2c");
       return dev;
@@ -108,13 +98,13 @@ I2C_ createI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
   return ser;
 }
 
-}
+} // namespace pins
 
 namespace pxt {
-  CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
-    auto i2c = pins::createI2C(sda, scl);
-    return i2c->getI2C();
-  }
+CODAL_I2C *getI2C(DigitalInOutPin sda, DigitalInOutPin scl) {
+  auto i2c = pins::createI2C(sda, scl);
+  return i2c->getI2C();
 }
+} // namespace pxt
 
 #endif

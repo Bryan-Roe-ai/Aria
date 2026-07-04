@@ -13,5 +13,5 @@ Runs repository script-based validation for local composite actions.
 
 - uses: ./.github/actions/validate-composite-actions
   with:
-    script-path: scripts/validate_composite_actions.py
+      script-path: scripts/validate_composite_actions.py
 ```

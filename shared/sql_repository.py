@@ -18,7 +18,6 @@ import logging
 import os
 import sqlite3
 from datetime import datetime, timezone
-from typing import Optional
 
 # Conditional SQLAlchemy import
 _SQLALCHEMY_AVAILABLE = True
@@ -31,7 +30,7 @@ except Exception:  # pragma: no cover
 from .sql_engine import get_engine, resolve_sql_url
 
 _TABLE_CREATED = False
-_SQLITE_CONN: Optional[sqlite3.Connection] = None
+_SQLITE_CONN: sqlite3.Connection | None = None
 
 # ----------------------------------------------------------------------------
 # Helpers (fallback)
@@ -82,8 +81,7 @@ def _ensure_table():
         try:
             conn = _get_sqlite_conn()
             conn.execute(
-                "CREATE TABLE IF NOT EXISTS QAI_KeyValue ("
-                "key_name TEXT PRIMARY KEY, value_data TEXT, updated_at TEXT)"
+                "CREATE TABLE IF NOT EXISTS QAI_KeyValue (key_name TEXT PRIMARY KEY, value_data TEXT, updated_at TEXT)"
             )
             conn.commit()
             _TABLE_CREATED = True
@@ -140,6 +138,7 @@ def _ensure_table():
 
 
 def put_value(key: str, value: str) -> bool:
+    """Insert or update a key/value pair in the repository table."""
     if not _ensure_table():
         return False
 
@@ -202,7 +201,8 @@ def put_value(key: str, value: str) -> bool:
         return False
 
 
-def get_value(key: str) -> Optional[str]:
+def get_value(key: str) -> str | None:
+    """Return the stored value for *key*, or ``None`` when missing."""
     if not _ensure_table():
         return None
 
@@ -233,6 +233,7 @@ def get_value(key: str) -> Optional[str]:
 
 
 def delete_value(key: str) -> bool:
+    """Delete *key* from the repository table."""
     if not _ensure_table():
         return False
 
@@ -263,6 +264,7 @@ def delete_value(key: str) -> bool:
 
 
 def list_values(limit: int = 100) -> list[dict]:  # noqa: ANN001
+    """Return up to *limit* key/value rows from the repository table."""
     if not _ensure_table():
         return []
 

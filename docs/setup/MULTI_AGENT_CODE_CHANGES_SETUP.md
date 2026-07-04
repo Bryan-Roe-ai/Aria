@@ -1,6 +1,7 @@
 # Multi-Agent Mode with Real Code Changes - Setup Guide
 
 ## Current Status
+
 - ✅ Multi-agent system: Fully operational
 - ✅ Master orchestrator: Running (daemon mode)
 - ✅ Consensus engine: Ready
@@ -11,12 +12,14 @@
 ## Why Code Changes Require a Real LLM
 
 The multi-agent system can only make actual code modifications when connected to a real LLM that understands:
+
 - Code syntax and patterns
 - Project structure and conventions
 - Safety boundaries and rollback triggers
 - Test case generation and validation
 
 **Echo mode** (current) is intentionally safe:
+
 - Zero code files modified
 - Tasks run as analysis/audits only
 - 100% consensus voting on safety
@@ -27,6 +30,7 @@ The multi-agent system can only make actual code modifications when connected to
 ### Option A: Ollama (RECOMMENDED - Easiest, Free, Local)
 
 **Host Machine Setup** (one-time):
+
 ```bash
 # 1. Install Ollama
 curl -fsSL https://ollama.ai/install.sh | sh
@@ -44,6 +48,7 @@ curl http://localhost:11434/api/tags
 ```
 
 **Container Execution** (this dev container):
+
 ```bash
 cd /workspaces/Aria
 PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent.py \
@@ -55,6 +60,7 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 ```
 
 **Benefits:**
+
 - ✅ Free (no API costs)
 - ✅ Runs locally on your machine
 - ✅ Full code access (private)
@@ -66,6 +72,7 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 ### Option B: Azure OpenAI (Enterprise)
 
 **Setup:**
+
 ```bash
 # 1. Edit local.settings.json and add:
 {
@@ -89,6 +96,7 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 ### Option C: OpenAI API (Official)
 
 **Setup:**
+
 ```bash
 # 1. Edit local.settings.json and add:
 {
@@ -110,21 +118,25 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 ## Safety Mechanisms (Always Active)
 
 ✅ **Automatic Rollback**
+
 - Any test failure → automatic rollback
 - Failed changes are reverted
 - Original code preserved
 
 ✅ **Consensus Voting**
+
 - All 5 agents vote on each change
 - Unanimous agreement required
 - Single dissent blocks the change
 
 ✅ **Dry-Run Preview**
+
 - Use `--dry-run` flag to preview changes
 - See what would change WITHOUT applying it
 - Perfect for review before commit
 
 ✅ **Test Validation**
+
 - 1,343 tests run per task
 - 0 tests fail = change accepted
 - Any failure = automatic rollback
@@ -161,6 +173,7 @@ When code changes are enabled, multi-agent will:
 10. **Harden error handling** in db_logging.py
 
 Each change is:
+
 - Reviewed by 5 agents
 - Validated by 1,343 tests
 - Consensus-voted on

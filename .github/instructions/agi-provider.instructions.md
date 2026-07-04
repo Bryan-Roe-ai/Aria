@@ -3,6 +3,7 @@ name: "AGI-Provider"
 description: "Guidance for AGI provider implementation and reasoning system"
 applyTo: "**/agi_provider.py"
 ---
+
 # AGI Provider — Implementation Guidance
 
 ## Canonical module and shim boundaries

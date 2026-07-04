@@ -3,9 +3,11 @@
 ## 🚀 New Features Added
 
 ### 1. Dataset Analyzer (`dataset_analyzer.py`)
+
 **Comprehensive dataset analysis and health checking**
 
 Features:
+
 - Statistical analysis (token counts, distribution, percentiles)
 - Content analysis (duplicates, vocabulary size, diversity)
 - Quality scoring with multiple heuristics
@@ -14,6 +16,7 @@ Features:
 - Health check recommendations
 
 Usage:
+
 ```bash
 # Analyze single dataset
 python scripts\dataset_analyzer.py --dataset train.jsonl
@@ -26,14 +29,17 @@ python scripts\dataset_analyzer.py --dataset train.jsonl --no-visualizations
 ```
 
 Output:
+
 - Statistics JSON
 - Visualization plots (histogram, boxplot, quality distribution, scatter)
 - Comparison charts
 
 ### 2. Training Monitor (`training_monitor.py`)
+
 **Real-time training progress monitoring with live metrics**
 
 Features:
+
 - Real-time metrics logging (loss, LR, throughput, memory)
 - Session management and history
 - Live dashboard (terminal-based)
@@ -42,6 +48,7 @@ Features:
 - Duration tracking
 
 Usage:
+
 ```python
 from scripts.training_monitor import TrainingMonitor, LiveDashboard
 
@@ -71,13 +78,16 @@ python scripts\training_monitor.py --session experiment_1 --stats
 ```
 
 Output:
+
 - `data_out/training_logs/{session_id}.jsonl` - Detailed metrics
 - `data_out/training_logs/{session_id}_summary.json` - Session summary
 
 ### 3. Learning Rate Finder (`lr_finder.py`)
+
 **Automatic optimal learning rate discovery using LR range test**
 
 Features:
+
 - Leslie Smith's LR range test implementation
 - Automatic LR suggestion
 - Gradient analysis
@@ -86,6 +96,7 @@ Features:
 - Model state preservation
 
 Usage:
+
 ```python
 from scripts.lr_finder import LearningRateFinder
 
@@ -106,13 +117,16 @@ print(f"Suggested LR: {suggested_lr:.2e}")
 ```
 
 Output:
+
 - `data_out/lr_finder/lr_finder_plot.png` - Loss vs LR curve
 - `data_out/lr_finder/lr_finder_results.json` - Results with suggestions
 
 ### 4. Data Augmentation (`data_augmenter.py`)
+
 **Text data augmentation for improved model generalization**
 
 Features:
+
 - Synonym replacement
 - Random insertion
 - Random word swapping
@@ -122,6 +136,7 @@ Features:
 - Format-aware (preserves JSON structure)
 
 Usage:
+
 ```bash
 # Basic augmentation
 python scripts\data_augmenter.py --input train.jsonl --output augmented.jsonl
@@ -138,13 +153,16 @@ python scripts\data_augmenter.py \
 ```
 
 Output:
+
 - Augmented dataset with original + generated samples
 - Statistics on augmentation factor
 
 ### 5. Model Server (`model_server.py`)
+
 **Production REST API for model serving**
 
 Features:
+
 - FastAPI-based REST API
 - Single and batch inference
 - Streaming support
@@ -154,6 +172,7 @@ Features:
 - OpenAPI documentation
 
 Usage:
+
 ```bash
 # Start server
 python scripts\model_server.py --model data_out\lora_training --port 8000
@@ -167,6 +186,7 @@ python scripts\model_server.py --model data_out\lora_training --port 8000
 ```
 
 API Examples:
+
 ```python
 import requests
 
@@ -187,9 +207,11 @@ print(response.json()["results"])
 ```
 
 ### 6. Model Exporter (`model_exporter.py`)
+
 **Export models to various formats for deployment**
 
 Features:
+
 - ONNX export with optimization
 - TorchScript export (script/trace)
 - Dynamic quantization
@@ -198,6 +220,7 @@ Features:
 - Validation and size comparison
 
 Usage:
+
 ```bash
 # Export to all formats
 python scripts\model_exporter.py --model data_out\lora_training --format all
@@ -213,6 +236,7 @@ python scripts\model_exporter.py --model data_out\lora_training --benchmark
 ```
 
 Output:
+
 - `data_out/exported_models/model.onnx` - ONNX format
 - `data_out/exported_models/model_scripted.pt` - TorchScript
 - `data_out/exported_models/model_quantized/` - Quantized model
@@ -221,6 +245,7 @@ Output:
 ## 📦 Updated Dependencies
 
 Add to `requirements-advanced.txt`:
+
 ```
 # For API serving
 fastapi>=0.104.0
@@ -242,24 +267,28 @@ seaborn>=0.12.0
 ## 🎯 Benefits
 
 ### Dataset Quality
+
 - **Dataset Analyzer** ensures data quality before training
 - Identifies duplicates, outliers, and low-quality samples
 - Visual insights into data distribution
 - Compare train/test/validation splits
 
 ### Training Efficiency
+
 - **Training Monitor** tracks progress in real-time
 - **LR Finder** eliminates LR hyperparameter guessing
 - Save 50-80% of training time with optimal LR
 - Prevent divergence and oscillation
 
 ### Data Diversity
+
 - **Data Augmenter** increases dataset size 2-5x
 - Improves model generalization
 - No additional data collection needed
 - Better performance on unseen data
 
 ### Production Deployment
+
 - **Model Server** provides production-ready API
 - **Model Exporter** optimizes for inference
 - 2-4x inference speedup with quantization
@@ -292,18 +321,19 @@ python scripts\model_server.py --model {trained_model}
 
 ## 📊 Performance Improvements
 
-| Feature | Benefit | Impact |
-| --------- | --------- | -------- |
-| Dataset Analyzer | Identify issues early | Save hours of debugging |
-| LR Finder | Optimal learning rate | 50-80% faster convergence |
-| Data Augmenter | 2-5x more training data | +10-20% accuracy |
-| Training Monitor | Real-time insights | Catch issues immediately |
-| Model Exporter | Optimized inference | 2-4x faster inference |
-| Model Server | Production API | Easy deployment |
+| Feature          | Benefit                 | Impact                    |
+| ---------------- | ----------------------- | ------------------------- |
+| Dataset Analyzer | Identify issues early   | Save hours of debugging   |
+| LR Finder        | Optimal learning rate   | 50-80% faster convergence |
+| Data Augmenter   | 2-5x more training data | +10-20% accuracy          |
+| Training Monitor | Real-time insights      | Catch issues immediately  |
+| Model Exporter   | Optimized inference     | 2-4x faster inference     |
+| Model Server     | Production API          | Easy deployment           |
 
 ## 🎓 Usage Patterns
 
 ### Research Workflow
+
 ```bash
 # 1. Analyze dataset
 python scripts\dataset_analyzer.py --dataset data.jsonl
@@ -322,6 +352,7 @@ python scripts\training_monitor.py --session experiment_1
 ```
 
 ### Production Workflow
+
 ```bash
 # 1. Full pipeline with new features
 python scripts\run_pipeline.py \
@@ -343,71 +374,76 @@ python scripts\model_server.py --model output --port 8000
 Planned for next phase:
 
 1. **Hyperparameter Optimization**
-   - Optuna integration
-   - Auto-tune all hyperparameters
-   - Multi-objective optimization
+    - Optuna integration
+    - Auto-tune all hyperparameters
+    - Multi-objective optimization
 
 2. **Experiment Tracking**
-   - MLflow integration
-   - Wandb support
-   - Experiment comparison UI
+    - MLflow integration
+    - Wandb support
+    - Experiment comparison UI
 
 3. **Advanced Monitoring**
-   - TensorBoard integration
-   - GPU utilization tracking
-   - Cost monitoring
+    - TensorBoard integration
+    - GPU utilization tracking
+    - Cost monitoring
 
 4. **Testing Framework**
-   - Unit tests for all components
-   - Integration tests
-   - Regression test suite
+    - Unit tests for all components
+    - Integration tests
+    - Regression test suite
 
 5. **Distributed Training**
-   - Multi-node support
-   - Efficient data parallelism
-   - Model parallelism
+    - Multi-node support
+    - Efficient data parallelism
+    - Model parallelism
 
 6. **Advanced RAG**
-   - Multi-modal support
-   - Hybrid search
-   - Re-ranking models
+    - Multi-modal support
+    - Hybrid search
+    - Re-ranking models
 
 ## 📝 Migration Guide
 
 For existing projects:
 
 1. **Install new dependencies**:
-   ```bash
-   pip install -r requirements-advanced.txt
-   ```
+
+    ```bash
+    pip install -r requirements-advanced.txt
+    ```
 
 2. **Update training scripts** to use monitor:
-   ```python
-   from scripts.training_monitor import TrainingMonitor
-   monitor = TrainingMonitor()
-   # Add logging calls in training loop
-   ```
+
+    ```python
+    from scripts.training_monitor import TrainingMonitor
+    monitor = TrainingMonitor()
+    # Add logging calls in training loop
+    ```
 
 3. **Run LR finder** before training:
-   ```bash
-   python scripts\lr_finder.py --model model --dataset data
-   # Use suggested LR in config
-   ```
+
+    ```bash
+    python scripts\lr_finder.py --model model --dataset data
+    # Use suggested LR in config
+    ```
 
 4. **Analyze datasets** before training:
-   ```bash
-   python scripts\dataset_analyzer.py --dataset train.jsonl
-   # Review statistics and fix issues
-   ```
+
+    ```bash
+    python scripts\dataset_analyzer.py --dataset train.jsonl
+    # Review statistics and fix issues
+    ```
 
 5. **Deploy with model server**:
-   ```bash
-   python scripts\model_server.py --model trained_model
-   ```
+    ```bash
+    python scripts\model_server.py --model trained_model
+    ```
 
 ## ✅ Quality Assurance
 
 All new features include:
+
 - Comprehensive error handling
 - Input validation
 - Progress reporting
@@ -418,6 +454,7 @@ All new features include:
 ## 🎉 Summary
 
 **6 new powerful tools added:**
+
 1. Dataset Analyzer - Data quality insights
 2. Training Monitor - Real-time tracking
 3. LR Finder - Optimal learning rates

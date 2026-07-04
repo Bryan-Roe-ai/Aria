@@ -14,7 +14,8 @@ import json
 import os
 import re
 import sys
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 WRITE_TOOLS = {
     "write_file",
@@ -137,7 +138,7 @@ def _strip_inline_comment(line: str) -> str:
 
 
 def _value_is_real_qpu(value: str) -> bool:
-    normalized = value.strip().strip('"\'').lower().replace("-", "_")
+    normalized = value.strip().strip("\"'").lower().replace("-", "_")
     if "simulator" in normalized:
         return False
     if ".qpu" in normalized or normalized == "qpu" or normalized.startswith("qpu."):
@@ -157,17 +158,11 @@ def _mentions_real_qpu(text: str) -> bool:
 
 
 def _has_cost_confirmation(text: str) -> bool:
-    return any(
-        COST_CONFIRM_PATTERN.search(_strip_inline_comment(line))
-        for line in text.splitlines()
-    )
+    return any(COST_CONFIRM_PATTERN.search(_strip_inline_comment(line)) for line in text.splitlines())
 
 
 def _sets_cost_denied(text: str) -> bool:
-    return any(
-        COST_DENY_PATTERN.search(_strip_inline_comment(line))
-        for line in text.splitlines()
-    )
+    return any(COST_DENY_PATTERN.search(_strip_inline_comment(line)) for line in text.splitlines())
 
 
 def _in_quantum_scope(path: str, text: str) -> bool:
@@ -181,7 +176,7 @@ def _read_posttool_file(path: str) -> str:
     if not path or not path.lower().endswith((".yaml", ".yml")):
         return ""
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return f.read()
     except Exception:
         return ""

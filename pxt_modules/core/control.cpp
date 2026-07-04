@@ -15,43 +15,32 @@ namespace control {
 //% weight=21 blockGap=12 blockId="control_raise_event"
 //% help=control/raise-event
 //% block="raise event|from %src|with value %value" blockExternalInputs=1
-void raiseEvent(int src, int value) {
-    Event evt(src, value);
-}
+void raiseEvent(int src, int value) { Event evt(src, value); }
 
 /**
-* Determine the version of system software currently running.
-*/
+ * Determine the version of system software currently running.
+ */
 //% blockId="control_device_dal_version" block="device dal version"
 //% help=control/device-dal-version
-String deviceDalVersion() {
-    return mkString(device.getVersion());
-}
+String deviceDalVersion() { return mkString(device.getVersion()); }
 
 /**
-* Allocates the next user notification event
-*/
+ * Allocates the next user notification event
+ */
 //% help=control/allocate-notify-event
-int allocateNotifyEvent() {
-    return ::allocateNotifyEvent();
-}
+int allocateNotifyEvent() { return ::allocateNotifyEvent(); }
 
 /** Write a message to DMESG debugging buffer. */
 //%
-void dmesg(String s) {
-    DMESG("# %s", s->getUTF8Data());
-}
+void dmesg(String s) { DMESG("# %s", s->getUTF8Data()); }
 
 /** Write a message and value (pointer) to DMESG debugging buffer. */
 //%
 void dmesgPtr(String str, Object_ ptr) {
-    DMESG("# %s: %p", str->getUTF8Data(), ptr);
+  DMESG("# %s: %p", str->getUTF8Data(), ptr);
 }
 
 //%
-uint32_t _ramSize()
-{
-    return (uint32_t)&_estack & 0x1fffffff;
-}
+uint32_t _ramSize() { return (uint32_t)&_estack & 0x1fffffff; }
 
-}
+} // namespace control

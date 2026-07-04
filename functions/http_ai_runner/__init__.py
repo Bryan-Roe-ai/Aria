@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "shared"))
 from chat_providers import detect_provider  # noqa: E402
 
 
-def _parse_body(req: func.HttpRequest) -> Dict[str, Any]:
+def _parse_body(req: func.HttpRequest) -> dict[str, Any]:
     try:
         return req.get_json() or {}
     except ValueError:
@@ -31,11 +31,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     body = _parse_body(req)
 
     prompt = params.get("prompt") or body.get("prompt")
-    provider_choice = (
-        params.get("provider")
-        or body.get("provider")
-        or os.getenv("DEFAULT_AI_PROVIDER", "local")
-    )
+    provider_choice = params.get("provider") or body.get("provider") or os.getenv("DEFAULT_AI_PROVIDER", "local")
     model = params.get("model") or body.get("model")
 
     if not prompt:
@@ -62,6 +58,4 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         )
     except Exception as e:  # noqa: BLE001
         logging.exception("AI HTTP run failed")
-        return func.HttpResponse(
-            json.dumps({"error": str(e)}), status_code=500, mimetype="application/json"
-        )
+        return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500, mimetype="application/json")

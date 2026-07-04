@@ -6,7 +6,7 @@ Combines document retrieval with fine-tuned model generation
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -30,16 +30,16 @@ class DocumentStore:
 
     def __init__(self, config: RAGConfig):
         self.config = config
-        self.documents: List[Dict[str, Any]] = []
-        self.embeddings: Optional[np.ndarray] = None
+        self.documents: list[dict[str, Any]] = []
+        self.embeddings: np.ndarray | None = None
         self.embedding_model = None
 
-    def add_documents(self, documents: List[Dict[str, Any]]):
+    def add_documents(self, documents: list[dict[str, Any]]):
         """Add documents to store"""
         self.documents.extend(documents)
         print(f"Added {len(documents)} documents. Total: {len(self.documents)}")
 
-    def load_from_directory(self, directory: str, extensions: List[str] | None = None):
+    def load_from_directory(self, directory: str, extensions: list[str] | None = None):
         """Load all documents from directory"""
         if extensions is None:
             extensions = [".txt", ".md", ".json"]
@@ -67,14 +67,12 @@ class DocumentStore:
 
         print(f"Loaded {loaded} files, {len(self.documents)} chunks")
 
-    def _chunk_text(self, text: str) -> List[str]:
+    def _chunk_text(self, text: str) -> list[str]:
         """Split text into overlapping chunks"""
         words = text.split()
         chunks = []
 
-        for i in range(
-            0, len(words), self.config.chunk_size - self.config.chunk_overlap
-        ):
+        for i in range(0, len(words), self.config.chunk_size - self.config.chunk_overlap):
             chunk = " ".join(words[i : i + self.config.chunk_size])
             if chunk.strip():
                 chunks.append(chunk)
@@ -91,18 +89,14 @@ class DocumentStore:
             self.embedding_model = SentenceTransformer(self.config.embedding_model)
 
             texts = [doc["content"] for doc in self.documents]
-            self.embeddings = self.embedding_model.encode(
-                texts, show_progress_bar=True, convert_to_numpy=True
-            )
+            self.embeddings = self.embedding_model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
             print(f"✓ Index built with {len(self.embeddings)} embeddings")
 
         except ImportError:
-            print(
-                "⚠ sentence-transformers not installed. Using simple keyword matching."
-            )
+            print("⚠ sentence-transformers not installed. Using simple keyword matching.")
             self.embedding_model = None
 
-    def retrieve(self, query: str, top_k: int = None) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = None) -> list[dict[str, Any]]:
         """Retrieve most relevant documents for query"""
         if top_k is None:
             top_k = self.config.top_k_retrieval
@@ -112,7 +106,7 @@ class DocumentStore:
         else:
             return self._keyword_retrieve(query, top_k)
 
-    def _semantic_retrieve(self, query: str, top_k: int) -> List[Dict[str, Any]]:
+    def _semantic_retrieve(self, query: str, top_k: int) -> list[dict[str, Any]]:
         """Semantic retrieval using embeddings"""
         query_embedding = self.embedding_model.encode([query], convert_to_numpy=True)[0]
 
@@ -133,7 +127,7 @@ class DocumentStore:
 
         return results
 
-    def _keyword_retrieve(self, query: str, top_k: int) -> List[Dict[str, Any]]:
+    def _keyword_retrieve(self, query: str, top_k: int) -> list[dict[str, Any]]:
         """Simple keyword-based retrieval"""
         query_words = set(query.lower().split())
         scores = []
@@ -192,9 +186,7 @@ class DocumentStore:
 class RAGPipeline:
     """Complete RAG pipeline with retrieval and generation"""
 
-    def __init__(
-        self, model_path: str, document_store: DocumentStore, config: RAGConfig = None
-    ):
+    def __init__(self, model_path: str, document_store: DocumentStore, config: RAGConfig = None):
         self.config = config or RAGConfig()
         self.document_store = document_store
 
@@ -210,9 +202,7 @@ class RAGPipeline:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-    def query(
-        self, question: str, return_context: bool = False, max_new_tokens: int = 256
-    ) -> Dict[str, Any]:
+    def query(self, question: str, return_context: bool = False, max_new_tokens: int = 256) -> dict[str, Any]:
         """
         Query the RAG pipeline
 
@@ -245,7 +235,7 @@ class RAGPipeline:
 
         return result
 
-    def _build_context(self, documents: List[Dict[str, Any]]) -> str:
+    def _build_context(self, documents: list[dict[str, Any]]) -> str:
         """Build context string from retrieved documents"""
         context_parts = []
 
@@ -300,12 +290,8 @@ def main():
 
     parser = argparse.ArgumentParser(description="RAG Pipeline")
     parser.add_argument("--model", type=str, required=True, help="Path to model")
-    parser.add_argument(
-        "--docs", type=str, required=True, help="Path to documents directory"
-    )
-    parser.add_argument(
-        "--index-dir", type=str, default="data_out/rag_index", help="Index directory"
-    )
+    parser.add_argument("--docs", type=str, required=True, help="Path to documents directory")
+    parser.add_argument("--index-dir", type=str, default="data_out/rag_index", help="Index directory")
     parser.add_argument("--query", type=str, help="Query to run")
     parser.add_argument("--interactive", action="store_true", help="Interactive mode")
     parser.add_argument("--rebuild-index", action="store_true", help="Rebuild index")

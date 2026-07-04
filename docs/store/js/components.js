@@ -2,7 +2,7 @@
 // These keep the navbar and footer consistent across all pages.
 
 function getNavbar(activePage) {
-  return `
+    return `
   <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="store-platform-bar">
     <div class="container store-platform-inner">
@@ -28,10 +28,10 @@ function getNavbar(activePage) {
         </span>
       </a>
       <nav class="nav-links" id="navLinks">
-        <a href="index.html" class="${activePage === 'home' ? 'active' : ''}">Overview</a>
-        <a href="products.html" class="${activePage === 'shop' ? 'active' : ''}">Catalog</a>
-        <a href="about.html" class="${activePage === 'about' ? 'active' : ''}">About</a>
-        <a href="contact.html" class="${activePage === 'contact' ? 'active' : ''}">Contact</a>
+        <a href="index.html" class="${activePage === "home" ? "active" : ""}">Overview</a>
+        <a href="products.html" class="${activePage === "shop" ? "active" : ""}">Catalog</a>
+        <a href="about.html" class="${activePage === "about" ? "active" : ""}">About</a>
+        <a href="contact.html" class="${activePage === "contact" ? "active" : ""}">Contact</a>
       </nav>
       <div class="nav-search">
         <input type="text" class="nav-search-input" placeholder="Search offers… (/ or ⌘K)" id="navSearchInput">
@@ -40,12 +40,12 @@ function getNavbar(activePage) {
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
-  </header>`;
+  </header>`
 }
 
 function getFooter() {
-  const year = new Date().getFullYear();
-  return `
+    const year = new Date().getFullYear()
+    return `
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -93,13 +93,16 @@ function getFooter() {
         </span>
       </div>
     </div>
-  </footer>`;
+  </footer>`
 }
 
 function renderProductCard(product) {
-  var category = typeof getCategoryById === 'function' ? getCategoryById(product.category) : null;
-  var categoryLabel = category ? category.name : product.category;
-  return `
+    var category =
+        typeof getCategoryById === "function"
+            ? getCategoryById(product.category)
+            : null
+    var categoryLabel = category ? category.name : product.category
+    return `
   <div class="product-card">
     <a href="product.html?id=${product.id}">
       <div class="product-card-image">
@@ -114,78 +117,90 @@ function renderProductCard(product) {
       <div class="product-card-price">$${product.price.toFixed(2)}</div>
       <a href="product.html?id=${product.id}" class="btn btn-primary">View Offer</a>
     </div>
-  </div>`;
+  </div>`
 }
 
 // Initialize shared components
 function initComponents(activePage) {
-  // Insert navbar
-  const headerSlot = document.getElementById('header-slot');
-  if (headerSlot) {
-    headerSlot.innerHTML = getNavbar(activePage);
-  }
-
-  // Insert footer
-  const footerSlot = document.getElementById('footer-slot');
-  if (footerSlot) {
-    footerSlot.innerHTML = getFooter();
-  }
-
-  // Mobile menu toggle
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('#mobileMenuBtn')) {
-      const nav = document.getElementById('navLinks');
-      if (nav) nav.classList.toggle('open');
-      return;
+    // Insert navbar
+    const headerSlot = document.getElementById("header-slot")
+    if (headerSlot) {
+        headerSlot.innerHTML = getNavbar(activePage)
     }
 
-    const nav = document.getElementById('navLinks');
-    const toggle = document.getElementById('mobileMenuBtn');
-    if (nav && nav.classList.contains('open')) {
-      const clickedNav = nav.contains(e.target);
-      const clickedToggle = toggle && toggle.contains(e.target);
-      if (!clickedNav && !clickedToggle) {
-        nav.classList.remove('open');
-      }
+    // Insert footer
+    const footerSlot = document.getElementById("footer-slot")
+    if (footerSlot) {
+        footerSlot.innerHTML = getFooter()
     }
-  });
 
-  // Nav search (redirect to products page with query)
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && e.target.id === 'navSearchInput') {
-      const query = e.target.value.trim();
-      if (query) {
-        const onCatalogPage = /\/products\.html$/i.test(window.location.pathname || '');
-        if (onCatalogPage) {
-          window.dispatchEvent(new CustomEvent('store:nav-search-submit', { detail: { query: query } }));
-        } else {
-          window.location.href = `products.html?search=${encodeURIComponent(query)}`;
+    // Mobile menu toggle
+    document.addEventListener("click", function (e) {
+        if (e.target.closest("#mobileMenuBtn")) {
+            const nav = document.getElementById("navLinks")
+            if (nav) nav.classList.toggle("open")
+            return
         }
-      }
+
+        const nav = document.getElementById("navLinks")
+        const toggle = document.getElementById("mobileMenuBtn")
+        if (nav && nav.classList.contains("open")) {
+            const clickedNav = nav.contains(e.target)
+            const clickedToggle = toggle && toggle.contains(e.target)
+            if (!clickedNav && !clickedToggle) {
+                nav.classList.remove("open")
+            }
+        }
+    })
+
+    // Nav search (redirect to products page with query)
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && e.target.id === "navSearchInput") {
+            const query = e.target.value.trim()
+            if (query) {
+                const onCatalogPage = /\/products\.html$/i.test(
+                    window.location.pathname || "",
+                )
+                if (onCatalogPage) {
+                    window.dispatchEvent(
+                        new CustomEvent("store:nav-search-submit", {
+                            detail: { query: query },
+                        }),
+                    )
+                } else {
+                    window.location.href = `products.html?search=${encodeURIComponent(query)}`
+                }
+            }
+        }
+    })
+
+    if (!window.__storeSearchHotkeysBound) {
+        window.__storeSearchHotkeysBound = true
+        document.addEventListener("keydown", function (e) {
+            const navSearch = document.getElementById("navSearchInput")
+            if (!navSearch) return
+
+            const activeEl = document.activeElement
+            const tag =
+                activeEl && activeEl.tagName
+                    ? activeEl.tagName.toLowerCase()
+                    : ""
+            const isTyping =
+                tag === "input" ||
+                tag === "textarea" ||
+                (activeEl && activeEl.isContentEditable)
+
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+                e.preventDefault()
+                navSearch.focus()
+                navSearch.select()
+                return
+            }
+
+            if (e.key === "/" && !isTyping) {
+                e.preventDefault()
+                navSearch.focus()
+            }
+        })
     }
-  });
-
-  if (!window.__storeSearchHotkeysBound) {
-    window.__storeSearchHotkeysBound = true;
-    document.addEventListener('keydown', function (e) {
-      const navSearch = document.getElementById('navSearchInput');
-      if (!navSearch) return;
-
-      const activeEl = document.activeElement;
-      const tag = activeEl && activeEl.tagName ? activeEl.tagName.toLowerCase() : '';
-      const isTyping = tag === 'input' || tag === 'textarea' || (activeEl && activeEl.isContentEditable);
-
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        navSearch.focus();
-        navSearch.select();
-        return;
-      }
-
-      if (e.key === '/' && !isTyping) {
-        e.preventDefault();
-        navSearch.focus();
-      }
-    });
-  }
 }

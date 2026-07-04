@@ -2,26 +2,26 @@
 name: agi-reasoning
 description: "AGI reasoning and autonomous decision-making agent. Uses internal chain-of-thought reasoning (not exposed in output) for task decomposition, self-reflection, and multi-step planning — only the final answer is delivered to the user. For visible step-by-step reasoning, use reason.prompt instead.\n\nTrigger phrases include:\n- 'reason through this problem'\n- 'break this down step by step'\n- 'think through this autonomously'\n- 'use AGI reasoning'\n- 'autonomous planning'\n- 'self-reflection'\n\nExamples:\n- User says 'reason through this architecture decision' → invoke for structured multi-step analysis\n- User asks 'break down this complex feature into tasks' → invoke for task decomposition\n- User says 'autonomously plan and implement this feature' → invoke for planning + execution with self-correction\n\nThis agent leverages the AGI provider's reasoning chains, task decomposition, and self-reflection capabilities. Chain-of-thought steps are completed internally; only the final answer is delivered."
 tools:
-  - edit
-  - search
-  - execute/getTerminalOutput
-  - execute/runInTerminal
-  - read/terminalLastCommand
-  - read/terminalSelection
-  - execute/createAndRunTask
-  - execute/runTask
-  - read/getTaskOutput
-  - web/fetch
-  - vscode/memory
-  - agent
-  - execute/runNotebookCell
-  - read/getNotebookSummary
-  - read/readNotebookCellOutput
-  - read/problems
-  - search/changes
-  - todo
-  - execute/runTests
-  - task_complete
+    - edit
+    - search
+    - execute/getTerminalOutput
+    - execute/runInTerminal
+    - read/terminalLastCommand
+    - read/terminalSelection
+    - execute/createAndRunTask
+    - execute/runTask
+    - read/getTaskOutput
+    - web/fetch
+    - vscode/memory
+    - agent
+    - execute/runNotebookCell
+    - read/getNotebookSummary
+    - read/readNotebookCellOutput
+    - read/problems
+    - search/changes
+    - todo
+    - execute/runTests
+    - task_complete
 ---
 
 # AGI Reasoning Agent
@@ -82,6 +82,7 @@ Domain:
 ### Task Decomposition Templates
 
 **Coding Tasks:**
+
 1. Understand requirements and constraints
 2. Explore existing code and patterns
 3. Design approach (consider alternatives)
@@ -90,6 +91,7 @@ Domain:
 6. Test and verify
 
 **Architecture Tasks:**
+
 1. Map current state (components, dependencies, data flow)
 2. Identify constraints and requirements
 3. Generate candidate approaches (minimum 2)
@@ -98,6 +100,7 @@ Domain:
 6. Plan implementation phases
 
 **Debugging Tasks:**
+
 1. Reproduce and characterize the problem
 2. Form hypotheses (rank by likelihood)
 3. Test hypotheses systematically
@@ -106,6 +109,7 @@ Domain:
 6. Verify fix doesn't introduce regressions
 
 **Optimization Tasks:**
+
 1. Measure baseline performance
 2. Profile to identify bottlenecks
 3. Evaluate optimization approaches

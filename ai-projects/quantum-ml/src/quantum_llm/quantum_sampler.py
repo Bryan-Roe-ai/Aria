@@ -93,8 +93,7 @@ def _classical_variational_probs(
         q = i % num_qubits
         # Apply single-qubit Ry rotation to qubit q using tensor product
         ry = np.array(
-            [[np.cos(theta / 2), -np.sin(theta / 2)],
-             [np.sin(theta / 2),  np.cos(theta / 2)]],
+            [[np.cos(theta / 2), -np.sin(theta / 2)], [np.sin(theta / 2), np.cos(theta / 2)]],
             dtype=complex,
         )
         # Embed into full Hilbert space
@@ -111,7 +110,7 @@ def _classical_variational_probs(
         cnot2[[2, 3]] = cnot2[[3, 2]]
 
         # Build operator: I for qubits < q, CNOT2 for q and q+1, I for qubits > q+1
-        before_dims = q          # number of qubits before the CNOT pair
+        before_dims = q  # number of qubits before the CNOT pair
         after_dims = num_qubits - q - 2  # number of qubits after the CNOT pair
 
         op = np.eye(1, dtype=complex)
@@ -295,18 +294,12 @@ class QuantumSampler:
 
         # Compute circuit
         if self.effective_backend == "pennylane":
-            probs = _pennylane_variational_probs(
-                params, self.num_qubits, self.shots, self.num_layers
-            )
+            probs = _pennylane_variational_probs(params, self.num_qubits, self.shots, self.num_layers)
         elif self.effective_backend == "qiskit":
-            probs = _qiskit_variational_probs(
-                params, self.num_qubits, self.shots, self.num_layers
-            )
+            probs = _qiskit_variational_probs(params, self.num_qubits, self.shots, self.num_layers)
         else:
             # Classical fallback
-            probs = _classical_variational_probs(
-                params, self.num_qubits, self.shots, self._rng
-            )
+            probs = _classical_variational_probs(params, self.num_qubits, self.shots, self._rng)
 
         # Cache result
         if self._cache_enabled and self._cache is not None:
@@ -344,6 +337,10 @@ class QuantumSampler:
         if k == 0:
             return 0
 
+        if not np.all(np.isfinite(logits_arr)):
+            logger.warning("QuantumSampler received non-finite logits; replacing invalid values with 0.0")
+            logits_arr = np.nan_to_num(logits_arr, nan=0.0, posinf=0.0, neginf=0.0)
+
         # Clamp blend_factor to its documented [0, 1] range. Values outside this
         # range can produce negative blended probabilities, which would make the
         # downstream rng.choice(p=...) call raise "probabilities are not non-negative".
@@ -352,7 +349,11 @@ class QuantumSampler:
         # Classical softmax distribution
         logits_arr -= logits_arr.max()  # numerical stability
         classical_probs = np.exp(logits_arr)
-        classical_probs /= classical_probs.sum()
+        classical_sum = classical_probs.sum()
+        if not np.isfinite(classical_sum) or classical_sum <= 0:
+            classical_probs = np.full(k, 1.0 / k)
+        else:
+            classical_probs /= classical_sum
 
         # Generate random circuit params from logit values (deterministic mapping)
         n_params = self.num_qubits * self.num_layers * 2

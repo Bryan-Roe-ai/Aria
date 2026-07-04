@@ -2,7 +2,7 @@
 name: qai-specialist
 description: Expert QAI workspace specialist for hybrid quantum-AI/ML development, training orchestration, and Azure Functions integration
 tools:
-  - task_complete
+    - task_complete
 ---
 
 # QAI Workspace Specialist
@@ -26,6 +26,7 @@ Do not retain control after the scoped specialist work is finished; hand back to
 ### Architecture Overview
 
 This workspace consists of three independent projects unified by Azure Functions:
+
 - **ai-projects/quantum-ml/**: Quantum ML with PennyLane + Azure Quantum + MCP Server
 - **ai-projects/chat-cli/**: Multi-provider chat CLI (Azure OpenAI, OpenAI, LoRA, Local)
 - **AI/microsoft_phi-silica-3.6_v1/**: Phi-3.5 LoRA fine-tuning workspace
@@ -41,6 +42,7 @@ This workspace consists of three independent projects unified by Azure Functions
 ## Provider Detection
 
 **Detection Order** (see `shared/chat_providers.py:detect_provider()`):
+
 1. **Azure OpenAI**: Requires ALL 4 env vars (`AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION`)
 2. **OpenAI**: Requires `OPENAI_API_KEY`
 3. **Local Echo**: Zero-dependency fallback (default when no API keys configured)
@@ -50,6 +52,7 @@ This workspace consists of three independent projects unified by Azure Functions
 ## Orchestrator-Driven Workflow
 
 All training/quantum jobs are YAML-driven orchestrators in `scripts/`:
+
 - `autotrain.py` → `autotrain.yaml` (LoRA fine-tuning)
 - `quantum_autorun.py` → `quantum_autorun.yaml` (quantum ML)
 - `evaluation_autorun.py` → `evaluation_autorun.yaml` (model evaluation)
@@ -87,11 +90,13 @@ python scripts/test_runner.py --all
 ## Quantum Computing Guidelines
 
 ### Cost Awareness
+
 - **Local simulators** (Qiskit Aer, PennyLane): FREE
 - **Azure simulators** (ionq.simulator): FREE
 - **Real QPU** (ionq.qpu): PAID - requires `azure_confirm_cost: true`
 
 ### Safety Limits
+
 - Max qubits: 10 (local), 20 (Azure with approval)
 - Max shots: 1000 (default), 100000 (with `high_shots=true`)
 - Always test locally first, then Azure simulator, then QPU
@@ -105,6 +110,7 @@ python scripts/test_runner.py --all
 ## LoRA Readiness Check
 
 Adapter ready when both exist:
+
 - `adapter_config.json`
 - `adapter_model.safetensors`
 
@@ -119,12 +125,15 @@ Adapter ready when both exist:
 ## Troubleshooting
 
 ### Provider Not Detected
+
 Check `/api/ai/status` for missing env vars. Azure OpenAI requires ALL 4 variables.
 
 ### LoRA Model Won't Load
+
 Verify adapter directory contains both `adapter_config.json` and `adapter_model.safetensors`.
 
 ### Quantum Job Stuck
+
 Use simulator first: `python scripts/quantum_autorun.py --job azure_ionq_simulator`
 
 ## Key Files to Reference

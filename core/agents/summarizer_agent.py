@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -39,7 +39,7 @@ class SummarizerAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
     ) -> None:
         self.memory = memory
         self.llm = llm or LLMClient()
@@ -47,13 +47,13 @@ class SummarizerAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"summarize", "compress", "condense"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         text: str = payload.get("text") or payload.get("content") or ""
         limit: int = max(1, int(payload.get("limit", 20)))
 
         if not text.strip():
-            events: List[Dict[str, Any]] = self.memory.last(limit)
+            events: list[dict[str, Any]] = self.memory.last(limit)
             if not events:
                 summary = "No context to summarize."
             else:
@@ -78,10 +78,7 @@ class SummarizerAgent(BaseAgent):
         messages = [
             {
                 "role": "system",
-                "content": (
-                    "You are a summarization engine. "
-                    'Output ONLY a JSON object with a single field: summary.'
-                ),
+                "content": ("You are a summarization engine. Output ONLY a JSON object with a single field: summary."),
             },
             {
                 "role": "user",
@@ -126,12 +123,8 @@ class SummarizerAgent(BaseAgent):
         return raw.strip()[:_MAX_SUMMARY_LENGTH] or fallback
 
     @staticmethod
-    def _format_event(event: Dict[str, Any]) -> str:
+    def _format_event(event: dict[str, Any]) -> str:
         event_type = event.get("type", "event")
         data = event.get("data", "")
-        data_str = (
-            json.dumps(data, ensure_ascii=False)
-            if isinstance(data, (dict, list))
-            else str(data)
-        )
+        data_str = json.dumps(data, ensure_ascii=False) if isinstance(data, (dict, list)) else str(data)
         return f"{event_type}: {data_str}"

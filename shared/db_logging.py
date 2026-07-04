@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 _WARNED = False  # Emit import/connection warnings only once
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +44,7 @@ def _get_conn():
         return None
 
 
-def _safe_exec(cursor, sql: str, params: List[Any]) -> bool:
+def _safe_exec(cursor, sql: str, params: list[Any]) -> bool:
     try:
         cursor.execute(sql, params)
         return True
@@ -54,19 +54,20 @@ def _safe_exec(cursor, sql: str, params: List[Any]) -> bool:
 
 
 def log_chat_message_safe(
-    session_id: Optional[str],
+    session_id: str | None,
     provider: str,
-    model: Optional[str],
+    model: str | None,
     role: str,
     content: str,
-    token_count: Optional[int] = None,
-    prompt_tokens: Optional[int] = None,
-    completion_tokens: Optional[int] = None,
-    total_tokens: Optional[int] = None,
-    execution_time_ms: Optional[int] = None,
-    finish_reason: Optional[str] = None,
-    log_file_path: Optional[str] = None,
-) -> Dict[str, Any]:
+    token_count: int | None = None,
+    prompt_tokens: int | None = None,
+    completion_tokens: int | None = None,
+    total_tokens: int | None = None,
+    execution_time_ms: int | None = None,
+    finish_reason: str | None = None,
+    log_file_path: str | None = None,
+) -> dict[str, Any]:
+    """Best-effort chat message logging; returns a skip/error dict on failure."""
     conn = _get_conn()
     if not conn:
         return {"success": False, "skipped": True}
@@ -114,7 +115,7 @@ def log_chat_message_safe(
             pass
 
 
-def _parse_quantum_summary() -> Dict[str, Any]:
+def _parse_quantum_summary() -> dict[str, Any]:
     summary_path = REPO_ROOT / "ai-projects" / "quantum-ml" / "results" / "custom_training_summary.json"
     if not summary_path.exists():
         return {}
@@ -131,9 +132,8 @@ def _parse_quantum_summary() -> Dict[str, Any]:
         return {}
 
 
-def log_quantum_run_safe(
-    job, result: Dict[str, Any], dataset_name: str, log_path: str
-) -> Dict[str, Any]:  # noqa: ANN001
+def log_quantum_run_safe(job, result: dict[str, Any], dataset_name: str, log_path: str) -> dict[str, Any]:  # noqa: ANN001
+    """Best-effort quantum run logging; returns a skip/error dict on failure."""
     conn = _get_conn()
     if not conn:
         return {"success": False, "skipped": True}
@@ -199,7 +199,7 @@ def log_quantum_run_safe(
             pass
 
 
-def _load_yaml(path: Path) -> Dict[str, Any]:
+def _load_yaml(path: Path) -> dict[str, Any]:
     try:
         import yaml  # noqa: WPS433
 
@@ -208,7 +208,8 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
         return {}
 
 
-def log_lora_run_safe(job, result: Dict[str, Any]) -> Dict[str, Any]:  # noqa: ANN001
+def log_lora_run_safe(job, result: dict[str, Any]) -> dict[str, Any]:  # noqa: ANN001
+    """Best-effort LoRA run logging; returns a skip/error dict on failure."""
     conn = _get_conn()
     if not conn:
         return {"success": False, "skipped": True}

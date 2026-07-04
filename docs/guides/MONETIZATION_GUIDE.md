@@ -10,11 +10,11 @@ This document describes the comprehensive monetization system implemented for th
 
 To achieve the $2,000 monthly recurring revenue (MRR) target:
 
-| Tier | Subscribers | Price/Month | Revenue |
-| ------ | ------------- | ------------- | --------- |
-| Pro | 5 | $49 | $245 |
-| Enterprise | 10 | $199 | $1,990 |
-| **Total** | **15** | - | **$2,235** |
+| Tier       | Subscribers | Price/Month | Revenue    |
+| ---------- | ----------- | ----------- | ---------- |
+| Pro        | 5           | $49         | $245       |
+| Enterprise | 10          | $199        | $1,990     |
+| **Total**  | **15**      | -           | **$2,235** |
 
 **Annual Recurring Revenue (ARR):** $26,820
 
@@ -25,6 +25,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 **Target Audience:** Trial users, students, hobbyists
 
 **Features:**
+
 - ✅ Basic Chat (100 messages/month)
 - ✅ Aria Character Access (basic)
 - ❌ Quantum Computing
@@ -35,6 +36,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 - ❌ Commercial License
 
 **Conversion Strategy:**
+
 - Upsell to Pro after 100 messages
 - Show feature comparisons
 - Offer 7-day Pro trial
@@ -44,6 +46,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 **Target Audience:** Professionals, developers, small teams
 
 **Features:**
+
 - ✅ 10,000 Chat Messages/month
 - ✅ Full Aria Character Suite
 - ✅ Quantum Computing (50 jobs/month)
@@ -55,6 +58,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 - ❌ Priority Support
 
 **Value Proposition:**
+
 - Professional features at affordable price
 - Quantum ML experimentation
 - Commercial usage rights
@@ -65,6 +69,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 **Target Audience:** Organizations, agencies, large teams
 
 **Features:**
+
 - ✅ **Unlimited** Everything
 - ✅ Custom Model Training
 - ✅ Priority Support (24/7)
@@ -74,6 +79,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 - ✅ Dedicated Account Manager
 
 **Value Proposition:**
+
 - No usage limits
 - Enterprise-grade support
 - Custom solutions
@@ -86,6 +92,7 @@ To achieve the $2,000 monthly recurring revenue (MRR) target:
 #### 1. Subscription Manager (`shared/subscription_manager.py`)
 
 Core features:
+
 - Subscription lifecycle management
 - Feature access control
 - Usage tracking and limits
@@ -129,6 +136,7 @@ New endpoints added:
 #### 3. Frontend Components
 
 ##### Pricing Page (`pricing.html`)
+
 - Beautiful, responsive design
 - Three-tier comparison
 - Revenue projection model
@@ -136,6 +144,7 @@ New endpoints added:
 - Call-to-action buttons
 
 ##### Admin Dashboard (`admin_dashboard.html`)
+
 - Real-time revenue metrics
 - Subscriber management
 - Usage analytics
@@ -146,13 +155,13 @@ New endpoints added:
 
 ### Tracked Resources
 
-| Resource | Free Limit | Pro Limit | Enterprise |
-| ---------- | ----------- | ----------- | ------------ |
-| Chat Messages | 100/mo | 10,000/mo | Unlimited |
-| Quantum Jobs | 0 | 50/mo | Unlimited |
-| Training Hours | 0 | 20/mo | Unlimited |
-| API Requests | 0 | 10,000/mo | Unlimited |
-| Websites Created | 0 | 10/mo | Unlimited |
+| Resource         | Free Limit | Pro Limit | Enterprise |
+| ---------------- | ---------- | --------- | ---------- |
+| Chat Messages    | 100/mo     | 10,000/mo | Unlimited  |
+| Quantum Jobs     | 0          | 50/mo     | Unlimited  |
+| Training Hours   | 0          | 20/mo     | Unlimited  |
+| API Requests     | 0          | 10,000/mo | Unlimited  |
+| Websites Created | 0          | 10/mo     | Unlimited  |
 
 ### Implementation Example
 
@@ -188,6 +197,7 @@ manager.upgrade_subscription(
 ```
 
 **Required Environment Variables:**
+
 - `STRIPE_SECRET_KEY` - Stripe API secret key
 - `STRIPE_PUBLISHABLE_KEY` - Stripe publishable key
 - `STRIPE_WEBHOOK_SECRET` - Webhook signing secret
@@ -206,6 +216,7 @@ manager.upgrade_subscription(
 ### 1. Free-to-Paid Conversion
 
 **Tactics:**
+
 - Show usage progress bars
 - "Upgrade to unlock" messaging
 - Feature discovery tooltips
@@ -216,6 +227,7 @@ manager.upgrade_subscription(
 ### 2. Pro-to-Enterprise Upsell
 
 **Triggers:**
+
 - Approaching usage limits
 - Team collaboration needs
 - Custom model requests
@@ -226,10 +238,12 @@ manager.upgrade_subscription(
 ### 3. Annual Billing Discount
 
 Offer 20% discount for annual commitment:
+
 - Pro Annual: $470 (save $118)
 - Enterprise Annual: $1,910 (save $478)
 
 **Benefits:**
+
 - Improved cash flow
 - Reduced churn
 - Higher customer lifetime value
@@ -237,6 +251,7 @@ Offer 20% discount for annual commitment:
 ### 4. Add-ons (Future Enhancement)
 
 Additional revenue streams:
+
 - Extra quantum computing hours: $10/10 hours
 - Additional API requests: $5/10K requests
 - Custom model training: $99/model
@@ -247,35 +262,37 @@ Additional revenue streams:
 ### Key Metrics to Track
 
 1. **Revenue Metrics**
-   - Monthly Recurring Revenue (MRR)
-   - Annual Recurring Revenue (ARR)
-   - Average Revenue Per User (ARPU)
-   - Customer Lifetime Value (LTV)
+    - Monthly Recurring Revenue (MRR)
+    - Annual Recurring Revenue (ARR)
+    - Average Revenue Per User (ARPU)
+    - Customer Lifetime Value (LTV)
 
 2. **User Metrics**
-   - Total subscribers
-   - Active subscribers
-   - Subscriber growth rate
-   - Churn rate
+    - Total subscribers
+    - Active subscribers
+    - Subscriber growth rate
+    - Churn rate
 
 3. **Conversion Metrics**
-   - Free-to-Pro conversion rate
-   - Pro-to-Enterprise conversion rate
-   - Trial-to-paid conversion rate
+    - Free-to-Pro conversion rate
+    - Pro-to-Enterprise conversion rate
+    - Trial-to-paid conversion rate
 
 4. **Usage Metrics**
-   - Features usage by tier
-   - Limit approaching alerts
-   - Feature adoption rate
+    - Features usage by tier
+    - Limit approaching alerts
+    - Feature adoption rate
 
 ### Monitoring Dashboard
 
 Access the admin dashboard at:
+
 ```
 http://localhost:8080/admin_dashboard.html
 ```
 
 Features:
+
 - Real-time revenue display
 - Subscriber list and management
 - Usage analytics
@@ -291,27 +308,28 @@ curl http://localhost:7071/api/subscription/status?user_id=demo_user
 ```
 
 Response:
+
 ```json
 {
-  "user_id": "demo_user",
-  "tier": "pro",
-  "tier_name": "PRO",
-  "price": 49,
-  "is_active": true,
-  "usage": {
-    "chat_messages": 150,
-    "quantum_jobs": 5,
-    "training_hours": 2,
-    "api_requests": 1000,
-    "websites_created": 1
-  },
-  "limits": {
-    "chat_messages": 10000,
-    "quantum_jobs": 50,
-    "training_hours": 20,
-    "api_requests": 10000,
-    "websites_created": 10
-  }
+    "user_id": "demo_user",
+    "tier": "pro",
+    "tier_name": "PRO",
+    "price": 49,
+    "is_active": true,
+    "usage": {
+        "chat_messages": 150,
+        "quantum_jobs": 5,
+        "training_hours": 2,
+        "api_requests": 1000,
+        "websites_created": 1
+    },
+    "limits": {
+        "chat_messages": 10000,
+        "quantum_jobs": 50,
+        "training_hours": 20,
+        "api_requests": 10000,
+        "websites_created": 10
+    }
 }
 ```
 
@@ -322,17 +340,18 @@ curl http://localhost:7071/api/subscription/revenue
 ```
 
 Response:
+
 ```json
 {
-  "total_subscribers": 15,
-  "active_subscribers": 15,
-  "by_tier": {
-    "free": 0,
-    "pro": 5,
-    "enterprise": 10
-  },
-  "monthly_recurring_revenue": 2235,
-  "annual_recurring_revenue": 26820
+    "total_subscribers": 15,
+    "active_subscribers": 15,
+    "by_tier": {
+        "free": 0,
+        "pro": 5,
+        "enterprise": 10
+    },
+    "monthly_recurring_revenue": 2235,
+    "annual_recurring_revenue": 26820
 }
 ```
 
@@ -353,21 +372,25 @@ curl -X POST http://localhost:7071/api/subscription/usage \
 ### Local Testing
 
 1. Start Azure Functions:
+
 ```bash
 func host start
 ```
 
 2. Open pricing page:
+
 ```bash
 open http://localhost:7071/pricing.html
 ```
 
 3. Open admin dashboard:
+
 ```bash
 open http://localhost:7071/admin_dashboard.html
 ```
 
 4. Test API endpoints:
+
 ```bash
 # Get pricing
 curl http://localhost:7071/api/subscription/pricing | jq
@@ -382,6 +405,7 @@ curl http://localhost:7071/api/subscription/revenue | jq
 ### Simulating Target Revenue
 
 The admin dashboard includes a "Simulate Target Revenue" button that creates demo data showing the $2,000+ MRR scenario with:
+
 - 5 Pro subscribers ($245)
 - 10 Enterprise subscribers ($1,990)
 - Total: $2,235 MRR
@@ -391,47 +415,50 @@ The admin dashboard includes a "Simulate Target Revenue" button that creates dem
 ### Phase 2 Features
 
 1. **Payment Gateway Integration**
-   - Full Stripe integration
-   - Automated billing
-   - Invoice generation
-   - Payment history
+    - Full Stripe integration
+    - Automated billing
+    - Invoice generation
+    - Payment history
 
 2. **Advanced Analytics**
-   - Cohort analysis
-   - Churn prediction
-   - Revenue forecasting
-   - A/B testing framework
+    - Cohort analysis
+    - Churn prediction
+    - Revenue forecasting
+    - A/B testing framework
 
 3. **Customer Portal**
-   - Self-service subscription management
-   - Usage dashboard
-   - Billing history
-   - Invoice downloads
+    - Self-service subscription management
+    - Usage dashboard
+    - Billing history
+    - Invoice downloads
 
 4. **Marketing Automation**
-   - Email campaigns
-   - In-app messaging
-   - Upgrade prompts
-   - Churn prevention
+    - Email campaigns
+    - In-app messaging
+    - Upgrade prompts
+    - Churn prevention
 
 5. **API Marketplace**
-   - Public API marketplace
-   - Developer documentation
-   - API key management
-   - Rate limit customization
+    - Public API marketplace
+    - Developer documentation
+    - API key management
+    - Rate limit customization
 
 ## Support & Documentation
 
 ### For Users
+
 - Pricing page: `/pricing.html`
 - API documentation: `/docs/api.md`
 - Feature comparison: See pricing page
 
 ### For Administrators
+
 - Admin dashboard: `/admin_dashboard.html`
 - This documentation: `MONETIZATION_GUIDE.md`
 
 ### Contact
+
 - Sales: sales@aria-platform.com
 - Support: support@aria-platform.com
 - Technical: tech@aria-platform.com
@@ -439,18 +466,21 @@ The admin dashboard includes a "Simulate Target Revenue" button that creates dem
 ## Compliance & Legal
 
 ### Terms of Service
+
 - Commercial use requires Pro or Enterprise tier
 - Free tier for personal/educational use only
 - Data retention policies apply
 - SLA guarantees for Enterprise only
 
 ### Privacy
+
 - No data shared with third parties
 - Usage data for analytics only
 - GDPR compliant
 - SOC 2 Type II certified (Enterprise)
 
 ### Refund Policy
+
 - 14-day money-back guarantee
 - Pro-rated refunds for annual plans
 - No questions asked cancellation
@@ -458,18 +488,21 @@ The admin dashboard includes a "Simulate Target Revenue" button that creates dem
 ## Success Metrics
 
 ### 30-Day Goals
+
 - [ ] 5 Pro subscribers ($245 MRR)
 - [ ] 10 Enterprise subscribers ($1,990 MRR)
 - [ ] 5% free-to-paid conversion
 - [ ] < 5% monthly churn
 
 ### 90-Day Goals
+
 - [ ] $3,000+ MRR
 - [ ] 50+ total subscribers
 - [ ] 10% free-to-paid conversion
 - [ ] API marketplace launch
 
 ### 12-Month Goals
+
 - [ ] $10,000+ MRR
 - [ ] 200+ total subscribers
 - [ ] Multiple revenue streams

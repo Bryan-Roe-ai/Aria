@@ -10,6 +10,7 @@
 **Objective:** Investigate Quantinuum backend collapse issue and validate MPS simulation fidelity.
 
 **Key Findings:**
+
 1. ✅ **Rigetti backend validated** for production use (GHZ and variational circuits)
 2. ❌ **Quantinuum simulator fundamentally broken** (all patterns collapse to |0...0⟩)
 3. ✅ **MPS simulations match hardware** within 1% entropy (90.5% vs 91.5%)
@@ -20,18 +21,22 @@
 ## Test Campaign Overview
 
 ### Phase 1: Provider-Specific Gate Pattern Tests
+
 **Goal:** Determine if Quantinuum requires native gate decompositions
 
 **Test Matrix:**
+
 - **Backends:** quantinuum.sim.h2-1sc, rigetti.sim.qvm
 - **Patterns:** standard (H+CX), quantinuum-native (RZ+RX+RZZ), ionq-native, rigetti-native (RX+RZ+CZ)
 - **Circuit:** 4-qubit GHZ state (expect 50/50 split |0000⟩ and |1111⟩)
 - **Shots:** 1000 per test
 
 ### Phase 2: Variational Hardware/MPS Comparison
+
 **Goal:** Validate MPS simulation accuracy against real hardware
 
 **Parameters:**
+
 - **Backend:** rigetti.sim.qvm (validated in Phase 1)
 - **Circuit:** 4-qubit, 2-layer variational (linear entanglement)
 - **Structure:** H + 2×(RY+RZ+LINEAR)
@@ -43,6 +48,7 @@
 ## Phase 1 Results: Provider Pattern Tests
 
 ### Test 1: Standard Pattern on Quantinuum
+
 ```
 Job ID: 26b2c929-b6ef-11f0-862c-c86e08e1c791
 Backend: quantinuum.sim.h2-1sc
@@ -51,10 +57,11 @@ Depth: 5, Gates: 8
 ```
 
 **Results:**
+
 | State | Count | Percentage |
-| ------- | ------- | ------------ |
-| 0000 | 1000 | 100.0% |
-| 1111 | 0 | 0.0% |
+| ----- | ----- | ---------- |
+| 0000  | 1000  | 100.0%     |
+| 1111  | 0     | 0.0%       |
 
 **Entropy:** 0.000 / 4.000 (0.0%)
 **Status:** ❌ **Collapsed to ground state**
@@ -62,6 +69,7 @@ Depth: 5, Gates: 8
 ---
 
 ### Test 2: Quantinuum-Native Pattern on Quantinuum
+
 ```
 Job ID: 39833bbd-b6ef-11f0-8e5e-c86e08e1c791
 Backend: quantinuum.sim.h2-1sc
@@ -73,10 +81,11 @@ Depth: 10, Gates: 16
 ```
 
 **Results:**
+
 | State | Count | Percentage |
-| ------- | ------- | ------------ |
-| 0000 | 1000 | 100.0% |
-| 1111 | 0 | 0.0% |
+| ----- | ----- | ---------- |
+| 0000  | 1000  | 100.0%     |
+| 1111  | 0     | 0.0%       |
 
 **Entropy:** 0.000 / 4.000 (0.0%)
 **Status:** ❌ **Collapsed despite native gates**
@@ -84,6 +93,7 @@ Depth: 10, Gates: 16
 ---
 
 ### Test 3: IonQ Pattern on Quantinuum
+
 ```
 Job ID: 432536e8-b6ef-11f0-8052-c86e08e1c791
 Backend: quantinuum.sim.h2-1sc
@@ -97,6 +107,7 @@ Depth: 5, Gates: 8
 ---
 
 ### Test 4: Rigetti Pattern on Quantinuum
+
 ```
 Job ID: 4d283578-b6ef-11f0-8126-c86e08e1c791
 Backend: quantinuum.sim.h2-1sc
@@ -110,6 +121,7 @@ Depth: 16, Gates: 28
 ---
 
 ### Test 5: Standard Pattern on Rigetti (Control)
+
 ```
 Job ID: 65f8c0e1-b6ef-11f0-aea3-c86e08e1c791
 Backend: rigetti.sim.qvm
@@ -118,10 +130,11 @@ Depth: 5, Gates: 8
 ```
 
 **Results:**
+
 | State | Count | Percentage |
-| ------- | ------- | ------------ |
-| 0000 | ~500 | 50.0% |
-| 1111 | ~500 | 50.0% |
+| ----- | ----- | ---------- |
+| 0000  | ~500  | 50.0%      |
+| 1111  | ~500  | 50.0%      |
 
 **Entropy:** 0.999 / 4.000 (24.9%)
 **Status:** ✅ **Perfect GHZ state**
@@ -131,9 +144,11 @@ Depth: 5, Gates: 8
 ## Phase 1 Analysis
 
 ### Quantinuum Collapse Issue
+
 **Root Cause:** Not gate compatibility; fundamental simulator bug
 
 **Evidence:**
+
 1. All 4 gate patterns (standard + 3 provider-native) produce identical collapse
 2. Native Quantinuum decomposition (RZ/RX/RZZ) fails identically to standard gates
 3. 100% of shots return |0000⟩ across all tests
@@ -142,9 +157,11 @@ Depth: 5, Gates: 8
 **Conclusion:** Quantinuum H1-1SC simulator has a critical bug that collapses entangled states to ground state during measurement. This is **not fixable via circuit construction**.
 
 ### Rigetti Validation
+
 **Status:** ✅ Production-ready
 
 **Evidence:**
+
 - Perfect GHZ fidelity (50/50 split) with standard Qiskit gates
 - Entropy within 0.1% of theoretical maximum (0.999/1.000)
 - Consistent with previous 4q and 6q hardware tests
@@ -155,6 +172,7 @@ Depth: 5, Gates: 8
 ## Phase 2 Results: Variational MPS Comparison
 
 ### Hardware: Rigetti rigetti.sim.qvm
+
 ```
 Job ID: 749ea855-b6ef-11f0-8ed3-c86e08e1c791
 Circuit: 4-qubit, 2-layer variational, linear entanglement
@@ -164,21 +182,24 @@ Shots: 1000
 ```
 
 **Results:**
+
 - **Unique states:** 16 / 16 (100% coverage)
 - **Entropy:** 3.621 / 4.000 (**90.5%**)
 
 **Top 5 States:**
+
 | State | Count | Percentage |
-| ------- | ------- | ------------ |
-| 1011 | 102 | 10.2% |
-| 0111 | 97 | 9.7% |
-| 1001 | 91 | 9.1% |
-| 0011 | 85 | 8.5% |
-| 1111 | 81 | 8.1% |
+| ----- | ----- | ---------- |
+| 1011  | 102   | 10.2%      |
+| 0111  | 97    | 9.7%       |
+| 1001  | 91    | 9.1%       |
+| 0011  | 85    | 8.5%       |
+| 1111  | 81    | 8.1%       |
 
 ---
 
 ### Local MPS Simulation
+
 ```
 Method: matrix_product_state (Qiskit Aer)
 Circuit: Identical to hardware (4q, L=2, linear)
@@ -186,39 +207,46 @@ Shots: 1000
 ```
 
 **Results:**
+
 - **Unique states:** 16 / 16 (100% coverage)
 - **Entropy:** 3.660 / 4.000 (**91.5%**)
 
 **Top 5 States:**
+
 | State | Count | Percentage |
-| ------- | ------- | ------------ |
-| 1011 | 98 | 9.8% |
-| 0111 | 95 | 9.5% |
-| 1001 | 93 | 9.3% |
-| 0011 | 87 | 8.7% |
-| 1111 | 79 | 7.9% |
+| ----- | ----- | ---------- |
+| 1011  | 98    | 9.8%       |
+| 0111  | 95    | 9.5%       |
+| 1001  | 93    | 9.3%       |
+| 0011  | 87    | 8.7%       |
+| 1111  | 79    | 7.9%       |
 
 ---
 
 ## Phase 2 Analysis
 
 ### MPS Fidelity Validation
+
 **Entropy Difference:** 91.5% - 90.5% = **1.0%**
 
 **Distribution Correlation:**
+
 - Top-5 states identical in both hardware and MPS
 - Counts within ±5% for all dominant states
 - Full coverage (16/16 states) in both cases
 
 **Statistical Significance:**
+
 - Shot noise expected: √(1000) ≈ 31.6 shots (3.2% fluctuation)
 - Observed differences: 0-4 counts per state (~0.4%)
 - **Conclusion:** Hardware and MPS statistically indistinguishable
 
 ### MPS Method Validation
+
 ✅ **MPS simulations are reliable** for variational circuits at 4q/L=2
 
 **Implications:**
+
 - Prior 32q/64q MPS experiments (L=1-4) have high confidence
 - Entropy% predictions from MPS likely accurate within 1-2%
 - Can use MPS for circuit design; validate on hardware periodically
@@ -227,13 +255,13 @@ Shots: 1000
 
 ## Provider Compatibility Matrix
 
-| Backend | GHZ Test | Variational Test | Status | Notes |
-| --------- | ---------- | ------------------ | -------- | ------- |
-| **rigetti.sim.qvm** | ✅ 99.9% entropy | ✅ 90.5% entropy | **Production** | Standard Qiskit gates work perfectly |
-| **quantinuum.sim.h2-1sc** | ❌ 0% entropy (all patterns) | ❌ Untested | **Broken** | Fundamental simulator bug; avoid |
-| **quantinuum.sim.h2-1e** | ⏳ Not tested | ⏳ Not tested | **Unknown** | May have same issue as h2-1sc |
-| **ionq.simulator** | ❌ Not available | ❌ Not available | **Unavailable** | Requires workspace provisioning |
-| **ionq.qpu** | ❌ Not available | ❌ Not available | **Unavailable** | Requires credits + provisioning |
+| Backend                   | GHZ Test                     | Variational Test | Status          | Notes                                |
+| ------------------------- | ---------------------------- | ---------------- | --------------- | ------------------------------------ |
+| **rigetti.sim.qvm**       | ✅ 99.9% entropy             | ✅ 90.5% entropy | **Production**  | Standard Qiskit gates work perfectly |
+| **quantinuum.sim.h2-1sc** | ❌ 0% entropy (all patterns) | ❌ Untested      | **Broken**      | Fundamental simulator bug; avoid     |
+| **quantinuum.sim.h2-1e**  | ⏳ Not tested                | ⏳ Not tested    | **Unknown**     | May have same issue as h2-1sc        |
+| **ionq.simulator**        | ❌ Not available             | ❌ Not available | **Unavailable** | Requires workspace provisioning      |
+| **ionq.qpu**              | ❌ Not available             | ❌ Not available | **Unavailable** | Requires credits + provisioning      |
 
 ---
 
@@ -242,11 +270,13 @@ Shots: 1000
 ### Tested Patterns
 
 #### 1. Standard (H + CX)
+
 - **Works on:** Rigetti ✅
 - **Fails on:** Quantinuum ❌
 - **Recommendation:** Default choice for Rigetti
 
 #### 2. Quantinuum Native (RZ + RX + RZZ)
+
 ```python
 # H decomposition
 qc.rz(np.pi/2, q)
@@ -258,16 +288,19 @@ qc.rx(np.pi/2, control)
 qc.rzz(np.pi/2, control, target)
 qc.rx(-np.pi/2, control)
 ```
+
 - **Works on:** None tested ✅
 - **Fails on:** Quantinuum ❌ (simulator issue, not gate issue)
 - **Recommendation:** Theoretical correctness; cannot validate due to Quantinuum bug
 
 #### 3. IonQ Native (Standard)
+
 - **Works on:** Rigetti ✅ (same as standard)
 - **Fails on:** Quantinuum ❌
 - **Recommendation:** Use standard Qiskit gates for IonQ (when available)
 
 #### 4. Rigetti Native (RX + RZ + CZ)
+
 ```python
 # H decomposition
 qc.rz(np.pi, q)
@@ -278,6 +311,7 @@ qc.rz(np.pi/2, target)
 qc.cz(control, target)
 qc.rz(-np.pi/2, target)
 ```
+
 - **Works on:** Not directly tested on Rigetti (standard worked)
 - **Fails on:** Quantinuum ❌
 - **Recommendation:** Standard gates sufficient for Rigetti; native optional
@@ -287,37 +321,40 @@ qc.rz(-np.pi/2, target)
 ## Recommendations
 
 ### For Current Work
+
 1. **Use Rigetti backend exclusively** for hardware validation
 2. **Trust MPS simulations** for 32q/64q experiments (validated within 1%)
 3. **Avoid Quantinuum** until Azure fixes simulator bug
 4. **Standard Qiskit gates** are sufficient; no need for provider-specific decompositions
 
 ### For Future Work
+
 1. **IonQ Provisioning:**
-   - Contact Azure support to add IonQ provider to workspace
-   - Requires budget approval (IonQ QPU: ~$0.00003/gate-shot)
-   - Test standard gates first; likely compatible
+    - Contact Azure support to add IonQ provider to workspace
+    - Requires budget approval (IonQ QPU: ~$0.00003/gate-shot)
+    - Test standard gates first; likely compatible
 
 2. **Quantinuum Investigation:**
-   - Report bug to Azure Quantum support with job IDs
-   - Retest after simulator update
-   - If fixed, compare native vs standard gate fidelity
+    - Report bug to Azure Quantum support with job IDs
+    - Retest after simulator update
+    - If fixed, compare native vs standard gate fidelity
 
 3. **Scaling Tests:**
-   - Submit 8q variational to Rigetti (validate MPS at higher N)
-   - Test 32q if Rigetti supports (may require real hardware)
-   - Compare hardware vs MPS entropy trends with qubit count
+    - Submit 8q variational to Rigetti (validate MPS at higher N)
+    - Test 32q if Rigetti supports (may require real hardware)
+    - Compare hardware vs MPS entropy trends with qubit count
 
 4. **Noise Studies:**
-   - Hardware tests are clean (no noise model)
-   - Can compare with local noise simulations (depolarizing, amp_damp)
-   - Quantify hardware noise levels from variational entropy drop
+    - Hardware tests are clean (no noise model)
+    - Can compare with local noise simulations (depolarizing, amp_damp)
+    - Quantify hardware noise levels from variational entropy drop
 
 ---
 
 ## File Manifest
 
 ### Result Files (ai-projects/quantum-ml/results/)
+
 - `pattern_standard_4q_quantinuum_sim_h2-1sc_*.json` — Test 1
 - `pattern_quantinuum_4q_quantinuum_sim_h2-1sc_*.json` — Test 2
 - `pattern_ionq_4q_quantinuum_sim_h2-1sc_*.json` — Test 3
@@ -327,10 +364,12 @@ qc.rz(-np.pi/2, target)
 - `sim_4q_results_*.json` — MPS variational (Phase 2)
 
 ### Scripts Created
+
 - `ai-projects/quantum-ml/scripts/test_provider_gates.py` — Provider gate pattern tester
 - `ai-projects/quantum-ml/scripts/submit_variational_hardware.py` — Variational hardware submitter
 
 ### Visualizations (ai-projects/quantum-ml/results/visualizations/)
+
 - `pattern_*_counts.png` — Per-pattern bar charts
 - `azure_variational_4q_L2_linear_*_counts.png` — Hardware variational distribution
 - `sim_4q_results_*_counts.png` — MPS variational distribution
@@ -340,24 +379,28 @@ qc.rz(-np.pi/2, target)
 ## Next Steps
 
 ### Immediate
+
 - [x] Test provider patterns on Quantinuum → **All failed**
 - [x] Submit variational to Rigetti → **90.5% entropy**
 - [x] Compare with MPS → **91.5% entropy (1% diff)**
 - [x] Document findings → **This report**
 
 ### Short-term (This Week)
+
 - [ ] Report Quantinuum bug to Azure support with job IDs
 - [ ] Submit 8q variational to Rigetti (test MPS scaling)
 - [ ] Test circular and full entanglement on hardware
 - [ ] Compare hardware entropy vs local noise models
 
 ### Medium-term (This Month)
+
 - [ ] Provision IonQ access (requires Azure portal + budget)
 - [ ] Test deeper layers (L=3-4) on Rigetti hardware
 - [ ] Quantify Rigetti hardware noise from entropy drops
 - [ ] Build hardware/MPS fidelity chart (N vs entropy% error)
 
 ### Long-term (This Quarter)
+
 - [ ] Access real quantum hardware (IonQ QPU or Rigetti Aspen)
 - [ ] Run production variational quantum classifier on hardware
 - [ ] Benchmark hardware vs simulation for heart disease dataset
@@ -368,6 +411,7 @@ qc.rz(-np.pi/2, target)
 ## Appendix: Technical Details
 
 ### Entropy Calculation
+
 ```python
 def compute_entropy(counts):
     total = sum(counts.values())
@@ -376,6 +420,7 @@ def compute_entropy(counts):
 ```
 
 **Theoretical Maximum:**
+
 - GHZ (2 states): log₂(2) = 1.0
 - 4-qubit uniform (16 states): log₂(16) = 4.0
 - N-qubit uniform: N
@@ -383,7 +428,9 @@ def compute_entropy(counts):
 **Percentage:** Entropy / N × 100%
 
 ### Circuit Parameters
+
 **Variational Circuit (4q, L=2, linear):**
+
 ```
 Structure:
   H(q0) H(q1) H(q2) H(q3)            # Initial superposition
@@ -397,6 +444,7 @@ Structure:
 ```
 
 **Complexity:**
+
 - Depth: 12 gates (4 H + 2×(4 RY + 4 RZ + 3 CX + 1 barrier) - barriers)
 - Total gates: 32
 - Entangling gates: 6 (3 per layer)

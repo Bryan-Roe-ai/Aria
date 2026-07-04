@@ -183,7 +183,6 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
           persist-credentials: false
-          submodules: recursive
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4e828ff8d448a8a6e532957b1811f387a63867e8
@@ -330,19 +329,21 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            echo "ref=$PR_HEAD_REF" >> "$GITHUB_OUTPUT"
-            echo "repo=$PR_HEAD_REPO" >> "$GITHUB_OUTPUT"
-            if [ "$PR_HEAD_REPO" = "$REPOSITORY" ]; then
-              echo "can_push=true" >> "$GITHUB_OUTPUT"
+          {
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              echo "ref=$PR_HEAD_REF"
+              echo "repo=$PR_HEAD_REPO"
+              if [ "$PR_HEAD_REPO" = "$REPOSITORY" ]; then
+                echo "can_push=true"
+              else
+                echo "can_push=false"
+              fi
             else
-              echo "can_push=false" >> "$GITHUB_OUTPUT"
+              echo "ref=$REF_NAME"
+              echo "repo=$REPOSITORY"
+              echo "can_push=false"
             fi
-          else
-            echo "ref=$REF_NAME" >> "$GITHUB_OUTPUT"
-            echo "repo=$REPOSITORY" >> "$GITHUB_OUTPUT"
-            echo "can_push=false" >> "$GITHUB_OUTPUT"
-          fi
+          } >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -399,7 +400,7 @@ jobs:
             npm install --global --no-fund --no-audit prettier@3
           fi
 
-          if git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' | grep -q .; then
+          if git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' ':(exclude).github/workflows/**' | grep -q .; then
             echo "::notice::C/C++ files detected; attempting to install clang-format"
             sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq || true
             sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends clang-format || true
@@ -452,13 +453,14 @@ jobs:
             "!**/vendor/**" \
             "!**/third_party/**" \
             "!**/third-party/**" \
-            "!**/*.min.*" || true
+            "!**/*.min.*" \
+            "!**/.github/workflows/**" || true
 
       - name: Run clang-format (C/C++)
         continue-on-error: true
         run: |
           set -euo pipefail
-          mapfile -t files < <(git ls-files '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' 2>/dev/null || true)
+          mapfile -t files < <(git ls-files -- '*.c' '*.cc' '*.cpp' '*.cxx' '*.h' '*.hh' '*.hpp' '*.hxx' ':(exclude).github/workflows/**' 2>/dev/null || true)
           if [ "${#files[@]}" -gt 0 ]; then
             clang-format -i --style=file --fallback-style=LLVM "${files[@]}" || true
           else

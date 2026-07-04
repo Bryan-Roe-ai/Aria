@@ -21,4 +21,4 @@
 game.onUpdate(() => {
     // Code in this function will run once per frame. MakeCode
     // Arcade games run at 30 FPS
-});
+})

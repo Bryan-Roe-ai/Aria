@@ -13,40 +13,45 @@ The Aria project includes multiple layers of testing to ensure the frontend (Jav
 ## Test Files
 
 ### Unit Tests
+
 - **`tests/test_aria_server.py`** - Server-side unit tests
-  - Tests tag generation (`[aria:say]`, `[aria:position]`, etc.)
-  - Fast, no external dependencies
-  - Run with: `pytest tests/test_aria_server.py`
+    - Tests tag generation (`[aria:say]`, `[aria:position]`, etc.)
+    - Fast, no external dependencies
+    - Run with: `pytest tests/test_aria_server.py`
 
 ### Integration Tests
+
 - **`tests/test_object_api_integration.py`** - HTTP API integration tests
-  - Tests REST endpoints (`/api/aria/object`, `/api/aria/state`)
-  - Requires server running on port 8000
-  - Simulates client requests without browser
-  - Run with: `pytest tests/test_object_api_integration.py`
+    - Tests REST endpoints (`/api/aria/object`, `/api/aria/state`)
+    - Requires server running on port 8000
+    - Simulates client requests without browser
+    - Run with: `pytest tests/test_object_api_integration.py`
 
 ### E2E Browser Tests
 
 #### Pyppeteer (Chromium via CDP)
+
 - **`tests/test_ui_pyppeteer.py`** - Browser automation using pyppeteer
-  - Uses Chrome DevTools Protocol
-  - Lightweight, Python-native
-  - Supports custom Chrome path via `CHROME_PATH` env var
-  - Run with: `pytest tests/test_ui_pyppeteer.py`
+    - Uses Chrome DevTools Protocol
+    - Lightweight, Python-native
+    - Supports custom Chrome path via `CHROME_PATH` env var
+    - Run with: `pytest tests/test_ui_pyppeteer.py`
 
 #### Playwright (Modern browser automation)
+
 - **`tests/test_ui_playwright.py`** - Browser automation using Playwright
-  - Modern, cross-browser (Chrome/Firefox/Safari)
-  - Better debugging and error messages
-  - Recommended for local development
-  - Run with: `pytest tests/test_ui_playwright.py -m playwright`
+    - Modern, cross-browser (Chrome/Firefox/Safari)
+    - Better debugging and error messages
+    - Recommended for local development
+    - Run with: `pytest tests/test_ui_playwright.py -m playwright`
 
 #### Selenium (Containerized Chrome)
+
 - **`tests/test_ui_selenium.py`** - Browser automation using Selenium Grid
-  - Uses remote Chrome in Docker container
-  - Best for CI/CD and isolated testing
-  - Supports VNC for watching tests run
-  - Run with: `pytest tests/test_ui_selenium.py -m selenium`
+    - Uses remote Chrome in Docker container
+    - Best for CI/CD and isolated testing
+    - Supports VNC for watching tests run
+    - Run with: `pytest tests/test_ui_selenium.py -m selenium`
 
 ## Running Tests Locally
 
@@ -119,40 +124,42 @@ The project includes a comprehensive GitHub Actions workflow (`.github/workflows
 ### Workflow Jobs
 
 1. **unit-integration-tests** (Python 3.10, 3.11, 3.12)
-   - Runs unit and integration tests
-   - Fast feedback (< 1 minute)
-   - No browser dependencies
+    - Runs unit and integration tests
+    - Fast feedback (< 1 minute)
+    - No browser dependencies
 
 2. **playwright-e2e**
-   - Installs Playwright and Chromium
-   - Starts Aria server
-   - Runs full E2E tests
-   - Duration: ~2-3 minutes
+    - Installs Playwright and Chromium
+    - Starts Aria server
+    - Runs full E2E tests
+    - Duration: ~2-3 minutes
 
 3. **pyppeteer-e2e**
-   - Installs system dependencies for Chromium
-   - Downloads Pyppeteer Chromium
-   - Runs E2E tests
-   - Duration: ~2-3 minutes
+    - Installs system dependencies for Chromium
+    - Downloads Pyppeteer Chromium
+    - Runs E2E tests
+    - Duration: ~2-3 minutes
 
 4. **containerized-chrome-e2e**
-   - Uses Selenium standalone Chrome service
-   - Isolated browser environment
-   - Best for consistency across environments
-   - Duration: ~2-3 minutes
+    - Uses Selenium standalone Chrome service
+    - Isolated browser environment
+    - Best for consistency across environments
+    - Duration: ~2-3 minutes
 
 5. **test-summary**
-   - Aggregates results from all jobs
-   - Provides unified test report
+    - Aggregates results from all jobs
+    - Provides unified test report
 
 ### Triggering the Workflow
 
 The workflow runs automatically on:
+
 - Push to `main` or `develop` branches
 - Pull requests targeting `main` or `develop`
 - Changes to `aria_web/` directory or test files
 
 Manual trigger:
+
 ```bash
 # Go to GitHub Actions tab → Select "Aria E2E Tests" → Click "Run workflow"
 ```
@@ -160,14 +167,17 @@ Manual trigger:
 ## Environment Variables
 
 ### Server Configuration
+
 - `ARIA_SERVER_URL` - Base URL for Aria server (default: `http://localhost:8000`)
 
 ### Pyppeteer Configuration
+
 - `CHROME_PATH` - Custom Chrome/Chromium binary path
 - `PUPPETEER_EXECUTABLE_PATH` - Alternative to CHROME_PATH
 - `PYPPETEER_DEBUG` - Enable debug output (set to `true`)
 
 ### Selenium Configuration
+
 - `SELENIUM_REMOTE_URL` - Selenium Grid hub URL (default: `http://localhost:4444/wd/hub`)
 
 ## Test Architecture
@@ -175,12 +185,14 @@ Manual trigger:
 ### What Each Test Type Validates
 
 #### Unit Tests
+
 - `[aria:say]` tag generation for speech commands
 - `[aria:position]` tag generation for movement
 - Object detection in command strings
 - Helper function correctness
 
 #### Integration Tests
+
 - POST `/api/aria/object` with action `add` creates object
 - POST `/api/aria/object` with action `update` modifies object position
 - POST `/api/aria/object` with action `remove` deletes object
@@ -188,6 +200,7 @@ Manual trigger:
 - GET `/api/aria/objects` lists all objects
 
 #### E2E Tests (All Variants)
+
 1. **Add Object**: Click "Add Object" → Verify object appears in server state
 2. **Pick Up Object**: Click object → Call `pickUpObject()` → Verify `state: 'held'` on server
 3. **Drop Object**: Call `dropObject()` → Verify object state changes to `on_stage` or `on_table`
@@ -233,6 +246,7 @@ Manual trigger:
 **Cause**: Missing system dependencies for Chromium
 
 **Solution**:
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install -y \
@@ -250,6 +264,7 @@ pytest tests/test_ui_pyppeteer.py -v
 **Cause**: Browsers not installed
 
 **Solution**:
+
 ```bash
 playwright install chromium
 # Or install all browsers
@@ -261,6 +276,7 @@ playwright install
 **Cause**: Selenium Chrome container not running
 
 **Solution**:
+
 ```bash
 # Start container
 docker run -d -p 4444:4444 -p 5900:5900 --shm-size=2g selenium/standalone-chrome:latest
@@ -277,6 +293,7 @@ curl http://localhost:4444/wd/hub/status
 **Cause**: Aria server not running
 
 **Solution**:
+
 ```bash
 # Start server manually
 cd aria_web
@@ -290,6 +307,7 @@ python server.py
 **Cause**: Browser automation library can't launch browser
 
 **Solution**:
+
 - Check if you're in a headless environment (CI, container)
 - Ensure system dependencies are installed
 - Verify browser installation

@@ -48,11 +48,11 @@ Edit `config/quantum_config.yaml`:
 
 ```yaml
 azure:
-  subscription_id: '<your-subscription-id>'  # From: az account show
-  resource_group: 'rg-quantum-ai'
-  workspace_name: 'quantum-ai-workspace'
-  location: 'eastus'
-  storage_account: '<your-storage-account-name>'  # From deployment output
+    subscription_id: "<your-subscription-id>" # From: az account show
+    resource_group: "rg-quantum-ai"
+    workspace_name: "quantum-ai-workspace"
+    location: "eastus"
+    storage_account: "<your-storage-account-name>" # From deployment output
 ```
 
 ### Step 3: Authenticate
@@ -145,22 +145,22 @@ Entanglement Quality: 100%
 
 ### FREE Options (Start Here!)
 
-| Service | Usage | Cost |
-| --------- | ------- | ------ |
-| **IonQ Simulator** | Unlimited | **$0.00** |
-| **Microsoft QC Simulator** | Unlimited | **$0.00** |
-| **Azure Storage** | First 5 GB | **$0.00** |
-| **Free Trial** | $200 credit | **$0.00** |
+| Service                    | Usage       | Cost      |
+| -------------------------- | ----------- | --------- |
+| **IonQ Simulator**         | Unlimited   | **$0.00** |
+| **Microsoft QC Simulator** | Unlimited   | **$0.00** |
+| **Azure Storage**          | First 5 GB  | **$0.00** |
+| **Free Trial**             | $200 credit | **$0.00** |
 
 **Recommendation:** Use simulators for all development and testing!
 
 ### Paid Quantum Hardware
 
-| Provider | Pricing Model | Estimated Cost |
-| ---------- | --------------- | ---------------- |
-| **IonQ QPU** | $0.00003 per gate-shot | ~$0.50 per circuit |
-| **Quantinuum H1-1** | $0.00015 per circuit | ~$1.50 per circuit |
-| **Rigetti** | Per-shot pricing | ~$0.30 per circuit |
+| Provider            | Pricing Model          | Estimated Cost     |
+| ------------------- | ---------------------- | ------------------ |
+| **IonQ QPU**        | $0.00003 per gate-shot | ~$0.50 per circuit |
+| **Quantinuum H1-1** | $0.00015 per circuit   | ~$1.50 per circuit |
+| **Rigetti**         | Per-shot pricing       | ~$0.30 per circuit |
 
 **For our optimized circuit:**
 
@@ -237,9 +237,9 @@ Quantum State Analysis:
 2. Check subscription: `az account show`
 3. Verify workspace exists:
 
-   ```powershell
-   az quantum workspace show -g rg-quantum-ai -n quantum-ai-workspace
-   ```
+    ```powershell
+    az quantum workspace show -g rg-quantum-ai -n quantum-ai-workspace
+    ```
 
 4. Update `quantum_config.yaml` with correct subscription ID
 
@@ -458,6 +458,6 @@ python test_azure_quantum.py
 
 ---
 
-*Generated: October 31, 2025*
-*Quantum AI Project - Azure Quantum Integration*
-*Status: PRODUCTION READY*
+_Generated: October 31, 2025_
+_Quantum AI Project - Azure Quantum Integration_
+_Status: PRODUCTION READY_

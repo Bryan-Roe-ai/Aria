@@ -6,17 +6,14 @@ Complete setup guide for deploying privacy-first AI systems with
 LM Studio + AGI Provider while maintaining regulatory compliance.
 """
 
-import json
-import os
-from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 
 class PrivacyDeploymentConfig:
     """Configuration schema for privacy-first deployments."""
 
     @staticmethod
-    def get_healthcare_config() -> Dict[str, Any]:
+    def get_healthcare_config() -> dict[str, Any]:
         """HIPAA-compliant configuration."""
         return {
             "description": "HIPAA-compliant deployment for healthcare",
@@ -32,7 +29,7 @@ class PrivacyDeploymentConfig:
         }
 
     @staticmethod
-    def get_financial_config() -> Dict[str, Any]:
+    def get_financial_config() -> dict[str, Any]:
         """PCI-DSS-compliant configuration."""
         return {
             "description": "PCI-DSS-compliant deployment for finance",
@@ -48,7 +45,7 @@ class PrivacyDeploymentConfig:
         }
 
     @staticmethod
-    def list_presets() -> Dict[str, str]:
+    def list_presets() -> dict[str, str]:
         """List available presets."""
         return {
             "healthcare": "HIPAA-compliant deployment",

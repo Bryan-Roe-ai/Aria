@@ -8,18 +8,18 @@
 
 # === Core runtime ===
 flask==3.1.3
-flask-cors==6.0.2
-numpy==2.4.6
-scikit-learn==1.8.0
+flask-cors==6.0.5
+numpy==2.5.0
+scikit-learn==1.9.0
 joblib==1.5.3
 
 # === Deep learning / ML runtime ===
 # NOTE: For CUDA-enabled servers, install the appropriate torch wheel for your CUDA version
-torch==2.12.0
+torch==2.12.1
 
 # === Quantum ML ===
 # Keep pennylane and pennylane-lightning versions compatible
-pennylane==0.45.0
+pennylane==0.45.1
 pennylane-lightning==0.45.0
 
 # === Production servers / deployment ===

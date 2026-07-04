@@ -177,3 +177,4 @@ Generated charts available in `ai-projects/quantum-ml/results/visualizations/`:
   - `ai-projects/quantum-ml/results/azure_ghz_4q_results_20251101_064243.json` (quantinuum)
   - `ai-projects/quantum-ml/results/azure_ghz_4q_results_20251101_064323.json` (quantinuum 100 shots)
 - Visualizations: `ai-projects/quantum-ml/results/visualizations/azure_ghz_*.png`
+```

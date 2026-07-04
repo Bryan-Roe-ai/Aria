@@ -9,6 +9,7 @@ Successfully implemented full-stack vision inference pipeline for the QAI web ch
 ### Backend (Azure Functions)
 
 **Inference Module** (`scripts/vision_inference.py`):
+
 - `VisionInference` class with TinyConvNet architecture
 - Auto-checkpoint discovery from training pipeline
 - Preprocessing: PIL Image → 64×64 RGB tensor → normalized
@@ -17,17 +18,19 @@ Successfully implemented full-stack vision inference pipeline for the QAI web ch
 - CLI interface for testing
 
 **API Endpoints** (`function_app.py`):
+
 1. `POST /api/vision/infer` - Single image analysis
-   - Input: `{"image": "<base64>"}`
-   - Output: `{"label": "happy", "confidence": 0.87, "scores": {...}, "model_info": {...}}`
-   - Model caching via singleton pattern
+    - Input: `{"image": "<base64>"}`
+    - Output: `{"label": "happy", "confidence": 0.87, "scores": {...}, "model_info": {...}}`
+    - Model caching via singleton pattern
 
 2. `POST /api/vision/batch-infer` - Batch processing
-   - Input: `{"images": ["<base64>", ...]}`
-   - Output: `{"results": [...], "count": N}`
-   - Maximum 50 images per request
+    - Input: `{"images": ["<base64>", ...]}`
+    - Output: `{"results": [...], "count": N}`
+    - Maximum 50 images per request
 
 **Features**:
+
 - CORS enabled for web frontend
 - Error handling with sanitized responses
 - Model singleton (loaded once, reused across requests)
@@ -36,12 +39,14 @@ Successfully implemented full-stack vision inference pipeline for the QAI web ch
 ### Frontend (Aria Chat)
 
 **HTML** (`chat-web/index.html`):
+
 - 🖼️ Upload Image button with gradient styling
 - Hidden file input (`accept="image/*"`)
 - Preview container with thumbnail and clear button
 - CSS styling matching existing chat aesthetics
 
 **JavaScript** (`chat-web/chat.js`):
+
 - Event handlers: button click, file selection, clear
 - FileReader for base64 encoding
 - Auto-analysis on upload (immediate API call)
@@ -52,20 +57,23 @@ Successfully implemented full-stack vision inference pipeline for the QAI web ch
 ### Testing
 
 **Test Suite** (`tests/test_vision_inference.py`):
+
 - 20 test cases covering:
-  - Model initialization and forward pass
-  - Preprocessing (PIL Image → tensor)
-  - All prediction methods (base64, file, batch)
-  - Error handling (invalid data, missing files)
-  - Checkpoint discovery
-  - Full pipeline integration
+    - Model initialization and forward pass
+    - Preprocessing (PIL Image → tensor)
+    - All prediction methods (base64, file, batch)
+    - Error handling (invalid data, missing files)
+    - Checkpoint discovery
+    - Full pipeline integration
 
 **Results**: ✅ **20/20 tests passed** (1.99s)
+
 - Minor warnings: `torch.load` weights_only (addressed in future PyTorch versions)
 
 ### Dependencies
 
 **Updated** (`requirements.txt`):
+
 ```
 Pillow>=10.0.0     # Image processing
 torch>=2.0.0       # Model inference
@@ -75,6 +83,7 @@ numpy>=1.24.0      # Array operations
 ### Documentation
 
 **Comprehensive Guide** (`VISION_API_GUIDE.md`):
+
 - Endpoint specifications (request/response formats)
 - Frontend integration examples (HTML + JavaScript)
 - Python client examples
@@ -91,16 +100,16 @@ numpy>=1.24.0      # Array operations
 3. Image loads, preview displays with thumbnail
 4. Vision API analyzes automatically in background
 5. Aria responds with expression analysis:
-   ```
-   🖼️ Image Analysis: smile.jpg
-   Expression: happy (87.3% confidence)
+    ```
+    🖼️ Image Analysis: smile.jpg
+    Expression: happy (87.3% confidence)
 
-   All Scores:
-   - happy: 87.3%
-   - neutral: 8.1%
-   - sad: 2.9%
-   - angry: 1.7%
-   ```
+    All Scores:
+    - happy: 87.3%
+    - neutral: 8.1%
+    - sad: 2.9%
+    - angry: 1.7%
+    ```
 6. User can clear and upload another image
 
 ## Technical Highlights
@@ -114,15 +123,15 @@ numpy>=1.24.0      # Array operations
 
 ## Validation Status
 
-| Component | Status | Details |
-| ----------- | -------- | --------- |
-| Inference Module | ✅ | 376 lines, fully tested |
-| API Endpoints | ✅ | 2 endpoints with CORS, caching |
-| Frontend UI | ✅ | Button, preview, CSS styling |
-| JavaScript | ✅ | Event handlers, base64 encoding, API calls |
-| Tests | ✅ | 20/20 passing (1.99s) |
-| Documentation | ✅ | Comprehensive API guide |
-| Dependencies | ✅ | requirements.txt updated |
+| Component        | Status | Details                                    |
+| ---------------- | ------ | ------------------------------------------ |
+| Inference Module | ✅     | 376 lines, fully tested                    |
+| API Endpoints    | ✅     | 2 endpoints with CORS, caching             |
+| Frontend UI      | ✅     | Button, preview, CSS styling               |
+| JavaScript       | ✅     | Event handlers, base64 encoding, API calls |
+| Tests            | ✅     | 20/20 passing (1.99s)                      |
+| Documentation    | ✅     | Comprehensive API guide                    |
+| Dependencies     | ✅     | requirements.txt updated                   |
 
 ## Next Steps (Optional Enhancements)
 
@@ -138,6 +147,7 @@ numpy>=1.24.0      # Array operations
 ## Deployment Ready
 
 **Local Testing**:
+
 ```powershell
 # Start Azure Functions
 func host start
@@ -149,6 +159,7 @@ start http://localhost:7071/chat-web/
 ```
 
 **Azure Deployment**:
+
 ```powershell
 # Deploy to Azure Functions
 func azure functionapp publish <app-name>
@@ -160,6 +171,7 @@ func azure functionapp publish <app-name>
 ## Summary
 
 ✅ **Full vision inference pipeline operational**
+
 - Backend: Azure Functions with model caching
 - Frontend: Seamless Aria chat integration
 - Tests: 100% passing (20/20)

@@ -20,7 +20,7 @@ import logging
 import os
 import sys
 import time
-from typing import Any, Dict, Optional
+from typing import Any
 
 __all__ = [
     "configure_logging",
@@ -68,17 +68,15 @@ class JsonFormatter(logging.Formatter):
     """
 
     def format(self, record: logging.LogRecord) -> str:
+        """Serialize a log record as a single JSON line."""
         record.message = record.getMessage()
         if record.exc_info:
             record.exc_text = self.formatException(record.exc_info)
         else:
             record.exc_text = None
 
-        doc: Dict[str, Any] = {
-            "timestamp": time.strftime(
-                "%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)
-            )
-            + f".{int(record.msecs):03d}Z",
+        doc: dict[str, Any] = {
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z",
             "level": record.levelname,
             "logger": record.name,
             "message": record.message,
@@ -117,8 +115,8 @@ _configured: bool = False
 
 
 def configure_logging(
-    level: Optional[str] = None,
-    structured: Optional[bool] = None,
+    level: str | None = None,
+    structured: bool | None = None,
     stream: Any = None,
 ) -> None:
     """Configure the root logger.
@@ -156,9 +154,7 @@ def configure_logging(
         # Remove existing stream handlers to avoid duplicates when running
         # under frameworks that add their own handlers (e.g. Azure Functions).
         for h in list(root.handlers):
-            if isinstance(h, logging.StreamHandler) and not isinstance(
-                h, logging.FileHandler
-            ):
+            if isinstance(h, logging.StreamHandler) and not isinstance(h, logging.FileHandler):
                 root.removeHandler(h)
 
         handler = logging.StreamHandler(stream or sys.stdout)
@@ -181,7 +177,7 @@ def configure_logging(
             h.setLevel(numeric_level)
 
 
-def configure_json_logging(level: Optional[str] = None, stream: Any = None) -> None:
+def configure_json_logging(level: str | None = None, stream: Any = None) -> None:
     """Backward-compatible helper used by legacy imports."""
     configure_logging(level=level, structured=True, stream=stream)
 

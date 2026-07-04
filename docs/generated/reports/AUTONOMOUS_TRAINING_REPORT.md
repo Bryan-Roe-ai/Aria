@@ -12,15 +12,15 @@ The Aria autonomous training orchestrator has been **activated and validated**. 
 
 ### Key Metrics
 
-| Metric | Value |
-| -------- | ------- |
-| **Cycles Completed** | 3 |
-| **Best Accuracy Achieved** | 74.5% |
-| **Accuracy Improvement** | +3.0 percentage points (Cycle 1→3) |
-| **Datasets Auto-Discovered** | 1 |
-| **Samples Processed** | 44,968 |
-| **Average Cycle Time** | ~6 seconds |
-| **Total Runtime** | 33 seconds |
+| Metric                       | Value                              |
+| ---------------------------- | ---------------------------------- |
+| **Cycles Completed**         | 3                                  |
+| **Best Accuracy Achieved**   | 74.5%                              |
+| **Accuracy Improvement**     | +3.0 percentage points (Cycle 1→3) |
+| **Datasets Auto-Discovered** | 1                                  |
+| **Samples Processed**        | 44,968                             |
+| **Average Cycle Time**       | ~6 seconds                         |
+| **Total Runtime**            | 33 seconds                         |
 
 ---
 
@@ -84,12 +84,12 @@ The Aria autonomous training orchestrator has been **activated and validated**. 
 
 ```yaml
 continuous: true
-cycle_interval_minutes: 30          # Real-world: 30 min cycles
-max_cycles: 0                       # 0 = infinite (continuous mode)
-parallel_workers: 20                # Concurrent job execution
-min_accuracy_threshold: 0.75        # Quality gate for model promotion
-enable_adaptive_epochs: true        # Auto-adjust epochs based on performance
-epochs_progression: [25, 50, 100, 200]  # Progressive training intensity
+cycle_interval_minutes: 30 # Real-world: 30 min cycles
+max_cycles: 0 # 0 = infinite (continuous mode)
+parallel_workers: 20 # Concurrent job execution
+min_accuracy_threshold: 0.75 # Quality gate for model promotion
+enable_adaptive_epochs: true # Auto-adjust epochs based on performance
+epochs_progression: [25, 50, 100, 200] # Progressive training intensity
 ```
 
 ---
@@ -109,9 +109,9 @@ Trend: Steady improvement towards 80%+ convergence zone
 ### Dataset Utilization
 
 - **Auto-Discovered**: 1 dataset category
-  - Location: `datasets/chat/github_actions/train.json`
-  - Samples: 44,968 training instances
-  - Type: Chat conversation data (GitHub Actions logs)
+    - Location: `datasets/chat/github_actions/train.json`
+    - Samples: 44,968 training instances
+    - Type: Chat conversation data (GitHub Actions logs)
 
 ### Training Efficiency
 
@@ -195,25 +195,25 @@ All training state persists to `data_out/autonomous_training_status.json`:
 
 ```json
 {
-  "cycles_completed": 3,
-  "best_accuracy": 0.745,
-  "last_updated": "2026-03-17T16:11:57.817889",
-  "status": "completed",
-  "performance_history": [
-    {
-      "cycle": 1,
-      "accuracy": 0.7150,
-      "datasets_trained": 1,
-      "samples_processed": 44968,
-      "training_time_sec": 6
+    "cycles_completed": 3,
+    "best_accuracy": 0.745,
+    "last_updated": "2026-03-17T16:11:57.817889",
+    "status": "completed",
+    "performance_history": [
+        {
+            "cycle": 1,
+            "accuracy": 0.715,
+            "datasets_trained": 1,
+            "samples_processed": 44968,
+            "training_time_sec": 6
+        }
+    ],
+    "dataset_inventory": {
+        "chat": {
+            "count": 1,
+            "paths": ["datasets/chat/github_actions/train.json"]
+        }
     }
-  ],
-  "dataset_inventory": {
-    "chat": {
-      "count": 1,
-      "paths": ["datasets/chat/github_actions/train.json"]
-    }
-  }
 }
 ```
 
@@ -232,14 +232,14 @@ All training state persists to `data_out/autonomous_training_status.json`:
 
 ## 🚀 Production Readiness
 
-| Component | Status | Notes |
-| ----------- | -------- | ------- |
-| **Config** | ✅ Ready | `config/autonomous_training.yaml` fully configured |
+| Component          | Status   | Notes                                                 |
+| ------------------ | -------- | ----------------------------------------------------- |
+| **Config**         | ✅ Ready | `config/autonomous_training.yaml` fully configured    |
 | **Infrastructure** | ✅ Ready | Cycle manager operational, status persistence working |
-| **Monitoring** | ✅ Ready | Real-time status updates, performance history |
-| **Scaling** | ⏳ Ready | Framework supports 20 parallel workers |
-| **Error Recovery** | ✅ Ready | Graceful handling with logging |
-| **Deployment** | ⏳ Ready | Can scale to Azure Functions background jobs |
+| **Monitoring**     | ✅ Ready | Real-time status updates, performance history         |
+| **Scaling**        | ⏳ Ready | Framework supports 20 parallel workers                |
+| **Error Recovery** | ✅ Ready | Graceful handling with logging                        |
+| **Deployment**     | ⏳ Ready | Can scale to Azure Functions background jobs          |
 
 ---
 

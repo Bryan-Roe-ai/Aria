@@ -16,12 +16,12 @@ Reusable wrapper for `pytest` execution in workflows.
 
 - uses: ./.github/actions/run-pytest-suite
   with:
-    test-path: tests/
-    marker-expression: "not slow and not azure"
-    extra-args: "--maxfail=1 -q"
+      test-path: tests/
+      marker-expression: "not slow and not azure"
+      extra-args: "--maxfail=1 -q"
 
 - uses: ./.github/actions/run-pytest-suite
   with:
-    test-path: tests/test_ollama_provider.py
-    extra-args: "-q"
+      test-path: tests/test_ollama_provider.py
+      extra-args: "-q"
 ```

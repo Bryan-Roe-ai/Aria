@@ -16,7 +16,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # Add shared directory to path for imports
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -34,7 +34,7 @@ except Exception:
     HAS_AZURE_OPENAI = False
 
 
-def azure_call(example: Dict[str, Any], deployment: str | None) -> str:
+def azure_call(example: dict[str, Any], deployment: str | None) -> str:
     # If Azure OpenAI isn't configured, fall back to naive predictor
     if not HAS_AZURE_OPENAI or not os.getenv("AZURE_OPENAI_API_KEY"):
         return naive_predict(example)
@@ -55,14 +55,14 @@ def azure_call(example: Dict[str, Any], deployment: str | None) -> str:
 def run(
     dataset: Path,
     max_samples: int | None,
-    metrics: List[str],
+    metrics: list[str],
     deployment: str | None,
     save_dir: Path | None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     data = load_jsonl(dataset, max_samples)
-    preds: List[str] = []
-    expects: List[str | None] = []
-    timings: List[float] = []
+    preds: list[str] = []
+    expects: list[str | None] = []
+    timings: list[float] = []
 
     use_azure = HAS_AZURE_OPENAI and os.getenv("AZURE_OPENAI_API_KEY") and os.getenv("AZURE_OPENAI_ENDPOINT")
 
@@ -76,7 +76,7 @@ def run(
         preds.append(p)
         expects.append(ex.get("expected") or ex.get("label"))
 
-    summary: Dict[str, Any] = {"samples": len(preds)}
+    summary: dict[str, Any] = {"samples": len(preds)}
     if "response_time" in metrics:
         summary["response_time_ms"] = round(sum(timings) / len(timings), 3) if timings else 0.0
     if "accuracy" in metrics:

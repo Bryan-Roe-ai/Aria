@@ -1,0 +1,13 @@
+ts	phase	decision	why	evidence	result
+2026-06-21T04:50:53Z	probe	orchestrate resume found no .orchestrate workspace and no CURSOR_API_KEY	user asked resume /orchestrate; nothing resumable without prior kickoff	subagent dafaf79d transcript	blocked, user must set goal and API key
+2026-06-21T04:50:53Z	orchestrate	AGI kickoff not run	CURSOR_API_KEY unset in shell environment	subagent f544b5ab transcript	blocked
+2026-06-21T04:50:53Z	infra	used local_dev_adapter instead of func host	npm and func CLI missing in WSL; outcome-oriented end state is working AGI API on 7071	terminals/970133 exit 127, local_dev_adapter.py	adapter serves /api/agi/*
+2026-06-21T04:50:53Z	agent	added agi-health automation agent	documented agent missing from scripts/agents; closes health gap from /agi activation	scripts/agents/agi_health_agent.py, tests/test_agi_health_agent.py	3 tests passed, agent ok
+2026-06-21T04:50:53Z	ui	restored apps/aria/agi.html and agi_stream_utils.js	files referenced in index.html but absent; health agent flagged missing_path	apps/aria/agi.html	panel links resolve
+2026-06-21T04:50:53Z	adapter	extended local_dev_adapter for POST analyze reason stream and GET persistence	agi.html and loop need full route surface without func	local_dev_adapter.py ROUTE_HANDLERS	curl analyze 200, stream SSE
+2026-06-21T04:50:53Z	persistence	enabled JSONL defaults via apply_agi_persistence_dev_defaults	persistence was off in dev; wired through local_settings and agi-health	shared/local_settings.py, data_out/agi_reasoning.jsonl	agi-health ok, status shows jsonl attached
+2026-06-21T04:50:54Z	adapter	deferred function_app import until after azure shim	top-level import broke adapter when azure package absent	local_dev_adapter.py _get_function_app	adapter starts without azure.functions installed
+2026-06-21T04:50:54Z	verify	curl verified status analyze stream on :7071	explicit verification boundary before calling done	terminals/579041.txt	status 200, analyze ok, stream SSE
+2026-06-21T04:50:54Z	docs	updated agi-api-runbook canvas	prior canvas said adapter returns 404 on AGI routes; stale after adapter work	canvases/agi-api-runbook.canvas.tsx	canvas TS check clean
+2026-06-21T04:51:02Z	verify	full test_agi_smoke suite not re-run green after adapter changes	7 smoke tests skip without azure.functions; only health and adapter unit tests run	tests/test_agi_smoke.py module skip	INCONCLUSIVE for API smoke gate
+2026-06-21T04:51:02Z	delivery	local code changes not committed	user did not request commit; trail is working tree only	git status dirty	open

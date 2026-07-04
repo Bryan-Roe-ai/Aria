@@ -6,8 +6,8 @@ and safe for reuse in API and CLI layers.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Iterable
 
 
 def parse_iso_datetime(value: str, default_tz_utc: bool = True) -> datetime:
@@ -127,9 +127,7 @@ def bucket_datetimes_by_day(values: Iterable[datetime]) -> dict[str, list[dateti
     for item in values:
         if not isinstance(item, datetime):
             continue
-        normalized = (
-            item if item.tzinfo is not None else item.replace(tzinfo=timezone.utc)
-        )
+        normalized = item if item.tzinfo is not None else item.replace(tzinfo=timezone.utc)
         utc_dt = normalized.astimezone(timezone.utc)
         key = utc_dt.date().isoformat()
         buckets.setdefault(key, []).append(item)
@@ -137,9 +135,7 @@ def bucket_datetimes_by_day(values: Iterable[datetime]) -> dict[str, list[dateti
     return buckets
 
 
-def sort_datetimes(
-    values: Iterable[datetime], descending: bool = False
-) -> list[datetime]:
+def sort_datetimes(values: Iterable[datetime], descending: bool = False) -> list[datetime]:
     """Return datetimes sorted by absolute UTC instant.
 
     Naive datetimes are interpreted as UTC.

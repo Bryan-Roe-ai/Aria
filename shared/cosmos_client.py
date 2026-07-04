@@ -18,15 +18,15 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 try:
     from azure.cosmos import CosmosClient, PartitionKey  # type: ignore
 except Exception:  # pragma: no cover - dependency optional until installed
     CosmosClient = None  # type: ignore
 
-_CLIENT: Optional[CosmosClient] = None
-_CONTAINER: Optional[Any] = None  # Container proxy object when initialized
+_CLIENT: CosmosClient | None = None
+_CONTAINER: Any | None = None  # Container proxy object when initialized
 
 
 def _enabled() -> bool:
@@ -38,6 +38,7 @@ def _settings_present() -> bool:
 
 
 def init() -> bool:
+    """Initialize the Cosmos client and container when settings are present."""
     global _CLIENT, _CONTAINER
     if not _enabled():
         logging.info("[cosmos] Disabled via QAI_ENABLE_COSMOS flag.")
@@ -83,17 +84,18 @@ def init() -> bool:
 
 
 def container():
+    """Return the initialized Cosmos container, or ``None`` when unavailable."""
     if _CLIENT is None or _CONTAINER is None:
         return None
     return _CONTAINER
 
 
-def health() -> Dict[str, Any]:
+def health() -> dict[str, Any]:
     """Return Cosmos client health/status details without raising.
 
     Attempts lazy init if enabled to surface container readiness.
     """
-    status: Dict[str, Any] = {
+    status: dict[str, Any] = {
         "enabled": _enabled(),
         "settings_present": _settings_present(),
         "initialized": False,
@@ -117,7 +119,7 @@ def health() -> Dict[str, Any]:
     return status
 
 
-def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, model: str) -> bool:
+def record_chat_message(user_id: str, message: dict[str, Any], provider: str, model: str) -> bool:
     """Persist a single chat message. user_id may be 'anonymous' if not provided."""
     if not init():  # ensures initialization or early exit
         return False
@@ -151,7 +153,7 @@ def record_chat_message(user_id: str, message: Dict[str, Any], provider: str, mo
         return False
 
 
-def record_chat_session(user_id: str, messages: list[Dict[str, Any]], provider: str, model: str) -> bool:
+def record_chat_session(user_id: str, messages: list[dict[str, Any]], provider: str, model: str) -> bool:
     """Persist entire chat session as one document (alternative strategy)."""
     if not init():
         return False
@@ -215,7 +217,7 @@ def worlds_container():
         return None
 
 
-def record_world(doc: Dict[str, Any]) -> bool:
+def record_world(doc: dict[str, Any]) -> bool:
     """Upsert a world document into the dedicated worlds container.
 
     Expected doc schema (minimum):
@@ -235,7 +237,7 @@ def record_world(doc: Dict[str, Any]) -> bool:
         return False
 
 
-def get_world(theme: str, seed: Union[str, int]) -> Optional[Dict[str, Any]]:
+def get_world(theme: str, seed: str | int) -> dict[str, Any] | None:
     """Fetch a single world by theme + seed. Returns None if not found or unavailable."""
     c = worlds_container()
     if c is None:
@@ -252,7 +254,7 @@ def get_world(theme: str, seed: Union[str, int]) -> Optional[Dict[str, Any]]:
         return None
 
 
-def list_worlds(limit: int = 100) -> list[Dict[str, Any]]:
+def list_worlds(limit: int = 100) -> list[dict[str, Any]]:
     """List world documents (lightweight metadata). Returns empty list if unavailable."""
     c = worlds_container()
     if c is None:

@@ -7,16 +7,19 @@ This guide provides step-by-step instructions for implementing the performance i
 ## 🎯 Implementation Roadmap
 
 ### Week 1: Critical Fixes
+
 - **Fix #1**: Aria keyword lookups (aria_web/server.py)
 - **Fix #3**: Batch evaluator indexing (scripts/batch_evaluator.py)
 - **Fix #6**: Remove redundant iteration (scripts/batch_evaluator.py)
 
 ### Week 2-3: High-Priority Fixes
+
 - **Fix #2**: Batch embedding API (shared/chat_memory.py)
 - **Fix #7**: Refactor complex functions (function_app.py)
 - **Fix #11**: Add caching (function_app.py ai_status)
 
 ### Month 2: Remaining Fixes
+
 - **Fix #4, #5, #12**: Training analytics improvements
 - **Fix #8**: Vectorize similarity search
 - **Fixes #9-10, #13-15**: Minor optimizations
@@ -145,7 +148,7 @@ Expected output: ~1-2ms per command (vs 3-4ms before)
 **Estimated time:** 20 minutes
 **Risk:** Low (backward compatible)
 
-#### Step 1: Add index to __init__
+#### Step 1: Add index to **init**
 
 Modify the `__init__` method:
 
@@ -687,6 +690,7 @@ If an optimization causes issues:
 ---
 
 **Next Steps:**
+
 1. Choose which fixes to implement first
 2. Create feature branch: `git checkout -b perf/critical-fixes`
 3. Implement fixes one at a time

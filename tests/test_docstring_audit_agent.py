@@ -24,9 +24,9 @@ def test_fully_documented_module_reports_ok(tmp_path):
     """A fully documented module should report 100 percent coverage."""
     write_module(
         tmp_path / "pkg" / "documented.py",
-        '\"\"\"Module docs.\"\"\"\n\n'
-        'def documented_function():\n    \"\"\"Function docs.\"\"\"\n    return 1\n\n'
-        'class DocumentedClass:\n    \"\"\"Class docs.\"\"\"\n',
+        '"""Module docs."""\n\n'
+        'def documented_function():\n    """Function docs."""\n    return 1\n\n'
+        'class DocumentedClass:\n    """Class docs."""\n',
     )
 
     result = DocstringAuditAgent(repo_root=tmp_path, paths=["pkg"]).run()
@@ -40,8 +40,7 @@ def test_missing_public_function_docstring_reports_warning(tmp_path):
     """A missing public function docstring should produce a warning finding."""
     write_module(
         tmp_path / "pkg" / "missing.py",
-        '\"\"\"Module docs.\"\"\"\n\n'
-        'def missing_function():\n    return 1\n',
+        '"""Module docs."""\n\ndef missing_function():\n    return 1\n',
     )
 
     result = DocstringAuditAgent(repo_root=tmp_path, paths=["pkg"]).run()
@@ -64,8 +63,7 @@ def test_private_missing_docstring_counts_without_public_finding(tmp_path):
     """Private definitions should count in totals without producing findings."""
     write_module(
         tmp_path / "pkg" / "private.py",
-        '\"\"\"Module docs.\"\"\"\n\n'
-        'def _private_function():\n    return 1\n',
+        '"""Module docs."""\n\ndef _private_function():\n    return 1\n',
     )
 
     result = DocstringAuditAgent(repo_root=tmp_path, paths=["pkg"]).run()
@@ -111,7 +109,7 @@ def test_dry_run_does_not_write_status_json(tmp_path, monkeypatch):
     """Dry-run mode should compute results without persisting status JSON."""
     import scripts.agents.base as base
 
-    write_module(tmp_path / "pkg" / "documented.py", '\"\"\"Module docs.\"\"\"\n')
+    write_module(tmp_path / "pkg" / "documented.py", '"""Module docs."""\n')
     status_root = tmp_path / "agents-data"
     monkeypatch.setattr(base, "AGENTS_DATA_DIR", status_root)
     monkeypatch.setattr("scripts.agents.docstring_audit_agent.REPO_ROOT", tmp_path)
@@ -124,11 +122,11 @@ def test_mixed_file_metrics_are_correct(tmp_path):
     """Mixed documented and undocumented nodes should produce exact metrics."""
     write_module(
         tmp_path / "pkg" / "mixed.py",
-        '\"\"\"Module docs.\"\"\"\n\n'
-        'class Documented:\n    \"\"\"Class docs.\"\"\"\n\n'
-        '    def method(self):\n        return 1\n\n'
-        'async def async_missing():\n    return 2\n\n'
-        'def documented_function():\n    \"\"\"Function docs.\"\"\"\n    return 3\n',
+        '"""Module docs."""\n\n'
+        'class Documented:\n    """Class docs."""\n\n'
+        "    def method(self):\n        return 1\n\n"
+        "async def async_missing():\n    return 2\n\n"
+        'def documented_function():\n    """Function docs."""\n    return 3\n',
     )
 
     result = DocstringAuditAgent(repo_root=tmp_path, paths=["pkg"]).run()
@@ -142,7 +140,7 @@ def test_mixed_file_metrics_are_correct(tmp_path):
 
 def test_json_output_prints_full_result(tmp_path, monkeypatch, capsys):
     """JSON mode should print the full result dictionary."""
-    write_module(tmp_path / "pkg" / "documented.py", '\"\"\"Module docs.\"\"\"\n')
+    write_module(tmp_path / "pkg" / "documented.py", '"""Module docs."""\n')
     monkeypatch.setattr("scripts.agents.docstring_audit_agent.REPO_ROOT", tmp_path)
 
     assert main(["--dry-run", "--json", "--path", "pkg"]) == 0

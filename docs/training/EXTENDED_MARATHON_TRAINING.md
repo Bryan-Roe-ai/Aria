@@ -90,7 +90,7 @@ Get-Content data_out\autotrain\status.json | ConvertFrom-Json | Format-List
 ### 6. Resource Requirements
 
 - **GPU**: CUDA-compatible GPU recommended (10x+ faster)
-  - Without GPU: Expect 2-3x longer runtime (10-15 hours total)
+    - Without GPU: Expect 2-3x longer runtime (10-15 hours total)
 - **RAM**: 8GB minimum, 16GB recommended
 - **Disk**: ~10GB for all outputs
 - **Active monitoring**: Optional but recommended for first hour
@@ -122,15 +122,15 @@ python .\scripts\training_analytics.py --compare-all
 
 ### 9. Expected Timeline
 
-| Phase | Duration | Jobs |
-| ------- | ---------- | ------ |
-| Synthetic Data Training | 1-1.5 hrs | 2 |
-| Comprehensive Marathon | 1.5-2 hrs | 2 |
-| Dolly Full Dataset | 2-3 hrs | 2 |
-| Mixed Chat Extended | 1-1.5 hrs | 2 |
-| Repo Extended | 1 hr | 2 |
-| HPO Variations | 1.5-2 hrs | 3 |
-| **Total** | **4-6 hrs** | **13** |
+| Phase                   | Duration    | Jobs   |
+| ----------------------- | ----------- | ------ |
+| Synthetic Data Training | 1-1.5 hrs   | 2      |
+| Comprehensive Marathon  | 1.5-2 hrs   | 2      |
+| Dolly Full Dataset      | 2-3 hrs     | 2      |
+| Mixed Chat Extended     | 1-1.5 hrs   | 2      |
+| Repo Extended           | 1 hr        | 2      |
+| HPO Variations          | 1.5-2 hrs   | 3      |
+| **Total**               | **4-6 hrs** | **13** |
 
 Times assume GPU acceleration. CPU-only systems: multiply by 2-3x
 
@@ -141,7 +141,7 @@ Times assume GPU acceleration. CPU-only systems: multiply by 2-3x
 ```yaml
 # Reduce max_train_samples in YAML (e.g., 3000 → 1500)
 # Or add to job config:
-no_stream: true  # Disable streaming for stability
+no_stream: true # Disable streaming for stability
 ```
 
 **Training stuck**:
@@ -171,4 +171,5 @@ python .\scripts\autotrain.py --config autotrain_extended_marathon.yaml --resume
 4. ⏳ Post-training evaluation & promotion
 
 ---
+
 For questions or issues, check `AUTOTRAIN_README.md` and `.github/copilot-instructions.md`

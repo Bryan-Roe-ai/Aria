@@ -9,11 +9,13 @@ This document lists potential performance optimizations identified but not yet i
 ## 🔮 Deferred Optimizations (Lower Priority)
 
 ### 1. function_app.py - Image URL Caching
+
 **Location**: `function_app.py:1420` - Vision inference endpoint
 
 **Issue**: Image fetched via HTTP on every request, even for repeated URLs.
 
 **Current Code**:
+
 ```python
 response = requests.get(image_url, timeout=10)
 response.raise_for_status()
@@ -22,6 +24,7 @@ result = vi.predict(img)
 ```
 
 **Suggested Improvement**:
+
 ```python
 from functools import lru_cache
 import hashlib
@@ -39,6 +42,7 @@ img = Image.open(io.BytesIO(image_bytes))
 ```
 
 **Estimated Impact**:
+
 - Low frequency endpoint (vision inference)
 - Significant speedup (eliminates network I/O) for repeated URLs
 - **Priority**: Low (implement if vision endpoint becomes high-traffic)
@@ -46,11 +50,13 @@ img = Image.open(io.BytesIO(image_bytes))
 ---
 
 ### 2. shared/chat_memory.py - NumPy Vectorized Cosine Similarity
+
 **Location**: `shared/chat_memory.py:240-251` - `fetch_similar_messages()`
 
 **Issue**: Python loop computing cosine similarity for ~500 embeddings per query.
 
 **Current Code**:
+
 ```python
 def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
     if not a or not b or len(a) != len(b):
@@ -69,6 +75,7 @@ for r in rows:
 ```
 
 **Suggested Improvement**:
+
 ```python
 try:
     import numpy as np
@@ -95,6 +102,7 @@ def _cosine_batch(query: Sequence[float], embeddings: List[Sequence[float]]) -> 
 ```
 
 **Estimated Impact**:
+
 - **Speedup**: 8-10x for 500 embeddings with 256 dimensions
 - **Memory**: ~2MB additional for NumPy arrays (acceptable)
 - **Priority**: Medium (implement when embedding search becomes bottleneck)
@@ -103,11 +111,13 @@ def _cosine_batch(query: Sequence[float], embeddings: List[Sequence[float]]) -> 
 ---
 
 ### 3. function_app.py - Status Endpoint File Existence Caching
+
 **Location**: `function_app.py` - `/api/ai/status` endpoint
 
 **Issue**: Checks many file paths on every status request.
 
 **Current Pattern** (hypothetical):
+
 ```python
 status = {
     "adapter_present": os.path.exists(adapter_path),
@@ -117,6 +127,7 @@ status = {
 ```
 
 **Suggested Improvement**:
+
 ```python
 from functools import lru_cache
 import time
@@ -138,6 +149,7 @@ def _exists_cached(path: str) -> bool:
 ```
 
 **Estimated Impact**:
+
 - **Latency reduction**: ~5-10ms per status request
 - **Frequency**: Status endpoint called periodically by monitoring
 - **Priority**: Low (acceptable latency for monitoring endpoint)
@@ -147,6 +159,7 @@ def _exists_cached(path: str) -> bool:
 ### 4. Batch Processing Optimization Opportunities
 
 #### 4.1 ai-projects/quantum-ml/src/quantum_classifier.py - Batch Processing
+
 **Location**: `quantum_classifier.py` - `forward()` method
 
 **Issue**: Sequential processing of batch items in quantum circuit execution.
@@ -162,6 +175,7 @@ def _exists_cached(path: str) -> bool:
 To identify the next set of optimizations, consider:
 
 ### 1. Add Performance Monitoring to Key Endpoints
+
 ```python
 import time
 import functools
@@ -180,12 +194,14 @@ def timed(func):
 ```
 
 Apply to:
+
 - All Azure Functions endpoints
 - `generate_tags_fallback()` in aria_web/server.py
 - `fetch_similar_messages()` in shared/chat_memory.py
 - Training pipeline orchestrators
 
 ### 2. Enable SQL Query Logging
+
 ```python
 # In shared/sql_engine.py or wherever SQL is executed
 import time
@@ -201,6 +217,7 @@ def execute_with_timing(cursor, query, *args):
 ```
 
 ### 3. Profile Hot Paths with cProfile
+
 ```bash
 # For server endpoints
 python -m cProfile -s cumulative aria_web/server.py > profile.txt
@@ -210,6 +227,7 @@ python -m cProfile -s cumulative scripts/autotrain.py --dry-run > profile.txt
 ```
 
 Look for functions with:
+
 - High `cumtime` (cumulative time)
 - High `ncalls` (call count)
 - High `percall` (time per call)
@@ -239,13 +257,13 @@ def performance_metrics():
 
 ## 🎯 Optimization Prioritization Matrix
 
-| Optimization | Impact | Effort | Priority |
-| -------------- | -------- | -------- | ---------- |
-| Image URL caching | High (if high-traffic) | Low | Conditional |
-| NumPy cosine similarity | Medium | Medium | Medium |
-| File existence caching | Low | Low | Low |
-| Quantum batch processing | Low | High | Low |
-| Performance monitoring | High (visibility) | Medium | High |
+| Optimization             | Impact                 | Effort | Priority    |
+| ------------------------ | ---------------------- | ------ | ----------- |
+| Image URL caching        | High (if high-traffic) | Low    | Conditional |
+| NumPy cosine similarity  | Medium                 | Medium | Medium      |
+| File existence caching   | Low                    | Low    | Low         |
+| Quantum batch processing | Low                    | High   | Low         |
+| Performance monitoring   | High (visibility)      | Medium | High        |
 
 ---
 

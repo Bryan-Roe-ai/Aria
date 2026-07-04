@@ -69,7 +69,7 @@ def run_validation() -> bool:
 
     missing_ids = get_by_id_refs - element_ids
     if missing_ids:
-        print(f' Missing Element IDs: {", ".join(sorted(missing_ids))}')
+        print(f" Missing Element IDs: {', '.join(sorted(missing_ids))}")
     else:
         print(f" Element IDs: All {len(get_by_id_refs)} references valid")
 
@@ -96,7 +96,7 @@ def run_validation() -> bool:
     # 5. Summary
     all_valid = defined_count == len(function_calls) and not missing_ids and all(features.values())
 
-    print(f'\n{"=" * 50}')
+    print(f"\n{'=' * 50}")
     if all_valid:
         print("ALL CHECKS PASSED")
         print("Dashboard is fully functional")

@@ -5,8 +5,8 @@
  */
 //%
 function setInterval(func: () => void, delay: number): number {
-    delay = Math.max(10, delay | 0);
-    return control.setInterval(func, delay, control.IntervalMode.Interval);
+    delay = Math.max(10, delay | 0)
+    return control.setInterval(func, delay, control.IntervalMode.Interval)
 }
 
 /**
@@ -15,7 +15,7 @@ function setInterval(func: () => void, delay: number): number {
  */
 //%
 function clearInterval(intervalId: number) {
-    control.clearInterval(intervalId, control.IntervalMode.Interval);
+    control.clearInterval(intervalId, control.IntervalMode.Interval)
 }
 
 /**
@@ -25,7 +25,7 @@ function clearInterval(intervalId: number) {
  */
 //%
 function setTimeout(func: () => void, delay: number): number {
-    return control.setInterval(func, delay, control.IntervalMode.Timeout);
+    return control.setInterval(func, delay, control.IntervalMode.Timeout)
 }
 
 /**
@@ -34,7 +34,7 @@ function setTimeout(func: () => void, delay: number): number {
  */
 //%
 function clearTimeout(intervalId: number) {
-    control.clearInterval(intervalId, control.IntervalMode.Timeout);
+    control.clearInterval(intervalId, control.IntervalMode.Timeout)
 }
 
 /**
@@ -43,7 +43,7 @@ function clearTimeout(intervalId: number) {
  */
 //%
 function setImmediate(func: () => void): number {
-    return control.setInterval(func, 0, control.IntervalMode.Immediate);
+    return control.setInterval(func, 0, control.IntervalMode.Immediate)
 }
 
 /**
@@ -52,5 +52,5 @@ function setImmediate(func: () => void): number {
  */
 //%
 function clearImmediate(intervalId: number) {
-    control.clearInterval(intervalId, control.IntervalMode.Immediate);
+    control.clearInterval(intervalId, control.IntervalMode.Immediate)
 }

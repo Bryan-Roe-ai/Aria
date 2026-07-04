@@ -61,18 +61,18 @@ Add to your `mcp.json` (in VS Code settings):
 
 ```json
 {
-  "servers": {
-    "quantum-ai": {
-      "type": "stdio",
+    "servers": {
+        "quantum-ai": {
+            "type": "stdio",
             "command": "${workspaceFolder}/.venv/bin/python",
-      "args": [
-        "c:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\quantum_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}\\quantum-ai"
-      }
+            "args": [
+                "c:\\Users\\Bryan\\OneDrive\\AI\\quantum-ai\\quantum_mcp_server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}\\quantum-ai"
+            }
+        }
     }
-  }
 }
 ```
 

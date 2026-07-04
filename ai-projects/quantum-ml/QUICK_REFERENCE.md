@@ -54,24 +54,24 @@ python .\src\quantum_classifier.py
 
 ## File Locations
 
-| Item | Path |
-| ------ | ------ |
-| Examples | `examples/*.py` |
-| Results/Plots | `results/*.png` |
-| Configuration | `config/quantum_config.yaml` |
-| Source Code | `src/*.py` |
-| Azure Deployment | `azure/*.bicep` |
+| Item             | Path                         |
+| ---------------- | ---------------------------- |
+| Examples         | `examples/*.py`              |
+| Results/Plots    | `results/*.png`              |
+| Configuration    | `config/quantum_config.yaml` |
+| Source Code      | `src/*.py`                   |
+| Azure Deployment | `azure/*.bicep`              |
 
 ---
 
 ## Key Results
 
-| Task | Result | Status |
-| ------ | -------- | -------- |
-| Bell State Simulation | 51.5% &#124;00⟩ / 48.5% &#124;11⟩ | ✅ Perfect |
-| Moons Classification | 85.0% accuracy | ✅ Excellent |
-| Iris Classification | 66.7% accuracy | ✅ Good |
-| State Evolution Plot | 50 angles tested | ✅ Generated |
+| Task                  | Result                            | Status       |
+| --------------------- | --------------------------------- | ------------ |
+| Bell State Simulation | 51.5% &#124;00⟩ / 48.5% &#124;11⟩ | ✅ Perfect   |
+| Moons Classification  | 85.0% accuracy                    | ✅ Excellent |
+| Iris Classification   | 66.7% accuracy                    | ✅ Good      |
+| State Evolution Plot  | 50 angles tested                  | ✅ Generated |
 
 ---
 
@@ -81,14 +81,14 @@ python .\src\quantum_classifier.py
 # config/quantum_config.yaml
 
 ml:
-  model:
-    n_qubits: 4        # Try: 6, 8
-    n_layers: 2        # Try: 3, 4
-    entanglement: "linear"  # Try: "circular", "full"
+    model:
+        n_qubits: 4 # Try: 6, 8
+        n_layers: 2 # Try: 3, 4
+        entanglement: "linear" # Try: "circular", "full"
 
-  training:
-    epochs: 100        # Try: 200
-    learning_rate: 0.01  # Try: 0.001-0.1
+    training:
+        epochs: 100 # Try: 200
+        learning_rate: 0.01 # Try: 0.001-0.1
 ```
 
 ---
@@ -121,11 +121,11 @@ python .\examples\azure_integration.py
 
 ## Troubleshooting
 
-| Issue | Solution |
-| ------- | ---------- |
-| Module not found | `.\venv\Scripts\Activate.ps1` |
-| Poor accuracy | Increase epochs/layers |
-| Memory error | Reduce qubits (<10) |
+| Issue                 | Solution                           |
+| --------------------- | ---------------------------------- |
+| Module not found      | `.\venv\Scripts\Activate.ps1`      |
+| Poor accuracy         | Increase epochs/layers             |
+| Memory error          | Reduce qubits (<10)                |
 | Azure connection fail | Check `config/quantum_config.yaml` |
 
 ---

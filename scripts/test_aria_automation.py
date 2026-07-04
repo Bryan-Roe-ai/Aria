@@ -3,6 +3,7 @@
 Quick test of Aria automation components
 Validates that all automation pieces work together
 """
+
 import subprocess
 import sys
 from pathlib import Path

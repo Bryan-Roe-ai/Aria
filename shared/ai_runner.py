@@ -20,11 +20,17 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional, Tuple
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 CHAT_CLI = ROOT_DIR / "ai-projects" / "chat-cli" / "src" / "chat_cli.py"
 LOG_DIR = ROOT_DIR / "ai-projects" / "chat-cli" / "logs"
+
+try:
+    from shared.local_settings import apply_local_settings
+
+    apply_local_settings()
+except Exception:
+    pass
 
 # Cached ANSI escape regex for performance across imports
 _ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
@@ -32,11 +38,11 @@ _ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
 
 def run_chat_once(
     prompt: str,
-    provider: Optional[str] = None,
-    model: Optional[str] = None,
-    system: Optional[str] = None,
+    provider: str | None = None,
+    model: str | None = None,
+    system: str | None = None,
     timeout: int = 120,
-) -> Tuple[str, Dict[str, str]]:
+) -> tuple[str, dict[str, str]]:
     """Run the chat CLI in one-shot mode and capture its stdout.
 
     Parameters

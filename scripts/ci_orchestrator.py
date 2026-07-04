@@ -34,7 +34,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     from .config_paths import resolve_existing_config_path
@@ -48,7 +48,7 @@ DATA_OUT = REPO_ROOT / "data_out" / "ci_orchestrator"
 @dataclass
 class ValidationJob:
     name: str
-    cmd: List[str]
+    cmd: list[str]
     critical: bool = True  # If True, failure blocks deployment
 
 
@@ -58,9 +58,9 @@ class CIOrchestrator:
         self.data_out = DATA_OUT
         self.data_out.mkdir(parents=True, exist_ok=True)
         self.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        self.results: List[Dict[str, Any]] = []
+        self.results: list[dict[str, Any]] = []
 
-    def _resolved_config_paths(self) -> Dict[str, Optional[str]]:
+    def _resolved_config_paths(self) -> dict[str, str | None]:
         """Resolve key orchestrator config paths for status metadata."""
         config_keys = [
             "autotrain",
@@ -68,7 +68,7 @@ class CIOrchestrator:
             "evaluation_autorun",
             "master_orchestrator",
         ]
-        resolved: Dict[str, Optional[str]] = {}
+        resolved: dict[str, str | None] = {}
         for key in config_keys:
             selected = resolve_existing_config_path(self.repo_root, key)
             resolved[key] = str(selected.relative_to(self.repo_root)) if selected else None
@@ -372,7 +372,7 @@ class CIOrchestrator:
         self._save_results()
         return all_passed
 
-    def _run_parallel_jobs(self, jobs: List[ValidationJob]) -> bool:
+    def _run_parallel_jobs(self, jobs: list[ValidationJob]) -> bool:
         """Run multiple jobs in parallel."""
         all_passed = True
 
@@ -392,7 +392,7 @@ class CIOrchestrator:
 
         return all_passed
 
-    def _run_validation_job(self, job: ValidationJob) -> Dict[str, Any]:
+    def _run_validation_job(self, job: ValidationJob) -> dict[str, Any]:
         """Run a single validation job."""
         print(f"[ci] Validating: {job.name}")
         t0 = time.perf_counter()
@@ -431,7 +431,7 @@ class CIOrchestrator:
                 "critical": job.critical,
             }
 
-    def _run_command(self, name: str, cmd: List[str], critical: bool = True) -> bool:
+    def _run_command(self, name: str, cmd: list[str], critical: bool = True) -> bool:
         """Run a single command and track result."""
         t0 = time.perf_counter()
 

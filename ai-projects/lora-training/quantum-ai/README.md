@@ -8,11 +8,11 @@ that uses different quantum computing frameworks.
 
 ## Key Differences
 
-| Feature | This Directory (AI/quantum-ai) | Main Directory (quantum-ai) |
-| --------- | ------------------------------- | --------------------------- |
-| Framework | **Qiskit** | **PennyLane** |
-| Backend | Qiskit Aer, IBM Quantum | PennyLane, Azure Quantum |
-| Status | Legacy/Alternative | Primary/Active |
+| Feature   | This Directory (AI/quantum-ai) | Main Directory (quantum-ai) |
+| --------- | ------------------------------ | --------------------------- |
+| Framework | **Qiskit**                     | **PennyLane**               |
+| Backend   | Qiskit Aer, IBM Quantum        | PennyLane, Azure Quantum    |
+| Status    | Legacy/Alternative             | Primary/Active              |
 
 For new development, use the **PennyLane-based** implementation in `/quantum-ai`.
 
@@ -39,19 +39,19 @@ Classical Input → Classical Preprocessing → Quantum Layer → Classical Post
 ### Components
 
 1. **Quantum Classifier** (`quantum_classifier.py`)
-   - Variational Quantum Classifier (VQC)
-   - Quantum Neural Network (QNN)
-   - Built-in data preprocessing and scaling
+    - Variational Quantum Classifier (VQC)
+    - Quantum Neural Network (QNN)
+    - Built-in data preprocessing and scaling
 
 2. **Hybrid QNN** (`hybrid_qnn.py`)
-   - PyTorch-based hybrid architecture
-   - Quantum layers integrated into classical networks
-   - Full gradient-based training
+    - PyTorch-based hybrid architecture
+    - Quantum layers integrated into classical networks
+    - Full gradient-based training
 
 3. **Azure Quantum Integration** (`azure_quantum_integration.py`)
-   - Workspace connection management
-   - Job submission and monitoring
-   - Backend selection and cost estimation
+    - Workspace connection management
+    - Job submission and monitoring
+    - Backend selection and cost estimation
 
 ## 📋 Prerequisites
 
@@ -219,19 +219,19 @@ Edit `config/quantum_config.yaml` to customize:
 
 ```yaml
 quantum:
-  num_qubits: 4
-  circuit_depth: 3
-  optimizer: COBYLA
-  shots: 1024
+    num_qubits: 4
+    circuit_depth: 3
+    optimizer: COBYLA
+    shots: 1024
 
 azure:
-  location: eastus
-  default_backend: ionq.simulator
+    location: eastus
+    default_backend: ionq.simulator
 
 training:
-  learning_rate: 0.001
-  batch_size: 16
-  epochs: 10
+    learning_rate: 0.001
+    batch_size: 16
+    epochs: 10
 ```
 
 ## 🔬 Supported Quantum Backends

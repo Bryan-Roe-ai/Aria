@@ -1,5 +1,5 @@
-name: 'Setup Python Environment'
-description: 'Reusable setup for Python with pip caching and common dependencies'
+name: "Setup Python Environment"
+description: "Reusable setup for Python with pip caching and common dependencies"
 
 inputs:
   python-version:

@@ -20,7 +20,7 @@ import logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -75,9 +75,7 @@ class CircuitCompiler:
         self.strategy = strategy or OptimizationStrategy()
         self.stats = defaultdict(CircuitStats)
 
-        logger.info(
-            f"CircuitCompiler initialized with level {self.strategy.compilation_level}"
-        )
+        logger.info(f"CircuitCompiler initialized with level {self.strategy.compilation_level}")
 
     def optimize_circuit(self, circuit_fn, n_qubits: int, circuit_id: str) -> Any:
         """
@@ -129,9 +127,7 @@ class CircuitCompiler:
         """Aggressive optimization: full circuit rewriting."""
         return circuit_fn
 
-    def analyze_circuit(
-        self, circuit_fn, n_qubits: int, circuit_id: str
-    ) -> CircuitStats:
+    def analyze_circuit(self, circuit_fn, n_qubits: int, circuit_id: str) -> CircuitStats:
         """
         Analyze circuit properties.
 
@@ -148,13 +144,11 @@ class CircuitCompiler:
 
         return stats
 
-    def get_optimization_report(self) -> Dict[str, Any]:
+    def get_optimization_report(self) -> dict[str, Any]:
         """Generate optimization report for all circuits."""
         report = {
             "total_circuits": len(self.stats),
-            "total_compilation_time": sum(
-                s.compilation_time for s in self.stats.values()
-            ),
+            "total_compilation_time": sum(s.compilation_time for s in self.stats.values()),
             "total_execution_time": sum(s.execution_time for s in self.stats.values()),
             "circuits": {},
         }
@@ -194,15 +188,13 @@ class BatchCircuitExecutor:
         self.cache_hits = 0
         self.cache_misses = 0
 
-        logger.info(
-            f"BatchCircuitExecutor: batch_size={max_batch_size}, parallel={enable_parallel}"
-        )
+        logger.info(f"BatchCircuitExecutor: batch_size={max_batch_size}, parallel={enable_parallel}")
 
     def execute_batch(
         self,
-        circuits: List[Tuple[Any, torch.Tensor]],
+        circuits: list[tuple[Any, torch.Tensor]],
         circuit_fn,
-    ) -> List[torch.Tensor]:
+    ) -> list[torch.Tensor]:
         """
         Execute a batch of circuits with the same structure.
 
@@ -222,7 +214,7 @@ class BatchCircuitExecutor:
 
         return results
 
-    def _execute_batch_internal(self, batch, circuit_fn) -> List[torch.Tensor]:
+    def _execute_batch_internal(self, batch, circuit_fn) -> list[torch.Tensor]:
         """Execute a single batch."""
         results = []
 
@@ -252,7 +244,7 @@ class BatchCircuitExecutor:
         data_rounded = torch.round(input_data * 100) / 100
         return f"{params_rounded.cpu().numpy().tobytes()}_{data_rounded.cpu().numpy().tobytes()}"
 
-    def get_cache_stats(self) -> Dict[str, Any]:
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get cache performance statistics."""
         total = self.cache_hits + self.cache_misses
         hit_rate = self.cache_hits / total if total > 0 else 0.0
@@ -293,9 +285,7 @@ class AdaptiveCircuitScheduler:
         self.queued_circuits = []
         self.completed_circuits = 0
 
-        logger.info(
-            f"AdaptiveCircuitScheduler: max_concurrent={max_concurrent_circuits}"
-        )
+        logger.info(f"AdaptiveCircuitScheduler: max_concurrent={max_concurrent_circuits}")
 
     def schedule(
         self,
@@ -330,7 +320,7 @@ class AdaptiveCircuitScheduler:
 
         return result
 
-    def get_stats(self) -> Dict[str, int]:
+    def get_stats(self) -> dict[str, int]:
         """Get scheduler statistics."""
         return {
             "active": self.active_circuits,
@@ -423,22 +413,16 @@ class QuantumClassicalPartitioner:
         variance = input_data.var().item()
         return min(1.0, (size * variance) / 1000.0)
 
-    def get_partition_report(self) -> Dict[str, Any]:
+    def get_partition_report(self) -> dict[str, Any]:
         """Get partitioning statistics."""
-        quantum_count = sum(
-            1 for d in self.partition_decisions if d["decision"] == "quantum"
-        )
+        quantum_count = sum(1 for d in self.partition_decisions if d["decision"] == "quantum")
         classical_count = len(self.partition_decisions) - quantum_count
 
         return {
             "total_decisions": len(self.partition_decisions),
             "quantum_count": quantum_count,
             "classical_count": classical_count,
-            "quantum_ratio": (
-                quantum_count / len(self.partition_decisions)
-                if self.partition_decisions
-                else 0.0
-            ),
+            "quantum_ratio": (quantum_count / len(self.partition_decisions) if self.partition_decisions else 0.0),
         }
 
 
@@ -467,9 +451,7 @@ if __name__ == "__main__":
     # Test partitioner
     test_data = torch.randn(4, 64)
     should_quantum = partitioner.should_use_quantum(test_data)
-    logger.info(
-        f"Partition decision for test data: {'quantum' if should_quantum else 'classical'}"
-    )
+    logger.info(f"Partition decision for test data: {'quantum' if should_quantum else 'classical'}")
 
     logger.info(f"Executor cache stats: {executor.get_cache_stats()}")
     logger.info(f"Scheduler stats: {scheduler.get_stats()}")

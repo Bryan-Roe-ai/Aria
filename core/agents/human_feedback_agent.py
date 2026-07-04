@@ -1,7 +1,8 @@
 """Human feedback agent for recording operator guidance and optional bus broadcasts."""
+
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.bus import AgentBus
@@ -12,14 +13,14 @@ from core.task import Task
 class HumanFeedbackAgent(BaseAgent):
     name = "human_feedback_agent"
 
-    def __init__(self, memory: MemoryStore, bus: Optional[AgentBus] = None) -> None:
+    def __init__(self, memory: MemoryStore, bus: AgentBus | None = None) -> None:
         self.memory = memory
         self.bus = bus
 
     def can_handle(self, task: Task) -> bool:
         return task.type in {"human_feedback", "feedback", "review"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
         message = payload.get("message") or payload.get("feedback") or ""
         rating = payload.get("rating")

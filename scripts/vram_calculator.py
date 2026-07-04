@@ -16,7 +16,6 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
-from typing import Optional
 
 # ---------------------------------------------------------------------------
 # Known model parameter counts (billions)
@@ -170,11 +169,11 @@ def _get_arch(model_name: str) -> tuple[int, int]:
 def calculate_safe_batch_size(
     *,
     model_name: str = "",
-    params_b: Optional[float] = None,
+    params_b: float | None = None,
     lora_rank: int = 16,
     seq_len: int = 512,
     dtype: str = "fp16",
-    vram_info: Optional[dict] = None,
+    vram_info: dict | None = None,
 ) -> dict:
     """Return a dict with VRAM info, memory estimates, and safe batch size.
 
@@ -238,14 +237,13 @@ def calculate_safe_batch_size(
         reasoning.append("No GPU — CPU-only mode.")
     else:
         reasoning.append(
-            f"GPU: {vram_info.get('gpu_name', 'Unknown')} — "
-            f"{free_gb:.1f} GB free of {total_gb:.1f} GB ({free_pct}%)"
+            f"GPU: {vram_info.get('gpu_name', 'Unknown')} — {free_gb:.1f} GB free of {total_gb:.1f} GB ({free_pct}%)"
         )
     reasoning.append(f"Model ({params_b:.1f}B {dtype}): ~{model_mem_gb:.1f} GB")
     reasoning.append(f"LoRA overhead (rank={lora_rank}): ~{lora_mem_gb:.3f} GB")
     reasoning.append(f"Activations (bs={safe_batch}, seq={seq_len}): ~{activation_at_safe:.3f} GB")
     reasoning.append(
-        f"Total estimated: {total_estimated_gb:.1f} GB " f"(budget was {max(budget_gb, 0):.1f} GB with 20% headroom)"
+        f"Total estimated: {total_estimated_gb:.1f} GB (budget was {max(budget_gb, 0):.1f} GB with 20% headroom)"
     )
 
     return {

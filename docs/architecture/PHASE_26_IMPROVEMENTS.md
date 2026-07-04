@@ -21,9 +21,9 @@ Phase 26 transitions from UI polish to **intelligent, data-driven optimization**
 - **Vocabulary Profiling**: Unique token count, role distribution (user/assistant)
 - **Turn Analysis**: Average turns per conversation
 - **Intelligent Recommendations**: Heuristic engine based on:
-  - **Sample count**: <500 (small), <2k (medium), >2k (large)
-  - **Token length**: >500 reduces batch size to prevent memory issues
-  - **Vocabulary size**: >10k increases LoRA rank for better coverage
+    - **Sample count**: <500 (small), <2k (medium), >2k (large)
+    - **Token length**: >500 reduces batch size to prevent memory issues
+    - **Vocabulary size**: >10k increases LoRA rank for better coverage
 
 **Dashboard Integration**: `dashboard/unified.html`
 
@@ -39,30 +39,32 @@ Phase 26 transitions from UI polish to **intelligent, data-driven optimization**
 - **Timeout**: 30-second limit with graceful error handling
 - **Response Format**:
 
-  ```json
-  {
-    "total_samples": 290,
-    "valid_samples": 290,
-    "tokens": {
-      "total": 23883,
-      "mean": 41.2,
-      "median": 34,
-      "min": 1,
-      "max": 1323,
-      "stdev": 82.8
-    },
-    "vocabulary": { "size": 6851 },
-    "roles": { "user": 290, "assistant": 290 },
-    "turns_per_sample": { "mean": 2.0 },
-    "recommendations": {
-      "batch_size": 4,
-      "learning_rate": "2e-4",
-      "lora_rank": 8,
-      "epochs": 5,
-      "reasoning": ["Small dataset (<500): lower batch, higher LR, more epochs"]
+    ```json
+    {
+        "total_samples": 290,
+        "valid_samples": 290,
+        "tokens": {
+            "total": 23883,
+            "mean": 41.2,
+            "median": 34,
+            "min": 1,
+            "max": 1323,
+            "stdev": 82.8
+        },
+        "vocabulary": { "size": 6851 },
+        "roles": { "user": 290, "assistant": 290 },
+        "turns_per_sample": { "mean": 2.0 },
+        "recommendations": {
+            "batch_size": 4,
+            "learning_rate": "2e-4",
+            "lora_rank": 8,
+            "epochs": 5,
+            "reasoning": [
+                "Small dataset (<500): lower batch, higher LR, more epochs"
+            ]
+        }
     }
-  }
-  ```
+    ```
 
 **Profiler CLI**:
 
@@ -106,11 +108,11 @@ python .\scripts\dataset_profiler.py .\datasets\chat\mixed_chat --recommend --qu
 
 - **Input**: Path to dataset directory or train.json
 - **Processing**:
-  1. Load JSON/JSONL file
-  2. Tokenize all messages (simple whitespace split)
-  3. Calculate statistics using `statistics` module
-  4. Count vocabulary with `Counter`
-  5. Apply heuristic rules based on thresholds
+    1. Load JSON/JSONL file
+    2. Tokenize all messages (simple whitespace split)
+    3. Calculate statistics using `statistics` module
+    4. Count vocabulary with `Counter`
+    5. Apply heuristic rules based on thresholds
 - **Output**: JSON profile with recommendations
 
 **Recommendation Engine** (heuristic rules):
@@ -188,20 +190,20 @@ curl "http://localhost:8080/api/profile-dataset?dataset=mixed_chat"
 **Plan**:
 
 1. **VRAM Probing**:
-   - Try `torch.cuda.get_device_properties()` if CUDA available
-   - Fallback to `nvidia-smi --query-gpu=memory.free --format=csv`
-   - Store total and available VRAM
+    - Try `torch.cuda.get_device_properties()` if CUDA available
+    - Fallback to `nvidia-smi --query-gpu=memory.free --format=csv`
+    - Store total and available VRAM
 2. **Memory Estimation**:
-   - Calculate model size (parameters × 4 bytes per float32)
-   - Add LoRA adapter overhead (rank × 2 × hidden_size × 4)
-   - Estimate activation memory (batch_size × seq_len × hidden_size × layers × 4)
+    - Calculate model size (parameters × 4 bytes per float32)
+    - Add LoRA adapter overhead (rank × 2 × hidden_size × 4)
+    - Estimate activation memory (batch_size × seq_len × hidden_size × layers × 4)
 3. **Safe Batch Calculation**:
-   - Reserve 20% headroom for OS/driver
-   - Recommend max batch size that fits in remaining VRAM
+    - Reserve 20% headroom for OS/driver
+    - Recommend max batch size that fits in remaining VRAM
 4. **Dashboard Integration**:
-   - Add "🖥️ Calculate Safe Batch" button to unified.html
-   - Show VRAM usage bar and recommended batch size
-   - Auto-populate batch_size field
+    - Add "🖥️ Calculate Safe Batch" button to unified.html
+    - Show VRAM usage bar and recommended batch size
+    - Auto-populate batch_size field
 
 **Expected Output**:
 
@@ -223,18 +225,18 @@ Safe batch size: 8 (with 20% headroom)
 **Plan**:
 
 1. **Metric Monitoring**:
-   - Track loss progression across epochs
-   - Detect **spikes** (>20% increase between epochs)
-   - Detect **divergence** (loss >10.0 or NaN)
-   - Detect **stagnation** (no improvement for 5+ epochs)
+    - Track loss progression across epochs
+    - Detect **spikes** (>20% increase between epochs)
+    - Detect **divergence** (loss >10.0 or NaN)
+    - Detect **stagnation** (no improvement for 5+ epochs)
 2. **Alert System**:
-   - Desktop notification on anomaly
-   - Visual indicator in analytics.html (red badge, exclamation icon)
-   - Optional auto-pause (configurable in settings)
+    - Desktop notification on anomaly
+    - Visual indicator in analytics.html (red badge, exclamation icon)
+    - Optional auto-pause (configurable in settings)
 3. **Dashboard Integration**:
-   - Add "Anomaly Detection" toggle to analytics.html
-   - Show anomaly timeline on chart (markers for spikes/stagnation)
-   - Export anomaly report to JSON
+    - Add "Anomaly Detection" toggle to analytics.html
+    - Show anomaly timeline on chart (markers for spikes/stagnation)
+    - Export anomaly report to JSON
 
 **Anomaly Rules**:
 
@@ -251,18 +253,18 @@ Safe batch size: 8 (with 20% headroom)
 **Plan**:
 
 1. **Extract Common Styles**:
-   - Dark mode variables (colors, backgrounds)
-   - Card styles (border, shadow, padding)
-   - Button styles (primary, secondary, info, danger)
-   - Badge styles (success, warning, error)
-   - Modal styles (overlay, container, animations)
+    - Dark mode variables (colors, backgrounds)
+    - Card styles (border, shadow, padding)
+    - Button styles (primary, secondary, info, danger)
+    - Badge styles (success, warning, error)
+    - Modal styles (overlay, container, animations)
 2. **Create Shared CSS**:
-   - File: `dashboard/shared-theme.css` (~300 lines)
-   - Link from all 3 pages: `<link rel="stylesheet" href="shared-theme.css">`
+    - File: `dashboard/shared-theme.css` (~300 lines)
+    - Link from all 3 pages: `<link rel="stylesheet" href="shared-theme.css">`
 3. **Reduce Duplication**:
-   - Before: ~300 lines per page (900 total)
-   - After: ~50 lines per page (450 total)
-   - Savings: 450 lines (50% reduction)
+    - Before: ~300 lines per page (900 total)
+    - After: ~50 lines per page (450 total)
+    - Savings: 450 lines (50% reduction)
 
 ---
 
@@ -273,22 +275,22 @@ Safe batch size: 8 (with 20% headroom)
 **Plan**:
 
 1. **Shortcuts**:
-   - `Tab`: Cycle through form fields
-   - `Enter`: Submit form
-   - `Escape`: Close modal
-   - `Arrow keys`: Navigate preset profiles
-   - `Space`: Toggle checkboxes
-   - `?`: Show keyboard hints panel
+    - `Tab`: Cycle through form fields
+    - `Enter`: Submit form
+    - `Escape`: Close modal
+    - `Arrow keys`: Navigate preset profiles
+    - `Space`: Toggle checkboxes
+    - `?`: Show keyboard hints panel
 2. **Keyboard Hints Panel**:
-   - Persistent panel (bottom-right corner)
-   - Toggle with `?` key
-   - Shows all available shortcuts with descriptions
-   - Responsive (hide on mobile)
+    - Persistent panel (bottom-right corner)
+    - Toggle with `?` key
+    - Shows all available shortcuts with descriptions
+    - Responsive (hide on mobile)
 3. **Accessibility**:
-   - ARIA labels for all form fields
-   - Role attributes for custom widgets
-   - Focus indicators (blue outline)
-   - Screen reader announcements for status changes
+    - ARIA labels for all form fields
+    - Role attributes for custom widgets
+    - Focus indicators (blue outline)
+    - Screen reader announcements for status changes
 
 ---
 
@@ -299,35 +301,35 @@ Safe batch size: 8 (with 20% headroom)
 **Plan**:
 
 1. **Session Storage**:
-   - Use localStorage or IndexedDB
-   - Store: config, start_time, end_time, final_loss, status
-   - Max 100 sessions (LRU eviction)
+    - Use localStorage or IndexedDB
+    - Store: config, start_time, end_time, final_loss, status
+    - Max 100 sessions (LRU eviction)
 2. **History Tab**:
-   - Add to unified.html (between Training and Analytics tabs)
-   - Table with columns: Date, Model, Dataset, Epochs, Final Loss, Status
-   - Filters: Date range, Status (completed/failed), Model
-   - Sort: Date (desc), Loss (asc), Duration
+    - Add to unified.html (between Training and Analytics tabs)
+    - Table with columns: Date, Model, Dataset, Epochs, Final Loss, Status
+    - Filters: Date range, Status (completed/failed), Model
+    - Sort: Date (desc), Loss (asc), Duration
 3. **Session Replay**:
-   - "Load Config" button to populate form from history
-   - Compare button to diff two sessions
-   - Export to CSV/JSON
+    - "Load Config" button to populate form from history
+    - Compare button to diff two sessions
+    - Export to CSV/JSON
 4. **Comparison View**:
-   - Side-by-side config diff
-   - Loss progression chart overlay
-   - Delta metrics (loss improvement, duration)
+    - Side-by-side config diff
+    - Loss progression chart overlay
+    - Delta metrics (loss improvement, duration)
 
 ---
 
 ## Progress Summary
 
-| Feature | Status | Completion |
+| Feature                    | Status         | Completion |
 | -------------------------- | -------------- | ---------- |
-| Dataset Profiling | ✅ Complete | 100% |
-| GPU-Aware Batch Calculator | 🔄 In Progress | 50% |
-| Anomaly Detection | 🔄 In Progress | 40% |
-| Shared CSS | 🔄 In Progress | 70% |
-| Keyboard Navigation | 🔄 In Progress | 40% |
-| Training Session History | 🔄 In Progress | 60% |
+| Dataset Profiling          | ✅ Complete    | 100%       |
+| GPU-Aware Batch Calculator | 🔄 In Progress | 50%        |
+| Anomaly Detection          | 🔄 In Progress | 40%        |
+| Shared CSS                 | 🔄 In Progress | 70%        |
+| Keyboard Navigation        | 🔄 In Progress | 40%        |
+| Training Session History   | 🔄 In Progress | 60%        |
 
 **Overall**: 45% complete (6/6 features touched)
 
@@ -377,33 +379,33 @@ Safe batch size: 8 (with 20% headroom)
 
 - `../../scripts/dataset_profiler.py` (NEW): 250+ line profiler with CLI
 - `../../apps/dashboard/unified.html`: Tuning wizard integration
-  - Added `📊 Profile Dataset` button
-  - Added `buildSuggestions()` refactor to prioritize AI recommendations
-  - Added `buildHeuristicSuggestions()` with existing tier logic
-  - Added `profileDatasetForWizard()` async function
+    - Added `📊 Profile Dataset` button
+    - Added `buildSuggestions()` refactor to prioritize AI recommendations
+    - Added `buildHeuristicSuggestions()` with existing tier logic
+    - Added `profileDatasetForWizard()` async function
 - `../../apps/dashboard/serve.py`:
-  - Added `/api/profile-dataset` endpoint
-  - Shells out to profiler script with subprocess
+    - Added `/api/profile-dataset` endpoint
+    - Shells out to profiler script with subprocess
 
 ---
 
 ## Next Steps (Priority Order)
 
 1. **Complete GPU-Aware Batch Calculator** (High Priority)
-   - Prevents costly OOM crashes
-   - Adds immediate value for users with limited VRAM
+    - Prevents costly OOM crashes
+    - Adds immediate value for users with limited VRAM
 2. **Implement Anomaly Detection** (High Priority)
-   - Prevents wasted training time on diverging runs
-   - Early warning system for issues
+    - Prevents wasted training time on diverging runs
+    - Early warning system for issues
 3. **Extract Shared CSS** (Medium Priority)
-   - Code quality improvement
-   - Easier theme maintenance
+    - Code quality improvement
+    - Easier theme maintenance
 4. **Add Keyboard Navigation** (Medium Priority)
-   - Power user feature
-   - Accessibility compliance
+    - Power user feature
+    - Accessibility compliance
 5. **Build Session History Tracker** (Low Priority)
-   - Nice-to-have for advanced users
-   - Lower ROI than other features
+    - Nice-to-have for advanced users
+    - Lower ROI than other features
 
 ---
 

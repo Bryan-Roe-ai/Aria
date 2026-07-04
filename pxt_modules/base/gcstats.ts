@@ -5,12 +5,12 @@ namespace control {
     }
 
     export interface GCStats {
-        numGC: number;
-        numBlocks: number;
-        totalBytes: number;
-        lastFreeBytes: number;
-        lastMaxBlockBytes: number;
-        minFreeBytes: number;
+        numGC: number
+        numBlocks: number
+        totalBytes: number
+        lastFreeBytes: number
+        lastMaxBlockBytes: number
+        minFreeBytes: number
     }
 
     /**
@@ -18,8 +18,7 @@ namespace control {
      */
     export function gcStats(): GCStats {
         const buf = getGCStats()
-        if (!buf)
-            return null
+        if (!buf) return null
         let off = 0
         const res: any = {}
 

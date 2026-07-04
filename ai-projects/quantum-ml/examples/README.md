@@ -218,20 +218,20 @@ Edit `config/quantum_config.yaml`:
 
 ```yaml
 ml:
-  model:
-    n_qubits: 4      # Change to 6 or 8
-    n_layers: 2      # Increase for more expressiveness
-    entanglement: "linear"  # Try "circular" or "full"
+    model:
+        n_qubits: 4 # Change to 6 or 8
+        n_layers: 2 # Increase for more expressiveness
+        entanglement: "linear" # Try "circular" or "full"
 ```
 
 ### Change Training Settings
 
 ```yaml
 ml:
-  training:
-    epochs: 100      # Increase for better convergence
-    batch_size: 32   # Adjust based on dataset size
-    learning_rate: 0.01  # Tune for optimization
+    training:
+        epochs: 100 # Increase for better convergence
+        batch_size: 32 # Adjust based on dataset size
+        learning_rate: 0.01 # Tune for optimization
 ```
 
 ### Test Different Datasets

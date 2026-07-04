@@ -5,7 +5,6 @@ Quick Start Guide for LM Studio MCP Server
 This script helps you get the LM Studio MCP server up and running quickly.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -75,9 +74,7 @@ def install_dependencies():
 
     print(f"Installing dependencies from {requirements_file}...")
     try:
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install", "-r", str(requirements_file), "-q"]
-        )
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(requirements_file), "-q"])
         print("✅ Dependencies installed")
         return True
     except subprocess.CalledProcessError:
@@ -131,9 +128,9 @@ def show_next_steps():
     print()
 
     print("5️⃣  Reference Documentation:")
-    print(f"   • README.md - Full documentation")
-    print(f"   • CONFIG_EXAMPLES.md - Configuration examples")
-    print(f"   • test_lmstudio_mcp.py - Test the connection")
+    print("   • README.md - Full documentation")
+    print("   • CONFIG_EXAMPLES.md - Configuration examples")
+    print("   • test_lmstudio_mcp.py - Test the connection")
     print()
 
 

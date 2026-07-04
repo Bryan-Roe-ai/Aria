@@ -9,6 +9,7 @@ Usage:
     python scripts/resource_monitor.py --export out.json   # JSON export
     python scripts/resource_monitor.py --thresholds        # Show threshold config
 """
+
 from __future__ import annotations
 
 import argparse
@@ -17,7 +18,7 @@ import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 # ─── thresholds ──────────────────────────────────────────────────────────────
 THRESHOLDS = {
@@ -45,7 +46,7 @@ def _badge(level: str) -> str:
 # ─── collectors ──────────────────────────────────────────────────────────────
 
 
-def _collect_cpu_mem() -> Dict[str, Any]:
+def _collect_cpu_mem() -> dict[str, Any]:
     try:
         import psutil
 
@@ -70,7 +71,7 @@ def _collect_cpu_mem() -> Dict[str, Any]:
         }
     except ImportError:
         # Fallback via /proc on Linux
-        result: Dict[str, Any] = {}
+        result: dict[str, Any] = {}
         try:
             with open("/proc/loadavg") as f:
                 parts = f.read().split()
@@ -80,7 +81,7 @@ def _collect_cpu_mem() -> Dict[str, Any]:
         except Exception:
             pass
         try:
-            mem: Dict[str, int] = {}
+            mem: dict[str, int] = {}
             with open("/proc/meminfo") as f:
                 for line in f:
                     k, v = line.split(":")[:2]
@@ -97,7 +98,7 @@ def _collect_cpu_mem() -> Dict[str, Any]:
         return result
 
 
-def _collect_disk() -> List[Dict[str, Any]]:
+def _collect_disk() -> list[dict[str, Any]]:
     try:
         import psutil
 
@@ -150,7 +151,7 @@ def _collect_disk() -> List[Dict[str, Any]]:
             return []
 
 
-def _collect_gpu() -> List[Dict[str, Any]]:
+def _collect_gpu() -> list[dict[str, Any]]:
     """Try nvidia-smi, then torch CUDA."""
     import subprocess
 
@@ -185,6 +186,7 @@ def _collect_gpu() -> List[Dict[str, Any]]:
         return gpus
     except (
         FileNotFoundError,
+        PermissionError,
         subprocess.CalledProcessError,
         subprocess.TimeoutExpired,
     ):
@@ -218,7 +220,7 @@ def _collect_gpu() -> List[Dict[str, Any]]:
 # ─── snapshot ────────────────────────────────────────────────────────────────
 
 
-def collect_snapshot() -> Dict[str, Any]:
+def collect_snapshot() -> dict[str, Any]:
     return {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "cpu_mem": _collect_cpu_mem(),
@@ -235,17 +237,17 @@ def _bar(pct: float, width: int = 20) -> str:
     return "[" + "█" * filled + "░" * (width - filled) + f"] {pct:5.1f}%"
 
 
-def print_snapshot(snap: Dict[str, Any]):
+def print_snapshot(snap: dict[str, Any]):
     ts = snap.get("timestamp", "")[:19].replace("T", " ")
     cm = snap.get("cpu_mem", {})
     disks = snap.get("disks", [])
     gpus = snap.get("gpus", [])
 
-    alerts: List[str] = []
+    alerts: list[str] = []
 
-    print(f"\n{'─'*60}")
+    print(f"\n{'─' * 60}")
     print(f"  💻 RESOURCE MONITOR   {ts}")
-    print(f"{'─'*60}")
+    print(f"{'─' * 60}")
 
     # CPU
     cpu_pct = cm.get("cpu_percent", 0.0)
@@ -311,14 +313,14 @@ def print_snapshot(snap: Dict[str, Any]):
 
     # Alerts
     if alerts:
-        print(f"\n  {'─'*56}")
+        print(f"\n  {'─' * 56}")
         print(f"  🚨 ALERTS ({len(alerts)}):")
         for a in alerts:
             print(f"     • {a}")
     else:
         print("\n  ✅ All resources within normal thresholds")
 
-    print(f"{'─'*60}\n")
+    print(f"{'─' * 60}\n")
 
 
 # ─── main ────────────────────────────────────────────────────────────────────

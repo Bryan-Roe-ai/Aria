@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -51,7 +51,7 @@ class CritiqueAgent(BaseAgent):
 
     name = "critique_agent"
 
-    _DEFAULT_CRITERIA: List[str] = [
+    _DEFAULT_CRITERIA: list[str] = [
         "Is the response accurate and factually correct?",
         "Is it concise and free of unnecessary repetition?",
         "Does it directly address the stated goal?",
@@ -61,7 +61,7 @@ class CritiqueAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
         threshold: float = 0.6,
     ) -> None:
         self.memory = memory
@@ -71,7 +71,7 @@ class CritiqueAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"critique", "evaluate_response", "assess_quality"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
 
         content: str = payload.get("response") or payload.get("content") or ""
@@ -79,7 +79,7 @@ class CritiqueAgent(BaseAgent):
         if not content.strip() and isinstance(plan, list):
             content = json.dumps(plan, ensure_ascii=False)
 
-        criteria: List[str] = payload.get("criteria") or self._DEFAULT_CRITERIA
+        criteria: list[str] = payload.get("criteria") or self._DEFAULT_CRITERIA
 
         critique = self._critique(content, criteria)
         critique["agent"] = self.name
@@ -93,7 +93,7 @@ class CritiqueAgent(BaseAgent):
 
         return critique
 
-    def _critique(self, content: str, criteria: List[str]) -> Dict[str, Any]:
+    def _critique(self, content: str, criteria: list[str]) -> dict[str, Any]:
         truncated = content[:_MAX_INPUT_CHARS]
         criteria_text = "\n".join(f"- {c}" for c in criteria)
 
@@ -125,8 +125,8 @@ class CritiqueAgent(BaseAgent):
 
         return self._parse_critique(raw)
 
-    def _parse_critique(self, raw: str) -> Dict[str, Any]:
-        fallback: Dict[str, Any] = {
+    def _parse_critique(self, raw: str) -> dict[str, Any]:
+        fallback: dict[str, Any] = {
             "score": _DEFAULT_SCORE,
             "issues": ["Critique unavailable"],
             "suggestions": [],
@@ -135,7 +135,7 @@ class CritiqueAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Dict[str, Any] | None:
+        def _extract(data: Any) -> dict[str, Any] | None:
             if not isinstance(data, dict):
                 return None
             if not any(k in data for k in ("score", "issues", "suggestions")):

@@ -5,6 +5,7 @@
 ## Quick Wins (< 30 minutes each)
 
 ### 1. Generator-Based Counting
+
 **File:** `dashboard/serve.py` lines 700, 761, 766
 
 ```python
@@ -18,6 +19,7 @@ count = sum(1 for d in dir.iterdir() if d.is_dir())
 ```
 
 ### 2. Gradient Norm Optimization
+
 **File:** `ai-projects/quantum-ml/web_app.py` line 440
 
 ```python
@@ -29,6 +31,7 @@ avg_gradient = np.mean(np.linalg.norm(g) for g in epoch_gradients)
 ```
 
 ### 3. Single-Pass Statistics
+
 **File:** `ai-projects/quantum-ml/web_app.py` lines 952-958
 
 ```python
@@ -52,6 +55,7 @@ avg_acc = np.mean(accuracies) if accuracies else 0.0
 ## Medium Complexity (1-2 hours)
 
 ### 4. File Caching with TTL
+
 **File:** `dashboard/serve.py` (add at module level)
 
 ```python
@@ -94,6 +98,7 @@ def _load_json_cached(filepath: Path) -> dict:
 ```
 
 ### 5. Keyword Matching with Frozensets
+
 **File:** `ai-projects/chat-cli/src/agi_provider.py` lines 343-372
 
 ```python
@@ -157,6 +162,7 @@ def _analyze_query_optimized(query: str) -> dict:
 ```
 
 ### 6. Consistent Frozenset Usage
+
 **File:** `aria_web/server.py` lines 554-557
 
 ```python
@@ -175,6 +181,7 @@ elif _contains_any_keyword(cmd, MOVE_LEFT_KEYWORDS):
 ```
 
 ### 7. Deque-Based Rate Limiting
+
 **File:** `dashboard/serve.py` lines 39-40
 
 ```python
@@ -206,6 +213,7 @@ def check_rate_limit(client_ip: str) -> bool:
 ## Complex Optimization (2-4 hours)
 
 ### 8. Quantum Gradient Optimization
+
 **File:** `ai-projects/quantum-ml/web_app.py` lines 217-246
 
 ```python
@@ -288,16 +296,16 @@ def benchmark_optimization(old_func, new_func, *args, iterations=100):
 
 ## Expected Performance Gains
 
-| Optimization | File | Speedup | Risk |
-| -------------- | ------ | --------- | ------ |
-| Quantum gradient | web_app.py | 10-100x | Low (has fallback) |
-| File caching | serve.py | 5-10x | Low (5s TTL) |
-| Keyword frozensets | agi_provider.py | 3-30x | Very low |
-| Position keywords | server.py | 2-5x | Very low |
-| Single-pass stats | web_app.py | 4x | Very low |
-| Generator counting | serve.py | 5-20% | Very low |
-| Deque rate limiting | serve.py | 2-5x | Low |
-| Gradient norm | web_app.py | <5% | Very low |
+| Optimization        | File            | Speedup | Risk               |
+| ------------------- | --------------- | ------- | ------------------ |
+| Quantum gradient    | web_app.py      | 10-100x | Low (has fallback) |
+| File caching        | serve.py        | 5-10x   | Low (5s TTL)       |
+| Keyword frozensets  | agi_provider.py | 3-30x   | Very low           |
+| Position keywords   | server.py       | 2-5x    | Very low           |
+| Single-pass stats   | web_app.py      | 4x      | Very low           |
+| Generator counting  | serve.py        | 5-20%   | Very low           |
+| Deque rate limiting | serve.py        | 2-5x    | Low                |
+| Gradient norm       | web_app.py      | <5%     | Very low           |
 
 ## Implementation Order
 

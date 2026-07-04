@@ -1,16 +1,15 @@
 namespace control.__screen {
     let __update: () => void
-    let __updated = false;
+    let __updated = false
 
     export function update() {
-        if (__update)
-            __update()
+        if (__update) __update()
         __updated = true
     }
 
     export function setupUpdate(update: () => void) {
-        __updated = true;
-        __update = update;
+        __updated = true
+        __update = update
         update()
     }
 
@@ -20,7 +19,7 @@ namespace control.__screen {
             __updated = false
             pause(200)
             if (!__updated) {
-                __screen.update();
+                __screen.update()
                 __updated = true
             }
         }

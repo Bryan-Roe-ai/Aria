@@ -1,0 +1,71 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+
+name: aria-st-train-50k
+experiment_name: aria-sentence-transformer
+description: Fine-tune all-MiniLM-L6-v2 on 50k all-nli triplets (MultipleNegativesRankingLoss)
+
+# Override compute at submit time:
+#   az ml job create -f job-sentence-transformer-train.yml --set compute=azureml:gpu-cluster
+compute: azureml:gpu-cluster
+
+# Repo root so shared paths and data_out conventions resolve.
+code: ../../../..
+
+environment:
+    build:
+        path: .
+        conda_file: environment-sentence-transformer.yml
+
+inputs:
+    model_id:
+        type: string
+        value: sentence-transformers/all-MiniLM-L6-v2
+    dataset:
+        type: string
+        value: sentence-transformers/all-nli
+    subset:
+        type: string
+        value: triplet
+    train_size:
+        type: integer
+        value: 50000
+    eval_size:
+        type: integer
+        value: 1000
+    run_name:
+        type: string
+        value: aria-minilm-all-nli-50k
+    hub_model_id:
+        type: string
+        optional: true
+        description: Hub repo id (user/model). Leave empty to skip Hub push.
+        value: ""
+
+outputs:
+    model_out:
+        type: uri_folder
+        mode: rw_mount
+
+resources:
+    instance_count: 1
+
+limits:
+    timeout: 28800 # 8h — NanoBEIR eval + 50k MNRL on NC6s_v3
+
+environment_variables:
+    MLFLOW_TRACKING_URI: azureml://tracking
+    HF_HUB_DISABLE_SYMLINKS_WARNING: "1"
+    PYTHONUTF8: "1"
+    TOKENIZERS_PARALLELISM: "false"
+
+command: >-
+    python ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_sentence_transformer.py
+    --model ${{inputs.model_id}}
+    --dataset ${{inputs.dataset}}
+    --subset ${{inputs.subset}}
+    --train-size ${{inputs.train_size}}
+    --eval-size ${{inputs.eval_size}}
+    --run-name ${{inputs.run_name}}
+    --output-dir ${{outputs.model_out}}
+    --hub-model-id "${{inputs.hub_model_id}}"
+    --push-to-hub

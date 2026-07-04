@@ -2,17 +2,28 @@
 """
 Fast validation runner - minimal checks for rapid feedback
 Optimized for speed over completeness
+
+Examples:
+  python scripts/fast_validate.py
+  python scripts/fast_validate.py --json
+  python scripts/fast_validate.py --check Dependencies --quiet
+  python scripts/fast_validate.py --list-checks
 """
+
+from __future__ import annotations
+
+import argparse
 import json
 import sys
 import time
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
-_CRITICAL_FAILURES: Dict[str, set[str]] = {
+_CRITICAL_FAILURES: dict[str, set[str]] = {
     "Datasets": {"missing", "empty"},
     "Scripts": {"missing_scripts"},
     "Output Dirs": {"write_issues"},
@@ -26,7 +37,7 @@ def is_critical_failure(check_name: str, status: str) -> bool:
     return status in _CRITICAL_FAILURES.get(check_name, set())
 
 
-def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
+def summarize_results(results: list[dict[str, Any]]) -> dict[str, Any]:
     """Build summary metadata for fast-validate checks."""
     total = len(results)
     ok_count = sum(1 for r in results if r.get("status") == "ok")
@@ -42,7 +53,7 @@ def summarize_results(results: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def quick_check_datasets() -> Dict[str, Any]:
+def quick_check_datasets() -> dict[str, Any]:
     """Lightning-fast dataset existence check (no JSONL parsing)."""
     datasets_dir = REPO_ROOT / "datasets"
     if not datasets_dir.exists():
@@ -62,7 +73,7 @@ def quick_check_datasets() -> Dict[str, Any]:
     }
 
 
-def quick_check_scripts() -> Dict[str, Any]:
+def quick_check_scripts() -> dict[str, Any]:
     """Verify critical scripts exist without importing."""
     critical = [
         "autotrain.py",
@@ -81,7 +92,7 @@ def quick_check_scripts() -> Dict[str, Any]:
     }
 
 
-def quick_check_venv() -> Dict[str, Any]:
+def quick_check_venv() -> dict[str, Any]:
     """Check Python virtual environments exist without inspecting packages."""
     venv_markers = [
         ".venv/Scripts/python.exe",
@@ -102,7 +113,7 @@ def quick_check_venv() -> Dict[str, Any]:
     }
 
 
-def quick_check_outputs() -> Dict[str, Any]:
+def quick_check_outputs() -> dict[str, Any]:
     """Verify output directories writable without listing all files."""
     output_dirs = ["data_out", "deployed_models"]
     issues = []
@@ -122,7 +133,7 @@ def quick_check_outputs() -> Dict[str, Any]:
     }
 
 
-def quick_check_configs() -> Dict[str, Any]:
+def quick_check_configs() -> dict[str, Any]:
     """Verify critical YAML configs parse without error."""
     import importlib
     import importlib.util
@@ -133,7 +144,7 @@ def quick_check_configs() -> Dict[str, Any]:
         "config/autonomous_training.yaml",
         "config/master_orchestrator.yaml",
     ]
-    issues: List[str] = []
+    issues: list[str] = []
     for cfg in configs:
         path = REPO_ROOT / cfg
         if not path.exists():
@@ -153,11 +164,11 @@ def quick_check_configs() -> Dict[str, Any]:
     }
 
 
-def quick_check_providers() -> Dict[str, Any]:
+def quick_check_providers() -> dict[str, Any]:
     """Check which chat providers have required env vars present (no connections)."""
     import os
 
-    providers: Dict[str, bool] = {}
+    providers: dict[str, bool] = {}
     providers["azure_openai"] = all(
         os.environ.get(k)
         for k in [
@@ -180,7 +191,7 @@ def quick_check_providers() -> Dict[str, Any]:
     }
 
 
-def quick_check_ai_tokens() -> Dict[str, Any]:
+def quick_check_ai_tokens() -> dict[str, Any]:
     """Check token automation status produced by generate_ai_tokens.py.
 
     Reads data_out/ai_token_status.json (if present) and reports whether at
@@ -268,14 +279,14 @@ def _spec_exists_in_python(module_name: str, python_exe: Path) -> bool:
     cmd = [
         str(python_exe),
         "-c",
-        ("import importlib.util,sys; " "sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"),
+        ("import importlib.util,sys; sys.exit(0 if importlib.util.find_spec(sys.argv[1]) else 1)"),
         module_name,
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
     return proc.returncode == 0
 
 
-def quick_check_dependencies() -> Dict[str, Any]:
+def quick_check_dependencies() -> dict[str, Any]:
     """Verify key Python packages are importable (no heavy loads)."""
     import importlib.util
 
@@ -302,7 +313,7 @@ def quick_check_dependencies() -> Dict[str, Any]:
         else:
             missing.append(pkg)
 
-    details: Dict[str, Any] = {
+    details: dict[str, Any] = {
         "status": "ok" if not missing else "missing_deps",
         "present": present,
         "missing": missing,
@@ -314,30 +325,95 @@ def quick_check_dependencies() -> Dict[str, Any]:
     return details
 
 
-def main() -> None:
-    """Run all fast checks (completes in <100ms)."""
-    print("🚀 Fast Validation (no heavy imports, no parsing)")
-    print("=" * 60)
+CHECKS: dict[str, Callable[[], dict[str, Any]]] = {
+    "Datasets": quick_check_datasets,
+    "Scripts": quick_check_scripts,
+    "Virtual Envs": quick_check_venv,
+    "Output Dirs": quick_check_outputs,
+    "Configs": quick_check_configs,
+    "Providers": quick_check_providers,
+    "AI Tokens": quick_check_ai_tokens,
+    "Dependencies": quick_check_dependencies,
+}
 
-    checks = [
-        ("Datasets", quick_check_datasets),
-        ("Scripts", quick_check_scripts),
-        ("Virtual Envs", quick_check_venv),
-        ("Output Dirs", quick_check_outputs),
-        ("Configs", quick_check_configs),
-        ("Providers", quick_check_providers),
-        ("AI Tokens", quick_check_ai_tokens),
-        ("Dependencies", quick_check_dependencies),
-    ]
 
-    results: List[Dict[str, Any]] = []
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run fast repository validation checks (<100ms, no heavy imports).",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  python scripts/fast_validate.py\n"
+            "  python scripts/fast_validate.py --json\n"
+            "  python scripts/fast_validate.py --check Dependencies\n"
+            "  python scripts/fast_validate.py --list-checks\n"
+        ),
+    )
+    parser.add_argument(
+        "--check",
+        action="append",
+        dest="checks",
+        metavar="NAME",
+        help="Run only the named check (repeatable). Default: all checks.",
+    )
+    parser.add_argument(
+        "--list-checks",
+        action="store_true",
+        help="Print available check names and exit.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full result payload as JSON to stdout.",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_true",
+        help="Suppress human-readable table output (use with --json).",
+    )
+    return parser
+
+
+def _resolve_checks(selected: Sequence[str] | None) -> list[tuple[str, Callable[[], dict[str, Any]]]]:
+    if not selected:
+        return list(CHECKS.items())
+    missing = [name for name in selected if name not in CHECKS]
+    if missing:
+        known = ", ".join(CHECKS)
+        raise SystemExit(
+            f"Unknown check(s): {', '.join(missing)}\n"
+            f"Available checks: {known}\n"
+            "List checks: python scripts/fast_validate.py --list-checks"
+        )
+    return [(name, CHECKS[name]) for name in selected]
+
+
+def run_validation(
+    selected: Sequence[str] | None = None,
+    *,
+    quiet: bool = False,
+) -> tuple[list[dict[str, Any]], dict[str, Any], bool, Path]:
+    """Run checks and return results, summary, all_ok, and output path."""
+    checks = _resolve_checks(selected)
+    results: list[dict[str, Any]] = []
     all_ok = True
+
+    if not quiet:
+        print("🚀 Fast Validation (no heavy imports, no parsing)")
+        print("=" * 60)
 
     for name, func in checks:
         result = func()
-        results.append({"check": name, **result})
+        row = {"check": name, **result}
+        results.append(row)
 
         critical_failure = is_critical_failure(name, result["status"])
+        if critical_failure:
+            all_ok = False
+
+        if quiet:
+            continue
+
         if result["status"] == "ok":
             status_icon = "✅"
         elif critical_failure:
@@ -347,28 +423,47 @@ def main() -> None:
         print(f"{status_icon} {name:15} - {result['status']}")
 
         if critical_failure:
-            all_ok = False
             for key in ["error", "missing", "issues"]:
                 if key in result and result[key]:
                     print(f"   ⚠️  {result[key]}")
 
-    print("=" * 60)
+    if not quiet:
+        print("=" * 60)
 
-    # Write results
     output_path = REPO_ROOT / "data_out" / "fast_validate_results.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
     summary = summarize_results(results)
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(
-            {"checks": results, "summary": summary, "all_ok": all_ok},
-            f,
-            indent=2,
-        )
+    payload = {"checks": results, "summary": summary, "all_ok": all_ok}
+    output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    if not quiet:
+        print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
+
+    return results, payload, all_ok, output_path
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+
+    if args.list_checks:
+        for name in CHECKS:
+            print(name)
+        return 0
+
+    _, payload, all_ok, output_path = run_validation(
+        args.checks,
+        quiet=args.quiet or args.json,
+    )
+
+    if args.json:
+        payload["results_path"] = str(output_path.relative_to(REPO_ROOT))
+        print(json.dumps(payload, indent=2))
+    elif args.quiet:
+        print(f"all_ok={all_ok} results={output_path.relative_to(REPO_ROOT)}")
 
     print(f"✅ Validation complete! Results: {output_path.relative_to(REPO_ROOT)}")
     sys.exit(0 if all_ok else 1)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

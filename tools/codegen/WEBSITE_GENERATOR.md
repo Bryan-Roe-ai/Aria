@@ -172,7 +172,7 @@ Each website includes:
 <!-- Portfolio grid -->
 <div class="portfolio-grid">
     <div class="portfolio-item">
-        <img src="project1.jpg">
+        <img src="project1.jpg" />
         <h3>E-Commerce Platform</h3>
         <p>Built a full-stack solution</p>
     </div>
@@ -369,26 +369,30 @@ Result: Online store ready for products
 
 1. **Run Demo**
 
-   ```bash
-   python3 website_generator_demo.py
-   ```
+```bash
+python3 website_generator_demo.py
+```
 
 2. **Choose Your Type**
-   - Portfolio? Landing? Blog? Docs? Store?
+
+    - Portfolio? Landing? Blog? Docs? Store?
 
 3. **Generate**
-   - Use @llm-maker in Copilot Chat
-   - Copy command from examples above
+
+    - Use @llm-maker in Copilot Chat
+    - Copy command from examples above
 
 4. **Customize**
-   - Edit HTML/CSS/JS as needed
-   - Add your content
+
+    - Edit HTML/CSS/JS as needed
+    - Add your content
 
 5. **Deploy**
-   - Push to GitHub Pages
-   - Deploy to Netlify
-   - Upload to S3
-   - or any static host
+
+    - Push to GitHub Pages
+    - Deploy to Netlify
+    - Upload to S3
+    - or any static host
 
 ---
 

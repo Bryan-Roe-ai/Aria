@@ -3,15 +3,16 @@ LLM Maker MCP Server
 Exposes tool creation and execution capabilities via Model Context Protocol
 """
 
-from src.tool_validator import ToolValidator
-from src.tool_registry import ToolRegistry
-from src.tool_maker import ToolMaker
-from src.tool_executor import ToolExecutor
 import asyncio
 import json
 import logging
 import sys
 from pathlib import Path
+
+from src.tool_executor import ToolExecutor
+from src.tool_maker import ToolMaker
+from src.tool_registry import ToolRegistry
+from src.tool_validator import ToolValidator
 
 # Add src directory to path
 src_path = Path(__file__).parent / "src"
@@ -119,9 +120,7 @@ async def list_tools() -> list[MCPTool]:
             description="Get details of a specific tool",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "tool_id": {"type": "string", "description": "Tool ID or name"}
-                },
+                "properties": {"tool_id": {"type": "string", "description": "Tool ID or name"}},
                 "required": ["tool_id"],
             },
         ),
@@ -130,9 +129,7 @@ async def list_tools() -> list[MCPTool]:
             description="Delete a tool from the registry",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "tool_id": {"type": "string", "description": "Tool ID to delete"}
-                },
+                "properties": {"tool_id": {"type": "string", "description": "Tool ID to delete"}},
                 "required": ["tool_id"],
             },
         ),
@@ -141,9 +138,7 @@ async def list_tools() -> list[MCPTool]:
             description="Validate a tool for safety",
             inputSchema={
                 "type": "object",
-                "properties": {
-                    "tool_id": {"type": "string", "description": "Tool ID or name"}
-                },
+                "properties": {"tool_id": {"type": "string", "description": "Tool ID or name"}},
                 "required": ["tool_id"],
             },
         ),

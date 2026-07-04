@@ -15,7 +15,6 @@ import importlib
 import json
 import pkgutil
 import sys
-from typing import Dict, List
 
 LEGACY_PACKAGES = [
     "qiskit_terra",  # legacy terra dist name (often 'qiskit-terra')
@@ -25,7 +24,7 @@ LEGACY_PACKAGES = [
 MODERN_ROOT = "qiskit"
 
 
-def find_distributions() -> Dict[str, str]:
+def find_distributions() -> dict[str, str]:
     versions = {}
     for m in pkgutil.iter_modules():
         name = m.name
@@ -39,7 +38,7 @@ def find_distributions() -> Dict[str, str]:
     return versions
 
 
-def classify(versions: Dict[str, str]) -> Dict[str, List[str]]:
+def classify(versions: dict[str, str]) -> dict[str, list[str]]:
     modern = []
     legacy = []
     errors = []
@@ -62,7 +61,7 @@ def classify(versions: Dict[str, str]) -> Dict[str, List[str]]:
     }
 
 
-def detect_conflict(versions: Dict[str, str]) -> Dict[str, object]:
+def detect_conflict(versions: dict[str, str]) -> dict[str, object]:
     """Determine conflict status and recommendation for a supplied versions map.
 
     Parameters

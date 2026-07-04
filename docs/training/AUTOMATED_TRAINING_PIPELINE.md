@@ -6,45 +6,45 @@ This document explains the usage of `scripts/automated_training_pipeline.py`, a 
 
 ## Why Use This Wrapper?
 
-* One command drives multi-model synthetic data generation + (optional) LoRA training.
-* Consistent summary artifacts for downstream dashboards & CI.
-* Seamless edge cases: generate-only, cleanup, evaluation disable.
-* Turn-key Azure ML remote execution spec without manual YAML authoring.
-* Append-only historical lineage maintained separately by `parallel_train.py` (`data_out/parallel_training/status.json`).
+- One command drives multi-model synthetic data generation + (optional) LoRA training.
+- Consistent summary artifacts for downstream dashboards & CI.
+- Seamless edge cases: generate-only, cleanup, evaluation disable.
+- Turn-key Azure ML remote execution spec without manual YAML authoring.
+- Append-only historical lineage maintained separately by `parallel_train.py` (`data_out/parallel_training/status.json`).
 
 ---
 
 ## Core Outputs
 
-| Artifact | Location | Purpose |
-| ---------- | ---------- | --------- |
-| Summary JSON | `data_out/automated_training/summary_<run_label>.json` | Aggregated results for this wrapper invocation (per model). |
-| Azure ML Job Spec (optional) | `.azureml/job_<run_label>.yaml` | Ready for `az ml job create --file` remote submission. |
-| Conda Environment Definition | `.azureml/environment.yml` | Base environment for Azure ML job. Generated if missing or forced. |
-| Synthetic Dataset | `datasets/chat/auto_generated/` | Train/Test JSON/JSONL for quick experiments. |
-| Status History | `data_out/parallel_training/status.json` | Long-term cumulative log from underlying training script(s). |
+| Artifact                     | Location                                               | Purpose                                                            |
+| ---------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------ |
+| Summary JSON                 | `data_out/automated_training/summary_<run_label>.json` | Aggregated results for this wrapper invocation (per model).        |
+| Azure ML Job Spec (optional) | `.azureml/job_<run_label>.yaml`                        | Ready for `az ml job create --file` remote submission.             |
+| Conda Environment Definition | `.azureml/environment.yml`                             | Base environment for Azure ML job. Generated if missing or forced. |
+| Synthetic Dataset            | `datasets/chat/auto_generated/`                        | Train/Test JSON/JSONL for quick experiments.                       |
+| Status History               | `data_out/parallel_training/status.json`               | Long-term cumulative log from underlying training script(s).       |
 
 ---
 
 ## Key Flags
 
-| Flag | Description | Default |
-| ------ | ------------- | --------- |
-| `--models phi,qwen,tinyllama` | Comma list of models to process. | `phi,qwen` |
-| `--quick` | Generate ~100 samples (fast dev mode). Ignored if `--samples` specified. | Off |
-| `--samples <N>` | Override synthetic sample count. | None |
-| `--generate-only` | Create synthetic dataset but skip training entirely. | Off |
-| `--no-eval` | Skip evaluation & sample generation in underlying training. | Off |
-| `--cleanup` | Remove intermediate checkpoints after successful training. | Off |
-| `--ranking-metric perplexity_improvement / post_perplexity / diversity_avg / combined_improvement / distinct_diversity` | Controls ranking metric selection (distinct_diversity is an alias of diversity_avg). | `perplexity_improvement` |
-| `--min-train-samples <N>` | Skip training if train sample count below threshold. | 50 |
-| `--output-name <str>` | Custom label replacing timestamp-based run label. | Auto timestamp |
-| `--azure-ml-spec` | Emit Azure ML job spec + environment file. | Off |
-| `--azure-ml-compute <cluster>` | Target compute cluster name for AML job. | `cpu-cluster` |
-| `--azure-ml-experiment <name>` | AML experiment name. | `lora-autotrain` |
-| `--azure-ml-env-name <name>` | Conda environment logical name. | `auto-training-env` |
-| `--azure-ml-image <image>` | Base container image for AML. | `mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04` |
-| `--force-azure-ml` | Overwrite existing environment.yml even if present. | Off |
+| Flag                                                                                                                    | Description                                                                          | Default                                              |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `--models phi,qwen,tinyllama`                                                                                           | Comma list of models to process.                                                     | `phi,qwen`                                           |
+| `--quick`                                                                                                               | Generate ~100 samples (fast dev mode). Ignored if `--samples` specified.             | Off                                                  |
+| `--samples <N>`                                                                                                         | Override synthetic sample count.                                                     | None                                                 |
+| `--generate-only`                                                                                                       | Create synthetic dataset but skip training entirely.                                 | Off                                                  |
+| `--no-eval`                                                                                                             | Skip evaluation & sample generation in underlying training.                          | Off                                                  |
+| `--cleanup`                                                                                                             | Remove intermediate checkpoints after successful training.                           | Off                                                  |
+| `--ranking-metric perplexity_improvement / post_perplexity / diversity_avg / combined_improvement / distinct_diversity` | Controls ranking metric selection (distinct_diversity is an alias of diversity_avg). | `perplexity_improvement`                             |
+| `--min-train-samples <N>`                                                                                               | Skip training if train sample count below threshold.                                 | 50                                                   |
+| `--output-name <str>`                                                                                                   | Custom label replacing timestamp-based run label.                                    | Auto timestamp                                       |
+| `--azure-ml-spec`                                                                                                       | Emit Azure ML job spec + environment file.                                           | Off                                                  |
+| `--azure-ml-compute <cluster>`                                                                                          | Target compute cluster name for AML job.                                             | `cpu-cluster`                                        |
+| `--azure-ml-experiment <name>`                                                                                          | AML experiment name.                                                                 | `lora-autotrain`                                     |
+| `--azure-ml-env-name <name>`                                                                                            | Conda environment logical name.                                                      | `auto-training-env`                                  |
+| `--azure-ml-image <image>`                                                                                              | Base container image for AML.                                                        | `mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04` |
+| `--force-azure-ml`                                                                                                      | Overwrite existing environment.yml even if present.                                  | Off                                                  |
 
 ---
 
@@ -98,8 +98,8 @@ python .\scripts\automated_training_pipeline.py --azure-ml-spec --generate-only 
 
 Generates synthetic data, writes summary, emits:
 
-* `.azureml/environment.yml`
-* `.azureml/job_<run_label>.yaml`
+- `.azureml/environment.yml`
+- `.azureml/job_<run_label>.yaml`
 
 Command inside job YAML includes `--generate-only` (training will be skipped remotely as well).
 
@@ -123,11 +123,11 @@ Runs synthetic generation & ultrafast TinyLlama LoRA config path defined in `aut
 
 ## Supported Models
 
-| Key | Base HF Model ID | Config (ultrafast) | Notes |
-| ----- | ------------------ | -------------------- | ------- |
-| phi | `microsoft/Phi-3.5-mini-instruct` | `AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml` | General baseline, medium size |
-| qwen | `Qwen/Qwen2.5-3B-Instruct` | `AI/microsoft_phi-silica-3.6_v1/lora/lora_qwen_ultrafast.yaml` (example, if present) | Higher capacity, slower |
-| tinyllama | `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | `AI/microsoft_phi-silica-3.6_v1/lora/lora_tinyllama_ultrafast.yaml` | Small, very fast experimentation |
+| Key       | Base HF Model ID                     | Config (ultrafast)                                                                   | Notes                            |
+| --------- | ------------------------------------ | ------------------------------------------------------------------------------------ | -------------------------------- |
+| phi       | `microsoft/Phi-3.5-mini-instruct`    | `AI/microsoft_phi-silica-3.6_v1/lora/lora.yaml`                                      | General baseline, medium size    |
+| qwen      | `Qwen/Qwen2.5-3B-Instruct`           | `AI/microsoft_phi-silica-3.6_v1/lora/lora_qwen_ultrafast.yaml` (example, if present) | Higher capacity, slower          |
+| tinyllama | `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | `AI/microsoft_phi-silica-3.6_v1/lora/lora_tinyllama_ultrafast.yaml`                  | Small, very fast experimentation |
 
 > If a config file is missing for a model key, add one under the LoRA directory following parameter patterns of existing ultrafast configs.
 
@@ -137,13 +137,13 @@ Runs synthetic generation & ultrafast TinyLlama LoRA config path defined in `aut
 
 The wrapper propagates the ranking metric to the underlying parallel trainer:
 
-| Metric | Definition | Direction | When Useful |
-| -------- | ------------ | ----------- | ------------- |
-| `perplexity_improvement` | Relative drop: (pre - post) / pre | Higher better | General quality gains |
-| `post_perplexity` | Final perplexity (stored negative internally for sorting) | Lower better | Absolute model quality target |
-| `diversity_avg` | (Distinct-1 + Distinct-2) / 2 from sample generations | Higher better | Variety / reduced repetition |
-| `distinct_diversity` | Alias of `diversity_avg` | Higher better | Convenience naming |
-| `combined_improvement` | `0.7 * perplexity_improvement + 0.3 * diversity_avg` | Higher better | Balanced quality vs variety |
+| Metric                   | Definition                                                | Direction     | When Useful                   |
+| ------------------------ | --------------------------------------------------------- | ------------- | ----------------------------- |
+| `perplexity_improvement` | Relative drop: (pre - post) / pre                         | Higher better | General quality gains         |
+| `post_perplexity`        | Final perplexity (stored negative internally for sorting) | Lower better  | Absolute model quality target |
+| `diversity_avg`          | (Distinct-1 + Distinct-2) / 2 from sample generations     | Higher better | Variety / reduced repetition  |
+| `distinct_diversity`     | Alias of `diversity_avg`                                  | Higher better | Convenience naming            |
+| `combined_improvement`   | `0.7 * perplexity_improvement + 0.3 * diversity_avg`      | Higher better | Balanced quality vs variety   |
 
 Sample diversity and echo ratio are computed only when evaluation & sample generation are enabled (i.e., not using `--no-eval`). Generate-only runs do not produce ranking data.
 
@@ -151,19 +151,19 @@ Sample diversity and echo ratio are computed only when evaluation & sample gener
 
 ## Azure ML Submission Guide (Manual)
 
-* Ensure Azure CLI & ML extension installed:
+- Ensure Azure CLI & ML extension installed:
 
 ```powershell
 az extension add -n ml
 ```
 
-* Fill in Azure ML placeholders in `.env` (added automatically if missing):
-  * `AZURE_ML_SUBSCRIPTION_ID`
-  * `AZURE_ML_RESOURCE_GROUP`
-  * `AZURE_ML_WORKSPACE`
-  * Confirm `AZURE_ML_COMPUTE_TARGET` matches existing cluster.
+- Fill in Azure ML placeholders in `.env` (added automatically if missing):
+    - `AZURE_ML_SUBSCRIPTION_ID`
+    - `AZURE_ML_RESOURCE_GROUP`
+    - `AZURE_ML_WORKSPACE`
+    - Confirm `AZURE_ML_COMPUTE_TARGET` matches existing cluster.
 
-* Log in & set defaults:
+- Log in & set defaults:
 
 ```powershell
 az login
@@ -171,19 +171,19 @@ az account set --subscription <SUBSCRIPTION_ID>
 az configure --defaults group=<RESOURCE_GROUP> workspace=<WORKSPACE_NAME>
 ```
 
-* (Optional) Create or update environment:
+- (Optional) Create or update environment:
 
 ```powershell
 az ml environment create --file .azureml/environment.yml
 ```
 
-* Submit job:
+- Submit job:
 
 ```powershell
 az ml job create --file .azureml/job_<run_label>.yaml
 ```
 
-* Monitor:
+- Monitor:
 
 ```powershell
 az ml job show --name automated-training-<run_label>
@@ -200,17 +200,17 @@ Minimal example (generate-only, truncated):
 
 ```json
 {
-  "run_label": "multi_<timestamp>",
-  "models": ["phi", "qwen"],
-  "generate_only": true,
-  "runs": [
-    {
-      "model": "phi",
-      "run_id": null,
-      "training_skipped": true,
-      "jobs": [{"status": "skipped", "dataset_train_samples": 63}]
-    }
-  ]
+    "run_label": "multi_<timestamp>",
+    "models": ["phi", "qwen"],
+    "generate_only": true,
+    "runs": [
+        {
+            "model": "phi",
+            "run_id": null,
+            "training_skipped": true,
+            "jobs": [{ "status": "skipped", "dataset_train_samples": 63 }]
+        }
+    ]
 }
 ```
 
@@ -220,10 +220,10 @@ For training runs `run_id` links to the underlying last entry in `data_out/paral
 
 ## Internal Mechanics
 
-* Synthetic dataset creation delegates to `scripts/auto_data_train.py` with `--train-mode none` when generate-only.
-* Training & evaluation wrapper logic lives in `scripts/parallel_train.py`; wrapper only reads latest status entry.
-* Ranking metrics implemented in `parallel_train.py` include improvement, absolute post perplexity, diversity average + alias, and combined weighting.
-* Cleanup removes large checkpoint directories while preserving adapter artifacts.
+- Synthetic dataset creation delegates to `scripts/auto_data_train.py` with `--train-mode none` when generate-only.
+- Training & evaluation wrapper logic lives in `scripts/parallel_train.py`; wrapper only reads latest status entry.
+- Ranking metrics implemented in `parallel_train.py` include improvement, absolute post perplexity, diversity average + alias, and combined weighting.
+- Cleanup removes large checkpoint directories while preserving adapter artifacts.
 
 ---
 
@@ -238,24 +238,24 @@ For training runs `run_id` links to the underlying last entry in `data_out/paral
 
 ## Troubleshooting
 
-| Symptom | Cause | Resolution |
-| --------- | ------- | ----------- |
-| No job YAML produced | Forgot `--azure-ml-spec` flag | Re-run with flag. |
-| Job spec command trains unexpectedly | Omitted `--generate-only` in original invocation | Add `--generate-only` and regenerate spec. |
-| AML job fails environment solve | Missing dependency versions | Add pinned versions to `environment.yml` & re-run with `--force-azure-ml`. |
-| Skipped training due to samples | `--min-train-samples` threshold | Lower threshold or increase `--samples`. |
-| Ranking field null | Generate-only or evaluation disabled | Perform real training with evaluation enabled. |
-| Azure ML validation skipped | Azure CLI / ML extension absent | Install CLI + `az extension add -n ml` and re-run validation. |
+| Symptom                              | Cause                                            | Resolution                                                                 |
+| ------------------------------------ | ------------------------------------------------ | -------------------------------------------------------------------------- |
+| No job YAML produced                 | Forgot `--azure-ml-spec` flag                    | Re-run with flag.                                                          |
+| Job spec command trains unexpectedly | Omitted `--generate-only` in original invocation | Add `--generate-only` and regenerate spec.                                 |
+| AML job fails environment solve      | Missing dependency versions                      | Add pinned versions to `environment.yml` & re-run with `--force-azure-ml`. |
+| Skipped training due to samples      | `--min-train-samples` threshold                  | Lower threshold or increase `--samples`.                                   |
+| Ranking field null                   | Generate-only or evaluation disabled             | Perform real training with evaluation enabled.                             |
+| Azure ML validation skipped          | Azure CLI / ML extension absent                  | Install CLI + `az extension add -n ml` and re-run validation.              |
 
 ---
 
 ## Recommended Next Steps
 
-* CI step to validate generated YAML schema with `az ml job validate` (implemented – use `scripts/azureml_ci_validate.py` or `ci_orchestrator.py --ci-pipeline`).
-* Integrate summary ingestion into dashboard view.
-* Expand synthetic recipe diversity for robustness.
-* Add combined diversity / length regularization metric.
-* Add automatic canary deployment via `model_deployer.py --deploy best --strategy canary` post-validation.
+- CI step to validate generated YAML schema with `az ml job validate` (implemented – use `scripts/azureml_ci_validate.py` or `ci_orchestrator.py --ci-pipeline`).
+- Integrate summary ingestion into dashboard view.
+- Expand synthetic recipe diversity for robustness.
+- Add combined diversity / length regularization metric.
+- Add automatic canary deployment via `model_deployer.py --deploy best --strategy canary` post-validation.
 
 ---
 

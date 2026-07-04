@@ -15,7 +15,7 @@
     {
       "check": "Virtual Envs",
       "status": "ok",
-      "venvs_found": 2,
+      "venvs_found": 1,
       "speed": "instant"
     },
     {
@@ -32,8 +32,10 @@
     },
     {
       "check": "Providers",
-      "status": "no_providers",
-      "available": [],
+      "status": "ok",
+      "available": [
+        "lmstudio"
+      ],
       "speed": "instant"
     },
     {
@@ -74,8 +76,8 @@
   ],
   "summary": {
     "total_checks": 8,
-    "ok_count": 6,
-    "warning_count": 2,
+    "ok_count": 7,
+    "warning_count": 1,
     "critical_failure_count": 0,
     "critical_failure_checks": []
   },

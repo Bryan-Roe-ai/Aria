@@ -13,14 +13,12 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional
 
 import numpy as np
 import yaml
 from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
-from qiskit_aer.noise import (NoiseModel, amplitude_damping_error,
-                              depolarizing_error)
+from qiskit_aer.noise import NoiseModel, amplitude_damping_error, depolarizing_error
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = REPO_ROOT / "config" / "quantum_config.yaml"
@@ -32,7 +30,7 @@ def create_variational_circuit(
     entanglement: str,
     noise_px: float = 0.0,
     noise_pz: float = 0.0,
-    rng: Optional[np.random.Generator] = None,
+    rng: np.random.Generator | None = None,
 ) -> QuantumCircuit:
     qc = QuantumCircuit(n_qubits, n_qubits)
 
@@ -91,7 +89,7 @@ def create_stabilizer_random_circuit(
     n_qubits: int,
     layers: int,
     twoq_density: float = 0.5,
-    seed: Optional[int] = None,
+    seed: int | None = None,
 ) -> QuantumCircuit:
     """Random Clifford circuit using H, S, X, Z, and CX gates.
 
@@ -142,7 +140,7 @@ def create_stabilizer_random_circuit(
     return qc
 
 
-def compute_entropy(counts: Dict[str, int]) -> float:
+def compute_entropy(counts: dict[str, int]) -> float:
     total = sum(counts.values())
     if total == 0:
         return 0.0
@@ -151,12 +149,8 @@ def compute_entropy(counts: Dict[str, int]) -> float:
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Run a local Qiskit Aer simulation (variational or stabilizer)"
-    )
-    p.add_argument(
-        "--n-qubits", type=int, default=16, help="Number of qubits (default: 16)"
-    )
+    p = argparse.ArgumentParser(description="Run a local Qiskit Aer simulation (variational or stabilizer)")
+    p.add_argument("--n-qubits", type=int, default=16, help="Number of qubits (default: 16)")
     p.add_argument(
         "--layers",
         type=int,
@@ -169,9 +163,7 @@ def parse_args() -> argparse.Namespace:
         default="circular",
         help="Entanglement topology (default: circular)",
     )
-    p.add_argument(
-        "--shots", type=int, default=2000, help="Number of shots (default: 2000)"
-    )
+    p.add_argument("--shots", type=int, default=2000, help="Number of shots (default: 2000)")
     # Noise injection (Monte Carlo Pauli)
     p.add_argument(
         "--noise-pauli-px",
@@ -248,23 +240,15 @@ def main() -> int:
 
     # Load config to resolve results_dir relative to project root
     cfg = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
-    results_dir = (
-        REPO_ROOT / Path(cfg["logging"]["results_dir"]).expanduser()
-    ).resolve()
+    results_dir = (REPO_ROOT / Path(cfg["logging"]["results_dir"]).expanduser()).resolve()
     results_dir.mkdir(parents=True, exist_ok=True)
 
     print("\n=== Local Aer Simulation ===")
     # Decide effective circuit kind and layer count for display/metadata
     using_stab_random = False
-    if args.circuit == "stabilizer_random" or (
-        args.circuit == "variational" and args.stabilizer_type == "random"
-    ):
+    if args.circuit == "stabilizer_random" or (args.circuit == "variational" and args.stabilizer_type == "random"):
         using_stab_random = True
-    effective_layers = (
-        args.clifford_layers
-        if using_stab_random or args.circuit == "stabilizer_ghz"
-        else args.layers
-    )
+    effective_layers = args.clifford_layers if using_stab_random or args.circuit == "stabilizer_ghz" else args.layers
     effective_circuit = (
         "stabilizer_random"
         if using_stab_random
@@ -276,11 +260,7 @@ def main() -> int:
     )
     print(f"Method: {args.method}, Circuit: {effective_circuit}")
 
-    rng = (
-        np.random.default_rng(args.noise_seed)
-        if (args.noise_pauli_px > 0 or args.noise_pauli_pz > 0)
-        else None
-    )
+    rng = np.random.default_rng(args.noise_seed) if (args.noise_pauli_px > 0 or args.noise_pauli_pz > 0) else None
 
     if args.circuit == "stabilizer_ghz":
         qc = create_stabilizer_ghz_circuit(args.n_qubits)
@@ -303,7 +283,7 @@ def main() -> int:
     print("Circuit depth:", qc.depth(), " | gates:", sum(qc.count_ops().values()))
 
     # Build optional Aer NoiseModel
-    noise_model: Optional[NoiseModel] = None
+    noise_model: NoiseModel | None = None
     if (args.noise_depolarizing_p > 0.0) or (args.noise_amp_damp_gamma > 0.0):
         noise_model = NoiseModel()
         # Attach depolarizing to 1q and 2q gates used in circuits
@@ -332,16 +312,10 @@ def main() -> int:
                 except Exception:
                     pass
 
-    sim = (
-        AerSimulator(method=args.method, noise_model=noise_model)
-        if noise_model
-        else AerSimulator(method=args.method)
-    )
+    sim = AerSimulator(method=args.method, noise_model=noise_model) if noise_model else AerSimulator(method=args.method)
     # Avoid backend coupling_map limits during transpile for large-n; Aer will handle compilation.
     # For stabilizer method/circuits, restrict basis_gates to Clifford set to avoid u1/u2/u3 decomposition.
-    is_stabilizer_flow = args.method == "stabilizer" or args.circuit.startswith(
-        "stabilizer"
-    )
+    is_stabilizer_flow = args.method == "stabilizer" or args.circuit.startswith("stabilizer")
     if is_stabilizer_flow:
         basis = ["h", "s", "sdg", "x", "z", "cx", "cz", "id", "measure"]
         tqc = transpile(qc, basis_gates=basis, optimization_level=0)
@@ -356,9 +330,9 @@ def main() -> int:
     # Avoid huge integer exponentiation; max entropy in bits equals number of qubits
     max_entropy = float(args.n_qubits)
 
-    print("Unique states:", len(counts), f"/ {2 ** args.n_qubits}")
+    print("Unique states:", len(counts), f"/ {2**args.n_qubits}")
     print(
-        f"Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy/max_entropy*100 if max_entropy>0 else 0):.1f}%)"
+        f"Entropy: {entropy:.3f} / {max_entropy:.3f} ({(entropy / max_entropy * 100 if max_entropy > 0 else 0):.1f}%)"
     )
 
     # Save JSON in the same schema as Azure results so the visualizer can pick it up

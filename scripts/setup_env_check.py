@@ -11,7 +11,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Tuple
 
 # Color codes for terminal output
 GREEN = "\033[92m"
@@ -270,9 +269,7 @@ def check_ai_token_health() -> bool:
 
     status_path = Path(__file__).parent.parent / "data_out" / "ai_token_status.json"
     if not status_path.exists():
-        print_warning(
-            "No token health status found. Run: python3 scripts/generate_ai_tokens.py"
-        )
+        print_warning("No token health status found. Run: python3 scripts/generate_ai_tokens.py")
         return True
 
     try:
@@ -402,7 +399,7 @@ def main() -> int:
         ("Test Suite", check_test_suite),
     ]
 
-    results: List[Tuple[str, bool]] = []
+    results: list[tuple[str, bool]] = []
     for check_name, check_fn in checks:
         try:
             result = check_fn()

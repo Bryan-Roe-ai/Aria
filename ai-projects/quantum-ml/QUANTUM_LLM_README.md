@@ -28,15 +28,15 @@ python quantum_llm_quickstart.py --mode generate --model data_out/quantum_llm_qu
 
 ### Core Files
 
-| File | Purpose | Features |
-| ------ | --------- | ---------- |
-| **quantum_llm_advanced.py** | Advanced quantum layers | Circuit caching, adaptive entanglement, multi-scale attention, prompt tuning, error mitigation |
-| **quantum_circuit_optimizer.py** | Circuit optimization | Circuit compilation, batch execution, adaptive scheduling, quantum/classical partitioning |
-| **quantum_llm_hybrid_trainer.py** | Hybrid training orchestration | Curriculum learning, adaptive routing, multi-stage training |
-| **quantum_llm_monitor.py** | Training monitoring | Real-time dashboard, metrics aggregation, performance profiling, alert system |
-| **quantum_llm_integrated.py** | Complete integration | Unified system combining all components |
-| **quantum_llm_datasets.py** | Dataset utilities | Tokenization, data loading, augmentation |
-| **quantum_llm_quickstart.py** | Quick start examples | Ready-to-run training examples |
+| File                              | Purpose                       | Features                                                                                       |
+| --------------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------- |
+| **quantum_llm_advanced.py**       | Advanced quantum layers       | Circuit caching, adaptive entanglement, multi-scale attention, prompt tuning, error mitigation |
+| **quantum_circuit_optimizer.py**  | Circuit optimization          | Circuit compilation, batch execution, adaptive scheduling, quantum/classical partitioning      |
+| **quantum_llm_hybrid_trainer.py** | Hybrid training orchestration | Curriculum learning, adaptive routing, multi-stage training                                    |
+| **quantum_llm_monitor.py**        | Training monitoring           | Real-time dashboard, metrics aggregation, performance profiling, alert system                  |
+| **quantum_llm_integrated.py**     | Complete integration          | Unified system combining all components                                                        |
+| **quantum_llm_datasets.py**       | Dataset utilities             | Tokenization, data loading, augmentation                                                       |
+| **quantum_llm_quickstart.py**     | Quick start examples          | Ready-to-run training examples                                                                 |
 
 ---
 
@@ -58,6 +58,7 @@ attention = MultiScaleQuantumAttention(
 ```
 
 **Benefits:**
+
 - Fine-grained patterns (2-3 qubits)
 - Mid-level structures (4 qubits)
 - Complex relationships (6 qubits)
@@ -74,6 +75,7 @@ layer = AdaptiveQuantumLayer(d_model=128, n_qubits=4)
 ```
 
 **Modes:**
+
 - **Linear entanglement:** Simple inputs (low complexity)
 - **Circular entanglement:** Moderate inputs (medium complexity)
 - **Full entanglement:** Complex inputs (high complexity)
@@ -91,6 +93,7 @@ cache = QuantumCircuitCache(cache_size=1000)
 ```
 
 **Features:**
+
 - LRU eviction policy
 - Hit/miss tracking
 - Cache statistics reporting
@@ -111,6 +114,7 @@ prompt_tuner = QuantumPromptTuning(
 ```
 
 **Benefits:**
+
 - Few-shot learning capability
 - Task adaptation without full retraining
 - Quantum-enhanced prompt representation
@@ -126,6 +130,7 @@ error_mitigator = QuantumErrorMitigation(n_qubits=4)
 ```
 
 **Techniques:**
+
 - Zero-noise extrapolation
 - Readout error correction
 - Calibration matrix support
@@ -151,6 +156,7 @@ compiler = CircuitCompiler(strategy)
 ```
 
 **Optimization Passes:**
+
 - Gate fusion (combine adjacent gates)
 - Gate cancellation (remove redundant gates)
 - Circuit depth reduction
@@ -171,6 +177,7 @@ executor = BatchCircuitExecutor(
 ```
 
 **Features:**
+
 - Batch processing
 - Execution caching
 - Cache hit rate tracking
@@ -190,6 +197,7 @@ scheduler = AdaptiveCircuitScheduler(
 ```
 
 **Capabilities:**
+
 - Load-aware scheduling
 - Priority-based execution
 - Resource contention management
@@ -233,6 +241,7 @@ stages = [
 ```
 
 **Stage Progression:**
+
 1. **Classical Warmup:** Pure classical training to learn basic patterns
 2. **Quantum Transition:** Gradual quantum integration (30% quantum)
 3. **Full Quantum:** Maximize quantum usage (70% quantum)
@@ -248,6 +257,7 @@ router = AdaptiveQuantumRouter(input_dim=64, learning_rate=0.001)
 ```
 
 **Policy Learning:**
+
 - Reinforcement learning based
 - Context-aware decisions
 - Performance-driven optimization
@@ -271,6 +281,7 @@ dashboard = TrainingDashboard(
 ```
 
 **Features:**
+
 - Real-time metrics tracking
 - Moving average computation
 - Trend detection (improving/degrading/stable)
@@ -278,6 +289,7 @@ dashboard = TrainingDashboard(
 - Alert system for issues
 
 **Metrics Tracked:**
+
 - Loss and perplexity
 - Quantum execution time
 - Classical execution time
@@ -297,6 +309,7 @@ exporter.export_all(snapshots)
 ```
 
 **Exported Data:**
+
 - Loss curves
 - Quantum metrics over time
 - Resource utilization
@@ -350,6 +363,7 @@ dataset = DatasetBuilder.auto_detect_and_load(
 ```
 
 **Supported Formats:**
+
 - Plain text files
 - JSON with "text" field
 - Chat format with "messages" array
@@ -461,22 +475,22 @@ Location: `data_out/quantum_llm/dashboard/dashboard.json`
 
 ```json
 {
-  "timestamp": 1234567890.0,
-  "metrics_summary": {
-    "moving_avg_loss": 2.5,
-    "loss_trend": "improving",
-    "anomalies": []
-  },
-  "performance_report": {
-    "avg_cpu_percent": 45.2,
-    "max_memory_mb": 2048.5
-  },
-  "circuit_stats": {
-    "attention_circuit_0": {
-      "avg_time": 0.15,
-      "executions": 1000
+    "timestamp": 1234567890.0,
+    "metrics_summary": {
+        "moving_avg_loss": 2.5,
+        "loss_trend": "improving",
+        "anomalies": []
+    },
+    "performance_report": {
+        "avg_cpu_percent": 45.2,
+        "max_memory_mb": 2048.5
+    },
+    "circuit_stats": {
+        "attention_circuit_0": {
+            "avg_time": 0.15,
+            "executions": 1000
+        }
     }
-  }
 }
 ```
 
@@ -631,6 +645,7 @@ config["dashboard_update_interval"] = 5
 ## 🤝 Contributing
 
 Improvements welcome! Focus areas:
+
 - Real QPU backend integration
 - Advanced error correction
 - Distributed training

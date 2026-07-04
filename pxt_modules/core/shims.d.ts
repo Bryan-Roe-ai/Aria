@@ -1,6 +1,5 @@
 // Auto-generated. Do not edit.
 declare namespace light {
-
     /**
      * Send a programmable light buffer to the specified digital pin
      * @param data The pin that the lights are connected to
@@ -9,30 +8,33 @@ declare namespace light {
      * @param buf The buffer to send to the pin
      */
     //% shim=light::sendBuffer
-    function sendBuffer(data: DigitalInOutPin, clk: DigitalInOutPin, mode: int32, buf: Buffer): void;
+    function sendBuffer(
+        data: DigitalInOutPin,
+        clk: DigitalInOutPin,
+        mode: int32,
+        buf: Buffer,
+    ): void
 }
 declare namespace control {
-
     /**
      * Determines if the USB has been enumerated.
      */
     //% shim=control::isUSBInitialized
-    function isUSBInitialized(): boolean;
+    function isUSBInitialized(): boolean
 }
 declare namespace pins {
-
     /**
      * Get a pin by configuration id (DAL.CFG_PIN...)
      */
     //% shim=pins::pinByCfg
-    function pinByCfg(key: int32): DigitalInOutPin;
+    function pinByCfg(key: int32): DigitalInOutPin
 
     /**
      * Create a new zero-initialized buffer.
      * @param size number of bytes in the buffer
      */
     //% shim=pins::createBuffer
-    function createBuffer(size: int32): Buffer;
+    function createBuffer(size: int32): Buffer
 
     /**
      * Get the duration of the last pulse in microseconds. This function should be called from a
@@ -41,9 +43,8 @@ declare namespace pins {
     //% help=pins/pulse-duration blockGap=8
     //% blockId=pins_pulse_duration block="pulse duration (µs)"
     //% weight=19 shim=pins::pulseDuration
-    function pulseDuration(): int32;
+    function pulseDuration(): int32
 }
-
 
 declare interface AnalogInPin {
     /**
@@ -56,9 +57,8 @@ declare interface AnalogInPin {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=AnalogInPinMethods::analogRead
-    analogRead(): int32;
+    analogRead(): int32
 }
-
 
 declare interface AnalogOutPin {
     /**
@@ -73,9 +73,8 @@ declare interface AnalogOutPin {
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4
     //% value.min=0 value.max=1023 shim=AnalogOutPinMethods::analogWrite
-    analogWrite(value: int32): void;
+    analogWrite(value: int32): void
 }
-
 
 declare interface DigitalInOutPin {
     /**
@@ -88,7 +87,7 @@ declare interface DigitalInOutPin {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=DigitalInOutPinMethods::digitalRead
-    digitalRead(): boolean;
+    digitalRead(): boolean
 
     /**
      * Set a pin or connector value to either 0 or 1.
@@ -101,7 +100,7 @@ declare interface DigitalInOutPin {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=DigitalInOutPinMethods::digitalWrite
-    digitalWrite(value: boolean): void;
+    digitalWrite(value: boolean): void
 
     /**
      * Make this pin a digital input, and create events where the timestamp is the duration
@@ -114,7 +113,7 @@ declare interface DigitalInOutPin {
     //% pin.fieldOptions.width=220
     //% pin.fieldOptions.columns=4
     //% deprecated=1 hidden=1 shim=DigitalInOutPinMethods::onPulsed
-    onPulsed(pulse: PulseValue, body: () => void): void;
+    onPulsed(pulse: PulseValue, body: () => void): void
 
     /**
      * Register code to run when a pin event occurs.
@@ -125,7 +124,7 @@ declare interface DigitalInOutPin {
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
     //% pin.fieldOptions.columns=4 shim=DigitalInOutPinMethods::onEvent
-    onEvent(event: PinEvent, body: () => void): void;
+    onEvent(event: PinEvent, body: () => void): void
 
     /**
      * Return the duration of a pulse in microseconds
@@ -140,7 +139,7 @@ declare interface DigitalInOutPin {
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
     //% pin.fieldOptions.columns=4 maxDuration.defl=2000000 shim=DigitalInOutPinMethods::pulseIn
-    pulseIn(value: PulseValue, maxDuration?: int32): int32;
+    pulseIn(value: PulseValue, maxDuration?: int32): int32
 
     /**
      * Set the pull direction of this pin.
@@ -153,12 +152,10 @@ declare interface DigitalInOutPin {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=DigitalInOutPinMethods::setPull
-    setPull(pull: PinPullMode): void;
+    setPull(pull: PinPullMode): void
 }
 
-
 declare interface PwmPin {}
-
 
 declare interface PwmOnlyPin {
     /**
@@ -175,7 +172,7 @@ declare interface PwmOnlyPin {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=PwmOnlyPinMethods::analogSetPeriod
-    analogSetPeriod(period: int32): void;
+    analogSetPeriod(period: int32): void
 
     /**
      * Write a value to the servo to control the rotation of the shaft. On a standard servo, this will
@@ -193,7 +190,7 @@ declare interface PwmOnlyPin {
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4
     //% value.defl=90 shim=PwmOnlyPinMethods::servoWrite
-    servoWrite(value?: int32): void;
+    servoWrite(value?: int32): void
 
     /**
      * Set the pin for PWM analog output, make the period be 20 ms, and set the pulse width.
@@ -207,16 +204,15 @@ declare interface PwmOnlyPin {
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=PwmOnlyPinMethods::servoSetPulse
-    servoSetPulse(duration: int32): void;
+    servoSetPulse(duration: int32): void
 
     /**
      * Indicates if the servo is running continuously
      */
     //% blockHidden=1 shim=PwmOnlyPinMethods::servoSetContinuous
-    servoSetContinuous(continuous: boolean): void;
+    servoSetContinuous(continuous: boolean): void
 }
 declare namespace control {
-
     /**
      * Announce that an event happened to registered handlers.
      * @param src ID of the MicroBit Component that generated the event
@@ -225,94 +221,99 @@ declare namespace control {
     //% weight=21 blockGap=12 blockId="control_raise_event"
     //% help=control/raise-event
     //% block="raise event|from %src|with value %value" blockExternalInputs=1 shim=control::raiseEvent
-    function raiseEvent(src: int32, value: int32): void;
+    function raiseEvent(src: int32, value: int32): void
 
     /**
      * Determine the version of system software currently running.
      */
     //% blockId="control_device_dal_version" block="device dal version"
     //% help=control/device-dal-version shim=control::deviceDalVersion
-    function deviceDalVersion(): string;
+    function deviceDalVersion(): string
 
     /**
      * Allocates the next user notification event
      */
     //% help=control/allocate-notify-event shim=control::allocateNotifyEvent
-    function allocateNotifyEvent(): int32;
+    function allocateNotifyEvent(): int32
 
     /** Write a message to DMESG debugging buffer. */
     //% shim=control::dmesg
-    function dmesg(s: string): void;
+    function dmesg(s: string): void
 
     /** Write a message and value (pointer) to DMESG debugging buffer. */
     //% shim=control::dmesgPtr
-    function dmesgPtr(str: string, ptr: Object): void;
+    function dmesgPtr(str: string, ptr: Object): void
 }
-
 
 declare interface I2C {
     /**
      * Read `size` bytes from a 7-bit I2C `address`.
      */
     //% repeat.defl=0 shim=I2CMethods::readBuffer
-    readBuffer(address: int32, size: int32, repeat?: boolean): Buffer;
+    readBuffer(address: int32, size: int32, repeat?: boolean): Buffer
 
     /**
      * Write bytes to a 7-bit I2C `address`.
      */
     //% repeat.defl=0 shim=I2CMethods::writeBuffer
-    writeBuffer(address: int32, buf: Buffer, repeat?: boolean): int32;
+    writeBuffer(address: int32, buf: Buffer, repeat?: boolean): int32
 }
 declare namespace pins {
-
     /**
      * Opens a Serial communication driver
      */
     //% help=pins/create-i2c
     //% parts=i2c shim=pins::createI2C
-    function createI2C(sda: DigitalInOutPin, scl: DigitalInOutPin): I2C;
+    function createI2C(sda: DigitalInOutPin, scl: DigitalInOutPin): I2C
 }
 declare namespace pins {
-
     /**
      * Opens a SPI driver
      */
     //% help=pins/create-spi
     //% parts=spi shim=pins::createSPI
-    function createSPI(mosiPin: DigitalInOutPin, misoPin: DigitalInOutPin, sckPin: DigitalInOutPin): SPI;
+    function createSPI(
+        mosiPin: DigitalInOutPin,
+        misoPin: DigitalInOutPin,
+        sckPin: DigitalInOutPin,
+    ): SPI
 
     /**
      * Opens a slave SPI driver
      */
     //% parts=spi shim=pins::createSlaveSPI
-    function createSlaveSPI(mosiPin: DigitalInOutPin, misoPin: DigitalInOutPin, sckPin: DigitalInOutPin, csPin: DigitalInOutPin): SPI;
+    function createSlaveSPI(
+        mosiPin: DigitalInOutPin,
+        misoPin: DigitalInOutPin,
+        sckPin: DigitalInOutPin,
+        csPin: DigitalInOutPin,
+    ): SPI
 }
-
 
 declare interface SPI {
     /**
      * Write to the SPI bus
      */
     //% shim=SPIMethods::write
-    write(value: int32): int32;
+    write(value: int32): int32
 
     /**
      * Transfer buffers over the SPI bus
      */
     //% argsNullable shim=SPIMethods::transfer
-    transfer(command: Buffer, response: Buffer): void;
+    transfer(command: Buffer, response: Buffer): void
 
     /**
      * Sets the SPI clock frequency
      */
     //% shim=SPIMethods::setFrequency
-    setFrequency(frequency: int32): void;
+    setFrequency(frequency: int32): void
 
     /**
      * Sets the SPI bus mode
      */
     //% shim=SPIMethods::setMode
-    setMode(mode: int32): void;
+    setMode(mode: int32): void
 }
 
 // Auto-generated. Do not edit. Really.

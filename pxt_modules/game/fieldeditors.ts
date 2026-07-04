@@ -1,5 +1,4 @@
 namespace __internal {
-
     /**
      * A speed picker
      * @param speed the speed, eg: 50
@@ -10,7 +9,7 @@ namespace __internal {
     //% speed.fieldOptions.decompileLiterals=1
     //% speed.fieldOptions.format="{0}pix/s"
     export function __spriteSpeedPicker(speed: number): number {
-        return speed;
+        return speed
     }
 
     /**
@@ -23,6 +22,6 @@ namespace __internal {
     //% speed.fieldOptions.decompileLiterals=1
     //% speed.fieldOptions.format="{0}pix/s²"
     export function __accSpeedPicker(acceleration: number): number {
-        return acceleration;
+        return acceleration
     }
 }

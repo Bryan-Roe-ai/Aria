@@ -5,7 +5,6 @@ Export models to ONNX, TensorRT, and other formats for deployment
 
 import time
 from pathlib import Path
-from typing import Dict, Optional
 
 import onnx
 import torch
@@ -157,9 +156,7 @@ class ModelExporter:
 
         return output_path
 
-    def quantize_model(
-        self, quantization_type: str = "dynamic", output_name: str = "model_quantized"
-    ) -> Path:
+    def quantize_model(self, quantization_type: str = "dynamic", output_name: str = "model_quantized") -> Path:
         """
         Quantize model for faster inference
 
@@ -177,9 +174,7 @@ class ModelExporter:
 
         if quantization_type == "dynamic":
             # Dynamic quantization
-            quantized_model = torch.quantization.quantize_dynamic(
-                self.model, {torch.nn.Linear}, dtype=torch.qint8
-            )
+            quantized_model = torch.quantization.quantize_dynamic(self.model, {torch.nn.Linear}, dtype=torch.qint8)
 
             # Save
             quantized_model.save_pretrained(output_path)
@@ -192,22 +187,16 @@ class ModelExporter:
             return None
 
         # Get size comparison
-        original_size = sum(
-            p.numel() * p.element_size() for p in self.model.parameters()
-        ) / (1024**2)
-        quantized_size = sum(
-            p.numel() * p.element_size() for p in quantized_model.parameters()
-        ) / (1024**2)
+        original_size = sum(p.numel() * p.element_size() for p in self.model.parameters()) / (1024**2)
+        quantized_size = sum(p.numel() * p.element_size() for p in quantized_model.parameters()) / (1024**2)
 
         print(f"  Original size: {original_size:.1f} MB")
         print(f"  Quantized size: {quantized_size:.1f} MB")
-        print(f"  Reduction: {(1 - quantized_size/original_size) * 100:.1f}%")
+        print(f"  Reduction: {(1 - quantized_size / original_size) * 100:.1f}%")
 
         return output_path
 
-    def export_to_huggingface(
-        self, repo_name: str, organization: Optional[str] = None, private: bool = False
-    ):
+    def export_to_huggingface(self, repo_name: str, organization: str | None = None, private: bool = False):
         """
         Upload model to Hugging Face Hub
 
@@ -229,9 +218,7 @@ class ModelExporter:
 
             # Upload model
             api = HfApi()
-            api.upload_folder(
-                folder_path=self.model_path, repo_id=repo_id, repo_type="model"
-            )
+            api.upload_folder(folder_path=self.model_path, repo_id=repo_id, repo_type="model")
 
             print(f"✓ Model uploaded to https://huggingface.co/{repo_id}")
 
@@ -240,7 +227,7 @@ class ModelExporter:
         except Exception as e:
             print(f"  ⚠ Upload failed: {e}")
 
-    def benchmark_formats(self, num_runs: int = 10) -> Dict[str, Dict[str, float]]:
+    def benchmark_formats(self, num_runs: int = 10) -> dict[str, dict[str, float]]:
         """
         Benchmark different export formats
 
@@ -268,7 +255,7 @@ class ModelExporter:
 
         return results
 
-    def _benchmark_pytorch(self, num_runs: int) -> Dict[str, float]:
+    def _benchmark_pytorch(self, num_runs: int) -> dict[str, float]:
         """Benchmark PyTorch model"""
         self.model.eval()
 
@@ -309,9 +296,7 @@ def main():
         default="all",
         help="Export format",
     )
-    parser.add_argument(
-        "--quantization", type=str, default="dynamic", help="Quantization type"
-    )
+    parser.add_argument("--quantization", type=str, default="dynamic", help="Quantization type")
     parser.add_argument("--benchmark", action="store_true", help="Run benchmarks")
 
     args = parser.parse_args()

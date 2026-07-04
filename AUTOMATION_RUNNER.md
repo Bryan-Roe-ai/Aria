@@ -5,18 +5,21 @@ Automatically runs core Aria systems and utilities for development and testing.
 ## Quick Start
 
 ### Option 1: Python (Recommended)
+
 ```bash
 cd c:\Users\Bryan\Aria
 python3.14 run_automation.py
 ```
 
 ### Option 2: Windows Batch File
+
 ```cmd
 cd c:\Users\Bryan\Aria
 run_automation.bat
 ```
 
 ### Option 3: PowerShell
+
 ```powershell
 cd c:\Users\Bryan\Aria
 .\run_automation.ps1
@@ -27,24 +30,24 @@ cd c:\Users\Bryan\Aria
 The automation runner executes the following tasks in sequence:
 
 1. **Environment Validation**
-   - Verifies Python version (3.8+)
-   - Checks workspace structure
-   - Confirms directory availability
+    - Verifies Python version (3.8+)
+    - Checks workspace structure
+    - Confirms directory availability
 
 2. **Environment Setup Check**
-   - Validates all dependencies
-   - Checks system configuration
-   - Identifies missing components
+    - Validates all dependencies
+    - Checks system configuration
+    - Identifies missing components
 
 3. **Test Suite**
-   - Runs all pytest tests
-   - Reports test results
-   - Captures coverage information
+    - Runs all pytest tests
+    - Reports test results
+    - Captures coverage information
 
 4. **Integration Validation**
-   - Performs integration checks
-   - Validates core systems
-   - Generates validation reports
+    - Performs integration checks
+    - Validates core systems
+    - Generates validation reports
 
 ## Features
 
@@ -83,7 +86,7 @@ To extend the automation runner, edit `run_automation.py` and add new methods to
 def run_custom_task(self) -> bool:
     """Run a custom automated task."""
     print_section("Running Custom Task")
-    
+
     try:
         # Your automation code here
         print_ok("Custom task completed")
@@ -98,15 +101,18 @@ Then add the call in the `run()` method.
 ## Troubleshooting
 
 ### Python Not Found
+
 - Ensure Python 3.8+ is installed
 - Add Python to your PATH environment variable
 - Try using the full path: `C:\Users\Bryan\.local\bin\python3.14.exe run_automation.py`
 
 ### Permission Denied
+
 - On Linux/macOS: `chmod +x run_automation.py`
 - On Windows: Run Command Prompt as Administrator
 
 ### Encoding Errors
+
 - Set environment variable: `PYTHONIOENCODING=utf-8`
 - Ensure console supports unicode output
 
@@ -141,6 +147,7 @@ python3.14 run_automation.py | Tee-Object -FilePath automation.log
 ## Support
 
 For issues or questions about the automation runner:
+
 1. Check the output messages for specific errors
 2. Review the relevant script documentation
 3. Consult the main Aria documentation

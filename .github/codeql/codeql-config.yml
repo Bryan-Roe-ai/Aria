@@ -1,24 +1,24 @@
 name: "Aria CodeQL — maximum security coverage"
 
 queries:
-  - uses: security-extended
-  - uses: security-and-quality
-  - uses: security-experimental
+    - uses: security-extended
+    - uses: security-and-quality
+    - uses: security-experimental
 
 packs:
-  - codeql/javascript-queries
-  - codeql/python-queries
-  - codeql/cpp-queries
-  - codeql/actions-queries
+    - codeql/javascript-queries
+    - codeql/python-queries
+    - codeql/cpp-queries
+    - codeql/actions-queries
 
 paths-ignore:
-  - "**/node_modules/**"
-  - "**/.venv/**"
-  - "**/venv/**"
-  - "**/__pycache__/**"
-  - "**/dist/**"
-  - "**/build/**"
-  - "**/*.min.js"
-  - "**/vendor/**"
-  - "**/third_party/**"
-  - "**/third-party/**"
+    - "**/node_modules/**"
+    - "**/.venv/**"
+    - "**/venv/**"
+    - "**/__pycache__/**"
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/*.min.js"
+    - "**/vendor/**"
+    - "**/third_party/**"
+    - "**/third-party/**"

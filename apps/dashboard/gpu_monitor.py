@@ -5,10 +5,9 @@ Provides real-time GPU metrics via nvidia-smi
 
 import json
 import subprocess
-from typing import Dict, List
 
 
-def get_gpu_info() -> Dict:
+def get_gpu_info() -> dict:
     """Get detailed GPU information using nvidia-smi"""
     try:
         result = subprocess.run(
@@ -35,27 +34,13 @@ def get_gpu_info() -> Dict:
                     {
                         "index": int(parts[0]),
                         "name": parts[1],
-                        "temperature": (
-                            float(parts[2]) if parts[2] not in ["N/A", "[N/A]"] else 0
-                        ),
-                        "utilization": (
-                            float(parts[3]) if parts[3] not in ["N/A", "[N/A]"] else 0
-                        ),
-                        "memory_utilization": (
-                            float(parts[4]) if parts[4] not in ["N/A", "[N/A]"] else 0
-                        ),
-                        "memory_used": (
-                            float(parts[5]) if parts[5] not in ["N/A", "[N/A]"] else 0
-                        ),
-                        "memory_total": (
-                            float(parts[6]) if parts[6] not in ["N/A", "[N/A]"] else 0
-                        ),
-                        "power_draw": (
-                            float(parts[7]) if parts[7] not in ["N/A", "[N/A]"] else 0
-                        ),
-                        "power_limit": (
-                            float(parts[8]) if parts[8] not in ["N/A", "[N/A]"] else 0
-                        ),
+                        "temperature": (float(parts[2]) if parts[2] not in ["N/A", "[N/A]"] else 0),
+                        "utilization": (float(parts[3]) if parts[3] not in ["N/A", "[N/A]"] else 0),
+                        "memory_utilization": (float(parts[4]) if parts[4] not in ["N/A", "[N/A]"] else 0),
+                        "memory_used": (float(parts[5]) if parts[5] not in ["N/A", "[N/A]"] else 0),
+                        "memory_total": (float(parts[6]) if parts[6] not in ["N/A", "[N/A]"] else 0),
+                        "power_draw": (float(parts[7]) if parts[7] not in ["N/A", "[N/A]"] else 0),
+                        "power_limit": (float(parts[8]) if parts[8] not in ["N/A", "[N/A]"] else 0),
                     }
                 )
 
@@ -69,7 +54,7 @@ def get_gpu_info() -> Dict:
         return {"error": str(e), "available": False}
 
 
-def get_gpu_processes() -> List[Dict]:
+def get_gpu_processes() -> list[dict]:
     """Get processes currently using GPU"""
     try:
         result = subprocess.run(
@@ -96,9 +81,7 @@ def get_gpu_processes() -> List[Dict]:
                     {
                         "pid": int(parts[0]),
                         "name": parts[1],
-                        "memory_mb": (
-                            float(parts[2]) if parts[2] not in ["N/A", "[N/A]"] else 0
-                        ),
+                        "memory_mb": (float(parts[2]) if parts[2] not in ["N/A", "[N/A]"] else 0),
                     }
                 )
 
@@ -108,7 +91,7 @@ def get_gpu_processes() -> List[Dict]:
         return []
 
 
-def get_system_resources() -> Dict:
+def get_system_resources() -> dict:
     """Get CPU and memory information"""
     try:
         import psutil

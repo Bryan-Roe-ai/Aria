@@ -25,17 +25,16 @@ SERVER_PATH = REPO_ROOT / "apps" / "aria" / "server.py"
 
 def _load_server_module():
     """Load apps/aria/server.py as a module without executing main()."""
-    spec = importlib.util.spec_from_file_location(
-        "aria_server_under_test", SERVER_PATH)
+    spec = importlib.util.spec_from_file_location("aria_server_under_test", SERVER_PATH)
     assert spec and spec.loader, "Could not create import spec for server.py"
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    spec.loader.exec_module(module)
     return module
 
 
-@pytest.fixture(scope="module")
-def aria_server():
+@pytest.fixture(scope="module", name="aria_server")
+def aria_server_fixture():
     mod = _load_server_module()
     handler_cls = mod.AriaRequestHandler
 
@@ -69,6 +68,8 @@ def _post_json(port: int, path: str, payload: dict):
         return json.loads(resp.read().decode("utf-8"))
 
 
+@pytest.mark.integration
+@pytest.mark.timeout(15)
 def test_schema_endpoint_returns_action_contract(aria_server):
     body = _get_json(aria_server["port"], "/api/aria/schema")
     assert "actions" in body
@@ -76,7 +77,16 @@ def test_schema_endpoint_returns_action_contract(aria_server):
     assert "limits" in body
 
     # All core actions must be present
-    for action in ("move", "say", "pickup", "drop", "throw", "gesture", "look", "wait"):
+    for action in (
+        "move",
+        "say",
+        "pickup",
+        "drop",
+        "throw",
+        "gesture",
+        "look",
+        "wait",
+    ):
         assert action in body["actions"], f"Missing action {action}"
 
     # Limits sanity checks (AI consumers rely on these)
@@ -87,6 +97,8 @@ def test_schema_endpoint_returns_action_contract(aria_server):
     assert limits["max_wait_seconds"] == 30
 
 
+@pytest.mark.integration
+@pytest.mark.timeout(15)
 def test_state_endpoint_shape(aria_server):
     body = _get_json(aria_server["port"], "/api/aria/state")
     assert "aria" in body
@@ -94,9 +106,15 @@ def test_state_endpoint_shape(aria_server):
     assert "environment" in body
 
 
+@pytest.mark.integration
+@pytest.mark.timeout(15)
 def test_command_endpoint_returns_actions_for_wave(aria_server):
-    body = _post_json(aria_server["port"],
-                      "/api/aria/command", {"command": "wave"})
+    # Force rule-based fallback for deterministic test speed and behavior.
+    body = _post_json(
+        aria_server["port"],
+        "/api/aria/command",
+        {"command": "wave", "use_llm": False},
+    )
     # Response should contain either tags or actions (or both); for wave we
     # expect a gesture action via fallback or tag inference.
     assert "actions" in body or "tags" in body
@@ -104,6 +122,8 @@ def test_command_endpoint_returns_actions_for_wave(aria_server):
         assert any(a.get("action") == "gesture" for a in body["actions"])
 
 
+@pytest.mark.integration
+@pytest.mark.timeout(15)
 def test_presets_endpoint_returns_curated_commands(aria_server):
     body = _get_json(aria_server["port"], "/api/aria/presets")
     assert "presets" in body
@@ -115,6 +135,10 @@ def test_presets_endpoint_returns_curated_commands(aria_server):
         for cmd in entry["commands"]:
             assert isinstance(cmd, str) and cmd.strip()
 
+    quantum_groups = [e for e in body["presets"] if e.get("name") == "Quantum Lab"]
+    assert quantum_groups, "Presets should include a Quantum Lab group"
+    assert len(quantum_groups[0]["commands"]) >= 5, "Quantum Lab pack should expose at least five commands"
+
 
 def test_execute_plan_mode_returns_actions_without_side_effects(aria_server):
     """Plan mode should return parsed actions without mutating stage_state."""
@@ -123,10 +147,11 @@ def test_execute_plan_mode_returns_actions_without_side_effects(aria_server):
     body = _post_json(
         aria_server["port"],
         "/api/aria/execute",
-        {"command": "wave", "auto_execute": False},
+        {"command": "wave", "auto_execute": False, "use_llm": False},
     )
     pos_after = dict(mod.stage_state["aria"].get("position", {}))
     # Plan mode must not move Aria
     assert pos_before == pos_after
-    # Response should expose either an 'actions' or 'plan' field for AI consumers
+    # Response should expose either an 'actions' or 'plan' field
+    # for AI consumers.
     assert any(k in body for k in ("actions", "plan", "tags"))

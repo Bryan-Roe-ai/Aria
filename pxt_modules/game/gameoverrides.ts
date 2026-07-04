@@ -5,7 +5,7 @@
 //% help=loops/forever weight=100 afterOnStart=true blockNamespace="loops"
 //% blockId=forever block="forever" blockAllowMultiple=1
 function forever(a: () => void): void {
-    game.forever(a);
+    game.forever(a)
 }
 
 // micro:bit compatibility
@@ -13,6 +13,6 @@ function forever(a: () => void): void {
 // between micro:bit and other maker-style editors
 namespace basic {
     export function forever(a: () => void) {
-        game.forever(a);
+        game.forever(a)
     }
 }

@@ -42,17 +42,18 @@ curl http://localhost:7071/api/ai/status | jq '.telemetry'
 **3. What gets traced:**
 
 - `/api/chat` endpoint: Full request lifecycle with custom attributes:
-  - `provider` (azure/openai/local/lora)
-  - `model` (deployment name or adapter path)
-  - `duration_ms` (completion time)
-  - `memory_injected` (number of memory-retrieved messages)
-  - `cosmos_persisted` (whether Cosmos write succeeded)
+    - `provider` (azure/openai/local/lora)
+    - `model` (deployment name or adapter path)
+    - `duration_ms` (completion time)
+    - `memory_injected` (number of memory-retrieved messages)
+    - `cosmos_persisted` (whether Cosmos write succeeded)
 - **Exception tracking**: All unhandled errors with stack traces
 - **Dependency calls**: OpenAI SDK, Cosmos DB, Azure Quantum (if enabled)
 
 ### Telemetry Code Structure
 
 **Initialization** (`shared/telemetry.py`):
+
 ```python
 from opentelemetry import trace
 from azure.monitor.opentelemetry import configure_azure_monitor
@@ -69,6 +70,7 @@ def is_enabled() -> bool:
 ```
 
 **Usage in endpoints** (`function_app.py`):
+
 ```python
 from opentelemetry import trace
 _tracer = trace.get_tracer("qai.functions")
@@ -85,6 +87,7 @@ with _tracer.start_as_current_span("chat_request") as span:
 1. Navigate to your Application Insights resource in Azure Portal
 2. Go to **Transaction Search** or **Logs (KQL editor)**
 3. Query example traces:
+
 ```kusto
 traces
 | where cloud_RoleName == "qai.functions"
@@ -94,6 +97,7 @@ traces
 ```
 
 4. Analyze custom attributes:
+
 ```kusto
 dependencies
 | where cloud_RoleName == "qai.functions"
@@ -176,46 +180,53 @@ curl -X POST http://localhost:7071/api/chat -H "Content-Type: application/json" 
 ### Persistence Strategies
 
 **1. Per-Message Strategy** (`QAI_COSMOS_PERSIST_STRATEGY=messages`):
+
 - **Behavior**: Each user and assistant message is written as a separate Cosmos document
 - **Document schema**:
+
 ```json
 {
-  "id": "msg_1234567890_user",
-  "userId": "user-123",
-  "sessionId": "test-session-1",
-  "role": "user",
-  "content": "Hello, how are you?",
-  "timestamp": 1700000000.123,
-  "provider": "azure",
-  "model": "gpt-4o-mini"
+    "id": "msg_1234567890_user",
+    "userId": "user-123",
+    "sessionId": "test-session-1",
+    "role": "user",
+    "content": "Hello, how are you?",
+    "timestamp": 1700000000.123,
+    "provider": "azure",
+    "model": "gpt-4o-mini"
 }
 ```
+
 - **Pros**: Fine-grained audit trail, easy to query individual messages
 - **Cons**: Higher write throughput (2 writes per chat turn)
 
 **2. Session Strategy** (`QAI_COSMOS_PERSIST_STRATEGY=sessions`):
+
 - **Behavior**: Entire conversation (all messages) is written as one document per session
 - **Document schema**:
+
 ```json
 {
-  "id": "session_test-session-1",
-  "userId": "user-123",
-  "sessionId": "test-session-1",
-  "messages": [
-    {"role": "user", "content": "Hello"},
-    {"role": "assistant", "content": "Hi there!"}
-  ],
-  "timestamp": 1700000000.123,
-  "provider": "azure",
-  "model": "gpt-4o-mini"
+    "id": "session_test-session-1",
+    "userId": "user-123",
+    "sessionId": "test-session-1",
+    "messages": [
+        { "role": "user", "content": "Hello" },
+        { "role": "assistant", "content": "Hi there!" }
+    ],
+    "timestamp": 1700000000.123,
+    "provider": "azure",
+    "model": "gpt-4o-mini"
 }
 ```
+
 - **Pros**: Fewer writes (1 write per chat turn), better for cost optimization
 - **Cons**: May hit document size limits on long conversations (~2 MB per document max)
 
 ### Cosmos Code Structure
 
 **Client initialization** (`shared/cosmos_client.py`):
+
 ```python
 from azure.cosmos import CosmosClient
 
@@ -244,6 +255,7 @@ class QAICosmosClient:
 ```
 
 **Usage in endpoint** (`function_app.py`):
+
 ```python
 if cosmos_client and os.getenv("QAI_ENABLE_COSMOS", "false").lower() == "true":
     strategy = os.getenv("QAI_COSMOS_PERSIST_STRATEGY", "messages")
@@ -266,25 +278,25 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 
 ```json
 {
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "IsEncrypted": false,
+    "Values": {
+        "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+        "FUNCTIONS_WORKER_RUNTIME": "python",
 
-    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=abc-123;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=abc-123;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/",
 
-    "QAI_ENABLE_COSMOS": "true",
-    "COSMOS_ENDPOINT": "https://qai-cosmos.documents.azure.com:443/",
-    "COSMOS_KEY": "your_primary_key_here",
-    "COSMOS_DATABASE": "qai",
-    "COSMOS_CONTAINER": "chat_sessions",
-    "QAI_COSMOS_PERSIST_STRATEGY": "messages",
+        "QAI_ENABLE_COSMOS": "true",
+        "COSMOS_ENDPOINT": "https://qai-cosmos.documents.azure.com:443/",
+        "COSMOS_KEY": "your_primary_key_here",
+        "COSMOS_DATABASE": "qai",
+        "COSMOS_CONTAINER": "chat_sessions",
+        "QAI_COSMOS_PERSIST_STRATEGY": "messages",
 
-    "AZURE_OPENAI_API_KEY": "your_azure_openai_key",
-    "AZURE_OPENAI_ENDPOINT": "https://your-resource.openai.azure.com/",
-    "AZURE_OPENAI_DEPLOYMENT": "gpt-4o-mini",
-    "AZURE_OPENAI_API_VERSION": "2024-08-01-preview"
-  }
+        "AZURE_OPENAI_API_KEY": "your_azure_openai_key",
+        "AZURE_OPENAI_ENDPOINT": "https://your-resource.openai.azure.com/",
+        "AZURE_OPENAI_DEPLOYMENT": "gpt-4o-mini",
+        "AZURE_OPENAI_API_VERSION": "2024-08-01-preview"
+    }
 }
 ```
 
@@ -295,6 +307,7 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 ### New Fields (as of latest version)
 
 **Telemetry section:**
+
 ```json
 "telemetry": {
   "enabled": true  // true if APPLICATIONINSIGHTS_CONNECTION_STRING is set
@@ -302,6 +315,7 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 ```
 
 **Quantum section:**
+
 ```json
 "quantum": {
   "enabled": true,  // true if qiskit imports successfully
@@ -318,6 +332,7 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 ```
 
 **Cosmos section:**
+
 ```json
 "cosmos": {
   "enabled": false,  // true if QAI_ENABLE_COSMOS=true
@@ -337,51 +352,57 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 ### Telemetry Not Appearing in Portal
 
 1. **Check connection string format:**
-   ```powershell
-   $env:APPLICATIONINSIGHTS_CONNECTION_STRING
-   # Should be: InstrumentationKey=...;IngestionEndpoint=https://...
-   ```
+
+    ```powershell
+    $env:APPLICATIONINSIGHTS_CONNECTION_STRING
+    # Should be: InstrumentationKey=...;IngestionEndpoint=https://...
+    ```
 
 2. **Verify telemetry.enabled in status:**
-   ```powershell
-   curl http://localhost:7071/api/ai/status | jq '.telemetry.enabled'
-   # Should return: true
-   ```
+
+    ```powershell
+    curl http://localhost:7071/api/ai/status | jq '.telemetry.enabled'
+    # Should return: true
+    ```
 
 3. **Check startup logs:**
-   ```powershell
-   # Look for: [startup] Telemetry initialized successfully
-   # Or: [startup] Telemetry init skipped: <error>
-   ```
+
+    ```powershell
+    # Look for: [startup] Telemetry initialized successfully
+    # Or: [startup] Telemetry init skipped: <error>
+    ```
 
 4. **Allow 2-5 minutes for ingestion latency** in Azure Portal
 
 ### Cosmos Writes Failing
 
 1. **Verify credentials:**
-   ```powershell
-   # Test connection using Azure Cosmos DB Data Explorer in Portal
-   ```
+
+    ```powershell
+    # Test connection using Azure Cosmos DB Data Explorer in Portal
+    ```
 
 2. **Check firewall rules:**
-   - Ensure your IP is allowlisted in Cosmos DB → Settings → Firewall and virtual networks
-   - Or enable "Allow access from Azure Portal" for testing
+    - Ensure your IP is allowlisted in Cosmos DB → Settings → Firewall and virtual networks
+    - Or enable "Allow access from Azure Portal" for testing
 
 3. **Review status error field:**
-   ```powershell
-   curl http://localhost:7071/api/ai/status | jq '.cosmos.error'
-   # Common errors:
-   # - "Unauthorized" → wrong key
-   # - "Forbidden" → firewall blocking
-   # - "NotFound" → database/container doesn't exist
-   ```
+
+    ```powershell
+    curl http://localhost:7071/api/ai/status | jq '.cosmos.error'
+    # Common errors:
+    # - "Unauthorized" → wrong key
+    # - "Forbidden" → firewall blocking
+    # - "NotFound" → database/container doesn't exist
+    ```
 
 4. **Check container partition key:**
-   - Must be `/userId` (or update client code to match your schema)
+    - Must be `/userId` (or update client code to match your schema)
 
 ### Conflict Detection Showing True
 
 **Current status shows:**
+
 ```json
 "quantum": {
   "conflict": true,
@@ -394,18 +415,19 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 **Resolution options:**
 
 1. **Ignore** (recommended if quantum endpoints aren't used in production):
-   - Root venv conflict doesn't affect isolated `ai-projects/quantum-ml/` training
-   - Quantum MCP server uses dedicated venv
+    - Root venv conflict doesn't affect isolated `ai-projects/quantum-ml/` training
+    - Quantum MCP server uses dedicated venv
 
 2. **Upgrade root venv to Qiskit 1.x** (use upgrade script):
-   ```powershell
-   cd quantum-ai
-   python .\scripts\upgrade_qiskit_to_1x.py --dry-run  # preview changes
-   python .\scripts\upgrade_qiskit_to_1x.py --install   # apply upgrade
-   ```
+
+    ```powershell
+    cd quantum-ai
+    python .\scripts\upgrade_qiskit_to_1x.py --dry-run  # preview changes
+    python .\scripts\upgrade_qiskit_to_1x.py --install   # apply upgrade
+    ```
 
 3. **Disable quantum status probing** (prevent import attempts):
-   - Set `QAI_STATUS_CONNECT_AZURE_QUANTUM=false` or leave unset (default)
+    - Set `QAI_STATUS_CONNECT_AZURE_QUANTUM=false` or leave unset (default)
 
 ---
 
@@ -415,23 +437,24 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 
 - **Free tier**: 5 GB ingestion/month (usually sufficient for dev/test)
 - **Sampling**: Configure in `shared/telemetry.py`:
-  ```python
-  from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
-  sampler = TraceIdRatioBased(0.1)  # 10% sampling
-  ```
+    ```python
+    from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+    sampler = TraceIdRatioBased(0.1)  # 10% sampling
+    ```
 - **Filtering**: Exclude low-value operations (e.g., health checks)
 
 ### Cosmos DB
 
 - **Serverless tier**: Pay per request (~$0.25/million reads, ~$1.25/million writes)
-  - Best for dev/test or low-traffic apps
+    - Best for dev/test or low-traffic apps
 - **Provisioned throughput**: Fixed monthly cost (400 RU/s minimum ~$24/month)
-  - Best for predictable workloads
+    - Best for predictable workloads
 - **Strategy impact**:
-  - Per-message: ~2 writes per chat turn (user + assistant)
-  - Session-level: ~1 write per chat turn
+    - Per-message: ~2 writes per chat turn (user + assistant)
+    - Session-level: ~1 write per chat turn
 
 **Example costs (per-message strategy, 1000 chat turns/day):**
+
 - Serverless: 2000 writes/day × 30 days = 60K writes/month → **~$0.08/month**
 - Provisioned 400 RU/s: **$24/month** (fixed)
 
@@ -440,28 +463,29 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 ## Best Practices
 
 1. **Always test with status endpoint first:**
-   ```powershell
-   curl http://localhost:7071/api/ai/status | jq '.telemetry, .cosmos'
-   ```
+
+    ```powershell
+    curl http://localhost:7071/api/ai/status | jq '.telemetry, .cosmos'
+    ```
 
 2. **Use feature flags for gradual rollout:**
-   - Enable telemetry first (zero cost to test)
-   - Add Cosmos after confirming telemetry works
-   - Enable Azure Quantum probing only if needed (adds latency)
+    - Enable telemetry first (zero cost to test)
+    - Add Cosmos after confirming telemetry works
+    - Enable Azure Quantum probing only if needed (adds latency)
 
 3. **Monitor ingestion limits:**
-   - Application Insights free tier: 5 GB/month
-   - Cosmos DB serverless: 1 million RU/s per container (very high)
+    - Application Insights free tier: 5 GB/month
+    - Cosmos DB serverless: 1 million RU/s per container (very high)
 
 4. **Secure credentials:**
-   - Never commit keys to source control
-   - Use Azure Key Vault references in production:
-     ```json
-     "COSMOS_KEY": "@Microsoft.KeyVault(SecretUri=https://...)"
-     ```
+    - Never commit keys to source control
+    - Use Azure Key Vault references in production:
+        ```json
+        "COSMOS_KEY": "@Microsoft.KeyVault(SecretUri=https://...)"
+        ```
 
 5. **Document environment variables in README:**
-   - Keep this guide in sync with `.env.example` or `local.settings.json.example`
+    - Keep this guide in sync with `.env.example` or `local.settings.json.example`
 
 ---
 
@@ -471,5 +495,5 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 - **Validation Script**: `ai-projects/quantum-ml/scripts/validate_qiskit_env.py` (conflict detection)
 - **Unit Tests**: `tests/test_validate_qiskit_env.py` (conflict detection logic)
 - **Azure Documentation**:
-  - [Application Insights for Azure Functions](https://learn.microsoft.com/azure/azure-functions/functions-monitoring)
-  - [Cosmos DB Python SDK](https://learn.microsoft.com/azure/cosmos-db/nosql/sdk-python)
+    - [Application Insights for Azure Functions](https://learn.microsoft.com/azure/azure-functions/functions-monitoring)
+    - [Cosmos DB Python SDK](https://learn.microsoft.com/azure/cosmos-db/nosql/sdk-python)

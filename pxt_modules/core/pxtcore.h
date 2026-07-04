@@ -13,8 +13,9 @@
 #define xmalloc device_malloc
 #define xfree device_free
 
-// on most devices we allocate the entire heap at once, so large allocs should work
-// if they don't you just get the regular out of memory instead of alloc too large
+// on most devices we allocate the entire heap at once, so large allocs should
+// work if they don't you just get the regular out of memory instead of alloc
+// too large
 #define GC_MAX_ALLOC_SIZE (128 * 1024)
 
 #endif

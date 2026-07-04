@@ -10,15 +10,12 @@ checkpoint loading to improve security and error handling.
 from __future__ import annotations
 
 import importlib.util
-import sys
 import logging
-import traceback
+import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
-_CANONICAL = (
-    Path(__file__).resolve().parents[1] / "ai-projects" / "quantum-ml" / "web_app.py"
-)
+_CANONICAL = Path(__file__).resolve().parents[1] / "ai-projects" / "quantum-ml" / "web_app.py"
 
 if not _CANONICAL.exists():
     raise FileNotFoundError(f"Canonical web app not found: {_CANONICAL}")
@@ -44,7 +41,7 @@ def _get_logger():
     return logging.getLogger("quantum-ai.web_app")
 
 
-def _get_request_json() -> Dict[str, Any]:
+def _get_request_json() -> dict[str, Any]:
     """Safely obtain JSON payload from the canonical module's request object.
 
     Returns an empty dict if request/json are unavailable or malformed.
@@ -136,7 +133,7 @@ def _compat_load_checkpoint() -> Any:
 
         # Attempt safe load without pickles first; only allow pickles on explicit failure.
         allow_pickle = False
-        load_error: Optional[Exception] = None
+        load_error: Exception | None = None
         try:
             checkpoint = np.load(str(resolved_path), allow_pickle=allow_pickle)
         except Exception as exc_no_pickle:
@@ -212,9 +209,11 @@ def _compat_load_checkpoint() -> Any:
 
         response = {
             "success": True,
-            "weights_shape": list(getattr(getattr(weights, "shape", None), "__iter__", lambda: [])())
-            if hasattr(weights, "shape")
-            else [],
+            "weights_shape": (
+                list(getattr(getattr(weights, "shape", None), "__iter__", lambda: [])())
+                if hasattr(weights, "shape")
+                else []
+            ),
             "epoch": epoch,
             "config": config,
             "message": f"Checkpoint loaded from epoch {epoch}",

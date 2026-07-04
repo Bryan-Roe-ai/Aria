@@ -9,6 +9,7 @@ is present: `REPO_ROOT`, `sys.path.insert(0, str(REPO_ROOT))`, or
 
 Return code 0 on success, 1 on failure.
 """
+
 import re
 import sys
 from pathlib import Path

@@ -1,4 +1,5 @@
 # Code Inefficiency Analysis Report
+
 **Date:** February 17, 2026
 **Repository:** Bryan-Roe/Aria
 **Analysis Scope:** Full codebase performance review
@@ -17,6 +18,7 @@ This document identifies inefficient code patterns discovered through comprehens
 **Complexity:** O(layers × qubits × gates × batch_size × dataset_size)
 
 #### Problem
+
 The `compute_gradient()` function uses three nested loops with expensive operations inside:
 
 ```python
@@ -39,19 +41,23 @@ def compute_gradient(circuit, X, y, weights, use_parameter_shift=True):
 ```
 
 #### Issues Identified
+
 1. **Triple nested loops:** O(n³) complexity
 2. **Array copying:** 2× `weights.copy()` per iteration (expensive for large arrays)
 3. **Redundant loss computation:** Each `compute_loss()` loops through entire batch
 4. **No vectorization:** NumPy capabilities not utilized
 
 #### Performance Impact
+
 For a typical configuration:
+
 - 3 layers × 10 qubits × 3 gates = 90 weight parameters
 - 32 batch size
 - Each epoch requires **180 forward passes** (2 per parameter)
 - With 100 samples, that's **18,000 circuit evaluations per epoch**
 
 #### Recommended Solution
+
 Use PennyLane's automatic differentiation (`qml.grad()`):
 
 ```python
@@ -67,6 +73,7 @@ def compute_gradient_optimized(circuit, X, y, weights):
 ```
 
 #### Expected Improvement
+
 - **Current:** ~1000ms per gradient computation
 - **Optimized:** ~10-50ms (10-100x speedup)
 - **Memory:** Reduced from O(n × batch_size) to O(batch_size)
@@ -81,6 +88,7 @@ def compute_gradient_optimized(circuit, X, y, weights):
 **Impact:** Network I/O, Memory
 
 #### Problem
+
 Multiple API endpoints repeatedly read and parse the same JSON files:
 
 ```python
@@ -102,12 +110,14 @@ with open(status_file, 'r') as f:
 ```
 
 #### Performance Impact
+
 - **File size:** status.json can be 1-5MB with multiple jobs
 - **Per request:** 4-5 file reads = 5-25MB of I/O
 - **Dashboard refresh:** Every 5 seconds = 12 reads/minute
 - **Cost:** ~50-200ms per file read + JSON parsing
 
 #### Recommended Solution
+
 Implement file-based caching with TTL:
 
 ```python
@@ -148,6 +158,7 @@ def get_job_progress(self, job_id):
 ```
 
 #### Expected Improvement
+
 - **First call:** Same performance (~50ms)
 - **Subsequent calls (within 5s):** <1ms (cache hit)
 - **Memory overhead:** ~1-5MB per cached file
@@ -165,6 +176,7 @@ def get_job_progress(self, job_id):
 **Complexity:** O(keywords × query_length)
 
 #### Problem
+
 Multiple `any()` calls iterate through keyword lists for each check:
 
 ```python
@@ -190,12 +202,15 @@ for dom, keywords in domain_keywords.items():  # O(domains)
 ```
 
 #### Performance Impact
+
 Total keyword checks: ~30 keywords × average query length
+
 - **Short query (10 words):** ~300 substring operations
 - **Long query (100 words):** ~3,000 substring operations
 - **Per-query overhead:** 1-10ms depending on query length
 
 #### Recommended Solution
+
 Pre-compile keyword sets and use word tokenization:
 
 ```python
@@ -259,6 +274,7 @@ def _analyze_query_optimized(query: str) -> dict:
 ```
 
 #### Expected Improvement
+
 - **Before:** O(keywords × query_length) = ~300-3000 ops
 - **After:** O(query_length + keywords) = ~100 ops
 - **Speedup:** 3-30x depending on query length
@@ -274,6 +290,7 @@ def _analyze_query_optimized(query: str) -> dict:
 **Pattern:** Inefficient position detection
 
 #### Problem
+
 Position detection uses inline `any()` calls despite having frozenset infrastructure:
 
 ```python
@@ -287,6 +304,7 @@ elif any(k in cmd for k in ['walk right', 'go right', 'right']):  # line 556
 Note: Lines 42-74 define 19 frozensets for keyword matching, showing awareness of the pattern, but it's not applied consistently.
 
 #### Recommended Solution
+
 Extend the existing frozenset pattern:
 
 ```python
@@ -313,6 +331,7 @@ elif _contains_any_keyword(cmd, MOVE_RIGHT_KEYWORDS):
 **Pattern:** Multiple iterations over same collection
 
 #### Problem
+
 Global statistics computed with 4 separate iterations:
 
 ```python
@@ -325,6 +344,7 @@ def get_global_stats():
 ```
 
 #### Recommended Solution
+
 Single-pass accumulation:
 
 ```python
@@ -355,6 +375,7 @@ def get_global_stats():
 ```
 
 #### Expected Improvement
+
 - **Before:** O(4n) - four complete iterations
 - **After:** O(n) - single iteration
 - **Speedup:** ~4x
@@ -370,6 +391,7 @@ def get_global_stats():
 **Pattern:** Unnecessary memory allocation
 
 #### Problem
+
 Creates intermediate lists when only counting:
 
 ```python
@@ -387,6 +409,7 @@ model_count = len([m for m in models_dir.iterdir() if m.is_dir()])  # Full list!
 ```
 
 #### Recommended Solution
+
 Use generator expressions with sum():
 
 ```python
@@ -401,6 +424,7 @@ model_count = sum(1 for m in models_dir.iterdir() if m.is_dir())
 ```
 
 #### Expected Improvement
+
 - **Memory:** O(n) → O(1)
 - **Speed:** 5-20% faster (no intermediate list allocation)
 - **Impact:** Increases with directory size
@@ -415,6 +439,7 @@ model_count = sum(1 for m in models_dir.iterdir() if m.is_dir())
 **Pattern:** O(n) filtering on every request
 
 #### Problem
+
 Rate limit tracking uses list filtering:
 
 ```python
@@ -424,6 +449,7 @@ request_counts[client_ip] = [t for t in request_counts[client_ip] if now - t < 6
 This creates a new list on every request, even for clients not near the limit.
 
 #### Recommended Solution
+
 Use `collections.deque` with expiration tracking:
 
 ```python
@@ -451,6 +477,7 @@ def check_rate_limit(client_ip: str) -> bool:
 ```
 
 #### Expected Improvement
+
 - **Before:** O(n) list creation per request
 - **After:** O(k) where k = expired entries
 - **Memory:** Bounded by rate limit window
@@ -467,12 +494,14 @@ def check_rate_limit(client_ip: str) -> bool:
 **Severity:** Low
 
 #### Problem
+
 ```python
 if epoch_gradients:
     avg_gradient = np.mean([np.linalg.norm(g) for g in epoch_gradients])
 ```
 
 #### Solution
+
 ```python
 if epoch_gradients:
     avg_gradient = np.mean(np.linalg.norm(g) for g in epoch_gradients)
@@ -484,49 +513,53 @@ Minor improvement: avoids creating intermediate list.
 
 ## Summary Table
 
-| Priority | Issue | File | Lines | Complexity | Expected Speedup |
-| ---------- | ------- | ------ | ------- | ------------ | ------------------ |
-| Critical | Triple-nested gradient loop | web_app.py | 217-246 | O(n³) | 10-100x |
-| High | Repeated JSON file reading | serve.py | 273-515 | File I/O | 5-10x |
-| High | Linear keyword searches | agi_provider.py | 343-372 | O(k×m) | 3-30x |
-| Medium | Any() position detection | server.py | 554-557 | O(k×m) | 2-5x |
-| Medium | Multi-pass session stats | web_app.py | 952-958 | O(4n) | 4x |
-| Medium | Directory traversal lists | serve.py | 700, 761, 766 | O(n) mem | 5-20% |
-| Low | Rate limit filtering | serve.py | 39-40 | O(n) | 2-5x |
-| Low | Gradient norm list | web_app.py | 440-443 | Minor | <5% |
+| Priority | Issue                       | File            | Lines         | Complexity | Expected Speedup |
+| -------- | --------------------------- | --------------- | ------------- | ---------- | ---------------- |
+| Critical | Triple-nested gradient loop | web_app.py      | 217-246       | O(n³)      | 10-100x          |
+| High     | Repeated JSON file reading  | serve.py        | 273-515       | File I/O   | 5-10x            |
+| High     | Linear keyword searches     | agi_provider.py | 343-372       | O(k×m)     | 3-30x            |
+| Medium   | Any() position detection    | server.py       | 554-557       | O(k×m)     | 2-5x             |
+| Medium   | Multi-pass session stats    | web_app.py      | 952-958       | O(4n)      | 4x               |
+| Medium   | Directory traversal lists   | serve.py        | 700, 761, 766 | O(n) mem   | 5-20%            |
+| Low      | Rate limit filtering        | serve.py        | 39-40         | O(n)       | 2-5x             |
+| Low      | Gradient norm list          | web_app.py      | 440-443       | Minor      | <5%              |
 
 ---
 
 ## Implementation Recommendations
 
 ### Phase 1: Critical Fixes (Implement Immediately)
+
 1. **Quantum gradient optimization** (web_app.py:217-246)
-   - Use `qml.grad()` for automatic differentiation
-   - Expected impact: 10-100x speedup in training
-   - Risk: Low (fallback to manual method exists)
+    - Use `qml.grad()` for automatic differentiation
+    - Expected impact: 10-100x speedup in training
+    - Risk: Low (fallback to manual method exists)
 
 2. **File caching** (serve.py:273-515)
-   - Implement TTL-based JSON caching
-   - Expected impact: 5-10x reduction in file I/O
-   - Risk: Low (5-second TTL prevents stale data)
+    - Implement TTL-based JSON caching
+    - Expected impact: 5-10x reduction in file I/O
+    - Risk: Low (5-second TTL prevents stale data)
 
 ### Phase 2: High Priority (Implement Soon)
+
 3. **Keyword matching optimization** (agi_provider.py:343-372)
-   - Convert to frozensets with set intersection
-   - Expected impact: 3-30x speedup per query
-   - Risk: Very low (pure optimization)
+    - Convert to frozensets with set intersection
+    - Expected impact: 3-30x speedup per query
+    - Risk: Very low (pure optimization)
 
 4. **Consistent frozenset usage** (server.py:554-557)
-   - Extend existing pattern to all keyword matching
-   - Expected impact: 2-5x speedup in position detection
-   - Risk: Very low (pattern already established)
+    - Extend existing pattern to all keyword matching
+    - Expected impact: 2-5x speedup in position detection
+    - Risk: Very low (pattern already established)
 
 ### Phase 3: Medium Priority (Implement When Time Permits)
+
 5. **Single-pass statistics** (web_app.py:952-958)
 6. **Generator-based counting** (serve.py:700, 761, 766)
 7. **Deque-based rate limiting** (serve.py:39-40)
 
 ### Phase 4: Low Priority (Nice to Have)
+
 8. **Minor list comprehension optimizations**
 
 ---
@@ -541,6 +574,7 @@ For each optimization:
 4. **Load tests:** Validate improvements under concurrent load
 
 Example test structure:
+
 ```python
 def test_gradient_optimization():
     """Test optimized gradient computation matches manual method"""
@@ -581,13 +615,13 @@ def test_gradient_performance():
 
 ## Memory Usage Considerations
 
-| Optimization | Memory Impact | Notes |
-| -------------- | --------------- | ------- |
-| Gradient vectorization | -50% | Eliminates weight copies |
-| File caching | +5MB | Per cached file (acceptable) |
-| Frozenset keywords | +10KB | One-time module load cost |
-| Generator expressions | -90% | Avoids intermediate lists |
-| Deque rate limiting | Constant | Bounded by time window |
+| Optimization           | Memory Impact | Notes                        |
+| ---------------------- | ------------- | ---------------------------- |
+| Gradient vectorization | -50%          | Eliminates weight copies     |
+| File caching           | +5MB          | Per cached file (acceptable) |
+| Frozenset keywords     | +10KB         | One-time module load cost    |
+| Generator expressions  | -90%          | Avoids intermediate lists    |
+| Deque rate limiting    | Constant      | Bounded by time window       |
 
 ---
 

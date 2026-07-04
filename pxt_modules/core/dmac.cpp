@@ -6,4 +6,4 @@ namespace pxt {
 SINGLETON(WDMAC);
 #endif
 
-}
+} // namespace pxt

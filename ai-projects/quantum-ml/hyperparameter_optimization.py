@@ -27,7 +27,6 @@ import sys
 import warnings
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
 
 import numpy as np
 
@@ -65,9 +64,7 @@ class EarlyStoppingTrainer(QuantumClassicalTrainer):
             if val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
                 self.patience_counter = 0
-                self.best_model_state = {
-                    k: v.cpu().clone() for k, v in self.model.state_dict().items()
-                }
+                self.best_model_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
             else:
                 self.patience_counter += 1
 
@@ -84,19 +81,15 @@ class EarlyStoppingTrainer(QuantumClassicalTrainer):
                 )
 
 
-def train_config(dataset_name: str, config: Dict) -> Dict:
+def train_config(dataset_name: str, config: dict) -> dict:
     """Train a single config and return metrics."""
     X, y, _ = load_dataset(dataset_name)
 
     # Split
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     # Preprocess
-    X_train, X_val, scaler, pca = preprocess_for_qubits(
-        X_train, X_val, config["n_qubits"]
-    )
+    X_train, X_val, scaler, pca = preprocess_for_qubits(X_train, X_val, config["n_qubits"])
 
     n_classes = len(np.unique(y_train))
 
@@ -119,17 +112,11 @@ def train_config(dataset_name: str, config: Dict) -> Dict:
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
     val_dataset = TensorDataset(X_val_tensor, y_val_tensor)
 
-    train_loader = DataLoader(
-        train_dataset, batch_size=config["batch_size"], shuffle=True, drop_last=True
-    )
-    val_loader = DataLoader(
-        val_dataset, batch_size=config["batch_size"], shuffle=False, drop_last=False
-    )
+    train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True, drop_last=True)
+    val_loader = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False, drop_last=False)
 
     # Train
-    trainer = EarlyStoppingTrainer(
-        model, learning_rate=config["learning_rate"], patience=10
-    )
+    trainer = EarlyStoppingTrainer(model, learning_rate=config["learning_rate"], patience=10)
 
     trainer.train(train_loader, val_loader, num_epochs=50)
 
@@ -144,7 +131,7 @@ def train_config(dataset_name: str, config: Dict) -> Dict:
     }
 
 
-def run_hpo_sweep(dataset_name: str, param_grid: Dict) -> List[Dict]:
+def run_hpo_sweep(dataset_name: str, param_grid: dict) -> list[dict]:
     """Run grid search over parameter space."""
     results = []
 
@@ -153,9 +140,9 @@ def run_hpo_sweep(dataset_name: str, param_grid: Dict) -> List[Dict]:
     values = list(param_grid.values())
 
     total_configs = np.prod([len(v) for v in values])
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"  HPO SWEEP: {dataset_name.upper()}")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"Total configurations: {total_configs}")
     print(f"Parameter grid: {param_grid}\n")
 
@@ -182,7 +169,7 @@ def run_hpo_sweep(dataset_name: str, param_grid: Dict) -> List[Dict]:
     return results
 
 
-def find_best_config(results: List[Dict]) -> Dict:
+def find_best_config(results: list[dict]) -> dict:
     """Find the best config based on validation accuracy."""
     if not results:
         return None
@@ -191,9 +178,7 @@ def find_best_config(results: List[Dict]) -> Dict:
     return best
 
 
-def save_hpo_report(
-    all_results: Dict, output_path: str = "results/hpo_optimization_report.json"
-):
+def save_hpo_report(all_results: dict, output_path: str = "results/hpo_optimization_report.json"):
     """Save comprehensive HPO report."""
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
@@ -233,9 +218,7 @@ def save_hpo_report(
     return report
 
 
-def plot_hpo_results(
-    all_results: Dict, output_path: str = "results/hpo_comparison.png"
-):
+def plot_hpo_results(all_results: dict, output_path: str = "results/hpo_comparison.png"):
     """Plot HPO results comparison."""
     fig, axes = plt.subplots(1, len(all_results), figsize=(6 * len(all_results), 5))
 
@@ -247,7 +230,7 @@ def plot_hpo_results(
 
         # Extract configs and accuracies
         accs = [r["metrics"]["val_acc"] for r in results]
-        configs = [f"C{i+1}" for i in range(len(results))]
+        configs = [f"C{i + 1}" for i in range(len(results))]
 
         # Sort by accuracy
         sorted_pairs = sorted(zip(accs, configs), reverse=True)
@@ -334,10 +317,8 @@ def main():
             improvement = (best["metrics"]["val_acc"] - baseline) * 100
 
             print(f"\n{dataset.upper()}:")
-            print(f"  Baseline:    {baseline:.4f} ({baseline*100:.2f}%)")
-            print(
-                f"  Best HPO:    {best['metrics']['val_acc']:.4f} ({best['metrics']['val_acc']*100:.2f}%)"
-            )
+            print(f"  Baseline:    {baseline:.4f} ({baseline * 100:.2f}%)")
+            print(f"  Best HPO:    {best['metrics']['val_acc']:.4f} ({best['metrics']['val_acc'] * 100:.2f}%)")
             print(f"  Improvement: {improvement:+.2f} pp")
             print(f"  Best config: {best['config']}")
 

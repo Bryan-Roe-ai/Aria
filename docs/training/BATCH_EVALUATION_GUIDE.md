@@ -148,15 +148,15 @@ deployed_models/
 
 ```json
 {
-  "model_id": "checkpoint-64",
-  "source_path": "C:\\...\\data_out\\lora_training\\checkpoint-64",
-  "deployment_name": "checkpoint-64_20251124_234342",
-  "deployment_path": "C:\\...\\deployed_models\\checkpoint-64_20251124_234342",
-  "metrics": {
-    "perplexity": 10.188461538461539
-  },
-  "promoted_at": "2025-11-25T07:43:42.329423Z",
-  "rank": 1
+    "model_id": "checkpoint-64",
+    "source_path": "C:\\...\\data_out\\lora_training\\checkpoint-64",
+    "deployment_name": "checkpoint-64_20251124_234342",
+    "deployment_path": "C:\\...\\deployed_models\\checkpoint-64_20251124_234342",
+    "metrics": {
+        "perplexity": 10.188461538461539
+    },
+    "promoted_at": "2025-11-25T07:43:42.329423Z",
+    "rank": 1
 }
 ```
 
@@ -169,9 +169,9 @@ deployed_models/
 1. **Train models** with `autotrain.py` or `train_lora.py`
 2. **Evaluate all adapters**:
 
-   ```powershell
-   python .\scripts\batch_evaluator.py --scan-models --evaluate-all --promote-best
-   ```
+    ```powershell
+    python .\scripts\batch_evaluator.py --scan-models --evaluate-all --promote-best
+    ```
 
 3. **Use promoted model** from `deployed_models/latest/` (or read `LATEST.txt`)
 
@@ -199,25 +199,25 @@ Copy-Item ".\deployed_models\$latestModel" -Destination "C:\production\models\" 
 
 ```yaml
 evaluation_tasks:
-  - model_id: phi35_mixed_chat
-    model_type: lora
-    model_path: data_out/lora_training/phi35_mixed_chat
-    dataset: datasets/chat/mixed_chat
-    metrics:
-      - perplexity
-      - diversity
-      - response_length
-      - coherence
-    max_samples: 100
+    - model_id: phi35_mixed_chat
+      model_type: lora
+      model_path: data_out/lora_training/phi35_mixed_chat
+      dataset: datasets/chat/mixed_chat
+      metrics:
+          - perplexity
+          - diversity
+          - response_length
+          - coherence
+      max_samples: 100
 
-  - model_id: phi35_coding
-    model_type: lora
-    model_path: data_out/lora_training/phi35_coding
-    dataset: datasets/chat/coding
-    metrics:
-      - perplexity
-      - diversity
-    max_samples: 50
+    - model_id: phi35_coding
+      model_type: lora
+      model_path: data_out/lora_training/phi35_coding
+      dataset: datasets/chat/coding
+      metrics:
+          - perplexity
+          - diversity
+      max_samples: 50
 ```
 
 ---

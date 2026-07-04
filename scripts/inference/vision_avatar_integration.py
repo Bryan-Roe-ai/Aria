@@ -13,7 +13,6 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Dict
 
 try:
     import torch
@@ -79,7 +78,7 @@ def run_inference(
     batch_size: int = 32,
     save_annotated: bool = False,
     export_features: bool = False,
-) -> Dict[str, dict]:
+) -> dict[str, dict]:
     """Run inference on all images under *images_dir*.
 
     Returns a dict keyed by image path string; each value is a dict with at

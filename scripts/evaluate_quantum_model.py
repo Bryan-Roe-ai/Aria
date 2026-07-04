@@ -16,7 +16,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure repository root is on sys.path before importing local shared modules.
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -26,7 +26,7 @@ if str(REPO_ROOT) not in sys.path:
 from shared.evaluation_utils import load_labels_from_dataset
 
 
-def load_model_predictions(model_path: Path, max_samples: Optional[int] = None) -> List[Any]:
+def load_model_predictions(model_path: Path, max_samples: int | None = None) -> list[Any]:
     if not model_path.exists():
         raise FileNotFoundError(model_path)
     with model_path.open("r", encoding="utf-8") as f:
@@ -41,7 +41,7 @@ def load_model_predictions(model_path: Path, max_samples: Optional[int] = None) 
     return preds
 
 
-def compute_binary_metrics(y_true: List[Any], y_pred: List[Any]) -> Dict[str, float]:
+def compute_binary_metrics(y_true: list[Any], y_pred: list[Any]) -> dict[str, float]:
     # Convert to strings for stable comparison
     paired = list(zip(y_true, y_pred))
     if not paired:
@@ -81,10 +81,10 @@ def compute_binary_metrics(y_true: List[Any], y_pred: List[Any]) -> Dict[str, fl
 def run(
     dataset: Path,
     model: Path,
-    max_samples: Optional[int],
-    metrics: List[str],
-    save_dir: Optional[Path],
-) -> Dict[str, Any]:
+    max_samples: int | None,
+    metrics: list[str],
+    save_dir: Path | None,
+) -> dict[str, Any]:
     y_true = load_labels_from_dataset(dataset, max_samples)
     y_pred = load_model_predictions(model, max_samples)
 
@@ -93,7 +93,7 @@ def run(
         y_pred += [None] * (len(y_true) - len(y_pred))
 
     # For now support binary metrics via compute_binary_metrics
-    summary: Dict[str, float] = {}
+    summary: dict[str, float] = {}
     if any(m in ("accuracy", "precision", "recall", "f1_score") for m in metrics):
         mvals = compute_binary_metrics(y_true, y_pred)
         # include requested metrics

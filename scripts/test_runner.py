@@ -11,6 +11,7 @@ Test Suites:
   quantum     — Quantum-related tests
   database    — Database integration tests
   chat        — Chat provider tests
+  ai_projects — Explicit ai-projects test paths skipped by root pytest
 
 Usage:
   python scripts/test_runner.py --unit
@@ -18,9 +19,12 @@ Usage:
   python scripts/test_runner.py --all
   python scripts/test_runner.py --integration
   python scripts/test_runner.py --list-suites
+  python scripts/test_runner.py --ai-projects
   python scripts/test_runner.py --unit --integration --watch
 """
+
 import argparse
+import importlib.util
 import json
 import re
 import subprocess
@@ -32,6 +36,13 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TESTS_DIR = REPO_ROOT / "tests"
 DATA_OUT = REPO_ROOT / "data_out"
+AI_PROJECT_TEST_PATHS = [
+    REPO_ROOT / "ai-projects" / "chat-cli" / "src" / "test_chat_providers.py",
+    REPO_ROOT / "ai-projects" / "chat-cli" / "src" / "test_chat_cli.py",
+    REPO_ROOT / "ai-projects" / "llm-maker" / "tests",
+    REPO_ROOT / "ai-projects" / "quantum-ml" / "test_entanglement_patterns.py",
+    REPO_ROOT / "ai-projects" / "quantum-ml" / "scripts" / "test_provider_gates.py",
+]
 
 # ---------------------------------------------------------------------------
 # Suite Definitions
@@ -72,41 +83,54 @@ SUITES = {
         "description": "Chat provider tests",
         "pytest_args": ["-k", "provider or chat or lmstudio"],
     },
+    "ai_projects": {
+        "description": "Explicit ai-project pytest paths skipped by root pytest",
+        "test_paths": AI_PROJECT_TEST_PATHS,
+        "pytest_args": [],
+    },
 }
 
 # ---------------------------------------------------------------------------
 # Result Parsing
 # ---------------------------------------------------------------------------
-_RESULT_RE = re.compile(
-    r"=+ (?:(\d+) passed)?"
-    r"(?:,? ?(\d+) failed)?"
-    r"(?:,? ?(\d+) error)?"
-    r"(?:,? ?(\d+) skipped)?"
-    r"(?:,? ?(\d+) warning)?"
-    r".*=+",
-)
+_RESULT_COUNT_RE = re.compile(r"(\d+)\s+(passed|failed|errors?|skipped)")
 
 
 def _parse_pytest_summary(output: str) -> dict:
     """Extract counts from pytest's one-line summary."""
-    m = _RESULT_RE.search(output)
-    if not m:
-        return {"passed": 0, "failed": 0, "errors": 0, "skipped": 0}
-    return {
-        "passed": int(m.group(1) or 0),
-        "failed": int(m.group(2) or 0),
-        "errors": int(m.group(3) or 0),
-        "skipped": int(m.group(4) or 0),
-    }
+    counts = {"passed": 0, "failed": 0, "errors": 0, "skipped": 0}
+    summary_line = ""
+    for line in output.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("="):
+            continue
+        if _RESULT_COUNT_RE.search(stripped):
+            summary_line = stripped
+
+    if not summary_line:
+        return counts
+
+    for count, label in _RESULT_COUNT_RE.findall(summary_line):
+        key = "errors" if label.startswith("error") else label
+        counts[key] = int(count)
+    return counts
 
 
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
+def _pytest_command_prefix() -> list[str]:
+    """Use ``python -m pytest`` when available, else fall back to the pytest executable."""
+    if importlib.util.find_spec("pytest") is not None:
+        return [sys.executable, "-m", "pytest"]
+    return ["pytest"]
+
+
 def run_suite(name: str, *, coverage: bool = False, verbose: int = 1) -> dict:
     """Run a single pytest suite and return structured results."""
     suite = SUITES[name]
-    cmd = [sys.executable, "-m", "pytest", str(TESTS_DIR)]
+    test_paths = [str(path) for path in suite.get("test_paths", [TESTS_DIR])]
+    cmd = [*_pytest_command_prefix(), *test_paths]
     cmd.extend(suite["pytest_args"])
 
     if coverage:
@@ -208,9 +232,9 @@ def _run_selected(suites: list[str], *, coverage: bool, verbose: int) -> bool:
     overall = True
 
     for name in suites:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  Running suite: {name}  ({SUITES[name]['description']})")
-        print(f"{'='*60}\n")
+        print(f"{'=' * 60}\n")
 
         summary, stdout, stderr = run_suite(name, coverage=coverage, verbose=verbose)
         results.append(summary)
@@ -255,6 +279,7 @@ def main() -> None:
     ap.add_argument("--quantum", action="store_true", help="Quantum tests")
     ap.add_argument("--database", action="store_true", help="Database tests")
     ap.add_argument("--chat", action="store_true", help="Chat tests")
+    ap.add_argument("--ai-projects", action="store_true", help="Explicit ai-projects pytest paths")
     ap.add_argument("--coverage", action="store_true", help="Enable coverage reporting")
     ap.add_argument("--watch", action="store_true", help="Re-run on file changes")
     ap.add_argument("--list-suites", action="store_true", help="List available suites")
@@ -288,6 +313,8 @@ def main() -> None:
         selected.append("database")
     if args.chat:
         selected.append("chat")
+    if args.ai_projects:
+        selected.append("ai_projects")
 
     if not selected:
         selected = ["unit"]  # Default to unit tests

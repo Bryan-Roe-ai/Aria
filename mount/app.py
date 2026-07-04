@@ -3,42 +3,55 @@ QAI Integration Service - FastAPI Application
 Unified API for quantum AI, chat, and training operations
 """
 
-import sys
+import asyncio
+import logging
+import time
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from uuid import uuid4
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-# Add mount directory to path for local imports
-sys.path.insert(0, str(Path(__file__).parent))
+try:
+    from .chat_integration import ChatIntegration
+    from .path_resolver import load_qai_config
+    from .quantum_integration import QuantumIntegration
+    from .training_integration import TrainingIntegration
+except ImportError:
+    # Support direct script execution (python mount/app.py).
+    from chat_integration import ChatIntegration
+    from path_resolver import load_qai_config
+    from quantum_integration import QuantumIntegration
+    from training_integration import TrainingIntegration
 
-from chat_integration import ChatIntegration
-from path_resolver import load_qai_config
-from quantum_integration import QuantumIntegration
-from training_integration import TrainingIntegration
+
+logger = logging.getLogger("qai.fastapi")
+startup_time_utc = datetime.now(timezone.utc)
+DEFAULT_CHECK_TIMEOUT_SECONDS = 3.0
 
 
 # Pydantic models for request/response
 class ChatRequest(BaseModel):
-    message: str
-    provider: Optional[str] = None
+    message: str = Field(min_length=1, max_length=8000)
+    provider: str | None = None
     stream: bool = False
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
 
 class ChatResponse(BaseModel):
     success: bool
-    provider: Optional[str] = None
-    message: Optional[str] = None
-    response: Optional[str] = None
-    conversation_id: Optional[str] = None
-    timestamp: Optional[str] = None
-    error: Optional[str] = None
+    provider: str | None = None
+    message: str | None = None
+    response: str | None = None
+    conversation_id: str | None = None
+    timestamp: str | None = None
+    error: str | None = None
 
 
 class TrainQuantumRequest(BaseModel):
@@ -57,7 +70,7 @@ class TrainLoRARequest(BaseModel):
 
 
 class OrchestratorRequest(BaseModel):
-    job_name: Optional[str] = None
+    job_name: str | None = None
     dry_run: bool = False
 
 
@@ -92,6 +105,73 @@ app = FastAPI(
     version=config["service"]["version"],
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def request_context_middleware(request: Request, call_next):
+    """Attach request id + latency headers and emit concise request logs."""
+    request_id = request.headers.get("x-request-id") or str(uuid4())
+    request.state.request_id = request_id
+    start_time = time.perf_counter()
+
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
+        logger.exception(
+            "request_failed request_id=%s method=%s path=%s duration_ms=%.2f",
+            request_id,
+            request.method,
+            request.url.path,
+            elapsed_ms,
+        )
+        raise
+
+    elapsed_ms = (time.perf_counter() - start_time) * 1000
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Process-Time-Ms"] = f"{elapsed_ms:.2f}"
+
+    logger.info(
+        "request_complete request_id=%s method=%s path=%s status=%s duration_ms=%.2f",
+        request_id,
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed_ms,
+    )
+    return response
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_with_request_id(request: Request, exc: HTTPException):
+    """Preserve default FastAPI HTTP errors while including request id."""
+    response = await http_exception_handler(request, exc)
+    request_id = getattr(request.state, "request_id", None)
+    if request_id:
+        response.headers["X-Request-ID"] = request_id
+    return response
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Return stable error shape for unhandled exceptions."""
+    request_id = getattr(request.state, "request_id", str(uuid4()))
+    logger.exception(
+        "unhandled_exception request_id=%s method=%s path=%s",
+        request_id,
+        request.method,
+        request.url.path,
+        exc_info=exc,
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error",
+            "request_id": request_id,
+        },
+        headers={"X-Request-ID": request_id},
+    )
+
 
 # CORS configuration
 if config["api"]["cors_enabled"]:
@@ -139,26 +219,104 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
+    now = datetime.now(timezone.utc)
     return {
         "status": "healthy",
         "service": config["service"]["name"],
         "version": config["service"]["version"],
+        "timestamp": now.isoformat(),
+        "startup_time": startup_time_utc.isoformat(),
+        "uptime_seconds": int((now - startup_time_utc).total_seconds()),
     }
+
+
+@app.get("/health/live")
+async def liveness_check():
+    """Liveness probe indicating process is running."""
+    return {
+        "status": "alive",
+        "service": config["service"]["name"],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+async def _run_component_check(
+    name: str,
+    getter,
+    *,
+    timeout_seconds: float = DEFAULT_CHECK_TIMEOUT_SECONDS,
+) -> tuple[str, str, dict | None]:
+    """Run a component status getter with timeout and normalized result."""
+    try:
+        data = await asyncio.wait_for(getter(), timeout=timeout_seconds)
+        return name, "ok", data
+    except asyncio.TimeoutError:
+        logger.warning("component_check_timeout component=%s", name)
+        return name, f"error: timeout>{timeout_seconds:.1f}s", None
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("component_check_failed component=%s error=%s", name, type(exc).__name__)
+        return name, f"error: {type(exc).__name__}", None
+
+
+@app.get("/health/ready")
+async def readiness_check():
+    """Readiness probe that validates integration modules are responsive."""
+    checks: dict[str, str] = {}
+    status_code = 200
+
+    results = await asyncio.gather(
+        _run_component_check("quantum", quantum_integration.get_status),
+        _run_component_check("chat", chat_integration.get_status),
+        _run_component_check("training", training_integration.get_status),
+    )
+    for name, state, _ in results:
+        checks[name] = state
+        if state != "ok":
+            status_code = 503
+
+    body = {
+        "status": "ready" if status_code == 200 else "degraded",
+        "service": config["service"]["name"],
+        "version": config["service"]["version"],
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "checks": checks,
+    }
+
+    if status_code == 200:
+        return body
+    return JSONResponse(status_code=status_code, content=body)
 
 
 @app.get("/status")
 async def get_full_status():
     """Get comprehensive system status"""
-    quantum_status = await quantum_integration.get_status()
-    chat_status = await chat_integration.get_status()
-    training_status = await training_integration.get_status()
+    now = datetime.now(timezone.utc)
+    results = await asyncio.gather(
+        _run_component_check("quantum", quantum_integration.get_status),
+        _run_component_check("chat", chat_integration.get_status),
+        _run_component_check("training", training_integration.get_status),
+    )
+
+    checks: dict[str, str] = {}
+    details: dict[str, dict | None] = {}
+    degraded = False
+    for name, state, payload in results:
+        checks[name] = state
+        details[name] = payload
+        if state != "ok":
+            degraded = True
 
     return {
         "service": config["service"]["name"],
         "version": config["service"]["version"],
-        "quantum": quantum_status,
-        "chat": chat_status,
-        "training": training_status,
+        "status": "degraded" if degraded else "healthy",
+        "timestamp": now.isoformat(),
+        "startup_time": startup_time_utc.isoformat(),
+        "uptime_seconds": int((now - startup_time_utc).total_seconds()),
+        "checks": checks,
+        "quantum": details["quantum"],
+        "chat": details["chat"],
+        "training": details["training"],
     }
 
 
@@ -190,9 +348,7 @@ async def list_quantum_backends():
 
 
 @app.post("/quantum/train")
-async def train_quantum_classifier(
-    request: TrainQuantumRequest, background_tasks: BackgroundTasks
-):
+async def train_quantum_classifier(request: TrainQuantumRequest, background_tasks: BackgroundTasks):
     """Train a quantum classifier"""
     result = await quantum_integration.train_classifier(
         dataset=request.dataset,
@@ -211,9 +367,7 @@ async def run_quantum_autorun(request: OrchestratorRequest):
     if not normalized_job_name:
         raise HTTPException(status_code=400, detail="job_name is required")
 
-    result = await quantum_integration.run_autorun_job(
-        job_name=normalized_job_name, dry_run=request.dry_run
-    )
+    result = await quantum_integration.run_autorun_job(job_name=normalized_job_name, dry_run=request.dry_run)
     return result
 
 
@@ -307,9 +461,7 @@ async def train_lora(request: TrainLoRARequest, background_tasks: BackgroundTask
 @app.post("/training/autotrain")
 async def run_autotrain(request: OrchestratorRequest):
     """Run AutoTrain orchestrator"""
-    result = await training_integration.run_autotrain(
-        job_name=request.job_name, dry_run=request.dry_run
-    )
+    result = await training_integration.run_autotrain(job_name=request.job_name, dry_run=request.dry_run)
     return result
 
 
@@ -350,8 +502,10 @@ async def get_training_metrics(run_name: str):
 if __name__ == "__main__":
     import uvicorn
 
+    app_import = "mount.app:app" if __package__ else "app:app"
+
     uvicorn.run(
-        "app:app",
+        app_import,
         host=config["service"]["host"],
         port=config["service"]["port"],
         reload=config["service"]["debug"],

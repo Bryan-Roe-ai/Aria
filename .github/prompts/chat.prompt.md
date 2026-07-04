@@ -4,6 +4,7 @@ name: "Chat"
 argument-hint: "Message + optional provider and memory context (example: provider + message or question)"
 agent: chat-provider
 ---
+
 # Chat
 
 Start a chat conversation using the Aria platform's multi-provider system with semantic memory.
@@ -18,13 +19,13 @@ Start a chat conversation using the Aria platform's multi-provider system with s
 
 ## Provider Configuration
 
-| Provider | Required Env Vars |
-| ---------- | ------------------ |
+| Provider     | Required Env Vars                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------ |
 | Azure OpenAI | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION` |
-| OpenAI | `OPENAI_API_KEY` |
-| LMStudio | `LMSTUDIO_BASE_URL` |
-| LoRA | `--provider lora` + adapter path |
-| Local | None (zero-dependency fallback) |
+| OpenAI       | `OPENAI_API_KEY`                                                                                       |
+| LMStudio     | `LMSTUDIO_BASE_URL`                                                                                    |
+| LoRA         | `--provider lora` + adapter path                                                                       |
+| Local        | None (zero-dependency fallback)                                                                        |
 
 ## Memory Modes
 

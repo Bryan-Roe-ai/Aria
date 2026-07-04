@@ -7,6 +7,7 @@ argument-hint: "Describe the symptom: context overflow, messages truncated, prun
 # Token Budget Debug Workflow
 
 ## What This Skill Produces
+
 - Root cause for token counting mismatches across tiktoken / AutoTokenizer / heuristic paths
 - Diagnosis of incorrect `reserve_output_tokens` or context window defaulting
 - Explanation of why messages were or weren't pruned using `PruneStats`
@@ -15,6 +16,7 @@ argument-hint: "Describe the symptom: context overflow, messages truncated, prun
 ## When to Use
 
 Trigger phrases:
+
 - "response is getting cut off"
 - "context window overflow"
 - "too many messages being removed"
@@ -31,6 +33,7 @@ Trigger phrases:
 ## Procedure
 
 ### Step 1 — Identify which counting path is executing
+
 ```python
 from token_utils import count_messages_tokens
 
@@ -45,6 +48,7 @@ from token_utils import count_messages_tokens
 ```
 
 ### Step 2 — Verify context window is not defaulting incorrectly
+
 ```python
 # Known context windows:
 MODEL_DEFAULTS = {
@@ -60,6 +64,7 @@ MODEL_DEFAULTS = {
 ```
 
 ### Step 3 — Capture and inspect PruneStats
+
 ```python
 pruned_msgs, stats, system_msg = prune_messages(
     messages,
@@ -79,9 +84,11 @@ print(stats)
 #   "reserve_output_tokens": 1024
 # }
 ```
+
 If `removed_count` is unexpectedly high, compare `original_tokens` to `budget`.
 
 ### Step 4 — Check system message preservation
+
 ```python
 # System messages are NEVER pruned — they survive any prune run
 # If system_msg is None after prune_messages():
@@ -92,6 +99,7 @@ If `removed_count` is unexpectedly high, compare `original_tokens` to `budget`.
 ### Step 5 — Audit reserve_output_tokens
 
 The default reserve is 1024 tokens. If the model needs long completions:
+
 ```python
 # For large code generation, increase reserve:
 reserve_output_tokens = 4096  # leaves more room for structured output
@@ -103,6 +111,7 @@ reserve_output_tokens = 4096  # leaves more room for structured output
 ### Step 6 — Debug heuristic fallback accuracy
 
 When tiktoken is not available:
+
 ```python
 # Heuristic: 1 token ≈ 4 chars (intentionally conservative)
 # Dense code or JSON will have more tokens than the heuristic predicts
@@ -118,14 +127,17 @@ print(enc.encode("hello world"))
 ```
 
 ### Step 7 — Log PruneStats on every prune
+
 ```python
 # Coding convention: always log stats when pruning occurs
 if stats["removed_count"] > 0:
     logger.info(f"Messages pruned: {stats}")
 ```
+
 This creates an audit trail for debugging truncation issues in production.
 
 ## Quality Checks
+
 - [ ] Model name passed explicitly — not relying on default window size
 - [ ] `reserve_output_tokens` set appropriately for expected completion length (≥ 1024)
 - [ ] System prompt present in messages or passed via `system_prompt` kwarg

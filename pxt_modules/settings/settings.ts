@@ -1,37 +1,36 @@
 namespace settings {
-    const RUN_KEY = "#run";
-    const SCOPE_KEY = "#scope";
-    const DEVICE_SECRETS_KEY = "#secrets";
-    const SECRETS_KEY = "__secrets";
+    const RUN_KEY = "#run"
+    const SCOPE_KEY = "#scope"
+    const DEVICE_SECRETS_KEY = "#secrets"
+    const SECRETS_KEY = "__secrets"
 
     //% shim=pxt::seedAddRandom
-    declare function seedAddRandom(n: number): void;
+    declare function seedAddRandom(n: number): void
 
     //% shim=settings::_set
-    declare function _set(key: string, data: Buffer): int32;
+    declare function _set(key: string, data: Buffer): int32
 
     //% shim=settings::_remove
-    declare function _remove(key: string): int32;
+    declare function _remove(key: string): int32
 
     //% shim=settings::_exists
-    declare function _exists(key: string): boolean;
+    declare function _exists(key: string): boolean
 
     //% shim=settings::_get
-    declare function _get(key: string): Buffer;
+    declare function _get(key: string): Buffer
 
     //% shim=settings::_userClean
-    declare function _userClean(): void;
+    declare function _userClean(): void
 
     //% shim=settings::_list
-    declare function _list(prefix: string): string[];
+    declare function _list(prefix: string): string[]
 
     export function runNumber() {
         return readNumber(RUN_KEY) || 0
     }
 
     function setScope(scope: string) {
-        if (!scope || scope.length > 100)
-            control.panic(922)
+        if (!scope || scope.length > 100) control.panic(922)
         const currScope = readString(SCOPE_KEY)
         if (currScope != scope) {
             _userClean()
@@ -110,10 +109,8 @@ namespace settings {
      */
     export function readString(key: string) {
         const buf = readBuffer(key)
-        if (!buf)
-            return undefined
-        else
-            return buf.toString()
+        if (!buf) return undefined
+        else return buf.toString()
     }
 
     /**
@@ -121,8 +118,7 @@ namespace settings {
      */
     export function readJSON(key: string) {
         const s = readString(key)
-        if (s)
-            return JSON.parse(s)
+        if (s) return JSON.parse(s)
         return undefined
     }
 
@@ -131,12 +127,10 @@ namespace settings {
      */
     export function readNumber(key: string) {
         const buf = readBuffer(key)
-        if (!buf)
-            return undefined
+        if (!buf) return undefined
         else {
             const nums = msgpack.unpackNumberArray(buf)
-            if (nums && nums.length >= 1)
-                return nums[0]
+            if (nums && nums.length >= 1) return nums[0]
             return undefined
         }
     }
@@ -146,10 +140,8 @@ namespace settings {
      */
     export function readNumberArray(key: string) {
         const buf = readBuffer(key)
-        if (!buf)
-            return undefined
-        else
-            return msgpack.unpackNumberArray(buf)
+        if (!buf) return undefined
+        else return msgpack.unpackNumberArray(buf)
     }
 
     /**
@@ -184,46 +176,42 @@ namespace settings {
     }
 
     function jsonMergeFrom(trg: any, src: any) {
-        if (!src) return;
+        if (!src) return
         const keys = Object.keys(src)
         keys.forEach(k => {
-            const srck = src[k];
-            if (isKV(trg[k]) && isKV(srck))
-                jsonMergeFrom(trg[k], srck);
-            else
-                trg[k] = clone(srck);
-        });
+            const srck = src[k]
+            if (isKV(trg[k]) && isKV(srck)) jsonMergeFrom(trg[k], srck)
+            else trg[k] = clone(srck)
+        })
     }
 
     //% fixedInstances
     export class SecretStore {
-        constructor(private key: string) { }
+        constructor(private key: string) {}
 
         setSecret(name: string, value: any) {
-            const secrets = this.readSecrets();
-            secrets[name] = value;
-            writeJSON(this.key, secrets);
+            const secrets = this.readSecrets()
+            secrets[name] = value
+            writeJSON(this.key, secrets)
         }
 
         updateSecret(name: string, value: any) {
-            const secrets = this.readSecrets();
-            const secret = secrets[name];
-            if (secret === undefined)
-                secrets[name] = value;
-            else jsonMergeFrom(secret, value);
+            const secrets = this.readSecrets()
+            const secret = secrets[name]
+            if (secret === undefined) secrets[name] = value
+            else jsonMergeFrom(secret, value)
             writeJSON(this.key, secrets)
         }
 
         readSecret(name: string, ensure: boolean = false): any {
-            const secrets = this.readSecrets();
-            const secret = secrets[name];
-            if (ensure && !secret)
-                throw "missing secret " + name;
-            return secret;
+            const secrets = this.readSecrets()
+            const secret = secrets[name]
+            if (ensure && !secret) throw "missing secret " + name
+            return secret
         }
 
         clearSecrets() {
-            writeString(this.key, "{}");
+            writeString(this.key, "{}")
         }
 
         readSecrets(): any {
@@ -231,7 +219,7 @@ namespace settings {
                 return readJSON(this.key) || {}
             } catch {
                 control.dmesg("invalid secret format")
-                return {};
+                return {}
             }
         }
     }
@@ -240,11 +228,11 @@ namespace settings {
      * Secrets shared by any program on the device
      */
     //% fixedInstance whenUsed block="device secrets"
-    export const deviceSecrets = new SecretStore(DEVICE_SECRETS_KEY);
+    export const deviceSecrets = new SecretStore(DEVICE_SECRETS_KEY)
 
     /**
      * Program secrets
      */
     //% fixedInstance whenUsed block="program secrets"
-    export const programSecrets = new SecretStore(SECRETS_KEY);
+    export const programSecrets = new SecretStore(SECRETS_KEY)
 }

@@ -32,7 +32,7 @@ import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT_PATH = REPO_ROOT / "scripts" / "autonomous_code_agent.py"
@@ -49,7 +49,7 @@ STATE_FILE = STATE_DIR / "state.json"
 class QueueTask:
     task: str
     llm_type: str = "echo"
-    model: Optional[str] = None
+    model: str | None = None
     dry_run: bool = False
     skip_tests: bool = False
 
@@ -64,7 +64,7 @@ def _ensure_dirs() -> None:
         QUEUE_FILE.write_text("", encoding="utf-8")
 
 
-def _read_pid() -> Optional[int]:
+def _read_pid() -> int | None:
     if not PID_FILE.exists():
         return None
     try:
@@ -73,7 +73,7 @@ def _read_pid() -> Optional[int]:
         return None
 
 
-def _is_running(pid: Optional[int]) -> bool:
+def _is_running(pid: int | None) -> bool:
     if pid is None:
         return False
     try:

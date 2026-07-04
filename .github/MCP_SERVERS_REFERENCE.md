@@ -42,11 +42,11 @@ GitHub Copilot Chat
 
 ### Server Locations
 
-| Server | Path | Status |
-| -------- | ------ | -------- |
-| quantum-ai | `ai-projects/quantum-ml/quantum_mcp_server.py` | ✅ Active |
-| llm-maker | `ai-projects/llm-maker/llm_maker_mcp_server.py` | ✅ Active |
-| task-complete | `scripts/task_complete_mcp_server.py` | ✅ Active |
+| Server        | Path                                            | Status    |
+| ------------- | ----------------------------------------------- | --------- |
+| quantum-ai    | `ai-projects/quantum-ml/quantum_mcp_server.py`  | ✅ Active |
+| llm-maker     | `ai-projects/llm-maker/llm_maker_mcp_server.py` | ✅ Active |
+| task-complete | `scripts/task_complete_mcp_server.py`           | ✅ Active |
 
 ### Configuration
 
@@ -54,29 +54,33 @@ All servers are configured in `.vscode/mcp.json`:
 
 ```json
 {
-  "servers": {
-    "quantum-ai": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml"
-      }
-    },
-    "llm-maker": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
-      }
-    },
-    "task-complete": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"]
+    "servers": {
+        "quantum-ai": {
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml"
+            }
+        },
+        "llm-maker": {
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": [
+                "${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}"
+            }
+        },
+        "task-complete": {
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": ["${workspaceFolder}/scripts/task_complete_mcp_server.py"]
+        }
     }
-  }
 }
 ```
 
@@ -458,16 +462,16 @@ Add to `.vscode/mcp.json`:
 
 ```json
 {
-  "servers": {
-    "my-server": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": ["${workspaceFolder}/scripts/my_mcp_server.py"],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}"
-      }
+    "servers": {
+        "my-server": {
+            "type": "stdio",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "args": ["${workspaceFolder}/scripts/my_mcp_server.py"],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        }
     }
-  }
 }
 ```
 
@@ -480,6 +484,7 @@ Add to `.vscode/mcp.json`:
 ### Step 4: Test
 
 In Copilot Chat:
+
 ```
 @my-server hello world
 ```
@@ -491,6 +496,7 @@ In Copilot Chat:
 **Symptom**: MCP tools not available in Copilot Chat
 
 **Diagnosis**:
+
 ```bash
 # Check if MCP configuration is valid JSON
 python3 -m json.tool .vscode/mcp.json
@@ -502,6 +508,7 @@ ls scripts/task_complete_mcp_server.py
 ```
 
 **Solutions**:
+
 1. Verify `.vscode/mcp.json` is valid JSON (no trailing commas)
 2. Ensure Python files are executable: `chmod +x *.py`
 3. Reload VS Code: `Ctrl+Shift+P` → "Reload Window"
@@ -512,12 +519,14 @@ ls scripts/task_complete_mcp_server.py
 **Symptom**: "Failed to start MCP server"
 
 **Check logs**:
+
 ```bash
 # Run server manually to see errors
 .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py 2>&1 | head -20
 ```
 
 **Common Issues**:
+
 - Missing dependencies: Install with `pip install -r requirements.txt`
 - Wrong Python path: Verify PYTHONPATH in mcp.json
 - Port conflict: Check if port is already in use
@@ -527,6 +536,7 @@ ls scripts/task_complete_mcp_server.py
 **Symptom**: MCP tools take a long time to respond
 
 **Optimizations**:
+
 1. **Enable caching**: Check if server has caching enabled
 2. **Reduce scope**: Use specific requests instead of broad ones
 3. **Check resources**: Monitor CPU/memory during execution
@@ -537,6 +547,7 @@ ls scripts/task_complete_mcp_server.py
 **Symptom**: MCP server crashes mid-execution
 
 **Debugging**:
+
 1. Check stdout/stderr for error messages
 2. Review server logs: `cat data_out/mcp_server.log`
 3. Test server isolation (run alone without Copilot)
@@ -547,11 +558,13 @@ ls scripts/task_complete_mcp_server.py
 ### 1. Use Agents for Server Routing
 
 Instead of:
+
 ```
 Use the quantum-ai MCP server to create a circuit
 ```
 
 Do:
+
 ```
 @quantum-ai Create a Bell state circuit
 ```
@@ -572,6 +585,7 @@ If quantum-ai is unavailable:
 ### 3. Monitor Server Health
 
 Before critical tasks:
+
 ```bash
 # Quick health check
 .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py <<< '{}' | head -3

@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -44,7 +44,7 @@ class ReasoningAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
     ) -> None:
         self.memory = memory
         self.llm = llm or LLMClient()
@@ -52,18 +52,13 @@ class ReasoningAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"reason", "explain", "chain_of_thought"}
 
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         payload = task.payload or {}
-        question: str = (
-            payload.get("question")
-            or payload.get("prompt")
-            or payload.get("text")
-            or ""
-        ).strip()
+        question: str = (payload.get("question") or payload.get("prompt") or payload.get("text") or "").strip()
         num_steps: int = max(1, int(payload.get("num_steps", _DEFAULT_NUM_STEPS)))
 
         if not question:
-            result: Dict[str, Any] = {
+            result: dict[str, Any] = {
                 "agent": self.name,
                 "task_id": task.id,
                 "steps": [],
@@ -83,7 +78,7 @@ class ReasoningAgent(BaseAgent):
 
         return reasoning
 
-    def _reason(self, question: str, num_steps: int) -> Dict[str, Any]:
+    def _reason(self, question: str, num_steps: int) -> dict[str, Any]:
         truncated = question[:_MAX_INPUT_CHARS]
         messages = [
             {
@@ -98,10 +93,7 @@ class ReasoningAgent(BaseAgent):
             },
             {
                 "role": "user",
-                "content": (
-                    f"Reason through the following in {num_steps} explicit steps:\n"
-                    f"{truncated}"
-                ),
+                "content": (f"Reason through the following in {num_steps} explicit steps:\n{truncated}"),
             },
         ]
 
@@ -113,8 +105,8 @@ class ReasoningAgent(BaseAgent):
 
         return self._parse_reasoning(raw)
 
-    def _parse_reasoning(self, raw: str) -> Dict[str, Any]:
-        fallback: Dict[str, Any] = {
+    def _parse_reasoning(self, raw: str) -> dict[str, Any]:
+        fallback: dict[str, Any] = {
             "steps": ["Reasoning unavailable"],
             "conclusion": "Could not complete reasoning chain.",
             "confidence": 0.0,
@@ -123,7 +115,7 @@ class ReasoningAgent(BaseAgent):
         if not raw or not raw.strip():
             return fallback
 
-        def _extract(data: Any) -> Dict[str, Any] | None:
+        def _extract(data: Any) -> dict[str, Any] | None:
             if not isinstance(data, dict):
                 return None
             if not any(k in data for k in ("steps", "conclusion")):
@@ -132,9 +124,7 @@ class ReasoningAgent(BaseAgent):
             if not isinstance(steps, list):
                 steps = [str(steps)]
             conclusion = str(data.get("conclusion", "")).strip()
-            confidence = float(
-                max(0.0, min(1.0, float(data.get("confidence", 0.5))))
-            )
+            confidence = float(max(0.0, min(1.0, float(data.get("confidence", 0.5)))))
             return {
                 "steps": [str(s) for s in steps],
                 "conclusion": conclusion or "No conclusion reached.",

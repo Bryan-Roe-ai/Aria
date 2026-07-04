@@ -32,45 +32,25 @@ np.random.seed(42)
 # Dataset configurations matching quantum training
 DATASETS = {
     "banknote": {
-        "path": (
-            Path(__file__).parent.parent
-            / "datasets"
-            / "quantum"
-            / "banknote.csv"
-        ),
+        "path": (Path(__file__).parent.parent / "datasets" / "quantum" / "banknote.csv"),
         "target_col": -1,  # Last column
         "n_features": 4,
         "has_header": False,
     },
     "ionosphere": {
-        "path": (
-            Path(__file__).parent.parent
-            / "datasets"
-            / "quantum"
-            / "ionosphere.csv"
-        ),
+        "path": (Path(__file__).parent.parent / "datasets" / "quantum" / "ionosphere.csv"),
         "target_col": -1,  # Last column
         "n_features": 4,
         "has_header": False,
     },
     "sonar": {
-        "path": (
-            Path(__file__).parent.parent
-            / "datasets"
-            / "quantum"
-            / "sonar.csv"
-        ),
+        "path": (Path(__file__).parent.parent / "datasets" / "quantum" / "sonar.csv"),
         "target_col": -1,  # Last column
         "n_features": 4,
         "has_header": False,
     },
     "heart_disease": {
-        "path": (
-            Path(__file__).parent.parent
-            / "datasets"
-            / "quantum"
-            / "heart_disease.csv"
-        ),
+        "path": (Path(__file__).parent.parent / "datasets" / "quantum" / "heart_disease.csv"),
         "target_col": -1,  # Last column
         "n_features": 4,
         "missing_values": ["?"],
@@ -82,9 +62,7 @@ DATASETS = {
 CLASSICAL_MODELS = {
     "SVM (RBF)": SVC(kernel="rbf", C=1.0, gamma="scale", random_state=42),
     "SVM (Linear)": SVC(kernel="linear", C=1.0, random_state=42),
-    "Random Forest": RandomForestClassifier(
-        n_estimators=100, max_depth=10, random_state=42
-    ),
+    "Random Forest": RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42),
     "Neural Network": MLPClassifier(
         hidden_layer_sizes=(16,),
         activation="relu",
@@ -106,9 +84,9 @@ QUANTUM_RESULTS = {
 
 def load_and_preprocess_dataset(dataset_name, config):
     """Load and preprocess a dataset matching quantum training procedure"""
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"📁 Loading {dataset_name.upper()} Dataset")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
 
     dataset_path = config["path"]
     if not dataset_path.exists():
@@ -119,9 +97,7 @@ def load_and_preprocess_dataset(dataset_name, config):
     header = "infer" if has_header else None
 
     if "missing_values" in config:
-        df = pd.read_csv(
-            dataset_path, header=header, na_values=config["missing_values"]
-        )
+        df = pd.read_csv(dataset_path, header=header, na_values=config["missing_values"])
     else:
         df = pd.read_csv(dataset_path, header=header)
 
@@ -160,9 +136,7 @@ def load_and_preprocess_dataset(dataset_name, config):
     print(f"   Classes: {len(np.unique(y))} ({np.bincount(y)})")
 
     # Train/test split (80/20 like quantum training)
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
     # Standardize features
     scaler = StandardScaler()
@@ -176,10 +150,7 @@ def load_and_preprocess_dataset(dataset_name, config):
     X_test_final = pca.transform(X_test_scaled)
 
     explained_variance = pca.explained_variance_ratio_.sum() * 100
-    print(
-        "   ✅ Reduced to "
-        f"{n_features} features (PCA variance: {explained_variance:.2f}%)"
-    )
+    print(f"   ✅ Reduced to {n_features} features (PCA variance: {explained_variance:.2f}%)")
     print(f"   Train: {X_train_final.shape}, Test: {X_test_final.shape}")
 
     return X_train_final, X_test_final, y_train, y_test
@@ -200,13 +171,11 @@ def train_classical_model(model_name, model, X_train, X_test, y_train, y_test):
     train_acc = accuracy_score(y_train, y_pred_train)
     test_acc = accuracy_score(y_test, y_pred_test)
 
-    print(f"   Train Accuracy: {train_acc:.4f} ({train_acc*100:.2f}%)")
-    print(f"   Test Accuracy:  {test_acc:.4f} ({test_acc*100:.2f}%)")
+    print(f"   Train Accuracy: {train_acc:.4f} ({train_acc * 100:.2f}%)")
+    print(f"   Test Accuracy:  {test_acc:.4f} ({test_acc * 100:.2f}%)")
 
     # Classification report
-    report = classification_report(
-        y_test, y_pred_test, output_dict=True, zero_division=0
-    )
+    report = classification_report(y_test, y_pred_test, output_dict=True, zero_division=0)
 
     return {
         "model_name": model_name,
@@ -218,20 +187,17 @@ def train_classical_model(model_name, model, X_train, X_test, y_train, y_test):
 
 def benchmark_dataset(dataset_name, config):
     """Benchmark all classical models on a dataset"""
-    print(f"\n{'#'*70}")
+    print(f"\n{'#' * 70}")
     print(f"# BENCHMARKING: {dataset_name.upper()}")
-    print(f"{'#'*70}")
+    print(f"{'#' * 70}")
 
     # Load data
-    X_train, X_test, y_train, y_test = load_and_preprocess_dataset(
-        dataset_name, config)
+    X_train, X_test, y_train, y_test = load_and_preprocess_dataset(dataset_name, config)
 
     # Train all classical models
     results = []
     for model_name, model in CLASSICAL_MODELS.items():
-        result = train_classical_model(
-            model_name, model, X_train, X_test, y_train, y_test
-        )
+        result = train_classical_model(model_name, model, X_train, X_test, y_train, y_test)
         result["dataset"] = dataset_name
         results.append(result)
 
@@ -248,11 +214,11 @@ def benchmark_dataset(dataset_name, config):
     )
 
     # Summary table
-    print(f"\n{'='*70}")
+    print(f"\n{'=' * 70}")
     print(f"📊 {dataset_name.upper()} - RESULTS SUMMARY")
-    print(f"{'='*70}")
+    print(f"{'=' * 70}")
     print(f"{'Model':<25} {'Test Accuracy':<15} {'vs Quantum':<15}")
-    print(f"{'-'*70}")
+    print(f"{'-' * 70}")
 
     for result in results:
         test_acc = result["test_accuracy"]
@@ -263,16 +229,13 @@ def benchmark_dataset(dataset_name, config):
         else:
             diff = test_acc - quantum_acc
             if diff > 0:
-                vs_quantum = f"+{diff*100:.2f}%"
+                vs_quantum = f"+{diff * 100:.2f}%"
             else:
-                vs_quantum = f"{diff*100:.2f}%"
+                vs_quantum = f"{diff * 100:.2f}%"
 
-        print(
-            f"{model_name:<25} {test_acc*100:>6.2f}% "
-            f"        {vs_quantum:<15}"
-        )
+        print(f"{model_name:<25} {test_acc * 100:>6.2f}%         {vs_quantum:<15}")
 
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
     return results
 
@@ -291,10 +254,7 @@ def generate_comparison_plots(all_results):
     for i, dataset in enumerate(datasets):
         dataset_results = [r for r in all_results if r["dataset"] == dataset]
         for j, model_name in enumerate(model_names):
-            model_result = next(
-                (r for r in dataset_results if r["model_name"]
-                 == model_name), None
-            )
+            model_result = next((r for r in dataset_results if r["model_name"] == model_name), None)
             if model_result:
                 accuracy_matrix[i, j] = model_result["test_accuracy"] * 100
 
@@ -321,8 +281,7 @@ def generate_comparison_plots(all_results):
         ax=ax1,
         cbar_kws={"label": "Accuracy (%)"},
     )
-    ax1.set_title("Accuracy Heatmap (All Models × All Datasets)",
-                  fontweight="bold")
+    ax1.set_title("Accuracy Heatmap (All Models × All Datasets)", fontweight="bold")
     ax1.set_ylabel("Dataset", fontweight="bold")
     ax1.set_xlabel("Model", fontweight="bold")
 
@@ -344,9 +303,7 @@ def generate_comparison_plots(all_results):
 
     ax2.set_ylabel("Test Accuracy (%)", fontweight="bold")
     ax2.set_xlabel("Dataset", fontweight="bold")
-    ax2.set_title(
-        "Model Performance Comparison (Grouped by Dataset)", fontweight="bold"
-    )
+    ax2.set_title("Model Performance Comparison (Grouped by Dataset)", fontweight="bold")
     ax2.set_xticks(x)
     ax2.set_xticklabels([d.replace("_", " ").title() for d in datasets])
     ax2.legend(loc="lower right", fontsize=8)
@@ -356,10 +313,8 @@ def generate_comparison_plots(all_results):
     # Plot 3: Average performance
     ax3 = axes[1, 0]
     avg_accuracies = accuracy_matrix.mean(axis=0)
-    colors = ["#1f77b4"] * (len(model_names) - 1) + \
-        ["#ff7f0e"]  # Quantum in orange
-    bars = ax3.barh(model_names, avg_accuracies,
-                    color=colors, edgecolor="black")
+    colors = ["#1f77b4"] * (len(model_names) - 1) + ["#ff7f0e"]  # Quantum in orange
+    bars = ax3.barh(model_names, avg_accuracies, color=colors, edgecolor="black")
 
     # Add value labels
     for i, (bar, acc) in enumerate(zip(bars, avg_accuracies)):
@@ -375,9 +330,7 @@ def generate_comparison_plots(all_results):
     quantum_idx = model_names.index("Quantum Hybrid QNN")
     quantum_scores = accuracy_matrix[:, quantum_idx]
 
-    best_classical_scores = np.max(
-        np.delete(accuracy_matrix, quantum_idx, axis=1), axis=1
-    )
+    best_classical_scores = np.max(np.delete(accuracy_matrix, quantum_idx, axis=1), axis=1)
     advantages = quantum_scores - best_classical_scores
 
     colors_adv = ["green" if a > 0 else "red" for a in advantages]
@@ -394,10 +347,8 @@ def generate_comparison_plots(all_results):
         ax4.text(x_pos, i, f"{adv:+.2f}%", va="center", fontweight="bold")
 
     ax4.axvline(0, color="black", linewidth=2, linestyle="--")
-    ax4.set_xlabel(
-        "Quantum Advantage (% points vs Best Classical)", fontweight="bold")
-    ax4.set_title("Quantum vs Best Classical Model (by Dataset)",
-                  fontweight="bold")
+    ax4.set_xlabel("Quantum Advantage (% points vs Best Classical)", fontweight="bold")
+    ax4.set_title("Quantum vs Best Classical Model (by Dataset)", fontweight="bold")
     ax4.grid(axis="x", alpha=0.3)
 
     plt.tight_layout()
@@ -418,18 +369,11 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
 
     report = []
     report.append("# Classical vs Quantum ML - Benchmark Report")
-    report.append(
-        f"\n**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    report.append(f"\n**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     report.append("## Executive Summary\n")
-    report.append(
-        "This report compares quantum hybrid neural networks against "
-        "classical ML baselines "
-    )
-    report.append(
-        "across four quantum-classical datasets: banknote authentication, "
-        "ionosphere radar, "
-    )
+    report.append("This report compares quantum hybrid neural networks against classical ML baselines ")
+    report.append("across four quantum-classical datasets: banknote authentication, ionosphere radar, ")
     report.append("sonar detection, and heart disease diagnosis.\n")
 
     # Overall winner
@@ -438,20 +382,14 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
     best_model = model_names[best_model_idx]
     best_avg = avg_accuracies[best_model_idx]
 
-    report.append(
-        "**🏆 Best Overall Model:** "
-        f"{best_model} ({best_avg:.2f}% average accuracy)\n"
-    )
+    report.append(f"**🏆 Best Overall Model:** {best_model} ({best_avg:.2f}% average accuracy)\n")
 
     # Quantum performance
     quantum_idx = model_names.index("Quantum Hybrid QNN")
     quantum_avg = avg_accuracies[quantum_idx]
     quantum_rank = sorted(avg_accuracies, reverse=True).index(quantum_avg) + 1
 
-    report.append(
-        "**⚛️ Quantum Model:** Ranked #"
-        f"{quantum_rank} with {quantum_avg:.2f}% average accuracy\n"
-    )
+    report.append(f"**⚛️ Quantum Model:** Ranked #{quantum_rank} with {quantum_avg:.2f}% average accuracy\n")
 
     # Dataset-by-dataset results
     report.append("\n## Detailed Results by Dataset\n")
@@ -461,9 +399,7 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
         report.append(f"\n### {dataset.replace('_', ' ').title()}\n")
 
         dataset_results = [r for r in all_results if r["dataset"] == dataset]
-        sorted_results = sorted(
-            dataset_results, key=lambda x: x["test_accuracy"], reverse=True
-        )
+        sorted_results = sorted(dataset_results, key=lambda x: x["test_accuracy"], reverse=True)
 
         report.append("| Rank | Model | Test Accuracy | vs Quantum |")
         report.append("|------|-------|---------------|------------|")
@@ -478,13 +414,10 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
                 emoji = "⚛️"
             else:
                 diff = test_acc - quantum_acc
-                vs_quantum = f"{diff*100:+.2f}%"
+                vs_quantum = f"{diff * 100:+.2f}%"
                 emoji = "🥇" if rank == 1 else ""
 
-            report.append(
-                f"| {rank} | {emoji} {model_name} | "
-                f"{test_acc*100:.2f}% | {vs_quantum} |"
-            )
+            report.append(f"| {rank} | {emoji} {model_name} | {test_acc * 100:.2f}% | {vs_quantum} |")
 
         report.append("")
 
@@ -497,10 +430,7 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
     for rank, idx in enumerate(sorted_indices, 1):
         model_name = model_names[idx]
         avg_acc = avg_accuracies[idx]
-        emoji = (
-            "🥇" if rank == 1 else (
-                "🥈" if rank == 2 else ("🥉" if rank == 3 else ""))
-        )
+        emoji = "🥇" if rank == 1 else ("🥈" if rank == 2 else ("🥉" if rank == 3 else ""))
         if model_name == "Quantum Hybrid QNN":
             emoji += " ⚛️"
         report.append(f"| {rank} | {emoji} {model_name} | {avg_acc:.2f}% |")
@@ -508,21 +438,14 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
     # Key insights
     report.append("\n## Key Insights\n")
 
-    quantum_wins = sum(
-        1
-        for i in range(len(datasets))
-        if accuracy_matrix[i, quantum_idx] == accuracy_matrix[i].max()
-    )
+    quantum_wins = sum(1 for i in range(len(datasets)) if accuracy_matrix[i, quantum_idx] == accuracy_matrix[i].max())
 
-    report.append(
-        f"- **Quantum Model Won:** {quantum_wins}/{len(datasets)} datasets\n")
+    report.append(f"- **Quantum Model Won:** {quantum_wins}/{len(datasets)} datasets\n")
 
     best_quantum_dataset = datasets[np.argmax(accuracy_matrix[:, quantum_idx])]
     best_quantum_acc = accuracy_matrix[:, quantum_idx].max()
     report.append(
-        "- **Best Quantum Performance:** "
-        f"{best_quantum_dataset.replace('_', ' ').title()} "
-        f"({best_quantum_acc:.2f}%)\n"
+        f"- **Best Quantum Performance:** {best_quantum_dataset.replace('_', ' ').title()} ({best_quantum_acc:.2f}%)\n"
     )
 
     # Classical winner
@@ -532,51 +455,27 @@ def generate_markdown_report(all_results, accuracy_matrix, avg_accuracies):
     best_classical = classical_names[best_classical_idx]
     best_classical_avg = classical_avg[best_classical_idx]
 
-    report.append(
-        "- **Best Classical Model:** "
-        f"{best_classical} ({best_classical_avg:.2f}% average)\n"
-    )
+    report.append(f"- **Best Classical Model:** {best_classical} ({best_classical_avg:.2f}% average)\n")
 
     # Quantum advantage
     quantum_advantage = quantum_avg - best_classical_avg
     if quantum_advantage > 0:
-        report.append(
-            "- **⚛️ Quantum Advantage:** +"
-            f"{quantum_advantage:.2f}% over best classical\n"
-        )
+        report.append(f"- **⚛️ Quantum Advantage:** +{quantum_advantage:.2f}% over best classical\n")
     else:
-        report.append(
-            "- **Classical Advantage:** "
-            f"{abs(quantum_advantage):.2f}% over quantum\n"
-        )
+        report.append(f"- **Classical Advantage:** {abs(quantum_advantage):.2f}% over quantum\n")
 
     # Recommendations
     report.append("\n## Recommendations\n")
 
     if quantum_wins >= len(datasets) / 2:
-        report.append(
-            "- ✅ **Quantum models show promise** on these datasets\n"
-        )
-        report.append(
-            "- 🚀 **Next step:** Deploy to Azure Quantum hardware for "
-            "validation\n"
-        )
+        report.append("- ✅ **Quantum models show promise** on these datasets\n")
+        report.append("- 🚀 **Next step:** Deploy to Azure Quantum hardware for validation\n")
     else:
-        report.append(
-            "- ⚠️ **Classical models outperform quantum** on average\n"
-        )
-        report.append(
-            "- 🔧 **Next step:** Optimize quantum hyperparameters and "
-            "entanglement patterns\n"
-        )
+        report.append("- ⚠️ **Classical models outperform quantum** on average\n")
+        report.append("- 🔧 **Next step:** Optimize quantum hyperparameters and entanglement patterns\n")
 
-    report.append(
-        "- 📊 **Hyperparameter tuning** could improve both classical and "
-        "quantum models\n"
-    )
-    report.append(
-        "- 🔄 **Cross-validation** would provide more robust estimates\n"
-    )
+    report.append("- 📊 **Hyperparameter tuning** could improve both classical and quantum models\n")
+    report.append("- 🔄 **Cross-validation** would provide more robust estimates\n")
 
     # Save report
     results_dir = Path(__file__).parent / "results"
@@ -617,10 +516,7 @@ def main():
     print("=" * 70)
     print("  CLASSICAL vs QUANTUM ML - COMPREHENSIVE BENCHMARK")
     print("=" * 70)
-    print(
-        "\n🎯 Objective: Compare quantum hybrid models against "
-        "classical baselines"
-    )
+    print("\n🎯 Objective: Compare quantum hybrid models against classical baselines")
     print(f"   Datasets: {len(DATASETS)}")
     print(f"   Classical Models: {len(CLASSICAL_MODELS)}")
     print("   Quantum Model: Hybrid QNN (4 qubits, 2 layers)")

@@ -109,6 +109,7 @@ class AriaActionParser:
 ```
 
 **LLM Parsing Flow:**
+
 1. Build system prompt with action schema + current stage state
 2. Send command to LLM provider
 3. Extract JSON array from response
@@ -116,6 +117,7 @@ class AriaActionParser:
 5. Return validated action list
 
 **Fallback Parsing:**
+
 - Uses regex patterns similar to existing `generate_tags_fallback()`
 - Parses move, say, pickup, gesture commands
 - Returns structured actions without LLM
@@ -131,6 +133,7 @@ def execute_aria_action(action: dict) -> dict:
 ```
 
 **Execution Results:**
+
 ```json
 {
     "status": "success",
@@ -146,6 +149,7 @@ def execute_aria_action(action: dict) -> dict:
 Execute commands with automatic action generation.
 
 **Request:**
+
 ```json
 {
     "command": "Walk to the table and pick up the apple",
@@ -155,14 +159,15 @@ Execute commands with automatic action generation.
 ```
 
 **Response (Plan Only - auto_execute=false):**
+
 ```json
 {
     "status": "success",
     "message": "Parsed 2 actions (plan only)",
     "command": "Walk to the table and pick up the apple",
     "actions": [
-        {"action": "move", "target": {"x": 60, "y": 35}, "speed": "normal"},
-        {"action": "pickup", "object_id": "apple"}
+        { "action": "move", "target": { "x": 60, "y": 35 }, "speed": "normal" },
+        { "action": "pickup", "object_id": "apple" }
     ],
     "executed": false,
     "results": null,
@@ -172,19 +177,24 @@ Execute commands with automatic action generation.
 ```
 
 **Response (Executed - auto_execute=true):**
+
 ```json
 {
     "status": "success",
     "message": "Parsed 2 actions and executed",
     "command": "Walk to the table and pick up the apple",
     "actions": [
-        {"action": "move", "target": {"x": 60, "y": 35}, "speed": "normal"},
-        {"action": "pickup", "object_id": "apple"}
+        { "action": "move", "target": { "x": 60, "y": 35 }, "speed": "normal" },
+        { "action": "pickup", "object_id": "apple" }
     ],
     "executed": true,
     "results": [
         {
-            "action": {"action": "move", "target": {"x": 60, "y": 35}, "speed": "normal"},
+            "action": {
+                "action": "move",
+                "target": { "x": 60, "y": 35 },
+                "speed": "normal"
+            },
             "result": {
                 "status": "success",
                 "message": "Moved to (60, 35)",
@@ -192,7 +202,7 @@ Execute commands with automatic action generation.
             }
         },
         {
-            "action": {"action": "pickup", "object_id": "apple"},
+            "action": { "action": "pickup", "object_id": "apple" },
             "result": {
                 "status": "success",
                 "message": "Picked up apple",
@@ -200,22 +210,27 @@ Execute commands with automatic action generation.
             }
         }
     ],
-    "tags": ["[aria:position:60:35]", "[aria:pickup:apple]", "[aria:limb:right_arm:grab]"],
+    "tags": [
+        "[aria:position:60:35]",
+        "[aria:pickup:apple]",
+        "[aria:limb:right_arm:grab]"
+    ],
     "state": {
         "aria": {
-            "position": {"x": 60, "y": 35},
+            "position": { "x": 60, "y": 35 },
             "expression": "neutral",
             "held_object": "apple",
             "facing": "right"
         },
         "objects": {
-            "apple": {"position": {"x": 55, "y": 35}, "state": "held"}
+            "apple": { "position": { "x": 55, "y": 35 }, "state": "held" }
         }
     }
 }
 ```
 
 **Error Response:**
+
 ```json
 {
     "status": "error",
@@ -229,10 +244,10 @@ Execute commands with automatic action generation.
 Auto-detects available providers in order:
 
 1. **Azure OpenAI**: Requires all 4 env vars
-   - `AZURE_OPENAI_API_KEY`
-   - `AZURE_OPENAI_ENDPOINT`
-   - `AZURE_OPENAI_DEPLOYMENT`
-   - `AZURE_OPENAI_API_VERSION`
+    - `AZURE_OPENAI_API_KEY`
+    - `AZURE_OPENAI_ENDPOINT`
+    - `AZURE_OPENAI_DEPLOYMENT`
+    - `AZURE_OPENAI_API_VERSION`
 
 2. **OpenAI**: Requires `OPENAI_API_KEY`
 
@@ -241,6 +256,7 @@ Auto-detects available providers in order:
 4. **Local Echo**: Zero-dependency fallback
 
 **Check Provider Status:**
+
 ```bash
 curl http://localhost:8080/api/ai/status | jq '.active_provider'
 ```
@@ -271,6 +287,7 @@ stage_state = {
 ```
 
 **State Updates:**
+
 - `move` → updates `aria.position`
 - `say` → updates `aria.expression`
 - `pickup` → sets `aria.held_object`, updates `object.state` to "held"
@@ -281,21 +298,25 @@ stage_state = {
 ## Action Validation Rules
 
 ### Move Action
+
 - Target can be `{x, y}` position or object name
 - Position must be within stage bounds (0-100)
 - Updates Aria's position immediately
 
 ### Pickup Action
+
 - Aria must be within 30 units of object
 - Aria can only hold one object at a time
 - Object must exist in `stage_state.objects`
 
 ### Drop/Throw Actions
+
 - Aria must be holding an object
 - Updates object position and state
 - Clears `held_object`
 
 ### Gesture Action
+
 - Valid gestures: wave, bow, nod, shake, point, shrug, clap
 - Fallback to 'wave' if invalid
 
@@ -377,6 +398,7 @@ pytest tests/test_aria_auto_execute.py --cov=apps/aria --cov-report=html
 **Symptom**: Server logs show "✗ LLM providers not available"
 
 **Solution**:
+
 1. Check environment variables (Azure OpenAI or OpenAI keys)
 2. Verify `shared/chat_providers.py` is accessible
 3. System will automatically fall back to rule-based parsing
@@ -386,6 +408,7 @@ pytest tests/test_aria_auto_execute.py --cov=apps/aria --cov-report=html
 **Symptom**: API returns 0 actions or unexpected actions
 
 **Solution**:
+
 1. Try with `use_llm: false` to test fallback parser
 2. Check command clarity (be specific about objects and actions)
 3. Review server logs for parsing errors
@@ -395,12 +418,14 @@ pytest tests/test_aria_auto_execute.py --cov=apps/aria --cov-report=html
 **Symptom**: Actions return error status
 
 **Common Errors:**
+
 - "Too far from object" → Move Aria closer first
 - "Already holding an object" → Drop current object before pickup
 - "Not holding anything" → Pick up an object first
 - "Object not found" → Check object name spelling (apple, book, cup, ball, flower)
 
 **Debug:**
+
 ```python
 # Check current state
 curl http://localhost:8080/api/aria/state | jq

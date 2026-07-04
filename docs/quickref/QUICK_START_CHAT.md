@@ -29,20 +29,20 @@ func start
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-| ----- | -------- |
-| `Enter` | Send message |
-| `Shift + Enter` | New line |
-| `Ctrl + K` | New chat |
+| Key             | Action       |
+| --------------- | ------------ |
+| `Enter`         | Send message |
+| `Shift + Enter` | New line     |
+| `Ctrl + K`      | New chat     |
 
 ## Controls
 
-| Button | Function |
-| -------- | ---------- |
-| 🔄 New Chat | Start fresh |
-| 🗑️ Clear | Remove messages |
-| 💾 Export | Save as JSON |
-| 🌓 Theme | Toggle dark/light |
+| Button      | Function          |
+| ----------- | ----------------- |
+| 🔄 New Chat | Start fresh       |
+| 🗑️ Clear    | Remove messages   |
+| 💾 Export   | Save as JSON      |
+| 🌓 Theme    | Toggle dark/light |
 
 ## Try These Commands
 

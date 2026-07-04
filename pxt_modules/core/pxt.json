@@ -41,13 +41,11 @@
         "leveldetector.ts",
         "pxtparts.json"
     ],
-    "testFiles": [
-        "test.ts"
-    ],
+    "testFiles": ["test.ts"],
     "public": true,
     "targetVersions": {
-        "target": "4.0.12",
-        "pxt": "12.2.32"
+        "target": "4.0.14",
+        "pxt": "12.2.34"
     },
     "yotta": {
         "config": {
@@ -58,10 +56,7 @@
         }
     },
     "dalDTS": {
-        "includeDirs": [
-            "libraries/codal-core/inc",
-            "pxtapp"
-        ],
+        "includeDirs": ["libraries/codal-core/inc", "pxtapp"],
         "excludePrefix": [
             "JD_",
             "USB_",

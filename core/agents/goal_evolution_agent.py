@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from typing import Dict, Optional, Sequence
+from collections.abc import Sequence
 
 from core.agent import BaseAgent
 from core.llm.client import LLMClient
@@ -26,7 +26,7 @@ class GoalEvolutionAgent(BaseAgent):
     def __init__(
         self,
         memory: MemoryStore,
-        llm: Optional[LLMClient] = None,
+        llm: LLMClient | None = None,
         goal_horizon: str = "medium_term",
     ) -> None:
         self.memory = memory
@@ -36,7 +36,7 @@ class GoalEvolutionAgent(BaseAgent):
     def can_handle(self, task: Task) -> bool:
         return task.type in {"goal_evolve", "new_goal", "reflect"}
 
-    def execute(self, task: Task) -> Dict[str, object]:
+    def execute(self, task: Task) -> dict[str, object]:
         payload = task.payload or {}
         history = self.memory.last(30)
         horizon = str(payload.get("horizon") or self.goal_horizon)
@@ -65,7 +65,7 @@ class GoalEvolutionAgent(BaseAgent):
 
         return {"agent": self.name, "goal": goal, "task_id": task.id, "goal_horizon": horizon}
 
-    def _build_prompt(self, history: Sequence[Dict[str, object]], horizon: str) -> str:
+    def _build_prompt(self, history: Sequence[dict[str, object]], horizon: str) -> str:
         horizon_map = {
             "short": "Focus on immediate next actions and quick wins.",
             "short_term": "Focus on immediate next actions and quick wins.",

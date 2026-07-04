@@ -62,7 +62,10 @@ def test_respond_simulation():
     chat_history: list = []
     hist_state: list = []
     import types
-    gen = m.respond("hello", chat_history, hist_state, True, "auto", None, 0.5, 256, "English", "Aria", False, 100, "test")
+
+    gen = m.respond(
+        "hello", chat_history, hist_state, True, "auto", None, 0.5, 256, "English", "Aria", False, 100, "test"
+    )
     # respond is a generator-function (contains yield); collect final output
     if isinstance(gen, types.GeneratorType):
         last = None
@@ -70,7 +73,7 @@ def test_respond_simulation():
             while True:
                 last = next(gen)
         except StopIteration as e:
-            if hasattr(e, 'value') and e.value is not None:
+            if hasattr(e, "value") and e.value is not None:
                 last = e.value
         out = last
     else:
@@ -105,20 +108,28 @@ def test_provider_readiness_note_reflects_missing_configuration(monkeypatch):
     m = load_module()
     monkeypatch.delenv("QAI_QUANTUM_MODEL_PATH", raising=False)
     monkeypatch.delenv("QAI_QUANTUM_MODEL", raising=False)
-    assert m.provider_readiness_note() == "QAI quantum backend not configured. Set QAI_QUANTUM_MODEL_PATH or choose auto."
+    assert (
+        m.provider_readiness_note() == "QAI quantum backend not configured. Set QAI_QUANTUM_MODEL_PATH or choose auto."
+    )
 
 
 def test_provider_diagnostics_summary_reflects_qai_configuration(monkeypatch):
     m = load_module()
     monkeypatch.setenv("QAI_QUANTUM_MODEL_PATH", "data_out/qai_quantum")
-    assert m.provider_diagnostics_summary() == "Provider: QAI quantum alias active · QAI quantum backend ready: data_out/qai_quantum"
+    assert (
+        m.provider_diagnostics_summary()
+        == "Provider: QAI quantum alias active · QAI quantum backend ready: data_out/qai_quantum"
+    )
 
 
 def test_provider_diagnostics_summary_reflects_auto_mode(monkeypatch):
     m = load_module()
     monkeypatch.delenv("QAI_QUANTUM_MODEL_PATH", raising=False)
     monkeypatch.delenv("QAI_QUANTUM_MODEL", raising=False)
-    assert m.provider_diagnostics_summary() == "Provider: auto · QAI quantum backend not configured. Set QAI_QUANTUM_MODEL_PATH or choose auto."
+    assert (
+        m.provider_diagnostics_summary()
+        == "Provider: auto · QAI quantum backend not configured. Set QAI_QUANTUM_MODEL_PATH or choose auto."
+    )
 
 
 def test_qai_provider_alias_maps_to_quantum_provider():
@@ -134,6 +145,7 @@ def test_repo_automation_status_summary_reflects_live_status(monkeypatch):
         "load_repo_automation_status",
         lambda: {
             "components_running": {"aria": True, "training": True, "quantum": False},
+            "component_enabled": {"aria": True, "training": True, "quantum": True, "backup": False},
             "errors": ["example error"],
             "uptime_seconds": 3661,
             "generated_at": "2026-05-31T23:50:00Z",
@@ -142,10 +154,11 @@ def test_repo_automation_status_summary_reflects_live_status(monkeypatch):
     )
 
     summary = m.repo_automation_status_summary()
-    assert "Repo automation: 2/3 components running" in summary
+    assert "Repo automation: 2/3 enabled components running" in summary
     assert "uptime 1:01:01" in summary
     assert "errors 1" in summary
     assert "active: aria, training" in summary
+    assert "disabled: backup" in summary
     assert "updated: 2026-05-31T23:50:00Z" in summary
     assert "quantum: config/quantum/quantum_autorun.yaml" in summary
 
@@ -174,6 +187,7 @@ def test_repo_automation_next_step_reflects_status(monkeypatch):
         "load_repo_automation_status",
         lambda: {
             "components_running": {"aria": True, "training": True, "quantum": False},
+            "component_enabled": {"aria": True, "training": True, "quantum": True, "backup": False},
             "errors": [],
         },
     )

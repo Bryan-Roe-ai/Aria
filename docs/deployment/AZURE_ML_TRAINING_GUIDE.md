@@ -26,6 +26,7 @@ az ml workspace list --query "[].{Name:name, ResourceGroup:resourceGroup}" -o ta
 ```
 
 **Update `.env` file** with these values:
+
 ```env
 AZURE_ML_SUBSCRIPTION_ID=<your-subscription-id>
 AZURE_ML_RESOURCE_GROUP=<your-resource-group>
@@ -92,6 +93,7 @@ python .\scripts\automated_training_pipeline.py --azure-ml-spec --quick --models
 - Model registration
 
 **Validate and submit**:
+
 ```powershell
 # Validate the generated spec
 python .\scripts\azureml_ci_validate.py
@@ -207,10 +209,10 @@ az ml job stream --name "<job-name>" --resource-group "<your-rg>" --workspace-na
 1. Go to [ml.azure.com](https://ml.azure.com)
 2. Navigate to **Jobs**
 3. Click on your job to see:
-   - Real-time logs
-   - Metrics and charts
-   - Resource utilization
-   - Model artifacts
+    - Real-time logs
+    - Metrics and charts
+    - Resource utilization
+    - Model artifacts
 
 ## 🔧 Best Practices
 
@@ -218,9 +220,9 @@ az ml job stream --name "<job-name>" --resource-group "<your-rg>" --workspace-na
 
 - Use **curated environments** for faster startup (no Docker build needed)
 - Common curated environments:
-  - `AzureML-sklearn-1.5` - Scikit-learn
-  - `AzureML-pytorch-2.0` - PyTorch
-  - `AzureML-tensorflow-2.7` - TensorFlow
+    - `AzureML-sklearn-1.5` - Scikit-learn
+    - `AzureML-pytorch-2.0` - PyTorch
+    - `AzureML-tensorflow-2.7` - TensorFlow
 
 ### 2. Cost Optimization
 
@@ -285,23 +287,26 @@ az ml compute list --resource-group "<your-rg>" --workspace-name "<your-workspac
 ## 📚 Additional Resources
 
 ### Microsoft Documentation
+
 - [Azure ML Training Overview](https://learn.microsoft.com/azure/machine-learning/how-to-train-model)
 - [Configure Training Jobs](https://learn.microsoft.com/azure/machine-learning/how-to-set-up-training-targets)
 - [Managed Compute](https://learn.microsoft.com/azure/machine-learning/how-to-create-attach-compute-studio)
 - [Distributed Training](https://learn.microsoft.com/azure/machine-learning/how-to-train-distributed-gpu)
 
 ### QAI Scripts
+
 - `scripts/automated_training_pipeline.py` - Multi-model training orchestrator
 - `scripts/azureml_ci_validate.py` - Job spec validation and submission
 - `scripts/parallel_train.py` - Parallel training for multiple configs
 - `AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py` - LoRA fine-tuning
 
 ### Pricing
+
 - [Azure ML Pricing Calculator](https://azure.microsoft.com/pricing/details/machine-learning/)
 - Estimated costs for QAI training:
-  - Quick test (100 samples): ~$0.10
-  - Small training (1000 samples): ~$0.50-1.00
-  - Full training (10000 samples): ~$5-10
+    - Quick test (100 samples): ~$0.10
+    - Small training (1000 samples): ~$0.50-1.00
+    - Full training (10000 samples): ~$5-10
 
 ## 🎓 Next Steps
 

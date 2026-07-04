@@ -27,7 +27,7 @@ def test_prune_jsonl(tmp_path):
     assert res["remaining"] == 2
     assert res["deleted"] == 3
     # file now has 2 lines
-    with open(path, "r", encoding="utf-8") as fh:
+    with open(path, encoding="utf-8") as fh:
         lines = fh.read().splitlines()
     assert len(lines) == 2
 

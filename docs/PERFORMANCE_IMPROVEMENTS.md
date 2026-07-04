@@ -4,20 +4,20 @@ This document outlines identified performance bottlenecks and inefficient code p
 
 ## Summary of Findings
 
-| Location | Issue | Severity | Status |
-| ---------- | ------- | ---------- | -------- |
-| `token_utils.py` | Repeated tokenizer instantiation | High | Fixed |
-| `chat_memory.py` | Inefficient cosine similarity loop | Medium | Fixed |
-| `chat_memory.py` | Repeated OpenAI client creation | Medium | Fixed |
-| `validate_datasets.py` | Full file read into memory | Medium | Fixed |
-| `chat_providers.py` | LM Studio health check on every auto-detect | Medium | Fixed |
-| `aria_web/server.py` | 20+ list creations in keyword checks | **Critical** | **Fixed (2025-02-17)** |
-| `extract_chat_logs_dataset.py` | Double traversal with any() | High | **Fixed (2025-02-17)** |
-| `batch_evaluator.py` | O(n²) linear search in compare_models() | High | **Fixed (2025-02-17)** |
-| `training_analytics.py` | String += in visualization loop | Medium | **Fixed (2025-02-17)** |
-| `agi_provider.py` | String += for tag concatenation | Low | **Fixed (2025-02-17)** |
-| `quantum_classifier.py` | Sequential batch processing | Medium | Documented |
-| `function_app.py` | Repeated file existence checks | Low | Documented |
+| Location                       | Issue                                       | Severity     | Status                 |
+| ------------------------------ | ------------------------------------------- | ------------ | ---------------------- |
+| `token_utils.py`               | Repeated tokenizer instantiation            | High         | Fixed                  |
+| `chat_memory.py`               | Inefficient cosine similarity loop          | Medium       | Fixed                  |
+| `chat_memory.py`               | Repeated OpenAI client creation             | Medium       | Fixed                  |
+| `validate_datasets.py`         | Full file read into memory                  | Medium       | Fixed                  |
+| `chat_providers.py`            | LM Studio health check on every auto-detect | Medium       | Fixed                  |
+| `aria_web/server.py`           | 20+ list creations in keyword checks        | **Critical** | **Fixed (2025-02-17)** |
+| `extract_chat_logs_dataset.py` | Double traversal with any()                 | High         | **Fixed (2025-02-17)** |
+| `batch_evaluator.py`           | O(n²) linear search in compare_models()     | High         | **Fixed (2025-02-17)** |
+| `training_analytics.py`        | String += in visualization loop             | Medium       | **Fixed (2025-02-17)** |
+| `agi_provider.py`              | String += for tag concatenation             | Low          | **Fixed (2025-02-17)** |
+| `quantum_classifier.py`        | Sequential batch processing                 | Medium       | Documented             |
+| `function_app.py`              | Repeated file existence checks              | Low          | Documented             |
 
 ---
 
@@ -26,12 +26,15 @@ This document outlines identified performance bottlenecks and inefficient code p
 ### 8. Aria Web Server - Repeated Keyword List Creation
 
 #### Location
+
 `aria_web/server.py` - Multiple functions including `parse_with_fallback()`, `generate_aria_position()`, and `generate_tags_fallback()`
 
 #### Problem
+
 Every command processed creates 20+ new list objects for keyword matching using `any(word in command for word in ['keyword1', 'keyword2', ...])`. This happens on the hot path for every user command.
 
 #### Before (Inefficient)
+
 ```python
 # Lines 220, 236, 242, 250, 496-520, 580, 649-652, 673-707
 if any(word in command_lower for word in ['go', 'move', 'walk', 'run']):
@@ -46,6 +49,7 @@ if any(k in cmd for k in ['jump', 'leap', 'hop']):
 ```
 
 #### After (Optimized with Pre-compiled Frozensets)
+
 ```python
 # Module-level constants (lines 42-60)
 MOVE_KEYWORDS = frozenset(['go', 'move', 'walk', 'run'])
@@ -65,6 +69,7 @@ if any(word in command_lower for word in SAY_KEYWORDS):
 ```
 
 #### Impact
+
 - **Before**: ~20+ list allocations per command (~200-400 bytes + allocation overhead)
 - **After**: 0 allocations (frozensets created once at module load)
 - **Performance**: 5-10x faster command parsing on hot path
@@ -75,18 +80,22 @@ if any(word in command_lower for word in SAY_KEYWORDS):
 ### 9. Extract Chat Logs - Double List Traversal
 
 #### Location
+
 `scripts/extract_chat_logs_dataset.py` - Line 72 in rolling window logic
 
 #### Problem
+
 Two separate `any()` calls traverse the same window list to check for user and assistant roles, performing O(2n) work.
 
 #### Before (Inefficient)
+
 ```python
 if any(x.get("role") == "user" for x in window) and any(x.get("role") == "assistant" for x in window):
     examples.append({"messages": window})
 ```
 
 #### After (Optimized with Single-Pass Set Collection)
+
 ```python
 # Single pass using set comprehension
 roles = {x.get("role") for x in window}
@@ -95,6 +104,7 @@ if "user" in roles and "assistant" in roles:
 ```
 
 #### Impact
+
 - **Before**: O(2n) - two complete passes over window
 - **After**: O(n) - single pass with O(1) membership checks
 - **Performance**: 2x faster dataset extraction
@@ -105,12 +115,15 @@ if "user" in roles and "assistant" in roles:
 ### 10. Batch Evaluator - O(n²) Linear Search
 
 #### Location
+
 `scripts/batch_evaluator.py` - Line 310 in `compare_models()` method
 
 #### Problem
+
 For each requested model ID, the code performs a linear search through all results using `next((r for r in self.results if r.model_id == model_id), None)`. This creates O(n×m) complexity where n is the number of results and m is the number of requested models.
 
 #### Before (Inefficient)
+
 ```python
 def compare_models(self, model_ids: List[str]) -> Dict:
     comparison = []
@@ -123,6 +136,7 @@ def compare_models(self, model_ids: List[str]) -> Dict:
 ```
 
 #### After (Optimized with Dictionary Index)
+
 ```python
 def compare_models(self, model_ids: List[str]) -> Dict:
     # Build index for O(1) lookups
@@ -137,6 +151,7 @@ def compare_models(self, model_ids: List[str]) -> Dict:
 ```
 
 #### Impact
+
 - **Before**: O(n×m) nested iteration (~1000 comparisons for 100 results × 10 models)
 - **After**: O(n + m) with O(1) lookups (~110 operations for same case)
 - **Performance**: 100x faster for large model comparisons
@@ -147,12 +162,15 @@ def compare_models(self, model_ids: List[str]) -> Dict:
 ### 11. Training Analytics - String Concatenation in Loop
 
 #### Location
+
 `scripts/training_analytics.py` - Lines 233-239 in chart building
 
 #### Problem
+
 String concatenation with `+=` in nested loop creates O(n²) memory reallocations for chart visualization.
 
 #### Before (Inefficient)
+
 ```python
 for row in range(chart_height - 1, -1, -1):
     line = "            │"
@@ -165,6 +183,7 @@ for row in range(chart_height - 1, -1, -1):
 ```
 
 #### After (Optimized with List Accumulation)
+
 ```python
 for row in range(chart_height - 1, -1, -1):
     line_chars = ["            │"]
@@ -177,6 +196,7 @@ for row in range(chart_height - 1, -1, -1):
 ```
 
 #### Impact
+
 - **Before**: O(n²) string reallocation (each += creates new string)
 - **After**: O(n) list append + single join
 - **Performance**: 10-100x faster for large visualizations
@@ -187,12 +207,15 @@ for row in range(chart_height - 1, -1, -1):
 ### 12. AGI Provider - Tag Concatenation Optimization
 
 #### Location
+
 `ai-projects/chat-cli/src/agi_provider.py` - Lines 697-701 in reflection improvement
 
 #### Problem
+
 Multiple `response +=` operations for adding Aria movement tags.
 
 #### Before (Inefficient)
+
 ```python
 if "left" in query_lower:
     response += " [aria:walk:left]"
@@ -203,6 +226,7 @@ elif "jump" in query_lower:
 ```
 
 #### After (Optimized)
+
 ```python
 tag = None
 if "left" in query_lower:
@@ -217,6 +241,7 @@ if tag:
 ```
 
 #### Impact
+
 - **Before**: Multiple string reallocations
 - **After**: Single concatenation when needed
 - **Performance**: 2-3x faster (minor impact as non-critical path)
@@ -227,15 +252,19 @@ if tag:
 ## 1. Token Utils - Repeated Tokenizer Instantiation
 
 ### Location
+
 `ai-projects/chat-cli/src/token_utils.py` - `_get_text_encoder()` function
 
 ### Problem
+
 Every call to `count_messages_tokens()` or `prune_messages()` creates a new tokenizer instance. For Hugging Face tokenizers, this involves:
+
 - Loading vocabulary files from disk
 - Compiling tokenizer rules
 - Memory allocation for tokenizer state
 
 ### Before (Inefficient)
+
 ```python
 def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], int]:
     # ... tokenizer creation happens on every call
@@ -250,6 +279,7 @@ def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], in
 ```
 
 ### After (Optimized with LRU Cache)
+
 ```python
 from functools import lru_cache
 
@@ -265,6 +295,7 @@ def _get_cached_tokenizer(model: str):
 ```
 
 ### Impact
+
 - **Before**: ~100-500ms per tokenizer load for Hugging Face models
 - **After**: ~0.1ms (cache hit)
 
@@ -273,12 +304,15 @@ def _get_cached_tokenizer(model: str):
 ## 2. Chat Memory - Inefficient Cosine Similarity Calculation
 
 ### Location
+
 `shared/chat_memory.py` - `_cosine()` and `fetch_similar_messages()`
 
 ### Problem
+
 The cosine similarity calculation uses list comprehensions and `sum()` which is slower than NumPy for larger vectors. When fetching similar messages, cosine similarity is computed in a tight loop.
 
 ### Before (Inefficient)
+
 ```python
 def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
     if not a or not b or len(a) != len(b):
@@ -290,6 +324,7 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
 ```
 
 ### After (Optimized with NumPy when available)
+
 ```python
 try:
     import numpy as np
@@ -321,6 +356,7 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
 ```
 
 ### Impact
+
 - **Before**: ~1.2ms for 500 embeddings × 256 dimensions
 - **After**: ~0.15ms with NumPy (8x faster)
 
@@ -329,12 +365,15 @@ def _cosine(a: Sequence[float], b: Sequence[float]) -> float:
 ## 3. Chat Memory - Repeated OpenAI Client Creation
 
 ### Location
+
 `shared/chat_memory.py` - `generate_embedding()` function
 
 ### Problem
+
 Creates a new OpenAI/AzureOpenAI client instance on every embedding request, incurring connection overhead.
 
 ### Before (Inefficient)
+
 ```python
 def generate_embedding(text: str) -> List[float]:
     # Azure first
@@ -351,6 +390,7 @@ def generate_embedding(text: str) -> List[float]:
 ```
 
 ### After (Optimized with Cached Clients)
+
 ```python
 _embedding_clients: Dict[str, Any] = {}
 
@@ -376,6 +416,7 @@ def _get_embedding_client(provider: str) -> Any:
 ```
 
 ### Impact
+
 - **Before**: ~50-100ms connection overhead per request
 - **After**: ~0ms (reuses existing connection)
 
@@ -384,12 +425,15 @@ def _get_embedding_client(provider: str) -> Any:
 ## 4. Dataset Validation - Full File Read Into Memory
 
 ### Location
+
 `scripts/validate_datasets.py` - `validate_jsonl()` function
 
 ### Problem
+
 Reads entire file into memory with `f.readlines()` which is inefficient for large datasets.
 
 ### Before (Inefficient)
+
 ```python
 def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -400,6 +444,7 @@ def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
 ```
 
 ### After (Optimized with Streaming)
+
 ```python
 def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -409,6 +454,7 @@ def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
 ```
 
 ### Impact
+
 - **Before**: Memory usage = file size (could be GBs)
 - **After**: Memory usage = single line buffer (~KB)
 
@@ -417,12 +463,15 @@ def validate_jsonl(self, filepath: Path, verbose: bool = False) -> Dict:
 ## 5. Chat Providers - LM Studio Health Check On Every Auto-Detect
 
 ### Location
+
 `ai-projects/chat-cli/src/chat_providers.py` - `detect_provider()` function
 
 ### Problem
+
 In auto mode, the function makes an HTTP request to check if LM Studio is running on every call, adding latency even when LM Studio isn't being used.
 
 ### Before (Inefficient)
+
 ```python
 # Auto mode - check for LM Studio first
 try:
@@ -437,6 +486,7 @@ except (urllib.error.URLError, Exception):
 ```
 
 ### After (Optimized with TTL Cache)
+
 ```python
 _lmstudio_cache = {"available": None, "checked_at": 0}
 _LMSTUDIO_CACHE_TTL = 30  # seconds
@@ -459,6 +509,7 @@ def _check_lmstudio_available(url: str) -> bool:
 ```
 
 ### Impact
+
 - **Before**: ~1000ms timeout on each failed check
 - **After**: ~0ms (cache hit within 30 seconds)
 
@@ -467,12 +518,15 @@ def _check_lmstudio_available(url: str) -> bool:
 ## 6. Quantum Classifier - Sequential Batch Processing
 
 ### Location
+
 `ai-projects/quantum-ml/src/quantum_classifier.py` - `forward()` method
 
 ### Problem
+
 Processes batch items sequentially in a Python loop, which is slow for quantum circuit execution.
 
 ### Current Code
+
 ```python
 def forward(self, inputs: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
     batch_size = inputs.shape[0]
@@ -487,6 +541,7 @@ def forward(self, inputs: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
 ```
 
 ### Recommendation
+
 Consider using PennyLane's built-in batching capabilities or torch.vmap for vectorized execution. This is a lower priority as quantum simulation is inherently sequential, but can benefit from async I/O when using cloud backends.
 
 ---
@@ -494,12 +549,15 @@ Consider using PennyLane's built-in batching capabilities or torch.vmap for vect
 ## 7. Function App - Repeated File Existence Checks
 
 ### Location
+
 `function_app.py` - `ai_status()` endpoint
 
 ### Problem
+
 The status endpoint checks many file paths on every request. While individually fast, the cumulative effect adds latency.
 
 ### Recommendation
+
 Consider caching path existence checks with a short TTL (5-10 seconds) for the status endpoint, especially for paths that rarely change like installed scripts.
 
 ---
@@ -507,17 +565,17 @@ Consider caching path existence checks with a short TTL (5-10 seconds) for the s
 ## Implementation Priority
 
 1. **High Priority** (implement immediately):
-   - Token Utils tokenizer caching (saves 100-500ms per request)
-   - Chat Memory client caching (saves 50-100ms per request)
-   - LM Studio availability caching (saves up to 1000ms)
+    - Token Utils tokenizer caching (saves 100-500ms per request)
+    - Chat Memory client caching (saves 50-100ms per request)
+    - LM Studio availability caching (saves up to 1000ms)
 
 2. **Medium Priority** (implement when time permits):
-   - Chat Memory NumPy cosine similarity
-   - Dataset Validation streaming read
+    - Chat Memory NumPy cosine similarity
+    - Dataset Validation streaming read
 
 3. **Low Priority** (document for future):
-   - Quantum Classifier batch optimization
-   - Function App file existence caching
+    - Quantum Classifier batch optimization
+    - Function App file existence caching
 
 ---
 
@@ -526,23 +584,29 @@ Consider caching path existence checks with a short TTL (5-10 seconds) for the s
 ### 7. SQL Repository - Inefficient Result Limiting
 
 #### Location
+
 `shared/sql_repository.py` - `list_values()` function (lines 235, 249)
 
 #### Problem
+
 Database queries were fetching all rows into memory before slicing in Python:
+
 ```python
 cur.execute("SELECT k, v, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC")
 for row in cur.fetchall()[:limit]:  # Fetches ALL rows, then slices
 ```
 
 #### Fix Applied
+
 Use SQL LIMIT clause to fetch only required rows:
+
 ```python
 cur.execute("SELECT k, v, updated_at FROM QAI_KeyValue ORDER BY updated_at DESC LIMIT ?", (limit,))
 for row in cur.fetchall():  # Only fetches 'limit' rows
 ```
 
 #### Impact
+
 - **Memory**: Prevents loading unnecessary data into memory
 - **Network**: Reduces data transfer from database
 - **Performance**: 2-10,000x improvement depending on table size
@@ -551,10 +615,13 @@ for row in cur.fetchall():  # Only fetches 'limit' rows
 ### 8. Training Analytics - String Concatenation in Loop
 
 #### Location
+
 `scripts/training_analytics.py` - chart generation (lines 233-238)
 
 #### Problem
+
 Using `+=` operator for string building in nested loops creates O(n²) complexity:
+
 ```python
 line = "            │"
 for value in scaled:
@@ -563,7 +630,9 @@ for value in scaled:
 ```
 
 #### Fix Applied
+
 Use list accumulation with join():
+
 ```python
 chars = []
 for value in scaled:
@@ -575,6 +644,7 @@ chart.append("            │" + "".join(chars))
 ```
 
 #### Impact
+
 - **Complexity**: O(n) instead of O(n²)
 - **Memory**: Single allocation vs multiple intermediate strings
 - **Performance**: 2-100x faster for typical chart sizes
@@ -583,22 +653,28 @@ chart.append("            │" + "".join(chars))
 ### 9. Quantum Web App - Dictionary Iteration Efficiency
 
 #### Location
+
 `ai-projects/quantum-ml/web_app.py` - metrics history trimming (line 516)
 
 #### Problem
+
 Inefficient loop-based dictionary updates:
+
 ```python
 for key in session.metrics_history:
     session.metrics_history[key] = session.metrics_history[key][-1000:]
 ```
 
 #### Fix Applied
+
 Use dictionary comprehension:
+
 ```python
 session.metrics_history = {key: values[-1000:] for key, values in session.metrics_history.items()}
 ```
 
 #### Impact
+
 - **Readability**: More Pythonic and clear
 - **Performance**: Single-pass operation
 - **Memory**: Efficient new dictionary creation
@@ -607,18 +683,23 @@ session.metrics_history = {key: values[-1000:] for key, values in session.metric
 ### 10. Quantum Circuit - Performance Documentation
 
 #### Location
+
 `ai-projects/quantum-ml/src/hybrid_qnn.py` - QuantumLayer class
 
 #### Problem
+
 Missing documentation about O(n²) complexity of full entanglement pattern.
 
 #### Fix Applied
+
 Added comprehensive performance notes:
+
 - Constructor docstring documents entanglement pattern performance
 - Circuit method includes performance warning about full entanglement
 - Users now aware: linear/circular = O(n), full = O(n²)
 
 #### Impact
+
 - **Awareness**: Users can make informed configuration choices
 - **Optimization**: Encourages efficient patterns for large circuits
 - **Scope**: Quantum neural network design
@@ -628,6 +709,7 @@ Added comprehensive performance notes:
 ## Testing Recommendations
 
 All optimizations should be tested with:
+
 1. Unit tests verifying correct behavior
 2. Performance benchmarks comparing before/after
 3. Integration tests ensuring no regressions

@@ -14,8 +14,7 @@ from pathlib import Path
 # Add to path
 sys.path.insert(0, str(Path(__file__).parent / "ai-projects" / "llm-maker" / "src"))
 
-from code_generation_templates import (ALL_TEMPLATES, WEBSITE_TEMPLATES_ALL,
-                                       get_template_info, list_templates)
+from code_generation_templates import ALL_TEMPLATES, WEBSITE_TEMPLATES_ALL, get_template_info, list_templates
 
 
 def print_banner():
@@ -86,10 +85,10 @@ def generate_from_template():
                 print(f"Description: {info['description']}")
 
                 if "parameters" in info:
-                    print(f"\nParameters:")
+                    print("\nParameters:")
                     for param, ptype in info["parameters"].items():
                         print(f"  • {param} ({ptype})")
-                    print(f"\nReturns:")
+                    print("\nReturns:")
                     for ret, rtype in info["returns"].items():
                         print(f"  • {ret} ({rtype})")
 
@@ -253,9 +252,7 @@ def main():
             show_quick_reference()
         elif choice == "0":
             print("\n👋 Thanks for using Aria Code Generation!")
-            print(
-                "   Remember: Use @llm-maker in Copilot Chat for interactive generation\n"
-            )
+            print("   Remember: Use @llm-maker in Copilot Chat for interactive generation\n")
             break
         else:
             print("Invalid choice. Please try again.")

@@ -9,13 +9,13 @@ import hashlib
 import json
 import time
 from collections import deque
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, List, Optional
+from typing import Any
 
 
-def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
+def tail_file(file_path: Path, max_lines: int = 20) -> list[str]:
     """
     Memory-efficient tail operation for log files.
 
@@ -44,7 +44,7 @@ def tail_file(file_path: Path, max_lines: int = 20) -> List[str]:
         return []
 
 
-def tail_file_smart(file_path: Path, max_lines: int = 20, small_file_threshold: int = 65536) -> List[str]:
+def tail_file_smart(file_path: Path, max_lines: int = 20, small_file_threshold: int = 65536) -> list[str]:
     """
     Smart tail operation that adapts to file size.
 
@@ -96,7 +96,7 @@ def tail_file_smart(file_path: Path, max_lines: int = 20, small_file_threshold: 
         return []
 
 
-def stream_jsonl(file_path: Path, filter_fn: Optional[Callable[[dict], bool]] = None) -> Iterator[dict]:
+def stream_jsonl(file_path: Path, filter_fn: Callable[[dict], bool] | None = None) -> Iterator[dict]:
     """
     Memory-efficient streaming of JSONL files.
 
@@ -138,7 +138,7 @@ def stream_jsonl(file_path: Path, filter_fn: Optional[Callable[[dict], bool]] = 
                 continue
 
 
-def batch_process(items: List[Any], batch_size: int, process_fn: Callable[[List[Any]], None]) -> None:
+def batch_process(items: list[Any], batch_size: int, process_fn: Callable[[list[Any]], None]) -> None:
     """
     Process items in batches to reduce memory pressure.
 
@@ -163,10 +163,10 @@ def batch_process(items: List[Any], batch_size: int, process_fn: Callable[[List[
 
 def find_json_in_output(
     output: str,
-    key: Optional[str] = None,
+    key: str | None = None,
     search_from_end: bool = True,
     max_lines: int = 50,
-) -> Optional[dict]:
+) -> dict | None:
     """
     Efficiently find JSON object in command output.
 
@@ -305,6 +305,7 @@ def timeit(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapper(*args, **kwargs):
+        """Time the wrapped call and print its duration."""
         t0 = time.time()
         result = func(*args, **kwargs)
         duration = time.time() - t0
@@ -337,12 +338,13 @@ def memoize_with_ttl(ttl_seconds: float = 60.0):
     """
 
     def decorator(func: Callable) -> Callable:
+        """Build a TTL memoization wrapper around *func*."""
         cache: dict = {}
         cache_times: dict = {}
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            # Create cache key from args/kwargs
+            """Return a cached result when fresh, otherwise call *func*."""
             key_data = (args, tuple(sorted(kwargs.items())))
             cache_key = hashlib.md5(str(key_data).encode()).hexdigest()
 
@@ -416,14 +418,14 @@ if __name__ == "__main__":
     t0 = time.time()
     content1 = cache.read(temp_path)
     t1 = time.time() - t0
-    print(f"  First read (disk): {t1*1000:.2f}ms")
+    print(f"  First read (disk): {t1 * 1000:.2f}ms")
 
     # Second read
     t0 = time.time()
     content2 = cache.read(temp_path)
     t2 = time.time() - t0
-    print(f"  Second read (cache): {t2*1000:.2f}ms")
-    print(f"  Speedup: {t1/t2:.1f}x")
+    print(f"  Second read (cache): {t2 * 1000:.2f}ms")
+    print(f"  Speedup: {t1 / t2:.1f}x")
     print(f"  Cache stats: {cache.stats()}")
 
     # Test timeit decorator
@@ -452,14 +454,14 @@ if __name__ == "__main__":
     t0 = time.time()
     r1 = expensive_computation(5)
     t1 = time.time() - t0
-    print(f"  First call: {t1*1000:.2f}ms, result={r1}, calls={call_count}")
+    print(f"  First call: {t1 * 1000:.2f}ms, result={r1}, calls={call_count}")
 
     # Second call (cached)
     t0 = time.time()
     r2 = expensive_computation(5)
     t2 = time.time() - t0
-    print(f"  Cached call: {t2*1000:.2f}ms, result={r2}, calls={call_count}")
-    print(f"  Speedup: {t1/t2:.1f}x")
+    print(f"  Cached call: {t2 * 1000:.2f}ms, result={r2}, calls={call_count}")
+    print(f"  Speedup: {t1 / t2:.1f}x")
 
     # Wait for TTL expiration
     time.sleep(1.1)
@@ -468,7 +470,7 @@ if __name__ == "__main__":
     t0 = time.time()
     r3 = expensive_computation(5)
     t3 = time.time() - t0
-    print(f"  After TTL: {t3*1000:.2f}ms, result={r3}, calls={call_count}")
+    print(f"  After TTL: {t3 * 1000:.2f}ms, result={r3}, calls={call_count}")
 
     # Cleanup
     temp_path.unlink()

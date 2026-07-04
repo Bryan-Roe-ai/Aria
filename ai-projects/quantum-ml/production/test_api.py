@@ -232,7 +232,7 @@ def test_performance():
         times.append(elapsed * 1000)  # Convert to ms
 
         assert response.status_code == 200
-        print(f"  Request {i+1}/{n_requests}: {elapsed*1000:.2f}ms", end="\r")
+        print(f"  Request {i + 1}/{n_requests}: {elapsed * 1000:.2f}ms", end="\r")
 
     avg_time = sum(times) / len(times)
     min_time = min(times)

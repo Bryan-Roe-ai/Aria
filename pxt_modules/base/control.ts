@@ -1,6 +1,6 @@
 /**
-* Program controls and events.
-*/
+ * Program controls and events.
+ */
 //% weight=90 color="#FF5722" icon="\uf110" advanced=true
 namespace control {
     /**
@@ -9,7 +9,7 @@ namespace control {
     //% deprecated=1 hidden=1 help=control/run-in-background blockAllowMultiple=1 afterOnStart=true
     //% blockId="control_run_in_background" block="run in background" blockGap=8 weight=0
     export function runInBackground(a: () => void) {
-        control.runInParallel(a);
+        control.runInParallel(a)
     }
 
     export const enum PXT_PANIC {
@@ -62,7 +62,7 @@ namespace control {
     //% help=control/panic weight=29
     //% blockId="control_panic" block="panic %code"
     //% shim=pxtrt::panic
-    export function panic(code: number) { }
+    export function panic(code: number) {}
 
     /**
      * Display an error code and stop the program when the assertion is `false`.
@@ -88,50 +88,45 @@ namespace control {
     }
 
     export class AnimationQueue {
-        running: boolean;
-        eventID: number;
-        public interval: number;
+        running: boolean
+        eventID: number
+        public interval: number
 
         constructor() {
-            this.running = false;
-            this.eventID = control.allocateNotifyEvent();
-            this.interval = 1;
+            this.running = false
+            this.eventID = control.allocateNotifyEvent()
+            this.interval = 1
         }
 
         /**
          * Runs 'render' in a loop until it returns false or the 'stop' function is called
          */
         runUntilDone(render: () => boolean) {
-            const evid = this.eventID;
+            const evid = this.eventID
 
             // if other animation, wait for turn
-            if (this.running)
-                control.waitForEvent(DAL.DEVICE_ID_NOTIFY, evid);
+            if (this.running) control.waitForEvent(DAL.DEVICE_ID_NOTIFY, evid)
 
             // check if the animation hasn't been cancelled since we've waiting
-            if (this.isCancelled(evid))
-                return;
+            if (this.isCancelled(evid)) return
 
             // run animation
-            this.running = true;
-            while (this.running
-                && !this.isCancelled(evid)
-                && render()) {
-                pause(this.interval);
+            this.running = true
+            while (this.running && !this.isCancelled(evid) && render()) {
+                pause(this.interval)
             }
 
             // check if the animation hasn't been cancelled since we've been waiting
-            if (this.isCancelled(evid))
-                return;
+            if (this.isCancelled(evid)) return
 
             // we're done
-            this.running = false;
+            this.running = false
             // unblock 1 fiber
-            control.raiseEvent(DAL.DEVICE_ID_NOTIFY_ONE, this.eventID);
+            control.raiseEvent(DAL.DEVICE_ID_NOTIFY_ONE, this.eventID)
         }
 
         isCancelled(evid: number) {
-            return this.eventID !== evid;
+            return this.eventID !== evid
         }
 
         /**
@@ -139,32 +134,32 @@ namespace control {
          */
         cancel() {
             if (this.running) {
-                this.running = false;
-                const evid = this.eventID;
-                this.eventID = control.allocateNotifyEvent();
+                this.running = false
+                const evid = this.eventID
+                this.eventID = control.allocateNotifyEvent()
                 // unblock fibers
-                control.raiseEvent(DAL.DEVICE_ID_NOTIFY, evid);
+                control.raiseEvent(DAL.DEVICE_ID_NOTIFY, evid)
             }
         }
     }
 
     //% shim=pxt::getConfig
-    export declare function getConfigValue(key: int32, defl: int32): number;
+    export declare function getConfigValue(key: int32, defl: int32): number
 
     //% shim=pxt::programHash
-    export declare function programHash(): number;
+    export declare function programHash(): number
 
     //% shim=pxt::programName
-    export declare function programName(): string;
+    export declare function programName(): string
 
     //% shim=control::_ramSize
     function _ramSize() {
-        return 32 * 1024 * 1024;
+        return 32 * 1024 * 1024
     }
 
     /** Returns estimated size of memory in bytes. */
     export function ramSize() {
-        return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
+        return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize()
     }
 
     /** Runs the function and returns run time in microseconds. */
@@ -172,8 +167,7 @@ namespace control {
         const t0 = micros()
         f()
         let t = micros() - t0
-        if (t < 0)
-            t += 0x3fffffff
+        if (t < 0) t += 0x3fffffff
         return t
     }
 }
@@ -186,5 +180,5 @@ namespace control {
 //% block="convert $value=math_number to text"
 //% blockId=variable_to_text blockNamespace="text"
 function convertToText(value: any): string {
-    return "" + value;
+    return "" + value
 }

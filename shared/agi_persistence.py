@@ -12,7 +12,7 @@ import os
 import threading
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class FileAGIPersistence:
@@ -33,7 +33,8 @@ class FileAGIPersistence:
         open(self.path, "a", encoding="utf-8").close()
         self._lock = threading.RLock()
 
-    def write_reasoning_chain(self, chain: List[Dict[str, Any]], meta: Optional[Dict[str, Any]] = None) -> str:
+    def write_reasoning_chain(self, chain: list[dict[str, Any]], meta: dict[str, Any] | None = None) -> str:
+        """Append one reasoning chain entry and return its generated id."""
         entry = {
             "id": uuid.uuid4().hex,
             "ts": time.time(),
@@ -44,11 +45,12 @@ class FileAGIPersistence:
         self._append(entry)
         return entry["id"]
 
-    def add_reasoning_chain(self, chain: List[Dict[str, Any]]) -> str:
-        # Backwards-compatible alias used by some callers
+    def add_reasoning_chain(self, chain: list[dict[str, Any]]) -> str:
+        """Backwards-compatible alias for :meth:`write_reasoning_chain`."""
         return self.write_reasoning_chain(chain)
 
-    def add_message(self, message: Dict[str, Any]) -> str:
+    def add_message(self, message: dict[str, Any]) -> str:
+        """Append one message entry and return its generated id."""
         entry = {
             "id": uuid.uuid4().hex,
             "ts": time.time(),
@@ -59,7 +61,7 @@ class FileAGIPersistence:
         self._append(entry)
         return entry["id"]
 
-    def _append(self, entry: Dict[str, Any]) -> None:
+    def _append(self, entry: dict[str, Any]) -> None:
         with self._lock:
             with open(self.path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(entry, separators=(",", ":"), ensure_ascii=False))
@@ -71,15 +73,15 @@ class FileAGIPersistence:
                 except Exception:
                     pass
 
-    def read_last(self, n: int = 10) -> List[Dict[str, Any]]:
+    def read_last(self, n: int = 10) -> list[dict[str, Any]]:
         """Return up to the last *n* entries from the file (newest last)."""
         with self._lock:
-            with open(self.path, "r", encoding="utf-8") as fh:
+            with open(self.path, encoding="utf-8") as fh:
                 lines = fh.read().splitlines()
         if not lines:
             return []
         selected = lines[-n:]
-        out: List[Dict[str, Any]] = []
+        out: list[dict[str, Any]] = []
         for line in selected:
             try:
                 out.append(json.loads(line))
@@ -88,5 +90,4 @@ class FileAGIPersistence:
         return out
 
     def close(self) -> None:
-        # File is opened per-write; nothing to close persistently.
-        return
+        """No-op close hook; file handles are opened per write."""

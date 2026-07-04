@@ -10,12 +10,12 @@
 
 ### Results Summary
 
-| Layers | Final Accuracy | Best Epoch Acc | Performance |
-| -------- | --------------- | ---------------- | ------------- |
-| **1** | 67.5% | 55.0% (epoch 40) | Baseline |
-| **2** | **87.5%** ⭐ | **87.5%** (epoch 30+) | **BEST** |
-| **3** | 75.0% | 75.0% (epoch 10+) | Good |
-| **4** | 67.5% | 70.0% (epoch 30) | Overfitting |
+| Layers | Final Accuracy | Best Epoch Acc        | Performance |
+| ------ | -------------- | --------------------- | ----------- |
+| **1**  | 67.5%          | 55.0% (epoch 40)      | Baseline    |
+| **2**  | **87.5%** ⭐   | **87.5%** (epoch 30+) | **BEST**    |
+| **3**  | 75.0%          | 75.0% (epoch 10+)     | Good        |
+| **4**  | 67.5%          | 70.0% (epoch 30)      | Overfitting |
 
 ### 🏆 Optimal Configuration Found
 
@@ -71,14 +71,14 @@ Based on experimental evidence, here's the optimized configuration:
 
 ```yaml
 ml:
-  model:
-    n_qubits: 4
-    n_layers: 2          # OPTIMAL (87.5% accuracy)
-    entanglement: linear
-  training:
-    epochs: 50           # Sufficient for convergence
-    learning_rate: 0.01  # Current value works well
-    batch_size: 32
+    model:
+        n_qubits: 4
+        n_layers: 2 # OPTIMAL (87.5% accuracy)
+        entanglement: linear
+    training:
+        epochs: 50 # Sufficient for convergence
+        learning_rate: 0.01 # Current value works well
+        batch_size: 32
 ```
 
 ---
@@ -102,14 +102,14 @@ ml:
 
 With the optimized 2-layer configuration, we expect:
 
-| Dataset | Previous | Expected | Improvement |
-| --------- | ---------- | ---------- | ------------- |
-| **Moons** | 72.5% | **87.5%** | +15% ✅ |
-| **Circles** | 52.5% | ~65-70% | +12-17% |
-| **Iris** | 76.7% | ~85-90% | +8-13% |
-| **XOR** | 57.5% | ~70-75% | +12-17% |
-| **Wine** | 88.9% | ~92-95% | +3-6% |
-| **Imbalanced** | 90.0% | ~93-95% | +3-5% |
+| Dataset        | Previous | Expected  | Improvement |
+| -------------- | -------- | --------- | ----------- |
+| **Moons**      | 72.5%    | **87.5%** | +15% ✅     |
+| **Circles**    | 52.5%    | ~65-70%   | +12-17%     |
+| **Iris**       | 76.7%    | ~85-90%   | +8-13%      |
+| **XOR**        | 57.5%    | ~70-75%   | +12-17%     |
+| **Wine**       | 88.9%    | ~92-95%   | +3-6%       |
+| **Imbalanced** | 90.0%    | ~93-95%   | +3-5%       |
 
 ### Average Expected Improvement
 
@@ -145,20 +145,20 @@ For datasets with 100-200 samples:
 ## 🎓 Key Learnings
 
 1. **More layers ≠ Better performance**
-   - Sweet spot at 2 layers for current dataset size
-   - Beyond that, overfitting degrades performance
+    - Sweet spot at 2 layers for current dataset size
+    - Beyond that, overfitting degrades performance
 
 2. **Fast Convergence Indicator**
-   - 2-layer model reached 87.5% by epoch 30
-   - Stable plateau indicates good generalization
+    - 2-layer model reached 87.5% by epoch 30
+    - Stable plateau indicates good generalization
 
 3. **Layer-to-Data Ratio**
-   - Rule of thumb: 1 layer per ~80-100 samples
-   - 160 samples → 2 layers ideal
+    - Rule of thumb: 1 layer per ~80-100 samples
+    - 160 samples → 2 layers ideal
 
 4. **Quantum Circuit Depth**
-   - Deeper circuits need more training data
-   - Match circuit complexity to problem complexity
+    - Deeper circuits need more training data
+    - Match circuit complexity to problem complexity
 
 ---
 
@@ -186,28 +186,28 @@ For datasets with 100-200 samples:
 
 1. **Update Configuration**
 
-   ```bash
-   # Already optimal in quantum_config.yaml:
-   # n_layers: 2 ✓
-   ```
+    ```bash
+    # Already optimal in quantum_config.yaml:
+    # n_layers: 2 ✓
+    ```
 
 2. **Re-train All Datasets**
 
-   ```bash
-   python .\examples\train_models.py
-   ```
+    ```bash
+    python .\examples\train_models.py
+    ```
 
 3. **Validate Improvements**
-   - Expect ~10-15% average improvement
-   - Monitor for overfitting
+    - Expect ~10-15% average improvement
+    - Monitor for overfitting
 
 4. **Continue Optimization**
 
-   ```bash
-   # Run learning rate experiment:
-   python .\experiments\parameter_tuning.py
-   # Select option 2: Learning Rate
-   ```
+    ```bash
+    # Run learning rate experiment:
+    python .\experiments\parameter_tuning.py
+    # Select option 2: Learning Rate
+    ```
 
 ---
 

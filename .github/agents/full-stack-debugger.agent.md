@@ -2,21 +2,21 @@
 name: full-stack-debugger
 description: "Full-stack debugging agent for the Aria platform. Diagnoses issues across Python backends, JavaScript frontends, Azure Functions, quantum pipelines, and training systems.\n\nTrigger phrases include:\n- 'debug this issue'\n- 'why is this failing'\n- 'troubleshoot'\n- 'diagnose the problem'\n- 'find the bug'\n- 'the tests are failing'\n- 'server not responding'\n\nExamples:\n- User says 'the Aria server isn't responding to commands' → invoke to diagnose server/API issues\n- User asks 'why is my training accuracy stuck at 0.5?' → invoke to analyze training pipeline\n- User says 'the chat endpoint returns 500' → invoke to trace through function_app.py → providers → shared\n\nThis agent traces issues across the full stack: client JS → server Python → Azure Functions → shared infra → training pipelines."
 tools:
-  - edit
-  - search
-  - execute
-  - execute/createAndRunTask
-  - execute/runTask
-  - read/getTaskOutput
-  - web/fetch
-  - vscode/memory
-  - agent
-  - execute/runTests
-  - read/problems
-  - search/changes
-  - execute/testFailure
-  - todo
-  - task_complete
+    - edit
+    - search
+    - execute
+    - execute/createAndRunTask
+    - execute/runTask
+    - read/getTaskOutput
+    - web/fetch
+    - vscode/memory
+    - agent
+    - execute/runTests
+    - read/problems
+    - search/changes
+    - execute/testFailure
+    - todo
+    - task_complete
 ---
 
 # Full-Stack Debugger Agent
@@ -40,6 +40,7 @@ Do not retain control after the scoped debugging work is finished; hand back to 
 ### Step 1: Characterize
 
 Before touching code, understand the problem:
+
 - **Symptom**: What exactly is failing? Error message? Unexpected behavior?
 - **Scope**: Which component? (Aria UI, chat API, training, quantum)
 - **Reproducibility**: Always, intermittent, or first-time?
@@ -48,6 +49,7 @@ Before touching code, understand the problem:
 ### Step 2: Hypothesize
 
 Form ranked hypotheses:
+
 1. Configuration/environment issues (missing env vars, wrong ports)
 2. Dependency issues (missing packages, version conflicts)
 3. Logic errors (wrong conditions, off-by-one, race conditions)
@@ -90,59 +92,64 @@ python scripts/test_runner.py --unit
 ## Component Debugging Guide
 
 ### Aria Character System
+
 **Files**: `apps/aria/server.py`, `apps/aria/aria_controller.js`, `aria_web/server.py`
 
-| Issue | Check |
-| ------- | ------- |
-| Server won't start | Port conflict (8080), missing deps, Python path |
-| Commands not working | `POST /api/aria/command` response, tag parsing logic |
-| Actions failing | Stage state validation, distance checks, bounds (0-100%) |
-| Objects not appearing | Object registry in `stage_state['objects']` |
-| LLM parsing fails | Provider availability, `AriaActionParser._initialize_provider()` |
-| Animations broken | Client-side `aria_controller.js`, CSS transitions, DOM selectors |
+| Issue                 | Check                                                            |
+| --------------------- | ---------------------------------------------------------------- |
+| Server won't start    | Port conflict (8080), missing deps, Python path                  |
+| Commands not working  | `POST /api/aria/command` response, tag parsing logic             |
+| Actions failing       | Stage state validation, distance checks, bounds (0-100%)         |
+| Objects not appearing | Object registry in `stage_state['objects']`                      |
+| LLM parsing fails     | Provider availability, `AriaActionParser._initialize_provider()` |
+| Animations broken     | Client-side `aria_controller.js`, CSS transitions, DOM selectors |
 
 ### Chat & API Layer
+
 **Files**: `function_app.py`, `shared/chat_providers.py`, `ai-projects/chat-cli/src/`
 
-| Issue | Check |
-| ------- | ------- |
-| Chat returns 500 | Provider detection chain, missing env vars |
-| No streaming | SSE format: `data: {json}\n\n` + `data: [DONE]\n\n` |
+| Issue               | Check                                                                             |
+| ------------------- | --------------------------------------------------------------------------------- |
+| Chat returns 500    | Provider detection chain, missing env vars                                        |
+| No streaming        | SSE format: `data: {json}\n\n` + `data: [DONE]\n\n`                               |
 | Wrong provider used | Detection order: LM Studio → Ollama → Azure → OpenAI → Local (LoRA explicit-only) |
-| LoRA won't load | Need both `adapter_config.json` + `adapter_model.safetensors` |
-| TTS failing | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`, fallback chain |
-| SQL pool saturated | `/api/ai/status` → `saturation_alert`, increase `QAI_SQL_POOL_SIZE` |
+| LoRA won't load     | Need both `adapter_config.json` + `adapter_model.safetensors`                     |
+| TTS failing         | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`, fallback chain                        |
+| SQL pool saturated  | `/api/ai/status` → `saturation_alert`, increase `QAI_SQL_POOL_SIZE`               |
 
 ### AGI Provider
+
 **Files**: `ai-projects/chat-cli/src/agi_provider.py`, `agi_provider.py` (shim)
 
-| Issue | Check |
-| ------- | ------- |
-| No reasoning chains | `enable_chain_of_thought=True` in `create_agi_provider()` |
-| Slow responses | `reasoning_depth` too high, reduce to 2 for simple queries |
-| Context overflow | `MAX_HISTORY_SIZE=50`, `MAX_REASONING_CHAINS=10` limits |
-| Bad decomposition | Check `_analyze_query()` complexity/intent/domain classification |
+| Issue               | Check                                                            |
+| ------------------- | ---------------------------------------------------------------- |
+| No reasoning chains | `enable_chain_of_thought=True` in `create_agi_provider()`        |
+| Slow responses      | `reasoning_depth` too high, reduce to 2 for simple queries       |
+| Context overflow    | `MAX_HISTORY_SIZE=50`, `MAX_REASONING_CHAINS=10` limits          |
+| Bad decomposition   | Check `_analyze_query()` complexity/intent/domain classification |
 
 ### Training Pipeline
+
 **Files**: `scripts/autonomous_training_orchestrator.py`, `scripts/autotrain.py`
 
-| Issue | Check |
-| ------- | ------- |
-| Training stuck | `data_out/autonomous_training_status.json`, check cycle state |
-| Low accuracy | Epoch selection, dataset quality, learning rate |
-| No datasets found | Scan paths: `datasets/quantum/`, `datasets/chat/`, `datasets/massive_quantum/` |
-| Adapter invalid | Both files present? `adapter_config.json` + `adapter_model.safetensors` |
-| Degradation alerts | >5% accuracy drop between cycles, check `performance_history[]` |
+| Issue              | Check                                                                          |
+| ------------------ | ------------------------------------------------------------------------------ |
+| Training stuck     | `data_out/autonomous_training_status.json`, check cycle state                  |
+| Low accuracy       | Epoch selection, dataset quality, learning rate                                |
+| No datasets found  | Scan paths: `datasets/quantum/`, `datasets/chat/`, `datasets/massive_quantum/` |
+| Adapter invalid    | Both files present? `adapter_config.json` + `adapter_model.safetensors`        |
+| Degradation alerts | >5% accuracy drop between cycles, check `performance_history[]`                |
 
 ### Quantum Workflows
+
 **Files**: `ai-projects/quantum-ml/`, `scripts/quantum_autorun.py`
 
-| Issue | Check |
-| ------- | ------- |
-| Circuit errors | Qubit count (≤10 local, ≤20 Azure), gate sequence validity |
-| Azure timeout | Network/auth, `az login`, workspace config |
-| Cost concern | Use simulator first: `--job azure_ionq_simulator` |
-| MCP server crash | Resource cleanup, `CircuitCache` TTL expiry |
+| Issue            | Check                                                      |
+| ---------------- | ---------------------------------------------------------- |
+| Circuit errors   | Qubit count (≤10 local, ≤20 Azure), gate sequence validity |
+| Azure timeout    | Network/auth, `az login`, workspace config                 |
+| Cost concern     | Use simulator first: `--job azure_ionq_simulator`          |
+| MCP server crash | Resource cleanup, `CircuitCache` TTL expiry                |
 
 ## Common Root Causes
 

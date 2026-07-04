@@ -1,17 +1,59 @@
 {
-	"name": "Aria Dev Container",
-	"image": "mcr.microsoft.com/devcontainers/python:2-3.14-trixie",
-	"features": {},
-	"postCreateCommand": "python -m pip install --upgrade pip && if [ -f requirements.txt ]; then pip install -r requirements.txt; fi && if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi",
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"ms-python.python",
-				"ms-azuretools.vscode-docker",
-				"ms-windows-ai-studio.windows-ai-studio",
-				"GitHub.copilot-chat",
-				"GitHub.copilot"
-			]
-		}
-	}
+    "name": "Aria AI Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/copilot-cli:1": {},
+        "ghcr.io/devcontainers/features/git-lfs:1": {},
+        "ghcr.io/joshuanianji/devcontainer-features/github-cli-persistence:1": {},
+        "ghcr.io/hspaans/devcontainer-features/pyupgrade:2": {},
+        "ghcr.io/devcontainers-extra/features/actions-runner:1": {},
+        "ghcr.io/helpers4/devcontainer/github-dev:": {}
+    },
+    "remoteUser": "vscode",
+    "forwardPorts": [7071, 8601, 8080, 8088, 11434],
+    "portsAttributes": {
+        "7071": {
+            "label": "Azure Functions",
+            "onAutoForward": "notify"
+        },
+        "8601": {
+            "label": "Streamlit",
+            "onAutoForward": "silent"
+        },
+        "8080": {
+            "label": "Aria Web",
+            "onAutoForward": "notify"
+        },
+        "8088": {
+            "label": "Writer Reviewer",
+            "onAutoForward": "notify"
+        },
+        "11434": {
+            "label": "Ollama",
+            "onAutoForward": "silent"
+        }
+    },
+    "remoteEnv": {
+        "LMSTUDIO_BASE_URL": "http://host.docker.internal:1234/v1",
+        "OLLAMA_BASE_URL": "http://host.docker.internal:11434/v1",
+        "OLLAMA_MODEL": "llama3.2",
+        "PIP_DISABLE_PIP_VERSION_CHECK": "1",
+        "PYTHONUNBUFFERED": "1",
+        "NPM_CONFIG_PREFIX": "/home/vscode/.npm-global"
+    },
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.analysis.typeCheckingMode": "basic",
+                "python.testing.pytestEnabled": true,
+                "python.testing.pytestArgs": ["tests"],
+                "editor.inlineSuggest.enabled": true
+            },
+            "extensions": []
+        }
+    }
 }

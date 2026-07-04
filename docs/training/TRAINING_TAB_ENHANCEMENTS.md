@@ -155,28 +155,28 @@ Small gray text under inputs providing:
 ### Core Functions
 
 ```javascript
-startTraining()          // Enhanced with validation and confirmation
-updateModelInfo()        // Dynamic model descriptions
-updateDatasetInfo()      // Dataset selection feedback
-updateEstimate()         // Real-time time/VRAM calculations
+startTraining() // Enhanced with validation and confirmation
+updateModelInfo() // Dynamic model descriptions
+updateDatasetInfo() // Dataset selection feedback
+updateEstimate() // Real-time time/VRAM calculations
 calculateEstimatedTime() // Helper for time estimation
 ```
 
 ### Advanced Features
 
 ```javascript
-toggleAdvancedOptions()  // Show/hide advanced section
-toggleEvalOptions()      // Show/hide eval settings
+toggleAdvancedOptions() // Show/hide advanced section
+toggleEvalOptions() // Show/hide eval settings
 validateTrainingParams() // Pre-submission validation
 ```
 
 ### Presets & Config
 
 ```javascript
-applyPreset()           // Apply quick preset (quick/standard/full/production)
-saveAsConfig()          // Export config as JSON
-loadConfigFile()        // Import config from JSON
-resetForm()             // Reset to defaults
+applyPreset() // Apply quick preset (quick/standard/full/production)
+saveAsConfig() // Export config as JSON
+loadConfigFile() // Import config from JSON
+resetForm() // Reset to defaults
 ```
 
 ## 📊 Technical Details
@@ -201,18 +201,18 @@ total_vram = base_vram + lora_vram
 
 ### Parameter Ranges
 
-| Parameter | Min | Max | Default | Step |
-| ----------- | ----- | ----- | --------- | ------ |
-| Epochs | 1 | 20 | 3 | 1 |
-| Max Samples | 10 | ∞ | 1000 | 10 |
-| Batch Size | 1 | 8 | 2 | - |
-| LoRA Rank | 4 | 128 | 8 | 4 |
-| LoRA Alpha | 8 | 256 | 16 | 8 |
-| LoRA Dropout | 0 | 0.5 | 0.1 | 0.05 |
-| Gradient Accum | 1 | 32 | 1 | 1 |
-| Warmup Steps | 0 | ∞ | 0 | 10 |
-| Weight Decay | 0 | 0.5 | 0.01 | 0.01 |
-| Max Grad Norm | 0 | 10 | 1.0 | 0.1 |
+| Parameter      | Min | Max | Default | Step |
+| -------------- | --- | --- | ------- | ---- |
+| Epochs         | 1   | 20  | 3       | 1    |
+| Max Samples    | 10  | ∞   | 1000    | 10   |
+| Batch Size     | 1   | 8   | 2       | -    |
+| LoRA Rank      | 4   | 128 | 8       | 4    |
+| LoRA Alpha     | 8   | 256 | 16      | 8    |
+| LoRA Dropout   | 0   | 0.5 | 0.1     | 0.05 |
+| Gradient Accum | 1   | 32  | 1       | 1    |
+| Warmup Steps   | 0   | ∞   | 0       | 10   |
+| Weight Decay   | 0   | 0.5 | 0.01    | 0.01 |
+| Max Grad Norm  | 0   | 10  | 1.0     | 0.1  |
 
 ## 🚀 Usage Guide
 
@@ -251,24 +251,24 @@ Compare results → Iterate → Production
 
 ```json
 {
-  "name": "my_training_job",
-  "model": "phi35",
-  "dataset": "datasets/chat/mixed_chat",
-  "epochs": 3,
-  "max_samples": 1000,
-  "learning_rate": "2e-4",
-  "batch_size": 2,
-  "lora_rank": 8,
-  "lora_alpha": 16,
-  "lora_dropout": 0.1,
-  "gradient_accumulation": 1,
-  "warmup_steps": 0,
-  "weight_decay": 0.01,
-  "max_grad_norm": 1.0,
-  "random_seed": 42,
-  "enable_eval": true,
-  "max_eval_samples": 100,
-  "eval_steps": 50
+    "name": "my_training_job",
+    "model": "phi35",
+    "dataset": "datasets/chat/mixed_chat",
+    "epochs": 3,
+    "max_samples": 1000,
+    "learning_rate": "2e-4",
+    "batch_size": 2,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.1,
+    "gradient_accumulation": 1,
+    "warmup_steps": 0,
+    "weight_decay": 0.01,
+    "max_grad_norm": 1.0,
+    "random_seed": 42,
+    "enable_eval": true,
+    "max_eval_samples": 100,
+    "eval_steps": 50
 }
 ```
 
@@ -366,6 +366,7 @@ The training tab is now a **production-ready, feature-rich interface** that:
 **Ready for**: Production use, team collaboration, experimentation, CI/CD integration
 
 ---
-*Last Updated: November 25, 2025*
-*Version: 2.0*
-*Status: ✅ Production Ready*
+
+_Last Updated: November 25, 2025_
+_Version: 2.0_
+_Status: ✅ Production Ready_

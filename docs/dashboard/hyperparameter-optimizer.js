@@ -5,59 +5,61 @@
 
 class HyperparameterOptimizer {
     constructor() {
-        this.searchSpace = {};
-        this.trials = [];
-        this.bestConfig = null;
-        this.bestScore = -Infinity;
-        this.currentTrial = 0;
-        this.maxTrials = 10;
-        this.strategy = 'bayesian'; // bayesian, grid, random
+        this.searchSpace = {}
+        this.trials = []
+        this.bestConfig = null
+        this.bestScore = -Infinity
+        this.currentTrial = 0
+        this.maxTrials = 10
+        this.strategy = "bayesian" // bayesian, grid, random
         this.earlyStopping = {
             enabled: true,
             patience: 3,
-            minDelta: 0.01
-        };
+            minDelta: 0.01,
+        }
     }
 
     /**
      * Define search space
      */
     defineSearchSpace(space) {
-        this.searchSpace = space;
-        console.log('[HyperOptim] Search space defined:', space);
+        this.searchSpace = space
+        console.log("[HyperOptim] Search space defined:", space)
     }
 
     /**
      * Start optimization
      */
     async startOptimization(config) {
-        this.maxTrials = config.maxTrials || 10;
-        this.strategy = config.strategy || 'bayesian';
-        this.currentTrial = 0;
-        this.trials = [];
-        this.bestConfig = null;
-        this.bestScore = -Infinity;
+        this.maxTrials = config.maxTrials || 10
+        this.strategy = config.strategy || "bayesian"
+        this.currentTrial = 0
+        this.trials = []
+        this.bestConfig = null
+        this.bestScore = -Infinity
 
-        console.log(`[HyperOptim] Starting ${this.strategy} optimization with ${this.maxTrials} trials`);
+        console.log(
+            `[HyperOptim] Starting ${this.strategy} optimization with ${this.maxTrials} trials`,
+        )
 
         // Show optimization UI
-        this.showOptimizationUI();
+        this.showOptimizationUI()
 
         // Generate trial configurations based on strategy
-        const trialConfigs = this.generateTrialConfigs();
+        const trialConfigs = this.generateTrialConfigs()
 
         // Run trials
         for (let i = 0; i < trialConfigs.length; i++) {
             if (this.shouldStopEarly()) {
-                console.log('[HyperOptim] Early stopping triggered');
-                break;
+                console.log("[HyperOptim] Early stopping triggered")
+                break
             }
 
-            await this.runTrial(trialConfigs[i], i + 1);
+            await this.runTrial(trialConfigs[i], i + 1)
         }
 
         // Show final results
-        this.showOptimizationResults();
+        this.showOptimizationResults()
     }
 
     /**
@@ -65,14 +67,14 @@ class HyperparameterOptimizer {
      */
     generateTrialConfigs() {
         switch (this.strategy) {
-            case 'grid':
-                return this.generateGridSearch();
-            case 'random':
-                return this.generateRandomSearch();
-            case 'bayesian':
-                return this.generateBayesianSearch();
+            case "grid":
+                return this.generateGridSearch()
+            case "random":
+                return this.generateRandomSearch()
+            case "bayesian":
+                return this.generateBayesianSearch()
             default:
-                return this.generateRandomSearch();
+                return this.generateRandomSearch()
         }
     }
 
@@ -80,60 +82,67 @@ class HyperparameterOptimizer {
      * Grid search: Exhaustive search over all combinations
      */
     generateGridSearch() {
-        const configs = [];
-        const params = Object.keys(this.searchSpace);
+        const configs = []
+        const params = Object.keys(this.searchSpace)
 
         // Generate all combinations (limited to maxTrials)
         const combinations = this.cartesianProduct(
-            params.map(p => this.searchSpace[p].values || this.searchSpace[p].range)
-        );
+            params.map(
+                p => this.searchSpace[p].values || this.searchSpace[p].range,
+            ),
+        )
 
         return combinations.slice(0, this.maxTrials).map(combo => {
-            const config = {};
+            const config = {}
             params.forEach((p, idx) => {
-                config[p] = combo[idx];
-            });
-            return config;
-        });
+                config[p] = combo[idx]
+            })
+            return config
+        })
     }
 
     /**
      * Random search: Random sampling from search space
      */
     generateRandomSearch() {
-        const configs = [];
+        const configs = []
 
         for (let i = 0; i < this.maxTrials; i++) {
-            const config = {};
+            const config = {}
             Object.keys(this.searchSpace).forEach(param => {
-                const space = this.searchSpace[param];
+                const space = this.searchSpace[param]
 
                 if (space.values) {
                     // Categorical: random choice
-                    config[param] = space.values[Math.floor(Math.random() * space.values.length)];
+                    config[param] =
+                        space.values[
+                            Math.floor(Math.random() * space.values.length)
+                        ]
                 } else if (space.range) {
                     // Continuous: random value in range
-                    const [min, max] = space.range;
-                    const scale = space.scale || 'linear';
+                    const [min, max] = space.range
+                    const scale = space.scale || "linear"
 
-                    if (scale === 'log') {
-                        const logMin = Math.log(min);
-                        const logMax = Math.log(max);
-                        config[param] = Math.exp(logMin + Math.random() * (logMax - logMin));
+                    if (scale === "log") {
+                        const logMin = Math.log(min)
+                        const logMax = Math.log(max)
+                        config[param] = Math.exp(
+                            logMin + Math.random() * (logMax - logMin),
+                        )
                     } else {
-                        config[param] = min + Math.random() * (max - min);
+                        config[param] = min + Math.random() * (max - min)
                     }
 
                     // Round if integer type
-                    if (space.type === 'int') {
-                        config[param] = Math.round(config[param]);
+                    if (space.type === "int") {
+                        config[param] = Math.round(config[param])
                     }
                 }
-            });
-            configs.push(config);
+            })
+            configs.push(config)
         }
 
-        return configs;
+        return configs
     }
 
     /**
@@ -141,17 +150,17 @@ class HyperparameterOptimizer {
      */
     generateBayesianSearch() {
         // Start with random samples
-        const initialSamples = 3;
-        const configs = this.generateRandomSearch().slice(0, initialSamples);
+        const initialSamples = 3
+        const configs = this.generateRandomSearch().slice(0, initialSamples)
 
         // For remaining trials, use acquisition function
         // (Simplified version - real Bayesian optimization is more complex)
         for (let i = initialSamples; i < this.maxTrials; i++) {
-            const config = this.selectNextBayesianConfig();
-            configs.push(config);
+            const config = this.selectNextBayesianConfig()
+            configs.push(config)
         }
 
-        return configs;
+        return configs
     }
 
     /**
@@ -159,114 +168,119 @@ class HyperparameterOptimizer {
      */
     selectNextBayesianConfig() {
         // Generate candidate configs
-        const candidates = this.generateRandomSearch().slice(0, 20);
+        const candidates = this.generateRandomSearch().slice(0, 20)
 
         // Score each candidate based on distance from previous trials
-        let bestCandidate = candidates[0];
-        let bestEI = -Infinity;
+        let bestCandidate = candidates[0]
+        let bestEI = -Infinity
 
         candidates.forEach(candidate => {
-            const ei = this.calculateExpectedImprovement(candidate);
+            const ei = this.calculateExpectedImprovement(candidate)
             if (ei > bestEI) {
-                bestEI = ei;
-                bestCandidate = candidate;
+                bestEI = ei
+                bestCandidate = candidate
             }
-        });
+        })
 
-        return bestCandidate;
+        return bestCandidate
     }
 
     /**
      * Calculate Expected Improvement (simplified)
      */
     calculateExpectedImprovement(config) {
-        if (this.trials.length === 0) return Math.random();
+        if (this.trials.length === 0) return Math.random()
 
         // Calculate distance to existing trials
-        let minDistance = Infinity;
+        let minDistance = Infinity
         this.trials.forEach(trial => {
-            const distance = this.configDistance(config, trial.config);
-            minDistance = Math.min(minDistance, distance);
-        });
+            const distance = this.configDistance(config, trial.config)
+            minDistance = Math.min(minDistance, distance)
+        })
 
         // Exploration bonus: prefer configs far from existing trials
-        const exploration = minDistance;
+        const exploration = minDistance
 
         // Exploitation: prefer regions with good scores
-        const exploitation = this.predictScore(config);
+        const exploitation = this.predictScore(config)
 
-        return exploration * 0.3 + exploitation * 0.7;
+        return exploration * 0.3 + exploitation * 0.7
     }
 
     /**
      * Calculate distance between two configurations
      */
     configDistance(config1, config2) {
-        let distance = 0;
+        let distance = 0
         Object.keys(config1).forEach(param => {
-            const v1 = config1[param];
-            const v2 = config2[param];
+            const v1 = config1[param]
+            const v2 = config2[param]
 
-            if (typeof v1 === 'number' && typeof v2 === 'number') {
-                const space = this.searchSpace[param];
-                const range = space.range ? space.range[1] - space.range[0] : 1;
-                distance += Math.pow((v1 - v2) / range, 2);
+            if (typeof v1 === "number" && typeof v2 === "number") {
+                const space = this.searchSpace[param]
+                const range = space.range ? space.range[1] - space.range[0] : 1
+                distance += Math.pow((v1 - v2) / range, 2)
             } else if (v1 !== v2) {
-                distance += 1;
+                distance += 1
             }
-        });
-        return Math.sqrt(distance);
+        })
+        return Math.sqrt(distance)
     }
 
     /**
      * Predict score for a configuration (simplified)
      */
     predictScore(config) {
-        if (this.trials.length === 0) return 0.5;
+        if (this.trials.length === 0) return 0.5
 
         // Weighted average of nearby trials
-        let weightedSum = 0;
-        let totalWeight = 0;
+        let weightedSum = 0
+        let totalWeight = 0
 
         this.trials.forEach(trial => {
-            const distance = this.configDistance(config, trial.config);
-            const weight = Math.exp(-distance);
-            weightedSum += weight * trial.score;
-            totalWeight += weight;
-        });
+            const distance = this.configDistance(config, trial.config)
+            const weight = Math.exp(-distance)
+            weightedSum += weight * trial.score
+            totalWeight += weight
+        })
 
-        return totalWeight > 0 ? weightedSum / totalWeight : 0.5;
+        return totalWeight > 0 ? weightedSum / totalWeight : 0.5
     }
 
     /**
      * Run a single trial
      */
     async runTrial(config, trialNum) {
-        console.log(`[HyperOptim] Running trial ${trialNum}/${this.maxTrials}`, config);
+        console.log(
+            `[HyperOptim] Running trial ${trialNum}/${this.maxTrials}`,
+            config,
+        )
 
-        this.updateTrialUI(trialNum, 'running', config);
+        this.updateTrialUI(trialNum, "running", config)
 
         try {
             // Submit training job with this configuration
-            const response = await fetch('/api/start-training', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const response = await fetch("/api/start-training", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...config,
                     job_name: `hyperparam_trial_${trialNum}`,
-                    _hyperopt: true
-                })
-            });
+                    _hyperopt: true,
+                }),
+            })
 
             if (!response.ok) {
-                throw new Error('Training submission failed');
+                throw new Error("Training submission failed")
             }
 
             // Wait for completion (poll status)
-            const result = await this.waitForCompletion(`hyperparam_trial_${trialNum}`);
+            const result = await this.waitForCompletion(
+                `hyperparam_trial_${trialNum}`,
+            )
 
             // Calculate score (lower loss = higher score)
-            const score = result.post_loss ? (1 / result.post_loss) * 100 : 0;
+            const score = result.post_loss ? (1 / result.post_loss) * 100 : 0
 
             // Record trial
             const trial = {
@@ -275,25 +289,26 @@ class HyperparameterOptimizer {
                 score,
                 loss: result.post_loss,
                 duration: result.duration,
-                timestamp: Date.now()
-            };
+                timestamp: Date.now(),
+            }
 
-            this.trials.push(trial);
+            this.trials.push(trial)
 
             // Update best config
             if (score > this.bestScore) {
-                this.bestScore = score;
-                this.bestConfig = config;
-                this.saveBestConfig();
+                this.bestScore = score
+                this.bestConfig = config
+                this.saveBestConfig()
             }
 
-            this.updateTrialUI(trialNum, 'completed', config, score);
+            this.updateTrialUI(trialNum, "completed", config, score)
 
-            console.log(`[HyperOptim] Trial ${trialNum} completed. Score: ${score.toFixed(2)}`);
-
+            console.log(
+                `[HyperOptim] Trial ${trialNum} completed. Score: ${score.toFixed(2)}`,
+            )
         } catch (err) {
-            console.error(`[HyperOptim] Trial ${trialNum} failed:`, err);
-            this.updateTrialUI(trialNum, 'failed', config);
+            console.error(`[HyperOptim] Trial ${trialNum} failed:`, err)
+            this.updateTrialUI(trialNum, "failed", config)
         }
     }
 
@@ -301,51 +316,51 @@ class HyperparameterOptimizer {
      * Wait for training completion
      */
     async waitForCompletion(jobName, timeout = 3600000) {
-        const startTime = Date.now();
+        const startTime = Date.now()
 
         while (Date.now() - startTime < timeout) {
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Poll every 5 seconds
+            await new Promise(resolve => setTimeout(resolve, 5000)) // Poll every 5 seconds
 
             try {
-                const response = await fetch('/status');
-                const data = await response.json();
+                const response = await fetch("/status")
+                const data = await response.json()
 
-                const job = data.jobs?.find(j => j.name === jobName);
-                if (job && job.status === 'completed') {
-                    return job;
+                const job = data.jobs?.find(j => j.name === jobName)
+                if (job && job.status === "completed") {
+                    return job
                 }
-                if (job && job.status === 'failed') {
-                    throw new Error('Training failed');
+                if (job && job.status === "failed") {
+                    throw new Error("Training failed")
                 }
             } catch (err) {
-                console.error('[HyperOptim] Status poll error:', err);
+                console.error("[HyperOptim] Status poll error:", err)
             }
         }
 
-        throw new Error('Training timeout');
+        throw new Error("Training timeout")
     }
 
     /**
      * Check if early stopping should trigger
      */
     shouldStopEarly() {
-        if (!this.earlyStopping.enabled) return false;
-        if (this.trials.length < this.earlyStopping.patience + 1) return false;
+        if (!this.earlyStopping.enabled) return false
+        if (this.trials.length < this.earlyStopping.patience + 1) return false
 
         // Check if no improvement in last N trials
-        const recentTrials = this.trials.slice(-this.earlyStopping.patience);
-        const recentBest = Math.max(...recentTrials.map(t => t.score));
+        const recentTrials = this.trials.slice(-this.earlyStopping.patience)
+        const recentBest = Math.max(...recentTrials.map(t => t.score))
 
-        const improvement = recentBest - this.bestScore;
-        return improvement < this.earlyStopping.minDelta;
+        const improvement = recentBest - this.bestScore
+        return improvement < this.earlyStopping.minDelta
     }
 
     /**
      * Show optimization UI
      */
     showOptimizationUI() {
-        const container = document.getElementById('hyperoptContainer');
-        if (!container) return;
+        const container = document.getElementById("hyperoptContainer")
+        if (!container) return
 
         container.innerHTML = `
             <div class="card">
@@ -361,53 +376,58 @@ class HyperparameterOptimizer {
                     <div id="currentBest" style="margin-top:20px"></div>
                 </div>
             </div>
-        `;
+        `
 
-        container.style.display = 'block';
+        container.style.display = "block"
     }
 
     /**
      * Update trial UI
      */
     updateTrialUI(trialNum, status, config, score = null) {
-        const container = document.getElementById('trialsProgress');
-        if (!container) return;
+        const container = document.getElementById("trialsProgress")
+        if (!container) return
 
-        const trialId = `trial-${trialNum}`;
-        let trialEl = document.getElementById(trialId);
+        const trialId = `trial-${trialNum}`
+        let trialEl = document.getElementById(trialId)
 
         if (!trialEl) {
-            trialEl = document.createElement('div');
-            trialEl.id = trialId;
-            trialEl.className = 'alert alert-info';
-            container.appendChild(trialEl);
+            trialEl = document.createElement("div")
+            trialEl.id = trialId
+            trialEl.className = "alert alert-info"
+            container.appendChild(trialEl)
         }
 
         const statusEmoji = {
-            running: '⏳',
-            completed: '✅',
-            failed: '❌'
-        };
+            running: "⏳",
+            completed: "✅",
+            failed: "❌",
+        }
 
         const configStr = Object.entries(config)
-            .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toFixed(4) : v}`)
-            .join(', ');
+            .map(
+                ([k, v]) => `${k}: ${typeof v === "number" ? v.toFixed(4) : v}`,
+            )
+            .join(", ")
 
         trialEl.innerHTML = `
             ${statusEmoji[status]} <strong>Trial ${trialNum}/${this.maxTrials}</strong> - ${status}<br>
             <small>${configStr}</small>
-            ${score !== null ? `<br><strong>Score: ${score.toFixed(2)}</strong>` : ''}
-        `;
+            ${score !== null ? `<br><strong>Score: ${score.toFixed(2)}</strong>` : ""}
+        `
 
-        trialEl.className = `alert alert-${status === 'completed' ? 'success' : status === 'failed' ? 'error' : 'info'}`;
+        trialEl.className = `alert alert-${status === "completed" ? "success" : status === "failed" ? "error" : "info"}`
 
         // Update current best
         if (this.bestConfig) {
-            const bestEl = document.getElementById('currentBest');
+            const bestEl = document.getElementById("currentBest")
             if (bestEl) {
                 const bestStr = Object.entries(this.bestConfig)
-                    .map(([k, v]) => `${k}: ${typeof v === 'number' ? v.toFixed(4) : v}`)
-                    .join(', ');
+                    .map(
+                        ([k, v]) =>
+                            `${k}: ${typeof v === "number" ? v.toFixed(4) : v}`,
+                    )
+                    .join(", ")
 
                 bestEl.innerHTML = `
                     <div class="card">
@@ -417,7 +437,7 @@ class HyperparameterOptimizer {
                             <p>${bestStr}</p>
                         </div>
                     </div>
-                `;
+                `
             }
         }
     }
@@ -426,12 +446,15 @@ class HyperparameterOptimizer {
      * Show final optimization results
      */
     showOptimizationResults() {
-        const container = document.getElementById('hyperoptContainer');
-        if (!container) return;
+        const container = document.getElementById("hyperoptContainer")
+        if (!container) return
 
         const bestStr = Object.entries(this.bestConfig)
-            .map(([k, v]) => `<li><strong>${k}:</strong> ${typeof v === 'number' ? v.toFixed(4) : v}</li>`)
-            .join('');
+            .map(
+                ([k, v]) =>
+                    `<li><strong>${k}:</strong> ${typeof v === "number" ? v.toFixed(4) : v}</li>`,
+            )
+            .join("")
 
         container.innerHTML = `
             <div class="card">
@@ -455,42 +478,46 @@ class HyperparameterOptimizer {
                     </div>
                 </div>
             </div>
-        `;
+        `
     }
 
     /**
      * Save best configuration
      */
     saveBestConfig() {
-        if (!this.bestConfig) return;
+        if (!this.bestConfig) return
 
-        localStorage.setItem('hyperopt-best-config', JSON.stringify({
-            config: this.bestConfig,
-            score: this.bestScore,
-            timestamp: Date.now()
-        }));
+        localStorage.setItem(
+            "hyperopt-best-config",
+            JSON.stringify({
+                config: this.bestConfig,
+                score: this.bestScore,
+                timestamp: Date.now(),
+            }),
+        )
 
-        console.log('[HyperOptim] Best config saved:', this.bestConfig);
+        console.log("[HyperOptim] Best config saved:", this.bestConfig)
     }
 
     /**
      * Apply best configuration to training form
      */
     applyBestConfig() {
-        if (!this.bestConfig) return;
+        if (!this.bestConfig) return
 
         Object.keys(this.bestConfig).forEach(key => {
-            const el = document.getElementById(key);
+            const el = document.getElementById(key)
             if (el) {
-                el.value = this.bestConfig[key];
+                el.value = this.bestConfig[key]
             }
-        });
+        })
 
-        if (typeof showToast === 'function') showToast('Best config applied to training form ✓', 'ok', 3500);
+        if (typeof showToast === "function")
+            showToast("Best config applied to training form ✓", "ok", 3500)
 
         // Switch to training tab
-        if (typeof switchTab === 'function') {
-            switchTab('training');
+        if (typeof switchTab === "function") {
+            switchTab("training")
         }
     }
 
@@ -505,16 +532,18 @@ class HyperparameterOptimizer {
             bestConfig: this.bestConfig,
             bestScore: this.bestScore,
             allTrials: this.trials,
-            timestamp: Date.now()
-        };
+            timestamp: Date.now(),
+        }
 
-        const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `hyperopt-results-${Date.now()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+        const blob = new Blob([JSON.stringify(results, null, 2)], {
+            type: "application/json",
+        })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `hyperopt-results-${Date.now()}.json`
+        a.click()
+        URL.revokeObjectURL(url)
     }
 
     /**
@@ -522,35 +551,42 @@ class HyperparameterOptimizer {
      */
     visualizeResults() {
         // Create visualization chart
-        const canvas = document.createElement('canvas');
-        canvas.id = 'hyperoptChart';
-        canvas.style.height = '400px';
+        const canvas = document.createElement("canvas")
+        canvas.id = "hyperoptChart"
+        canvas.style.height = "400px"
 
-        const container = document.getElementById('hyperoptContainer');
+        const container = document.getElementById("hyperoptContainer")
         if (container) {
-            container.appendChild(canvas);
+            container.appendChild(canvas)
         }
 
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d")
         new Chart(ctx, {
-            type: 'line',
+            type: "line",
             data: {
                 labels: this.trials.map(t => `Trial ${t.trialNum}`),
-                datasets: [{
-                    label: 'Trial Score',
-                    data: this.trials.map(t => t.score),
-                    borderColor: '#0f9d89',
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    tension: 0.4
-                }, {
-                    label: 'Best Score So Far',
-                    data: this.trials.map((t, idx) =>
-                        Math.max(...this.trials.slice(0, idx + 1).map(tr => tr.score))
-                    ),
-                    borderColor: '#2dce89',
-                    backgroundColor: 'rgba(45, 206, 137, 0.1)',
-                    tension: 0.4
-                }]
+                datasets: [
+                    {
+                        label: "Trial Score",
+                        data: this.trials.map(t => t.score),
+                        borderColor: "#0f9d89",
+                        backgroundColor: "rgba(102, 126, 234, 0.1)",
+                        tension: 0.4,
+                    },
+                    {
+                        label: "Best Score So Far",
+                        data: this.trials.map((t, idx) =>
+                            Math.max(
+                                ...this.trials
+                                    .slice(0, idx + 1)
+                                    .map(tr => tr.score),
+                            ),
+                        ),
+                        borderColor: "#2dce89",
+                        backgroundColor: "rgba(45, 206, 137, 0.1)",
+                        tension: 0.4,
+                    },
+                ],
             },
             options: {
                 responsive: true,
@@ -558,34 +594,34 @@ class HyperparameterOptimizer {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Optimization Progress'
-                    }
-                }
-            }
-        });
+                        text: "Optimization Progress",
+                    },
+                },
+            },
+        })
     }
 
     /**
      * Stop optimization
      */
     stopOptimization() {
-
-
-        this.maxTrials = this.currentTrial;
-        if (typeof showToast === 'function') showToast('Optimization stopping after current trial', 'info', 4000);
+        this.maxTrials = this.currentTrial
+        if (typeof showToast === "function")
+            showToast("Optimization stopping after current trial", "info", 4000)
     }
 
     /**
      * Helper: Cartesian product
      */
     cartesianProduct(arrays) {
-        return arrays.reduce((acc, array) =>
-            acc.flatMap(x => array.map(y => [...x, y])), [[]]
-        );
+        return arrays.reduce(
+            (acc, array) => acc.flatMap(x => array.map(y => [...x, y])),
+            [[]],
+        )
     }
 }
 
 // Export for use in dashboard
-if (typeof window !== 'undefined') {
-    window.HyperparameterOptimizer = HyperparameterOptimizer;
+if (typeof window !== "undefined") {
+    window.HyperparameterOptimizer = HyperparameterOptimizer
 }

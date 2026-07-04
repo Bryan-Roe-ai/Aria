@@ -246,8 +246,7 @@ def main() -> None:
                 if len(scope_drift) > 2:
                     scope_preview += ", ..."
                 scope_suffix = (
-                    " | scope warning: unfinished items may be drifting"
-                    f" from the active request -> {scope_preview}"
+                    f" | scope warning: unfinished items may be drifting from the active request -> {scope_preview}"
                 )
             _emit(
                 {
@@ -256,9 +255,7 @@ def main() -> None:
                         "Stop blocked: incomplete todo items are still present. "
                         "Finish the active work, update todo statuses, then stop."
                     ),
-                    "systemMessage": (
-                        f"incomplete todo guard: unresolved items -> {preview}{scope_suffix}"
-                    ),
+                    "systemMessage": (f"incomplete todo guard: unresolved items -> {preview}{scope_suffix}"),
                 },
                 exit_code=2,
             )
@@ -268,8 +265,7 @@ def main() -> None:
                 {
                     "continue": True,
                     "systemMessage": (
-                        "Loop-escape: task_complete attempts detected but result "
-                        "may have been cleared. Allowing stop."
+                        "Loop-escape: task_complete attempts detected but result may have been cleared. Allowing stop."
                     ),
                 }
             )
@@ -279,8 +275,7 @@ def main() -> None:
                 {
                     "continue": True,
                     "systemMessage": (
-                        "task_complete guard bypassed by explicit env override "
-                        f"({_ALLOW_STOP_OVERRIDE_ENV}=true)."
+                        f"task_complete guard bypassed by explicit env override ({_ALLOW_STOP_OVERRIDE_ENV}=true)."
                     ),
                 }
             )
@@ -293,9 +288,7 @@ def main() -> None:
                     "finished, send a brief summary and then call task_complete. "
                     "If work remains, continue instead of stopping."
                 ),
-                "systemMessage": (
-                    "Finish the work or send a brief summary and call task_complete before stopping."
-                ),
+                "systemMessage": ("Finish the work or send a brief summary and call task_complete before stopping."),
             },
             exit_code=2,
         )

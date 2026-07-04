@@ -7,7 +7,7 @@ import json
 from collections import defaultdict
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -37,10 +37,10 @@ class DatasetStatistics:
     low_quality_rate: float
 
     # Distribution
-    token_distribution: Dict[str, int]
-    length_percentiles: Dict[str, int]
+    token_distribution: dict[str, int]
+    length_percentiles: dict[str, int]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     def print_summary(self):
@@ -66,9 +66,7 @@ class DatasetStatistics:
 
         print("\n✨ Quality Metrics:")
         print(f"  Avg quality score: {self.avg_quality_score:.3f}")
-        print(
-            f"  Low quality samples: {self.low_quality_count:,} ({self.low_quality_rate:.2%})"
-        )
+        print(f"  Low quality samples: {self.low_quality_count:,} ({self.low_quality_rate:.2%})")
 
         print("\n📈 Length Distribution (percentiles):")
         for pct, value in sorted(self.length_percentiles.items()):
@@ -173,25 +171,23 @@ class DatasetAnalyzer:
 
         # Create visualizations
         if create_visualizations:
-            self._create_visualizations(
-                token_counts, quality_scores, Path(dataset_path).stem
-            )
+            self._create_visualizations(token_counts, quality_scores, Path(dataset_path).stem)
 
         # Save results
         self._save_results(stats, Path(dataset_path).stem)
 
         return stats
 
-    def _load_dataset(self, path: str) -> List[Dict[str, Any]]:
+    def _load_dataset(self, path: str) -> list[dict[str, Any]]:
         """Load dataset from JSONL"""
         samples = []
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     samples.append(json.loads(line))
         return samples
 
-    def _extract_text(self, sample: Dict[str, Any]) -> str:
+    def _extract_text(self, sample: dict[str, Any]) -> str:
         """Extract text from sample"""
         if "messages" in sample:
             return " ".join([m.get("content", "") for m in sample["messages"]])
@@ -230,7 +226,7 @@ class DatasetAnalyzer:
 
         return np.mean(scores) if scores else 0.0
 
-    def _compute_distribution(self, token_counts: List[int]) -> Dict[str, int]:
+    def _compute_distribution(self, token_counts: list[int]) -> dict[str, int]:
         """Compute token count distribution"""
         bins = [0, 50, 100, 200, 500, 1000, 2000, float("inf")]
         labels = [
@@ -252,9 +248,7 @@ class DatasetAnalyzer:
 
         return dict(distribution)
 
-    def _create_visualizations(
-        self, token_counts: List[int], quality_scores: List[float], dataset_name: str
-    ):
+    def _create_visualizations(self, token_counts: list[int], quality_scores: list[float], dataset_name: str):
         """Create visualization plots"""
         try:
             fig, axes = plt.subplots(2, 2, figsize=(15, 12))
@@ -264,9 +258,7 @@ class DatasetAnalyzer:
             axes[0, 0].set_xlabel("Token Count")
             axes[0, 0].set_ylabel("Frequency")
             axes[0, 0].set_title("Token Length Distribution")
-            axes[0, 0].axvline(
-                np.median(token_counts), color="r", linestyle="--", label="Median"
-            )
+            axes[0, 0].axvline(np.median(token_counts), color="r", linestyle="--", label="Median")
             axes[0, 0].legend()
 
             # Token length box plot
@@ -276,21 +268,15 @@ class DatasetAnalyzer:
             axes[0, 1].grid(True, alpha=0.3)
 
             # Quality score distribution
-            axes[1, 0].hist(
-                quality_scores, bins=30, edgecolor="black", alpha=0.7, color="green"
-            )
+            axes[1, 0].hist(quality_scores, bins=30, edgecolor="black", alpha=0.7, color="green")
             axes[1, 0].set_xlabel("Quality Score")
             axes[1, 0].set_ylabel("Frequency")
             axes[1, 0].set_title("Quality Score Distribution")
-            axes[1, 0].axvline(
-                np.mean(quality_scores), color="r", linestyle="--", label="Mean"
-            )
+            axes[1, 0].axvline(np.mean(quality_scores), color="r", linestyle="--", label="Mean")
             axes[1, 0].legend()
 
             # Length vs Quality scatter
-            sample_indices = np.random.choice(
-                len(token_counts), min(1000, len(token_counts)), replace=False
-            )
+            sample_indices = np.random.choice(len(token_counts), min(1000, len(token_counts)), replace=False)
             sampled_counts = [token_counts[i] for i in sample_indices]
             sampled_quality = [quality_scores[i] for i in sample_indices]
             axes[1, 1].scatter(sampled_counts, sampled_quality, alpha=0.5)
@@ -322,17 +308,15 @@ class DatasetAnalyzer:
 
         print(f"✓ Statistics saved to {output_file}")
 
-    def compare_datasets(
-        self, dataset_paths: List[str]
-    ) -> Dict[str, DatasetStatistics]:
+    def compare_datasets(self, dataset_paths: list[str]) -> dict[str, DatasetStatistics]:
         """Compare multiple datasets"""
         results = {}
 
         for path in dataset_paths:
             dataset_name = Path(path).stem
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"Analyzing: {dataset_name}")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
 
             stats = self.analyze(path, create_visualizations=False)
             results[dataset_name] = stats
@@ -343,7 +327,7 @@ class DatasetAnalyzer:
 
         return results
 
-    def _create_comparison_plot(self, results: Dict[str, DatasetStatistics]):
+    def _create_comparison_plot(self, results: dict[str, DatasetStatistics]):
         """Create comparison visualization"""
         try:
             fig, axes = plt.subplots(2, 2, figsize=(15, 12))
@@ -397,9 +381,7 @@ def main():
     parser = argparse.ArgumentParser(description="Dataset Analysis & Health Check")
     parser.add_argument("--dataset", type=str, help="Path to dataset (JSONL)")
     parser.add_argument("--compare", nargs="+", help="Compare multiple datasets")
-    parser.add_argument(
-        "--no-visualizations", action="store_true", help="Skip creating visualizations"
-    )
+    parser.add_argument("--no-visualizations", action="store_true", help="Skip creating visualizations")
     parser.add_argument(
         "--quality-threshold",
         type=float,

@@ -5,30 +5,35 @@
 Four powerful training tools have been added to enhance your AI training workflow:
 
 ### 1. **Automatic Evaluation** (`scripts/auto_eval.py`)
+
 - Compute perplexity, inference speed, memory usage
 - Compare multiple models
 - BLEU/ROUGE quality metrics (optional)
 - Export results to JSON
 
 ### 2. **RAG Pipeline** (`scripts/rag_pipeline.py`)
+
 - Document indexing and semantic search
 - Context-aware generation
 - Interactive Q&A mode
 - Persistent vector index
 
 ### 3. **Semantic Pruning** (`scripts/semantic_pruning.py`)
+
 - Remove exact duplicates
 - Semantic deduplication via embeddings
 - Quality scoring and filtering
 - 20-40% dataset reduction typical
 
 ### 4. **GPU Optimizer** (`scripts/gpu_optimizer.py`)
+
 - Auto-detect hardware capabilities
 - Configure optimal batch size, precision, quantization
 - Multi-GPU support
 - Direct config file updates
 
 ### 5. **Master Pipeline** (`scripts/run_pipeline.py`)
+
 - One-command orchestration
 - Complete workflow automation
 - Error handling and resumption
@@ -53,6 +58,7 @@ AI/microsoft_phi-silica-3.6_v1/
 ## 🚀 Quick Start
 
 ### Option 1: Full Automated Pipeline
+
 ```bash
 cd AI\microsoft_phi-silica-3.6_v1
 
@@ -64,6 +70,7 @@ python scripts\run_pipeline.py \
 ```
 
 ### Option 2: Individual Tools
+
 ```bash
 # 1. Optimize for your GPU
 python scripts\gpu_optimizer.py --update-config lora\lora.yaml
@@ -89,6 +96,7 @@ python scripts\rag_pipeline.py \
 ```
 
 ### Option 3: Quick Test (No GPU Required)
+
 ```bash
 # Test on CPU with 64 samples
 python scripts\run_pipeline.py \
@@ -101,11 +109,13 @@ python scripts\run_pipeline.py \
 ## 📦 Installation
 
 ### Core Features (Already Installed)
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Advanced Features (Optional)
+
 ```bash
 # Install all advanced features
 pip install -r requirements-advanced.txt
@@ -119,24 +129,28 @@ pip install bitsandbytes           # For 4-bit/8-bit quantization
 ## 💡 Key Features
 
 ### Automatic Evaluation
+
 ✅ Multiple metrics (perplexity, speed, memory)
 ✅ Model comparison
 ✅ JSON export
 ✅ Programmatic API
 
 ### RAG Pipeline
+
 ✅ Semantic document search
 ✅ Context injection
 ✅ Interactive mode
 ✅ Index persistence
 
 ### Semantic Pruning
+
 ✅ 20-40% dataset reduction
 ✅ Quality scoring
 ✅ Duplicate removal
 ✅ Diversity preservation
 
 ### GPU Optimizer
+
 ✅ Hardware auto-detection
 ✅ Memory-aware config
 ✅ Multi-GPU scaling
@@ -145,6 +159,7 @@ pip install bitsandbytes           # For 4-bit/8-bit quantization
 ## 🎓 Use Cases
 
 ### Use Case 1: Production Training
+
 ```bash
 # High-quality training with all optimizations
 python scripts\run_pipeline.py \
@@ -156,6 +171,7 @@ python scripts\run_pipeline.py \
 ```
 
 ### Use Case 2: Rapid Experimentation
+
 ```bash
 # Quick iterations with small samples
 python scripts\run_pipeline.py \
@@ -166,6 +182,7 @@ python scripts\run_pipeline.py \
 ```
 
 ### Use Case 3: Model Evaluation Only
+
 ```bash
 # Just evaluate an existing model
 python scripts\auto_eval.py \
@@ -176,6 +193,7 @@ python scripts\auto_eval.py \
 ```
 
 ### Use Case 4: RAG Deployment
+
 ```bash
 # Train and deploy with RAG
 python scripts\train_lora.py --dataset data --config lora\lora.yaml
@@ -192,30 +210,33 @@ python scripts\rag_pipeline.py \
 ## 📊 Expected Results
 
 ### GPU Optimization
+
 - **RTX 4090**: Batch size 4, BF16, 2000 tokens/sec
 - **RTX 3090**: Batch size 2, FP16, 1000 tokens/sec
 - **RTX 3060**: Batch size 1, 8-bit, 400 tokens/sec
 - **CPU**: Batch size 1, FP32, 50 tokens/sec
 
 ### Semantic Pruning
+
 - **Typical Reduction**: 20-40%
 - **Quality Improvement**: 5-15% better perplexity
 - **Training Speed**: 30-50% faster
 
 ### Evaluation Metrics
+
 - **Perplexity**: Lower is better (target: <15)
 - **Inference**: Target >100 tokens/sec on GPU
 - **Memory**: Should fit in 80% of VRAM
 
 ## 🔧 Troubleshooting
 
-| Issue | Solution |
-| ------- | ---------- |
-| Out of memory | Run `python scripts\gpu_optimizer.py --memory-usage 0.6` |
-| Slow training | Check GPU utilization, enable BF16/FP16 |
-| Import errors | Install optional deps: `pip install -r requirements-advanced.txt` |
-| Poor eval scores | More aggressive pruning, increase training epochs |
-| RAG not working | Install: `pip install sentence-transformers` |
+| Issue            | Solution                                                          |
+| ---------------- | ----------------------------------------------------------------- |
+| Out of memory    | Run `python scripts\gpu_optimizer.py --memory-usage 0.6`          |
+| Slow training    | Check GPU utilization, enable BF16/FP16                           |
+| Import errors    | Install optional deps: `pip install -r requirements-advanced.txt` |
+| Poor eval scores | More aggressive pruning, increase training epochs                 |
+| RAG not working  | Install: `pip install sentence-transformers`                      |
 
 ## 📚 Documentation
 
@@ -226,52 +247,56 @@ python scripts\rag_pipeline.py \
 ## 🎯 Next Steps
 
 1. **Test the tools**:
-   ```bash
-   # Quick test
-   python scripts\gpu_optimizer.py
-   ```
+
+    ```bash
+    # Quick test
+    python scripts\gpu_optimizer.py
+    ```
 
 2. **Run a small experiment**:
-   ```bash
-   python scripts\run_pipeline.py \
-     --input-dataset ..\..\datasets\chat\dolly\train.jsonl \
-     --max-train-samples 64 \
-     --skip-rag
-   ```
+
+    ```bash
+    python scripts\run_pipeline.py \
+      --input-dataset ..\..\datasets\chat\dolly\train.jsonl \
+      --max-train-samples 64 \
+      --skip-rag
+    ```
 
 3. **Review results**:
-   ```bash
-   # Check output directory
-   dir data_out\
 
-   # View pipeline results
-   type data_out\pipeline_results.json
-   ```
+    ```bash
+    # Check output directory
+    dir data_out\
+
+    # View pipeline results
+    type data_out\pipeline_results.json
+    ```
 
 4. **Scale up**:
-   ```bash
-   # Full training run
-   python scripts\run_pipeline.py \
-     --input-dataset ..\..\datasets\chat\dolly\train.jsonl \
-     --test-dataset ..\..\datasets\chat\dolly\test.jsonl \
-     --rag-docs ..\..\datasets
-   ```
+    ```bash
+    # Full training run
+    python scripts\run_pipeline.py \
+      --input-dataset ..\..\datasets\chat\dolly\train.jsonl \
+      --test-dataset ..\..\datasets\chat\dolly\test.jsonl \
+      --rag-docs ..\..\datasets
+    ```
 
 ## ✨ Features Summary
 
-| Tool | Purpose | Key Benefit |
-| ------ | --------- | ------------- |
-| GPU Optimizer | Auto-configure hardware | Maximize performance |
-| Semantic Pruning | Clean training data | 30-50% faster training |
-| Auto Evaluation | Benchmark models | Track improvements |
-| RAG Pipeline | Enhance with context | Better responses |
-| Master Pipeline | Orchestrate workflow | One-command training |
+| Tool             | Purpose                 | Key Benefit            |
+| ---------------- | ----------------------- | ---------------------- |
+| GPU Optimizer    | Auto-configure hardware | Maximize performance   |
+| Semantic Pruning | Clean training data     | 30-50% faster training |
+| Auto Evaluation  | Benchmark models        | Track improvements     |
+| RAG Pipeline     | Enhance with context    | Better responses       |
+| Master Pipeline  | Orchestrate workflow    | One-command training   |
 
 ## 🎉 You're Ready!
 
 All advanced training components are now installed and ready to use. Start with the Quick Start commands above, or dive into the complete guide at `ADVANCED_TRAINING_GUIDE.md`.
 
 **Free alternatives included:**
+
 - All tools work without paid services
 - CPU fallback for GPU tools
 - Local embeddings without API keys

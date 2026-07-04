@@ -11,12 +11,12 @@ follow-up node.
 from __future__ import annotations
 
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from agent_framework import WorkflowBuilder
 from agent_framework.azure import AzureAIClient
 from azure.identity.aio import DefaultAzureCredential
-
 
 CLASSIFIER_INSTRUCTIONS = """\
 You are an email spam classifier.
@@ -54,9 +54,7 @@ def _get_required_env(name: str) -> str:
     value = os.environ.get(name, "").strip()
     if value:
         return value
-    raise ValueError(
-        f"{name} is not set. Add it to your .env file or environment variables."
-    )
+    raise ValueError(f"{name} is not set. Add it to your .env file or environment variables.")
 
 
 def _coerce_text(value: Any) -> str:

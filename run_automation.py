@@ -4,16 +4,21 @@ Aria Automation Runner
 Automatically runs core Aria systems and utilities.
 """
 
+import argparse
 import os
-import sys
-import subprocess
 import signal
+import subprocess
+import sys
 from pathlib import Path
-from typing import List
 
 # Use .venv environment if available
 workspace_root = Path(__file__).parent
-venv_python = workspace_root / ".venv" / ("Scripts" if sys.platform == "win32" else "bin") / ("python.exe" if sys.platform == "win32" else "python")
+venv_python = (
+    workspace_root
+    / ".venv"
+    / ("Scripts" if sys.platform == "win32" else "bin")
+    / ("python.exe" if sys.platform == "win32" else "python")
+)
 
 if venv_python.exists():
     # Prepend venv bin to PATH so subprocess uses venv Python
@@ -30,7 +35,7 @@ if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except:
+    except Exception:
         pass
 
 # Color codes for terminal output
@@ -44,13 +49,9 @@ BOLD = "\033[1m"
 
 def print_section(title: str) -> None:
     """Print a section header."""
-    print(
-        f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}"
-    )
+    print(f"\n{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
     print(f"{BOLD}{BLUE}{title}{RESET}")
-    print(
-        f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}"
-    )
+    print(f"{BOLD}{BLUE}═══════════════════════════════════════════════════════════{RESET}")
 
 
 def print_ok(msg: str) -> None:
@@ -80,11 +81,21 @@ def print_info(msg: str) -> None:
 class AutomationRunner:
     """Manages automatic execution of Aria systems."""
 
-    def __init__(self, workspace_root: Path):
+    def __init__(
+        self,
+        workspace_root: Path,
+        *,
+        auto_improve: bool = False,
+        strict_endpoints: bool = False,
+        full_pytest: bool = False,
+    ):
         """Initialize the automation runner."""
         self.workspace_root = workspace_root
-        self.processes: List[subprocess.Popen] = []
+        self.processes: list[subprocess.Popen] = []
         self.running = True
+        self.auto_improve = auto_improve
+        self.strict_endpoints = strict_endpoints
+        self.full_pytest = full_pytest
 
     def setup_signal_handlers(self) -> None:
         """Setup SIGINT and SIGTERM handlers for graceful shutdown."""
@@ -101,10 +112,6 @@ class AutomationRunner:
         """Validate that the environment is set up correctly."""
         print_section("Environment Validation")
 
-        # Check Python version
-        if sys.version_info < (3, 8):
-            print_error(f"Python 3.8+ required (current: {sys.version})")
-            return False
         print_ok(f"Python version: {sys.version.split()[0]}")
 
         # Check workspace exists
@@ -139,8 +146,8 @@ class AutomationRunner:
                 cwd=str(self.workspace_root),
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='replace',
+                encoding="utf-8",
+                errors="replace",
                 timeout=30,
             )
 
@@ -179,8 +186,8 @@ class AutomationRunner:
                 cwd=str(self.workspace_root),
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='replace',
+                encoding="utf-8",
+                errors="replace",
                 timeout=300,
             )
 
@@ -193,9 +200,7 @@ class AutomationRunner:
                 print_ok("All tests passed")
                 return True
             if "No module named pytest" in (result.stderr or ""):
-                print_error(
-                    "pytest is not installed in the active Python environment"
-                )
+                print_error("pytest is not installed in the active Python environment")
                 return False
             if result.returncode == 5:
                 print_warning("pytest collected no tests")
@@ -223,12 +228,12 @@ class AutomationRunner:
         try:
             print_info("Starting validation checks...")
             result = subprocess.run(
-                [sys.executable, str(validation_script)],
+                [_PYTHON_EXECUTABLE, str(validation_script)],
                 cwd=str(self.workspace_root),
                 capture_output=True,
                 text=True,
-                encoding='utf-8',
-                errors='replace',
+                encoding="utf-8",
+                errors="replace",
                 timeout=60,
             )
 
@@ -249,6 +254,58 @@ class AutomationRunner:
             return False
         except Exception as e:
             print_error(f"Failed to run validation: {e}")
+            return False
+
+    def run_auto_improve(self) -> bool:
+        """Run repo auto-improvement cycle (ruff fix + contract/health checks)."""
+        print_section("Running Auto-Improve Repo Cycle")
+
+        improve_script = self.workspace_root / "scripts" / "repo_health_automation.py"
+        if not improve_script.exists():
+            print_warning(f"Auto-improve script not found: {improve_script}")
+            return False
+
+        command = [
+            _PYTHON_EXECUTABLE,
+            str(improve_script),
+            "--once",
+            "--auto-fix-ruff",
+            "--continue-on-fail",
+        ]
+        if self.strict_endpoints:
+            command.append("--strict-endpoints")
+        if self.full_pytest:
+            command.append("--full-pytest")
+
+        try:
+            print_info("Starting repo auto-improve cycle...")
+            result = subprocess.run(
+                command,
+                cwd=str(self.workspace_root),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=900,
+            )
+
+            if result.stdout:
+                print(result.stdout)
+            if result.stderr:
+                print(result.stderr)
+
+            if result.returncode == 0:
+                print_ok("Auto-improve cycle completed successfully")
+                return True
+
+            print_warning("Auto-improve cycle finished with issues")
+            return False
+
+        except subprocess.TimeoutExpired:
+            print_warning("Auto-improve cycle timed out")
+            return False
+        except Exception as e:
+            print_error(f"Failed to run auto-improve cycle: {e}")
             return False
 
     def display_status(self) -> None:
@@ -291,6 +348,11 @@ class AutomationRunner:
             # Run environment setup check
             env_ok = self.run_env_setup_check()
 
+            # Optional auto-improvement cycle
+            auto_improve_ok = True
+            if self.auto_improve:
+                auto_improve_ok = self.run_auto_improve()
+
             # Run tests
             print_info("Running test suite...")
             tests_ok = self.run_tests()
@@ -298,16 +360,14 @@ class AutomationRunner:
             # Run validation
             validation_ok = self.run_validation()
 
-            overall_ok = env_ok and tests_ok and validation_ok
+            overall_ok = env_ok and auto_improve_ok and tests_ok and validation_ok
 
             # Display final status
             print_section("Automation Complete")
             if overall_ok:
                 print_ok("All automated tasks completed successfully!")
             else:
-                print_warning(
-                    "Automation finished with issues. Review the warnings/errors above."
-                )
+                print_warning("Automation finished with issues. Review the warnings/errors above.")
             self.display_status()
             return overall_ok
 
@@ -323,9 +383,32 @@ class AutomationRunner:
 
 def main() -> int:
     """Main entry point for the automation runner."""
+    parser = argparse.ArgumentParser(description="Aria Automation Runner")
+    parser.add_argument(
+        "--auto-improve",
+        action="store_true",
+        help="Run auto-improve repo cycle (ruff fix + repo health checks) before tests.",
+    )
+    parser.add_argument(
+        "--strict-endpoints",
+        action="store_true",
+        help="Use strict endpoint mode during auto-improve cycle.",
+    )
+    parser.add_argument(
+        "--full-pytest",
+        action="store_true",
+        help="Include full pytest smoke during auto-improve cycle.",
+    )
+
+    args = parser.parse_args()
     workspace_root = Path(__file__).parent
 
-    runner = AutomationRunner(workspace_root)
+    runner = AutomationRunner(
+        workspace_root,
+        auto_improve=args.auto_improve,
+        strict_endpoints=args.strict_endpoints,
+        full_pytest=args.full_pytest,
+    )
     return 0 if runner.run() else 1
 
 

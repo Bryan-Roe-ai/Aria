@@ -8,14 +8,14 @@ Then open the local URL printed by Gradio.
 
 from __future__ import annotations
 
-from datetime import datetime
 import importlib
-import os
-from pathlib import Path
-from typing import Any
 import json
+import os
 import sys
 import time
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 import gradio as gr
 
@@ -581,14 +581,18 @@ def hist_state_to_display(hist_state: list[dict[str, Any]]) -> list[dict[str, st
         return []
     display: list[dict[str, str]] = []
     for e in hist_state:
-        display.append({
-            "role": "user",
-            "content": f"{e.get('user', '')}\n\n*{e.get('user_ts', '')}*",
-        })
-        display.append({
-            "role": "assistant",
-            "content": f"{e.get('assistant', '')}\n\n*{e.get('assistant_ts', '')}*",
-        })
+        display.append(
+            {
+                "role": "user",
+                "content": f"{e.get('user', '')}\n\n*{e.get('user_ts', '')}*",
+            }
+        )
+        display.append(
+            {
+                "role": "assistant",
+                "content": f"{e.get('assistant', '')}\n\n*{e.get('assistant_ts', '')}*",
+            }
+        )
     return display
 
 
@@ -698,9 +702,10 @@ def reset_chat_session(provider_choice: str) -> tuple[list[Any], list[Any], str,
     return [], [], provider_info, status_info
 
 
-def detect_provider(provider_choice: str, model_override_val: str, temperature_val: float, max_output_tokens_val: int) -> tuple[Any, str]:
-    chat_cli_src = Path(__file__).resolve(
-    ).parents[1] / "ai-projects" / "chat-cli" / "src"
+def detect_provider(
+    provider_choice: str, model_override_val: str, temperature_val: float, max_output_tokens_val: int
+) -> tuple[Any, str]:
+    chat_cli_src = Path(__file__).resolve().parents[1] / "ai-projects" / "chat-cli" / "src"
     if str(chat_cli_src) not in sys.path:
         sys.path.insert(0, str(chat_cli_src))
 
@@ -713,10 +718,8 @@ def detect_provider(provider_choice: str, model_override_val: str, temperature_v
     provider, info = detect_provider_fn(
         explicit=str(provider_choice) if provider_choice else None,
         model_override=str(model_override_val) if model_override_val else None,
-        temperature=float(
-            temperature_val) if temperature_val is not None else None,
-        max_output_tokens=int(
-            max_output_tokens_val) if max_output_tokens_val else None,
+        temperature=float(temperature_val) if temperature_val is not None else None,
+        max_output_tokens=int(max_output_tokens_val) if max_output_tokens_val else None,
     )
     return provider, f"{info.name} ({info.model})"
 
@@ -785,13 +788,13 @@ def respond(
                 "assistant_ts": assistant_ts,
             }
         ]
-        hist_state = hist_state[-int(max_history):]
+        hist_state = hist_state[-int(max_history) :]
         if autosave:
             try:
                 save_conversation_json(hist_state, session_name or "session")
             except Exception:
                 pass
-        yield chat_history[-int(max_history * 2):], "", hist_state, "simulation", "Replied with simulation mode."
+        yield chat_history[-int(max_history * 2) :], "", hist_state, "simulation", "Replied with simulation mode."
         return
 
     provider_display = ""
@@ -825,13 +828,19 @@ def respond(
                 "assistant_ts": assistant_ts,
             }
         ]
-        hist_state = hist_state[-int(max_history):]
+        hist_state = hist_state[-int(max_history) :]
         if autosave:
             try:
                 save_conversation_json(hist_state, session_name or "session")
             except Exception:
                 pass
-        yield chat_history[-int(max_history * 2):], "", hist_state, "fallback", "Provider unavailable, used local fallback."
+        yield (
+            chat_history[-int(max_history * 2) :],
+            "",
+            hist_state,
+            "fallback",
+            "Provider unavailable, used local fallback.",
+        )
         return
 
     provider_type = type(provider).__name__.lower()
@@ -848,8 +857,7 @@ def respond(
                 temperature_val,
                 max_output_tokens_val,
             )
-            fallback_reply = str(
-                fallback_provider.complete(messages, stream=False))
+            fallback_reply = str(fallback_provider.complete(messages, stream=False))
             assistant_ts = timestamp_now()
             display_user = f"{user_message}\n\n*{user_ts}*"
             display_assistant = f"{fallback_reply}\n\n*{assistant_ts}*"
@@ -865,14 +873,19 @@ def respond(
                     "assistant_ts": assistant_ts,
                 }
             ]
-            hist_state = hist_state[-int(max_history):]
+            hist_state = hist_state[-int(max_history) :]
             if autosave:
                 try:
-                    save_conversation_json(
-                        hist_state, session_name or "session")
+                    save_conversation_json(hist_state, session_name or "session")
                 except Exception:
                     pass
-            yield chat_history[-int(max_history * 2):], "", hist_state, fallback_display, "Provider fallback used after Ollama error."
+            yield (
+                chat_history[-int(max_history * 2) :],
+                "",
+                hist_state,
+                fallback_display,
+                "Provider fallback used after Ollama error.",
+            )
             return
         assistant_ts = timestamp_now()
         display_user = f"{user_message}\n\n*{user_ts}*"
@@ -889,13 +902,13 @@ def respond(
                 "assistant_ts": assistant_ts,
             }
         ]
-        hist_state = hist_state[-int(max_history):]
+        hist_state = hist_state[-int(max_history) :]
         if autosave:
             try:
                 save_conversation_json(hist_state, session_name or "session")
             except Exception:
                 pass
-        yield chat_history[-int(max_history * 2):], "", hist_state, provider_display, "Complete."
+        yield chat_history[-int(max_history * 2) :], "", hist_state, provider_display, "Complete."
         return
 
     display_user = f"{user_message}\n\n*{user_ts}*"
@@ -904,7 +917,7 @@ def respond(
         {"role": "user", "content": display_user},
         {"role": "assistant", "content": display_assistant},
     ]
-    yield chat_history[-int(max_history * 2):], "", hist_state, provider_display, "Streaming response..."
+    yield chat_history[-int(max_history * 2) :], "", hist_state, provider_display, "Streaming response..."
 
     partial = ""
     try:
@@ -912,15 +925,13 @@ def respond(
         if hasattr(stream_resp, "__iter__") and not isinstance(stream_resp, str):
             for chunk in stream_resp:
                 partial += str(chunk)
-                chat_history[-1] = {"role": "assistant",
-                                    "content": f"{partial}\n\n*{timestamp_now()}*"}
-                yield chat_history[-int(max_history * 2):], "", hist_state, provider_display, "Streaming response..."
+                chat_history[-1] = {"role": "assistant", "content": f"{partial}\n\n*{timestamp_now()}*"}
+                yield chat_history[-int(max_history * 2) :], "", hist_state, provider_display, "Streaming response..."
         else:
             partial = str(stream_resp)
     except Exception as e:
         err = f"[Provider error: {str(e)}]"
-        chat_history[-1] = {"role": "assistant",
-                            "content": f"{err}\n\n*{timestamp_now()}*"}
+        chat_history[-1] = {"role": "assistant", "content": f"{err}\n\n*{timestamp_now()}*"}
         hist_state = list(hist_state) + [
             {
                 "user": user_message,
@@ -929,18 +940,23 @@ def respond(
                 "assistant_ts": timestamp_now(),
             }
         ]
-        hist_state = hist_state[-int(max_history):]
+        hist_state = hist_state[-int(max_history) :]
         if autosave:
             try:
                 save_conversation_json(hist_state, session_name or "session")
             except Exception:
                 pass
-        yield chat_history[-int(max_history * 2):], "", hist_state, provider_display, "Provider failed; error captured in chat."
+        yield (
+            chat_history[-int(max_history * 2) :],
+            "",
+            hist_state,
+            provider_display,
+            "Provider failed; error captured in chat.",
+        )
         return
 
     assistant_ts = timestamp_now()
-    chat_history[-1] = {"role": "assistant",
-                        "content": f"{partial}\n\n*{assistant_ts}*"}
+    chat_history[-1] = {"role": "assistant", "content": f"{partial}\n\n*{assistant_ts}*"}
     hist_state = list(hist_state) + [
         {
             "user": user_message,
@@ -949,13 +965,13 @@ def respond(
             "assistant_ts": assistant_ts,
         }
     ]
-    hist_state = hist_state[-int(max_history):]
+    hist_state = hist_state[-int(max_history) :]
     if autosave:
         try:
             save_conversation_json(hist_state, session_name or "session")
         except Exception:
             pass
-    yield chat_history[-int(max_history * 2):], "", hist_state, provider_display, "Complete."
+    yield chat_history[-int(max_history * 2) :], "", hist_state, provider_display, "Complete."
 
 
 def run_llm_smoke_test(
@@ -972,10 +988,7 @@ def run_llm_smoke_test(
     max_history: int,
     session_name: str,
 ):
-    smoke_prompt = (
-        "LLM smoke test: reply with a short friendly confirmation "
-        "that the model is working."
-    )
+    smoke_prompt = "LLM smoke test: reply with a short friendly confirmation that the model is working."
     last_result = None
     for result in respond(
         smoke_prompt,
@@ -993,12 +1006,16 @@ def run_llm_smoke_test(
         session_name,
     ):
         last_result = result
-    return last_result if last_result is not None else (
-        chat_history,
-        "",
-        hist_state,
-        "",
-        "LLM smoke test did not run.",
+    return (
+        last_result
+        if last_result is not None
+        else (
+            chat_history,
+            "",
+            hist_state,
+            "",
+            "LLM smoke test did not run.",
+        )
     )
 
 
@@ -1029,13 +1046,10 @@ with gr.Blocks() as demo:
         )
 
         with gr.Row(equal_height=False):
-            with gr.Column(
-                scale=7, elem_id="surfaceBlock", elem_classes=["surface-card"]
-            ):
+            with gr.Column(scale=7, elem_id="surfaceBlock", elem_classes=["surface-card"]):
                 with gr.Accordion("Optional Greeting Demo", open=False):
                     with gr.Row():
-                        name = gr.Textbox(
-                            label="Name", placeholder="Your name")
+                        name = gr.Textbox(label="Name", placeholder="Your name")
                         language = gr.Dropdown(
                             choices=["English", "Spanish", "French", "German"],
                             value="English",
@@ -1048,15 +1062,11 @@ with gr.Blocks() as demo:
                             value="Friendly",
                             label="Style",
                         )
-                        excitement = gr.Slider(
-                            1, 10, value=1, step=1, label="Exclamation count"
-                        )
+                        excitement = gr.Slider(1, 10, value=1, step=1, label="Exclamation count")
 
                     with gr.Row():
                         greet_btn = gr.Button("Greet", variant="primary")
-                        output = gr.Textbox(
-                            label="Greeting", interactive=False, lines=2
-                        )
+                        output = gr.Textbox(label="Greeting", interactive=False, lines=2)
 
                 gr.Markdown("<div class='section-label'>Conversation</div>")
                 with gr.Column(elem_id="chatPanel", elem_classes=["surface-card"]):
@@ -1067,12 +1077,9 @@ with gr.Blocks() as demo:
                     label="Your message",
                     elem_id="userInputBox",
                 )
-                gr.HTML(
-                    "<div class='section-label' style='margin-top:6px;'>Quick prompts</div>"
-                )
+                gr.HTML("<div class='section-label' style='margin-top:6px;'>Quick prompts</div>")
                 with gr.Row(elem_classes=["quick-prompts-row"]):
-                    qp1 = gr.Button("📋 Today's priorities",
-                                    variant="secondary")
+                    qp1 = gr.Button("📋 Today's priorities", variant="secondary")
                     qp2 = gr.Button("📝 Project update", variant="secondary")
                     qp3 = gr.Button("💡 App ideas", variant="secondary")
 
@@ -1086,89 +1093,61 @@ with gr.Blocks() as demo:
 
                 gr.Markdown("<div class='section-label'>Session status</div>")
                 with gr.Row(elem_id="statusRow"):
-                    provider_info = gr.Textbox(
-                        label="Detected provider", interactive=False
-                    )
+                    provider_info = gr.Textbox(label="Detected provider", interactive=False)
                     status_info = gr.Textbox(label="Status", interactive=False)
 
             with gr.Column(scale=5, elem_id="sidebarPanel", elem_classes=["surface-card"]):
                 gr.Markdown("### Controls")
                 simple_mode = gr.Checkbox(label="Simple mode", value=True)
-                gr.Markdown(
-                    "<div class='simple-note'>Simple mode hides advanced settings to keep the UI easy.</div>")
+                gr.Markdown("<div class='simple-note'>Simple mode hides advanced settings to keep the UI easy.</div>")
 
                 with gr.Row():
-                    use_model = gr.Checkbox(
-                        label="Use simulation", value=False)
+                    use_model = gr.Checkbox(label="Use simulation", value=False)
                     provider_select = gr.Dropdown(
-                        choices=["auto", "local", "ollama", "lmstudio",
-                                 "openai", "azure", "lora", "agi", "quantum"],
+                        choices=["auto", "local", "ollama", "lmstudio", "openai", "azure", "lora", "agi", "quantum"],
                         value="auto",
                         label="Provider",
                     )
-                gr.Markdown(
-                    f"<div class='simple-note'>{provider_diagnostics_summary()}</div>"
-                )
+                gr.Markdown(f"<div class='simple-note'>{provider_diagnostics_summary()}</div>")
 
                 with gr.Column(visible=False) as advanced_controls:
                     with gr.Accordion("Model", open=False):
-                        model_override = gr.Textbox(
-                            label="Model override", placeholder="Optional model id")
-                        persona = gr.Textbox(
-                            label="Assistant name", value="Aria")
-                        temperature = gr.Slider(
-                            0.0, 1.0, value=0.7, step=0.05, label="Temperature")
-                        max_output_tokens = gr.Slider(
-                            16, 2048, value=512, step=16, label="Max output tokens")
+                        model_override = gr.Textbox(label="Model override", placeholder="Optional model id")
+                        persona = gr.Textbox(label="Assistant name", value="Aria")
+                        temperature = gr.Slider(0.0, 1.0, value=0.7, step=0.05, label="Temperature")
+                        max_output_tokens = gr.Slider(16, 2048, value=512, step=16, label="Max output tokens")
 
                     with gr.Accordion("History and Sessions", open=False):
-                        autosave = gr.Checkbox(
-                            label="Autosave conversation", value=True)
-                        max_history = gr.Slider(
-                            10, 500, step=10, value=200, label="Max history (turns)")
-                        session_name = gr.Textbox(
-                            label="Session name", placeholder="session-2026-05-29")
+                        autosave = gr.Checkbox(label="Autosave conversation", value=True)
+                        max_history = gr.Slider(10, 500, step=10, value=200, label="Max history (turns)")
+                        session_name = gr.Textbox(label="Session name", placeholder="session-2026-05-29")
                         with gr.Row():
-                            export_json_btn = gr.Button(
-                                "Export JSON", variant="secondary")
-                            export_md_btn = gr.Button(
-                                "Export Markdown", variant="secondary")
+                            export_json_btn = gr.Button("Export JSON", variant="secondary")
+                            export_md_btn = gr.Button("Export Markdown", variant="secondary")
                         with gr.Row():
-                            export_txt_btn = gr.Button(
-                                "Export TXT", variant="secondary")
-                            load_latest_btn = gr.Button(
-                                "Load latest", variant="secondary")
+                            export_txt_btn = gr.Button("Export TXT", variant="secondary")
+                            load_latest_btn = gr.Button("Load latest", variant="secondary")
 
-                        saved_sessions = gr.Dropdown(
-                            choices=list_json_sessions(), label="Saved sessions (.json)")
+                        saved_sessions = gr.Dropdown(choices=list_json_sessions(), label="Saved sessions (.json)")
                         with gr.Row():
-                            refresh_sessions_btn = gr.Button(
-                                "Refresh sessions", variant="secondary")
-                            load_session_btn = gr.Button(
-                                "Load session", variant="secondary")
-                            delete_session_btn = gr.Button(
-                                "Delete session", variant="secondary")
+                            refresh_sessions_btn = gr.Button("Refresh sessions", variant="secondary")
+                            load_session_btn = gr.Button("Load session", variant="secondary")
+                            delete_session_btn = gr.Button("Delete session", variant="secondary")
 
                     with gr.Accordion("Search and Audio", open=False):
                         search_input = gr.Textbox(
-                            label="Search conversation", placeholder="Search user or assistant text")
+                            label="Search conversation", placeholder="Search user or assistant text"
+                        )
                         with gr.Row():
-                            search_btn = gr.Button(
-                                "Search", variant="secondary")
-                            revert_btn = gr.Button(
-                                "Show all", variant="secondary")
-                        tts_autoplay = gr.Checkbox(
-                            label="Autoplay assistant audio", value=False)
-                        speak_btn = gr.Button(
-                            "Speak last reply", variant="secondary")
-                        tts_audio = gr.Audio(
-                            label="Assistant audio", interactive=False)
+                            search_btn = gr.Button("Search", variant="secondary")
+                            revert_btn = gr.Button("Show all", variant="secondary")
+                        tts_autoplay = gr.Checkbox(label="Autoplay assistant audio", value=False)
+                        speak_btn = gr.Button("Speak last reply", variant="secondary")
+                        tts_audio = gr.Audio(label="Assistant audio", interactive=False)
 
-                    export_file = gr.File(
-                        label="Conversation file", interactive=False)
+                    export_file = gr.File(label="Conversation file", interactive=False)
 
-        greet_btn.click(make_greeting, inputs=[
-                        name, style, excitement, language], outputs=output)
+        greet_btn.click(make_greeting, inputs=[name, style, excitement, language], outputs=output)
 
         hist_state = gr.State(initial_hist_state)
 
@@ -1197,19 +1176,15 @@ with gr.Blocks() as demo:
             max_history,
             session_name,
         ]
-        send_outputs = [chatbot, user_input,
-                        hist_state, provider_info, status_info]
+        send_outputs = [chatbot, user_input, hist_state, provider_info, status_info]
 
-        send_btn.click(respond, inputs=send_inputs,
-                       outputs=send_outputs, queue=True)
-        user_input.submit(respond, inputs=send_inputs,
-                          outputs=send_outputs, queue=True)
+        send_btn.click(respond, inputs=send_inputs, outputs=send_outputs, queue=True)
+        user_input.submit(respond, inputs=send_inputs, outputs=send_outputs, queue=True)
 
         def toggle_advanced(is_simple: bool):
             return gr.update(visible=not bool(is_simple))
 
-        simple_mode.change(toggle_advanced, inputs=[
-                           simple_mode], outputs=[advanced_controls])
+        simple_mode.change(toggle_advanced, inputs=[simple_mode], outputs=[advanced_controls])
 
         provider_select.change(
             provider_status_snapshot,
@@ -1239,46 +1214,37 @@ with gr.Blocks() as demo:
                 max_history,
                 session_name,
             ],
-            outputs=[chatbot, user_input, hist_state,
-                     provider_info, status_info],
+            outputs=[chatbot, user_input, hist_state, provider_info, status_info],
             queue=True,
         )
 
-        qp1.click(lambda: "Summarize today's priorities in 5 bullets.",
-                  outputs=[user_input])
-        qp2.click(lambda: "Help me draft a short project update.",
-                  outputs=[user_input])
-        qp3.click(lambda: "Give me three creative app ideas.",
-                  outputs=[user_input])
+        qp1.click(lambda: "Summarize today's priorities in 5 bullets.", outputs=[user_input])
+        qp2.click(lambda: "Help me draft a short project update.", outputs=[user_input])
+        qp3.click(lambda: "Give me three creative app ideas.", outputs=[user_input])
 
         save_btn.click(
-            lambda h, s: save_conversation_json(
-                h, s or "session") if h else None,
+            lambda h, s: save_conversation_json(h, s or "session") if h else None,
             inputs=[hist_state, session_name],
             outputs=[export_file],
         )
 
         export_json_btn.click(
-            lambda h, s: save_conversation_json(
-                h, s or "session") if h else None,
+            lambda h, s: save_conversation_json(h, s or "session") if h else None,
             inputs=[hist_state, session_name],
             outputs=[export_file],
         )
         export_md_btn.click(
-            lambda h, s: save_conversation_markdown(
-                h, s or "session") if h else None,
+            lambda h, s: save_conversation_markdown(h, s or "session") if h else None,
             inputs=[hist_state, session_name],
             outputs=[export_file],
         )
         export_txt_btn.click(
-            lambda h, s: save_conversation_txt(
-                h, s or "session") if h else None,
+            lambda h, s: save_conversation_txt(h, s or "session") if h else None,
             inputs=[hist_state, session_name],
             outputs=[export_file],
         )
 
-        load_latest_btn.click(lambda: load_latest_conversation(), outputs=[
-                              chatbot, hist_state])
+        load_latest_btn.click(lambda: load_latest_conversation(), outputs=[chatbot, hist_state])
 
         def refresh_sessions():
             files = list_json_sessions()
@@ -1297,8 +1263,7 @@ with gr.Blocks() as demo:
                 return [], []
             return hist_state_to_display(data), data
 
-        load_session_btn.click(load_session, inputs=[
-                               saved_sessions], outputs=[chatbot, hist_state])
+        load_session_btn.click(load_session, inputs=[saved_sessions], outputs=[chatbot, hist_state])
 
         def delete_session(filename: str):
             if filename:
@@ -1309,36 +1274,28 @@ with gr.Blocks() as demo:
             files = list_json_sessions()
             return gr.Dropdown(choices=files, value=(files[0] if files else None))
 
-        delete_session_btn.click(delete_session, inputs=[
-                                 saved_sessions], outputs=[saved_sessions])
+        delete_session_btn.click(delete_session, inputs=[saved_sessions], outputs=[saved_sessions])
 
         def search_chat(query: str, hist: list[dict[str, Any]]):
             if not query or not hist:
                 return []
             q = query.lower()
-            filtered = [
-                e for e in hist
-                if q in e.get("user", "").lower() or q in e.get("assistant", "").lower()
-            ]
+            filtered = [e for e in hist if q in e.get("user", "").lower() or q in e.get("assistant", "").lower()]
             return hist_state_to_display(filtered)
 
-        search_btn.click(search_chat, inputs=[
-                         search_input, hist_state], outputs=[chatbot])
-        revert_btn.click(lambda h: hist_state_to_display(
-            h), inputs=[hist_state], outputs=[chatbot])
+        search_btn.click(search_chat, inputs=[search_input, hist_state], outputs=[chatbot])
+        revert_btn.click(lambda h: hist_state_to_display(h), inputs=[hist_state], outputs=[chatbot])
 
         def speak_last(hist: list[dict[str, Any]], autoplay: bool):
             if not hist:
                 return None
             return generate_tts_for_text(hist[-1].get("assistant", ""))
 
-        speak_btn.click(speak_last, inputs=[
-                        hist_state, tts_autoplay], outputs=[tts_audio])
+        speak_btn.click(speak_last, inputs=[hist_state, tts_autoplay], outputs=[tts_audio])
 
 
 if __name__ == "__main__":
-    os.environ.setdefault("GRADIO_SERVER_PORT",
-                          os.environ.get("GRADIO_PORT", "7861"))
+    os.environ.setdefault("GRADIO_SERVER_PORT", os.environ.get("GRADIO_PORT", "7861"))
     demo.launch(
         css=CSS,
         theme=THEME,

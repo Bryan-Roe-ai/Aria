@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from core.agent import BaseAgent
 
@@ -11,7 +11,7 @@ class AgentRegistry:
     """Simple in-memory registry for core agents."""
 
     def __init__(self) -> None:
-        self._agents: List[BaseAgent] = []
+        self._agents: list[BaseAgent] = []
 
     def register(self, agent: BaseAgent) -> BaseAgent:
         """Register an agent and reject duplicate names."""
@@ -20,7 +20,7 @@ class AgentRegistry:
         self._agents.append(agent)
         return agent
 
-    def get_agents(self) -> List[BaseAgent]:
+    def get_agents(self) -> list[BaseAgent]:
         """Return registered agents in registration order."""
         return list(self._agents)
 

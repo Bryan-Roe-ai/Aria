@@ -15,7 +15,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 DATASET_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -34,9 +34,9 @@ def _is_safe_dataset_name(name: str) -> bool:
     return bool(DATASET_NAME_PATTERN.fullmatch(name_norm))
 
 
-def _error_response(code: str, message: str, **extra: Any) -> Dict[str, Any]:
+def _error_response(code: str, message: str, **extra: Any) -> dict[str, Any]:
     """Return a consistent error payload."""
-    response: Dict[str, Any] = {"success": False, "error": code, "message": message}
+    response: dict[str, Any] = {"success": False, "error": code, "message": message}
     if extra:
         response.update(extra)
     return response
@@ -45,7 +45,7 @@ def _error_response(code: str, message: str, **extra: Any) -> Dict[str, Any]:
 class TrainingIntegration:
     """Integration layer for training operations"""
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.workspace_root = Path(config["paths"]["workspace_root"])
         self.phi_path = Path(config["paths"]["phi_training"])
@@ -56,23 +56,19 @@ class TrainingIntegration:
         autotrain_cfg = dict(orchestrators.get("autotrain") or {})
         quantum_cfg = dict(orchestrators.get("quantum_autorun") or {})
         self.autotrain_config = Path(
-            autotrain_cfg.get("config_file")
-            or self.workspace_root / "config" / "training" / "autotrain.yaml"
+            autotrain_cfg.get("config_file") or self.workspace_root / "config" / "training" / "autotrain.yaml"
         )
         self.autotrain_status_file = Path(
-            autotrain_cfg.get("status_file")
-            or self.output_dir / "autotrain" / "status.json"
+            autotrain_cfg.get("status_file") or self.output_dir / "autotrain" / "status.json"
         )
         self.quantum_autorun_config = Path(
-            quantum_cfg.get("config_file")
-            or self.workspace_root / "config" / "quantum" / "quantum_autorun.yaml"
+            quantum_cfg.get("config_file") or self.workspace_root / "config" / "quantum" / "quantum_autorun.yaml"
         )
         self.quantum_autorun_status_file = Path(
-            quantum_cfg.get("status_file")
-            or self.output_dir / "quantum_autorun" / "status.json"
+            quantum_cfg.get("status_file") or self.output_dir / "quantum_autorun" / "status.json"
         )
 
-    async def get_status(self) -> Dict[str, Any]:
+    async def get_status(self) -> dict[str, Any]:
         """Get current training system status"""
         return {
             "enabled": self.config["training"]["enabled"],
@@ -84,7 +80,7 @@ class TrainingIntegration:
             "recent_trainings": self._get_recent_trainings(),
         }
 
-    def _get_autotrain_status(self) -> Dict[str, Any]:
+    def _get_autotrain_status(self) -> dict[str, Any]:
         """Get AutoTrain orchestrator status"""
         config_file = self.autotrain_config
         status_file = self.autotrain_status_file
@@ -107,7 +103,7 @@ class TrainingIntegration:
 
         return status
 
-    def _get_quantum_autorun_status(self) -> Dict[str, Any]:
+    def _get_quantum_autorun_status(self) -> dict[str, Any]:
         """Get Quantum AutoRun orchestrator status"""
         config_file = self.quantum_autorun_config
         status_file = self.quantum_autorun_status_file
@@ -130,7 +126,7 @@ class TrainingIntegration:
 
         return status
 
-    def _check_lora_adapter(self) -> Dict[str, Any]:
+    def _check_lora_adapter(self) -> dict[str, Any]:
         """Check if LoRA adapter is available"""
         adapter_dir = self.output_dir / "lora_training" / "lora_adapter"
         config_file = adapter_dir / "adapter_config.json"
@@ -152,7 +148,7 @@ class TrainingIntegration:
 
         return adapter_info
 
-    def _get_recent_trainings(self, limit: int = 5) -> List[Dict[str, Any]]:
+    def _get_recent_trainings(self, limit: int = 5) -> list[dict[str, Any]]:
         """Get recent training runs"""
         trainings = []
         lora_output = self.output_dir / "lora_training"
@@ -162,9 +158,7 @@ class TrainingIntegration:
 
         # Look for training logs and checkpoints
         try:
-            for run_dir in sorted(
-                lora_output.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True
-            )[:limit]:
+            for run_dir in sorted(lora_output.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True)[:limit]:
                 if run_dir.is_dir():
                     trainings.append(
                         {
@@ -179,9 +173,7 @@ class TrainingIntegration:
 
         return trainings
 
-    async def run_autotrain(
-        self, job_name: Optional[str] = None, dry_run: bool = False
-    ) -> Dict[str, Any]:
+    async def run_autotrain(self, job_name: str | None = None, dry_run: bool = False) -> dict[str, Any]:
         """Run AutoTrain orchestrator"""
         try:
             autotrain_script = self.scripts_path / "autotrain.py"
@@ -213,7 +205,7 @@ class TrainingIntegration:
             logger.exception("run_autotrain failed")
             return {"success": False, "error": str(e)}
 
-    async def list_autotrain_jobs(self) -> List[str]:
+    async def list_autotrain_jobs(self) -> list[str]:
         """List all configured AutoTrain jobs"""
         try:
             autotrain_script = self.scripts_path / "autotrain.py"
@@ -229,11 +221,7 @@ class TrainingIntegration:
             if result.returncode == 0:
                 # Parse job names from output
                 lines = result.stdout.strip().split("\n")
-                jobs = [
-                    line.strip()
-                    for line in lines
-                    if line.strip() and not line.startswith("-")
-                ]
+                jobs = [line.strip() for line in lines if line.strip() and not line.startswith("-")]
                 return jobs
             return []
         except Exception:
@@ -246,7 +234,7 @@ class TrainingIntegration:
         max_train_samples: int = 64,
         max_eval_samples: int = 16,
         epochs: int = 1,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Run LoRA training directly
 
         Hardening and validation added to prevent uncontrolled command-line and
@@ -258,23 +246,19 @@ class TrainingIntegration:
         try:
             # Basic type/format checks
             if not isinstance(dataset, str) or not dataset.strip():
-                return _error_response(
-                    "invalid_dataset", "Dataset must be a non-empty string."
-                )
+                return _error_response("invalid_dataset", "Dataset must be a non-empty string.")
 
             # Fetch available datasets (list_datasets uses a thread for FS ops)
             available_datasets = await self.list_datasets()
 
             # Build allowed map (normalized -> canonical discovered dataset name)
-            allowed_dataset_map: Dict[str, str] = {}
+            allowed_dataset_map: dict[str, str] = {}
             for names in available_datasets.values():
                 for name in names:
                     if isinstance(name, str) and _is_safe_dataset_name(name):
                         allowed_dataset_map[_normalize_dataset_name(name)] = name.strip()
 
-            logger.debug(
-                "train_lora: allowed dataset names=%s", sorted(allowed_dataset_map.keys())
-            )
+            logger.debug("train_lora: allowed dataset names=%s", sorted(allowed_dataset_map.keys()))
 
             if not _is_safe_dataset_name(dataset):
                 logger.warning(
@@ -352,7 +336,7 @@ class TrainingIntegration:
             logger.exception("train_lora failed")
             return _error_response("training_failed", str(e))
 
-    async def list_datasets(self) -> Dict[str, List[str]]:
+    async def list_datasets(self) -> dict[str, list[str]]:
         """List available training datasets.
 
         Filesystem operations are performed in a thread to avoid blocking the event
@@ -360,7 +344,7 @@ class TrainingIntegration:
         """
         datasets_root = self.workspace_root / "datasets"
 
-        def _scan() -> Dict[str, List[str]]:
+        def _scan() -> dict[str, list[str]]:
             result = {"quantum": [], "chat": [], "vision": []}
 
             try:
@@ -389,7 +373,7 @@ class TrainingIntegration:
             logger.exception("list_datasets failed")
             return {"quantum": [], "chat": [], "vision": []}
 
-    async def get_training_metrics(self, run_name: str) -> Dict[str, Any]:
+    async def get_training_metrics(self, run_name: str) -> dict[str, Any]:
         """Get metrics for a specific training run"""
         run_dir = self.output_dir / "lora_training" / run_name
 

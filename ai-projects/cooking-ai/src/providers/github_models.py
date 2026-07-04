@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 try:
     from openai import OpenAI  # type: ignore
@@ -21,31 +21,25 @@ class GitHubModelsProvider:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
-        temperature: Optional[float] = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        temperature: float | None = None,
         base_url: str = "https://models.inference.ai.azure.com",
     ) -> None:
         if OpenAI is None:
-            raise RuntimeError(
-                "openai package not available. Install with: pip install openai>=1.43.0"
-            )
-        api_key = (
-            api_key or os.getenv("GITHUB_MODELS_API_KEY") or os.getenv("GITHUB_TOKEN")
-        )
+            raise RuntimeError("openai package not available. Install with: pip install openai>=1.43.0")
+        api_key = api_key or os.getenv("GITHUB_MODELS_API_KEY") or os.getenv("GITHUB_TOKEN")
         if not api_key:
-            raise RuntimeError(
-                "GitHub Models provider requires GITHUB_MODELS_API_KEY or GITHUB_TOKEN to be set."
-            )
+            raise RuntimeError("GitHub Models provider requires GITHUB_MODELS_API_KEY or GITHUB_TOKEN to be set.")
         self.model = model or os.getenv("GITHUB_MODELS_MODEL", "gpt-4o-mini")
         self.temperature = 0.4 if temperature is None else float(temperature)
         # Create client with custom base URL
         self.client = OpenAI(api_key=api_key, base_url=base_url)
 
-    def complete(self, messages: List[Dict[str, str]], json_mode: bool = False) -> str:
+    def complete(self, messages: list[dict[str, str]], json_mode: bool = False) -> str:
         """Send a chat completion request and return the assistant content."""
         # Some GitHub Models support response_format; if not, rely on prompting.
-        kwargs: Dict[str, Any] = {
+        kwargs: dict[str, Any] = {
             "model": self.model,
             "messages": messages,
             "temperature": self.temperature,

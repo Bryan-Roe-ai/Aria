@@ -5,7 +5,6 @@ Aria Platform Code Generation System
 """
 
 import sys
-from pathlib import Path
 
 # ============================================================================
 # EXAMPLE 1: GENERATED PORTFOLIO WEBSITE
@@ -509,9 +508,7 @@ def demo_portfolio_generation():
     print("=" * 70)
 
     print("\n📝 REQUEST:")
-    print(
-        "  @llm-maker Build a professional portfolio website with home, about, work, and contact pages"
-    )
+    print("  @llm-maker Build a professional portfolio website with home, about, work, and contact pages")
 
     print("\n📦 GENERATED FILES:")
     files = {
@@ -555,9 +552,7 @@ def demo_landing_page():
     print("=" * 70)
 
     print("\n📝 REQUEST:")
-    print(
-        "  @llm-maker Build a SaaS landing page with hero, features, pricing, and FAQ"
-    )
+    print("  @llm-maker Build a SaaS landing page with hero, features, pricing, and FAQ")
 
     print("\n📦 GENERATED STRUCTURE:")
     sections = [

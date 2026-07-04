@@ -75,16 +75,16 @@ python .\scripts\train_lora.py --dataset ..\..\datasets\chat\dolly --config .\lo
 
 ## 📊 Dataset Sizes & Quality
 
-| Dataset | Size | Samples | Quality | License |
-| --------- | ------ | --------- | --------- | --------- |
-| **Quantum** | | | | |
-| Heart Disease | <1 MB | 303 | ⭐⭐⭐⭐ | Free |
-| Ionosphere | <1 MB | 351 | ⭐⭐⭐⭐ | Free |
-| Sonar | <1 MB | 208 | ⭐⭐⭐⭐ | Free |
-| **Chat/LLM** | | | | |
-| Dolly 15k | 50 MB | 15,000 | ⭐⭐⭐⭐⭐ | Commercial ✅ |
-| OpenAssistant | 500 MB | 161,000 | ⭐⭐⭐⭐⭐ | Commercial ✅ |
-| Alpaca | 100 MB | 52,000 | ⭐⭐⭐⭐ | Non-commercial ⚠️ |
+| Dataset       | Size   | Samples | Quality    | License           |
+| ------------- | ------ | ------- | ---------- | ----------------- |
+| **Quantum**   |        |         |            |                   |
+| Heart Disease | <1 MB  | 303     | ⭐⭐⭐⭐   | Free              |
+| Ionosphere    | <1 MB  | 351     | ⭐⭐⭐⭐   | Free              |
+| Sonar         | <1 MB  | 208     | ⭐⭐⭐⭐   | Free              |
+| **Chat/LLM**  |        |         |            |                   |
+| Dolly 15k     | 50 MB  | 15,000  | ⭐⭐⭐⭐⭐ | Commercial ✅     |
+| OpenAssistant | 500 MB | 161,000 | ⭐⭐⭐⭐⭐ | Commercial ✅     |
+| Alpaca        | 100 MB | 52,000  | ⭐⭐⭐⭐   | Non-commercial ⚠️ |
 
 ---
 

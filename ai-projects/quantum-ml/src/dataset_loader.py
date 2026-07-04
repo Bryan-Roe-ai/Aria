@@ -4,7 +4,7 @@ Consolidates duplicated dataset loading code from multiple files.
 """
 
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -14,8 +14,8 @@ from sklearn.preprocessing import StandardScaler
 
 
 def load_dataset(
-    name: str, base_path: Optional[Path] = None, return_feature_names: bool = False
-) -> Tuple[np.ndarray, np.ndarray, Optional[List[str]]]:
+    name: str, base_path: Path | None = None, return_feature_names: bool = False
+) -> tuple[np.ndarray, np.ndarray, list[str] | None]:
     """
     Load a preset dataset from the datasets/quantum directory.
 
@@ -42,9 +42,7 @@ def load_dataset(
     }
 
     if name not in datasets_map:
-        raise ValueError(
-            f"Unknown dataset: {name}. Available: {list(datasets_map.keys())}"
-        )
+        raise ValueError(f"Unknown dataset: {name}. Available: {list(datasets_map.keys())}")
 
     path = datasets_map[name]
     if not path.exists():
@@ -94,7 +92,7 @@ def load_dataset(
 
 def preprocess_for_qubits(
     X_train: np.ndarray, X_val: np.ndarray, n_qubits: int
-) -> Tuple[np.ndarray, np.ndarray, Optional["StandardScaler"], Optional["PCA"]]:
+) -> tuple[np.ndarray, np.ndarray, Optional["StandardScaler"], Optional["PCA"]]:
     """
     Preprocess data to match the number of qubits.
 

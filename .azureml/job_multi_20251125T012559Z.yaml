@@ -5,14 +5,14 @@ display_name: automated-training-multi_20251125T012559Z
 experiment_name: lora-autotrain
 compute: azureml:cpu-cluster
 environment:
-  image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04
-  conda_file: environment.yml
-  name: auto-training-env
+    image: mcr.microsoft.com/azureml/openmpi4.1.0-ubuntu20.04
+    conda_file: environment.yml
+    name: auto-training-env
 resources:
-  instance_count: 1
+    instance_count: 1
 identity:
-  type: managed
+    type: managed
 description: Auto-generated Azure ML job spec for multi-model LoRA training wrapper
 tags:
-  generator: automated_training_pipeline
-  models: phi
+    generator: automated_training_pipeline
+    models: phi

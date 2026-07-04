@@ -200,5 +200,14 @@
     },
     "python-envs.defaultEnvManager": "ms-python.python:venv",
     "editor.formatOnSave": true,
-    "editor.wordWrap": "on"
+    "editor.wordWrap": "on",
+    "iis.configDir": "",
+    "cursorpyright.analysis.autoImportCompletions": true,
+    "cursorpyright.analysis.extraPaths": [
+        "./ai-projects/llm-maker/src",
+        "./aria_web",
+        "./tests/test_",
+        "./ai-projects/quantum-ml/src"
+    ],
+    "mirrord.promptUsingBinary": false
 }

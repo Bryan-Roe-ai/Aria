@@ -7,7 +7,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import psutil
 import torch
@@ -62,9 +62,7 @@ def check_system_resources():
     return device, cpu_count
 
 
-def get_optimal_settings(
-    device: str, cpu_count: int, memory_gb: float
-) -> Dict[str, Any]:
+def get_optimal_settings(device: str, cpu_count: int, memory_gb: float) -> dict[str, Any]:
     """Calculate optimal training settings based on hardware"""
     settings = {}
 
@@ -109,7 +107,7 @@ def monitor_resources():
     return status
 
 
-def setup_environment_variables(settings: Dict[str, Any]):
+def setup_environment_variables(settings: dict[str, Any]):
     """Set environment variables for maximum performance"""
 
     # PyTorch optimizations
@@ -151,9 +149,7 @@ def run_max_training(
     print("\n📊 OPTIMAL SETTINGS:")
     print(f"   Batch size: {settings['batch_size']}")
     print(f"   Gradient accumulation: {settings['gradient_accumulation']}")
-    print(
-        f"   Effective batch size: {settings['batch_size'] * settings['gradient_accumulation']}"
-    )
+    print(f"   Effective batch size: {settings['batch_size'] * settings['gradient_accumulation']}")
     print(f"   DataLoader workers: {settings['workers']}")
     print(f"   Device: {device.upper()}")
 
@@ -161,29 +157,15 @@ def run_max_training(
     setup_environment_variables(settings)
 
     # Build training command
-    script_path = (
-        Path(__file__).parent.parent
-        / "AI"
-        / "microsoft_phi-silica-3.6_v1"
-        / "scripts"
-        / "train_lora.py"
-    )
-    config_path = (
-        Path(__file__).parent.parent
-        / "AI"
-        / "microsoft_phi-silica-3.6_v1"
-        / "lora"
-        / "lora.yaml"
-    )
+    script_path = Path(__file__).parent.parent / "AI" / "microsoft_phi-silica-3.6_v1" / "scripts" / "train_lora.py"
+    config_path = Path(__file__).parent.parent / "AI" / "microsoft_phi-silica-3.6_v1" / "lora" / "lora.yaml"
 
     # Convert dataset path to absolute
     dataset_abs = Path(dataset)
     if not dataset_abs.is_absolute():
         dataset_abs = Path(__file__).parent / dataset
 
-    save_dir = (
-        Path(__file__).parent.parent / "data_out" / "lora_training" / "max_performance"
-    )
+    save_dir = Path(__file__).parent.parent / "data_out" / "lora_training" / "max_performance"
 
     cmd = [
         sys.executable,
@@ -223,9 +205,7 @@ def run_max_training(
     # Start training with resource monitoring
     import subprocess
 
-    process = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1
-    )
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
 
     last_update = time.time()
 
@@ -259,12 +239,8 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Max Performance AI Training")
-    parser.add_argument(
-        "--dataset", default="../../datasets/chat/dolly", help="Dataset path"
-    )
-    parser.add_argument(
-        "--model", default="microsoft/Phi-3.5-mini-instruct", help="Model to train"
-    )
+    parser.add_argument("--dataset", default="../../datasets/chat/dolly", help="Dataset path")
+    parser.add_argument("--model", default="microsoft/Phi-3.5-mini-instruct", help="Model to train")
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs")
     parser.add_argument(
         "--check-only",

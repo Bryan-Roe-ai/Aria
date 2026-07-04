@@ -35,11 +35,11 @@ Memory retrieval flow:
 
 Embedding configuration:
 
-| Priority | Method | Env Vars Required |
-| ---------- | -------- | ------------------- |
-| 1 | Azure OpenAI Embeddings | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` |
-| 2 | OpenAI Embeddings | `OPENAI_API_KEY` |
-| 3 | Local Hash Fallback (dim=256) | None |
+| Priority | Method                        | Env Vars Required                                                                    |
+| -------- | ----------------------------- | ------------------------------------------------------------------------------------ |
+| 1        | Azure OpenAI Embeddings       | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` |
+| 2        | OpenAI Embeddings             | `OPENAI_API_KEY`                                                                     |
+| 3        | Local Hash Fallback (dim=256) | None                                                                                 |
 
 Backfill existing logs:
 
@@ -98,9 +98,9 @@ Retrieval (Python-side cosine similarity) selects recent rows (TOP 500) optional
 1. Install the [SQL Database Projects extension](https://marketplace.visualstudio.com/items?itemName=ms-mssql.sql-database-projects-vscode)
 2. Open this folder in VS Code
 3. Use the SQL Database Projects view to:
-   - **Build**: Validate schema without deployment
-   - **Publish**: Deploy to Azure SQL or local SQL Server
-   - **Generate Script**: Create deployment SQL script
+    - **Build**: Validate schema without deployment
+    - **Publish**: Deploy to Azure SQL or local SQL Server
+    - **Generate Script**: Create deployment SQL script
 
 ### Manual Deployment
 
@@ -165,13 +165,13 @@ from datetime import datetime
 
 # Connection string (use Azure Key Vault in production)
 conn_str = (
-  "Driver={ODBC Driver 18 for SQL Server};"
-  "Server=tcp:qai-sql-server.database.windows.net,1433;"
-  "Database=qai-db;"
-  "Uid=qai-admin;"
-  "Pwd={your_password};"
-  "Encrypt=yes;"
-  "TrustServerCertificate=no;"
+    "Driver={ODBC Driver 18 for SQL Server};"
+    "Server=tcp:qai-sql-server.database.windows.net,1433;"
+    "Database=qai-db;"
+    "Uid=qai-admin;"
+    "Pwd={your_password};"
+    "Encrypt=yes;"
+    "TrustServerCertificate=no;"
 )
 
 # Log quantum training run
@@ -196,7 +196,7 @@ cursor.execute("""
     @RunId = @RunId OUTPUT;
   SELECT @RunId;
 """, 'heart_quick', 'heart_disease', 'qiskit_aer', 4, 2, 'linear',
-   0.01, 10, 16, 0.85, 45.2, 'completed')
+               0.01, 10, 16, 0.85, 45.2, 'completed')
 
 run_id = cursor.fetchone()[0]
 conn.commit()
@@ -211,11 +211,12 @@ Modify `scripts/quantum_autorun.py` and `scripts/autotrain.py` to log runs:
 # Add to quantum_autorun.py after successful training
 import pyodbc
 
-def log_to_database(job_config, results):
-  conn = pyodbc.connect(DB_CONNECTION_STRING)
-  cursor = conn.cursor()
 
-  cursor.execute("""
+def log_to_database(job_config, results):
+    conn = pyodbc.connect(DB_CONNECTION_STRING)
+    cursor = conn.cursor()
+
+    cursor.execute("""
     DECLARE @RunId UNIQUEIDENTIFIER;
     EXEC sp_LogQuantumTrainingRun
       @JobName = ?, @DatasetName = ?, @Backend = ?,
@@ -225,12 +226,12 @@ def log_to_database(job_config, results):
       @StatusJsonPath = ?, @ResultsJsonPath = ?,
       @Status = ?, @RunId = @RunId OUTPUT;
   """, job_config['name'], job_config['dataset'], job_config['backend'],
-     job_config['n_qubits'], job_config['n_layers'], job_config['entanglement'],
-     job_config['learning_rate'], job_config['epochs'], job_config['batch_size'],
-     results['test_accuracy'], results['test_loss'], results['execution_time'],
-     results['status_json_path'], results['results_json_path'], 'completed')
+        job_config['n_qubits'], job_config['n_layers'], job_config['entanglement'],
+        job_config['learning_rate'], job_config['epochs'], job_config['batch_size'],
+        results['test_accuracy'], results['test_loss'], results['execution_time'],
+        results['status_json_path'], results['results_json_path'], 'completed')
 
-  conn.commit()
+    conn.commit()
 ```
 
 ### Azure Functions Integration
@@ -242,33 +243,36 @@ import pyodbc
 from azure.identity import DefaultAzureCredential
 
 # Use managed identity in production
-def get_db_connection():
-  credential = DefaultAzureCredential()
-  token = credential.get_token("https://database.windows.net/")
 
-  conn_str = (
-    f"Driver={{ODBC Driver 18 for SQL Server}};"
-    f"Server=tcp:qai-sql-server.database.windows.net,1433;"
-    f"Database=qai-db;"
-    f"Authentication=ActiveDirectoryMsi;"
-  )
-  return pyodbc.connect(conn_str)
+
+def get_db_connection():
+    credential = DefaultAzureCredential()
+    token = credential.get_token("https://database.windows.net/")
+
+    conn_str = (
+        f"Driver={{ODBC Driver 18 for SQL Server}};"
+        f"Server=tcp:qai-sql-server.database.windows.net,1433;"
+        f"Database=qai-db;"
+        f"Authentication=ActiveDirectoryMsi;"
+    )
+    return pyodbc.connect(conn_str)
+
 
 @app.route(route="chat", methods=["POST"])
 async def chat_endpoint(req: func.HttpRequest) -> func.HttpResponse:
-  # ... existing chat logic ...
+    # ... existing chat logic ...
 
-  # Log conversation
-  conn = get_db_connection()
-  cursor = conn.cursor()
-  cursor.execute("""
+    # Log conversation
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
     DECLARE @ConvId UNIQUEIDENTIFIER, @MsgId UNIQUEIDENTIFIER;
     EXEC sp_LogChatConversation
       @SessionId = ?, @Provider = ?, @Model = ?,
       @Role = ?, @Content = ?, @TotalTokens = ?,
       @ConversationId = @ConvId OUTPUT, @MessageId = @MsgId OUTPUT;
   """, session_id, provider, model, 'user', user_message, token_count)
-  conn.commit()
+    conn.commit()
 ```
 
 ## Cost Optimization

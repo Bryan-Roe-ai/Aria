@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple
 
-RoleMessage = Dict[str, str]
+RoleMessage = dict[str, str]
 
 try:
     import tiktoken  # type: ignore
@@ -18,12 +18,13 @@ except Exception:  # pragma: no cover - optional
 
 
 # Reasonable default context sizes by popular models/deployments
-MODEL_CONTEXT_DEFAULTS: Dict[str, int] = {
+MODEL_CONTEXT_DEFAULTS: dict[str, int] = {
     # OpenAI
     "gpt-4o": 128000,
     "gpt-4o-mini": 128000,
     "gpt-4.1": 128000,
     "gpt-4.1-mini": 128000,
+    "gpt-5-chat": 128000,
     "gpt-3.5-turbo": 16385,
     # Azure OpenAI often uses custom deployment names; fall back to a safe default
     "azure-default": 16384,
@@ -32,7 +33,7 @@ MODEL_CONTEXT_DEFAULTS: Dict[str, int] = {
 }
 
 
-def _match_model_default(model: Optional[str]) -> int:
+def _match_model_default(model: str | None) -> int:
     m = (model or "").lower()
     for key, ctx in MODEL_CONTEXT_DEFAULTS.items():
         if key in m:
@@ -49,7 +50,7 @@ class PruneStats:
     reserve_output_tokens: int
 
 
-def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], int]:
+def _get_text_encoder(provider: str, model: str | None) -> Callable[[str], int]:
     """Return a function that approximates token count for a given text.
 
     Priority: tiktoken (OpenAI/Azure) -> transformers tokenizer (if available) -> heuristic.
@@ -58,9 +59,7 @@ def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], in
     mdl = (model or "").lower()
 
     # Try tiktoken for OpenAI/Azure
-    if tiktoken is not None and (
-        prov in ("openai", "azure") or any(k in mdl for k in ("gpt-", "-o"))
-    ):
+    if tiktoken is not None and (prov in ("openai", "azure") or any(k in mdl for k in ("gpt-", "-o"))):
         try:
             from tiktoken import encoding_for_model
 
@@ -99,10 +98,10 @@ def _get_text_encoder(provider: str, model: Optional[str]) -> Callable[[str], in
 
 
 def count_messages_tokens(
-    messages: List[RoleMessage],
+    messages: list[RoleMessage],
     provider: str,
-    model: Optional[str],
-    system_prompt: Optional[str] = None,
+    model: str | None,
+    system_prompt: str | None = None,
 ) -> int:
     enc = _get_text_encoder(provider, model)
     total = 0
@@ -114,13 +113,13 @@ def count_messages_tokens(
 
 
 def prune_messages(
-    messages: List[RoleMessage],
+    messages: list[RoleMessage],
     provider: str,
-    model: Optional[str],
-    max_context_tokens: Optional[int],
+    model: str | None,
+    max_context_tokens: int | None,
     reserve_output_tokens: int = 1024,
-    system_prompt: Optional[str] = None,
-) -> Tuple[List[RoleMessage], PruneStats, Optional[RoleMessage]]:
+    system_prompt: str | None = None,
+) -> tuple[list[RoleMessage], PruneStats, RoleMessage | None]:
     """Prune conversation to fit within model context budget.
 
     Returns: (pruned_messages, stats, system_message)
@@ -138,9 +137,7 @@ def prune_messages(
     system_msgs = [m for m in msgs if m.get("role") == "system"]
     non_system = [m for m in msgs if m.get("role") != "system"]
 
-    system_text = system_prompt or "\n\n".join(
-        m.get("content", "") for m in system_msgs
-    )
+    system_text = system_prompt or "\n\n".join(m.get("content", "") for m in system_msgs)
     system_msg = {"role": "system", "content": system_text} if system_text else None
 
     original_tokens = count_messages_tokens(msgs, provider, model, system_prompt)
@@ -150,9 +147,7 @@ def prune_messages(
 
     # Pre-compute token counts for each message (O(n) - done once)
     # Each message costs: role tokens + content tokens + 4 (framing)
-    message_token_counts = [
-        enc(m.get("role", "")) + enc(m.get("content", "")) + 4 for m in non_system
-    ]
+    message_token_counts = [enc(m.get("role", "")) + enc(m.get("content", "")) + 4 for m in non_system]
 
     # Calculate base system token cost (done once)
     system_tokens = (enc(system_text) + 4) if system_text else 0
@@ -163,9 +158,7 @@ def prune_messages(
     # Prune from front (oldest messages) while over budget
     # Uses running total instead of recalculating each iteration (O(n) total)
     start_idx = 0
-    while (
-        start_idx < len(non_system) and (total_tokens + reserve_output_tokens) > budget
-    ):
+    while start_idx < len(non_system) and (total_tokens + reserve_output_tokens) > budget:
         total_tokens -= message_token_counts[start_idx]
         start_idx += 1
 

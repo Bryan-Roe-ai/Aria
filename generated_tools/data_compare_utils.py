@@ -4,7 +4,8 @@ This module is intentionally pure (no filesystem/network side effects)
 and safe for reuse in API and CLI layers.
 """
 
-from typing import Any, Iterable
+from collections.abc import Iterable
+from typing import Any
 
 
 def compare_records(

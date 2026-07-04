@@ -46,64 +46,64 @@ This model provides a complete blueprint for building production-grade autonomou
 ```yaml
 # autonomous_training.yaml
 discovery:
-  enabled: true
-  sources:
-    - type: "local"
-      path: "datasets/"
-    - type: "huggingface"
-      filter: "classification"
-  interval_hours: 24
+    enabled: true
+    sources:
+        - type: "local"
+          path: "datasets/"
+        - type: "huggingface"
+          filter: "classification"
+    interval_hours: 24
 
 training:
-  workers: 20                    # Parallel workers
-  epochs: 100
-  batch_size: 32
-  datasets_dir: "datasets/massive_quantum"
-  output_dir: "data_out/distributed_benchmark"
+    workers: 20 # Parallel workers
+    epochs: 100
+    batch_size: 32
+    datasets_dir: "datasets/massive_quantum"
+    output_dir: "data_out/distributed_benchmark"
 
-  # Backend selection
-  backends:
-    - type: "classical"
-      enabled: true
-      frameworks: ["sklearn", "pytorch"]
-    - type: "quantum"
-      enabled: true
-      frameworks: ["qiskit", "pennylane"]
-      simulators: ["qiskit_aer", "lightning.qubit"]
+    # Backend selection
+    backends:
+        - type: "classical"
+          enabled: true
+          frameworks: ["sklearn", "pytorch"]
+        - type: "quantum"
+          enabled: true
+          frameworks: ["qiskit", "pennylane"]
+          simulators: ["qiskit_aer", "lightning.qubit"]
 
 optimization:
-  enabled: true
-  methods:
-    - "hyperparameter_tuning"
-    - "model_pruning"
-    - "quantization"
-  target_metrics:
-    - "accuracy"
-    - "inference_time"
-    - "model_size"
+    enabled: true
+    methods:
+        - "hyperparameter_tuning"
+        - "model_pruning"
+        - "quantization"
+    target_metrics:
+        - "accuracy"
+        - "inference_time"
+        - "model_size"
 
 deployment:
-  enabled: false
-  targets:
-    - type: "azure_ml"
-    - type: "local_api"
+    enabled: false
+    targets:
+        - type: "azure_ml"
+        - type: "local_api"
 
 # SCALING CONFIGURATION (KEY FEATURE)
 scaling:
-  mode: "multiprocessing"        # Options: "multiprocessing", "ray", "sequential"
-  max_workers: null              # null = auto-detect CPU count
-  batch_size: 100                # Process N datasets per batch
-  resource_limits:
-    max_cpu_percent: 90
-    max_memory_gb: 16
-    enable_gpu: false
+    mode: "multiprocessing" # Options: "multiprocessing", "ray", "sequential"
+    max_workers: null # null = auto-detect CPU count
+    batch_size: 100 # Process N datasets per batch
+    resource_limits:
+        max_cpu_percent: 90
+        max_memory_gb: 16
+        enable_gpu: false
 
 # MONITORING
 monitoring:
-  enabled: true
-  log_level: "INFO"
-  output_format: "json"
-  real_time_dashboard: false
+    enabled: true
+    log_level: "INFO"
+    output_format: "json"
+    real_time_dashboard: false
 ```
 
 ### 2. Orchestrator Core Pattern
@@ -442,30 +442,35 @@ class QuantumMLBackend:
 ## Production Deployment Checklist
 
 ### 1. Resource Management
+
 - [ ] Implement CPU/GPU detection with `multiprocessing.cpu_count()`
 - [ ] Add memory monitoring (use `psutil` library)
 - [ ] Set resource limits in config (max CPU %, max memory)
 - [ ] Implement graceful degradation when resources are constrained
 
 ### 2. Error Handling
+
 - [ ] Wrap all async operations in try/except blocks
 - [ ] Log errors to persistent storage (JSON/database)
 - [ ] Implement retry logic with exponential backoff
 - [ ] Add health check endpoints for monitoring
 
 ### 3. Monitoring & Observability
+
 - [ ] Real-time dashboard (use `rich` library for CLI)
 - [ ] Metrics export (Prometheus format recommended)
 - [ ] Progress tracking with detailed status JSON
 - [ ] Integration with cloud monitoring (Azure Monitor, CloudWatch)
 
 ### 4. Scalability
+
 - [ ] Test with 100+ datasets
 - [ ] Verify worker scaling (test with 1, 4, 8, 16, 32 workers)
 - [ ] Benchmark Ray vs multiprocessing for your workload
 - [ ] Profile memory usage per worker
 
 ### 5. Configuration Management
+
 - [ ] Validate YAML schema on load
 - [ ] Support environment variable overrides
 - [ ] Version your configuration files
@@ -474,6 +479,7 @@ class QuantumMLBackend:
 ## Usage Examples
 
 ### Basic Usage (Single Cycle)
+
 ```powershell
 # Run one training cycle with auto-detected workers
 python scripts/autonomous_training_orchestrator.py --once
@@ -483,6 +489,7 @@ python scripts/autonomous_training_orchestrator.py --config custom.yaml --once
 ```
 
 ### Continuous Operation
+
 ```powershell
 # Run continuously (1 hour interval between cycles)
 python scripts/autonomous_training_orchestrator.py
@@ -497,20 +504,22 @@ nohup python scripts/autonomous_training_orchestrator.py &
 ### Scaling Modes
 
 **Multiprocessing (Default, Recommended)**
+
 ```yaml
 scaling:
-  mode: "multiprocessing"
-  max_workers: null  # Auto-detect
+    mode: "multiprocessing"
+    max_workers: null # Auto-detect
 ```
 
 **Ray Distributed (Advanced)**
+
 ```yaml
 scaling:
-  mode: "ray"
-  max_workers: 64
-  ray_config:
-    num_cpus: 32
-    num_gpus: 0
+    mode: "ray"
+    max_workers: 64
+    ray_config:
+        num_cpus: 32
+        num_gpus: 0
 ```
 
 ## Performance Benchmarks
@@ -518,13 +527,14 @@ scaling:
 Based on our production deployment (552 datasets, 100 epochs):
 
 | Workers | Datasets/Hour | Accuracy | Memory/Worker |
-| --------- | --------------- | ---------- | --------------- |
-| 4 | ~25 | 98-100% | ~500 MB |
-| 8 | ~45 | 98-100% | ~500 MB |
-| 20 | ~100 | 98-100% | ~500 MB |
-| 32 | ~150 | 98-100% | ~500 MB |
+| ------- | ------------- | -------- | ------------- |
+| 4       | ~25           | 98-100%  | ~500 MB       |
+| 8       | ~45           | 98-100%  | ~500 MB       |
+| 20      | ~100          | 98-100%  | ~500 MB       |
+| 32      | ~150          | 98-100%  | ~500 MB       |
 
 **Key Findings:**
+
 - Linear scaling up to CPU count
 - Memory usage stable across worker counts
 - 100% accuracy achievable on well-structured datasets
@@ -533,6 +543,7 @@ Based on our production deployment (552 datasets, 100 epochs):
 ## Integration Patterns
 
 ### With Azure Quantum
+
 ```python
 # In config YAML
 training:
@@ -549,6 +560,7 @@ training:
 ```
 
 ### With MLflow Tracking
+
 ```python
 import mlflow
 
@@ -565,6 +577,7 @@ class AutonomousOrchestrator:
 ```
 
 ### With Monitoring Dashboard
+
 ```python
 # Real-time monitoring
 from rich.live import Live
@@ -589,16 +602,19 @@ with Live(create_status_table(self), refresh_per_second=1):
 ## Best Practices
 
 ### 1. Start Small, Scale Gradually
+
 - Test with 10 datasets, 4 workers
 - Increase to 100 datasets, 8 workers
 - Production: 500+ datasets, CPU-count workers
 
 ### 2. Use Async/Await Correctly
+
 - IO-bound: Use `asyncio` (file I/O, network)
 - CPU-bound: Use `ProcessPoolExecutor` (ML training)
 - Never block event loop with heavy computation
 
 ### 3. Handle Failures Gracefully
+
 ```python
 try:
     result = await train_model(dataset)
@@ -608,11 +624,13 @@ except Exception as e:
 ```
 
 ### 4. Version Everything
+
 - Configuration files: `config_v1.yaml`, `config_v2.yaml`
 - Trained models: Include timestamp and version in filenames
 - Results: Save with metadata (date, config hash, git commit)
 
 ### 5. Monitor Resource Usage
+
 ```python
 import psutil
 
@@ -628,26 +646,33 @@ def check_resources():
 ## Common Issues & Solutions
 
 ### Issue: "unrecognized arguments: --datasets-list"
+
 **Cause:** Argument mismatch between orchestrator and worker script.
 **Solution:** Use `--datasets-dir` for directory-based discovery (recommended).
 
 ### Issue: UnicodeEncodeError in logs
+
 **Cause:** Non-ASCII characters (emojis) in output.
 **Solution:** Use ASCII alternatives or set encoding:
+
 ```python
 logging.basicConfig(encoding='utf-8', ...)
 ```
 
 ### Issue: Out of memory with many workers
+
 **Cause:** Each worker loads model/data into memory.
 **Solution:**
+
 - Reduce worker count
 - Use batch processing
 - Enable swap/pagefile
 
 ### Issue: Qiskit version conflicts (Azure Quantum)
+
 **Cause:** `azure-quantum` requires old qiskit (0.46), but newer packages need >=1.1.
 **Solution:**
+
 - Use separate virtual environments
 - Or install azure-quantum in main environment (test first)
 
@@ -702,11 +727,13 @@ psutil>=5.9.0
 ## License & Attribution
 
 This model is based on the QAI autonomous training orchestrator:
+
 - Repository: Bryan-Roe/QAI
 - License: MIT (or your license)
 - Author: Bryan Roe
 
 Feel free to adapt this model to your specific needs. Key patterns to preserve:
+
 1. Async orchestration loop
 2. Resource-aware worker allocation
 3. YAML-based configuration

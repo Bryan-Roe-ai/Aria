@@ -37,7 +37,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Ensure repo root and scripts dir are on path before importing local modules
 _REPO_ROOT_BOOTSTRAP = Path(__file__).resolve().parent.parent
@@ -64,8 +64,8 @@ class AgentJob:
 
     task: str
     llm_type: str = "ollama"
-    model: Optional[str] = None
-    files: Optional[List[str]] = None
+    model: str | None = None
+    files: list[str] | None = None
     dry_run: bool = False
     skip_tests: bool = False
 
@@ -85,10 +85,10 @@ class MultiAgentReport:
     total_files_modified: int
     total_tokens_estimated: int
     total_duration_seconds: float
-    consensus: Dict[str, Any]
-    tasks: List[Dict[str, Any]]
+    consensus: dict[str, Any]
+    tasks: list[dict[str, Any]]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
     def save(self, output_dir: Path = DATA_OUT) -> Path:
@@ -137,7 +137,7 @@ def _run_single_job(job: AgentJob) -> Any:
 
 
 def run_parallel(
-    jobs: List[AgentJob],
+    jobs: list[AgentJob],
     max_workers: int = 3,
     verbose: bool = False,
 ) -> MultiAgentReport:
@@ -146,9 +146,9 @@ def run_parallel(
     started_at = datetime.now().isoformat()
     _start = time.monotonic()
 
-    _LOGGER.info(f"Multi-agent run {run_id}: {len(jobs)} tasks, " f"max_workers={max_workers}")
+    _LOGGER.info(f"Multi-agent run {run_id}: {len(jobs)} tasks, max_workers={max_workers}")
 
-    completed_states: List[Any] = []
+    completed_states: list[Any] = []
 
     with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="agent") as pool:
         futures = {pool.submit(_run_single_job, job): job for job in jobs}
@@ -213,7 +213,7 @@ def _load_jobs_from_file(
     default_llm: str,
     default_dry_run: bool,
     default_skip_tests: bool,
-) -> List[AgentJob]:
+) -> list[AgentJob]:
     """Load job definitions from a JSON file."""
     with open(path) as f:
         raw = json.load(f)
@@ -338,7 +338,7 @@ def main() -> None:
     )
 
     # Build job list
-    jobs: List[AgentJob] = []
+    jobs: list[AgentJob] = []
     effective_skip_tests = args.skip_tests or args.dry_run
     if args.tasks_file:
         try:

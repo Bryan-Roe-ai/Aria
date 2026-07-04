@@ -20,6 +20,7 @@ def log_*_safe(...) -> Dict:
 ## Available Functions
 
 ### log_chat_message_safe()
+
 ```python
 log_chat_message_safe(
     session_id, provider, model, role, content,
@@ -29,6 +30,7 @@ log_chat_message_safe(
 ```
 
 ### log_quantum_run_safe()
+
 ```python
 log_quantum_run_safe(
     job, result, dataset_name=None, log_path=None
@@ -37,6 +39,7 @@ log_quantum_run_safe(
 ```
 
 ### log_lora_run_safe()
+
 ```python
 log_lora_run_safe(
     job, result
@@ -48,6 +51,7 @@ log_lora_run_safe(
 ## Return Structure
 
 All functions return a dict with at minimum:
+
 - `success: bool` — whether the log was written
 - `skipped: bool` (optional) — True if DB is not configured
 - `error: str` (optional) — error message if failed

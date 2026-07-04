@@ -2,7 +2,7 @@
 // These keep the navbar and footer consistent across all pages.
 
 function getNavbar(activePage) {
-  return `
+    return `
   <div class="platform-nav" style="display:flex;gap:8px;padding:8px 16px;background:#1a1a2e;align-items:center;flex-wrap:wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
     <span style="color:rgba(255,255,255,0.4);font-size:0.75em;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;">Aria Platform</span>
     <a href="../aria/" style="color:rgba(255,255,255,0.85);text-decoration:none;padding:4px 12px;border-radius:6px;font-size:0.82em;font-weight:500;background:rgba(255,255,255,0.06);transition:all 0.2s;">👤 Aria</a>
@@ -17,10 +17,10 @@ function getNavbar(activePage) {
         TechDrop
       </a>
       <nav class="nav-links" id="navLinks">
-        <a href="index.html" class="${activePage === 'home' ? 'active' : ''}">Home</a>
-        <a href="products.html" class="${activePage === 'shop' ? 'active' : ''}">Shop</a>
-        <a href="about.html" class="${activePage === 'about' ? 'active' : ''}">About</a>
-        <a href="contact.html" class="${activePage === 'contact' ? 'active' : ''}">Contact</a>
+        <a href="index.html" class="${activePage === "home" ? "active" : ""}">Home</a>
+        <a href="products.html" class="${activePage === "shop" ? "active" : ""}">Shop</a>
+        <a href="about.html" class="${activePage === "about" ? "active" : ""}">About</a>
+        <a href="contact.html" class="${activePage === "contact" ? "active" : ""}">Contact</a>
       </nav>
       <div class="nav-search">
         <input type="text" class="nav-search-input" placeholder="Search products..." id="navSearchInput">
@@ -29,12 +29,12 @@ function getNavbar(activePage) {
         <i class="fa-solid fa-bars"></i>
       </button>
     </div>
-  </header>`;
+  </header>`
 }
 
 function getFooter() {
-  const year = new Date().getFullYear();
-  return `
+    const year = new Date().getFullYear()
+    return `
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
@@ -79,11 +79,11 @@ function getFooter() {
         </span>
       </div>
     </div>
-  </footer>`;
+  </footer>`
 }
 
 function renderProductCard(product) {
-  return `
+    return `
   <div class="product-card">
     <a href="product.html?id=${product.id}">
       <div class="product-card-image">
@@ -98,38 +98,38 @@ function renderProductCard(product) {
       <div class="product-card-price">$${product.price.toFixed(2)}</div>
       <a href="product.html?id=${product.id}" class="btn btn-primary">View Details</a>
     </div>
-  </div>`;
+  </div>`
 }
 
 // Initialize shared components
 function initComponents(activePage) {
-  // Insert navbar
-  const headerSlot = document.getElementById('header-slot');
-  if (headerSlot) {
-    headerSlot.innerHTML = getNavbar(activePage);
-  }
-
-  // Insert footer
-  const footerSlot = document.getElementById('footer-slot');
-  if (footerSlot) {
-    footerSlot.innerHTML = getFooter();
-  }
-
-  // Mobile menu toggle
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('#mobileMenuBtn')) {
-      const nav = document.getElementById('navLinks');
-      if (nav) nav.classList.toggle('open');
+    // Insert navbar
+    const headerSlot = document.getElementById("header-slot")
+    if (headerSlot) {
+        headerSlot.innerHTML = getNavbar(activePage)
     }
-  });
 
-  // Nav search (redirect to products page with query)
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' && e.target.id === 'navSearchInput') {
-      const query = e.target.value.trim();
-      if (query) {
-        window.location.href = `products.html?search=${encodeURIComponent(query)}`;
-      }
+    // Insert footer
+    const footerSlot = document.getElementById("footer-slot")
+    if (footerSlot) {
+        footerSlot.innerHTML = getFooter()
     }
-  });
+
+    // Mobile menu toggle
+    document.addEventListener("click", function (e) {
+        if (e.target.closest("#mobileMenuBtn")) {
+            const nav = document.getElementById("navLinks")
+            if (nav) nav.classList.toggle("open")
+        }
+    })
+
+    // Nav search (redirect to products page with query)
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" && e.target.id === "navSearchInput") {
+            const query = e.target.value.trim()
+            if (query) {
+                window.location.href = `products.html?search=${encodeURIComponent(query)}`
+            }
+        }
+    })
 }

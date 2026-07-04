@@ -13,7 +13,7 @@ import sqlite3
 import threading
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class SQLiteAGIPersistence:
@@ -47,7 +47,8 @@ class SQLiteAGIPersistence:
         )
         self._conn.commit()
 
-    def write_reasoning_chain(self, chain: List[Dict[str, Any]], meta: Optional[Dict[str, Any]] = None) -> str:
+    def write_reasoning_chain(self, chain: list[dict[str, Any]], meta: dict[str, Any] | None = None) -> str:
+        """Persist one reasoning chain row and return its generated id."""
         eid = uuid.uuid4().hex
         ts = time.time()
         meta_j = json.dumps(meta or {}, separators=(",", ":"), ensure_ascii=False)
@@ -60,10 +61,12 @@ class SQLiteAGIPersistence:
             self._conn.commit()
         return eid
 
-    def add_reasoning_chain(self, chain: List[Dict[str, Any]]) -> str:
+    def add_reasoning_chain(self, chain: list[dict[str, Any]]) -> str:
+        """Backwards-compatible alias for :meth:`write_reasoning_chain`."""
         return self.write_reasoning_chain(chain)
 
-    def add_message(self, message: Dict[str, Any]) -> str:
+    def add_message(self, message: dict[str, Any]) -> str:
+        """Persist one message row and return its generated id."""
         eid = uuid.uuid4().hex
         ts = time.time()
         meta_j = json.dumps({}, separators=(",", ":"), ensure_ascii=False)
@@ -76,7 +79,7 @@ class SQLiteAGIPersistence:
             self._conn.commit()
         return eid
 
-    def write(self, event_type: str, data: Dict[str, Any]) -> str:
+    def write(self, event_type: str, data: dict[str, Any]) -> str:
         """Generic write(event_type, data) compatibility method."""
         eid = uuid.uuid4().hex
         ts = time.time()
@@ -90,7 +93,7 @@ class SQLiteAGIPersistence:
             self._conn.commit()
         return eid
 
-    def read_last(self, n: int = 10) -> List[Dict[str, Any]]:
+    def read_last(self, n: int = 10) -> list[dict[str, Any]]:
         """Return up to the last *n* events (newest last)."""
         with self._lock:
             cur = self._conn.execute(
@@ -98,7 +101,7 @@ class SQLiteAGIPersistence:
                 (n,),
             )
             rows = cur.fetchall()
-        out: List[Dict[str, Any]] = []
+        out: list[dict[str, Any]] = []
         # rows are newest-first; return newest-last to match FileAGIPersistence
         for id, ts, ev_type, meta_j, payload_j in reversed(rows):
             try:
@@ -109,7 +112,7 @@ class SQLiteAGIPersistence:
                 payload = json.loads(payload_j) if payload_j else {}
             except Exception:
                 payload = {}
-            entry: Dict[str, Any] = {"id": id, "ts": ts, "type": ev_type, "meta": meta}
+            entry: dict[str, Any] = {"id": id, "ts": ts, "type": ev_type, "meta": meta}
             if ev_type == "reasoning_chain":
                 entry["chain"] = payload
             elif ev_type == "message":
@@ -120,6 +123,7 @@ class SQLiteAGIPersistence:
         return out
 
     def close(self) -> None:
+        """Close the underlying SQLite connection."""
         try:
             self._conn.close()
         except Exception:

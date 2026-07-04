@@ -31,7 +31,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -115,7 +115,7 @@ def get_quantum_llm_status(
     *,
     status_file: str | Path | None = None,
     output_dir: str | Path | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Load Quantum LLM runtime status and checkpoint readiness metadata."""
     resolved_output_dir = _resolve_repo_path(output_dir, default=DEFAULT_OUTPUT_DIR)
     resolved_status_file = _resolve_repo_path(
@@ -123,7 +123,7 @@ def get_quantum_llm_status(
         default=resolved_output_dir / "status.json",
     )
 
-    payload: Dict[str, Any] = {
+    payload: dict[str, Any] = {
         "available": False,
         "status": "not_started",
         "output_dir": _repo_relative_str(resolved_output_dir),
@@ -181,11 +181,11 @@ def get_quantum_llm_status(
 
 
 def write_quantum_llm_status(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     *,
     status_file: str | Path | None = None,
     output_dir: str | Path | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Persist Quantum LLM status metadata in a repo-consistent JSON artifact."""
     resolved_output_dir = _resolve_repo_path(output_dir, default=DEFAULT_OUTPUT_DIR)
     resolved_status_file = _resolve_repo_path(
@@ -427,7 +427,7 @@ class QuantumEnhancedLLMTrainer:
     torch interface.
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: dict[str, Any]):
         self.config = config
         self.passive_mode = config.get("passive", False)
         self.interval = config.get("interval", 3600)
@@ -505,7 +505,7 @@ class QuantumEnhancedLLMTrainer:
         )
 
         # Metrics
-        self.training_history: List[Dict] = []
+        self.training_history: list[dict] = []
         self.quantum_metrics = {
             "circuit_executions": 0,
             "optimization_steps": 0,
@@ -691,7 +691,7 @@ class QuantumEnhancedLLMTrainer:
 
             if batch_idx % 5 == 0:
                 logger.info(
-                    f"  Epoch {epoch+1} | Batch {batch_idx}/{len(dataloader)} | "
+                    f"  Epoch {epoch + 1} | Batch {batch_idx}/{len(dataloader)} | "
                     f"Loss: {batch_loss:.4f} | "
                     f"Circuit evals: {evals}"
                 )
@@ -716,8 +716,8 @@ class QuantumEnhancedLLMTrainer:
         dataset_path: Path,
         output_dir: Path,
         epochs: int = 3,
-        model: Optional[Any] = None,
-    ) -> Dict[str, Any]:
+        model: Any | None = None,
+    ) -> dict[str, Any]:
         """
         Train the QuantumLLM on a dataset.
 
@@ -793,7 +793,7 @@ class QuantumEnhancedLLMTrainer:
                             loss=epoch_loss,
                             training_mode=training_mode,
                         )
-                    logger.info(f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f}")
+                    logger.info(f"  Epoch {epoch + 1} complete | Avg Loss: {epoch_loss:.4f}")
                     write_quantum_llm_status(
                         {
                             "available": True,
@@ -824,7 +824,7 @@ class QuantumEnhancedLLMTrainer:
                     results["epochs_completed"] = epoch + 1
                     results["final_loss"] = epoch_loss
                     logger.info(
-                        f"  Epoch {epoch+1} complete | Avg Loss: {epoch_loss:.4f} | "
+                        f"  Epoch {epoch + 1} complete | Avg Loss: {epoch_loss:.4f} | "
                         f"LR: {self.optimizer.param_groups[0]['lr']:.6f}"
                     )
                     if epoch_loss < best_loss:
@@ -926,7 +926,7 @@ class QuantumEnhancedLLMTrainer:
             )
             raise
 
-    def _load_dataset(self, dataset_path: Path) -> List[Dict[str, Any]]:
+    def _load_dataset(self, dataset_path: Path) -> list[dict[str, Any]]:
         """Load training dataset from JSONL or JSON format."""
         dataset = []
 
@@ -953,7 +953,7 @@ class QuantumEnhancedLLMTrainer:
 
         return dataset
 
-    def _train_epoch_with_quantum(self, model: Optional[Any], dataset: List[Dict[str, Any]], epoch: int) -> float:
+    def _train_epoch_with_quantum(self, model: Any | None, dataset: list[dict[str, Any]], epoch: int) -> float:
         """
         Train one epoch with quantum enhancement.
 
@@ -1092,7 +1092,7 @@ class QuantumEnhancedLLMTrainer:
                             epochs=1,
                             model=self.model if self.real_training else None,
                         )
-                        logger.info(f"Cycle {cycle_count} complete: " f"Loss={results['final_loss']:.4f}")
+                        logger.info(f"Cycle {cycle_count} complete: Loss={results['final_loss']:.4f}")
                         write_quantum_llm_status(
                             {
                                 "available": True,
@@ -1291,7 +1291,7 @@ def main():
         logger.info(f"  Epochs: {results['epochs_completed']}")
         logger.info(f"  Final Loss: {results['final_loss']:.4f}")
         logger.info(f"  Best Loss: {results.get('best_loss', 'N/A')}")
-        logger.info(f"  Circuit Executions: " f"{results['quantum_metrics']['circuit_executions']}")
+        logger.info(f"  Circuit Executions: {results['quantum_metrics']['circuit_executions']}")
 
     return 0
 

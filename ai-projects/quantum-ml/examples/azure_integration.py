@@ -9,14 +9,7 @@ from pathlib import Path
 from qiskit import QuantumCircuit
 
 # Add parent directory to path
-sys.path.append(
-    str(
-        Path(__file__).parent.parent.parent.parent
-        / "ai-projects"
-        / "quantum-ml"
-        / "src"
-    )
-)
+sys.path.append(str(Path(__file__).parent.parent.parent.parent / "ai-projects" / "quantum-ml" / "src"))
 
 print("=" * 60)
 print("AZURE QUANTUM INTEGRATION GUIDE")
@@ -33,7 +26,7 @@ import yaml
 config_path = Path(__file__).parent.parent / "config" / "quantum_config.yaml"
 
 try:
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     azure_config = config.get("azure", {})

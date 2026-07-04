@@ -11,5 +11,5 @@ Scans workflow `uses:` references and warns when external actions do not specify
 ```yaml
 - uses: ./.github/actions/validate-action-references
   with:
-    workflows-path: .github/workflows
+      workflows-path: .github/workflows
 ```

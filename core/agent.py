@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 from core.task import Task
 
@@ -18,5 +18,5 @@ class BaseAgent(ABC):
         """Return whether this agent can execute the task."""
 
     @abstractmethod
-    def execute(self, task: Task) -> Dict[str, Any]:
+    def execute(self, task: Task) -> dict[str, Any]:
         """Execute a task and return a structured result."""

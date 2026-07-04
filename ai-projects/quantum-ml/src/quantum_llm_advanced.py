@@ -18,7 +18,6 @@ import logging
 import math
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -48,7 +47,7 @@ class QuantumCircuitCache:
         if self.cache is None:
             self.cache = OrderedDict()
 
-    def get(self, key: str) -> Optional[torch.Tensor]:
+    def get(self, key: str) -> torch.Tensor | None:
         """Retrieve cached result."""
         if key in self.cache:
             self.hits += 1
@@ -72,7 +71,7 @@ class QuantumCircuitCache:
         self.hits = 0
         self.misses = 0
 
-    def get_stats(self) -> Dict[str, float]:
+    def get_stats(self) -> dict[str, float]:
         """Get cache statistics."""
         total = self.hits + self.misses
         hit_rate = self.hits / total if total > 0 else 0.0
@@ -122,11 +121,7 @@ class AdaptiveQuantumLayer(nn.Module):
             {
                 "linear": QuantumLayer(n_qubits, n_layers, device, "linear"),
                 "circular": QuantumLayer(n_qubits, n_layers, device, "circular"),
-                "full": (
-                    QuantumLayer(n_qubits, n_layers, device, "full")
-                    if n_qubits <= 6
-                    else None
-                ),
+                "full": (QuantumLayer(n_qubits, n_layers, device, "full") if n_qubits <= 6 else None),
             }
         )
 
@@ -211,7 +206,7 @@ class AdaptiveQuantumLayer(nn.Module):
 
         return torch.cat(batch_results, dim=0)
 
-    def get_cache_stats(self) -> Dict[str, float]:
+    def get_cache_stats(self) -> dict[str, float]:
         """Get cache performance statistics."""
         return self.cache.get_stats()
 
@@ -229,7 +224,7 @@ class MultiScaleQuantumAttention(nn.Module):
         self,
         d_model: int = 64,
         n_heads: int = 4,
-        qubit_range: Tuple[int, int] = (2, 6),
+        qubit_range: tuple[int, int] = (2, 6),
         n_quantum_layers: int = 2,
         dropout: float = 0.1,
         use_adaptive: bool = True,
@@ -271,22 +266,14 @@ class MultiScaleQuantumAttention(nn.Module):
             self.quantum_layers.append(layer)
 
         # Quantum projection layers
-        self.quantum_proj_q = nn.ModuleList(
-            [nn.Linear(self.d_head, 2**q) for q in self.qubit_counts]
-        )
-        self.quantum_proj_k = nn.ModuleList(
-            [nn.Linear(self.d_head, 2**q) for q in self.qubit_counts]
-        )
+        self.quantum_proj_q = nn.ModuleList([nn.Linear(self.d_head, 2**q) for q in self.qubit_counts])
+        self.quantum_proj_k = nn.ModuleList([nn.Linear(self.d_head, 2**q) for q in self.qubit_counts])
 
         self.attn_dropout = nn.Dropout(dropout)
 
-        logger.info(
-            f"MultiScaleQuantumAttention: {n_heads} heads with qubits {qubit_counts}"
-        )
+        logger.info(f"MultiScaleQuantumAttention: {n_heads} heads with qubits {qubit_counts}")
 
-    def forward(
-        self, x: torch.Tensor, mask: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
         batch, seq_len, _ = x.shape
 
         # Project to Q, K, V
@@ -311,28 +298,16 @@ class MultiScaleQuantumAttention(nn.Module):
             # Apply quantum layer
             if self.quantum_layers[h] is not None:
                 try:
-                    Q_q = self.quantum_layers[h](Q_proj).view(
-                        batch, seq_len, self.qubit_counts[h]
-                    )
-                    K_q = self.quantum_layers[h](K_proj).view(
-                        batch, seq_len, self.qubit_counts[h]
-                    )
+                    Q_q = self.quantum_layers[h](Q_proj).view(batch, seq_len, self.qubit_counts[h])
+                    K_q = self.quantum_layers[h](K_proj).view(batch, seq_len, self.qubit_counts[h])
                 except Exception as e:
                     logger.warning(f"Quantum head {h} failed: {e}, using classical")
-                    Q_q = torch.tanh(Q_proj[..., : self.qubit_counts[h]]).view(
-                        batch, seq_len, self.qubit_counts[h]
-                    )
-                    K_q = torch.tanh(K_proj[..., : self.qubit_counts[h]]).view(
-                        batch, seq_len, self.qubit_counts[h]
-                    )
+                    Q_q = torch.tanh(Q_proj[..., : self.qubit_counts[h]]).view(batch, seq_len, self.qubit_counts[h])
+                    K_q = torch.tanh(K_proj[..., : self.qubit_counts[h]]).view(batch, seq_len, self.qubit_counts[h])
             else:
                 # Classical fallback
-                Q_q = torch.tanh(Q_proj[..., : self.qubit_counts[h]]).view(
-                    batch, seq_len, self.qubit_counts[h]
-                )
-                K_q = torch.tanh(K_proj[..., : self.qubit_counts[h]]).view(
-                    batch, seq_len, self.qubit_counts[h]
-                )
+                Q_q = torch.tanh(Q_proj[..., : self.qubit_counts[h]]).view(batch, seq_len, self.qubit_counts[h])
+                K_q = torch.tanh(K_proj[..., : self.qubit_counts[h]]).view(batch, seq_len, self.qubit_counts[h])
 
             # Compute attention
             attn_logits = torch.bmm(Q_q, K_q.transpose(1, 2)) * self.scales[h]
@@ -351,7 +326,7 @@ class MultiScaleQuantumAttention(nn.Module):
         out = torch.cat(head_outputs, dim=-1)
         return self.W_O(out)
 
-    def get_cache_stats(self) -> Dict[str, Dict[str, float]]:
+    def get_cache_stats(self) -> dict[str, dict[str, float]]:
         """Get cache statistics for all quantum layers."""
         stats = {}
         for i, layer in enumerate(self.quantum_layers):
@@ -463,7 +438,7 @@ class QuantumErrorMitigation(nn.Module):
         self,
         quantum_layer: nn.Module,
         x: torch.Tensor,
-        noise_scales: List[float] | None = None,
+        noise_scales: list[float] | None = None,
     ) -> torch.Tensor:
         """
         Zero-noise extrapolation by running circuits at multiple noise levels.

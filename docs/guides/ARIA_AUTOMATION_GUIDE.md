@@ -325,32 +325,32 @@ Edit `config/master_orchestrator.yaml`:
 
 ```yaml
 orchestrators:
-  - name: aria_automation
-    script: scripts/aria_automation.py
-    enabled: true
-    schedule: "*/30 * * * *"  # Every 30 minutes
-    priority: 5
-    retry_on_failure: 3
-    timeout_minutes: 15
-    dependencies: []
-    flags:
-      mode: training
-      once: true
+    - name: aria_automation
+      script: scripts/aria_automation.py
+      enabled: true
+      schedule: "*/30 * * * *" # Every 30 minutes
+      priority: 5
+      retry_on_failure: 3
+      timeout_minutes: 15
+      dependencies: []
+      flags:
+          mode: training
+          once: true
 
 workflows:
-  # Aria full stack (runs continuously)
-  - name: aria_full_stack
-    enabled: false  # Enable for 24/7 operation
-    trigger: "manual"
-    orchestrators:
-      - aria_automation
-    flags:
-      mode: full
-    on_success:
-      - log_result
-    on_failure:
-      - restart_aria
-      - notify_admin
+    # Aria full stack (runs continuously)
+    - name: aria_full_stack
+      enabled: false # Enable for 24/7 operation
+      trigger: "manual"
+      orchestrators:
+          - aria_automation
+      flags:
+          mode: full
+      on_success:
+          - log_result
+      on_failure:
+          - restart_aria
+          - notify_admin
 ```
 
 ### Running via Master Orchestrator
@@ -483,27 +483,27 @@ python3 scripts/aria_automation.py --stop
 
 1. Check dataset exists:
 
-   ```bash
-   ls datasets/chat/aria_movement/
-   ```
+    ```bash
+    ls datasets/chat/aria_movement/
+    ```
 
 2. Validate dataset:
 
-   ```bash
-   python3 scripts/validate_datasets.py --category chat
-   ```
+    ```bash
+    python3 scripts/validate_datasets.py --category chat
+    ```
 
 3. Check logs:
 
-   ```bash
-   tail -f data_out/aria_automation/aria_automation.log
-   ```
+    ```bash
+    tail -f data_out/aria_automation/aria_automation.log
+    ```
 
 4. Run single training manually:
 
-   ```bash
-   python3 scripts/aria_quick_train.py
-   ```
+    ```bash
+    python3 scripts/aria_quick_train.py
+    ```
 
 ### Issue: Server Won't Start
 
@@ -513,23 +513,23 @@ python3 scripts/aria_automation.py --stop
 
 1. Check dependencies:
 
-   ```bash
-   cd aria_web
-   pip3 install -r requirements.txt
-   ```
+    ```bash
+    cd aria_web
+    pip3 install -r requirements.txt
+    ```
 
 2. Test server manually:
 
-   ```bash
-   cd aria_web
-   python3 server.py
-   ```
+    ```bash
+    cd aria_web
+    python3 server.py
+    ```
 
 3. Check for errors:
 
-   ```bash
-   python3 aria_web/server.py 2>&1 | tee server_debug.log
-   ```
+    ```bash
+    python3 aria_web/server.py 2>&1 | tee server_debug.log
+    ```
 
 ### Issue: Backend Not Starting
 
@@ -539,29 +539,29 @@ python3 scripts/aria_automation.py --stop
 
 1. Install Functions Core Tools:
 
-   ```bash
-   # Windows
-   npm install -g azure-functions-core-tools@4
+    ```bash
+    # Windows
+    npm install -g azure-functions-core-tools@4
 
-   # Linux
-   curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-   sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-   sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/debian/11/prod bullseye main" > /etc/apt/sources.list.d/dotnetdev.list'
-   sudo apt update
-   sudo apt install azure-functions-core-tools-4
-   ```
+    # Linux
+    curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+    sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+    sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/debian/11/prod bullseye main" > /etc/apt/sources.list.d/dotnetdev.list'
+    sudo apt update
+    sudo apt install azure-functions-core-tools-4
+    ```
 
 2. Check Functions installation:
 
-   ```bash
-   func --version
-   ```
+    ```bash
+    func --version
+    ```
 
 3. Test Functions manually:
 
-   ```bash
-   func host start
-   ```
+    ```bash
+    func host start
+    ```
 
 ### Issue: Process Zombies
 
@@ -591,10 +591,10 @@ pkill -f "aria.*server.py"
 2. Use `--once` flag for training
 3. Limit training samples:
 
-   ```bash
-   # Edit aria_quick_train.py
-   # Set max_train_samples to lower value
-   ```
+    ```bash
+    # Edit aria_quick_train.py
+    # Set max_train_samples to lower value
+    ```
 
 ### View Logs
 

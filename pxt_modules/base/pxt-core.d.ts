@@ -2,165 +2,171 @@
 
 interface Array<T> {
     /**
-      * Get or set the length of an array. This number is one more than the index of the last element the array.
-      */
+     * Get or set the length of an array. This number is one more than the index of the last element the array.
+     */
     //% shim=Array_::length weight=84
     //% blockId="lists_length" block="length of %VALUE" blockBuiltin=true blockNamespace="arrays"
-    length: number;
+    length: number
 
     /**
-      * Append a new element to an array.
-      * @param items New elements of the Array.
-      */
+     * Append a new element to an array.
+     * @param items New elements of the Array.
+     */
     //% help=arrays/push
     //% shim=Array_::push weight=50
     //% blockId="array_push" block="%list| add value %value| to end" blockNamespace="arrays"
     //% group="Modify"
-    push(item: T): void;
+    push(item: T): void
 
     /**
-      * Concatenates the values with another array.
-      * @param arr The other array that is being concatenated with
-      */
+     * Concatenates the values with another array.
+     * @param arr The other array that is being concatenated with
+     */
     //% helper=arrayConcat weight=40
-    concat(arr: T[]): T[];
+    concat(arr: T[]): T[]
 
     /**
-      * Remove the last element from an array and return it.
-      */
+     * Remove the last element from an array and return it.
+     */
     //% help=arrays/pop
     //% shim=Array_::pop weight=45
     //% blockId="array_pop" block="get and remove last value from %list" blockNamespace="arrays"
     //% group="Read"
-    pop(): T;
+    pop(): T
 
     /**
-      * Reverse the elements in an array. The first array element becomes the last, and the last array element becomes the first.
-      */
+     * Reverse the elements in an array. The first array element becomes the last, and the last array element becomes the first.
+     */
     //% help=arrays/reverse
     //% helper=arrayReverse weight=10
     //% blockId="array_reverse" block="reverse %list" blockNamespace="arrays"
     //% group="Operations"
-    reverse(): void;
+    reverse(): void
 
     /**
-      * Remove the first element from an array and return it. This method changes the length of the array.
-      */
+     * Remove the first element from an array and return it. This method changes the length of the array.
+     */
     //% help=arrays/shift
     //% helper=arrayShift weight=30
     //% blockId="array_shift" block="get and remove first value from %list" blockNamespace="arrays"
     //% group="Read"
-    shift(): T;
+    shift(): T
 
     /**
-      * Add one element to the beginning of an array and return the new length of the array.
-      * @param element to insert at the start of the Array.
-      */
+     * Add one element to the beginning of an array and return the new length of the array.
+     * @param element to insert at the start of the Array.
+     */
     //% help=arrays/unshift
     //% helper=arrayUnshift weight=25
     //% blockId="array_unshift" block="%list| insert %value| at beginning" blockNamespace="arrays"
     //% group="Modify"
     //unshift(...values:T[]): number; //rest is not supported in our compiler yet.
-    unshift(value: T): number;
+    unshift(value: T): number
 
     /**
-      * Return a section of an array.
-      * @param start The beginning of the specified portion of the array. eg: 0
-      * @param end The end of the specified portion of the array. eg: 0
-      */
+     * Return a section of an array.
+     * @param start The beginning of the specified portion of the array. eg: 0
+     * @param end The end of the specified portion of the array. eg: 0
+     */
     //% help=arrays/slice
     //% helper=arraySlice weight=41 blockNamespace="arrays"
-    slice(start?: number, end?: number): T[];
+    slice(start?: number, end?: number): T[]
 
     /**
-      * Remove elements from an array.
-      * @param start The zero-based location in the array from which to start removing elements. eg: 0
-      * @param deleteCount The number of elements to remove. eg: 0
-      */
+     * Remove elements from an array.
+     * @param start The zero-based location in the array from which to start removing elements. eg: 0
+     * @param deleteCount The number of elements to remove. eg: 0
+     */
     //% helper=arraySplice weight=40
-    splice(start: number, deleteCount: number): void;
+    splice(start: number, deleteCount: number): void
 
     /**
-      * joins all elements of an array into a string and returns this string.
-      * @param sep the string separator
-      */
+     * joins all elements of an array into a string and returns this string.
+     * @param sep the string separator
+     */
     //% helper=arrayJoin weight=40
-    join(sep?: string): string;
+    join(sep?: string): string
 
     /**
-      * Tests whether at least one element in the array passes the test implemented by the provided function.
-      * @param callbackfn A function that accepts up to two arguments. The some method calls the callbackfn function one time for each element in the array.
-      */
+     * Tests whether at least one element in the array passes the test implemented by the provided function.
+     * @param callbackfn A function that accepts up to two arguments. The some method calls the callbackfn function one time for each element in the array.
+     */
     //% helper=arraySome weight=40
-    some(callbackfn: (value: T, index: number) => boolean): boolean;
+    some(callbackfn: (value: T, index: number) => boolean): boolean
 
     /**
-      * Tests whether all elements in the array pass the test implemented by the provided function.
-      * @param callbackfn A function that accepts up to two arguments. The every method calls the callbackfn function one time for each element in the array.
-      */
+     * Tests whether all elements in the array pass the test implemented by the provided function.
+     * @param callbackfn A function that accepts up to two arguments. The every method calls the callbackfn function one time for each element in the array.
+     */
     //% helper=arrayEvery weight=40
-    every(callbackfn: (value: T, index: number) => boolean): boolean;
+    every(callbackfn: (value: T, index: number) => boolean): boolean
 
     /**
-      * Sort the elements of an array in place and returns the array. The sort is not necessarily stable.
-      * @param specifies a function that defines the sort order. If omitted, the array is sorted according to the prmitive type
-      */
+     * Sort the elements of an array in place and returns the array. The sort is not necessarily stable.
+     * @param specifies a function that defines the sort order. If omitted, the array is sorted according to the prmitive type
+     */
     //% helper=arraySort weight=40
-    sort(callbackfn?: (value1: T, value2: T) => number): T[];
+    sort(callbackfn?: (value1: T, value2: T) => number): T[]
 
     /**
-      * Call a defined callback function on each element of an array, and return an array containing the results.
-      * @param callbackfn A function that accepts up to two arguments. The map method calls the callbackfn function one time for each element in the array.
-      */
+     * Call a defined callback function on each element of an array, and return an array containing the results.
+     * @param callbackfn A function that accepts up to two arguments. The map method calls the callbackfn function one time for each element in the array.
+     */
     //% helper=arrayMap weight=40
-    map<U>(callbackfn: (value: T, index: number) => U): U[];
+    map<U>(callbackfn: (value: T, index: number) => U): U[]
 
     /**
-      * Call a defined callback function on each element of an array.
-      * @param callbackfn A function that accepts up to two arguments. The forEach method calls the callbackfn function one time for each element in the array.
-      */
+     * Call a defined callback function on each element of an array.
+     * @param callbackfn A function that accepts up to two arguments. The forEach method calls the callbackfn function one time for each element in the array.
+     */
     //% helper=arrayForEach weight=40
-    forEach(callbackfn: (value: T, index: number) => void): void;
+    forEach(callbackfn: (value: T, index: number) => void): void
 
     /**
-      * Return the elements of an array that meet the condition specified in a callback function.
-      * @param callbackfn A function that accepts up to two arguments. The filter method calls the callbackfn function one time for each element in the array.
-      */
+     * Return the elements of an array that meet the condition specified in a callback function.
+     * @param callbackfn A function that accepts up to two arguments. The filter method calls the callbackfn function one time for each element in the array.
+     */
     //% helper=arrayFilter weight=40
-    filter(callbackfn: (value: T, index: number) => boolean): T[];
+    filter(callbackfn: (value: T, index: number) => boolean): T[]
 
     /**
-      * Fills all the elements of an array from a start index to an end index with a static value. The end index is not included.
-      */
+     * Fills all the elements of an array from a start index to an end index with a static value. The end index is not included.
+     */
     //% helper=arrayFill weight=39
-    fill(value: T, start?: number, end?: number): T[];
+    fill(value: T, start?: number, end?: number): T[]
 
     /**
      * Returns the value of the first element in the array that satisfies the provided testing function. Otherwise undefined is returned.
      * @param callbackfn
      */
     //% helper=arrayFind weight=40
-    find(callbackfn: (value: T, index: number) => boolean): T;
+    find(callbackfn: (value: T, index: number) => boolean): T
 
     /**
-      * Call the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
-      * @param callbackfn A function that accepts up to three arguments. The reduce method calls the callbackfn function one time for each element in the array.
-      * @param initialValue Initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
-      */
+     * Call the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
+     * @param callbackfn A function that accepts up to three arguments. The reduce method calls the callbackfn function one time for each element in the array.
+     * @param initialValue Initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.
+     */
     //% helper=arrayReduce weight=40
-    reduce<U>(callbackfn: (previousValue: U, currentValue: T, currentIndex: number) => U, initialValue: U): U;
-
+    reduce<U>(
+        callbackfn: (
+            previousValue: U,
+            currentValue: T,
+            currentIndex: number,
+        ) => U,
+        initialValue: U,
+    ): U
 
     /** Remove the first occurrence of an object. Returns true if removed. */
     //% shim=Array_::removeElement weight=48
-    removeElement(element: T): boolean;
+    removeElement(element: T): boolean
 
     /** Remove and return the element at a certain index. */
     //% help=arrays/remove-at
     //% shim=Array_::removeAt weight=47
     //% blockId="array_removeat" block="%list| get and remove value at %index" blockNamespace="arrays"
     //% group="Read"
-    removeAt(index: number): T;
+    removeAt(index: number): T
 
     /**
      * Insert the value at a particular index, increases length by 1
@@ -171,18 +177,18 @@ interface Array<T> {
     //% shim=Array_::insertAt weight=20
     //% blockId="array_insertAt" block="%list| insert at %index| value %value" blockNamespace="arrays"
     //% group="Modify"
-    insertAt(index: number, value: T): void;
+    insertAt(index: number, value: T): void
 
     /**
-      * Return the index of the first occurrence of a value in an array.
-      * @param item The value to locate in the array.
-      * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
-      */
+     * Return the index of the first occurrence of a value in an array.
+     * @param item The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+     */
     //% help=arrays/index-of
     //% shim=Array_::indexOf weight=40
     //% blockId="array_indexof" block="%list| find index of %value" blockNamespace="arrays"
     //% group="Operations"
-    indexOf(item: T, fromIndex?: number): number;
+    indexOf(item: T, fromIndex?: number): number
 
     /**
      * Get the value at a particular index
@@ -190,7 +196,7 @@ interface Array<T> {
      */
     //% help=arrays/get
     //% shim=Array_::getAt weight=85
-    get(index: number): T;
+    get(index: number): T
 
     /**
      * Store a value at a particular index
@@ -199,7 +205,7 @@ interface Array<T> {
      */
     //% help=arrays/set
     //% shim=Array_::setAt weight=84
-    set(index: number, value: T): void;
+    set(index: number, value: T): void
 
     /**
      * Return a random value from the array
@@ -209,40 +215,40 @@ interface Array<T> {
     //% blockId="array_pickRandom" block="get random value from %list"
     //% blockNamespace="arrays"
     //% group="Read"
-    _pickRandom(): T;
+    _pickRandom(): T
 
-    [n: number]: T;
+    [n: number]: T
 
     /**
-      * Add one element to the beginning of an array and return the new length of the array.
-      * @param element to insert at the start of the Array.
-      */
+     * Add one element to the beginning of an array and return the new length of the array.
+     * @param element to insert at the start of the Array.
+     */
     //% help=arrays/unshift
     //% helper=arrayUnshift weight=24
     //% blockId="array_unshift_statement" block="%list| insert %value| at beginning" blockNamespace="arrays"
     //% blockAliasFor="Array.unshift"
     //% group="Modify"
-    _unshiftStatement(value: T): void;
+    _unshiftStatement(value: T): void
 
     /**
-      * Remove the last element from an array and return it.
-      */
+     * Remove the last element from an array and return it.
+     */
     //% help=arrays/pop
     //% shim=Array_::pop weight=44
     //% blockId="array_pop_statement" block="remove last value from %list" blockNamespace="arrays"
     //% blockAliasFor="Array.pop"
     //% group="Modify"
-    _popStatement(): void;
+    _popStatement(): void
 
     /**
-      * Remove the first element from an array and return it. This method changes the length of the array.
-      */
+     * Remove the first element from an array and return it. This method changes the length of the array.
+     */
     //% help=arrays/shift
     //% helper=arrayShift weight=29
     //% blockId="array_shift_statement" block="remove first value from %list" blockNamespace="arrays"
     //% blockAliasFor="Array.shift"
     //% group="Modify"
-    _shiftStatement(): void;
+    _shiftStatement(): void
 
     /** Remove the element at a certain index. */
     //% help=arrays/remove-at-statement
@@ -250,7 +256,7 @@ interface Array<T> {
     //% blockId="array_removeat_statement" block="%list| remove value at %index" blockNamespace="arrays"
     //% blockAliasFor="Array.removeAt"
     //% group="Modify"
-    _removeAtStatement(index: number): void;
+    _removeAtStatement(index: number): void
 }
 
 declare interface String {
@@ -263,7 +269,7 @@ declare interface String {
     //% shim=String_::concat weight=49
     //% blockId="string_concat" blockNamespace="text"
     // block="join %list=text|%other"
-    concat(other: string): string;
+    concat(other: string): string
 
     /**
      * Return the character at the specified index.
@@ -273,12 +279,12 @@ declare interface String {
     //% help=text/char-at
     //% blockId="string_get" block="char from %this=text|at %pos" blockNamespace="text"
     //% this.defl="this"
-    charAt(index: number): string;
+    charAt(index: number): string
 
     /** Returns the length of a String object. */
     //% property shim=String_::length weight=47
     //% blockId="text_length" block="length of %VALUE" blockBuiltin=true blockNamespace="text"
-    length: number;
+    length: number
 
     /**
      * Return the Unicode value of the character at the specified location.
@@ -288,7 +294,7 @@ declare interface String {
     //% help=text/char-code-at
     //% blockId="string_charcode_at" block="char code from $this=text|at $index" blockNamespace="text"
     //% this.defl="this"
-    charCodeAt(index: number): number;
+    charCodeAt(index: number): number
 
     /**
      * See how the order of characters in two strings is different (in ASCII encoding).
@@ -298,7 +304,7 @@ declare interface String {
     //% help=text/compare
     //% blockId="string_compare" block="compare %this=text| to %that" blockNamespace="text"
     //% this.defl="this"
-    compare(that: string): number;
+    compare(that: string): number
 
     /**
      * Return a substring of the current string.
@@ -313,7 +319,7 @@ declare interface String {
     //% this.defl="this"
     //% blockNamespace="text"
     //% expandArgumentsInToolbox
-    substr(start: number, length?: number): string;
+    substr(start: number, length?: number): string
 
     /**
      * Return the current string with the first occurrence of toReplace
@@ -323,7 +329,10 @@ declare interface String {
      *                or a function that accepts the substring and returns the replacement string.
      */
     //% helper=stringReplace
-    replace(toReplace: string, replacer: string | ((sub: string) => string)): string;
+    replace(
+        toReplace: string,
+        replacer: string | ((sub: string) => string),
+    ): string
 
     /**
      * Return the current string with each occurrence of toReplace
@@ -333,7 +342,10 @@ declare interface String {
      *                or a function that accepts the substring and returns the replacement string.
      */
     //% helper=stringReplaceAll
-    replaceAll(toReplace: string, replacer: string | ((sub: string) => string)): string;
+    replaceAll(
+        toReplace: string,
+        replacer: string | ((sub: string) => string),
+    ): string
 
     /**
      * Return a substring of the current string.
@@ -341,7 +353,7 @@ declare interface String {
      * @param end one-past-last character index
      */
     //% helper=stringSlice
-    slice(start: number, end?: number): string;
+    slice(start: number, end?: number): string
 
     /** Returns a value indicating if the string is empty */
     //% helper=stringEmpty
@@ -349,7 +361,7 @@ declare interface String {
     //% blockId="string_isempty" blockNamespace="text"
     //% block="%this=text| is empty"
     //% this.defl="this"
-    isEmpty(): boolean;
+    isEmpty(): boolean
 
     /**
      * Returns the position of the first occurrence of a specified value in a string.
@@ -361,7 +373,7 @@ declare interface String {
     //% blockId="string_indexof" blockNamespace="text"
     //% block="%this=text|find index of %searchValue"
     //% this.defl="this"
-    indexOf(searchValue: string, start?: number): number;
+    indexOf(searchValue: string, start?: number): number
 
     /**
      * Determines whether a string contains the characters of a specified string.
@@ -373,7 +385,7 @@ declare interface String {
     //% blockId="string_includes" blockNamespace="text"
     //% block="%this=text|includes %searchValue"
     //% this.defl="this"
-    includes(searchValue: string, start?: number): boolean;
+    includes(searchValue: string, start?: number): boolean
 
     /**
      * Splits the string according to the separators
@@ -385,27 +397,27 @@ declare interface String {
     //% blockId="string_split" blockNamespace="text"
     //% block="split %this=text|at %separator"
     //% this.defl="this"
-    split(separator?: string, limit?: number): string[];
+    split(separator?: string, limit?: number): string[]
 
     /**
      * Return a substring of the current string with whitespace removed from both ends
      */
     //% helper=stringTrim
-    trim(): string;
+    trim(): string
 
     /**
      * Converts the string to upper case characters.
      */
     //% helper=stringToUpperCase
     //% help=text/to-upper-case
-    toUpperCase(): string;
+    toUpperCase(): string
 
     /**
      * Converts the string to lower case characters.
      */
     //% helper=stringToLowerCase
     //% help=text/to-lower-case
-    toLowerCase(): string;
+    toLowerCase(): string
 
     /**
      * Return a substring of the current string.
@@ -418,20 +430,20 @@ declare interface String {
     //% this.defl="this"
     //% blockAliasFor="String.substr"
     //% deprecated
-    __substr(start: number, length?: number): string;
+    __substr(start: number, length?: number): string
 
-    [index: number]: string;
+    [index: number]: string
 }
 
 /**
-  * Convert a string to a number.
-  * @param s A string to convert into a number. eg: 123
-  */
+ * Convert a string to a number.
+ * @param s A string to convert into a number. eg: 123
+ */
 //% shim=String_::toNumber
 //% help=text/parse-float
 //% blockId="string_parsefloat" block="parse to number %text" blockNamespace="text"
 //% text.defl="123"
-declare function parseFloat(text: string): number;
+declare function parseFloat(text: string): number
 
 /**
  * Returns a pseudorandom number between min and max included.
@@ -443,49 +455,47 @@ declare function parseFloat(text: string): number;
 //% blockNamespace="Math"
 //% help=math/randint
 //% shim=Math_::randomRange
-declare function randint(min: number, max: number): number;
+declare function randint(min: number, max: number): number
 
-interface Object { }
+interface Object {}
 interface Function {
-  __assignableToFunction: Function;
+    __assignableToFunction: Function
 }
 interface IArguments {
-  __assignableToIArguments: IArguments;
+    __assignableToIArguments: IArguments
 }
 interface RegExp {
-  __assignableToRegExp: RegExp;
+    __assignableToRegExp: RegExp
 }
-type TemplateStringsArray = Array<string>;
+type TemplateStringsArray = Array<string>
 
-type uint8 = number;
-type uint16 = number;
-type uint32 = number;
-type int8 = number;
-type int16 = number;
-type int32 = number;
-
+type uint8 = number
+type uint16 = number
+type uint32 = number
+type int8 = number
+type int16 = number
+type int32 = number
 
 declare interface Boolean {
     /**
      * Returns a string representation of an object.
      */
     //% shim=numops::toString
-    toString(): string;
+    toString(): string
 }
 
 /**
  * Combine, split, and search text strings.
-*/
+ */
 //% blockNamespace="text"
 declare namespace String {
-
     /**
      * Make a string from the given ASCII character code.
      */
     //% help=math/from-char-code
     //% shim=String_::fromCharCode weight=1
     //% blockNamespace="text" blockId="stringFromCharCode" block="text from char code %code"
-    function fromCharCode(code: number): string;
+    function fromCharCode(code: number): string
 }
 
 declare interface Number {
@@ -493,19 +503,19 @@ declare interface Number {
      * Returns a string representation of a number.
      */
     //% shim=numops::toString
-    toString(): string;
+    toString(): string
 }
 
 /**
  * Add, remove, and replace items in lists.
-*/
+ */
 //% blockNamespace="Arrays"
 declare namespace Array {
     /**
      * Check if a given object is an array.
      */
     //% shim=Array_::isArray
-    function isArray(obj: any): boolean;
+    function isArray(obj: any): boolean
 }
 
 declare namespace Object {
@@ -513,12 +523,12 @@ declare namespace Object {
      * Return the field names in an object.
      */
     //% shim=pxtrt::keysOf
-    function keys(obj: any): string[];
+    function keys(obj: any): string[]
 }
 
 /**
  * More complex operations with numbers.
-*/
+ */
 declare namespace Math {
     /**
      * Returns the value of a base expression taken to a specified power.
@@ -526,14 +536,14 @@ declare namespace Math {
      * @param y The exponent value of the expression.
      */
     //% shim=Math_::pow
-    function pow(x: number, y: number): number;
+    function pow(x: number, y: number): number
 
     /**
      * Returns a pseudorandom number between 0 and 1.
      */
     //% shim=Math_::random
     //% help=math/random
-    function random(): number;
+    function random(): number
 
     /**
      * Returns a pseudorandom number between min and max included.
@@ -544,7 +554,7 @@ declare namespace Math {
     //% blockId="device_random_deprecated" block="pick random %min|to %limit"
     //% help=math/random-range deprecated
     //% shim=Math_::randomRange
-    function randomRange(min: number, max: number): number;
+    function randomRange(min: number, max: number): number
 
     /**
      * Returns the natural logarithm (base e) of a number.
@@ -552,7 +562,7 @@ declare namespace Math {
      */
     //% shim=Math_::log
     //% help=math
-    function log(x: number): number;
+    function log(x: number): number
 
     /**
      * Returns returns ``e^x``.
@@ -560,7 +570,7 @@ declare namespace Math {
      */
     //% shim=Math_::exp
     //% help=math
-    function exp(x: number): number;
+    function exp(x: number): number
 
     /**
      * Returns the sine of a number.
@@ -568,7 +578,7 @@ declare namespace Math {
      */
     //% shim=Math_::sin
     //% help=math/trigonometry
-    function sin(x: number): number;
+    function sin(x: number): number
 
     /**
      * Returns the cosine of a number.
@@ -576,7 +586,7 @@ declare namespace Math {
      */
     //% shim=Math_::cos
     //% help=math/trigonometry
-    function cos(x: number): number;
+    function cos(x: number): number
 
     /**
      * Returns the tangent of a number.
@@ -584,7 +594,7 @@ declare namespace Math {
      */
     //% shim=Math_::tan
     //% help=math/trigonometry
-    function tan(x: number): number;
+    function tan(x: number): number
 
     /**
      * Returns the arcsine (in radians) of a number
@@ -592,7 +602,7 @@ declare namespace Math {
      */
     //% shim=Math_::asin
     //% help=math/trigonometry
-    function asin(x: number): number;
+    function asin(x: number): number
 
     /**
      * Returns the arccosine (in radians) of a number
@@ -600,7 +610,7 @@ declare namespace Math {
      */
     //% shim=Math_::acos
     //% help=math/trigonometry
-    function acos(x: number): number;
+    function acos(x: number): number
 
     /**
      * Returns the arctangent (in radians) of a number
@@ -608,7 +618,7 @@ declare namespace Math {
      */
     //% shim=Math_::atan
     //% help=math/trigonometry
-    function atan(x: number): number;
+    function atan(x: number): number
 
     /**
      * Returns the arctangent of the quotient of its arguments.
@@ -617,7 +627,7 @@ declare namespace Math {
      */
     //% shim=Math_::atan2
     //% help=math/trigonometry
-    function atan2(y: number, x: number): number;
+    function atan2(y: number, x: number): number
 
     /**
      * Returns the square root of a number.
@@ -625,39 +635,39 @@ declare namespace Math {
      */
     //% shim=Math_::sqrt
     //% help=math
-    function sqrt(x: number): number;
+    function sqrt(x: number): number
 
     /**
      * Returns the smallest number greater than or equal to its numeric argument.
      * @param x A numeric expression.
      */
     //% shim=Math_::ceil
-      //% help=math
-    function ceil(x: number): number;
+    //% help=math
+    function ceil(x: number): number
 
     /**
-      * Returns the greatest number less than or equal to its numeric argument.
-      * @param x A numeric expression.
-      */
+     * Returns the greatest number less than or equal to its numeric argument.
+     * @param x A numeric expression.
+     */
     //% shim=Math_::floor
-      //% help=math
-    function floor(x: number): number;
+    //% help=math
+    function floor(x: number): number
 
     /**
-      * Returns the number with the decimal part truncated.
-      * @param x A numeric expression.
-      */
+     * Returns the number with the decimal part truncated.
+     * @param x A numeric expression.
+     */
     //% shim=Math_::trunc
     //% help=math
-    function trunc(x: number): number;
+    function trunc(x: number): number
 
     /**
-      * Returns a supplied numeric expression rounded to the nearest number.
-      * @param x The value to be rounded to the nearest number.
-      */
+     * Returns a supplied numeric expression rounded to the nearest number.
+     * @param x The value to be rounded to the nearest number.
+     */
     //% shim=Math_::round
     //% help=math
-    function round(x: number): number;
+    function round(x: number): number
 
     /**
      * Returns the value of integer signed 32 bit multiplication of two numbers.
@@ -666,7 +676,7 @@ declare namespace Math {
      */
     //% shim=Math_::imul
     //% help=math
-    function imul(x: number, y: number): number;
+    function imul(x: number, y: number): number
 
     /**
      * Returns the value of integer signed 32 bit division of two numbers.
@@ -675,13 +685,13 @@ declare namespace Math {
      */
     //% shim=Math_::idiv
     //% help=math
-    function idiv(x: number, y: number): number;
+    function idiv(x: number, y: number): number
 }
 
 declare namespace control {
     //% shim=_control::_onCodeStart
-    export function _onCodeStart(arg: any): void;
+    export function _onCodeStart(arg: any): void
 
     //% shim=_control::_onCodeStop
-    export function _onCodeStop(arg: any): void;
+    export function _onCodeStop(arg: any): void
 }

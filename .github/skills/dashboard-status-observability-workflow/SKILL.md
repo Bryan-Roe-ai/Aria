@@ -37,32 +37,32 @@ Common trigger phrases:
 ## Procedure
 
 1. Identify source-of-truth mapping
-   - For each panel, list exact source (status file vs health endpoint).
-   - Avoid implicit mixing of data from unmatched timestamps.
+    - For each panel, list exact source (status file vs health endpoint).
+    - Avoid implicit mixing of data from unmatched timestamps.
 
 2. Validate schema assumptions
-   - Standard orchestrator schema: `{total_jobs,succeeded,failed,running,last_updated,avg_duration}`.
-   - Autonomous schema: `{cycles_completed,best_accuracy,performance_history,dataset_inventory}`.
+    - Standard orchestrator schema: `{total_jobs,succeeded,failed,running,last_updated,avg_duration}`.
+    - Autonomous schema: `{cycles_completed,best_accuracy,performance_history,dataset_inventory}`.
 
 3. Check polling behavior
-   - Ensure interval cadence is stable and not duplicated by multiple timers.
-   - Handle request failures with retries/backoff and visible stale-data indicators.
+    - Ensure interval cadence is stable and not duplicated by multiple timers.
+    - Handle request failures with retries/backoff and visible stale-data indicators.
 
 4. Align health endpoint display
-   - `/api/ai/status` fields should map directly to UI labels.
-   - Distinguish unavailable vs disabled vs unhealthy states clearly.
+    - `/api/ai/status` fields should map directly to UI labels.
+    - Distinguish unavailable vs disabled vs unhealthy states clearly.
 
 5. Handle missing/stale data explicitly
-   - Don’t crash on absent files/keys.
-   - Show “no data yet” vs “error loading” distinctly.
+    - Don’t crash on absent files/keys.
+    - Show “no data yet” vs “error loading” distinctly.
 
 6. Fix minimal layer
-   - Source mapping bug -> selector/adapter fix.
-   - Schema drift bug -> parser normalization.
-   - Polling bug -> timer/state lifecycle fix.
+    - Source mapping bug -> selector/adapter fix.
+    - Schema drift bug -> parser normalization.
+    - Polling bug -> timer/state lifecycle fix.
 
 7. Re-verify panel-by-panel
-   - Compare each rendered metric against raw source values.
+    - Compare each rendered metric against raw source values.
 
 ## Quality Checks
 

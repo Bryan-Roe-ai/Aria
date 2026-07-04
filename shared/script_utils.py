@@ -13,10 +13,9 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional
 
 
-def get_repo_root(script_file: Optional[str] = None) -> Path:
+def get_repo_root(script_file: str | None = None) -> Path:
     """
     Get the repository root directory.
 
@@ -43,7 +42,7 @@ def get_repo_root(script_file: Optional[str] = None) -> Path:
         return Path(__file__).resolve().parent.parent
 
 
-def setup_path(script_file: Optional[str] = None, *additional_paths: str) -> Path:
+def setup_path(script_file: str | None = None, *additional_paths: str) -> Path:
     """
     Setup sys.path to include repository root and optional additional paths.
 
@@ -82,7 +81,7 @@ def setup_path(script_file: Optional[str] = None, *additional_paths: str) -> Pat
     return repo_root
 
 
-def get_data_out_dir(script_file: str, subdir: Optional[str] = None) -> Path:
+def get_data_out_dir(script_file: str, subdir: str | None = None) -> Path:
     """
     Get the standard data_out directory for a script's outputs.
 

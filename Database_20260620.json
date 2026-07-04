@@ -1,0 +1,27 @@
+{
+    "$schema": "https://github.com/Azure/data-api-builder/releases/latest/download/dab.draft.schema.json",
+    "data-source": {
+        "database-type": "mssql",
+        "connection-string": "Data Source=host.docker.internal,1433;Initial Catalog=Database;User ID=SA;Password=Holdmybeer3;Pooling=False;Trust Server Certificate=True;Authentication=SqlPassword"
+    },
+    "runtime": {
+        "rest": {
+            "enabled": true,
+            "path": "/api"
+        },
+        "graphql": {
+            "enabled": true,
+            "path": "/graphql"
+        },
+        "mcp": {
+            "enabled": true
+        },
+        "host": {
+            "mode": "development",
+            "cors": {
+                "origins": ["*"]
+            }
+        }
+    },
+    "entities": {}
+}

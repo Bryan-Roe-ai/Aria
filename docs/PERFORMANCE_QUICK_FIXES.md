@@ -9,12 +9,14 @@ Quick reference for common performance anti-patterns and their fixes in the Aria
 ### 1. Keyword/String Membership Checks
 
 ❌ **SLOW - Creates list every time:**
+
 ```python
 if any(k in cmd for k in ['jump', 'leap', 'hop']):
     do_something()
 ```
 
 ✅ **FAST - Use tuple or module-level frozenset:**
+
 ```python
 # For small sets, tuple is fastest
 if any(k in cmd for k in ('jump', 'leap', 'hop')):
@@ -33,12 +35,14 @@ if any(k in cmd for k in _JUMP_KEYWORDS):
 ### 2. Status/Enum Membership Checks
 
 ❌ **SLOW - Creates list:**
+
 ```python
 if status in ["succeeded", "completed", "done"]:
     process()
 ```
 
 ✅ **FAST - Use tuple or frozenset:**
+
 ```python
 # Tuple for small, fixed sets
 if status in ("succeeded", "completed", "done"):
@@ -57,6 +61,7 @@ if status in SUCCESS_STATUSES:
 ### 3. Linear Searches in Lists
 
 ❌ **SLOW - O(n) search:**
+
 ```python
 # Searching for item in list
 for item in large_list:
@@ -65,6 +70,7 @@ for item in large_list:
 ```
 
 ✅ **FAST - O(1) dict lookup:**
+
 ```python
 # Build index once
 items_by_id = {item.id: item for item in large_list}
@@ -80,6 +86,7 @@ return items_by_id.get(target_id)
 ### 4. String Concatenation in Loops
 
 ❌ **SLOW - O(n²) due to immutable strings:**
+
 ```python
 result = ""
 for item in items:
@@ -87,6 +94,7 @@ for item in items:
 ```
 
 ✅ **FAST - O(n) using list and join:**
+
 ```python
 result = ", ".join(str(item) for item in items)
 ```
@@ -98,6 +106,7 @@ result = ", ".join(str(item) for item in items)
 ### 5. Multiple Passes Over Same Data
 
 ❌ **SLOW - Multiple iterations:**
+
 ```python
 succeeded = [r for r in results if r.status == "success"]
 failed = [r for r in results if r.status != "success"]
@@ -105,6 +114,7 @@ total_time = sum(r.duration for r in results)
 ```
 
 ✅ **FAST - Single-pass aggregation:**
+
 ```python
 succeeded = []
 failed = []
@@ -125,6 +135,7 @@ for r in results:
 ### 6. Average/Statistics Calculations
 
 ❌ **SLOW - Manual calculation:**
+
 ```python
 for key, values in data.items():
     avg = sum(values) / len(values)
@@ -132,6 +143,7 @@ for key, values in data.items():
 ```
 
 ✅ **FAST - Use statistics module:**
+
 ```python
 import statistics
 
@@ -147,6 +159,7 @@ for key, values in data.items():
 ### 7. Finding Maximum with Custom Key
 
 ❌ **SLOW - Manual tracking:**
+
 ```python
 best_value = float('-inf')
 best_item = None
@@ -159,6 +172,7 @@ for item in items:
 ```
 
 ✅ **FAST - Use built-in max:**
+
 ```python
 best_item = max(items, key=lambda item: compute_score(item))
 ```
@@ -170,12 +184,14 @@ best_item = max(items, key=lambda item: compute_score(item))
 ### 8. Top-K Selection
 
 ❌ **SLOW - Full sort:**
+
 ```python
 # When you only need top 10 out of 1000s
 top_items = sorted(items, key=lambda x: x.score, reverse=True)[:10]
 ```
 
 ✅ **FAST - Use heapq.nlargest:**
+
 ```python
 import heapq
 
@@ -183,6 +199,7 @@ top_items = heapq.nlargest(10, items, key=lambda x: x.score)
 ```
 
 **Improvement:** 5-10x faster for large collections
+
 - `heapq.nlargest`: O(n log k) where k=10
 - `sorted`: O(n log n) where n=1000s
 
@@ -191,6 +208,7 @@ top_items = heapq.nlargest(10, items, key=lambda x: x.score)
 ### 9. Database Operations in Loops
 
 ❌ **SLOW - Connection per operation:**
+
 ```python
 for item in items:
     conn = get_connection()
@@ -201,6 +219,7 @@ for item in items:
 ```
 
 ✅ **FAST - Batch operations:**
+
 ```python
 conn = get_connection()
 cursor = conn.cursor()
@@ -216,6 +235,7 @@ conn.close()
 ### 10. List Comprehension vs append
 
 ❌ **SLOWER - Repeated append:**
+
 ```python
 results = []
 for item in items:
@@ -224,6 +244,7 @@ for item in items:
 ```
 
 ✅ **FASTER - List comprehension:**
+
 ```python
 results = [transform(item) for item in items if item.valid]
 ```
@@ -255,6 +276,7 @@ grep -n "sum(.*).*len(" *.py
 ## 📊 When to Optimize
 
 ### DO optimize when:
+
 - ✅ Code is in a hot path (called frequently)
 - ✅ Processing large datasets (>1000 items)
 - ✅ Operation is in a loop
@@ -262,6 +284,7 @@ grep -n "sum(.*).*len(" *.py
 - ✅ Easy win (simple fix with big impact)
 
 ### DON'T optimize when:
+
 - ❌ Code runs once at startup
 - ❌ Small datasets (<100 items)
 - ❌ Premature (no profiling data)

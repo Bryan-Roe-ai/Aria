@@ -69,7 +69,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     }
     if lora_info["adapter_config_exists"]:
         try:
-            with open(adapter_cfg, "r", encoding="utf-8") as f:
+            with open(adapter_cfg, encoding="utf-8") as f:
                 cfg = json.load(f)
             lora_info["base_model"] = cfg.get("base_model_name_or_path")
         except Exception:
@@ -128,13 +128,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
             # Build Azure Quantum context and job list if metadata present
             try:
-                cfg_path = (
-                    repo_root
-                    / "ai-projects"
-                    / "quantum-ml"
-                    / "config"
-                    / "quantum_config.yaml"
-                )
+                cfg_path = repo_root / "ai-projects" / "quantum-ml" / "config" / "quantum_config.yaml"
                 azure_ctx = None
                 workspace_url = None
                 if cfg_path.exists():
@@ -168,9 +162,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                                 "name": j.get("name"),
                                 "mode": j.get("mode"),
                                 "job_id": job_id,
-                                "backend": meta.get("azure_backend")
-                                or meta.get("backend")
-                                or j.get("mode"),
+                                "backend": meta.get("azure_backend") or meta.get("backend") or j.get("mode"),
                                 "success": meta.get("azure_success"),
                                 "counts": meta.get("azure_counts"),
                                 "results_file": meta.get("azure_results_file"),
@@ -219,14 +211,18 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             "endpoints": [
                 "/api/chat-web",
                 "/api/chat-web/chat.js",
+                "/api/chat-web/static/agi_stream_utils.js",
                 "/api/chat",
                 "/api/ai/status",
+                "/api/agi/analyze",
+                "/api/agi/reason",
+                "/api/agi/stream",
+                "/api/agi/status",
+                "/api/agi/persistence",
             ],
             "status": "ok",
         }
-        return func.HttpResponse(
-            json.dumps(payload), status_code=200, mimetype="application/json"
-        )
+        return func.HttpResponse(json.dumps(payload), status_code=200, mimetype="application/json")
     except Exception as e:  # noqa: BLE001
         payload = {
             "status": "error",
@@ -236,6 +232,4 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
                 "openai": openai_env,
             },
         }
-        return func.HttpResponse(
-            json.dumps(payload), status_code=500, mimetype="application/json"
-        )
+        return func.HttpResponse(json.dumps(payload), status_code=500, mimetype="application/json")

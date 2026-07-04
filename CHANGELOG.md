@@ -10,6 +10,7 @@ uses [Conventional Commits](https://www.conventionalcommits.org/).
 ## [Unreleased]
 
 ### Added
+
 - `LICENSE` file (MIT) added to repo root.
 - `CHANGELOG.md` (this file) added to track changes going forward.
 - `[tool.black]`, `[tool.isort]`, `[tool.pytest.ini_options]` sections in `pyproject.toml`.
@@ -18,6 +19,7 @@ uses [Conventional Commits](https://www.conventionalcommits.org/).
 - `.gitattributes` to enforce LF line endings across the repository.
 
 ### Changed
+
 - `pyproject.toml` dev dependency `pytest>=7.0,<8.0` updated to `pytest>=8.0.0` to match
   `requirements.txt` and avoid resolution conflicts.
 - `requirements-dev.txt` updated to include `pytest-cov`, `black`, `isort`, `pre-commit`.
@@ -27,6 +29,7 @@ uses [Conventional Commits](https://www.conventionalcommits.org/).
 - `pytest.ini` extended with `filterwarnings` to suppress noisy deprecation warnings.
 
 ### Fixed
+
 - `pr-tests.yml` watcher job `if:` condition used `${...}` instead of `${{...}}` — corrected
   to valid GitHub Actions expression syntax.
 
@@ -35,6 +38,7 @@ uses [Conventional Commits](https://www.conventionalcommits.org/).
 ## [0.1.0] — Initial public release
 
 ### Added
+
 - Animated 3D Aria character stage (`apps/aria/`).
 - Multi-provider chat CLI supporting LM Studio, Ollama, Azure OpenAI, OpenAI, and local echo.
 - Azure Functions API layer (`function_app.py`) with `/api/chat`, `/api/tts`, `/api/ai/status`

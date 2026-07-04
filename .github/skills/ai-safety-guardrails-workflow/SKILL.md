@@ -37,28 +37,28 @@ Common trigger phrases:
 ## Procedure
 
 1. Model risks and abuse cases
-   - Enumerate misuse paths (injection, exfiltration, harmful output, overreach).
-   - Rank by likelihood and impact.
+    - Enumerate misuse paths (injection, exfiltration, harmful output, overreach).
+    - Rank by likelihood and impact.
 
 2. Add input controls
-   - Validate/normalize inputs and enforce scope constraints.
-   - Strip or quarantine unsupported instruction patterns when possible.
+    - Validate/normalize inputs and enforce scope constraints.
+    - Strip or quarantine unsupported instruction patterns when possible.
 
 3. Add runtime controls
-   - Constrain tool access and side-effect permissions.
-   - Set timeout/token/attempt budgets to avoid runaway behavior.
+    - Constrain tool access and side-effect permissions.
+    - Set timeout/token/attempt budgets to avoid runaway behavior.
 
 4. Add output controls
-   - Enforce schema, redact sensitive patterns, and moderate unsafe content.
-   - Apply fail-safe response when policy confidence is low.
+    - Enforce schema, redact sensitive patterns, and moderate unsafe content.
+    - Apply fail-safe response when policy confidence is low.
 
 5. Add observability
-   - Log violation types and control decisions without leaking secrets.
-   - Track trend metrics to detect safety drift.
+    - Log violation types and control decisions without leaking secrets.
+    - Track trend metrics to detect safety drift.
 
 6. Verify with adversarial tests
-   - Run targeted adversarial prompts and boundary cases.
-   - Confirm controls trigger correctly and degrade gracefully.
+    - Run targeted adversarial prompts and boundary cases.
+    - Confirm controls trigger correctly and degrade gracefully.
 
 ## Quality Checks
 

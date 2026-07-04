@@ -9,7 +9,7 @@ import re
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class EmailTemplate(Enum):
 class EmailNotificationSystem:
     """Handles email notifications for subscription events"""
 
-    def __init__(self, smtp_host: Optional[str] = None, smtp_port: int = 587):
+    def __init__(self, smtp_host: str | None = None, smtp_port: int = 587):
         self.smtp_host = smtp_host or "localhost"
         self.smtp_port = smtp_port
         self.from_email = "noreply@aria-platform.com"
@@ -46,7 +46,7 @@ class EmailNotificationSystem:
         self.template_dir.mkdir(parents=True, exist_ok=True)
 
         # Store sent emails for testing/demo
-        self.sent_emails: List[Dict[str, Any]] = []
+        self.sent_emails: list[dict[str, Any]] = []
         self.notification_log = Path("data_out/notifications/email_log.json")
         self.notification_log.parent.mkdir(parents=True, exist_ok=True)
 
@@ -55,7 +55,7 @@ class EmailNotificationSystem:
         to_email: str,
         subject: str,
         body_html: str,
-        body_text: Optional[str] = None,
+        body_text: str | None = None,
     ) -> bool:
         """
         Send an email notification
@@ -97,7 +97,7 @@ class EmailNotificationSystem:
             logger.error(f"Failed to send email to {to_email}: {str(e)}")
             return False
 
-    def send_template_email(self, to_email: str, template: EmailTemplate, context: Dict[str, Any]) -> bool:
+    def send_template_email(self, to_email: str, template: EmailTemplate, context: dict[str, Any]) -> bool:
         """
         Send an email using a template
 
@@ -181,7 +181,7 @@ class EmailNotificationSystem:
 
         return self.send_template_email(user_email, EmailTemplate.PAYMENT_FAILED, context)
 
-    def _get_template(self, template: EmailTemplate) -> Dict[str, str]:
+    def _get_template(self, template: EmailTemplate) -> dict[str, str]:
         """Get email template data"""
         templates = {
             EmailTemplate.SUBSCRIPTION_ACTIVATED: {
@@ -322,7 +322,7 @@ class EmailNotificationSystem:
             },
         )
 
-    def _render_template(self, template: str, context: Dict[str, Any]) -> str:
+    def _render_template(self, template: str, context: dict[str, Any]) -> str:
         """Simple template rendering"""
         result = template
         for key, value in context.items():
@@ -342,7 +342,7 @@ class EmailNotificationSystem:
         next_month = datetime.now() + timedelta(days=30)
         return next_month.strftime("%B %d, %Y")
 
-    def _log_notification(self, email_data: Dict[str, Any]) -> None:
+    def _log_notification(self, email_data: dict[str, Any]) -> None:
         """Log notification to file"""
         try:
             # Load existing log
@@ -365,7 +365,7 @@ class EmailNotificationSystem:
         except Exception as e:
             logger.error(f"Failed to log notification: {str(e)}")
 
-    def get_sent_emails(self, user_email: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_sent_emails(self, user_email: str | None = None) -> list[dict[str, Any]]:
         """Get sent emails (for testing/demo)"""
         if user_email:
             return [e for e in self.sent_emails if e["to"] == user_email]
@@ -373,7 +373,7 @@ class EmailNotificationSystem:
 
 
 # Global instance
-_email_system: Optional[EmailNotificationSystem] = None
+_email_system: EmailNotificationSystem | None = None
 
 
 def get_email_system() -> EmailNotificationSystem:
