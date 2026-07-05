@@ -207,18 +207,12 @@ class Analyzer:
         results: list[Finding],
     ) -> str:
         lines = cursor.split("\n")
-        offending_lines = [
-            index + 1
-            for index, line in enumerate(lines)
-            if line != line.rstrip(" \t")
-        ]
+        offending_lines = [index + 1 for index, line in enumerate(lines) if line != line.rstrip(" \t")]
         if not offending_lines:
             return cursor
 
         preview = ",".join(str(number) for number in offending_lines[:5])
-        detail: str = (
-            f"{len(offending_lines)} line(s) (e.g. {preview})"
-        )
+        detail: str = f"{len(offending_lines)} line(s) (e.g. {preview})"
         results.append(
             Finding(
                 kind="trailing_whitespace",
@@ -241,9 +235,7 @@ class Analyzer:
         if trailing_newlines <= 1:
             return cursor
 
-        detail: str = (
-            f"{trailing_newlines - 1} extra blank line(s) at EOF"
-        )
+        detail: str = f"{trailing_newlines - 1} extra blank line(s) at EOF"
         results.append(
             Finding(
                 kind="trailing_blank_lines",
