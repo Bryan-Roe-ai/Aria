@@ -107,7 +107,7 @@ class ToolAgent:
 
     def run(self, user_input: str) -> str:
         tool_name, fn, args = self.route(user_input)
-        result = fn(*args) if args else fn()
+        result = fn(*args)
         return f"[tool={tool_name}]\n{result}"
 
 
