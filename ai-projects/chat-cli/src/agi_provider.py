@@ -44,14 +44,15 @@ from __future__ import annotations
 import asyncio
 import html
 import logging
+import math
 import os
 import re
 import time
 from collections.abc import Generator, Iterable
 from dataclasses import dataclass, field
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, TypedDict, cast, runtime_checkable
 
-from chat_providers import BaseChatProvider, ProviderChoice, RoleMessage, detect_provider
+import chat_providers as _chat_providers
 
 _logger = logging.getLogger(__name__)
 
@@ -76,6 +77,54 @@ MAX_INPUT_LENGTH = 10000
 MAX_HISTORY_SIZE = 50
 MAX_GOALS = 5
 MAX_REASONING_CHAINS = 10
+
+
+class RoleMessage(TypedDict):
+    role: str
+    content: str
+
+
+class BaseChatProvider:
+    """Minimal chat provider interface used by AGIProvider."""
+
+    temperature: float | None
+
+    def __init__(self, temperature: float | None = None) -> None:
+        self.temperature = temperature
+
+    def complete(
+        self,
+        messages: list[RoleMessage],
+        stream: bool = True,
+    ) -> Iterable[str] | str:
+        raise NotImplementedError
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderChoice:
+    name: str
+    model: str = ""
+
+
+def detect_provider(
+    *,
+    explicit: str = "auto",
+    model_override: str | None = None,
+    temperature: float | None = None,
+    max_output_tokens: int | None = None,
+) -> tuple[BaseChatProvider, ProviderChoice]:
+    """Dispatch to the installed chat_providers implementation."""
+    candidate = getattr(_chat_providers, "detect_provider", None)
+    if not callable(candidate):
+        raise ImportError("chat_providers.detect_provider is unavailable")
+
+    result = candidate(
+        explicit=explicit,
+        model_override=model_override,
+        temperature=temperature,
+        max_output_tokens=max_output_tokens,
+    )
+    return cast(tuple[BaseChatProvider, ProviderChoice], result)
 
 
 # ---------------------------------------------------------------------------
@@ -107,9 +156,8 @@ class MemoryInterface(Protocol):
         message:
             A dict with ``"role"`` and ``"content"`` keys.
         """
-        ...
+        raise NotImplementedError
 
-    # type: ignore[name-defined]
     def add_reasoning_chain(self, chain: list[ReasoningStep]) -> None:
         """Persist a completed reasoning *chain*.
 
@@ -122,7 +170,7 @@ class MemoryInterface(Protocol):
             Ordered list of ``ReasoningStep`` objects produced during one
             ``AGIProvider.complete`` call.
         """
-        ...
+        raise NotImplementedError
 
     def get_relevant_context(self, query: str) -> str:
         """Return a concise textual summary of memory relevant to *query*.
@@ -145,6 +193,15 @@ class MemoryInterface(Protocol):
 
 
 @runtime_checkable
+class ContextInterface(MemoryInterface, Protocol):
+    conversation_history: list[RoleMessage]
+    reasoning_chains: list[list[ReasoningStep]]
+    goals: list[str]
+    learned_patterns: dict[str, Any]
+    max_history: int
+
+
+@runtime_checkable
 class EnvironmentInterface(Protocol):
     """Structural protocol for AGI environment adapters.
 
@@ -161,7 +218,6 @@ class EnvironmentInterface(Protocol):
     """
 
     def complete(
-        # type: ignore[name-defined]
         self,
         messages: list[RoleMessage],
         stream: bool = True,
@@ -184,7 +240,7 @@ class EnvironmentInterface(Protocol):
             Either a generator of token strings (streaming) or a complete
             response string (non-streaming).
         """
-        ...
+        raise NotImplementedError
 
 
 # ---------------------------------------------------------------------------
@@ -385,8 +441,8 @@ def _sanitize_input(text: str, max_length: int = MAX_INPUT_LENGTH) -> str:
     """Sanitize user input to reduce injection and control-char issues."""
     if not isinstance(text, str):
         return ""
-    text = text[:max_length]
-    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+    truncated_text = text[:max_length]
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", truncated_text)
 
 
 def _sanitize_for_logging(text: str, max_length: int = 200) -> str:
@@ -421,6 +477,19 @@ def _infer_aria_movement_tag(query: str) -> str | None:
     if any(word in query_lower for word in ["move", "walk", "go", "run"]):
         return "[aria:idle]"
     return None
+
+
+def _set_provider_temperature(provider: BaseChatProvider, temperature: float | None) -> bool:
+    """Best-effort provider temperature update with debug logging."""
+    try:
+        provider.temperature = temperature
+        return True
+    except AttributeError as exc:
+        _logger.debug(
+            "Provider temperature update skipped: %s",
+            _sanitize_for_logging(str(exc)),
+        )
+        return False
 
 
 @dataclass
@@ -548,279 +617,8 @@ class AGIContext:
         return "\n".join(parts)
 
 
-class AGIProvider(BaseChatProvider):
-    """AGI-enhanced chat provider with reasoning, memory, and multi-agent routing.
-
-    ``AGIProvider`` wraps any :class:`~chat_providers.BaseChatProvider` and
-    adds a structured reasoning pipeline:
-
-    1. **Query analysis** — classify intent, domain, and complexity.
-    2. **Agent routing** — select the best specialist from ``_AGENT_REGISTRY``.
-    3. **Task decomposition** — break complex queries into ordered subtasks.
-    4. **Chain-of-thought synthesis** — generate domain-aware reasoning hints.
-    5. **Self-reflection** — validate and patch the response (e.g. missing
-       Aria movement tags).
-
-    Parameters
-    ----------
-    base_provider:
-        Underlying LLM provider.  When ``None`` the provider is auto-detected
-        via :func:`~chat_providers.detect_provider` on first use.
-    temperature:
-        Sampling temperature forwarded to the base provider.  Agent-aware
-        overrides are applied per specialist during response generation.
-    max_output_tokens:
-        Maximum token budget for generated responses.
-    enable_chain_of_thought:
-        Include chain-of-thought synthesis steps in the reasoning trace.
-    enable_self_reflection:
-        Validate and improve the generated response after synthesis.
-    enable_task_decomposition:
-        Break complex queries into subtasks before synthesis.
-    reasoning_depth:
-        Number of reasoning steps to generate, clamped to ``[1, 5]``.
-    verbose:
-        Prepend the formatted reasoning trace to each response.
-
-    Examples
-    --------
-    Wrap any provider::
-
-        from agi_provider import AGIProvider
-        from chat_providers import detect_provider
-
-        base, _ = detect_provider(explicit="local")
-        agi = AGIProvider(base_provider=base, verbose=True)
-        print(agi.complete([{"role": "user", "content": "Explain LoRA"}], stream=False))
-
-    Auto-detect the best available provider::
-
-        provider, info = create_agi_provider(temperature=0.4)
-        response = provider.complete([{"role": "user", "content": "Hello"}], stream=False)
-    """
-
-    def __init__(
-        self,
-        base_provider: BaseChatProvider | None = None,
-        temperature: float = 0.7,
-        max_output_tokens: int = 2048,
-        enable_chain_of_thought: bool = True,
-        enable_self_reflection: bool = True,
-        enable_task_decomposition: bool = True,
-        reasoning_depth: int = 3,
-        verbose: bool = False,
-    ) -> None:
-        self.base_provider = base_provider
-        self.temperature = temperature
-        self.max_output_tokens = max_output_tokens
-        self.enable_chain_of_thought = enable_chain_of_thought
-        self.enable_self_reflection = enable_self_reflection
-        self.enable_task_decomposition = enable_task_decomposition
-        self.reasoning_depth = min(max(1, reasoning_depth), 5)
-        self.verbose = verbose
-        self.context = AGIContext()
-        self._base_provider_choice: ProviderChoice | None = None
-        self._last_agent_used: str | None = None
-
-    def _get_base_provider(self) -> BaseChatProvider:
-        """Return the base provider, auto-detecting it on first call.
-
-        The detected provider and its :class:`~chat_providers.ProviderChoice`
-        are cached on the instance so subsequent calls are cheap.
-
-        Returns
-        -------
-        BaseChatProvider
-            The underlying LLM provider used for final response generation.
-        """
-        if self.base_provider is None:
-            provider, choice = detect_provider(explicit="auto")
-            self.base_provider = provider
-            self._base_provider_choice = choice
-        return self.base_provider
-
-    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
-        """Process *messages* through the AGI reasoning pipeline and return a response.
-
-        The pipeline:
-
-        1. Truncate ``messages`` to ``MAX_HISTORY_SIZE`` if needed.
-        2. Deduplicate and add new messages to ``self.context``.
-        3. Extract the latest user query.
-        4. Run ``_reason`` to build the reasoning chain.
-        5. Generate a response via the base provider (or a specialist).
-        6. Optionally apply self-reflection.
-        7. Store the chain and return the response, streaming if requested.
-
-        Parameters
-        ----------
-        messages:
-            Ordered conversation turn list.
-        stream:
-            When ``True`` yield tokens one by one; when ``False`` return the
-            full response as a single ``str``.
-
-        Returns
-        -------
-        Iterable[str] | str
-            Streaming token generator or complete response string.
-        """
-        if len(messages) > MAX_HISTORY_SIZE:
-            messages = messages[-MAX_HISTORY_SIZE:]
-            _logger.warning("Message count exceeded limit; truncating to %d", MAX_HISTORY_SIZE)
-
-        existing = {m.get("content", "") for m in self.context.conversation_history}
-        for msg in messages:
-            content = _sanitize_input(str(msg.get("content", "")))
-            if content not in existing:
-                self.context.add_message({"role": msg.get("role", "user"), "content": content})
-                existing.add(content)
-
-        user_query = ""
-        for msg in reversed(messages):
-            if msg.get("role") == "user":
-                user_query = _sanitize_input(str(msg.get("content", "")))
-                break
-
-        if not user_query.strip():
-            text = "I'm ready to help. What would you like to discuss?"
-            return self._stream_text(text) if stream else text
-
-        try:
-            reasoning_chain = self._reason(user_query, messages)
-            response = self._generate_response(user_query, reasoning_chain, messages)
-            if self.enable_self_reflection:
-                response = self._reflect_and_improve(user_query, response, reasoning_chain)
-            self.context.add_reasoning_chain(reasoning_chain)
-            # Persist reasoning chain to optional persistence backend (best-effort)
-            if getattr(self, "persistence", None) is not None:
-                try:
-                    serialized_chain = []
-                    for step in reasoning_chain:
-                        serialized_chain.append(
-                            {
-                                "step_type": step.step_type,
-                                "content": step.content,
-                                "confidence": step.confidence,
-                                "metadata": step.metadata,
-                            }
-                        )
-                    meta = {"query": user_query, "agent": self._last_agent_used, "ts": time.time()}
-                    if hasattr(self.persistence, "write_reasoning_chain"):
-                        self.persistence.write_reasoning_chain(serialized_chain, meta)
-                    elif hasattr(self.persistence, "add_reasoning_chain"):
-                        self.persistence.add_reasoning_chain(serialized_chain)
-                    elif hasattr(self.persistence, "write"):
-                        try:
-                            self.persistence.write("reasoning_chain", {"chain": serialized_chain, "meta": meta})
-                        except Exception:
-                            pass
-                except Exception as pers_exc:
-                    _logger.exception("Failed to persist AGI reasoning chain: %s", _sanitize_for_logging(str(pers_exc)))
-        except Exception as exc:
-            _logger.error("AGI processing error: %s", _sanitize_for_logging(str(exc)))
-            response = self._generate_fallback_response(user_query, {"intent": "general", "domain": "general"})
-
-        return self._stream_text(response) if stream else response
-
-    def complete_quantum(
-        self,
-        query: str,
-        *,
-        include_analysis: bool = False,
-    ) -> dict[str, Any]:
-        """Answer *query* through the quantum-specialist routing path.
-
-        Used by ``POST /api/aria/quantum/ask`` on the Aria stage server so
-        quantum lab queries always route via ``quantum-specialist`` without
-        requiring the Azure Functions host.
-
-        Returns
-        -------
-        Dict[str, Any]
-            ``response``, ``agent``, ``quantum`` metadata; optional ``analysis``
-            when *include_analysis* is ``True``.
-        """
-        sanitized = _sanitize_input(str(query or ""))
-        if not sanitized.strip():
-            return {
-                "response": "Please provide a quantum computing question.",
-                "agent": "quantum-specialist",
-                "quantum": {
-                    "backend_ready": False,
-                    "model_path": None,
-                    "dispatched": False,
-                },
-            }
-
-        messages: list[RoleMessage] = [{"role": "user", "content": sanitized}]
-        analysis = self._analyze_query(sanitized)
-        analysis["domain"] = "quantum"
-        model_path = self._resolve_quantum_model_path(analysis)
-        if model_path:
-            analysis["quantum_model_path"] = model_path
-
-        reasoning_chain: list[ReasoningStep] = []
-        response = ""
-
-        try:
-            reasoning_chain = self._reason(
-                sanitized,
-                messages,
-                analysis=analysis,
-                force_agent="quantum-specialist",
-            )
-            response = self._generate_response(sanitized, reasoning_chain, messages)
-            if self.enable_self_reflection:
-                response = self._reflect_and_improve(sanitized, response, reasoning_chain)
-            self.context.add_reasoning_chain(reasoning_chain)
-            if getattr(self, "persistence", None) is not None:
-                try:
-                    serialized_chain = [
-                        {
-                            "step_type": step.step_type,
-                            "content": step.content,
-                            "confidence": step.confidence,
-                            "metadata": step.metadata,
-                        }
-                        for step in reasoning_chain
-                    ]
-                    meta = {
-                        "query": sanitized,
-                        "agent": "quantum-specialist",
-                        "ts": time.time(),
-                    }
-                    if hasattr(self.persistence, "write_reasoning_chain"):
-                        self.persistence.write_reasoning_chain(serialized_chain, meta)
-                    elif hasattr(self.persistence, "add_reasoning_chain"):
-                        self.persistence.add_reasoning_chain(serialized_chain)
-                except Exception as pers_exc:
-                    _logger.exception(
-                        "Failed to persist AGI reasoning chain: %s",
-                        _sanitize_for_logging(str(pers_exc)),
-                    )
-        except Exception as exc:
-            _logger.error(
-                "Quantum AGI processing error: %s",
-                _sanitize_for_logging(str(exc)),
-            )
-            response = self._generate_fallback_response(sanitized, {"intent": "explanation", "domain": "quantum"})
-
-        final_analysis = reasoning_chain[0].metadata if reasoning_chain else analysis
-        quantum_meta = {
-            "backend_ready": bool(final_analysis.get("quantum_backend_ready") or model_path),
-            "model_path": final_analysis.get("quantum_model_path") or model_path,
-            "dispatched": bool(final_analysis.get("specialist_dispatched")),
-        }
-
-        payload: dict[str, Any] = {
-            "response": response,
-            "agent": "quantum-specialist",
-            "quantum": quantum_meta,
-        }
-        if include_analysis:
-            payload["analysis"] = final_analysis
-        return payload
+class _AGIProviderReasoningMixin:
+    """Reasoning, routing, and prompt-construction helpers for AGIProvider."""
 
     def _analyze_query(self, query: str) -> dict[str, Any]:
         """Classify *query* by complexity, intent, and domain.
@@ -997,11 +795,7 @@ class AGIProvider(BaseChatProvider):
             "summary": f"{complexity.capitalize()} {intent} query about {domain}",
         }
 
-    # ------------------------------------------------------------------
-    # Multi-agent routing
-    # ------------------------------------------------------------------
-
-    def _select_agent(self, analysis: dict[str, Any]) -> tuple:
+    def _select_agent(self, analysis: dict[str, Any]) -> tuple[str, float]:
         """Select the best specialist agent based on query analysis.
 
         Scores each non-fallback agent by domain match, intent match, and a
@@ -1016,9 +810,6 @@ class AGIProvider(BaseChatProvider):
         Returns a ``(agent_name, score)`` tuple where *score* is the winning
         match score (0.0 for the general fallback).
         """
-        import math
-        import time
-
         intent = analysis.get("intent", "general")
         domain = analysis.get("domain", "general")
         confidence = analysis.get("confidence", 0.5)
@@ -1486,6 +1277,289 @@ class AGIProvider(BaseChatProvider):
 
         return "\n".join(lines)
 
+
+class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
+    """AGI-enhanced chat provider with reasoning, memory, and multi-agent routing.
+
+    ``AGIProvider`` wraps any :class:`~chat_providers.BaseChatProvider` and
+    adds a structured reasoning pipeline:
+
+    1. **Query analysis** — classify intent, domain, and complexity.
+    2. **Agent routing** — select the best specialist from ``_AGENT_REGISTRY``.
+    3. **Task decomposition** — break complex queries into ordered subtasks.
+    4. **Chain-of-thought synthesis** — generate domain-aware reasoning hints.
+    5. **Self-reflection** — validate and patch the response (e.g. missing
+       Aria movement tags).
+
+    Parameters
+    ----------
+    base_provider:
+        Underlying LLM provider.  When ``None`` the provider is auto-detected
+        via :func:`~chat_providers.detect_provider` on first use.
+    temperature:
+        Sampling temperature forwarded to the base provider.  Agent-aware
+        overrides are applied per specialist during response generation.
+    max_output_tokens:
+        Maximum token budget for generated responses.
+    enable_chain_of_thought:
+        Include chain-of-thought synthesis steps in the reasoning trace.
+    enable_self_reflection:
+        Validate and improve the generated response after synthesis.
+    enable_task_decomposition:
+        Break complex queries into subtasks before synthesis.
+    reasoning_depth:
+        Number of reasoning steps to generate, clamped to ``[1, 5]``.
+    verbose:
+        Prepend the formatted reasoning trace to each response.
+
+    Examples
+    --------
+    Wrap any provider::
+
+        from agi_provider import AGIProvider
+        from chat_providers import detect_provider
+
+        base, _ = detect_provider(explicit="local")
+        agi = AGIProvider(base_provider=base, verbose=True)
+        print(agi.complete([{"role": "user", "content": "Explain LoRA"}], stream=False))
+
+    Auto-detect the best available provider::
+
+        provider, info = create_agi_provider(temperature=0.4)
+        response = provider.complete([{"role": "user", "content": "Hello"}], stream=False)
+    """
+
+    def __init__(
+        self,
+        base_provider: BaseChatProvider | None = None,
+        temperature: float = 0.7,
+        max_output_tokens: int = 2048,
+        enable_chain_of_thought: bool = True,
+        enable_self_reflection: bool = True,
+        enable_task_decomposition: bool = True,
+        reasoning_depth: int = 3,
+        verbose: bool = False,
+    ) -> None:
+        super().__init__(temperature=temperature)
+        self.base_provider = base_provider
+        self.temperature = temperature
+        self.max_output_tokens = max_output_tokens
+        self.enable_chain_of_thought = enable_chain_of_thought
+        self.enable_self_reflection = enable_self_reflection
+        self.enable_task_decomposition = enable_task_decomposition
+        self.reasoning_depth = min(max(1, reasoning_depth), 5)
+        self.verbose = verbose
+        self.context: ContextInterface = AGIContext()
+        self._base_provider_choice: ProviderChoice | None = None
+        self._last_agent_used: str | None = None
+        self.persistence: Any | None = None
+
+    def _get_base_provider(self) -> BaseChatProvider:
+        """Return the base provider, auto-detecting it on first call.
+
+        The detected provider and its :class:`~chat_providers.ProviderChoice`
+        are cached on the instance so subsequent calls are cheap.
+
+        Returns
+        -------
+        BaseChatProvider
+            The underlying LLM provider used for final response generation.
+        """
+        if self.base_provider is None:
+            provider, choice = detect_provider(explicit="auto")
+            self.base_provider = provider
+            self._base_provider_choice = choice
+        return self.base_provider
+
+    def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+        """Process *messages* through the AGI reasoning pipeline and return a response.
+
+        The pipeline:
+
+        1. Truncate ``messages`` to ``MAX_HISTORY_SIZE`` if needed.
+        2. Deduplicate and add new messages to ``self.context``.
+        3. Extract the latest user query.
+        4. Run ``_reason`` to build the reasoning chain.
+        5. Generate a response via the base provider (or a specialist).
+        6. Optionally apply self-reflection.
+        7. Store the chain and return the response, streaming if requested.
+
+        Parameters
+        ----------
+        messages:
+            Ordered conversation turn list.
+        stream:
+            When ``True`` yield tokens one by one; when ``False`` return the
+            full response as a single ``str``.
+
+        Returns
+        -------
+        Iterable[str] | str
+            Streaming token generator or complete response string.
+        """
+        if len(messages) > MAX_HISTORY_SIZE:
+            messages = messages[-MAX_HISTORY_SIZE:]
+            _logger.warning("Message count exceeded limit; truncating to %d", MAX_HISTORY_SIZE)
+
+        existing = {m.get("content", "") for m in self.context.conversation_history}
+        for msg in messages:
+            content = _sanitize_input(str(msg.get("content", "")))
+            if content not in existing:
+                self.context.add_message({"role": msg.get("role", "user"), "content": content})
+                existing.add(content)
+
+        user_query = ""
+        for msg in reversed(messages):
+            if msg.get("role") == "user":
+                user_query = _sanitize_input(str(msg.get("content", "")))
+                break
+
+        if not user_query.strip():
+            text = "I'm ready to help. What would you like to discuss?"
+            return self._stream_text(text) if stream else text
+
+        try:
+            reasoning_chain = self._reason(user_query, messages)
+            response = self._generate_response(user_query, reasoning_chain, messages)
+            if self.enable_self_reflection:
+                response = self._reflect_and_improve(user_query, response, reasoning_chain)
+            self.context.add_reasoning_chain(reasoning_chain)
+            # Persist reasoning chain to optional persistence backend (best-effort)
+            if getattr(self, "persistence", None) is not None:
+                try:
+                    serialized_chain = []
+                    for step in reasoning_chain:
+                        serialized_chain.append(
+                            {
+                                "step_type": step.step_type,
+                                "content": step.content,
+                                "confidence": step.confidence,
+                                "metadata": step.metadata,
+                            }
+                        )
+                    meta = {"query": user_query, "agent": self._last_agent_used, "ts": time.time()}
+                    if hasattr(self.persistence, "write_reasoning_chain"):
+                        self.persistence.write_reasoning_chain(serialized_chain, meta)
+                    elif hasattr(self.persistence, "add_reasoning_chain"):
+                        self.persistence.add_reasoning_chain(serialized_chain)
+                    elif hasattr(self.persistence, "write"):
+                        try:
+                            self.persistence.write(
+                                "reasoning_chain",
+                                {"chain": serialized_chain, "meta": meta},
+                            )
+                        except Exception as write_exc:
+                            _logger.debug(
+                                "Generic persistence write failed: %s",
+                                _sanitize_for_logging(str(write_exc)),
+                            )
+                except Exception as pers_exc:
+                    _logger.exception("Failed to persist AGI reasoning chain: %s", _sanitize_for_logging(str(pers_exc)))
+        except Exception as exc:
+            _logger.error("AGI processing error: %s", _sanitize_for_logging(str(exc)))
+            response = self._generate_fallback_response(user_query, {"intent": "general", "domain": "general"})
+
+        return self._stream_text(response) if stream else response
+
+    def complete_quantum(
+        self,
+        query: str,
+        *,
+        include_analysis: bool = False,
+    ) -> dict[str, Any]:
+        """Answer *query* through the quantum-specialist routing path.
+
+        Used by ``POST /api/aria/quantum/ask`` on the Aria stage server so
+        quantum lab queries always route via ``quantum-specialist`` without
+        requiring the Azure Functions host.
+
+        Returns
+        -------
+        Dict[str, Any]
+            ``response``, ``agent``, ``quantum`` metadata; optional ``analysis``
+            when *include_analysis* is ``True``.
+        """
+        sanitized = _sanitize_input(str(query or ""))
+        if not sanitized.strip():
+            return {
+                "response": "Please provide a quantum computing question.",
+                "agent": "quantum-specialist",
+                "quantum": {
+                    "backend_ready": False,
+                    "model_path": None,
+                    "dispatched": False,
+                },
+            }
+
+        messages: list[RoleMessage] = [{"role": "user", "content": sanitized}]
+        analysis = self._analyze_query(sanitized)
+        analysis["domain"] = "quantum"
+        model_path = self._resolve_quantum_model_path(analysis)
+        if model_path:
+            analysis["quantum_model_path"] = model_path
+
+        reasoning_chain: list[ReasoningStep] = []
+        response = ""
+
+        try:
+            reasoning_chain = self._reason(
+                sanitized,
+                messages,
+                analysis=analysis,
+                force_agent="quantum-specialist",
+            )
+            response = self._generate_response(sanitized, reasoning_chain, messages)
+            if self.enable_self_reflection:
+                response = self._reflect_and_improve(sanitized, response, reasoning_chain)
+            self.context.add_reasoning_chain(reasoning_chain)
+            if getattr(self, "persistence", None) is not None:
+                try:
+                    serialized_chain = [
+                        {
+                            "step_type": step.step_type,
+                            "content": step.content,
+                            "confidence": step.confidence,
+                            "metadata": step.metadata,
+                        }
+                        for step in reasoning_chain
+                    ]
+                    meta = {
+                        "query": sanitized,
+                        "agent": "quantum-specialist",
+                        "ts": time.time(),
+                    }
+                    if hasattr(self.persistence, "write_reasoning_chain"):
+                        self.persistence.write_reasoning_chain(serialized_chain, meta)
+                    elif hasattr(self.persistence, "add_reasoning_chain"):
+                        self.persistence.add_reasoning_chain(serialized_chain)
+                except Exception as pers_exc:
+                    _logger.exception(
+                        "Failed to persist AGI reasoning chain: %s",
+                        _sanitize_for_logging(str(pers_exc)),
+                    )
+        except Exception as exc:
+            _logger.error(
+                "Quantum AGI processing error: %s",
+                _sanitize_for_logging(str(exc)),
+            )
+            response = self._generate_fallback_response(sanitized, {"intent": "explanation", "domain": "quantum"})
+
+        final_analysis = reasoning_chain[0].metadata if reasoning_chain else analysis
+        quantum_meta = {
+            "backend_ready": bool(final_analysis.get("quantum_backend_ready") or model_path),
+            "model_path": final_analysis.get("quantum_model_path") or model_path,
+            "dispatched": bool(final_analysis.get("specialist_dispatched")),
+        }
+
+        payload: dict[str, Any] = {
+            "response": response,
+            "agent": "quantum-specialist",
+            "quantum": quantum_meta,
+        }
+        if include_analysis:
+            payload["analysis"] = final_analysis
+        return payload
+
     def _generate_response(
         self,
         query: str,
@@ -1537,18 +1611,17 @@ class AGIProvider(BaseChatProvider):
                 "infrastructure-specialist": 0.25,
             }
             original_temp = getattr(provider, "temperature", None)
-            if selected_agent in _AGENT_TEMPERATURES:
-                try:
-                    provider.temperature = _AGENT_TEMPERATURES[selected_agent]
-                except AttributeError:
-                    pass  # provider is immutable — skip
-            result = provider.complete(enhanced_messages, stream=False)
-            # Restore original temperature so state doesn't leak.
-            if original_temp is not None:
-                try:
-                    provider.temperature = original_temp
-                except AttributeError:
-                    pass
+            temperature_overridden = False
+            try:
+                if selected_agent in _AGENT_TEMPERATURES:
+                    temperature_overridden = _set_provider_temperature(
+                        provider,
+                        _AGENT_TEMPERATURES[selected_agent],
+                    )
+                result = provider.complete(enhanced_messages, stream=False)
+            finally:
+                if temperature_overridden:
+                    _set_provider_temperature(provider, original_temp)
             response = result if isinstance(result, str) else "".join(result)
         except Exception as exc:
             _logger.error("Base provider error: %s", _sanitize_for_logging(str(exc)))
@@ -1846,7 +1919,10 @@ class AGIProvider(BaseChatProvider):
 
             asyncio.run(main())
         """
-        result = await asyncio.to_thread(self.complete, messages, stream)
+        result = await cast(
+            Any,
+            asyncio.to_thread(self.complete, messages, stream),
+        )
         if isinstance(result, str):
             return result
         return "".join(result)
@@ -1899,8 +1975,8 @@ def create_agi_provider(
             stream=False,
         )
     """
-    base_provider = None
-    base_choice = None
+    base_provider: BaseChatProvider | None = None
+    base_choice: ProviderChoice | None = None
 
     # The base provider defaults to auto-detection, but operators can pin it via
     # the AGI_BASE_PROVIDER env var (e.g. "local" for a guaranteed-working
@@ -1981,7 +2057,7 @@ def create_agi_provider(
         try:
             from shared.agi_memory_redis import create_redis_agi_memory
 
-            provider.context = create_redis_agi_memory()
+            provider.context = cast(ContextInterface, create_redis_agi_memory())
         except Exception as exc:  # pragma: no cover - best-effort memory backend
             _logger.exception(
                 "Failed to initialise Redis AGI memory backend: %s",

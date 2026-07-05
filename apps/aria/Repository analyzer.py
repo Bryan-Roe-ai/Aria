@@ -24,6 +24,7 @@ import logging
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from .registry import SUPPORTED_FINDING_KINDS, TRANSFORM_ORDER
 from .risk_manager import RiskManager
@@ -44,9 +45,8 @@ class Finding:
     path: Path
     detail: str = ""
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Return a serializable representation of the finding."""
-
         return {
             "kind": self.kind,
             "path": str(self.path),
@@ -216,9 +216,7 @@ class Analyzer:
             return cursor
 
         preview = ",".join(str(number) for number in offending_lines[:5])
-        detail: str = (
-            f"{len(offending_lines)} line(s) (e.g. {preview})"
-        )
+        detail: str = f"{len(offending_lines)} line(s) (e.g. {preview})"
         results.append(
             Finding(
                 kind="trailing_whitespace",
@@ -241,9 +239,7 @@ class Analyzer:
         if trailing_newlines <= 1:
             return cursor
 
-        detail: str = (
-            f"{trailing_newlines - 1} extra blank line(s) at EOF"
-        )
+        detail: str = f"{trailing_newlines - 1} extra blank line(s) at EOF"
         results.append(
             Finding(
                 kind="trailing_blank_lines",

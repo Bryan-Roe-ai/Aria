@@ -1,7 +1,5 @@
 # https://circleci.com/docs/2.0/config-intro/
 
-version: 2.1
-
 jobs:
     test:
         docker:
@@ -9,8 +7,4 @@ jobs:
         steps:
             - checkout
             - run: echo "Running example step, please edit this file"
-
-workflows:
-    test-flow:
-        jobs:
-            - test
+version: "2.1"
