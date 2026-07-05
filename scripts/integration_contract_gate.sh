@@ -26,6 +26,7 @@ endpoint="${INTEGRATION_AI_STATUS_ENDPOINT:-http://localhost:7071/api/ai/status}
 retry_count="${RETRY_COUNT:-30}"
 retry_interval="${RETRY_INTERVAL:-1}"
 start_cmd="${START_FUNC_CMD:-}" # optional command to start a local function host
+auto_start_func_host="${AUTO_START_FUNC_HOST:-true}"
 tmp_dir="${TMPDIR:-/tmp}"
 start_log="${tmp_dir%/}/integration_contract_gate.start.log"
 
@@ -60,6 +61,17 @@ fi
 if [[ "${strict_endpoints}" != "true" ]]; then
   log "Standard mode complete."
   exit 0
+fi
+
+if [[ -z "${start_cmd}" && "${auto_start_func_host}" != "false" ]]; then
+  if [[ "${endpoint}" == "http://localhost:7071/"* || "${endpoint}" == "http://127.0.0.1:7071/"* ]]; then
+    if command -v func >/dev/null 2>&1; then
+      start_cmd="func host start"
+      log "Auto-start enabled: using local Functions host command '${start_cmd}'."
+    else
+      log "Auto-start skipped: 'func' is not available on PATH."
+    fi
+  fi
 fi
 
 if [[ -n "${start_cmd}" ]]; then

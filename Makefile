@@ -30,7 +30,7 @@ GRADIO_SHARE ?= false
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
 	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
-	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot help
+	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot sql-setup-local sql-status sql-reset-local sql-verify help
 
 # Default target
 all: lint test
@@ -102,6 +102,24 @@ start-qai: install-qai
 start-gradio:
 	@echo "🚀 Starting local Gradio demo on port $(GRADIO_PORT)..."
 	GRADIO_PORT=$(GRADIO_PORT) GRADIO_SHARE=$(GRADIO_SHARE) $(PYTHON) scripts/gradio_demo.py
+
+## Bootstrap local SQL (SQLite) and verify connectivity
+sql-setup-local:
+	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py setup
+
+## Read-only SQL status check (health + validation row count)
+sql-status:
+	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py status
+
+## Reset local SQLite DB file and re-bootstrap sql_setup_check
+sql-reset-local:
+	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py reset
+
+## End-to-end SQL verification (bootstrap + status + focused tests)
+sql-verify:
+	@$(MAKE) sql-setup-local
+	@$(MAKE) sql-status
+	@QAI_SQL_URL=sqlite:///:memory: $(PYTEST) -q tests/test_sql_integration.py tests/test_sql_engine_extended.py
 
 ## Start autonomous training orchestrator (dry-run by default)
 start-orchestrator:
