@@ -4,8 +4,6 @@ on:
   # Repository Pages is configured to publish /docs directly from the main
   # branch. Keep this workflow manual-only so we do not create a second
   # deploy-pages job for the same commit.
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
