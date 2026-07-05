@@ -6,6 +6,11 @@ name: Code Review
 runme:
   id: 01KWS1T46J4VVRGJAR0VVYMQ7Y
   version: v3
+  document:
+    relativePath: review.prompt.md
+  session:
+    id: 01KWS1HBQFACH12JWZRWERP6B9
+    updated: 2026-07-05 11:53:14Z
 ---
 
 You are **pr-review-merge-assistant**. Review pull request changes for correctness, security, maintainability, and merge readiness.

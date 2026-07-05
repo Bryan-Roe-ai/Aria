@@ -26,11 +26,28 @@ ARIA_PORT    ?= 8080
 FUNC_PORT    ?= 7071
 GRADIO_PORT  ?= 7860
 GRADIO_SHARE ?= false
+BASELINE_RESULT ?= /home/vscode/.aitk/evals/foundry/eval_f5ba66e749794172942de2d1001dd594/evalrun_d0a3c099c518434892c2e968dca64311/result.json
+CANDIDATE_RESULT ?= /home/vscode/.aitk/evals/foundry/eval_f5ba66e749794172942de2d1001dd594/evalrun_d0a3c099c518434892c2e968dca64311/result.json
+REPORT_OUTPUT ?= data_out/pr_review_eval_comparison_report.md
+REPORT_OUTPUT_LATEST ?= data_out/pr_review_eval_comparison_report_latest.md
 
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
-	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
-	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot sql-setup-local sql-status sql-status-json sql-doctor sql-doctor-json sql-reset-local sql-verify dab-verify ignore-verify setup-verify help
+	start-local-status start-functions-clean restart-functions-clean start-qai \
+	validate-mcp validate-mcp-json validate-mcp-config \
+	validate-mcp-config-json validate-mcp-config-strict \
+	validate-mcp-config-strict-json validate-mcp-suite \
+	validate-mcp-suite-server validate-mcp-suite-strict \
+	validate-mcp-suite-server-strict validate-mcp-suite-drift \
+	validate-mcp-suite-drift-json \
+	agents agents-dry ai-automation aria-bot \
+	aria-bot-apply test-aria-bot sql-setup-local sql-status sql-status-json \
+	sql-doctor sql-doctor-json sql-reset-local sql-verify dab-verify \
+	ignore-verify setup-verify help pr-eval-report pr-eval-report-latest \
+	pr-eval-gate pr-eval-gate-latest pr-eval-mock pr-eval-all \
+	pr-eval-all-strict pr-eval-list pr-eval-status pr-eval-triage-latest \
+	validate-eval-workflow-setup validate-eval-workflow-setup-json \
+	validate-eval-artifacts validate-eval-artifacts-json
 
 # Default target
 all: lint test
@@ -203,6 +220,48 @@ validate-mcp:
 validate-mcp-json:
 	@$(PYTHON) scripts/validate_mcp_setup.py --json
 
+## Validate MCP config statically (no server launch)
+validate-mcp-config:
+	@$(PYTHON) scripts/validate_mcp_setup.py --config-only
+
+## Validate MCP config statically with JSON output
+validate-mcp-config-json:
+	@$(PYTHON) scripts/validate_mcp_setup.py --config-only --json
+
+## Validate MCP config statically with strict env-reference checks
+validate-mcp-config-strict:
+	@$(PYTHON) scripts/validate_mcp_setup.py --config-only --env-strict
+
+## Validate MCP config statically with strict env-reference checks in JSON output
+validate-mcp-config-strict-json:
+	@$(PYTHON) scripts/validate_mcp_setup.py --config-only --env-strict --json
+
+## Run full MCP validation suite (config-only + runtime probe) and write JSON artifact
+validate-mcp-suite:
+	@$(PYTHON) scripts/validate_mcp_suite.py
+
+## Run MCP validation suite for a single server (usage: make validate-mcp-suite-server SERVER=llm-maker)
+validate-mcp-suite-server:
+	@test -n "$(SERVER)" || (echo "SERVER is required, e.g. make $@ SERVER=llm-maker" && exit 2)
+	@$(PYTHON) scripts/validate_mcp_suite.py --server "$(SERVER)" --output "data_out/mcp_validation_suite_$(SERVER).json"
+
+## Run full MCP validation suite with strict env-reference checks
+validate-mcp-suite-strict:
+	@$(PYTHON) scripts/validate_mcp_suite.py --env-strict --output data_out/mcp_validation_suite_strict.json
+
+## Run strict MCP validation suite for a single server
+validate-mcp-suite-server-strict:
+	@test -n "$(SERVER)" || (echo "SERVER is required, e.g. make $@ SERVER=llm-maker" && exit 2)
+	@$(PYTHON) scripts/validate_mcp_suite.py --env-strict --server "$(SERVER)" --output "data_out/mcp_validation_suite_$(SERVER)_strict.json"
+
+## Validate drift between non-strict and strict MCP suite artifacts
+validate-mcp-suite-drift:
+	@$(PYTHON) scripts/validate_mcp_suite_drift.py
+
+## Validate MCP suite drift in JSON mode
+validate-mcp-suite-drift-json:
+	@$(PYTHON) scripts/validate_mcp_suite_drift.py --json
+
 # ---------------------------------------------------------------------------
 # Repository inspection agents
 # ---------------------------------------------------------------------------
@@ -217,6 +276,88 @@ agents-dry:
 
 ## Alias for agents
 ai-automation: agents
+
+## Generate PR review eval comparison markdown report
+## Override paths as needed:
+## make pr-eval-report BASELINE_RESULT=/path/base.json CANDIDATE_RESULT=/path/new.json REPORT_OUTPUT=data_out/report.md
+pr-eval-report:
+	@$(PYTHON) data_out/run_pr_review_eval_report.py \
+		$(BASELINE_RESULT) \
+		$(CANDIDATE_RESULT) \
+		$(REPORT_OUTPUT)
+	@echo "✅ Wrote report to $(REPORT_OUTPUT)"
+
+## Generate eval report using auto-discovered latest Foundry eval runs
+## Optionally override output path:
+## make pr-eval-report-latest REPORT_OUTPUT_LATEST=data_out/latest.md
+pr-eval-report-latest:
+	@$(PYTHON) data_out/run_pr_review_eval_report_latest.py $(REPORT_OUTPUT_LATEST)
+	@echo "✅ Wrote latest-run report to $(REPORT_OUTPUT_LATEST)"
+
+## Generate report and fail (non-zero) when gate decision is BLOCK
+pr-eval-gate:
+	@$(PYTHON) data_out/run_pr_review_eval_report.py \
+		$(BASELINE_RESULT) \
+		$(CANDIDATE_RESULT) \
+		$(REPORT_OUTPUT) \
+		--fail-on-block
+
+## Auto-discover latest eval runs and fail when gate is BLOCK
+pr-eval-gate-latest:
+	@$(PYTHON) data_out/run_pr_review_eval_report_latest.py \
+		$(REPORT_OUTPUT_LATEST) --fail-on-block
+
+## Generate mock non-empty eval result from seed dataset and compare vs baseline
+## Useful when Foundry result files are empty but pipeline validation is needed.
+pr-eval-mock:
+	@$(PYTHON) data_out/generate_mock_pr_review_eval_result.py
+	@$(PYTHON) data_out/run_pr_review_eval_report.py \
+		$(BASELINE_RESULT) \
+		data_out/mock_eval_result.json \
+		data_out/pr_review_eval_comparison_report_mock.md
+	@echo "✅ Wrote mock comparison report to data_out/pr_review_eval_comparison_report_mock.md"
+
+## Run a full non-blocking evaluation pass: mock validation + latest report
+pr-eval-all:
+	@$(MAKE) pr-eval-mock
+	@$(MAKE) pr-eval-report-latest
+	@echo "✅ Completed full non-blocking evaluation pass."
+
+## Run full evaluation pass and fail if latest gate is BLOCK
+pr-eval-all-strict:
+	@$(MAKE) pr-eval-mock
+	@$(MAKE) pr-eval-gate-latest
+
+## List discovered eval runs with sample counts and auto-selected baseline/candidate
+pr-eval-list:
+	@$(PYTHON) data_out/list_pr_review_eval_runs.py
+
+## Print concise status from latest eval comparison JSON
+## Exits with code 2 when gate=BLOCK (useful for lightweight checks)
+pr-eval-status:
+	@$(PYTHON) data_out/print_pr_eval_status.py
+
+## One-command triage: list runs, generate latest report, print status
+pr-eval-triage-latest:
+	@$(MAKE) pr-eval-list
+	@$(MAKE) pr-eval-report-latest
+	@$(MAKE) pr-eval-status
+
+## Validate wiring for PR eval workflow (scripts, Make targets, VS Code tasks)
+validate-eval-workflow-setup:
+	@$(PYTHON) scripts/validate_eval_workflow_setup.py
+
+## Validate PR eval workflow wiring in JSON mode (automation-friendly)
+validate-eval-workflow-setup-json:
+	@$(PYTHON) scripts/validate_eval_workflow_setup.py --json
+
+## Validate generated PR eval report artifacts (.md/.json pairs)
+validate-eval-artifacts:
+	@$(PYTHON) scripts/validate_eval_artifacts.py
+
+## Validate generated PR eval artifacts in JSON mode
+validate-eval-artifacts-json:
+	@$(PYTHON) scripts/validate_eval_artifacts.py --json
 
 # ---------------------------------------------------------------------------
 # Code quality

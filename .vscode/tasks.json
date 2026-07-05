@@ -115,6 +115,146 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "eval: pr-report",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-report"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-report-latest",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-report-latest"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-gate",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-gate"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-gate-latest",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-gate-latest"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-mock",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-mock"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-all",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-all"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-all-strict",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-all-strict"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-list-runs",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-list"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-status",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-status"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "eval: pr-triage-latest",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make pr-eval-triage-latest"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: eval-workflow-setup",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make validate-eval-workflow-setup"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: eval-workflow-setup-json",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make validate-eval-workflow-setup-json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: eval-artifacts",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make validate-eval-artifacts"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: eval-artifacts-json",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make validate-eval-artifacts-json"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "validate: mcp-setup",
 			"type": "shell",
 			"command": "bash",
@@ -131,6 +271,106 @@
 			"args": [
 				"-lc",
 				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_setup.py --json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-config",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_setup.py --config-only"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-config-json",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_setup.py --config-only --json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-config-strict",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_setup.py --config-only --env-strict"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-config-strict-json",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_setup.py --config-only --env-strict --json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-suite",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_suite.py"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-suite (llm-maker)",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_suite.py --server llm-maker --output data_out/mcp_validation_suite_llm-maker.json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-suite-strict",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_suite.py --env-strict --output data_out/mcp_validation_suite_strict.json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-suite-strict (llm-maker)",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_suite.py --env-strict --server llm-maker --output data_out/mcp_validation_suite_llm-maker_strict.json"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-suite-drift",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_suite_drift.py"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "validate: mcp-suite-drift-json",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"\"${workspaceFolder}/.venv/bin/python\" scripts/validate_mcp_suite_drift.py --json"
 			],
 			"problemMatcher": []
 		},
