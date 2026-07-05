@@ -220,12 +220,7 @@ def test_quick_check_ai_tokens_warn_when_no_healthy(tmp_path, monkeypatch):
     out.mkdir(parents=True)
     status_path = out / "ai_token_status.json"
     status_path.write_text(
-        "{\n"
-        '  "last_updated": "2099-01-01T00:00:00Z",\n'
-        '  "healthy": 0,\n'
-        '  "total": 4,\n'
-        '  "providers": {}\n'
-        "}\n"
+        '{\n  "last_updated": "2099-01-01T00:00:00Z",\n  "healthy": 0,\n  "total": 4,\n  "providers": {}\n}\n'
     )
 
     result = mod.quick_check_ai_tokens()

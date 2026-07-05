@@ -1571,411 +1571,497 @@
             </header>
 
             <main id="main-content">
-            <div class="demo-notice" style="display: none" role="note">
-                <strong>🌐 Demo Mode:</strong> Running in GitHub Pages demo mode
-                with simulated API responses. For full AI capabilities, run
-                locally with Python backend.
-                <a href="https://github.com/Bryan-Roe/Aria" target="_blank"
-                    >View on GitHub</a
-                >
-            </div>
+                <div class="demo-notice" style="display: none" role="note">
+                    <strong>🌐 Demo Mode:</strong> Running in GitHub Pages demo
+                    mode with simulated API responses. For full AI capabilities,
+                    run locally with Python backend.
+                    <a href="https://github.com/Bryan-Roe/Aria" target="_blank"
+                        >View on GitHub</a
+                    >
+                </div>
 
-            <section id="object-manager" class="object-manager" aria-labelledby="object-manager-heading">
-                <h2 id="object-manager-heading">🎯 Object Manager</h2>
-                <div
-                    style="
-                        margin-bottom: 14px;
-                        padding: 12px;
-                        border: 1px solid var(--line);
-                        border-radius: 10px;
-                        background: rgba(247, 242, 232, 0.5);
-                    "
+                <section
+                    id="object-manager"
+                    class="object-manager"
+                    aria-labelledby="object-manager-heading"
                 >
-                    <label
-                        for="providerSelect"
+                    <h2 id="object-manager-heading">🎯 Object Manager</h2>
+                    <div
                         style="
-                            display: block;
-                            font-weight: 600;
-                            margin-bottom: 6px;
-                        "
-                        >Provider</label
-                    >
-                    <select
-                        id="providerSelect"
-                        name="providerSelect"
-                        style="
-                            width: 100%;
-                            padding: 8px;
-                            border-radius: 8px;
+                            margin-bottom: 14px;
+                            padding: 12px;
                             border: 1px solid var(--line);
+                            border-radius: 10px;
+                            background: rgba(247, 242, 232, 0.5);
                         "
                     >
-                        <option value="auto">Auto</option>
-                        <option value="local">Local</option>
-                        <option value="openai">OpenAI</option>
-                        <option value="azure">Azure</option>
-                        <option value="quantum-llm">Quantum LLM</option>
-                    </select>
-                    <label
-                        for="modelInput"
-                        style="
-                            display: block;
-                            font-weight: 600;
-                            margin-top: 8px;
-                        "
-                        >Model / Path</label
-                    >
-                    <input
-                        id="modelInput"
-                        name="modelInput"
-                        placeholder="model name or path"
-                        style="
-                            width: 100%;
-                            padding: 8px;
-                            border-radius: 8px;
-                            border: 1px solid var(--line);
-                        "
-                    />
-                    <div style="margin-top: 8px">
                         <label
-                            ><input id="useLlmToggle" type="checkbox" /> Use
-                            LLM</label
+                            for="providerSelect"
+                            style="
+                                display: block;
+                                font-weight: 600;
+                                margin-bottom: 6px;
+                            "
+                            >Provider</label
                         >
+                        <select
+                            id="providerSelect"
+                            name="providerSelect"
+                            style="
+                                width: 100%;
+                                padding: 8px;
+                                border-radius: 8px;
+                                border: 1px solid var(--line);
+                            "
+                        >
+                            <option value="auto">Auto</option>
+                            <option value="local">Local</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="azure">Azure</option>
+                            <option value="quantum-llm">Quantum LLM</option>
+                        </select>
+                        <label
+                            for="modelInput"
+                            style="
+                                display: block;
+                                font-weight: 600;
+                                margin-top: 8px;
+                            "
+                            >Model / Path</label
+                        >
+                        <input
+                            id="modelInput"
+                            name="modelInput"
+                            placeholder="model name or path"
+                            style="
+                                width: 100%;
+                                padding: 8px;
+                                border-radius: 8px;
+                                border: 1px solid var(--line);
+                            "
+                        />
+                        <div style="margin-top: 8px">
+                            <label
+                                ><input id="useLlmToggle" type="checkbox" /> Use
+                                LLM</label
+                            >
+                        </div>
                     </div>
-                </div>
-                <div
-                    style="
-                        margin-bottom: 14px;
-                        padding: 12px;
-                        border: 1px solid rgba(56, 189, 248, 0.35);
-                        border-radius: 10px;
-                        background: rgba(15, 23, 42, 0.04);
-                    "
-                >
-                    <strong style="color: var(--teal)">⚛ Quantum Lab</strong>
-                    <p
-                        id="quantum-live-status"
-                        class="quantum-live-status"
-                        aria-live="polite"
-                        aria-atomic="true"
+                    <div
+                        style="
+                            margin-bottom: 14px;
+                            padding: 12px;
+                            border: 1px solid rgba(56, 189, 248, 0.35);
+                            border-radius: 10px;
+                            background: rgba(15, 23, 42, 0.04);
+                        "
                     >
-                        Load a quantum world to swap in qubits, gates, and lab
-                        props — presets run intro actions on the server.
-                    </p>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                        <strong style="color: var(--teal)"
+                            >⚛ Quantum Lab</strong
+                        >
+                        <p
+                            id="quantum-live-status"
+                            class="quantum-live-status"
+                            aria-live="polite"
+                            aria-atomic="true"
+                        >
+                            Load a quantum world to swap in qubits, gates, and
+                            lab props — presets run intro actions on the server.
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                            <button
+                                type="button"
+                                class="object-btn active"
+                                onclick="loadQuantumStage('intro')"
+                            >
+                                Load Quantum World
+                            </button>
+                            <button
+                                type="button"
+                                class="object-btn"
+                                onclick="loadQuantumStage('entangle')"
+                            >
+                                Entangle preset
+                            </button>
+                            <button
+                                type="button"
+                                class="object-btn"
+                                onclick="loadQuantumStage('measure')"
+                            >
+                                Measure preset
+                            </button>
+                        </div>
+                    </div>
+                    <div class="object-controls">
                         <button
-                            type="button"
                             class="object-btn active"
-                            onclick="loadQuantumStage('intro')"
+                            onclick="toggleObject('apple')"
+                            id="btn-apple"
+                            aria-pressed="true"
                         >
-                            Load Quantum World
+                            🍎 Apple
                         </button>
                         <button
-                            type="button"
-                            class="object-btn"
-                            onclick="loadQuantumStage('entangle')"
+                            class="object-btn active"
+                            onclick="toggleObject('book')"
+                            id="btn-book"
+                            aria-pressed="true"
                         >
-                            Entangle preset
+                            📚 Book
                         </button>
                         <button
-                            type="button"
-                            class="object-btn"
-                            onclick="loadQuantumStage('measure')"
+                            class="object-btn active"
+                            onclick="toggleObject('cup')"
+                            id="btn-cup"
+                            aria-pressed="true"
                         >
-                            Measure preset
+                            ☕ Cup
                         </button>
-                    </div>
-                </div>
-                <div class="object-controls">
-                    <button
-                        class="object-btn active"
-                        onclick="toggleObject('apple')"
-                        id="btn-apple"
-                        aria-pressed="true"
-                    >
-                        🍎 Apple
-                    </button>
-                    <button
-                        class="object-btn active"
-                        onclick="toggleObject('book')"
-                        id="btn-book"
-                        aria-pressed="true"
-                    >
-                        📚 Book
-                    </button>
-                    <button
-                        class="object-btn active"
-                        onclick="toggleObject('cup')"
-                        id="btn-cup"
-                        aria-pressed="true"
-                    >
-                        ☕ Cup
-                    </button>
-                    <button
-                        class="object-btn active"
-                        onclick="toggleObject('ball')"
-                        id="btn-ball"
-                        aria-pressed="true"
-                    >
-                        ⚽ Ball
-                    </button>
-                    <button
-                        class="object-btn active"
-                        onclick="toggleObject('flower')"
-                        id="btn-flower"
-                        aria-pressed="true"
-                    >
-                        🌸 Flower
-                    </button>
-                </div>
-            </section>
-
-            <div class="main-content">
-                <section class="stage-container" aria-labelledby="stage-section-heading">
-                    <h2 id="stage-section-heading" class="sr-only">Interactive stage</h2>
-                    <p id="stage-help-text" class="sr-only">
-                        Aria stands on an interactive stage with movable objects. Use the command input, chat controls, object manager, or keyboard focus on stage objects to interact without a mouse.
-                    </p>
-                    <div class="stage" id="stage" aria-describedby="stage-help-text stage-label">
-                        <div class="stage-label" id="stage-label" aria-live="polite">
-                            Default stage · not loaded
-                        </div>
-                        <!-- Interactive Table -->
-                        <div id="table" class="table" aria-hidden="true">
-                            <div class="table-leg" style="left: 10%" aria-hidden="true"></div>
-                            <div class="table-leg" style="left: 90%" aria-hidden="true"></div>
-                        </div>
-
-                        <!-- Interactive Objects -->
-                        <div
-                            id="apple"
-                            class="object apple"
-                            data-object="apple"
-                            role="button"
-                            tabindex="0"
-                            aria-label="Apple stage object. Press Enter or Space to pick up or drop it."
+                        <button
+                            class="object-btn active"
+                            onclick="toggleObject('ball')"
+                            id="btn-ball"
+                            aria-pressed="true"
                         >
-                            🍎
-                        </div>
-                        <div id="book" class="object book" data-object="book" role="button" tabindex="0" aria-label="Book stage object. Press Enter or Space to pick up or drop it.">
-                            📚
-                        </div>
-                        <div id="cup" class="object cup" data-object="cup" role="button" tabindex="0" aria-label="Cup stage object. Press Enter or Space to pick up or drop it.">
-                            ☕
-                        </div>
-                        <div id="ball" class="object ball" data-object="ball" role="button" tabindex="0" aria-label="Ball stage object. Press Enter or Space to pick up or drop it.">
-                            ⚽
-                        </div>
-                        <div
-                            id="flower"
-                            class="object flower"
-                            data-object="flower"
-                            role="button"
-                            tabindex="0"
-                            aria-label="Flower stage object. Press Enter or Space to pick up or drop it."
+                            ⚽ Ball
+                        </button>
+                        <button
+                            class="object-btn active"
+                            onclick="toggleObject('flower')"
+                            id="btn-flower"
+                            aria-pressed="true"
                         >
-                            🌸
-                        </div>
-
-                        <div class="aria-character" id="aria" role="img" aria-label="Aria, an interactive character avatar on the stage.">
-                            <div class="aria-ponytail left" aria-hidden="true"></div>
-                            <div class="aria-ponytail right" aria-hidden="true"></div>
-                            <div class="aria-hair" aria-hidden="true"></div>
-                            <div class="aria-bangs" aria-hidden="true">
-                                <div class="aria-bang"></div>
-                                <div class="aria-bang"></div>
-                                <div class="aria-bang"></div>
-                            </div>
-                            <div class="aria-head" aria-hidden="true">
-                                <div class="aria-blush left"></div>
-                                <div class="aria-blush right"></div>
-                                <div class="aria-eyes">
-                                    <div class="aria-eye">
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                    </div>
-                                    <div class="aria-eye">
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                        <div class="aria-eyelash"></div>
-                                    </div>
-                                </div>
-                                <div class="aria-mouth" id="ariaMouth"></div>
-                            </div>
-                            <div class="aria-neck"></div>
-                            <div class="aria-bow"></div>
-                            <div class="aria-body"></div>
-
-                            <!-- Left Arm with Joints -->
-                            <div class="aria-shoulder left"></div>
-                            <div
-                                class="aria-upper-arm left"
-                                id="ariaUpperArmLeft"
-                            >
-                                <div class="aria-elbow"></div>
-                            </div>
-                            <div
-                                class="aria-lower-arm left"
-                                id="ariaLowerArmLeft"
-                            >
-                                <div class="aria-wrist"></div>
-                            </div>
-                            <div class="aria-hand left" id="ariaHandLeft">
-                                <div class="aria-finger"></div>
-                                <div class="aria-finger"></div>
-                                <div class="aria-finger"></div>
-                                <div class="aria-finger"></div>
-                            </div>
-
-                            <!-- Right Arm with Joints -->
-                            <div class="aria-shoulder right"></div>
-                            <div
-                                class="aria-upper-arm right"
-                                id="ariaUpperArmRight"
-                            >
-                                <div class="aria-elbow"></div>
-                            </div>
-                            <div
-                                class="aria-lower-arm right"
-                                id="ariaLowerArmRight"
-                            >
-                                <div class="aria-wrist"></div>
-                            </div>
-                            <div class="aria-hand right" id="ariaHandRight">
-                                <div class="aria-finger"></div>
-                                <div class="aria-finger"></div>
-                                <div class="aria-finger"></div>
-                                <div class="aria-finger"></div>
-                            </div>
-
-                            <!-- Left Leg with Joints -->
-                            <div class="aria-hip left"></div>
-                            <div
-                                class="aria-upper-leg left"
-                                id="ariaUpperLegLeft"
-                            >
-                                <div class="aria-knee"></div>
-                            </div>
-                            <div
-                                class="aria-lower-leg left"
-                                id="ariaLowerLegLeft"
-                            >
-                                <div class="aria-ankle"></div>
-                            </div>
-                            <div class="aria-foot left"></div>
-
-                            <!-- Right Leg with Joints -->
-                            <div class="aria-hip right"></div>
-                            <div
-                                class="aria-upper-leg right"
-                                id="ariaUpperLegRight"
-                            >
-                                <div class="aria-knee"></div>
-                            </div>
-                            <div
-                                class="aria-lower-leg right"
-                                id="ariaLowerLegRight"
-                            >
-                                <div class="aria-ankle"></div>
-                            </div>
-                            <div class="aria-foot right"></div>
-                        </div>
+                            🌸 Flower
+                        </button>
                     </div>
                 </section>
 
-                <aside class="control-panel" aria-labelledby="control-panel-heading">
-                    <h2 id="control-panel-heading">🎮 Command Input</h2>
-                    <div class="command-input">
-                        <input
-                            type="text"
-                            id="commandInput"
-                            placeholder="Type a command (e.g., 'aria smile', 'jump', 'dance with sparkles')"
-                            aria-describedby="commandInputHelp"
-                            autocomplete="off"
-                            onkeypress="
-                                if (event.key === 'Enter') sendCommand()
-                            "
-                        />
-                        <button onclick="sendCommand()">Execute Command</button>
-                    </div>
-                    <p id="commandInputHelp" class="sr-only">
-                        Enter a natural language command for Aria and press Enter or activate Execute Command.
-                    </p>
-
-                    <div class="quick-commands">
-                        <h3>⚛ Quantum Lab samples</h3>
-                        <p
-                            style="
-                                font-size: 0.88em;
-                                color: var(--ink-soft);
-                                margin-bottom: 6px;
-                            "
-                        >
-                            Click a chip to paste a preset command (from
-                            <code>/api/aria/presets</code>).
+                <div class="main-content">
+                    <section
+                        class="stage-container"
+                        aria-labelledby="stage-section-heading"
+                    >
+                        <h2 id="stage-section-heading" class="sr-only">
+                            Interactive stage
+                        </h2>
+                        <p id="stage-help-text" class="sr-only">
+                            Aria stands on an interactive stage with movable
+                            objects. Use the command input, chat controls,
+                            object manager, or keyboard focus on stage objects
+                            to interact without a mouse.
                         </p>
                         <div
-                            id="quantum-sample-chips"
-                            class="sample-chips"
-                            aria-live="polite"
-                        ></div>
-                    </div>
-
-                    <div class="quick-commands">
-                        <h3>💬 Chat Control</h3>
-                        <div class="chat-panel">
+                            class="stage"
+                            id="stage"
+                            aria-describedby="stage-help-text stage-label"
+                        >
                             <div
-                                id="chatMessages"
-                                class="chat-messages"
+                                class="stage-label"
+                                id="stage-label"
+                                aria-live="polite"
+                            >
+                                Default stage · not loaded
+                            </div>
+                            <!-- Interactive Table -->
+                            <div id="table" class="table" aria-hidden="true">
+                                <div
+                                    class="table-leg"
+                                    style="left: 10%"
+                                    aria-hidden="true"
+                                ></div>
+                                <div
+                                    class="table-leg"
+                                    style="left: 90%"
+                                    aria-hidden="true"
+                                ></div>
+                            </div>
+
+                            <!-- Interactive Objects -->
+                            <div
+                                id="apple"
+                                class="object apple"
+                                data-object="apple"
+                                role="button"
+                                tabindex="0"
+                                aria-label="Apple stage object. Press Enter or Space to pick up or drop it."
+                            >
+                                🍎
+                            </div>
+                            <div
+                                id="book"
+                                class="object book"
+                                data-object="book"
+                                role="button"
+                                tabindex="0"
+                                aria-label="Book stage object. Press Enter or Space to pick up or drop it."
+                            >
+                                📚
+                            </div>
+                            <div
+                                id="cup"
+                                class="object cup"
+                                data-object="cup"
+                                role="button"
+                                tabindex="0"
+                                aria-label="Cup stage object. Press Enter or Space to pick up or drop it."
+                            >
+                                ☕
+                            </div>
+                            <div
+                                id="ball"
+                                class="object ball"
+                                data-object="ball"
+                                role="button"
+                                tabindex="0"
+                                aria-label="Ball stage object. Press Enter or Space to pick up or drop it."
+                            >
+                                ⚽
+                            </div>
+                            <div
+                                id="flower"
+                                class="object flower"
+                                data-object="flower"
+                                role="button"
+                                tabindex="0"
+                                aria-label="Flower stage object. Press Enter or Space to pick up or drop it."
+                            >
+                                🌸
+                            </div>
+
+                            <div
+                                class="aria-character"
+                                id="aria"
+                                role="img"
+                                aria-label="Aria, an interactive character avatar on the stage."
+                            >
+                                <div
+                                    class="aria-ponytail left"
+                                    aria-hidden="true"
+                                ></div>
+                                <div
+                                    class="aria-ponytail right"
+                                    aria-hidden="true"
+                                ></div>
+                                <div class="aria-hair" aria-hidden="true"></div>
+                                <div class="aria-bangs" aria-hidden="true">
+                                    <div class="aria-bang"></div>
+                                    <div class="aria-bang"></div>
+                                    <div class="aria-bang"></div>
+                                </div>
+                                <div class="aria-head" aria-hidden="true">
+                                    <div class="aria-blush left"></div>
+                                    <div class="aria-blush right"></div>
+                                    <div class="aria-eyes">
+                                        <div class="aria-eye">
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                        </div>
+                                        <div class="aria-eye">
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                            <div class="aria-eyelash"></div>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="aria-mouth"
+                                        id="ariaMouth"
+                                    ></div>
+                                </div>
+                                <div class="aria-neck"></div>
+                                <div class="aria-bow"></div>
+                                <div class="aria-body"></div>
+
+                                <!-- Left Arm with Joints -->
+                                <div class="aria-shoulder left"></div>
+                                <div
+                                    class="aria-upper-arm left"
+                                    id="ariaUpperArmLeft"
+                                >
+                                    <div class="aria-elbow"></div>
+                                </div>
+                                <div
+                                    class="aria-lower-arm left"
+                                    id="ariaLowerArmLeft"
+                                >
+                                    <div class="aria-wrist"></div>
+                                </div>
+                                <div class="aria-hand left" id="ariaHandLeft">
+                                    <div class="aria-finger"></div>
+                                    <div class="aria-finger"></div>
+                                    <div class="aria-finger"></div>
+                                    <div class="aria-finger"></div>
+                                </div>
+
+                                <!-- Right Arm with Joints -->
+                                <div class="aria-shoulder right"></div>
+                                <div
+                                    class="aria-upper-arm right"
+                                    id="ariaUpperArmRight"
+                                >
+                                    <div class="aria-elbow"></div>
+                                </div>
+                                <div
+                                    class="aria-lower-arm right"
+                                    id="ariaLowerArmRight"
+                                >
+                                    <div class="aria-wrist"></div>
+                                </div>
+                                <div class="aria-hand right" id="ariaHandRight">
+                                    <div class="aria-finger"></div>
+                                    <div class="aria-finger"></div>
+                                    <div class="aria-finger"></div>
+                                    <div class="aria-finger"></div>
+                                </div>
+
+                                <!-- Left Leg with Joints -->
+                                <div class="aria-hip left"></div>
+                                <div
+                                    class="aria-upper-leg left"
+                                    id="ariaUpperLegLeft"
+                                >
+                                    <div class="aria-knee"></div>
+                                </div>
+                                <div
+                                    class="aria-lower-leg left"
+                                    id="ariaLowerLegLeft"
+                                >
+                                    <div class="aria-ankle"></div>
+                                </div>
+                                <div class="aria-foot left"></div>
+
+                                <!-- Right Leg with Joints -->
+                                <div class="aria-hip right"></div>
+                                <div
+                                    class="aria-upper-leg right"
+                                    id="ariaUpperLegRight"
+                                >
+                                    <div class="aria-knee"></div>
+                                </div>
+                                <div
+                                    class="aria-lower-leg right"
+                                    id="ariaLowerLegRight"
+                                >
+                                    <div class="aria-ankle"></div>
+                                </div>
+                                <div class="aria-foot right"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <aside
+                        class="control-panel"
+                        aria-labelledby="control-panel-heading"
+                    >
+                        <h2 id="control-panel-heading">🎮 Command Input</h2>
+                        <div class="command-input">
+                            <input
+                                type="text"
+                                id="commandInput"
+                                placeholder="Type a command (e.g., 'aria smile', 'jump', 'dance with sparkles')"
+                                aria-describedby="commandInputHelp"
+                                autocomplete="off"
+                                onkeypress="
+                                    if (event.key === 'Enter') sendCommand()
+                                "
+                            />
+                            <button onclick="sendCommand()">
+                                Execute Command
+                            </button>
+                        </div>
+                        <p id="commandInputHelp" class="sr-only">
+                            Enter a natural language command for Aria and press
+                            Enter or activate Execute Command.
+                        </p>
+
+                        <div class="quick-commands">
+                            <h3>⚛ Quantum Lab samples</h3>
+                            <p
+                                style="
+                                    font-size: 0.88em;
+                                    color: var(--ink-soft);
+                                    margin-bottom: 6px;
+                                "
+                            >
+                                Click a chip to paste a preset command (from
+                                <code>/api/aria/presets</code>).
+                            </p>
+                            <div
+                                id="quantum-sample-chips"
+                                class="sample-chips"
+                                aria-live="polite"
+                            ></div>
+                        </div>
+
+                        <div class="quick-commands">
+                            <h3>💬 Chat Control</h3>
+                            <div class="chat-panel">
+                                <div
+                                    id="chatMessages"
+                                    class="chat-messages"
+                                    role="log"
+                                    aria-live="polite"
+                                    aria-relevant="additions text"
+                                    aria-label="Chat messages"
+                                ></div>
+
+                                <div class="chat-input-block">
+                                    <input
+                                        id="chatInput"
+                                        type="text"
+                                        placeholder="Type a chat message or /goto front-left — hit Enter to send"
+                                        aria-describedby="chatInputHelp"
+                                        onkeypress="
+                                            if (event.key === 'Enter')
+                                                sendChat()
+                                        "
+                                    />
+                                    <button
+                                        class="quick-btn"
+                                        onclick="sendChat()"
+                                    >
+                                        Send
+                                    </button>
+                                </div>
+                                <p id="chatInputHelp" class="sr-only">
+                                    Type a message to Aria or a slash command
+                                    such as slash goto waypoint, then press
+                                    Enter.
+                                </p>
+
+                                <div
+                                    style="
+                                        margin-top: 8px;
+                                        font-size: 0.85em;
+                                        color: #666;
+                                    "
+                                >
+                                    Commands:
+                                    <code>/goto &lt;waypoint&gt;</code>,
+                                    <code>/waypoints</code>,
+                                    <code>/circle</code>,
+                                    <code>/spiral</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-log">
+                            <h3>📋 Command Log</h3>
+                            <div
+                                id="logContainer"
                                 role="log"
                                 aria-live="polite"
                                 aria-relevant="additions text"
-                                aria-label="Chat messages"
+                                aria-label="Command log"
+                                tabindex="0"
                             ></div>
-
-                            <div class="chat-input-block">
-                                <input
-                                    id="chatInput"
-                                    type="text"
-                                    placeholder="Type a chat message or /goto front-left — hit Enter to send"
-                                    aria-describedby="chatInputHelp"
-                                    onkeypress="
-                                        if (event.key === 'Enter') sendChat()
-                                    "
-                                />
-                                <button class="quick-btn" onclick="sendChat()">
-                                    Send
-                                </button>
-                            </div>
-                            <p id="chatInputHelp" class="sr-only">
-                                Type a message to Aria or a slash command such as slash goto waypoint, then press Enter.
-                            </p>
-
-                            <div
-                                style="
-                                    margin-top: 8px;
-                                    font-size: 0.85em;
-                                    color: #666;
-                                "
-                            >
-                                Commands: <code>/goto &lt;waypoint&gt;</code>,
-                                <code>/waypoints</code>, <code>/circle</code>,
-                                <code>/spiral</code>
-                            </div>
                         </div>
-                    </div>
-
-                    <div class="status-log">
-                        <h3>📋 Command Log</h3>
-                        <div id="logContainer" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Command log" tabindex="0"></div>
-                    </div>
-                </aside>
-            </div>
+                    </aside>
+                </div>
             </main>
         </div>
 
