@@ -1194,6 +1194,14 @@
                 )
                     return
 
+                const escapeHtml = value =>
+                    String(value)
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#39;")
+
                 tbody.innerHTML = currentData.jobs
                     .slice(0, 10)
                     .map(job => {
@@ -1216,12 +1224,12 @@
 
                         return `
                     <tr>
-                        <td>${job.name || "Unknown"}</td>
-                        <td>${finalLoss.toFixed(4)}</td>
-                        <td>${improvement}%</td>
-                        <td>${duration}</td>
-                        <td>${job.lora_rank || "N/A"}</td>
-                        <td class="metric-good">${score}</td>
+                        <td>${escapeHtml(job.name || "Unknown")}</td>
+                        <td>${escapeHtml(finalLoss.toFixed(4))}</td>
+                        <td>${escapeHtml(improvement)}%</td>
+                        <td>${escapeHtml(duration)}</td>
+                        <td>${escapeHtml(job.lora_rank || "N/A")}</td>
+                        <td class="metric-good">${escapeHtml(score)}</td>
                     </tr>
                 `
                     })
