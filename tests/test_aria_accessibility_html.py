@@ -1,5 +1,6 @@
 """Focused accessibility structure checks for the user-facing Aria pages."""
 
+import re
 from pathlib import Path
 
 BASE = Path(__file__).parent.parent / "apps" / "aria"
@@ -44,7 +45,7 @@ def test_auto_execute_has_semantic_examples_and_live_regions() -> None:
     assert 'aria-busy="false"' in AUTO_EXECUTE_HTML
     assert 'role="status"' in AUTO_EXECUTE_HTML
     assert 'id="loading"' in AUTO_EXECUTE_HTML
-    assert '<button type="button" onclick="setCommand(' in AUTO_EXECUTE_HTML
+    assert re.search(r'<button[^>]+type="button"[^>]*onclick="[^"]*setCommand\(', AUTO_EXECUTE_HTML)
 
 
 def test_auto_execute_reports_busy_focus_and_theme_state() -> None:
