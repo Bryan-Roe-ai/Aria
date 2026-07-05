@@ -30,10 +30,16 @@ from core.task import Task
 
 
 class AriaRunner:
+    """Coordinates autonomous planning, execution, and self-assessment."""
+
     def __init__(self, config: dict[str, Any] | None = None):
         self.config = config or {}
-        self.sleep_seconds = float(self.config.get("sleep_seconds", 2))
-        self.max_cycles = self.config.get("max_cycles")
+        self.sleep_seconds = self._parse_sleep_seconds(
+            self.config.get("sleep_seconds", 2),
+        )
+        self.max_cycles = self._parse_max_cycles(
+            self.config.get("max_cycles"),
+        )
 
         self.memory = MemoryStore(db_path=self.config.get("memory_db_path"))
         self.registry = AgentRegistry()
@@ -44,6 +50,42 @@ class AriaRunner:
         self.observer = CycleObserver(self.bus, self.memory)
 
         self._setup_agents()
+
+    @staticmethod
+    def _parse_sleep_seconds(value: Any) -> float:
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return 2.0
+        return max(0.0, parsed)
+
+    @staticmethod
+    def _parse_max_cycles(value: Any) -> int | None:
+        if value is None:
+            return None
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return None
+        if parsed <= 0:
+            return None
+        return parsed
+
+    @staticmethod
+    def _parse_target_score(value: Any) -> float:
+        try:
+            parsed = float(value)
+        except (TypeError, ValueError):
+            return 0.7
+        return min(1.0, max(0.0, parsed))
+
+    @staticmethod
+    def _normalize_limit(value: Any, default: int = 5) -> int:
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return default
+        return max(0, parsed)
 
     def _setup_agents(self):
         planner = PlannerAgent(self.memory)
@@ -89,7 +131,8 @@ class AriaRunner:
         }
 
     def _recent_events(self, limit: int = 5) -> dict[str, Any]:
-        return {"events": self.memory.last(limit)}
+        safe_limit = self._normalize_limit(limit, default=5)
+        return {"events": self.memory.last(safe_limit)}
 
     def _knowledge_neighbors(self, entity: str) -> dict[str, Any]:
         return {
@@ -166,7 +209,7 @@ class AriaRunner:
                 payload=payload,
                 priority=int(step.get("priority", 0)),
             )
-        except Exception as exc:
+        except (TypeError, ValueError) as exc:
             return None, {"index": index, "error": str(exc)}
         return task, None
 
@@ -185,35 +228,86 @@ class AriaRunner:
         assessor = getattr(training_agent, "self_assess", None)
         if not callable(assessor):
             return None
-        assessment = assessor(target_score=float(self.config.get("target_score", 0.7)))
+
+        raw_assessment = assessor(
+            target_score=self._parse_target_score(
+                self.config.get("target_score", 0.7),
+            ),
+        )
+        if not isinstance(raw_assessment, dict):
+            return None
+
+        assessment: dict[str, Any] = dict(raw_assessment)
+        assessment_record: dict[str, Any] = {"goal": goal}
+        assessment_record.update(assessment)
         self.memory.write(
             "training_self_assessment",
-            {"goal": goal, **assessment},
+            assessment_record,
         )
         if assessment.get("needs_retraining"):
             retrain_task = Task(
+                id="train_self_assess",
                 type="train",
-                payload={"goal": goal, "source": "self_assess"},
+                payload={
+                    "goal": goal,
+                    "source": "self_assess",
+                },
             )
             retrain_result = self.router.route(retrain_task)
-            assessment = dict(assessment)
             assessment["retrain_result"] = retrain_result
         return assessment
 
-    def _autonomous_cycle(self):
+    def _extract_plan(
+        self,
+        plan_result: Any,
+    ) -> tuple[list[Any], str | None]:
+        if not isinstance(plan_result, dict):
+            return [], "Planner returned a non-dictionary response envelope"
+
+        result = plan_result.get("result", {})
+        if result is None:
+            result = {}
+        if not isinstance(result, dict):
+            return [], "Planner returned non-dictionary 'result' payload"
+
+        plan = result.get("plan", [])
+        if plan is None:
+            plan = []
+        if not isinstance(plan, list):
+            return [], "Planner returned non-list 'plan' payload"
+
+        plan_error = result.get("error")
+        if plan_error is None:
+            return plan, None
+        if isinstance(plan_error, str):
+            return plan, plan_error
+        return plan, str(plan_error)
+
+    def _autonomous_cycle(self) -> dict[str, Any]:
         with self.observer.cycle() as obs:
             return self._autonomous_cycle_body(obs)
+        return {}
 
-    def _autonomous_cycle_body(self, obs):
+    def _autonomous_cycle_body(self, obs: Any) -> dict[str, Any]:
         goal = self._generate_goal()
         self.memory.write("goal_created", {"goal": goal})
 
-        planner_task = Task(id="planner", type="plan", payload={"goal": goal})
-        plan_result = self.router.route(planner_task)
-        plan = plan_result.get("result", {}).get("plan", [])
-        plan_error = plan_result.get("result", {}).get("error")
+        plan_result = self.router.route(
+            Task(
+                id="planner",
+                type="plan",
+                payload={"goal": goal},
+            ),
+        )
+        plan, plan_error = self._extract_plan(plan_result)
 
-        self.memory.write("plan_received", {"plan": plan})
+        self.memory.write(
+            "plan_received",
+            {
+                "plan": plan,
+                "plan_error": plan_error,
+            },
+        )
 
         executed = []
         skipped = []
@@ -232,10 +326,14 @@ class AriaRunner:
         failed_steps = sum(
             1
             for routed in executed
-            if isinstance(routed, dict) and isinstance(routed.get("result"), dict) and routed["result"].get("error")
+            if (
+                isinstance(routed, dict)
+                and isinstance(routed.get("result"), dict)
+                and routed["result"].get("error")
+            )
         )
 
-        cycle_summary = {
+        cycle_summary: dict[str, Any] = {
             "goal": goal,
             "plan_length": len(plan),
             "executed_steps": len(executed),
@@ -252,9 +350,13 @@ class AriaRunner:
         return cycle_summary
 
     def run_once(self) -> dict[str, Any]:
+        """Run a single autonomous cycle and return its summary."""
+
         return self._autonomous_cycle()
 
     def run(self):
+        """Run autonomous cycles until stopped or max cycles is reached."""
+
         print("[Aria] Autonomous self-improving runtime started.")
 
         cycle_count = 0
@@ -262,14 +364,17 @@ class AriaRunner:
             try:
                 self._autonomous_cycle()
                 cycle_count += 1
-                if self.max_cycles is not None and cycle_count >= int(self.max_cycles):
+                if (
+                    self.max_cycles is not None
+                    and cycle_count >= self.max_cycles
+                ):
                     break
                 time.sleep(self.sleep_seconds)
             except KeyboardInterrupt:
                 print("[Aria] Shutdown requested.")
                 break
-            except Exception as e:
-                print("[Aria] Error in cycle:", e)
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                print(f"[Aria] Error in cycle: {exc!r}")
                 time.sleep(self.sleep_seconds)
 
 

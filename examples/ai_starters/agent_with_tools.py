@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import ast
-import operator as op
 import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 
+_FILE_TOOL_ROOT = Path.cwd().resolve()
+
+
 # ----- Tools -----
 def search_tool(query: str, corpus: list[str]) -> str:
+    """Return up to five corpus lines matching the query."""
     q = query.lower().strip()
     if not q:
         return "No search query provided."
@@ -21,29 +24,53 @@ def search_tool(query: str, corpus: list[str]) -> str:
     return "\n".join(matches[:5])
 
 
-_ALLOWED_OPS = {
-    ast.Add: op.add,
-    ast.Sub: op.sub,
-    ast.Mult: op.mul,
-    ast.Div: op.truediv,
-    ast.Pow: op.pow,
-    ast.USub: op.neg,
-}
+def _apply_operator(
+    operator: ast.operator,
+    left: float,
+    right: float,
+) -> float:
+    """Apply a supported arithmetic operator to two numbers."""
+    if isinstance(operator, ast.Add):
+        return left + right
+    if isinstance(operator, ast.Sub):
+        return left - right
+    if isinstance(operator, ast.Mult):
+        return left * right
+    if isinstance(operator, ast.Div):
+        return left / right
+    if isinstance(operator, ast.Pow):
+        return left**right
+    raise ValueError("Unsupported expression")
+
+
+def _resolve_text_path(path: str) -> Path:
+    """Resolve a file-tool path and keep it within the current working tree."""
+    candidate = Path(path).expanduser()
+    if not candidate.is_absolute():
+        candidate = _FILE_TOOL_ROOT / candidate
+    resolved = candidate.resolve(strict=False)
+    try:
+        resolved.relative_to(_FILE_TOOL_ROOT)
+    except ValueError as exc:
+        raise ValueError(f"Path must stay within {_FILE_TOOL_ROOT}") from exc
+    return resolved
 
 
 def _safe_eval(node: ast.AST) -> float:
+    """Safely evaluate basic arithmetic expression nodes."""
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
         return float(node.value)
-    if isinstance(node, ast.BinOp) and type(node.op) in _ALLOWED_OPS:
+    if isinstance(node, ast.BinOp):
         left = _safe_eval(node.left)
         right = _safe_eval(node.right)
-        return _ALLOWED_OPS[type(node.op)](left, right)
-    if isinstance(node, ast.UnaryOp) and type(node.op) in _ALLOWED_OPS:
-        return _ALLOWED_OPS[type(node.op)](_safe_eval(node.operand))
+        return _apply_operator(node.op, left, right)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        return -_safe_eval(node.operand)
     raise ValueError("Unsupported expression")
 
 
 def calculator_tool(expression: str) -> str:
+    """Evaluate a simple arithmetic expression safely."""
     try:
         parsed = ast.parse(expression, mode="eval")
         result = _safe_eval(parsed.body)
@@ -53,14 +80,25 @@ def calculator_tool(expression: str) -> str:
 
 
 def read_file_tool(path: str) -> str:
-    p = Path(path)
+    """Read and return up to 2000 characters from a file."""
+    try:
+        p = _resolve_text_path(path)
+    except ValueError as exc:
+        return f"File access error: {exc}"
     if not p.exists() or not p.is_file():
         return "File not found."
-    return p.read_text(encoding="utf-8", errors="replace")[:2000]
+    contents = p.read_text(encoding="utf-8", errors="replace")
+    if len(contents) <= 2000:
+        return contents
+    return f"{contents[:2000]}\n...[truncated]"
 
 
 def write_file_tool(path: str, content: str) -> str:
-    p = Path(path)
+    """Write text content to a file and report the result."""
+    try:
+        p = _resolve_text_path(path)
+    except ValueError as exc:
+        return f"File access error: {exc}"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(content, encoding="utf-8")
     return f"Wrote {len(content)} chars to {p}"
@@ -69,9 +107,12 @@ def write_file_tool(path: str, content: str) -> str:
 # ----- Router / Agent -----
 @dataclass
 class ToolAgent:
+    """Route user commands to local utility tools."""
+
     corpus: list[str]
 
     def route(self, user_input: str) -> tuple[str, Callable[..., str], tuple]:
+        """Select a tool and arguments based on command prefixes."""
         text = user_input.strip()
 
         # search: <query>
@@ -97,15 +138,21 @@ class ToolAgent:
                 return ("error", lambda: "Use: write: <path> | <content>", ())
             return ("write_file", write_file_tool, (parts[0], parts[1]))
 
+        help_text = (
+            "Try one of:\n"
+            "- search: <keyword>\n"
+            "- calc: <expression>\n"
+            "- read: <path>\n"
+            "- write: <path> | <content>"
+        )
         return (
             "help",
-            lambda: (
-                "Try one of:\n- search: <keyword>\n- calc: <expression>\n- read: <path>\n- write: <path> | <content>"
-            ),
+            lambda: help_text,
             (),
         )
 
     def run(self, user_input: str) -> str:
+        """Execute the routed tool and format the output."""
         tool_name, fn, args = self.route(user_input)
         result = fn(*args)
         return f"[tool={tool_name}]\n{result}"

@@ -2,25 +2,32 @@
 	// Prompted values used by one or more servers below.
 	"inputs": [
 		{
+			"id": "GITHUB_HOST",
+			"type": "promptString",
+			"description": "GitHub host for GitHub MCP server (use github.com for public GitHub, or your GHES host, e.g. github.company.com)",
+			"default": "github.com",
+			"password": false
+		},
+		{
+			"id": "GITHUB_TOKEN",
+			"type": "promptString",
 			"description": "Optional GitHub PAT for GitHub MCP server (recommended scopes: repo, read:org, read:user). Leave empty for public-only access with stricter rate limits.",
 			"default": "",
-			"id": "GITHUB_TOKEN",
-			"password": true,
-			"type": "promptString"
+			"password": true
 		},
 		{
+			"id": "PROMPTS_API_KEY",
+			"type": "promptString",
 			"description": "Optional API key for authenticated requests (enables save_prompt tool)",
 			"default": "",
-			"id": "PROMPTS_API_KEY",
-			"password": true,
-			"type": "promptString"
+			"password": true
 		},
 		{
-			"default": "",
-			"description": "Optional query string to filter prompts (e.g., users=a,b&categories=c,d&tags=e,f)",
 			"id": "PROMPTS_QUERY",
-			"password": false,
-			"type": "promptString"
+			"type": "promptString",
+			"description": "Optional query string to filter prompts (e.g., users=a,b&categories=c,d&tags=e,f)",
+			"default": "",
+			"password": false
 		}
 	],
 	// MCP server definitions for this workspace.
@@ -90,6 +97,7 @@
 			"command": "npx",
 			"cwd": "${workspaceFolder}",
 			"env": {
+				"GH_HOST": "${input:GITHUB_HOST}",
 				"GH_TOKEN": "${input:GITHUB_TOKEN}",
 				"GITHUB_PERSONAL_ACCESS_TOKEN": "${input:GITHUB_TOKEN}",
 				"GITHUB_TOKEN": "${input:GITHUB_TOKEN}"

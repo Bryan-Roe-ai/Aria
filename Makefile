@@ -22,6 +22,9 @@ BLACK        ?= $(PYTHON) -m black
 MYPY         ?= $(PYTHON) -m mypy
 COMPOSE      ?= docker compose
 TEST_PATH    ?= tests
+PYTEST_COMMON_ARGS ?= -q --tb=short
+PYTEST_UNIT_MARKERS ?= not slow and not azure and not integration
+PYTEST_XDIST_WORKERS ?= auto
 ARIA_PORT    ?= 8080
 FUNC_PORT    ?= 7071
 GRADIO_PORT  ?= 7860
@@ -31,7 +34,7 @@ CANDIDATE_RESULT ?= /home/vscode/.aitk/evals/foundry/eval_f5ba66e749794172942de2
 REPORT_OUTPUT ?= data_out/pr_review_eval_comparison_report.md
 REPORT_OUTPUT_LATEST ?= data_out/pr_review_eval_comparison_report_latest.md
 
-.PHONY: all install install-qai dev start stop build test test-unit test-integration \
+.PHONY: all install install-qai dev start stop build test test-fast test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
 	start-local-status start-functions-clean restart-functions-clean start-qai \
 	validate-mcp validate-mcp-json validate-mcp-config \
@@ -51,6 +54,17 @@ REPORT_OUTPUT_LATEST ?= data_out/pr_review_eval_comparison_report_latest.md
 
 # Default target
 all: lint test
+
+define run_pytest_with_optional_xdist
+	@XDIST_FLAGS=""; \
+	if $(PYTHON) -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('xdist') else 1)" >/dev/null 2>&1; then \
+		XDIST_FLAGS="-n $(PYTEST_XDIST_WORKERS)"; \
+		echo "🧪 pytest-xdist enabled ($$XDIST_FLAGS)"; \
+	else \
+		echo "🧪 pytest-xdist not installed; running without parallel workers (install with .venv/bin/python -m pip install -r requirements-dev.txt or make install)"; \
+	fi; \
+	$(PYTEST) $(1) $(PYTEST_COMMON_ARGS) $$XDIST_FLAGS $(2)
+endef
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -187,15 +201,18 @@ stop:
 
 ## Run all tests
 test:
-	$(PYTEST) $(TEST_PATH) -q --tb=short
+	$(call run_pytest_with_optional_xdist,$(TEST_PATH),)
+
+## Run the fastest local test loop (smoke + unit markers)
+test-fast: smoke test-unit
 
 ## Run only unit tests (fast, no cloud)
 test-unit:
-	$(PYTEST) $(TEST_PATH) -q --tb=short -m "not slow and not azure and not integration"
+	$(call run_pytest_with_optional_xdist,$(TEST_PATH),-m "$(PYTEST_UNIT_MARKERS)")
 
 ## Run integration tests
 test-integration:
-	$(PYTEST) $(TEST_PATH) -q --tb=short -m integration
+	$(PYTEST) $(TEST_PATH) $(PYTEST_COMMON_ARGS) -m integration
 
 ## Run the focused aria-bot startup and entrypoint regression suite
 test-aria-bot:
@@ -203,7 +220,7 @@ test-aria-bot:
 
 ## Run tests with coverage report
 test-coverage:
-	$(PYTEST) $(TEST_PATH) -q --tb=short --cov=shared --cov=scripts \
+	$(PYTEST) $(TEST_PATH) $(PYTEST_COMMON_ARGS) --cov=shared --cov=scripts \
 		--cov-report=term-missing --cov-report=html:data_out/coverage_html
 
 ## Run a quick smoke test (import check)
