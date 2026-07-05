@@ -28,4 +28,5 @@ for _name, _value in _mod.__dict__.items():
 if hasattr(_mod, "__all__"):
     __all__ = list(_mod.__all__)  # type: ignore[attr-defined]
 else:
-    __all__ = [k for k in globals() if not k.startswith("__")]
+    # Use the canonical module's dictionary to determine exported names.
+    __all__: list[str] = [k for k in _mod.__dict__ if not k.startswith("__")] # pyright: ignore[reportUnsupportedDunderAll]
