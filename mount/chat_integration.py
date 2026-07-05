@@ -23,6 +23,14 @@ class ChatIntegration:
         configured_providers = config.get("chat", {}).get("providers", {})
         self.allowed_providers: set[str] = set(configured_providers.keys()) or {"local", "openai", "azure", "lora"}
 
+    def _is_safe_cli_message(self, message: str) -> bool:
+        """Validate untrusted message before passing it as a CLI argument."""
+        if message.startswith("-"):
+            return False
+        if any(ch in message for ch in ("\n", "\r", "\x00")):
+            return False
+        return True
+
     async def get_status(self) -> dict[str, Any]:
         """Get current chat system status"""
         return {
@@ -136,6 +144,8 @@ class ChatIntegration:
                 return {"success": False, "error": "Message cannot be empty"}
             if len(message) > 8000:
                 return {"success": False, "error": "Message is too long"}
+            if not self._is_safe_cli_message(message):
+                return {"success": False, "error": "Message contains unsafe characters for CLI execution"}
 
             # For now, we'll use subprocess to call the chat CLI
             # In production, you'd import the provider classes directly
