@@ -57,7 +57,8 @@ static inline int byteSize(int w, int h, int bpp) {
   if (bpp == 1)
     return (int)(sizeof(ImageHeader) + (((size_t)h + 7) >> 3) * (size_t)w);
   else
-    return (int)(sizeof(ImageHeader) + ((((size_t)h * 4 + 31) / 32) * 4) * (size_t)w);
+    return (int)(sizeof(ImageHeader) +
+                 ((((size_t)h * 4 + 31) / 32) * 4) * (size_t)w);
 }
 
 Image_ allocImage(const uint8_t *data, uint32_t sz) {
