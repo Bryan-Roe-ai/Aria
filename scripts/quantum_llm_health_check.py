@@ -73,11 +73,11 @@ def check_loss_metrics(status: dict[str, Any]) -> tuple[bool, str]:
     if best_loss is None:
         return True, "⚠ No best_loss metric yet"
 
-    if not isinstance(best_loss, (int, float)) or best_loss < 0:
+    if not isinstance(best_loss, int | float) or best_loss < 0:
         return False, f"❌ Invalid best_loss: {best_loss}"
 
     if final_loss is not None:
-        if not isinstance(final_loss, (int, float)) or final_loss < 0:
+        if not isinstance(final_loss, int | float) or final_loss < 0:
             return False, f"❌ Invalid final_loss: {final_loss}"
 
         if best_loss > final_loss * 10:  # Best loss is way worse than final

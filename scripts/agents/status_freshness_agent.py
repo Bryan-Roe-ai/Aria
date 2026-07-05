@@ -148,11 +148,11 @@ class StatusFreshnessAgent(AutomationAgent):
                 return True
 
         errors = payload.get("errors")
-        if isinstance(errors, (int, float)) and not isinstance(errors, bool) and errors > 0:
+        if isinstance(errors, int | float) and not isinstance(errors, bool) and errors > 0:
             return True
 
         failed = payload.get("failed")
-        if isinstance(failed, (int, float)) and not isinstance(failed, bool) and failed > 0:
+        if isinstance(failed, int | float) and not isinstance(failed, bool) and failed > 0:
             return not explicit_success
         return False
 

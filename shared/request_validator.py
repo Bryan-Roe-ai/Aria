@@ -91,7 +91,7 @@ def validate_fields(body: dict, schema: dict[str, dict]) -> str | None:
                 return f"Field '{field}' must be {type_name}"
 
         # Length checks (str / list)
-        if isinstance(value, (str, list)):
+        if isinstance(value, str | list):
             min_len = rules.get("min_length")
             if min_len is not None and len(value) < min_len:
                 return f"Field '{field}' must have at least {min_len} item(s)"
@@ -101,7 +101,7 @@ def validate_fields(body: dict, schema: dict[str, dict]) -> str | None:
                 return f"Field '{field}' exceeds max length {max_len}"
 
         # Numeric range
-        if isinstance(value, (int, float)):
+        if isinstance(value, int | float):
             min_val = rules.get("min")
             if min_val is not None and value < min_val:
                 return f"Field '{field}' must be >= {min_val}"
