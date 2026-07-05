@@ -11,8 +11,9 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from typing import Any, Callable, Tuple
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import text
 
@@ -22,22 +23,13 @@ if str(REPO_ROOT) not in sys.path:
 
 DEFAULT_SQL_URL = "sqlite:///data_out/qai_local.db"
 DEFAULT_DB_PATH = Path("data_out/qai_local.db")
-CHECK_TABLE_DDL = (
-    "CREATE TABLE IF NOT EXISTS sql_setup_check "
-    "(id INTEGER PRIMARY KEY, note TEXT NOT NULL)"
-)
-CHECK_INSERT_SQL = (
-    "INSERT INTO sql_setup_check (note) "
-    "VALUES ('sql configured')"
-)
+CHECK_TABLE_DDL = "CREATE TABLE IF NOT EXISTS sql_setup_check (id INTEGER PRIMARY KEY, note TEXT NOT NULL)"
+CHECK_INSERT_SQL = "INSERT INTO sql_setup_check (note) VALUES ('sql configured')"
 CHECK_COUNT_SQL = "SELECT COUNT(*) FROM sql_setup_check"
-ENGINE_UNAVAILABLE_MSG = (
-    "SQL engine not available. "
-    "Ensure dependencies are installed."
-)
+ENGINE_UNAVAILABLE_MSG = "SQL engine not available. Ensure dependencies are installed."
 
 
-def _sql_api() -> Tuple[Callable[[], Any], Callable[[], dict[str, Any]]]:
+def _sql_api() -> tuple[Callable[[], Any], Callable[[], dict[str, Any]]]:
     from shared.sql_engine import get_engine, sql_health
 
     return get_engine, sql_health
@@ -96,9 +88,7 @@ def cmd_reset(db_path: Path) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Local SQL helper commands for Aria"
-    )
+    parser = argparse.ArgumentParser(description="Local SQL helper commands for Aria")
     parser.add_argument(
         "command",
         choices=["setup", "status", "reset"],
@@ -107,18 +97,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--url",
         default=None,
-        help=(
-            "SQL URL override "
-            f"(default: env QAI_SQL_URL or {DEFAULT_SQL_URL})"
-        ),
+        help=(f"SQL URL override (default: env QAI_SQL_URL or {DEFAULT_SQL_URL})"),
     )
     parser.add_argument(
         "--db-path",
         default=str(DEFAULT_DB_PATH),
-        help=(
-            "Path to local SQLite DB file for reset "
-            f"(default: {DEFAULT_DB_PATH})"
-        ),
+        help=(f"Path to local SQLite DB file for reset (default: {DEFAULT_DB_PATH})"),
     )
     return parser.parse_args()
 
