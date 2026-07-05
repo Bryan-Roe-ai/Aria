@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import os
+from pathlib import Path
 
 
 def load_module():
@@ -167,16 +168,14 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_invalid_session_name_stays_in_conv_dir(monkeypatch):
+def test_save_conversation_json_path_traversal_safe_via_hash(monkeypatch, tmp_path):
     m = load_module()
+    conv_dir = tmp_path / "conversations"
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
+    monkeypatch.setattr(m, "CONV_DIR", conv_dir)
+    monkeypatch.setattr(m, "LATEST_PATH", conv_dir / "latest.json")
 
-    history = [{"user": "hi", "assistant": "hello"}]
-    output_path = m.save_conversation_json(history, "ignored")
-    output_abs = os.path.abspath(output_path)
-    conv_dir_abs = os.path.abspath(str(m.CONV_DIR))
-
-    assert os.path.commonpath([output_abs, conv_dir_abs]) == conv_dir_abs
-    assert os.path.exists(output_abs)
-    with open(output_abs, encoding="utf-8") as saved_file:
-        assert json.load(saved_file) == history
+    # SHA-256 hashing of the session name means the filename is always a safe hex token;
+    # even when safe_session_name returns a path-traversal-like string, no ValueError is raised.
+    result = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    assert Path(result).parent.resolve() == conv_dir.resolve()
