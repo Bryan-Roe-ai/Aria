@@ -155,7 +155,7 @@ def test_main_ok_minimal_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -
 
 def test_main_ok_when_local_settings_json_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _write_minimal_repo(tmp_path)
-    (tmp_path / "local.settings.json").unlink()
+    (tmp_path / "local.settings.json").unlink(missing_ok=True)
 
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(os, "environ", os.environ.copy())
