@@ -21,12 +21,7 @@ try:
 except ImportError:
     _LOCAL_NUMPY = None
 
-_CANONICAL = (
-    Path(__file__).resolve().parents[1]
-    / "ai-projects"
-    / "quantum-ml"
-    / "web_app.py"
-)
+_CANONICAL = Path(__file__).resolve().parents[1] / "ai-projects" / "quantum-ml" / "web_app.py"
 
 if not _CANONICAL.exists():
     raise FileNotFoundError(f"Canonical web app not found: {_CANONICAL}")
@@ -113,11 +108,7 @@ def _to_mapping(value: Any) -> dict[str, Any] | None:
     if isinstance(value, Mapping):
         return {str(k): v for k, v in value.items()}
 
-    if (
-        isinstance(value, list)
-        and len(value) == 1
-        and isinstance(value[0], Mapping)
-    ):
+    if isinstance(value, list) and len(value) == 1 and isinstance(value[0], Mapping):
         return {str(k): v for k, v in value[0].items()}
 
     try:
@@ -170,10 +161,7 @@ def _compat_load_checkpoint() -> Any:
     payload = _get_request_json()
     checkpoint_path = payload.get("checkpoint_path")
 
-    if (
-        not isinstance(checkpoint_path, str)
-        or not checkpoint_path.strip()
-    ):
+    if not isinstance(checkpoint_path, str) or not checkpoint_path.strip():
         return _json_error("No checkpoint path provided", 400)
 
     try:
@@ -193,8 +181,7 @@ def _compat_load_checkpoint() -> Any:
 
         if not _is_within_directory(resolved_path, allowed_dir):
             return _json_error(
-                "Invalid checkpoint path: must be within checkpoints "
-                "directory",
+                "Invalid checkpoint path: must be within checkpoints directory",
                 403,
             )
 
@@ -252,10 +239,7 @@ def _compat_load_checkpoint() -> Any:
         data: dict[str, Any] | None = None
         if hasattr(checkpoint, "files"):
             try:
-                data = {
-                    name: checkpoint[name]
-                    for name in checkpoint.files
-                }
+                data = {name: checkpoint[name] for name in checkpoint.files}
             except (AttributeError, KeyError, TypeError, ValueError) as e_read:
                 if allow_pickle:
                     logger.exception(
@@ -265,17 +249,13 @@ def _compat_load_checkpoint() -> Any:
                     return _json_error("Unexpected checkpoint format", 500)
 
                 logger.debug(
-                    "Reading checkpoint members failed (%s); "
-                    "retry with pickles",
+                    "Reading checkpoint members failed (%s); retry with pickles",
                     e_read,
                 )
                 try:
                     checkpoint = np.load(str(resolved_path), allow_pickle=True)
                     allow_pickle = True
-                    data = {
-                        name: checkpoint[name]
-                        for name in checkpoint.files
-                    }
+                    data = {name: checkpoint[name] for name in checkpoint.files}
                 except (
                     AttributeError,
                     KeyError,
@@ -288,10 +268,7 @@ def _compat_load_checkpoint() -> Any:
                         e_retry,
                     )
                     return _json_error("Unexpected checkpoint format", 500)
-        elif (
-            isinstance(checkpoint, np.ndarray)
-            and checkpoint.dtype == object
-        ):
+        elif isinstance(checkpoint, np.ndarray) and checkpoint.dtype == object:
             data = _to_mapping(checkpoint.tolist())
         else:
             data = _to_mapping(checkpoint)
