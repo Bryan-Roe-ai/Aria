@@ -1,7 +1,8 @@
+import hashlib
 import importlib.util
+import json
 import os
-
-import pytest
+from pathlib import Path
 
 
 def load_module():
@@ -168,11 +169,18 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_invalid_session_path_raises_chained_value_error(monkeypatch):
+def test_save_conversation_json_path_traversal_safe_via_hash(monkeypatch, tmp_path):
     m = load_module()
+    monkeypatch.setattr(m, "CONV_DIR", tmp_path)
+    monkeypatch.setattr(m, "LATEST_PATH", tmp_path / "latest.json")
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
+    monkeypatch.setattr(m, "CONV_DIR", conv_dir)
+    monkeypatch.setattr(m, "LATEST_PATH", conv_dir / "latest.json")
 
-    with pytest.raises(ValueError, match="Invalid session path") as excinfo:
-        m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    saved = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
 
-    assert isinstance(excinfo.value.__cause__, ValueError)
+    assert Path(saved).resolve().is_relative_to(tmp_path.resolve())
+    assert (tmp_path / "latest.json").exists()
+    assert os.path.basename(saved).endswith(".json")
+    expected_prefix = f"{hashlib.sha256(b'../escape').hexdigest()[:16]}_"
+    assert os.path.basename(saved).startswith(expected_prefix)

@@ -78,7 +78,7 @@ def _parse_bool(value: Any, default: bool = True) -> bool:
         return default
     if isinstance(value, bool):
         return value
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return bool(value)
     if isinstance(value, str):
         v = value.strip().lower()
@@ -114,7 +114,7 @@ def _parse_float(value: Any) -> float | None:
         return None
     if isinstance(value, bool):
         return None
-    if isinstance(value, (int, float)):
+    if isinstance(value, int | float):
         return float(value)
     if isinstance(value, str):
         v = value.strip()
