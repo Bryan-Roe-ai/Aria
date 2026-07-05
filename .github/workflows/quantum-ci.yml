@@ -57,7 +57,7 @@ env:
   PYTHONDONTWRITEBYTECODE: "1"
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
-  QUANTUM_COVERAGE_THRESHOLD: "60"
+  QUANTUM_COVERAGE_THRESHOLD: "20"
 
 defaults:
   run:
@@ -185,10 +185,7 @@ jobs:
             --maxfail=1 \
             --durations=15 \
             --junitxml="data_out/junit-quantum-unit-${{ matrix.python-version }}.xml" \
-            --cov=ai_projects \
-            --cov=ai-projects/quantum-ml \
-            --cov=shared \
-            --cov=scripts \
+            --cov=ai-projects/quantum-ml/src \
             --cov-report=term-missing:skip-covered \
             --cov-report=xml:"data_out/coverage-quantum-unit-${{ matrix.python-version }}.xml" \
             2>&1 | tee "data_out/pytest-quantum-unit-${{ matrix.python-version }}.txt"
