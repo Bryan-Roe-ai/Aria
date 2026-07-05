@@ -48,10 +48,7 @@ def _resolved_env(name: str) -> str:
     memory capability.
     """
     value = os.environ.get(name, "").strip()
-    if (
-        (value.startswith("${") and value.endswith("}"))
-        or (value.startswith("{{") and value.endswith("}}"))
-    ):
+    if (value.startswith("${") and value.endswith("}")) or (value.startswith("{{") and value.endswith("}}")):
         return ""
     return value
 
@@ -72,10 +69,7 @@ async def main() -> None:
     memory_store_name = _resolved_env("MEMORY_STORE_NAME")
     context_providers = []
     if not memory_store_name:
-        logger.warning(
-            "MEMORY_STORE_NAME is not set; memory will not be available "
-            "to the agent."
-        )
+        logger.warning("MEMORY_STORE_NAME is not set; memory will not be available to the agent.")
     else:
         # Reuse the project_client that FoundryChatClient just created,
         # instead of
