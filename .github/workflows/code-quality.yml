@@ -79,6 +79,63 @@ jobs:
           mypy --install-types --non-interactive --ignore-missing-imports --exclude="(venv|venv_.*|data_out|mount)" . || echo "MyPy check completed with warnings"
         continue-on-error: true
 
+  autofix:
+    name: Auto-fix (black + isort + autopep8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: ./.github/actions/setup-python-env
+        with:
+          install-requirements: 'false'
+          extra-packages: 'black isort autopep8'
+
+      - name: Apply formatting fixes
+        run: |
+          set -euo pipefail
+          black --exclude="(venv|venv_.*|__pycache__|\.git|data_out|mount|__blobstorage__|__queuestorage__)" .
+          isort --skip-glob="venv*" --skip-glob="data_out*" --skip-glob="mount*" .
+          autopep8 --in-place --recursive --select=E,W . \
+            --exclude venv,venv_*,__pycache__,.git,data_out,mount,__blobstorage__,__queuestorage__
+
+      - name: Create patch artifact
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No auto-fixes were needed." > autofix-summary.txt
+          else
+            git diff > autofix.patch
+            {
+              echo "Auto-fix generated changes."
+              echo ""
+              echo "Apply locally with:"
+              echo "  git apply autofix.patch"
+            } > autofix-summary.txt
+          fi
+
+      - name: Upload autofix patch
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: autofix-patch
+          path: |
+            autofix.patch
+            autofix-summary.txt
+          if-no-files-found: ignore
+          retention-days: 14
+
   security-check:
     name: Security Dependency Check
     runs-on: ubuntu-latest
