@@ -601,141 +601,242 @@
                 </button>
             </header>
             <main id="main-content">
-            <div class="header">
-                <h1>Aria Auto-Execute</h1>
-                <p>LLM-powered action generation & execution</p>
-            </div>
-
-            <div class="content">
-                <section class="quantum-toolbar" aria-labelledby="quantum-toolbar-heading">
-                    <h2 id="quantum-toolbar-heading" class="sr-only">Quantum world tools</h2>
-                    <button
-                        type="button"
-                        class="btn-quantum"
-                        onclick="loadQuantumWorld('intro')"
-                    >
-                        ⚛ Load Quantum World
-                    </button>
-                    <span
-                        id="quantum-status"
-                        class="quantum-status"
-                        aria-live="polite"
-                        aria-atomic="true"
-                        >Sets up qubit/gate on the server — open the main stage
-                        to see the themed world.</span
-                    >
-                </section>
-
-                <section class="examples" aria-labelledby="example-commands-heading">
-                    <h2 id="example-commands-heading">📝 Example Commands</h2>
-                    <p class="sr-only">Each example button fills the command field for you.</p>
-                    <ul class="example-list" id="fallback-examples">
-                        <li>
-                            <button type="button" onclick="setCommand('Walk to the table and pick up the apple')">
-                                Walk to the table and pick up the apple
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" onclick="setCommand('Say hello and wave at the audience')">
-                                Say hello and wave at the audience
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" onclick="setCommand('Go to the center and do a little dance')">
-                                Go to the center and do a little dance
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" onclick="setCommand('Pick up the book, move to stage left, and drop it')">
-                                Pick up the book, move to stage left, and drop it
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" onclick="setCommand('Look at the flower and say how beautiful it is')">
-                                Look at the flower and say how beautiful it is
-                            </button>
-                        </li>
-                        <li>
-                            <button type="button" onclick="setCommand('Throw the ball toward the right side of the stage')">
-                                Throw the ball toward the right side of the stage
-                            </button>
-                        </li>
-                    </ul>
-                    <div id="preset-groups" class="preset-groups" hidden></div>
-                </section>
-
-                <section class="control-panel" aria-labelledby="command-panel-heading">
-                    <h2 id="command-panel-heading" class="sr-only">Auto-execute controls</h2>
-                    <div class="input-group">
-                        <label for="command">Command:</label>
-                        <input
-                            type="text"
-                            id="command"
-                            placeholder="Type a natural language command for Aria..."
-                            aria-describedby="command-help"
-                            autocomplete="off"
-                            value="Walk to the table and pick up the apple"
-                        />
-                        <p id="command-help" class="sr-only">
-                            Type a command for Aria, then choose Plan Actions Only or Execute Actions.
-                        </p>
-                    </div>
-
-                    <div class="checkbox-group">
-                        <label>
-                            <input type="checkbox" id="use-llm" checked />
-                            Use LLM (fallback to rules if unavailable)
-                        </label>
-                        <label>
-                            <input type="checkbox" id="show-state" />
-                            Show updated state
-                        </label>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="provider">Provider (optional):</label>
-                        <select id="provider">
-                            <option value="">Auto-detect</option>
-                            <option value="quantum-llm">Quantum LLM</option>
-                            <option value="azure">Azure OpenAI</option>
-                            <option value="openai">OpenAI</option>
-                            <option value="lmstudio">LM Studio</option>
-                            <option value="ollama">Ollama</option>
-                            <option value="local">Local fallback</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label for="model">Model / Path (optional):</label>
-                        <input
-                            type="text"
-                            id="model"
-                            placeholder="e.g. data_out/quantum_llm_training"
-                        />
-                    </div>
-
-                    <div class="button-group">
-                        <button type="button" class="btn-plan" onclick="planActions()">
-                            📋 Plan Actions Only
-                        </button>
-                        <button type="button" class="btn-execute" onclick="executeActions()">
-                            ▶️ Execute Actions
-                        </button>
-                        <button type="button" class="btn-clear" onclick="clearResults()">
-                            🗑️ Clear
-                        </button>
-                    </div>
-                </section>
-
-                <div class="sr-only" id="page-status" aria-live="polite" aria-atomic="true">Ready.</div>
-
-                <div class="loading" id="loading" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
-                    <div class="spinner"></div>
-                    <p>Processing command...</p>
+                <div class="header">
+                    <h1>Aria Auto-Execute</h1>
+                    <p>LLM-powered action generation & execution</p>
                 </div>
 
-                <div class="results" id="results" role="region" aria-live="polite" aria-label="Auto-execute results" aria-busy="false" tabindex="-1"></div>
-            </div>
+                <div class="content">
+                    <section
+                        class="quantum-toolbar"
+                        aria-labelledby="quantum-toolbar-heading"
+                    >
+                        <h2 id="quantum-toolbar-heading" class="sr-only">
+                            Quantum world tools
+                        </h2>
+                        <button
+                            type="button"
+                            class="btn-quantum"
+                            onclick="loadQuantumWorld('intro')"
+                        >
+                            ⚛ Load Quantum World
+                        </button>
+                        <span
+                            id="quantum-status"
+                            class="quantum-status"
+                            aria-live="polite"
+                            aria-atomic="true"
+                            >Sets up qubit/gate on the server — open the main
+                            stage to see the themed world.</span
+                        >
+                    </section>
+
+                    <section
+                        class="examples"
+                        aria-labelledby="example-commands-heading"
+                    >
+                        <h2 id="example-commands-heading">
+                            📝 Example Commands
+                        </h2>
+                        <p class="sr-only">
+                            Each example button fills the command field for you.
+                        </p>
+                        <ul class="example-list" id="fallback-examples">
+                            <li>
+                                <button
+                                    type="button"
+                                    onclick="
+                                        setCommand(
+                                            'Walk to the table and pick up the apple',
+                                        )
+                                    "
+                                >
+                                    Walk to the table and pick up the apple
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    onclick="
+                                        setCommand(
+                                            'Say hello and wave at the audience',
+                                        )
+                                    "
+                                >
+                                    Say hello and wave at the audience
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    onclick="
+                                        setCommand(
+                                            'Go to the center and do a little dance',
+                                        )
+                                    "
+                                >
+                                    Go to the center and do a little dance
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    onclick="
+                                        setCommand(
+                                            'Pick up the book, move to stage left, and drop it',
+                                        )
+                                    "
+                                >
+                                    Pick up the book, move to stage left, and
+                                    drop it
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    onclick="
+                                        setCommand(
+                                            'Look at the flower and say how beautiful it is',
+                                        )
+                                    "
+                                >
+                                    Look at the flower and say how beautiful it
+                                    is
+                                </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    onclick="
+                                        setCommand(
+                                            'Throw the ball toward the right side of the stage',
+                                        )
+                                    "
+                                >
+                                    Throw the ball toward the right side of the
+                                    stage
+                                </button>
+                            </li>
+                        </ul>
+                        <div
+                            id="preset-groups"
+                            class="preset-groups"
+                            hidden
+                        ></div>
+                    </section>
+
+                    <section
+                        class="control-panel"
+                        aria-labelledby="command-panel-heading"
+                    >
+                        <h2 id="command-panel-heading" class="sr-only">
+                            Auto-execute controls
+                        </h2>
+                        <div class="input-group">
+                            <label for="command">Command:</label>
+                            <input
+                                type="text"
+                                id="command"
+                                placeholder="Type a natural language command for Aria..."
+                                aria-describedby="command-help"
+                                autocomplete="off"
+                                value="Walk to the table and pick up the apple"
+                            />
+                            <p id="command-help" class="sr-only">
+                                Type a command for Aria, then choose Plan
+                                Actions Only or Execute Actions.
+                            </p>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="use-llm" checked />
+                                Use LLM (fallback to rules if unavailable)
+                            </label>
+                            <label>
+                                <input type="checkbox" id="show-state" />
+                                Show updated state
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="provider">Provider (optional):</label>
+                            <select id="provider">
+                                <option value="">Auto-detect</option>
+                                <option value="quantum-llm">Quantum LLM</option>
+                                <option value="azure">Azure OpenAI</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="lmstudio">LM Studio</option>
+                                <option value="ollama">Ollama</option>
+                                <option value="local">Local fallback</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="model">Model / Path (optional):</label>
+                            <input
+                                type="text"
+                                id="model"
+                                placeholder="e.g. data_out/quantum_llm_training"
+                            />
+                        </div>
+
+                        <div class="button-group">
+                            <button
+                                type="button"
+                                class="btn-plan"
+                                onclick="planActions()"
+                            >
+                                📋 Plan Actions Only
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-execute"
+                                onclick="executeActions()"
+                            >
+                                ▶️ Execute Actions
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-clear"
+                                onclick="clearResults()"
+                            >
+                                🗑️ Clear
+                            </button>
+                        </div>
+                    </section>
+
+                    <div
+                        class="sr-only"
+                        id="page-status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        Ready.
+                    </div>
+
+                    <div
+                        class="loading"
+                        id="loading"
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        aria-hidden="true"
+                    >
+                        <div class="spinner"></div>
+                        <p>Processing command...</p>
+                    </div>
+
+                    <div
+                        class="results"
+                        id="results"
+                        role="region"
+                        aria-live="polite"
+                        aria-label="Auto-execute results"
+                        aria-busy="false"
+                        tabindex="-1"
+                    ></div>
+                </div>
             </main>
         </div>
 
@@ -818,7 +919,10 @@
                 if (results)
                     results.setAttribute("aria-busy", isBusy ? "true" : "false")
                 if (loading)
-                    loading.setAttribute("aria-hidden", isBusy ? "false" : "true")
+                    loading.setAttribute(
+                        "aria-hidden",
+                        isBusy ? "false" : "true",
+                    )
             }
 
             function focusResults() {
@@ -913,7 +1017,9 @@
                     if (statusEl)
                         statusEl.textContent =
                             "Quantum setup failed: " + err.message
-                    announceStatus("Quantum world failed to load: " + err.message)
+                    announceStatus(
+                        "Quantum world failed to load: " + err.message,
+                    )
                 }
             }
 
@@ -949,7 +1055,9 @@
                         document.getElementById("command").placeholder =
                             "Enter a natural language command for Aria..."
                     }, 2000)
-                    announceStatus("Enter a command before planning or executing actions.")
+                    announceStatus(
+                        "Enter a command before planning or executing actions.",
+                    )
                     return
                 }
 
@@ -996,7 +1104,9 @@
                         <p style="margin-top: 10px; font-size: 0.9em;">Make sure the Aria server is running</p>
                     </div>
                 `
-                    announceStatus("Auto-execute request failed: " + error.message)
+                    announceStatus(
+                        "Auto-execute request failed: " + error.message,
+                    )
                     focusResults()
                 } finally {
                     loading.classList.remove("active")

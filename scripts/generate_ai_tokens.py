@@ -350,7 +350,7 @@ def probe_ollama(
             result.status = "warn"
             result.notes.append("No models installed. Run: ollama pull llama3.2")
     elif status == -1:
-        _fail("Ollama   — server not reachable " f"(tried: {', '.join(attempted)}) (is `ollama serve` running?)")
+        _fail(f"Ollama   — server not reachable (tried: {', '.join(attempted)}) (is `ollama serve` running?)")
         result.status = "fail"
         result.error = "connection refused"
         result.notes.append("Start Ollama: ollama serve")
@@ -466,7 +466,7 @@ def probe_lmstudio(
         if write and not env.get("LMSTUDIO_BASE_URL"):
             result.env_written["LMSTUDIO_BASE_URL"] = base_url
     elif status == -1:
-        _fail("LM Studio — not reachable " f"(tried: {', '.join(attempted)}) (enable local server in LM Studio app)")
+        _fail(f"LM Studio — not reachable (tried: {', '.join(attempted)}) (enable local server in LM Studio app)")
         result.status = "fail"
         result.error = "connection refused"
         result.notes.append("Enable LM Studio local server: LM Studio → Local Server tab → Start")
