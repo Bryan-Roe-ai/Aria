@@ -8,6 +8,7 @@ Then open the local URL printed by Gradio.
 
 from __future__ import annotations
 
+import hashlib
 import importlib
 import json
 import os
@@ -540,7 +541,8 @@ def save_conversation_json(hist_state: list[dict[str, Any]], session_name: str =
     ensure_conv_dir()
     ts = int(time.time())
     safe_name = safe_session_name(session_name)
-    candidate = CONV_DIR / f"{safe_name}_{ts}.json"
+    session_token = hashlib.sha256(safe_name.encode("utf-8")).hexdigest()[:16]
+    candidate = CONV_DIR / f"{session_token}_{ts}.json"
     base_dir = CONV_DIR.resolve()
     filename = candidate.resolve()
     try:
