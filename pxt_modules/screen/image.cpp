@@ -55,9 +55,9 @@ RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), buffer(buf) {
 
 static inline int byteSize(int w, int h, int bpp) {
   if (bpp == 1)
-    return sizeof(ImageHeader) + ((h + 7) >> 3) * w;
+    return (int)(sizeof(ImageHeader) + (((size_t)h + 7) >> 3) * (size_t)w);
   else
-    return sizeof(ImageHeader) + (((h * 4 + 31) / 32) * 4) * w;
+    return (int)(sizeof(ImageHeader) + ((((size_t)h * 4 + 31) / 32) * 4) * (size_t)w);
 }
 
 Image_ allocImage(const uint8_t *data, uint32_t sz) {
