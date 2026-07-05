@@ -12,6 +12,7 @@ Topics published:
                        configured via slow_cycle_threshold_s (default: None,
                        meaning no alerting).
 """
+
 from __future__ import annotations
 
 import time
@@ -56,8 +57,8 @@ class CycleObserver:
 
     def __init__(
         self,
-        bus: "AgentBus",
-        memory: "MemoryStore",
+        bus: AgentBus,
+        memory: MemoryStore,
         slow_cycle_threshold_s: float | None = None,
     ) -> None:
         self._bus = bus
@@ -76,7 +77,7 @@ class CycleObserver:
     # Public API
     # ------------------------------------------------------------------
 
-    def cycle(self) -> "_CycleContext":
+    def cycle(self) -> _CycleContext:
         """Return a context manager for one autonomous cycle."""
         return _CycleContext(self)
 
@@ -86,11 +87,7 @@ class CycleObserver:
 
     def stats(self) -> dict[str, Any]:
         """Return a snapshot of aggregate cycle statistics."""
-        success_rate = (
-            round(self.successful_cycles / self.total_cycles, 4)
-            if self.total_cycles
-            else 0.0
-        )
+        success_rate = round(self.successful_cycles / self.total_cycles, 4) if self.total_cycles else 0.0
         return {
             "total_cycles": self.total_cycles,
             "successful_cycles": self.successful_cycles,
@@ -182,7 +179,7 @@ class _CycleContext:
     def set_summary(self, summary: dict[str, Any]) -> None:
         self._observer.set_summary(summary)
 
-    def __enter__(self) -> "_CycleContext":
+    def __enter__(self) -> _CycleContext:
         self._start = time.monotonic()
         self._observer._on_start(self._cycle_index)
         return self
