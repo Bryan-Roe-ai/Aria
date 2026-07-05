@@ -30,7 +30,7 @@ GRADIO_SHARE ?= false
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
 	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
-	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot sql-setup-local sql-status sql-status-json sql-doctor sql-doctor-json sql-reset-local sql-verify help
+	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot sql-setup-local sql-status sql-status-json sql-doctor sql-doctor-json sql-reset-local sql-verify dab-verify ignore-verify setup-verify help
 
 # Default target
 all: lint test
@@ -132,6 +132,19 @@ sql-verify:
 	@$(MAKE) sql-setup-local
 	@$(MAKE) sql-status
 	@QAI_SQL_URL=sqlite:///:memory: $(PYTEST) -q tests/test_sql_integration.py tests/test_sql_engine_extended.py
+
+## Verify DAB config wiring and local env placeholders (fails on drift)
+dab-verify:
+	@$(PYTHON) scripts/dab_verify.py
+
+## Verify .gitignore recursively ignores venv/.venv folders
+ignore-verify:
+	@$(PYTHON) scripts/ignore_verify.py
+
+## Run all local setup guardrails in one command
+setup-verify:
+	@$(MAKE) ignore-verify
+	@$(MAKE) dab-verify
 
 ## Start autonomous training orchestrator (dry-run by default)
 start-orchestrator:

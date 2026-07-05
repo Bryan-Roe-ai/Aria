@@ -219,11 +219,35 @@ jobs:
         uses: ./.github/actions/run-integration-contract-gate
 
   # ---------------------------------------------------------------------------
+  # Gate 5 — Setup verification guardrails
+  # ---------------------------------------------------------------------------
+  setup-guardrails:
+    name: Setup Guardrails
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: '3.11'
+
+      - name: Verify setup guardrails
+        uses: ./.github/actions/run-setup-verify
+
+  # ---------------------------------------------------------------------------
   # Fan-in — All gates must pass.  This is the single required status check.
   # ---------------------------------------------------------------------------
   gates-passed:
     name: All Gates Passed
-    needs: [unit-tests, ai-project-tests, pr-validation, security, contract-gate]
+    needs: [unit-tests, ai-project-tests, pr-validation, security, contract-gate, setup-guardrails]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -237,6 +261,7 @@ jobs:
           PR_VALIDATION: ${{ needs.pr-validation.result }}
           SECURITY: ${{ needs.security.result }}
           CONTRACT_GATE: ${{ needs.contract-gate.result }}
+          SETUP_GUARDRAILS: ${{ needs.setup-guardrails.result }}
         run: |
           set -euo pipefail
 
@@ -246,8 +271,8 @@ jobs:
 
           # Map gate display names to their result values.
           # Using parallel arrays keeps the order deterministic.
-          GATE_NAMES=("Unit Tests" "AI Project Tests" "PR Validation" "Security Review" "Contract Gate")
-          GATE_RESULTS=("${UNIT_TESTS}" "${AI_PROJECT_TESTS}" "${PR_VALIDATION}" "${SECURITY}" "${CONTRACT_GATE}")
+          GATE_NAMES=("Unit Tests" "AI Project Tests" "PR Validation" "Security Review" "Contract Gate" "Setup Guardrails")
+          GATE_RESULTS=("${UNIT_TESTS}" "${AI_PROJECT_TESTS}" "${PR_VALIDATION}" "${SECURITY}" "${CONTRACT_GATE}" "${SETUP_GUARDRAILS}")
 
           status_emoji() {
             case "$1" in

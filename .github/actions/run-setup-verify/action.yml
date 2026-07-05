@@ -1,0 +1,10 @@
+name: Run Setup Verify
+description: Run repository setup guardrails (recursive venv ignore + DAB wiring)
+runs:
+    using: composite
+    steps:
+        - name: Run setup verification
+          shell: bash
+          run: |
+              set -euo pipefail
+              make setup-verify

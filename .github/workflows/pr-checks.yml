@@ -83,6 +83,9 @@ jobs:
             echo "::notice::scripts/fast_validate.py not found, skipping fast validation"
           fi
 
+      - name: Verify setup guardrails (DAB + recursive venv ignore)
+        uses: ./.github/actions/run-setup-verify
+
   description-check:
     name: PR Description Check
     if: github.event.pull_request.draft == false

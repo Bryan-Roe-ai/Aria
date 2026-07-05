@@ -33,6 +33,32 @@ env:
   FORCE_COLOR: "1"
 
 jobs:
+  setup-guardrails:
+    name: Setup guardrails (DAB + recursive venv ignore)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          egress-policy: audit
+          disable-sudo: true
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run setup verification
+        uses: ./.github/actions/run-setup-verify
+
   lint:
     name: Lint (ruff + black)
     runs-on: ubuntu-latest
@@ -86,7 +112,7 @@ jobs:
     name: Type check (mypy)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: lint
+    needs: [lint, setup-guardrails]
 
     steps:
       - name: Harden runner
@@ -134,7 +160,7 @@ jobs:
     name: Unit tests (pytest) — ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    needs: lint
+    needs: [lint, setup-guardrails]
     strategy:
       fail-fast: false
       matrix:
@@ -224,19 +250,26 @@ jobs:
     name: CI success
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [lint, type-check, unit-tests]
+    needs: [setup-guardrails, lint, type-check, unit-tests]
     if: always()
     steps:
       - name: Verify all required jobs succeeded
         env:
+          SETUP_RESULT: ${{ needs.setup-guardrails.result }}
           LINT_RESULT: ${{ needs.lint.result }}
           TYPE_RESULT: ${{ needs.type-check.result }}
           TEST_RESULT: ${{ needs.unit-tests.result }}
         run: |
           set -euo pipefail
+          echo "setup-guardrails=$SETUP_RESULT"
           echo "lint=$LINT_RESULT"
           echo "type-check=$TYPE_RESULT"
           echo "unit-tests=$TEST_RESULT"
+
+          if [[ "$SETUP_RESULT" != "success" ]]; then
+            echo "::error::Setup guardrails job failed."
+            exit 1
+          fi
 
           if [[ "$LINT_RESULT" != "success" ]]; then
             echo "::error::Lint job failed."
