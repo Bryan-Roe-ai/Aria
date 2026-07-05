@@ -251,7 +251,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: [setup-guardrails, lint, type-check, unit-tests]
-    if: always()
+    # Only run when required jobs completed (success or failure).
+    # When the run is cancelled by concurrency (cancel-in-progress), required
+    # jobs show as "cancelled"; skip ci-success in that case so the job does
+    # not show as "failed" for a run that was superseded by a newer push.
+    # type-check is advisory and may be "skipped" when a dependency fails, so
+    # "skipped" is also an accepted result for it.
+    if: >-
+      always() &&
+      (needs.setup-guardrails.result == 'success' || needs.setup-guardrails.result == 'failure') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'failure') &&
+      (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'failure') &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'failure' || needs.type-check.result == 'skipped')
     steps:
       - name: Verify all required jobs succeeded
         env:
