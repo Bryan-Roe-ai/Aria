@@ -201,3 +201,4 @@ data_out/quantum_autorun/status.json
 data_out/evaluation_autorun/status.json
 data_out/autonomous_agent/status.json
 data_out/*
+logs/lora_signals.jsonl
