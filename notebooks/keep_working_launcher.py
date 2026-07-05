@@ -210,12 +210,43 @@ def export_systemd(
     session=None,
     python_exec=None,
     workspace_dir=None,
+    task=None,
+    work=None,
+    short=None,
+    long=None,
+    cycles_per_long=None,
+    notify=False,
+    sound=False,
+    repeat=False,
 ):
-    """Export a systemd user service file to ``path``."""
+    """Export a systemd user service file to ``path``.
+
+    Settings may be supplied either via the ``session`` dict or as direct
+    keyword arguments.  Direct keyword arguments take precedence over values
+    in ``session``.
+    """
 
     p = Path(path).expanduser()
     p.parent.mkdir(parents=True, exist_ok=True)
-    session = session or {}
+    session = dict(session) if session else {}
+
+    # Direct keyword arguments override session dict values.
+    if task is not None:
+        session["task"] = task
+    if work is not None:
+        session["work"] = work
+    if short is not None:
+        session["short"] = short
+    if long is not None:
+        session["long"] = long
+    if cycles_per_long is not None:
+        session["cycles_per_long"] = cycles_per_long
+    if notify:
+        session["notify"] = notify
+    if sound:
+        session["sound"] = sound
+    if repeat:
+        session["repeat"] = repeat
 
     if python_exec is None:
         python_exec = sys.executable or "python3"
