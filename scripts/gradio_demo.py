@@ -19,6 +19,7 @@ import uuid
 from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, cast
 
 import gradio as gr
@@ -27,9 +28,10 @@ import gradio as gr
 # See respond() and cancel_stream() implementations for details.
 
 APP_NAME = "QAI"
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-REPO_AUTOMATION_STATUS_PATH = os.path.join(REPO_ROOT, "data_out", "repo_automation", "status.json")
-REPO_AUTOMATION_LEGACY_STATUS_PATH = os.path.join(REPO_ROOT, "automation_status.json")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT))
+REPO_AUTOMATION_STATUS_PATH = str(REPO_ROOT / "data_out" / "repo_automation" / "status.json")
+REPO_AUTOMATION_LEGACY_STATUS_PATH = str(REPO_ROOT / "automation_status.json")
 
 
 def default_provider_choice() -> str:
@@ -170,7 +172,7 @@ def _sanitize_cli_output(text: str, limit: int = 4000) -> str:
 
 def run_repo_automation_command(*args: str) -> str:
     """Run a repo automation command and format the captured output for the UI."""
-    command = [sys.executable, os.path.join(REPO_ROOT, "scripts", "repo_automation.py"), *args]
+    command = [sys.executable, str(REPO_ROOT / "scripts" / "repo_automation.py"), *args]
     pretty_command = "python scripts/repo_automation.py " + " ".join(args)
     try:
         completed = subprocess.run(
@@ -888,7 +890,8 @@ def auto_improve_daemon():
 with gr.Blocks() as demo:
     # Theme injection element + toggle
     theme_css = gr.HTML(value=LIGHT_CSS)
-    hero_banner = gr.HTML(value=f"""
+    hero_banner = gr.HTML(
+        value=f"""
         <div class="hero-banner">
             <div class="hero-title">QAI Gradio Demo</div>
             <p class="hero-subtitle">A polished chat workspace for QAI session management, exports, and lightweight automation experiments.</p>
@@ -902,7 +905,8 @@ with gr.Blocks() as demo:
                 <span class="pill">Auto-improve</span>
             </div>
         </div>
-        """)
+        """
+    )
     with gr.Row(elem_classes=["surface-card"]):
         with gr.Column(scale=4):
             gr.Markdown(
