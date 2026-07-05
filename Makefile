@@ -30,7 +30,7 @@ GRADIO_SHARE ?= false
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
 	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
-	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot sql-setup-local sql-status sql-reset-local sql-verify help
+	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot sql-setup-local sql-status sql-status-json sql-doctor sql-doctor-json sql-reset-local sql-verify help
 
 # Default target
 all: lint test
@@ -110,6 +110,18 @@ sql-setup-local:
 ## Read-only SQL status check (health + validation row count)
 sql-status:
 	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py status
+
+## Read-only SQL status check in JSON format
+sql-status-json:
+	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py status --json
+
+## SQL health gate for local/CI usage (non-zero when unhealthy)
+sql-doctor:
+	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py doctor
+
+## SQL health gate in JSON format (non-zero when unhealthy)
+sql-doctor-json:
+	@QAI_SQL_URL=$${QAI_SQL_URL:-sqlite:///data_out/qai_local.db} $(PYTHON) scripts/sql_local_tools.py doctor --json
 
 ## Reset local SQLite DB file and re-bootstrap sql_setup_check
 sql-reset-local:
