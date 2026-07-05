@@ -11,6 +11,7 @@ def test_e2e_summary_avoids_sc2129_multiple_append_redirects() -> None:
     content = workflow_path.read_text(encoding="utf-8")
 
     assert 'echo "## Core Runtime Monitor" >> "$GITHUB_STEP_SUMMARY"' not in content
+    assert 'echo "| automating core files | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"' not in content
     assert '} >> "$GITHUB_STEP_SUMMARY"' in content
 
 

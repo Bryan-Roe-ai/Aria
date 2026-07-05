@@ -143,7 +143,9 @@ jobs:
               echo "| core monitor artifact | \`data_out/core_automation/status-monitor.json\` |"
             } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| automating core files | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "| automating core files | ❌ failed |"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
   e2e_playwright:
