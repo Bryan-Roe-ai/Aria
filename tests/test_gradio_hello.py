@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 
 
@@ -170,9 +171,12 @@ def test_save_conversation_json_invalid_session_name_stays_in_conv_dir(monkeypat
     m = load_module()
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
 
-    output_path = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    history = [{"user": "hi", "assistant": "hello"}]
+    output_path = m.save_conversation_json(history, "ignored")
     output_abs = os.path.abspath(output_path)
     conv_dir_abs = os.path.abspath(str(m.CONV_DIR))
 
     assert os.path.commonpath([output_abs, conv_dir_abs]) == conv_dir_abs
-    assert "../" not in os.path.basename(output_abs)
+    assert os.path.exists(output_abs)
+    with open(output_abs, encoding="utf-8") as saved_file:
+        assert json.load(saved_file) == history
