@@ -1,18 +1,18 @@
-from pathlib import Path
 import ast
+from pathlib import Path
 
-ROOT = Path('.')
-OUT = ROOT / 'docs' / 'reports'
+ROOT = Path(".")
+OUT = ROOT / "docs" / "reports"
 OUT.mkdir(parents=True, exist_ok=True)
 
-report = OUT / 'dependency-graph.md'
+report = OUT / "dependency-graph.md"
 
-with report.open('w', encoding='utf-8') as f:
-    f.write('# Dependency Graph\n\n')
+with report.open("w", encoding="utf-8") as f:
+    f.write("# Dependency Graph\n\n")
 
-    for path in ROOT.rglob('*.py'):
+    for path in ROOT.rglob("*.py"):
         try:
-            tree = ast.parse(path.read_text(encoding='utf-8'))
+            tree = ast.parse(path.read_text(encoding="utf-8"))
             imports = []
 
             for node in ast.walk(tree):
@@ -23,11 +23,11 @@ with report.open('w', encoding='utf-8') as f:
                     if node.module:
                         imports.append(node.module)
 
-            f.write(f'## {path}\n')
+            f.write(f"## {path}\n")
             for imp in sorted(set(imports)):
-                f.write(f'- {imp}\n')
-            f.write('\n')
+                f.write(f"- {imp}\n")
+            f.write("\n")
         except Exception:
             pass
 
-print(f'Generated {report}')
+print(f"Generated {report}")
