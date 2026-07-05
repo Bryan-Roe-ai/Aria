@@ -1,10 +1,35 @@
-name: Run Setup Verify
-description: Run repository setup guardrails (recursive venv ignore + DAB wiring)
+name: Run setup verification
+
+description: Runs make setup-verify to validate local setup guardrails in CI.
+
+inputs:
+  python-version:
+    description: Python version to use for setup verification
+    required: false
+    default: "3.12"
+  dab-strict-values:
+    description: "Fail if DAB connection strings contain placeholder tokens (undefined/changeme/etc)."
+    required: false
+    default: "false"
+
 runs:
-    using: composite
-    steps:
-        - name: Run setup verification
-          shell: bash
-          run: |
-              set -euo pipefail
-              make setup-verify
+  using: composite
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install dev dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Run setup verification
+      shell: bash
+      run: |
+        if [ "${{ inputs.dab-strict-values }}" = "true" ]; then
+          export DAB_VERIFY_STRICT_VALUES=1
+        fi
+        make setup-verify

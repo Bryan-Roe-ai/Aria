@@ -1,21 +1,25 @@
----
-runme:
-    id: 01KWR9PPYY5K1164BQCBXFYQWW
-    version: v3
----
-
 # run-setup-verify
 
-Composite GitHub Action that runs `make setup-verify` to enforce local setup guardrails.
+Composite action to run `make setup-verify` in CI, ensuring local setup guardrails stay healthy.
 
-## What it checks
+## Inputs
 
-- Recursive `venv` / `.venv` gitignore coverage (`make ignore-verify`)
-- Data API Builder connection wiring (`make dab-verify`)
+- `python-version` (optional, default: `3.12`)
+- `dab-strict-values` (optional, default: `false`)
+  - When `true`, exports `DAB_VERIFY_STRICT_VALUES=1` so DAB setup verification fails on placeholder connection-string values (for example `Database=undefined`).
 
 ## Usage
 
-```yaml {"id":"01KWR9PS2GPYMJ6CN62GP7GMSN"}
-- name: Verify setup guardrails
+```yaml
+- name: Setup guardrails
   uses: ./.github/actions/run-setup-verify
+```
+
+### Strict DAB placeholder checks
+
+```yaml
+- name: Setup guardrails (strict DAB values)
+  uses: ./.github/actions/run-setup-verify
+  with:
+    dab-strict-values: "true"
 ```
