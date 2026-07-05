@@ -147,6 +147,7 @@ class ChatIntegration:
                 "--provider",
                 normalized_provider,
                 "--once",
+                "--",
                 message,
             ]
 
