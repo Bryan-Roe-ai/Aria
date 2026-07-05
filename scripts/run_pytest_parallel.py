@@ -20,12 +20,8 @@ TEST_FILE_PATTERNS = ("test_*.py", "*_test.py")
 
 
 def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
-    parser = argparse.ArgumentParser(
-        description="Run pytest in parallel by sharding test files."
-    )
-    parser.add_argument(
-        "paths", nargs="*", help="Test files or directories to run."
-    )
+    parser = argparse.ArgumentParser(description="Run pytest in parallel by sharding test files.")
+    parser.add_argument("paths", nargs="*", help="Test files or directories to run.")
     parser.add_argument(
         "--workers",
         default="auto",
@@ -41,9 +37,7 @@ def parse_args(argv: Sequence[str]) -> tuple[argparse.Namespace, list[str]]:
     return args, pytest_args
 
 
-def normalize_workers(
-    value: str, file_count: int, min_files_per_worker: int
-) -> int:
+def normalize_workers(value: str, file_count: int, min_files_per_worker: int) -> int:
     if file_count <= 1:
         return 1
     if value == "auto":
@@ -86,15 +80,11 @@ def shard_files(files: Sequence[str], worker_count: int) -> list[list[str]]:
     shard_sizes = [0] * worker_count
     weighted_files = sorted(
         files,
-        key=lambda file_path: Path(file_path).stat().st_size
-        if Path(file_path).exists()
-        else 0,
+        key=lambda file_path: Path(file_path).stat().st_size if Path(file_path).exists() else 0,
         reverse=True,
     )
     for file_path in weighted_files:
-        shard_index = min(
-            range(worker_count), key=lambda index: shard_sizes[index]
-        )
+        shard_index = min(range(worker_count), key=lambda index: shard_sizes[index])
         shards[shard_index].append(file_path)
         if Path(file_path).exists():
             shard_sizes[shard_index] += Path(file_path).stat().st_size
@@ -106,14 +96,9 @@ def run_serial(paths: Sequence[str], pytest_args: Sequence[str]) -> int:
     return subprocess.run(command, check=False).returncode
 
 
-def run_parallel(
-    files: Sequence[str], pytest_args: Sequence[str], worker_count: int
-) -> int:
+def run_parallel(files: Sequence[str], pytest_args: Sequence[str], worker_count: int) -> int:
     shards = shard_files(files, worker_count)
-    print(
-        "🧪 builtin parallel pytest fallback enabled "
-        f"({len(shards)} workers across {len(files)} files)"
-    )
+    print(f"🧪 builtin parallel pytest fallback enabled ({len(shards)} workers across {len(files)} files)")
     processes: list[tuple[int, list[str], subprocess.Popen[str]]] = []
     for index, shard in enumerate(shards, start=1):
         command = [sys.executable, "-m", "pytest", *shard, *pytest_args]
@@ -128,10 +113,7 @@ def run_parallel(
     exit_code = 0
     for index, shard, process in processes:
         output, _ = process.communicate()
-        print(
-            f"\n===== pytest shard {index}/{len(shards)} "
-            f"({len(shard)} files) ====="
-        )
+        print(f"\n===== pytest shard {index}/{len(shards)} ({len(shard)} files) =====")
         if output:
             print(output, end="" if output.endswith("\n") else "\n")
         if process.returncode != 0:
@@ -144,20 +126,14 @@ def main(argv: Sequence[str]) -> int:
     files = discover_test_files(args.paths)
     if not files:
         print(
-            "No test files discovered; falling back to pytest with "
-            "the original paths.",
+            "No test files discovered; falling back to pytest with the original paths.",
             file=sys.stderr,
         )
         return run_serial(args.paths or ["tests"], pytest_args)
 
-    worker_count = normalize_workers(
-        args.workers, len(files), args.min_files_per_worker
-    )
+    worker_count = normalize_workers(args.workers, len(files), args.min_files_per_worker)
     if worker_count <= 1:
-        print(
-            "🧪 builtin parallel pytest fallback using serial mode "
-            "(not enough files to shard)"
-        )
+        print("🧪 builtin parallel pytest fallback using serial mode (not enough files to shard)")
         return run_serial(args.paths or ["tests"], pytest_args)
     return run_parallel(files, pytest_args, worker_count)
 

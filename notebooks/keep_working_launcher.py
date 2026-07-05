@@ -74,10 +74,7 @@ def load_config(path=CONFIG_PATH):
 
     data = _read_json(path, None)
     if isinstance(data, dict):
-        return {
-            key: data.get(key, default)
-            for key, default in DEFAULT_SETTINGS.items()
-        }
+        return {key: data.get(key, default) for key, default in DEFAULT_SETTINGS.items()}
     return dict(DEFAULT_SETTINGS)
 
 
@@ -87,10 +84,7 @@ def save_config(settings, path=CONFIG_PATH):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     settings = settings or {}
-    cleaned = {
-        key: settings.get(key, default)
-        for key, default in DEFAULT_SETTINGS.items()
-    }
+    cleaned = {key: settings.get(key, default) for key, default in DEFAULT_SETTINGS.items()}
     path.write_text(json.dumps(cleaned, indent=2), encoding="utf-8")
     return cleaned
 
@@ -131,8 +125,7 @@ def append_db_record(rec: SessionRecord, path=HISTORY_DB):
     init_db(path)
     with sqlite3.connect(str(path)) as conn:
         conn.execute(
-            "INSERT INTO sessions(task_name, start_ts, end_ts, duration_s, "
-            "kind) VALUES (?,?,?,?,?)",
+            "INSERT INTO sessions(task_name, start_ts, end_ts, duration_s, kind) VALUES (?,?,?,?,?)",
             (
                 rec.task_name,
                 rec.start_ts,
@@ -165,10 +158,7 @@ def send_notification(title: str, message: str):
             return
 
         if system == "Darwin":
-            script = (
-                f'display notification "{message}" '
-                f'with title "{title}"'
-            )
+            script = f'display notification "{message}" with title "{title}"'
             mac_notifier = "".join(["osa", "script"])
             subprocess.run([mac_notifier, "-e", script], check=False)
             return
@@ -280,11 +270,7 @@ def run_session(seconds, task_name, kind="work", notify=False, sound=False):
     """Run a blocking session and persist the completed record."""
 
     start = _utc_now()
-    label = (
-        task_name
-        if kind == "work"
-        else kind.replace("_", " ").title()
-    )
+    label = task_name if kind == "work" else kind.replace("_", " ").title()
     print(f"Starting {label}: {task_name} for {seconds} seconds")
     try:
         for remaining in range(seconds, 0, -1):
@@ -372,33 +358,23 @@ def build_parser():
         type=str,
         dest="status_file",
         default=None,
-        help=(
-            "Write a JSON status file with last_session and running state"
-        ),
+        help=("Write a JSON status file with last_session and running state"),
     )
     parser.add_argument(
         "--export-systemd",
         type=str,
         default=None,
-        help=(
-            "Export a systemd user service file to the given path and exit"
-        ),
+        help=("Export a systemd user service file to the given path and exit"),
     )
     parser.add_argument(
         "--install-systemd",
         action="store_true",
-        help=(
-            "Write service to ~/.config/systemd/user/keep-working.service "
-            "and print enable instructions"
-        ),
+        help=("Write service to ~/.config/systemd/user/keep-working.service and print enable instructions"),
     )
     parser.add_argument(
         "--no-config",
         action="store_true",
-        help=(
-            "Ignore notebooks/keep_working_config.json and use built-in "
-            "defaults"
-        ),
+        help=("Ignore notebooks/keep_working_config.json and use built-in defaults"),
     )
     return parser
 
@@ -467,9 +443,7 @@ def handle_systemd_requests(args):
         return True
 
     if args.install_systemd:
-        user_path = Path(
-            "~/.config/systemd/user/keep-working.service"
-        ).expanduser()
+        user_path = Path("~/.config/systemd/user/keep-working.service").expanduser()
         svc_path = export_systemd(
             str(user_path),
             session=session,
@@ -477,10 +451,7 @@ def handle_systemd_requests(args):
             workspace_dir=str(Path.cwd()),
         )
         print("Installed systemd service to", svc_path)
-        print(
-            "Run: systemctl --user daemon-reload && systemctl --user "
-            "enable --now keep-working.service"
-        )
+        print("Run: systemctl --user daemon-reload && systemctl --user enable --now keep-working.service")
         return True
 
     return False
@@ -527,10 +498,7 @@ def run_cycles(args):
             if args.no_breaks:
                 continue
 
-            if (
-                args.cycles_per_long > 0
-                and cycle_count % args.cycles_per_long == 0
-            ):
+            if args.cycles_per_long > 0 and cycle_count % args.cycles_per_long == 0:
                 break_kind = "long_break"
                 break_seconds = args.long
             else:

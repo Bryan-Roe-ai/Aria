@@ -60,8 +60,7 @@ _pennylane_available = qml is not None
 _qiskit_aer_available = False
 if _pennylane_available:
     _qiskit_aer_available = (
-        importlib.util.find_spec("pennylane_qiskit") is not None
-        and importlib.util.find_spec("qiskit_aer") is not None
+        importlib.util.find_spec("pennylane_qiskit") is not None and importlib.util.find_spec("qiskit_aer") is not None
     )
 
 
@@ -162,7 +161,7 @@ class CodeTokenizer:
         while i < len(text):
             matched = False
             for kw in self._keywords:
-                if text[i: i + len(kw)] == kw:
+                if text[i : i + len(kw)] == kw:
                     ids.append(self._tok2id[kw])
                     i += len(kw)
                     matched = True
@@ -239,10 +238,7 @@ class QuantumFeatureMapLayer(nn.Module):
                     weights,
                     wires=range(n_qubits),
                 )
-                return [
-                    qml_mod.expval(qml_mod.PauliZ(i))
-                    for i in range(n_qubits)
-                ]
+                return [qml_mod.expval(qml_mod.PauliZ(i)) for i in range(n_qubits)]
 
             weight_shapes = {"weights": (n_var_layers, n_qubits, 3)}
             self.qlayer = qml_mod.qnn.TorchLayer(_circuit, weight_shapes)
@@ -338,9 +334,7 @@ class QuantumKernelAttention(nn.Module):
         v = v.transpose(1, 2)  # (B, n_heads, T, head_dim)
 
         # Scaled dot-product attention with quantum features
-        scores = (
-            torch.matmul(q_q, k_q.transpose(-2, -1)) / self.scale
-        )  # (B, H, T, T)
+        scores = torch.matmul(q_q, k_q.transpose(-2, -1)) / self.scale  # (B, H, T, T)
 
         # Causal mask: prevent attending to future tokens
         causal = torch.triu(
@@ -488,10 +482,7 @@ class QuantumCodeLLM(nn.Module):
             self._backend_label, self._qdevice = "classical", None
         else:
             if not _pennylane_available:
-                raise RuntimeError(
-                    "A non-classical backend was requested but "
-                    "PennyLane is not installed"
-                )
+                raise RuntimeError("A non-classical backend was requested but PennyLane is not installed")
             assert qml is not None
             self._backend_label = config.backend
             self._qdevice = qml.device(config.backend, wires=config.n_qubits)
@@ -558,9 +549,7 @@ class QuantumCodeLLM(nn.Module):
                 "truncate input_ids before calling forward"
             )
         tok = self.token_emb(input_ids)
-        pos = self.pos_emb(
-            torch.arange(seq_len, device=input_ids.device).unsqueeze(0)
-        )
+        pos = self.pos_emb(torch.arange(seq_len, device=input_ids.device).unsqueeze(0))
         x = self.emb_drop(tok + pos)
 
         for block in self.blocks:
@@ -593,7 +582,7 @@ class QuantumCodeLLM(nn.Module):
         ids = prompt_ids.to(model_device).clone()  # (1, T)
         for _ in range(max_new_tokens):
             # Truncate to max_seq_len
-            ids_cond = ids[:, -self.config.max_seq_len:]
+            ids_cond = ids[:, -self.config.max_seq_len :]
             logits = self.forward(ids_cond)  # (1, T, vocab)
             next_logits = logits[:, -1, :] / temperature  # (1, vocab)
 
@@ -621,9 +610,7 @@ class QuantumCodeLLM(nn.Module):
     def parameter_count(self) -> dict:
         """Return total and trainable parameter counts."""
         total = sum(p.numel() for p in self.parameters())
-        trainable = sum(
-            p.numel() for p in self.parameters() if p.requires_grad
-        )
+        trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
         return {"total": total, "trainable": trainable}
 
 
@@ -635,28 +622,13 @@ _PYTHON_SNIPPETS = [
     "def add(a, b):\n    return a + b\n",
     "def subtract(a, b):\n    return a - b\n",
     "def multiply(x, y):\n    return x * y\n",
-    (
-        "def divide(x, y):\n"
-        "    if y == 0:\n"
-        "        return None\n"
-        "    return x / y\n"
-    ),
+    ("def divide(x, y):\n    if y == 0:\n        return None\n    return x / y\n"),
     "def square(n):\n    return n * n\n",
     "def cube(n):\n    return n * n * n\n",
     "def is_even(n):\n    return n % 2 == 0\n",
     "def is_odd(n):\n    return n % 2 != 0\n",
-    (
-        "def factorial(n):\n"
-        "    if n <= 1:\n"
-        "        return 1\n"
-        "    return n * factorial(n - 1)\n"
-    ),
-    (
-        "def fibonacci(n):\n"
-        "    if n <= 1:\n"
-        "        return n\n"
-        "    return fibonacci(n - 1) + fibonacci(n - 2)\n"
-    ),
+    ("def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n"),
+    ("def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)\n"),
     "def max_value(lst):\n    return max(lst)\n",
     "def min_value(lst):\n    return min(lst)\n",
     "def sum_list(lst):\n    return sum(lst)\n",
@@ -764,7 +736,7 @@ class CodeDataset(Dataset):
         return max(0, len(self.tokens) - self.seq_len - 1)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        chunk = self.tokens[idx: idx + self.seq_len + 1]
+        chunk = self.tokens[idx : idx + self.seq_len + 1]
         # Pad if needed (last chunk)
         while len(chunk) < self.seq_len + 1:
             chunk.append(CodeTokenizer.PAD)
@@ -872,19 +844,12 @@ class QuantumCodeTrainer:
                 if step % self.cfg.log_every == 0:
                     lr_now = self.scheduler.get_last_lr()[0]
                     perp = math.exp(min(loss.item(), 20))
-                    print(
-                        f"  step {step:>5d} | loss {loss.item():.4f} "
-                        f"| ppl {perp:.1f} | lr {lr_now:.2e}"
-                    )
+                    print(f"  step {step:>5d} | loss {loss.item():.4f} | ppl {perp:.1f} | lr {lr_now:.2e}")
 
             avg_loss = epoch_loss / max(1, len(self.loader))
             elapsed = time.time() - t0
             avg_ppl = math.exp(min(avg_loss, 20))
-            print(
-                f"Epoch {epoch}/{self.cfg.n_epochs} — "
-                f"avg loss {avg_loss:.4f} | ppl {avg_ppl:.1f} "
-                f"| {elapsed:.1f}s"
-            )
+            print(f"Epoch {epoch}/{self.cfg.n_epochs} — avg loss {avg_loss:.4f} | ppl {avg_ppl:.1f} | {elapsed:.1f}s")
             history.append(
                 {
                     "epoch": epoch,
@@ -905,9 +870,7 @@ def train(
     model_cfg: dict | None = None,
     train_cfg: dict | None = None,
     extra_snippets: list[str] | None = None,
-) -> tuple[
-    QuantumCodeLLM, CodeTokenizer
-]:
+) -> tuple[QuantumCodeLLM, CodeTokenizer]:
     """Train a QuantumCodeLLM and return (model, tokenizer).
 
     Args:
@@ -931,10 +894,7 @@ def train(
 
     print(f"QuantumCodeLLM ready — backend: {model.backend}")
     params = model.parameter_count()
-    print(
-        f"Parameters: {params['total']:,} total, "
-        f"{params['trainable']:,} trainable"
-    )
+    print(f"Parameters: {params['total']:,} total, {params['trainable']:,} trainable")
     print(f"Vocab size: {tokenizer.vocab_size}")
 
     tcfg = TrainConfig(extra_snippets=extra_snippets, **train_cfg)
@@ -971,9 +931,7 @@ def load_checkpoint(
     checkpoint_path: str | Path,
     map_location: str | torch.device = "cpu",
     backend_override: str | None = None,
-) -> tuple[
-    QuantumCodeLLM, CodeTokenizer, dict[str, Any]
-]:
+) -> tuple[QuantumCodeLLM, CodeTokenizer, dict[str, Any]]:
     """Load a checkpoint created by save_checkpoint.
 
     Also supports legacy payloads where config was serialized as
@@ -985,9 +943,7 @@ def load_checkpoint(
 
     payload = torch.load(path, map_location=map_location, weights_only=False)
     if "model_state" not in payload:
-        raise ValueError(
-            f"Invalid checkpoint payload: missing model_state in {path}"
-        )
+        raise ValueError(f"Invalid checkpoint payload: missing model_state in {path}")
 
     tokenizer = CodeTokenizer.from_dict(payload.get("tokenizer"))
 
@@ -997,9 +953,7 @@ def load_checkpoint(
     elif isinstance(raw_config, dict):
         config = QuantumCodeLLMConfig(**raw_config)
     else:
-        raise ValueError(
-            f"Invalid checkpoint payload: missing valid config in {path}"
-        )
+        raise ValueError(f"Invalid checkpoint payload: missing valid config in {path}")
 
     config.vocab_size = tokenizer.vocab_size
     if backend_override is not None:
@@ -1047,9 +1001,7 @@ def generate(
     model.eval()
     model_device = next(model.parameters()).device
     requested_device = torch.device(device)
-    input_device = (
-        model_device if requested_device != model_device else requested_device
-    )
+    input_device = model_device if requested_device != model_device else requested_device
     ids = tokenizer.encode(prompt, add_bos=True, add_eos=False)
     input_tensor = torch.tensor([ids], dtype=torch.long, device=input_device)
     with torch.no_grad():
@@ -1061,7 +1013,7 @@ def generate(
             eos_id=tokenizer.EOS,
         )
     # Strip the prompt prefix, decode only new tokens
-    new_ids = out_ids[0, len(ids):].tolist()
+    new_ids = out_ids[0, len(ids) :].tolist()
     return prompt + tokenizer.decode(new_ids)
 
 
