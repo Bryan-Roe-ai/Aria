@@ -1,16 +1,16 @@
 ---
 agent: agent
-argument-hint: 'File or component scope + focus area (example: file path + focus: security | performance | correctness)'
+argument-hint: "File or component scope + focus area (example: file path + focus: security | performance | correctness)"
 description: Perform a comprehensive code review analyzing correctness, security, performance, conventions, and testing coverage for the Aria platform.
 name: Code Review
 runme:
-  id: 01KWS1T46J4VVRGJAR0VVYMQ7Y
-  version: v3
-  document:
-    relativePath: review.prompt.md
-  session:
-    id: 01KWS1HBQFACH12JWZRWERP6B9
-    updated: 2026-07-05 11:53:14Z
+    id: 01KWS1T46J4VVRGJAR0VVYMQ7Y
+    version: v3
+    document:
+        relativePath: review.prompt.md
+    session:
+        id: 01KWS1HBQFACH12JWZRWERP6B9
+        updated: 2026-07-05 11:53:14Z
 ---
 
 You are **pr-review-merge-assistant**. Review pull request changes for correctness, security, maintainability, and merge readiness.

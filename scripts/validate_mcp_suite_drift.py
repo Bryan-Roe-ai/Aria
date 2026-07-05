@@ -7,11 +7,7 @@ from typing import Any
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description=(
-            "Validate drift between MCP suite artifacts (normal vs strict)."
-        )
-    )
+    parser = argparse.ArgumentParser(description=("Validate drift between MCP suite artifacts (normal vs strict)."))
     parser.add_argument(
         "--base",
         default="data_out/mcp_validation_suite.json",
@@ -50,10 +46,7 @@ def compare(
     strict_s = get_summary(strict)
 
     if base_s.get("env_strict") is True:
-        warnings.append(
-            "Base artifact has env_strict=true "
-            "(expected false or absent)."
-        )
+        warnings.append("Base artifact has env_strict=true (expected false or absent).")
 
     if strict_s.get("env_strict") is not True:
         errors.append("Strict artifact missing env_strict=true in summary.")
@@ -62,21 +55,11 @@ def compare(
     # strict and non-strict runs.
     for key in ("config_ok", "runtime_ok", "all_ok"):
         if base_s.get(key) != strict_s.get(key):
-            errors.append(
-                "Summary drift detected for "
-                f"'{key}': base={base_s.get(key)} "
-                f"strict={strict_s.get(key)}"
-            )
+            errors.append(f"Summary drift detected for '{key}': base={base_s.get(key)} strict={strict_s.get(key)}")
 
     # sanity check: strict should remain explicitly strict
-    if (
-        strict_s.get("all_ok") is True
-        and strict_s.get("config_ok") is not True
-    ):
-        errors.append(
-            "Inconsistent strict summary: "
-            "all_ok=true but config_ok!=true"
-        )
+    if strict_s.get("all_ok") is True and strict_s.get("config_ok") is not True:
+        errors.append("Inconsistent strict summary: all_ok=true but config_ok!=true")
 
     return errors, warnings
 
