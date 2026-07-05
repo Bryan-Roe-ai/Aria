@@ -153,6 +153,17 @@ def test_main_ok_minimal_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -
     assert main() == 0
 
 
+def test_main_ok_without_local_settings_json(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _write_minimal_repo(tmp_path)
+    (tmp_path / "local.settings.json").unlink()
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(os, "environ", os.environ.copy())
+    monkeypatch.setattr("sys.argv", ["dab_verify.py", "--repo-root", str(tmp_path)])
+
+    assert main() == 0
+
+
 def test_main_fails_when_strict_and_placeholders(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _write_minimal_repo(tmp_path)
 
