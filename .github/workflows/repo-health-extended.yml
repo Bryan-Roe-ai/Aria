@@ -1,0 +1,58 @@
+name: Extended Repository Health
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - repo-cleanup-automation
+
+jobs:
+  extended-health:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install analysis tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install vulture detect-secrets
+
+      - name: Run repository validation
+        run: |
+          python tools/repo_cleanup/validate_structure.py
+
+      - name: Run autofix cleanup
+        run: |
+          python tools/repo_cleanup/autofix_cleanup.py
+
+      - name: Detect potential dead code
+        run: |
+          python tools/repo_cleanup/detect_dead_code.py
+
+      - name: Run Vulture dead code analysis
+        run: |
+          vulture . --min-confidence 80 || true
+
+      - name: Run secret scan
+        run: |
+          detect-secrets scan > .secrets.baseline || true
+
+      - name: Generate repository inventory
+        run: |
+          python tools/repo_cleanup/generate_repo_inventory.py
+
+      - name: Upload repository reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: extended-repo-health
+          path: |
+            docs/reports/
+            .secrets.baseline
