@@ -121,8 +121,8 @@ Buffer slice(Buffer buf, int offset = 0, int length = -1) {
 void shift(Buffer buf, int offset, int start = 0, int length = -1) {
   if (length < 0)
     length = buf->length - start;
-  if (start < 0 || start + length > buf->length || start + length < start ||
-      length == 0 || offset == 0 || offset == INT_MIN)
+  if (start < 0 || length < 0 || length > buf->length - start || length == 0 ||
+      offset == 0 || offset == INT_MIN)
     return;
   if (offset <= -length || offset >= length) {
     fill(buf, 0);
