@@ -613,10 +613,10 @@ def save_conversation_json(hist_state: list[dict], session_name: str = "session"
     conv_root = os.path.realpath(CONV_DIR)
     filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.json"))
     if os.path.commonpath([conv_root, filename]) != conv_root:
-        raise ValueError(f"Invalid session name: {session_name!r}")
+        raise ValueError("Invalid session name")
     temp_filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.json.tmp"))
     if os.path.commonpath([conv_root, temp_filename]) != conv_root:
-        raise ValueError(f"Invalid session name: {session_name!r}")
+        raise ValueError("Invalid session name")
     latest_temp = LATEST_PATH + ".tmp"
     try:
         with _conv_lock():
@@ -649,10 +649,10 @@ def save_conversation_markdown(hist_state: list[dict], session_name: str = "sess
     conv_root = os.path.realpath(CONV_DIR)
     filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.md"))
     if os.path.commonpath([conv_root, filename]) != conv_root:
-        raise ValueError(f"Invalid session name: {session_name!r}")
+        raise ValueError("Invalid session name")
     temp_filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.md.tmp"))
     if os.path.commonpath([conv_root, temp_filename]) != conv_root:
-        raise ValueError(f"Invalid session name: {session_name!r}")
+        raise ValueError("Invalid session name")
     try:
         with _conv_lock():
             with open(temp_filename, "w", encoding="utf-8") as f:
@@ -736,10 +736,10 @@ def generate_html_export(hist_state: list[dict], session_name: str = "session") 
     conv_root = os.path.realpath(CONV_DIR)
     filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.html"))
     if os.path.commonpath([conv_root, filename]) != conv_root:
-        raise ValueError(f"Invalid session name: {session_name!r}")
+        raise ValueError("Invalid session name")
     temp_filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.html.tmp"))
     if os.path.commonpath([conv_root, temp_filename]) != conv_root:
-        raise ValueError(f"Invalid session name: {session_name!r}")
+        raise ValueError("Invalid session name")
     parts = [
         "<!doctype html>",
         "<html><head><meta charset='utf-8'><title>Conversation</title>",
