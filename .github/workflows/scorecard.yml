@@ -1,29 +1,32 @@
 name: Scorecard supply-chain security
 
 on:
-  # For Branch-Protection check. Only the default branch is supported:
+  # For the Branch-Protection check. Only the default branch is supported:
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
   branch_protection_rule:
 
-  # Keep Maintained check updated periodically:
+  # Keep the Maintained check updated periodically:
   # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
   schedule:
     - cron: "33 13 * * 0"
 
-  # Run on default branch updates
+  # Run on updates to the current default branch (currently main).
   push:
     branches: ["main"]
 
-  # Optional: allow maintainers to run manually
+  # Allow maintainers to run manually.
   workflow_dispatch:
 
-# Default to least privilege
+# Default to least privilege.
 permissions: read-all
 
-# Prevent overlapping runs on same ref; cancel stale in-progress run
+# Prevent overlapping runs on the same ref; cancel stale in-progress runs.
 concurrency:
   group: scorecard-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  RESULTS_FILE: ${{ github.workspace }}/results.sarif
 
 jobs:
   analysis:
@@ -31,30 +34,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    # publish_results works only from default branch; this also avoids running
-    # where results cannot be published meaningfully.
+    # publish_results works only from the default branch.
     if: github.ref_name == github.event.repository.default_branch
 
     permissions:
-      # Upload SARIF to code-scanning
+      # Upload SARIF to code scanning.
       security-events: write
-      # Publish results / badge support
+      # Publish results / badge support.
       id-token: write
-      # Uncomment for private repos if needed by Scorecard checks:
-      # contents: read
-      # actions: read
+      # Read repository metadata/content for checks as needed.
+      contents: read
+      actions: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+          # Scorecard checks may inspect history and branch settings context.
           fetch-depth: 0
 
       - name: Run Scorecard analysis
         uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
         with:
-          results_file: results.sarif
+          results_file: ${{ env.RESULTS_FILE }}
           results_format: sarif
           publish_results: true
           # Optional for some checks/private repos:
@@ -65,14 +68,11 @@ jobs:
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: scorecard-sarif
-          path: results.sarif
+          path: ${{ env.RESULTS_FILE }}
           retention-days: 5
           if-no-files-found: error
 
-      - name: Upload to code-scanning
-        # Pin this to a full commit SHA after selecting the desired v3 release SHA.
-        # Example format:
-        # uses: github/codeql-action/upload-sarif@<FULL_LENGTH_COMMIT_SHA> # v3.x.y
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload to code scanning
+        uses: github/codeql-action/upload-sarif@<FULL_LENGTH_COMMIT_SHA> # v3.x.y
         with:
-          sarif_file: results.sarif
+          sarif_file: ${{ env.RESULTS_FILE }}
