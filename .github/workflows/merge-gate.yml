@@ -50,6 +50,7 @@ env:
   # Centralised pins so all jobs stay in sync.
   CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
   DEPENDENCY_REVIEW_SHA: 2031cfc080254a8a887f58cffee85186f0e49e48  # v4.9.0
+  GITHUB_SCRIPT_SHA: 60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -243,11 +244,94 @@ jobs:
         uses: ./.github/actions/run-setup-verify
 
   # ---------------------------------------------------------------------------
+  # Gate 6 — Wait for GitHub's automatic NuGet dependency submission job
+  # ---------------------------------------------------------------------------
+  dependency-submission:
+    name: Dependency Submission
+    if: github.event.pull_request.draft != true && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      checks: read
+      contents: read
+    steps:
+      - name: Wait for submit-nuget check
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CHECK_NAME: submit-nuget
+          MAX_ATTEMPTS: '30'
+          SLEEP_SECONDS: '10'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const core = require('@actions/core');
+            const { setTimeout: sleep } = require('node:timers/promises');
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const ref = process.env.HEAD_SHA;
+            const checkName = process.env.CHECK_NAME;
+            const maxAttempts = Number(process.env.MAX_ATTEMPTS || '30');
+            const sleepSeconds = Number(process.env.SLEEP_SECONDS || '10');
+
+            function pickLatestRun(checkRuns) {
+              return [...checkRuns]
+                .filter((run) => run.name === checkName)
+                .sort((left, right) => {
+                  const leftTime = Date.parse(left.started_at || left.completed_at || 0);
+                  const rightTime = Date.parse(right.started_at || right.completed_at || 0);
+                  return rightTime - leftTime || right.id - left.id;
+                })[0];
+            }
+
+            for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+              const checkRuns = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref,
+                per_page: 100,
+              });
+              const latestRun = pickLatestRun(checkRuns);
+
+              if (!latestRun) {
+                core.info(
+                  `Attempt ${attempt}/${maxAttempts}: check '${checkName}' not visible yet for ${ref}; waiting ${sleepSeconds}s.`,
+                );
+                await sleep(sleepSeconds * 1000);
+                continue;
+              }
+
+              core.info(
+                `Attempt ${attempt}/${maxAttempts}: '${checkName}' status=${latestRun.status} conclusion=${latestRun.conclusion ?? 'n/a'} (${latestRun.details_url}).`,
+              );
+
+              if (latestRun.status !== 'completed') {
+                await sleep(sleepSeconds * 1000);
+                continue;
+              }
+
+              if (['success', 'neutral', 'skipped'].includes(latestRun.conclusion)) {
+                core.info(`Dependency submission check '${checkName}' completed successfully.`);
+                return;
+              }
+
+              core.setFailed(
+                `Dependency submission check '${checkName}' concluded with '${latestRun.conclusion}'. See ${latestRun.details_url}.`,
+              );
+              return;
+            }
+
+            core.setFailed(
+              `Timed out waiting for dependency submission check '${checkName}' on ${ref}. Merge Gate must not pass before that check completes.`,
+            );
+
+  # ---------------------------------------------------------------------------
   # Fan-in — All gates must pass.  This is the single required status check.
   # ---------------------------------------------------------------------------
   gates-passed:
     name: All Gates Passed
-    needs: [unit-tests, ai-project-tests, pr-validation, security, contract-gate, setup-guardrails]
+    needs: [unit-tests, ai-project-tests, pr-validation, security, contract-gate, setup-guardrails, dependency-submission]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -262,6 +346,7 @@ jobs:
           SECURITY: ${{ needs.security.result }}
           CONTRACT_GATE: ${{ needs.contract-gate.result }}
           SETUP_GUARDRAILS: ${{ needs.setup-guardrails.result }}
+          DEPENDENCY_SUBMISSION: ${{ needs.dependency-submission.result }}
         run: |
           set -euo pipefail
 
@@ -271,8 +356,8 @@ jobs:
 
           # Map gate display names to their result values.
           # Using parallel arrays keeps the order deterministic.
-          GATE_NAMES=("Unit Tests" "AI Project Tests" "PR Validation" "Security Review" "Contract Gate" "Setup Guardrails")
-          GATE_RESULTS=("${UNIT_TESTS}" "${AI_PROJECT_TESTS}" "${PR_VALIDATION}" "${SECURITY}" "${CONTRACT_GATE}" "${SETUP_GUARDRAILS}")
+          GATE_NAMES=("Unit Tests" "AI Project Tests" "PR Validation" "Security Review" "Contract Gate" "Setup Guardrails" "Dependency Submission")
+          GATE_RESULTS=("${UNIT_TESTS}" "${AI_PROJECT_TESTS}" "${PR_VALIDATION}" "${SECURITY}" "${CONTRACT_GATE}" "${SETUP_GUARDRAILS}" "${DEPENDENCY_SUBMISSION}")
 
           status_emoji() {
             case "$1" in

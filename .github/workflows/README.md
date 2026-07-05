@@ -33,7 +33,7 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 
 #### `merge-gate.yml` — Canonical PR validation gate
 - **Triggers:** pull requests to `main`, merge queue, manual dispatch
-- **Purpose:** single branch-protection check (`Merge Gate / All Gates Passed`) with fan-in across unit tests, PR validation, security review, integration contract checks, and setup guardrails
+- **Purpose:** single branch-protection check (`Merge Gate / All Gates Passed`) with fan-in across unit tests, PR validation, security review, integration contract checks, setup guardrails, and automatic dependency submission completion
 - **Duration:** ~10–20 minutes
 - **Owner:** Platform team
 
@@ -130,6 +130,7 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 - **Single required status check:** `Merge Gate / All Gates Passed`
 - **Canonical PR validation workflow:** `.github/workflows/merge-gate.yml`
 - **Guardrail gate in merge path:** `setup-guardrails` (runs `./.github/actions/run-setup-verify`)
+- **Dependency graph guard in merge path:** `dependency-submission` waits for GitHub's automatic `submit-nuget` check on PR heads before the fan-in gate can pass
 - **Support-only lanes (not required for merge):** `ci.yml`, `pr-tests.yml`, and `ci-pipeline.yml`
 - **Workflow hygiene checks remain active:** `workflow-validation.yml` and `actionlint.yml` for workflow/config changes
 
