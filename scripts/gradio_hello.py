@@ -545,8 +545,8 @@ def save_conversation_json(hist_state: list[dict[str, Any]], session_name: str =
     filename = candidate.resolve()
     try:
         filename.relative_to(base_dir)
-    except ValueError:
-        raise ValueError("Invalid session path")
+    except ValueError as err:
+        raise ValueError("Invalid session path") from err
     with filename.open("w", encoding="utf-8") as f:
         json.dump(hist_state, f, ensure_ascii=False, indent=2)
     with LATEST_PATH.open("w", encoding="utf-8") as f:

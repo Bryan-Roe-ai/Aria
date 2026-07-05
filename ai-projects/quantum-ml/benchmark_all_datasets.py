@@ -28,20 +28,21 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import torch
+from sklearn.decomposition import PCA
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from torch.utils.data import DataLoader, TensorDataset
 
 # Add src to path
 src_path = Path(__file__).parent / "src"
 sys.path.insert(0, str(src_path))
 
-import matplotlib.pyplot as plt
-import torch
-from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 from src.hybrid_qnn import HybridQNN, QuantumClassicalTrainer
-from torch.utils.data import DataLoader, TensorDataset
 
 # Dataset configurations
 DATASETS = {
@@ -226,7 +227,6 @@ DATASETS = {
 
 def load_dataset(dataset_name):
     """Load a dataset by name with dataset-specific handling"""
-    from sklearn.impute import SimpleImputer
 
     dataset_config = DATASETS[dataset_name]
     dataset_path = Path(__file__).parent.parent / "datasets" / "quantum" / dataset_config["file"]
@@ -343,6 +343,7 @@ def load_dataset(dataset_name):
     X = X.values
 
     # Convert labels to binary
+    y = np.asarray(y)
     unique_labels = np.unique(y)
     if len(unique_labels) > 2 or y.dtype == object:
         if y.dtype == object:
