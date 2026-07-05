@@ -1,18 +1,18 @@
 from pathlib import Path
 
-ROOT = Path('.')
+ROOT = Path(".")
 
 FORBIDDEN_DIRS = [
-    '__pycache__',
-    '.venv',
-    '.venv-linux',
-    'logs',
+    "__pycache__",
+    ".venv",
+    ".venv-linux",
+    "logs",
 ]
 
 FORBIDDEN_PATTERNS = [
-    '*.pyc',
-    'coverage*',
-    'tmp*',
+    "*.pyc",
+    "coverage*",
+    "tmp*",
 ]
 
 
@@ -35,28 +35,28 @@ def root_clutter_score():
     return len(entries)
 
 
-if __name__ == '__main__':
-    print('Repository structure validation')
-    print('-' * 40)
+if __name__ == "__main__":
+    print("Repository structure validation")
+    print("-" * 40)
 
     bad_dirs = scan_forbidden_dirs()
     bad_patterns = scan_patterns()
 
     if bad_dirs:
-        print('\nForbidden directories detected:')
+        print("\nForbidden directories detected:")
         for item in bad_dirs:
-            print(f' - {item}')
+            print(f" - {item}")
 
     if bad_patterns:
-        print('\nForbidden file patterns detected:')
+        print("\nForbidden file patterns detected:")
         for item in bad_patterns:
-            print(f' - {item}')
+            print(f" - {item}")
 
     clutter = root_clutter_score()
-    print(f'\nRoot entry count: {clutter}')
+    print(f"\nRoot entry count: {clutter}")
 
     if clutter > 30:
-        print('WARNING: Root directory is heavily cluttered.')
+        print("WARNING: Root directory is heavily cluttered.")
 
     if not bad_dirs and not bad_patterns:
-        print('\nRepository structure looks clean.')
+        print("\nRepository structure looks clean.")
