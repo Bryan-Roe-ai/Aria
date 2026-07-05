@@ -30,3 +30,15 @@ def test_scorecard_workflow_uses_pinned_upload_sarif_action() -> None:
     assert separator == "@"
     assert upload_step["uses"] == f"github/codeql-action/upload-sarif@{expected_sha}"
     assert "REPLACE_WITH_FULL_40_CHAR_SHA" not in upload_step["uses"]
+
+
+def test_scorecard_results_file_is_relative_path() -> None:
+    """RESULTS_FILE must not include github.workspace to avoid double-path in Docker actions."""
+    workflow = _load_workflow("scorecard.yml")
+
+    results_file = workflow.get("env", {}).get("RESULTS_FILE", "")
+    assert "github.workspace" not in results_file, (
+        "RESULTS_FILE must be a plain relative path (e.g. 'results.sarif'), "
+        "not '${{ github.workspace }}/results.sarif' — the latter creates a "
+        "double-path inside the Docker-based Scorecard action container."
+    )

@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RESULTS_FILE: ${{ github.workspace }}/results.sarif
+  RESULTS_FILE: results.sarif
 
 jobs:
   analysis:
