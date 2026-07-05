@@ -609,7 +609,7 @@ def _conv_lock():
 def save_conversation_json(hist_state: list[dict], session_name: str = "session") -> str:
     ensure_conv_dir()
     ts = int(time.time())
-    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", (session_name or "session").strip()).strip("._-") or "session"
+    safe_name = "session"
     conv_root = os.path.realpath(CONV_DIR)
     filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.json"))
     if os.path.commonpath([conv_root, filename]) != conv_root:
