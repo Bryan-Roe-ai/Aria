@@ -35,13 +35,13 @@ This evaluation project enables you to:
 
 Before you begin, ensure you have the following installed and configured:
 
-| Requirement | Description |
-|-------------|-------------|
-| **Python 3.10+** | Python interpreter |
-| **VS Code** | Visual Studio Code with the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python) |
-| **Foundry Toolkit** | [Foundry Toolkit for VS Code](https://marketplace.visualstudio.com/items?itemName=ms-windows-ai-studio.windows-ai-studio) |
-| **Azure CLI** | Installed and authenticated via `az login` |
-| **Azure subscription** | With access to Azure AI services and Microsoft Foundry |
+| Requirement            | Description                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Python 3.10+**       | Python interpreter                                                                                                        |
+| **VS Code**            | Visual Studio Code with the [Python extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python)      |
+| **Foundry Toolkit**    | [Foundry Toolkit for VS Code](https://marketplace.visualstudio.com/items?itemName=ms-windows-ai-studio.windows-ai-studio) |
+| **Azure CLI**          | Installed and authenticated via `az login`                                                                                |
+| **Azure subscription** | With access to Azure AI services and Microsoft Foundry                                                                    |
 
 ---
 
@@ -50,14 +50,14 @@ Before you begin, ensure you have the following installed and configured:
 ### Step 1: Set Up Python Environment
 
 1. Use the one-line command below to create Python environment and install dependencies.
-   - Windows
-     ```powershell
-     python -m venv .venv; .\.venv\Scripts\activate; pip install uv; uv pip install -r requirements.txt --prerelease=allow
-     ```
-   - MacOS / Linux
-     ```bash
-     python3 -m venv .venv && source .venv/bin/activate && pip install uv && uv pip install -r requirements.txt --prerelease=allow
-     ```
+    - Windows
+        ```powershell
+        python -m venv .venv; .\.venv\Scripts\activate; pip install uv; uv pip install -r requirements.txt --prerelease=allow
+        ```
+    - MacOS / Linux
+        ```bash
+        python3 -m venv .venv && source .venv/bin/activate && pip install uv && uv pip install -r requirements.txt --prerelease=allow
+        ```
 2. Select the Python environment in VS Code: Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`), run `Python: Select Interpreter`, and select the new created environment.
 
 ### Step 2: Configure Environment Variables
@@ -95,11 +95,11 @@ agent-eval/
 
 The `.env` file contains critical configuration for connecting to Azure services:
 
-| Variable | Description |
-|----------|-------------|
-| `FOUNDRY_PROJECT_ENDPOINT` | Microsoft Foundry project endpoint where your agent is hosted |
-| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint for the judge model |
-| `AZURE_OPENAI_DEPLOYMENT_NAME` | Azure OpenAI deployment name for the judge model |
+| Variable                       | Description                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `FOUNDRY_PROJECT_ENDPOINT`     | Microsoft Foundry project endpoint where your agent is hosted |
+| `AZURE_OPENAI_ENDPOINT`        | Azure OpenAI endpoint for the judge model                     |
+| `AZURE_OPENAI_DEPLOYMENT_NAME` | Azure OpenAI deployment name for the judge model              |
 
 ### Pytest Configuration
 
@@ -154,11 +154,11 @@ The `data.jsonl` file contains your test cases in JSON Lines format. Each line r
 {"id": "query2", "query": "Book a meeting for tomorrow", "ground_truth": "Meeting scheduled"}
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `id` | Yes | Unique identifier for the test case |
-| `query` | Yes | The input query to send to your agent |
-| `ground_truth` | No | Expected response (required for some built-in evaluators) |
+| Field          | Required | Description                                               |
+| -------------- | -------- | --------------------------------------------------------- |
+| `id`           | Yes      | Unique identifier for the test case                       |
+| `query`        | Yes      | The input query to send to your agent                     |
+| `ground_truth` | No       | Expected response (required for some built-in evaluators) |
 
 ### Generate Test Cases with GitHub Copilot
 
@@ -190,8 +190,8 @@ custom_prompt = """
 You are evaluating whether the agent's response is professional and courteous.
 Score from 1 (unprofessional) to 5 (highly professional).
 
-Query: 
-Response: 
+Query:
+Response:
 
 Output JSON only: {"result": <score>, "reason": "<explanation>"}
 """
@@ -255,9 +255,13 @@ After running evaluations, results are saved to the `test-results/` folder:
 
 ```json
 {
-  "rows": [
-    {"inputs.query": "...", "outputs.coherence": 4, "outputs.relevance": 5}
-  ]
+    "rows": [
+        {
+            "inputs.query": "...",
+            "outputs.coherence": 4,
+            "outputs.relevance": 5
+        }
+    ]
 }
 ```
 
@@ -294,13 +298,13 @@ Upload your local evaluation results to Microsoft Foundry for centralized tracki
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| **Tests not discovered** | Ensure `pytest` is configured in VS Code settings and the Python environment is activated |
-| **Authentication errors** | Run `az login` to authenticate with Azure CLI |
-| **Model deployment not found** | Verify `AZURE_OPENAI_DEPLOYMENT_NAME` matches your deployment in Azure Portal |
-| **Agent not found** | Confirm the agent exists in your Foundry project at `FOUNDRY_PROJECT_ENDPOINT` |
-| **Timeout errors** | Increase timeout in pytest.ini or reduce parallel workers with `-n 2` |
+| Issue                          | Solution                                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------------- |
+| **Tests not discovered**       | Ensure `pytest` is configured in VS Code settings and the Python environment is activated |
+| **Authentication errors**      | Run `az login` to authenticate with Azure CLI                                             |
+| **Model deployment not found** | Verify `AZURE_OPENAI_DEPLOYMENT_NAME` matches your deployment in Azure Portal             |
+| **Agent not found**            | Confirm the agent exists in your Foundry project at `FOUNDRY_PROJECT_ENDPOINT`            |
+| **Timeout errors**             | Increase timeout in pytest.ini or reduce parallel workers with `-n 2`                     |
 
 ### Debugging Tips
 

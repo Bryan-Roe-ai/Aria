@@ -40,9 +40,7 @@ def _resolved_env(name: str) -> str:
     memory capability.
     """
     value = os.environ.get(name, "").strip()
-    if (value.startswith("${") and value.endswith("}")) or (
-        value.startswith("{{") and value.endswith("}}")
-    ):
+    if (value.startswith("${") and value.endswith("}")) or (value.startswith("{{") and value.endswith("}}")):
         return ""
     return value
 
