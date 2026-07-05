@@ -216,15 +216,15 @@ def export_systemd(
     short=None,
     long=None,
     cycles_per_long=None,
-    notify=False,
-    sound=False,
-    repeat=False,
+    notify=None,
+    sound=None,
+    repeat=None,
 ):
     """Export a systemd user service file to ``path``.
 
-    Settings may be provided either as a ``session`` dict or as individual
-    keyword arguments (``task``, ``work``, ``short``, ``long``,
-    ``cycles_per_long``, ``notify``, ``sound``, ``repeat``).  Keyword
+    Session parameters can be passed either as a ``session`` mapping or as
+    individual keyword arguments (``task``, ``work``, ``short``, ``long``,
+    ``cycles_per_long``, ``notify``, ``sound``, ``repeat``).  Explicit keyword
     arguments take precedence over values in ``session``.
     """
 
@@ -232,7 +232,7 @@ def export_systemd(
     p.parent.mkdir(parents=True, exist_ok=True)
     session = dict(session) if session else {}
 
-    # Merge explicit keyword arguments into session, preferring kwargs
+    # Individual kwargs override session dict values when explicitly supplied.
     if task is not None:
         session["task"] = task
     if work is not None:
