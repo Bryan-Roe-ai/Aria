@@ -52,13 +52,12 @@ Aria/
 
 ### Automatic Deployment
 
-GitHub Pages automatically deploys when changes are pushed:
+GitHub Pages automatically deploys from the repository's configured Pages source:
 
-1. **Trigger**: Push to `main` with changes in `docs/**`, `aria_web/**`, or `generated_sites/**`
-2. **Sync + Validate**: Generated site bundles are strict-validated and mirrored into `docs/generated/` (stale generated files are removed)
-3. **Build**: GitHub Actions runs Jekyll build on `docs/` directory
-4. **Deploy**: Built site is published to GitHub Pages
-5. **URL**: https://bryan-roe.github.io/Aria
+1. **Trigger**: Push to `main` with updated published content in `docs/**`
+2. **Build**: GitHub Pages publishes the `docs/` directory
+3. **Deploy**: The published site is served at GitHub Pages
+4. **URL**: https://bryan-roe.github.io/Aria
 
 ### Deployment Workflow (.github/workflows/pages.yml)
 
@@ -66,14 +65,6 @@ GitHub Pages automatically deploys when changes are pushed:
 name: Deploy to GitHub Pages
 
 on:
-    push:
-        branches: [main]
-        paths:
-            - "docs/**"
-            - "aria_web/**"
-            - "generated_sites/**"
-            - "scripts/validate_site_bundles.py"
-            - ".github/workflows/pages.yml"
     workflow_dispatch:
 
 permissions:
@@ -89,6 +80,8 @@ jobs:
               uses: actions/checkout@v4
             - name: Setup Pages
               uses: actions/configure-pages@v4
+            - name: Validate generated site bundles
+              run: python scripts/validate_site_bundles.py --strict-metadata
             - name: Build with Jekyll
               uses: actions/jekyll-build-pages@v1
               with:
@@ -107,6 +100,11 @@ jobs:
             - name: Deploy to GitHub Pages
               uses: actions/deploy-pages@v4
 ```
+
+> **Why manual-only?** The repository's Pages settings already publish the
+> `docs/` folder from `main`. Leaving a `push` trigger in `pages.yml` creates a
+> second `deploy-pages` run for the same commit, and the duplicate deployments
+> can cause the built-in Pages `deploy` job to fail.
 
 ### Manual Deployment
 

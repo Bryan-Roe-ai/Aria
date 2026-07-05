@@ -42,11 +42,11 @@ docs/                          # GitHub Pages root
 
 ### 2. GitHub Actions Workflow
 
-Created `.github/workflows/pages.yml` for automatic deployment:
+Created `.github/workflows/pages.yml` for manual validation/redeployment:
 
-- **Triggers**: Push to `main` or `copilot/enable-github-pages-for-repo` branch
+- **Triggers**: Manual (`workflow_dispatch`) only
 - **Build**: Uses Jekyll to build from `docs/`
-- **Deploy**: Automatic deployment to GitHub Pages
+- **Deploy**: Manual redeployment to GitHub Pages when needed
 - **Permissions**: Configured for GitHub Pages deployment
 
 ### 3. Demo Mode Implementation
@@ -118,6 +118,10 @@ Under "Build and deployment":
 - GitHub will automatically trigger the first deployment
 - Check the **Actions** tab to monitor progress
 - First deployment typically takes 1-2 minutes
+
+> **Important:** Do not also wire `.github/workflows/pages.yml` to run on push.
+> With Pages already publishing `main` / `docs`, an automatic Actions deploy
+> would create a duplicate `deploy-pages` job for the same commit.
 
 ### Step 4: Verify Deployment
 
