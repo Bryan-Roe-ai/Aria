@@ -23,6 +23,8 @@ from chat_providers import (
     LMStudioProvider,
     LocalEchoProvider,
     OllamaProvider,
+    _provider_detection_cache,
+    _provider_detection_cache_lock,
     _check_ollama_available,
     _ollama_availability_cache,
     _ollama_cache_lock,
@@ -46,6 +48,12 @@ def _reset_ollama_cache() -> None:
         _ollama_availability_cache["available"] = None
         _ollama_availability_cache["checked_at"] = 0.0
         _ollama_availability_cache["url"] = None
+
+
+def _reset_detect_provider_cache() -> None:
+    """Reset detect_provider result cache between tests."""
+    with _provider_detection_cache_lock:
+        _provider_detection_cache.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -361,6 +369,7 @@ def test_detect_provider_explicit_invalid_provider_raises_value_error():
 def test_detect_provider_auto_picks_ollama_when_reachable(monkeypatch):
     """Auto-detect selects Ollama when it is reachable and LMStudio is not."""
     _reset_ollama_cache()
+    _reset_detect_provider_cache()
     monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.setenv("OLLAMA_MODEL", "llama3.2")
@@ -387,6 +396,7 @@ def test_detect_provider_auto_picks_ollama_when_reachable(monkeypatch):
 def test_detect_provider_auto_prefers_lmstudio_over_ollama(monkeypatch):
     """LMStudio takes priority over Ollama in auto-detection."""
     _reset_ollama_cache()
+    _reset_detect_provider_cache()
     monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
 
@@ -412,6 +422,7 @@ def test_detect_provider_auto_prefers_lmstudio_over_ollama(monkeypatch):
 def test_detect_provider_ollama_not_picked_when_unreachable(monkeypatch):
     """Auto-detect falls through to local echo when Ollama is unreachable."""
     _reset_ollama_cache()
+    _reset_detect_provider_cache()
     monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
 
@@ -432,6 +443,7 @@ def test_detect_provider_ollama_not_picked_when_unreachable(monkeypatch):
 @pytest.mark.unit
 def test_detect_provider_explicit_local_prefers_lmstudio(monkeypatch):
     """Explicit local uses LMStudio when available."""
+    _reset_detect_provider_cache()
     monkeypatch.setenv("LMSTUDIO_MODEL", "phi-3-mini")
 
     with (
@@ -450,6 +462,7 @@ def test_detect_provider_explicit_local_prefers_lmstudio(monkeypatch):
 @pytest.mark.unit
 def test_detect_provider_explicit_local_uses_ollama_when_lmstudio_unavailable(monkeypatch):
     """Explicit local falls back to Ollama when LMStudio is unavailable."""
+    _reset_detect_provider_cache()
     monkeypatch.setenv("OLLAMA_MODEL", "mistral")
 
     with (
@@ -468,6 +481,7 @@ def test_detect_provider_explicit_local_uses_ollama_when_lmstudio_unavailable(mo
 @pytest.mark.unit
 def test_detect_provider_explicit_local_falls_back_to_echo_when_no_local_runtime():
     """Explicit local degrades to LocalEchoProvider if LMStudio/Ollama are unavailable."""
+    _reset_detect_provider_cache()
     with (
         patch("chat_providers._check_lm_studio_available", return_value=False),
         patch("chat_providers._check_ollama_available", return_value=False),
@@ -476,3 +490,60 @@ def test_detect_provider_explicit_local_falls_back_to_echo_when_no_local_runtime
 
     assert choice.name == "local"
     assert isinstance(provider, LocalEchoProvider)
+
+
+@pytest.mark.unit
+def test_detect_provider_auto_uses_result_cache(monkeypatch):
+    """Second auto detection call should use detect_provider result cache."""
+    _reset_detect_provider_cache()
+    monkeypatch.setenv("QAI_PROVIDER_DETECT_CACHE_TTL", "60")
+    monkeypatch.delenv("AZURE_OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    lm_calls = 0
+    ollama_calls = 0
+
+    def _fake_lm(_url):
+        nonlocal lm_calls
+        lm_calls += 1
+        return False
+
+    def _fake_ollama(_url):
+        nonlocal ollama_calls
+        ollama_calls += 1
+        return False
+
+    with (
+        patch("chat_providers._check_lm_studio_available", side_effect=_fake_lm),
+        patch("chat_providers._check_ollama_available", side_effect=_fake_ollama),
+    ):
+        first_provider, first_choice = detect_provider(explicit="auto")
+        second_provider, second_choice = detect_provider(explicit="auto")
+
+    assert first_choice.name == "local"
+    assert second_choice.name == "local"
+    assert first_provider is second_provider
+    assert lm_calls == 1
+    assert ollama_calls == 1
+
+
+@pytest.mark.unit
+def test_detect_provider_cache_invalidates_when_env_changes(monkeypatch):
+    """Changing model env vars should invalidate detect_provider cache key."""
+    _reset_detect_provider_cache()
+    monkeypatch.setenv("QAI_PROVIDER_DETECT_CACHE_TTL", "60")
+    monkeypatch.setenv("OLLAMA_MODEL", "llama3.2")
+
+    with patch("chat_providers.OpenAI") as mock_openai_cls:
+        mock_openai_cls.return_value = MagicMock()
+        first_provider, first_choice = detect_provider(explicit="ollama")
+
+    monkeypatch.setenv("OLLAMA_MODEL", "mistral")
+
+    with patch("chat_providers.OpenAI") as mock_openai_cls:
+        mock_openai_cls.return_value = MagicMock()
+        second_provider, second_choice = detect_provider(explicit="ollama")
+
+    assert first_choice.model == "llama3.2"
+    assert second_choice.model == "mistral"
+    assert first_provider is not second_provider

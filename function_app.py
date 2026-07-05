@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import time
 from collections import deque
 from datetime import datetime, timezone
@@ -224,6 +225,17 @@ _AI_CAPABILITY_COUNTERS = {
     "memory_candidates": 0,
     "memory_injected": 0,
 }
+
+
+# Short-lived cache for /api/ai/status payloads to reduce repeated heavy
+# diagnostics when dashboards poll frequently.
+_AI_STATUS_CACHE: dict[str, object] = {
+    "key": None,
+    "cached_at": 0.0,
+    "payload_json": None,
+}
+_AI_STATUS_CACHE_LOCK = threading.RLock()
+_AI_STATUS_CACHE_DEFAULT_TTL_SECONDS = 2.0
 
 
 # File caching for repeated JSON reads
@@ -2308,6 +2320,87 @@ def health(req: func.HttpRequest) -> func.HttpResponse:
 # =============================================================================
 
 
+def _get_ai_status_cache_ttl_seconds() -> float:
+    raw = os.getenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", str(_AI_STATUS_CACHE_DEFAULT_TTL_SECONDS))
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        value = _AI_STATUS_CACHE_DEFAULT_TTL_SECONDS
+    if value < 0:
+        return 0.0
+    if value > 300:
+        return 300.0
+    return value
+
+
+def _ai_status_refresh_requested(req: func.HttpRequest) -> bool:
+    try:
+        refresh = (req.params or {}).get("refresh")
+    except Exception:
+        refresh = None
+    if refresh is None:
+        return False
+    return str(refresh).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _build_ai_status_cache_key(repo_root: Path, active_provider: str) -> tuple[object, ...]:
+    def _mtime_or_none(path: Path) -> int | None:
+        try:
+            return path.stat().st_mtime_ns
+        except Exception:
+            return None
+
+    watched_status_files = [
+        repo_root / "data_out" / "autonomous_training_status.json",
+        repo_root / "data_out" / "autonomous_training_heartbeat.json",
+        repo_root / "data_out" / "autotrain" / "status.json",
+        repo_root / "data_out" / "quantum_autorun" / "status.json",
+        repo_root / "data_out" / "evaluation_autorun" / "status.json",
+        repo_root / "data_out" / "self_learning" / "status.json",
+    ]
+
+    status_mtimes = tuple(_mtime_or_none(path) for path in watched_status_files)
+
+    return (
+        active_provider,
+        os.getenv("CHAT_TEMPERATURE", "0.7"),
+        bool(os.getenv("AZURE_OPENAI_API_KEY")),
+        os.getenv("AZURE_OPENAI_ENDPOINT"),
+        os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview"),
+        bool(os.getenv("OPENAI_API_KEY")),
+        os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+        os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1"),
+        os.getenv("LMSTUDIO_MODEL", "local-model"),
+        os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1"),
+        os.getenv("OLLAMA_MODEL", "llama3.2"),
+        os.getenv("QAI_STATUS_CONNECT_AZURE_QUANTUM", "false").lower(),
+        status_mtimes,
+    )
+
+
+def _get_cached_ai_status_payload(cache_key: tuple[object, ...], ttl_seconds: float) -> str | None:
+    if ttl_seconds <= 0:
+        return None
+
+    with _AI_STATUS_CACHE_LOCK:
+        if _AI_STATUS_CACHE.get("key") != cache_key:
+            return None
+        if (time.time() - float(_AI_STATUS_CACHE.get("cached_at", 0.0))) >= ttl_seconds:
+            return None
+        payload_json = _AI_STATUS_CACHE.get("payload_json")
+        if isinstance(payload_json, str):
+            return payload_json
+        return None
+
+
+def _set_cached_ai_status_payload(cache_key: tuple[object, ...], payload_json: str) -> None:
+    with _AI_STATUS_CACHE_LOCK:
+        _AI_STATUS_CACHE["key"] = cache_key
+        _AI_STATUS_CACHE["cached_at"] = time.time()
+        _AI_STATUS_CACHE["payload_json"] = payload_json
+
+
 @app.route(route="ai/status", methods=["GET"], auth_level=func.AuthLevel.ANONYMOUS)
 def ai_status(req: func.HttpRequest) -> func.HttpResponse:
     """Health / status endpoint for provider readiness and environment diagnostics.
@@ -2324,6 +2417,21 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
       - assets and known endpoints
     """
     try:
+        repo_root = Path(__file__).resolve().parent
+        active_provider = _settings.active_provider()
+        ttl_seconds = _get_ai_status_cache_ttl_seconds()
+        use_cache = not _ai_status_refresh_requested(req)
+        cache_key = _build_ai_status_cache_key(repo_root, active_provider)
+
+        if use_cache:
+            cached_payload_json = _get_cached_ai_status_payload(cache_key, ttl_seconds)
+            if cached_payload_json is not None:
+                return func.HttpResponse(
+                    cached_payload_json,
+                    status_code=200,
+                    mimetype="application/json",
+                    headers=create_cors_response_headers(),
+                )
 
         def _load_status_payload(status_path: Path, *, require_clean: bool = False) -> dict:
             loaded = load_status_json(status_path)
@@ -2409,7 +2517,6 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "peft": _iu.find_spec("peft") is not None,
         }
 
-        repo_root = Path(__file__).resolve().parent
         venv_info = build_venv_info(repo_root)
 
         # LoRA adapter defaults
@@ -2439,7 +2546,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 pass
 
         # Detect active provider
-        provider, info = _detect_provider_with_runtime_fallback(explicit=_settings.active_provider())
+        provider, info = _detect_provider_with_runtime_fallback(explicit=active_provider)
 
         # Assets
         chat_web_html = (repo_root / "apps" / "chat" / "index.html").exists()
@@ -2784,8 +2891,12 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             "status": "ok",
         }
 
+        payload_json = json.dumps(payload)
+        if use_cache and ttl_seconds > 0:
+            _set_cached_ai_status_payload(cache_key, payload_json)
+
         return func.HttpResponse(
-            json.dumps(payload),
+            payload_json,
             status_code=200,
             mimetype="application/json",
             headers=create_cors_response_headers(),

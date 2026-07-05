@@ -21,6 +21,7 @@ from core.agents.summarizer_agent import SummarizerAgent
 from core.agents.tool_agent import ToolAgent
 from core.agents.training_agent import TrainingAgent
 from core.bus import AgentBus
+from core.cycle_observer import CycleObserver
 from core.knowledge.graph import ConceptLinker, KnowledgeGraph
 from core.memory.store import MemoryStore
 from core.registry import AgentRegistry
@@ -40,6 +41,7 @@ class AriaRunner:
         self.bus = AgentBus()
         self.knowledge_graph = KnowledgeGraph()
         self.concept_linker = ConceptLinker(self.knowledge_graph, self.memory)
+        self.observer = CycleObserver(self.bus, self.memory)
 
         self._setup_agents()
 
@@ -199,6 +201,10 @@ class AriaRunner:
         return assessment
 
     def _autonomous_cycle(self):
+        with self.observer.cycle() as obs:
+            return self._autonomous_cycle_body(obs)
+
+    def _autonomous_cycle_body(self, obs):
         goal = self._generate_goal()
         self.memory.write("goal_created", {"goal": goal})
 
@@ -242,6 +248,7 @@ class AriaRunner:
         if assessment is not None:
             cycle_summary["self_assessment"] = assessment
         self.memory.write("cycle_completed", cycle_summary)
+        obs.set_summary(cycle_summary)
         return cycle_summary
 
     def run_once(self) -> dict[str, Any]:

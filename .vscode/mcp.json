@@ -1,62 +1,115 @@
 {
-  // MCP server configurations for Aria workspace
-  "servers": {
-    // Quantum ML MCP server
-    "quantum-ai": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": [
-        "${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "MAX_WORKERS": "8",
-        "ENABLE_TELEMETRY": "true",
-        "QAI_SQL_POOL_SIZE": "10",
-        "MAX_CONTEXT_TOKENS": "128000",
-        "RESERVE_OUTPUT_TOKENS": "4096"
-      },
-      "cwd": "${workspaceFolder}/ai-projects/quantum-ml"
-    },
-    // LLM Maker MCP server
-    "llm-maker": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": [
-        "${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "MAX_WORKERS": "8",
-        "ENABLE_TELEMETRY": "true",
-        "MAX_CONTEXT_TOKENS": "128000",
-        "RESERVE_OUTPUT_TOKENS": "4096",
-        "QAI_SQL_POOL_SIZE": "10"
-      },
-      "cwd": "${workspaceFolder}/ai-projects/llm-maker"
-    },
-    // Task completion MCP server
-    "task-complete": {
-      "type": "stdio",
-      "command": "${workspaceFolder}/.venv/bin/python",
-      "args": [
-        "${workspaceFolder}/scripts/task_complete_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}",
-        "PYTHONUNBUFFERED": "1",
-        "PYTHONDONTWRITEBYTECODE": "1",
-        "LOG_LEVEL": "INFO",
-        "MAX_WORKERS": "4",
-        "ENABLE_TELEMETRY": "true"
-      },
-      "cwd": "${workspaceFolder}/scripts"
-    }
-  }
+	"servers": {
+		"quantum-ai": {
+			"type": "stdio",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/ai-projects/quantum-ml/quantum_mcp_server.py"
+			],
+			"env": {
+				"PYTHONPATH": "${workspaceFolder}/ai-projects/quantum-ml:${workspaceFolder}",
+				"PYTHONUNBUFFERED": "1",
+				"PYTHONDONTWRITEBYTECODE": "1",
+				"LOG_LEVEL": "INFO",
+				"MAX_WORKERS": "8",
+				"ENABLE_TELEMETRY": "true",
+				"QAI_SQL_POOL_SIZE": "10",
+				"MAX_CONTEXT_TOKENS": "128000",
+				"RESERVE_OUTPUT_TOKENS": "4096"
+			},
+			"cwd": "${workspaceFolder}/ai-projects/quantum-ml"
+		},
+		"llm-maker": {
+			"type": "stdio",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/ai-projects/llm-maker/llm_maker_mcp_server.py"
+			],
+			"env": {
+				"PYTHONPATH": "${workspaceFolder}/ai-projects/llm-maker:${workspaceFolder}",
+				"PYTHONUNBUFFERED": "1",
+				"PYTHONDONTWRITEBYTECODE": "1",
+				"LOG_LEVEL": "INFO",
+				"MAX_WORKERS": "8",
+				"ENABLE_TELEMETRY": "true",
+				"MAX_CONTEXT_TOKENS": "128000",
+				"RESERVE_OUTPUT_TOKENS": "4096",
+				"QAI_SQL_POOL_SIZE": "10"
+			},
+			"cwd": "${workspaceFolder}/ai-projects/llm-maker"
+		},
+		"task-complete": {
+			"type": "stdio",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/scripts/task_complete_mcp_server.py"
+			],
+			"env": {
+				"PYTHONPATH": "${workspaceFolder}/scripts:${workspaceFolder}",
+				"PYTHONUNBUFFERED": "1",
+				"PYTHONDONTWRITEBYTECODE": "1",
+				"LOG_LEVEL": "INFO",
+				"MAX_WORKERS": "4",
+				"ENABLE_TELEMETRY": "true"
+			},
+			"cwd": "${workspaceFolder}/scripts"
+		},
+		"io.github.github/github-mcp-server": {
+			"type": "stdio",
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"-p",
+				"127.0.0.1:8085:8085",
+				"-e",
+				"GITHUB_OAUTH_CALLBACK_PORT=8085",
+				"-e",
+				"GITHUB_PERSONAL_ACCESS_TOKEN=${input:token}",
+				"ghcr.io/github/github-mcp-server:1.5.0"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.5.0"
+		},
+		"microsoftdocs/mcp": {
+			"type": "http",
+			"url": "https://learn.microsoft.com/api/mcp",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"io.github.f/prompts.chat-mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@fkadev/prompts.chat-mcp@1.0.9"
+			],
+			"env": {
+				"PROMPTS_API_KEY": "${input:PROMPTS_API_KEY}",
+				"PROMPTS_QUERY": "${input:PROMPTS_QUERY}"
+			},
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.9"
+		}
+	},
+	"inputs": [
+		{
+			"id": "token",
+			"type": "promptString",
+			"description": "",
+			"password": true
+		},
+		{
+			"id": "PROMPTS_API_KEY",
+			"type": "promptString",
+			"description": "API key for authenticated requests (enables save_prompt tool)",
+			"password": true
+		},
+		{
+			"id": "PROMPTS_QUERY",
+			"type": "promptString",
+			"description": "Query string to filter prompts (e.g., users=a,b&categories=c,d&tags=e,f)",
+			"password": false
+		}
+	]
 }

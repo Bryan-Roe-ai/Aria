@@ -101,6 +101,15 @@ _ollama_cache_lock = threading.RLock()
 _OLLAMA_CACHE_TTL_SECONDS = 30
 
 
+# Thread-safe cache for detect_provider results to reduce repeated provider
+# probing and client instantiation on hot API paths (e.g., /api/ai/status,
+# chat endpoint setup). Cache entries are keyed by explicit parameters and
+# relevant environment values so config changes invalidate naturally.
+_provider_detection_cache: dict[tuple[Any, ...], dict[str, Any]] = {}
+_provider_detection_cache_lock = threading.RLock()
+_PROVIDER_DETECT_CACHE_TTL_SECONDS = 5.0
+
+
 # {"role": "system|user|assistant", "content": "..."}
 RoleMessage = dict[str, str]
 
@@ -1399,6 +1408,96 @@ def _check_ollama_available(server_url: str) -> bool:
     return is_available
 
 
+def _get_provider_detect_cache_ttl_seconds() -> float:
+    """Resolve provider-detection cache TTL from env with safe bounds."""
+    return _get_bounded_timeout_env(
+        "QAI_PROVIDER_DETECT_CACHE_TTL",
+        _PROVIDER_DETECT_CACHE_TTL_SECONDS,
+        minimum=0.0,
+        maximum=300.0,
+    )
+
+
+def _build_provider_detect_cache_key(
+    provider_choice: str,
+    model_override: str | None,
+    temperature: float | None,
+    max_output_tokens: int | None,
+) -> tuple[Any, ...]:
+    """Build a cache key for detect_provider with env-aware invalidation."""
+    lmstudio_api_key = _get_lmstudio_api_key()
+    return (
+        provider_choice,
+        model_override,
+        temperature,
+        max_output_tokens,
+        os.getenv("CHAT_TEMPERATURE"),
+        os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1"),
+        os.getenv("LMSTUDIO_MODEL", "local-model"),
+        bool(lmstudio_api_key),
+        os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434/v1"),
+        os.getenv("OLLAMA_MODEL", "llama3.2"),
+        bool(os.getenv("AZURE_OPENAI_API_KEY")),
+        os.getenv("AZURE_OPENAI_ENDPOINT"),
+        os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview"),
+        bool(os.getenv("OPENAI_API_KEY")),
+        os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    )
+
+
+def _get_cached_provider_detection(cache_key: tuple[Any, ...]) -> tuple[BaseChatProvider, ProviderChoice] | None:
+    """Return a cached detect_provider result when still fresh."""
+    ttl_seconds = _get_provider_detect_cache_ttl_seconds()
+    if ttl_seconds <= 0:
+        return None
+
+    with _provider_detection_cache_lock:
+        entry = _provider_detection_cache.get(cache_key)
+        if not entry:
+            return None
+
+        if (time.time() - float(entry.get("cached_at", 0.0))) >= ttl_seconds:
+            _provider_detection_cache.pop(cache_key, None)
+            return None
+
+        provider = entry.get("provider")
+        choice = entry.get("choice")
+        if provider is None or choice is None:
+            _provider_detection_cache.pop(cache_key, None)
+            return None
+        return provider, choice
+
+
+def _set_cached_provider_detection(
+    cache_key: tuple[Any, ...],
+    provider: BaseChatProvider,
+    choice: ProviderChoice,
+) -> None:
+    """Store detect_provider result in cache."""
+    ttl_seconds = _get_provider_detect_cache_ttl_seconds()
+    if ttl_seconds <= 0:
+        return
+
+    with _provider_detection_cache_lock:
+        _provider_detection_cache[cache_key] = {
+            "provider": provider,
+            "choice": choice,
+            "cached_at": time.time(),
+        }
+
+
+def _cache_provider_result(
+    cache_key: tuple[Any, ...] | None,
+    provider: BaseChatProvider,
+    choice: ProviderChoice,
+) -> tuple[BaseChatProvider, ProviderChoice]:
+    """Cache helper for early-return branches in detect_provider."""
+    if cache_key is not None:
+        _set_cached_provider_detection(cache_key, provider, choice)
+    return provider, choice
+
+
 def detect_provider(
     explicit: str | None = None,
     model_override: str | None = None,
@@ -1422,6 +1521,15 @@ def detect_provider(
     if explicit_requested and provider_choice not in _KNOWN_PROVIDER_CHOICES:
         valid = ", ".join(sorted(_KNOWN_PROVIDER_CHOICES))
         raise ValueError(f"Unknown provider '{explicit}'. Valid providers: {valid}")
+
+    # Cache only non-special providers. AGI/Quantum/LoRA can be stateful or
+    # model-path specific and are intentionally resolved fresh.
+    cache_key: tuple[Any, ...] | None = None
+    if provider_choice in {"auto", "local", "lmstudio", "ollama", "azure", "openai"}:
+        cache_key = _build_provider_detect_cache_key(provider_choice, model_override, temperature, max_output_tokens)
+        cached = _get_cached_provider_detection(cache_key)
+        if cached is not None:
+            return cached
 
     # LM Studio config
     lm_studio_base_url = os.getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
@@ -1534,7 +1642,7 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="lmstudio", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="lmstudio", model=selected_model))
 
     if provider_choice == "ollama":
         selected_model = model_override or ollama_model_name
@@ -1544,7 +1652,7 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="ollama", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="ollama", model=selected_model))
 
     if provider_choice == "azure":
         if not (azure_openai_api_key and azure_openai_endpoint and (model_override or azure_openai_deployment)):
@@ -1560,7 +1668,7 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="azure", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="azure", model=selected_model))
 
     if provider_choice == "openai":
         if not openai_api_key:
@@ -1572,13 +1680,13 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="openai", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="openai", model=selected_model))
 
     if provider_choice == "local":
         if force_local_echo:
             selected_model = model_override or "local-echo"
             provider = LocalEchoProvider()
-            return provider, ProviderChoice(name="local", model=selected_model)
+            return _cache_provider_result(cache_key, provider, ProviderChoice(name="local", model=selected_model))
 
         # "local" should prefer actual local-LLM runtimes first, then degrade
         # to the deterministic local echo provider when no runtime is available.
@@ -1590,7 +1698,7 @@ def detect_provider(
                 temperature=temperature_setting,
                 max_output_tokens=max_output_tokens,
             )
-            return provider, ProviderChoice(name="lmstudio", model=selected_model)
+            return _cache_provider_result(cache_key, provider, ProviderChoice(name="lmstudio", model=selected_model))
 
         if _check_ollama_available(ollama_base_url):
             selected_model = model_override or ollama_model_name
@@ -1600,11 +1708,11 @@ def detect_provider(
                 temperature=temperature_setting,
                 max_output_tokens=max_output_tokens,
             )
-            return provider, ProviderChoice(name="ollama", model=selected_model)
+            return _cache_provider_result(cache_key, provider, ProviderChoice(name="ollama", model=selected_model))
 
         selected_model = model_override or "local-echo"
         provider = LocalEchoProvider()
-        return provider, ProviderChoice(name="local", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="local", model=selected_model))
 
     # Auto mode - check for LM Studio first using thread-safe cached check
     if _check_lm_studio_available(lm_studio_base_url):
@@ -1615,7 +1723,7 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="lmstudio", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="lmstudio", model=selected_model))
 
     # Check for Ollama next
     if _check_ollama_available(ollama_base_url):
@@ -1626,7 +1734,7 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="ollama", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="ollama", model=selected_model))
 
     if azure_openai_api_key and azure_openai_endpoint and (model_override or azure_openai_deployment):
         selected_model = model_override or azure_openai_deployment
@@ -1638,7 +1746,7 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="azure", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="azure", model=selected_model))
 
     if openai_api_key:
         selected_model = model_override or openai_model_name
@@ -1648,9 +1756,9 @@ def detect_provider(
             temperature=temperature_setting,
             max_output_tokens=max_output_tokens,
         )
-        return provider, ProviderChoice(name="openai", model=selected_model)
+        return _cache_provider_result(cache_key, provider, ProviderChoice(name="openai", model=selected_model))
 
     # Fallback to local echo provider
     selected_model = model_override or "local-echo"
     provider = LocalEchoProvider()
-    return provider, ProviderChoice(name="local", model=selected_model)
+    return _cache_provider_result(cache_key, provider, ProviderChoice(name="local", model=selected_model))

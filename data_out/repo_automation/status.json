@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-07-05T00:13:20Z",
-  "run_id": "20260705T001226Z",
-  "started": "2026-07-05T00:12:26Z",
+  "generated_at": "2026-07-05T05:28:36Z",
+  "run_id": "20260705T052804Z",
+  "started": "2026-07-05T05:28:04Z",
   "config_path": null,
   "config_paths": {
     "quantum": "config/quantum/quantum_autorun.yaml",
     "evaluation": "config/evaluation/evaluation_autorun.yaml"
   },
-  "uptime_seconds": 53.125059,
+  "uptime_seconds": 31.857939,
   "component_enabled": {
     "aria": true,
     "training": true,
@@ -36,7 +36,7 @@
     "backup": false
   },
   "dependency_status": {},
-  "last_health_check": "2026-07-05T00:13:20Z",
+  "last_health_check": "2026-07-05T05:28:36Z",
   "total_cycles": 0,
   "errors": []
 }

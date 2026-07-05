@@ -172,6 +172,11 @@ class TestGetEndpoints:
 
     def test_ai_status(self, app_module):
         """GET /api/ai/status returns JSON with provider info."""
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
+
         req = _mock_request("GET")
         resp = app_module.ai_status(req)
         assert resp.status_code == 200
@@ -202,6 +207,10 @@ class TestGetEndpoints:
 
     def test_ai_status_uses_shared_status_loader_without_leaking_metadata(self, app_module, monkeypatch):
         """GET /api/ai/status should strip shared loader metadata from payloads."""
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
 
         def _fake_status(path, *_, **__):
             path = Path(path)
@@ -278,6 +287,10 @@ class TestGetEndpoints:
             "_detect_provider_with_runtime_fallback",
             _fake_detect_provider_with_runtime_fallback,
         )
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
 
         req = _mock_request("GET")
         resp = app_module.ai_status(req)
@@ -286,6 +299,150 @@ class TestGetEndpoints:
         assert captured["explicit"] == "lmstudio"
         data = json.loads(resp.get_body())
         assert data["active_provider"] == "lmstudio"
+
+    def test_ai_status_uses_short_ttl_cache(self, app_module, monkeypatch):
+        """Back-to-back ai/status calls should reuse cached payload by default."""
+        calls = {"detect": 0, "venv": 0}
+
+        class _Info:
+            name = "local"
+            model = "local-echo"
+
+        def _fake_detect_provider_with_runtime_fallback(*, explicit=None, **kwargs):
+            calls["detect"] += 1
+            return object(), _Info()
+
+        def _fake_build_venv_info(_repo_root):
+            calls["venv"] += 1
+            return {
+                "path": "/tmp/.venv/bin/python",
+                "exists": False,
+                "packages": {"available": {}, "versions": {}},
+                "error": None,
+            }
+
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "60")
+        monkeypatch.setattr(
+            app_module,
+            "_detect_provider_with_runtime_fallback",
+            _fake_detect_provider_with_runtime_fallback,
+        )
+        monkeypatch.setattr(app_module, "build_venv_info", _fake_build_venv_info)
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
+
+        first = app_module.ai_status(_mock_request("GET"))
+        second = app_module.ai_status(_mock_request("GET"))
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert calls["detect"] == 1
+        assert calls["venv"] == 1
+
+    def test_ai_status_refresh_query_bypasses_cache(self, app_module, monkeypatch):
+        """ai/status refresh=1 should bypass cache and recompute diagnostics."""
+        calls = {"detect": 0}
+
+        class _Info:
+            name = "local"
+            model = "local-echo"
+
+        def _fake_detect_provider_with_runtime_fallback(*, explicit=None, **kwargs):
+            calls["detect"] += 1
+            return object(), _Info()
+
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "60")
+        monkeypatch.setattr(
+            app_module,
+            "_detect_provider_with_runtime_fallback",
+            _fake_detect_provider_with_runtime_fallback,
+        )
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
+
+        first = app_module.ai_status(_mock_request("GET"))
+        refreshed = app_module.ai_status(_mock_request("GET", params={"refresh": "1"}))
+
+        assert first.status_code == 200
+        assert refreshed.status_code == 200
+        assert calls["detect"] == 2
+
+    def test_ai_status_cache_invalidates_on_env_change(self, app_module, monkeypatch):
+        """Changing provider env should invalidate ai/status cached payload."""
+        calls = {"detect": 0}
+
+        class _Info:
+            name = "openai"
+            model = "gpt-4o-mini"
+
+        def _fake_detect_provider_with_runtime_fallback(*, explicit=None, **kwargs):
+            calls["detect"] += 1
+            return object(), _Info()
+
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "60")
+        monkeypatch.setenv("OPENAI_MODEL", "gpt-4o-mini")
+        monkeypatch.setattr(
+            app_module,
+            "_detect_provider_with_runtime_fallback",
+            _fake_detect_provider_with_runtime_fallback,
+        )
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
+
+        first = app_module.ai_status(_mock_request("GET"))
+        monkeypatch.setenv("OPENAI_MODEL", "gpt-4o")
+        second = app_module.ai_status(_mock_request("GET"))
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert calls["detect"] == 2
+
+    def test_ai_status_cache_disabled_when_ttl_zero(self, app_module, monkeypatch):
+        """TTL=0 disables ai/status cache so each request recomputes."""
+        calls = {"detect": 0}
+
+        class _Info:
+            name = "local"
+            model = "local-echo"
+
+        def _fake_detect_provider_with_runtime_fallback(*, explicit=None, **kwargs):
+            calls["detect"] += 1
+            return object(), _Info()
+
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "0")
+        monkeypatch.setattr(
+            app_module,
+            "_detect_provider_with_runtime_fallback",
+            _fake_detect_provider_with_runtime_fallback,
+        )
+        with app_module._AI_STATUS_CACHE_LOCK:
+            app_module._AI_STATUS_CACHE["key"] = None
+            app_module._AI_STATUS_CACHE["cached_at"] = 0.0
+            app_module._AI_STATUS_CACHE["payload_json"] = None
+
+        first = app_module.ai_status(_mock_request("GET"))
+        second = app_module.ai_status(_mock_request("GET"))
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert calls["detect"] == 2
+
+    def test_ai_status_cache_ttl_helper_clamps_values(self, app_module, monkeypatch):
+        """TTL helper should parse env and clamp to documented bounds."""
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "-1")
+        assert app_module._get_ai_status_cache_ttl_seconds() == 0.0
+
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "9999")
+        assert app_module._get_ai_status_cache_ttl_seconds() == 300.0
+
+        monkeypatch.setenv("QAI_FUNCTION_AI_STATUS_CACHE_TTL", "bad-value")
+        assert app_module._get_ai_status_cache_ttl_seconds() == app_module._AI_STATUS_CACHE_DEFAULT_TTL_SECONDS
 
     def test_chat_options(self, app_module):
         """OPTIONS /api/chat returns CORS headers."""
