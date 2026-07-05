@@ -39,7 +39,6 @@ PLACEHOLDER_SNIPPETS = (
     "initial catalog=database",
     "server=tcp:example",
 )
-MISSING_LOCAL_SETTINGS_ERROR = "error=missing_file:local.settings.json"
 
 
 def _placeholder_hits(value: str) -> list[str]:
@@ -94,11 +93,13 @@ def check_database_config(path: Path) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def check_local_settings(path: Path) -> tuple[list[str], list[str]]:
+def check_local_settings(path: Path, *, require_exists: bool = True) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     data, err = _load_json(path)
     if err:
+        if err.startswith("error=missing_file:") and not require_exists:
+            return errors, warnings
         errors.append(err)
         return errors, warnings
 
@@ -167,8 +168,8 @@ def main() -> int:
         errors.extend(local_errors)
         warnings.extend(local_warnings)
 
-    local_errors, local_warnings = check_local_settings(root / "local.settings.json")
-    errors.extend([e for e in local_errors if e != MISSING_LOCAL_SETTINGS_ERROR])
+    local_errors, local_warnings = check_local_settings(root / "local.settings.json", require_exists=False)
+    errors.extend(local_errors)
     warnings.extend(local_warnings)
 
     env_errors, env_warnings = check_env_example(root / ".env.example")
