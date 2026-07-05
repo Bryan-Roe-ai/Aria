@@ -131,15 +131,21 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          echo "## Core Runtime Monitor" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Core Runtime Monitor"
+            echo ""
+            echo "| Check | Result |"
+            echo "|-------|--------|"
+          } >> "$GITHUB_STEP_SUMMARY"
           if [ "${{ steps.core_monitor.outcome }}" = "success" ]; then
-            echo "| automating core files | ✅ passed |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| core monitor artifact | \`data_out/core_automation/status-monitor.json\` |" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "| automating core files | ✅ passed |"
+              echo "| core monitor artifact | \`data_out/core_automation/status-monitor.json\` |"
+            } >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| automating core files | ❌ failed |" >> "$GITHUB_STEP_SUMMARY"
+            {
+              echo "| automating core files | ❌ failed |"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
   e2e_playwright:

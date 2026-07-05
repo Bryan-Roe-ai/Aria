@@ -82,12 +82,14 @@ jobs:
       - name: Generate cleanup report
         run: |
           mkdir -p docs/reports
-          echo '# Repository Cleanup Report' > docs/reports/repo-health.md
-          echo '' >> docs/reports/repo-health.md
-          echo 'Generated automatically by GitHub Actions.' >> docs/reports/repo-health.md
-          echo '' >> docs/reports/repo-health.md
-          echo '## Runtime Artifact Scan' >> docs/reports/repo-health.md
-          find . -type d -name '__pycache__' >> docs/reports/repo-health.md || true
+          {
+            echo '# Repository Cleanup Report'
+            echo ''
+            echo 'Generated automatically by GitHub Actions.'
+            echo ''
+            echo '## Runtime Artifact Scan'
+            find . -type d -name '__pycache__' || true
+          } > docs/reports/repo-health.md
 
       - name: Upload cleanup report
         uses: actions/upload-artifact@v4
