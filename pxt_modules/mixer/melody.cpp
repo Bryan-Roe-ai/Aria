@@ -243,7 +243,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
     return 1;
   }
 
-  memset(dst, 0, numsamples * 2);
+  memset(dst, 0, (size_t)numsamples * 2);
 
   uint32_t samplesPerMS = (sampleRate << 8) / 1000;
   float toneStepMult = (1024.0 * (1 << 16)) / sampleRate;
