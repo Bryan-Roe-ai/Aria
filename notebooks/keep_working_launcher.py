@@ -215,9 +215,9 @@ def export_systemd(
     short=None,
     long=None,
     cycles_per_long=None,
-    notify=False,
-    sound=False,
-    repeat=False,
+    notify=None,
+    sound=None,
+    repeat=None,
 ):
     """Export a systemd user service file to ``path``.
 
@@ -241,11 +241,11 @@ def export_systemd(
         session["long"] = long
     if cycles_per_long is not None:
         session["cycles_per_long"] = cycles_per_long
-    if notify:
+    if notify is not None:
         session["notify"] = notify
-    if sound:
+    if sound is not None:
         session["sound"] = sound
-    if repeat:
+    if repeat is not None:
         session["repeat"] = repeat
 
     if python_exec is None:
