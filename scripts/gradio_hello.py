@@ -541,14 +541,15 @@ def save_conversation_json(hist_state: list[dict[str, Any]], session_name: str =
     ensure_conv_dir()
     ts = int(time.time())
     safe_name = safe_session_name(session_name)
+    # Guard against path traversal if safe_session_name is bypassed (defense in depth).
+    # Path(safe_name).name strips any directory components; if the result differs from
+    # safe_name the value contains separators or ".." and must be rejected.
+    if Path(safe_name).name != safe_name:
+        raise ValueError("Invalid session path") from ValueError(f"unsafe session name: {safe_name!r}")
+    # Use sha256 hash of safe_name as the actual filename token to prevent
+    # uncontrolled data in path expressions (CWE-73).
     session_token = hashlib.sha256(safe_name.encode("utf-8")).hexdigest()[:16]
-    candidate = CONV_DIR / f"{session_token}_{ts}.json"
-    base_dir = CONV_DIR.resolve()
-    filename = candidate.resolve()
-    try:
-        filename.relative_to(base_dir)
-    except ValueError as err:
-        raise ValueError("Invalid session path") from err
+    filename = (CONV_DIR / f"{session_token}_{ts}.json").resolve()
     with filename.open("w", encoding="utf-8") as f:
         json.dump(hist_state, f, ensure_ascii=False, indent=2)
     with LATEST_PATH.open("w", encoding="utf-8") as f:

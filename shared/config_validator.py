@@ -246,7 +246,7 @@ class ConfigValidator:
             # Validate timeout
             timeout = orch.get("timeout_minutes")
             if timeout is not None:
-                if not isinstance(timeout, (int, float)):
+                if not isinstance(timeout, int | float):
                     result.errors.append(
                         ValidationError(
                             rule="field_type",

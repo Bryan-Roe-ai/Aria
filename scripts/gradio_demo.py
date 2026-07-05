@@ -890,8 +890,7 @@ def auto_improve_daemon():
 with gr.Blocks() as demo:
     # Theme injection element + toggle
     theme_css = gr.HTML(value=LIGHT_CSS)
-    hero_banner = gr.HTML(
-        value=f"""
+    hero_banner = gr.HTML(value=f"""
         <div class="hero-banner">
             <div class="hero-title">QAI Gradio Demo</div>
             <p class="hero-subtitle">A polished chat workspace for QAI session management, exports, and lightweight automation experiments.</p>
@@ -905,8 +904,7 @@ with gr.Blocks() as demo:
                 <span class="pill">Auto-improve</span>
             </div>
         </div>
-        """
-    )
+        """)
     with gr.Row(elem_classes=["surface-card"]):
         with gr.Column(scale=4):
             gr.Markdown(
@@ -1067,10 +1065,10 @@ with gr.Blocks() as demo:
             if request_tokens is not None and not isinstance(request_tokens, dict):
                 request_tokens = None
             # Normalize legacy tuple-pair history into message dicts.
-            if chat_history and isinstance(chat_history[0], (tuple, list)):
+            if chat_history and isinstance(chat_history[0], tuple | list):
                 normalized = []
                 for pair in chat_history:
-                    if not isinstance(pair, (tuple, list)) or len(pair) != 2:
+                    if not isinstance(pair, tuple | list) or len(pair) != 2:
                         continue
                     normalized.append({"role": "user", "content": str(pair[0])})
                     normalized.append({"role": "assistant", "content": str(pair[1])})
