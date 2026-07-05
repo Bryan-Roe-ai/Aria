@@ -73,11 +73,7 @@ def check_vscode_tasks(repo: Path) -> list[CheckResult]:
         return [CheckResult("tasks:file", False, "missing .vscode/tasks.json")]
 
     obj = load_json(tasks_file)
-    labels = {
-        t.get("label")
-        for t in obj.get("tasks", [])
-        if isinstance(t, dict) and isinstance(t.get("label"), str)
-    }
+    labels = {t.get("label") for t in obj.get("tasks", []) if isinstance(t, dict) and isinstance(t.get("label"), str)}
 
     required = [
         "eval: pr-report",
@@ -127,19 +123,14 @@ def print_results_json(results: list[CheckResult]) -> int:
             "fail": len(failures),
             "all_ok": len(failures) == 0,
         },
-        "checks": [
-            {"name": r.name, "ok": r.ok, "detail": r.detail}
-            for r in results
-        ],
+        "checks": [{"name": r.name, "ok": r.ok, "detail": r.detail} for r in results],
     }
     print(json.dumps(payload, indent=2))
     return 1 if failures else 0
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Validate PR eval workflow wiring."
-    )
+    parser = argparse.ArgumentParser(description="Validate PR eval workflow wiring.")
     parser.add_argument(
         "--json",
         action="store_true",

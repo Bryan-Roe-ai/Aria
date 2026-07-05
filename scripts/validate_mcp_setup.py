@@ -76,10 +76,7 @@ def validate_config_inputs(
         issues.append(
             ConfigValidationIssue(
                 code="server_not_found",
-                detail=(
-                    "Requested server for config lint not found: "
-                    f"{only_server}"
-                ),
+                detail=(f"Requested server for config lint not found: {only_server}"),
             )
         )
         return issues
@@ -93,23 +90,15 @@ def validate_config_inputs(
         refs: list[tuple[str, str]] = []
 
         command = str(server.get("command", ""))
-        refs.extend(
-            ("command", m.group(1))
-            for m in INPUT_REF_RE.finditer(command)
-        )
+        refs.extend(("command", m.group(1)) for m in INPUT_REF_RE.finditer(command))
 
         for arg in server.get("args", []):
             arg_s = str(arg)
-            refs.extend(
-                ("args", m.group(1)) for m in INPUT_REF_RE.finditer(arg_s)
-            )
+            refs.extend(("args", m.group(1)) for m in INPUT_REF_RE.finditer(arg_s))
 
         for k, v in server.get("env", {}).items():
             v_s = str(v)
-            refs.extend(
-                (f"env.{k}", m.group(1))
-                for m in INPUT_REF_RE.finditer(v_s)
-            )
+            refs.extend((f"env.{k}", m.group(1)) for m in INPUT_REF_RE.finditer(v_s))
 
         for where, ref in refs:
             referenced_ids.add(ref)
@@ -117,29 +106,18 @@ def validate_config_inputs(
                 issues.append(
                     ConfigValidationIssue(
                         code="undefined_input_reference",
-                        detail=(
-                            f"Server '{name}' has undefined input reference "
-                            f"'{ref}' in {where}"
-                        ),
+                        detail=(f"Server '{name}' has undefined input reference '{ref}' in {where}"),
                     )
                 )
 
         env_refs: list[tuple[str, str]] = []
-        env_refs.extend(
-            ("command", m.group(1))
-            for m in ENV_REF_RE.finditer(command)
-        )
+        env_refs.extend(("command", m.group(1)) for m in ENV_REF_RE.finditer(command))
         for arg in server.get("args", []):
             arg_s = str(arg)
-            env_refs.extend(
-                ("args", m.group(1)) for m in ENV_REF_RE.finditer(arg_s)
-            )
+            env_refs.extend(("args", m.group(1)) for m in ENV_REF_RE.finditer(arg_s))
         for k, v in server.get("env", {}).items():
             v_s = str(v)
-            env_refs.extend(
-                (f"env.{k}", m.group(1))
-                for m in ENV_REF_RE.finditer(v_s)
-            )
+            env_refs.extend((f"env.{k}", m.group(1)) for m in ENV_REF_RE.finditer(v_s))
 
         for where, ref in env_refs:
             key = (name, where, ref)
@@ -150,10 +128,7 @@ def validate_config_inputs(
                 issues.append(
                     ConfigValidationIssue(
                         code="missing_env_reference",
-                        detail=(
-                            f"Server '{name}' references missing env var "
-                            f"'{ref}' in {where}"
-                        ),
+                        detail=(f"Server '{name}' references missing env var '{ref}' in {where}"),
                         severity="error" if env_strict else "warning",
                     )
                 )
@@ -163,10 +138,7 @@ def validate_config_inputs(
             issues.append(
                 ConfigValidationIssue(
                     code="unused_input_id",
-                    detail=(
-                        "Input id is defined but not referenced by any "
-                        f"selected server: {input_id}"
-                    ),
+                    detail=(f"Input id is defined but not referenced by any selected server: {input_id}"),
                     severity="warning",
                 )
             )
@@ -228,14 +200,8 @@ def build_server_params(
         raise ValueError("Missing required 'command' for stdio server")
 
     command = resolve_workspace_value(server_config["command"], workspace)
-    args = [
-        resolve_workspace_value(arg, workspace)
-        for arg in server_config.get("args", [])
-    ]
-    env = {
-        key: resolve_workspace_value(value, workspace)
-        for key, value in server_config.get("env", {}).items()
-    }
+    args = [resolve_workspace_value(arg, workspace) for arg in server_config.get("args", [])]
+    env = {key: resolve_workspace_value(value, workspace) for key, value in server_config.get("env", {}).items()}
     cwd_raw = server_config.get("cwd", str(workspace))
     cwd = resolve_workspace_value(cwd_raw, workspace)
     return LocalStdioServerParameters(
@@ -300,10 +266,7 @@ async def validate_server(
         return ServerValidationResult(
             name,
             True,
-            (
-                f"SKIP: external launcher '{command}' "
-                "not validated in local stdio probe"
-            ),
+            (f"SKIP: external launcher '{command}' not validated in local stdio probe"),
             [],
         )
 
@@ -372,9 +335,7 @@ def results_to_json(results: list[ServerValidationResult]) -> dict[str, Any]:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Validate stdio MCP servers configured in .vscode/mcp.json"
-    )
+    parser = argparse.ArgumentParser(description="Validate stdio MCP servers configured in .vscode/mcp.json")
     parser.add_argument(
         "--config",
         default=".vscode/mcp.json",
@@ -392,18 +353,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--config-only",
         action="store_true",
-        help=(
-            "Run only static MCP config checks "
-            "(inputs/references), skip stdio probes"
-        ),
+        help=("Run only static MCP config checks (inputs/references), skip stdio probes"),
     )
     parser.add_argument(
         "--env-strict",
         action="store_true",
-        help=(
-            "Treat missing ${env:...} references as errors "
-            "instead of warnings"
-        ),
+        help=("Treat missing ${env:...} references as errors instead of warnings"),
     )
     return parser.parse_args()
 
@@ -457,12 +412,8 @@ async def async_main() -> int:
                             "all_ok": False,
                         },
                         "servers": [],
-                        "config_issues": [
-                            asdict(issue) for issue in config_issues
-                        ],
-                        "error": (
-                            "No MCP servers matched the requested selection."
-                        ),
+                        "config_issues": [asdict(issue) for issue in config_issues],
+                        "error": ("No MCP servers matched the requested selection."),
                     },
                     indent=2,
                 )

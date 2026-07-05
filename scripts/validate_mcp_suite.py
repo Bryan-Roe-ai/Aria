@@ -10,10 +10,7 @@ from typing import Any
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description=(
-            "Run MCP validation suite: static config lint + stdio probe, "
-            "and emit combined JSON."
-        )
+        description=("Run MCP validation suite: static config lint + stdio probe, and emit combined JSON.")
     )
     parser.add_argument(
         "--config",
@@ -32,10 +29,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--env-strict",
         action="store_true",
-        help=(
-            "Treat missing ${env:...} references as errors in both "
-            "config-only and runtime phases."
-        ),
+        help=("Treat missing ${env:...} references as errors in both config-only and runtime phases."),
     )
     return parser.parse_args()
 
@@ -84,10 +78,7 @@ def run_validator(
             "config_issues": [
                 {
                     "code": "invalid_validator_output",
-                    "detail": (
-                        "Failed to parse JSON output from "
-                        "validate_mcp_setup.py"
-                    ),
+                    "detail": ("Failed to parse JSON output from validate_mcp_setup.py"),
                     "severity": "error",
                 }
             ],
@@ -139,11 +130,7 @@ def main() -> int:
     out_path.write_text(json.dumps(output_payload, indent=2), encoding="utf-8")
 
     print(f"Wrote {out_path}")
-    print(
-        "suite_status="
-        f"{'OK' if all_ok else 'FAIL'} "
-        f"config_ok={config_code == 0} runtime_ok={runtime_code == 0}"
-    )
+    print(f"suite_status={'OK' if all_ok else 'FAIL'} config_ok={config_code == 0} runtime_ok={runtime_code == 0}")
 
     return 0 if all_ok else 1
 

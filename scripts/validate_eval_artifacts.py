@@ -124,10 +124,7 @@ def print_results(results: list[CheckResult], as_json: bool) -> int:
                 "fail": len(fails),
                 "all_ok": len(fails) == 0,
             },
-            "checks": [
-                {"name": r.name, "ok": r.ok, "detail": r.detail}
-                for r in results
-            ],
+            "checks": [{"name": r.name, "ok": r.ok, "detail": r.detail} for r in results],
         }
         print(json.dumps(payload, indent=2))
     else:
@@ -142,9 +139,7 @@ def print_results(results: list[CheckResult], as_json: bool) -> int:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Validate generated PR eval report artifacts."
-    )
+    parser = argparse.ArgumentParser(description="Validate generated PR eval report artifacts.")
     parser.add_argument(
         "--latest",
         action="store_true",
