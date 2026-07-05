@@ -1,12 +1,11 @@
 """Tests for the provider-detection cache layer in chat_providers.py."""
+
 from __future__ import annotations
 
 import sys
 import time
 from pathlib import Path
 from unittest.mock import MagicMock
-
-import pytest
 
 _CHAT_SRC = Path(__file__).resolve().parents[1] / "ai-projects" / "chat-cli" / "src"
 if str(_CHAT_SRC) not in sys.path:
@@ -85,7 +84,8 @@ class TestCacheSetGet:
         key = ("local", None, None, None)
         with cp._provider_detection_cache_lock:
             cp._provider_detection_cache[key] = {
-                "provider": _make_fake_provider(), "choice": _make_choice(),
+                "provider": _make_fake_provider(),
+                "choice": _make_choice(),
                 "cached_at": time.time(),
             }
         assert cp._get_cached_provider_detection(key) is None
@@ -95,7 +95,8 @@ class TestCacheSetGet:
         key = ("local", None, None, None)
         with cp._provider_detection_cache_lock:
             cp._provider_detection_cache[key] = {
-                "provider": _make_fake_provider(), "choice": _make_choice(),
+                "provider": _make_fake_provider(),
+                "choice": _make_choice(),
                 "cached_at": time.time() - 1.0,
             }
         assert cp._get_cached_provider_detection(key) is None
@@ -105,7 +106,8 @@ class TestCacheSetGet:
         key = ("local", None, None, None)
         with cp._provider_detection_cache_lock:
             cp._provider_detection_cache[key] = {
-                "provider": _make_fake_provider(), "choice": _make_choice(),
+                "provider": _make_fake_provider(),
+                "choice": _make_choice(),
                 "cached_at": time.time() - 1.0,
             }
         cp._get_cached_provider_detection(key)
@@ -129,7 +131,9 @@ class TestCacheSetGet:
         key = ("local", None, None, None)
         with cp._provider_detection_cache_lock:
             cp._provider_detection_cache[key] = {
-                "provider": None, "choice": _make_choice(), "cached_at": time.time(),
+                "provider": None,
+                "choice": _make_choice(),
+                "cached_at": time.time(),
             }
         assert cp._get_cached_provider_detection(key) is None
 
@@ -138,7 +142,9 @@ class TestCacheSetGet:
         key = ("local", None, None, None)
         with cp._provider_detection_cache_lock:
             cp._provider_detection_cache[key] = {
-                "provider": _make_fake_provider(), "choice": None, "cached_at": time.time(),
+                "provider": _make_fake_provider(),
+                "choice": None,
+                "cached_at": time.time(),
             }
         assert cp._get_cached_provider_detection(key) is None
 

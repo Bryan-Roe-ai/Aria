@@ -148,6 +148,7 @@ def test_ai_status_refresh_param_bypasses_cache(status_module, monkeypatch):
 # _get_status_cache_ttl_seconds
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_get_status_cache_ttl_returns_default(status_module, monkeypatch):
     monkeypatch.delenv("QAI_STATUS_CACHE_TTL", raising=False)
@@ -187,19 +188,23 @@ def test_get_status_cache_ttl_invalid_env_uses_default(status_module, monkeypatc
 # _request_wants_refresh
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
-@pytest.mark.parametrize("param_value,expected", [
-    ("1", True),
-    ("true", True),
-    ("yes", True),
-    ("y", True),
-    ("on", True),
-    ("TRUE", True),
-    ("0", False),
-    ("false", False),
-    ("no", False),
-    ("", False),
-])
+@pytest.mark.parametrize(
+    "param_value,expected",
+    [
+        ("1", True),
+        ("true", True),
+        ("yes", True),
+        ("y", True),
+        ("on", True),
+        ("TRUE", True),
+        ("0", False),
+        ("false", False),
+        ("no", False),
+        ("", False),
+    ],
+)
 def test_request_wants_refresh_param_values(status_module, param_value, expected):
     req = MockRequest(params={"refresh": param_value})
     assert status_module._request_wants_refresh(req) is expected
@@ -221,9 +226,9 @@ def test_request_wants_refresh_none_params(status_module):
 # _get_cached_payload_json / _set_cached_payload_json
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 def test_cache_set_get_round_trip(status_module):
-    import time as _time
     # Reset cache state
     with status_module._STATUS_CACHE_LOCK:
         status_module._STATUS_CACHE.update({"key": None, "cached_at": 0.0, "payload_json": None})
@@ -253,13 +258,16 @@ def test_cache_ttl_zero_disables_get(status_module):
 @pytest.mark.unit
 def test_cache_expired_entry_returns_none(status_module):
     import time as _time
+
     key = ("expire-key",)
     with status_module._STATUS_CACHE_LOCK:
-        status_module._STATUS_CACHE.update({
-            "key": key,
-            "cached_at": _time.time() - 100.0,
-            "payload_json": '{"old":1}',
-        })
+        status_module._STATUS_CACHE.update(
+            {
+                "key": key,
+                "cached_at": _time.time() - 100.0,
+                "payload_json": '{"old":1}',
+            }
+        )
     result = status_module._get_cached_payload_json(key, ttl_seconds=1.0)
     assert result is None
 
@@ -269,11 +277,14 @@ def test_cache_not_returned_when_payload_not_str(status_module):
     key = ("bad-payload",)
     with status_module._STATUS_CACHE_LOCK:
         import time as _time
-        status_module._STATUS_CACHE.update({
-            "key": key,
-            "cached_at": _time.time(),
-            "payload_json": 12345,  # not a string
-        })
+
+        status_module._STATUS_CACHE.update(
+            {
+                "key": key,
+                "cached_at": _time.time(),
+                "payload_json": 12345,  # not a string
+            }
+        )
     result = status_module._get_cached_payload_json(key, ttl_seconds=60.0)
     assert result is None
 
@@ -281,6 +292,7 @@ def test_cache_not_returned_when_payload_not_str(status_module):
 # ---------------------------------------------------------------------------
 # TTL=0 causes cache to be bypassed on main()
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 def test_ai_status_ttl_zero_always_computes(status_module, monkeypatch):
