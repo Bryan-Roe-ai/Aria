@@ -20,12 +20,12 @@ Quick start
     print(generate(model, tokenizer, "def factorial(n):"))
 """
 
-from __future__ import annotations
-
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-arguments,too-many-positional-arguments
 # pylint: disable=too-many-instance-attributes,too-many-locals
 # pylint: disable=too-few-public-methods
+
+from __future__ import annotations
 
 import importlib.util
 import math
@@ -37,13 +37,12 @@ from typing import Any
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 from torch import nn
+from torch.nn import functional as F
 from torch.utils.data import DataLoader, Dataset
 
 try:
     import pennylane as qml  # type: ignore
-
 except ImportError:
     qml = None
 
