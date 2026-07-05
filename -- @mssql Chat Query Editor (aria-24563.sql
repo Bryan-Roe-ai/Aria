@@ -1,0 +1,1 @@
+-- @mssql Chat Query Editor (aria-24563.database.windows.net:Database:admin@bryanroe.com)

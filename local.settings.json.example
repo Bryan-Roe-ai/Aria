@@ -4,7 +4,7 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "# Data API Builder (DAB) SQL connection string used by Database_20260705.json/Database_20260620.json": "",
-    "DAB_CONNECTION_STRING": "Server=tcp:aria-24563.database.windows.net,1433;Initial Catalog=Database;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+    "DAB_CONNECTION_STRING": "Server=tcp:aria-24563.database.windows.net,1433;Initial Catalog=Aria;Authentication=Active Directory Default;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
     "# If SQL auth is required instead of Entra/managed identity, use User ID/Password in DAB_CONNECTION_STRING.": "",
     "# Remote TTS (Azure Cognitive Services) - set these to enable /api/tts": "",
     "AZURE_SPEECH_KEY": "<your-azure-speech-key-here>",

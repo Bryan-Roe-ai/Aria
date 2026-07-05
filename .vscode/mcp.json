@@ -90,6 +90,21 @@
 			},
 			"gallery": "https://api.mcp.github.com",
 			"version": "1.0.9"
+		},
+		"microsoft/markitdown": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"markitdown-mcp@0.0.1a4"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"huggingface/hf-mcp-server": {
+			"type": "http",
+			"url": "https://huggingface.co/mcp?login",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
 		}
 	},
 	"inputs": [
