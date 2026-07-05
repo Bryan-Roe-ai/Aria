@@ -9,11 +9,12 @@ Usage examples:
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import text
 
@@ -33,6 +34,21 @@ def _sql_api() -> tuple[Callable[[], Any], Callable[[], dict[str, Any]]]:
     from shared.sql_engine import get_engine, sql_health
 
     return get_engine, sql_health
+
+
+def _clear_cached_engine() -> None:
+    import shared.sql_engine as eng
+
+    engine = getattr(eng, "_ENGINE", None)
+    if engine is not None:
+        try:
+            dispose = getattr(engine, "dispose", None)
+            if callable(dispose):
+                dispose()
+        except Exception:
+            pass
+    eng._ENGINE = None
+    eng._LAST_URL = None
 
 
 def _effective_url(url: str | None) -> str:
@@ -73,14 +89,46 @@ def cmd_setup() -> None:
     print(f"✅ Local SQL bootstrap complete. Set QAI_SQL_URL={configured_url}")
 
 
-def cmd_status() -> None:
+def cmd_status(json_output: bool = False) -> None:
     _, sql_health = _sql_api()
-    print("sql_health=", sql_health())
-    print("sql_setup_check_rows=", _status_row_count())
+    health = sql_health()
+    row_count = _status_row_count()
+    if json_output:
+        print(
+            json.dumps(
+                {
+                    "sql_health": health,
+                    "sql_setup_check_rows": row_count,
+                }
+            )
+        )
+        return
+    print("sql_health=", health)
+    print("sql_setup_check_rows=", row_count)
+
+
+def cmd_doctor(json_output: bool = False) -> int:
+    _, sql_health = _sql_api()
+    health = sql_health()
+    ok = bool(health.get("enabled")) and bool(health.get("connectivity"))
+    payload = {
+        "ok": ok,
+        "sql_health": health,
+    }
+    if json_output:
+        print(json.dumps(payload))
+    else:
+        if ok:
+            print("✅ SQL doctor: healthy")
+        else:
+            print("❌ SQL doctor: unhealthy")
+        print("sql_health=", health)
+    return 0 if ok else 1
 
 
 def cmd_reset(db_path: Path) -> None:
     print(f"♻️  Resetting local SQLite database at {db_path}...")
+    _clear_cached_engine()
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()
@@ -91,7 +139,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Local SQL helper commands for Aria")
     parser.add_argument(
         "command",
-        choices=["setup", "status", "reset"],
+        choices=["setup", "status", "reset", "doctor"],
         help="Command to run",
     )
     parser.add_argument(
@@ -104,6 +152,12 @@ def parse_args() -> argparse.Namespace:
         default=str(DEFAULT_DB_PATH),
         help=(f"Path to local SQLite DB file for reset (default: {DEFAULT_DB_PATH})"),
     )
+    parser.add_argument(
+        "--json",
+        dest="json_output",
+        action="store_true",
+        help="Emit status output in JSON format",
+    )
     return parser.parse_args()
 
 
@@ -114,9 +168,11 @@ def main() -> int:
     if args.command == "setup":
         cmd_setup()
     elif args.command == "status":
-        cmd_status()
+        cmd_status(json_output=args.json_output)
     elif args.command == "reset":
         cmd_reset(Path(args.db_path))
+    elif args.command == "doctor":
+        return cmd_doctor(json_output=args.json_output)
     else:
         raise ValueError(f"Unsupported command: {args.command}")
     return 0

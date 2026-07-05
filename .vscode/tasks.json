@@ -470,6 +470,22 @@
 				"isDefault": true
 			},
 			"detail": "Builds the DatabaseProjectDatabase SQL project"
+		},
+		{
+			"label": "sqlproj: Build Data",
+			"type": "process",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"/workspaces/Aria/Data/Data.sqlproj"
+			],
+			"problemMatcher": "$sqlproj-problem-matcher",
+			"isBackground": true,
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "Builds the Data SQL project"
 		}
 	],
 	"inputs": [
