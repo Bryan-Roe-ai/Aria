@@ -400,14 +400,14 @@ def validate_action(action: dict) -> tuple[bool, str]:
                 return False, f"{action_type} coordinates must be an object"
             x = coords.get("x")
             y = coords.get("y")
-            if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
+            if not isinstance(x, int | float) or not isinstance(y, int | float):
                 return False, f"{action_type} coordinates must contain numeric x/y"
             if not (0 <= x <= 100 and 0 <= y <= 100):
                 return False, f"{action_type} coordinates must be between 0 and 100"
 
     if action_type == "wait":
         duration = action.get("duration", 1.0)
-        if not isinstance(duration, (int, float)) or duration < 0 or duration > 30:
+        if not isinstance(duration, int | float) or duration < 0 or duration > 30:
             return False, "wait duration must be between 0 and 30 seconds"
 
     if action_type == "say":

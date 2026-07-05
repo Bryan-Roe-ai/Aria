@@ -127,7 +127,7 @@ class _SafeEvaluator(ast.NodeVisitor):
 
     def visit_Constant(self, node: ast.Constant) -> float:
         """Return a numeric constant value."""
-        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+        if isinstance(node.value, bool) or not isinstance(node.value, int | float):
             raise ValueError("Only numeric constants are allowed")
         return node.value
 
@@ -178,7 +178,7 @@ def evaluate_arithmetic(text: str) -> str | None:
     try:
         tree = ast.parse(expr, mode="eval")
         result = _SafeEvaluator().visit(tree)
-        if isinstance(result, bool) or not isinstance(result, (int, float)):
+        if isinstance(result, bool) or not isinstance(result, int | float):
             return None
         return _format_result(result)
     except ZeroDivisionError:

@@ -30,7 +30,7 @@ def _normalize_provider_priority(value: object) -> list[str]:
     if isinstance(value, str):
         providers = [item.strip() for item in value.split(",") if item.strip()]
         return providers or list(_DEFAULT_PROVIDER_PRIORITY)
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         providers = [str(item).strip() for item in value if str(item).strip()]
         return providers or list(_DEFAULT_PROVIDER_PRIORITY)
     return list(_DEFAULT_PROVIDER_PRIORITY)
