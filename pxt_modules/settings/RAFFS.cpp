@@ -44,6 +44,8 @@ using namespace codal;
 
 using namespace pxt::raffs;
 
+static uint16_t raffs_unlocked_event;
+
 struct FSHeader {
   uint32_t magic;
   uint32_t bytes;
@@ -79,6 +81,9 @@ FS::FS(Flash &flash, uintptr_t baseAddr, uint32_t bytes)
   auto numPages = bytes / page;
   if ((baseAddr & (page - 1)) || bytes % page || numPages < 2 || (numPages & 1))
     oops();
+
+  if (!raffs_unlocked_event)
+    raffs_unlocked_event = codal::allocateNotifyEvent();
 }
 
 void FS::erasePages(uintptr_t addr, uint32_t len) {
