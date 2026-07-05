@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -175,7 +176,8 @@ def test_save_conversation_json_path_traversal_safe_via_hash(monkeypatch, tmp_pa
 
     saved = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
 
-    Path(saved).resolve().relative_to(tmp_path.resolve())
+    assert Path(saved).resolve().is_relative_to(tmp_path.resolve())
     assert (tmp_path / "latest.json").exists()
     assert os.path.basename(saved).endswith(".json")
-    assert os.path.basename(saved).startswith("1ba7343c47dc442d_")
+    expected_prefix = f"{hashlib.sha256(b'../escape').hexdigest()[:16]}_"
+    assert os.path.basename(saved).startswith(expected_prefix)
