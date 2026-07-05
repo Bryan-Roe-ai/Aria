@@ -23,7 +23,6 @@ except ModuleNotFoundError:
 
 from chat_providers import detect_provider  # noqa: E402
 
-
 _STATUS_CACHE: dict[str, object] = {
     "key": None,
     "cached_at": 0.0,
@@ -110,7 +109,9 @@ def _set_cached_payload_json(cache_key: tuple[object, ...], payload_json: str) -
         _STATUS_CACHE["payload_json"] = payload_json
 
 
-def _build_status_payload(repo_root: Path, azure_env: dict[str, bool], openai_env: dict[str, bool]) -> dict[str, object]:
+def _build_status_payload(
+    repo_root: Path, azure_env: dict[str, bool], openai_env: dict[str, bool]
+) -> dict[str, object]:
     """Compute the full status payload (expensive path)."""
     # In-process ML deps availability
     inproc_ml = {

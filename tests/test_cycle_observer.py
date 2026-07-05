@@ -1,4 +1,5 @@
 """Tests for core.cycle_observer and AriaRunner integration."""
+
 from __future__ import annotations
 
 import pytest
@@ -161,11 +162,13 @@ class TestCycleObserverMemoryWrites:
 class TestAriaRunnerObserverIntegration:
     def test_runner_has_observer(self):
         from core.runner import AriaRunner
+
         r = AriaRunner()
         assert isinstance(r.observer, CycleObserver)
 
     def test_run_once_increments_observer(self):
         from core.runner import AriaRunner
+
         r = AriaRunner()
         assert r.observer.total_cycles == 0
         r.run_once()
@@ -174,6 +177,7 @@ class TestAriaRunnerObserverIntegration:
 
     def test_run_once_publishes_cycle_events(self):
         from core.runner import AriaRunner
+
         completed_events = []
         r = AriaRunner()
         r.bus.subscribe(CycleObserver.TOPIC_COMPLETED, completed_events.append)
@@ -185,6 +189,7 @@ class TestAriaRunnerObserverIntegration:
 
     def test_observer_stats_after_run_once(self):
         from core.runner import AriaRunner
+
         r = AriaRunner()
         r.run_once()
         s = r.observer.stats()
@@ -196,6 +201,7 @@ class TestAriaRunnerObserverIntegration:
 # ---------------------------------------------------------------------------
 # Slow-cycle threshold tests
 # ---------------------------------------------------------------------------
+
 
 class TestCycleObserverSlowThreshold:
     def test_slow_cycle_event_emitted_when_threshold_exceeded(self):

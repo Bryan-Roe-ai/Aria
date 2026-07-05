@@ -23,11 +23,11 @@ from chat_providers import (
     LMStudioProvider,
     LocalEchoProvider,
     OllamaProvider,
-    _provider_detection_cache,
-    _provider_detection_cache_lock,
     _check_ollama_available,
     _ollama_availability_cache,
     _ollama_cache_lock,
+    _provider_detection_cache,
+    _provider_detection_cache_lock,
     detect_provider,
 )
 
