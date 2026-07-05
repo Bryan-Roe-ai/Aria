@@ -30,11 +30,7 @@ Your identity needs ``Azure AI User`` on the Foundry project scope.
 
 import os
 
-from azure.ai.projects import (
-    AIProjectClient,
-    MemoryStoreDefaultDefinition,
-    MemoryStoreDefaultOptions,
-)
+from azure.ai.projects import AIProjectClient, MemoryStoreDefaultDefinition, MemoryStoreDefaultOptions
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
