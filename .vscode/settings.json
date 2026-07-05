@@ -210,5 +210,17 @@
         "./tests/test_",
         "./ai-projects/quantum-ml/src"
     ],
-    "mirrord.promptUsingBinary": false
+    "mirrord.promptUsingBinary": false,
+    "cSpell.words": [
+        "ACMRTUXB",
+        "aitk",
+        "evals",
+        "isort",
+        "MYPY",
+        "pids",
+        "pycache",
+        "PYTEST",
+        "venv",
+        "XDIST"
+    ]
 }

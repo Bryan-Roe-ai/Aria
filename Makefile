@@ -22,9 +22,12 @@ BLACK        ?= $(PYTHON) -m black
 MYPY         ?= $(PYTHON) -m mypy
 COMPOSE      ?= docker compose
 TEST_PATH    ?= tests
+LINT_PATHS   ?= $(TEST_PATH) shared/ scripts/ apps/aria/server.py
 PYTEST_COMMON_ARGS ?= -q --tb=short
 PYTEST_UNIT_MARKERS ?= not slow and not azure and not integration
 PYTEST_XDIST_WORKERS ?= auto
+PYTEST_FALLBACK_MIN_FILES_PER_WORKER ?= 2
+PYTEST_CHANGED_FALLBACK_MIN_FILES_PER_WORKER ?= 1
 ARIA_PORT    ?= 8080
 FUNC_PORT    ?= 7071
 GRADIO_PORT  ?= 7860
@@ -34,8 +37,8 @@ CANDIDATE_RESULT ?= /home/vscode/.aitk/evals/foundry/eval_f5ba66e749794172942de2
 REPORT_OUTPUT ?= data_out/pr_review_eval_comparison_report.md
 REPORT_OUTPUT_LATEST ?= data_out/pr_review_eval_comparison_report_latest.md
 
-.PHONY: all install install-qai dev start stop build test test-fast test-unit test-integration \
-	lint format type-check clean docker-build docker-dev start-gradio \
+.PHONY: all install install-qai dev start stop build test test-fast test-fast-changed test-unit test-unit-changed test-integration verify-fast verify-changed verify-changed-full \
+	lint lint-fast lint-changed format format-changed type-check type-check-changed clean docker-build docker-dev start-gradio \
 	start-local-status start-functions-clean restart-functions-clean start-qai \
 	validate-mcp validate-mcp-json validate-mcp-config \
 	validate-mcp-config-json validate-mcp-config-strict \
@@ -60,10 +63,12 @@ define run_pytest_with_optional_xdist
 	if $(PYTHON) -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('xdist') else 1)" >/dev/null 2>&1; then \
 		XDIST_FLAGS="-n $(PYTEST_XDIST_WORKERS)"; \
 		echo "🧪 pytest-xdist enabled ($$XDIST_FLAGS)"; \
+		$(PYTEST) $(1) $(PYTEST_COMMON_ARGS) $$XDIST_FLAGS $(2); \
 	else \
-		echo "🧪 pytest-xdist not installed; running without parallel workers (install with .venv/bin/python -m pip install -r requirements-dev.txt or make install)"; \
+		echo "🧪 pytest-xdist not installed; using builtin parallel fallback (install with .venv/bin/python -m pip install -r requirements-dev.txt or make install to use xdist instead)"; \
+		$(PYTHON) scripts/run_pytest_parallel.py --workers "$(PYTEST_XDIST_WORKERS)" --min-files-per-worker "$(PYTEST_FALLBACK_MIN_FILES_PER_WORKER)" $(1) $(PYTEST_COMMON_ARGS) $(2); \
 	fi; \
-	$(PYTEST) $(1) $(PYTEST_COMMON_ARGS) $$XDIST_FLAGS $(2)
+
 endef
 
 # ---------------------------------------------------------------------------
@@ -204,11 +209,80 @@ test:
 	$(call run_pytest_with_optional_xdist,$(TEST_PATH),)
 
 ## Run the fastest local test loop (smoke + unit markers)
-test-fast: smoke test-unit
+test-fast:
+	@set -e; \
+	$(MAKE) smoke & \
+	smoke_pid=$$!; \
+	$(MAKE) test-unit & \
+	test_pid=$$!; \
+	wait $$smoke_pid; \
+	wait $$test_pid
+
+## Run the fastest non-mutating local verification loop (fast lint + fast tests)
+verify-fast:
+	@set -e; \
+	$(MAKE) lint-fast & \
+	lint_pid=$$!; \
+	$(MAKE) test-fast & \
+	test_pid=$$!; \
+	wait $$lint_pid; \
+	wait $$test_pid
+
+## Run the fastest changed-scope local test loop (smoke + changed unit tests)
+test-fast-changed:
+	@set -e; \
+	$(MAKE) smoke & \
+	smoke_pid=$$!; \
+	$(MAKE) test-unit-changed & \
+	test_pid=$$!; \
+	wait $$smoke_pid; \
+	wait $$test_pid
+
+## Run the fastest changed-scope verification loop (lint + smoke + changed unit tests)
+verify-changed:
+	@set -e; \
+	$(MAKE) lint-changed & \
+	lint_pid=$$!; \
+	$(MAKE) test-fast-changed & \
+	test_pid=$$!; \
+	wait $$lint_pid; \
+	wait $$test_pid
+
+## Run the fullest changed-scope verification loop (lint + type-check + smoke + changed unit tests)
+verify-changed-full:
+	@set -e; \
+	$(MAKE) lint-changed & \
+	lint_pid=$$!; \
+	$(MAKE) type-check-changed & \
+	typecheck_pid=$$!; \
+	$(MAKE) test-fast-changed & \
+	test_pid=$$!; \
+	wait $$lint_pid; \
+	wait $$typecheck_pid; \
+	wait $$test_pid
 
 ## Run only unit tests (fast, no cloud)
 test-unit:
 	$(call run_pytest_with_optional_xdist,$(TEST_PATH),-m "$(PYTEST_UNIT_MARKERS)")
+
+## Run only changed test files through the fast unit-test path
+test-unit-changed:
+	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'tests/**/*.py' 'tests/*.py')"; \
+	if [ -z "$$files" ]; then \
+		echo "ℹ️ No changed test files to run."; \
+		exit 0; \
+	fi; \
+	echo "🧪 Running changed test files:"; \
+	printf '  %s\n' $$files; \
+	XDIST_FLAGS=""; \
+	if $(PYTHON) -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('xdist') else 1)" >/dev/null 2>&1; then \
+		XDIST_FLAGS="-n $(PYTEST_XDIST_WORKERS)"; \
+		echo "🧪 pytest-xdist enabled ($$XDIST_FLAGS)"; \
+		$(PYTEST) $$files $(PYTEST_COMMON_ARGS) $$XDIST_FLAGS -m "$(PYTEST_UNIT_MARKERS)"; \
+	else \
+		echo "🧪 pytest-xdist not installed; using builtin parallel fallback (install with .venv/bin/python -m pip install -r requirements-dev.txt or make install to use xdist instead)"; \
+		$(PYTHON) scripts/run_pytest_parallel.py --workers "$(PYTEST_XDIST_WORKERS)" --min-files-per-worker "$(PYTEST_CHANGED_FALLBACK_MIN_FILES_PER_WORKER)" $$files $(PYTEST_COMMON_ARGS) -m "$(PYTEST_UNIT_MARKERS)"; \
+	fi
 
 ## Run integration tests
 test-integration:
@@ -216,7 +290,7 @@ test-integration:
 
 ## Run the focused aria-bot startup and entrypoint regression suite
 test-aria-bot:
-	$(PYTEST) tests/test_aria_bot.py tests/test_aria_bot_root_shim.py tests/test_aria_bot_dev_entrypoints.py -q
+	$(call run_pytest_with_optional_xdist,tests/test_aria_bot.py tests/test_aria_bot_root_shim.py tests/test_aria_bot_dev_entrypoints.py,)
 
 ## Run tests with coverage report
 test-coverage:
@@ -225,8 +299,13 @@ test-coverage:
 
 ## Run a quick smoke test (import check)
 smoke:
-	$(PYTHON) -c "from shared.config import get_settings; s = get_settings(); print('Active provider:', s.active_provider())"
-	$(PYTHON) -c "from shared.logging import configure_logging, get_logger; configure_logging(); get_logger('smoke').info('OK')"
+	@set -e; \
+	$(PYTHON) -c "from shared.config import get_settings; s = get_settings(); print('Active provider:', s.active_provider())" & \
+	provider_pid=$$!; \
+	$(PYTHON) -c "from shared.logging import configure_logging, get_logger; configure_logging(); get_logger('smoke').info('OK')" & \
+	logging_pid=$$!; \
+	wait $$provider_pid; \
+	wait $$logging_pid
 	@echo "✅ Smoke test passed."
 
 ## Validate configured VS Code MCP stdio servers
@@ -382,9 +461,36 @@ validate-eval-artifacts-json:
 
 ## Run ruff linter and black formatter check
 lint:
-	$(RUFF) check $(TEST_PATH) shared/ scripts/ apps/aria/server.py
-	$(BLACK) --check --quiet shared/ scripts/ apps/aria/server.py $(TEST_PATH)
+	@set -e; \
+	$(RUFF) check $(LINT_PATHS) & \
+	ruff_pid=$$!; \
+	$(BLACK) --check --quiet $(LINT_PATHS) & \
+	black_pid=$$!; \
+	wait $$ruff_pid; \
+	wait $$black_pid
 	@echo "✅ Lint passed."
+
+## Run the quickest useful lint loop (Ruff only)
+lint-fast:
+	$(RUFF) check $(LINT_PATHS)
+	@echo "✅ Fast lint passed."
+
+## Run lint checks only for changed Python files
+lint-changed:
+	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py')"; \
+	if [ -z "$$files" ]; then \
+		echo "ℹ️ No changed Python files to lint within the standard repo quality paths."; \
+		exit 0; \
+	fi; \
+	echo "🧪 Linting changed Python files:"; \
+	printf '  %s\n' $$files; \
+	$(RUFF) check $$files & \
+	ruff_pid=$$!; \
+	$(BLACK) --check --quiet $$files & \
+	black_pid=$$!; \
+	wait $$ruff_pid; \
+	wait $$black_pid
+	@echo "✅ Changed-file lint passed."
 
 ## Auto-format code with black and isort via ruff
 format:
@@ -392,10 +498,35 @@ format:
 	$(BLACK) shared/ scripts/ apps/aria/server.py $(TEST_PATH)
 	@echo "✅ Formatting complete."
 
+## Auto-format only changed Python files
+format-changed:
+	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py')"; \
+	if [ -z "$$files" ]; then \
+		echo "ℹ️ No changed Python files to format within the standard repo quality paths."; \
+		exit 0; \
+	fi; \
+	echo "🧪 Formatting changed Python files:"; \
+	printf '  %s\n' $$files; \
+	$(RUFF) check --fix $$files || true; \
+	$(BLACK) $$files
+	@echo "✅ Changed-file formatting complete."
+
 ## Run mypy type checks
 type-check:
 	$(MYPY) shared/ --ignore-missing-imports --no-error-summary || true
 	@echo "✅ Type check done (warnings above are non-fatal)."
+
+## Run mypy only for changed shared Python files
+type-check-changed:
+	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py')"; \
+	if [ -z "$$files" ]; then \
+		echo "ℹ️ No changed shared Python files to type-check."; \
+		exit 0; \
+	fi; \
+	echo "🧪 Type-checking changed shared Python files:"; \
+	printf '  %s\n' $$files; \
+	$(MYPY) $$files --ignore-missing-imports --no-error-summary || true
+	@echo "✅ Changed-file type check done (warnings above are non-fatal)."
 
 # ---------------------------------------------------------------------------
 # Docker

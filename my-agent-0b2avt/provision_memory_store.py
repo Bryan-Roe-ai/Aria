@@ -16,7 +16,8 @@ Usage (from this directory, with the venv activated and ``az login`` done):
 Required env vars (also read from a local ``.env`` file if present):
 
     FOUNDRY_PROJECT_ENDPOINT                      e.g.
-                                                  https://<account>.services.ai.azure.com/api/projects/<project>
+        https://<account>.services.ai.azure.com/
+        api/projects/<project>
     AZURE_AI_MODEL_DEPLOYMENT_NAME                Chat model deployment
                                                   used by the memory store
     AZURE_AI_EMBEDDING_MODEL_DEPLOYMENT_NAME      Embedding model
@@ -86,8 +87,9 @@ def main() -> None:
             verified = project.beta.memory_stores.get(name=memory_store_name)
         except ResourceNotFoundError as exc:
             raise RuntimeError(
-                f"Memory store '{memory_store_name}' was not found after creation; "
-                "the service may not have persisted it."
+                "Memory store "
+                f"'{memory_store_name}' was not found "
+                "after creation; the service may not have persisted it."
             ) from exc
         print(f"Verified memory store '{verified.name}' is available on the service (id={verified.id}).")
 

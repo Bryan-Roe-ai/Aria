@@ -1,11 +1,16 @@
 """quantum_code_llm.py — Self-contained Quantum LLM for Code Generation
 ========================================================================
 Architecture: Hybrid quantum-classical transformer
-  - Quantum kernel attention  : angle encoding + variational circuit as feature map
-  - Quantum FFN middle layer  : variational quantum circuit between linear projections
-  - Code-aware tokenizer      : character-level + keyword special tokens
-  - Auto-detect backend       : Qiskit Aer (via pennylane-qiskit) → PennyLane
-                                default.qubit → classical MLP fallback
+    - Quantum kernel attention  : angle encoding + variational
+                                  circuit as feature map
+    - Quantum FFN middle layer  : variational quantum circuit
+                                  between linear projections
+    - Code-aware tokenizer      : character-level + keyword
+                                  special tokens
+    - Auto-detect backend       : Qiskit Aer
+                                  (via pennylane-qiskit) →
+                                  PennyLane default.qubit → classical
+                                  MLP fallback
 
 Quick start
 -----------
@@ -17,6 +22,12 @@ Quick start
 
 from __future__ import annotations
 
+# pylint: disable=too-many-lines
+# pylint: disable=too-many-arguments,too-many-positional-arguments
+# pylint: disable=too-many-instance-attributes,too-many-locals
+# pylint: disable=too-few-public-methods
+
+import importlib.util
 import math
 import random
 import time
@@ -26,9 +37,18 @@ from typing import Any
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
+from torch import nn
 from torch.utils.data import DataLoader, Dataset
+
+try:
+    import pennylane as qml  # type: ignore
+
+except ImportError:
+    qml = None
+
+# cspell:ignore Qiskit qiskit qubit qubits qnode qlayer qdevice
+# cspell:ignore normalised normalise triu gelu multinomial mcfg tcfg
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. QUANTUM BACKEND DETECTION
@@ -36,33 +56,29 @@ from torch.utils.data import DataLoader, Dataset
 
 QUANTUM_BACKEND: str = "classical"  # resolved at module load
 
-try:
-    import pennylane as qml  # type: ignore
+_pennylane_available = qml is not None
 
-    _PENNYLANE_AVAILABLE = True
-except ImportError:
-    _PENNYLANE_AVAILABLE = False
-
-_QISKIT_AER_AVAILABLE = False
-if _PENNYLANE_AVAILABLE:
-    try:
-        import pennylane_qiskit  # type: ignore  # noqa: F401
-        from qiskit_aer import AerSimulator  # type: ignore  # noqa: F401
-
-        _QISKIT_AER_AVAILABLE = True
-    except ImportError:
-        pass
+_qiskit_aer_available = False
+if _pennylane_available:
+    _qiskit_aer_available = (
+        importlib.util.find_spec("pennylane_qiskit") is not None
+        and importlib.util.find_spec("qiskit_aer") is not None
+    )
 
 
 def _make_device(n_qubits: int):
     """Return (backend_label, qml.device) using the best available backend."""
-    if _QISKIT_AER_AVAILABLE:
+    if _qiskit_aer_available and qml is not None:
         try:
-            dev = qml.device("qiskit.aer", wires=n_qubits, backend="statevector_simulator")
+            dev = qml.device(
+                "qiskit.aer",
+                wires=n_qubits,
+                backend="statevector_simulator",
+            )
             return "qiskit.aer", dev
-        except Exception:
+        except (RuntimeError, ValueError, TypeError):
             pass
-    if _PENNYLANE_AVAILABLE:
+    if _pennylane_available and qml is not None:
         dev = qml.device("default.qubit", wires=n_qubits)
         return "default.qubit", dev
     return "classical", None
@@ -104,10 +120,13 @@ class CodeTokenizer:
 
     PAD, BOS, EOS, UNK = 0, 1, 2, 3
 
-    def __init__(self, keywords: list[str] = _CODE_KEYWORDS) -> None:
+    def __init__(self, keywords: list[str] | None = None) -> None:
+        """Build tokenizer vocabulary from keyword and ASCII token sets."""
         # Special single-char controls
         self._special = ["<PAD>", "<BOS>", "<EOS>", "<UNK>"]
         # Multi-char keyword tokens
+        if keywords is None:
+            keywords = list(_CODE_KEYWORDS)
         self._keywords: list[str] = sorted(keywords, key=len, reverse=True)
         # All printable ASCII characters
         self._chars: list[str] = [chr(c) for c in range(32, 127)]
@@ -130,7 +149,13 @@ class CodeTokenizer:
 
         self.vocab_size: int = idx
 
-    def encode(self, text: str, add_bos: bool = True, add_eos: bool = True) -> list[int]:
+    def encode(
+        self,
+        text: str,
+        add_bos: bool = True,
+        add_eos: bool = True,
+    ) -> list[int]:
+        """Encode text into token IDs using keyword-first tokenization."""
         ids: list[int] = []
         if add_bos:
             ids.append(self.BOS)
@@ -138,7 +163,7 @@ class CodeTokenizer:
         while i < len(text):
             matched = False
             for kw in self._keywords:
-                if text[i : i + len(kw)] == kw:
+                if text[i: i + len(kw)] == kw:
                     ids.append(self._tok2id[kw])
                     i += len(kw)
                     matched = True
@@ -152,23 +177,27 @@ class CodeTokenizer:
         return ids
 
     def decode(self, ids: list[int], skip_special: bool = True) -> str:
+        """Decode token IDs into text."""
         parts: list[str] = []
         for i in ids:
             tok = self._id2tok.get(i, "")
-            if skip_special and i in (self.PAD, self.BOS, self.EOS, self.UNK):
+            if skip_special and i in (self.PAD, self.BOS, self.EOS):
                 continue
             parts.append(tok)
         return "".join(parts)
 
     @property
     def keywords(self) -> list[str]:
+        """Return configured keyword tokens."""
         return list(self._keywords)
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize tokenizer metadata."""
         return {"keywords": self.keywords}
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any] | None) -> CodeTokenizer:
+        """Construct tokenizer from serialized metadata."""
         if not payload:
             return cls()
         keywords = payload.get("keywords", _CODE_KEYWORDS)
@@ -197,15 +226,27 @@ class QuantumFeatureMapLayer(nn.Module):
         self.quantum = device is not None
 
         if self.quantum:
+            qml_mod = qml
+            assert qml_mod is not None
 
-            @qml.qnode(device, interface="torch", diff_method="best")
+            @qml_mod.qnode(device, interface="torch", diff_method="best")
             def _circuit(inputs, weights):
-                qml.AngleEmbedding(inputs, wires=range(n_qubits), rotation="Y")
-                qml.StronglyEntanglingLayers(weights, wires=range(n_qubits))
-                return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
+                qml_mod.AngleEmbedding(
+                    inputs,
+                    wires=range(n_qubits),
+                    rotation="Y",
+                )
+                qml_mod.StronglyEntanglingLayers(
+                    weights,
+                    wires=range(n_qubits),
+                )
+                return [
+                    qml_mod.expval(qml_mod.PauliZ(i))
+                    for i in range(n_qubits)
+                ]
 
             weight_shapes = {"weights": (n_var_layers, n_qubits, 3)}
-            self.qlayer = qml.qnn.TorchLayer(_circuit, weight_shapes)
+            self.qlayer = qml_mod.qnn.TorchLayer(_circuit, weight_shapes)
         else:
             # Classical fallback: MLP that mimics bounded quantum outputs
             self.qlayer = nn.Sequential(
@@ -216,6 +257,7 @@ class QuantumFeatureMapLayer(nn.Module):
             )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply the quantum (or fallback classical) feature map."""
         # x: (..., n_qubits)
         shape = x.shape
         x_flat = x.reshape(-1, self.n_qubits)
@@ -275,12 +317,13 @@ class QuantumKernelAttention(nn.Module):
         x: torch.Tensor,
         mask: torch.Tensor | None = None,
     ) -> torch.Tensor:
-        B, T, _ = x.shape
+        """Run causal self-attention with quantum-mapped Q/K features."""
+        batch_size, seq_len, _ = x.shape
 
         # Project and reshape for multi-head: (B, T, n_heads, n_qubits)
-        q = self.w_q(x).view(B, T, self.n_heads, self.n_qubits)
-        k = self.w_k(x).view(B, T, self.n_heads, self.n_qubits)
-        v = self.w_v(x).view(B, T, self.n_heads, self.head_dim)
+        q = self.w_q(x).view(batch_size, seq_len, self.n_heads, self.n_qubits)
+        k = self.w_k(x).view(batch_size, seq_len, self.n_heads, self.n_qubits)
+        v = self.w_v(x).view(batch_size, seq_len, self.n_heads, self.head_dim)
 
         # Normalise input to quantum circuit range [-π, π]
         q_norm = torch.tanh(q) * math.pi
@@ -296,11 +339,19 @@ class QuantumKernelAttention(nn.Module):
         v = v.transpose(1, 2)  # (B, n_heads, T, head_dim)
 
         # Scaled dot-product attention with quantum features
-        scores = torch.matmul(q_q, k_q.transpose(-2, -1)) / self.scale  # (B, H, T, T)
+        scores = (
+            torch.matmul(q_q, k_q.transpose(-2, -1)) / self.scale
+        )  # (B, H, T, T)
 
         # Causal mask: prevent attending to future tokens
-        causal = torch.triu(torch.ones(T, T, device=x.device, dtype=torch.bool), diagonal=1)
-        scores = scores.masked_fill(causal.unsqueeze(0).unsqueeze(0), float("-inf"))
+        causal = torch.triu(
+            torch.ones(seq_len, seq_len, device=x.device, dtype=torch.bool),
+            diagonal=1,
+        )
+        scores = scores.masked_fill(
+            causal.unsqueeze(0).unsqueeze(0),
+            float("-inf"),
+        )
         if mask is not None:
             scores = scores.masked_fill(mask, float("-inf"))
 
@@ -308,7 +359,7 @@ class QuantumKernelAttention(nn.Module):
         out = torch.matmul(attn, v)  # (B, H, T, head_dim)
 
         # Recombine heads
-        out = out.transpose(1, 2).contiguous().view(B, T, -1)
+        out = out.transpose(1, 2).contiguous().view(batch_size, seq_len, -1)
         return self.w_o(out)
 
 
@@ -320,7 +371,8 @@ class QuantumKernelAttention(nn.Module):
 class QuantumFFN(nn.Module):
     """Feed-forward block with a quantum variational circuit in the middle.
 
-         x → Linear(d_model → n_qubits) → quantum_circuit → Linear(n_qubits → d_model)
+         x → Linear(d_model → n_qubits) → quantum_circuit →
+         Linear(n_qubits → d_model)
 
     The quantum circuit is a variational layer that can learn non-linear
     quantum feature transformations.  Classical paths are used when no
@@ -340,12 +392,14 @@ class QuantumFFN(nn.Module):
         self.quantum = QuantumFeatureMapLayer(n_qubits, n_var_layers, device)
         self.up = nn.Linear(n_qubits, d_model)
         self.gate = nn.Linear(d_model, d_model)  # classical gating
+        self.activation = nn.GELU()
         self.norm_inner = nn.LayerNorm(n_qubits)
         self.drop = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Run the quantum-enhanced feed-forward transformation."""
         # Quantum path: project → quantum feature map → project back
-        h = F.gelu(self.down(x))
+        h = self.activation(self.down(x))
         h = self.norm_inner(h)
         h_norm = torch.tanh(h) * math.pi  # normalise to [-π, π]
         h_q = self.quantum(h_norm)
@@ -374,11 +428,23 @@ class QuantumTransformerBlock(nn.Module):
     ) -> None:
         super().__init__()
         self.norm1 = nn.LayerNorm(d_model)
-        self.attn = QuantumKernelAttention(d_model, n_heads, n_qubits, n_var_layers, device, dropout)
+        self.attn = QuantumKernelAttention(
+            d_model,
+            n_heads,
+            n_qubits,
+            n_var_layers,
+            device,
+            dropout,
+        )
         self.norm2 = nn.LayerNorm(d_model)
         self.ffn = QuantumFFN(d_model, n_qubits, n_var_layers, device, dropout)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Apply attention and FFN with residual connections."""
         x = x + self.attn(self.norm1(x), mask)
         x = x + self.ffn(self.norm2(x))
         return x
@@ -391,6 +457,8 @@ class QuantumTransformerBlock(nn.Module):
 
 @dataclass
 class QuantumCodeLLMConfig:
+    """Configuration for QuantumCodeLLM."""
+
     vocab_size: int = 120
     d_model: int = 64
     n_heads: int = 4
@@ -399,13 +467,15 @@ class QuantumCodeLLMConfig:
     n_var_layers: int = 2  # variational layers inside each quantum circuit
     max_seq_len: int = 128
     dropout: float = 0.1
-    backend: str = "auto"  # "auto" | "qiskit.aer" | "default.qubit" | "classical"
+    # "auto" | "qiskit.aer" | "default.qubit" | "classical"
+    backend: str = "auto"
 
 
 class QuantumCodeLLM(nn.Module):
     """Quantum-enhanced language model for code generation.
 
-    Embedding → Positional Encoding → N × QuantumTransformerBlock → Output head
+    Embedding → Positional Encoding →
+    N × QuantumTransformerBlock → Output head
     """
 
     def __init__(self, config: QuantumCodeLLMConfig) -> None:
@@ -418,13 +488,21 @@ class QuantumCodeLLM(nn.Module):
         elif config.backend == "classical":
             self._backend_label, self._qdevice = "classical", None
         else:
-            if not _PENNYLANE_AVAILABLE:
-                raise RuntimeError("A non-classical backend was requested but PennyLane is not installed")
+            if not _pennylane_available:
+                raise RuntimeError(
+                    "A non-classical backend was requested but "
+                    "PennyLane is not installed"
+                )
+            assert qml is not None
             self._backend_label = config.backend
             self._qdevice = qml.device(config.backend, wires=config.n_qubits)
 
         # Embeddings
-        self.token_emb = nn.Embedding(config.vocab_size, config.d_model, padding_idx=0)
+        self.token_emb = nn.Embedding(
+            config.vocab_size,
+            config.d_model,
+            padding_idx=0,
+        )
         self.pos_emb = nn.Embedding(config.max_seq_len, config.d_model)
         self.emb_drop = nn.Dropout(config.dropout)
 
@@ -446,10 +524,10 @@ class QuantumCodeLLM(nn.Module):
         self.norm = nn.LayerNorm(config.d_model)
         self.head = nn.Linear(config.d_model, config.vocab_size, bias=False)
 
+        self._init_weights()
+
         # Weight tying: output head shares weights with token embedding
         self.head.weight = self.token_emb.weight
-
-        self._init_weights()
 
     def _init_weights(self) -> None:
         for m in self.modules():
@@ -460,7 +538,11 @@ class QuantumCodeLLM(nn.Module):
             elif isinstance(m, nn.Embedding):
                 nn.init.normal_(m.weight, std=0.02)
 
-    def forward(self, input_ids: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self,
+        input_ids: torch.Tensor,
+        mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         """
         Args:
             input_ids : (B, T) token indices
@@ -469,14 +551,17 @@ class QuantumCodeLLM(nn.Module):
         Returns:
             logits : (B, T, vocab_size)
         """
-        B, T = input_ids.shape
-        if T > self.config.max_seq_len:
+        _, seq_len = input_ids.shape
+        if seq_len > self.config.max_seq_len:
             raise ValueError(
-                f"input length {T} exceeds max_seq_len={self.config.max_seq_len}; "
+                "input length "
+                f"{seq_len} exceeds max_seq_len={self.config.max_seq_len}; "
                 "truncate input_ids before calling forward"
             )
         tok = self.token_emb(input_ids)
-        pos = self.pos_emb(torch.arange(T, device=input_ids.device).unsqueeze(0))
+        pos = self.pos_emb(
+            torch.arange(seq_len, device=input_ids.device).unsqueeze(0)
+        )
         x = self.emb_drop(tok + pos)
 
         for block in self.blocks:
@@ -494,7 +579,9 @@ class QuantumCodeLLM(nn.Module):
         top_k: int = 40,
         eos_id: int = 2,
     ) -> torch.Tensor:
-        """Autoregressively generate tokens using temperature + top-k sampling."""
+        """Autoregressively generate tokens with temperature and top-k
+        sampling.
+        """
         if prompt_ids.ndim != 2 or prompt_ids.shape[0] != 1:
             raise ValueError("prompt_ids must have shape (1, T)")
         if temperature <= 0:
@@ -503,10 +590,11 @@ class QuantumCodeLLM(nn.Module):
             raise ValueError("top_k must be >= 0")
 
         self.eval()
-        ids = prompt_ids.clone()  # (1, T)
+        model_device = next(self.parameters()).device
+        ids = prompt_ids.to(model_device).clone()  # (1, T)
         for _ in range(max_new_tokens):
             # Truncate to max_seq_len
-            ids_cond = ids[:, -self.config.max_seq_len :]
+            ids_cond = ids[:, -self.config.max_seq_len:]
             logits = self.forward(ids_cond)  # (1, T, vocab)
             next_logits = logits[:, -1, :] / temperature  # (1, vocab)
 
@@ -514,7 +602,10 @@ class QuantumCodeLLM(nn.Module):
             if top_k > 0:
                 k = min(top_k, next_logits.shape[-1])
                 kth_val = torch.topk(next_logits, k).values[:, -1, None]
-                next_logits = next_logits.masked_fill(next_logits < kth_val, float("-inf"))
+                next_logits = next_logits.masked_fill(
+                    next_logits < kth_val,
+                    float("-inf"),
+                )
 
             probs = F.softmax(next_logits, dim=-1)
             next_id = torch.multinomial(probs, num_samples=1)  # (1, 1)
@@ -525,11 +616,15 @@ class QuantumCodeLLM(nn.Module):
 
     @property
     def backend(self) -> str:
+        """Return resolved backend label."""
         return self._backend_label
 
     def parameter_count(self) -> dict:
+        """Return total and trainable parameter counts."""
         total = sum(p.numel() for p in self.parameters())
-        trainable = sum(p.numel() for p in self.parameters() if p.requires_grad)
+        trainable = sum(
+            p.numel() for p in self.parameters() if p.requires_grad
+        )
         return {"total": total, "trainable": trainable}
 
 
@@ -541,13 +636,28 @@ _PYTHON_SNIPPETS = [
     "def add(a, b):\n    return a + b\n",
     "def subtract(a, b):\n    return a - b\n",
     "def multiply(x, y):\n    return x * y\n",
-    "def divide(x, y):\n    if y == 0:\n        return None\n    return x / y\n",
+    (
+        "def divide(x, y):\n"
+        "    if y == 0:\n"
+        "        return None\n"
+        "    return x / y\n"
+    ),
     "def square(n):\n    return n * n\n",
     "def cube(n):\n    return n * n * n\n",
     "def is_even(n):\n    return n % 2 == 0\n",
     "def is_odd(n):\n    return n % 2 != 0\n",
-    "def factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n - 1)\n",
-    "def fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n - 1) + fibonacci(n - 2)\n",
+    (
+        "def factorial(n):\n"
+        "    if n <= 1:\n"
+        "        return 1\n"
+        "    return n * factorial(n - 1)\n"
+    ),
+    (
+        "def fibonacci(n):\n"
+        "    if n <= 1:\n"
+        "        return n\n"
+        "    return fibonacci(n - 1) + fibonacci(n - 2)\n"
+    ),
     "def max_value(lst):\n    return max(lst)\n",
     "def min_value(lst):\n    return min(lst)\n",
     "def sum_list(lst):\n    return sum(lst)\n",
@@ -556,14 +666,69 @@ _PYTHON_SNIPPETS = [
     "def to_lower(s):\n    return s.lower()\n",
     "def count_chars(s):\n    return len(s)\n",
     "def greet(name):\n    return 'Hello, ' + name + '!'\n",
-    "class Counter:\n    def __init__(self):\n        self.count = 0\n    def increment(self):\n        self.count += 1\n    def get(self):\n        return self.count\n",
-    "class Stack:\n    def __init__(self):\n        self.items = []\n    def push(self, item):\n        self.items.append(item)\n    def pop(self):\n        return self.items.pop()\n    def is_empty(self):\n        return len(self.items) == 0\n",
-    "def bubble_sort(lst):\n    n = len(lst)\n    for i in range(n):\n        for j in range(n - i - 1):\n            if lst[j] > lst[j + 1]:\n                lst[j], lst[j + 1] = lst[j + 1], lst[j]\n    return lst\n",
-    "def binary_search(lst, target):\n    low, high = 0, len(lst) - 1\n    while low <= high:\n        mid = (low + high) // 2\n        if lst[mid] == target:\n            return mid\n        elif lst[mid] < target:\n            low = mid + 1\n        else:\n            high = mid - 1\n    return -1\n",
-    "def flatten(lst):\n    result = []\n    for item in lst:\n        if isinstance(item, list):\n            result.extend(flatten(item))\n        else:\n            result.append(item)\n    return result\n",
+    (
+        "class Counter:\n"
+        "    def __init__(self):\n"
+        "        self.count = 0\n"
+        "    def increment(self):\n"
+        "        self.count += 1\n"
+        "    def get(self):\n"
+        "        return self.count\n"
+    ),
+    (
+        "class Stack:\n"
+        "    def __init__(self):\n"
+        "        self.items = []\n"
+        "    def push(self, item):\n"
+        "        self.items.append(item)\n"
+        "    def pop(self):\n"
+        "        return self.items.pop()\n"
+        "    def is_empty(self):\n"
+        "        return len(self.items) == 0\n"
+    ),
+    (
+        "def bubble_sort(lst):\n"
+        "    n = len(lst)\n"
+        "    for i in range(n):\n"
+        "        for j in range(n - i - 1):\n"
+        "            if lst[j] > lst[j + 1]:\n"
+        "                lst[j], lst[j + 1] = lst[j + 1], lst[j]\n"
+        "    return lst\n"
+    ),
+    (
+        "def binary_search(lst, target):\n"
+        "    low, high = 0, len(lst) - 1\n"
+        "    while low <= high:\n"
+        "        mid = (low + high) // 2\n"
+        "        if lst[mid] == target:\n"
+        "            return mid\n"
+        "        elif lst[mid] < target:\n"
+        "            low = mid + 1\n"
+        "        else:\n"
+        "            high = mid - 1\n"
+        "    return -1\n"
+    ),
+    (
+        "def flatten(lst):\n"
+        "    result = []\n"
+        "    for item in lst:\n"
+        "        if isinstance(item, list):\n"
+        "            result.extend(flatten(item))\n"
+        "        else:\n"
+        "            result.append(item)\n"
+        "    return result\n"
+    ),
     "def gcd(a, b):\n    while b:\n        a, b = b, a % b\n    return a\n",
     "def lcm(a, b):\n    return a * b // gcd(a, b)\n",
-    "def is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n ** 0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n",
+    (
+        "def is_prime(n):\n"
+        "    if n < 2:\n"
+        "        return False\n"
+        "    for i in range(2, int(n ** 0.5) + 1):\n"
+        "        if n % i == 0:\n"
+        "            return False\n"
+        "    return True\n"
+    ),
     "def clamp(value, lo, hi):\n    return max(lo, min(hi, value))\n",
     "def average(lst):\n    return sum(lst) / len(lst)\n",
     "def unique(lst):\n    return list(set(lst))\n",
@@ -581,20 +746,26 @@ class CodeDataset(Dataset):
     def __init__(
         self,
         tokenizer: CodeTokenizer,
-        snippets: list[str] = _PYTHON_SNIPPETS,
+        snippets: list[str] | None = None,
         seq_len: int = 64,
     ) -> None:
+        """Build next-token dataset from code snippets."""
         self.tokenizer = tokenizer
         self.seq_len = seq_len
+        snippets = _PYTHON_SNIPPETS if snippets is None else snippets
         # Concatenate all snippets into one long token stream
         full_text = "\n".join(snippets) + "\n"
-        self.tokens = tokenizer.encode(full_text, add_bos=False, add_eos=False)
+        self.tokens = tokenizer.encode(
+            full_text,
+            add_bos=False,
+            add_eos=False,
+        )
 
     def __len__(self) -> int:
         return max(0, len(self.tokens) - self.seq_len - 1)
 
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
-        chunk = self.tokens[idx : idx + self.seq_len + 1]
+        chunk = self.tokens[idx: idx + self.seq_len + 1]
         # Pad if needed (last chunk)
         while len(chunk) < self.seq_len + 1:
             chunk.append(CodeTokenizer.PAD)
@@ -610,6 +781,8 @@ class CodeDataset(Dataset):
 
 @dataclass
 class TrainConfig:
+    """Training hyperparameters for QuantumCodeTrainer."""
+
     n_epochs: int = 5
     batch_size: int = 8
     lr: float = 3e-3
@@ -674,20 +847,23 @@ class QuantumCodeTrainer:
             epoch_loss = 0.0
             t0 = time.time()
 
-            for batch_idx, (x, y) in enumerate(self.loader):
+            for x, y in self.loader:
                 x, y = x.to(self._device), y.to(self._device)
 
                 logits = self.model(x)  # (B, T, vocab)
-                B, T, V = logits.shape
+                batch_size, seq_len, vocab_size = logits.shape
                 loss = F.cross_entropy(
-                    logits.view(B * T, V),
-                    y.view(B * T),
+                    logits.reshape(batch_size * seq_len, vocab_size),
+                    y.reshape(batch_size * seq_len),
                     ignore_index=CodeTokenizer.PAD,
                 )
 
                 self.optimizer.zero_grad()
                 loss.backward()
-                nn.utils.clip_grad_norm_(self.model.parameters(), self.cfg.grad_clip)
+                nn.utils.clip_grad_norm_(
+                    self.model.parameters(),
+                    self.cfg.grad_clip,
+                )
                 self.optimizer.step()
                 self.scheduler.step()
 
@@ -697,16 +873,26 @@ class QuantumCodeTrainer:
                 if step % self.cfg.log_every == 0:
                     lr_now = self.scheduler.get_last_lr()[0]
                     perp = math.exp(min(loss.item(), 20))
-                    print(f"  step {step:>5d} | loss {loss.item():.4f} | ppl {perp:.1f} | lr {lr_now:.2e}")
+                    print(
+                        f"  step {step:>5d} | loss {loss.item():.4f} "
+                        f"| ppl {perp:.1f} | lr {lr_now:.2e}"
+                    )
 
             avg_loss = epoch_loss / max(1, len(self.loader))
             elapsed = time.time() - t0
+            avg_ppl = math.exp(min(avg_loss, 20))
             print(
                 f"Epoch {epoch}/{self.cfg.n_epochs} — "
-                f"avg loss {avg_loss:.4f} | ppl {math.exp(min(avg_loss, 20)):.1f} "
+                f"avg loss {avg_loss:.4f} | ppl {avg_ppl:.1f} "
                 f"| {elapsed:.1f}s"
             )
-            history.append({"epoch": epoch, "loss": avg_loss, "ppl": math.exp(min(avg_loss, 20))})
+            history.append(
+                {
+                    "epoch": epoch,
+                    "loss": avg_loss,
+                    "ppl": avg_ppl,
+                }
+            )
 
         return history
 
@@ -720,11 +906,14 @@ def train(
     model_cfg: dict | None = None,
     train_cfg: dict | None = None,
     extra_snippets: list[str] | None = None,
-) -> tuple[QuantumCodeLLM, CodeTokenizer]:
+) -> tuple[
+    QuantumCodeLLM, CodeTokenizer
+]:
     """Train a QuantumCodeLLM and return (model, tokenizer).
 
     Args:
-        model_cfg : kwargs for QuantumCodeLLMConfig (e.g. n_qubits, d_model)
+        model_cfg : kwargs for QuantumCodeLLMConfig
+                    (e.g. n_qubits, d_model)
         train_cfg : kwargs for TrainConfig (e.g. n_epochs, lr)
         extra_snippets : additional Python code strings to train on
 
@@ -743,7 +932,10 @@ def train(
 
     print(f"QuantumCodeLLM ready — backend: {model.backend}")
     params = model.parameter_count()
-    print(f"Parameters: {params['total']:,} total, {params['trainable']:,} trainable")
+    print(
+        f"Parameters: {params['total']:,} total, "
+        f"{params['trainable']:,} trainable"
+    )
     print(f"Vocab size: {tokenizer.vocab_size}")
 
     tcfg = TrainConfig(extra_snippets=extra_snippets, **train_cfg)
@@ -780,10 +972,13 @@ def load_checkpoint(
     checkpoint_path: str | Path,
     map_location: str | torch.device = "cpu",
     backend_override: str | None = None,
-) -> tuple[QuantumCodeLLM, CodeTokenizer, dict[str, Any]]:
+) -> tuple[
+    QuantumCodeLLM, CodeTokenizer, dict[str, Any]
+]:
     """Load a checkpoint created by save_checkpoint.
 
-    Also supports legacy payloads where config was serialized as QuantumCodeLLMConfig.
+    Also supports legacy payloads where config was serialized as
+    QuantumCodeLLMConfig.
     """
     path = Path(checkpoint_path)
     if not path.exists():
@@ -791,7 +986,9 @@ def load_checkpoint(
 
     payload = torch.load(path, map_location=map_location, weights_only=False)
     if "model_state" not in payload:
-        raise ValueError(f"Invalid checkpoint payload: missing model_state in {path}")
+        raise ValueError(
+            f"Invalid checkpoint payload: missing model_state in {path}"
+        )
 
     tokenizer = CodeTokenizer.from_dict(payload.get("tokenizer"))
 
@@ -801,7 +998,9 @@ def load_checkpoint(
     elif isinstance(raw_config, dict):
         config = QuantumCodeLLMConfig(**raw_config)
     else:
-        raise ValueError(f"Invalid checkpoint payload: missing valid config in {path}")
+        raise ValueError(
+            f"Invalid checkpoint payload: missing valid config in {path}"
+        )
 
     config.vocab_size = tokenizer.vocab_size
     if backend_override is not None:
@@ -833,7 +1032,12 @@ def generate(
 
     Example::
 
-        code = generate(model, tokenizer, "def factorial(n):", max_new_tokens=60)
+        code = generate(
+            model,
+            tokenizer,
+            "def factorial(n):",
+            max_new_tokens=60,
+        )
         print(code)
     """
     if temperature <= 0:
@@ -842,8 +1046,13 @@ def generate(
         raise ValueError("top_k must be >= 0")
 
     model.eval()
+    model_device = next(model.parameters()).device
+    requested_device = torch.device(device)
+    input_device = (
+        model_device if requested_device != model_device else requested_device
+    )
     ids = tokenizer.encode(prompt, add_bos=True, add_eos=False)
-    input_tensor = torch.tensor([ids], dtype=torch.long, device=device)
+    input_tensor = torch.tensor([ids], dtype=torch.long, device=input_device)
     with torch.no_grad():
         out_ids = model.generate(
             input_tensor,
@@ -853,7 +1062,7 @@ def generate(
             eos_id=tokenizer.EOS,
         )
     # Strip the prompt prefix, decode only new tokens
-    new_ids = out_ids[0, len(ids) :].tolist()
+    new_ids = out_ids[0, len(ids):].tolist()
     return prompt + tokenizer.decode(new_ids)
 
 
