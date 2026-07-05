@@ -24,9 +24,7 @@ def main() -> int:
     cfg_current = _load_json(Path("Database_20260705.json"))
     cfg_legacy = _load_json(Path("Database_20260620.json"))
     local_values = _load_json(Path("local.settings.json")).get("Values", {})
-    example_values = _load_json(
-        Path("local.settings.json.example")
-    ).get("Values", {})
+    example_values = _load_json(Path("local.settings.json.example")).get("Values", {})
     env_path = Path(".env.example")
     if env_path.exists():
         env_text = env_path.read_text(encoding="utf-8")
@@ -34,18 +32,10 @@ def main() -> int:
         env_text = ""
 
     checks = {
-        "db_current_uses_env": (
-            cfg_current["data-source"]["connection-string"]
-            == "@env('DAB_CONNECTION_STRING')"
-        ),
-        "db_legacy_uses_env": (
-            cfg_legacy["data-source"]["connection-string"]
-            == "@env('DAB_CONNECTION_STRING')"
-        ),
+        "db_current_uses_env": (cfg_current["data-source"]["connection-string"] == "@env('DAB_CONNECTION_STRING')"),
+        "db_legacy_uses_env": (cfg_legacy["data-source"]["connection-string"] == "@env('DAB_CONNECTION_STRING')"),
         "local_has_dab_connection": "DAB_CONNECTION_STRING" in local_values,
-        "example_has_dab_connection": (
-            "DAB_CONNECTION_STRING" in example_values
-        ),
+        "example_has_dab_connection": ("DAB_CONNECTION_STRING" in example_values),
         "env_example_has_dab_connection": "DAB_CONNECTION_STRING=" in env_text,
     }
 
