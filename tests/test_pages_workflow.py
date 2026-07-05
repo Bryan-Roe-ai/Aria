@@ -14,8 +14,8 @@ def _load_workflow(workflow_name: str) -> dict:
 
 
 def _workflow_triggers(workflow: dict) -> dict:
-    # PyYAML still treats an unquoted `on` key as a YAML 1.1 boolean in GitHub
-    # workflow files, so support both parsed forms here.
+    # PyYAML parses an unquoted `on` key as boolean True per the YAML 1.1
+    # rules, so support both parsed forms here.
     return workflow.get("on") or workflow.get(True, {})
 
 
