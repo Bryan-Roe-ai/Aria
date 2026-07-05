@@ -4,6 +4,10 @@ Uses a trained quantum-enhanced language model for chat interactions
 Integrates real quantum circuits in the attention mechanism
 """
 
+# flake8: noqa
+# pylint: disable=line-too-long,no-name-in-module,too-many-instance-attributes,too-few-public-methods
+
+import json
 import logging
 import sys
 from collections.abc import Iterator
@@ -28,14 +32,13 @@ for p in [str(quantum_ml_path), str(quantum_ml_src)]:
         sys.path.insert(0, p)
 
 try:
-    from quantum_transformer import QUANTUM_AVAILABLE, QuantumLLM
+    from quantum_transformer import QuantumLLM
 
     QUANTUM_LLM_AVAILABLE = True
 except ImportError as e:
     QuantumLLM = None  # type: ignore[assignment]
-    QUANTUM_AVAILABLE = False
     QUANTUM_LLM_AVAILABLE = False
-    logging.warning(f"QuantumLLM not available: {e}")
+    logging.warning("QuantumLLM not available: %s", e)
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +57,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         model_path: str,
         temperature: float = 0.8,
         max_output_tokens: int = 200,
-        **kwargs,
+        **_kwargs,
     ):
         super().__init__()
         self.model_path = self._validate_model_path(model_path)
@@ -76,9 +79,9 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         try:
             self._load_model()
-            logger.info(f"Quantum LLM loaded from {self.model_path}")
-        except Exception as e:
-            logger.error(f"Failed to load quantum LLM: {e}")
+            logger.info("Quantum LLM loaded from %s", self.model_path)
+        except (FileNotFoundError, KeyError, OSError, RuntimeError, ValueError) as e:
+            logger.error("Failed to load quantum LLM: %s", e)
             raise
 
     @staticmethod
@@ -87,7 +90,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         try:
             path.resolve().relative_to(base_dir.resolve())
             return True
-        except Exception:
+        except (OSError, ValueError):
             return False
 
     def _validate_model_path(self, model_path: str) -> Path:
@@ -98,7 +101,10 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         resolved = candidate.resolve()
         trusted_roots = [repo_root.resolve(), quantum_ml_path.resolve()]
-        if not any(self._is_within_directory(resolved, root) for root in trusted_roots):
+        if not any(
+            self._is_within_directory(resolved, root)
+            for root in trusted_roots
+        ):
             raise ValueError(
                 f"Refusing to load model from untrusted path: {resolved}. "
                 "Model path must be under the project repository."
@@ -112,8 +118,13 @@ class QuantumLLMChatProvider(BaseChatProvider):
             raise FileNotFoundError(f"Checkpoint file not found: {resolved}")
 
         trusted_roots = [repo_root.resolve(), quantum_ml_path.resolve()]
-        if not any(self._is_within_directory(resolved, root) for root in trusted_roots):
-            raise ValueError(f"Refusing to deserialize checkpoint from untrusted path: {resolved}")
+        if not any(
+            self._is_within_directory(resolved, root)
+            for root in trusted_roots
+        ):
+            raise ValueError(
+                f"Refusing to deserialize checkpoint from untrusted path: {resolved}"
+            )
         return resolved
 
     def _resolve_checkpoint_path(self) -> Path:
@@ -124,8 +135,6 @@ class QuantumLLMChatProvider(BaseChatProvider):
         status_file = self.model_path / "status.json"
         if status_file.exists():
             try:
-                import json
-
                 with open(status_file, encoding="utf-8") as status_handle:
                     status_payload = json.load(status_handle)
 
@@ -138,10 +147,14 @@ class QuantumLLMChatProvider(BaseChatProvider):
                     checkpoint_path = Path(checkpoint_ref)
                     if not checkpoint_path.is_absolute():
                         direct_candidate = self.model_path / checkpoint_path
-                        checkpoint_path = direct_candidate if direct_candidate.exists() else repo_root / checkpoint_path
+                        checkpoint_path = (
+                            direct_candidate
+                            if direct_candidate.exists()
+                            else repo_root / checkpoint_path
+                        )
                     if checkpoint_path.exists():
                         return checkpoint_path
-            except Exception as exc:  # noqa: BLE001
+            except (OSError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 logger.warning(
                     "Failed to read Quantum LLM status metadata from %s: %s",
                     status_file,
@@ -158,7 +171,9 @@ class QuantumLLMChatProvider(BaseChatProvider):
                 return candidate
 
         attempted = "\n  - " + "\n  - ".join(str(p) for p in candidates)
-        raise FileNotFoundError(f"No Quantum LLM checkpoint found in {self.model_path}. Tried:{attempted}")
+        raise FileNotFoundError(
+            f"No Quantum LLM checkpoint found in {self.model_path}. Tried:{attempted}"
+        )
 
     def _derive_model_config(self, checkpoint: dict[str, Any]) -> dict[str, Any]:
         """Normalize model config across legacy and modern checkpoint schemas."""
@@ -166,26 +181,44 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         if isinstance(model_cfg, dict) and model_cfg:
             return {
-                "vocab_size": int(model_cfg.get("vocab_size", checkpoint.get("vocab_size", 256))),
-                "d_model": int(model_cfg.get("d_model", checkpoint.get("d_model", 64))),
-                "n_heads": int(model_cfg.get("n_heads", checkpoint.get("n_heads", 4))),
+                "vocab_size": int(
+                    model_cfg.get("vocab_size", checkpoint.get("vocab_size", 256))
+                ),
+                "d_model": int(
+                    model_cfg.get("d_model", checkpoint.get("d_model", 64))
+                ),
+                "n_heads": int(
+                    model_cfg.get("n_heads", checkpoint.get("n_heads", 4))
+                ),
                 "n_transformer_layers": int(
                     model_cfg.get(
                         "n_transformer_layers",
                         model_cfg.get("n_layers", checkpoint.get("n_layers", 2)),
                     )
                 ),
-                "n_qubits": int(model_cfg.get("n_qubits", checkpoint.get("n_qubits", 4))),
-                "n_quantum_layers": int(model_cfg.get("n_quantum_layers", checkpoint.get("n_quantum_layers", 2))),
+                "n_qubits": int(
+                    model_cfg.get("n_qubits", checkpoint.get("n_qubits", 4))
+                ),
+                "n_quantum_layers": int(
+                    model_cfg.get(
+                        "n_quantum_layers",
+                        checkpoint.get("n_quantum_layers", 2),
+                    )
+                ),
                 "max_seq_len": int(
                     model_cfg.get(
                         "max_seq_len",
-                        model_cfg.get("max_seq_length", checkpoint.get("max_seq_length", 128)),
+                        model_cfg.get(
+                            "max_seq_length",
+                            checkpoint.get("max_seq_length", 128),
+                        ),
                     )
                 ),
                 "entanglement": model_cfg.get("entanglement", "circular"),
                 "dropout": float(model_cfg.get("dropout", 0.0)),
-                "use_quantum_attention": bool(model_cfg.get("use_quantum_attention", True)),
+                "use_quantum_attention": bool(
+                    model_cfg.get("use_quantum_attention", True)
+                ),
                 "use_quantum_ffn": bool(model_cfg.get("use_quantum_ffn", True)),
                 "tie_embeddings": bool(model_cfg.get("tie_embeddings", True)),
             }
@@ -195,13 +228,19 @@ class QuantumLLMChatProvider(BaseChatProvider):
             "vocab_size": int(checkpoint.get("vocab_size", 256)),
             "d_model": int(checkpoint.get("d_model", 64)),
             "n_heads": int(checkpoint.get("n_heads", 4)),
-            "n_transformer_layers": int(checkpoint.get("n_layers", checkpoint.get("n_transformer_layers", 2))),
+            "n_transformer_layers": int(
+                checkpoint.get("n_layers", checkpoint.get("n_transformer_layers", 2))
+            ),
             "n_qubits": int(checkpoint.get("n_qubits", 4)),
             "n_quantum_layers": int(checkpoint.get("n_quantum_layers", 2)),
-            "max_seq_len": int(checkpoint.get("max_seq_length", checkpoint.get("max_seq_len", 128))),
+            "max_seq_len": int(
+                checkpoint.get("max_seq_length", checkpoint.get("max_seq_len", 128))
+            ),
             "entanglement": checkpoint.get("entanglement", "circular"),
             "dropout": float(checkpoint.get("dropout", 0.0)),
-            "use_quantum_attention": bool(checkpoint.get("use_quantum_attention", True)),
+            "use_quantum_attention": bool(
+                checkpoint.get("use_quantum_attention", True)
+            ),
             "use_quantum_ffn": bool(checkpoint.get("use_quantum_ffn", True)),
             "tie_embeddings": bool(checkpoint.get("tie_embeddings", True)),
         }
@@ -213,7 +252,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         checkpoint_path = self._resolve_checkpoint_path()
         checkpoint_path = self._validate_checkpoint_path(checkpoint_path)
-        logger.info(f"Loading checkpoint from {checkpoint_path}")
+        logger.info("Loading checkpoint from %s", checkpoint_path)
         checkpoint = torch.load(checkpoint_path, map_location=self.device)
 
         model_state_dict = checkpoint.get("model_state_dict") or checkpoint.get("state_dict")
@@ -226,7 +265,9 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         # Build model using the current quantum_transformer API.
         if hasattr(QuantumLLM, "from_config"):
-            self.model = QuantumLLM.from_config({"quantum_transformer": self.model_config}).to(self.device)
+            self.model = QuantumLLM.from_config(
+                {"quantum_transformer": self.model_config}
+            ).to(self.device)
         else:  # defensive fallback for older implementations
             self.model = QuantumLLM(
                 vocab_size=self.model_config["vocab_size"],
@@ -331,7 +372,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
                     top_k=20,
                 )
 
-            new_token_ids = generated_ids[0, context.size(1) :]
+            new_token_ids = generated_ids[0, context.size(1):]
             return self._decode_tokens(new_token_ids)
 
         generated = []
@@ -365,7 +406,11 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
         return "".join(generated)
 
-    def complete(self, messages: list[RoleMessage], stream: bool = False) -> str | Iterator[str]:
+    def complete(
+        self,
+        messages: list[RoleMessage],
+        stream: bool = False,
+    ) -> str | Iterator[str]:
         """
         Generate a response using the quantum LLM.
 
@@ -379,7 +424,9 @@ class QuantumLLMChatProvider(BaseChatProvider):
         if not self.model:
             error_msg = "Model not loaded"
             logger.error(error_msg)
-            return error_msg if not stream else iter([error_msg])
+            if stream:
+                return iter([error_msg])
+            return error_msg
 
         # Build prompt from conversation
         prompt_parts = []
@@ -405,13 +452,14 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
             if stream:
                 return self._stream_response(response)
-            else:
-                return response
+            return response
 
-        except Exception as e:
+        except (OSError, RuntimeError, TypeError, ValueError) as e:
             error_msg = f"Generation failed: {e}"
             logger.error(error_msg)
-            return error_msg if not stream else iter([error_msg])
+            if stream:
+                return iter([error_msg])
+            return error_msg
 
     def _stream_response(self, response: str) -> Iterator[str]:
         """Stream a response in small, non-empty chunks.
@@ -426,7 +474,11 @@ class QuantumLLMChatProvider(BaseChatProvider):
         buffer: list[str] = []
         for char in text:
             buffer.append(char)
-            should_flush = char == "\n" or len(buffer) >= 16 or (char.isspace() and len(buffer) >= 8)
+            should_flush = (
+                char == "\n"
+                or len(buffer) >= 16
+                or (char.isspace() and len(buffer) >= 8)
+            )
             if should_flush:
                 chunk = "".join(buffer)
                 if chunk:
@@ -438,7 +490,10 @@ class QuantumLLMChatProvider(BaseChatProvider):
 
 
 def create_quantum_llm_provider(
-    model_path: str, temperature: float = 0.8, max_output_tokens: int = 200, **kwargs
+    model_path: str,
+    temperature: float = 0.8,
+    max_output_tokens: int = 200,
+    **kwargs,
 ) -> tuple[QuantumLLMChatProvider, ProviderChoice]:
     """
     Factory function to create a quantum LLM chat provider.
@@ -462,9 +517,11 @@ def create_quantum_llm_provider(
         **kwargs,
     )
 
+    model_name = Path(model_path).name
+
     info = ProviderChoice(
         name="quantum-llm",
-        model=f"quantum-llm ({Path(model_path).name})",
+        model=f"quantum-llm ({model_name})",
     )
 
     return provider, info
