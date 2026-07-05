@@ -30,8 +30,8 @@ import gradio as gr
 APP_NAME = "QAI"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
-REPO_AUTOMATION_STATUS_PATH = os.path.join(REPO_ROOT, "data_out", "repo_automation", "status.json")
-REPO_AUTOMATION_LEGACY_STATUS_PATH = os.path.join(REPO_ROOT, "automation_status.json")
+REPO_AUTOMATION_STATUS_PATH = str(REPO_ROOT / "data_out" / "repo_automation" / "status.json")
+REPO_AUTOMATION_LEGACY_STATUS_PATH = str(REPO_ROOT / "automation_status.json")
 
 
 def default_provider_choice() -> str:
@@ -172,7 +172,7 @@ def _sanitize_cli_output(text: str, limit: int = 4000) -> str:
 
 def run_repo_automation_command(*args: str) -> str:
     """Run a repo automation command and format the captured output for the UI."""
-    command = [sys.executable, os.path.join(REPO_ROOT, "scripts", "repo_automation.py"), *args]
+    command = [sys.executable, str(REPO_ROOT / "scripts" / "repo_automation.py"), *args]
     pretty_command = "python scripts/repo_automation.py " + " ".join(args)
     try:
         completed = subprocess.run(
