@@ -191,7 +191,7 @@ class QuantumIntegration:
                     "success": False,
                     "error": f"Invalid epochs '{epochs}'.",
                 }
-            safe_epochs = epochs
+            safe_epochs = int(epochs)
 
             cmd = [
                 sys.executable,
