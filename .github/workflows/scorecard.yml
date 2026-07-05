@@ -1,26 +1,15 @@
 name: Scorecard supply-chain security
 
 on:
-  # For the Branch-Protection check. Only the default branch is supported:
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
   branch_protection_rule:
-
-  # Keep the Maintained check updated periodically:
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
   schedule:
     - cron: "33 13 * * 0"
-
-  # Run on updates to the current default branch (currently main).
   push:
     branches: ["main"]
-
-  # Allow maintainers to run manually.
   workflow_dispatch:
 
-# Default to least privilege.
 permissions: read-all
 
-# Prevent overlapping runs on the same ref; cancel stale in-progress runs.
 concurrency:
   group: scorecard-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -33,16 +22,11 @@ jobs:
     name: Scorecard analysis
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
-    # publish_results works only from the default branch.
     if: github.ref_name == github.event.repository.default_branch
 
     permissions:
-      # Upload SARIF to code scanning.
       security-events: write
-      # Publish results / badge support.
       id-token: write
-      # Read repository metadata/content for checks as needed.
       contents: read
       actions: read
 
@@ -51,7 +35,6 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-          # Scorecard checks may inspect history and branch settings context.
           fetch-depth: 0
 
       - name: Run Scorecard analysis
@@ -60,9 +43,6 @@ jobs:
           results_file: ${{ env.RESULTS_FILE }}
           results_format: sarif
           publish_results: true
-          # Optional for some checks/private repos:
-          # repo_token: ${{ secrets.SCORECARD_TOKEN }}
-          # file_mode: git
 
       - name: Upload SARIF artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
@@ -73,6 +53,6 @@ jobs:
           if-no-files-found: error
 
       - name: Upload to code scanning
-        uses: github/codeql-action/upload-sarif@<FULL_LENGTH_COMMIT_SHA> # v3.x.y
+        uses: github/codeql-action/upload-sarif@REPLACE_WITH_FULL_40_CHAR_SHA
         with:
           sarif_file: ${{ env.RESULTS_FILE }}
