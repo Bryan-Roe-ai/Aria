@@ -1,8 +1,6 @@
 import importlib.util
 import os
 
-import pytest
-
 
 def load_module():
     path = os.path.join(os.path.dirname(__file__), "..", "scripts", "gradio_hello.py")
@@ -168,11 +166,13 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_invalid_session_path_raises_chained_value_error(monkeypatch):
+def test_save_conversation_json_invalid_session_name_stays_in_conv_dir(monkeypatch):
     m = load_module()
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
 
-    with pytest.raises(ValueError, match="Invalid session path") as excinfo:
-        m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    output_path = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    output_abs = os.path.abspath(output_path)
+    conv_dir_abs = os.path.abspath(str(m.CONV_DIR))
 
-    assert isinstance(excinfo.value.__cause__, ValueError)
+    assert os.path.commonpath([output_abs, conv_dir_abs]) == conv_dir_abs
+    assert "../" not in os.path.basename(output_abs)
