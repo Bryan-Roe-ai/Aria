@@ -504,9 +504,10 @@ def quantum_llm_stream(req, ctx):
         return ctx._sse_response(_sse_generator(), status_code=200)
     except Exception as exc:
         ctx.logging.error("quantum-llm/stream error: %s", exc)
+        error_message = str(exc)
 
         def _err():
-            yield f"data: {ctx.json.dumps({'error': str(exc)})}\n\n".encode()
+            yield f"data: {ctx.json.dumps({'error': error_message})}\n\n".encode()
             yield b"data: [DONE]\n\n"
 
         return ctx._sse_response(_err(), status_code=200)
