@@ -28,6 +28,9 @@ PYTEST_UNIT_MARKERS ?= not slow and not azure and not integration
 PYTEST_XDIST_WORKERS ?= auto
 PYTEST_FALLBACK_MIN_FILES_PER_WORKER ?= 2
 PYTEST_CHANGED_FALLBACK_MIN_FILES_PER_WORKER ?= 1
+CHANGED_QUALITY_PY_FILES ?=
+CHANGED_TEST_PY_FILES ?=
+CHANGED_SHARED_PY_FILES ?=
 ARIA_PORT    ?= 8080
 FUNC_PORT    ?= 7071
 GRADIO_PORT  ?= 7860
@@ -231,9 +234,10 @@ verify-fast:
 ## Run the fastest changed-scope local test loop (smoke + changed unit tests)
 test-fast-changed:
 	@set -e; \
+	files="$(CHANGED_TEST_PY_FILES)"; \
 	$(MAKE) smoke & \
 	smoke_pid=$$!; \
-	$(MAKE) test-unit-changed & \
+	$(MAKE) test-unit-changed CHANGED_TEST_PY_FILES="$$files" & \
 	test_pid=$$!; \
 	wait $$smoke_pid; \
 	wait $$test_pid
@@ -241,9 +245,11 @@ test-fast-changed:
 ## Run the fastest changed-scope verification loop (lint + smoke + changed unit tests)
 verify-changed:
 	@set -e; \
-	$(MAKE) lint-changed & \
+	quality_files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py' | tr '\n' ' ')"; \
+	test_files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'tests/**/*.py' 'tests/*.py' | tr '\n' ' ')"; \
+	$(MAKE) lint-changed CHANGED_QUALITY_PY_FILES="$$quality_files" & \
 	lint_pid=$$!; \
-	$(MAKE) test-fast-changed & \
+	$(MAKE) test-fast-changed CHANGED_TEST_PY_FILES="$$test_files" & \
 	test_pid=$$!; \
 	wait $$lint_pid; \
 	wait $$test_pid
@@ -251,11 +257,14 @@ verify-changed:
 ## Run the fullest changed-scope verification loop (lint + type-check + smoke + changed unit tests)
 verify-changed-full:
 	@set -e; \
-	$(MAKE) lint-changed & \
+	quality_files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py' | tr '\n' ' ')"; \
+	test_files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'tests/**/*.py' 'tests/*.py' | tr '\n' ' ')"; \
+	shared_files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' | tr '\n' ' ')"; \
+	$(MAKE) lint-changed CHANGED_QUALITY_PY_FILES="$$quality_files" & \
 	lint_pid=$$!; \
-	$(MAKE) type-check-changed & \
+	$(MAKE) type-check-changed CHANGED_SHARED_PY_FILES="$$shared_files" & \
 	typecheck_pid=$$!; \
-	$(MAKE) test-fast-changed & \
+	$(MAKE) test-fast-changed CHANGED_TEST_PY_FILES="$$test_files" & \
 	test_pid=$$!; \
 	wait $$lint_pid; \
 	wait $$typecheck_pid; \
@@ -267,7 +276,10 @@ test-unit:
 
 ## Run only changed test files through the fast unit-test path
 test-unit-changed:
-	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'tests/**/*.py' 'tests/*.py')"; \
+	@files="$(CHANGED_TEST_PY_FILES)"; \
+	if [ -z "$$files" ]; then \
+		files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'tests/**/*.py' 'tests/*.py')"; \
+	fi; \
 	if [ -z "$$files" ]; then \
 		echo "ℹ️ No changed test files to run."; \
 		exit 0; \
@@ -477,7 +489,10 @@ lint-fast:
 
 ## Run lint checks only for changed Python files
 lint-changed:
-	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py')"; \
+	@files="$(CHANGED_QUALITY_PY_FILES)"; \
+	if [ -z "$$files" ]; then \
+		files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py')"; \
+	fi; \
 	if [ -z "$$files" ]; then \
 		echo "ℹ️ No changed Python files to lint within the standard repo quality paths."; \
 		exit 0; \
@@ -500,7 +515,10 @@ format:
 
 ## Auto-format only changed Python files
 format-changed:
-	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py')"; \
+	@files="$(CHANGED_QUALITY_PY_FILES)"; \
+	if [ -z "$$files" ]; then \
+		files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py' 'scripts/**/*.py' 'scripts/*.py' 'apps/**/*.py' 'apps/*.py' 'tests/**/*.py' 'tests/*.py')"; \
+	fi; \
 	if [ -z "$$files" ]; then \
 		echo "ℹ️ No changed Python files to format within the standard repo quality paths."; \
 		exit 0; \
@@ -518,7 +536,10 @@ type-check:
 
 ## Run mypy only for changed shared Python files
 type-check-changed:
-	@files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py')"; \
+	@files="$(CHANGED_SHARED_PY_FILES)"; \
+	if [ -z "$$files" ]; then \
+		files="$$(git diff --name-only --diff-filter=ACMRTUXB HEAD -- 'shared/**/*.py' 'shared/*.py')"; \
+	fi; \
 	if [ -z "$$files" ]; then \
 		echo "ℹ️ No changed shared Python files to type-check."; \
 		exit 0; \

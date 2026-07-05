@@ -15,6 +15,7 @@ import subprocess
 import sys
 from collections.abc import Iterable, Sequence
 from pathlib import Path
+from typing import cast
 
 TEST_FILE_PATTERNS = ("test_*.py", "*_test.py")
 
@@ -55,13 +56,13 @@ def normalize_workers(value: str, file_count: int, min_files_per_worker: int) ->
 
 def discover_test_files(paths: Iterable[str]) -> list[str]:
     discovered: list[str] = []
-    seen: dict[str, None] = {}
+    seen: list[str] = []
     for raw_path in paths or ["tests"]:
         path = Path(raw_path)
         if path.is_file():
             normalized = str(path)
             if normalized not in seen:
-                seen[normalized] = None
+                seen.append(normalized)
                 discovered.append(normalized)
             continue
         if not path.exists():
@@ -70,7 +71,7 @@ def discover_test_files(paths: Iterable[str]) -> list[str]:
             for file_path in sorted(path.rglob(pattern)):
                 normalized = str(file_path)
                 if normalized not in seen:
-                    seen[normalized] = None
+                    seen.append(normalized)
                     discovered.append(normalized)
     return discovered
 
@@ -78,16 +79,18 @@ def discover_test_files(paths: Iterable[str]) -> list[str]:
 def shard_files(files: Sequence[str], worker_count: int) -> list[list[str]]:
     shards: list[list[str]] = [[] for _ in range(worker_count)]
     shard_sizes = [0] * worker_count
-    weighted_files = sorted(
-        files,
-        key=lambda file_path: Path(file_path).stat().st_size if Path(file_path).exists() else 0,
-        reverse=True,
-    )
-    for file_path in weighted_files:
+    weighted_files: list[tuple[str, int]] = []
+    for file_path in files:
+        path = Path(file_path)
+        weight = path.stat().st_size if path.exists() else 0
+        weighted_files.append((file_path, weight))
+
+    weighted_files.sort(key=lambda item: item[1], reverse=True)
+
+    for file_path, weight in weighted_files:
         shard_index = min(range(worker_count), key=lambda index: shard_sizes[index])
         shards[shard_index].append(file_path)
-        if Path(file_path).exists():
-            shard_sizes[shard_index] += Path(file_path).stat().st_size
+        shard_sizes[shard_index] += weight
     return [shard for shard in shards if shard]
 
 
@@ -116,9 +119,10 @@ def run_parallel(files: Sequence[str], pytest_args: Sequence[str], worker_count:
         print(f"\n===== pytest shard {index}/{len(shards)} ({len(shard)} files) =====")
         if output:
             print(output, end="" if output.endswith("\n") else "\n")
-        if process.returncode != 0:
-            exit_code = process.returncode or 1
-    return exit_code
+        result_code = process.returncode
+        if result_code is not None and result_code != 0:
+            exit_code = result_code
+    return cast(int, exit_code)
 
 
 def main(argv: Sequence[str]) -> int:

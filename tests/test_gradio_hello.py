@@ -1,6 +1,8 @@
 import importlib.util
 import os
 
+import pytest
+
 
 def load_module():
     path = os.path.join(os.path.dirname(__file__), "..", "scripts", "gradio_hello.py")
@@ -164,3 +166,13 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
         "local (local-echo)",
         "Using local offline fallback.",
     )
+
+
+def test_save_conversation_json_invalid_session_path_raises_chained_value_error(monkeypatch):
+    m = load_module()
+    monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
+
+    with pytest.raises(ValueError, match="Invalid session path") as excinfo:
+        m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+
+    assert isinstance(excinfo.value.__cause__, ValueError)

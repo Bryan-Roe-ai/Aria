@@ -12,3 +12,10 @@ rulesets:
     - csharp-code-style
     - csharp-security
     - csharp-inclusive
+    - python-best-practices
+    - python-code-style
+    - python-django
+    - python-flask
+    - python-inclusive
+    - python-pandas
+    - python-security
