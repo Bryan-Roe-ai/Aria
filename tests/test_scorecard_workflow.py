@@ -17,9 +17,13 @@ def test_scorecard_workflow_uses_pinned_upload_sarif_action() -> None:
     workflow = _load_workflow("scorecard.yml")
     codeql_workflow = _load_workflow("codeql.yml")
 
-    upload_step = next(step for step in workflow["jobs"]["analysis"]["steps"] if step["name"] == "Upload to code scanning")
+    upload_step = next(
+        step for step in workflow["jobs"]["analysis"]["steps"] if step["name"] == "Upload to code scanning"
+    )
     codeql_init_step = next(
-        step for step in codeql_workflow["jobs"]["analyze"]["steps"] if step.get("uses", "").startswith("github/codeql-action/init@")
+        step
+        for step in codeql_workflow["jobs"]["analyze"]["steps"]
+        if step.get("uses", "").startswith("github/codeql-action/init@")
     )
     _action_ref, separator, expected_sha = codeql_init_step["uses"].rpartition("@")
 
