@@ -14,9 +14,6 @@ concurrency:
   group: scorecard-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  RESULTS_FILE: results.sarif
-
 jobs:
   analysis:
     name: Scorecard analysis
@@ -40,7 +37,7 @@ jobs:
       - name: Run Scorecard analysis
         uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
         with:
-          results_file: ${{ env.RESULTS_FILE }}
+          results_file: results.sarif
           results_format: sarif
           publish_results: true
 
@@ -48,11 +45,11 @@ jobs:
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: scorecard-sarif
-          path: ${{ env.RESULTS_FILE }}
+          path: results.sarif
           retention-days: 5
           if-no-files-found: error
 
       - name: Upload to code scanning
         uses: github/codeql-action/upload-sarif@4e828ff8d448a8a6e532957b1811f387a63867e8
         with:
-          sarif_file: ${{ env.RESULTS_FILE }}
+          sarif_file: results.sarif
