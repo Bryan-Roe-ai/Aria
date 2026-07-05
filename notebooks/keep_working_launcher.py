@@ -210,12 +210,49 @@ def export_systemd(
     session=None,
     python_exec=None,
     workspace_dir=None,
+    *,
+    task=None,
+    work=None,
+    short=None,
+    long=None,
+    cycles_per_long=None,
+    notify=None,
+    sound=None,
+    repeat=None,
 ):
-    """Export a systemd user service file to ``path``."""
+    """Export a systemd user service file to ``path``.
+
+    Session parameters can be passed either as a ``session`` mapping or as
+    individual keyword arguments (``task``, ``work``, ``short``, ``long``,
+    ``cycles_per_long``, ``notify``, ``sound``, ``repeat``).  Explicit keyword
+    arguments take precedence over values in ``session``.
+    """
 
     p = Path(path).expanduser()
     p.parent.mkdir(parents=True, exist_ok=True)
-    session = session or {}
+    session = dict(session) if session else {}
+
+    # Individual kwargs override session dict values when explicitly supplied.
+    if task is not None:
+        session["task"] = task
+    if work is not None:
+        session["work"] = work
+    if short is not None:
+        session["short"] = short
+    if long is not None:
+        session["long"] = long
+    if cycles_per_long is not None:
+        session["cycles_per_long"] = cycles_per_long
+    # Boolean flags: keyword arg wins over session dict
+    session.setdefault("notify", False)
+    session.setdefault("sound", False)
+    session.setdefault("repeat", False)
+    if notify:
+        session["notify"] = True
+    if sound:
+        session["sound"] = True
+    if repeat:
+        session["repeat"] = True
 
     if python_exec is None:
         python_exec = sys.executable or "python3"
