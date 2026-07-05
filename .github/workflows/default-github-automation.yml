@@ -87,6 +87,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
         with:
           install-requirements: 'false'
+          extra-packages: 'pyyaml'
 
       - name: Verify required automation files exist
         run: |
