@@ -29,3 +29,19 @@ def test_pages_workflow_is_manual_only() -> None:
         "the main branch; enabling a push trigger creates a duplicate deploy-pages "
         "job that races the built-in Pages deployment."
     )
+
+
+def test_pages_workflow_concurrency_group() -> None:
+    workflow = _load_workflow("pages.yml")
+    concurrency = workflow.get("concurrency", {})
+
+    assert concurrency.get("group") == "github-pages", (
+        "pages.yml must use concurrency group 'github-pages' (not 'pages') so that "
+        "manual runs are serialized with the same group that GitHub's built-in "
+        "deploy-pages action recommends, preventing concurrent deploy conflicts."
+    )
+    assert concurrency.get("cancel-in-progress") is True, (
+        "pages.yml concurrency must set cancel-in-progress: true so that a "
+        "superseded manual run is cancelled rather than left running alongside "
+        "a newer deployment."
+    )
