@@ -1,5 +1,6 @@
 import importlib.util
 import os
+from pathlib import Path
 
 import pytest
 
@@ -168,11 +169,14 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_invalid_session_path_raises_chained_value_error(monkeypatch):
+def test_save_conversation_json_path_traversal_safe_via_hash(monkeypatch, tmp_path):
     m = load_module()
+    conv_dir = tmp_path / "conversations"
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
+    monkeypatch.setattr(m, "CONV_DIR", conv_dir)
+    monkeypatch.setattr(m, "LATEST_PATH", conv_dir / "latest.json")
 
-    with pytest.raises(ValueError, match="Invalid session path") as excinfo:
-        m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
-
-    assert isinstance(excinfo.value.__cause__, ValueError)
+    # SHA-256 hashing of the session name means the filename is always a safe hex token;
+    # even when safe_session_name returns a path-traversal-like string, no ValueError is raised.
+    result = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    assert Path(result).parent.resolve() == conv_dir.resolve()
