@@ -6,8 +6,10 @@ Checks:
 - Each DAB config has either:
     - `data-source.connection-string` as `${DAB_CONNECTION_STRING}` or
     - a direct non-empty connection string.
-- `local.settings.json` and `local.settings.json.example` include
-  `Values.DAB_CONNECTION_STRING` as a non-empty string.
+- `local.settings.json.example` includes `Values.DAB_CONNECTION_STRING` as a
+  non-empty string.
+- If present, `local.settings.json` includes `Values.DAB_CONNECTION_STRING` as
+  a non-empty string.
 - `.env.example` includes a `DAB_CONNECTION_STRING=` entry.
 
 By default, placeholder values emit warnings. Set `DAB_VERIFY_STRICT_VALUES=1`
@@ -159,10 +161,14 @@ def main() -> int:
         errors.extend(cfg_errors)
         warnings.extend(cfg_warnings)
 
-    for file_name in ("local.settings.json", "local.settings.json.example"):
+    for file_name in ("local.settings.json.example",):
         local_errors, local_warnings = check_local_settings(root / file_name)
         errors.extend(local_errors)
         warnings.extend(local_warnings)
+
+    local_errors, local_warnings = check_local_settings(root / "local.settings.json")
+    errors.extend([e for e in local_errors if e != "error=missing_file:local.settings.json"])
+    warnings.extend(local_warnings)
 
     env_errors, env_warnings = check_env_example(root / ".env.example")
     errors.extend(env_errors)
