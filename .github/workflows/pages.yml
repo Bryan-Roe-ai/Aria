@@ -4,6 +4,8 @@ on:
   # Repository Pages is configured to publish /docs directly from the main
   # branch. Keep this workflow manual-only so we do not create a second
   # deploy-pages job for the same commit.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,16 +14,16 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683               # v4.2.2
-  CONFIGURE_PAGES_SHA: 983d7736d9b0ae728b81ab479565c72886d7745b        # v5.0.0
-  JEKYLL_BUILD_PAGES_SHA: 44a6e6beabd48582f863aeeb6cb2151cc1716697     # v1.0.13
-  UPLOAD_PAGES_ARTIFACT_SHA: 56afc609e74202658d3ffba0e8f6dda462b719fa   # v3.0.1
-  DEPLOY_PAGES_SHA: cd2ce8fcbc39b97be8ca5fce6e763baed58fa128             # v5
+  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  CONFIGURE_PAGES_SHA: 983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+  JEKYLL_BUILD_PAGES_SHA: 44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
+  UPLOAD_PAGES_ARTIFACT_SHA: 56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+  DEPLOY_PAGES_SHA: cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
 
 defaults:
   run:
@@ -43,16 +45,15 @@ jobs:
 
       - name: Validate generated site bundles
         run: |
+          set -euo pipefail
           echo "Validating generated site bundles..."
-          if ! python scripts/validate_site_bundles.py --strict-metadata; then
-            echo "::error::Generated site bundle validation failed. Fix generated_sites/ bundle contract issues before deploying."
-            exit 1
-          fi
+          python scripts/validate_site_bundles.py --strict-metadata
 
       - name: Sync generated site bundles into docs
         run: |
+          set -euo pipefail
           # Sync only when generated_sites/ has at least one bundle subdirectory.
-          if [[ -d generated_sites ]] && find generated_sites -mindepth 1 -maxdepth 1 -type d -print -quit | grep -q .; then
+          if compgen -G 'generated_sites/*/' > /dev/null; then
             mkdir -p docs/generated
             echo "Mirroring generated_sites/ to docs/generated/ and removing stale generated files."
             rsync -a --delete generated_sites/ docs/generated/
