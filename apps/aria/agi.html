@@ -196,49 +196,78 @@
             </header>
 
             <main id="agi-main">
-            <section class="panel" aria-labelledby="agi-status-heading">
-                <h2 id="agi-status-heading" class="sr-only">AGI status and persistence</h2>
-                <label for="apiBase">Functions API base</label>
-                <input id="apiBase" type="text" value="http://localhost:7071" />
-                <button type="button" id="refreshStatus">Refresh Status</button>
-                <span
-                    id="statusPill"
-                    class="status-pill"
-                    style="margin-left: 8px"
-                    role="status"
-                    aria-live="polite"
-                    aria-atomic="true"
-                    >unknown</span
-                >
-                <pre id="statusOutput" style="margin-top: 12px" aria-live="polite">Loading…</pre>
-                <label for="persistenceOutput" style="margin-top: 12px"
-                    >Persistence</label
-                >
-                <pre id="persistenceOutput" aria-live="polite">Loading…</pre>
-            </section>
+                <section class="panel" aria-labelledby="agi-status-heading">
+                    <h2 id="agi-status-heading" class="sr-only">
+                        AGI status and persistence
+                    </h2>
+                    <label for="apiBase">Functions API base</label>
+                    <input
+                        id="apiBase"
+                        type="text"
+                        value="http://localhost:7071"
+                    />
+                    <button type="button" id="refreshStatus">
+                        Refresh Status
+                    </button>
+                    <span
+                        id="statusPill"
+                        class="status-pill"
+                        style="margin-left: 8px"
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        >unknown</span
+                    >
+                    <pre
+                        id="statusOutput"
+                        style="margin-top: 12px"
+                        aria-live="polite"
+                    >
+Loading…</pre>
+                    <label for="persistenceOutput" style="margin-top: 12px"
+                        >Persistence</label
+                    >
+                    <pre id="persistenceOutput" aria-live="polite">
+Loading…</pre>
+                </section>
 
-            <section class="panel" aria-labelledby="agi-query-heading">
-                <h2 id="agi-query-heading" class="sr-only">Run AGI query</h2>
-                <label for="query">Query</label>
-                <textarea id="query" placeholder="Ask the AGI provider…" aria-describedby="query-help">
+                <section class="panel" aria-labelledby="agi-query-heading">
+                    <h2 id="agi-query-heading" class="sr-only">
+                        Run AGI query
+                    </h2>
+                    <label for="query">Query</label>
+                    <textarea
+                        id="query"
+                        placeholder="Ask the AGI provider…"
+                        aria-describedby="query-help"
+                    >
 What is a qubit?</textarea>
-                <p id="query-help" class="sr-only">
-                    Enter a prompt for the AGI provider. Press Control plus Enter or Command plus Enter to run.
-                </p>
-                <label for="mode">Mode</label>
-                <select id="mode">
-                    <option value="analyze">Analyze</option>
-                    <option value="reason">Reason</option>
-                    <option value="stream">Stream (SSE)</option>
-                </select>
-                <button type="button" id="runBtn">Run</button>
-                <button type="button" id="clearBtn" class="secondary">
-                    Clear Output
-                </button>
-                <div id="output" class="output" style="margin-top: 12px" role="log" aria-live="polite" aria-relevant="additions text" tabindex="-1">
-                    Ready.
-                </div>
-            </section>
+                    <p id="query-help" class="sr-only">
+                        Enter a prompt for the AGI provider. Press Control plus
+                        Enter or Command plus Enter to run.
+                    </p>
+                    <label for="mode">Mode</label>
+                    <select id="mode">
+                        <option value="analyze">Analyze</option>
+                        <option value="reason">Reason</option>
+                        <option value="stream">Stream (SSE)</option>
+                    </select>
+                    <button type="button" id="runBtn">Run</button>
+                    <button type="button" id="clearBtn" class="secondary">
+                        Clear Output
+                    </button>
+                    <div
+                        id="output"
+                        class="output"
+                        style="margin-top: 12px"
+                        role="log"
+                        aria-live="polite"
+                        aria-relevant="additions text"
+                        tabindex="-1"
+                    >
+                        Ready.
+                    </div>
+                </section>
             </main>
         </div>
 
@@ -350,12 +379,17 @@ What is a qubit?</textarea>
                         output.textContent = "Ready."
                         focusOutput()
                     })
-                document.getElementById("query").addEventListener("keydown", function (event) {
-                    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-                        event.preventDefault()
-                        document.getElementById("runBtn").click()
-                    }
-                })
+                document
+                    .getElementById("query")
+                    .addEventListener("keydown", function (event) {
+                        if (
+                            (event.ctrlKey || event.metaKey) &&
+                            event.key === "Enter"
+                        ) {
+                            event.preventDefault()
+                            document.getElementById("runBtn").click()
+                        }
+                    })
                 document
                     .getElementById("runBtn")
                     .addEventListener("click", function () {
