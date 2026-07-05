@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+import pathlib
 import subprocess
-from pathlib import Path
 
 REQUIRED_PATTERNS = ("**/.venv/", "**/venv/")
 
 
-def _gitignore_text(path: Path) -> str:
+def _gitignore_text(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
@@ -35,7 +35,7 @@ def _check_ignore_matches() -> bool:
 
 
 def main() -> int:
-    gitignore_path = Path(".gitignore")
+    gitignore_path = pathlib.Path(".gitignore")
     if not gitignore_path.exists():
         print("❌ .gitignore not found.")
         return 1
