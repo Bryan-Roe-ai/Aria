@@ -4,9 +4,9 @@ This guide walks through a minimal deployment to get Aria running on Azure Funct
 
 ## Prerequisites
 
-✓ **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli  
-✓ **Azure Account**: Active subscription with admin access  
-✓ **Docker**: For building container images (optional if using azd)  
+✓ **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli
+✓ **Azure Account**: Active subscription with admin access
+✓ **Docker**: For building container images (optional if using azd)
 ✓ **Git**: Latest commit should be on main branch
 
 ## Step 1: Prepare (5 minutes)
@@ -300,9 +300,9 @@ For issues or questions:
 
 ---
 
-**Deployment Time**: ~45 minutes  
-**Estimated Cost**: $100-200/month (development tier)  
+**Deployment Time**: ~45 minutes
+**Estimated Cost**: $100-200/month (development tier)
 **SLA**: 99.5% uptime
 
-**Status**: ✅ Ready for Production  
+**Status**: ✅ Ready for Production
 **Last Updated**: June 1, 2026

@@ -27,7 +27,7 @@ except Exception:  # pragma: no cover
     _SQLALCHEMY_AVAILABLE = False
     text = None  # type: ignore
 
-from .sql_engine import get_engine, resolve_sql_url
+from .sql_engine import get_engine, resolve_sql_url  # noqa: E402  (after conditional import above)
 
 _TABLE_CREATED = False
 _SQLITE_CONN: sqlite3.Connection | None = None

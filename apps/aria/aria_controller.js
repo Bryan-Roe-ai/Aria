@@ -65,6 +65,34 @@ const activeObjects = {
     flower: true,
 }
 
+function describeStageObject(objectId) {
+    const label = String(objectId || "object").replace(/[-_]/g, " ")
+    return (
+        label.charAt(0).toUpperCase() +
+        label.slice(1) +
+        " stage object. Press Enter or Space to pick up or drop it."
+    )
+}
+
+function updateObjectAccessibility(objectId, options = {}) {
+    const obj = document.getElementById(objectId)
+    const btn = document.getElementById("btn-" + objectId)
+    const held = Boolean(options.held)
+    const hidden = Boolean(options.hidden)
+
+    if (obj) {
+        obj.setAttribute("role", "button")
+        obj.setAttribute("tabindex", hidden ? "-1" : "0")
+        obj.setAttribute("aria-label", describeStageObject(objectId))
+        obj.setAttribute("aria-pressed", held ? "true" : "false")
+        obj.setAttribute("aria-hidden", hidden ? "true" : "false")
+    }
+
+    if (btn) {
+        btn.setAttribute("aria-pressed", hidden ? "false" : "true")
+    }
+}
+
 function clampPercent(v, fallback = 50) {
     const n = Number(v)
     if (!Number.isFinite(n)) return fallback
@@ -158,6 +186,10 @@ function applyServerObjectsState(objectsState) {
 
         objEl.style.display = hidden ? "none" : "block"
         activeObjects[objectId] = !hidden
+        updateObjectAccessibility(objectId, {
+            hidden,
+            held: state === "held",
+        })
 
         if (btn) {
             btn.classList.toggle("active", !hidden)
@@ -249,6 +281,7 @@ function toggleObject(objectId) {
         btn.classList.remove("active")
         btn.classList.add("inactive")
         activeObjects[objectId] = false
+        updateObjectAccessibility(objectId, { hidden: true, held: false })
         log("🗑️ Removed " + objectId)
         // Sync change to backend
         sendObjectUpdate("update", objectId, {
@@ -261,6 +294,7 @@ function toggleObject(objectId) {
         btn.classList.add("active")
         btn.classList.remove("inactive")
         activeObjects[objectId] = true
+        updateObjectAccessibility(objectId, { hidden: false, held: false })
         log("➕ Added " + objectId)
         // Sync change to backend (object is back on stage)
         sendObjectUpdate("update", objectId, {
@@ -2639,6 +2673,7 @@ function pickUpObject(objectId) {
 
     // Visual feedback
     obj.classList.add("held")
+    updateObjectAccessibility(objectId, { hidden: false, held: true })
 
     // Sync server side: mark object as held
     sendObjectUpdate("update", objectId, { state: "held" }).catch(() => {})
@@ -2678,6 +2713,7 @@ function dropObject(name) {
 
     // Remove held state
     obj.classList.remove("held")
+    updateObjectAccessibility(targetName, { hidden: false, held: false })
 
     // Drop at current Aria position
     const ariaRect = aria.getBoundingClientRect()
@@ -2723,6 +2759,7 @@ function throwObject(direction) {
 
     const obj = characterState.heldObjectElement
     obj.classList.remove("held")
+    updateObjectAccessibility(obj.id, { hidden: false, held: false })
 
     // Throwing arm animation
     moveArm(ariaArmRight, -120, 150)
@@ -2824,6 +2861,11 @@ function initializeObjectInteractions() {
     const objects = document.querySelectorAll(".object")
 
     objects.forEach(obj => {
+        updateObjectAccessibility(obj.id, {
+            hidden: obj.style.display === "none",
+            held: obj.classList.contains("held"),
+        })
+
         // Prevent adding duplicate event listeners when called multiple times
         if (obj.__interactionInitialized) return
         obj.__interactionInitialized = true
@@ -2835,6 +2877,13 @@ function initializeObjectInteractions() {
                 pickUpObject(objectId)
             } else if (characterState.heldObject === objectId) {
                 dropObject()
+            }
+        })
+
+        obj.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault()
+                obj.click()
             }
         })
 
@@ -2907,6 +2956,7 @@ function addObject(objectName, emoji) {
     newObj.id = objectName
     newObj.className = "object"
     newObj.textContent = emoji
+    newObj.setAttribute("data-object", objectName)
 
     // Position near Aria
     const ariaX = characterState.position.x
@@ -2930,6 +2980,8 @@ function addObject(objectName, emoji) {
         btn.onclick = () => toggleObject(objectName)
         objectManager.appendChild(btn)
     }
+
+    updateObjectAccessibility(objectName, { hidden: false, held: false })
 
     // Initialize interactions for new object (click/drag)
     initializeObjectInteractions()

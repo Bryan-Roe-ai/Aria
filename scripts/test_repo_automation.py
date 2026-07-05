@@ -10,6 +10,7 @@ Validates:
 - Integration points
 """
 
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -82,11 +83,9 @@ def test_imports():
     print("\n📦 Testing Python imports...")
 
     ok = True
-    try:
-        import psutil
-
+    if importlib.util.find_spec("psutil") is not None:
         print("✅ psutil installed")
-    except ImportError:
+    else:
         print("❌ psutil not installed")
         ok = False
 

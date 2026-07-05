@@ -139,7 +139,7 @@ class TestCircuitCacheLRU:
     def test_eviction_counter_increments(self):
         cache = CircuitCache(max_size=2, max_age_seconds=0)
         rng = np.random.default_rng(9)
-        for i in range(5):
+        for _i in range(5):
             cache.put(rng.random(4), 4, np.ones(4) / 4)
         assert cache.stats()["evictions"] >= 3
 

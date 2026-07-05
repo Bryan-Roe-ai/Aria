@@ -33,7 +33,8 @@
         "./ai-projects/llm-maker/src",
         "./aria_web",
         "./tests/test_",
-        "./ai-projects/quantum-ml/src"
+        "./ai-projects/quantum-ml/src",
+        "/home/vscode/.vscode-server/extensions/ms-security.ms-sentinel-2.3.0/python"
     ],
     "python.analysis.autoImportCompletions": true,
     "chat.mcp.serverSampling": {

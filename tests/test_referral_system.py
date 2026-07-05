@@ -54,7 +54,7 @@ class TestGenerateReferralCode:
         assert data["referrals"] == []
 
     def test_updates_code_for_existing_user(self, referral_system):
-        code1 = referral_system.generate_referral_code("user1")
+        referral_system.generate_referral_code("user1")
         code2 = referral_system.generate_referral_code("user1")
         assert referral_system.referrals_data["user1"]["referral_code"] == code2
 

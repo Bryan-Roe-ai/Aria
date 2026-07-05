@@ -128,10 +128,21 @@ class StageStateStore:
             if self._path.exists():
                 loaded = json.loads(self._path.read_text(encoding="utf-8"))
                 if isinstance(loaded, dict):
-                    return loaded
+                    # Deep-merge: fill in any keys present in the default but
+                    # missing from the persisted state (handles schema evolution).
+                    return self._merge_with_defaults(loaded, copy.deepcopy(self._default_state))
         except Exception:
             pass
         return copy.deepcopy(self._default_state)
+
+    def _merge_with_defaults(self, loaded: dict, defaults: dict) -> dict:
+        """Recursively fill missing keys in *loaded* from *defaults*."""
+        for key, default_val in defaults.items():
+            if key not in loaded:
+                loaded[key] = default_val
+            elif isinstance(default_val, dict) and isinstance(loaded[key], dict):
+                loaded[key] = self._merge_with_defaults(loaded[key], default_val)
+        return loaded
 
     def _wrap(self, value: Any) -> Any:
         if isinstance(value, PersistentDict | PersistentList):

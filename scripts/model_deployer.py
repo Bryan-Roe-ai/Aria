@@ -200,7 +200,7 @@ def cmd_deploy(args: argparse.Namespace) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Model deployer for Aria LoRA adapters")
-    sub = parser.add_subparsers()
+    parser.add_subparsers()
 
     # Top-level flags that match the ci-pipeline usage pattern:
     # python scripts/model_deployer.py --deploy best --strategy canary

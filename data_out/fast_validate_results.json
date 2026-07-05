@@ -15,7 +15,7 @@
     {
       "check": "Virtual Envs",
       "status": "ok",
-      "venvs_found": 1,
+      "venvs_found": 2,
       "speed": "instant"
     },
     {
@@ -58,7 +58,9 @@
           "notes": []
         }
       },
-      "speed": "instant"
+      "speed": "instant",
+      "age_seconds": 8436132.027,
+      "age_hours": 2343.37
     },
     {
       "check": "Dependencies",

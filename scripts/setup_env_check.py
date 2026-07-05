@@ -159,7 +159,7 @@ def check_local_services() -> bool:
             import urllib.request
 
             request = urllib.request.Request(url, headers={"User-Agent": "setup-check"})
-            with urllib.request.urlopen(request, timeout=1) as response:
+            with urllib.request.urlopen(request, timeout=1):
                 print_ok(f"{name} is running on port {port}")
         except Exception:
             print_warning(f"{name} not accessible on port {port} (not running)")
@@ -352,8 +352,7 @@ def print_next_steps() -> None:
     """Print recommended next steps."""
     print_section("Next Steps")
 
-    print(
-        f"""
+    print(f"""
 {BOLD}1. Start Services:{RESET}
    • Ollama:    ollama serve
    • LM Studio: lm-studio (GUI application)
@@ -377,8 +376,7 @@ def print_next_steps() -> None:
     • Quick start:     cat QUICK_START_AUTOMATION.md
     • Automation:      cat AUTOMATION_RUNNER.md
     • Watch status:    python3 scripts/watch_continuous_automation.py
-"""
-    )
+""")
 
 
 def main() -> int:

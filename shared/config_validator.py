@@ -466,7 +466,7 @@ def validate_configs_before_daemon(
     ]
 
     print("\n🔍 Validating orchestrator configurations...")
-    for name, config_path in configs_to_check:
+    for _name, config_path in configs_to_check:
         result = validator.validate_file(config_path)
         results.append(result)
         print(result.report(verbose=verbose))

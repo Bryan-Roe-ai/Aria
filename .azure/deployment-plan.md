@@ -1,8 +1,8 @@
 # Aria Platform — Production Deployment Plan
 
-**Current Status**: Stable (2+ days uptime, all tests passing, automation healthy)  
-**Last Validated**: June 1, 2026  
-**Deployment Target**: Azure Functions + Container Apps (optional)  
+**Current Status**: Stable (2+ days uptime, all tests passing, automation healthy)
+**Last Validated**: June 1, 2026
+**Deployment Target**: Azure Functions + Container Apps (optional)
 **Version**: 1.0.0
 
 ---

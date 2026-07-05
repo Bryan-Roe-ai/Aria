@@ -2,13 +2,31 @@
   "total_jobs": 1,
   "jobs": [
     {
-      "name": "another",
-      "preset": "heart"
+      "name": "broken_local",
+      "mode": "train_custom_dataset",
+      "enabled": true,
+      "preset": "not_a_preset",
+      "csv": null,
+      "label_col": null,
+      "drop_cols": null,
+      "epochs": null,
+      "batch_size": null,
+      "learning_rate": null,
+      "test_size": null,
+      "n_qubits": null,
+      "extra_args": [],
+      "azure_backend": null,
+      "azure_shots": null,
+      "azure_confirm_cost": false,
+      "status": "missing",
+      "missing": [
+        "Unknown preset: not_a_preset"
+      ]
     }
   ],
-  "last_updated": "2026-06-01T22:48:29.703601Z",
+  "last_updated": "2026-07-05T02:07:27.906116Z",
   "succeeded": 0,
-  "failed": 0,
+  "failed": 1,
   "running": 0,
   "avg_duration": null
 }

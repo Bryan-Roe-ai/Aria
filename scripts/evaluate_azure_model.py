@@ -86,7 +86,7 @@ def run(
         save_dir.mkdir(parents=True, exist_ok=True)
         out = {
             "summary": summary,
-            "predictions": [{"pred": p, "expected": e} for p, e in zip(preds, expects)],
+            "predictions": [{"pred": p, "expected": e} for p, e in zip(preds, expects, strict=False)],
         }
         (save_dir / "results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 

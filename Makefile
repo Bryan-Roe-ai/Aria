@@ -30,7 +30,7 @@ GRADIO_SHARE ?= false
 .PHONY: all install install-qai dev start stop build test test-unit test-integration \
 	lint format type-check clean docker-build docker-dev start-gradio \
 	start-local-status start-functions-clean restart-functions-clean start-qai validate-mcp validate-mcp-json \
-	agents agents-dry ai-automation help
+	agents agents-dry ai-automation aria-bot aria-bot-apply test-aria-bot help
 
 # Default target
 all: lint test
@@ -107,6 +107,16 @@ start-gradio:
 start-orchestrator:
 	$(PYTHON) scripts/autonomous_training_orchestrator.py --max-cycles 1 --dry-run
 
+## Run aria-bot against the repo in dry-run mode
+aria-bot:
+	@echo "🤖 Running aria-bot in dry-run mode..."
+	$(PYTHON) -m aria_bot --repo-root .
+
+## Run aria-bot against the repo and apply safe changes
+aria-bot-apply:
+	@echo "🤖 Running aria-bot with --apply..."
+	$(PYTHON) -m aria_bot --repo-root . --apply
+
 ## Stop all Docker Compose services
 stop:
 	$(COMPOSE) -f docker-compose.dev.yml down
@@ -126,6 +136,10 @@ test-unit:
 ## Run integration tests
 test-integration:
 	$(PYTEST) $(TEST_PATH) -q --tb=short -m integration
+
+## Run the focused aria-bot startup and entrypoint regression suite
+test-aria-bot:
+	$(PYTEST) tests/test_aria_bot.py tests/test_aria_bot_root_shim.py tests/test_aria_bot_dev_entrypoints.py -q
 
 ## Run tests with coverage report
 test-coverage:

@@ -689,20 +689,8 @@ class TestPostValidation:
             lambda query_emb, top_k=5, session_id=None, min_similarity=0.0: [],
         )
 
-        import inspect
-
-        import azure.functions as _af
-
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
+        captured: dict = {"sse_body": b""}
+        _capture_sse_http_response(monkeypatch, app_module, captured)
         req = _mock_request(
             "POST",
             body={"messages": [{"role": "user", "content": "say hi"}]},
@@ -990,20 +978,8 @@ class TestAgiEndpoints:
             ),
         )
 
-        import inspect
-
-        import azure.functions as _af
-
-        _real_HttpResponse = _af.HttpResponse
-
-        def _capturing_HttpResponse(body=None, **kwargs):
-            if body is not None and inspect.isgenerator(body):
-                consumed = b"".join(body)
-                captured["sse_body"] = consumed
-                return _real_HttpResponse(consumed, **kwargs)
-            return _real_HttpResponse(body, **kwargs)
-
-        monkeypatch.setattr(app_module.func, "HttpResponse", _capturing_HttpResponse)
+        captured: dict = {"sse_body": b""}
+        _capture_sse_http_response(monkeypatch, app_module, captured)
         req = _mock_request(
             "POST",
             body={"query": "stream a short response", "goals": ["be concise"]},

@@ -15,8 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import time
 from collections.abc import Callable, Sequence
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -215,18 +215,44 @@ def quick_check_ai_tokens() -> dict[str, Any]:
             "speed": "instant",
         }
 
-    healthy = int(payload.get("healthy", 0))
-    total = int(payload.get("total", 0))
-    providers = payload.get("providers", {})
+    if not isinstance(payload, dict):
+        return {
+            "status": "token_status_parse_error",
+            "error": (f"Invalid JSON shape in {status_path.name}: expected object"),
+            "speed": "instant",
+        }
+
+    def _coerce_non_negative_int(value: Any, default: int = 0) -> int:
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            return default
+        return max(0, parsed)
+
+    healthy = _coerce_non_negative_int(payload.get("healthy", 0))
+    total = _coerce_non_negative_int(payload.get("total", 0))
+    providers_raw = payload.get("providers", {})
+    providers = providers_raw if isinstance(providers_raw, dict) else {}
 
     # Mark stale if older than 24h to encourage periodic refresh
     last_updated = payload.get("last_updated", "")
     stale = False
+    age_seconds: float | None = None
     if isinstance(last_updated, str) and last_updated:
         try:
-            # Expecting format like 2026-03-29T08:35:15Z
-            parsed = time.strptime(last_updated, "%Y-%m-%dT%H:%M:%SZ")
-            age_seconds = max(0.0, time.time() - time.mktime(parsed))
+            # Accept values like 2026-03-29T08:35:15Z and ISO offsets.
+            iso_value = last_updated.strip()
+            if iso_value.endswith(("Z", "z")):
+                iso_value = f"{iso_value[:-1]}+00:00"
+            parsed = datetime.fromisoformat(iso_value)
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            else:
+                parsed = parsed.astimezone(timezone.utc)
+            age_seconds = max(
+                0.0,
+                (datetime.now(timezone.utc) - parsed).total_seconds(),
+            )
             stale = age_seconds > 24 * 60 * 60
         except ValueError:
             stale = True
@@ -236,7 +262,7 @@ def quick_check_ai_tokens() -> dict[str, Any]:
     else:
         status = "no_healthy_token_providers"
 
-    return {
+    result: dict[str, Any] = {
         "status": status,
         "healthy": healthy,
         "total": total,
@@ -245,6 +271,12 @@ def quick_check_ai_tokens() -> dict[str, Any]:
         "providers": providers,
         "speed": "instant",
     }
+
+    if age_seconds is not None:
+        result["age_seconds"] = round(age_seconds, 3)
+        result["age_hours"] = round(age_seconds / 3600.0, 3)
+
+    return result
 
 
 def _find_project_python() -> Path | None:

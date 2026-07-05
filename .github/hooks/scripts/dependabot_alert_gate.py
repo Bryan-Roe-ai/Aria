@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Hook: inject a vulnerability summary at SessionStart when critical CVEs exist.
+"""Hook: inject a vulnerability summary at SessionStart
+when critical CVEs exist.
 
 Conversation-derived policy this enforces:
 - A recent push flagged 40 Dependabot vulnerabilities (4 critical, 13 high).

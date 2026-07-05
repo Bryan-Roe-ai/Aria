@@ -21,7 +21,7 @@ def check_status_file(output_dir: Path) -> tuple[bool, str]:
         return False, f"❌ Status file not found at {status_file}"
 
     try:
-        status = json.loads(status_file.read_text(encoding="utf-8"))
+        json.loads(status_file.read_text(encoding="utf-8"))
         return True, "✓ Status file found and valid"
     except json.JSONDecodeError as e:
         return False, f"❌ Status file is malformed: {e}"

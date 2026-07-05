@@ -34,17 +34,23 @@ The system is composed of modular components:
 ## Usage
 
 The deterministic loop lives in the `aria_bot` Python package and exposes a
-single-cycle CLI:
+single-cycle CLI. You can run it from the repository root or from inside the
+`aria-bot/` folder:
 
 ```bash
 # Dry-run (default): analyze + plan, but never touch disk.
 python -m aria_bot
+make aria-bot
+./scripts/start_aria_bot.sh
 
 # Apply safe fixes to disk (no git commit).
 python -m aria_bot --apply
+make aria-bot-apply
+./scripts/start_aria_bot.sh --apply
 
 # Apply and create a local git commit (never pushes).
 python -m aria_bot --apply --commit
+./scripts/start_aria_bot.sh --apply --commit
 ```
 
 Each cycle writes a machine-readable summary to

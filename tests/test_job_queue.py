@@ -304,7 +304,7 @@ class TestJobQueueStatus:
         assert expected.issubset(set(status.keys()))
 
     def test_get_queue_status_counts(self, queue, m):
-        jid = queue.add_job(name="j1", config={})
+        queue.add_job(name="j1", config={})
         time.sleep(0.002)
         queue.add_job(name="j2", config={})
         s = queue.get_queue_status()

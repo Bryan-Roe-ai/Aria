@@ -17,8 +17,71 @@ if [ -f "${REPO_ROOT}/.env" ]; then
     set +a
 fi
 
-# Export LM Studio endpoint (container-friendly default via host bridge)
-export LMSTUDIO_BASE_URL="${LMSTUDIO_BASE_URL:-http://host.docker.internal:1234/v1}"
+# Resolve LM Studio endpoint across host/container setups.
+resolve_lmstudio_base_url() {
+    local configured="${LMSTUDIO_BASE_URL:-}"
+    local candidates=()
+
+    add_candidate() {
+        local url="$1"
+        local existing
+        for existing in "${candidates[@]}"; do
+            if [ "$existing" = "$url" ]; then
+                return 0
+            fi
+        done
+        candidates+=("$url")
+    }
+
+    add_cross_host_fallbacks() {
+        local base="$1"
+        local variants=(
+            "host.docker.internal"
+            "gateway.docker.internal"
+            "127.0.0.1"
+            "localhost"
+        )
+        local current
+        local target
+        for current in "${variants[@]}"; do
+            if [[ "$base" == *"$current"* ]]; then
+                for target in "${variants[@]}"; do
+                    if [ "$target" != "$current" ]; then
+                        add_candidate "${base/$current/$target}"
+                    fi
+                done
+                return 0
+            fi
+        done
+    }
+
+    if [ -n "$configured" ]; then
+        add_candidate "$configured"
+        add_cross_host_fallbacks "$configured"
+    else
+        add_candidate "http://host.docker.internal:1234/v1"
+        add_candidate "http://127.0.0.1:1234/v1"
+        add_candidate "http://localhost:1234/v1"
+        add_candidate "http://gateway.docker.internal:1234/v1"
+    fi
+
+    local candidate
+    for candidate in "${candidates[@]}"; do
+        if timeout 2 curl -s "${candidate}/models" >/dev/null 2>&1; then
+            export LMSTUDIO_BASE_URL="$candidate"
+            return 0
+        fi
+    done
+
+    # If nothing responds, preserve explicit user override; otherwise default
+    # to host bridge and let check_lmstudio print actionable diagnostics.
+    if [ -n "$configured" ]; then
+        export LMSTUDIO_BASE_URL="$configured"
+    else
+        export LMSTUDIO_BASE_URL="http://host.docker.internal:1234/v1"
+    fi
+    return 1
+}
 
 # Colors for output
 RED='\033[0;31m'
@@ -49,14 +112,16 @@ print_info() {
 # Check LM Studio availability
 check_lmstudio() {
     print_header "Checking LM Studio Connection"
+
+    resolve_lmstudio_base_url >/dev/null 2>&1 || true
     
-    timeout 2 curl -s "${LMSTUDIO_BASE_URL}/models" > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
+    if timeout 2 curl -s "${LMSTUDIO_BASE_URL}/models" > /dev/null 2>&1; then
         print_success "LM Studio is running at ${LMSTUDIO_BASE_URL}"
         return 0
     else
         print_error "Cannot connect to LM Studio at ${LMSTUDIO_BASE_URL}"
-        print_info "Make sure LM Studio is running on your host machine"
+        print_info "Tried host/gateway/localhost endpoints; ensure LM Studio Local Server is started"
+        print_info "Override endpoint with: export LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1"
         return 1
     fi
 }
@@ -64,7 +129,6 @@ check_lmstudio() {
 # Query LM Studio
 query() {
     local prompt="$1"
-    local max_turns="${2:-1}"
     
     if ! check_lmstudio; then
         return 1
@@ -233,7 +297,7 @@ Examples:
     $(basename "$0") chat
 
 Environment:
-    LMSTUDIO_BASE_URL  Set custom LM Studio endpoint (default: http://host.docker.internal:1234/v1)
+    LMSTUDIO_BASE_URL  Set custom LM Studio endpoint (auto-detects host bridge/localhost when unset)
     LMSTUDIO_MODEL     Optional model id to force (e.g. openai/gpt-oss-20b)
 
 EOF

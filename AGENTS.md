@@ -89,6 +89,7 @@ actions. Tag forms recognised include:
 
 - Fast unit tests: `python scripts/test_runner.py --unit`
 - Aria-specific unit tests: `pytest tests/unit/test_tags_to_actions.py`
+- Aria-bot dry-run from repo root: `python -m aria_bot --repo-root .` or `make aria-bot`
 - Quick repo validation: `python scripts/fast_validate.py`
 - System health: `curl http://localhost:7071/api/ai/status | jq`
 

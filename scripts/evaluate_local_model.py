@@ -38,7 +38,7 @@ def compute_accuracy(preds: list[str], expects: list[str]) -> float:
     if not preds:
         return 0.0
     match = 0
-    for p, e in zip(preds, expects):
+    for p, e in zip(preds, expects, strict=False):
         if e is None:
             continue
         if p.strip() == e.strip():
@@ -60,7 +60,7 @@ def basic_bleu(preds: list[str], expects: list[str]) -> float:
         return 0.0
     total = 0.0
     count = 0
-    for p, e in zip(preds, expects):
+    for p, e in zip(preds, expects, strict=False):
         if e is None:
             continue
         total += score_one(p, e)
@@ -96,7 +96,7 @@ def run_evaluation(
     if "determinism" in metrics:
         # run predictor twice and compare
         preds2 = [naive_predict(ex) for ex in data]
-        identical = sum(1 for a, b in zip(preds, preds2) if a == b)
+        identical = sum(1 for a, b in zip(preds, preds2, strict=False) if a == b)
         results["determinism"] = identical / len(preds)
 
     if "response_time" in metrics:
@@ -119,7 +119,7 @@ def run_evaluation(
         save_dir.mkdir(parents=True, exist_ok=True)
         out = {
             "summary": results,
-            "predictions": [{"pred": p, "expected": e} for p, e in zip(preds, expects)],
+            "predictions": [{"pred": p, "expected": e} for p, e in zip(preds, expects, strict=False)],
         }
         path = save_dir / "results.json"
         path.write_text(json.dumps(out, indent=2), encoding="utf-8")

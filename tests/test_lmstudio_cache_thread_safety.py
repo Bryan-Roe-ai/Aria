@@ -61,7 +61,7 @@ class TestLMStudioCacheThreadSafety:
 
         # Second call - should make new HTTP request
         with mock.patch("urllib.request.urlopen") as mock_urlopen:
-            result2 = chat_providers._check_lmstudio_available(url)
+            chat_providers._check_lmstudio_available(url)
 
         mock_urlopen.assert_called_once()
 
@@ -79,7 +79,7 @@ class TestLMStudioCacheThreadSafety:
         # Second call with different url - should make new HTTP request
         with mock.patch("urllib.request.urlopen") as mock_urlopen:
             mock_urlopen.side_effect = Exception("connection refused")
-            result2 = chat_providers._check_lmstudio_available(url2)
+            chat_providers._check_lmstudio_available(url2)
 
         mock_urlopen.assert_called_once()
 

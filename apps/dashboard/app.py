@@ -122,7 +122,6 @@ def _compute_training_progress():
     succeeded_durations = []
     running_job_name = None
     running_log_path = None
-    total_epochs_running = None
     # Compute runner-specific average durations for per-job ETA
     runner_durations = {}
     for rec in jobs_status:

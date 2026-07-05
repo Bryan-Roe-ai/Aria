@@ -53,7 +53,7 @@ def test_incremental_backup(tmp_path: Path):
     try:
         create_dummy_structure(Path("."))
         manager = BackupManager()
-        first = manager.create_backup(include_datasets=False, compress=False, incremental=False)
+        manager.create_backup(include_datasets=False, compress=False, incremental=False)
         # Second backup without changes should mark files unchanged
         second = manager.create_backup(include_datasets=False, compress=False, incremental=True)
         assert second["incremental"] is True

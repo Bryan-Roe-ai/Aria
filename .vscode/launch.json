@@ -32,6 +32,68 @@
             "justMyCode": true
         },
         {
+            "name": "Python Debugger: aria-bot (dry-run)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "aria_bot",
+            "args": [
+                "--repo-root",
+                "${workspaceFolder}"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: aria-bot (apply)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "aria_bot",
+            "args": [
+                "--repo-root",
+                "${workspaceFolder}",
+                "--apply"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: aria-bot (targeted dry-run)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "aria_bot",
+            "args": [
+                "--repo-root",
+                "${workspaceFolder}",
+                "--paths",
+                "aria-bot/aria_bot",
+                "tests/test_aria_bot_root_shim.py"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python Debugger: aria-bot (apply + commit)",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "module": "aria_bot",
+            "args": [
+                "--repo-root",
+                "${workspaceFolder}",
+                "--apply",
+                "--commit"
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python Debugger: Core Runtime",
             "type": "debugpy",
             "request": "launch",

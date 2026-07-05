@@ -64,6 +64,36 @@
                     color var(--transition);
             }
 
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            .skip-link {
+                position: absolute;
+                left: 16px;
+                top: 12px;
+                z-index: 1000;
+                padding: 10px 14px;
+                border-radius: 10px;
+                background: var(--text-primary);
+                color: var(--bg-secondary);
+                text-decoration: none;
+                transform: translateY(-160%);
+                transition: transform 0.2s ease;
+            }
+
+            .skip-link:focus {
+                transform: translateY(0);
+            }
+
             .container {
                 max-width: 960px;
                 margin: 0 auto;
@@ -103,6 +133,17 @@
             .theme-toggle:hover {
                 background: var(--accent-glow);
                 border-color: var(--accent);
+            }
+
+            a:focus-visible,
+            button:focus-visible,
+            input:focus-visible,
+            select:focus-visible,
+            textarea:focus-visible,
+            .example-list button:focus-visible,
+            .preset-chip:focus-visible {
+                outline: 3px solid var(--accent-glow);
+                outline-offset: 3px;
             }
 
             .header {
@@ -350,10 +391,10 @@
                     border var(--transition);
             }
 
-            .examples h4 {
+            .examples h2 {
                 color: var(--accent);
                 margin-bottom: 10px;
-                font-size: 0.95em;
+                font-size: 1rem;
             }
 
             .example-list {
@@ -362,15 +403,24 @@
             }
 
             .example-list li {
+                margin-bottom: 6px;
+            }
+
+            .example-list li button {
+                width: 100%;
+                text-align: left;
                 padding: 7px 8px;
-                cursor: pointer;
                 border-radius: 8px;
                 transition: background var(--transition);
                 color: var(--text-primary);
                 font-size: 0.92em;
+                background: transparent;
+                box-shadow: none;
+                border: 1px solid transparent;
+                font-weight: 500;
             }
 
-            .example-list li:hover {
+            .example-list li button:hover {
                 background: var(--accent-glow);
             }
 
@@ -517,9 +567,11 @@
     </head>
 
     <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
         <div class="container">
-            <div class="top-bar">
-                <div
+            <header class="top-bar">
+                <nav
+                    aria-label="Aria page navigation"
                     style="
                         display: flex;
                         gap: 8px;
@@ -528,28 +580,35 @@
                     "
                 >
                     <a href="./">← Aria</a>
+                    <a href="./auto-execute.html" aria-current="page"
+                        >⚡ Auto-Execute</a
+                    >
                     <a href="./agi.html">🧠 AGI</a>
                     <a href="./agi-quantum.html">⚛ AGI Quantum</a>
                     <a href="./quantum-stage.html">🎭 Quantum Stage</a>
                     <a href="../chat/">💬 Chat</a>
                     <a href="../dashboard/">📊 Dashboard</a>
                     <a href="../store/">🛒 Store</a>
-                </div>
+                </nav>
                 <button
                     class="theme-toggle"
                     onclick="toggleTheme()"
                     title="Toggle dark mode (Ctrl/Cmd+D)"
+                    aria-label="Toggle color theme"
+                    aria-pressed="false"
                 >
                     🌙
                 </button>
-            </div>
+            </header>
+            <main id="main-content">
             <div class="header">
                 <h1>Aria Auto-Execute</h1>
                 <p>LLM-powered action generation & execution</p>
             </div>
 
             <div class="content">
-                <div class="quantum-toolbar">
+                <section class="quantum-toolbar" aria-labelledby="quantum-toolbar-heading">
+                    <h2 id="quantum-toolbar-heading" class="sr-only">Quantum world tools</h2>
                     <button
                         type="button"
                         class="btn-quantum"
@@ -561,79 +620,65 @@
                         id="quantum-status"
                         class="quantum-status"
                         aria-live="polite"
+                        aria-atomic="true"
                         >Sets up qubit/gate on the server — open the main stage
                         to see the themed world.</span
                     >
-                </div>
+                </section>
 
-                <div class="examples">
-                    <h4>📝 Example Commands (click to use):</h4>
+                <section class="examples" aria-labelledby="example-commands-heading">
+                    <h2 id="example-commands-heading">📝 Example Commands</h2>
+                    <p class="sr-only">Each example button fills the command field for you.</p>
                     <ul class="example-list" id="fallback-examples">
-                        <li
-                            onclick="
-                                setCommand(
-                                    'Walk to the table and pick up the apple',
-                                )
-                            "
-                        >
-                            Walk to the table and pick up the apple
+                        <li>
+                            <button type="button" onclick="setCommand('Walk to the table and pick up the apple')">
+                                Walk to the table and pick up the apple
+                            </button>
                         </li>
-                        <li
-                            onclick="
-                                setCommand('Say hello and wave at the audience')
-                            "
-                        >
-                            Say hello and wave at the audience
+                        <li>
+                            <button type="button" onclick="setCommand('Say hello and wave at the audience')">
+                                Say hello and wave at the audience
+                            </button>
                         </li>
-                        <li
-                            onclick="
-                                setCommand(
-                                    'Go to the center and do a little dance',
-                                )
-                            "
-                        >
-                            Go to the center and do a little dance
+                        <li>
+                            <button type="button" onclick="setCommand('Go to the center and do a little dance')">
+                                Go to the center and do a little dance
+                            </button>
                         </li>
-                        <li
-                            onclick="
-                                setCommand(
-                                    'Pick up the book, move to stage left, and drop it',
-                                )
-                            "
-                        >
-                            Pick up the book, move to stage left, and drop it
+                        <li>
+                            <button type="button" onclick="setCommand('Pick up the book, move to stage left, and drop it')">
+                                Pick up the book, move to stage left, and drop it
+                            </button>
                         </li>
-                        <li
-                            onclick="
-                                setCommand(
-                                    'Look at the flower and say how beautiful it is',
-                                )
-                            "
-                        >
-                            Look at the flower and say how beautiful it is
+                        <li>
+                            <button type="button" onclick="setCommand('Look at the flower and say how beautiful it is')">
+                                Look at the flower and say how beautiful it is
+                            </button>
                         </li>
-                        <li
-                            onclick="
-                                setCommand(
-                                    'Throw the ball toward the right side of the stage',
-                                )
-                            "
-                        >
-                            Throw the ball toward the right side of the stage
+                        <li>
+                            <button type="button" onclick="setCommand('Throw the ball toward the right side of the stage')">
+                                Throw the ball toward the right side of the stage
+                            </button>
                         </li>
                     </ul>
                     <div id="preset-groups" class="preset-groups" hidden></div>
-                </div>
+                </section>
 
-                <div class="control-panel">
+                <section class="control-panel" aria-labelledby="command-panel-heading">
+                    <h2 id="command-panel-heading" class="sr-only">Auto-execute controls</h2>
                     <div class="input-group">
                         <label for="command">Command:</label>
                         <input
                             type="text"
                             id="command"
                             placeholder="Type a natural language command for Aria..."
+                            aria-describedby="command-help"
+                            autocomplete="off"
                             value="Walk to the table and pick up the apple"
                         />
+                        <p id="command-help" class="sr-only">
+                            Type a command for Aria, then choose Plan Actions Only or Execute Actions.
+                        </p>
                     </div>
 
                     <div class="checkbox-group">
@@ -670,25 +715,28 @@
                     </div>
 
                     <div class="button-group">
-                        <button class="btn-plan" onclick="planActions()">
+                        <button type="button" class="btn-plan" onclick="planActions()">
                             📋 Plan Actions Only
                         </button>
-                        <button class="btn-execute" onclick="executeActions()">
+                        <button type="button" class="btn-execute" onclick="executeActions()">
                             ▶️ Execute Actions
                         </button>
-                        <button class="btn-clear" onclick="clearResults()">
+                        <button type="button" class="btn-clear" onclick="clearResults()">
                             🗑️ Clear
                         </button>
                     </div>
-                </div>
+                </section>
 
-                <div class="loading" id="loading">
+                <div class="sr-only" id="page-status" aria-live="polite" aria-atomic="true">Ready.</div>
+
+                <div class="loading" id="loading" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
                     <div class="spinner"></div>
                     <p>Processing command...</p>
                 </div>
 
-                <div class="results" id="results"></div>
+                <div class="results" id="results" role="region" aria-live="polite" aria-label="Auto-execute results" aria-busy="false" tabindex="-1"></div>
             </div>
+            </main>
         </div>
 
         <script>
@@ -759,8 +807,28 @@
             restoreAutoExecuteSettings()
             loadCommandPresets()
 
+            function announceStatus(message) {
+                const status = document.getElementById("page-status")
+                if (status) status.textContent = message
+            }
+
+            function setResultsBusy(isBusy) {
+                const results = document.getElementById("results")
+                const loading = document.getElementById("loading")
+                if (results)
+                    results.setAttribute("aria-busy", isBusy ? "true" : "false")
+                if (loading)
+                    loading.setAttribute("aria-hidden", isBusy ? "false" : "true")
+            }
+
+            function focusResults() {
+                const results = document.getElementById("results")
+                if (results) results.focus()
+            }
+
             function setCommand(cmd) {
                 document.getElementById("command").value = cmd
+                announceStatus("Example command loaded into the command field.")
             }
 
             async function loadCommandPresets() {
@@ -821,6 +889,7 @@
             async function loadQuantumWorld(preset) {
                 const statusEl = document.getElementById("quantum-status")
                 if (statusEl) statusEl.textContent = "Loading quantum world…"
+                announceStatus("Loading quantum world preset.")
                 try {
                     const response = await fetch("/api/aria/quantum/setup", {
                         method: "POST",
@@ -839,15 +908,18 @@
                             label +
                             "). Open the main stage to see qubit/gate."
                     }
+                    announceStatus("Quantum world loaded: " + label + ".")
                 } catch (err) {
                     if (statusEl)
                         statusEl.textContent =
                             "Quantum setup failed: " + err.message
+                    announceStatus("Quantum world failed to load: " + err.message)
                 }
             }
 
             function clearResults() {
                 document.getElementById("results").innerHTML = ""
+                announceStatus("Results cleared.")
             }
 
             async function planActions() {
@@ -877,6 +949,7 @@
                         document.getElementById("command").placeholder =
                             "Enter a natural language command for Aria..."
                     }, 2000)
+                    announceStatus("Enter a command before planning or executing actions.")
                     return
                 }
 
@@ -885,6 +958,12 @@
 
                 loading.classList.add("active")
                 results.innerHTML = ""
+                setResultsBusy(true)
+                announceStatus(
+                    autoExecute
+                        ? "Executing Aria action sequence."
+                        : "Planning Aria action sequence.",
+                )
 
                 try {
                     const response = await fetch("/api/aria/execute", {
@@ -903,6 +982,12 @@
 
                     const data = await response.json()
                     displayResults(data, autoExecute, showState)
+                    announceStatus(
+                        (data.status || "complete") +
+                            ": " +
+                            (data.actions?.length || 0) +
+                            " actions processed.",
+                    )
                 } catch (error) {
                     results.innerHTML = `
                     <div class="section">
@@ -911,8 +996,11 @@
                         <p style="margin-top: 10px; font-size: 0.9em;">Make sure the Aria server is running</p>
                     </div>
                 `
+                    announceStatus("Auto-execute request failed: " + error.message)
+                    focusResults()
                 } finally {
                     loading.classList.remove("active")
+                    setResultsBusy(false)
                 }
             }
 
@@ -997,6 +1085,7 @@
                 }
 
                 results.innerHTML = html
+                focusResults()
             }
 
             function escapeHtml(text) {
@@ -1037,11 +1126,15 @@
                 if (html.getAttribute("data-theme") === "dark") {
                     html.setAttribute("data-theme", "light")
                     btn.textContent = "🌙"
+                    btn.setAttribute("aria-pressed", "false")
                     localStorage.setItem("aria-theme", "light")
+                    announceStatus("Light theme enabled.")
                 } else {
                     html.setAttribute("data-theme", "dark")
                     btn.textContent = "☀️"
+                    btn.setAttribute("aria-pressed", "true")
                     localStorage.setItem("aria-theme", "dark")
+                    announceStatus("Dark theme enabled.")
                 }
             }
             ;(function () {
@@ -1049,7 +1142,10 @@
                 if (saved === "dark") {
                     document.documentElement.setAttribute("data-theme", "dark")
                     const btn = document.querySelector(".theme-toggle")
-                    if (btn) btn.textContent = "☀️"
+                    if (btn) {
+                        btn.textContent = "☀️"
+                        btn.setAttribute("aria-pressed", "true")
+                    }
                 }
                 // Ctrl/Cmd+D for dark mode, Enter in command field to execute
                 document.addEventListener("keydown", function (e) {

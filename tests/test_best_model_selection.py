@@ -67,7 +67,6 @@ def test_best_model_selection():
     best_post = select_fn([m.copy() for m in metrics], "post_perplexity")
     assert best_post["model"] == "tinyllama"
     # Combined improvement weights improvement more but diversity gives tinyllama maybe still phi due to improvement weight dominance (0.7*0.333 + 0.3*0.5=0.366 vs 0.7*0.1 +0.3*0.9=0.34) => phi
-    metrics_ci = [m.copy() for m in metrics]
     # compute combined to compare
     phi_score = 0.7 * ((30 - 20) / 30) + 0.3 * 0.5
     tiny_score = 0.7 * ((10 - 9) / 10) + 0.3 * 0.9

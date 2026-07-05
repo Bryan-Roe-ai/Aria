@@ -153,7 +153,9 @@ async def main():
     # Start WebSocket server
     async with websockets.serve(handler, "localhost", 8765):
         # Start heartbeat task
-        heartbeat_task = asyncio.create_task(periodic_heartbeat())
+        # Store a reference to the task so it isn't garbage-collected while running
+        # (see asyncio.create_task docs — the loop only keeps a weak reference).
+        _heartbeat_task = asyncio.create_task(periodic_heartbeat())
 
         print("WebSocket server ready!")
         print("Connect clients to: ws://localhost:8765")

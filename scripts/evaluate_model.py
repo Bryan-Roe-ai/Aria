@@ -52,7 +52,7 @@ except ImportError:
         pairs: list[tuple[str, str]] = []
         for rec in records:
             msgs = rec.get("messages", [])
-            for i, msg in enumerate(msgs):
+            for _i, msg in enumerate(msgs):
                 if msg.get("role") == "assistant":
                     # Use previous user message as input context
                     ref = msg.get("content", "")

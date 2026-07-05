@@ -95,7 +95,7 @@ class TestTailFileSmart:
         regular = tail_file(p, max_lines=10)
         smart = tail_file_smart(p, max_lines=10)
         # Both should return the same last 10 lines (stripping whitespace)
-        assert [l.strip() for l in regular] == [l.strip() for l in smart]
+        assert [ln.strip() for ln in regular] == [ln.strip() for ln in smart]
 
 
 # ---------------------------------------------------------------------------

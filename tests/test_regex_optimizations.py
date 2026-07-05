@@ -147,8 +147,6 @@ class TestFunctionAppOptimizations:
         content = function_app_path.read_text()
 
         # Count occurrences of 'import re' in the file
-        import_count = content.count("import re")
-
         # Should have exactly 1 import at the top level
         # (There might be other imports like 'import requests', so check carefully)
         lines_with_import_re = [

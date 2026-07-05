@@ -162,7 +162,7 @@ class TestChatMemoryConnectionPooling:
 
         with patch.dict("os.environ", {"QAI_DB_CONN": "test_connection_string"}):
             # Try to get connection - should skip dead one and create new
-            conn = cm._get_conn()
+            cm._get_conn()
 
             # Should have created a new connection
             assert mock_module.connect.called

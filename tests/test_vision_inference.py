@@ -6,6 +6,7 @@ Tests cover:
 from __future__ import annotations
 
 import base64
+import binascii
 import importlib.util
 import io
 
@@ -50,6 +51,7 @@ else:
     import numpy as np
     import torch as _torch
     from PIL import Image as _Image
+    from PIL import UnidentifiedImageError
 
     from scripts.vision_inference import TinyConvNet as _TinyConvNet
     from scripts.vision_inference import VisionInference as _VisionInference
@@ -290,7 +292,7 @@ class TestVisionInferenceErrors:
             pytest.skip("PyTorch not available")
         ckpt_path, _ = dummy_checkpoint
         vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
-        with pytest.raises(Exception):
+        with pytest.raises(binascii.Error):
             vi.predict_base64("not_valid_base64!!!")  # type: ignore
 
     def test_invalid_file_path(self, dummy_checkpoint: tuple[Path, list[str]]) -> None:
@@ -309,7 +311,7 @@ class TestVisionInferenceErrors:
         ckpt_path, _ = dummy_checkpoint
         vi = VisionInference(checkpoint_path=str(ckpt_path), device="cpu")  # type: ignore
         bad_data = base64.b64encode(b"not an image").decode("ascii")
-        with pytest.raises(Exception):
+        with pytest.raises(UnidentifiedImageError):
             vi.predict_base64(bad_data)  # type: ignore
 
 

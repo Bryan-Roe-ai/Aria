@@ -149,7 +149,7 @@ def summarize_text(text: str, *, max_sentences: int = 3, max_chars: int = 420) -
         max_frequency = max(frequencies.values())
         weights = {token: count / max_frequency for token, count in frequencies.items()}
         scored: list[tuple[float, int, str]] = []
-        for idx, (sentence, tokens) in enumerate(zip(sentences, tokenized_sentences)):
+        for idx, (sentence, tokens) in enumerate(zip(sentences, tokenized_sentences, strict=False)):
             if not tokens:
                 score = 0.02
             else:

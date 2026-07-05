@@ -31,7 +31,7 @@ def test_serialize_deserialize_cycle():
     blob = chat_memory._serialize_f32(vec)  # type: ignore[attr-defined]
     out = chat_memory._deserialize_f32(blob, len(vec))  # type: ignore[attr-defined]
     assert len(out) == len(vec)
-    for a, b in zip(vec, out):
+    for a, b in zip(vec, out, strict=False):
         assert abs(a - b) < 1e-6
 
 

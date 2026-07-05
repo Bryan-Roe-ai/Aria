@@ -1,11 +1,9 @@
 # Python bytecode and caches
-__pycache__/*
+*/__pycache__/*
 *.py[cod]
 *$py.class
-/workspaces/Aria/.azure/PRODUCTION-RUNBOOK.md
 # Compiled extensions
 *.so
-/workspaces/Aria/.azure/PRE-DEPLOYMENT-CHECKLIST.md
 # Distribution / packaging
 .Python
 build/
@@ -124,7 +122,6 @@ checkpoints/
 outputs/
 config/autogen/
 .push-worktrees/
-df
 dotnet/
 tools/codegen/sk-process-framework/
 
@@ -178,8 +175,27 @@ task_complete.json
 *_state.json
 *_status.json
 
+# Root-level local cleanup artifacts
+.git_status_*.tmp
+.status_after_reset.tmp
+.task_complete
+uv.lock.bak
+tmp_npz_test.npz
+\[dev\]
+=0.45.0,
+=1.58.0
+
 # core dumps
 core.*
 
 # Empty/stale submodule directory
 LMStudio-MCP/
+ai-projects/cooking-ai/src/providers/__pycache__/__init__.cpython-314.pyc
+
+.fake
+ai-projects/cooking-ai/src/providers/__pycache__/__init__.cpython-314.pyc
+data_out/autonomous_agent/status.json
+data_out/repo_health_automation/status.json
+data_out/autonomous_agent/status.json
+data_out/quantum_autorun/status.json
+data_out/evaluation_autorun/status.json

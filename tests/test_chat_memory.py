@@ -97,7 +97,7 @@ class TestSerializeDeserialize:
         original = [0.1, 0.5, -0.3, 1.0, 0.0]
         blob = cm._serialize_f32(original)
         recovered = cm._deserialize_f32(blob, len(original))
-        for orig, rec in zip(original, recovered):
+        for orig, rec in zip(original, recovered, strict=False):
             assert abs(orig - rec) < 1e-5
 
     def test_empty_blob_returns_zeros(self):

@@ -269,9 +269,6 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        # Use the root_dir set by main()
-        root_dir = getattr(self.__class__, "root_dir", REPO_ROOT)
-
         # API: Start training
         if self.path == "/api/start-training":
             content_length = int(self.headers["Content-Length"])
@@ -386,7 +383,7 @@ class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
                 if log_file and Path(log_file).exists():
                     try:
                         with open(log_file, encoding="utf-8", errors="ignore") as f:
-                            for i, line in enumerate(f):
+                            for _i, line in enumerate(f):
                                 m = re.search(
                                     r"step\s*(\d+).*?train_loss=([0-9\.]+).*?eval_loss=([0-9\.]+)",
                                     line,

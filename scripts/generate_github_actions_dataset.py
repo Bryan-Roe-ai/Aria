@@ -74,7 +74,7 @@ def parse_workflow(path: Path) -> WorkflowInfo | None:
         # Extract used actions
         uses_actions = []
         if "jobs" in parsed and isinstance(parsed["jobs"], dict):
-            for job_name, job_config in parsed["jobs"].items():
+            for _job_name, job_config in parsed["jobs"].items():
                 if isinstance(job_config, dict) and "steps" in job_config:
                     for step in job_config.get("steps", []):
                         if isinstance(step, dict) and "uses" in step:
@@ -249,13 +249,13 @@ def generate_best_practices_qa(workflow: WorkflowInfo) -> tuple[str, str]:
         practices.append("- Preserves build artifacts for debugging and deployment")
 
     jobs_config = workflow.parsed_yaml.get("jobs", {})
-    for job_name, job_config in jobs_config.items():
+    for _job_name, job_config in jobs_config.items():
         if "needs" in job_config:
             practices.append("- Uses job dependencies to create a proper pipeline flow")
             break
 
     # Check for conditional execution
-    for job_name, job_config in jobs_config.items():
+    for _job_name, job_config in jobs_config.items():
         if "if" in job_config:
             practices.append("- Uses conditional job execution to optimize resource usage")
             break
@@ -267,7 +267,7 @@ def generate_best_practices_qa(workflow: WorkflowInfo) -> tuple[str, str]:
         practices.append("- Allows manual workflow triggering for flexibility")
 
     # Check for matrix strategy
-    for job_name, job_config in jobs_config.items():
+    for _job_name, job_config in jobs_config.items():
         if "strategy" in job_config and "matrix" in job_config["strategy"]:
             practices.append("- Uses matrix strategy for testing across multiple configurations")
             break

@@ -67,7 +67,7 @@ def test_reflection_agent_formats_cycle_completed_events() -> None:
 
     capturing_llm: Any = CapturingLLM()
     agent = ReflectionAgent(memory, llm=capturing_llm)
-    result = agent.execute(Task(type="retrospect", payload={"cycle_limit": 3}))
+    agent.execute(Task(type="retrospect", payload={"cycle_limit": 3}))
 
     user_message = captured["messages"][1]["content"]
     assert "goal=stabilise queue" in user_message

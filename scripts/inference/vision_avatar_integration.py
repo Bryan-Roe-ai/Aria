@@ -16,7 +16,6 @@ from pathlib import Path
 
 try:
     import torch
-    import torch.nn as nn
     from torch.utils.data import DataLoader, Dataset
 except ImportError as exc:
     raise ImportError("PyTorch required: pip install torch") from exc
@@ -125,7 +124,7 @@ def run_inference(
             confs = probs.max(dim=1).values.cpu().tolist()
             all_scores = probs.cpu().tolist()
 
-            for path_str, pred_idx, conf, scores in zip(paths, preds, confs, all_scores):
+            for path_str, pred_idx, conf, scores in zip(paths, preds, confs, all_scores, strict=False):
                 entry: dict = {
                     "predicted_label": (classes[pred_idx] if pred_idx < len(classes) else str(pred_idx)),
                     "predicted_index": pred_idx,

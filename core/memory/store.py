@@ -30,6 +30,18 @@ def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _as_utc(dt: datetime) -> datetime:
+    """Return a timezone-aware UTC datetime.
+
+    Naive timestamps are treated as UTC to keep the store's UTC-only contract
+    predictable for callers that construct datetimes manually in tests or
+    lightweight agents.
+    """
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 class MemoryStore:
     """
     Thread-safe in-memory event store.
@@ -46,10 +58,12 @@ class MemoryStore:
         db_path: str | None = None,
     ) -> None:
         self._lock = threading.RLock()
-        self._events: deque[Event] = deque(maxlen=max_events) if max_events else deque()
+        if max_events is not None and max_events < 0:
+            raise ValueError("max_events must be >= 0 or None")
+        self._events: deque[Event] = deque(maxlen=max_events) if max_events is not None else deque()
         self._backend = None
         if db_path:
-            from core.memory.sqlite_backend import SQLiteMemoryBackend
+            from .sqlite_backend import SQLiteMemoryBackend
 
             self._backend = SQLiteMemoryBackend(db_path)
             for event in self._backend.load_all():
@@ -69,7 +83,7 @@ class MemoryStore:
         epoch (float seconds), type, data.
         The provided `data` is deep-copied to avoid external mutation.
         """
-        ts = timestamp.astimezone(timezone.utc) if timestamp else _now_utc()
+        ts = _as_utc(timestamp) if timestamp else _now_utc()
         event: Event = {
             "id": uuid.uuid4().hex,
             "timestamp": ts.isoformat(),
@@ -95,20 +109,31 @@ class MemoryStore:
 
         Returned events are shallow copies of the stored events
         (data dict remains a deepcopy from write).
+        Non-positive ``limit`` values return an empty list.
         """
-        since_epoch = since.astimezone(timezone.utc).timestamp() if since else None
-        until_epoch = until.astimezone(timezone.utc).timestamp() if until else None
+        if limit is not None and limit <= 0:
+            return []
+
+        since_epoch = _as_utc(since).timestamp() if since else None
+        until_epoch = _as_utc(until).timestamp() if until else None
+        if since_epoch is not None and until_epoch is not None and since_epoch > until_epoch:
+            return []
 
         with self._lock:
             events_snapshot = list(self._events)
 
-        iterable: Iterable[Event] = reversed(events_snapshot) if reverse else events_snapshot
+        iterable: Iterable[Event] = reversed(events_snapshot)
+        if not reverse:
+            iterable = events_snapshot
 
         results: list[Event] = []
         for e in iterable:
             if event_type is not None and e.get("type") != event_type:
                 continue
-            epoch = float(e.get("epoch", 0))
+            try:
+                epoch = float(e.get("epoch", 0))
+            except (TypeError, ValueError):
+                continue
             if since_epoch is not None and epoch < since_epoch:
                 continue
             if until_epoch is not None and epoch > until_epoch:

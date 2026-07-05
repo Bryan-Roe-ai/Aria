@@ -38,6 +38,36 @@
                 padding: 16px;
             }
 
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            .skip-link {
+                position: absolute;
+                left: 16px;
+                top: 12px;
+                z-index: 1000;
+                padding: 10px 14px;
+                border-radius: 10px;
+                background: var(--text);
+                color: var(--panel);
+                text-decoration: none;
+                transform: translateY(-160%);
+                transition: transform 0.2s ease;
+            }
+
+            .skip-link:focus {
+                transform: translateY(0);
+            }
+
             .container {
                 max-width: 960px;
                 margin: 0 auto;
@@ -54,6 +84,15 @@
                 color: var(--accent);
                 text-decoration: none;
                 font-weight: 500;
+            }
+
+            a:focus-visible,
+            button:focus-visible,
+            input:focus-visible,
+            select:focus-visible,
+            textarea:focus-visible {
+                outline: 3px solid rgba(102, 126, 234, 0.35);
+                outline-offset: 3px;
             }
 
             h1 {
@@ -138,23 +177,27 @@
     </head>
 
     <body>
+        <a href="#agi-main" class="skip-link">Skip to main content</a>
         <div class="container">
-            <div class="top-bar">
+            <header class="top-bar">
                 <div>
                     <h1>🧠 AGI Panel</h1>
                     <p style="color: var(--muted); font-size: 0.9rem">
                         Analyze, reason, and stream via Azure Functions AGI API.
                     </p>
                 </div>
-                <div>
+                <nav aria-label="Aria page navigation">
                     <a href="./index.html">← Stage</a>
+                    <a href="./agi.html" aria-current="page">AGI</a>
                     <a href="./auto-execute.html" style="margin-left: 12px"
                         >Auto-Execute</a
                     >
-                </div>
-            </div>
+                </nav>
+            </header>
 
-            <div class="panel">
+            <main id="agi-main">
+            <section class="panel" aria-labelledby="agi-status-heading">
+                <h2 id="agi-status-heading" class="sr-only">AGI status and persistence</h2>
                 <label for="apiBase">Functions API base</label>
                 <input id="apiBase" type="text" value="http://localhost:7071" />
                 <button type="button" id="refreshStatus">Refresh Status</button>
@@ -162,19 +205,26 @@
                     id="statusPill"
                     class="status-pill"
                     style="margin-left: 8px"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
                     >unknown</span
                 >
-                <pre id="statusOutput" style="margin-top: 12px">Loading…</pre>
+                <pre id="statusOutput" style="margin-top: 12px" aria-live="polite">Loading…</pre>
                 <label for="persistenceOutput" style="margin-top: 12px"
                     >Persistence</label
                 >
-                <pre id="persistenceOutput">Loading…</pre>
-            </div>
+                <pre id="persistenceOutput" aria-live="polite">Loading…</pre>
+            </section>
 
-            <div class="panel">
+            <section class="panel" aria-labelledby="agi-query-heading">
+                <h2 id="agi-query-heading" class="sr-only">Run AGI query</h2>
                 <label for="query">Query</label>
-                <textarea id="query" placeholder="Ask the AGI provider…">
+                <textarea id="query" placeholder="Ask the AGI provider…" aria-describedby="query-help">
 What is a qubit?</textarea>
+                <p id="query-help" class="sr-only">
+                    Enter a prompt for the AGI provider. Press Control plus Enter or Command plus Enter to run.
+                </p>
                 <label for="mode">Mode</label>
                 <select id="mode">
                     <option value="analyze">Analyze</option>
@@ -185,10 +235,11 @@ What is a qubit?</textarea>
                 <button type="button" id="clearBtn" class="secondary">
                     Clear Output
                 </button>
-                <div id="output" class="output" style="margin-top: 12px">
+                <div id="output" class="output" style="margin-top: 12px" role="log" aria-live="polite" aria-relevant="additions text" tabindex="-1">
                     Ready.
                 </div>
-            </div>
+            </section>
+            </main>
         </div>
 
         <script>
@@ -199,6 +250,10 @@ What is a qubit?</textarea>
                     document.getElementById("persistenceOutput")
                 var statusPill = document.getElementById("statusPill")
                 var output = document.getElementById("output")
+
+                function focusOutput() {
+                    output.focus()
+                }
 
                 function apiUrl(path) {
                     return apiBaseInput.value.replace(/\/$/, "") + path
@@ -230,10 +285,23 @@ What is a qubit?</textarea>
                     }
                 }
 
+                async function loadPersistence() {
+                    try {
+                        var res = await fetch(apiUrl("/api/agi/persistence"))
+                        if (res.ok) {
+                            var data = await res.json()
+                            output.textContent = JSON.stringify(data, null, 2)
+                        }
+                    } catch (err) {
+                        console.warn("Persistence endpoint unavailable:", err)
+                    }
+                }
+
                 async function runAnalyzeOrReason(endpoint) {
                     var query = document.getElementById("query").value.trim()
                     if (!query) return
                     output.textContent = "Running…"
+                    output.setAttribute("aria-busy", "true")
                     var res = await fetch(apiUrl(endpoint), {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -241,12 +309,15 @@ What is a qubit?</textarea>
                     })
                     var text = await res.text()
                     output.textContent = text
+                    output.setAttribute("aria-busy", "false")
+                    focusOutput()
                 }
 
                 async function runStream() {
                     var query = document.getElementById("query").value.trim()
                     if (!query) return
                     output.innerHTML = ""
+                    output.setAttribute("aria-busy", "true")
                     var res = await fetch(apiUrl("/api/agi/stream"), {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -266,6 +337,8 @@ What is a qubit?</textarea>
                     } else {
                         output.textContent = text
                     }
+                    output.setAttribute("aria-busy", "false")
+                    focusOutput()
                 }
 
                 document
@@ -275,7 +348,14 @@ What is a qubit?</textarea>
                     .getElementById("clearBtn")
                     .addEventListener("click", function () {
                         output.textContent = "Ready."
+                        focusOutput()
                     })
+                document.getElementById("query").addEventListener("keydown", function (event) {
+                    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                        event.preventDefault()
+                        document.getElementById("runBtn").click()
+                    }
+                })
                 document
                     .getElementById("runBtn")
                     .addEventListener("click", function () {
@@ -283,6 +363,8 @@ What is a qubit?</textarea>
                         if (mode === "stream")
                             return runStream().catch(function (e) {
                                 output.textContent = String(e)
+                                output.setAttribute("aria-busy", "false")
+                                focusOutput()
                             })
                         var endpoint =
                             mode === "reason"
@@ -290,6 +372,8 @@ What is a qubit?</textarea>
                                 : "/api/agi/analyze"
                         runAnalyzeOrReason(endpoint).catch(function (e) {
                             output.textContent = String(e)
+                            output.setAttribute("aria-busy", "false")
+                            focusOutput()
                         })
                     })
 

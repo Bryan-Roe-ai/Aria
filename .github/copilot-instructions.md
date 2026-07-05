@@ -88,6 +88,11 @@ python scripts/repo_automation.py --status
 python scripts/aria_automation.py --mode full
 python scripts/aria_automation.py --status
 
+# aria-bot deterministic self-improvement loop
+python -m aria_bot --repo-root .              # Safe dry-run from repo root
+make aria-bot                                 # Same dry-run via Makefile
+make aria-bot-apply                           # Apply safe fixes locally
+
 # === ARIA CHARACTER WEB UI ===
 cd apps/aria && python server.py                  # Start Aria web interface (port 8080)
 # Access at: http://localhost:8080

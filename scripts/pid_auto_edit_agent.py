@@ -282,7 +282,7 @@ def cmd_stop(_: argparse.Namespace) -> int:
     assert pid is not None
     os.kill(pid, signal.SIGTERM)
     # brief wait
-    for i in range(20):
+    for _i in range(20):
         if not _is_running(pid):
             break
         time.sleep(0.1)

@@ -102,7 +102,7 @@ class AIProjectsRegistry:
             try:
                 chat_cli_src = cls._get_ai_project_path("chat-cli", "src")
             except ImportError as e:
-                raise ImportError(f"Failed to load chat-cli: {e}")
+                raise ImportError(f"Failed to load chat-cli: {e}") from e
 
             if str(chat_cli_src) not in sys.path:
                 sys.path.insert(0, str(chat_cli_src))
@@ -224,7 +224,7 @@ class AIProjectsRegistry:
 
                 cls._cache[cache_key] = ns
             except ImportError as e:
-                raise ImportError(f"Failed to load quantum-ml: {e}")
+                raise ImportError(f"Failed to load quantum-ml: {e}") from e
 
         return cls._cache[cache_key]
 
@@ -247,7 +247,7 @@ class AIProjectsRegistry:
                 ns = LoraNamespace()
                 cls._cache[cache_key] = ns
             except ImportError as e:
-                raise ImportError(f"Failed to load lora-training: {e}")
+                raise ImportError(f"Failed to load lora-training: {e}") from e
 
         return cls._cache[cache_key]
 
@@ -275,7 +275,7 @@ class AIProjectsRegistry:
 
                 cls._cache[cache_key] = ns
             except ImportError as e:
-                raise ImportError(f"Failed to load llm-maker: {e}")
+                raise ImportError(f"Failed to load llm-maker: {e}") from e
 
         return cls._cache[cache_key]
 

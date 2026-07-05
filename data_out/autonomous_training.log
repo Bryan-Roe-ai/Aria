@@ -1472,3 +1472,45 @@ Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_train
 2026-07-01 15:43:28,277 - INFO -   Training progress: 100%
 2026-07-01 15:43:28,277 - INFO - Current accuracy: 0.9569 (best: 0.9569, plateau: 92 cycles)
 2026-07-01 15:43:28,280 - INFO - Cycle complete. Next cycle in 1800s...
+2026-07-04 22:56:38,005 - WARNING - Stale pidfile detected (pid=17079); replacing
+2026-07-04 22:56:38,010 - INFO - ======================================================================
+2026-07-04 22:56:38,010 - INFO - 🤖 AUTONOMOUS AI TRAINING ORCHESTRATOR
+2026-07-04 22:56:38,010 - INFO - ======================================================================
+2026-07-04 22:56:38,010 - INFO - Starting continuous training mode (infinite cycles)...
+2026-07-04 22:56:38,010 - INFO - Cycle interval: 1800s
+2026-07-04 22:56:38,010 - INFO - 
+======================================================================
+2026-07-04 22:56:38,010 - INFO - CYCLE 448
+2026-07-04 22:56:38,010 - INFO - ======================================================================
+2026-07-04 22:56:38,018 - INFO - Starting training cycle #448...
+2026-07-04 22:56:38,020 - INFO - Found 4 dataset categories: ['chat', 'synthetic:quantum', 'synthetic:python_help', 'synthetic:aria_commands']
+2026-07-04 22:56:40,020 - INFO -   Training progress: 33%
+2026-07-04 22:56:42,020 - INFO -   Training progress: 67%
+2026-07-04 22:56:44,021 - INFO -   Training progress: 100%
+2026-07-04 22:56:44,021 - INFO - Current accuracy: 0.9569 (best: 0.9569, plateau: 93 cycles)
+2026-07-04 22:56:44,022 - INFO - 🔬 Running scheduled Quantum LLM training step...
+2026-07-04 22:56:47,005 - INFO - QuantumLayer loaded successfully
+2026-07-04 22:56:47,022 - INFO - Using QuantumSelfAttention
+2026-07-04 22:56:47,022 - INFO - Using QuantumFeedForward
+2026-07-04 22:56:47,025 - INFO - Using QuantumSelfAttention
+2026-07-04 22:56:47,026 - INFO - Using QuantumFeedForward
+2026-07-04 22:56:47,027 - INFO - QuantumLLM initialised: 55,312 parameters
+2026-07-04 22:56:47,027 - INFO -   vocab=256, d_model=64, heads=4, blocks=2, qubits=4, seq_len=32
+2026-07-04 22:56:48,117 - INFO - Initialized quantum feature encoder
+2026-07-04 22:56:48,118 - INFO - Initialized QuantumAttentionOptimizer
+2026-07-04 22:56:48,119 - INFO - Initialized QuantumEnhancedLLMTrainer
+2026-07-04 22:56:48,119 - INFO -   Device: cpu
+2026-07-04 22:56:48,119 - INFO -   Parameters: 55,312
+2026-07-04 22:56:48,119 - INFO -   Quantum available: True
+2026-07-04 22:56:48,119 - INFO -   Model config: {'vocab_size': 256, 'd_model': 64, 'n_heads': 4, 'n_transformer_layers': 2, 'n_qubits': 4, 'n_quantum_layers': 2, 'max_seq_len': 32, 'entanglement': 'circular', 'dropout': 0.1, 'use_quantum_attention': True, 'use_quantum_ffn': True, 'tie_embeddings': True}
+2026-07-04 22:56:48,120 - INFO - Starting quantum-enhanced LLM training
+2026-07-04 22:56:48,120 - INFO -   Dataset: /workspaces/Aria/datasets/chat/github_actions/train.json
+2026-07-04 22:56:48,120 - INFO -   Output: /workspaces/Aria/data_out/quantum_llm_training
+2026-07-04 22:56:48,120 - INFO -   Epochs: 1
+2026-07-04 22:56:48,120 - INFO -   Mode: simulated
+2026-07-04 22:56:48,121 - INFO - 
+--- Epoch 1/1 (simulated) ---
+2026-07-04 22:56:48,157 - INFO -   Epoch 1 complete | Avg Loss: 0.8924
+2026-07-04 22:56:48,166 - INFO - 
+Training complete! Results saved to: /workspaces/Aria/data_out/quantum_llm_training/quantum_training_results.json
+2026-07-04 22:56:48,171 - INFO - Cycle complete. Next cycle in 1800s...

@@ -43,7 +43,7 @@ def load_model_predictions(model_path: Path, max_samples: int | None = None) -> 
 
 def compute_binary_metrics(y_true: list[Any], y_pred: list[Any]) -> dict[str, float]:
     # Convert to strings for stable comparison
-    paired = list(zip(y_true, y_pred))
+    paired = list(zip(y_true, y_pred, strict=False))
     if not paired:
         return {"accuracy": 0.0, "precision": 0.0, "recall": 0.0, "f1_score": 0.0}
 
@@ -105,7 +105,7 @@ def run(
         save_dir.mkdir(parents=True, exist_ok=True)
         out = {
             "summary": summary,
-            "predictions": [{"pred": p, "expected": t} for p, t in zip(y_pred, y_true)],
+            "predictions": [{"pred": p, "expected": t} for p, t in zip(y_pred, y_true, strict=False)],
         }
         (save_dir / "results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
 

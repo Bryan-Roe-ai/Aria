@@ -974,7 +974,7 @@ class QuantumEnhancedLLMTrainer:
             if batch_idx % 10 == 0:
                 # Quantum-enhanced optimization step
                 mock_attention = torch.randn(1, 8, 8)
-                optimized = self.attention_optimizer.optimize_attention_weights(mock_attention)
+                self.attention_optimizer.optimize_attention_weights(mock_attention)
                 self.quantum_metrics["circuit_executions"] += 1
                 self.quantum_metrics["optimization_steps"] += 1
 

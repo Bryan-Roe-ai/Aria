@@ -77,12 +77,10 @@ class TestDryRun:
         # Create multi-job config
         cfg = sample_qconfig
         with cfg.open("a", encoding="utf-8") as f:
-            f.write(
-                """
+            f.write("""
   - name: another
     preset: heart
-"""
-            )
+""")
         import sys
 
         proc = subprocess.run(

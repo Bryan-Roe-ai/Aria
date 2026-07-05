@@ -151,14 +151,12 @@ class TestConfigValidator:
     def test_undefined_dependency(self, validator):
         """Test validation detects undefined dependencies."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """orchestrators:
+            f.write("""orchestrators:
   - name: test1
     script: scripts/autotrain.py
     enabled: true
     dependencies: [undefined_orch]
-"""
-            )
+""")
             f.flush()
             temp_path = Path(f.name)
 
@@ -172,8 +170,7 @@ class TestConfigValidator:
     def test_circular_dependency(self, validator):
         """Test validation detects circular dependencies."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """orchestrators:
+            f.write("""orchestrators:
   - name: test1
     script: scripts/autotrain.py
     enabled: true
@@ -182,8 +179,7 @@ class TestConfigValidator:
     script: scripts/quantum_autorun.py
     enabled: true
     dependencies: [test1]
-"""
-            )
+""")
             f.flush()
             temp_path = Path(f.name)
 
@@ -197,8 +193,7 @@ class TestConfigValidator:
     def test_workflow_references_undefined_orchestrator(self, validator):
         """Test validation detects undefined orchestrator references in workflows."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """orchestrators:
+            f.write("""orchestrators:
   - name: test1
     script: scripts/autotrain.py
     enabled: true
@@ -207,8 +202,7 @@ workflows:
   - name: wf1
     enabled: true
     orchestrators: [test1, undefined_orch]
-"""
-            )
+""")
             f.flush()
             temp_path = Path(f.name)
 
@@ -222,14 +216,12 @@ workflows:
     def test_invalid_priority_type(self, validator):
         """Test validation detects invalid priority type."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write(
-                """orchestrators:
+            f.write("""orchestrators:
   - name: test1
     script: scripts/autotrain.py
     enabled: true
     priority: "not_a_number"
-"""
-            )
+""")
             f.flush()
             temp_path = Path(f.name)
 

@@ -62,6 +62,7 @@ import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -191,6 +192,76 @@ def _probe_url(url: str, headers: dict[str, str] | None = None, timeout: int = 5
         return -1, None, 0.0
 
 
+def _endpoint_candidates(primary_url: str) -> list[str]:
+    """Return probe candidate URLs with container-friendly localhost fallbacks.
+
+    Keeps primary URL first, then adds common substitutions used across dev
+    containers where host.docker.internal may be unavailable.
+    """
+    candidates: list[str] = []
+
+    def _add(url: str) -> None:
+        if url and url not in candidates:
+            candidates.append(url)
+
+    normalized = primary_url.rstrip("/")
+    _add(normalized)
+
+    def _swap_hostname(url: str, current: str, target: str) -> str | None:
+        parts = urllib.parse.urlsplit(url)
+        if parts.hostname != current:
+            return None
+
+        auth = ""
+        if parts.username:
+            auth = parts.username
+            if parts.password:
+                auth += f":{parts.password}"
+            auth += "@"
+
+        host = target
+        if ":" in target and not target.startswith("["):
+            host = f"[{target}]"
+
+        port = ""
+        if parts.port is not None:
+            port = f":{parts.port}"
+
+        netloc = f"{auth}{host}{port}"
+        return urllib.parse.urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+
+    variants = [
+        "host.docker.internal",
+        "gateway.docker.internal",
+        "127.0.0.1",
+        "localhost",
+    ]
+
+    # Prefer parsed URL hostname matching to avoid accidental path/query
+    # replacements when a host-like token appears outside netloc.
+    parsed_host = urllib.parse.urlsplit(normalized).hostname
+    current_variant = parsed_host if parsed_host in variants else None
+
+    # Fallback for non-URL strings: keep existing substring-based behavior.
+    if current_variant is None and "://" not in normalized:
+        for candidate in variants:
+            if candidate in normalized:
+                current_variant = candidate
+                break
+
+    if current_variant is not None:
+        for target in variants:
+            if target == current_variant:
+                continue
+            swapped = _swap_hostname(normalized, current_variant, target)
+            if swapped is None and "://" not in normalized:
+                swapped = normalized.replace(current_variant, target)
+            if swapped is not None:
+                _add(swapped)
+
+    return candidates
+
+
 # ── Token generation helpers ──────────────────────────────────────────────────
 
 
@@ -249,11 +320,22 @@ def probe_ollama(
     base_url = (env.get("OLLAMA_BASE_URL") or "http://127.0.0.1:11434").rstrip("/")
     # Ollama's management API is always at /api/tags (not under /v1)
     api_base = re.sub(r"/v1$", "", base_url, flags=re.IGNORECASE)
-    model = env.get("OLLAMA_MODEL") or "llama3.2"
     result.endpoint = api_base
 
     # Ollama does not use API tokens — probe the /api/tags endpoint
-    status, data, latency = _probe_url(f"{api_base}/api/tags")
+    status = -1
+    data: Any = None
+    latency = 0.0
+    endpoint_used = api_base
+    attempted = []
+    for candidate in _endpoint_candidates(api_base):
+        attempted.append(candidate)
+        status, data, latency = _probe_url(f"{candidate}/api/tags")
+        if status != -1:
+            endpoint_used = candidate
+            break
+
+    result.endpoint = endpoint_used
     result.latency_ms = latency
     result.token_present = True  # no token required
 
@@ -261,20 +343,20 @@ def probe_ollama(
         models = [m.get("name", "") for m in data.get("models", [])]
         if models:
             result.model = models[0]
-            _ok(f"Ollama   — {api_base} ({len(models)} models: {', '.join(models[:3])})")
+            _ok(f"Ollama   — {endpoint_used} ({len(models)} models: {', '.join(models[:3])})")
             result.status = "ok"
         else:
-            _warn(f"Ollama   — server reachable but no models installed at {api_base}")
+            _warn(f"Ollama   — server reachable but no models installed at {endpoint_used}")
             result.status = "warn"
             result.notes.append("No models installed. Run: ollama pull llama3.2")
     elif status == -1:
-        _fail(f"Ollama   — server not reachable at {api_base} (is `ollama serve` running?)")
+        _fail("Ollama   — server not reachable " f"(tried: {', '.join(attempted)}) (is `ollama serve` running?)")
         result.status = "fail"
         result.error = "connection refused"
         result.notes.append("Start Ollama: ollama serve")
         return result
     else:
-        _fail(f"Ollama   — unexpected response {status} from {api_base}")
+        _fail(f"Ollama   — unexpected response {status} from {endpoint_used}")
         result.status = "fail"
         result.error = f"HTTP {status}"
         return result
@@ -329,12 +411,24 @@ def probe_lmstudio(
         headers["Authorization"] = f"Bearer {token}"
         result.token_present = True
 
-    status, data, latency = _probe_url(f"{v1_url}/models", headers=headers)
+    status = -1
+    data: Any = None
+    latency = 0.0
+    endpoint_used = v1_url
+    attempted = []
+    for candidate in _endpoint_candidates(v1_url):
+        attempted.append(candidate)
+        status, data, latency = _probe_url(f"{candidate}/models", headers=headers)
+        if status != -1:
+            endpoint_used = candidate
+            break
+
+    result.endpoint = endpoint_used
     result.latency_ms = latency
 
     if status == 401:
         # Server is up but auth failed
-        _warn(f"LM Studio — server at {v1_url} requires a token (401 Unauthorized)")
+        _warn(f"LM Studio — server at {endpoint_used} requires a token (401 Unauthorized)")
         if rotate or not token:
             # Generate a fresh token
             new_token = _generate_local_token("lmstudio")
@@ -357,14 +451,14 @@ def probe_lmstudio(
             _fail("LM Studio — token required but none provided")
         # Re-probe with new token
         headers["Authorization"] = f"Bearer {token}"
-        status, data, latency = _probe_url(f"{v1_url}/models", headers=headers)
+        status, data, latency = _probe_url(f"{endpoint_used}/models", headers=headers)
         result.latency_ms = latency
 
     if status == 200 and isinstance(data, dict):
         models = [m.get("id", "") for m in data.get("data", [])]
         active = models[0] if models else env.get("LMSTUDIO_MODEL", "unknown")
         result.model = active
-        _ok(f"LM Studio — {v1_url}  model: {active}  ({latency:.0f}ms)")
+        _ok(f"LM Studio — {endpoint_used}  model: {active}  ({latency:.0f}ms)")
         result.status = "ok"
         result.token_present = True
         if write and models and not env.get("LMSTUDIO_MODEL"):
@@ -372,12 +466,12 @@ def probe_lmstudio(
         if write and not env.get("LMSTUDIO_BASE_URL"):
             result.env_written["LMSTUDIO_BASE_URL"] = base_url
     elif status == -1:
-        _fail(f"LM Studio — not reachable at {v1_url} (enable local server in LM Studio app)")
+        _fail("LM Studio — not reachable " f"(tried: {', '.join(attempted)}) (enable local server in LM Studio app)")
         result.status = "fail"
         result.error = "connection refused"
         result.notes.append("Enable LM Studio local server: LM Studio → Local Server tab → Start")
     elif status != 401:
-        _fail(f"LM Studio — unexpected response {status} from {v1_url}")
+        _fail(f"LM Studio — unexpected response {status} from {endpoint_used}")
         result.status = "fail"
         result.error = f"HTTP {status}"
 

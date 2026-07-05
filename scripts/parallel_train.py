@@ -391,7 +391,7 @@ class ParallelTrainer:
                     toks = t.split()
                     unigrams_total += len(toks)
                     unigrams_set.update(toks)
-                    bgs = list(zip(toks, toks[1:]))
+                    bgs = list(zip(toks, toks[1:], strict=False))
                     bigrams_total += len(bgs)
                     bigrams_set.update(bgs)
                 d1 = len(unigrams_set) / unigrams_total if unigrams_total else 0.0

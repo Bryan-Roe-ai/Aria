@@ -77,6 +77,36 @@
                 color: var(--ink);
             }
 
+            .sr-only {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+
+            .skip-link {
+                position: absolute;
+                left: 16px;
+                top: 12px;
+                z-index: 1000;
+                padding: 10px 14px;
+                border-radius: 10px;
+                background: var(--ink);
+                color: white;
+                text-decoration: none;
+                transform: translateY(-160%);
+                transition: transform 0.2s ease;
+            }
+
+            .skip-link:focus {
+                transform: translateY(0);
+            }
+
             body::before {
                 content: "";
                 position: fixed;
@@ -1291,6 +1321,18 @@
                 transform: translateY(0);
             }
 
+            a:focus-visible,
+            button:focus-visible,
+            input:focus-visible,
+            select:focus-visible,
+            .object:focus-visible,
+            .object-btn:focus-visible,
+            .quick-btn:focus-visible,
+            .sample-chip:focus-visible {
+                outline: 3px solid rgba(15, 157, 137, 0.4);
+                outline-offset: 3px;
+            }
+
             .quick-commands {
                 margin-top: 20px;
             }
@@ -1484,9 +1526,15 @@
     </head>
 
     <body>
+        <a href="#main-content" class="skip-link">Skip to main content</a>
         <div class="container">
-            <a href="./" class="back-link">← Aria Home</a>
-            <div
+            <nav aria-label="Aria stage navigation">
+                <a href="./" class="back-link" aria-current="page"
+                    >← Aria Home</a
+                >
+            </nav>
+            <nav
+                aria-label="Aria stage quick links"
                 style="
                     display: flex;
                     gap: 10px;
@@ -1512,7 +1560,7 @@
                     style="margin: 0"
                     >🎭 Quantum Stage</a
                 >
-            </div>
+            </nav>
 
             <header>
                 <h1>👤 Aria - Interactive AI Character</h1>
@@ -1522,7 +1570,8 @@
                 </p>
             </header>
 
-            <div class="demo-notice" style="display: none">
+            <main id="main-content">
+            <div class="demo-notice" style="display: none" role="note">
                 <strong>🌐 Demo Mode:</strong> Running in GitHub Pages demo mode
                 with simulated API responses. For full AI capabilities, run
                 locally with Python backend.
@@ -1531,8 +1580,8 @@
                 >
             </div>
 
-            <div id="object-manager" class="object-manager">
-                <h3>🎯 Object Manager</h3>
+            <section id="object-manager" class="object-manager" aria-labelledby="object-manager-heading">
+                <h2 id="object-manager-heading">🎯 Object Manager</h2>
                 <div
                     style="
                         margin-bottom: 14px;
@@ -1608,6 +1657,7 @@
                         id="quantum-live-status"
                         class="quantum-live-status"
                         aria-live="polite"
+                        aria-atomic="true"
                     >
                         Load a quantum world to swap in qubits, gates, and lab
                         props — presets run intro actions on the server.
@@ -1641,6 +1691,7 @@
                         class="object-btn active"
                         onclick="toggleObject('apple')"
                         id="btn-apple"
+                        aria-pressed="true"
                     >
                         🍎 Apple
                     </button>
@@ -1648,6 +1699,7 @@
                         class="object-btn active"
                         onclick="toggleObject('book')"
                         id="btn-book"
+                        aria-pressed="true"
                     >
                         📚 Book
                     </button>
@@ -1655,6 +1707,7 @@
                         class="object-btn active"
                         onclick="toggleObject('cup')"
                         id="btn-cup"
+                        aria-pressed="true"
                     >
                         ☕ Cup
                     </button>
@@ -1662,6 +1715,7 @@
                         class="object-btn active"
                         onclick="toggleObject('ball')"
                         id="btn-ball"
+                        aria-pressed="true"
                     >
                         ⚽ Ball
                     </button>
@@ -1669,22 +1723,27 @@
                         class="object-btn active"
                         onclick="toggleObject('flower')"
                         id="btn-flower"
+                        aria-pressed="true"
                     >
                         🌸 Flower
                     </button>
                 </div>
-            </div>
+            </section>
 
             <div class="main-content">
-                <div class="stage-container">
-                    <div class="stage" id="stage">
-                        <div class="stage-label" id="stage-label">
+                <section class="stage-container" aria-labelledby="stage-section-heading">
+                    <h2 id="stage-section-heading" class="sr-only">Interactive stage</h2>
+                    <p id="stage-help-text" class="sr-only">
+                        Aria stands on an interactive stage with movable objects. Use the command input, chat controls, object manager, or keyboard focus on stage objects to interact without a mouse.
+                    </p>
+                    <div class="stage" id="stage" aria-describedby="stage-help-text stage-label">
+                        <div class="stage-label" id="stage-label" aria-live="polite">
                             Default stage · not loaded
                         </div>
                         <!-- Interactive Table -->
-                        <div id="table" class="table">
-                            <div class="table-leg" style="left: 10%"></div>
-                            <div class="table-leg" style="left: 90%"></div>
+                        <div id="table" class="table" aria-hidden="true">
+                            <div class="table-leg" style="left: 10%" aria-hidden="true"></div>
+                            <div class="table-leg" style="left: 90%" aria-hidden="true"></div>
                         </div>
 
                         <!-- Interactive Objects -->
@@ -1692,36 +1751,42 @@
                             id="apple"
                             class="object apple"
                             data-object="apple"
+                            role="button"
+                            tabindex="0"
+                            aria-label="Apple stage object. Press Enter or Space to pick up or drop it."
                         >
                             🍎
                         </div>
-                        <div id="book" class="object book" data-object="book">
+                        <div id="book" class="object book" data-object="book" role="button" tabindex="0" aria-label="Book stage object. Press Enter or Space to pick up or drop it.">
                             📚
                         </div>
-                        <div id="cup" class="object cup" data-object="cup">
+                        <div id="cup" class="object cup" data-object="cup" role="button" tabindex="0" aria-label="Cup stage object. Press Enter or Space to pick up or drop it.">
                             ☕
                         </div>
-                        <div id="ball" class="object ball" data-object="ball">
+                        <div id="ball" class="object ball" data-object="ball" role="button" tabindex="0" aria-label="Ball stage object. Press Enter or Space to pick up or drop it.">
                             ⚽
                         </div>
                         <div
                             id="flower"
                             class="object flower"
                             data-object="flower"
+                            role="button"
+                            tabindex="0"
+                            aria-label="Flower stage object. Press Enter or Space to pick up or drop it."
                         >
                             🌸
                         </div>
 
-                        <div class="aria-character" id="aria">
-                            <div class="aria-ponytail left"></div>
-                            <div class="aria-ponytail right"></div>
-                            <div class="aria-hair"></div>
-                            <div class="aria-bangs">
+                        <div class="aria-character" id="aria" role="img" aria-label="Aria, an interactive character avatar on the stage.">
+                            <div class="aria-ponytail left" aria-hidden="true"></div>
+                            <div class="aria-ponytail right" aria-hidden="true"></div>
+                            <div class="aria-hair" aria-hidden="true"></div>
+                            <div class="aria-bangs" aria-hidden="true">
                                 <div class="aria-bang"></div>
                                 <div class="aria-bang"></div>
                                 <div class="aria-bang"></div>
                             </div>
-                            <div class="aria-head">
+                            <div class="aria-head" aria-hidden="true">
                                 <div class="aria-blush left"></div>
                                 <div class="aria-blush right"></div>
                                 <div class="aria-eyes">
@@ -1821,21 +1886,26 @@
                             <div class="aria-foot right"></div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="control-panel">
-                    <h2>🎮 Command Input</h2>
+                <aside class="control-panel" aria-labelledby="control-panel-heading">
+                    <h2 id="control-panel-heading">🎮 Command Input</h2>
                     <div class="command-input">
                         <input
                             type="text"
                             id="commandInput"
                             placeholder="Type a command (e.g., 'aria smile', 'jump', 'dance with sparkles')"
+                            aria-describedby="commandInputHelp"
+                            autocomplete="off"
                             onkeypress="
                                 if (event.key === 'Enter') sendCommand()
                             "
                         />
                         <button onclick="sendCommand()">Execute Command</button>
                     </div>
+                    <p id="commandInputHelp" class="sr-only">
+                        Enter a natural language command for Aria and press Enter or activate Execute Command.
+                    </p>
 
                     <div class="quick-commands">
                         <h3>⚛ Quantum Lab samples</h3>
@@ -1862,7 +1932,10 @@
                             <div
                                 id="chatMessages"
                                 class="chat-messages"
+                                role="log"
                                 aria-live="polite"
+                                aria-relevant="additions text"
+                                aria-label="Chat messages"
                             ></div>
 
                             <div class="chat-input-block">
@@ -1870,6 +1943,7 @@
                                     id="chatInput"
                                     type="text"
                                     placeholder="Type a chat message or /goto front-left — hit Enter to send"
+                                    aria-describedby="chatInputHelp"
                                     onkeypress="
                                         if (event.key === 'Enter') sendChat()
                                     "
@@ -1878,6 +1952,9 @@
                                     Send
                                 </button>
                             </div>
+                            <p id="chatInputHelp" class="sr-only">
+                                Type a message to Aria or a slash command such as slash goto waypoint, then press Enter.
+                            </p>
 
                             <div
                                 style="
@@ -1895,10 +1972,11 @@
 
                     <div class="status-log">
                         <h3>📋 Command Log</h3>
-                        <div id="logContainer"></div>
+                        <div id="logContainer" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Command log" tabindex="0"></div>
                     </div>
-                </div>
+                </aside>
             </div>
+            </main>
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>

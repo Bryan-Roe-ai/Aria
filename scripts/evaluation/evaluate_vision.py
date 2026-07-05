@@ -18,7 +18,6 @@ import numpy as np
 
 try:
     import torch
-    import torch.nn as nn
     from torch.utils.data import DataLoader
 except ImportError as exc:
     raise ImportError("PyTorch required: pip install torch") from exc
@@ -89,14 +88,14 @@ def evaluate(
             all_confs.extend(confs)
 
     total = len(all_labels)
-    correct = sum(p == l for p, l in zip(all_preds, all_labels))
+    correct = sum(p == lbl for p, lbl in zip(all_preds, all_labels, strict=False))
     accuracy = correct / max(total, 1)
 
     # Per-class accuracy
     per_class: dict[str, dict] = {}
     for cls_idx, cls_name in enumerate(ds.classes):
-        cls_total = sum(1 for l in all_labels if l == cls_idx)
-        cls_correct = sum(1 for p, l in zip(all_preds, all_labels) if l == cls_idx and p == l)
+        cls_total = sum(1 for lbl in all_labels if lbl == cls_idx)
+        cls_correct = sum(1 for p, lbl in zip(all_preds, all_labels, strict=False) if lbl == cls_idx and p == lbl)
         per_class[cls_name] = {
             "total": cls_total,
             "correct": cls_correct,

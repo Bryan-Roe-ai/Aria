@@ -149,6 +149,27 @@ class TestProbeOllama:
         assert r.status == "fail"
         assert r.error == "connection refused"
 
+    def test_fallback_from_host_docker_internal(self, monkeypatch):
+        calls: list[str] = []
+
+        def fake_probe(url, **kwargs):
+            calls.append(url)
+            if "host.docker.internal" in url:
+                return (-1, None, 0.0)
+            return (200, {"models": [{"name": "llama3.2"}]}, 4.0)
+
+        monkeypatch.setattr(gat, "_probe_url", fake_probe)
+        r = gat.probe_ollama({"OLLAMA_BASE_URL": "http://host.docker.internal:11434"})
+        assert r.status == "ok"
+        assert any("host.docker.internal" in c for c in calls)
+        fallbacks = (
+            "gateway.docker.internal",
+            "127.0.0.1",
+            "localhost",
+        )
+        assert any(alt in c for c in calls for alt in fallbacks)
+        assert any(alt in r.endpoint for alt in fallbacks)
+
     def test_records_latency(self, monkeypatch):
         monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"models": [{"name": "phi3"}]}, 42.5))
         r = gat.probe_ollama({})
@@ -179,6 +200,70 @@ class TestProbeLmStudio:
         r = gat.probe_lmstudio({})
         assert r.status == "fail"
         assert r.error == "connection refused"
+
+    def test_fallback_from_host_docker_internal(self, monkeypatch):
+        calls: list[str] = []
+
+        def fake_probe(url, headers=None, **kwargs):
+            calls.append(url)
+            if "host.docker.internal" in url:
+                return (-1, None, 0.0)
+            return (200, {"data": [{"id": "phi-3-mini"}]}, 7.0)
+
+        monkeypatch.setattr(gat, "_probe_url", fake_probe)
+        r = gat.probe_lmstudio({"LMSTUDIO_BASE_URL": "http://host.docker.internal:1234"})
+        assert r.status == "ok"
+        assert any("host.docker.internal" in c for c in calls)
+        fallbacks = (
+            "gateway.docker.internal",
+            "127.0.0.1",
+            "localhost",
+        )
+        assert any(alt in c for c in calls for alt in fallbacks)
+        assert any(alt in r.endpoint for alt in fallbacks)
+
+
+class TestEndpointCandidates:
+    def test_adds_cross_host_fallbacks_for_loopback_input(self):
+        candidates = gat._endpoint_candidates("http://127.0.0.1:11434")
+        assert candidates[0] == "http://127.0.0.1:11434"
+        assert "http://localhost:11434" in candidates
+        assert "http://host.docker.internal:11434" in candidates
+        assert "http://gateway.docker.internal:11434" in candidates
+
+    def test_adds_localhost_fallbacks_for_container_host(self):
+        candidates = gat._endpoint_candidates("http://host.docker.internal:1234/v1")
+        assert candidates[0] == "http://host.docker.internal:1234/v1"
+        assert "http://127.0.0.1:1234/v1" in candidates
+        assert "http://localhost:1234/v1" in candidates
+        assert "http://gateway.docker.internal:1234/v1" in candidates
+
+    def test_adds_host_and_local_fallbacks_for_gateway(self):
+        candidates = gat._endpoint_candidates("http://gateway.docker.internal:1234/v1")
+        assert candidates[0] == "http://gateway.docker.internal:1234/v1"
+        assert "http://host.docker.internal:1234/v1" in candidates
+        assert "http://127.0.0.1:1234/v1" in candidates
+        assert "http://localhost:1234/v1" in candidates
+
+    def test_adds_container_fallbacks_for_localhost(self):
+        candidates = gat._endpoint_candidates("http://localhost:1234/v1")
+        assert candidates[0] == "http://localhost:1234/v1"
+        assert "http://127.0.0.1:1234/v1" in candidates
+        assert "http://host.docker.internal:1234/v1" in candidates
+        assert "http://gateway.docker.internal:1234/v1" in candidates
+
+    def test_does_not_replace_path_text_when_hostname_differs(self):
+        url = "http://example.com/path/host.docker.internal/service"
+        candidates = gat._endpoint_candidates(url)
+        assert candidates == [url]
+
+    def test_uses_hostname_even_when_path_contains_other_variant(self):
+        url = "http://localhost:1234/path/host.docker.internal"
+        candidates = gat._endpoint_candidates(url)
+        assert candidates[0] == url
+        assert "http://127.0.0.1:1234/path/host.docker.internal" in candidates
+        assert "http://host.docker.internal:1234/path/host.docker.internal" in candidates
+        assert "http://gateway.docker.internal:1234/path/host.docker.internal" in candidates
 
     def test_401_generates_token_when_rotate(self, monkeypatch):
         call_count = {"n": 0}
@@ -337,7 +422,7 @@ class TestRun:
         monkeypatch.setattr(gat, "_probe_url", fake_probe)
 
         settings = gat._load_settings()
-        results = gat.run(["lmstudio"], settings, rotate=True, write=True)
+        gat.run(["lmstudio"], settings, rotate=True, write=True)
         saved = json.loads(target.read_text())
         assert "LM_API_TOKEN" in saved["Values"]
         assert saved["Values"]["LM_API_TOKEN"].startswith("lmstudio-")
@@ -397,7 +482,7 @@ class TestCLIExitCodes:
 
     def test_json_flag_produces_valid_json(self, monkeypatch, capsys):
         monkeypatch.setattr(gat, "_probe_url", lambda *a, **kw: (200, {"models": [{"name": "phi3"}]}, 8.0))
-        rc = self._run(["--provider", "ollama", "--json"], monkeypatch)
+        self._run(["--provider", "ollama", "--json"], monkeypatch)
         out = capsys.readouterr().out
         # The JSON block starts with '{' on its own line; find and parse it
         json_lines: list[str] = []

@@ -140,6 +140,13 @@ def load_jobs(path: Path) -> list[QJob]:
     values into typed QJob instances. It handles both proper YAML parsing
     (pyyaml) and the simple fallback loader used when pyyaml is missing.
     """
+
+    def _make_getter(raw_row: dict) -> Any:
+        def _get(key: str, default: Any = None) -> Any:
+            return raw_row.get(key, default)
+
+        return _get
+
     data = read_yaml(path)
     jobs: list[QJob] = []
     for raw in data.get("jobs", []):
@@ -147,8 +154,7 @@ def load_jobs(path: Path) -> list[QJob]:
         if not isinstance(raw, dict):
             continue
 
-        def _get(key: str, default: Any = None) -> Any:
-            return raw.get(key, default)
+        _get = _make_getter(raw)
 
         name_val = _get("name")
         name = str(name_val) if name_val is not None else "<unnamed>"

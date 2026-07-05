@@ -47,7 +47,7 @@ class TestReadJsonCached:
     def test_second_read_returns_cached_data(self, tmp_path):
         p = tmp_path / "data.json"
         p.write_text('{"v": 1}', encoding="utf-8")
-        first = read_json_cached(p)
+        read_json_cached(p)
         # Overwrite on disk — cached value should still be returned
         p.write_text('{"v": 999}', encoding="utf-8")
         second = read_json_cached(p)

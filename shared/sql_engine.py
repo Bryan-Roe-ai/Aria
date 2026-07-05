@@ -350,7 +350,7 @@ def quick_query(sql: str, **kwargs) -> list[dict]:  # noqa: ANN001
             with engine.connect() as connection:
                 query_result = connection.execute(text(sql))
                 column_names = query_result.keys()
-                result_rows = [dict(zip(column_names, row)) for row in query_result.fetchall()]
+                result_rows = [dict(zip(column_names, row, strict=False)) for row in query_result.fetchall()]
         except Exception as execution_error:  # noqa: BLE001
             logging.warning(f"[sql_engine] quick_query failed: {execution_error}")
             return []
@@ -365,7 +365,7 @@ def quick_query(sql: str, **kwargs) -> list[dict]:  # noqa: ANN001
                 column_names = [description[0] for description in (cursor.description or [])]
                 data = cursor.fetchall()
                 if column_names:
-                    result_rows = [dict(zip(column_names, row)) for row in data]
+                    result_rows = [dict(zip(column_names, row, strict=False)) for row in data]
                 else:
                     result_rows = []
         except Exception as execution_error:  # noqa: BLE001

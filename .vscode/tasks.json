@@ -145,6 +145,36 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "aria-bot: dry-run",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && \"${workspaceFolder}/.venv/bin/python\" -m aria_bot --repo-root \"${workspaceFolder}\""
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "aria-bot: apply",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && \"${workspaceFolder}/.venv/bin/python\" -m aria_bot --repo-root \"${workspaceFolder}\" --apply"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "aria-bot: test-suite",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"-lc",
+				"cd \"${workspaceFolder}\" && make test-aria-bot"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "automation: go-forever",
 			"type": "shell",
 			"command": "bash",
