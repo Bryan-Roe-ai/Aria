@@ -99,7 +99,7 @@ jobs:
 
       - name: Detect contract-relevant changes
         id: changes
-        uses: dorny/paths-filter@3b5d7f7f5e8f2f9f40f9f7dfd7e2d6f7e9eec5f2 # pin to a known commit in your repo policy
+        uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3.0.3
         with:
           filters: |
             contract:
