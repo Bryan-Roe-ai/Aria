@@ -243,12 +243,16 @@ def export_systemd(
         session["long"] = long
     if cycles_per_long is not None:
         session["cycles_per_long"] = cycles_per_long
-    if notify is not None:
-        session["notify"] = notify
-    if sound is not None:
-        session["sound"] = sound
-    if repeat is not None:
-        session["repeat"] = repeat
+    # Boolean flags: keyword arg wins over session dict
+    session.setdefault("notify", False)
+    session.setdefault("sound", False)
+    session.setdefault("repeat", False)
+    if notify:
+        session["notify"] = True
+    if sound:
+        session["sound"] = True
+    if repeat:
+        session["repeat"] = True
 
     if python_exec is None:
         python_exec = sys.executable or "python3"
