@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+import uuid
 from collections import Counter
 from contextlib import contextmanager
 from datetime import datetime, timedelta
@@ -1393,12 +1394,14 @@ with gr.Blocks() as demo:
                 return None
             ensure_conv_dir()
             ts = int(time.time())
-            safe_name = _sanitize_session_name(session_name)
             conv_root = os.path.realpath(CONV_DIR)
-            filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.txt"))
+            base_name = f"session_{ts}_{uuid.uuid4().hex}"
+            filename = os.path.realpath(os.path.join(conv_root, f"{base_name}.txt"))
+            temp = os.path.realpath(os.path.join(conv_root, f"{base_name}.txt.tmp"))
             if os.path.commonpath([conv_root, filename]) != conv_root:
                 return None
-            temp = filename + ".tmp"
+            if os.path.commonpath([conv_root, temp]) != conv_root:
+                return None
             try:
                 with _conv_lock():
                     with open(temp, "w", encoding="utf-8") as f:
@@ -1423,12 +1426,14 @@ with gr.Blocks() as demo:
                 return None
             ensure_conv_dir()
             ts = int(time.time())
-            safe_name = _sanitize_session_name(session_name)
             conv_root = os.path.realpath(CONV_DIR)
-            filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.jsonl"))
+            base_name = f"session_{ts}_{uuid.uuid4().hex}"
+            filename = os.path.realpath(os.path.join(conv_root, f"{base_name}.jsonl"))
+            temp = os.path.realpath(os.path.join(conv_root, f"{base_name}.jsonl.tmp"))
             if os.path.commonpath([conv_root, filename]) != conv_root:
                 return None
-            temp = filename + ".tmp"
+            if os.path.commonpath([conv_root, temp]) != conv_root:
+                return None
             try:
                 with _conv_lock():
                     with open(temp, "w", encoding="utf-8") as f:
