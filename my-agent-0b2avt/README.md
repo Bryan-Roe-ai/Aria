@@ -27,8 +27,8 @@ The agent is hosted using the [Agent Framework](https://github.com/microsoft/age
 ## Prerequisites
 
 - An Azure AI Foundry project with:
-  - A deployed chat model (e.g., `gpt-5.4-mini`)
-  - A deployed embedding model (e.g., `text-embedding-3-small`) — used by the memory store itself, not by the agent at runtime
+    - A deployed chat model (e.g., `gpt-5.4-mini`)
+    - A deployed embedding model (e.g., `text-embedding-3-small`) — used by the memory store itself, not by the agent at runtime
 - Azure CLI logged in (`az login`)
 
 ### Required RBAC
@@ -36,7 +36,6 @@ The agent is hosted using the [Agent Framework](https://github.com/microsoft/age
 Your identity (or the Managed Identity running the container in production) needs **Azure AI User** on the Foundry project scope. This role covers provisioning the memory store with `provision_memory_store.py` and reading/writing memories from `main.py`.
 
 The memory store embeds and retrieves memories through the project's inference endpoint, so the same identity also needs **Cognitive Services OpenAI User** on the Foundry project scope to call the embedding deployment. Without it, memory writes fail with a `401` (`Authentication to the Azure OpenAI resource failed`) and the store stays empty. When deploying, grant both roles to the hosted agent's runtime identity (the `…-AgentIdentity` service principal) at the project scope.
-
 
 ## Option 1: Azure Developer CLI (`azd`)
 
@@ -49,13 +48,13 @@ With the bundled `postprovision` hook, a single `azd provision` creates the Foun
 
 1. **Azure Developer CLI (`azd`)** — [Install azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd) (1.25 or later)
 2. Install the unified Foundry CLI extension bundle:
-   ```bash
-   azd ext install microsoft.foundry
-   ```
+    ```bash
+    azd ext install microsoft.foundry
+    ```
 3. Authenticate:
-   ```bash
-   azd auth login
-   ```
+    ```bash
+    azd auth login
+    ```
 
 ### 2. Initialize the agent project
 
@@ -75,13 +74,13 @@ Wire the bundled hook into the `azure.yaml` that `azd ai agent init` generated, 
 
 ```yaml
 hooks:
-  postprovision:
-    posix:
-      shell: sh
-      run: ./src/<agent-name>/hooks/postprovision.sh
-    windows:
-      shell: pwsh
-      run: ./src/<agent-name>/hooks/postprovision.ps1
+    postprovision:
+        posix:
+            shell: sh
+            run: ./src/<agent-name>/hooks/postprovision.sh
+        windows:
+            shell: pwsh
+            run: ./src/<agent-name>/hooks/postprovision.ps1
 ```
 
 The hook ([`hooks/postprovision.sh`](hooks/postprovision.sh) / [`hooks/postprovision.ps1`](hooks/postprovision.ps1)) runs everything the [manual steps](#provision-manually-without-the-hook) below would, in one shot. It locates its own directory, so it works no matter where `azd` runs it from.

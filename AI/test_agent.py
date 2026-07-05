@@ -1,15 +1,16 @@
 # Copyright (c) Microsoft. All rights reserved.
 
 import os
+
 from dotenv import load_dotenv
 from pytest_agent_evals import (
-    EvaluatorResults,
-    evals,
     AzureOpenAIModelConfig,
-    FoundryAgentConfig,
     BuiltInEvaluatorConfig,
+    CustomCodeEvaluatorConfig,
     CustomPromptEvaluatorConfig,
-    CustomCodeEvaluatorConfig
+    EvaluatorResults,
+    FoundryAgentConfig,
+    evals,
 )
 
 load_dotenv()
@@ -23,23 +24,27 @@ EVAL_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
 # The endpoint for the Foundry Project where the agent is hosted
 PROJECT_ENDPOINT = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
 
-from evaluators import custom_prompt_evaluator
-
-from evaluators import custom_code_evaluator
+from evaluators import custom_code_evaluator, custom_prompt_evaluator
 
 # --- Tests ---
 
 # The Test Class is the main entry point for defining your evaluation suite.
 # We use decorators to configure the agent, dataset, and judge model.
 
+
 @evals.dataset("data.jsonl")  # Specifies the input dataset file (JSONL format)
-@evals.judge_model(AzureOpenAIModelConfig(deployment_name=EVAL_DEPLOYMENT, endpoint=EVAL_ENDPOINT)) # Configures the LLM used for "Judge" evaluators
-@evals.agent(FoundryAgentConfig(agent_name="agent", project_endpoint=PROJECT_ENDPOINT)) # Links this test class to the Foundry agent
+@evals.judge_model(
+    AzureOpenAIModelConfig(deployment_name=EVAL_DEPLOYMENT, endpoint=EVAL_ENDPOINT)
+)  # Configures the LLM used for "Judge" evaluators
+@evals.agent(
+    FoundryAgentConfig(agent_name="agent", project_endpoint=PROJECT_ENDPOINT)
+)  # Links this test class to the Foundry agent
 class Test_agent:
     """
     Test class for the Agent: agent.
     Each method represents a specific evaluation criteria (e.g., Relevance, Coherence).
     """
+
     @evals.evaluator(BuiltInEvaluatorConfig("intent_resolution"))
     def test_intent_resolution(self, evaluator_results: EvaluatorResults):
         """
@@ -139,8 +144,9 @@ class Test_agent:
         # Assert that the result is pass
         assert evaluator_results.meteor_score.result == "pass"
 
-
-    @evals.evaluator(CustomPromptEvaluatorConfig(name="custom_prompt_evaluator", prompt=custom_prompt_evaluator, threshold=3))
+    @evals.evaluator(
+        CustomPromptEvaluatorConfig(name="custom_prompt_evaluator", prompt=custom_prompt_evaluator, threshold=3)
+    )
     def test_custom_prompt_evaluator(self, evaluator_results: EvaluatorResults):
         """
         Tests a custom criteria using a custom prompt template.
@@ -149,7 +155,9 @@ class Test_agent:
         # Result is automatically calculated as "pass" if the LLM judged score meets the threshold
         assert evaluator_results.custom_prompt_evaluator.result == "pass"
 
-    @evals.evaluator(CustomCodeEvaluatorConfig(name="custom_code_evaluator", grader=custom_code_evaluator, threshold=0.5))
+    @evals.evaluator(
+        CustomCodeEvaluatorConfig(name="custom_code_evaluator", grader=custom_code_evaluator, threshold=0.5)
+    )
     def test_custom_code_evaluator(self, evaluator_results: EvaluatorResults):
         """
         Tests a custom criteria using a Python function.
