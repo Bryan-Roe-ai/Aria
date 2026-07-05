@@ -210,6 +210,7 @@ def export_systemd(
     session=None,
     python_exec=None,
     workspace_dir=None,
+    *,
     task=None,
     work=None,
     short=None,
@@ -219,21 +220,33 @@ def export_systemd(
     sound=False,
     repeat=False,
 ):
-    """Export a systemd user service file to ``path``."""
+    """Export a systemd user service file to ``path``.
+
+    Settings may be provided either as a ``session`` dict or as individual
+    keyword arguments (``task``, ``work``, ``short``, ``long``,
+    ``cycles_per_long``, ``notify``, ``sound``, ``repeat``).  Keyword
+    arguments take precedence over values in ``session``.
+    """
 
     p = Path(path).expanduser()
     p.parent.mkdir(parents=True, exist_ok=True)
-    session = dict(session or {})
+    session = dict(session) if session else {}
 
-    # Direct kwargs take precedence over values in the session dict
-    overrides = {
-        "task": task,
-        "work": work,
-        "short": short,
-        "long": long,
-        "cycles_per_long": cycles_per_long,
-    }
-    session.update({k: v for k, v in overrides.items() if v is not None})
+    # Merge explicit keyword arguments into session, preferring kwargs
+    if task is not None:
+        session["task"] = task
+    if work is not None:
+        session["work"] = work
+    if short is not None:
+        session["short"] = short
+    if long is not None:
+        session["long"] = long
+    if cycles_per_long is not None:
+        session["cycles_per_long"] = cycles_per_long
+    # Boolean flags: keyword arg wins over session dict
+    session.setdefault("notify", False)
+    session.setdefault("sound", False)
+    session.setdefault("repeat", False)
     if notify:
         session["notify"] = True
     if sound:
