@@ -21,7 +21,8 @@ def test_scorecard_workflow_uses_pinned_upload_sarif_action() -> None:
     codeql_init_step = next(
         step for step in codeql_workflow["jobs"]["analyze"]["steps"] if step.get("uses", "").startswith("github/codeql-action/init@")
     )
-    expected_sha = codeql_init_step["uses"].rsplit("@", 1)[1]
+    _action_ref, separator, expected_sha = codeql_init_step["uses"].rpartition("@")
 
+    assert separator == "@"
     assert upload_step["uses"] == f"github/codeql-action/upload-sarif@{expected_sha}"
     assert "REPLACE_WITH_FULL_40_CHAR_SHA" not in upload_step["uses"]
