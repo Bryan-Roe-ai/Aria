@@ -34,9 +34,7 @@ PROJECT_ENDPOINT = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
 # We use decorators to configure the agent, dataset, and judge model.
 
 
-@evals.dataset(
-    "data.jsonl"
-)  # Specifies the input dataset file (JSONL format)
+@evals.dataset("data.jsonl")  # Specifies the input dataset file (JSONL format)
 @evals.judge_model(
     AzureOpenAIModelConfig(
         deployment_name=EVAL_DEPLOYMENT,
@@ -70,7 +68,4 @@ class TestAgent:  # pylint: disable=too-few-public-methods
         """
         # Result is automatically calculated as "pass"
         # if the grading score meets the threshold.
-        assert (
-            evaluator_results.custom_code_evaluator.result
-            == "pass"
-        )
+        assert evaluator_results.custom_code_evaluator.result == "pass"

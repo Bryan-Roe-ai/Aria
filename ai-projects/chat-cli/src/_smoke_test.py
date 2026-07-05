@@ -1,4 +1,5 @@
 """Smoke test for chat provider functionality."""
+
 from __future__ import annotations
 
 from importlib import import_module
@@ -7,9 +8,7 @@ from typing import Any
 
 def _detect_provider() -> Any:
     module = import_module("chat_providers")
-    provider_fn: Any | None = getattr(
-        module, "detect_provider", None
-    )  # type: ignore
+    provider_fn: Any | None = getattr(module, "detect_provider", None)  # type: ignore
     if provider_fn is not None:
         return provider_fn
 

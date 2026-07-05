@@ -227,7 +227,6 @@ DATASETS = {
 
 def load_dataset(dataset_name):
     """Load a dataset by name with dataset-specific handling"""
-    from sklearn.impute import SimpleImputer
 
     dataset_config = DATASETS[dataset_name]
     dataset_path = Path(__file__).parent.parent / "datasets" / "quantum" / dataset_config["file"]
