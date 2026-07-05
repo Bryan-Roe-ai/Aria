@@ -57,7 +57,7 @@ GitHub Pages automatically deploys from the repository's configured Pages source
 1. **Trigger**: Push to `main` with updated published content in `docs/**`
 2. **Build**: GitHub Pages publishes the `docs/` directory
 3. **Deploy**: The published site is served at GitHub Pages
-5. **URL**: https://bryan-roe.github.io/Aria
+4. **URL**: https://bryan-roe.github.io/Aria
 
 ### Deployment Workflow (.github/workflows/pages.yml)
 

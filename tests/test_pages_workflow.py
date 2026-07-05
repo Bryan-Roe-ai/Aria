@@ -13,9 +13,15 @@ def _load_workflow(workflow_name: str) -> dict:
     return yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
 
+def _workflow_triggers(workflow: dict) -> dict:
+    # PyYAML still treats an unquoted `on` key as a YAML 1.1 boolean in GitHub
+    # workflow files, so support both parsed forms here.
+    return workflow.get("on") or workflow.get(True, {})
+
+
 def test_pages_workflow_is_manual_only() -> None:
     workflow = _load_workflow("pages.yml")
-    triggers = workflow.get("on", workflow.get(True, {}))
+    triggers = _workflow_triggers(workflow)
 
     assert "workflow_dispatch" in triggers
     assert "push" not in triggers, (
