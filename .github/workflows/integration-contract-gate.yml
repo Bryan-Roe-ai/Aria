@@ -1,34 +1,23 @@
-# =============================================================================
-# Integration Contract Gate
-# =============================================================================
-# Purpose: Validates that all module API contracts remain intact.
-#          Runs scripts/integration_contract_gate.sh on every PR and push.
-#          Strict-endpoint mode runs on pushes to main to catch regressions
-#          before they land in the default branch.
-# Triggers:
-#   - push to main (strict mode — 8/8 endpoint checks must pass)
-#   - pull_request to main/dev (non-strict, fast gate)
-#   - manual dispatch (choose mode via input)
-# =============================================================================
-
 name: Integration Contract Gate
 
 on:
   push:
     branches: [main]
     paths-ignore:
-      - '**.md'
+      - '**/*.md'
       - 'docs/**'
       - '.vscode/**'
       - '.devcontainer/**'
+      - '.github/ISSUE_TEMPLATE/**'
       - 'LICENSE'
   pull_request:
     branches: [main, dev]
     paths-ignore:
-      - '**.md'
+      - '**/*.md'
       - 'docs/**'
       - '.vscode/**'
       - '.devcontainer/**'
+      - '.github/ISSUE_TEMPLATE/**'
       - 'LICENSE'
   workflow_dispatch:
     inputs:
@@ -41,37 +30,21 @@ on:
           - 'false'
           - 'true'
 
-# Cancel superseded PR runs; never cancel pushes to main (we want a full
-# audit trail of contract validation on the default branch).
 concurrency:
   group: contract-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Principle of least privilege: this workflow only reads code and uploads
-# artifacts. No write access to issues, PRs, packages, or contents required.
 permissions:
   contents: read
 
 env:
-  # Opt into Node.js 24 for JS actions ahead of the June 2026 forced migration.
+  # Keep this aligned with your actual setup-node version below.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.2
-  CHECKOUT_SHA: 11bd71901bbe5b1630ceea73d27597364c9af683      # v4.2.2
-  ACTIONS_CACHE_SHA: 1bd1e32a3bdc45362d1e726936510720a7c30a57   # v4.2.0
-  SETUP_NODE_SHA: 49933ea5288caeca8642d1e84afbd3f7d6820020      # v4.4.0
-  UPLOAD_ARTIFACT_SHA: 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
   PYTHON_VERSION: '3.11'
-  # Make Python output unbuffered so logs stream live in the Actions UI.
   PYTHONUNBUFFERED: '1'
   PYTHONDONTWRITEBYTECODE: '1'
-  # Force colored output where supported.
   FORCE_COLOR: '1'
-  # Integration endpoint used by the contract gate (override in workflows or runs)
   INTEGRATION_AI_STATUS_ENDPOINT: 'http://127.0.0.1:7071/api/ai/status'
-  # Optional: command used to start a local Functions host (if desired in CI).
-  # Keep this cwd-agnostic; the startup step adds --script-root when needed.
-  START_FUNC_CMD: 'func start --cors "*"'
-  # Retry tuning for the gate script/steps
   RETRY_COUNT: '30'
   RETRY_INTERVAL: '1'
 
@@ -95,15 +68,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          # Shallow clone is sufficient for contract validation; speeds up checkout.
           fetch-depth: 1
           persist-credentials: false
-
-      - name: Setup Python
-        uses: ./.github/actions/setup-python-env
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          extra-packages: 'pytest pytest-timeout openai'
 
       - name: Determine gate mode
         id: mode
@@ -131,26 +97,57 @@ jobs:
 
           echo "::notice title=Contract Gate Mode::${mode_label}"
 
-      - name: Validate generated site bundles (strict)
+      - name: Detect contract-relevant changes
+        id: changes
+        uses: dorny/paths-filter@3b5d7f7f5e8f2f9f40f9f7dfd7e2d6f7e9eec5f2 # pin to a known commit in your repo policy
+        with:
+          filters: |
+            contract:
+              - 'function_app.py'
+              - 'shared/**'
+              - 'ai-projects/**'
+              - 'apps/**'
+              - 'scripts/integration_contract_gate.sh'
+              - '.github/actions/run-integration-contract-gate/**'
+              - '.github/actions/validate-composite-actions/**'
+              - '.github/actions/validate-site-bundles/**'
+              - '.github/workflows/integration-contract-gate.yml'
+
+      - name: Skip notice (no relevant changes)
+        if: steps.mode.outputs.strict == 'false' && steps.changes.outputs.contract != 'true'
+        run: |
+          echo "::notice title=Contract Gate::No contract-relevant changes detected; skipping gate."
+
+      - name: Setup Python
+        if: steps.mode.outputs.strict == 'true' || steps.changes.outputs.contract == 'true'
+        uses: ./.github/actions/setup-python-env
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          extra-packages: 'pytest pytest-timeout openai'
+
+      - name: Validate generated site bundles (strict metadata)
+        if: steps.mode.outputs.strict == 'true' || steps.changes.outputs.contract == 'true'
         uses: ./.github/actions/validate-site-bundles
         with:
           strict-metadata: 'true'
 
       - name: Validate local composite actions
+        if: steps.mode.outputs.strict == 'true' || steps.changes.outputs.contract == 'true'
         uses: ./.github/actions/validate-composite-actions
         with:
           script-path: scripts/validate_composite_actions.py
 
-      - name: Setup Node.js (needed for azure functions core tools install)
+      - name: Setup Node.js
+        if: steps.mode.outputs.strict == 'true'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '18'
 
       - name: Cache npm
+        if: steps.mode.outputs.strict == 'true'
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
         with:
-          path: |
-            ~/.npm
+          path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
@@ -167,14 +164,14 @@ jobs:
           echo "INTEGRATION_AI_STATUS_ENDPOINT=${INTEGRATION_AI_STATUS_ENDPOINT}"
 
           adapter_log="${RUNNER_TEMP:-/tmp}/local_dev_adapter.log"
+          pid_file="${RUNNER_TEMP:-/tmp}/local_dev_adapter.pid"
           echo "Adapter log: ${adapter_log}"
 
-          # Robust CI path: use local_dev_adapter for /api/ai/status instead of
-          # installing Azure Functions Core Tools via npm (flaky with Node/ESM).
           endpoint_port="7071"
 
           echo "Starting local_dev_adapter on port ${endpoint_port}"
           nohup python local_dev_adapter.py --port "${endpoint_port}" &>"${adapter_log}" &
+          echo "$!" > "${pid_file}"
 
           echo "Waiting for endpoint to become available: ${INTEGRATION_AI_STATUS_ENDPOINT}"
           i=0
@@ -211,7 +208,7 @@ jobs:
           exit 1
 
       - name: Run contract gate (standard)
-        if: steps.mode.outputs.strict == 'false'
+        if: steps.mode.outputs.strict == 'false' && steps.changes.outputs.contract == 'true'
         uses: ./.github/actions/run-integration-contract-gate
 
       - name: Run contract gate (strict)
@@ -219,6 +216,18 @@ jobs:
         uses: ./.github/actions/run-integration-contract-gate
         with:
           strict-endpoints: 'true'
+
+      - name: Cleanup local adapter
+        if: always() && steps.mode.outputs.strict == 'true'
+        run: |
+          set -euo pipefail
+          pid_file="${RUNNER_TEMP:-/tmp}/local_dev_adapter.pid"
+          if [[ -f "${pid_file}" ]]; then
+            pid="$(cat "${pid_file}" || true)"
+            if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+              kill "${pid}" || true
+            fi
+          fi
 
       - name: Upload contract results
         if: always()
@@ -237,6 +246,7 @@ jobs:
         env:
           MODE_LABEL: ${{ steps.mode.outputs.mode_label }}
           JOB_STATUS: ${{ job.status }}
+          CHANGED: ${{ steps.changes.outputs.contract }}
         run: |
           set -euo pipefail
           status_file='data_out/ci_orchestrator/ci_results.json'
@@ -249,6 +259,7 @@ jobs:
             echo "| --- | --- |"
             echo "| **Mode** | ${MODE_LABEL} |"
             echo "| **Job status** | ${JOB_STATUS} |"
+            echo "| **Contract-relevant changes** | ${CHANGED:-n/a} |"
             echo "| **Run** | [#${GITHUB_RUN_NUMBER} (attempt ${GITHUB_RUN_ATTEMPT})](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) |"
             echo "| **Commit** | <code>${short_sha}</code> |"
             echo ""
@@ -259,7 +270,6 @@ jobs:
               echo "### Orchestrator Status"
               echo ""
               echo '```json'
-              # Pretty-print if jq is available, otherwise emit raw JSON.
               if command -v jq >/dev/null 2>&1; then
                 jq '.' "${status_file}" || cat "${status_file}"
               else
