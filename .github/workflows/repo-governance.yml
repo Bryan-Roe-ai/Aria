@@ -1,0 +1,61 @@
+name: Repository Governance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 1'
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install vulture detect-secrets
+
+      - name: Run cleanup automation
+        run: |
+          python tools/repo_cleanup/autofix_cleanup.py
+          python tools/repo_cleanup/detect_dead_code.py
+          python tools/repo_cleanup/detect_large_files.py
+          python tools/repo_cleanup/detect_duplicate_code.py
+          python tools/repo_cleanup/generate_dependency_graph.py
+          python tools/repo_cleanup/architecture_drift.py
+          python tools/repo_cleanup/repo_scorecard.py
+
+      - name: Generate governance summary
+        run: |
+          mkdir -p docs/reports
+          echo '# Governance Summary' > docs/reports/governance-summary.md
+          echo '' >> docs/reports/governance-summary.md
+          echo 'Automated governance completed successfully.' >> docs/reports/governance-summary.md
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: automated repo governance updates
+          branch: automated/repo-governance
+          title: 'Automated Repository Governance Updates'
+          body: |
+            Automated repository governance updates.
+
+            Includes:
+            - cleanup automation
+            - dependency analysis
+            - architecture drift checks
+            - duplicate detection
+            - maintainability reporting
