@@ -100,6 +100,7 @@ jobs:
         id: core_monitor
         run: |
           set -euo pipefail
+          mkdir -p data_out/core_automation
           python scripts/automate_core_files.py --json > data_out/core_automation/status-monitor.json
           test -f data_out/core_automation/status-monitor.json
           python -m json.tool data_out/core_automation/status-monitor.json >/dev/null
