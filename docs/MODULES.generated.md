@@ -5,15 +5,18 @@
 ## `agi_provider.py`
 
 ### Purpose
+
 Provides abstraction logic for AGI or AI model provider integrations.
 
 ### Responsibilities
+
 - Provider configuration
 - Request orchestration
 - AI backend selection
 - Integration routing
 
 ### Related Files
+
 - `chat_providers.py`
 - `token_utils.py`
 - `LMSTUDIO_AGI_INTEGRATION_IMPL.py`
@@ -23,9 +26,11 @@ Provides abstraction logic for AGI or AI model provider integrations.
 ## `chat_providers.py`
 
 ### Purpose
+
 Defines chat-oriented provider integrations and model access helpers.
 
 ### Responsibilities
+
 - Chat completion provider handling
 - Provider registration
 - Request forwarding
@@ -35,15 +40,18 @@ Defines chat-oriented provider integrations and model access helpers.
 ## `function_app.py`
 
 ### Purpose
+
 Primary Azure Functions application module.
 
 ### Responsibilities
+
 - Function registration
 - HTTP/API entry points
 - Runtime initialization
 - Integration orchestration
 
 ### Dependencies
+
 - Azure Functions runtime
 - Shared provider modules
 - Configuration files
@@ -53,15 +61,18 @@ Primary Azure Functions application module.
 ## `run_automation.py`
 
 ### Purpose
+
 Runs automation workflows locally.
 
 ### Responsibilities
+
 - Automation execution
 - Scheduling helpers
 - Task orchestration
 - Development-time workflow execution
 
 ### Related Scripts
+
 - `run_continuous_automation.py`
 - `setup_scheduled_automation.ps1`
 
@@ -70,9 +81,11 @@ Runs automation workflows locally.
 ## `local_dev_adapter.py`
 
 ### Purpose
+
 Provides adapters and compatibility helpers for local development workflows.
 
 ### Responsibilities
+
 - Local runtime integration
 - Environment adaptation
 - Development testing support
@@ -82,9 +95,11 @@ Provides adapters and compatibility helpers for local development workflows.
 ## `token_utils.py`
 
 ### Purpose
+
 Utility helpers for token counting and token-related processing.
 
 ### Responsibilities
+
 - Token accounting
 - Usage estimation
 - Shared token helper utilities
@@ -94,9 +109,11 @@ Utility helpers for token counting and token-related processing.
 ## `lora_infer_bridge.py`
 
 ### Purpose
+
 Bridge module for LoRA-based inference workflows.
 
 ### Responsibilities
+
 - LoRA inference execution
 - Adapter integration
 - Model invocation abstraction
@@ -106,9 +123,11 @@ Bridge module for LoRA-based inference workflows.
 ## `aria_web/`
 
 ### Purpose
+
 Web-facing interface components.
 
 ### Likely Responsibilities
+
 - UI assets
 - Web routes
 - Frontend integration
@@ -119,9 +138,11 @@ Web-facing interface components.
 ## `aria_bot/` and `aria-bot/`
 
 ### Purpose
+
 Bot-oriented automation and conversational integrations.
 
 ### Responsibilities
+
 - Bot runtime integration
 - Chat workflows
 - Agent interaction logic
@@ -131,9 +152,11 @@ Bot-oriented automation and conversational integrations.
 ## `datasets/`
 
 ### Purpose
+
 Dataset storage and training/evaluation assets.
 
 ### Responsibilities
+
 - Model training inputs
 - Benchmarking data
 - Evaluation support
@@ -143,7 +166,9 @@ Dataset storage and training/evaluation assets.
 ## `tests/`
 
 ### Purpose
+
 Automated validation and regression testing.
 
 ### Notes
+
 Testing configuration is defined in `pytest.ini`.

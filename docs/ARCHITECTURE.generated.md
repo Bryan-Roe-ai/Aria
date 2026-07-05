@@ -15,6 +15,7 @@ Aria is a multi-component AI automation platform centered around Python services
 ## Primary Entry Points
 
 ### Azure Function Runtime
+
 - `function_app.py`
 - `host.json`
 - `function_app_domains/`
@@ -22,6 +23,7 @@ Aria is a multi-component AI automation platform centered around Python services
 The Azure Functions runtime appears to be the primary hosted execution layer. `function_app.py` contains the main application registration and endpoint definitions.
 
 ### Local Development and Automation
+
 - `app.py`
 - `run_automation.py`
 - `run_continuous_automation.py`
@@ -30,6 +32,7 @@ The Azure Functions runtime appears to be the primary hosted execution layer. `f
 These scripts support local execution, scheduled workflows, and development-time orchestration.
 
 ### AI Provider Layer
+
 - `agi_provider.py`
 - `chat_providers.py`
 - `token_utils.py`
@@ -60,21 +63,22 @@ Client/UI
 
 ## Key Directories
 
-| Directory | Purpose |
-|---|---|
-| `core/` | Core runtime and shared application logic |
+| Directory    | Purpose                                       |
+| ------------ | --------------------------------------------- |
+| `core/`      | Core runtime and shared application logic     |
 | `functions/` | Azure Function handlers and execution modules |
-| `shared/` | Shared utilities and reusable helpers |
-| `tools/` | Automation and utility tooling |
-| `config/` | Configuration assets and runtime settings |
-| `docs/` | Existing project documentation |
-| `examples/` | Demonstration and usage examples |
-| `datasets/` | Training and evaluation datasets |
-| `tests/` | Automated test suite |
+| `shared/`    | Shared utilities and reusable helpers         |
+| `tools/`     | Automation and utility tooling                |
+| `config/`    | Configuration assets and runtime settings     |
+| `docs/`      | Existing project documentation                |
+| `examples/`  | Demonstration and usage examples              |
+| `datasets/`  | Training and evaluation datasets              |
+| `tests/`     | Automated test suite                          |
 
 ## Runtime and Tooling
 
 ### Python
+
 Primary runtime is Python with dependency management defined in:
 
 - `pyproject.toml`
@@ -82,12 +86,14 @@ Primary runtime is Python with dependency management defined in:
 - `uv.lock`
 
 ### TypeScript
+
 The repository also contains TypeScript configuration:
 
 - `main.ts`
 - `tsconfig.json`
 
 ### Containerization
+
 - `Dockerfile`
 - `docker-compose.dev.yml`
 - `function_app.Dockerfile`
