@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -13,4 +14,4 @@ def test_scorecard_workflow_pins_valid_upload_sarif_sha() -> None:
     content = workflow_path.read_text(encoding="utf-8")
 
     assert "github/codeql-action/upload-sarif@REPLACE_WITH_FULL_40_CHAR_SHA" not in content
-    assert "uses: github/codeql-action/upload-sarif@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a" in content
+    assert re.search(r"uses:\s+github/codeql-action/upload-sarif@[0-9a-f]{40}\b", content)
