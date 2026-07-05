@@ -165,6 +165,10 @@
                     >unknown</span
                 >
                 <pre id="statusOutput" style="margin-top: 12px">Loading…</pre>
+                <label for="persistenceOutput" style="margin-top: 12px"
+                    >Persistence</label
+                >
+                <pre id="persistenceOutput">Loading…</pre>
             </div>
 
             <div class="panel">
@@ -191,6 +195,8 @@ What is a qubit?</textarea>
             ;(function () {
                 var apiBaseInput = document.getElementById("apiBase")
                 var statusOutput = document.getElementById("statusOutput")
+                var persistenceOutput =
+                    document.getElementById("persistenceOutput")
                 var statusPill = document.getElementById("statusPill")
                 var output = document.getElementById("output")
 
@@ -207,8 +213,19 @@ What is a qubit?</textarea>
                         statusPill.textContent = res.ok
                             ? "online"
                             : "error " + res.status
+
+                        if (persistenceOutput) {
+                            var persistenceRes = await fetch(
+                                apiUrl("/api/agi/persistence"),
+                            )
+                            persistenceOutput.textContent =
+                                await persistenceRes.text()
+                        }
                     } catch (err) {
                         statusOutput.textContent = String(err)
+                        if (persistenceOutput) {
+                            persistenceOutput.textContent = String(err)
+                        }
                         statusPill.textContent = "offline"
                     }
                 }

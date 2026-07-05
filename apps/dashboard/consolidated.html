@@ -1399,9 +1399,7 @@
                     '<div class="alert alert-info">Calculating VRAM requirements...</div>'
 
                 try {
-                    const resp = await fetch(
-                        `/api/vram-info?model=${encodeURIComponent(model)}&lora_rank=${rank}`,
-                    )
+                    const resp = await fetch(`/api/vram-info?model=${encodeURIComponent(model)}&lora_rank=${rank}`)
                     const data = await resp.json()
                     if (data.error && !data.available) {
                         resultsDiv.innerHTML = `<div class="alert alert-warning">⚠️ ${data.error}<br><small>${data.recommendation || ""}</small></div>`
@@ -1590,7 +1588,7 @@
                 )
             }
 
-            function loadConfig() {
+        function loadConfig() {
                 const input = document.createElement("input")
                 input.type = "file"
                 input.accept = ".json"
@@ -1615,7 +1613,7 @@
                                 "warn",
                                 5000,
                             )
-                        }
+        }
                     }
                     reader.readAsText(file)
                 }
@@ -1623,7 +1621,7 @@
             }
 
             // Phase 30: Hyperparameter Optimizer Functions
-            function startHyperparamOptimization() {
+        function startHyperparamOptimization() {
                 if (!window.hyperOptimizer) {
                     showToast(
                         "Hyperparameter optimizer not initialized",
@@ -1654,7 +1652,7 @@
                 window.hyperOptimizer.startOptimization({ strategy, maxTrials })
             }
 
-            function configureSearchSpace() {
+        function configureSearchSpace() {
                 showInfo(
                     "Search Space Configuration",
                     "Default search space:\n" +
@@ -1668,14 +1666,14 @@
             }
 
             // Phase 29: Model Comparison Functions
-            function toggleSelectAll() {
+        function toggleSelectAll() {
                 const selectAll = document.getElementById("selectAllHistory")
                 const checkboxes =
                     document.querySelectorAll(".compare-checkbox")
                 checkboxes.forEach(cb => (cb.checked = selectAll.checked))
             }
 
-            function compareSelectedModels() {
+        function compareSelectedModels() {
                 if (!window.modelComparator) {
                     showToast("Model comparator not initialized", "warn", 4000)
                     return
@@ -1716,7 +1714,7 @@
                 )
             }
 
-            function clearComparisonSelection() {
+        function clearComparisonSelection() {
                 document
                     .querySelectorAll(".compare-checkbox")
                     .forEach(cb => (cb.checked = false))
@@ -1728,11 +1726,11 @@
             document.addEventListener("keydown", e => {
                 if (e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
                     const tabMap = {
-                        1: "overview",
-                        2: "training",
-                        3: "analytics",
-                        4: "history",
-                        5: "tools",
+                        '1': "overview",
+                        '2': "training",
+                        '3': "analytics",
+                        '4': "history",
+                        '5': "tools",
                     }
                     if (tabMap[e.key]) {
                         e.preventDefault()

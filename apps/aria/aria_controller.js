@@ -14,9 +14,9 @@ const ARIA_MODEL_KEY = "aria-model-input"
 const ARIA_USE_LLM_KEY = "aria-use-llm-toggle"
 
 function restoreProviderSettings() {
-    const providerInput = document.getElementById("providerSelect")
-    const modelInput = document.getElementById("modelInput")
-    const useLlmInput = document.getElementById("useLlmToggle")
+    const providerInput = document.getElementById('providerSelect')
+    const modelInput = document.getElementById('modelInput')
+    const useLlmInput = document.getElementById('useLlmToggle')
 
     try {
         if (providerInput) {
