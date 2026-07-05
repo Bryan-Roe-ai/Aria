@@ -209,10 +209,7 @@ class Orchestrator:
         else:
             validation = validator.validate(changed_paths=[])
         notes.append(
-            "execution summary: "
-            f"{len(executions)} plan(s), "
-            f"{len(applied_paths)} applied, "
-            f"{len(skipped_paths)} skipped"
+            f"execution summary: {len(executions)} plan(s), {len(applied_paths)} applied, {len(skipped_paths)} skipped"
         )
         if not validation.ok:
             notes.append("validation failed; skipping commit")
@@ -224,7 +221,7 @@ class Orchestrator:
             message = self._commit_message(executions)
             commit_sha = commits.commit(applied_paths, message)
             if commit_sha is None:
-                notes.append("commit step produced no SHA " "(nothing staged or git unavailable)")
+                notes.append("commit step produced no SHA (nothing staged or git unavailable)")
         elif not self.config.apply:
             notes.append("dry-run: no files were modified")
         elif not applied_paths:
