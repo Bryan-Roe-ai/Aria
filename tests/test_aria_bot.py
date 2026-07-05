@@ -14,6 +14,9 @@ PKG_PARENT = REPO_ROOT / "aria-bot"
 if str(PKG_PARENT) not in sys.path:
     sys.path.insert(0, str(PKG_PARENT))
 
+from aria_bot.commit_system import COMMIT_PREFIX  # noqa: E402
+from aria_bot.defaults import DEFAULT_MAX_PLANS as INTERNAL_DEFAULT_MAX_PLANS  # noqa: E402
+
 from aria_bot import (  # noqa: E402  (sys.path tweak above)
     DEFAULT_MAX_PLANS as EXPORTED_DEFAULT_MAX_PLANS,
 )
@@ -27,8 +30,6 @@ from aria_bot import (
     RiskManager,
     run_cycle,
 )
-from aria_bot.commit_system import COMMIT_PREFIX  # noqa: E402
-from aria_bot.defaults import DEFAULT_MAX_PLANS as INTERNAL_DEFAULT_MAX_PLANS  # noqa: E402
 
 
 @pytest.fixture()
