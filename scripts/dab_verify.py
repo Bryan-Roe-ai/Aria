@@ -91,11 +91,13 @@ def check_database_config(path: Path) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def check_local_settings(path: Path) -> tuple[list[str], list[str]]:
+def check_local_settings(path: Path, *, require_exists: bool = True) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
     data, err = _load_json(path)
     if err:
+        if err.startswith("error=missing_file:") and not require_exists:
+            return errors, warnings
         errors.append(err)
         return errors, warnings
 
@@ -170,6 +172,10 @@ def main() -> int:
     local_example_errors, local_example_warnings = check_local_settings(root / "local.settings.json.example")
     errors.extend(local_example_errors)
     warnings.extend(local_example_warnings)
+
+    local_errors, local_warnings = check_local_settings(root / "local.settings.json", require_exists=False)
+    errors.extend(local_errors)
+    warnings.extend(local_warnings)
 
     env_errors, env_warnings = check_env_example(root / ".env.example")
     errors.extend(env_errors)

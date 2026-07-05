@@ -93,6 +93,12 @@ def test_check_local_settings_warns_placeholder_value(tmp_path: Path) -> None:
     assert any("placeholder_connection_string" in w for w in warnings)
 
 
+def test_check_local_settings_allows_missing_file_when_optional(tmp_path: Path) -> None:
+    errors, warnings = check_local_settings(tmp_path / "local.settings.json", require_exists=False)
+    assert errors == []
+    assert warnings == []
+
+
 def test_check_env_example_requires_key(tmp_path: Path) -> None:
     p = tmp_path / ".env.example"
     p.write_text("# no DAB key here\n", encoding="utf-8")
