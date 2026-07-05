@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 import os
@@ -170,12 +171,16 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
 
 def test_save_conversation_json_path_traversal_safe_via_hash(monkeypatch, tmp_path):
     m = load_module()
-    conv_dir = tmp_path / "conversations"
+    monkeypatch.setattr(m, "CONV_DIR", tmp_path)
+    monkeypatch.setattr(m, "LATEST_PATH", tmp_path / "latest.json")
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
     monkeypatch.setattr(m, "CONV_DIR", conv_dir)
     monkeypatch.setattr(m, "LATEST_PATH", conv_dir / "latest.json")
 
-    # SHA-256 hashing of the session name means the filename is always a safe hex token;
-    # even when safe_session_name returns a path-traversal-like string, no ValueError is raised.
-    result = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
-    assert Path(result).parent.resolve() == conv_dir.resolve()
+    saved = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+
+    assert Path(saved).resolve().is_relative_to(tmp_path.resolve())
+    assert (tmp_path / "latest.json").exists()
+    assert os.path.basename(saved).endswith(".json")
+    expected_prefix = f"{hashlib.sha256(b'../escape').hexdigest()[:16]}_"
+    assert os.path.basename(saved).startswith(expected_prefix)
