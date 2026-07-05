@@ -9,9 +9,7 @@ pytestmark = pytest.mark.unit
 
 
 def _load_merge_gate() -> dict:
-    workflow_path = (
-        Path(__file__).resolve().parents[1] / ".github/workflows/merge-gate.yml"
-    )
+    workflow_path = Path(__file__).resolve().parents[1] / ".github/workflows/merge-gate.yml"
     return yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
 
 
