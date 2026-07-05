@@ -326,11 +326,7 @@ class AriaRunner:
         failed_steps = sum(
             1
             for routed in executed
-            if (
-                isinstance(routed, dict)
-                and isinstance(routed.get("result"), dict)
-                and routed["result"].get("error")
-            )
+            if (isinstance(routed, dict) and isinstance(routed.get("result"), dict) and routed["result"].get("error"))
         )
 
         cycle_summary: dict[str, Any] = {
@@ -364,10 +360,7 @@ class AriaRunner:
             try:
                 self._autonomous_cycle()
                 cycle_count += 1
-                if (
-                    self.max_cycles is not None
-                    and cycle_count >= self.max_cycles
-                ):
+                if self.max_cycles is not None and cycle_count >= self.max_cycles:
                     break
                 time.sleep(self.sleep_seconds)
             except KeyboardInterrupt:

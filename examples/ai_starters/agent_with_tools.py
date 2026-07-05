@@ -8,7 +8,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-
 _FILE_TOOL_ROOT = Path.cwd().resolve()
 
 
@@ -139,11 +138,7 @@ class ToolAgent:
             return ("write_file", write_file_tool, (parts[0], parts[1]))
 
         help_text = (
-            "Try one of:\n"
-            "- search: <keyword>\n"
-            "- calc: <expression>\n"
-            "- read: <path>\n"
-            "- write: <path> | <content>"
+            "Try one of:\n- search: <keyword>\n- calc: <expression>\n- read: <path>\n- write: <path> | <content>"
         )
         return (
             "help",

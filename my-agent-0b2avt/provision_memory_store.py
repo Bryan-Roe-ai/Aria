@@ -58,11 +58,7 @@ def main() -> None:
     ):
         try:
             existing = project.beta.memory_stores.get(name=memory_store_name)
-            print(
-                "Memory store "
-                f"'{existing.name}' already exists (id={existing.id}); "
-                "leaving as-is."
-            )
+            print(f"Memory store '{existing.name}' already exists (id={existing.id}); leaving as-is.")
             return
         except ResourceNotFoundError:
             pass
@@ -75,17 +71,13 @@ def main() -> None:
                 chat_summary_enabled=False,
                 user_profile_enabled=True,
                 user_profile_details=(
-                    "Avoid irrelevant or sensitive data, such as age, "
-                    "finances, precise location, and credentials"
+                    "Avoid irrelevant or sensitive data, such as age, finances, precise location, and credentials"
                 ),
             ),
         )
         created = project.beta.memory_stores.create(
             name=memory_store_name,
-            description=(
-                "Memory store for the Agent Framework "
-                "foundry-hosted memory sample"
-            ),
+            description=("Memory store for the Agent Framework foundry-hosted memory sample"),
             definition=definition,
         )
         print(f"Created memory store '{created.name}' (id={created.id}).")
@@ -101,11 +93,7 @@ def main() -> None:
                 f"Memory store '{memory_store_name}' was not found after creation; "
                 "the service may not have persisted it."
             ) from exc
-        print(
-            "Verified memory store "
-            f"'{verified.name}' is available on the service "
-            f"(id={verified.id})."
-        )
+        print(f"Verified memory store '{verified.name}' is available on the service (id={verified.id}).")
 
 
 if __name__ == "__main__":
