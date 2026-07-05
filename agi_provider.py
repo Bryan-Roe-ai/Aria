@@ -19,25 +19,34 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Final, cast
 
-_CANONICAL_PATH: Final[Path] = Path(__file__).resolve().parent / "ai-projects" / "chat-cli" / "src" / "agi_provider.py"
+_CANONICAL_PATH: Final[Path] = (
+    Path(__file__).resolve().parent
+    / "ai-projects"
+    / "chat-cli"
+    / "src"
+    / "agi_provider.py"
+)
 
 _MODULE_NAME: Final[str] = "_aria_canonical_agi_provider"
 
-_EXPECTED_EXPORTS: Final[tuple[str, ...]] = (
-    "AGIProvider",
-    "AGIContext",
-    "ReasoningStep",
-    "create_agi_provider",
-    "MemoryInterface",
-    "EnvironmentInterface",
-    "MAX_INPUT_LENGTH",
-    "MAX_HISTORY_SIZE",
-    "MAX_GOALS",
-    "MAX_REASONING_CHAINS",
-    "_sanitize_input",
-    "_sanitize_for_logging",
-    "_infer_aria_movement_tag",
-    "_AGENT_REGISTRY",
+_EXPECTED_EXPORTS: Final[tuple[str, ...]] = cast(
+    tuple[str, ...],
+    (
+        "AGIProvider",
+        "AGIContext",
+        "ReasoningStep",
+        "create_agi_provider",
+        "MemoryInterface",
+        "EnvironmentInterface",
+        "MAX_INPUT_LENGTH",
+        "MAX_HISTORY_SIZE",
+        "MAX_GOALS",
+        "MAX_REASONING_CHAINS",
+        "_sanitize_input",
+        "_sanitize_for_logging",
+        "_infer_aria_movement_tag",
+        "_AGENT_REGISTRY",
+    ),
 )
 
 
@@ -63,7 +72,10 @@ def _load_canonical_module(path: Path) -> ModuleType:
 
     spec = importlib.util.spec_from_file_location(_MODULE_NAME, path)
     if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to create import spec for canonical AGI provider: {path!s}")
+        raise ImportError(
+            "Unable to create import spec for canonical AGI provider: "
+            f"{path!s}"
+        )
 
     module = importlib.util.module_from_spec(spec)
     previous = sys.modules.get(_MODULE_NAME)
@@ -88,7 +100,8 @@ def _export(module: ModuleType, name: str) -> Any:
         return getattr(module, name)
     except AttributeError as exc:
         raise ImportError(
-            f"Canonical AGI provider is missing expected export {name!r} from {_CANONICAL_PATH!s}"
+            "Canonical AGI provider is missing expected export "
+            f"{name!r} from {_CANONICAL_PATH!s}"
         ) from exc
 
 
@@ -97,7 +110,10 @@ def _validate_expected_exports(module: ModuleType) -> None:
     if not missing:
         return
     missing_str = ", ".join(repr(name) for name in missing)
-    raise ImportError(f"Canonical AGI provider is missing expected exports: {missing_str} from {_CANONICAL_PATH!s}")
+    raise ImportError(
+        "Canonical AGI provider is missing expected exports: "
+        f"{missing_str} from {_CANONICAL_PATH!s}"
+    )
 
 
 _mod = _load_canonical_module(_CANONICAL_PATH)
@@ -113,7 +129,10 @@ EnvironmentInterface = _export(_mod, "EnvironmentInterface")
 MAX_INPUT_LENGTH = cast(int, _export(_mod, "MAX_INPUT_LENGTH"))
 MAX_HISTORY_SIZE = cast(int, _export(_mod, "MAX_HISTORY_SIZE"))
 MAX_GOALS = cast(int, _export(_mod, "MAX_GOALS"))
-MAX_REASONING_CHAINS = cast(int, _export(_mod, "MAX_REASONING_CHAINS"))
+MAX_REASONING_CHAINS = cast(
+    int,
+    _export(_mod, "MAX_REASONING_CHAINS"),
+)
 
 _sanitize_input = _export(_mod, "_sanitize_input")
 _sanitize_for_logging = _export(_mod, "_sanitize_for_logging")
