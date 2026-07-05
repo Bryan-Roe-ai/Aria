@@ -16,12 +16,12 @@ env:
   PYTHONDONTWRITEBYTECODE: '1'
   PIP_DISABLE_PIP_VERSION_CHECK: '1'
 
-  permissions:
-    contents: read
+permissions:
+  contents: read
 
-  concurrency:
-    group: quality-${{ github.ref }}
-    cancel-in-progress: true
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
 
 defaults:
   run:
