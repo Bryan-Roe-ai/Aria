@@ -173,8 +173,6 @@ def test_save_conversation_json_path_traversal_safe_via_hash(monkeypatch, tmp_pa
     monkeypatch.setattr(m, "CONV_DIR", tmp_path)
     monkeypatch.setattr(m, "LATEST_PATH", tmp_path / "latest.json")
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
-    monkeypatch.setattr(m, "CONV_DIR", conv_dir)
-    monkeypatch.setattr(m, "LATEST_PATH", conv_dir / "latest.json")
 
     saved = m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
 
