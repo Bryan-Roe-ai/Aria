@@ -1537,6 +1537,11 @@ with gr.Blocks() as demo:
                 return None
             if os.path.isabs(filename):
                 return None
+            # Only allow plain file names from the session list; no directory components.
+            if os.path.basename(filename) != filename:
+                return None
+            if not filename.endswith((".json", ".md", ".txt")):
+                return None
             base = os.path.realpath(CONV_DIR)
             candidate = os.path.realpath(os.path.join(base, filename))
             try:
