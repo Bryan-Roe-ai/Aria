@@ -1,3 +1,4 @@
+---
 disable-default-queries: false
 # Use default queries in addition to custom suites to keep Copilot Autofix coverage broad.
 name: "Aria CodeQL — maximum security coverage"
