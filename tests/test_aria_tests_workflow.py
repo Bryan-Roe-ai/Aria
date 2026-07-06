@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 _DOWNLOAD_CMD = 'python -c "from pyppeteer.chromium_downloader import download_chromium; download_chromium()"'
 
 
