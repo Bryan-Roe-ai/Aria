@@ -18,11 +18,12 @@ def test_pyppeteer_workflow_uses_supported_chromium_download_command() -> None:
 
 @pytest.mark.unit
 def test_e2e_tests_workflow_uses_pyppeteer_bundled_chromium() -> None:
-    """e2e-tests.yml containerized_chrome job must not try to apt-install chromium."""
+    """e2e-tests.yml containerized_chrome job must keep the Bullseye-safe Chromium fallback chain."""
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "e2e-tests.yml"
     content = workflow_path.read_text(encoding="utf-8")
 
-    # Must use pyppeteer bundled download — never apt-install chromium-browser (not in Bullseye)
-    assert "chromium-browser" not in content
     assert "python -m pyppeteer install" not in content
     assert _DOWNLOAD_CMD in content
+    assert "if apt-get install -y chromium; then" in content
+    assert "elif apt-get install -y chromium-browser; then" in content
+    assert 'ln -sf "$(command -v chromium-browser)" /usr/bin/chromium' in content
