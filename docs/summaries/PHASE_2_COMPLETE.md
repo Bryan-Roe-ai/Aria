@@ -38,17 +38,17 @@ The Aria platform now has a **complete, enterprise-grade monetization system** w
 
 ## 🌐 All Web Pages (9)
 
-| #   | Page                        | Purpose        | Features                             |
+| # | Page | Purpose | Features |
 | --- | --------------------------- | -------------- | ------------------------------------ |
-| 1   | `monetization-index.html`   | Landing hub    | All links, stats, overview           |
-| 2   | `pricing.html`              | Pricing tiers  | 3-tier comparison, FAQ               |
-| 3   | `checkout.html`             | Payment        | Stripe-ready forms                   |
-| 4   | `subscription-success.html` | Confirmation   | Success animation, next steps        |
-| 5   | `my-subscription.html`      | User dashboard | Usage tracking, billing              |
-| 6   | `account.html`              | Settings       | Profile, billing, API keys, security |
-| 7   | `admin_dashboard.html`      | Admin          | Revenue analytics, subscribers       |
-| 8   | `analytics-dashboard.html`  | Analytics      | Charts, trends, insights             |
-| 9   | `referrals.html`            | Referrals      | Affiliate program, tracking          |
+| 1 | `monetization-index.html` | Landing hub | All links, stats, overview |
+| 2 | `pricing.html` | Pricing tiers | 3-tier comparison, FAQ |
+| 3 | `checkout.html` | Payment | Stripe-ready forms |
+| 4 | `subscription-success.html` | Confirmation | Success animation, next steps |
+| 5 | `my-subscription.html` | User dashboard | Usage tracking, billing |
+| 6 | `account.html` | Settings | Profile, billing, API keys, security |
+| 7 | `admin_dashboard.html` | Admin | Revenue analytics, subscribers |
+| 8 | `analytics-dashboard.html` | Analytics | Charts, trends, insights |
+| 9 | `referrals.html` | Referrals | Affiliate program, tracking |
 
 ---
 
@@ -203,16 +203,16 @@ Example Revenue (50 referrals):
 
 ### Email Templates (8)
 
-| Template                 | Trigger          | Purpose           |
+| Template | Trigger | Purpose |
 | ------------------------ | ---------------- | ----------------- |
-| `SUBSCRIPTION_ACTIVATED` | New subscription | Welcome email     |
-| `USAGE_WARNING_80`       | 80% usage        | Soft warning      |
-| `USAGE_WARNING_90`       | 90% usage        | Urgent alert      |
-| `USAGE_LIMIT_REACHED`    | 100% usage       | Upgrade prompt    |
-| `PAYMENT_SUCCEEDED`      | Payment OK       | Receipt           |
-| `PAYMENT_FAILED`         | Payment failed   | Action required   |
-| `INVOICE_GENERATED`      | New invoice      | Billing notice    |
-| `REFERRAL_EARNED`        | New referral     | Commission notice |
+| `SUBSCRIPTION_ACTIVATED` | New subscription | Welcome email |
+| `USAGE_WARNING_80` | 80% usage | Soft warning |
+| `USAGE_WARNING_90` | 90% usage | Urgent alert |
+| `USAGE_LIMIT_REACHED` | 100% usage | Upgrade prompt |
+| `PAYMENT_SUCCEEDED` | Payment OK | Receipt |
+| `PAYMENT_FAILED` | Payment failed | Action required |
+| `INVOICE_GENERATED` | New invoice | Billing notice |
+| `REFERRAL_EARNED` | New referral | Commission notice |
 
 ### Notification Flow
 

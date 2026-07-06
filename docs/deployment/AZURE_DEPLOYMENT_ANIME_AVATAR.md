@@ -190,10 +190,10 @@ Invoke-RestMethod -Uri "https://$appUrl/api/chat-web"
 ### Cost Optimization
 
 - **Estimated Monthly Costs:**
-    - Consumption Plan: $0-50 (first 1M executions free)
-    - Premium P1V2: ~$146/month
-    - Storage: ~$2-5/month
-    - App Insights: ~$10-30/month (based on data ingestion)
+  - Consumption Plan: $0-50 (first 1M executions free)
+  - Premium P1V2: ~$146/month
+  - Storage: ~$2-5/month
+  - App Insights: ~$10-30/month (based on data ingestion)
 
 ## Troubleshooting
 

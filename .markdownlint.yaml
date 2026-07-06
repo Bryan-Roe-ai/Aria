@@ -17,6 +17,12 @@ MD025:
 # multiple code blocks (each code-block break is parsed as a new list by markdownlint).
 MD029: false
 
+# MD033: Inline HTML – allow specific elements commonly used in GitHub-flavoured
+# Markdown that have no pure-markdown equivalents (e.g. <details>/<summary> for
+# collapsible sections).
+MD033:
+    allowed_elements: [details, summary]
+
 # MD036: No emphasis as heading – disabled. Many guides intentionally use bold text
 # as inline sub-section labels (e.g. **Wheat Seeds**) rather than additional headings.
 MD036: false

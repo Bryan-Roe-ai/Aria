@@ -27,8 +27,8 @@
 - **SKU:** basic1
 - **Status:** ✅ Succeeded
 - **Available Targets:**
-    - quantinuum.sim.h2-1sc (Syntax Checker - FREE)
-    - quantinuum.sim.h2-1e (Emulator - H1 class)
+  - quantinuum.sim.h2-1sc (Syntax Checker - FREE)
+  - quantinuum.sim.h2-1e (Emulator - H1 class)
 - **Cost:** Syntax checker is free; emulator ~$75/hour
 
 #### 2. Rigetti
@@ -37,14 +37,14 @@
 - **SKU:** azure-basic-qvm-only-unlimited
 - **Status:** ✅ Succeeded
 - **Available Targets:**
-    - rigetti.sim.qvm (Quantum Virtual Machine - FREE)
+  - rigetti.sim.qvm (Quantum Virtual Machine - FREE)
 - **Cost:** Unlimited free simulator access
 
 ### Endpoint Information
 
-- **Workspace URI:** https://quantum-ai-workspace.eastus.quantum.azure.com
+- **Workspace URI:** <https://quantum-ai-workspace.eastus.quantum.azure.com>
 - **Created:** 2025-10-31T17:28:16Z
-- **Created By:** BryanRoe@BRsite.onmicrosoft.com
+- **Created By:** <BryanRoe@BRsite.onmicrosoft.com>
 
 ---
 
@@ -184,6 +184,7 @@ job = target.submit(program, ...)
     ```powershell
     .\deploy_to_azure_quantum.ps1 -SetupAzureML
     ```
+
     - Deploy compute cluster
     - Register quantum model
     - Create REST API endpoint

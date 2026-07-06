@@ -172,9 +172,9 @@ python scripts\distributed_benchmark.py --datasets-dir datasets/massive_quantum/
 
 | Tier | Datasets | Epochs | Time/Dataset | Workers | Total Hours | Wall Time |
 | ---- | -------- | ------ | ------------ | ------- | ----------- | --------- |
-| 1    | 3,500    | 1      | 15 min       | 16      | 875         | 55 hours  |
-| 2    | 2,800    | 25     | 2 hours      | 10      | 5,600       | 560 hours |
-| 3    | 100      | 50     | 4 hours      | 5       | 400         | 80 hours  |
+| 1 | 3,500 | 1 | 15 min | 16 | 875 | 55 hours |
+| 2 | 2,800 | 25 | 2 hours | 10 | 5,600 | 560 hours |
+| 3 | 100 | 50 | 4 hours | 5 | 400 | 80 hours |
 
 **Total wall time:** ~30 days continuous operation (10 workers average)
 
@@ -379,14 +379,14 @@ jobs:
 
 ### 6.2 Success Metrics
 
-| Metric            | Target | Current           | Gap        |
+| Metric | Target | Current | Gap |
 | ----------------- | ------ | ----------------- | ---------- |
-| Total datasets    | 5,000  | 30                | 4,970      |
-| Training-ready    | 3,500  | 27                | 3,473      |
-| Production models | 50     | 10 (from 27)      | 40         |
-| QPU-validated     | 100    | 0                 | 100        |
-| Average accuracy  | 75%    | 85% (27 datasets) | ✅ Exceeds |
-| API deployed      | Yes    | No                | 1 API      |
+| Total datasets | 5,000 | 30 | 4,970 |
+| Training-ready | 3,500 | 27 | 3,473 |
+| Production models | 50 | 10 (from 27) | 40 |
+| QPU-validated | 100 | 0 | 100 |
+| Average accuracy | 75% | 85% (27 datasets) | ✅ Exceeds |
+| API deployed | Yes | No | 1 API |
 
 ### 6.3 Risk Mitigation
 
@@ -416,15 +416,15 @@ jobs:
 
 ### Total Cost Estimate (16 weeks)
 
-| Category                  | Low      | Medium     | High        |
+| Category | Low | Medium | High |
 | ------------------------- | -------- | ---------- | ----------- |
-| Compute (Local)           | $0       | $0         | $0          |
-| Azure VM (Optional)       | $0       | $400       | $1,000      |
-| Azure Batch (Sprint)      | $0       | $1,400     | $3,000      |
-| Azure Storage             | $5       | $20        | $50         |
-| Azure Quantum (Simulator) | $0       | $0         | $0          |
-| Azure Quantum (QPU)       | $100     | $2,000     | $10,000     |
-| **Total**                 | **$105** | **$3,820** | **$14,050** |
+| Compute (Local) | $0 | $0 | $0 |
+| Azure VM (Optional) | $0 | $400 | $1,000 |
+| Azure Batch (Sprint) | $0 | $1,400 | $3,000 |
+| Azure Storage | $5 | $20 | $50 |
+| Azure Quantum (Simulator) | $0 | $0 | $0 |
+| Azure Quantum (QPU) | $100 | $2,000 | $10,000 |
+| **Total** | **$105** | **$3,820** | **$14,050** |
 
 **Recommended Budget: $3,820 (Medium)**
 

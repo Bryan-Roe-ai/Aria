@@ -19,9 +19,9 @@ free local execution and cloud hardware submission.
 - `scripts/evaluation/quantum_autorun.py` – the orchestrator
 - `quantum_autorun.yaml` – declarative job definitions
 - Outputs under `data_out/quantum_autorun/`
-    - `<job>/<timestamp>/stdout.log`
-    - `<job>/last_run.json`
-    - `status.json` with a summary of the last invocation
+  - `<job>/<timestamp>/stdout.log`
+  - `<job>/last_run.json`
+  - `status.json` with a summary of the last invocation
 
 ## Quick start (PowerShell)
 

@@ -65,12 +65,12 @@ If output is shallow, check which stage is being skipped by adding `verbose=True
 
 ### Step 4 — Verify decomposition template by intent
 
-| Intent      | Decomposition steps                                   |
+| Intent | Decomposition steps |
 | ----------- | ----------------------------------------------------- |
-| coding      | requirements → design → implement → edge cases → test |
-| explanation | define → examples → relationships → summary           |
-| creation    | concept → outline → details → review                  |
-| question    | direct → elaborate → examples → summary               |
+| coding | requirements → design → implement → edge cases → test |
+| explanation | define → examples → relationships → summary |
+| creation | concept → outline → details → review |
+| question | direct → elaborate → examples → summary |
 
 If decomposition steps don't match intent, check `_decompose_task()` intent detection logic.
 

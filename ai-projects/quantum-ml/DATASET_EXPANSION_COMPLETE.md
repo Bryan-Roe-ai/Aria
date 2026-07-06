@@ -34,10 +34,10 @@ Successfully expanded the quantum ML dataset collection from **4 to 15 datasets*
 
 - Created `dataset_architecture_analyzer.py`
 - Provides intelligent recommendations for:
-    - Qubit count (4-6 based on features)
-    - Layer count (2-4 based on complexity)
-    - Hidden dimensions (16-32)
-    - Learning rate, batch size, epochs
+  - Qubit count (4-6 based on features)
+  - Layer count (2-4 based on complexity)
+  - Hidden dimensions (16-32)
+  - Learning rate, batch size, epochs
 - Generated comprehensive analysis in `results/architecture_analysis.json`
 
 ---
@@ -46,28 +46,28 @@ Successfully expanded the quantum ML dataset collection from **4 to 15 datasets*
 
 ### ✅ **Working Datasets (10)**
 
-| Dataset               | Samples | Features | Classes | Category   | Recommended Qubits |
+| Dataset | Samples | Features | Classes | Category | Recommended Qubits |
 | --------------------- | ------- | -------- | ------- | ---------- | ------------------ |
-| **banknote**          | 1,371   | 4        | 2       | Forensics  | 4                  |
-| **blood_transfusion** | 748     | 4        | 2       | Medical    | 4                  |
-| **diabetes**          | 767     | 8        | 2       | Medical    | 4                  |
-| **glass**             | 213     | 10       | 6       | Forensics  | 4                  |
-| **haberman**          | 305     | 3        | 2       | Medical    | 4                  |
-| **heart_disease**     | 302     | 13       | 2       | Medical    | 5                  |
-| **ionosphere**        | 350     | 34       | 2       | Physics    | 6                  |
-| **iris**              | 149     | 4        | 3       | Biology    | 4                  |
-| **magic_gamma**       | 19,019  | 10       | 2       | Physics    | 4                  |
-| **sonar**             | 207     | 60       | 2       | Geophysics | 6                  |
+| **banknote** | 1,371 | 4 | 2 | Forensics | 4 |
+| **blood_transfusion** | 748 | 4 | 2 | Medical | 4 |
+| **diabetes** | 767 | 8 | 2 | Medical | 4 |
+| **glass** | 213 | 10 | 6 | Forensics | 4 |
+| **haberman** | 305 | 3 | 2 | Medical | 4 |
+| **heart_disease** | 302 | 13 | 2 | Medical | 5 |
+| **ionosphere** | 350 | 34 | 2 | Physics | 6 |
+| **iris** | 149 | 4 | 3 | Biology | 4 |
+| **magic_gamma** | 19,019 | 10 | 2 | Physics | 4 |
+| **sonar** | 207 | 60 | 2 | Geophysics | 6 |
 
 ### ⚠️ **Datasets Needing Format Fixes (5)**
 
-| Dataset              | Samples | Category    | Issue                                            |
+| Dataset | Samples | Category | Issue |
 | -------------------- | ------- | ----------- | ------------------------------------------------ |
-| **breast_cancer**    | 569     | Medical     | No header, needs special handling for M/B labels |
-| **vertebral_column** | 310     | Medical     | Encoding issue (latin-1 required)                |
-| **wine_red**         | 1,599   | Chemistry   | Semicolon delimiter (;) instead of comma         |
-| **wine_white**       | 4,898   | Chemistry   | Semicolon delimiter (;) instead of comma         |
-| **wheat_seeds**      | 210     | Agriculture | Semicolon delimiter (;) instead of comma         |
+| **breast_cancer** | 569 | Medical | No header, needs special handling for M/B labels |
+| **vertebral_column** | 310 | Medical | Encoding issue (latin-1 required) |
+| **wine_red** | 1,599 | Chemistry | Semicolon delimiter (;) instead of comma |
+| **wine_white** | 4,898 | Chemistry | Semicolon delimiter (;) instead of comma |
+| **wheat_seeds** | 210 | Agriculture | Semicolon delimiter (;) instead of comma |
 
 ---
 
@@ -152,10 +152,10 @@ python quantum-ai\quick_test_datasets.py
 
 - ✅ **10 datasets validated** in 13.2 seconds
 - 🏆 **Top performers** (1 epoch):
-    - Haberman: 100% accuracy
-    - Banknote: 94.49% accuracy
-    - Magic Gamma: 76.82% accuracy
-    - Heart Disease: 72.92% accuracy
+  - Haberman: 100% accuracy
+  - Banknote: 94.49% accuracy
+  - Magic Gamma: 76.82% accuracy
+  - Heart Disease: 72.92% accuracy
 
 ---
 
@@ -226,11 +226,11 @@ python quantum-ai\quick_test_datasets.py
 
 Based on 1-epoch quick tests, expected full-training performance:
 
-| Difficulty | Expected Accuracy | Epochs Needed | Example Datasets                     |
+| Difficulty | Expected Accuracy | Epochs Needed | Example Datasets |
 | ---------- | ----------------- | ------------- | ------------------------------------ |
-| **Easy**   | 90-100%           | 25-40         | Banknote, Iris                       |
-| **Medium** | 75-90%            | 40-50         | Diabetes, Magic Gamma, Heart Disease |
-| **Hard**   | 60-80%            | 50+           | Haberman, Blood Transfusion, Sonar   |
+| **Easy** | 90-100% | 25-40 | Banknote, Iris |
+| **Medium** | 75-90% | 40-50 | Diabetes, Magic Gamma, Heart Disease |
+| **Hard** | 60-80% | 50+ | Haberman, Blood Transfusion, Sonar |
 
 ---
 

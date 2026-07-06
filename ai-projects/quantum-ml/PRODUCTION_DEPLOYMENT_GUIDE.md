@@ -12,20 +12,20 @@
 
 ### Enhanced 8-Qubit Classifier Results
 
-| Metric            | Value     | Improvement      |
+| Metric | Value | Improvement |
 | ----------------- | --------- | ---------------- |
-| **Accuracy**      | **97.5%** | +20% vs 4-qubit  |
-| **Qubits**        | 8         | 2x capacity      |
-| **Layers**        | 4         | Optimized depth  |
-| **Parameters**    | 473       | Efficient        |
+| **Accuracy** | **97.5%** | +20% vs 4-qubit |
+| **Qubits** | 8 | 2x capacity |
+| **Layers** | 4 | Optimized depth |
+| **Parameters** | 473 | Efficient |
 | **Training Time** | 20 epochs | Fast convergence |
 
 ### Comparison: 4-Qubit vs 8-Qubit
 
-| Configuration          | Accuracy     | Use Case             |
+| Configuration | Accuracy | Use Case |
 | ---------------------- | ------------ | -------------------- |
-| 4 qubits, 2 layers     | 77.5%        | Simple patterns      |
-| 4 qubits, 4 layers     | 87.5%        | Moderate complexity  |
+| 4 qubits, 2 layers | 77.5% | Simple patterns |
+| 4 qubits, 4 layers | 87.5% | Moderate complexity |
 | **8 qubits, 4 layers** | **97.5%** ⭐ | **Complex patterns** |
 
 ---
@@ -276,6 +276,7 @@ quantum:
     ```
 
 3. **REST API Deployment**
+
     ```python
     service = deployer.deploy_inference_endpoint(
         model_name='quantum-classifier-8q',
@@ -290,20 +291,20 @@ quantum:
 
 ### Training Performance
 
-| Dataset | 4-Qubit | 8-Qubit   | Improvement |
+| Dataset | 4-Qubit | 8-Qubit | Improvement |
 | ------- | ------- | --------- | ----------- |
-| Moons   | 77.5%   | **97.5%** | +20.0%      |
-| XOR     | 57.5%   | **85.0%** | +27.5%      |
-| Spiral  | 55.0%   | **82.0%** | +27.0%      |
-| Wine    | 63.9%   | **91.2%** | +27.3%      |
+| Moons | 77.5% | **97.5%** | +20.0% |
+| XOR | 57.5% | **85.0%** | +27.5% |
+| Spiral | 55.0% | **82.0%** | +27.0% |
+| Wine | 63.9% | **91.2%** | +27.3% |
 
 ### Computational Cost
 
-| Configuration          | Parameters | Training Time | Inference Time |
+| Configuration | Parameters | Training Time | Inference Time |
 | ---------------------- | ---------- | ------------- | -------------- |
-| 4 qubits, 2 layers     | 96         | 2 min         | 10 ms          |
-| 4 qubits, 4 layers     | 192        | 4 min         | 15 ms          |
-| **8 qubits, 4 layers** | **473**    | **6 min**     | **20 ms**      |
+| 4 qubits, 2 layers | 96 | 2 min | 10 ms |
+| 4 qubits, 4 layers | 192 | 4 min | 15 ms |
+| **8 qubits, 4 layers** | **473** | **6 min** | **20 ms** |
 
 ---
 
@@ -316,6 +317,7 @@ quantum:
     ```powershell
     .\deploy_to_azure_quantum.ps1 -SubscriptionId "your-id"
     ```
+
     - Start with free simulator
     - Verify workspace configuration
     - Test quantum entanglement
@@ -325,14 +327,17 @@ quantum:
     ```powershell
     .\deploy_to_azure_quantum.ps1 -HardwareTest
     ```
+
     - Begin with Bell state test
     - Progress to full 8-qubit circuits
     - Compare simulator vs hardware results
 
 3. **Set Up Production Pipeline**
+
     ```powershell
     .\deploy_to_azure_quantum.ps1 -SetupAzureML
     ```
+
     - Configure ML workspace
     - Deploy compute cluster
     - Register first model version
@@ -459,10 +464,10 @@ pip install azureml-sdk  # For Azure ML
 
 ### Getting Help
 
-- **Azure Quantum Docs**: https://docs.microsoft.com/azure/quantum/
+- **Azure Quantum Docs**: <https://docs.microsoft.com/azure/quantum/>
 - **GitHub Issues**: Report bugs and feature requests
-- **Azure Support**: https://portal.azure.com/#blade/Microsoft_Azure_Support/HelpAndSupportBlade
-- **PennyLane Docs**: https://docs.pennylane.ai/
+- **Azure Support**: <https://portal.azure.com/#blade/Microsoft_Azure_Support/HelpAndSupportBlade>
+- **PennyLane Docs**: <https://docs.pennylane.ai/>
 
 ---
 
@@ -546,21 +551,21 @@ pip install azureml-sdk  # For Azure ML
 
 **Azure Quantum**
 
-- Portal: https://portal.azure.com
-- Documentation: https://aka.ms/quantum-docs
-- Pricing: https://azure.microsoft.com/pricing/details/azure-quantum/
+- Portal: <https://portal.azure.com>
+- Documentation: <https://aka.ms/quantum-docs>
+- Pricing: <https://azure.microsoft.com/pricing/details/azure-quantum/>
 
 **Azure Machine Learning**
 
-- Portal: https://ml.azure.com
-- Documentation: https://aka.ms/azureml-docs
-- Examples: https://github.com/Azure/azureml-examples
+- Portal: <https://ml.azure.com>
+- Documentation: <https://aka.ms/azureml-docs>
+- Examples: <https://github.com/Azure/azureml-examples>
 
 **Quantum Computing**
 
-- PennyLane: https://pennylane.ai
-- Qiskit: https://qiskit.org
-- Research Papers: https://arxiv.org/list/quant-ph/recent
+- PennyLane: <https://pennylane.ai>
+- Qiskit: <https://qiskit.org>
+- Research Papers: <https://arxiv.org/list/quant-ph/recent>
 
 ---
 

@@ -80,11 +80,11 @@ You are an expert autonomous code fixer and improver. Your mission is to systema
 **Output Format:**
 
 - For each significant change, provide:
-    - File path and line number
-    - Issue category (bug/quality/performance/security)
-    - Original code snippet
-    - Fixed code snippet
-    - Justification for the change
+  - File path and line number
+  - Issue category (bug/quality/performance/security)
+  - Original code snippet
+  - Fixed code snippet
+  - Justification for the change
 - Periodic summary: total files scanned, issues found, fixes applied, test results
 - Final report: comprehensive list of all improvements made
 

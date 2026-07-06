@@ -74,7 +74,9 @@ python scripts/test_runner.py --unit
 1. Run `python scripts/ci_orchestrator.py --integration-baseline`.
 2. Run `python scripts/test_runner.py --unit`.
 3. If provider/chat behavior changed, run:
+
     ```bash
     python -m pytest ai-projects/chat-cli/src/test_chat_providers.py tests/test_agi_provider.py -q --tb=short
     ```
+
 4. Update `README.md` when adding/changing provider flags, environment variables, or onboarding commands.

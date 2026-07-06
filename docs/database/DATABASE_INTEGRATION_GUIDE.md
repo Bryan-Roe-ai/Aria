@@ -385,4 +385,4 @@ Download and install: [ODBC Driver 18 for SQL Server](https://learn.microsoft.co
 - Database schema: `database/README.md`
 - Stored procedures: `database/StoredProcedures/*.sql`
 - Helper module: `shared/db_logging.py`
-- Azure SQL docs: https://learn.microsoft.com/azure/azure-sql/
+- Azure SQL docs: <https://learn.microsoft.com/azure/azure-sql/>

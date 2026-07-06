@@ -15,43 +15,43 @@ The Aria project includes multiple layers of testing to ensure the frontend (Jav
 ### Unit Tests
 
 - **`tests/test_aria_server.py`** - Server-side unit tests
-    - Tests tag generation (`[aria:say]`, `[aria:position]`, etc.)
-    - Fast, no external dependencies
-    - Run with: `pytest tests/test_aria_server.py`
+  - Tests tag generation (`[aria:say]`, `[aria:position]`, etc.)
+  - Fast, no external dependencies
+  - Run with: `pytest tests/test_aria_server.py`
 
 ### Integration Tests
 
 - **`tests/test_object_api_integration.py`** - HTTP API integration tests
-    - Tests REST endpoints (`/api/aria/object`, `/api/aria/state`)
-    - Requires server running on port 8000
-    - Simulates client requests without browser
-    - Run with: `pytest tests/test_object_api_integration.py`
+  - Tests REST endpoints (`/api/aria/object`, `/api/aria/state`)
+  - Requires server running on port 8000
+  - Simulates client requests without browser
+  - Run with: `pytest tests/test_object_api_integration.py`
 
 ### E2E Browser Tests
 
 #### Pyppeteer (Chromium via CDP)
 
 - **`tests/test_ui_pyppeteer.py`** - Browser automation using pyppeteer
-    - Uses Chrome DevTools Protocol
-    - Lightweight, Python-native
-    - Supports custom Chrome path via `CHROME_PATH` env var
-    - Run with: `pytest tests/test_ui_pyppeteer.py`
+  - Uses Chrome DevTools Protocol
+  - Lightweight, Python-native
+  - Supports custom Chrome path via `CHROME_PATH` env var
+  - Run with: `pytest tests/test_ui_pyppeteer.py`
 
 #### Playwright (Modern browser automation)
 
 - **`tests/test_ui_playwright.py`** - Browser automation using Playwright
-    - Modern, cross-browser (Chrome/Firefox/Safari)
-    - Better debugging and error messages
-    - Recommended for local development
-    - Run with: `pytest tests/test_ui_playwright.py -m playwright`
+  - Modern, cross-browser (Chrome/Firefox/Safari)
+  - Better debugging and error messages
+  - Recommended for local development
+  - Run with: `pytest tests/test_ui_playwright.py -m playwright`
 
 #### Selenium (Containerized Chrome)
 
 - **`tests/test_ui_selenium.py`** - Browser automation using Selenium Grid
-    - Uses remote Chrome in Docker container
-    - Best for CI/CD and isolated testing
-    - Supports VNC for watching tests run
-    - Run with: `pytest tests/test_ui_selenium.py -m selenium`
+  - Uses remote Chrome in Docker container
+  - Best for CI/CD and isolated testing
+  - Supports VNC for watching tests run
+  - Run with: `pytest tests/test_ui_selenium.py -m selenium`
 
 ## Running Tests Locally
 

@@ -4,20 +4,20 @@ This document outlines identified performance bottlenecks and inefficient code p
 
 ## Summary of Findings
 
-| Location                       | Issue                                       | Severity     | Status                 |
+| Location | Issue | Severity | Status |
 | ------------------------------ | ------------------------------------------- | ------------ | ---------------------- |
-| `token_utils.py`               | Repeated tokenizer instantiation            | High         | Fixed                  |
-| `chat_memory.py`               | Inefficient cosine similarity loop          | Medium       | Fixed                  |
-| `chat_memory.py`               | Repeated OpenAI client creation             | Medium       | Fixed                  |
-| `validate_datasets.py`         | Full file read into memory                  | Medium       | Fixed                  |
-| `chat_providers.py`            | LM Studio health check on every auto-detect | Medium       | Fixed                  |
-| `aria_web/server.py`           | 20+ list creations in keyword checks        | **Critical** | **Fixed (2025-02-17)** |
-| `extract_chat_logs_dataset.py` | Double traversal with any()                 | High         | **Fixed (2025-02-17)** |
-| `batch_evaluator.py`           | O(n²) linear search in compare_models()     | High         | **Fixed (2025-02-17)** |
-| `training_analytics.py`        | String += in visualization loop             | Medium       | **Fixed (2025-02-17)** |
-| `agi_provider.py`              | String += for tag concatenation             | Low          | **Fixed (2025-02-17)** |
-| `quantum_classifier.py`        | Sequential batch processing                 | Medium       | Documented             |
-| `function_app.py`              | Repeated file existence checks              | Low          | Documented             |
+| `token_utils.py` | Repeated tokenizer instantiation | High | Fixed |
+| `chat_memory.py` | Inefficient cosine similarity loop | Medium | Fixed |
+| `chat_memory.py` | Repeated OpenAI client creation | Medium | Fixed |
+| `validate_datasets.py` | Full file read into memory | Medium | Fixed |
+| `chat_providers.py` | LM Studio health check on every auto-detect | Medium | Fixed |
+| `aria_web/server.py` | 20+ list creations in keyword checks | **Critical** | **Fixed (2025-02-17)** |
+| `extract_chat_logs_dataset.py` | Double traversal with any() | High | **Fixed (2025-02-17)** |
+| `batch_evaluator.py` | O(n²) linear search in compare_models() | High | **Fixed (2025-02-17)** |
+| `training_analytics.py` | String += in visualization loop | Medium | **Fixed (2025-02-17)** |
+| `agi_provider.py` | String += for tag concatenation | Low | **Fixed (2025-02-17)** |
+| `quantum_classifier.py` | Sequential batch processing | Medium | Documented |
+| `function_app.py` | Repeated file existence checks | Low | Documented |
 
 ---
 

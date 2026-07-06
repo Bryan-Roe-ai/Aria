@@ -341,15 +341,15 @@ python .\scripts\autotrain.py --job my_local_job --reinstall
 ## Related Docs
 
 - **Training scripts:**
-    - `AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py` (HF runner)
-    - `scripts/run_local_lora_training.py` (local runner)
-    - `AI/microsoft_phi-silica-3.6_v1/local_train/README.md` (local setup details)
+  - `AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py` (HF runner)
+  - `scripts/run_local_lora_training.py` (local runner)
+  - `AI/microsoft_phi-silica-3.6_v1/local_train/README.md` (local setup details)
 - **Azure Functions:**
-    - `http_ai_status/__init__.py` (status endpoint integration)
-    - `function_app.py` (root function handler)
+  - `http_ai_status/__init__.py` (status endpoint integration)
+  - `function_app.py` (root function handler)
 - **Datasets:**
-    - `datasets/chat/mixed_chat/` (example chat dataset)
-    - `DATASETS_QUICK_REF.md` (catalog)
+  - `datasets/chat/mixed_chat/` (example chat dataset)
+  - `DATASETS_QUICK_REF.md` (catalog)
 
 ---
 

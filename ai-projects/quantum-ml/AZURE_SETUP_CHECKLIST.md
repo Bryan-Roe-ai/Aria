@@ -9,9 +9,9 @@
 ### Step 1: Azure Account Setup (5 min)
 
 - [ ] **Sign up for Azure** (if you don't have an account)
-    - Go to: <https://azure.microsoft.com/free/>
-    - Get $200 free credit (valid for 30 days)
-    - No credit card required for free services
+  - Go to: <https://azure.microsoft.com/free/>
+  - Get $200 free credit (valid for 30 days)
+  - No credit card required for free services
 
 - [ ] **Install Azure CLI** (if not installed)
 
@@ -50,8 +50,8 @@
 - [ ] **Update parameters file**
 
     Edit `quantum_workspace.parameters.json` and update:
-    - `workspaceName`: Must be globally unique (e.g., `quantum-ai-bryan-2025`)
-    - `storageAccountName`: Must be globally unique, lowercase, no hyphens (e.g., `quantumstoragebr2025`)
+  - `workspaceName`: Must be globally unique (e.g., `quantum-ai-bryan-2025`)
+  - `storageAccountName`: Must be globally unique, lowercase, no hyphens (e.g., `quantumstoragebr2025`)
 
     **Example:**
 
@@ -143,9 +143,9 @@
     ```
 
 - [ ] **Follow the interactive prompts**
-    - Test 1: Verifies connection ✓
-    - Test 2: Runs Bell state on hardware 🔔
-    - Test 3: Tests your optimized circuit 🏆
+  - Test 1: Verifies connection ✓
+  - Test 2: Runs Bell state on hardware 🔔
+  - Test 3: Tests your optimized circuit 🏆
 
 ---
 

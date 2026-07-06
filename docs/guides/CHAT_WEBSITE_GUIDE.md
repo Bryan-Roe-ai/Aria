@@ -1,6 +1,6 @@
 # Chat Website - Complete Guide
 
-## 🎉 Your AI Chat Website is Ready!
+## 🎉 Your AI Chat Website is Ready
 
 I've created a beautiful, responsive chat website that works with multiple AI providers.
 
@@ -8,7 +8,7 @@ I've created a beautiful, responsive chat website that works with multiple AI pr
 
 The server is already running! Open your browser to:
 
-**http://localhost:7071/api/chat-web**
+**<http://localhost:7071/api/chat-web>**
 
 Or run the startup script:
 
@@ -45,7 +45,7 @@ Or run the startup script:
 └─────────────────┘
 ```
 
-### Files Created/Modified:
+### Files Created/Modified
 
 1. **Frontend** (`chat-web/`)
     - `index.html` - Beautiful gradient UI
@@ -74,20 +74,24 @@ Or run the startup script:
 
 - **Cost**: Pay per token (~$0.002/1K tokens for GPT-4o-mini)
 - **Setup**:
+
     ```powershell
     $env:OPENAI_API_KEY = "sk-..."
     ```
+
 - **Best for**: Production quality responses
 
 ### 3. Azure OpenAI
 
 - **Cost**: Similar to OpenAI
 - **Setup**:
+
     ```powershell
     $env:AZURE_OPENAI_API_KEY = "your-key"
     $env:AZURE_OPENAI_ENDPOINT = "https://your-resource.openai.azure.com/"
     $env:AZURE_OPENAI_DEPLOYMENT = "gpt-4o-mini"
     ```
+
 - **Best for**: Enterprise with Azure integration
 
 ## 🔧 API Reference
@@ -330,7 +334,7 @@ View logs in Azure Portal:
 - Check `ai-projects/chat-cli/README.md` for provider details
 - Review `.github/copilot-instructions.md` for architecture
 
-## 🎉 Congratulations!
+## 🎉 Congratulations
 
 You now have a fully functional AI chat website that:
 

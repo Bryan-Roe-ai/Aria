@@ -59,12 +59,12 @@ Successfully implemented full-stack vision inference pipeline for the QAI web ch
 **Test Suite** (`tests/test_vision_inference.py`):
 
 - 20 test cases covering:
-    - Model initialization and forward pass
-    - Preprocessing (PIL Image → tensor)
-    - All prediction methods (base64, file, batch)
-    - Error handling (invalid data, missing files)
-    - Checkpoint discovery
-    - Full pipeline integration
+  - Model initialization and forward pass
+  - Preprocessing (PIL Image → tensor)
+  - All prediction methods (base64, file, batch)
+  - Error handling (invalid data, missing files)
+  - Checkpoint discovery
+  - Full pipeline integration
 
 **Results**: ✅ **20/20 tests passed** (1.99s)
 
@@ -100,6 +100,7 @@ numpy>=1.24.0      # Array operations
 3. Image loads, preview displays with thumbnail
 4. Vision API analyzes automatically in background
 5. Aria responds with expression analysis:
+
     ```
     🖼️ Image Analysis: smile.jpg
     Expression: happy (87.3% confidence)
@@ -110,6 +111,7 @@ numpy>=1.24.0      # Array operations
     - sad: 2.9%
     - angry: 1.7%
     ```
+
 6. User can clear and upload another image
 
 ## Technical Highlights
@@ -123,15 +125,15 @@ numpy>=1.24.0      # Array operations
 
 ## Validation Status
 
-| Component        | Status | Details                                    |
+| Component | Status | Details |
 | ---------------- | ------ | ------------------------------------------ |
-| Inference Module | ✅     | 376 lines, fully tested                    |
-| API Endpoints    | ✅     | 2 endpoints with CORS, caching             |
-| Frontend UI      | ✅     | Button, preview, CSS styling               |
-| JavaScript       | ✅     | Event handlers, base64 encoding, API calls |
-| Tests            | ✅     | 20/20 passing (1.99s)                      |
-| Documentation    | ✅     | Comprehensive API guide                    |
-| Dependencies     | ✅     | requirements.txt updated                   |
+| Inference Module | ✅ | 376 lines, fully tested |
+| API Endpoints | ✅ | 2 endpoints with CORS, caching |
+| Frontend UI | ✅ | Button, preview, CSS styling |
+| JavaScript | ✅ | Event handlers, base64 encoding, API calls |
+| Tests | ✅ | 20/20 passing (1.99s) |
+| Documentation | ✅ | Comprehensive API guide |
+| Dependencies | ✅ | requirements.txt updated |
 
 ## Next Steps (Optional Enhancements)
 

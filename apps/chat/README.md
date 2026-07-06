@@ -153,9 +153,9 @@ Check environment variables and ensure `ai-projects/chat-cli/src/chat_providers.
 
 - **Free tier**: Use local provider (default, unlimited)
 - **Paid tier**: OpenAI/Azure charges per token
-    - Monitor usage in provider dashboards
-    - Set rate limits on API keys
-    - Use cheaper models (gpt-4o-mini vs gpt-4)
+  - Monitor usage in provider dashboards
+  - Set rate limits on API keys
+  - Use cheaper models (gpt-4o-mini vs gpt-4)
 
 ## Files Structure
 

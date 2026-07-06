@@ -6,11 +6,11 @@ applyTo: "**/subscription_manager.py"
 
 ## Tier Definitions
 
-| Tier       | Price   | Chat Msgs | Quantum Jobs | Training Hrs |
+| Tier | Price | Chat Msgs | Quantum Jobs | Training Hrs |
 | ---------- | ------- | --------- | ------------ | ------------ |
-| FREE       | $0/mo   | 100/mo    | 0            | 0            |
-| PRO        | $49/mo  | 10,000/mo | 50/mo        | 20 hrs/mo    |
-| ENTERPRISE | $199/mo | Unlimited | Unlimited    | Unlimited    |
+| FREE | $0/mo | 100/mo | 0 | 0 |
+| PRO | $49/mo | 10,000/mo | 50/mo | 20 hrs/mo |
+| ENTERPRISE | $199/mo | Unlimited | Unlimited | Unlimited |
 
 ## Feature Gating
 

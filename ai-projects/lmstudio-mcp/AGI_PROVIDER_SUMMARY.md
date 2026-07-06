@@ -318,24 +318,31 @@ entry = get_lmstudio_agent_registry_entry()
 ## Examples Included
 
 ### Example 1: Basic Routing
+
 Shows routing decisions for different query types
 
 ### Example 2: Query Classification
+
 Shows how queries are analyzed and classified by domain
 
 ### Example 3: Task Decomposition
+
 Shows how complex tasks are broken into subtasks
 
 ### Example 4: Chain-of-Thought
+
 Shows multi-step reasoning analysis
 
 ### Example 5: Multi-Agent Workflow
+
 Shows how different agents collaborate
 
 ### Example 6: Fallback Behavior
+
 Shows resilience and automatic fallback
 
 ### Example 7: Configuration & Tuning
+
 Shows how to optimize for speed vs quality
 
 ## Documentation Files
@@ -353,11 +360,13 @@ Shows how to optimize for speed vs quality
 ## Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 pip install -r mcp-requirements.txt
 ```
 
 ### 2. Start Services
+
 ```bash
 # Terminal 1: LM Studio app (https://lmstudio.ai)
 # - Load model
@@ -368,6 +377,7 @@ python lmstudio_mcp_server.py
 ```
 
 ### 3. Use with AGI Provider
+
 ```python
 from agi_provider import AGIProvider
 agi = AGIProvider()
@@ -379,6 +389,7 @@ response = agi.complete([
 ```
 
 ### 4. Run Examples
+
 ```bash
 python agi_provider_examples.py
 ```
@@ -401,16 +412,19 @@ python agi_provider_examples.py
 ## Testing & Verification
 
 Run verification:
+
 ```bash
 python verify_agent_integration.py
 ```
 
 Run examples:
+
 ```bash
 python agi_provider_examples.py
 ```
 
 Test routing:
+
 ```python
 from lmstudio_agi_integration import AGILMStudioRouter
 router = AGILMStudioRouter()
@@ -449,6 +463,7 @@ router = AGILMStudioRouter()
 **Fallback Route**: ~500ms-2s (network call to cloud API)
 
 **Optimization Tips**:
+
 - ↓ LMSTUDIO_MAX_TOKENS for faster responses
 - ↓ reasoning_depth for simpler routing decisions
 - Cache routing decisions in production
@@ -475,6 +490,7 @@ router = AGILMStudioRouter()
 ✨ **Complete LM Studio + AGI Provider Integration**
 
 Three new files totaling 1,500 lines of production-ready code:
+
 - Sophisticated routing with multi-agent support
 - Task decomposition and reasoning
 - Fallback & resilience patterns

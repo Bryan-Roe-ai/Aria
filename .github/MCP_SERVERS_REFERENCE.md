@@ -42,11 +42,11 @@ GitHub Copilot Chat
 
 ### Server Locations
 
-| Server        | Path                                            | Status    |
+| Server | Path | Status |
 | ------------- | ----------------------------------------------- | --------- |
-| quantum-ai    | `ai-projects/quantum-ml/quantum_mcp_server.py`  | ✅ Active |
-| llm-maker     | `ai-projects/llm-maker/llm_maker_mcp_server.py` | ✅ Active |
-| task-complete | `scripts/task_complete_mcp_server.py`           | ✅ Active |
+| quantum-ai | `ai-projects/quantum-ml/quantum_mcp_server.py` | ✅ Active |
+| llm-maker | `ai-projects/llm-maker/llm_maker_mcp_server.py` | ✅ Active |
+| task-complete | `scripts/task_complete_mcp_server.py` | ✅ Active |
 
 ### Configuration
 
@@ -604,9 +604,9 @@ pip install --upgrade mcp>=0.9.0
 
 ## MCP Protocol Resources
 
-- **Official MCP Spec**: https://modelcontextprotocol.io/
-- **Python SDK**: https://github.com/modelcontextprotocol/python-sdk
-- **Example Servers**: https://github.com/modelcontextprotocol/servers
+- **Official MCP Spec**: <https://modelcontextprotocol.io/>
+- **Python SDK**: <https://github.com/modelcontextprotocol/python-sdk>
+- **Example Servers**: <https://github.com/modelcontextprotocol/servers>
 
 ---
 

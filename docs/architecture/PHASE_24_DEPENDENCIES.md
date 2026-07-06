@@ -107,17 +107,17 @@ pip list | Select-String "websockets|watchdog|win10toast"
 
 ## Feature Dependency Matrix
 
-| Feature                  | Dependencies              | Status                |
+| Feature | Dependencies | Status |
 | ------------------------ | ------------------------- | --------------------- |
-| WebSocket Server         | websockets, watchdog      | Required for Phase 23 |
-| Export (PNG/CSV/TXT)     | None                      | Phase 24 ✅           |
-| Backup Manager           | None                      | Phase 24 ✅           |
-| Browser Notifications    | None                      | Phase 24 ✅           |
-| Python CLI Notifications | win10toast (Windows only) | Phase 24 ✅ Optional  |
-| Analytics Dashboard      | Chart.js (CDN)            | Phase 23 ✅           |
-| Job Queue                | None                      | Phase 23 ✅           |
-| Model Comparison         | None                      | Phase 23 ✅           |
-| Config Templates         | None                      | Phase 23 ✅           |
+| WebSocket Server | websockets, watchdog | Required for Phase 23 |
+| Export (PNG/CSV/TXT) | None | Phase 24 ✅ |
+| Backup Manager | None | Phase 24 ✅ |
+| Browser Notifications | None | Phase 24 ✅ |
+| Python CLI Notifications | win10toast (Windows only) | Phase 24 ✅ Optional |
+| Analytics Dashboard | Chart.js (CDN) | Phase 23 ✅ |
+| Job Queue | None | Phase 23 ✅ |
+| Model Comparison | None | Phase 23 ✅ |
+| Config Templates | None | Phase 23 ✅ |
 
 ---
 

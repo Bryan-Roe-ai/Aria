@@ -29,20 +29,20 @@
 
 ### Standard Datasets (Original Training)
 
-| Dataset     | Accuracy | Grade   | Use Case                   |
+| Dataset | Accuracy | Grade | Use Case |
 | ----------- | -------- | ------- | -------------------------- |
-| **Moons**   | 72.5%    | ★★★★★★★ | Non-linear boundaries      |
-| **Circles** | 52.5%    | ★★★★★   | Concentric patterns        |
-| **Iris**    | 76.7%    | ★★★★★★★ | Multi-class classification |
+| **Moons** | 72.5% | ★★★★★★★ | Non-linear boundaries |
+| **Circles** | 52.5% | ★★★★★ | Concentric patterns |
+| **Iris** | 76.7% | ★★★★★★★ | Multi-class classification |
 
 ### Extended Datasets (Recent Experiments)
 
-| Dataset        | Accuracy | Grade    | Use Case             |
+| Dataset | Accuracy | Grade | Use Case |
 | -------------- | -------- | -------- | -------------------- |
-| **XOR**        | 57.5%    | ★★★★★    | Linearly inseparable |
-| **Spiral**     | 37.5%    | ★★★      | Highly non-linear    |
-| **Imbalanced** | 90.0%    | ★★★★★★★★ | Class imbalance      |
-| **Wine**       | 88.9%    | ★★★★★★★★ | Real-world data      |
+| **XOR** | 57.5% | ★★★★★ | Linearly inseparable |
+| **Spiral** | 37.5% | ★★★ | Highly non-linear |
+| **Imbalanced** | 90.0% | ★★★★★★★★ | Class imbalance |
+| **Wine** | 88.9% | ★★★★★★★★ | Real-world data |
 
 ---
 

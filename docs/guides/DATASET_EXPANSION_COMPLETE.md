@@ -78,35 +78,35 @@ Successfully expanded quantum ML dataset collection from **15 to 27 datasets** (
 
 ### Exceptional Performers (>95% Accuracy)
 
-| Dataset               | Accuracy | Loss   | Samples | Features |
+| Dataset | Accuracy | Loss | Samples | Features |
 | --------------------- | -------- | ------ | ------- | -------- |
-| wine_white            | 99.59%   | 0.0778 | 4,898   | 11→4     |
-| wine_red              | 99.38%   | 0.3660 | 1,599   | 11→5     |
-| optical_recognition   | 98.94%   | 0.1321 | 3,823   | 64→6     |
-| pendigits             | 97.98%   | 0.1024 | 7,494   | 16→5     |
-| wine_quality_combined | 98.23%   | 0.0769 | 6,497   | 12→5     |
-| liver_disorders       | 95.31%   | 0.6090 | 345     | 6→4      |
+| wine_white | 99.59% | 0.0778 | 4,898 | 11→4 |
+| wine_red | 99.38% | 0.3660 | 1,599 | 11→5 |
+| optical_recognition | 98.94% | 0.1321 | 3,823 | 64→6 |
+| pendigits | 97.98% | 0.1024 | 7,494 | 16→5 |
+| wine_quality_combined | 98.23% | 0.0769 | 6,497 | 12→5 |
+| liver_disorders | 95.31% | 0.6090 | 345 | 6→4 |
 
 ### Very Good Performers (75-95%)
 
-| Dataset            | Accuracy | Samples |
+| Dataset | Accuracy | Samples |
 | ------------------ | -------- | ------- |
-| banknote           | 93.38%   | 1,372   |
-| balance_scale      | 91.07%   | 625     |
-| breast_cancer      | 75.89%   | 569     |
-| statlog_australian | 82.03%   | 690     |
-| magic_gamma        | 77.53%   | 19,020  |
-| blood_transfusion  | 75.00%   | 747     |
+| banknote | 93.38% | 1,372 |
+| balance_scale | 91.07% | 625 |
+| breast_cancer | 75.89% | 569 |
+| statlog_australian | 82.03% | 690 |
+| magic_gamma | 77.53% | 19,020 |
+| blood_transfusion | 75.00% | 747 |
 
 ### Challenging Datasets (<50%)
 
-| Dataset       | Accuracy | Issue                      |
+| Dataset | Accuracy | Issue |
 | ------------- | -------- | -------------------------- |
-| statlog_heart | 0.00%    | Training instability       |
-| iris          | 6.25%    | Multi-class complexity     |
-| wheat_seeds   | 40.62%   | Limited samples            |
-| sonar         | 40.62%   | High dimensionality (60→4) |
-| glass         | 43.75%   | Class imbalance (8.44x)    |
+| statlog_heart | 0.00% | Training instability |
+| iris | 6.25% | Multi-class complexity |
+| wheat_seeds | 40.62% | Limited samples |
+| sonar | 40.62% | High dimensionality (60→4) |
+| glass | 43.75% | Class imbalance (8.44x) |
 
 ---
 
@@ -183,18 +183,18 @@ Implemented 14 dataset-specific loading handlers:
 
 ## 📊 Domain Distribution
 
-| Domain             | Datasets | Samples | Percentage |
+| Domain | Datasets | Samples | Percentage |
 | ------------------ | -------- | ------- | ---------- |
-| **Medical**        | 10       | 3,959   | 37%        |
-| **Chemistry**      | 3        | 12,994  | 11%        |
-| **Image Features** | 2        | 11,317  | 7%         |
-| **Physics**        | 2        | 19,644  | 7%         |
-| **Agriculture**    | 2        | 420     | 7%         |
-| **Forensics**      | 2        | 1,585   | 7%         |
-| **Finance**        | 1        | 690     | 4%         |
-| **Social Science** | 1        | 1,473   | 4%         |
-| **Geophysics**     | 1        | 208     | 4%         |
-| **Biology**        | 1        | 150     | 4%         |
+| **Medical** | 10 | 3,959 | 37% |
+| **Chemistry** | 3 | 12,994 | 11% |
+| **Image Features** | 2 | 11,317 | 7% |
+| **Physics** | 2 | 19,644 | 7% |
+| **Agriculture** | 2 | 420 | 7% |
+| **Forensics** | 2 | 1,585 | 7% |
+| **Finance** | 1 | 690 | 4% |
+| **Social Science** | 1 | 1,473 | 4% |
+| **Geophysics** | 1 | 208 | 4% |
+| **Biology** | 1 | 150 | 4% |
 
 ### Domain Analysis
 

@@ -9,8 +9,8 @@
 - Added `/api/cancel_job/<job_name>` POST endpoint
 - Reads PID from file-based tracking (`data_out/autotrain/<job_name>.pid`)
 - Terminates process tree using OS-appropriate commands:
-    - Windows: `taskkill /F /T /PID <pid>`
-    - Unix/Linux: `os.killpg(os.getpgid(pid), signal.SIGTERM)`
+  - Windows: `taskkill /F /T /PID <pid>`
+  - Unix/Linux: `os.killpg(os.getpgid(pid), signal.SIGTERM)`
 - Updates job status to `cancelled` with timestamp
 - Calculates elapsed duration for cancelled jobs
 
@@ -32,8 +32,8 @@
 **Data Model:**
 
 - `validated_type` field distinguishes validation phases:
-    - `"dry-run"`: Job validated during `--dry-run` mode
-    - `"preflight"`: Job validated before actual execution
+  - `"dry-run"`: Job validated during `--dry-run` mode
+  - `"preflight"`: Job validated before actual execution
 
 **UI Display:**
 
@@ -53,12 +53,12 @@
 **Algorithm:**
 
 - Calculates runner-specific average durations:
-    - Groups completed jobs by `runner` type ("hf" vs "local")
-    - Computes mean duration for each runner category
+  - Groups completed jobs by `runner` type ("hf" vs "local")
+  - Computes mean duration for each runner category
 - For running jobs:
-    - Parses `start_time` to calculate elapsed seconds
-    - Subtracts elapsed from runner-specific average
-    - Returns remaining time estimate (rounded to 1 decimal)
+  - Parses `start_time` to calculate elapsed seconds
+  - Subtracts elapsed from runner-specific average
+  - Returns remaining time estimate (rounded to 1 decimal)
 
 **UI Display:**
 
@@ -98,13 +98,13 @@
 
 ## API Endpoints
 
-| Endpoint                             | Method | Purpose                    | Returns                                            |
+| Endpoint | Method | Purpose | Returns |
 | ------------------------------------ | ------ | -------------------------- | -------------------------------------------------- |
-| `/api/training_progress`             | GET    | Current progress snapshot  | Full job status with ETA, validated_type, category |
-| `/api/retry_job/<name>`              | POST   | Retry failed/succeeded job | `{accepted: true, retry_count: N}`                 |
-| `/api/cancel_job/<name>`             | POST   | Cancel running job         | `{cancelled: true, pid: N}`                        |
-| `/api/training_progress_history`     | GET    | Historical snapshots       | Array of progress states                           |
-| `/api/training_progress_history_csv` | GET    | Export history as CSV      | CSV file download                                  |
+| `/api/training_progress` | GET | Current progress snapshot | Full job status with ETA, validated_type, category |
+| `/api/retry_job/<name>` | POST | Retry failed/succeeded job | `{accepted: true, retry_count: N}` |
+| `/api/cancel_job/<name>` | POST | Cancel running job | `{cancelled: true, pid: N}` |
+| `/api/training_progress_history` | GET | Historical snapshots | Array of progress states |
+| `/api/training_progress_history_csv` | GET | Export history as CSV | CSV file download |
 
 ## Testing
 
@@ -128,7 +128,7 @@ python .\scripts\autotrain.py --dry-run
 ### Live Testing
 
 1. Start dashboard: `python dashboard/app.py` or use SocketIO runner
-2. Navigate to http://localhost:5000
+2. Navigate to <http://localhost:5000>
 3. Click theme toggle (moon icon) to test dark mode
 4. Start a training job to see:
     - Per-job ETA in running job row

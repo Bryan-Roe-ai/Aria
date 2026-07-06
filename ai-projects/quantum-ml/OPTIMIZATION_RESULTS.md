@@ -10,12 +10,12 @@
 
 ### Results Summary
 
-| Layers | Final Accuracy | Best Epoch Acc        | Performance |
+| Layers | Final Accuracy | Best Epoch Acc | Performance |
 | ------ | -------------- | --------------------- | ----------- |
-| **1**  | 67.5%          | 55.0% (epoch 40)      | Baseline    |
-| **2**  | **87.5%** ⭐   | **87.5%** (epoch 30+) | **BEST**    |
-| **3**  | 75.0%          | 75.0% (epoch 10+)     | Good        |
-| **4**  | 67.5%          | 70.0% (epoch 30)      | Overfitting |
+| **1** | 67.5% | 55.0% (epoch 40) | Baseline |
+| **2** | **87.5%** ⭐ | **87.5%** (epoch 30+) | **BEST** |
+| **3** | 75.0% | 75.0% (epoch 10+) | Good |
+| **4** | 67.5% | 70.0% (epoch 30) | Overfitting |
 
 ### 🏆 Optimal Configuration Found
 
@@ -102,14 +102,14 @@ ml:
 
 With the optimized 2-layer configuration, we expect:
 
-| Dataset        | Previous | Expected  | Improvement |
+| Dataset | Previous | Expected | Improvement |
 | -------------- | -------- | --------- | ----------- |
-| **Moons**      | 72.5%    | **87.5%** | +15% ✅     |
-| **Circles**    | 52.5%    | ~65-70%   | +12-17%     |
-| **Iris**       | 76.7%    | ~85-90%   | +8-13%      |
-| **XOR**        | 57.5%    | ~70-75%   | +12-17%     |
-| **Wine**       | 88.9%    | ~92-95%   | +3-6%       |
-| **Imbalanced** | 90.0%    | ~93-95%   | +3-5%       |
+| **Moons** | 72.5% | **87.5%** | +15% ✅ |
+| **Circles** | 52.5% | ~65-70% | +12-17% |
+| **Iris** | 76.7% | ~85-90% | +8-13% |
+| **XOR** | 57.5% | ~70-75% | +12-17% |
+| **Wine** | 88.9% | ~92-95% | +3-6% |
+| **Imbalanced** | 90.0% | ~93-95% | +3-5% |
 
 ### Average Expected Improvement
 

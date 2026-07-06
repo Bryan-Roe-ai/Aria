@@ -12,13 +12,13 @@ applyTo: "scripts/*train*"
 
 ## Key Scripts
 
-| Script                                | Config                            | Purpose                            |
+| Script | Config | Purpose |
 | ------------------------------------- | --------------------------------- | ---------------------------------- |
-| `autotrain.py`                        | `autotrain.yaml`                  | LoRA fine-tuning job orchestration |
-| `automated_training_pipeline.py`      | —                                 | End-to-end training pipeline       |
-| `train_and_promote.py`                | —                                 | Train + auto-deploy best model     |
-| `autonomous_training_orchestrator.py` | `config/autonomous_training.yaml` | Continuous self-managing cycles    |
-| `master_orchestrator.py`              | `config/master_orchestrator.yaml` | Coordinates all sub-orchestrators  |
+| `autotrain.py` | `autotrain.yaml` | LoRA fine-tuning job orchestration |
+| `automated_training_pipeline.py` | — | End-to-end training pipeline |
+| `train_and_promote.py` | — | Train + auto-deploy best model |
+| `autonomous_training_orchestrator.py` | `config/autonomous_training.yaml` | Continuous self-managing cycles |
+| `master_orchestrator.py` | `config/master_orchestrator.yaml` | Coordinates all sub-orchestrators |
 
 ## Data Conventions
 

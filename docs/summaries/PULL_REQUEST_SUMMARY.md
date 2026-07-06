@@ -198,13 +198,13 @@ Future opportunities including:
 
 ### Performance Improvements
 
-| Metric           | Before            | After        | Improvement        |
+| Metric | Before | After | Improvement |
 | ---------------- | ----------------- | ------------ | ------------------ |
-| Keyword checks   | O(n) scan         | O(1) lookup  | 1.14x faster       |
-| DB connections   | New per request   | Pooled       | 50-100x (batch)    |
-| Regex operations | Compile each call | Pre-compiled | 2-5x faster        |
-| Tag filtering    | O(n²)             | O(n)         | Complexity reduced |
-| Memory usage     | Full list         | Generator    | Lower footprint    |
+| Keyword checks | O(n) scan | O(1) lookup | 1.14x faster |
+| DB connections | New per request | Pooled | 50-100x (batch) |
+| Regex operations | Compile each call | Pre-compiled | 2-5x faster |
+| Tag filtering | O(n²) | O(n) | Complexity reduced |
+| Memory usage | Full list | Generator | Lower footprint |
 
 ---
 

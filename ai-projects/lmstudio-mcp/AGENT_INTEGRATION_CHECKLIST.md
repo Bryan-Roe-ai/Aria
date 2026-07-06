@@ -10,23 +10,27 @@
 ## ✅ Features Implemented
 
 ### Core Agent Integration
+
 - [x] `LMStudioAgentClient` async client class
 - [x] `get_lmstudio_agent_client()` factory function
 - [x] LMSTUDIO_AGENT_ENTRY for agent registry
 - [x] `register_lmstudio_agent()` for multi-agent system
 
 ### Agent Capabilities
+
 - [x] Chat completion with configurable parameters
 - [x] Model listing and selection
 - [x] Server health checks
 - [x] Streaming response infrastructure
 
 ### Routing & Selection
+
 - [x] `should_use_lmstudio()` heuristic detection
 - [x] `get_lmstudio_agent_info()` for help/info commands
 - [x] Agent metadata with domains and intents
 
 ### Documentation
+
 - [x] Quick start guide (3 steps)
 - [x] Chat CLI usage examples
 - [x] AGI provider integration examples
