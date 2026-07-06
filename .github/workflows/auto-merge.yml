@@ -37,7 +37,7 @@ on:
 concurrency:
   group: >-
     auto-merge-${{
-      github.event.pull_request.number
+      github.event.pull_request.number != '' && github.event.pull_request.number
       || github.event.check_run.id
     }}
   cancel-in-progress: false
@@ -234,24 +234,32 @@ jobs:
               }
 
               // Guard against fork PRs — GITHUB_TOKEN cannot merge across forks.
-              const headRepo = prData.head.repo ? prData.head.repo.full_name : '';
+              // prData.head.repo is null when the fork has been deleted.
               const thisRepo = context.repo.owner + '/' + context.repo.repo;
-              if (headRepo !== thisRepo) {
-                core.info(`PR #${prNumber}: fork PR (${headRepo}) — skipping.`);
+              if (!prData.head.repo || prData.head.repo.full_name !== thisRepo) {
+                const headRepo = prData.head.repo ? prData.head.repo.full_name : '(deleted fork)';
+                core.info(`PR #${prNumber}: fork or deleted-fork PR (${headRepo}) — skipping.`);
                 summaryRows.push(`| #${prNumber} | ⊘ skipped (fork) |`);
                 continue;
               }
 
-              // mergeable can be null/'unknown' while GitHub calculates; skip if false.
-              if (prData.mergeable === false) {
-                core.info(`PR #${prNumber}: not mergeable (conflicts or branch behind) — skipping.`);
-                summaryRows.push(`| #${prNumber} | ❌ not mergeable |`);
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  body: '⚠️ Auto-merge gate passed but the PR cannot be merged (merge conflict or branch behind base). Please resolve conflicts and re-run checks.',
-                });
+              // mergeable can be null (still calculating) or false (conflict/behind).
+              // Only proceed when explicitly true to avoid merging in an unknown state.
+              if (prData.mergeable !== true) {
+                if (prData.mergeable === false) {
+                  core.info(`PR #${prNumber}: not mergeable (conflicts or branch behind) — skipping.`);
+                  summaryRows.push(`| #${prNumber} | ❌ not mergeable |`);
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: '⚠️ Auto-merge gate passed but the PR cannot be merged (merge conflict or branch behind base). Please resolve conflicts and re-run checks.',
+                  });
+                } else {
+                  // null — GitHub is still calculating mergeability; skip this run.
+                  core.info(`PR #${prNumber}: mergeability unknown (still calculating) — skipping.`);
+                  summaryRows.push(`| #${prNumber} | ⏳ mergeability pending |`);
+                }
                 continue;
               }
 
@@ -263,8 +271,12 @@ jobs:
               });
 
               // Build latest review state per reviewer (COMMENTED doesn't update decision).
+              // Sort by submission time to ensure later reviews overwrite earlier ones.
+              const sortedReviews = [...reviews].sort(
+                (a, b) => new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime()
+              );
               const latestByReviewer = {};
-              for (const review of reviews) {
+              for (const review of sortedReviews) {
                 if (review.state !== 'COMMENTED') {
                   latestByReviewer[review.user.login] = review.state;
                 }
