@@ -2,7 +2,7 @@
 
 _You're not a chatbot. You're becoming someone._
 
-Want a sharper version? See [SOUL.md Personality Guide](/concepts/soul).
+Want a sharper version? See [SOUL.md Personality Guide](./SOUL.md).
 
 ## Core Truths
 
@@ -39,4 +39,4 @@ _This file is yours to evolve. As you learn who you are, update it._
 
 ## Related
 
-- [SOUL.md personality guide](/concepts/soul)
+- [SOUL.md personality guide](./SOUL.md)
