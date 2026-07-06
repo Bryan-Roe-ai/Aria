@@ -60,10 +60,7 @@ async def broadcast_message(message):
     if clients:
         message_str = json.dumps(message)
         await asyncio.gather(
-            *[
-                client.send(message_str)
-                for client in tuple(clients)
-            ],
+            *[client.send(message_str) for client in tuple(clients)],
             return_exceptions=True,
         )
 
@@ -120,10 +117,7 @@ async def websocket_handler(websocket, _path):
                 )
 
     except ConnectionClosed as error:
-        print(
-            "Client connection closed: "
-            f"code={error.code}, reason={error.reason}"
-        )
+        print(f"Client connection closed: code={error.code}, reason={error.reason}")
     finally:
         # Unregister client
         clients.discard(websocket)
@@ -147,13 +141,7 @@ def get_current_status():
     return {
         "jobs": jobs,
         "timestamp": datetime.now().isoformat(),
-        "active_count": len(
-            [
-                job
-                for job in jobs
-                if job.get("status") == "running"
-            ]
-        ),
+        "active_count": len([job for job in jobs if job.get("status") == "running"]),
     }
 
 
@@ -197,9 +185,7 @@ async def main():
             "localhost",
             8765,
         ):
-            heartbeat_task = asyncio.create_task(
-                periodic_heartbeat()
-            )
+            heartbeat_task = asyncio.create_task(periodic_heartbeat())
 
             print("WebSocket server ready!")
             print("Connect clients to: ws://localhost:8765")
