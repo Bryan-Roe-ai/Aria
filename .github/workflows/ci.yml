@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
           disable-sudo: true
@@ -62,7 +62,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
           disable-sudo: true
@@ -109,7 +109,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
           disable-sudo: true
@@ -159,7 +159,7 @@ jobs:
     steps:
       - name: Harden runner
         if: runner.os == 'Linux'
-        uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
           disable-sudo: true
