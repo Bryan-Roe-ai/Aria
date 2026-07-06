@@ -174,10 +174,11 @@ def test_save_conversation_json_hashes_bypassed_session_name_into_safe_filename(
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
 
     saved_path = Path(m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored"))
+    hash_prefix = saved_path.stem.split("_", 1)[0]
 
     assert saved_path.parent == tmp_path
     assert saved_path.name.endswith(".json")
     assert "escape" not in saved_path.name
-    assert saved_path.stem.split("_", 1)[0].isalnum()
-    assert len(saved_path.stem.split("_", 1)[0]) == 16
+    assert hash_prefix.isalnum()
+    assert len(hash_prefix) == 16
     assert (tmp_path / "latest.json").exists()
