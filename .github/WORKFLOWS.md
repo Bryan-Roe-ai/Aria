@@ -450,6 +450,24 @@ act pull_request
 5. Add to this documentation
 6. Update workflow validation to include new workflow
 
+### Running CLI Scripts Locally
+
+Many workflows invoke CLI scripts from the `scripts/` directory. When running
+these scripts outside of CI, ensure the repository root is on `sys.path` so
+that local package imports resolve correctly:
+
+```python
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+```
+
+All CLI scripts in this repo follow this pattern. See
+[AGENTS.md](../AGENTS.md) for a full list of available CLI scripts and their
+usage.
+
 ## 📚 Additional Resources
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
