@@ -61,3 +61,14 @@ def test_codeql_autofix_excludes_workflow_files_from_formatting() -> None:
 
     assert ".github/workflows/stdio.cpp" not in files
     assert "pxt_modules/base/advmath.cpp" in files
+
+
+@pytest.mark.unit
+def test_codeql_config_keeps_default_queries_for_autofix() -> None:
+    config_path = Path(__file__).resolve().parents[1] / ".github" / "codeql" / "codeql-config.yml"
+    assert config_path.exists(), "Expected CodeQL config to exist"
+
+    config = yaml.load(config_path.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+
+    assert config.get("disable-default-queries") == "false"
+    assert "**/fixtures/**" in config["paths-ignore"]
