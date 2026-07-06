@@ -274,19 +274,38 @@ def _check_lmstudio_available(url: str) -> bool:
 
 @dataclass
 class ProviderChoice:
+    """Lightweight descriptor returned alongside a provider instance by ``detect_provider``.
+
+    Attributes:
+        name:  Canonical provider name (e.g. ``"azure"``, ``"openai"``,
+               ``"lmstudio"``, ``"ollama"``, ``"local"``, ``"agi"``,
+               ``"quantum"``, ``"lora"``).
+        model: The model identifier or path that the provider will use.
+    """
+
     name: str  # 'azure' | 'openai' | 'local'
     model: str
 
 
 class BaseChatProvider:
-    """Abstract base for all chat-completion providers.
+    """Abstract base for all chat providers.
 
-    Subclasses must implement :meth:`complete`.  The class also ships several
-    static helpers that normalize message payloads and extract content from
-    OpenAI-compatible streaming/non-streaming responses.
+    Subclasses must implement ``complete()``.  Helper static methods for
+    parsing OpenAI-style streaming and non-streaming responses are provided
+    so concrete providers don't duplicate that logic.
     """
 
     def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+        """Send *messages* to the backend and return the response.
+
+        Args:
+            messages: Conversation history as a list of ``{"role": …, "content": …}`` dicts.
+            stream:   When ``True`` return a generator that yields string chunks;
+                      when ``False`` return the full response as a single string.
+
+        Raises:
+            NotImplementedError: Subclasses must override this method.
+        """
         raise NotImplementedError
 
     @staticmethod

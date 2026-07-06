@@ -18,4 +18,4 @@ The more you know, the better you can help. But remember — you're learning abo
 
 ## Related
 
-- [Agent workspace](/concepts/agent-workspace)
+- [Agent workspace](./AGENTS.md)
