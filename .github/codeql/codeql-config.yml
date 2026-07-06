@@ -9,7 +9,6 @@ queries:
     - uses: security-and-quality
     - uses: security-experimental
 
-
 # Optional: remove packs unless you have a specific custom-pack strategy.
 # queries suites already include the standard query packs for analyzed languages.
 
@@ -31,6 +30,8 @@ paths-ignore:
     - "**/__pycache__/**"
     - "**/.pytest_cache/**"
     - "**/.egg-info/**"
+    - "**/.mypy_cache/**"
+    - "**/.ruff_cache/**"
     
     # Build & dist artifacts
     - "**/dist/**"
@@ -43,6 +44,7 @@ paths-ignore:
     - "**/*.min.js"
     - "**/*.min.css"
     - "**/bundle.js"
+    - "**/*.generated.*"
     
     # Third-party code
     - "**/vendor/**"
@@ -53,4 +55,6 @@ paths-ignore:
     # Test snapshots & fixtures
     - "**/__snapshots__/**"
     - "**/fixtures/**"
+    - "**/test/fixtures/**"
+    - "**/tests/fixtures/**"
     - "**/*.snap"
