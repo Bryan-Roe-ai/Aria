@@ -1,6 +1,6 @@
 name: "Aria CodeQL — maximum security coverage"
 
-# Use default queries in addition to custom packs and suites
+# Use default queries in addition to custom suites to keep Copilot Autofix coverage broad.
 disable-default-queries: false
 
 # Keep suites explicit and stable.
@@ -30,7 +30,9 @@ paths-ignore:
     - "**/__pycache__/**"
     - "**/.pytest_cache/**"
     - "**/.egg-info/**"
-
+    - "**/.mypy_cache/**"
+    - "**/.ruff_cache/**"
+    
     # Build & dist artifacts
     - "**/dist/**"
     - "**/build/**"
@@ -42,7 +44,8 @@ paths-ignore:
     - "**/*.min.js"
     - "**/*.min.css"
     - "**/bundle.js"
-
+    - "**/*.generated.*"
+    
     # Third-party code
     - "**/vendor/**"
     - "**/third_party/**"
@@ -52,4 +55,6 @@ paths-ignore:
     # Test snapshots & fixtures
     - "**/__snapshots__/**"
     - "**/fixtures/**"
+    - "**/test/fixtures/**"
+    - "**/tests/fixtures/**"
     - "**/*.snap"
