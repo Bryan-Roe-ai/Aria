@@ -1,14 +1,14 @@
 {
-  "timestamp": "20260706T003544Z",
+  "timestamp": "20260706T034521Z",
   "suites": [
     {
       "passed": 0,
       "failed": 0,
-      "errors": 9,
+      "errors": 0,
       "skipped": 7,
       "suite": "unit",
       "returncode": 3,
-      "duration_s": 7.17,
+      "duration_s": 11.8,
       "success": false
     }
   ],

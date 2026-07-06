@@ -1,7 +1,6 @@
 import importlib.util
 import os
-
-import pytest
+from pathlib import Path
 
 
 def load_module():
@@ -168,13 +167,17 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_rejects_path_traversal_when_sanitizer_is_bypassed(monkeypatch, tmp_path):
+def test_save_conversation_json_hashes_bypassed_session_name_into_safe_filename(monkeypatch, tmp_path):
     m = load_module()
     monkeypatch.setattr(m, "CONV_DIR", tmp_path)
     monkeypatch.setattr(m, "LATEST_PATH", tmp_path / "latest.json")
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
 
-    with pytest.raises(ValueError, match="Invalid session path"):
-        m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
+    saved_path = Path(m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored"))
 
-    assert not (tmp_path / "latest.json").exists()
+    assert saved_path.parent == tmp_path
+    assert saved_path.name.endswith(".json")
+    assert "escape" not in saved_path.name
+    assert saved_path.stem.split("_", 1)[0].isalnum()
+    assert len(saved_path.stem.split("_", 1)[0]) == 16
+    assert (tmp_path / "latest.json").exists()
