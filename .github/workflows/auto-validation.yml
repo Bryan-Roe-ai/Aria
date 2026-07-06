@@ -11,7 +11,7 @@ name: Auto Validation
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'config/training/autotrain.yaml'
       - 'autotrain.yaml'

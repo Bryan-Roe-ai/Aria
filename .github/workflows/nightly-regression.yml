@@ -254,9 +254,9 @@ jobs:
       - name: Compare against baseline
         id: compare
         env:
-          CURRENT_PASSED:  ${{ needs.full-test-suite.outputs.passed }}
-          CURRENT_FAILED:  ${{ needs.full-test-suite.outputs.failed }}
-          CURRENT_ERRORS:  ${{ needs.full-test-suite.outputs.errors }}
+          CURRENT_PASSED: ${{ needs.full-test-suite.outputs.passed }}
+          CURRENT_FAILED: ${{ needs.full-test-suite.outputs.failed }}
+          CURRENT_ERRORS: ${{ needs.full-test-suite.outputs.errors }}
           CURRENT_SKIPPED: ${{ needs.full-test-suite.outputs.skipped }}
         run: |
           set -euo pipefail
@@ -325,12 +325,12 @@ jobs:
         if: steps.compare.outputs.regression == 'true'
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b
         env:
-          PASSED:      ${{ needs.full-test-suite.outputs.passed }}
-          FAILED:      ${{ needs.full-test-suite.outputs.failed }}
-          ERRORS:      ${{ needs.full-test-suite.outputs.errors }}
-          SKIPPED:     ${{ needs.full-test-suite.outputs.skipped }}
+          PASSED: ${{ needs.full-test-suite.outputs.passed }}
+          FAILED: ${{ needs.full-test-suite.outputs.failed }}
+          ERRORS: ${{ needs.full-test-suite.outputs.errors }}
+          SKIPPED: ${{ needs.full-test-suite.outputs.skipped }}
           PREV_PASSED: ${{ steps.compare.outputs.prev-passed }}
-          REASON:      ${{ steps.compare.outputs.reason }}
+          REASON: ${{ steps.compare.outputs.reason }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
