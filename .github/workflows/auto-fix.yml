@@ -1,16 +1,16 @@
 name: auto-fix
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "15 2 * * 2"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    - cron: '15 2 * * 2'
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   autofix:
@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-
     permissions:
       contents: write
       pull-requests: write
@@ -32,10 +31,10 @@ jobs:
       - name: Set up Python and autofix tooling
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: "3.11"
-          install-requirements: "false"
-          install-dev-requirements: "false"
-          extra-packages: "ruff==0.11.13 black==25.1.0 pytest==8.3.5 pyyaml"  # cspell:ignore pytest pyyaml
+          python-version: '3.11'
+          install-requirements: 'false'
+          install-dev-requirements: 'false'
+          extra-packages: 'ruff==0.11.13 black==25.1.0 pytest==8.3.5 pyyaml' # cspell:ignore pytest pyyaml
 
       - name: Detect safe Python targets
         id: detect
@@ -203,10 +202,10 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "ci(chore): apply automated safe autofixes"
-          branch: "fix/autofix-weekly"
+          commit-message: 'ci(chore): apply automated safe autofixes'
+          branch: 'fix/autofix-weekly'
           delete-branch: false
-          title: "ci: automated safe autofixes"
+          title: 'ci: automated safe autofixes'
           body: |
             ## Summary
             Apply scheduled/manual safe autofixes for scoped Python targets.
@@ -235,7 +234,9 @@ jobs:
           labels: |
             automation
             maintenance
+            autofix
+            auto-merge
 
-      - name: No changes to commit
-        if: steps.changes.outputs.changed != 'true'
+      - if: steps.changes.outputs.changed != 'true'
+        name: No changes to commit
         run: echo "No autofix changes detected."

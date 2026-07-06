@@ -1,85 +1,97 @@
+concurrency:
+  cancel-in-progress: false
+  group: auto-merge-${{ github.event.pull_request.number }}
+
+env:
+  AUTO_MERGE_LABEL: auto-merge
+  AUTOFIX_LABEL: autofix
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
+
+jobs:
+  disable:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action == 'unlabeled' &&
+      (github.event.label.name == 'auto-merge' || github.event.label.name == 'autofix') &&
+      !contains(github.event.pull_request.labels.*.name, 'auto-merge') &&
+      !contains(github.event.pull_request.labels.*.name, 'autofix')
+    name: Disable Auto-Merge
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        name: Disable auto-merge (no-op safe)
+        run: |
+          set -euo pipefail
+          gh pr merge --disable-auto "$PR_NUMBER" || echo "Auto-merge was already disabled."
+    timeout-minutes: 5
+
+  enable:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (
+        (
+          github.event.action == 'labeled' &&
+          (github.event.label.name == 'auto-merge' || github.event.label.name == 'autofix')
+        ) ||
+        (
+          github.event.action != 'unlabeled' &&
+          (
+            contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
+            contains(github.event.pull_request.labels.*.name, 'autofix')
+          )
+        )
+      )
+    name: Enable Auto-Merge
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
+        with:
+          disable-sudo: true
+          egress-policy: audit
+
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        id: state
+        name: Check if auto-merge already enabled
+        run: |
+          set -euo pipefail
+          enabled="$(gh pr view "$PR_NUMBER" --json autoMergeRequest --jq '.autoMergeRequest != null')"
+          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
+
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        if: steps.state.outputs.enabled != 'true'
+        name: Enable auto-merge (squash)
+        run: |
+          set -euo pipefail
+          gh pr merge --auto --squash "$PR_NUMBER"
+          echo "✅ Auto-merge enabled for PR #$PR_NUMBER"
+    timeout-minutes: 5
+
 name: Auto Merge
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
 
-env:
-  AUTO_MERGE_LABEL: auto-merge
-  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
-
 permissions:
   contents: read
-
-concurrency:
-  group: auto-merge-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
-
-jobs:
-  enable:
-    name: Enable Auto-Merge
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      (
-        (github.event.action == 'labeled' && github.event.label.name == 'auto-merge') ||
-        (github.event.action != 'unlabeled' && contains(github.event.pull_request.labels.*.name, 'auto-merge'))
-      )
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          disable-sudo: true
-          egress-policy: audit
-
-      - name: Check if auto-merge already enabled
-        id: state
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          enabled="$(gh pr view "$PR_NUMBER" --json autoMergeRequest --jq '.autoMergeRequest != null')"
-          echo "enabled=$enabled" >> "$GITHUB_OUTPUT"
-
-      - name: Enable auto-merge (squash)
-        if: steps.state.outputs.enabled != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          gh pr merge --auto --squash "$PR_NUMBER"
-          echo "✅ Auto-merge enabled for PR #$PR_NUMBER"
-
-  disable:
-    name: Disable Auto-Merge
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-    if: >-
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.action == 'unlabeled' &&
-      github.event.label.name == 'auto-merge'
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          disable-sudo: true
-          egress-policy: audit
-
-      - name: Disable auto-merge (no-op safe)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          gh pr merge --disable-auto "$PR_NUMBER" || echo "Auto-merge was already disabled."
