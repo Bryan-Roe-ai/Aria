@@ -29,6 +29,23 @@ def test_codeql_autofix_ref_step_avoids_unbound_shell_vars() -> None:
 
 
 @pytest.mark.unit
+def test_codeql_autofix_uses_sha_for_checkout_and_branch_for_push() -> None:
+    """Verify the autofix job uses SHA for checkout (resilient to branch deletion)
+    and a separate push_ref for the git push step (uses branch name)."""
+    workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "codeql.yml"
+    content = workflow_path.read_text(encoding="utf-8")
+
+    # The "Determine checkout ref" step must expose PR_HEAD_SHA for checkout
+    assert "PR_HEAD_SHA" in content, "PR_HEAD_SHA env var must be set in the ref step"
+    assert 'echo "ref=$PR_HEAD_SHA"' in content, "checkout ref must use SHA, not branch name"
+    assert 'echo "push_ref=$PR_HEAD_REF"' in content, "push_ref must preserve the branch name"
+
+    # The push step must use push_ref (branch name), not ref (SHA)
+    assert 'steps.ref.outputs.push_ref' in content, "git push must target push_ref (branch name)"
+    assert 'HEAD:${{ steps.ref.outputs.push_ref }}' in content, "push must use push_ref"
+
+
+@pytest.mark.unit
 def test_codeql_autofix_excludes_workflow_files_from_formatting() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     workflow_path = repo_root / ".github" / "workflows" / "codeql.yml"
