@@ -1,23 +1,194 @@
-      - name: Set up Python + pip cache
+name: CI
+
+# Canonical PR validation runs through merge-gate.yml.
+# This workflow is for branch CI and manual validation runs.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - ".gitignore"
+      - "LICENSE"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  PYTHON_VERSION: "3.11"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_NO_PYTHON_VERSION_WARNING: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+  FORCE_COLOR: "1"
+
+jobs:
+  setup-guardrails:
+    name: Setup guardrails (DAB + recursive venv ignore)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+- name: Harden runner
+  uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+  with:
+    egress-policy: audit
+    disable-sudo: true
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: |
-            requirements.txt
-            requirements-dev.txt
-            constraints.txt
 
-      - name: Install dependencies (cached)
+      - name: Run setup verification
+        uses: ./.github/actions/run-setup-verify
+
+  lint:
+    name: Lint (ruff + black)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+- name: Harden runner
+  uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+  with:
+    egress-policy: audit
+    disable-sudo: true
+
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+          set -euo pipefail
+          mkdir -p data_out
+          python -m pytest tests/ \
+            -q --tb=short \
+            -m "not slow and not azure and not integration" \
+            --ignore=tests/test_ui_playwright.py \
+            --ignore=tests/test_ui_pyppeteer.py \
+            --ignore=tests/test_ui_selenium.py \
+            --maxfail=1 \
+            --durations=10 \
+            --junitxml=data_out/junit-${{ matrix.os }}.xml \
+            --cov=shared --cov=scripts \
+            --cov-report=term-missing \
+            --cov-report=xml:data_out/coverage-${{ matrix.os }}.xml
+
+      - name: Run unit tests (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CI: "true"
+          AZURE_CLIENT_ID: ""
+          AZURE_TENANT_ID: ""
+          AZURE_CLIENT_SECRET: ""
+          OPENAI_API_KEY: ""
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path data_out -Force | Out-Null
+          python -m pytest tests/ `
+            -q --tb=short `
+            -m "not slow and not azure and not integration" `
+            --ignore=tests/test_ui_playwright.py `
+            --ignore=tests/test_ui_pyppeteer.py `
+            --ignore=tests/test_ui_selenium.py `
+            --maxfail=1 `
+            --durations=10 `
+            --junitxml=data_out/junit-${{ matrix.os }}.xml `
+            --cov=shared --cov=scripts `
+            --cov-report=term-missing `
+            --cov-report=xml:data_out/coverage-${{ matrix.os }}.xml
+
+      - name: Run ai-project tests (Linux)
+        if: runner.os != 'Windows'
+        env:
+          CI: "true"
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --upgrade pip setuptools wheel
-          if [[ -f constraints.txt && -f requirements.txt ]]; then
-            python -m pip install -r requirements.txt -c constraints.txt
-          elif [[ -f requirements.txt ]]; then
-            python -m pip install -r requirements.txt
+          python scripts/test_runner.py --ai-projects
+
+      - name: Run ai-project tests (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CI: "true"
+        shell: pwsh
+        run: |
+          python scripts/test_runner.py --ai-projects
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
+        with:
+          name: unit-test-results-${{ matrix.os }}
+          path: |
+            data_out/junit-${{ matrix.os }}.xml
+            data_out/coverage-${{ matrix.os }}.xml
+          retention-days: 7
+          if-no-files-found: warn
+
+  ci-success:
+    name: CI success
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [setup-guardrails, lint, type-check, unit-tests]
+    # Only run when required jobs completed (success or failure).
+    # When the run is cancelled by concurrency (cancel-in-progress), required
+    # jobs show as "cancelled"; skip ci-success in that case so the job does
+    # not show as "failed" for a run that was superseded by a newer push.
+    # type-check is advisory and may be "skipped" when a dependency fails, so
+    # "skipped" is also an accepted result for it.
+    if: >-
+      always() &&
+      (needs.setup-guardrails.result == 'success' || needs.setup-guardrails.result == 'failure') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'failure') &&
+      (needs.unit-tests.result == 'success' || needs.unit-tests.result == 'failure') &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'failure' || needs.type-check.result == 'skipped')
+    steps:
+      - name: Verify all required jobs succeeded
+        env:
+          SETUP_RESULT: ${{ needs.setup-guardrails.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TYPE_RESULT: ${{ needs.type-check.result }}
+          TEST_RESULT: ${{ needs.unit-tests.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "setup-guardrails=$SETUP_RESULT"
+          echo "lint=$LINT_RESULT"
+          echo "type-check=$TYPE_RESULT"
+          echo "unit-tests=$TEST_RESULT"
+
+          if [[ "$SETUP_RESULT" != "success" ]]; then
+            echo "::error::Setup guardrails job failed."
+            exit 1
           fi
-          if [[ -f requirements-dev.txt ]]; then
-            python -m pip install -r requirements-dev.txt
+
+          if [[ "$LINT_RESULT" != "success" ]]; then
+            echo "::error::Lint job failed."
+            exit 1
           fi
+
+          if [[ "$TEST_RESULT" != "success" ]]; then
+            echo "::error::Unit test job failed."
+            exit 1
+          fi
+
+          if [[ "$TYPE_RESULT" != "success" ]]; then
+            echo "::warning::Type check did not pass, but it is currently advisory."
+          fi
+
+          echo "All required CI jobs passed."
