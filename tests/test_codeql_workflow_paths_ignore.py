@@ -35,6 +35,7 @@ def test_codeql_autofix_excludes_workflow_files_from_formatting() -> None:
     content = workflow_path.read_text(encoding="utf-8")
 
     assert "!**/.github/workflows/**" in content
+    assert "!**/datasets/**" in content
     assert ":(exclude).github/workflows/**" in content
 
     result = subprocess.run(

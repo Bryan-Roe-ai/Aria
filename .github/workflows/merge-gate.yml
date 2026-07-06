@@ -128,6 +128,33 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Check for stale gitlinks
+        # Stale gitlinks (mode 160000 in the index with no matching .gitmodules
+        # entry) cause `actions/checkout` post-job cleanup to fail with:
+        #   "fatal: No url found for submodule path '<name>' in .gitmodules"
+        # Catch this early so it doesn't silently break other workflows.
+        run: |
+          set -euo pipefail
+          stale_links=$(git ls-files --stage | awk '$1 == "160000" { print $4 }')
+          if [[ -z "$stale_links" ]]; then
+            echo "No submodule gitlinks in index — OK."
+            exit 0
+          fi
+          stale=()
+          while IFS= read -r path; do
+            url=$(git config -f .gitmodules "submodule.${path}.url" 2>/dev/null || true)
+            if [[ -z "$url" ]]; then
+              stale+=("$path")
+            fi
+          done <<< "$stale_links"
+          if (( ${#stale[@]} > 0 )); then
+            echo "::error title=Stale gitlinks::The following paths are tracked as " \
+              "submodule gitlinks (mode 160000) but have no entry in .gitmodules: ${stale[*]}"
+            echo "Remove them with: git rm --cached <path>"
+            exit 1
+          fi
+          echo "All gitlinks have valid .gitmodules entries — OK."
+
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
         with:
@@ -265,7 +292,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const core = require('@actions/core');
             const { setTimeout: sleep } = require('node:timers/promises');
 
             const owner = context.repo.owner;

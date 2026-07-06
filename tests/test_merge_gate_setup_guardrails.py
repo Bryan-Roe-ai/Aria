@@ -44,3 +44,32 @@ def test_merge_gate_fan_in_requires_dependency_submission() -> None:
     gates_passed = workflow["jobs"]["gates-passed"]
 
     assert "dependency-submission" in gates_passed["needs"]
+
+
+def test_pr_validation_has_stale_gitlink_check() -> None:
+    """PR Validation must include a stale-gitlink guard step.
+
+    Stale gitlinks (mode 160000 in the index without a .gitmodules entry) cause
+    ``actions/checkout`` post-job cleanup to fail with:
+        fatal: No url found for submodule path '<name>' in .gitmodules
+    Catching this in the merge gate prevents it from silently breaking unrelated
+    workflows such as Dependency Review.
+    """
+    workflow = _load_merge_gate()
+    steps = workflow["jobs"]["pr-validation"]["steps"]
+    step_names = [s["name"] for s in steps]
+
+    assert "Check for stale gitlinks" in step_names, (
+        "pr-validation must include a 'Check for stale gitlinks' step to catch "
+        "stale mode-160000 gitlinks before they break other CI workflows"
+    )
+
+
+def test_stale_gitlink_check_uses_git_ls_files() -> None:
+    """Stale-gitlink step must use ``git ls-files --stage`` to detect mode 160000 entries."""
+    workflow = _load_merge_gate()
+    steps = workflow["jobs"]["pr-validation"]["steps"]
+    check_step = next(s for s in steps if s["name"] == "Check for stale gitlinks")
+
+    assert "git ls-files --stage" in check_step["run"]
+    assert "160000" in check_step["run"]

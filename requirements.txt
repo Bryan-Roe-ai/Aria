@@ -37,7 +37,7 @@ gradio>=6.19.0
 # Optional TTS fallbacks for local development: pyttsx3 (offline, Windows-friendly) and gTTS
 # If you want server-side TTS without Azure credentials, enable QAI_ENABLE_LOCAL_TTS and
 # install these packages.
-plyer>=2.0.0
+plyer>=2.1.0
 pyttsx3>=2.99
 gTTS>=2.5.4
 

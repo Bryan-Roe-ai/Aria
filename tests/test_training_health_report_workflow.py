@@ -7,6 +7,8 @@ import sys
 import textwrap
 from pathlib import Path
 
+import yaml
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "training-health-report.yml"
 
@@ -17,6 +19,26 @@ def _extract_status_script() -> str:
     start = text.index(marker) + len(marker)
     end = text.index("\n          PYEOF", start)
     return textwrap.dedent(text[start:end]).strip()
+
+
+def test_checkout_step_has_submodules_false() -> None:
+    """Regression guard: checkout step must have submodules: false.
+
+    Without explicit ``submodules: false``, an orphaned gitlink in the tree
+    (e.g. LMStudio-MCP) causes ``git submodule foreach --recursive`` to fail
+    during the credential-removal post-processing of actions/checkout, even
+    though submodules are not being fetched.  See CI job 84021614545.
+    """
+    wf = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = wf["jobs"]["health-report"]["steps"]
+    checkout_steps = [s for s in steps if "checkout" in (s.get("uses") or "").lower()]
+    assert checkout_steps, "No checkout step found in training-health-report.yml"
+    for step in checkout_steps:
+        with_cfg = step.get("with", {})
+        assert with_cfg.get("submodules") is False, (
+            f"Checkout step '{step.get('name', '(unnamed)')}' must set "
+            f"submodules: false to prevent orphaned-gitlink checkout failures"
+        )
 
 
 def _run_status_script(tmp_path: Path, training: dict) -> dict:

@@ -209,8 +209,12 @@ jobs:
         run: |
           set -e
           # Use Debian repo for chromium; package name varies by image/repo.
-          if apt-get install -y chromium chromium-driver; then
-            echo "Installed chromium + chromium-driver"
+          # chromium-driver is NOT installed: pyppeteer drives chromium directly
+          # via CHROME_PATH and does not use WebDriver/chromedriver. Installing
+          # chromium-driver would pull in libz3-4 which intermittently fails to
+          # download on Debian Bullseye and is not needed for these tests.
+          if apt-get install -y chromium; then
+            echo "Installed chromium"
           elif apt-get install -y chromium-browser; then
             echo "Installed chromium-browser"
           else
@@ -230,10 +234,11 @@ jobs:
           fi
       - name: Install Python test deps
         # cspell:ignore asyncio pyppeteer pytest
-        run: python -m pip install --upgrade pip && python -m pip install pytest pytest-asyncio pyppeteer requests
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pytest-asyncio pyppeteer requests
+          python -c "from pyppeteer.chromium_downloader import download_chromium; download_chromium()"
       - name: Start server and run pyppeteer tests
-        env:
-          CHROME_PATH: /usr/bin/chromium
         run: |
           python3 aria_web/server.py > /tmp/aria_server.log 2>&1 &
           READY=0
