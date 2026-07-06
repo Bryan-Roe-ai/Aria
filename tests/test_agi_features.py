@@ -84,26 +84,26 @@ def _start_server(get_payload=None, post_payload=None):
 def test_memory_store_persists_events_with_sqlite_backend() -> None:
     db_path = _artifact_path("memory-store").with_suffix(".sqlite")
     try:
-        memory = MemoryStore(db_path=str(db_path))
-        naive_timestamp = datetime(2026, 7, 5, 12, 0, 0)
-        expected_epoch = naive_timestamp.replace(
-            tzinfo=timezone.utc,
-        ).timestamp()
-        event_id = memory.write(
-            "goal_created",
-            {"goal": "persist this"},
-            naive_timestamp,
-        )
+        with MemoryStore(db_path=str(db_path)) as memory:
+            naive_timestamp = datetime(2026, 7, 5, 12, 0, 0)
+            expected_epoch = naive_timestamp.replace(
+                tzinfo=timezone.utc,
+            ).timestamp()
+            event_id = memory.write(
+                "goal_created",
+                {"goal": "persist this"},
+                naive_timestamp,
+            )
 
-        reloaded = MemoryStore(db_path=str(db_path))
-        restored = reloaded.get(event_id)
+        with MemoryStore(db_path=str(db_path)) as reloaded:
+            restored = reloaded.get(event_id)
 
-        assert restored is not None
-        assert restored["data"]["goal"] == "persist this"
-        assert restored["timestamp"].endswith("+00:00")
-        assert restored["epoch"] == expected_epoch
-        queried = reloaded.query(since=naive_timestamp)
-        assert queried and queried[0]["id"] == event_id
+            assert restored is not None
+            assert restored["data"]["goal"] == "persist this"
+            assert restored["timestamp"].endswith("+00:00")
+            assert restored["epoch"] == expected_epoch
+            queried = reloaded.query(since=naive_timestamp)
+            assert queried and queried[0]["id"] == event_id
     finally:
         if db_path.exists():
             db_path.unlink()
@@ -112,25 +112,25 @@ def test_memory_store_persists_events_with_sqlite_backend() -> None:
 def test_memory_store_persists_aware_datetime_with_sqlite_backend() -> None:
     db_path = _artifact_path("memory-store-aware").with_suffix(".sqlite")
     try:
-        memory = MemoryStore(db_path=str(db_path))
-        eastern = timezone(timedelta(hours=-5))
-        aware_timestamp = datetime(2026, 7, 5, 12, 0, 0, tzinfo=eastern)
-        expected_epoch = aware_timestamp.astimezone(timezone.utc).timestamp()
-        event_id = memory.write(
-            "goal_created",
-            {"goal": "persist aware"},
-            aware_timestamp,
-        )
+        with MemoryStore(db_path=str(db_path)) as memory:
+            eastern = timezone(timedelta(hours=-5))
+            aware_timestamp = datetime(2026, 7, 5, 12, 0, 0, tzinfo=eastern)
+            expected_epoch = aware_timestamp.astimezone(timezone.utc).timestamp()
+            event_id = memory.write(
+                "goal_created",
+                {"goal": "persist aware"},
+                aware_timestamp,
+            )
 
-        reloaded = MemoryStore(db_path=str(db_path))
-        restored = reloaded.get(event_id)
+        with MemoryStore(db_path=str(db_path)) as reloaded:
+            restored = reloaded.get(event_id)
 
-        assert restored is not None
-        assert restored["data"]["goal"] == "persist aware"
-        assert restored["timestamp"].endswith("+00:00")
-        assert restored["epoch"] == expected_epoch
-        queried = reloaded.query(until=aware_timestamp)
-        assert queried and queried[-1]["id"] == event_id
+            assert restored is not None
+            assert restored["data"]["goal"] == "persist aware"
+            assert restored["timestamp"].endswith("+00:00")
+            assert restored["epoch"] == expected_epoch
+            queried = reloaded.query(until=aware_timestamp)
+            assert queried and queried[-1]["id"] == event_id
     finally:
         if db_path.exists():
             db_path.unlink()

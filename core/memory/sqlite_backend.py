@@ -56,3 +56,7 @@ class SQLiteMemoryBackend:
                 }
             )
         return events
+
+    def close(self) -> None:
+        """Close the underlying SQLite connection, releasing any file lock."""
+        self._conn.close()
