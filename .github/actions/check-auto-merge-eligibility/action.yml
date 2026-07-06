@@ -44,8 +44,11 @@ runs:
         pr_json="$(gh pr view "$PR_NUMBER" \
           --json number,isDraft,baseRefName,headRepository,labels,mergeStateStatus,reviewDecision,state \
           2>&1)" || {
-          # Sanitize raw gh output: strip ANSI codes, limit to first 120 chars.
-          sanitized="$(printf '%s' "${pr_json}" | head -n1 | sed 's/\x1b\[[0-9;]*m//g' | cut -c1-120)"
+          # Sanitize raw gh output: strip ANSI escape codes, keep first line,
+          # truncate using bash substring (character-aware, avoids splitting
+          # multi-byte UTF-8 sequences that cut -c can mishandle on some systems).
+          first_line="$(printf '%s' "${pr_json}" | head -n1 | sed 's/\x1b\[[0-9;]*m//g')"
+          sanitized="${first_line:0:120}"
           echo "eligible=false" >> "$GITHUB_OUTPUT"
           printf 'reason=Failed to fetch PR data: %s\n' "${sanitized}" >> "$GITHUB_OUTPUT"
           exit 0

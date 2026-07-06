@@ -37,7 +37,7 @@ on:
 concurrency:
   group: >-
     auto-merge-${{
-      github.event.pull_request.number != '' && github.event.pull_request.number
+      github.event.pull_request.number
       || github.event.check_run.id
     }}
   cancel-in-progress: false
@@ -235,7 +235,7 @@ jobs:
 
               // Guard against fork PRs — GITHUB_TOKEN cannot merge across forks.
               // prData.head.repo is null when the fork has been deleted.
-              const thisRepo = context.repo.owner + '/' + context.repo.repo;
+              const thisRepo = context.payload.repository.full_name;
               if (!prData.head.repo || prData.head.repo.full_name !== thisRepo) {
                 const headRepo = prData.head.repo ? prData.head.repo.full_name : '(deleted fork)';
                 core.info(`PR #${prNumber}: fork or deleted-fork PR (${headRepo}) — skipping.`);

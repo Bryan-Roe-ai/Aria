@@ -135,8 +135,7 @@ def test_merge_on_gate_pass_filters_all_gates_passed_name() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["merge-on-gate-pass"].get("if", "")
     assert "All Gates Passed" in job_if, (
-        "merge-on-gate-pass must filter on check_run.name == 'All Gates Passed' "
-        "(the canonical fan-in job name from merge-gate.yml)"
+        "merge-on-gate-pass must filter on check_run.name == 'All Gates Passed' (the canonical fan-in job name from merge-gate.yml)"
     )
 
 
