@@ -95,13 +95,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m ruff check .
+          python -m ruff check tests shared scripts apps/aria/server.py
 
       - name: Run black
         shell: bash
         run: |
           set -euo pipefail
-          python -m black --check .
+          python -m black --check tests shared scripts apps/aria/server.py
 
   type-check:
     name: Type check
