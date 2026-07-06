@@ -2,6 +2,8 @@ import importlib.util
 import os
 from pathlib import Path
 
+EXPECTED_SESSION_HASH_LEN = 16
+
 
 def load_module():
     path = os.path.join(os.path.dirname(__file__), "..", "scripts", "gradio_hello.py")
@@ -174,11 +176,13 @@ def test_save_conversation_json_hashes_bypassed_session_name_into_safe_filename(
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
 
     saved_path = Path(m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored"))
-    hash_prefix = saved_path.stem.split("_", 1)[0]
+    stem_parts = saved_path.stem.split("_", 1)
 
     assert saved_path.parent == tmp_path
     assert saved_path.name.endswith(".json")
     assert "escape" not in saved_path.name
+    assert len(stem_parts) == 2
+    hash_prefix = stem_parts[0]
     assert hash_prefix.isalnum()
-    assert len(hash_prefix) == 16
+    assert len(hash_prefix) == EXPECTED_SESSION_HASH_LEN
     assert (tmp_path / "latest.json").exists()
