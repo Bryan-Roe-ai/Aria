@@ -279,6 +279,13 @@ class ProviderChoice:
 
 
 class BaseChatProvider:
+    """Abstract base for all chat providers.
+
+    Subclasses must implement ``complete()``.  The shared static helpers on
+    this class normalise OpenAI-compatible wire formats so each provider
+    doesn't have to duplicate that logic.
+    """
+
     def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         raise NotImplementedError
 
@@ -797,6 +804,16 @@ class LocalEchoProvider(BaseChatProvider):
 
 
 class OpenAIProvider(BaseChatProvider):
+    """Provider for OpenAI chat completions (api.openai.com).
+
+    Handles quota/rate-limit errors with exponential back-off retries and
+    returns friendly error strings rather than raising when the account's
+    billing limit is reached.
+
+    Required env var: ``OPENAI_API_KEY``
+    Optional env var: ``OPENAI_MODEL`` (default: ``gpt-4o-mini``)
+    """
+
     def __init__(
         self,
         model: str,
@@ -1173,6 +1190,17 @@ class OllamaProvider(BaseChatProvider):
 
 
 class AzureOpenAIProvider(BaseChatProvider):
+    """Provider for Azure OpenAI Service deployments.
+
+    Wraps the openai SDK's ``AzureOpenAI`` client with exponential back-off
+    retries on transient 429 rate-limit errors and friendly error messages on
+    quota/billing failures.
+
+    Required env vars: ``AZURE_OPENAI_API_KEY``, ``AZURE_OPENAI_ENDPOINT``,
+    ``AZURE_OPENAI_DEPLOYMENT``
+    Optional env var: ``AZURE_OPENAI_API_VERSION`` (default: ``2024-08-01-preview``)
+    """
+
     def __init__(
         self,
         deployment: str,
@@ -1504,13 +1532,38 @@ def detect_provider(
     temperature: float | None = None,
     max_output_tokens: int | None = None,
 ) -> tuple[BaseChatProvider, ProviderChoice]:
-    """Detect the best provider based on environment variables.
+    """Detect and instantiate the best available chat provider.
 
-    Behavior summary:
-        - Explicit mode: uses the requested provider (including AGI/Quantum/LoRA).
-        - Explicit 'local': prefers local runtimes (LM Studio, then Ollama),
-            then falls back to LocalEchoProvider.
-        - Auto mode order: LM Studio -> Ollama -> Azure OpenAI -> OpenAI -> local.
+    Resolution order when ``explicit`` is ``None`` or ``"auto"``:
+    LM Studio → Ollama → Azure OpenAI → OpenAI → LocalEchoProvider.
+
+    Explicit provider names bypass auto-detection and instantiate the named
+    provider directly.  Stateful/path-sensitive providers (``agi``,
+    ``quantum``, ``lora``) are never cached; the others are cached for
+    ``QAI_PROVIDER_DETECT_CACHE_TTL`` seconds (default 5 s) to reduce
+    repeated HTTP health-checks on hot API paths.
+
+    Args:
+        explicit: Provider name override.  Accepted values:
+            ``auto``, ``lmstudio``, ``ollama``, ``azure``, ``openai``,
+            ``local``, ``local_echo``, ``agi``, ``quantum``, ``lora``.
+            Provider aliases such as ``azure_openai`` and ``lm-studio`` are
+            also accepted (see ``_PROVIDER_ALIASES``).
+        model_override: Model name or path passed to the chosen provider.
+            Required for ``lora``; optional for all others.
+        temperature: Sampling temperature (0–2).  Defaults to
+            ``CHAT_TEMPERATURE`` env var or ``0.7``.
+        max_output_tokens: Maximum tokens the provider may generate.
+
+    Returns:
+        A ``(provider, ProviderChoice)`` tuple where ``ProviderChoice.name``
+        is the canonical provider name and ``ProviderChoice.model`` is the
+        resolved model identifier.
+
+    Raises:
+        ValueError: Unknown explicit provider name.
+        RuntimeError: Required credentials/paths are missing for the chosen
+            provider, or the provider module is unavailable.
     """
     explicit_normalized = (explicit or "").strip().lower()
     force_local_echo = explicit_normalized in {"local_echo", "local-echo"}

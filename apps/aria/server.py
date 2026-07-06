@@ -423,7 +423,19 @@ def validate_action(action: dict) -> tuple[bool, str]:
 
 
 def validate_action_sequence(actions: list[dict]) -> tuple[bool, str]:
-    """Validate an action sequence before plan/execution."""
+    """Validate a list of actions before plan or execution.
+
+    Enforces the global sequence-level constraint (max 25 actions) and
+    delegates per-action validation to :func:`validate_action`.
+
+    Args:
+        actions: List of action dicts, each containing at least an
+            ``"action"`` key.
+
+    Returns:
+        ``(True, "")`` when the sequence is valid, or ``(False, reason)``
+        with a human-readable explanation of the first violation found.
+    """
     if not isinstance(actions, list) or not actions:
         return False, "actions must be a non-empty list"
     if len(actions) > 25:
@@ -600,7 +612,29 @@ Rules:
         _planned_held_object=_UNSET,
         _referenced_object=_UNSET,
     ) -> list[dict]:
-        """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
+        """Parse a command into structured actions using rule-based pattern matching.
+
+        Used when the LLM provider is unavailable or ``parse_with_llm`` fails.
+        Supports compound commands joined by conjunctions/separators (e.g.
+        "pick up the cup and bring it here") by recursively splitting on
+        ``_RE_COMMAND_SEPARATORS`` and propagating held-object state across
+        the resulting segments.
+
+        The leading-underscore parameters are internal and used only during
+        recursive segment processing — callers should not set them.
+
+        Args:
+            command: Natural language command string.
+            _allow_split: Whether to attempt compound-command splitting.
+            _planned_held_object: Overrides the live ``stage_state`` held-object
+                value for recursive segment calls.
+            _referenced_object: Most recently mentioned object, forwarded to
+                segment calls to resolve pronoun references like "bring it here".
+
+        Returns:
+            List of action dicts conforming to :data:`ARIA_ACTIONS` schema,
+            possibly empty if no rules matched.
+        """
         actions = []
         command_lower = command.lower()
         known_objects = ["apple", "book", "cup", "ball", "flower"]
@@ -1049,7 +1083,17 @@ QUANTUM_STAGE_PRESETS = {
 
 
 def apply_world_to_stage(world: dict, *, theme: str) -> None:
-    """Replace stage objects and environment metadata from a generated world."""
+    """Replace stage objects and environment metadata from a generated world.
+
+    Mutates ``stage_state`` in-place: clears existing objects and writes the
+    new ones, and updates the environment ``theme``, ``generated_at``, and
+    optional ``stage_style`` fields.  Aria's pose is left unchanged.
+
+    Args:
+        world: Dict returned by :func:`generate_world_fallback` or
+            :func:`generate_world_with_llm`.
+        theme: Theme name string stored in ``stage_state["environment"]["theme"]``.
+    """
     stage_state["objects"] = {}
     for oid, obj in world.get("objects", {}).items():
         stage_state["objects"][oid] = {
@@ -1637,14 +1681,22 @@ def generate_tags_fallback(command: str) -> list[str]:
 
 
 def execute_aria_action(action: dict) -> dict:
-    """
-    Execute a single structured action and update stage state
+    """Execute a single structured action and mutate ``stage_state`` accordingly.
+
+    Coordinates are clamped to ``[0, 100]`` via :func:`_coerce_and_clamp_position`.
+    The ``pickup`` action auto-moves Aria to the object when it is farther
+    than ``PICKUP_DISTANCE_THRESHOLD`` units away.
 
     Args:
-        action: Action dict with 'action' key and params
+        action: Action dict with an ``"action"`` key matching a key in
+            :data:`ARIA_ACTIONS` plus action-specific parameters.
 
     Returns:
-        Result dict with status, message, and updated state
+        Dict with keys:
+        - ``status``: ``"success"`` or ``"error"``
+        - ``message``: Human-readable description of the outcome.
+        - ``tags``: List of legacy ``[aria:*]`` tag strings produced (present
+          only on success).
     """
     action_type = action.get("action")
 
