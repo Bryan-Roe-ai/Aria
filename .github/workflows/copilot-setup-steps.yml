@@ -95,10 +95,37 @@ jobs:
 
           candidate_files=()
 
+          is_markdown_target() {
+            local file="$1"
+
+            if [ "$file" = "README.md" ]; then
+              return 0
+            fi
+
+            case "$file" in
+              .github/*)
+                local rel="${file#.github/}"
+                case "$rel" in
+                  */*)
+                    return 1
+                    ;;
+                esac
+
+                case "$(basename "$file")" in
+                  COPILOT*.md|copilot-*.md)
+                    return 0
+                    ;;
+                esac
+                ;;
+            esac
+
+            return 1
+          }
+
           load_default_targets() {
             while IFS= read -r -d '' file; do
               candidate_files+=("$file")
-            done < <(find .github -maxdepth 1 -type f -name '*.md' -print0 | sort -z)
+            done < <(find .github -maxdepth 1 -type f \( -name 'COPILOT*.md' -o -name 'copilot-*.md' \) -print0 | sort -z)
             while IFS= read -r -d '' file; do
               candidate_files+=("$file")
             done < <(find .github -type f \( -iname '*.yml' -o -iname '*.yaml' \) -print0 | sort -z)
@@ -119,10 +146,7 @@ jobs:
           }
 
           if [ "${INCLUDE_ALL}" = "true" ]; then
-            while IFS= read -r -d '' file; do
-              candidate_files+=("$file")
-            done < <(find .github -type f \( -iname '*.md' -o -iname '*.yml' -o -iname '*.yaml' \) -print0 | sort -z)
-            [ -f "README.md" ] && candidate_files+=("README.md")
+            load_default_targets
           elif [ "${EVENT_NAME}" = "pull_request" ] && [ -n "${PR_BASE_SHA}" ] && [ -n "${PR_HEAD_SHA}" ]; then
             load_changed_targets "${PR_BASE_SHA}" "${PR_HEAD_SHA}" || load_default_targets
           elif [ "${EVENT_NAME}" = "push" ] \
@@ -140,11 +164,7 @@ jobs:
                 printf '%s\0' "$file" >> "$YAML_LIST_FILE"
                 ;;
             esac
-            case "$file" in
-              .github/*.md|README.md)
-                printf '%s\0' "$file" >> "$MD_LIST_FILE"
-                ;;
-            esac
+            is_markdown_target "$file" && printf '%s\0' "$file" >> "$MD_LIST_FILE"
           done
 
           echo "yaml_list_file=$YAML_LIST_FILE" >> "$GITHUB_OUTPUT"
