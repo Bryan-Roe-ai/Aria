@@ -28,18 +28,18 @@ open http://localhost:8000/monetization-index.html
 
 ### User-Facing Pages
 
-| Page | URL | Description |
+| Page                | URL                         | Description                           |
 | ------------------- | --------------------------- | ------------------------------------- |
-| **Landing** | `monetization-index.html` | Main hub with all links and stats |
-| **Pricing** | `pricing.html` | 3-tier comparison with revenue model |
-| **Checkout** | `checkout.html?plan=pro` | Stripe-ready payment page |
-| **Success** | `subscription-success.html` | Post-payment confirmation |
-| **My Subscription** | `my-subscription.html` | User dashboard with usage tracking |
-| **Account** | `account.html` | Settings, billing, API keys, security |
+| **Landing**         | `monetization-index.html`   | Main hub with all links and stats     |
+| **Pricing**         | `pricing.html`              | 3-tier comparison with revenue model  |
+| **Checkout**        | `checkout.html?plan=pro`    | Stripe-ready payment page             |
+| **Success**         | `subscription-success.html` | Post-payment confirmation             |
+| **My Subscription** | `my-subscription.html`      | User dashboard with usage tracking    |
+| **Account**         | `account.html`              | Settings, billing, API keys, security |
 
 ### Admin Pages
 
-| Page | URL | Description |
+| Page                | URL                    | Description                                 |
 | ------------------- | ---------------------- | ------------------------------------------- |
 | **Admin Dashboard** | `admin_dashboard.html` | Revenue analytics and subscriber management |
 
@@ -166,11 +166,11 @@ python3 setup_monetization.py
 - Current plan display with tier badge
 - Real-time usage statistics
 - 5 resource types tracked:
-  - Chat messages
-  - Quantum jobs
-  - Training hours
-  - API requests
-  - Websites created
+    - Chat messages
+    - Quantum jobs
+    - Training hours
+    - API requests
+    - Websites created
 - Visual progress bars (green/yellow/red)
 - Feature access list
 - Billing history table
@@ -338,12 +338,12 @@ This creates:
 
 ## 📚 Documentation
 
-| Document | Description |
+| Document                       | Description                             |
 | ------------------------------ | --------------------------------------- |
-| `MONETIZATION_GUIDE.md` | Complete technical guide (10,936 chars) |
-| `INCOME_STREAM_SUMMARY.md` | Executive summary with screenshots |
-| `QUICK_START_MONETIZATION.md` | Quick start guide (5,894 chars) |
-| `SETUP_MONETIZATION_README.md` | This file |
+| `MONETIZATION_GUIDE.md`        | Complete technical guide (10,936 chars) |
+| `INCOME_STREAM_SUMMARY.md`     | Executive summary with screenshots      |
+| `QUICK_START_MONETIZATION.md`  | Quick start guide (5,894 chars)         |
+| `SETUP_MONETIZATION_README.md` | This file                               |
 
 ## 🚀 Production Deployment
 

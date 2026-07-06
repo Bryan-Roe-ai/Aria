@@ -201,9 +201,9 @@ When using manifests, the trainer keeps streaming enabled by default for best sc
 
 - All evaluation metrics are appended to `<save_dir>/metrics.jsonl`.
 - If the following environment variables are set, the same metrics are also sent to Azure Log Analytics via the HTTP Data Collector API:
-  - `AZURE_LOG_ANALYTICS_WORKSPACE_ID`
-  - `AZURE_LOG_ANALYTICS_SHARED_KEY`
-  - Optional: `AZURE_LOG_TYPE` (default: `LLMTrainingMetrics`)
+    - `AZURE_LOG_ANALYTICS_WORKSPACE_ID`
+    - `AZURE_LOG_ANALYTICS_SHARED_KEY`
+    - Optional: `AZURE_LOG_TYPE` (default: `LLMTrainingMetrics`)
 
 Each record contains a UTC `timestamp` plus fields like `eval_loss`, `eval_perplexity`, and `step`.
 

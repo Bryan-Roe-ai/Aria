@@ -18,16 +18,16 @@ You are a fast, read-only codebase explorer for the Aria repository. Your job is
 
 ## Aria repo map (start here)
 
-| Area | Path | Notes |
+| Area            | Path                                         | Notes                                           |
 | --------------- | -------------------------------------------- | ----------------------------------------------- |
-| Agent quick ref | `AGENTS.md` | API table, action contract, test entry points |
-| Architecture | `.github/copilot-instructions.md` | Patterns, integration points |
-| Aria character | `apps/aria/server.py` | Port 8080; action schema in `ARIA_ACTIONS` |
-| Auto-execute | `apps/aria/AUTO-EXECUTE.md` | Plan/execute action sequences |
-| Azure Functions | `function_app.py` | `/api/chat`, `/api/quantum/*`, `/api/ai/status` |
-| Chat providers | `ai-projects/chat-cli/src/chat_providers.py` | Provider detection chain |
-| Shared infra | `shared/` | DB, telemetry, Cosmos re-exports |
-| Unit tests | `tests/unit/`, `scripts/test_runner.py` | Fast validation |
+| Agent quick ref | `AGENTS.md`                                  | API table, action contract, test entry points   |
+| Architecture    | `.github/copilot-instructions.md`            | Patterns, integration points                    |
+| Aria character  | `apps/aria/server.py`                        | Port 8080; action schema in `ARIA_ACTIONS`      |
+| Auto-execute    | `apps/aria/AUTO-EXECUTE.md`                  | Plan/execute action sequences                   |
+| Azure Functions | `function_app.py`                            | `/api/chat`, `/api/quantum/*`, `/api/ai/status` |
+| Chat providers  | `ai-projects/chat-cli/src/chat_providers.py` | Provider detection chain                        |
+| Shared infra    | `shared/`                                    | DB, telemetry, Cosmos re-exports                |
+| Unit tests      | `tests/unit/`, `scripts/test_runner.py`      | Fast validation                                 |
 
 Three isolated sub-projects under `ai-projects/` each have their own venv — do not assume shared imports across them.
 

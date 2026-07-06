@@ -22,12 +22,12 @@ Comprehensive hyperparameter optimization experiments have identified the **opti
 
 ### Experiment 1: Layer Depth Optimization
 
-| Layers | Validation Accuracy | Grade | Verdict |
+| Layers | Validation Accuracy | Grade        | Verdict            |
 | ------ | ------------------: | ------------ | ------------------ |
-| 1 | 62.5% | ★★★★ | Too simple |
-| 2 | 77.5% | ★★★★★★★ | Good baseline |
-| **3** | **87.5%** ⭐ | **★★★★★★★★** | **OPTIMAL** |
-| 4 | 82.5% | ★★★★★★★ | Overfitting starts |
+| 1      |               62.5% | ★★★★         | Too simple         |
+| 2      |               77.5% | ★★★★★★★      | Good baseline      |
+| **3**  |        **87.5%** ⭐ | **★★★★★★★★** | **OPTIMAL**        |
+| 4      |               82.5% | ★★★★★★★      | Overfitting starts |
 
 ## Winner: 3 Layers (87.5% accuracy)
 
@@ -42,13 +42,13 @@ Comprehensive hyperparameter optimization experiments have identified the **opti
 
 ### Experiment 2: Learning Rate Optimization
 
-| Learning Rate | Validation Accuracy | Convergence | Verdict |
+| Learning Rate | Validation Accuracy | Convergence   | Verdict          |
 | ------------- | ------------------: | ------------- | ---------------- |
-| 0.001 | 80.0% | Slow | Too conservative |
-| 0.005 | 82.5% | Moderate | Good |
-| 0.01 | 85.0% | Fast | Very good |
-| 0.05 | 85.0% | Fast | Very good |
-| **0.1** | **90.0%** 🏆 | **Very Fast** | **OPTIMAL** |
+| 0.001         |               80.0% | Slow          | Too conservative |
+| 0.005         |               82.5% | Moderate      | Good             |
+| 0.01          |               85.0% | Fast          | Very good        |
+| 0.05          |               85.0% | Fast          | Very good        |
+| **0.1**       |        **90.0%** 🏆 | **Very Fast** | **OPTIMAL**      |
 
 ## Winner: Learning Rate 0.1 (90% accuracy)
 
@@ -73,11 +73,11 @@ Epoch 30-50: 90.0% → Stable plateau
 
 ### Experiment 3: Entanglement Pattern Comparison
 
-| Pattern | Validation Accuracy | Circuit Complexity | Verdict |
+| Pattern    | Validation Accuracy | Circuit Complexity | Verdict     |
 | ---------- | ------------------: | -----------------: | ----------- |
-| **linear** | **82.5%** ✅ | Low | **OPTIMAL** |
-| circular | 80.0% | Medium | Good |
-| full | 52.5% | High | Overfitting |
+| **linear** |        **82.5%** ✅ |                Low | **OPTIMAL** |
+| circular   |               80.0% |             Medium | Good        |
+| full       |               52.5% |               High | Overfitting |
 
 ### Winner: Linear Entanglement (82.5% accuracy)
 
@@ -109,11 +109,11 @@ ml:
 
 ### Expected Performance
 
-| Configuration | Expected Accuracy |
+| Configuration                        | Expected Accuracy |
 | ------------------------------------ | ----------------: |
-| Baseline (2 layers, LR 0.01, full) | 72.5% |
-| Optimized (3 layers, LR 0.1, linear) | **90.0%** |
-| **Improvement** | **+17.5%** |
+| Baseline (2 layers, LR 0.01, full)   |             72.5% |
+| Optimized (3 layers, LR 0.1, linear) |         **90.0%** |
+| **Improvement**                      |        **+17.5%** |
 
 ---
 
@@ -121,11 +121,11 @@ ml:
 
 ### Convergence Speed Comparison
 
-| Learning Rate | Epochs to 80% | Epochs to 85% | Final |
+| Learning Rate | Epochs to 80% | Epochs to 85% | Final   |
 | ------------- | ------------- | ------------- | ------- |
-| 0.001 | 40+ | 50+ | 80% |
-| 0.01 | 30 | 40 | 85% |
-| **0.1** | **<10** | **15-20** | **90%** |
+| 0.001         | 40+           | 50+           | 80%     |
+| 0.01          | 30            | 40            | 85%     |
+| **0.1**       | **<10**       | **15-20**     | **90%** |
 
 **Key Finding:** LR=0.1 converges **3-4x faster** than LR=0.01!
 
@@ -332,14 +332,14 @@ Through systematic hyperparameter optimization, we've achieved:
 
 ## 📊 Final Statistics
 
-| Metric | Before | After | Change |
+| Metric            | Before  | After     | Change     |
 | ----------------- | ------- | --------- | ---------- |
-| **Accuracy** | 72.5% | **90.0%** | **+17.5%** |
-| **Layers** | 2 | 3 | +1 |
-| **Learning Rate** | 0.01 | 0.1 | 10x faster |
-| **Entanglement** | full | linear | Simpler |
-| **Epochs to 85%** | 40+ | 15-20 | 2x faster |
-| **Training Time** | 3-4 min | 1-2 min | 2x faster |
+| **Accuracy**      | 72.5%   | **90.0%** | **+17.5%** |
+| **Layers**        | 2       | 3         | +1         |
+| **Learning Rate** | 0.01    | 0.1       | 10x faster |
+| **Entanglement**  | full    | linear    | Simpler    |
+| **Epochs to 85%** | 40+     | 15-20     | 2x faster  |
+| **Training Time** | 3-4 min | 1-2 min   | 2x faster  |
 
 ---
 

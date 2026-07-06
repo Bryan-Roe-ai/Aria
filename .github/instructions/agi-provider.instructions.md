@@ -24,10 +24,10 @@ applyTo: "**/agi_provider.py"
 ## Behavioural expectations
 
 - Decomposition templates should stay intent-specific:
-  - coding: requirements → design → implement → edge cases → test
-  - explanation: define → examples → relationships → summary
-  - creation: concept → outline → details → review
-  - question: direct → elaborate → examples → summary
+    - coding: requirements → design → implement → edge cases → test
+    - explanation: define → examples → relationships → summary
+    - creation: concept → outline → details → review
+    - question: direct → elaborate → examples → summary
 - Self-reflection should check response completeness, answer length, and missing Aria tags for Aria-domain requests.
 - When `domain == "aria"`, maintain movement/action tag injection such as `[aria:walk:left]`, `[aria:jump]`, `[aria:wave]`, and `[aria:dance]`.
 

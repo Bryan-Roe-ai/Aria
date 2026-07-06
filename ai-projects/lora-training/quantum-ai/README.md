@@ -8,11 +8,11 @@ that uses different quantum computing frameworks.
 
 ## Key Differences
 
-| Feature | This Directory (AI/quantum-ai) | Main Directory (quantum-ai) |
+| Feature   | This Directory (AI/quantum-ai) | Main Directory (quantum-ai) |
 | --------- | ------------------------------ | --------------------------- |
-| Framework | **Qiskit** | **PennyLane** |
-| Backend | Qiskit Aer, IBM Quantum | PennyLane, Azure Quantum |
-| Status | Legacy/Alternative | Primary/Active |
+| Framework | **Qiskit**                     | **PennyLane**               |
+| Backend   | Qiskit Aer, IBM Quantum        | PennyLane, Azure Quantum    |
+| Status    | Legacy/Alternative             | Primary/Active              |
 
 For new development, use the **PennyLane-based** implementation in `/quantum-ai`.
 

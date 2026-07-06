@@ -51,13 +51,13 @@ optionally prepended to the response in `verbose` mode.
 
 **Step types and their semantics:**
 
-| `step_type` | Produced by | Description |
+| `step_type`  | Produced by            | Description                            |
 | ------------ | ---------------------- | -------------------------------------- |
-| `analyze` | `_analyze_query` | Intent / domain / complexity breakdown |
-| `route` | `_select_agent` | Selected specialist agent |
-| `decompose` | `_decompose_task` | Ordered subtask list (complex queries) |
-| `synthesize` | `_chain_of_thought` | Domain-aware reasoning hints |
-| `reflect` | `_reflect_and_improve` | Post-generation validation annotations |
+| `analyze`    | `_analyze_query`       | Intent / domain / complexity breakdown |
+| `route`      | `_select_agent`        | Selected specialist agent              |
+| `decompose`  | `_decompose_task`      | Ordered subtask list (complex queries) |
+| `synthesize` | `_chain_of_thought`    | Domain-aware reasoning hints           |
+| `reflect`    | `_reflect_and_improve` | Post-generation validation annotations |
 
 ---
 
@@ -66,12 +66,12 @@ optionally prepended to the response in `verbose` mode.
 Memory is managed by `AGIContext`, a bounded in-process store with four
 components:
 
-| Component | Bound | Purpose |
+| Component              | Bound                       | Purpose                              |
 | ---------------------- | --------------------------- | ------------------------------------ |
-| `conversation_history` | `MAX_HISTORY_SIZE` (50) | Recent turn-by-turn messages |
-| `reasoning_chains` | `MAX_REASONING_CHAINS` (10) | Per-turn reasoning traces |
-| `goals` | `MAX_GOALS` (5) | User-specified session goals |
-| `learned_patterns` | Unbounded† | Routing observations with time-decay |
+| `conversation_history` | `MAX_HISTORY_SIZE` (50)     | Recent turn-by-turn messages         |
+| `reasoning_chains`     | `MAX_REASONING_CHAINS` (10) | Per-turn reasoning traces            |
+| `goals`                | `MAX_GOALS` (5)             | User-specified session goals         |
+| `learned_patterns`     | Unbounded†                  | Routing observations with time-decay |
 
 † `learned_patterns` is bounded in practice by session lifetime; entries decay
 with a 24-hour half-life applied in `_select_agent`.
@@ -123,15 +123,15 @@ in tests.
 
 `_AGENT_REGISTRY` maps agent names to capability descriptors:
 
-| Agent | Domains | Provider | Use-case |
+| Agent                  | Domains   | Provider | Use-case                     |
 | ---------------------- | --------- | -------- | ---------------------------- |
-| `quantum-specialist` | quantum | quantum | Qiskit/PennyLane queries |
-| `code-specialist` | technical | lora | Code generation & debugging |
-| `aria-character` | aria | local | Movement & gesture commands |
-| `ai-specialist` | ai | lora | LLM / LoRA / training topics |
-| `reasoning-specialist` | ai | agi | Step-by-step reasoning |
-| `lmstudio-specialist` | (any) | lmstudio | General LM Studio inference |
-| `general` | (any) | agi | Fallback |
+| `quantum-specialist`   | quantum   | quantum  | Qiskit/PennyLane queries     |
+| `code-specialist`      | technical | lora     | Code generation & debugging  |
+| `aria-character`       | aria      | local    | Movement & gesture commands  |
+| `ai-specialist`        | ai        | lora     | LLM / LoRA / training topics |
+| `reasoning-specialist` | ai        | agi      | Step-by-step reasoning       |
+| `lmstudio-specialist`  | (any)     | lmstudio | General LM Studio inference  |
+| `general`              | (any)     | agi      | Fallback                     |
 
 Agent selection uses a weighted score:
 
@@ -170,14 +170,14 @@ asyncio.run(main())
 
 ## Security Boundaries
 
-| Concern | Mechanism |
+| Concern                  | Mechanism                                       |
 | ------------------------ | ----------------------------------------------- |
-| Input injection | `_sanitize_input()` strips control characters |
-| Log injection / XSS | `_sanitize_for_logging()` HTML-escapes output |
-| History overflow / DoS | `MAX_HISTORY_SIZE` hard-limit + warning log |
-| Goal overflow | `MAX_GOALS` hard-limit, oldest evicted first |
-| Reasoning chain overflow | `MAX_REASONING_CHAINS` rolling window |
-| Error detail leakage | All exceptions caught; sanitized message logged |
+| Input injection          | `_sanitize_input()` strips control characters   |
+| Log injection / XSS      | `_sanitize_for_logging()` HTML-escapes output   |
+| History overflow / DoS   | `MAX_HISTORY_SIZE` hard-limit + warning log     |
+| Goal overflow            | `MAX_GOALS` hard-limit, oldest evicted first    |
+| Reasoning chain overflow | `MAX_REASONING_CHAINS` rolling window           |
+| Error detail leakage     | All exceptions caught; sanitized message logged |
 
 ---
 

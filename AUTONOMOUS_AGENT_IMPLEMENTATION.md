@@ -148,16 +148,16 @@ state.save()  # → data_out/autonomous_agent/status.json
 
 ## Task Categories (Auto-Detected)
 
-| Type | Keywords | Complexity | Example |
+| Type          | Keywords                     | Complexity | Example                    |
 | ------------- | ---------------------------- | ---------- | -------------------------- |
-| Bug Fix | bug, fix, broken, failing | Moderate | "Fix test_chat.py test" |
-| Feature | feature, implement, add | Complex | "Add OAuth2 support" |
-| Refactor | refactor, improve, cleanup | Moderate | "Extract to util function" |
-| Test | test, coverage, unit test | Simple | "Write edge case tests" |
-| Security | security, vulnerable | Complex | "Validate inputs" |
-| Performance | performance, optimize, fast | Complex | "Speed up queries" |
-| Documentation | document, docstring, comment | Simple | "Add docstrings" |
-| Cleanup | cleanup, unused, dead code | Simple | "Remove old code" |
+| Bug Fix       | bug, fix, broken, failing    | Moderate   | "Fix test_chat.py test"    |
+| Feature       | feature, implement, add      | Complex    | "Add OAuth2 support"       |
+| Refactor      | refactor, improve, cleanup   | Moderate   | "Extract to util function" |
+| Test          | test, coverage, unit test    | Simple     | "Write edge case tests"    |
+| Security      | security, vulnerable         | Complex    | "Validate inputs"          |
+| Performance   | performance, optimize, fast  | Complex    | "Speed up queries"         |
+| Documentation | document, docstring, comment | Simple     | "Add docstrings"           |
+| Cleanup       | cleanup, unused, dead code   | Simple     | "Remove old code"          |
 
 Agent automatically chooses appropriate prompts based on task description.
 
@@ -378,15 +378,15 @@ tail -50 data_out/autonomous_agent/agent.log
 
 ## Performance Metrics
 
-| Metric | Value |
+| Metric              | Value                |
 | ------------------- | -------------------- |
-| Syntax Validation | <100ms |
-| LLM Planning | 5-10s (Mistral) |
-| File Identification | 2-5s |
-| Test Suite | 30-120s |
-| Total Task | 1-5 minutes |
-| Memory Usage | 4-8GB (with Mistral) |
-| CPU Usage | 2-4 cores |
+| Syntax Validation   | <100ms               |
+| LLM Planning        | 5-10s (Mistral)      |
+| File Identification | 2-5s                 |
+| Test Suite          | 30-120s              |
+| Total Task          | 1-5 minutes          |
+| Memory Usage        | 4-8GB (with Mistral) |
+| CPU Usage           | 2-4 cores            |
 
 ## Security Considerations
 

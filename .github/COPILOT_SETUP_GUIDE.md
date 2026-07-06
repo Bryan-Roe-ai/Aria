@@ -183,13 +183,13 @@ Aria includes **20+ specialized agents** for different development workflows. Ea
 
 ### Core Agents
 
-| Agent | Purpose | Trigger Phrases |
+| Agent                          | Purpose                                         | Trigger Phrases                                     |
 | ------------------------------ | ----------------------------------------------- | --------------------------------------------------- |
-| `ai.agent.md` | Primary autonomous agent for task decomposition | "break this down", "reason through this" |
-| `aria-character.agent.md` | Aria interactive character control | "make Aria", "create a world", "action sequence" |
-| `autonomous-trainer.agent.md` | LoRA training & model lifecycle | "train a model", "fine-tune", "evaluate models" |
-| `ai-architect.agent.md` | AI system architecture & design | "design an AI pipeline", "plan the architecture" |
-| `full-stack-debugger.agent.md` | Cross-stack issue diagnosis | "debug this", "why is this failing", "troubleshoot" |
+| `ai.agent.md`                  | Primary autonomous agent for task decomposition | "break this down", "reason through this"            |
+| `aria-character.agent.md`      | Aria interactive character control              | "make Aria", "create a world", "action sequence"    |
+| `autonomous-trainer.agent.md`  | LoRA training & model lifecycle                 | "train a model", "fine-tune", "evaluate models"     |
+| `ai-architect.agent.md`        | AI system architecture & design                 | "design an AI pipeline", "plan the architecture"    |
+| `full-stack-debugger.agent.md` | Cross-stack issue diagnosis                     | "debug this", "why is this failing", "troubleshoot" |
 
 ### Specialized Agents
 

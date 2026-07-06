@@ -7,9 +7,9 @@ Changes
 -------
 
 - Add `resolve_hf_model_id()` helper to `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_lora.py`.
-  - Supports alias mapping (e.g., `gpt-oss` -> `openai/gpt-oss-20b`).
-  - Honors precedence: env var > CLI arg > config value > alias mapping > fallback.
-  - Accepts local checkpoint paths.
+    - Supports alias mapping (e.g., `gpt-oss` -> `openai/gpt-oss-20b`).
+    - Honors precedence: env var > CLI arg > config value > alias mapping > fallback.
+    - Accepts local checkpoint paths.
 - Update `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/lora/lora.yaml` to default `model: gpt-oss` and include `model_aliases`.
 - Add `tests/test_train_lora_model_resolution.py` with unit tests for alias resolution and path precedence.
 

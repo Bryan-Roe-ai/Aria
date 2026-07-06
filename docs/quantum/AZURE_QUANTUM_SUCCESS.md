@@ -185,14 +185,14 @@ All jobs visible in Azure Portal:
 
 ## 🎯 Success Metrics
 
-| Metric | Target | Actual | Status |
+| Metric             | Target       | Actual       | Status |
 | ------------------ | ------------ | ------------ | ------ |
-| Azure connection | Working | ✅ Connected | PASS |
-| Backends available | ≥1 | 5 | PASS |
-| Experiments run | 4 | 4 | PASS |
-| Success rate | 100% | 100% | PASS |
-| Cost | $0 | $0 | PASS |
-| Quantum accuracy | Match theory | ✓ Validated | PASS |
+| Azure connection   | Working      | ✅ Connected | PASS   |
+| Backends available | ≥1           | 5            | PASS   |
+| Experiments run    | 4            | 4            | PASS   |
+| Success rate       | 100%         | 100%         | PASS   |
+| Cost               | $0           | $0           | PASS   |
+| Quantum accuracy   | Match theory | ✓ Validated  | PASS   |
 
 ---
 

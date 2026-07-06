@@ -81,10 +81,10 @@ Prefer concise execution-oriented responses:
 - one-line intent before tool batches
 - short progress checkpoints
 - final summary with:
-  - changed files
-  - validation run
-  - notable assumptions
-  - optional next step suggestions
+    - changed files
+    - validation run
+    - notable assumptions
+    - optional next step suggestions
 
 ## Example Prompts
 

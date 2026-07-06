@@ -11,6 +11,7 @@ On every subsequent turn (and on requests in brand new sessions) the framework r
 The store is created on startup via `EnsureMemoryStoreCreatedAsync` (idempotent), so a fresh `azd provision` produces a fully working agent on first invocation.
 
 <!-- markdownlint-disable MD028 -->
+
 > [!NOTE]
 > Provisioning of the Foundry project, model deployments, and supporting Azure resources is handled by the [`azd-ai-starter-basic`](https://github.com/Azure-Samples/azd-ai-starter-basic) template, which `azd ai agent init` pulls in automatically. The chat and embedding deployments declared under `resources:` in `agent.manifest.yaml` flow into the starter's `AI_PROJECT_DEPLOYMENTS` parameter.
 
@@ -19,6 +20,7 @@ The store is created on startup via `EnsureMemoryStoreCreatedAsync` (idempotent)
 > Production agents should partition memory per end user using the platform-injected isolation headers.
 > See the comment near `stateInitializer` in [Program.cs](Program.cs) for the pattern that becomes available
 > once the `HostedSessionContext` API ships in a future `Microsoft.Agents.AI.Foundry.Hosting` release.
+
 <!-- markdownlint-enable MD028 -->
 
 See [Program.cs](Program.cs) for the full implementation.
@@ -45,13 +47,13 @@ Before running this sample, ensure you have:
 
 ### Environment Variables
 
-| Variable | Required | Description |
+| Variable                                | Required    | Description                                                                                                      |
 | --------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
-| `FOUNDRY_PROJECT_ENDPOINT` | Yes | Foundry project endpoint. Auto-injected in hosted containers; set automatically by `azd ai agent run` locally. |
-| `AZURE_AI_MODEL_DEPLOYMENT_NAME` | Yes | Chat model deployment name. Declared in `agent.manifest.yaml`. |
-| `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME` | Yes | Embedding model deployment name (used by Foundry Memory). Declared in `agent.manifest.yaml`. |
-| `AZURE_AI_MEMORY_STORE_ID` | No | Memory store name. Defaults to `foundry-memory-rag-store`. The store is created on startup if it does not exist. |
-| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Recommended | Enables telemetry. Auto-injected in hosted containers; set manually for local dev. |
+| `FOUNDRY_PROJECT_ENDPOINT`              | Yes         | Foundry project endpoint. Auto-injected in hosted containers; set automatically by `azd ai agent run` locally.   |
+| `AZURE_AI_MODEL_DEPLOYMENT_NAME`        | Yes         | Chat model deployment name. Declared in `agent.manifest.yaml`.                                                   |
+| `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME`    | Yes         | Embedding model deployment name (used by Foundry Memory). Declared in `agent.manifest.yaml`.                     |
+| `AZURE_AI_MEMORY_STORE_ID`              | No          | Memory store name. Defaults to `foundry-memory-rag-store`. The store is created on startup if it does not exist. |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Recommended | Enables telemetry. Auto-injected in hosted containers; set manually for local dev.                               |
 
 **Local development (without `azd`):**
 
@@ -114,12 +116,14 @@ azd ai agent run
 ```
 
 <!-- markdownlint-disable MD028 -->
+
 > [!NOTE]
 > If you've already cloned this repository, pass a local path to the manifest instead:
 > `azd ai agent init -m <path-to-repo>/samples/csharp/hosted-agents/agent-framework/foundry-memory-rag/agent.manifest.yaml`
 
 > [!NOTE]
 > If you already have a Foundry project and model deployments, add `-p <project-id> -d <chat-deployment-name>` to `azd ai agent init` to target existing resources. You also need an embedding deployment (default `text-embedding-3-small`); set its name via `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME` if it differs from the default.
+
 <!-- markdownlint-enable MD028 -->
 
 The agent starts on `http://localhost:8088/`. Run a few turns to seed memory, then ask the agent to recall:

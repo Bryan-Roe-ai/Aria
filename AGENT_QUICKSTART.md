@@ -310,16 +310,16 @@ MIN_TEST_PASSING_RATE = 0.8          # 80% tests must pass
 
 ## Supported Task Types
 
-| Category | Example | Risk |
+| Category      | Example                          | Risk   |
 | ------------- | -------------------------------- | ------ |
-| Bug Fix | "Fix failing test_chat.py" | Medium |
-| Feature | "Add OAuth2 support" | High |
-| Refactor | "Extract common code to utility" | Medium |
-| Test | "Add unit tests for edge cases" | Low |
-| Security | "Validate user inputs" | High |
-| Documentation | "Add docstrings to module" | Low |
-| Performance | "Optimize database queries" | Medium |
-| Cleanup | "Remove unused imports" | Low |
+| Bug Fix       | "Fix failing test_chat.py"       | Medium |
+| Feature       | "Add OAuth2 support"             | High   |
+| Refactor      | "Extract common code to utility" | Medium |
+| Test          | "Add unit tests for edge cases"  | Low    |
+| Security      | "Validate user inputs"           | High   |
+| Documentation | "Add docstrings to module"       | Low    |
+| Performance   | "Optimize database queries"      | Medium |
+| Cleanup       | "Remove unused imports"          | Low    |
 
 ## AGI Smoke Prompt Toolkit
 
@@ -442,12 +442,12 @@ watch -n 2 'cat data_out/autonomous_agent/status.json | python -m json.tool'
 
 ## Performance
 
-| Model | Speed | Quality | Memory | Recommendation |
+| Model         | Speed      | Quality    | Memory | Recommendation     |
 | ------------- | ---------- | ---------- | ------ | ------------------ |
-| Mistral | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 4GB | **Best for agent** |
-| Neural-Chat | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 8GB | Good |
-| Llama-7B | ⭐⭐ | ⭐⭐⭐ | 8GB | Slower |
-| GPT-4 (cloud) | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | N/A | No - uses API |
+| Mistral       | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐   | 4GB    | **Best for agent** |
+| Neural-Chat   | ⭐⭐⭐⭐   | ⭐⭐⭐⭐   | 8GB    | Good               |
+| Llama-7B      | ⭐⭐       | ⭐⭐⭐     | 8GB    | Slower             |
+| GPT-4 (cloud) | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | N/A    | No - uses API      |
 
 ## Security
 

@@ -10,31 +10,31 @@ Short & actionable summary for AI agents editing Aria — an interactive AI char
 
 - **Interactive AI Character Platform** with 3D animated avatar, natural language movement commands, and real-time object interaction
 - **Three isolated projects + Functions integration layer:**
-  - `ai-projects/quantum-ml/` — MCP server, web dashboard, quantum ML pipelines (separate venv)
-  - `ai-projects/chat-cli/` — chat CLI with multi-provider support (separate venv)
-  - `AI/microsoft_phi-silica-3.6_v1/` — Phi-3.5 LoRA fine-tuning (separate venv)
-  - `function_app.py` — Azure Functions integration exposing all APIs
+    - `ai-projects/quantum-ml/` — MCP server, web dashboard, quantum ML pipelines (separate venv)
+    - `ai-projects/chat-cli/` — chat CLI with multi-provider support (separate venv)
+    - `AI/microsoft_phi-silica-3.6_v1/` — Phi-3.5 LoRA fine-tuning (separate venv)
+    - `function_app.py` — Azure Functions integration exposing all APIs
 - **Integration points:**
-  - `function_app.py` dynamically imports from ai-projects/chat-cli/src and ai-projects/quantum-ml/src (adds to sys.path)
-  - Shared infra in `shared/`: re-exports chat providers, DB engines, telemetry, Cosmos client
+    - `function_app.py` dynamically imports from ai-projects/chat-cli/src and ai-projects/quantum-ml/src (adds to sys.path)
+    - Shared infra in `shared/`: re-exports chat providers, DB engines, telemetry, Cosmos client
 - **Web Interfaces:**
-  - `apps/aria/` — Interactive Aria character interface with CSS animations, eye tracking, gestures
-  - `apps/chat/` — Streaming chat UI with SSE support
+    - `apps/aria/` — Interactive Aria character interface with CSS animations, eye tracking, gestures
+    - `apps/chat/` — Streaming chat UI with SSE support
 - **API endpoints** (via `function_app.py`):
-  - `/api/chat` — streaming chat SSE
-  - `/api/chat-web` — web UI HTML
-  - `/api/tts` — Azure Speech TTS (falls back to local if enabled)
-  - `/api/quantum/*` — quantum job submission/monitoring
-  - `/api/ai/status` — health check showing active provider, env vars, DB pool, Cosmos status
-  - `/api/quantum-llm/status` — quantum-powered LLM backend info (backend, qubits, fallback, provider)
-  - `/api/quantum-llm/chat` — non-streaming quantum-augmented LLM completion
-  - `/api/quantum-llm/stream` — SSE streaming quantum-augmented LLM (same format as `/api/chat/stream`)
+    - `/api/chat` — streaming chat SSE
+    - `/api/chat-web` — web UI HTML
+    - `/api/tts` — Azure Speech TTS (falls back to local if enabled)
+    - `/api/quantum/*` — quantum job submission/monitoring
+    - `/api/ai/status` — health check showing active provider, env vars, DB pool, Cosmos status
+    - `/api/quantum-llm/status` — quantum-powered LLM backend info (backend, qubits, fallback, provider)
+    - `/api/quantum-llm/chat` — non-streaming quantum-augmented LLM completion
+    - `/api/quantum-llm/stream` — SSE streaming quantum-augmented LLM (same format as `/api/chat/stream`)
 - **Aria Web API endpoints** (via `apps/aria/server.py` on port 8080):
-  - `GET /api/aria/state` — current stage state (position, objects, expressions)
-  - `POST /api/aria/command` — process natural language commands
-  - `POST /api/aria/execute` — auto-execute action sequences (plan or execute mode)
-  - `POST /api/aria/object` — manage objects (add, update, remove)
-  - `POST /api/aria/world` — LLM-powered themed world generation
+    - `GET /api/aria/state` — current stage state (position, objects, expressions)
+    - `POST /api/aria/command` — process natural language commands
+    - `POST /api/aria/execute` — auto-execute action sequences (plan or execute mode)
+    - `POST /api/aria/object` — manage objects (add, update, remove)
+    - `POST /api/aria/world` — LLM-powered themed world generation
 
 ## Key Features
 
@@ -43,9 +43,9 @@ Short & actionable summary for AI agents editing Aria — an interactive AI char
 - 3D CSS-animated character with smooth transitions and physics-based movement
 - Natural language command processing ("move left", "wave at me", "dance", "jump", "pickup ball")
 - **Auto-Execute System**: LLM-powered action parser converts natural language to structured action sequences
-  - 8 core actions: move, say, pickup, drop, throw, gesture, look, wait
-  - Plan mode (preview actions) and execute mode (run sequences)
-  - Dual-mode parsing: LLM-powered + rule-based fallback
+    - 8 core actions: move, say, pickup, drop, throw, gesture, look, wait
+    - Plan mode (preview actions) and execute mode (run sequences)
+    - Dual-mode parsing: LLM-powered + rule-based fallback
 - Object interaction system (add, pickup, drop, throw with trajectory physics)
 - **World Generation**: LLM-powered themed environment creation
 - Eye tracking and attention system (follows mouse cursor)
@@ -143,16 +143,16 @@ watch -n 5 'cat data_out/autonomous_training_status.json | python -m json.tool' 
 **Autonomous/self-managing systems:**
 
 - `scripts/autonomous_training_orchestrator.py` — Continuous learning with 30-min cycles (infinite by default)
-  - Self-discovers datasets (scans `datasets/quantum`, `datasets/chat`, `datasets/massive_quantum`)
-  - Self-optimizes: Adaptive epochs `[25, 50, 100, 200]` based on performance history
-  - Self-heals: Graceful error handling, continues on failure, logs to `data_out/autonomous_training.log`
-  - State: `data_out/autonomous_training_status.json` (cycles_completed, best_accuracy, dataset_inventory)
-  - Config: `config/autonomous_training.yaml` (cycle_interval_minutes, epochs_progression, min_datasets)
-  - Trigger: Time-based (30min) OR signal-based (`pkill -USR1 -f autonomous_training`)
+    - Self-discovers datasets (scans `datasets/quantum`, `datasets/chat`, `datasets/massive_quantum`)
+    - Self-optimizes: Adaptive epochs `[25, 50, 100, 200]` based on performance history
+    - Self-heals: Graceful error handling, continues on failure, logs to `data_out/autonomous_training.log`
+    - State: `data_out/autonomous_training_status.json` (cycles_completed, best_accuracy, dataset_inventory)
+    - Config: `config/autonomous_training.yaml` (cycle_interval_minutes, epochs_progression, min_datasets)
+    - Trigger: Time-based (30min) OR signal-based (`pkill -USR1 -f autonomous_training`)
 - `scripts/repo_automation.py` — Full repo automation (all components: Aria + training + quantum + datasets)
 - `scripts/aria_automation.py` — Aria-specific automation (server on port 8080 + continuous training)
 - `scripts/master_orchestrator.py` — Coordinates all sub-orchestrators with schedules/dependencies
-  - Config: `config/master_orchestrator.yaml` (cron schedules, priorities, retry logic, timeouts)
+    - Config: `config/master_orchestrator.yaml` (cron schedules, priorities, retry logic, timeouts)
 
 **Data conventions:**
 
@@ -205,62 +205,62 @@ async def run_single_cycle(cycle_number):
 **Performance monitoring & observability:**
 
 - **Health endpoint**: `GET /api/ai/status` — Comprehensive system diagnostics
-  - Active provider detection (azure|openai|local|lora)
-  - Environment variable presence (Azure OpenAI, OpenAI, Cosmos, SQL)
-  - ML library availability (torch, transformers, peft) — in-process & venv
-  - SQL pool metrics with saturation alerts (warns at ≥80%)
-  - Cosmos DB health check (lazy connection)
-  - Quantum environment status (qiskit, pennylane, Azure Quantum backends)
-  - LoRA adapter readiness (adapter_config.json, tokenizer)
+    - Active provider detection (azure|openai|local|lora)
+    - Environment variable presence (Azure OpenAI, OpenAI, Cosmos, SQL)
+    - ML library availability (torch, transformers, peft) — in-process & venv
+    - SQL pool metrics with saturation alerts (warns at ≥80%)
+    - Cosmos DB health check (lazy connection)
+    - Quantum environment status (qiskit, pennylane, Azure Quantum backends)
+    - LoRA adapter readiness (adapter_config.json, tokenizer)
 - **Status files**: All orchestrators write `data_out/<name>/status.json`
-  - Schema: `{total_jobs, succeeded, failed, running, last_updated, avg_duration}`
-  - Autonomous training: `{cycles_completed, best_accuracy, performance_history[], dataset_inventory}`
+    - Schema: `{total_jobs, succeeded, failed, running, last_updated, avg_duration}`
+    - Autonomous training: `{cycles_completed, best_accuracy, performance_history[], dataset_inventory}`
 - **Monitoring scripts**:
-  - `scripts/status_dashboard.py` — Unified view of all orchestrators (supports --watch, --export)
-  - `scripts/resource_monitor.py` — CPU/memory/disk/GPU with threshold alerts
-  - `scripts/system_health_check.py` — Comprehensive health report (venvs, Azure Functions, datasets)
-  - `scripts/training_analytics.py` — Performance trends, improvement rates, plateau detection
+    - `scripts/status_dashboard.py` — Unified view of all orchestrators (supports --watch, --export)
+    - `scripts/resource_monitor.py` — CPU/memory/disk/GPU with threshold alerts
+    - `scripts/system_health_check.py` — Comprehensive health report (venvs, Azure Functions, datasets)
+    - `scripts/training_analytics.py` — Performance trends, improvement rates, plateau detection
 - **Performance degradation alerts**: Auto-detect >5% accuracy drops between cycles
 - **Metrics tracked**: mean_accuracy, median_accuracy, max_accuracy, successful_count, exceptional_models
 - **Notification config**: `config/notification_config.yaml` (email/SMTP/local alerts)
 
 ## Where to Edit
 
-| Change | File(s) |
+| Change                                       | File(s)                                                                                  |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Add/modify API endpoint | `function_app.py` |
-| Quantum LLM pipeline | `ai-projects/quantum-ml/src/quantum_llm/pipeline.py` |
-| Quantum token sampler | `ai-projects/quantum-ml/src/quantum_llm/quantum_sampler.py` |
-| Quantum embedding transformer | `ai-projects/quantum-ml/src/quantum_llm/quantum_embeddings.py` |
-| Quantum provider router | `ai-projects/quantum-ml/src/quantum_llm/quantum_router.py` |
-| Quantum LLM config | `ai-projects/quantum-ml/src/quantum_llm/config.py` |
-| Chat provider logic | `ai-projects/chat-cli/src/chat_providers.py` (re-exported by `shared/chat_providers.py`) |
-| Training orchestration | `scripts/autotrain.py` + root `autotrain.yaml` |
-| Autonomous training behavior | `scripts/autonomous_training_orchestrator.py` + `config/autonomous_training.yaml` |
-| Master orchestrator (schedules/coordination) | `scripts/master_orchestrator.py` + `config/master_orchestrator.yaml` |
-| Aria automation | `scripts/aria_automation.py` (server + training + health monitoring) |
-| Full repo automation | `scripts/repo_automation.py` (all components + backups + notifications) |
-| Quantum jobs | `scripts/quantum_autorun.py` + root `quantum_autorun.yaml` |
-| MCP server tools | `ai-projects/quantum-ml/quantum_mcp_server.py` |
-| Shared DB/telemetry | `shared/sql_engine.py`, `shared/telemetry.py`, `shared/cosmos_client.py` |
-| Aria character interface | `apps/aria/index.html`, `apps/aria/aria_controller.js`, `apps/aria/server.py` |
-| Aria movement/gestures | `apps/aria/aria_controller.js` (command parsing & animation triggers) |
-| Semantic memory/embeddings | `shared/chat_memory.py` (generate_embedding, fetch_similar, store) |
-| Token management | `ai-projects/chat-cli/src/token_utils.py` (counting, pruning) |
-| LLM tool generation | `ai-projects/llm-maker/src/tool_maker.py`, `tool_validator.py` |
-| Website generation | `ai-projects/llm-maker/src/website_maker.py` |
-| Cooking AI recipes | `ai-projects/cooking-ai/src/agents/recipe_agent.py` |
-| Subscriptions/monetization | `shared/subscription_manager.py` + `setup_monetization.py` |
-| DB logging (fault-tolerant) | `shared/db_logging.py` (SP wrappers) |
-| Vision/expression AI | `scripts/vision_inference.py` (TinyConvNet) |
-| Batch model evaluation | `scripts/batch_evaluator.py` + `config/evaluation/` |
-| Monitoring dashboard | `apps/dashboard/` (hub, analytics, GPU monitor) |
-| AGI reasoning | `ai-projects/chat-cli/src/agi_provider.py` |
-| Test runner | `scripts/test_runner.py` (centralized suite orchestrator) |
-| Request validation | `shared/request_validator.py` (JSON schema validation) |
-| Artifact cleanup | `scripts/cleanup_artifacts.py` (data_out/ retention) |
-| Model evaluation | `scripts/evaluate_model.py` (delegates or fallback metrics) |
-| Fast validation | `scripts/fast_validate.py` (configs, providers, deps) |
+| Add/modify API endpoint                      | `function_app.py`                                                                        |
+| Quantum LLM pipeline                         | `ai-projects/quantum-ml/src/quantum_llm/pipeline.py`                                     |
+| Quantum token sampler                        | `ai-projects/quantum-ml/src/quantum_llm/quantum_sampler.py`                              |
+| Quantum embedding transformer                | `ai-projects/quantum-ml/src/quantum_llm/quantum_embeddings.py`                           |
+| Quantum provider router                      | `ai-projects/quantum-ml/src/quantum_llm/quantum_router.py`                               |
+| Quantum LLM config                           | `ai-projects/quantum-ml/src/quantum_llm/config.py`                                       |
+| Chat provider logic                          | `ai-projects/chat-cli/src/chat_providers.py` (re-exported by `shared/chat_providers.py`) |
+| Training orchestration                       | `scripts/autotrain.py` + root `autotrain.yaml`                                           |
+| Autonomous training behavior                 | `scripts/autonomous_training_orchestrator.py` + `config/autonomous_training.yaml`        |
+| Master orchestrator (schedules/coordination) | `scripts/master_orchestrator.py` + `config/master_orchestrator.yaml`                     |
+| Aria automation                              | `scripts/aria_automation.py` (server + training + health monitoring)                     |
+| Full repo automation                         | `scripts/repo_automation.py` (all components + backups + notifications)                  |
+| Quantum jobs                                 | `scripts/quantum_autorun.py` + root `quantum_autorun.yaml`                               |
+| MCP server tools                             | `ai-projects/quantum-ml/quantum_mcp_server.py`                                           |
+| Shared DB/telemetry                          | `shared/sql_engine.py`, `shared/telemetry.py`, `shared/cosmos_client.py`                 |
+| Aria character interface                     | `apps/aria/index.html`, `apps/aria/aria_controller.js`, `apps/aria/server.py`            |
+| Aria movement/gestures                       | `apps/aria/aria_controller.js` (command parsing & animation triggers)                    |
+| Semantic memory/embeddings                   | `shared/chat_memory.py` (generate_embedding, fetch_similar, store)                       |
+| Token management                             | `ai-projects/chat-cli/src/token_utils.py` (counting, pruning)                            |
+| LLM tool generation                          | `ai-projects/llm-maker/src/tool_maker.py`, `tool_validator.py`                           |
+| Website generation                           | `ai-projects/llm-maker/src/website_maker.py`                                             |
+| Cooking AI recipes                           | `ai-projects/cooking-ai/src/agents/recipe_agent.py`                                      |
+| Subscriptions/monetization                   | `shared/subscription_manager.py` + `setup_monetization.py`                               |
+| DB logging (fault-tolerant)                  | `shared/db_logging.py` (SP wrappers)                                                     |
+| Vision/expression AI                         | `scripts/vision_inference.py` (TinyConvNet)                                              |
+| Batch model evaluation                       | `scripts/batch_evaluator.py` + `config/evaluation/`                                      |
+| Monitoring dashboard                         | `apps/dashboard/` (hub, analytics, GPU monitor)                                          |
+| AGI reasoning                                | `ai-projects/chat-cli/src/agi_provider.py`                                               |
+| Test runner                                  | `scripts/test_runner.py` (centralized suite orchestrator)                                |
+| Request validation                           | `shared/request_validator.py` (JSON schema validation)                                   |
+| Artifact cleanup                             | `scripts/cleanup_artifacts.py` (data_out/ retention)                                     |
+| Model evaluation                             | `scripts/evaluate_model.py` (delegates or fallback metrics)                              |
+| Fast validation                              | `scripts/fast_validate.py` (configs, providers, deps)                                    |
 
 ## Safety Rules
 
@@ -349,22 +349,22 @@ These are automatically applied by VS Code based on file paths. Check attachment
 
 Available agents in `.github/agents/`:
 
-| Agent | Purpose |
+| Agent                           | Purpose                                                                          |
 | ------------------------------- | -------------------------------------------------------------------------------- |
-| `ai.agent.md` | Primary autonomous agent — task decomposition, multi-step execution |
-| `my-agent.agent.md` | QAI specialist — quantum-AI/ML development |
-| `agi-reasoning.agent.md` | Chain-of-thought reasoning, self-reflection (CoT is internal, final answer only) |
-| `visible-reasoning.agent.md` | Visible step-by-step reasoning, shows CoT trace to users |
-| `aria-character.agent.md` | Interactive character commands, animations |
-| `autonomous-trainer.agent.md` | LoRA training lifecycle, model promotion |
-| `full-stack-debugger.agent.md` | Cross-stack issue diagnosis |
-| `automated-code-fixer.agent.md` | Autonomous code improvements |
-| `ai-architect.agent.md` | AI pipeline design, provider integration |
-| `llm-maker.agent.md` | Safe tool/website generation |
-| `chat-provider.agent.md` | Multi-provider chat, streaming, memory |
-| `platform-ops.agent.md` | Subscriptions, monitoring, deployment |
-| `vision-ai.agent.md` | Expression/emotion classification |
-| `data-pipeline.agent.md` | Batch evaluation, dataset management |
+| `ai.agent.md`                   | Primary autonomous agent — task decomposition, multi-step execution              |
+| `my-agent.agent.md`             | QAI specialist — quantum-AI/ML development                                       |
+| `agi-reasoning.agent.md`        | Chain-of-thought reasoning, self-reflection (CoT is internal, final answer only) |
+| `visible-reasoning.agent.md`    | Visible step-by-step reasoning, shows CoT trace to users                         |
+| `aria-character.agent.md`       | Interactive character commands, animations                                       |
+| `autonomous-trainer.agent.md`   | LoRA training lifecycle, model promotion                                         |
+| `full-stack-debugger.agent.md`  | Cross-stack issue diagnosis                                                      |
+| `automated-code-fixer.agent.md` | Autonomous code improvements                                                     |
+| `ai-architect.agent.md`         | AI pipeline design, provider integration                                         |
+| `llm-maker.agent.md`            | Safe tool/website generation                                                     |
+| `chat-provider.agent.md`        | Multi-provider chat, streaming, memory                                           |
+| `platform-ops.agent.md`         | Subscriptions, monitoring, deployment                                            |
+| `vision-ai.agent.md`            | Expression/emotion classification                                                |
+| `data-pipeline.agent.md`        | Batch evaluation, dataset management                                             |
 
 **Mode equivalents now live in `.github/agents/`**:
 

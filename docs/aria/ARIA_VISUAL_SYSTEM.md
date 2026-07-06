@@ -55,16 +55,16 @@
 
 ## 🧪 Test Results (aria_expanded_v2)
 
-| Command | Expected | Generated | Status |
+| Command             | Expected                                     | Generated                     | Status     |
 | ------------------- | -------------------------------------------- | ----------------------------- | ---------- |
-| move left | `[aria:move:left]` | `[aria:left]` | ⚠️ Partial |
-| aria smile | `[aria:expression:smile]` | `[aria:expression:smile]` | ✅ Perfect |
-| jump | `[aria:animate:jump]` | `[aria:animate:jump]` | ✅ Perfect |
-| wave hello | `[aria:gesture:wave]` | `[aria:gesture:hello]` | ⚠️ Close |
-| look surprised | `[aria:expression:surprised]` | `[aria:expression:surprised]` | ✅ Perfect |
-| dance with sparkles | `[aria:animate:dance] [aria:effect:sparkle]` | `[aria:effect:sparkle]` | ⚠️ Partial |
-| thumbs up | `[aria:gesture:thumbs_up]` | `[aria:gesture:tumble]` | ❌ Wrong |
-| spin around | `[aria:animate:spin]` | `[aria:animate:left]` | ❌ Wrong |
+| move left           | `[aria:move:left]`                           | `[aria:left]`                 | ⚠️ Partial |
+| aria smile          | `[aria:expression:smile]`                    | `[aria:expression:smile]`     | ✅ Perfect |
+| jump                | `[aria:animate:jump]`                        | `[aria:animate:jump]`         | ✅ Perfect |
+| wave hello          | `[aria:gesture:wave]`                        | `[aria:gesture:hello]`        | ⚠️ Close   |
+| look surprised      | `[aria:expression:surprised]`                | `[aria:expression:surprised]` | ✅ Perfect |
+| dance with sparkles | `[aria:animate:dance] [aria:effect:sparkle]` | `[aria:effect:sparkle]`       | ⚠️ Partial |
+| thumbs up           | `[aria:gesture:thumbs_up]`                   | `[aria:gesture:tumble]`       | ❌ Wrong   |
+| spin around         | `[aria:animate:spin]`                        | `[aria:animate:left]`         | ❌ Wrong   |
 
 **Accuracy**: ~50% exact match, 75% semantically related
 
@@ -124,13 +124,13 @@ python .\scripts\aria_test_debug.py      # Raw model output inspection
 
 ## 📈 Training Evolution
 
-| Version | Epochs | LR | Perplexity | Notes |
+| Version              | Epochs | LR        | Perplexity | Notes                         |
 | -------------------- | ------ | --------- | ---------: | ----------------------------- |
-| aria_movement | 3 | 0.0003 | ~15 | Original verbose responses |
-| aria_simple | 2 | 0.002 | ~12 | Minimal tokens, still verbose |
-| aria_fast_v2 | 2 | 0.002 | ~10 | 16 samples, too small |
-| aria_expanded_v1 | 3 | 0.002 | 10.23 | Generated Python code instead |
-| **aria_expanded_v2** | **10** | **0.005** | **1.53** | ✅ **Generates tags!** |
+| aria_movement        | 3      | 0.0003    |        ~15 | Original verbose responses    |
+| aria_simple          | 2      | 0.002     |        ~12 | Minimal tokens, still verbose |
+| aria_fast_v2         | 2      | 0.002     |        ~10 | 16 samples, too small         |
+| aria_expanded_v1     | 3      | 0.002     |      10.23 | Generated Python code instead |
+| **aria_expanded_v2** | **10** | **0.005** |   **1.53** | ✅ **Generates tags!**        |
 
 **Key Breakthrough**: 10 epochs + 5x higher LR overcame base model's coding bias
 

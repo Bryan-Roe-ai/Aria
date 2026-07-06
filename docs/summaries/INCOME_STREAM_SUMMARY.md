@@ -47,31 +47,31 @@ To achieve $2,000+ MRR:
 #### Frontend
 
 - **Pricing Page** (`pricing.html`) - Beautiful, responsive pricing page with:
-  - 3-tier comparison
-  - Revenue projection model
-  - Detailed feature comparison table
-  - FAQ section
-  - Call-to-action buttons
+    - 3-tier comparison
+    - Revenue projection model
+    - Detailed feature comparison table
+    - FAQ section
+    - Call-to-action buttons
 
 - **Admin Dashboard** (`admin_dashboard.html`) - Revenue management dashboard with:
-  - Real-time MRR/ARR metrics
-  - Subscriber list and management
-  - Revenue charts by tier
-  - Export functionality
-  - Quick actions
+    - Real-time MRR/ARR metrics
+    - Subscriber list and management
+    - Revenue charts by tier
+    - Export functionality
+    - Quick actions
 
 ### 4. Premium Features Gated
 
-| Feature | Free | Pro | Enterprise |
+| Feature            | Free   | Pro         | Enterprise |
 | ------------------ | ------ | ----------- | ---------- |
-| Chat Messages | 100/mo | 10,000/mo | Unlimited |
-| Quantum Computing | ❌ | 50 jobs/mo | Unlimited |
-| Model Training | ❌ | 20 hrs/mo | Unlimited |
-| Website Maker | ❌ | 10 sites/mo | Unlimited |
-| API Access | ❌ | 10K req/mo | Unlimited |
-| Commercial License | ❌ | ✅ | ✅ |
-| Custom Models | ❌ | ❌ | ✅ |
-| Priority Support | ❌ | ❌ | ✅ 24/7 |
+| Chat Messages      | 100/mo | 10,000/mo   | Unlimited  |
+| Quantum Computing  | ❌     | 50 jobs/mo  | Unlimited  |
+| Model Training     | ❌     | 20 hrs/mo   | Unlimited  |
+| Website Maker      | ❌     | 10 sites/mo | Unlimited  |
+| API Access         | ❌     | 10K req/mo  | Unlimited  |
+| Commercial License | ❌     | ✅          | ✅         |
+| Custom Models      | ❌     | ❌          | ✅         |
+| Priority Support   | ❌     | ❌          | ✅ 24/7    |
 
 ## Screenshots
 

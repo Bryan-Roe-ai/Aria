@@ -137,8 +137,8 @@ Reasoning steps should describe _what_ was checked and _why_, at a high level, w
 
 ## Contrast with `agi-reasoning`
 
-| Feature | `visible-reasoning` | `agi-reasoning` |
+| Feature          | `visible-reasoning`                            | `agi-reasoning`                          |
 | ---------------- | ---------------------------------------------- | ---------------------------------------- |
-| Chain-of-thought | **Shown to user** | Internal only |
-| Use case | Explanations, teaching, debugging transparency | Autonomous execution, production answers |
-| Output format | Reasoning trace + final answer | Final answer only |
+| Chain-of-thought | **Shown to user**                              | Internal only                            |
+| Use case         | Explanations, teaching, debugging transparency | Autonomous execution, production answers |
+| Output format    | Reasoning trace + final answer                 | Final answer only                        |

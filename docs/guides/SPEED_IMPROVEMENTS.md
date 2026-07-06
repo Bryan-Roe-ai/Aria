@@ -18,18 +18,18 @@
 ### 3. Smart Orchestrator Speed Boost (`smart_orchestrator.py`)
 
 - **Changes**:
-  - Job polling: 1s → 0.1s (10x faster)
-  - Iteration delay: 10s → 3s (3.3x faster)
-  - Backoff capped at 10s (prevents excessive waits)
+    - Job polling: 1s → 0.1s (10x faster)
+    - Iteration delay: 10s → 3s (3.3x faster)
+    - Backoff capped at 10s (prevents excessive waits)
 - **Impact**: Orchestrator responds faster to job state changes
 
 ### 4. VS Code Workspace Optimization (`.vscode/settings_optimized.json`)
 
 - **Excluded from file watching**:
-  - `venv/`, `data_out/`, `__pycache__/`, `.pytest_cache/`
-  - `datasets/` (immutable, no need to watch)
+    - `venv/`, `data_out/`, `__pycache__/`, `.pytest_cache/`
+    - `datasets/` (immutable, no need to watch)
 - **Excluded from search**:
-  - `data_out/`, `datasets/massive_quantum/` (huge directories)
+    - `data_out/`, `datasets/massive_quantum/` (huge directories)
 - **Impact**: Faster file operations, search, IntelliSense
 
 ## Workflow Optimizations
@@ -60,12 +60,12 @@ python .\scripts\test_runner.py --unit --watch
 
 ## Benchmarks
 
-| Operation | Before | After | Speedup |
+| Operation              | Before | After | Speedup  |
 | ---------------------- | ------ | ----- | -------- |
-| Fast validation | 10s | 0.1s | **100x** |
-| Test watch polling | 2s | 0.5s | **4x** |
-| Orchestrator iteration | 10s | 3s | **3.3x** |
-| VS Code file indexing | ~30s | ~10s | **3x** |
+| Fast validation        | 10s    | 0.1s  | **100x** |
+| Test watch polling     | 2s     | 0.5s  | **4x**   |
+| Orchestrator iteration | 10s    | 3s    | **3.3x** |
+| VS Code file indexing  | ~30s   | ~10s  | **3x**   |
 
 ## Apply Settings
 
