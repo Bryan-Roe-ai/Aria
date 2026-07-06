@@ -274,6 +274,15 @@ def _check_lmstudio_available(url: str) -> bool:
 
 @dataclass
 class ProviderChoice:
+    """Lightweight descriptor returned alongside a provider instance by ``detect_provider``.
+
+    Attributes:
+        name:  Canonical provider name (e.g. ``"azure"``, ``"openai"``,
+               ``"lmstudio"``, ``"ollama"``, ``"local"``, ``"agi"``,
+               ``"quantum"``, ``"lora"``).
+        model: The model identifier or path that the provider will use.
+    """
+
     name: str  # 'azure' | 'openai' | 'local'
     model: str
 
@@ -281,12 +290,22 @@ class ProviderChoice:
 class BaseChatProvider:
     """Abstract base for all chat providers.
 
-    Subclasses must implement ``complete()``.  The shared static helpers on
-    this class normalise OpenAI-compatible wire formats so each provider
-    doesn't have to duplicate that logic.
+    Subclasses must implement ``complete()``.  Helper static methods for
+    parsing OpenAI-style streaming and non-streaming responses are provided
+    so concrete providers don't duplicate that logic.
     """
 
     def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
+        """Send *messages* to the backend and return the response.
+
+        Args:
+            messages: Conversation history as a list of ``{"role": …, "content": …}`` dicts.
+            stream:   When ``True`` return a generator that yields string chunks;
+                      when ``False`` return the full response as a single string.
+
+        Raises:
+            NotImplementedError: Subclasses must override this method.
+        """
         raise NotImplementedError
 
     @staticmethod
@@ -804,16 +823,6 @@ class LocalEchoProvider(BaseChatProvider):
 
 
 class OpenAIProvider(BaseChatProvider):
-    """Provider for OpenAI chat completions (api.openai.com).
-
-    Handles quota/rate-limit errors with exponential back-off retries and
-    returns friendly error strings rather than raising when the account's
-    billing limit is reached.
-
-    Required env var: ``OPENAI_API_KEY``
-    Optional env var: ``OPENAI_MODEL`` (default: ``gpt-4o-mini``)
-    """
-
     def __init__(
         self,
         model: str,
@@ -1190,17 +1199,6 @@ class OllamaProvider(BaseChatProvider):
 
 
 class AzureOpenAIProvider(BaseChatProvider):
-    """Provider for Azure OpenAI Service deployments.
-
-    Wraps the openai SDK's ``AzureOpenAI`` client with exponential back-off
-    retries on transient 429 rate-limit errors and friendly error messages on
-    quota/billing failures.
-
-    Required env vars: ``AZURE_OPENAI_API_KEY``, ``AZURE_OPENAI_ENDPOINT``,
-    ``AZURE_OPENAI_DEPLOYMENT``
-    Optional env var: ``AZURE_OPENAI_API_VERSION`` (default: ``2024-08-01-preview``)
-    """
-
     def __init__(
         self,
         deployment: str,
@@ -1532,38 +1530,37 @@ def detect_provider(
     temperature: float | None = None,
     max_output_tokens: int | None = None,
 ) -> tuple[BaseChatProvider, ProviderChoice]:
-    """Detect and instantiate the best available chat provider.
+    """Return the best available chat provider and a descriptor for it.
 
-    Resolution order when ``explicit`` is ``None`` or ``"auto"``:
-    LM Studio → Ollama → Azure OpenAI → OpenAI → LocalEchoProvider.
+    Provider selection behaviour:
+    - **Explicit mode**: honours the requested provider, including special
+      providers (``"agi"``, ``"quantum"``, ``"lora"``) that are never cached.
+    - **Explicit ``"local"``**: prefers running local runtimes (LM Studio, then
+      Ollama), falling back to ``LocalEchoProvider``.
+    - **Auto mode** (``explicit=None`` or ``"auto"``): probes in order:
+      LM Studio → Ollama → Azure OpenAI → OpenAI → ``LocalEchoProvider``.
 
-    Explicit provider names bypass auto-detection and instantiate the named
-    provider directly.  Stateful/path-sensitive providers (``agi``,
-    ``quantum``, ``lora``) are never cached; the others are cached for
-    ``QAI_PROVIDER_DETECT_CACHE_TTL`` seconds (default 5 s) to reduce
-    repeated HTTP health-checks on hot API paths.
+    Results for cacheable providers (auto / lmstudio / ollama / azure / openai)
+    are stored in a 5-second thread-safe TTL cache so repeated calls on hot
+    API paths don't re-probe the network.
 
     Args:
-        explicit: Provider name override.  Accepted values:
-            ``auto``, ``lmstudio``, ``ollama``, ``azure``, ``openai``,
-            ``local``, ``local_echo``, ``agi``, ``quantum``, ``lora``.
-            Provider aliases such as ``azure_openai`` and ``lm-studio`` are
-            also accepted (see ``_PROVIDER_ALIASES``).
-        model_override: Model name or path passed to the chosen provider.
-            Required for ``lora``; optional for all others.
-        temperature: Sampling temperature (0–2).  Defaults to
-            ``CHAT_TEMPERATURE`` env var or ``0.7``.
+        explicit:          Override the provider by name; ``None`` or ``"auto"``
+                           triggers the auto-detection chain.
+        model_override:    Override the model/path used by the selected provider.
+        temperature:       Sampling temperature; defaults to ``CHAT_TEMPERATURE``
+                           env var or provider-specific default.
         max_output_tokens: Maximum tokens the provider may generate.
 
     Returns:
-        A ``(provider, ProviderChoice)`` tuple where ``ProviderChoice.name``
-        is the canonical provider name and ``ProviderChoice.model`` is the
-        resolved model identifier.
+        ``(provider, choice)`` where *provider* is a ``BaseChatProvider`` ready
+        to call and *choice* is a ``ProviderChoice`` with the resolved name and
+        model.
 
     Raises:
-        ValueError: Unknown explicit provider name.
-        RuntimeError: Required credentials/paths are missing for the chosen
-            provider, or the provider module is unavailable.
+        ValueError: When *explicit* is not a recognised provider name.
+        RuntimeError: When a requested provider is unavailable (e.g. missing
+                      env vars, module not installed, or network unreachable).
     """
     explicit_normalized = (explicit or "").strip().lower()
     force_local_echo = explicit_normalized in {"local_echo", "local-echo"}

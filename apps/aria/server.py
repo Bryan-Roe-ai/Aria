@@ -423,19 +423,7 @@ def validate_action(action: dict) -> tuple[bool, str]:
 
 
 def validate_action_sequence(actions: list[dict]) -> tuple[bool, str]:
-    """Validate a list of actions before plan or execution.
-
-    Enforces the global sequence-level constraint (max 25 actions) and
-    delegates per-action validation to :func:`validate_action`.
-
-    Args:
-        actions: List of action dicts, each containing at least an
-            ``"action"`` key.
-
-    Returns:
-        ``(True, "")`` when the sequence is valid, or ``(False, reason)``
-        with a human-readable explanation of the first violation found.
-    """
+    """Validate an action sequence before plan/execution."""
     if not isinstance(actions, list) or not actions:
         return False, "actions must be a non-empty list"
     if len(actions) > 25:
@@ -612,29 +600,7 @@ Rules:
         _planned_held_object=_UNSET,
         _referenced_object=_UNSET,
     ) -> list[dict]:
-        """Parse a command into structured actions using rule-based pattern matching.
-
-        Used when the LLM provider is unavailable or ``parse_with_llm`` fails.
-        Supports compound commands joined by conjunctions/separators (e.g.
-        "pick up the cup and bring it here") by recursively splitting on
-        ``_RE_COMMAND_SEPARATORS`` and propagating held-object state across
-        the resulting segments.
-
-        The leading-underscore parameters are internal and used only during
-        recursive segment processing — callers should not set them.
-
-        Args:
-            command: Natural language command string.
-            _allow_split: Whether to attempt compound-command splitting.
-            _planned_held_object: Overrides the live ``stage_state`` held-object
-                value for recursive segment calls.
-            _referenced_object: Most recently mentioned object, forwarded to
-                segment calls to resolve pronoun references like "bring it here".
-
-        Returns:
-            List of action dicts conforming to :data:`ARIA_ACTIONS` schema,
-            possibly empty if no rules matched.
-        """
+        """Rule-based fallback parser (uses existing generate_tags_fallback logic)"""
         actions = []
         command_lower = command.lower()
         known_objects = ["apple", "book", "cup", "ball", "flower"]
@@ -958,6 +924,11 @@ Rules:
 
 
 def _sanitize_id(raw: str) -> str:
+    """Convert *raw* into a safe, lowercase object-id (alphanumeric + underscore, max 30 chars).
+
+    Falls back to a random ``obj_NNNN`` string when the input collapses to
+    empty after cleaning (e.g., a string that is entirely non-ASCII).
+    """
     cleaned = re.sub(r"[^a-zA-Z0-9_]+", "_", raw.strip().lower())
     return cleaned[:30] or f"obj_{random.randint(1000, 9999)}"
 
@@ -1083,16 +1054,16 @@ QUANTUM_STAGE_PRESETS = {
 
 
 def apply_world_to_stage(world: dict, *, theme: str) -> None:
-    """Replace stage objects and environment metadata from a generated world.
+    """Replace the live stage objects and environment metadata from a generated world dict.
 
-    Mutates ``stage_state`` in-place: clears existing objects and writes the
-    new ones, and updates the environment ``theme``, ``generated_at``, and
-    optional ``stage_style`` fields.  Aria's pose is left unchanged.
+    Mutates the global ``stage_state`` in-place: all existing objects are
+    cleared and replaced with those from *world*, and ``environment`` is updated
+    with theme, generation timestamp, and optional stage style.  Stage bounds
+    and Aria's position are not modified.
 
     Args:
-        world: Dict returned by :func:`generate_world_fallback` or
-            :func:`generate_world_with_llm`.
-        theme: Theme name string stored in ``stage_state["environment"]["theme"]``.
+        world: Output of ``generate_world_fallback`` or ``generate_world_with_llm``.
+        theme: Theme name written to ``environment["theme"]`` as the canonical value.
     """
     stage_state["objects"] = {}
     for oid, obj in world.get("objects", {}).items():
@@ -1109,7 +1080,25 @@ def apply_world_to_stage(world: dict, *, theme: str) -> None:
 
 
 def setup_quantum_stage(*, preset: str = "intro", count: int = 6, run_actions: bool = True) -> dict:
-    """Load the quantum-themed world and optionally run a preset action sequence."""
+    """Load the quantum-themed world and optionally execute a preset action sequence.
+
+    Generates and applies the ``"quantum"`` world, guaranteeing that the
+    preset-critical objects ``qubit`` and ``gate`` exist even when the random
+    shuffle omitted them.
+
+    Args:
+        preset: Name of a key in ``QUANTUM_STAGE_PRESETS`` (``"intro"``,
+                ``"entangle"``, ``"measure"``); unknown values fall back to
+                ``"intro"``.
+        count:  Minimum object count (at least 6 to accommodate required objects).
+        run_actions: When ``True``, validates and executes the preset action
+                     sequence, including results in the return dict.
+
+    Returns:
+        A dict with ``status``, ``theme``, ``preset``, ``count``, ``objects``,
+        ``environment``, ``actions``, ``results`` (when *run_actions* is True),
+        and ``state`` (current ``stage_state``).
+    """
     world = generate_world_fallback("quantum", max(count, 6))
     apply_world_to_stage(world, theme="quantum")
 
@@ -1167,7 +1156,22 @@ def _get_agi_provider(*, verbose: bool = False):
 
 
 def generate_world_fallback(theme: str, count: int) -> dict:
-    """Generate a world procedurally without LLM."""
+    """Generate a themed world procedurally without an LLM.
+
+    Draws from ``THEME_OBJECT_LIBRARY`` for the given *theme* (falls back to
+    ``"forest"`` when unknown), ensures ``THEME_REQUIRED_OBJECTS`` are always
+    present, then fills the remaining slots from a shuffled catalog.  Positions
+    are placed with a simple Poisson-ish spread so objects don't visually overlap.
+
+    Args:
+        theme: Theme key (e.g. ``"forest"``, ``"space"``, ``"quantum"``).
+        count: Desired number of objects (required objects are always included
+               and count toward this total).
+
+    Returns:
+        A dict with ``"objects"`` (id → object record) and ``"environment"``
+        (theme, seed, stage bounds, optional stage_style).
+    """
     theme_key = theme.lower()
     objects_catalog = list(THEME_OBJECT_LIBRARY.get(theme_key, THEME_OBJECT_LIBRARY["forest"]))
     required = THEME_REQUIRED_OBJECTS.get(theme_key, [])
@@ -1207,7 +1211,17 @@ def generate_world_fallback(theme: str, count: int) -> dict:
 
 
 def generate_world_with_llm(theme: str, count: int, provider) -> dict:
-    """Use LLM provider to generate a themed world. Returns fallback on failure."""
+    """Use an LLM provider to generate a themed world; falls back to procedural on failure.
+
+    Sends a structured prompt to *provider* requesting a JSON world with
+    ``objects`` (id, emoji, position, state) and ``environment``.  The response
+    is sanitised (code fences stripped, positions clamped to [0, 100]) before
+    returning.  If the LLM returns unparseable JSON or raises an exception,
+    ``generate_world_fallback(theme, count)`` is returned instead.
+
+    The returned dict includes an ``"llm": True/False`` key indicating whether
+    the LLM path succeeded.
+    """
     system_prompt = (
         "You are a world generator for a 2D stage (coordinates 0-100 for x and y). "
         "Given a theme, produce JSON with 'objects' and 'environment'. Each object must have: id, emoji, position {x,y}, state. "
@@ -1681,22 +1695,14 @@ def generate_tags_fallback(command: str) -> list[str]:
 
 
 def execute_aria_action(action: dict) -> dict:
-    """Execute a single structured action and mutate ``stage_state`` accordingly.
-
-    Coordinates are clamped to ``[0, 100]`` via :func:`_coerce_and_clamp_position`.
-    The ``pickup`` action auto-moves Aria to the object when it is farther
-    than ``PICKUP_DISTANCE_THRESHOLD`` units away.
+    """
+    Execute a single structured action and update stage state
 
     Args:
-        action: Action dict with an ``"action"`` key matching a key in
-            :data:`ARIA_ACTIONS` plus action-specific parameters.
+        action: Action dict with 'action' key and params
 
     Returns:
-        Dict with keys:
-        - ``status``: ``"success"`` or ``"error"``
-        - ``message``: Human-readable description of the outcome.
-        - ``tags``: List of legacy ``[aria:*]`` tag strings produced (present
-          only on success).
+        Result dict with status, message, and updated state
     """
     action_type = action.get("action")
 
@@ -1889,7 +1895,12 @@ def execute_aria_action(action: dict) -> dict:
 
 
 def action_to_tags(action: dict) -> list[str]:
-    """Convert a structured action to Aria tag(s) without mutating stage state."""
+    """Convert a single structured action dict to the equivalent ``[aria:*]`` tag(s).
+
+    Unlike ``execute_aria_action``, this function is pure: it does not mutate
+    ``stage_state`` and is safe to call speculatively.  Returns an empty list
+    for unknown or malformed actions.
+    """
     action_type = action.get("action")
     if not action_type:
         return []
@@ -2076,6 +2087,18 @@ def tags_to_actions(tags: list[str]) -> list[dict]:
 
 
 class AriaRequestHandler(SimpleHTTPRequestHandler):
+    """HTTP request handler for the Aria Visual Command System.
+
+    Extends ``SimpleHTTPRequestHandler`` with:
+    - CORS headers on every response (``end_headers``).
+    - GET endpoints: ``/api/aria/state``, ``/api/aria/objects``,
+      ``/api/aria/schema``, ``/api/aria/presets``, ``/api/aria/health``.
+      Falls back to static file serving for everything else.
+    - POST endpoints: ``/api/aria/command`` (natural-language → tags/actions),
+      ``/api/aria/execute`` (structured action sequence), ``/api/aria/object``
+      (add/update/remove stage objects), ``/api/aria/world`` (world generation).
+    """
+
     def end_headers(self):
         # Add CORS headers
         self.send_header("Access-Control-Allow-Origin", "*")
