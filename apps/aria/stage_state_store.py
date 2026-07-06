@@ -9,6 +9,11 @@ from typing import Any
 
 
 def _default_stage_state_path() -> Path:
+    """Return the path for persisting stage state, honouring ``ARIA_STAGE_STATE_PATH``.
+
+    Falls back to ``<repo_root>/data_out/aria/stage_state.json`` when the env
+    var is not set.
+    """
     repo_root = Path(__file__).resolve().parents[2]
     configured = os.getenv("ARIA_STAGE_STATE_PATH")
     if configured:
@@ -17,6 +22,11 @@ def _default_stage_state_path() -> Path:
 
 
 def _unwrap(value: Any) -> Any:
+    """Recursively convert ``PersistentDict``/``PersistentList`` to plain dicts/lists.
+
+    Used before JSON serialisation so that the store's wrapper types do not
+    appear in the output file.
+    """
     if isinstance(value, PersistentDict):
         return {key: _unwrap(item) for key, item in value.items()}
     if isinstance(value, PersistentList):
@@ -25,6 +35,14 @@ def _unwrap(value: Any) -> Any:
 
 
 class PersistentDict(dict):
+    """A ``dict`` subclass that triggers ``StageStateStore.persist()`` on every mutation.
+
+    Wraps nested dicts and lists in ``PersistentDict``/``PersistentList`` so that
+    deep mutations (e.g. ``state["aria"]["position"]["x"] = 50``) are also
+    automatically persisted.  Direct construction is handled by
+    ``StageStateStore._wrap()``; external callers should not instantiate this class.
+    """
+
     def __init__(self, store: StageStateStore, initial: dict[str, Any] | None = None) -> None:
         super().__init__()
         self._store = store
@@ -74,6 +92,12 @@ class PersistentDict(dict):
 
 
 class PersistentList(list):
+    """A ``list`` subclass that triggers ``StageStateStore.persist()`` on every mutation.
+
+    Mirrors ``PersistentDict`` for list-valued stage state fields.  Elements are
+    wrapped on insertion so nested containers remain persistent.
+    """
+
     def __init__(self, store: StageStateStore, initial: list[Any] | None = None) -> None:
         super().__init__(store._wrap(item) for item in (initial or []))
         self._store = store
@@ -117,6 +141,23 @@ class PersistentList(list):
 
 
 class StageStateStore:
+    """Thread-safe, auto-persisting store for Aria's stage state.
+
+    On creation the store loads previously persisted state from *path* (falling
+    back to ``_default_stage_state_path()``) and deep-merges it with
+    *default_state* so that new schema fields are always present.  Every
+    subsequent mutation through the ``state`` attribute is automatically written
+    to disk via an atomic ``tmp → replace`` strategy.
+
+    Public interface:
+        ``state``       – live ``PersistentDict`` that can be mutated directly.
+        ``snapshot()``  – return a plain-dict copy safe for serialisation.
+        ``replace()``   – atomically overwrite the full state.
+        ``merge()``     – shallow-merge a patch dict into the current state.
+        ``reset()``     – restore factory defaults.
+        ``persist()``   – force an immediate disk flush (called automatically).
+    """
+
     def __init__(self, default_state: dict[str, Any], *, path: Path | None = None) -> None:
         self._lock = threading.RLock()
         self._path = path or _default_stage_state_path()
@@ -124,6 +165,10 @@ class StageStateStore:
         self.state = self._wrap(self._load_initial_state())
 
     def _load_initial_state(self) -> dict[str, Any]:
+        """Load state from disk, merging with defaults to handle schema evolution.
+
+        Returns the default state when the file is absent or unreadable.
+        """
         try:
             if self._path.exists():
                 loaded = json.loads(self._path.read_text(encoding="utf-8"))
@@ -145,6 +190,7 @@ class StageStateStore:
         return loaded
 
     def _wrap(self, value: Any) -> Any:
+        """Wrap plain dicts/lists in their persistent counterparts; pass-through everything else."""
         if isinstance(value, PersistentDict | PersistentList):
             return value
         if isinstance(value, dict):
@@ -154,6 +200,11 @@ class StageStateStore:
         return copy.deepcopy(value)
 
     def persist(self) -> None:
+        """Write current state to disk atomically (tmp file → rename).
+
+        Called automatically by ``PersistentDict``/``PersistentList`` on every
+        mutation; safe to call manually when a forced flush is needed.
+        """
         with self._lock:
             self._path.parent.mkdir(parents=True, exist_ok=True)
             payload = _unwrap(self.state)
@@ -162,10 +213,15 @@ class StageStateStore:
             tmp_path.replace(self._path)
 
     def snapshot(self) -> dict[str, Any]:
+        """Return a plain-dict deep-copy of the current state, safe for serialisation."""
         with self._lock:
             return _unwrap(self.state)
 
     def replace(self, new_state: dict[str, Any]) -> dict[str, Any]:
+        """Atomically replace the entire state with *new_state* and persist.
+
+        Returns the live ``PersistentDict`` after replacement.
+        """
         with self._lock:
             self.state.clear()
             self.state.update(copy.deepcopy(new_state))
@@ -173,10 +229,16 @@ class StageStateStore:
             return self.state
 
     def merge(self, patch: dict[str, Any]) -> dict[str, Any]:
+        """Shallow-merge *patch* into the current state and persist.
+
+        Existing keys not present in *patch* are left unchanged.
+        Returns the live ``PersistentDict`` after the merge.
+        """
         with self._lock:
             self.state.update(copy.deepcopy(patch))
             self.persist()
             return self.state
 
     def reset(self) -> dict[str, Any]:
+        """Restore factory defaults and persist.  Returns the live state dict."""
         return self.replace(self._default_state)
