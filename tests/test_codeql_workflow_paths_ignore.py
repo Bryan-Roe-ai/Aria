@@ -73,3 +73,12 @@ def test_codeql_config_keeps_default_queries_for_autofix() -> None:
 
     assert config.get("disable-default-queries") == "false"
     assert "**/fixtures/**" in config["paths-ignore"]
+
+
+@pytest.mark.unit
+def test_codeql_config_has_document_start_and_no_trailing_whitespace() -> None:
+    config_path = Path(__file__).resolve().parents[1] / ".github" / "codeql" / "codeql-config.yml"
+    content = config_path.read_text(encoding="utf-8")
+
+    assert content.startswith("---\n")
+    assert all(line == line.rstrip() for line in content.splitlines())
