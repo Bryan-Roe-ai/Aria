@@ -39,7 +39,7 @@ KEEP_FILES = {"status.json", "latest_results.json"}
 
 
 def _file_age_days(path: Path) -> float:
-    return (time.time() - path.stat().st_mtime) / 86400
+    return max(0.0, (time.time() - path.stat().st_mtime) / 86400)
 
 
 def find_candidates(max_age_days: int = 30, max_count: int = 50) -> list[tuple[Path, str]]:
