@@ -823,6 +823,14 @@ class LocalEchoProvider(BaseChatProvider):
 
 
 class OpenAIProvider(BaseChatProvider):
+    """Provider for the OpenAI public API (chat completions).
+
+    Requires the ``openai`` package and a valid ``OPENAI_API_KEY`` environment
+    variable (or an explicit *api_key* argument).  Supports both streaming and
+    non-streaming completions, and retries transient 429 rate-limit errors with
+    exponential back-off.
+    """
+
     def __init__(
         self,
         model: str,
@@ -830,6 +838,17 @@ class OpenAIProvider(BaseChatProvider):
         temperature: float = 0.7,
         max_output_tokens: int | None = None,
     ):
+        """Initialize the OpenAI provider.
+
+        Args:
+            model: Model ID (e.g. ``"gpt-4o-mini"``).
+            api_key: OpenAI API key.  Falls back to the ``OPENAI_API_KEY``
+                environment variable when ``None``.
+            temperature: Sampling temperature in ``[0, 2]``.  Higher values
+                produce more varied output.
+            max_output_tokens: Maximum tokens the model may generate.
+                ``None`` uses the model's own default.
+        """
         if OpenAI is None:
             raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
         self.client = OpenAI(api_key=api_key)
@@ -925,6 +944,22 @@ class LMStudioProvider(BaseChatProvider):
         temperature: float = 0.7,
         max_output_tokens: int | None = None,
     ):
+        """Initialize the LM Studio provider.
+
+        Args:
+            base_url: Base URL of the LM Studio local server.  Defaults to
+                the standard LM Studio port.  Override with ``LMSTUDIO_BASE_URL``.
+            model: Model name as reported by the LM Studio server.  Override
+                with ``LMSTUDIO_MODEL``.
+            temperature: Sampling temperature in ``[0, 2]``.
+            max_output_tokens: Maximum tokens to generate.
+
+        The provider uses the official ``openai`` SDK when available and falls
+        back to a pure-HTTP implementation (``urllib.request``) in environments
+        where the SDK is not installed.  An API token is read from
+        ``LM_API_TOKEN`` / ``LMSTUDIO_API_KEY`` / ``LMSTUDIO_TOKEN`` /
+        ``LMSTUDIO_API_TOKEN`` when the LM Studio server requires authentication.
+        """
         # Prefer official OpenAI SDK when available, but support a pure-HTTP
         # fallback so LM Studio remains usable in minimal environments.
         self.client = None
@@ -1122,6 +1157,20 @@ class OllamaProvider(BaseChatProvider):
         temperature: float = 0.7,
         max_output_tokens: int | None = None,
     ):
+        """Initialize the Ollama provider.
+
+        Args:
+            base_url: Base URL of the Ollama OpenAI-compatible endpoint.
+                Defaults to the standard Ollama port.  Override with
+                ``OLLAMA_BASE_URL``.
+            model: Model tag as known to Ollama (e.g. ``"llama3.2"``,
+                ``"codellama:latest"``).  Override with ``OLLAMA_MODEL``.
+            temperature: Sampling temperature in ``[0, 2]``.
+            max_output_tokens: Maximum tokens to generate.
+
+        Raises:
+            RuntimeError: If the ``openai`` package is not installed.
+        """
         if OpenAI is None:
             raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
         # Ollama doesn't require real key
@@ -1199,6 +1248,16 @@ class OllamaProvider(BaseChatProvider):
 
 
 class AzureOpenAIProvider(BaseChatProvider):
+    """Provider for Azure-hosted OpenAI deployments.
+
+    Requires the ``openai`` package.  Authentication is via an API key; the
+    endpoint and deployment name must be supplied explicitly (or read from
+    ``AZURE_OPENAI_ENDPOINT`` / ``AZURE_OPENAI_DEPLOYMENT`` env vars by
+    :func:`detect_provider`).  Retries transient 429 errors with jittered
+    exponential back-off, and converts quota/billing errors into friendly
+    string messages rather than raising exceptions.
+    """
+
     def __init__(
         self,
         deployment: str,
@@ -1208,6 +1267,19 @@ class AzureOpenAIProvider(BaseChatProvider):
         temperature: float = 0.7,
         max_output_tokens: int | None = None,
     ):
+        """Initialize the Azure OpenAI provider.
+
+        Args:
+            deployment: Azure deployment name (used as the ``model`` parameter
+                in API calls).
+            endpoint: Azure OpenAI resource endpoint URL (e.g.
+                ``"https://<resource>.openai.azure.com"``).
+            api_key: Azure OpenAI API key.
+            api_version: REST API version string.  Defaults to the latest
+                stable preview.
+            temperature: Sampling temperature in ``[0, 2]``.
+            max_output_tokens: Maximum tokens the model may generate.
+        """
         if AzureOpenAI is None:
             raise RuntimeError("openai package not installed. Install 'openai' to use this provider.")
         self.client = AzureOpenAI(
@@ -1530,37 +1602,49 @@ def detect_provider(
     temperature: float | None = None,
     max_output_tokens: int | None = None,
 ) -> tuple[BaseChatProvider, ProviderChoice]:
-    """Return the best available chat provider and a descriptor for it.
+    """Detect and instantiate the best available chat provider.
 
-    Provider selection behaviour:
-    - **Explicit mode**: honours the requested provider, including special
-      providers (``"agi"``, ``"quantum"``, ``"lora"``) that are never cached.
-    - **Explicit ``"local"``**: prefers running local runtimes (LM Studio, then
-      Ollama), falling back to ``LocalEchoProvider``.
-    - **Auto mode** (``explicit=None`` or ``"auto"``): probes in order:
-      LM Studio → Ollama → Azure OpenAI → OpenAI → ``LocalEchoProvider``.
+    Provider selection rules
+    ------------------------
+    1. **Explicit mode** — when *explicit* is set and not ``"auto"``:
 
-    Results for cacheable providers (auto / lmstudio / ollama / azure / openai)
-    are stored in a 5-second thread-safe TTL cache so repeated calls on hot
-    API paths don't re-probe the network.
+       * ``"lmstudio"`` → :class:`LMStudioProvider` (requires server running).
+       * ``"ollama"``   → :class:`OllamaProvider` (requires server running).
+       * ``"azure"``    → :class:`AzureOpenAIProvider` (needs ``AZURE_OPENAI_API_KEY``,
+         ``AZURE_OPENAI_ENDPOINT``, ``AZURE_OPENAI_DEPLOYMENT``).
+       * ``"openai"``   → :class:`OpenAIProvider` (needs ``OPENAI_API_KEY``).
+       * ``"local"``    → probes LM Studio then Ollama; falls back to
+         :class:`LocalEchoProvider`.
+       * ``"local_echo"`` / ``"local-echo"`` → :class:`LocalEchoProvider` directly.
+       * ``"agi"``      → full AGI provider from ``agi_provider`` module; falls
+         back to ``local_agi_provider.LocalAGIProvider`` when unavailable.
+       * ``"quantum"``  → ``quantum_provider.create_quantum_llm_provider``; needs
+         ``QAI_QUANTUM_MODEL_PATH`` or ``--model``.
+       * ``"lora"``     → :class:`LoraLocalProvider`; requires *model_override* path.
+
+    2. **Auto mode** (``explicit=None`` or ``"auto"``) — probes in order:
+       LM Studio → Ollama → Azure OpenAI → OpenAI → :class:`LocalEchoProvider`.
+
+    Results for the ``auto``, ``local``, ``lmstudio``, ``ollama``, ``azure``, and
+    ``openai`` choices are cached for :data:`_PROVIDER_DETECT_CACHE_TTL_SECONDS`
+    seconds (default 5 s) to avoid repeated availability probes on hot paths.
+    Cache TTL can be tuned with ``QAI_PROVIDER_DETECT_CACHE_TTL``.
 
     Args:
-        explicit:          Override the provider by name; ``None`` or ``"auto"``
-                           triggers the auto-detection chain.
-        model_override:    Override the model/path used by the selected provider.
-        temperature:       Sampling temperature; defaults to ``CHAT_TEMPERATURE``
-                           env var or provider-specific default.
-        max_output_tokens: Maximum tokens the provider may generate.
+        explicit: Provider name or ``None``/``"auto"`` for automatic detection.
+            See :data:`_KNOWN_PROVIDER_CHOICES` for valid values.
+        model_override: Override the model name/path selected by env vars.
+        temperature: Sampling temperature.  ``None`` reads ``CHAT_TEMPERATURE``
+            (default ``0.7``).
+        max_output_tokens: Maximum tokens to generate.
 
     Returns:
-        ``(provider, choice)`` where *provider* is a ``BaseChatProvider`` ready
-        to call and *choice* is a ``ProviderChoice`` with the resolved name and
-        model.
+        A ``(provider, choice)`` tuple where *choice* records the resolved
+        provider name and model.
 
     Raises:
-        ValueError: When *explicit* is not a recognised provider name.
-        RuntimeError: When a requested provider is unavailable (e.g. missing
-                      env vars, module not installed, or network unreachable).
+        ValueError: When *explicit* names an unknown provider.
+        RuntimeError: When required configuration (API keys, server) is absent.
     """
     explicit_normalized = (explicit or "").strip().lower()
     force_local_echo = explicit_normalized in {"local_echo", "local-echo"}

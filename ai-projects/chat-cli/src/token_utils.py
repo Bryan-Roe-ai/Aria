@@ -34,10 +34,11 @@ MODEL_CONTEXT_DEFAULTS: dict[str, int] = {
 
 
 def _match_model_default(model: str | None) -> int:
-    """Return the context-window size for ``model`` using substring matching.
+    """Return the context-window size for *model* by substring matching.
 
-    Falls back to 8192 tokens for unrecognised model names, which is a
-    conservative safe default across a wide range of deployed models.
+    Looks up the model name in :data:`MODEL_CONTEXT_DEFAULTS`.  When no known
+    key is found, returns 8 192 tokens as a safe fallback that fits most local
+    and smaller cloud models.
     """
     m = (model or "").lower()
     for key, ctx in MODEL_CONTEXT_DEFAULTS.items():
@@ -48,14 +49,14 @@ def _match_model_default(model: str | None) -> int:
 
 @dataclass
 class PruneStats:
-    """Token-usage summary produced by :func:`prune_messages`.
+    """Token-count statistics returned by :func:`prune_messages`.
 
     Attributes:
-        original_tokens: Total tokens in the input message list before pruning.
-        pruned_tokens: Tokens remaining after pruning (excluding removed messages).
-        removed_count: Number of messages dropped from the front of the history.
-        budget: Effective context-window limit used for the pruning pass.
-        reserve_output_tokens: Tokens reserved for the model's generated reply.
+        original_tokens: Estimated token count of the full message list before pruning.
+        pruned_tokens: Token count after pruning (system prompt included).
+        removed_count: Number of messages removed from the front of the history.
+        budget: Effective context-window token budget used for the pruning pass.
+        reserve_output_tokens: Tokens reserved for the model's output (not consumed by input).
     """
 
     original_tokens: int
@@ -118,20 +119,21 @@ def count_messages_tokens(
     model: str | None,
     system_prompt: str | None = None,
 ) -> int:
-    """Estimate the total token count for a message list and optional system prompt.
+    """Estimate the total token count for a list of chat messages.
 
-    Uses the same encoder strategy as :func:`prune_messages` (tiktoken for
-    OpenAI/Azure, transformers tokenizer for local models, 4-char heuristic
-    otherwise).  Adds 4 tokens per message as a framing cost approximation.
+    Adds 4 tokens of framing overhead per message (role header, separators) on
+    top of the raw content token count, matching the rough overhead assumed by
+    the OpenAI API.  A separate framing cost is added for *system_prompt* when
+    provided.
 
     Args:
-        messages: List of ``{role, content}`` dicts.
-        provider: Provider name used to choose the encoder (e.g. ``"openai"``).
-        model: Model name for encoder lookup (e.g. ``"gpt-4o-mini"``).
-        system_prompt: Optional system-prompt text counted separately.
+        messages: List of ``{"role": ..., "content": ...}`` dicts.
+        provider: Provider name (e.g. ``"openai"``); influences which tokenizer is used.
+        model: Model name; used to select the appropriate tiktoken encoding.
+        system_prompt: Optional system prompt prepended to the token budget.
 
     Returns:
-        Approximate total token count as an integer.
+        Approximate token count as an integer.
     """
     enc = _get_text_encoder(provider, model)
     total = 0
