@@ -7,6 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -45,6 +47,7 @@ def test_python_dash_m_aria_bot_works_from_repo_root():
     assert "self-modifying repository cycle" in result.stdout
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="Shell script execute bit and direct .sh execution not applicable on Windows")
 def test_start_aria_bot_shell_wrapper_works_from_repo_root():
     script = REPO_ROOT / "scripts" / "start_aria_bot.sh"
 
