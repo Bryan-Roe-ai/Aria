@@ -1,4 +1,8 @@
 schema-version: v1
+ignore:
+    # Ignore editor/runtime dependencies outside the repository to avoid false positives
+    # (for example, Pylance bundled typeshed stubs under /home/vscode/.vscode-server/extensions).
+    - /home/vscode/.vscode-server/extensions/**
 rulesets:
     - javascript-best-practices
     - javascript-browser-security

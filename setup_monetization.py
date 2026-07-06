@@ -4,6 +4,7 @@ Aria Monetization System Setup Script
 Automatically configures and tests the monetization system
 """
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -11,7 +12,9 @@ from pathlib import Path
 
 
 # Color codes for terminal output
-class Colors:
+class Colors:  # pylint: disable=too-few-public-methods
+    """ANSI color codes used for terminal output formatting."""
+
     HEADER = "\033[95m"
     BLUE = "\033[94m"
     GREEN = "\033[92m"
@@ -22,30 +25,56 @@ class Colors:
 
 
 def print_header(text):
+    """Print a formatted section header."""
     print(f"\n{Colors.HEADER}{Colors.BOLD}{'=' * 80}{Colors.END}")
     print(f"{Colors.HEADER}{Colors.BOLD}{text:^80}{Colors.END}")
     print(f"{Colors.HEADER}{Colors.BOLD}{'=' * 80}{Colors.END}\n")
 
 
 def print_success(text):
+    """Print a success message."""
     print(f"{Colors.GREEN}✓ {text}{Colors.END}")
 
 
 def print_error(text):
+    """Print an error message."""
     print(f"{Colors.RED}✗ {text}{Colors.END}")
 
 
 def print_info(text):
+    """Print an informational message."""
     print(f"{Colors.BLUE}ℹ {text}{Colors.END}")
 
 
 def print_warning(text):
+    """Print a warning message."""
     print(f"{Colors.YELLOW}⚠ {text}{Colors.END}")
 
 
 def check_file_exists(filepath):
     """Check if a file exists"""
     return Path(filepath).exists()
+
+
+def load_subscription_manager():
+    """Load subscription manager symbols from the shared directory."""
+    module_path = (
+        Path(__file__).resolve().parent
+        / "shared"
+        / "subscription_manager.py"
+    )
+    spec = importlib.util.spec_from_file_location(
+        "subscription_manager", module_path
+    )
+
+    if spec is None or spec.loader is None:
+        raise ImportError(
+            f"Unable to load subscription manager from {module_path}"
+        )
+
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.SubscriptionTier, module.get_subscription_manager
 
 
 def check_python_imports():
@@ -105,28 +134,48 @@ def test_subscription_manager():
     print_info("Testing subscription manager...")
 
     try:
-        # Import the subscription manager
-        sys.path.insert(0, "shared")
-        from subscription_manager import SubscriptionTier, get_subscription_manager
+        subscription_tier, get_subscription_manager = (
+            load_subscription_manager()
+        )
 
         # Create manager instance
         manager = get_subscription_manager()
         print_success("  Subscription manager imported")
 
         # Test creating subscriptions
-        manager.upgrade_subscription("test_user_1", SubscriptionTier.PRO, 30, "test")
+        manager.upgrade_subscription(
+            "test_user_1",
+            subscription_tier.PRO,
+            30,
+            "test",
+        )
         print_success("  Pro subscription created")
 
-        manager.upgrade_subscription("test_user_2", SubscriptionTier.ENTERPRISE, 30, "test")
+        manager.upgrade_subscription(
+            "test_user_2",
+            subscription_tier.ENTERPRISE,
+            30,
+            "test",
+        )
         print_success("  Enterprise subscription created")
 
         # Get revenue stats
         stats = manager.get_revenue_stats()
-        print_success(f"  Revenue stats retrieved: ${stats['monthly_recurring_revenue']} MRR")
+        print_success(
+            "  Revenue stats retrieved: "
+            f"${stats['monthly_recurring_revenue']} MRR"
+        )
 
         return True
-    except Exception as e:
-        print_error(f"  Error: {str(e)}")
+    except (
+        ImportError,
+        AttributeError,
+        RuntimeError,
+        ValueError,
+        KeyError,
+        TypeError,
+    ) as err:
+        print_error(f"  Error: {str(err)}")
         return False
 
 
@@ -135,19 +184,30 @@ def generate_demo_data():
     print_info("Generating demo data...")
 
     try:
-        sys.path.insert(0, "shared")
-        from subscription_manager import SubscriptionTier, get_subscription_manager
+        subscription_tier, get_subscription_manager = (
+            load_subscription_manager()
+        )
 
         manager = get_subscription_manager()
 
         # Create 5 Pro subscribers
         for i in range(5):
-            manager.upgrade_subscription(f"pro_user_{i + 1}", SubscriptionTier.PRO, 30, "demo")
+            manager.upgrade_subscription(
+                f"pro_user_{i + 1}",
+                subscription_tier.PRO,
+                30,
+                "demo",
+            )
         print_success("  Created 5 Pro subscribers")
 
         # Create 10 Enterprise subscribers
         for i in range(10):
-            manager.upgrade_subscription(f"ent_user_{i + 1}", SubscriptionTier.ENTERPRISE, 30, "demo")
+            manager.upgrade_subscription(
+                f"ent_user_{i + 1}",
+                subscription_tier.ENTERPRISE,
+                30,
+                "demo",
+            )
         print_success("  Created 10 Enterprise subscribers")
 
         # Get final stats
@@ -157,12 +217,21 @@ def generate_demo_data():
 
         if stats["monthly_recurring_revenue"] >= 2000:
             print_success(
-                f"  🎉 TARGET ACHIEVED! ({stats['monthly_recurring_revenue'] / 2000 * 100:.1f}% of $2,000 goal)"
+                "  🎉 TARGET ACHIEVED! "
+                f"({stats['monthly_recurring_revenue'] / 2000 * 100:.1f}% "
+                "of $2,000 goal)"
             )
 
         return True
-    except Exception as e:
-        print_error(f"  Error: {str(e)}")
+    except (
+        ImportError,
+        AttributeError,
+        RuntimeError,
+        ValueError,
+        KeyError,
+        TypeError,
+    ) as err:
+        print_error(f"  Error: {str(err)}")
         return False
 
 
@@ -173,11 +242,14 @@ def start_test_server():
     print_info("  Press Ctrl+C to stop the server")
 
     try:
-        subprocess.run(["python3", "-m", "http.server", "8000"])
+        subprocess.run(
+            ["python3", "-m", "http.server", "8000"],
+            check=False,
+        )
     except KeyboardInterrupt:
         print_success("\n  Server stopped")
-    except Exception as e:
-        print_error(f"  Error starting server: {str(e)}")
+    except (subprocess.SubprocessError, OSError) as err:
+        print_error(f"  Error starting server: {str(err)}")
 
 
 def create_local_settings():
@@ -196,12 +268,12 @@ def create_local_settings():
         }
 
         try:
-            with open("local.settings.json", "w") as f:
+            with open("local.settings.json", "w", encoding="utf-8") as f:
                 json.dump(settings, f, indent=2)
             print_success("  local.settings.json created")
             return True
-        except Exception as e:
-            print_error(f"  Error: {str(e)}")
+        except (OSError, TypeError, ValueError) as err:
+            print_error(f"  Error: {str(err)}")
             return False
     else:
         print_success("  local.settings.json already exists")
@@ -216,10 +288,16 @@ def print_next_steps():
 
     print(f"{Colors.GREEN}1. View the Pricing Page:{Colors.END}")
     print("   python3 -m http.server 8000")
-    print("   Then open: http://localhost:8000/web/monetization/pricing.html\n")
+    print(
+        "   Then open: "
+        "http://localhost:8000/web/monetization/pricing.html\n"
+    )
 
     print(f"{Colors.GREEN}2. View the Admin Dashboard:{Colors.END}")
-    print("   Open: http://localhost:8000/web/monetization/admin_dashboard.html\n")
+    print(
+        "   Open: "
+        "http://localhost:8000/web/monetization/admin_dashboard.html\n"
+    )
 
     print(f"{Colors.GREEN}3. Test the APIs (optional):{Colors.END}")
     print("   func host start")
@@ -233,7 +311,10 @@ def print_next_steps():
     print("   - web/monetization/admin_dashboard.html - Revenue dashboard")
     print("   - web/monetization/my-subscription.html - User subscription")
     print("   - web/monetization/checkout.html - Payment page")
-    print("   - web/monetization/subscription-success.html - Success page")
+    print(
+        "   - web/monetization/subscription-success.html "
+        "- Success page"
+    )
     print("   - web/monetization/account.html - Account settings\n")
 
 
@@ -264,7 +345,9 @@ def main():
 
     # Step 5: Generate demo data
     generate_demo = input(
-        f"{Colors.BLUE}Generate demo data (5 Pro + 10 Enterprise subscribers)? (y/n): {Colors.END}"
+        f"{Colors.BLUE}Generate demo data "
+        "(5 Pro + 10 Enterprise subscribers)? "
+        f"(y/n): {Colors.END}"
     ).lower()
     if generate_demo == "y":
         generate_demo_data()
@@ -274,7 +357,9 @@ def main():
     print_next_steps()
 
     # Step 7: Offer to start server
-    start_server = input(f"{Colors.BLUE}Start test server now? (y/n): {Colors.END}").lower()
+    start_server = input(
+        f"{Colors.BLUE}Start test server now? (y/n): {Colors.END}"
+    ).lower()
     if start_server == "y":
         start_test_server()
 
@@ -283,11 +368,19 @@ def main():
 
 if __name__ == "__main__":
     try:
-        success = main()
-        sys.exit(0 if success else 1)
+        sys.exit(0 if main() else 1)
     except KeyboardInterrupt:
         print(f"\n{Colors.YELLOW}Setup interrupted{Colors.END}")
         sys.exit(1)
-    except Exception as e:
-        print_error(f"Unexpected error: {str(e)}")
+    except (
+        RuntimeError,
+        ValueError,
+        OSError,
+        ImportError,
+        AttributeError,
+        KeyError,
+        TypeError,
+        subprocess.SubprocessError,
+    ) as err:
+        print_error(f"Unexpected error: {str(err)}")
         sys.exit(1)
