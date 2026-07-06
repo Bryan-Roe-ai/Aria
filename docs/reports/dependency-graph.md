@@ -1,20 +1,17 @@
 # Dependency Graph
 
 ## code_generation_quickstart.py
-
 - pathlib
 - runpy
 - sys
 
 ## chat_providers.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
 
 ## function_app.py
-
 - PIL
 - asyncio
 - azure.cognitiveservices.speech
@@ -75,20 +72,16 @@
 - wave
 
 ## blueprint.py
-
 - azure.functions
 
 ## LMSTUDIO_AGI_INTEGRATION_IMPL.py
-
 - os
 - urllib.request
 
 ## run_main_if_referenced.py
-
 - sys
 
 ## run_continuous_automation.py
-
 - argparse
 - datetime
 - os
@@ -99,8 +92,7 @@
 - time
 
 ## app.py
-
-- **future**
+- __future__
 - argparse
 - importlib
 - json
@@ -115,13 +107,11 @@
 - urllib
 
 ## autotrain.py
-
-- **future**
+- __future__
 - scripts.autotrain
 - warnings
 
 ## setup_monetization.py
-
 - json
 - pathlib
 - subprocess
@@ -129,22 +119,19 @@
 - sys
 
 ## lora_infer_bridge.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
 
 ## token_utils.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
 
 ## agi_provider.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
@@ -154,13 +141,11 @@
 ## main.py
 
 ## code_generation_demo.py
-
 - pathlib
 - runpy
 - sys
 
 ## run_automation.py
-
 - argparse
 - os
 - pathlib
@@ -169,14 +154,12 @@
 - sys
 
 ## website_generator_demo.py
-
 - pathlib
 - runpy
 - sys
 
 ## local_dev_adapter.py
-
-- **future**
+- __future__
 - argparse
 - azure.functions
 - dotenv
@@ -192,90 +175,76 @@
 - types
 - typing
 
-## aria_bot/**init**.py
-
-- **future**
+## aria_bot/__init__.py
+- __future__
 - importlib.util
 - pathlib
 - sys
 
-## aria_bot/**main**.py
-
-- **future**
+## aria_bot/__main__.py
+- __future__
 - importlib
 
 ## generated_tools/data_datetime_utils.py
-
-- **future**
+- __future__
 - collections.abc
 - datetime
 
 ## generated_tools/data_table_utils.py
-
 - collections
 - collections.abc
 - typing
 
 ## generated_tools/data_record_utils.py
-
-- **future**
+- __future__
 - collections.abc
 - typing
 
 ## generated_tools/data_compare_utils.py
-
 - collections.abc
 - typing
 
 ## generated_tools/data_stats_utils.py
-
-- **future**
+- __future__
 - collections.abc
 
 ## generated_tools/data_text_utils.py
-
-- **future**
+- __future__
 - collections
 - collections.abc
 - re
 - typing
 
 ## generated_tools/data_validation_utils.py
-
-- **future**
+- __future__
 - collections.abc
 - re
 - typing
 
 ## generated_tools/data_struct_utils.py
-
-- **future**
+- __future__
 - collections.abc
 - typing
 
-## ai_projects/**init**.py
+## ai_projects/__init__.py
 
-## ai_projects/quantum_ml/**init**.py
-
+## ai_projects/quantum_ml/__init__.py
 - pathlib
 
 ## core/agent.py
-
-- **future**
+- __future__
 - abc
 - core.task
 - typing
 
 ## core/notifications.py
-
-- **future**
+- __future__
 - json
 - typing
 - urllib.error
 - urllib.request
 
-## core/**init**.py
-
+## core/__init__.py
 - agent
 - core.agent
 - core.registry
@@ -286,31 +255,27 @@
 - task
 
 ## core/cycle_observer.py
-
-- **future**
+- __future__
 - core.bus
 - core.memory.store
 - time
 - typing
 
 ## core/task.py
-
-- **future**
+- __future__
 - dataclasses
 - typing
 - uuid
 
 ## core/queue.py
-
-- **future**
+- __future__
 - asyncio
 - collections.abc
 - contextlib
 - typing
 
 ## core/runner.py
-
-- **future**
+- __future__
 - core.agents.critique_agent
 - core.agents.debate_agent
 - core.agents.goal_evolution_agent
@@ -334,30 +299,26 @@
 - typing
 
 ## core/router.py
-
-- **future**
+- __future__
 - core.agent
 - core.registry
 - core.task
 - typing
 
 ## core/registry.py
-
-- **future**
+- __future__
 - collections.abc
 - core.agent
 
 ## core/bus.py
-
-- **future**
+- __future__
 - collections
 - collections.abc
 - threading
 - typing
 
-## core/**main**.py
-
-- **future**
+## core/__main__.py
+- __future__
 - argparse
 - collections.abc
 - core.runner
@@ -365,13 +326,11 @@
 - pathlib
 - sys
 
-## core/ingestion/**init**.py
-
+## core/ingestion/__init__.py
 - core.ingestion.pipeline
 
 ## core/ingestion/pipeline.py
-
-- **future**
+- __future__
 - abc
 - core.memory.store
 - csv
@@ -379,13 +338,11 @@
 - typing
 - urllib.request
 
-## core/knowledge/**init**.py
-
+## core/knowledge/__init__.py
 - core.knowledge.graph
 
 ## core/knowledge/graph.py
-
-- **future**
+- __future__
 - collections
 - core.memory.store
 - json
@@ -393,7 +350,6 @@
 - yaml
 
 ## core/memory/store.py
-
 - collections
 - collections.abc
 - copy
@@ -403,36 +359,31 @@
 - typing
 - uuid
 
-## core/memory/**init**.py
-
-- **future**
+## core/memory/__init__.py
+- __future__
 - core.memory.store
 - datetime
 - json
 - store
 
 ## core/memory/sqlite_backend.py
-
-- **future**
+- __future__
 - json
 - sqlite3
 - typing
 
-## core/llm/**init**.py
-
+## core/llm/__init__.py
 - core.llm.client
 
 ## core/llm/client.py
-
-- **future**
+- __future__
 - collections.abc
 - importlib
 - json
 - os
 
 ## core/agents/debate_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -442,8 +393,7 @@
 - re
 - typing
 
-## core/agents/**init**.py
-
+## core/agents/__init__.py
 - core.agents.critique_agent
 - core.agents.debate_agent
 - core.agents.goal_evolution_agent
@@ -457,8 +407,7 @@
 - core.agents.training_agent
 
 ## core/agents/hypothesis_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -469,8 +418,7 @@
 - typing
 
 ## core/agents/summarizer_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -481,8 +429,7 @@
 - typing
 
 ## core/agents/critique_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -493,8 +440,7 @@
 - typing
 
 ## core/agents/human_feedback_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.bus
 - core.memory.store
@@ -502,8 +448,7 @@
 - typing
 
 ## core/agents/goal_evolution_agent.py
-
-- **future**
+- __future__
 - collections.abc
 - core.agent
 - core.llm.client
@@ -514,8 +459,7 @@
 - re
 
 ## core/agents/reasoning_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -526,8 +470,7 @@
 - typing
 
 ## core/agents/reflection_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -538,8 +481,7 @@
 - typing
 
 ## core/agents/tool_agent.py
-
-- **future**
+- __future__
 - collections.abc
 - core.agent
 - core.task
@@ -548,8 +490,7 @@
 - urllib.request
 
 ## core/agents/planner_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.memory.store
@@ -559,8 +500,7 @@
 - uuid
 
 ## core/agents/llm_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.llm.client
 - core.task
@@ -569,8 +509,7 @@
 - typing
 
 ## core/agents/training_agent.py
-
-- **future**
+- __future__
 - core.agent
 - core.task
 - json
@@ -578,14 +517,12 @@
 - typing
 
 ## scripts/check_docs_for_cli_note.py
-
 - pathlib
 - re
 - sys
 
 ## scripts/auto_bootstrap.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -595,8 +532,7 @@
 - time
 
 ## scripts/validate_mcp_suite.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
@@ -605,7 +541,6 @@
 - typing
 
 ## scripts/autonomous_training_demo.py
-
 - argparse
 - datetime
 - json
@@ -618,8 +553,7 @@
 - time
 
 ## scripts/system_health_check.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - datetime
@@ -633,7 +567,6 @@
 - typing
 
 ## scripts/repo_automation.py
-
 - argparse
 - config_paths
 - config_validator
@@ -653,8 +586,7 @@
 - typing
 
 ## scripts/validate_mcp_setup.py
-
-- **future**
+- __future__
 - argparse
 - asyncio
 - dataclasses
@@ -667,7 +599,6 @@
 - typing
 
 ## scripts/aria_demo.py
-
 - pathlib
 - peft
 - re
@@ -676,7 +607,6 @@
 - transformers
 
 ## scripts/parallel_train.py
-
 - argparse
 - asyncio
 - datetime
@@ -695,14 +625,12 @@
 - yaml
 
 ## scripts/ignore_verify.py
-
-- **future**
+- __future__
 - pathlib
 - subprocess
 
 ## scripts/autonomous_training_orchestrator.py
-
-- **future**
+- __future__
 - argparse
 - atexit
 - config_validator
@@ -723,7 +651,6 @@
 - yaml
 
 ## scripts/benchmark_performance.py
-
 - json
 - pathlib
 - performance_utils
@@ -732,7 +659,6 @@
 - time
 
 ## scripts/test_ai_improvements.py
-
 - hybrid_qnn
 - pathlib
 - pytest
@@ -742,8 +668,7 @@
 - train_lora
 
 ## scripts/agi_persistence_prune.py
-
-- **future**
+- __future__
 - argparse
 - json
 - os
@@ -753,7 +678,6 @@
 - typing
 
 ## scripts/setup_env_check.py
-
 - json
 - os
 - pathlib
@@ -762,8 +686,7 @@
 - urllib.request
 
 ## scripts/evaluate_local_model.py
-
-- **future**
+- __future__
 - argparse
 - evaluation_utils
 - json
@@ -772,18 +695,16 @@
 - time
 - typing
 
-## scripts/**init**.py
+## scripts/__init__.py
 
 ## scripts/generate_site_bundle.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
 - pathlib
 
 ## scripts/job_queue.py
-
 - dataclasses
 - datetime
 - enum
@@ -793,13 +714,11 @@
 - uuid
 
 ## scripts/config_paths.py
-
-- **future**
+- __future__
 - pathlib
 
 ## scripts/sql_local_tools.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - json
@@ -811,8 +730,7 @@
 - typing
 
 ## scripts/repair_data_out_status.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -820,7 +738,6 @@
 - re
 
 ## scripts/cleanup_artifacts.py
-
 - argparse
 - datetime
 - json
@@ -828,7 +745,6 @@
 - time
 
 ## scripts/aria_test.py
-
 - pathlib
 - peft
 - sys
@@ -837,7 +753,6 @@
 - typing
 
 ## scripts/distributed_benchmark.py
-
 - argparse
 - datetime
 - functools
@@ -857,7 +772,6 @@
 - warnings
 
 ## scripts/aria_test_debug.py
-
 - pathlib
 - peft
 - sys
@@ -865,8 +779,7 @@
 - transformers
 
 ## scripts/evaluate_azure_model.py
-
-- **future**
+- __future__
 - argparse
 - json
 - openai
@@ -878,8 +791,7 @@
 - typing
 
 ## scripts/fast_validate.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - datetime
@@ -893,8 +805,7 @@
 - typing
 
 ## scripts/generate_github_actions_dataset.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - datetime
@@ -906,15 +817,13 @@
 - yaml
 
 ## scripts/vram_calculator.py
-
-- **future**
+- __future__
 - argparse
 - json
 - subprocess
 - torch
 
 ## scripts/test_aria_automation.py
-
 - os
 - pathlib
 - pytest
@@ -922,8 +831,7 @@
 - sys
 
 ## scripts/repo_health_automation.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - dataclasses
@@ -935,17 +843,15 @@
 - time
 
 ## scripts/generate_evaluation_set.py
-
-- **future**
+- __future__
 - hashlib
 - json
 - pathlib
 - typing
 
 ## scripts/vision_inference.py
-
 - PIL
-- **future**
+- __future__
 - argparse
 - base64
 - io
@@ -956,20 +862,17 @@
 - torch
 
 ## scripts/final_validation.py
-
 - functools
 - pathlib
 - re
 
 ## scripts/check_cli_scripts_sys_path.py
-
 - pathlib
 - re
 - sys
 
 ## scripts/setup_local_llm.py
-
-- **future**
+- __future__
 - argparse
 - importlib.util
 - io
@@ -985,7 +888,6 @@
 - urllib.request
 
 ## scripts/gradio_demo.py
-
 - collections
 - contextlib
 - datetime
@@ -1010,8 +912,7 @@
 - wave
 
 ## scripts/watch_continuous_automation.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - dataclasses
@@ -1022,13 +923,11 @@
 - time
 
 ## scripts/gradio_maintenance.py
-
 - os
 - time
 
 ## scripts/validate_eval_artifacts.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - json
@@ -1036,14 +935,12 @@
 - typing
 
 ## scripts/sql_demo.py
-
 - pathlib
 - shared.sql_engine
 - sys
 - typing
 
 ## scripts/aria_automation.py
-
 - argparse
 - dataclasses
 - datetime
@@ -1059,13 +956,11 @@
 - typing
 
 ## scripts/validate_dashboard.py
-
 - pathlib
 - re
 
 ## scripts/evaluate_quantum_model.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
@@ -1074,7 +969,6 @@
 - typing
 
 ## scripts/backup_manager.py
-
 - argparse
 - datetime
 - hashlib
@@ -1088,8 +982,7 @@
 - typing
 
 ## scripts/lmstudio_chat_fix.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -1102,7 +995,6 @@
 - urllib.request
 
 ## scripts/validate_optimizations.py
-
 - aria_web.server
 - batch_evaluator
 - pathlib
@@ -1112,7 +1004,6 @@
 - time
 
 ## scripts/notification_system.py
-
 - argparse
 - json
 - pathlib
@@ -1122,7 +1013,6 @@
 - win10toast
 
 ## scripts/dashboard.py
-
 - datetime
 - os
 - pathlib
@@ -1132,7 +1022,6 @@
 - typing
 
 ## scripts/test_runner.py
-
 - argparse
 - datetime
 - importlib.util
@@ -1144,8 +1033,7 @@
 - time
 
 ## scripts/quantum_llm_status_check.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
@@ -1154,7 +1042,6 @@
 - typing
 
 ## scripts/status_dashboard.py
-
 - argparse
 - datetime
 - json
@@ -1167,7 +1054,6 @@
 - typing
 
 ## scripts/training_analytics.py
-
 - argparse
 - datetime
 - os
@@ -1177,8 +1063,7 @@
 - sys
 
 ## scripts/provider_smoke.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - shared.core.module_registry
@@ -1186,8 +1071,7 @@
 - sys
 
 ## scripts/autotrain.py
-
-- **future**
+- __future__
 - argparse
 - config_paths
 - dataclasses
@@ -1202,8 +1086,7 @@
 - yaml
 
 ## scripts/master_orchestrator.py
-
-- **future**
+- __future__
 - argparse
 - config_paths
 - config_validator
@@ -1221,7 +1104,6 @@
 - yaml
 
 ## scripts/quantum_llm_trainer.py
-
 - argparse
 - datetime
 - hybrid_qnn
@@ -1241,8 +1123,7 @@
 - yaml
 
 ## scripts/run_pytest_parallel.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - math
@@ -1253,11 +1134,9 @@
 - typing
 
 ## scripts/self_learning_chat.py
-
 - scripts.training.cli.self_learning_chat
 
 ## scripts/train_quantum_llm_chat.py
-
 - argparse
 - datetime
 - inspect
@@ -1271,8 +1150,7 @@
 - torch.utils.data
 
 ## scripts/ci_orchestrator.py
-
-- **future**
+- __future__
 - argparse
 - concurrent.futures
 - config_paths
@@ -1286,8 +1164,7 @@
 - typing
 
 ## scripts/quantum_llm_health_check.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
@@ -1295,22 +1172,19 @@
 - typing
 
 ## scripts/gradio_webhook.py
-
 - json
 - os
 - time
 
 ## scripts/azureml_ci_validate.py
-
-- **future**
+- __future__
 - os
 - pathlib
 - shutil
 - subprocess
 
 ## scripts/model_deployer.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -1320,12 +1194,10 @@
 - typing
 
 ## scripts/task_complete_mcp_server.py
-
 - json
 - sys
 
 ## scripts/aria_test_final.py
-
 - pathlib
 - peft
 - re
@@ -1334,8 +1206,7 @@
 - transformers
 
 ## scripts/evaluate_openai_model.py
-
-- **future**
+- __future__
 - argparse
 - json
 - openai
@@ -1347,23 +1218,20 @@
 - typing
 
 ## scripts/validate_eval_workflow_setup.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - json
 - pathlib
 
 ## scripts/test_autonomous_agent.py
-
 - pathlib
 - pytest
 - subprocess
 - sys
 
 ## scripts/resource_monitor.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -1375,13 +1243,11 @@
 - typing
 
 ## scripts/sync_docs_chat.py
-
-- **future**
+- __future__
 - pathlib
 - shutil
 
 ## scripts/monitor_autonomous_training.py
-
 - argparse
 - csv
 - datetime
@@ -1392,8 +1258,7 @@
 - time
 
 ## scripts/run_repo_agents.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - dataclasses
@@ -1404,15 +1269,13 @@
 - sys
 
 ## scripts/generate_synthetic_autonomous_datasets.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
 
 ## scripts/gradio_hello.py
-
-- **future**
+- __future__
 - datetime
 - gradio
 - gtts
@@ -1427,8 +1290,7 @@
 - typing
 
 ## scripts/autonomous_code_agent.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - datetime
@@ -1448,8 +1310,7 @@
 - urllib.request
 
 ## scripts/multi_agent.py
-
-- **future**
+- __future__
 - argparse
 - concurrent.futures
 - dataclasses
@@ -1463,8 +1324,7 @@
 - typing
 
 ## scripts/quantum_autorun.py
-
-- **future**
+- __future__
 - argparse
 - config_paths
 - dataclasses
@@ -1478,16 +1338,14 @@
 - yaml
 
 ## scripts/generate_aria_schema.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - server
 - sys
 
 ## scripts/integration_smoke.py
-
-- **future**
+- __future__
 - argparse
 - config_paths
 - dataclasses
@@ -1502,8 +1360,7 @@
 - urllib.request
 
 ## scripts/dab_verify.py
-
-- **future**
+- __future__
 - argparse
 - json
 - os
@@ -1511,7 +1368,6 @@
 - typing
 
 ## scripts/demo_quantum_llm.py
-
 - json
 - pathlib
 - sys
@@ -1519,8 +1375,7 @@
 - yaml
 
 ## scripts/automate_core_files.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -1530,8 +1385,7 @@
 - typing
 
 ## scripts/batch_evaluator.py
-
-- **future**
+- __future__
 - argparse
 - concurrent.futures
 - dataclasses
@@ -1547,11 +1401,9 @@
 - yaml
 
 ## scripts/gradio_utils.py
-
 - datetime
 
 ## scripts/lm_studio_analyzer.py
-
 - argparse
 - json
 - os
@@ -1559,8 +1411,7 @@
 - subprocess
 
 ## scripts/generate_ai_tokens.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - json
@@ -1578,12 +1429,10 @@
 - urllib.request
 
 ## scripts/cleanup_query_metrics.py
-
-- **future**
+- __future__
 - re
 
 ## scripts/test_repo_automation.py
-
 - importlib.util
 - pathlib
 - pytest
@@ -1592,7 +1441,6 @@
 - sys
 
 ## scripts/evaluate_model.py
-
 - argparse
 - collections
 - datetime
@@ -1602,30 +1450,26 @@
 - sys
 
 ## scripts/validate_site_bundles.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - sys
 
 ## scripts/validate_mcp_suite_drift.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
 - typing
 
 ## scripts/autonomous_agent_tasks.py
-
-- **future**
+- __future__
 - dataclasses
 - enum
 - typing
 
 ## scripts/evaluation_autorun.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -1635,7 +1479,6 @@
 - yaml
 
 ## scripts/test_watcher.py
-
 - argparse
 - pathlib
 - shlex
@@ -1643,14 +1486,12 @@
 - time
 
 ## scripts/validate_composite_actions.py
-
-- **future**
+- __future__
 - pathlib
 - yaml
 
 ## scripts/extract_chat_logs_dataset.py
-
-- **future**
+- __future__
 - argparse
 - hashlib
 - json
@@ -1658,7 +1499,6 @@
 - random
 
 ## scripts/pre_commit_check.py
-
 - argparse
 - os
 - pathlib
@@ -1667,14 +1507,12 @@
 - sys
 
 ## scripts/validate_foundry_config.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - re
 
 ## scripts/local_llm_server.py
-
 - datetime
 - http.server
 - json
@@ -1683,13 +1521,11 @@
 - time
 
 ## scripts/sql_demo_simple.py
-
 - pathlib
 - sqlite3
 
 ## scripts/pid_auto_edit_agent.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - datetime
@@ -1703,8 +1539,7 @@
 - typing
 
 ## scripts/quantum_llm_metrics_analyzer.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
@@ -1712,8 +1547,7 @@
 - typing
 
 ## scripts/inference/vision_avatar_integration.py
-
-- **future**
+- __future__
 - argparse
 - json
 - pathlib
@@ -1722,11 +1556,10 @@
 - torch
 - torch.utils.data
 
-## scripts/inference/**init**.py
+## scripts/inference/__init__.py
 
 ## scripts/agents/agents_md_audit_agent.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - datetime
@@ -1736,14 +1569,12 @@
 - scripts.agents.base
 - sys
 
-## scripts/agents/**init**.py
-
-- **future**
+## scripts/agents/__init__.py
+- __future__
 - scripts.agents.base
 
 ## scripts/agents/status_freshness_agent.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - datetime
@@ -1753,8 +1584,7 @@
 - sys
 
 ## scripts/agents/agi_health_agent.py
-
-- **future**
+- __future__
 - agi_provider
 - argparse
 - collections.abc
@@ -1766,8 +1596,7 @@
 - typing
 
 ## scripts/agents/docstring_audit_agent.py
-
-- **future**
+- __future__
 - argparse
 - ast
 - collections.abc
@@ -1778,8 +1607,7 @@
 - sys
 
 ## scripts/agents/base.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - datetime
@@ -1787,8 +1615,7 @@
 - pathlib
 
 ## scripts/agents/marker_audit_agent.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - json
@@ -1797,11 +1624,10 @@
 - scripts.agents.base
 - sys
 
-## scripts/evaluation/**init**.py
+## scripts/evaluation/__init__.py
 
 ## scripts/evaluation/evaluate_vision.py
-
-- **future**
+- __future__
 - argparse
 - json
 - numpy
@@ -1811,12 +1637,11 @@
 - torch
 - torch.utils.data
 
-## scripts/training/**init**.py
+## scripts/training/__init__.py
 
 ## scripts/training/train_vision.py
-
 - PIL
-- **future**
+- __future__
 - argparse
 - numpy
 - pathlib
@@ -1827,28 +1652,24 @@
 - torch.utils.data
 
 ## AI/evaluators.py
-
 - typing
 
 ## AI/test_agent.py
-
 - dotenv
 - evaluators
 - os
 - pytest_agent_evals
 
 ## AI/microsoft_phi-silica-3.6_v1/scripts/otel_callback.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
 
-## ai-projects/cooking-ai/src/**init**.py
+## ai-projects/cooking-ai/src/__init__.py
 
 ## ai-projects/cooking-ai/src/main.py
-
-- **future**
+- __future__
 - agents.recipe_agent
 - argparse
 - os
@@ -1856,36 +1677,31 @@
 - providers.local
 
 ## ai-projects/cooking-ai/src/utils/json_utils.py
-
-- **future**
+- __future__
 - json
 - jsonschema
 - re
 
 ## ai-projects/cooking-ai/src/providers/github_models.py
-
-- **future**
+- __future__
 - openai
 - os
 - typing
 
-## ai-projects/cooking-ai/src/providers/**init**.py
+## ai-projects/cooking-ai/src/providers/__init__.py
 
 ## ai-projects/cooking-ai/src/providers/local.py
-
-- **future**
+- __future__
 - json
 - re
 
 ## ai-projects/cooking-ai/src/agents/recipe_agent.py
-
-- **future**
+- __future__
 - typing
 - utils.json_utils
 
 ## ai-projects/cooking-ai/tests/test_agent.py
-
-- **future**
+- __future__
 - agents.recipe_agent
 - json
 - pathlib
@@ -1895,15 +1711,13 @@
 - utils.json_utils
 
 ## ai-projects/cooking-ai/tests/run_tests.py
-
-- **future**
+- __future__
 - importlib
 - pathlib
 - sys
 
 ## ai-projects/cooking-ai/tests/test_schemas.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -1911,33 +1725,28 @@
 - utils.json_utils
 
 ## ai-projects/cooking-ai/tests/debug_run_local.py
-
 - pathlib
 - providers.local
 - sys
 
 ## ai-projects/cooking-ai/tests/debug_agent_extract.py
-
 - agents.recipe_agent
 - pathlib
 - providers.local
 - sys
 
 ## ai-projects/cooking-ai/tests/_debug_local.py
-
 - providers.local
 
 ## ai-projects/cooking-ai/tests/debug_extract_local.py
-
 - pathlib
 - providers.local
 - sys
 
-## ai-projects/chat-cli/src/**init**.py
+## ai-projects/chat-cli/src/__init__.py
 
 ## ai-projects/chat-cli/src/chat_providers.py
-
-- **future**
+- __future__
 - agi_provider
 - collections.abc
 - dataclasses
@@ -1965,7 +1774,6 @@
 - urllib.request
 
 ## ai-projects/chat-cli/src/quantum_provider.py
-
 - chat_providers
 - collections.abc
 - json
@@ -1978,16 +1786,14 @@
 - typing
 
 ## ai-projects/chat-cli/src/local_agi_provider.py
-
-- **future**
+- __future__
 - collections.abc
 - core.llm.client
 - json
 - typing
 
 ## ai-projects/chat-cli/src/test_chat_cli.py
-
-- **future**
+- __future__
 - chat_cli
 - contextlib
 - io
@@ -1998,14 +1804,12 @@
 - unittest.mock
 
 ## ai-projects/chat-cli/src/_smoke_test.py
-
-- **future**
+- __future__
 - importlib
 - typing
 
 ## ai-projects/chat-cli/src/chat_cli.py
-
-- **future**
+- __future__
 - argparse
 - colorama
 - datetime
@@ -2018,14 +1822,12 @@
 - typing
 
 ## ai-projects/chat-cli/src/api.py
-
 - agi_provider
 - chat_providers
 - token_utils
 
 ## ai-projects/chat-cli/src/lora_infer_bridge.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - peft
@@ -2034,8 +1836,7 @@
 - transformers
 
 ## ai-projects/chat-cli/src/token_utils.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - math
@@ -2043,8 +1844,7 @@
 - transformers
 
 ## ai-projects/chat-cli/src/agi_provider.py
-
-- **future**
+- __future__
 - asyncio
 - chat_providers
 - collections.abc
@@ -2061,8 +1861,7 @@
 - typing
 
 ## ai-projects/chat-cli/src/test_chat_providers.py
-
-- **future**
+- __future__
 - agi_provider
 - chat_cli
 - chat_providers
@@ -2078,8 +1877,7 @@
 - unittest.mock
 
 ## ai-projects/lmstudio-mcp/lmstudio_agent_integration.py
-
-- **future**
+- __future__
 - asyncio
 - collections.abc
 - json
@@ -2091,16 +1889,13 @@
 - traceback
 - typing
 
-## ai-projects/lmstudio-mcp/**init**.py
-
+## ai-projects/lmstudio-mcp/__init__.py
 - lmstudio_mcp_server
 
 ## ai-projects/lmstudio-mcp/privacy_deployment_config.py
-
 - typing
 
 ## ai-projects/lmstudio-mcp/lmstudio_agi_integration.py
-
 - asyncio
 - json
 - lmstudio_agent_integration
@@ -2110,15 +1905,13 @@
 - typing
 
 ## ai-projects/lmstudio-mcp/agi_mcp_tools.py
-
-- **future**
+- __future__
 - agi_provider
 - pathlib
 - sys
 - typing
 
 ## ai-projects/lmstudio-mcp/agi_provider_examples.py
-
 - asyncio
 - lmstudio_agi_integration
 - pathlib
@@ -2126,7 +1919,6 @@
 - traceback
 
 ## ai-projects/lmstudio-mcp/privacy_first_ai.py
-
 - asyncio
 - dataclasses
 - datetime
@@ -2141,7 +1933,6 @@
 - typing
 
 ## ai-projects/lmstudio-mcp/test_lmstudio_mcp.py
-
 - asyncio
 - lmstudio_mcp_server
 - os
@@ -2150,7 +1941,6 @@
 - traceback
 
 ## ai-projects/lmstudio-mcp/quickstart.py
-
 - asyncio
 - httpx
 - pathlib
@@ -2159,7 +1949,6 @@
 - traceback
 
 ## ai-projects/lmstudio-mcp/verify_agent_integration.py
-
 - asyncio
 - lmstudio_agent_integration
 - lmstudio_mcp_server
@@ -2169,7 +1958,6 @@
 - traceback
 
 ## ai-projects/lmstudio-mcp/lmstudio_mcp_server.py
-
 - agi_mcp_tools
 - asyncio
 - httpx
@@ -2183,12 +1971,10 @@
 - typing
 
 ## ai-projects/my-agent-230a13f1/main.py
-
 - asyncio
 - azure.ai.agentserver.responses
 
 ## ai-projects/quantum-ml/train_ionosphere.py
-
 - joblib
 - matplotlib.pyplot
 - numpy
@@ -2203,7 +1989,6 @@
 - torch.utils.data
 
 ## ai-projects/quantum-ml/benchmark_all_datasets.py
-
 - datetime
 - json
 - matplotlib.pyplot
@@ -2220,7 +2005,6 @@
 - torch.utils.data
 
 ## ai-projects/quantum-ml/validate_quantum_llm.py
-
 - argparse
 - importlib
 - json
@@ -2236,13 +2020,11 @@
 - typing
 
 ## ai-projects/quantum-ml/demo_dashboard.py
-
 - requests
 - sys
 - time
 
 ## ai-projects/quantum-ml/quick_test_datasets.py
-
 - datetime
 - json
 - numpy
@@ -2259,7 +2041,6 @@
 - torch.utils.data
 
 ## ai-projects/quantum-ml/train_pennylane_simple.py
-
 - argparse
 - datetime
 - json
@@ -2274,7 +2055,6 @@
 - time
 
 ## ai-projects/quantum-ml/dataset_architecture_analyzer.py
-
 - datetime
 - json
 - numpy
@@ -2283,7 +2063,6 @@
 - sklearn.preprocessing
 
 ## ai-projects/quantum-ml/train_custom_dataset.py
-
 - argparse
 - joblib
 - json
@@ -2304,13 +2083,11 @@
 - yaml
 
 ## ai-projects/quantum-ml/submit_qsharp_circuit.py
-
 - azure.quantum
 - time
 - traceback
 
 ## ai-projects/quantum-ml/example_mcp_client.py
-
 - asyncio
 - azure.ai.inference
 - azure.ai.inference.models
@@ -2321,7 +2098,6 @@
 - os
 
 ## ai-projects/quantum-ml/deploy_banknote_to_azure.py
-
 - azure.identity
 - azure.quantum
 - datetime
@@ -2334,7 +2110,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/deploy_quantum_models_azure.py
-
 - pathlib
 - pickle
 - qiskit
@@ -2344,7 +2119,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/web_app.py
-
 - datetime
 - flask
 - flask_cors
@@ -2368,7 +2142,6 @@
 - time
 
 ## ai-projects/quantum-ml/test_quantum_hardware.py
-
 - azure.quantum
 - logging
 - numpy
@@ -2378,7 +2151,6 @@
 - sys
 
 ## ai-projects/quantum-ml/test_entanglement_patterns.py
-
 - datetime
 - hybrid_qnn
 - matplotlib.pyplot
@@ -2395,7 +2167,6 @@
 - torch.utils.data
 
 ## ai-projects/quantum-ml/train_heart_disease.py
-
 - joblib
 - matplotlib.pyplot
 - numpy
@@ -2411,7 +2182,6 @@
 - torch.utils.data
 
 ## ai-projects/quantum-ml/hyperparameter_optimization.py
-
 - datetime
 - itertools
 - json
@@ -2427,8 +2197,7 @@
 - warnings
 
 ## ai-projects/quantum-ml/test_azure_quantum.py
-
-- **future**
+- __future__
 - argparse
 - azure_quantum_integration
 - datetime
@@ -2442,7 +2211,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/submit_circuit_azure.py
-
 - azure.quantum
 - qiskit
 - qiskit_qir
@@ -2450,12 +2218,10 @@
 - traceback
 
 ## ai-projects/quantum-ml/run_azure_quantum_free.py
-
 - qiskit
 - src.azure_quantum_integration
 
 ## ai-projects/quantum-ml/quantum_mcp_server.py
-
 - asyncio
 - azure_quantum_integration
 - collections
@@ -2483,7 +2249,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/quantum_llm_demo.py
-
 - ai_projects.quantum_ml.src.quantum_llm
 - asyncio
 - collections
@@ -2494,7 +2259,6 @@
 - traceback
 
 ## ai-projects/quantum-ml/hyperparameter_tuning.py
-
 - dataset_loader
 - datetime
 - hybrid_qnn
@@ -2507,8 +2271,7 @@
 - torch.utils.data
 
 ## ai-projects/quantum-ml/quantum_llm_quickstart.py
-
-- **future**
+- __future__
 - argparse
 - json
 - logging
@@ -2521,7 +2284,6 @@
 - typing
 
 ## ai-projects/quantum-ml/classical_baseline_comparison.py
-
 - datetime
 - json
 - matplotlib.pyplot
@@ -2540,7 +2302,6 @@
 - warnings
 
 ## ai-projects/quantum-ml/quantum_llm_integration.py
-
 - argparse
 - json
 - logging
@@ -2548,7 +2309,6 @@
 - sys
 
 ## ai-projects/quantum-ml/deploy_to_azure_quantum.py
-
 - argparse
 - datetime
 - json
@@ -2557,8 +2317,7 @@
 - src.azure_quantum_integration
 
 ## ai-projects/quantum-ml/scripts/test_provider_gates.py
-
-- **future**
+- __future__
 - argparse
 - azure_quantum_integration
 - datetime
@@ -2571,8 +2330,7 @@
 - yaml
 
 ## ai-projects/quantum-ml/scripts/upgrade_qiskit_to_1x.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - pathlib
@@ -2583,23 +2341,20 @@
 - sys
 
 ## ai-projects/quantum-ml/scripts/run_hardware_tests.py
-
-- **future**
+- __future__
 - argparse
 - pathlib
 - sys
 - test_azure_quantum
 
 ## ai-projects/quantum-ml/scripts/run_experiment_grid.py
-
-- **future**
+- __future__
 - pathlib
 - subprocess
 - sys
 
 ## ai-projects/quantum-ml/scripts/submit_small_stabilizer.py
-
-- **future**
+- __future__
 - argparse
 - azure_quantum_integration
 - datetime
@@ -2611,16 +2366,14 @@
 - yaml
 
 ## ai-projects/quantum-ml/scripts/validate_qiskit_env.py
-
-- **future**
+- __future__
 - importlib
 - json
 - pkgutil
 - sys
 
 ## ai-projects/quantum-ml/scripts/run_simulated_circuit.py
-
-- **future**
+- __future__
 - argparse
 - datetime
 - json
@@ -2632,7 +2385,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/scripts/train_from_dataset.py
-
 - argparse
 - json
 - numpy
@@ -2646,8 +2398,7 @@
 - yaml
 
 ## ai-projects/quantum-ml/scripts/visualize_hardware_results.py
-
-- **future**
+- __future__
 - json
 - matplotlib.pyplot
 - pandas
@@ -2656,8 +2407,7 @@
 - yaml
 
 ## ai-projects/quantum-ml/scripts/submit_variational_hardware.py
-
-- **future**
+- __future__
 - argparse
 - azure_quantum_integration
 - datetime
@@ -2669,7 +2419,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/src/dataset_loader.py
-
 - numpy
 - pandas
 - pathlib
@@ -2678,10 +2427,9 @@
 - sklearn.preprocessing
 - typing
 
-## ai-projects/quantum-ml/src/**init**.py
+## ai-projects/quantum-ml/src/__init__.py
 
 ## ai-projects/quantum-ml/src/quantum_circuit_optimizer.py
-
 - collections
 - dataclasses
 - logging
@@ -2693,14 +2441,12 @@
 - typing
 
 ## ai-projects/quantum-ml/src/automate_quantum_job.py
-
 - azure.quantum
 - azure.quantum.qiskit
 - qiskit
 - time
 
 ## ai-projects/quantum-ml/src/quantum_llm_hybrid_trainer.py
-
 - dataclasses
 - json
 - logging
@@ -2714,8 +2460,7 @@
 - typing
 
 ## ai-projects/quantum-ml/src/quantum_code_llm.py
-
-- **future**
+- __future__
 - dataclasses
 - pathlib
 - string
@@ -2725,7 +2470,6 @@
 - typing
 
 ## ai-projects/quantum-ml/src/hybrid_qnn.py
-
 - logging
 - pennylane
 - torch
@@ -2733,14 +2477,12 @@
 - yaml
 
 ## ai-projects/quantum-ml/src/api.py
-
 - automate_quantum_job
 - azure_quantum_integration
 - quantum_classifier
 - quantum_llm_integrated
 
 ## ai-projects/quantum-ml/src/quantum_llm_datasets.py
-
 - json
 - logging
 - numpy
@@ -2751,7 +2493,6 @@
 - typing
 
 ## ai-projects/quantum-ml/src/quantum_transformer.py
-
 - hybrid_qnn
 - logging
 - math
@@ -2762,7 +2503,6 @@
 - torch.nn.functional
 
 ## ai-projects/quantum-ml/src/quantum_classifier.py
-
 - logging
 - numpy
 - pathlib
@@ -2774,7 +2514,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/src/quantum_llm_advanced.py
-
 - collections
 - dataclasses
 - hybrid_qnn
@@ -2785,7 +2524,6 @@
 - torch.nn.functional
 
 ## ai-projects/quantum-ml/src/azure_ml_integration.py
-
 - azureml.core
 - azureml.core.compute
 - azureml.core.model
@@ -2796,7 +2534,6 @@
 - typing
 
 ## ai-projects/quantum-ml/src/quantum_llm_monitor.py
-
 - collections
 - dataclasses
 - json
@@ -2809,7 +2546,6 @@
 - typing
 
 ## ai-projects/quantum-ml/src/quantum_llm_integrated.py
-
 - argparse
 - json
 - logging
@@ -2825,7 +2561,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/src/azure_quantum_integration.py
-
 - azure.identity
 - azure.quantum
 - azure.quantum.qiskit
@@ -2837,7 +2572,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/src/quantum_classifier_enhanced.py
-
 - logging
 - numpy
 - pathlib
@@ -2849,8 +2583,7 @@
 - torch.nn
 - yaml
 
-## ai-projects/quantum-ml/src/quantum_llm/**init**.py
-
+## ai-projects/quantum-ml/src/quantum_llm/__init__.py
 - circuit_cache
 - config
 - pipeline
@@ -2859,24 +2592,21 @@
 - quantum_sampler
 
 ## ai-projects/quantum-ml/src/quantum_llm/config.py
-
-- **future**
+- __future__
 - dataclasses
 - math
 - os
 - typing
 
 ## ai-projects/quantum-ml/src/quantum_llm/quantum_router.py
-
-- **future**
+- __future__
 - logging
 - numpy
 - pennylane
 - quantum_sampler
 
 ## ai-projects/quantum-ml/src/quantum_llm/circuit_cache.py
-
-- **future**
+- __future__
 - collections
 - hashlib
 - logging
@@ -2885,8 +2615,7 @@
 - typing
 
 ## ai-projects/quantum-ml/src/quantum_llm/quantum_embeddings.py
-
-- **future**
+- __future__
 - logging
 - numpy
 - pennylane
@@ -2896,8 +2625,7 @@
 - quantum_sampler
 
 ## ai-projects/quantum-ml/src/quantum_llm/quantum_sampler.py
-
-- **future**
+- __future__
 - circuit_cache
 - collections.abc
 - logging
@@ -2909,8 +2637,7 @@
 - warnings
 
 ## ai-projects/quantum-ml/src/quantum_llm/pipeline.py
-
-- **future**
+- __future__
 - asyncio
 - chat_providers
 - collections.abc
@@ -2927,7 +2654,6 @@
 - typing
 
 ## ai-projects/quantum-ml/production/test_api.py
-
 - datetime
 - json
 - pytest
@@ -2935,7 +2661,6 @@
 - time
 
 ## ai-projects/quantum-ml/production/banknote_api.py
-
 - datetime
 - flask
 - flask_cors
@@ -2949,7 +2674,6 @@
 - torch
 
 ## ai-projects/quantum-ml/experiments/auto_optimize.py
-
 - matplotlib.pyplot
 - numpy
 - pathlib
@@ -2965,7 +2689,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/experiments/parameter_tuning.py
-
 - matplotlib
 - matplotlib.pyplot
 - numpy
@@ -2979,7 +2702,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/experiments/extended_datasets.py
-
 - matplotlib
 - matplotlib.pyplot
 - numpy
@@ -2993,11 +2715,9 @@
 - sys
 
 ## ai-projects/quantum-ml/experiments/analyze_plots.py
-
 - pathlib
 
 ## ai-projects/quantum-ml/experiments/quick_demo.py
-
 - extended_datasets
 - pathlib
 - sys
@@ -3005,7 +2725,6 @@
 - traceback
 
 ## ai-projects/quantum-ml/experiments/run_all_experiments.py
-
 - datetime
 - experiments.analyze_plots
 - experiments.extended_datasets
@@ -3015,7 +2734,6 @@
 - time
 
 ## ai-projects/quantum-ml/examples/train_models.py
-
 - matplotlib
 - matplotlib.pyplot
 - numpy
@@ -3028,7 +2746,6 @@
 - sys
 
 ## ai-projects/quantum-ml/examples/create_circuits.py
-
 - numpy
 - pathlib
 - pennylane
@@ -3038,7 +2755,6 @@
 - sys
 
 ## ai-projects/quantum-ml/examples/azure_integration.py
-
 - pathlib
 - qiskit
 - src.azure_quantum_integration
@@ -3046,7 +2762,6 @@
 - yaml
 
 ## ai-projects/quantum-ml/examples/run_simulations.py
-
 - matplotlib
 - matplotlib.pyplot
 - numpy
@@ -3057,7 +2772,6 @@
 - qiskit_aer.noise
 
 ## ai-projects/llm-maker/web_server.py
-
 - http.server
 - json
 - logging
@@ -3072,7 +2786,6 @@
 - website_maker
 
 ## ai-projects/llm-maker/llm_maker_mcp_server.py
-
 - asyncio
 - json
 - logging
@@ -3086,8 +2799,7 @@
 - src.tool_validator
 - sys
 
-## ai-projects/llm-maker/src/**init**.py
-
+## ai-projects/llm-maker/src/__init__.py
 - tool_executor
 - tool_maker
 - tool_registry
@@ -3095,7 +2807,6 @@
 - website_maker
 
 ## ai-projects/llm-maker/src/tool_maker.py
-
 - logging
 - pathlib
 - shared.chat_providers
@@ -3105,14 +2816,12 @@
 - yaml
 
 ## ai-projects/llm-maker/src/tool_validator.py
-
 - ast
 - logging
 - pathlib
 - yaml
 
 ## ai-projects/llm-maker/src/tool_executor.py
-
 - RestrictedPython
 - RestrictedPython.Guards
 - contextlib
@@ -3124,7 +2833,6 @@
 - typing
 
 ## ai-projects/llm-maker/src/website_maker.py
-
 - argparse
 - datetime
 - json
@@ -3135,7 +2843,6 @@
 - sys
 
 ## ai-projects/llm-maker/src/tool_registry.py
-
 - dataclasses
 - datetime
 - json
@@ -3145,14 +2852,12 @@
 - uuid
 
 ## ai-projects/llm-maker/tests/test_validator.py
-
 - pathlib
 - pytest
 - sys
 - tool_validator
 
 ## ai-projects/llm-maker/tests/test_executor.py
-
 - pathlib
 - pytest
 - src.tool_executor
@@ -3160,14 +2865,12 @@
 - tool_executor
 
 ## ai-projects/llm-maker/tests/test_validate_perf.py
-
 - pathlib
 - sys
 - time
 - tool_validator
 
 ## ai-projects/llm-maker/tests/test_registry.py
-
 - pathlib
 - pytest
 - sys
@@ -3177,11 +2880,9 @@
 ## ai-projects/llm-maker/examples/fibonacci.py
 
 ## ai-projects/llm-maker/examples/text_processor.py
-
 - re
 
 ## ai-projects/llm-maker/examples/quick_start.py
-
 - pathlib
 - sys
 - tool_executor
@@ -3189,7 +2890,6 @@
 - tool_registry
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/python mcp.py
-
 - asyncio
 - azure.ai.inference
 - azure.ai.inference.models
@@ -3203,7 +2903,6 @@
 - os
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azure_ml_training.py
-
 - argparse
 - azure.ai.ml
 - azure.ai.ml.constants
@@ -3213,7 +2912,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azure_foundry_deploy.py
-
 - argparse
 - azure.ai.ml
 - azure.ai.ml.constants
@@ -3223,7 +2921,6 @@
 - time
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/lr_finder.py
-
 - argparse
 - json
 - matplotlib.pyplot
@@ -3236,8 +2933,7 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/otel_callback.py
-
-- **future**
+- __future__
 - logging
 - opentelemetry
 - opentelemetry.exporter.otlp.proto.grpc.trace_exporter
@@ -3249,7 +2945,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/model_exporter.py
-
 - argparse
 - huggingface_hub
 - onnx
@@ -3260,8 +2955,7 @@
 - transformers
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_sentence_transformer.py
-
-- **future**
+- __future__
 - argparse
 - contextlib
 - datasets
@@ -3277,7 +2971,6 @@
 - traceback
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/data_augmenter.py
-
 - argparse
 - dataclasses
 - json
@@ -3286,7 +2979,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/gpu_optimizer.py
-
 - argparse
 - dataclasses
 - pathlib
@@ -3296,7 +2988,6 @@
 - yaml
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/dataset_analyzer.py
-
 - argparse
 - collections
 - dataclasses
@@ -3307,7 +2998,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/auto_eval.py
-
 - argparse
 - dataclasses
 - datasets
@@ -3324,7 +3014,6 @@
 - yaml
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/model_server.py
-
 - argparse
 - asyncio
 - datetime
@@ -3339,7 +3028,6 @@
 - uvicorn
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/semantic_pruning.py
-
 - argparse
 - dataclasses
 - json
@@ -3349,7 +3037,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/prepare_dataset.py
-
 - argparse
 - collections.abc
 - csv
@@ -3359,7 +3046,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_lora.py
-
 - argparse
 - collections.abc
 - dataclasses
@@ -3384,7 +3070,6 @@
 - yaml
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/run_pipeline.py
-
 - argparse
 - json
 - pathlib
@@ -3394,7 +3079,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/metrics_logger.py
-
 - applicationinsights
 - base64
 - datetime
@@ -3412,7 +3096,6 @@
 - urllib.request
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/training_monitor.py
-
 - argparse
 - dataclasses
 - datetime
@@ -3424,7 +3107,6 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/rag_pipeline.py
-
 - argparse
 - dataclasses
 - json
@@ -3436,8 +3118,7 @@
 - typing
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/submit_sentence_transformer_azureml.py
-
-- **future**
+- __future__
 - argparse
 - os
 - pathlib
@@ -3446,7 +3127,6 @@
 - sys
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/local_train/train_local.py
-
 - argparse
 - dataclasses
 - datasets
@@ -3459,7 +3139,6 @@
 - yaml
 
 ## ai-projects/lora-training/microsoft_phi-silica-3.6_v1/foundry/score_foundry.py
-
 - json
 - os
 - pathlib
@@ -3468,7 +3147,6 @@
 - transformers
 
 ## ai-projects/lora-training/quantum-ai/src/hybrid_qnn.py
-
 - logging
 - numpy
 - qiskit
@@ -3485,7 +3163,6 @@
 - torch.utils.data
 
 ## ai-projects/lora-training/quantum-ai/src/quantum_classifier.py
-
 - logging
 - numpy
 - qiskit
@@ -3500,7 +3177,6 @@
 - sklearn.preprocessing
 
 ## ai-projects/lora-training/quantum-ai/src/azure_quantum_integration.py
-
 - azure.quantum
 - azure.quantum.qiskit
 - logging
@@ -3510,8 +3186,7 @@
 - typing
 
 ## ai-projects/email-spam-workflow/workflow.py
-
-- **future**
+- __future__
 - agent_framework
 - agent_framework.azure
 - azure.identity.aio
@@ -3520,8 +3195,7 @@
 - typing
 
 ## ai-projects/email-spam-workflow/main.py
-
-- **future**
+- __future__
 - agent_framework
 - argparse
 - asyncio
@@ -3531,14 +3205,12 @@
 - workflow
 
 ## ai-projects/writer-reviewer-workflow/workflow.py
-
 - agent_framework
 - agent_framework.azure
 - azure.identity.aio
 - os
 
 ## ai-projects/writer-reviewer-workflow/main.py
-
 - agent_framework
 - argparse
 - asyncio
@@ -3550,8 +3222,7 @@
 - workflow
 
 ## ai-projects/writer-reviewer-workflow/prototype_workflow.py
-
-- **future**
+- __future__
 - dataclasses
 - json
 - keyword
@@ -3564,8 +3235,7 @@
 - typing
 
 ## aria-bot/aria_bot/validator.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - logging
@@ -3573,9 +3243,8 @@
 - shutil
 - subprocess
 
-## aria-bot/aria_bot/**init**.py
-
-- **future**
+## aria-bot/aria_bot/__init__.py
+- __future__
 - analyzer
 - commit_system
 - defaults
@@ -3587,8 +3256,7 @@
 - validator
 
 ## aria-bot/aria_bot/analyzer.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - logging
@@ -3597,8 +3265,7 @@
 - risk_manager
 
 ## aria-bot/aria_bot/executor.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - logging
@@ -3607,8 +3274,7 @@
 - risk_manager
 
 ## aria-bot/aria_bot/commit_system.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - logging
@@ -3617,12 +3283,10 @@
 - subprocess
 
 ## aria-bot/aria_bot/defaults.py
-
-- **future**
+- __future__
 
 ## aria-bot/aria_bot/planner.py
-
-- **future**
+- __future__
 - analyzer
 - collections.abc
 - dataclasses
@@ -3632,12 +3296,10 @@
 - risk_manager
 
 ## aria-bot/aria_bot/registry.py
-
-- **future**
+- __future__
 
 ## aria-bot/aria_bot/cli.py
-
-- **future**
+- __future__
 - argparse
 - collections.abc
 - defaults
@@ -3648,8 +3310,7 @@
 - sys
 
 ## aria-bot/aria_bot/orchestrator.py
-
-- **future**
+- __future__
 - analyzer
 - collections.abc
 - commit_system
@@ -3666,54 +3327,46 @@
 - time
 - validator
 
-## aria-bot/aria_bot/**main**.py
-
-- **future**
+## aria-bot/aria_bot/__main__.py
+- __future__
 - cli
 
 ## aria-bot/aria_bot/risk_manager.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - os
 - pathlib
 
-## function_app_domains/**init**.py
+## function_app_domains/__init__.py
 
 ## function_app_domains/subscriptions.py
-
-- **future**
+- __future__
 - function_app_domains.access
 - shared.email_notifications
 - shared.stripe_webhooks
 - shared.subscription_manager
 
 ## function_app_domains/agi.py
-
-- **future**
+- __future__
 - agi_provider
 - function_app_domains.access
 - shared.agi_persistence_sqlite
 
 ## function_app_domains/referrals.py
-
-- **future**
+- __future__
 - function_app_domains.access
 - shared.referral_system
 
 ## function_app_domains/access.py
-
-- **future**
+- __future__
 
 ## function_app_domains/aria_proxy.py
-
-- **future**
+- __future__
 - function_app_domains.access
 
 ## function_app_domains/quantum.py
-
-- **future**
+- __future__
 - function_app_domains.access
 - numpy
 - pennylane
@@ -3722,19 +3375,16 @@
 - torch
 
 ## function_app_domains/chat.py
-
-- **future**
+- __future__
 - function_app_domains.access
 - tiktoken
 
-## functions/http_ai_routes/**init**.py
-
+## functions/http_ai_routes/__init__.py
 - azure.functions
 - json
 - pathlib
 
-## functions/http_ai_runner/**init**.py
-
+## functions/http_ai_runner/__init__.py
 - azure.functions
 - chat_providers
 - json
@@ -3745,14 +3395,12 @@
 - typing
 
 ## functions/http_chat_web/function_app.py
-
 - azure.functions
 - pathlib
 - shared.http_utils
 - sys
 
-## functions/http_ai_status/**init**.py
-
+## functions/http_ai_status/__init__.py
 - azure.functions
 - chat_providers
 - importlib.util
@@ -3767,8 +3415,7 @@
 - time
 - yaml
 
-## functions/http_ai_provider_probe/**init**.py
-
+## functions/http_ai_provider_probe/__init__.py
 - azure.functions
 - chat_providers
 - json
@@ -3777,7 +3424,6 @@
 - sys
 
 ## functions/http_chat/function_app.py
-
 - azure.functions
 - chat_providers
 - json
@@ -3786,8 +3432,7 @@
 - shared.http_utils
 - sys
 
-## functions/timer_ai_runner/**init**.py
-
+## functions/timer_ai_runner/__init__.py
 - azure.functions
 - chat_providers
 - datetime
@@ -3797,8 +3442,7 @@
 - sys
 
 ## shared/agi_persistence.py
-
-- **future**
+- __future__
 - json
 - os
 - threading
@@ -3807,8 +3451,7 @@
 - uuid
 
 ## shared/db_logging.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -3817,7 +3460,6 @@
 - yaml
 
 ## shared/email_notifications.py
-
 - datetime
 - enum
 - json
@@ -3826,8 +3468,7 @@
 - re
 - typing
 
-## shared/**init**.py
-
+## shared/__init__.py
 - shared.file_cache
 - shared.http_utils
 - shared.import_helpers
@@ -3836,8 +3477,7 @@
 - shared.script_utils
 
 ## shared/config_validator.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - pathlib
@@ -3847,8 +3487,7 @@
 - yaml
 
 ## shared/agi_memory_redis.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - logging
@@ -3858,28 +3497,24 @@
 - typing
 
 ## shared/request_validator.py
-
-- **future**
+- __future__
 - json
 - logging
 
 ## shared/chat_providers.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - shared.local_settings
 - sys
 
 ## shared/import_helpers.py
-
 - collections.abc
 - logging
 - typing
 
 ## shared/runtime_env.py
-
-- **future**
+- __future__
 - collections.abc
 - functools
 - json
@@ -3889,14 +3524,12 @@
 - textwrap
 
 ## shared/consensus_engine.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 
 ## shared/config.py
-
-- **future**
+- __future__
 - azure.identity
 - azure.keyvault.secrets
 - functools
@@ -3908,8 +3541,7 @@
 - typing
 
 ## shared/chat_memory.py
-
-- **future**
+- __future__
 - collections.abc
 - hashlib
 - logging
@@ -3924,7 +3556,6 @@
 - typing
 
 ## shared/performance_utils.py
-
 - collections
 - collections.abc
 - functools
@@ -3936,7 +3567,6 @@
 - typing
 
 ## shared/stripe_webhooks.py
-
 - datetime
 - json
 - logging
@@ -3946,23 +3576,20 @@
 - typing
 
 ## shared/evaluation_utils.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - typing
 
 ## shared/local_calc.py
-
-- **future**
+- __future__
 - ast
 - math
 - operator
 - re
 
 ## shared/sql_engine.py
-
-- **future**
+- __future__
 - collections
 - hashlib
 - logging
@@ -3974,8 +3601,7 @@
 - urllib.parse
 
 ## shared/cosmos_client.py
-
-- **future**
+- __future__
 - azure.cosmos
 - logging
 - os
@@ -3984,29 +3610,25 @@
 - uuid
 
 ## shared/json_utils.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - time
 - typing
 
 ## shared/script_utils.py
-
-- **future**
+- __future__
 - pathlib
 - sys
 
 ## shared/telemetry.py
-
-- **future**
+- __future__
 - azure.monitor.opentelemetry
 - logging
 - os
 
 ## shared/logging.py
-
-- **future**
+- __future__
 - json
 - logging
 - os
@@ -4015,8 +3637,7 @@
 - typing
 
 ## shared/file_cache.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - threading
@@ -4024,15 +3645,13 @@
 - typing
 
 ## shared/token_utils.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
 
 ## shared/ai_safety_middleware.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - datetime
@@ -4040,21 +3659,18 @@
 - typing
 
 ## shared/local_settings.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
 - pathlib
 
 ## shared/http_utils.py
-
 - logging
 - pathlib
 - typing
 
 ## shared/subscription_manager.py
-
 - datetime
 - enum
 - json
@@ -4063,14 +3679,12 @@
 - typing
 
 ## shared/agi_backend_status.py
-
-- **future**
+- __future__
 - os
 - typing
 
 ## shared/ai_runner.py
-
-- **future**
+- __future__
 - datetime
 - logging
 - os
@@ -4081,14 +3695,12 @@
 - sys
 
 ## shared/local_summary.py
-
-- **future**
+- __future__
 - collections
 - re
 
 ## shared/sql_repository.py
-
-- **future**
+- __future__
 - datetime
 - logging
 - os
@@ -4097,7 +3709,6 @@
 - sqlite3
 
 ## shared/referral_system.py
-
 - datetime
 - json
 - logging
@@ -4107,8 +3718,7 @@
 - typing
 
 ## shared/agi_persistence_sqlite.py
-
-- **future**
+- __future__
 - json
 - os
 - sqlite3
@@ -4118,18 +3728,15 @@
 - uuid
 
 ## shared/core/entrypoints_registry.py
-
 - logging
 - pathlib
 - typing
 - yaml
 
-## shared/core/**init**.py
-
+## shared/core/__init__.py
 - module_registry
 
 ## shared/core/module_registry.py
-
 - importlib
 - importlib.util
 - logging
@@ -4137,16 +3744,15 @@
 - sys
 - typing
 
-## shared/domain/**init**.py
+## shared/domain/__init__.py
 
-## shared/utilities/**init**.py
+## shared/utilities/__init__.py
 
-## shared/infrastructure/**init**.py
+## shared/infrastructure/__init__.py
 
-## shared/premium/**init**.py
+## shared/premium/__init__.py
 
 ## mount/quantum_integration.py
-
 - json
 - pathlib
 - re
@@ -4155,10 +3761,9 @@
 - typing
 - yaml
 
-## mount/**init**.py
+## mount/__init__.py
 
 ## mount/train_max_performance.py
-
 - argparse
 - os
 - pathlib
@@ -4170,7 +3775,6 @@
 - typing
 
 ## mount/app.py
-
 - asyncio
 - chat_integration
 - contextlib
@@ -4191,7 +3795,6 @@
 - uvicorn
 
 ## mount/training_integration.py
-
 - asyncio
 - json
 - logging
@@ -4203,15 +3806,13 @@
 - typing
 
 ## mount/path_resolver.py
-
-- **future**
+- __future__
 - copy
 - pathlib
 - typing
 - yaml
 
 ## mount/chat_integration.py
-
 - datetime
 - json
 - os
@@ -4220,18 +3821,16 @@
 - sys
 - typing
 
-## aria_web/**init**.py
+## aria_web/__init__.py
 
 ## aria_web/server.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - sys
 
 ## quantum-ai/web_app.py
-
-- **future**
+- __future__
 - collections.abc
 - importlib.util
 - logging
@@ -4241,26 +3840,22 @@
 - typing
 
 ## quantum-ai/scripts/smoke_quantum_code_llm.py
-
-- **future**
+- __future__
 - api
 - argparse
 - pathlib
 - sys
 
 ## quantum-ai/scripts/validate_qiskit_env.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 
-## quantum-ai/src/**init**.py
-
+## quantum-ai/src/__init__.py
 - api
 
 ## quantum-ai/src/quantum_code_llm.py
-
-- **future**
+- __future__
 - dataclasses
 - importlib.util
 - math
@@ -4275,42 +3870,36 @@
 - typing
 
 ## quantum-ai/src/api.py
-
 - quantum_code_llm
 - typing
 
 ## quantum-ai/examples/quantum_code_llm_demo.py
-
-- **future**
+- __future__
 - os
 - quantum_code_llm
 - sys
 
 ## quantum-ai/examples/quantum_code_chat.py
-
-- **future**
+- __future__
 - argparse
 - os
 - quantum_code_llm
 - sys
 
 ## tests/test_setup_verify_workflow_wiring.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - yaml
 
 ## tests/test_train_quantum_llm_chat.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - types
 
 ## tests/test_sql_repository_extended.py
-
-- **future**
+- __future__
 - os
 - pytest
 - shared.sql_engine
@@ -4318,8 +3907,7 @@
 - unittest.mock
 
 ## tests/test_watch_continuous_automation.py
-
-- **future**
+- __future__
 - datetime
 - importlib
 - os
@@ -4327,8 +3915,7 @@
 - sys
 
 ## tests/test_status_schema_fixtures.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -4337,14 +3924,12 @@
 - scripts.integration_smoke
 
 ## tests/test_consolidated_html.py
-
 - pathlib
 - pytest
 - re
 
 ## tests/test_multi_agent.py
-
-- **future**
+- __future__
 - importlib
 - json
 - pathlib
@@ -4353,26 +3938,22 @@
 - types
 
 ## tests/test_provider_response_handling.py
-
 - chat_providers
 - pathlib
 - sys
 - unittest.mock
 
 ## tests/test_local_dev_adapter.py
-
-- **future**
+- __future__
 - json
 - local_dev_adapter
 - pytest
 
 ## tests/workflow_test_helpers.py
-
-- **future**
+- __future__
 
 ## tests/test_autonomous_code_agent.py
-
-- **future**
+- __future__
 - autonomous_code_agent
 - pathlib
 - pytest
@@ -4381,22 +3962,19 @@
 - types
 
 ## tests/test_agi_smoke.py
-
 - function_app
 - json
 - pytest
 - unittest.mock
 
 ## tests/test_quantum_autorun_dry_run_behavior.py
-
-- **future**
+- __future__
 - pathlib
 - quantum_autorun
 - sys
 
 ## tests/test_hypothesis_agent.py
-
-- **future**
+- __future__
 - core.agents.hypothesis_agent
 - core.memory.store
 - core.task
@@ -4404,11 +3982,9 @@
 - typing
 
 ## tests/test_aria_index_provider_wiring.py
-
 - pathlib
 
 ## tests/test_lmstudio_cache_thread_safety.py
-
 - chat_providers
 - pathlib
 - sys
@@ -4417,7 +3993,6 @@
 - unittest
 
 ## tests/test_training_integration.py
-
 - asyncio
 - mount.training_integration
 - pathlib
@@ -4427,42 +4002,36 @@
 - unittest.mock
 
 ## tests/test_agent_mode_delegation_contracts.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - re
 
 ## tests/test_status_dashboard.py
-
-- **future**
+- __future__
 - datetime
 - importlib.util
 - json
 - pathlib
 
 ## tests/test_root_shims.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 
 ## tests/test_gradio_autoimprove.py
-
 - importlib.util
 - os
 
 ## tests/test_agi_stream_utils_js.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - shutil
 - subprocess
 
 ## tests/test_quantum_command_gate_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -4470,8 +4039,7 @@
 - sys
 
 ## tests/test_sql_engine_extended.py
-
-- **future**
+- __future__
 - os
 - pytest
 - shared.sql_engine
@@ -4479,8 +4047,7 @@
 - unittest.mock
 
 ## tests/test_requirements_security_gate_hook.py
-
-- **future**
+- __future__
 - importlib.util
 - io
 - json
@@ -4488,8 +4055,7 @@
 - sys
 
 ## tests/test_quantum_mcp_server_security.py
-
-- **future**
+- __future__
 - asyncio
 - os
 - pathlib
@@ -4502,8 +4068,7 @@
 - unittest.mock
 
 ## tests/test_docstring_audit_agent.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - scripts.agents.base
@@ -4511,41 +4076,34 @@
 - sys
 
 ## tests/test_lmstudio_agi_integration_impl.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - urllib.request
 
 ## tests/test_provider_gates.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
 
 ## tests/test_agi_backend_status.py
-
 - shared.agi_backend_status
 
 ## tests/test_azure_openai_provider_resilience.py
-
-- **future**
+- __future__
 - importlib
 - pytest
 - typing
 - unittest.mock
 
 ## tests/test_gradio_hello.py
-
-- hashlib
 - importlib.util
 - os
 - pathlib
 
 ## tests/test_config.py
-
-- **future**
+- __future__
 - os
 - pathlib
 - pytest
@@ -4554,8 +4112,7 @@
 - unittest.mock
 
 ## tests/test_ai_runner.py
-
-- **future**
+- __future__
 - os
 - pathlib
 - pytest
@@ -4564,8 +4121,7 @@
 - unittest.mock
 
 ## tests/test_quantum_provider.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
@@ -4574,8 +4130,7 @@
 - torch
 
 ## tests/test_test_runner.py
-
-- **future**
+- __future__
 - datetime
 - json
 - pathlib
@@ -4585,20 +4140,17 @@
 - sys
 
 ## tests/test_qai_path_resolver.py
-
-- **future**
+- __future__
 - mount.path_resolver
 - pathlib
 - pytest
 
 ## tests/test_chat_web_embedded_script.py
-
-- **future**
+- __future__
 - pathlib
 
 ## tests/test_job_queue.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
@@ -4606,7 +4158,6 @@
 - time
 
 ## tests/test_training_integration_validation.py
-
 - asyncio
 - mount.training_integration
 - pathlib
@@ -4615,8 +4166,7 @@
 - unittest.mock
 
 ## tests/test_module_registry.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - shared.core.module_registry
@@ -4624,15 +4174,13 @@
 - unittest.mock
 
 ## tests/test_cosmos_client.py
-
-- **future**
+- __future__
 - os
 - shared.cosmos_client
 - unittest.mock
 
 ## tests/test_quantum_provider_checkpoint_loading.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -4641,18 +4189,15 @@
 - typing
 
 ## tests/test_connection_pool_mock.py
-
 - shared.chat_memory
 
 ## tests/test_setup_env_check.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
 
 ## tests/test_orchestrator_health_integration.py
-
 - datetime
 - importlib.util
 - json
@@ -4662,13 +4207,11 @@
 - types
 
 ## tests/test_local_summary.py
-
 - shared.local_summary
 - unittest
 
 ## tests/test_lmstudio_mcp_agi_tools.py
-
-- **future**
+- __future__
 - agi_mcp_tools
 - importlib.util
 - pathlib
@@ -4677,19 +4220,22 @@
 - types
 
 ## tests/test_gradio_webhook_ui.py
-
 - importlib.util
 - os
 
-## tests/test_lora_cleanup.py
+## tests/test_auto_fix_workflow.py
+- __future__
+- pathlib
+- pytest
+- yaml
 
+## tests/test_lora_cleanup.py
 - json
 - pathlib
 - pytest
 
 ## tests/test_core_models.py
-
-- **future**
+- __future__
 - core
 - core.agent
 - core.registry
@@ -4700,8 +4246,7 @@
 - sys
 
 ## tests/test_orchestrator_backoff.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -4711,8 +4256,7 @@
 - tenacity
 
 ## tests/test_secrets_leak_guard_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -4720,8 +4264,7 @@
 - sys
 
 ## tests/test_training_analytics_cli.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - subprocess
@@ -4729,7 +4272,6 @@
 - tempfile
 
 ## tests/test_training_analytics.py
-
 - importlib.util
 - json
 - pathlib
@@ -4737,23 +4279,20 @@
 - sys
 
 ## tests/test_gradio_focused_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - tests.workflow_test_helpers
 - yaml
 
 ## tests/test_script_utils.py
-
-- **future**
+- __future__
 - pathlib
 - shared.script_utils
 - sys
 
 ## tests/test_quantum_cost_gate_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -4761,8 +4300,7 @@
 - sys
 
 ## tests/test_route_access_gates.py
-
-- **future**
+- __future__
 - function_app
 - json
 - pathlib
@@ -4771,52 +4309,44 @@
 - unittest.mock
 
 ## tests/test_local_dev_adapter_http.py
-
-- **future**
+- __future__
 - json
 - local_dev_adapter
 - pytest
 
 ## tests/test_request_validator.py
-
-- **future**
+- __future__
 - json
 - pytest
 - shared.request_validator
 - unittest.mock
 
 ## tests/test_validate_qiskit_env.py
-
 - importlib.util
 - pathlib
 
 ## tests/test_azureml_submission_gating.py
-
 - importlib
 - pathlib
 
 ## tests/test_gradio_maintenance.py
-
 - os
 - scripts
 - time
 
 ## tests/test_mount_app_health.py
-
-- **future**
+- __future__
 - datetime
 - fastapi.testclient
 - importlib
 
 ## tests/test_aria_tests_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 
 ## tests/test_generate_ai_tokens.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -4826,16 +4356,14 @@
 - unittest.mock
 
 ## tests/test_agent_with_tools_example.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
 - sys
 
 ## tests/test_core_infra.py
-
-- **future**
+- __future__
 - core.agents.human_feedback_agent
 - core.bus
 - core.memory.store
@@ -4845,15 +4373,13 @@
 - pytest
 
 ## tests/test_master_orchestrator_schedule.py
-
-- **future**
+- __future__
 - datetime
 - pytest
 - scripts.master_orchestrator
 
 ## tests/test_http_ai_status_function.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
@@ -4862,9 +4388,8 @@
 - types
 
 ## tests/test_vision_inference.py
-
 - PIL
-- **future**
+- __future__
 - base64
 - binascii
 - importlib.util
@@ -4880,13 +4405,11 @@
 - unittest.mock
 
 ## tests/test_aria_command_presets.py
-
 - json
 - pathlib
 
 ## tests/test_quantum_mcp_server_qiskit_compat.py
-
-- **future**
+- __future__
 - asyncio
 - pathlib
 - pytest
@@ -4896,11 +4419,9 @@
 - types
 
 ## tests/test_agi_panel_integration.py
-
 - pathlib
 
 ## tests/test_server_start_sys_executable.py
-
 - pathlib
 - pytest
 - socket
@@ -4909,15 +4430,13 @@
 - time
 
 ## tests/test_config_validation_gates.py
-
 - os
 - pathlib
 - subprocess
 - sys
 
 ## tests/test_integration_smoke_schema.py
-
-- **future**
+- __future__
 - pytest
 - re
 - scripts.integration_smoke
@@ -4925,7 +4444,6 @@
 - typing
 
 ## tests/test_quantum_llm_trainer.py
-
 - json
 - pathlib
 - pytest
@@ -4934,14 +4452,12 @@
 - tempfile
 
 ## tests/test_aria_bot_dev_entrypoints.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
 
 ## tests/validate_performance_optimizations.py
-
 - pathlib
 - server
 - shared.chat_memory
@@ -4950,20 +4466,17 @@
 - traceback
 
 ## tests/test_aria_auto_execute.py
-
 - pytest
 - requests
 
 ## tests/test_quantum_provider_checkpoint_metadata.py
-
 - json
 - pathlib
 - pytest
 - sys
 
 ## tests/test_dataset_write_guard_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -4971,14 +4484,12 @@
 - sys
 
 ## tests/test_agi_launcher_task.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
 
 ## tests/test_quantum_llm_health_check.py
-
 - json
 - pathlib
 - pytest
@@ -4986,13 +4497,11 @@
 - sys
 
 ## tests/test_aria_accessibility_html.py
-
 - pathlib
 - re
 
 ## tests/test_lmstudio_http_fallback.py
-
-- **future**
+- __future__
 - chat_providers
 - json
 - pathlib
@@ -5000,15 +4509,13 @@
 - unittest.mock
 
 ## tests/test_scorecard_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - yaml
 
 ## tests/test_writer_reviewer_prototype_workflow.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
@@ -5017,8 +4524,7 @@
 - sys
 
 ## tests/test_lora_adapter_completeness_guard_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -5027,14 +4533,12 @@
 - tempfile
 
 ## tests/test_merge_gate_setup_guardrails.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - yaml
 
 ## tests/test_monitor_autonomous_training.py
-
 - importlib.util
 - io
 - json
@@ -5043,15 +4547,13 @@
 - sys
 
 ## tests/test_app_main.py
-
-- **future**
+- __future__
 - app
 - os
 - pytest
 - sys
 
 ## tests/test_performance_critical_fixes.py
-
 - aria_web.server
 - pathlib
 - shared.chat_memory
@@ -5061,7 +4563,6 @@
 - unittest.mock
 
 ## tests/test_agi_persistence_auth.py
-
 - function_app
 - json
 - pathlib
@@ -5071,30 +4572,26 @@
 - unittest.mock
 
 ## tests/test_import_helpers.py
-
 - pathlib
 - shared.import_helpers
 - sys
 
 ## tests/test_quantum_llm_stream_errors.py
-
-- **future**
+- __future__
 - asyncio
 - pathlib
 - quantum_llm
 - sys
 
 ## tests/test_subscription_manager.py
-
-- **future**
+- __future__
 - datetime
 - json
 - pytest
 - shared.subscription_manager
 
 ## tests/test_pr_checklist_guard_hook.py
-
-- **future**
+- __future__
 - importlib.util
 - io
 - json
@@ -5102,16 +4599,14 @@
 - sys
 
 ## tests/test_site_bundle_validation_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - tests.workflow_test_helpers
 - yaml
 
 ## tests/test_quantum_integration.py
-
-- **future**
+- __future__
 - asyncio
 - json
 - mount.quantum_integration
@@ -5120,16 +4615,14 @@
 - types
 
 ## tests/test_quantum_web_ui.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
 - sys
 
 ## tests/test_app_local_logic.py
-
-- **future**
+- __future__
 - app
 - builtins
 - os
@@ -5137,8 +4630,7 @@
 - sys
 
 ## tests/test_repair_data_out_status.py
-
-- **future**
+- __future__
 - datetime
 - json
 - pathlib
@@ -5146,12 +4638,10 @@
 - sys
 
 ## tests/test_gradio_utils.py
-
 - scripts
 
 ## tests/test_reflection_agent.py
-
-- **future**
+- __future__
 - core.agents.reflection_agent
 - core.memory.store
 - core.task
@@ -5159,8 +4649,7 @@
 - typing
 
 ## tests/test_provider_fallback.py
-
-- **future**
+- __future__
 - os
 - pathlib
 - pytest
@@ -5170,13 +4659,11 @@
 - unittest.mock
 
 ## tests/test_token_utils.py
-
-- **future**
+- __future__
 - shared.token_utils
 
 ## tests/test_dab_verify.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -5184,8 +4671,7 @@
 - scripts.dab_verify
 
 ## tests/test_quantum_provider_selection.py
-
-- **future**
+- __future__
 - importlib
 - pytest
 - sys
@@ -5193,7 +4679,6 @@
 - typing
 
 ## tests/test_notification_system.py
-
 - importlib.util
 - pathlib
 - scripts.notification_system
@@ -5202,14 +4687,12 @@
 - unittest.mock
 
 ## tests/test_avatar_integration.py
-
 - importlib
 - pathlib
 - pytest
 
 ## tests/test_quantum_llm_metrics_analyzer.py
-
-- **future**
+- __future__
 - importlib
 - importlib.util
 - pathlib
@@ -5217,8 +4700,7 @@
 - sys
 
 ## tests/test_scope_drift_guard_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -5226,28 +4708,24 @@
 - sys
 
 ## tests/test_aria_bot_root_shim.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - subprocess
 - sys
 
 ## tests/test_fast_validate.py
-
-- **future**
+- __future__
 - importlib
 - importlib.util
 - pathlib
 - pytest
 
 ## tests/test_azureml_validation.py
-
 - importlib
 - pathlib
 
 ## tests/test_local_agi_sse_integration.py
-
 - importlib.util
 - json
 - pathlib
@@ -5255,8 +4733,7 @@
 - unittest.mock
 
 ## tests/test_git_commit_hygiene_hook.py
-
-- **future**
+- __future__
 - importlib.util
 - io
 - json
@@ -5264,8 +4741,7 @@
 - sys
 
 ## tests/test_performance_utils.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - shared.performance_utils
@@ -5274,8 +4750,7 @@
 - types
 
 ## tests/test_run_repo_agents.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - scripts
@@ -5283,7 +4758,6 @@
 - sys
 
 ## tests/test_aria_server.py
-
 - http
 - importlib.util
 - json
@@ -5292,8 +4766,7 @@
 - sys
 
 ## tests/test_provider_detection_cache.py
-
-- **future**
+- __future__
 - chat_providers
 - pathlib
 - sys
@@ -5301,23 +4774,20 @@
 - unittest.mock
 
 ## tests/test_core_cli.py
-
-- **future**
-- core.**main**
+- __future__
+- core.__main__
 - json
 - pytest
 
 ## tests/test_quantum_code_llm.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - quantum_code_llm
 - sys
 
 ## tests/test_db_logging.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -5326,13 +4796,11 @@
 - unittest.mock
 
 ## tests/test_ai_safety_middleware.py
-
-- **future**
+- __future__
 - shared.ai_safety_middleware
 
 ## tests/test_quantum_llm_quickstart.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
@@ -5340,23 +4808,20 @@
 - sys
 
 ## tests/test_stage_state_store.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
 - sys
 
 ## tests/test_task_complete_stub.py
-
-- **future**
+- __future__
 - os
 - pathlib
 - subprocess
 
 ## tests/test_parallel_train.py
-
-- **future**
+- __future__
 - asyncio
 - importlib.util
 - json
@@ -5365,7 +4830,6 @@
 - sys
 
 ## tests/test_phase_optimizations.py
-
 - aria_web.server
 - batch_evaluator
 - pathlib
@@ -5376,7 +4840,6 @@
 - unittest.mock
 
 ## tests/test_evaluation_utils.py
-
 - evaluation_utils
 - json
 - pathlib
@@ -5384,8 +4847,7 @@
 - tempfile
 
 ## tests/test_object_api_integration.py
-
-- **future**
+- __future__
 - http.server
 - json
 - pathlib
@@ -5399,22 +4861,19 @@
 - urllib.request
 
 ## tests/test_quantum_llm_local_smoke.py
-
-- **future**
+- __future__
 - asyncio
 - pathlib
 - quantum_llm
 - sys
 
 ## tests/test_ci_orchestrator_integration_baseline.py
-
-- **future**
+- __future__
 - pytest
 - scripts.ci_orchestrator
 
 ## tests/test_dry_run_reminder_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -5422,8 +4881,7 @@
 - sys
 
 ## tests/test_file_cache.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -5433,15 +4891,13 @@
 - time
 
 ## tests/test_core_runtime.py
-
-- **future**
+- __future__
 - core.agents.tool_agent
 - core.runner
 - core.task
 
 ## tests/test_agents_base.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -5449,19 +4905,16 @@
 - sys
 
 ## tests/test_evaluation_framework.py
-
 - json
 - pathlib
 - subprocess
 - sys
 
 ## tests/test_local_calc.py
-
 - shared.local_calc
 - unittest
 
 ## tests/test_quantum_web_app.py
-
 - importlib.util
 - logging
 - numpy
@@ -5471,8 +4924,7 @@
 - types
 
 ## tests/test_agents_md_audit_agent.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - scripts.agents.agents_md_audit_agent
@@ -5480,12 +4932,10 @@
 - sys
 
 ## tests/test_aria_auto_execute_html.py
-
 - pathlib
 
 ## tests/test_system_health_check.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
@@ -5493,14 +4943,12 @@
 - types
 
 ## tests/test_validate_site_bundles.py
-
-- **future**
+- __future__
 - json
 - scripts.validate_site_bundles
 
 ## tests/test_app_providers.py
-
-- **future**
+- __future__
 - app
 - json
 - os
@@ -5509,7 +4957,6 @@
 - types
 
 ## tests/test_github_actions_dataset.py
-
 - json
 - pathlib
 - pytest
@@ -5517,7 +4964,6 @@
 - sys
 
 ## tests/test_agi_persistence_endpoint.py
-
 - function_app
 - json
 - pytest
@@ -5526,29 +4972,25 @@
 - unittest.mock
 
 ## tests/test_pages_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - yaml
 
 ## tests/test_vram_calculator.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - sys
 - vram_calculator
 
 ## tests/test_train_vision.py
-
 - importlib
 - pathlib
 - pytest
 
 ## tests/test_app_validation.py
-
-- **future**
+- __future__
 - app
 - io
 - os
@@ -5557,23 +4999,20 @@
 - types
 
 ## tests/test_openai_provider_resilience.py
-
-- **future**
+- __future__
 - importlib
 - pytest
 - typing
 - unittest.mock
 
 ## tests/test_quantum_autorun_unit.py
-
 - importlib
 - pathlib
 - sys
 - unittest.mock
 
 ## tests/test_agi_features.py
-
-- **future**
+- __future__
 - core.agents.critique_agent
 - core.agents.debate_agent
 - core.agents.goal_evolution_agent
@@ -5605,7 +5044,6 @@
 - uuid
 
 ## tests/test_ui_selenium.py
-
 - json
 - logging
 - os
@@ -5622,46 +5060,39 @@
 - urllib.parse
 
 ## tests/test_shared_config.py
-
-- **future**
+- __future__
 - shared.config
 
 ## tests/test_validate_mcp_setup.py
-
 - pathlib
 - scripts.validate_mcp_setup
 
 ## tests/test_cleanup_query_metrics.py
-
 - cleanup_query_metrics
 - pathlib
 - pytest
 - sys
 
 ## tests/test_train_lora_model_resolution.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 
 ## tests/test_keep_working_config.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
 - pytest
 
 ## tests/test_database_integration.py
-
-- **future**
+- __future__
 - math
 - pathlib
 - shared.chat_memory
 - sys
 
 ## tests/test_regex_optimizations.py
-
 - email_notifications
 - final_validation
 - function_app
@@ -5674,7 +5105,6 @@
 - validate_dashboard
 
 ## tests/conftest.py
-
 - json
 - pathlib
 - pytest
@@ -5684,16 +5114,14 @@
 - websockets.client
 
 ## tests/test_codeql_workflow_paths_ignore.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - subprocess
 - yaml
 
 ## tests/test_aria_bot.py
-
-- **future**
+- __future__
 - aria_bot
 - aria_bot.commit_system
 - aria_bot.defaults
@@ -5708,15 +5136,13 @@
 - sys
 
 ## tests/test_config_paths.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - scripts.config_paths
 
 ## tests/test_quantum_llm.py
-
-- **future**
+- __future__
 - asyncio
 - json
 - numpy
@@ -5726,20 +5152,17 @@
 - sys
 
 ## tests/test_chat_memory_unit.py
-
 - pytest
 - shared
 - threading
 - unittest.mock
 
 ## tests/test_evaluate_vision.py
-
 - importlib
 - pathlib
 - pytest
 
 ## tests/test_quantum_autorun_integration.py
-
 - json
 - pathlib
 - pytest
@@ -5747,20 +5170,22 @@
 - sys
 
 ## tests/test_agi_memory_redis.py
-
 - agi_provider
 - shared.agi_memory_redis
 
-## tests/test_email_notifications.py
+## tests/test_no_orphaned_gitlinks.py
+- __future__
+- pathlib
+- subprocess
 
-- **future**
+## tests/test_email_notifications.py
+- __future__
 - json
 - pytest
 - shared.email_notifications
 
 ## tests/test_quantum_llm_status_check.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -5768,8 +5193,7 @@
 - sys
 
 ## tests/test_ui_pyppeteer.py
-
-- **future**
+- __future__
 - asyncio
 - contextlib
 - json
@@ -5785,24 +5209,21 @@
 - time
 
 ## tests/test_qai_app_startup.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
 - sys
 
 ## tests/test_quantum_llm_provider_result_normalization.py
-
-- **future**
+- __future__
 - asyncio
 - pathlib
 - quantum_llm
 - sys
 
 ## tests/test_cleanup_artifacts.py
-
-- **future**
+- __future__
 - importlib
 - importlib.util
 - os
@@ -5811,27 +5232,23 @@
 - time
 
 ## tests/test_runtime_env.py
-
-- **future**
+- __future__
 - json
 - shared.runtime_env
 - subprocess
 
 ## tests/test_parallel_status.py
-
 - json
 - pathlib
 - pytest
 
 ## tests/test_copilot_setup_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 
 ## tests/test_autonomous_training_orchestrator.py
-
-- **future**
+- __future__
 - datetime
 - importlib.util
 - json
@@ -5841,7 +5258,6 @@
 - signal
 
 ## tests/test_azure_quantum_integration.py
-
 - enum
 - importlib
 - json
@@ -5851,15 +5267,13 @@
 - unittest.mock
 
 ## tests/test_telemetry.py
-
-- **future**
+- __future__
 - os
 - shared.telemetry
 - sys
 - unittest.mock
 
 ## tests/test_agi_prune.py
-
 - json
 - pathlib
 - scripts.agi_persistence_prune
@@ -5868,30 +5282,26 @@
 - time
 
 ## tests/test_autotrain_root_shim.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - scripts.autotrain
 - warnings
 
 ## tests/test_data_struct_utils.py
-
-- **future**
+- __future__
 - generated_tools.data_struct_utils
 - pathlib
 - sys
 
 ## tests/test_referral_system.py
-
-- **future**
+- __future__
 - json
 - pytest
 - shared.referral_system
 - unittest.mock
 
 ## tests/test_ui_playwright.py
-
 - json
 - os
 - pathlib
@@ -5904,8 +5314,7 @@
 - time
 
 ## tests/test_dependabot_alert_gate_hook.py
-
-- **future**
+- __future__
 - importlib.util
 - io
 - json
@@ -5915,8 +5324,7 @@
 - time
 
 ## tests/test_run_main_if_referenced.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - pytest
@@ -5924,16 +5332,14 @@
 ## tests/test_best_model_selection.py
 
 ## tests/test_run_continuous_automation.py
-
-- **future**
+- __future__
 - datetime
 - importlib.util
 - pathlib
 - subprocess
 
 ## tests/test_ignore_verify.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - scripts.ignore_verify
@@ -5941,8 +5347,7 @@
 - typing
 
 ## tests/test_status_freshness_agent.py
-
-- **future**
+- __future__
 - datetime
 - json
 - pathlib
@@ -5951,8 +5356,7 @@
 - sys
 
 ## tests/test_chat_memory.py
-
-- **future**
+- __future__
 - math
 - os
 - random
@@ -5960,8 +5364,7 @@
 - unittest.mock
 
 ## tests/test_quantum_llm_circuit_cache.py
-
-- **future**
+- __future__
 - asyncio
 - json
 - numpy
@@ -5972,7 +5375,6 @@
 - time
 
 ## tests/test_agi_provider.py
-
 - agi_provider
 - asyncio
 - chat_providers
@@ -5982,14 +5384,12 @@
 - sys
 
 ## tests/test_resource_monitor.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
 
 ## tests/test_config_validator.py
-
 - config_validator
 - pathlib
 - pytest
@@ -5997,8 +5397,7 @@
 - tempfile
 
 ## tests/test_cycle_observer.py
-
-- **future**
+- __future__
 - core.bus
 - core.cycle_observer
 - core.memory.store
@@ -6006,8 +5405,7 @@
 - pytest
 
 ## tests/test_ollama_provider.py
-
-- **future**
+- __future__
 - chat_providers
 - pathlib
 - pytest
@@ -6016,7 +5414,6 @@
 - urllib.error
 
 ## tests/test_http_utils.py
-
 - os
 - pathlib
 - shared.http_utils
@@ -6024,15 +5421,13 @@
 - tempfile
 
 ## tests/test_quantum_sampler_nonfinite.py
-
-- **future**
+- __future__
 - pathlib
 - quantum_llm
 - sys
 
 ## tests/test_core_agents.py
-
-- **future**
+- __future__
 - collections.abc
 - core.agents.critique_agent
 - core.agents.debate_agent
@@ -6052,7 +5447,6 @@
 - pytest
 
 ## tests/test_performance_keyword_sets.py
-
 - pyodbc
 - pytest
 - server
@@ -6060,13 +5454,11 @@
 - time
 
 ## tests/test_integration_contract_gate_script.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 
 ## tests/test_autotrain.py
-
 - datetime
 - importlib.util
 - pathlib
@@ -6074,25 +5466,21 @@
 - sys
 
 ## tests/test_agi_persistence_sqlite.py
-
 - agi_provider
 
 ## tests/test_azure_quantum_runner.py
-
 - importlib
 - pathlib
 - pytest
 - sys
 
 ## tests/test_setup_monetization.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
 
 ## tests/test_serve_api_routes.py
-
 - http.server
 - importlib.util
 - json
@@ -6107,22 +5495,19 @@
 - urllib.request
 
 ## tests/test_agi_health_agent.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - scripts.agents.agi_health_agent
 - sys
 
 ## tests/test_backup_manager.py
-
 - json
 - os
 - pathlib
 - scripts.backup_manager
 
 ## tests/test_lmstudio_agi_integration.py
-
 - agi_provider
 - chat_providers
 - os
@@ -6131,7 +5516,6 @@
 - unittest.mock
 
 ## tests/test_function_app_endpoints.py
-
 - azure.functions
 - function_app
 - inspect
@@ -6146,21 +5530,18 @@
 - unittest.mock
 
 ## tests/test_consensus_engine.py
-
 - pathlib
 - pytest
 - shared.consensus_engine
 - sys
 
 ## tests/test_job_yaml_schema.py
-
 - pathlib
 - pytest
 - yaml
 
 ## tests/test_no_verify_bypass_guard_hook.py
-
-- **future**
+- __future__
 - importlib.util
 - io
 - json
@@ -6168,15 +5549,13 @@
 - sys
 
 ## tests/test_core_knowledge.py
-
-- **future**
+- __future__
 - core.knowledge.graph
 - core.memory.store
 - json
 
 ## tests/test_json_utils.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -6184,15 +5563,13 @@
 - sys
 
 ## tests/test_run_automation.py
-
-- **future**
+- __future__
 - importlib.util
 - pathlib
 - subprocess
 - sys
 
 ## tests/test_web_app_security.py
-
 - collections.abc
 - flask.testing
 - importlib.util
@@ -6205,12 +5582,10 @@
 - unittest.mock
 
 ## tests/test_gradio_webhook.py
-
 - os
 - scripts
 
 ## tests/test_sql_integration.py
-
 - logging
 - os
 - pytest
@@ -6220,8 +5595,7 @@
 - typing
 
 ## tests/test_sql_local_tools.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -6232,8 +5606,7 @@
 - typing
 
 ## tests/test_local_dev_adapter-v2.py
-
-- **future**
+- __future__
 - json
 - local_dev_adapter
 - os
@@ -6241,36 +5614,32 @@
 - pytest
 
 ## tests/test_agi_persistence.py
-
 - agi_provider
 - json
 
 ## tests/test_training_health_report_workflow.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
 - subprocess
 - sys
 - textwrap
+- yaml
 
 ## tests/test_actionlint_shellcheck_workflows.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 
 ## tests/test_workflow_validation_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 - tests.workflow_test_helpers
 - yaml
 
 ## tests/test_orchestrator_health_in_status_endpoint.py
-
 - importlib.util
 - json
 - pathlib
@@ -6279,7 +5648,6 @@
 - types
 
 ## tests/test_performance_optimizations.py
-
 - ai_runner
 - chat_memory
 - collections
@@ -6298,36 +5666,31 @@
 - training_analytics
 
 ## tests/test_dashboard_utils.py
-
 - importlib.util
 - json
 - pathlib
 - sys
 
 ## tests/test_auto_create_pr_workflow.py
-
-- **future**
+- __future__
 - pathlib
 - pytest
 
 ## tests/test_gradio_demo.py
-
 - importlib.util
 - os
 - sys
 - types
 
 ## tests/test_app_cli.py
-
-- **future**
+- __future__
 - app
 - os
 - pytest
 - sys
 
 ## tests/test_status_schema.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - pytest
@@ -6336,20 +5699,17 @@
 - scripts.repo_automation
 
 ## tests/test_notifications.py
-
-- **future**
+- __future__
 - core.notifications
 - urllib.error
 
 ## tests/test_app_local_fallback.py
-
 - app
 - os
 - sys
 
 ## tests/test_marker_audit_agent.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - scripts.agents.base
@@ -6357,8 +5717,7 @@
 - sys
 
 ## tests/test_enforce_task_complete_hook.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -6367,8 +5726,7 @@
 - sys
 
 ## tests/test_core_router.py
-
-- **future**
+- __future__
 - core.agent
 - core.agents.llm_agent
 - core.agents.planner_agent
@@ -6379,21 +5737,18 @@
 - core.task
 
 ## tests/integration/test_quantum_llm_pipeline.py
-
 - ai_projects.quantum_ml.src.quantum_llm.config
 - ai_projects.quantum_ml.src.quantum_llm.pipeline
 - pytest
 
 ## tests/keep_working/test_keep_working.py
-
 - json
 - notebooks.keep_working_launcher
 - pathlib
 - sys
 
 ## tests/unit/test_aria_schema_endpoint.py
-
-- **future**
+- __future__
 - http.server
 - importlib.util
 - json
@@ -6404,8 +5759,7 @@
 - urllib.request
 
 ## tests/unit/test_lm_studio_analyzer.py
-
-- **future**
+- __future__
 - importlib.util
 - json
 - pathlib
@@ -6413,23 +5767,20 @@
 - subprocess
 
 ## tests/unit/test_chat_cli_no_stream.py
-
-- **future**
+- __future__
 - argparse
 - importlib.util
 - pathlib
 - types
 
 ## tests/unit/test_aria_schema_in_sync.py
-
-- **future**
+- __future__
 - json
 - pathlib
 - server
 - sys
 
 ## tests/unit/test_quantum_llm_components.py
-
 - ai_projects.quantum_ml.src.quantum_llm.quantum_embeddings
 - ai_projects.quantum_ml.src.quantum_llm.quantum_router
 - ai_projects.quantum_ml.src.quantum_llm.quantum_sampler
@@ -6437,8 +5788,7 @@
 - pytest
 
 ## tests/unit/test_local_settings.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -6446,33 +5796,28 @@
 - shared.local_settings
 
 ## tests/unit/test_tags_to_actions.py
-
 - pathlib
 - server
 - sys
 
 ## tests/unit/test_circuit_cache.py
-
 - ai_projects.quantum_ml.src.quantum_llm.circuit_cache
 - numpy
 - pytest
 - time
 
 ## tests/unit/test_quantum_llm_config.py
-
 - ai_projects.quantum_ml.src.quantum_llm.config
 - json
 - pytest
 
 ## tests/unit/test_fallback_gesture_parser.py
-
-- **future**
+- __future__
 - pathlib
 - server
 - sys
 
 ## my-agent-0b2avt/provision_memory_store.py
-
 - azure.ai.projects
 - azure.core.exceptions
 - azure.identity
@@ -6480,7 +5825,6 @@
 - os
 
 ## my-agent-0b2avt/main.py
-
 - agent_framework
 - agent_framework.foundry
 - agent_framework_foundry_hosting
@@ -6491,18 +5835,15 @@
 - os
 
 ## notebooks/evaluators.py
-
 - typing
 
 ## notebooks/test_agent.py
-
 - dotenv
 - evaluators
 - os
 - pytest_agent_evals
 
 ## notebooks/keep_working_launcher.py
-
 - argparse
 - dataclasses
 - datetime
@@ -6520,20 +5861,17 @@
 - time
 
 ## notebooks/notebook_utils/utils.py
-
 - json
 - numpy
 - pathlib
 - random
 
 ## apps/dashboard/gpu_monitor.py
-
 - json
 - psutil
 - subprocess
 
 ## apps/dashboard/app.py
-
 - csv
 - datetime
 - flask
@@ -6555,7 +5893,6 @@
 - yaml
 
 ## apps/dashboard/websocket_server.py
-
 - asyncio
 - datetime
 - json
@@ -6565,7 +5902,6 @@
 - websockets
 
 ## apps/dashboard/serve.py
-
 - collections
 - datetime
 - gpu_monitor
@@ -6587,7 +5923,6 @@
 - yaml
 
 ## apps/aria/test_auto_execute.py
-
 - json
 - pytest
 - requests
@@ -6595,8 +5930,7 @@
 - traceback
 
 ## apps/aria/stage_state_store.py
-
-- **future**
+- __future__
 - copy
 - json
 - os
@@ -6605,8 +5939,7 @@
 - typing
 
 ## apps/aria/Repository analyzer.py
-
-- **future**
+- __future__
 - collections.abc
 - dataclasses
 - logging
@@ -6616,7 +5949,6 @@
 - typing
 
 ## apps/aria/server.py
-
 - agi_provider
 - datetime
 - hashlib
@@ -6640,8 +5972,7 @@
 - urllib.request
 
 ## examples/ai_starters/agent_with_tools.py
-
-- **future**
+- __future__
 - ast
 - collections.abc
 - dataclasses
@@ -6649,11 +5980,9 @@
 - re
 
 ## examples/ai_starters/local_model_chat.py
-
 - transformers
 
 ## examples/ai_starters/fastapi_local_chat.py
-
 - examples.ai_starters.local_model_chat
 - fastapi
 - fastapi.responses
@@ -6662,8 +5991,7 @@
 - uvicorn
 
 ## examples/ai_starters/sql_to_local_ai_orchestrator.py
-
-- **future**
+- __future__
 - argparse
 - examples.ai_starters.local_model_chat
 - importlib
@@ -6676,8 +6004,7 @@
 - urllib.parse
 
 ## tools/codegen_from_input.py
-
-- **future**
+- __future__
 - argparse
 - dataclasses
 - datetime
@@ -6687,7 +6014,6 @@
 - typing
 
 ## tools/codegen/code_generation_quickstart.py
-
 - code_generation_templates
 - pathlib
 - subprocess
@@ -6695,16 +6021,13 @@
 - traceback
 
 ## tools/codegen/website_generator_guide.py
-
 - sys
 - traceback
 
 ## tools/codegen/code_generation_templates.py
-
 - sys
 
 ## tools/codegen/code_generation_examples.py
-
 - pathlib
 - sys
 - tool_maker
@@ -6712,61 +6035,48 @@
 - website_maker
 
 ## tools/codegen/code_generation_demo.py
-
 - sys
 - traceback
 
 ## tools/codegen/website_generator_demo.py
-
 - sys
 - traceback
 
 ## tools/repo_cleanup/generate_repo_inventory.py
-
 - pathlib
 
 ## tools/repo_cleanup/detect_duplicate_code.py
-
 - collections
 - pathlib
 
 ## tools/repo_cleanup/detect_large_files.py
-
 - pathlib
 
 ## tools/repo_cleanup/generate_dependency_graph.py
-
 - ast
 - pathlib
 
 ## tools/repo_cleanup/autofix_cleanup.py
-
 - pathlib
 - shutil
 
 ## tools/repo_cleanup/validate_structure.py
-
 - pathlib
 
 ## tools/repo_cleanup/ai_cleanup_agent.py
-
 - pathlib
 
 ## tools/repo_cleanup/repo_scorecard.py
-
 - pathlib
 
 ## tools/repo_cleanup/detect_dead_code.py
-
 - pathlib
 
 ## tools/repo_cleanup/architecture_drift.py
-
 - pathlib
 
 ## .github/hooks/scripts/scope_drift_guard.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
@@ -6775,8 +6085,7 @@
 - typing
 
 ## .github/hooks/scripts/quantum_command_gate.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
@@ -6785,8 +6094,7 @@
 - typing
 
 ## .github/hooks/scripts/dependabot_alert_gate.py
-
-- **future**
+- __future__
 - json
 - os
 - pathlib
@@ -6796,8 +6104,7 @@
 - typing
 
 ## .github/hooks/scripts/requirements_security_gate.py
-
-- **future**
+- __future__
 - json
 - os
 - re
@@ -6810,8 +6117,7 @@
 - typing
 
 ## .github/hooks/scripts/dataset_write_guard.py
-
-- **future**
+- __future__
 - json
 - os
 - re
@@ -6819,8 +6125,7 @@
 - typing
 
 ## .github/hooks/scripts/enforce_task_complete.py
-
-- **future**
+- __future__
 - json
 - os
 - re
@@ -6828,8 +6133,7 @@
 - typing
 
 ## .github/hooks/scripts/git_commit_hygiene.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
@@ -6840,8 +6144,7 @@
 - typing
 
 ## .github/hooks/scripts/secrets_leak_guard.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
@@ -6850,8 +6153,7 @@
 - typing
 
 ## .github/hooks/scripts/no_verify_bypass_guard.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
@@ -6860,7 +6162,6 @@
 - typing
 
 ## .github/hooks/scripts/quantum_cost_gate.py
-
 - collections.abc
 - json
 - os
@@ -6869,8 +6170,7 @@
 - typing
 
 ## .github/hooks/scripts/lora_adapter_completeness_guard.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
@@ -6880,8 +6180,7 @@
 - typing
 
 ## .github/hooks/scripts/pr_checklist_guard.py
-
-- **future**
+- __future__
 - json
 - os
 - subprocess
@@ -6889,11 +6188,11 @@
 - typing
 
 ## .github/hooks/scripts/dry_run_reminder.py
-
-- **future**
+- __future__
 - collections.abc
 - json
 - os
 - re
 - sys
 - typing
+
