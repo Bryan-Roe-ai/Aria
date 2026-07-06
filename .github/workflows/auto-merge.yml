@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
 
+env:
+  AUTO_MERGE_LABEL: auto-merge
+  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
+
 permissions:
   contents: read
 
@@ -11,19 +15,15 @@ concurrency:
   group: auto-merge-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
-env:
-  AUTO_MERGE_LABEL: auto-merge
-  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0
-
 jobs:
   enable:
     name: Enable Auto-Merge
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      contents: read
       pull-requests: write
       issues: write
-      contents: read
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       (
@@ -34,8 +34,8 @@ jobs:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
-          egress-policy: audit
           disable-sudo: true
+          egress-policy: audit
 
       - name: Check if auto-merge already enabled
         id: state
@@ -62,9 +62,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
+      contents: read
       pull-requests: write
       issues: write
-      contents: read
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.action == 'unlabeled' &&
@@ -73,8 +73,8 @@ jobs:
       - name: Harden runner
         uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
-          egress-policy: audit
           disable-sudo: true
+          egress-policy: audit
 
       - name: Disable auto-merge (no-op safe)
         env:

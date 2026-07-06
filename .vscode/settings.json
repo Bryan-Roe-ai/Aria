@@ -295,5 +295,13 @@
         "XDIST"
     ],
     "prompty.currentModelConfiguration": "My Custom Model",
-    "mirrord.promptUsingDefaultConfig": false
+    "mirrord.promptUsingDefaultConfig": false,
+    "mdb.presetConnections": [
+        {
+            "name": "Preset Connection",
+            "connectionString": "mongodb://localhost:27017"
+        }
+    ],
+    "sqltools.connections": [],
+    "mirrord.promptUsingDefaultConfigSingleFileNoFolder": false
 }
