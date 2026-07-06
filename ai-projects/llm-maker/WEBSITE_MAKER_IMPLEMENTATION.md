@@ -214,7 +214,7 @@ Supports three patterns:
 
 ### Web UI Example
 
-1. Navigate to http://localhost:8090/website-maker
+1. Navigate to <http://localhost:8090/website-maker>
 2. Fill in form:
     - Name: "my-portfolio"
     - Description: "Personal portfolio with hero, projects, skills, contact form"

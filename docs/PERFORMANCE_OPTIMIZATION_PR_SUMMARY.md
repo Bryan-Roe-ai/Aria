@@ -181,13 +181,13 @@ For a file with 10 regex operations executed 1000 times:
 
 ### Expected Impact by Module
 
-| Module                   | Optimizations      | Expected Speedup           |
+| Module | Optimizations | Expected Speedup |
 | ------------------------ | ------------------ | -------------------------- |
-| `final_validation.py`    | 9+ regex patterns  | 2-5x for validation        |
-| `validate_dashboard.py`  | 10+ regex patterns | 2-5x for validation        |
-| `function_app.py`        | TTS word timing    | 10-20% for TTS calls       |
-| `email_notifications.py` | HTML stripping     | 5-10x for email generation |
-| `sql_repository.py`      | List comprehension | 10-30% for queries         |
+| `final_validation.py` | 9+ regex patterns | 2-5x for validation |
+| `validate_dashboard.py` | 10+ regex patterns | 2-5x for validation |
+| `function_app.py` | TTS word timing | 10-20% for TTS calls |
+| `email_notifications.py` | HTML stripping | 5-10x for email generation |
+| `sql_repository.py` | List comprehension | 10-30% for queries |
 
 ## Code Quality Improvements
 

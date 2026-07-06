@@ -4,7 +4,7 @@ Since the dev container has networking isolation, follow these steps:
 
 ## Option 1: Run Ollama on Host Machine (Recommended)
 
-### macOS (Intel/Apple Silicon):
+### macOS (Intel/Apple Silicon)
 
 ```bash
 # Download installer
@@ -17,7 +17,7 @@ ollama serve &
 ollama pull mistral  # or: neural-chat, codellama, dolphin-mixtral
 ```
 
-### Linux (Ubuntu/Debian):
+### Linux (Ubuntu/Debian)
 
 ```bash
 # Install Ollama
@@ -30,11 +30,11 @@ sudo systemctl start ollama
 ollama pull mistral
 ```
 
-### Windows:
+### Windows
 
-1. Download: https://ollama.ai/download
+1. Download: <https://ollama.ai/download>
 2. Run installer
-3. Ollama will auto-start on http://localhost:11434
+3. Ollama will auto-start on <http://localhost:11434>
 
 ## Option 2: After Ollama is Running on Host
 
@@ -52,7 +52,7 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
   --verbose
 ```
 
-## Available Models (sorted by speed):
+## Available Models (sorted by speed)
 
 **Fast (good for code tasks):**
 
@@ -70,7 +70,7 @@ PYTHONPATH=/workspaces/Aria:/workspaces/Aria/scripts python3 scripts/multi_agent
 - `llama2:13b` - 13B parameters
 - `mixtral` - 8x7B, very capable
 
-## From Container Terminal:
+## From Container Terminal
 
 Once Ollama is running on host:
 

@@ -5,10 +5,10 @@ catch issues early and keep the `main` branch healthy.
 
 ## Contents
 
-| File             | Platform                       | Description                               |
+| File | Platform | Description |
 | ---------------- | ------------------------------ | ----------------------------------------- |
-| `pre-commit`     | Linux / macOS / Git Bash (Win) | Bash hook that runs fast unit tests.      |
-| `pre-commit.ps1` | Windows (PowerShell)           | PowerShell equivalent for native Windows. |
+| `pre-commit` | Linux / macOS / Git Bash (Win) | Bash hook that runs fast unit tests. |
+| `pre-commit.ps1` | Windows (PowerShell) | PowerShell equivalent for native Windows. |
 
 ## Installation
 
@@ -76,18 +76,20 @@ git commit --no-verify
 ## Troubleshooting
 
 - **Hook does not run**
-    - Confirm `git config --get core.hooksPath` returns `.githooks`.
-    - On Linux/macOS, confirm the file is executable (`ls -l .githooks/pre-commit`).
+  - Confirm `git config --get core.hooksPath` returns `.githooks`.
+  - On Linux/macOS, confirm the file is executable (`ls -l .githooks/pre-commit`).
 - **`pre-commit.ps1` is blocked by execution policy (Windows)**
-    - Run PowerShell as your user and execute:
+  - Run PowerShell as your user and execute:
+
         ```powershell
         Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
         ```
+
 - **Tests are too slow**
-    - Ensure only unit tests are selected; integration/Azure suites should be excluded.
-    - Profile with `pytest --durations=10` to identify slow tests.
+  - Ensure only unit tests are selected; integration/Azure suites should be excluded.
+  - Profile with `pytest --durations=10` to identify slow tests.
 - **Need to debug what the hook runs**
-    - Inspect [`pre-commit`](./pre-commit) or [`pre-commit.ps1`](./pre-commit.ps1)
+  - Inspect [`pre-commit`](./pre-commit) or [`pre-commit.ps1`](./pre-commit.ps1)
       directly — they are plain scripts.
 
 ## Contributing

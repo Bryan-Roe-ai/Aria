@@ -168,9 +168,9 @@ print(f"Available targets: {[t.name for t in workspace.get_targets()]}")
 - **Log Analytics**: ~$2.30/GB ingested
 - **Application Insights**: First 5GB/month free
 - **Quantum Jobs**: Varies by provider
-    - IonQ: ~$0.00003 per gate-shot
-    - Quantinuum: ~$0.00015 per circuit execution
-    - Microsoft Simulators: Free
+  - IonQ: ~$0.00003 per gate-shot
+  - Quantinuum: ~$0.00015 per circuit execution
+  - Microsoft Simulators: Free
 
 ### Cost Optimization Tips
 

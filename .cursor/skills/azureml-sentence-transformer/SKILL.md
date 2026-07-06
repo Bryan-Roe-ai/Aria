@@ -9,15 +9,15 @@ Fine-tune `all-MiniLM-L6-v2` on Azure ML GPU compute. Default job: **50k** `sent
 
 ## Repo map
 
-| Path                                                                                                   | Role                                                         |
+| Path | Role |
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/job-sentence-transformer-train.yml`     | Command job spec                                             |
-| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/environment-sentence-transformer.yml`   | Conda env for the job                                        |
-| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/submit_sentence_transformer.sh`         | Preferred submit wrapper                                     |
-| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/submit_sentence_transformer_azureml.py` | Python submit wrapper (calls `az ml job create`)             |
-| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_sentence_transformer.py`          | Training script (supports `--push-to-hub`, `--hub-model-id`) |
-| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/README.md`                              | §13 — full docs                                              |
-| `.github/workflows/azureml-train.yml`                                                                  | Manual dispatch; set `jobFile` to the ST job YAML            |
+| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/job-sentence-transformer-train.yml` | Command job spec |
+| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/environment-sentence-transformer.yml` | Conda env for the job |
+| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/submit_sentence_transformer.sh` | Preferred submit wrapper |
+| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/submit_sentence_transformer_azureml.py` | Python submit wrapper (calls `az ml job create`) |
+| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/scripts/train_sentence_transformer.py` | Training script (supports `--push-to-hub`, `--hub-model-id`) |
+| `ai-projects/lora-training/microsoft_phi-silica-3.6_v1/azureml/README.md` | §13 — full docs |
+| `.github/workflows/azureml-train.yml` | Manual dispatch; set `jobFile` to the ST job YAML |
 
 Documented defaults: `rg-phi36-ml`, `phi36-ml-workspace`, `azureml:gpu-cluster`.
 
@@ -68,22 +68,22 @@ Artifacts: `model_out/final/` on the job output mount. MLflow tracking: `azureml
 
 ## Local alternatives (when Azure blocked)
 
-| Path                                                        | When                                                                |
+| Path | When |
 | ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| `SMOKE_TEST=1 python scripts/train_sentence_transformer.py` | Local CPU/GPU smoke (no Hub push)                                   |
-| HF Jobs via `hf_jobs` MCP                                   | User has HF Jobs credits; ephemeral — use `hub_strategy=every_save` |
-| Full local run                                              | Machine with GPU + `sentence-transformers[train]`                   |
+| `SMOKE_TEST=1 python scripts/train_sentence_transformer.py` | Local CPU/GPU smoke (no Hub push) |
+| HF Jobs via `hf_jobs` MCP | User has HF Jobs credits; ephemeral — use `hub_strategy=every_save` |
+| Full local run | Machine with GPU + `sentence-transformers[train]` |
 
 ## Troubleshooting
 
-| Symptom                          | Likely cause                  | Fix                                                                        |
+| Symptom | Likely cause | Fix |
 | -------------------------------- | ----------------------------- | -------------------------------------------------------------------------- |
-| `Please run az login`            | No Azure session              | `az login` or device code                                                  |
-| `subscription ... doesn't exist` | Wrong ID or wrong tenant      | `az account list`, set correct subscription                                |
-| `Set AZURE_ML_SUBSCRIPTION_ID`   | Placeholder `.env`            | Export real values; never commit secrets                                   |
-| Job fails on `--push-to-hub`     | Missing `HF_TOKEN` in job env | Pass `environment_variables.HF_TOKEN` at submit                            |
-| OOM on GPU                       | Batch 64 too large            | Override `per_device_train_batch_size` in training script or use larger VM |
-| HF Jobs 402                      | Insufficient HF credits       | Use Azure ML path instead                                                  |
+| `Please run az login` | No Azure session | `az login` or device code |
+| `subscription ... doesn't exist` | Wrong ID or wrong tenant | `az account list`, set correct subscription |
+| `Set AZURE_ML_SUBSCRIPTION_ID` | Placeholder `.env` | Export real values; never commit secrets |
+| Job fails on `--push-to-hub` | Missing `HF_TOKEN` in job env | Pass `environment_variables.HF_TOKEN` at submit |
+| OOM on GPU | Batch 64 too large | Override `per_device_train_batch_size` in training script or use larger VM |
+| HF Jobs 402 | Insufficient HF credits | Use Azure ML path instead |
 
 ## Agent checklist
 

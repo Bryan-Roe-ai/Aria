@@ -8,7 +8,7 @@ All web applications in the Aria repository have been successfully migrated to G
 
 ## 🌐 Live Demo URL
 
-**https://bryan-roe.github.io/Aria**
+**<https://bryan-roe.github.io/Aria>**
 
 (Will be active after repository settings are configured - see Activation Instructions below)
 
@@ -101,7 +101,7 @@ To activate GitHub Pages for this repository:
 
 ### Step 1: Go to Repository Settings
 
-1. Navigate to: https://github.com/Bryan-Roe/Aria/settings/pages
+1. Navigate to: <https://github.com/Bryan-Roe/Aria/settings/pages>
 2. Or click: **Settings** → **Pages** (in left sidebar)
 
 ### Step 2: Configure Source
@@ -126,18 +126,18 @@ Under "Build and deployment":
 ### Step 4: Verify Deployment
 
 1. Return to Settings → Pages
-2. You'll see: "Your site is live at https://bryan-roe.github.io/Aria"
+2. You'll see: "Your site is live at <https://bryan-roe.github.io/Aria>"
 3. Click the link to view your live site
 
 ### Step 5: Test All Applications
 
 Visit and test each application:
 
-- Main landing: https://bryan-roe.github.io/Aria
-- Aria character: https://bryan-roe.github.io/Aria/aria/
-- AI chat: https://bryan-roe.github.io/Aria/chat/
-- Dashboard: https://bryan-roe.github.io/Aria/dashboard/
-- Quantum: https://bryan-roe.github.io/Aria/quantum/
+- Main landing: <https://bryan-roe.github.io/Aria>
+- Aria character: <https://bryan-roe.github.io/Aria/aria/>
+- AI chat: <https://bryan-roe.github.io/Aria/chat/>
+- Dashboard: <https://bryan-roe.github.io/Aria/dashboard/>
+- Quantum: <https://bryan-roe.github.io/Aria/quantum/>
 
 ---
 
@@ -311,12 +311,12 @@ bash /tmp/validate_pages.sh
 
 ## 🔗 Resources
 
-- **Live Demo**: https://bryan-roe.github.io/Aria
-- **Repository**: https://github.com/Bryan-Roe/Aria
+- **Live Demo**: <https://bryan-roe.github.io/Aria>
+- **Repository**: <https://github.com/Bryan-Roe/Aria>
 - **Pages Documentation**: [docs/README_PAGES.md](README_PAGES.md)
 - **Deployment Guide**: [docs/DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
-- **GitHub Pages Docs**: https://docs.github.com/pages
-- **Jekyll Documentation**: https://jekyllrb.com/docs/
+- **GitHub Pages Docs**: <https://docs.github.com/pages>
+- **Jekyll Documentation**: <https://jekyllrb.com/docs/>
 
 ---
 
@@ -326,7 +326,7 @@ For issues or questions:
 
 1. Check documentation in `docs/DEPLOYMENT_GUIDE.md`
 2. Review GitHub Actions logs in the Actions tab
-3. Open an issue: https://github.com/Bryan-Roe/Aria/issues
+3. Open an issue: <https://github.com/Bryan-Roe/Aria/issues>
 4. Refer to GitHub Pages documentation
 
 ---

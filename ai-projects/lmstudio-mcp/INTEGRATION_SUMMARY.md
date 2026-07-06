@@ -240,26 +240,31 @@ response = await client.complete(
 ## Key Features
 
 ✅ **Seamless Agent Integration**
+
 - Works with existing Aria agent system
 - Automatic agent selection & routing
 - No breaking changes to existing code
 
 ✅ **Full Async Support**
+
 - Non-blocking I/O throughout
 - Supports streaming responses
 - Efficient connection pooling
 
 ✅ **Private & Local**
+
 - No cloud dependencies
 - No API key management
 - Runs on your machine
 
 ✅ **Production Ready**
+
 - Error handling & recovery
 - Health checks & diagnostics
 - Comprehensive logging
 
 ✅ **Well Documented**
+
 - Detailed examples & guides
 - Integration patterns shown
 - Troubleshooting included
@@ -314,7 +319,7 @@ pip install -r mcp-requirements.txt
 
 ### 2. Start LM Studio
 
-- Open LM Studio app (https://lmstudio.ai)
+- Open LM Studio app (<https://lmstudio.ai>)
 - Load a model (Mistral 7B recommended)
 - Enable "Local Server"
 
@@ -333,6 +338,7 @@ python verify_agent_integration.py
 ### 5. Use in Your Application
 
 See `AGENT_INTEGRATION.md` for examples with:
+
 - Chat CLI
 - AGI provider
 - Custom agents

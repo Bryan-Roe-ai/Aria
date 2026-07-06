@@ -321,14 +321,14 @@ python scripts\model_server.py --model {trained_model}
 
 ## 📊 Performance Improvements
 
-| Feature          | Benefit                 | Impact                    |
+| Feature | Benefit | Impact |
 | ---------------- | ----------------------- | ------------------------- |
-| Dataset Analyzer | Identify issues early   | Save hours of debugging   |
-| LR Finder        | Optimal learning rate   | 50-80% faster convergence |
-| Data Augmenter   | 2-5x more training data | +10-20% accuracy          |
-| Training Monitor | Real-time insights      | Catch issues immediately  |
-| Model Exporter   | Optimized inference     | 2-4x faster inference     |
-| Model Server     | Production API          | Easy deployment           |
+| Dataset Analyzer | Identify issues early | Save hours of debugging |
+| LR Finder | Optimal learning rate | 50-80% faster convergence |
+| Data Augmenter | 2-5x more training data | +10-20% accuracy |
+| Training Monitor | Real-time insights | Catch issues immediately |
+| Model Exporter | Optimized inference | 2-4x faster inference |
+| Model Server | Production API | Easy deployment |
 
 ## 🎓 Usage Patterns
 
@@ -436,6 +436,7 @@ For existing projects:
     ```
 
 5. **Deploy with model server**:
+
     ```bash
     python scripts\model_server.py --model trained_model
     ```

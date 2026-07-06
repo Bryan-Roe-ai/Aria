@@ -4,17 +4,17 @@ This directory contains all training and optimization scripts for the Phi-3.6 fi
 
 ## 📁 Script Overview
 
-| Script                | Purpose               | Usage                                                            |
+| Script | Purpose | Usage |
 | --------------------- | --------------------- | ---------------------------------------------------------------- |
-| `train_lora.py`       | LoRA fine-tuning      | `python train_lora.py --dataset data --config ../lora/lora.yaml` |
-| `auto_eval.py`        | Automatic evaluation  | `python auto_eval.py --model path/to/model --dataset test.jsonl` |
-| `rag_pipeline.py`     | RAG setup             | `python rag_pipeline.py --model model --docs docs --interactive` |
-| `semantic_pruning.py` | Data pruning          | `python semantic_pruning.py --input in.jsonl --output out.jsonl` |
-| `gpu_optimizer.py`    | Hardware optimization | `python gpu_optimizer.py --update-config ../lora/lora.yaml`      |
-| `run_pipeline.py`     | Master orchestrator   | `python run_pipeline.py --input-dataset train.jsonl`             |
-| `prepare_dataset.py`  | Dataset preparation   | Helper for data formatting                                       |
-| `metrics_logger.py`   | Training metrics      | Used by train_lora.py                                            |
-| `otel_callback.py`    | Telemetry             | Optional observability                                           |
+| `train_lora.py` | LoRA fine-tuning | `python train_lora.py --dataset data --config ../lora/lora.yaml` |
+| `auto_eval.py` | Automatic evaluation | `python auto_eval.py --model path/to/model --dataset test.jsonl` |
+| `rag_pipeline.py` | RAG setup | `python rag_pipeline.py --model model --docs docs --interactive` |
+| `semantic_pruning.py` | Data pruning | `python semantic_pruning.py --input in.jsonl --output out.jsonl` |
+| `gpu_optimizer.py` | Hardware optimization | `python gpu_optimizer.py --update-config ../lora/lora.yaml` |
+| `run_pipeline.py` | Master orchestrator | `python run_pipeline.py --input-dataset train.jsonl` |
+| `prepare_dataset.py` | Dataset preparation | Helper for data formatting |
+| `metrics_logger.py` | Training metrics | Used by train_lora.py |
+| `otel_callback.py` | Telemetry | Optional observability |
 
 ## 🚀 Quick Commands
 

@@ -92,9 +92,9 @@ Comprehensive visualization of training metrics, GPU usage, model performance, a
 #### **Training Time Distribution**
 
 - Doughnut chart showing job duration categories:
-    - Quick (<10 min) - Green
-    - Medium (10-60 min) - Yellow
-    - Long (>60 min) - Red
+  - Quick (<10 min) - Green
+  - Medium (10-60 min) - Yellow
+  - Long (>60 min) - Red
 
 ### How to Use
 
@@ -453,15 +453,15 @@ python .\dashboard\websocket_server.py
 
 ### 2. Access Features
 
-| Feature                | URL                                  | Keyboard Shortcut |
+| Feature | URL | Keyboard Shortcut |
 | ---------------------- | ------------------------------------ | ----------------- |
-| **Hub**                | http://localhost:8000/               | -                 |
-| **Training Dashboard** | http://localhost:8000/unified.html   | -                 |
-| **Analytics**          | http://localhost:8000/analytics.html | -                 |
-| **Model Comparison**   | In unified.html                      | `Ctrl+M`          |
-| **Config Templates**   | In unified.html                      | `Ctrl+T`          |
-| **Training History**   | In hub.html                          | `Ctrl+H`          |
-| **Job Queue**          | In hub.html                          | Click "Job Queue" |
+| **Hub** | <http://localhost:8000/> | - |
+| **Training Dashboard** | <http://localhost:8000/unified.html> | - |
+| **Analytics** | <http://localhost:8000/analytics.html> | - |
+| **Model Comparison** | In unified.html | `Ctrl+M` |
+| **Config Templates** | In unified.html | `Ctrl+T` |
+| **Training History** | In hub.html | `Ctrl+H` |
+| **Job Queue** | In hub.html | Click "Job Queue" |
 
 ### 3. Test Features
 
@@ -494,14 +494,14 @@ Start-Process "http://localhost:8000/analytics.html"
 
 ## 📈 Performance Improvements
 
-| Metric                 | Before                  | After                    | Improvement     |
+| Metric | Before | After | Improvement |
 | ---------------------- | ----------------------- | ------------------------ | --------------- |
-| **Real-time Updates**  | 5-10s polling           | Instant (WebSocket)      | 10x faster      |
-| **Server Load**        | High (constant polling) | Low (push notifications) | 80% reduction   |
-| **Data Visualization** | None                    | 4 interactive charts     | New feature     |
-| **Job Management**     | Manual                  | Priority queue           | Automated       |
-| **Config Management**  | Manual                  | Templates                | 5x faster setup |
-| **Model Comparison**   | Manual calculation      | Automated                | Instant         |
+| **Real-time Updates** | 5-10s polling | Instant (WebSocket) | 10x faster |
+| **Server Load** | High (constant polling) | Low (push notifications) | 80% reduction |
+| **Data Visualization** | None | 4 interactive charts | New feature |
+| **Job Management** | Manual | Priority queue | Automated |
+| **Config Management** | Manual | Templates | 5x faster setup |
+| **Model Comparison** | Manual calculation | Automated | Instant |
 
 ---
 

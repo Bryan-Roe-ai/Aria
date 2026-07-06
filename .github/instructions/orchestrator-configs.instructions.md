@@ -12,12 +12,12 @@ applyTo: "config/**/*.yaml"
 
 ## Key Config Files
 
-| Config                            | Orchestrator                                  | Validates With                                    |
+| Config | Orchestrator | Validates With |
 | --------------------------------- | --------------------------------------------- | ------------------------------------------------- |
-| `autotrain.yaml`                  | `scripts/autotrain.py`                        | `python scripts/autotrain.py --dry-run`           |
-| `quantum_autorun.yaml`            | `scripts/quantum_autorun.py`                  | `python scripts/quantum_autorun.py --dry-run`     |
-| `config/autonomous_training.yaml` | `scripts/autonomous_training_orchestrator.py` | Check status JSON                                 |
-| `config/master_orchestrator.yaml` | `scripts/master_orchestrator.py`              | `python scripts/master_orchestrator.py --dry-run` |
+| `autotrain.yaml` | `scripts/autotrain.py` | `python scripts/autotrain.py --dry-run` |
+| `quantum_autorun.yaml` | `scripts/quantum_autorun.py` | `python scripts/quantum_autorun.py --dry-run` |
+| `config/autonomous_training.yaml` | `scripts/autonomous_training_orchestrator.py` | Check status JSON |
+| `config/master_orchestrator.yaml` | `scripts/master_orchestrator.py` | `python scripts/master_orchestrator.py --dry-run` |
 
 ## Autonomous Training Config Keys
 

@@ -6,10 +6,10 @@ This document details two critical performance bottlenecks that were identified 
 
 ## Overview
 
-| Fix                           | Location                | Impact                           | Speedup      | Status   |
+| Fix | Location | Impact | Speedup | Status |
 | ----------------------------- | ----------------------- | -------------------------------- | ------------ | -------- |
-| Keyword matching optimization | `aria_web/server.py`    | 100-250x faster command parsing  | **100-250x** | ✅ Fixed |
-| DB connection pooling         | `shared/chat_memory.py` | 9.6x faster embedding operations | **9.6x**     | ✅ Fixed |
+| Keyword matching optimization | `aria_web/server.py` | 100-250x faster command parsing | **100-250x** | ✅ Fixed |
+| DB connection pooling | `shared/chat_memory.py` | 9.6x faster embedding operations | **9.6x** | ✅ Fixed |
 
 ---
 
@@ -88,9 +88,9 @@ Typical Aria session: 100-500 commands
 ### Tests
 
 - `tests/test_performance_critical_fixes.py`:
-    - `test_keywords_in_cmd_function()` - Validates correctness
-    - `test_keyword_sets_are_frozen()` - Validates immutability
-    - `test_keyword_matching_benchmark()` - 10k iterations in 4ms
+  - `test_keywords_in_cmd_function()` - Validates correctness
+  - `test_keyword_sets_are_frozen()` - Validates immutability
+  - `test_keyword_matching_benchmark()` - 10k iterations in 4ms
 
 ---
 
@@ -205,17 +205,17 @@ Batch processing 1000 embeddings:
 ### Files Modified
 
 - `shared/chat_memory.py`:
-    - Lines 24 (added threading import)
-    - Lines 58-103 (`_get_conn()` with caching)
-    - Lines 191-221 (`store_embedding()` updated to not close connection)
-    - Lines 267-292 (`fetch_similar_messages()` updated to not close connection)
+  - Lines 24 (added threading import)
+  - Lines 58-103 (`_get_conn()` with caching)
+  - Lines 191-221 (`store_embedding()` updated to not close connection)
+  - Lines 267-292 (`fetch_similar_messages()` updated to not close connection)
 
 ### Tests
 
 - `tests/test_performance_critical_fixes.py`:
-    - `test_connection_caching()` - Validates cache reuse
-    - `test_store_embedding_uses_cached_connection()` - Validates no close()
-    - `test_connection_pooling_speedup()` - 10 ops in 52ms benchmark
+  - `test_connection_caching()` - Validates cache reuse
+  - `test_store_embedding_uses_cached_connection()` - Validates no close()
+  - `test_connection_pooling_speedup()` - 10 ops in 52ms benchmark
 
 ---
 

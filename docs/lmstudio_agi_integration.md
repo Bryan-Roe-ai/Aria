@@ -49,7 +49,7 @@ if score > 0.0:
 ### TASK 1: Add LM Studio Agent to Registry
 
 File: ai-projects/chat-cli/src/agi_provider.py
-Location: In _AGENT_REGISTRY dict (around line 25-120)
+Location: In_AGENT_REGISTRY dict (around line 25-120)
 Add new agent entry:
 
 ```python
@@ -80,7 +80,7 @@ Need to update to handle explicit="lmstudio":
 ### TASK 3: Verify Agent Dispatch
 
 File: ai-projects/chat-cli/src/agi_provider.py
-Location: _dispatch_to_agent method (line 481)
+Location:_dispatch_to_agent method (line 481)
 Current: calls detect_provider(explicit=provider_name)
 Should already work if detect_provider handles "lmstudio"
 
@@ -93,7 +93,7 @@ Should already work if detect_provider handles "lmstudio"
 
 ## Provider Configuration (Environment Variables)
 
-- LMSTUDIO_BASE_URL: default http://127.0.0.1:1234/v1
+- LMSTUDIO_BASE_URL: default <http://127.0.0.1:1234/v1>
 - LMSTUDIO_MODEL: default "local-model"
 - Already configured in .env file
 

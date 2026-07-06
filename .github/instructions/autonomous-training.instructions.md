@@ -10,7 +10,7 @@ applyTo: "scripts/autonomous_training*"
 - State machine: `discovery → collection → training → analysis → optimization → deployment`.
 - Self-discovers datasets by scanning `datasets/quantum`, `datasets/chat`, `datasets/massive_quantum`.
 - Adaptive epoch selection: `[25, 50, 100, 200]` based on performance history.
-    - Increase epochs if accuracy < 0.70 or plateauing.
+  - Increase epochs if accuracy < 0.70 or plateauing.
 - Performance degradation detection: alerts on >5% accuracy drop between cycles.
 - Auto-deploy threshold: accuracy > 0.90 (configurable, must be enabled).
 - Config: `config/autonomous_training.yaml` (cycle_interval_minutes, epochs_progression, min_datasets).

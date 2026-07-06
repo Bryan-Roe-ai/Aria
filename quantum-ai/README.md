@@ -17,11 +17,11 @@ Tokens → Embedding + Positional Encoding
 
 ## Quantum Backend Auto-Detection
 
-| Priority | Backend         | Requires                          |
+| Priority | Backend | Requires |
 | -------- | --------------- | --------------------------------- |
-| 1st      | `qiskit.aer`    | `pennylane-qiskit` + `qiskit-aer` |
-| 2nd      | `default.qubit` | `pennylane` (already in repo)     |
-| 3rd      | classical MLP   | nothing (always available)        |
+| 1st | `qiskit.aer` | `pennylane-qiskit` + `qiskit-aer` |
+| 2nd | `default.qubit` | `pennylane` (already in repo) |
+| 3rd | classical MLP | nothing (always available) |
 
 ## Quick Start
 
@@ -72,15 +72,15 @@ python3 -m pip install -r quantum-ai/requirements-smoke.txt
 
 ## Config Reference
 
-| Parameter      | Default  | Description                                                   |
+| Parameter | Default | Description |
 | -------------- | -------- | ------------------------------------------------------------- |
-| `n_qubits`     | 4        | qubits per quantum layer                                      |
-| `d_model`      | 64       | model hidden dimension                                        |
-| `n_heads`      | 4        | attention heads                                               |
-| `n_layers`     | 2        | transformer blocks                                            |
-| `n_var_layers` | 2        | variational layers inside each circuit                        |
-| `max_seq_len`  | 128      | maximum context length                                        |
-| `backend`      | `"auto"` | `"auto"`, `"qiskit.aer"`, `"default.qubit"`, or `"classical"` |
+| `n_qubits` | 4 | qubits per quantum layer |
+| `d_model` | 64 | model hidden dimension |
+| `n_heads` | 4 | attention heads |
+| `n_layers` | 2 | transformer blocks |
+| `n_var_layers` | 2 | variational layers inside each circuit |
+| `max_seq_len` | 128 | maximum context length |
+| `backend` | `"auto"` | `"auto"`, `"qiskit.aer"`, `"default.qubit"`, or `"classical"` |
 
 ## Train with Custom Code
 
@@ -135,7 +135,7 @@ To run the unit test locally:
 
 ## Files
 
-| File                                | Description                        |
+| File | Description |
 | ----------------------------------- | ---------------------------------- |
-| `src/quantum_code_llm.py`           | Self-contained module (~700 lines) |
-| `examples/quantum_code_llm_demo.py` | Training + generation demo         |
+| `src/quantum_code_llm.py` | Self-contained module (~700 lines) |
+| `examples/quantum_code_llm_demo.py` | Training + generation demo |

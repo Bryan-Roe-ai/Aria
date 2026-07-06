@@ -40,86 +40,86 @@ This document provides a complete index of all experimental results, documentati
 **Multi-backend testing and provider comparison**
 
 - [`HARDWARE_TEST_RESULTS.md`](./HARDWARE_TEST_RESULTS.md)
-    - Multi-backend GHZ tests (Rigetti ✅, Quantinuum ⚠️)
-    - 4-qubit and 6-qubit scaling tests
-    - Hardware vs local simulator validation
-    - Backend availability matrix
+  - Multi-backend GHZ tests (Rigetti ✅, Quantinuum ⚠️)
+  - 4-qubit and 6-qubit scaling tests
+  - Hardware vs local simulator validation
+  - Backend availability matrix
 
 - [`PROVIDER_COMPARISON_RESULTS.md`](./PROVIDER_COMPARISON_RESULTS.md) ⭐ **Most Comprehensive**
-    - 4 gate pattern tests (standard, quantinuum-native, ionq-native, rigetti-native)
-    - Quantinuum bug root cause analysis
-    - Variational hardware (90.5%) vs MPS (91.5%) comparison
-    - Provider compatibility matrix
-    - Production recommendations
+  - 4 gate pattern tests (standard, quantinuum-native, ionq-native, rigetti-native)
+  - Quantinuum bug root cause analysis
+  - Variational hardware (90.5%) vs MPS (91.5%) comparison
+  - Provider compatibility matrix
+  - Production recommendations
 
 ### 3. Simulation Campaign
 
 **32→256 qubit local experiments**
 
 - [`OPTIMIZATION_RESULTS.md`](./OPTIMIZATION_RESULTS.md)
-    - Initial 32q/64q MPS entanglement topology comparison
-    - Clean vs Pauli noise (px/pz) experiments
-    - Entropy% trends and histograms
+  - Initial 32q/64q MPS entanglement topology comparison
+  - Clean vs Pauli noise (px/pz) experiments
+  - Entropy% trends and histograms
 
 - [`FINAL_OPTIMIZATION_REPORT.md`](./FINAL_OPTIMIZATION_REPORT.md)
-    - 64q deep layer exploration (L=3-4)
-    - Depolarizing and amplitude damping noise
-    - Stabilizer random experiments (128/256q, shots=2000)
-    - Summary charts and comprehensive analysis
+  - 64q deep layer exploration (L=3-4)
+  - Depolarizing and amplitude damping noise
+  - Stabilizer random experiments (128/256q, shots=2000)
+  - Summary charts and comprehensive analysis
 
 ### 4. Dataset Training
 
 **Custom dataset experiments with quantum classifiers**
 
 - [`DATASET_TRAINING_RESULTS.md`](./DATASET_TRAINING_RESULTS.md)
-    - 4 UCI datasets (banknote, heart disease, ionosphere, sonar)
-    - Quantum classifier performance metrics
-    - Hyperparameter tuning results
+  - 4 UCI datasets (banknote, heart disease, ionosphere, sonar)
+  - Quantum classifier performance metrics
+  - Hyperparameter tuning results
 
 - [`CUSTOM_DATASET_GUIDE.md`](./CUSTOM_DATASET_GUIDE.md)
-    - How to prepare custom CSV datasets
-    - Feature engineering for quantum circuits
-    - Training workflows
+  - How to prepare custom CSV datasets
+  - Feature engineering for quantum circuits
+  - Training workflows
 
 ### 5. Deployment Guides
 
 **Azure Quantum workspace setup and production deployment**
 
 - [`azure/DEPLOYMENT.md`](./azure/DEPLOYMENT.md)
-    - Complete Azure Quantum workspace setup
-    - CLI commands, authentication, provider configuration
-    - Terraform/Bicep infrastructure-as-code
+  - Complete Azure Quantum workspace setup
+  - CLI commands, authentication, provider configuration
+  - Terraform/Bicep infrastructure-as-code
 
 - [`AZURE_QUANTUM_QUICKSTART.md`](./AZURE_QUANTUM_QUICKSTART.md)
-    - Fast path to first hardware job
-    - Minimal setup for testing
+  - Fast path to first hardware job
+  - Minimal setup for testing
 
 - [`PRODUCTION_DEPLOYMENT_GUIDE.md`](./PRODUCTION_DEPLOYMENT_GUIDE.md)
-    - Best practices for production workloads
-    - Cost monitoring and optimization
-    - Job batching and retry strategies
+  - Best practices for production workloads
+  - Cost monitoring and optimization
+  - Job batching and retry strategies
 
 ### 6. MCP Server
 
 **Model Context Protocol for AI agents**
 
 - [`MCP_SERVER_README.md`](./MCP_SERVER_README.md)
-    - Installation and configuration
-    - Available tools (create_circuit, simulate, submit, train_classifier, etc.)
-    - Usage examples and integration patterns
+  - Installation and configuration
+  - Available tools (create_circuit, simulate, submit, train_classifier, etc.)
+  - Usage examples and integration patterns
 
 ### 7. Workflow Summaries
 
 **Quick reference for common tasks**
 
 - [`DEMONSTRATION_SUMMARY.md`](./DEMONSTRATION_SUMMARY.md)
-    - End-to-end workflow examples
-    - Local simulation → Azure hardware pipeline
+  - End-to-end workflow examples
+  - Local simulation → Azure hardware pipeline
 
 - [`READY_FOR_HARDWARE.md`](./READY_FOR_HARDWARE.md)
-    - Pre-hardware checklist
-    - Cost estimation
-    - Testing best practices
+  - Pre-hardware checklist
+  - Cost estimation
+  - Testing best practices
 
 ---
 
@@ -134,20 +134,20 @@ This document provides a complete index of all experimental results, documentati
 
 #### Azure Hardware Jobs
 
-| Backend               | Jobs  | Status           | Notes                      |
+| Backend | Jobs | Status | Notes |
 | --------------------- | ----- | ---------------- | -------------------------- |
-| rigetti.sim.qvm       | 3     | ✅ All passed    | 4q/6q GHZ + 4q variational |
-| quantinuum.sim.h2-1sc | 6     | ❌ All collapsed | All patterns failed (bug)  |
-| **Total**             | **9** | **33% success**  | Quantinuum excluded        |
+| rigetti.sim.qvm | 3 | ✅ All passed | 4q/6q GHZ + 4q variational |
+| quantinuum.sim.h2-1sc | 6 | ❌ All collapsed | All patterns failed (bug) |
+| **Total** | **9** | **33% success** | Quantinuum excluded |
 
 #### Local Simulations
 
-| Method      | Qubits    | Circuits                             | Status           |
+| Method | Qubits | Circuits | Status |
 | ----------- | --------- | ------------------------------------ | ---------------- |
-| MPS         | 32, 64    | 22 (L=1-4, 3 entanglements, 4 noise) | ✅ Complete      |
-| Stabilizer  | 128, 256  | 6 (L=2/4/8, shots=2000)              | ✅ Complete      |
-| Statevector | 4, 16     | 8 (early tests)                      | ✅ Complete      |
-| **Total**   | **4-256** | **36**                               | **100% success** |
+| MPS | 32, 64 | 22 (L=1-4, 3 entanglements, 4 noise) | ✅ Complete |
+| Stabilizer | 128, 256 | 6 (L=2/4/8, shots=2000) | ✅ Complete |
+| Statevector | 4, 16 | 8 (early tests) | ✅ Complete |
+| **Total** | **4-256** | **36** | **100% success** |
 
 ### Key Metrics
 

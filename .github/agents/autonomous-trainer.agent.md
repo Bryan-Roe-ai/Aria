@@ -39,13 +39,13 @@ Do not retain control after the scoped training work is finished; hand back to `
 
 ### Orchestrators (YAML-driven)
 
-| Orchestrator    | Script                                        | Config                            | Purpose                       |
+| Orchestrator | Script | Config | Purpose |
 | --------------- | --------------------------------------------- | --------------------------------- | ----------------------------- |
-| Autotrain       | `scripts/autotrain.py`                        | `autotrain.yaml`                  | LoRA fine-tuning jobs         |
-| Quantum Autorun | `scripts/quantum_autorun.py`                  | `quantum_autorun.yaml`            | Quantum ML pipelines          |
-| Evaluation      | `scripts/evaluation_autorun.py`               | `evaluation_autorun.yaml`         | Model evaluation              |
-| Master          | `scripts/master_orchestrator.py`              | `config/master_orchestrator.yaml` | Coordinates all orchestrators |
-| Autonomous      | `scripts/autonomous_training_orchestrator.py` | `config/autonomous_training.yaml` | Self-managing 30-min cycles   |
+| Autotrain | `scripts/autotrain.py` | `autotrain.yaml` | LoRA fine-tuning jobs |
+| Quantum Autorun | `scripts/quantum_autorun.py` | `quantum_autorun.yaml` | Quantum ML pipelines |
+| Evaluation | `scripts/evaluation_autorun.py` | `evaluation_autorun.yaml` | Model evaluation |
+| Master | `scripts/master_orchestrator.py` | `config/master_orchestrator.yaml` | Coordinates all orchestrators |
+| Autonomous | `scripts/autonomous_training_orchestrator.py` | `config/autonomous_training.yaml` | Self-managing 30-min cycles |
 
 ### Execution Protocol
 
@@ -84,9 +84,9 @@ Each cycle:
 ### State Files
 
 - Status: `data_out/autonomous_training_status.json`
-    - `{cycles_completed, best_accuracy, performance_history[], dataset_inventory}`
+  - `{cycles_completed, best_accuracy, performance_history[], dataset_inventory}`
 - Orchestrator status: `data_out/<orchestrator>/status.json`
-    - `{total_jobs, succeeded, failed, running, last_updated, avg_duration}`
+  - `{total_jobs, succeeded, failed, running, last_updated, avg_duration}`
 - Logs: `data_out/autonomous_training.log`
 
 ## Dataset Conventions
@@ -134,16 +134,16 @@ python scripts/resource_monitor.py --snapshot
 
 ## Key Files
 
-| Change                 | File                                                                              |
+| Change | File |
 | ---------------------- | --------------------------------------------------------------------------------- |
-| Training orchestration | `scripts/autotrain.py` + `autotrain.yaml`                                         |
-| Autonomous training    | `scripts/autonomous_training_orchestrator.py` + `config/autonomous_training.yaml` |
-| Training pipeline      | `scripts/automated_training_pipeline.py`                                          |
-| Train + deploy         | `scripts/train_and_promote.py`                                                    |
-| Performance analysis   | `scripts/training_analytics.py`                                                   |
-| Monitoring             | `scripts/monitor_autonomous_training.py`                                          |
-| Master orchestrator    | `scripts/master_orchestrator.py` + `config/master_orchestrator.yaml`              |
-| LoRA fine-tuning       | `AI/microsoft_phi-silica-3.6_v1/`                                                 |
+| Training orchestration | `scripts/autotrain.py` + `autotrain.yaml` |
+| Autonomous training | `scripts/autonomous_training_orchestrator.py` + `config/autonomous_training.yaml` |
+| Training pipeline | `scripts/automated_training_pipeline.py` |
+| Train + deploy | `scripts/train_and_promote.py` |
+| Performance analysis | `scripts/training_analytics.py` |
+| Monitoring | `scripts/monitor_autonomous_training.py` |
+| Master orchestrator | `scripts/master_orchestrator.py` + `config/master_orchestrator.yaml` |
+| LoRA fine-tuning | `AI/microsoft_phi-silica-3.6_v1/` |
 
 ## Safety Rules
 

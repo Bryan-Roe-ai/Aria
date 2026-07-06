@@ -43,12 +43,12 @@ AI/
 
 **Already Available** - No download needed
 
-| Dataset       | Samples | Features | Classes | Use Case                          |
+| Dataset | Samples | Features | Classes | Use Case |
 | ------------- | ------- | -------- | ------- | --------------------------------- |
-| Iris          | 150     | 4        | 3       | Binary/multi-class classification |
-| Wine          | 178     | 13       | 3       | Quality classification            |
-| Breast Cancer | 569     | 30       | 2       | Medical diagnosis                 |
-| Digits        | 1,797   | 64       | 10      | Image classification              |
+| Iris | 150 | 4 | 3 | Binary/multi-class classification |
+| Wine | 178 | 13 | 3 | Quality classification |
+| Breast Cancer | 569 | 30 | 2 | Medical diagnosis |
+| Digits | 1,797 | 64 | 10 | Image classification |
 
 **Training Command:**
 
@@ -302,7 +302,7 @@ Computer vision feature-based classification
 #### Quantum Many-Body Systems
 
 - **Source**: TensorFlow Quantum datasets
-- **URL**: https://www.tensorflow.org/quantum/tutorials/mnist
+- **URL**: <https://www.tensorflow.org/quantum/tutorials/mnist>
 - **Format**: NumPy arrays
 - **Use**: Quantum state preparation, VQE training
 
@@ -355,7 +355,7 @@ ds = load_dataset("OpenAssistant/oasst1")
 - **Format**: JSON
 - **Quality**: ⭐⭐⭐⭐
 - **Use**: Instruction tuning
-- **URL**: https://github.com/tatsu-lab/stanford_alpaca
+- **URL**: <https://github.com/tatsu-lab/stanford_alpaca>
 
 #### 4. Dolly 15k
 
@@ -446,7 +446,7 @@ python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets
 
 ## 🎯 Dataset Selection Guide
 
-### For Quantum AI (4-10 qubits):
+### For Quantum AI (4-10 qubits)
 
 - **Start with**: Iris, Wine, Breast Cancer (built-in)
 - **Next**: UCI datasets (Heart Disease, Sonar)
@@ -454,7 +454,7 @@ python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets
 - **Features**: Keep ≤ 10 features (or use PCA)
 - **Samples**: 100-10,000 (quantum simulators are slow)
 
-### For Phi-3.6 Fine-Tuning:
+### For Phi-3.6 Fine-Tuning
 
 - **Small tests**: Dolly 15k (fits in memory, high quality)
 - **Production**: ShareGPT or OpenAssistant (large, diverse)
@@ -462,7 +462,7 @@ python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets
 - **Format**: JSONL with `messages` field (Phi-3 chat template)
 - **Streaming**: Use `datasets` library for >10GB files
 
-### For Talk-to-AI Chat:
+### For Talk-to-AI Chat
 
 - **Logs**: Your own conversation history in `ai-projects/chat-cli/logs/*.jsonl`
 - **Fine-tune on**: Personal assistant style from your interactions
@@ -507,19 +507,19 @@ python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets
 
 ## 🔐 License Considerations
 
-### ✅ Safe for Commercial Use:
+### ✅ Safe for Commercial Use
 
 - Dolly 15k (CC BY-SA 3.0)
 - OpenAssistant (Apache 2.0)
 - UCI datasets (Attribution required)
 - Scikit-learn datasets (BSD)
 
-### ⚠️ Research/Non-Commercial Only:
+### ⚠️ Research/Non-Commercial Only
 
 - ShareGPT (No commercial license)
 - Alpaca (Based on OpenAI data - terms unclear)
 
-### 🔒 Requires Credentialing:
+### 🔒 Requires Credentialing
 
 - MIMIC-III (Healthcare data - CITI training required)
 - Clinical trial data (IRB approval)
@@ -528,14 +528,14 @@ python AI\microsoft_phi-silica-3.6_v1\scripts\train_lora.py --dataset .\datasets
 
 ## 💾 Storage Requirements
 
-### Current Workspace Storage:
+### Current Workspace Storage
 
 - **Quantum datasets**: ~50 MB (UCI + built-in)
 - **Chat datasets (small)**: ~500 MB (Dolly 15k)
 - **Chat datasets (large)**: ~5-10 GB (ShareGPT, OpenAssistant)
 - **Code datasets**: ~50+ GB (The Stack)
 
-### Recommended Setup:
+### Recommended Setup
 
 ```powershell
 # Check available space
@@ -577,6 +577,7 @@ Get-PSDrive C | Select-Object Used,Free
     ```
 
 4. **Monitor Storage**
+
     ```powershell
     # Track dataset sizes
     Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
@@ -586,22 +587,22 @@ Get-PSDrive C | Select-Object Used,Free
 
 ## 📚 Additional Resources
 
-### Data Sources:
+### Data Sources
 
-- **Hugging Face Hub**: https://huggingface.co/datasets
-- **Papers with Code**: https://paperswithcode.com/datasets
-- **UCI ML Repository**: https://archive.ics.uci.edu/ml/
-- **Kaggle Datasets**: https://www.kaggle.com/datasets
-- **Google Dataset Search**: https://datasetsearch.research.google.com/
+- **Hugging Face Hub**: <https://huggingface.co/datasets>
+- **Papers with Code**: <https://paperswithcode.com/datasets>
+- **UCI ML Repository**: <https://archive.ics.uci.edu/ml/>
+- **Kaggle Datasets**: <https://www.kaggle.com/datasets>
+- **Google Dataset Search**: <https://datasetsearch.research.google.com/>
 
-### Tools:
+### Tools
 
 - **Hugging Face `datasets`**: Streaming, caching, auto-download
 - **Pandas**: CSV/Excel processing
 - **PyArrow**: Fast Parquet reading
 - **DVC**: Dataset version control
 
-### Tutorials:
+### Tutorials
 
 - Quantum dataset preparation: `ai-projects/quantum-ml/notebooks/`
 - JSONL conversion: `AI/microsoft_phi-silica-3.6_v1/scripts/prepare_dataset.py`

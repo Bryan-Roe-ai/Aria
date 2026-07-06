@@ -15,8 +15,8 @@ Successfully added LLM-powered automatic action generation and execution system 
 ### 2. AriaActionParser Class
 
 - **Dual-Mode Parsing**:
-    - LLM-powered parsing using `shared.chat_providers.detect_provider()`
-    - Rule-based fallback parser for offline/no-API operation
+  - LLM-powered parsing using `shared.chat_providers.detect_provider()`
+  - Rule-based fallback parser for offline/no-API operation
 - **System Prompt Generation**: Dynamic prompts include action schema + current stage state
 - **JSON Response Extraction**: Handles various LLM response formats (plain JSON, markdown-wrapped, etc.)
 - **Action Validation**: Filters invalid actions before returning
@@ -24,55 +24,55 @@ Successfully added LLM-powered automatic action generation and execution system 
 ### 3. Action Execution Engine
 
 - **`execute_aria_action()` Function**:
-    - Validates action type and parameters
-    - Updates global `stage_state` dict
-    - Returns status, message, and visualization tags
-    - Enforces rules (distance checks, single-object holding, etc.)
+  - Validates action type and parameters
+  - Updates global `stage_state` dict
+  - Returns status, message, and visualization tags
+  - Enforces rules (distance checks, single-object holding, etc.)
 - **State Management**:
-    - Aria position, expression, held_object, facing
-    - Object positions and states (on_table, held, dropped, thrown)
-    - Environment data (table, stage bounds)
+  - Aria position, expression, held_object, facing
+  - Object positions and states (on_table, held, dropped, thrown)
+  - Environment data (table, stage bounds)
 
 ### 4. REST API Endpoint
 
 - **POST /api/aria/execute**:
-    - `command` (string): Natural language command
-    - `auto_execute` (bool): Execute actions or plan only
-    - `use_llm` (bool): Use LLM or fallback parser
+  - `command` (string): Natural language command
+  - `auto_execute` (bool): Execute actions or plan only
+  - `use_llm` (bool): Use LLM or fallback parser
 - **Response Format**:
-    - Plan mode: Returns parsed actions only
-    - Execute mode: Returns actions + execution results + updated state
-    - Error handling: Graceful failures with detailed messages
+  - Plan mode: Returns parsed actions only
+  - Execute mode: Returns actions + execution results + updated state
+  - Error handling: Graceful failures with detailed messages
 
 ### 5. Web Interface (auto-execute.html)
 
 - **Interactive UI**:
-    - Command input with example commands
-    - Plan vs Execute buttons
-    - LLM toggle and state display options
+  - Command input with example commands
+  - Plan vs Execute buttons
+  - LLM toggle and state display options
 - **Real-time Results**:
-    - Action cards with parameters
-    - Execution status badges
-    - Generated tags display
-    - JSON state viewer with syntax highlighting
+  - Action cards with parameters
+  - Execution status badges
+  - Generated tags display
+  - JSON state viewer with syntax highlighting
 - **Responsive Design**: Modern gradient UI with smooth animations
 
 ## 📁 Files Created/Modified
 
-### Created:
+### Created
 
 - `aria_web/auto-execute.html` - Web UI for testing (529 lines)
 - `aria_web/AUTO-EXECUTE.md` - Comprehensive documentation (450+ lines)
 - This summary document
 
-### Modified:
+### Modified
 
 - `aria_web/server.py` - Added 223 lines:
-    - LLM imports and provider detection (lines 12-13, 23-31)
-    - ARIA_ACTIONS schema (lines 57-101)
-    - AriaActionParser class (lines 104-277)
-    - execute_aria_action() function (lines 617-771)
-    - /api/aria/execute endpoint (lines 910-982)
+  - LLM imports and provider detection (lines 12-13, 23-31)
+  - ARIA_ACTIONS schema (lines 57-101)
+  - AriaActionParser class (lines 104-277)
+  - execute_aria_action() function (lines 617-771)
+  - /api/aria/execute endpoint (lines 910-982)
 
 ## 🧪 Testing Results
 
@@ -107,7 +107,7 @@ Result: Successfully parsed 2 actions (say, gesture) and executed both with prop
 
 ## 🔄 Integration with Existing Code
 
-### Preserved Features:
+### Preserved Features
 
 - ✅ Original `/api/aria/command` endpoint (rule-based tags)
 - ✅ `/api/aria/state` endpoint (stage state queries)
@@ -115,7 +115,7 @@ Result: Successfully parsed 2 actions (say, gesture) and executed both with prop
 - ✅ Existing tag generation system (`generate_tags_fallback()`)
 - ✅ AI model loading path (currently disabled for fast startup)
 
-### New Parallel System:
+### New Parallel System
 
 - New `/api/aria/execute` endpoint operates independently
 - Uses same `stage_state` dict for consistency
@@ -166,13 +166,13 @@ Result: Successfully parsed 2 actions (say, gesture) and executed both with prop
 
 All tested with fallback parser:
 
-| Command              | Actions Generated                    | Execution |
+| Command | Actions Generated | Execution |
 | -------------------- | ------------------------------------ | --------- |
-| "Say hello"          | `say(text="hello", emotion="happy")` | ✅        |
-| "Wave and say hello" | `say(...), gesture(wave)`            | ✅        |
-| "Walk to the table"  | `move(target={x:60, y:35})`          | ✅        |
-| "Pick up the apple"  | `move(to apple), pickup(apple)`      | ✅        |
-| "Go to center"       | `move(target={x:50, y:50})`          | ✅        |
+| "Say hello" | `say(text="hello", emotion="happy")` | ✅ |
+| "Wave and say hello" | `say(...), gesture(wave)` | ✅ |
+| "Walk to the table" | `move(target={x:60, y:35})` | ✅ |
+| "Pick up the apple" | `move(to apple), pickup(apple)` | ✅ |
+| "Go to center" | `move(target={x:50, y:50})` | ✅ |
 
 ## 🚀 Performance
 

@@ -11,15 +11,15 @@ Composite GitHub Action to provision Python with pip caching and repository-awar
 - `dev-requirements-file` (default: `requirements-dev.txt`)
 - `constraints-file` (default: `constraints.txt`)
 - `cache-dependency-path` (default: empty)
-    - Optional newline-delimited list of dependency files for cache invalidation.
+  - Optional newline-delimited list of dependency files for cache invalidation.
 - `extra-requirement-files` (default: empty)
-    - Optional newline-delimited list of additional `-r` files to install.
+  - Optional newline-delimited list of additional `-r` files to install.
 - `extra-packages` (default: empty)
-    - Optional space-delimited list of packages to install after requirements files.
+  - Optional space-delimited list of packages to install after requirements files.
 - `pip-check-mode` (default: `skip`)
-    - `skip`: do not run `python -m pip check`
-    - `warn`: run `pip check` but do not fail
-    - `enforce`: fail if `pip check` reports dependency issues
+  - `skip`: do not run `python -m pip check`
+  - `warn`: run `pip check` but do not fail
+  - `enforce`: fail if `pip check` reports dependency issues
 
 ## Usage
 

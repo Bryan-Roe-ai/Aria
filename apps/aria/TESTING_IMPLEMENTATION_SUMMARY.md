@@ -161,13 +161,13 @@ pytest tests/ -v                                  # All tests (skip if browser u
 
 ## Environment Variables Reference
 
-| Variable                    | Purpose                 | Default                        | Used By       |
+| Variable | Purpose | Default | Used By |
 | --------------------------- | ----------------------- | ------------------------------ | ------------- |
-| `ARIA_SERVER_URL`           | Backend server URL      | `http://localhost:8000`        | All E2E tests |
-| `CHROME_PATH`               | Custom Chrome binary    | Auto-detect                    | Pyppeteer     |
-| `PUPPETEER_EXECUTABLE_PATH` | Alternative Chrome path | Auto-detect                    | Pyppeteer     |
-| `PYPPETEER_DEBUG`           | Enable debug output     | `false`                        | Pyppeteer     |
-| `SELENIUM_REMOTE_URL`       | Selenium Grid URL       | `http://localhost:4444/wd/hub` | Selenium      |
+| `ARIA_SERVER_URL` | Backend server URL | `http://localhost:8000` | All E2E tests |
+| `CHROME_PATH` | Custom Chrome binary | Auto-detect | Pyppeteer |
+| `PUPPETEER_EXECUTABLE_PATH` | Alternative Chrome path | Auto-detect | Pyppeteer |
+| `PYPPETEER_DEBUG` | Enable debug output | `false` | Pyppeteer |
+| `SELENIUM_REMOTE_URL` | Selenium Grid URL | `http://localhost:4444/wd/hub` | Selenium |
 
 ## CI/CD Workflow Execution
 
@@ -232,13 +232,13 @@ $ python -c "import yaml; yaml.safe_load(open('.github/workflows/aria-tests.yml'
 
 ## Browser Compatibility Matrix
 
-| Browser  | Pyppeteer        | Playwright | Selenium       |
+| Browser | Pyppeteer | Playwright | Selenium |
 | -------- | ---------------- | ---------- | -------------- |
-| Chromium | ✅ (CDP)         | ✅         | ✅ (WebDriver) |
-| Chrome   | ✅ (custom path) | ✅         | ✅ (WebDriver) |
-| Firefox  | ❌               | ✅         | ✅ (WebDriver) |
-| Safari   | ❌               | ✅ (macOS) | ✅ (WebDriver) |
-| Edge     | ❌               | ✅         | ✅ (WebDriver) |
+| Chromium | ✅ (CDP) | ✅ | ✅ (WebDriver) |
+| Chrome | ✅ (custom path) | ✅ | ✅ (WebDriver) |
+| Firefox | ❌ | ✅ | ✅ (WebDriver) |
+| Safari | ❌ | ✅ (macOS) | ✅ (WebDriver) |
+| Edge | ❌ | ✅ | ✅ (WebDriver) |
 
 ## Future Enhancements
 

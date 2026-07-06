@@ -155,17 +155,17 @@ Get-Content data_out\overnight_download.log | Select-Object -Last 50
 
 ### Based on Quality Scoring
 
-| Score Range | Datasets | Expected Accuracy | Use Case              |
+| Score Range | Datasets | Expected Accuracy | Use Case |
 | ----------- | -------- | ----------------- | --------------------- |
-| 90-100      | 100      | 85-95%            | Production deployment |
-| 85-90       | 50       | 80-90%            | Secondary models      |
-| 80-85       | 55       | 75-85%            | Research/testing      |
+| 90-100 | 100 | 85-95% | Production deployment |
+| 85-90 | 50 | 80-90% | Secondary models |
+| 80-85 | 55 | 75-85% | Research/testing |
 
 ### Based on 27-Dataset Benchmark
 
-| Current UCI Avg | OpenML Expected | Delta     |
+| Current UCI Avg | OpenML Expected | Delta |
 | --------------- | --------------- | --------- |
-| 90.55%          | 85-90%          | -0 to -5% |
+| 90.55% | 85-90% | -0 to -5% |
 
 **Reasoning for expected drop:**
 

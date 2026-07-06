@@ -6,7 +6,7 @@ Composite action to run `make setup-verify` in CI, ensuring local setup guardrai
 
 - `python-version` (optional, default: `3.12`)
 - `dab-strict-values` (optional, default: `false`)
-    - When `true`, exports `DAB_VERIFY_STRICT_VALUES=1` so DAB setup verification fails on placeholder connection-string values (for example `Database=undefined`).
+  - When `true`, exports `DAB_VERIFY_STRICT_VALUES=1` so DAB setup verification fails on placeholder connection-string values (for example `Database=undefined`).
 
 ## Usage
 

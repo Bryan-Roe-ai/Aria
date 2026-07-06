@@ -35,8 +35,8 @@ Use from `continual-learning` when transcript deltas may produce durable memory 
 
 - Use plain bullet points only.
 - Keep only these sections:
-    - `## Learned User Preferences`
-    - `## Learned Workspace Facts`
+  - `## Learned User Preferences`
+  - `## Learned Workspace Facts`
 - Do not write evidence/confidence tags.
 - Do not write process instructions, rationale, or metadata blocks.
 - Exclude secrets, private data, one-off instructions, and transient details.

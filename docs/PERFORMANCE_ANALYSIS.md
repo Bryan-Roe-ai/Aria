@@ -418,13 +418,13 @@ def aggregate_results(self) -> Dict:
 **Problem:**
 Functions with complexity > 10 are difficult to optimize and maintain:
 
-| Line | Function          | Complexity | Issues                                                         |
+| Line | Function | Complexity | Issues |
 | ---- | ----------------- | ---------- | -------------------------------------------------------------- |
-| 762  | `tts`             | 34         | Multiple nested conditionals, hard to follow control flow      |
-| 1041 | `ai_status`       | 28         | Many sequential checks, could be refactored                    |
-| 195  | `chat`            | 27         | Complex logic mixing validation, provider detection, streaming |
-| 606  | `chat_stream`     | 18         | Nested error handling and streaming logic                      |
-| 1852 | `quantum_circuit` | 18         | Complex parameter validation and circuit building              |
+| 762 | `tts` | 34 | Multiple nested conditionals, hard to follow control flow |
+| 1041 | `ai_status` | 28 | Many sequential checks, could be refactored |
+| 195 | `chat` | 27 | Complex logic mixing validation, provider detection, streaming |
+| 606 | `chat_stream` | 18 | Nested error handling and streaming logic |
+| 1852 | `quantum_circuit` | 18 | Complex parameter validation and circuit building |
 
 **Why it's slow:**
 

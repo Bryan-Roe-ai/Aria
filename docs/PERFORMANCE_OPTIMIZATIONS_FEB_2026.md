@@ -6,13 +6,13 @@ This document details performance optimizations implemented in February 2026, in
 
 Five high-impact optimizations targeting hot paths in data processing, command parsing, and quantum ML training:
 
-| File                                   | Optimization                       | Estimated Speedup | Lines Changed |
+| File | Optimization | Estimated Speedup | Lines Changed |
 | -------------------------------------- | ---------------------------------- | ----------------- | ------------- |
-| `scripts/extract_chat_logs_dataset.py` | Single-pass role checking          | 2x                | 3             |
-| `scripts/job_queue.py`                 | Set intersection for tag filtering | 5-50x             | 3             |
-| `function_app.py`                      | Command pattern table              | 5-20x             | 30            |
-| `scripts/generate_evaluation_set.py`   | Single-pass file reading           | 2-3x              | 35            |
-| `ai-projects/quantum-ml/web_app.py`    | PennyLane autograd gradients       | 10-100x           | 40            |
+| `scripts/extract_chat_logs_dataset.py` | Single-pass role checking | 2x | 3 |
+| `scripts/job_queue.py` | Set intersection for tag filtering | 5-50x | 3 |
+| `function_app.py` | Command pattern table | 5-20x | 30 |
+| `scripts/generate_evaluation_set.py` | Single-pass file reading | 2-3x | 35 |
+| `ai-projects/quantum-ml/web_app.py` | PennyLane autograd gradients | 10-100x | 40 |
 
 **Total estimated impact:** 24-175x cumulative speedup across affected code paths.
 
