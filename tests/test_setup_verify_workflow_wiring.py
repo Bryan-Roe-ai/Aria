@@ -48,3 +48,14 @@ def test_ci_workflow_uses_pinned_harden_runner_action() -> None:
 
     assert harden_runner_steps
     assert harden_runner_steps == [EXPECTED_HARDEN_RUNNER_ACTION] * len(harden_runner_steps)
+
+
+def test_ci_lint_job_uses_standard_lint_paths() -> None:
+    workflow = _load_yaml(".github/workflows/ci.yml")
+    lint_steps = workflow["jobs"]["lint"]["steps"]
+
+    ruff_step = next(step for step in lint_steps if step.get("name") == "Run ruff")
+    black_step = next(step for step in lint_steps if step.get("name") == "Run black")
+
+    assert "python -m ruff check tests shared scripts apps/aria/server.py" in ruff_step["run"]
+    assert "python -m black --check tests shared scripts apps/aria/server.py" in black_step["run"]
