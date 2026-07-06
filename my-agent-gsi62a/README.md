@@ -23,28 +23,28 @@ See [Program.cs](Program.cs) for the full implementation.
 Before running this sample, ensure you have:
 
 1. **Azure Developer CLI (`azd`)**
-   - [Install azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd) (1.25 or later) and the unified Foundry CLI extension: `azd ext install microsoft.foundry`
-   - Authenticated: `azd auth login`
+    - [Install azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd) (1.25 or later) and the unified Foundry CLI extension: `azd ext install microsoft.foundry`
+    - Authenticated: `azd auth login`
 
 2. **Azure CLI**
-   - Installed and authenticated: `az login`
+    - Installed and authenticated: `az login`
 
 3. **.NET 10.0 SDK or later**
-   - Verify your version: `dotnet --version`
-   - Download from [https://dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)
+    - Verify your version: `dotnet --version`
+    - Download from [https://dotnet.microsoft.com/download](https://dotnet.microsoft.com/download)
 
 > [!NOTE]
 > You do **not** need an existing [Microsoft Foundry](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-foundry?view=foundry) project or model deployment to get started, `azd provision` creates them for you. If you already have a project, see the [note below](#using-azd) on how to target it.
 
 ### Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `FOUNDRY_PROJECT_ENDPOINT` | Yes | Foundry project endpoint. Auto-injected in hosted containers; set automatically by `azd ai agent run` locally. |
-| `AZURE_AI_MODEL_DEPLOYMENT_NAME` | Yes | Chat model deployment name. Declared in `agent.manifest.yaml`. |
-| `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME` | Yes | Embedding model deployment name (used by Foundry Memory). Declared in `agent.manifest.yaml`. |
-| `AZURE_AI_MEMORY_STORE_ID` | No | Memory store name. Defaults to `foundry-memory-rag-store`. The store is created on startup if it does not exist. |
-| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Recommended | Enables telemetry. Auto-injected in hosted containers; set manually for local dev. |
+| Variable                                | Required    | Description                                                                                                      |
+| --------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| `FOUNDRY_PROJECT_ENDPOINT`              | Yes         | Foundry project endpoint. Auto-injected in hosted containers; set automatically by `azd ai agent run` locally.   |
+| `AZURE_AI_MODEL_DEPLOYMENT_NAME`        | Yes         | Chat model deployment name. Declared in `agent.manifest.yaml`.                                                   |
+| `AZURE_AI_EMBEDDING_DEPLOYMENT_NAME`    | Yes         | Embedding model deployment name (used by Foundry Memory). Declared in `agent.manifest.yaml`.                     |
+| `AZURE_AI_MEMORY_STORE_ID`              | No          | Memory store name. Defaults to `foundry-memory-rag-store`. The store is created on startup if it does not exist. |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | Recommended | Enables telemetry. Auto-injected in hosted containers; set manually for local dev.                               |
 
 **Local development (without `azd`):**
 
@@ -172,14 +172,14 @@ For the full deployment guide, see [Azure AI Foundry hosted agents](https://aka.
 1. Open the Command Palette (`Ctrl+Shift+P`) and run **Foundry Toolkit: Deploy Hosted Agent**. The extension opens a tab-based **Deploy Hosted Agent** wizard and reads `agent.yaml` to auto-populate what it can.
 2. If prompted, complete **Foundry Project Setup** to pick the subscription and Foundry project (or create a new one) to deploy to.
 3. On the **Basics** tab, configure the core deployment settings:
-   - **Deployment Method**: **Code** (upload as a ZIP) or **Container** (Docker image via ACR).
-   - For **Code**, pick a packaging option: **Remote** or **Local**.
-   - For **Container**, pick a registry option: default ACR, your own ACR, or a prebuilt ACR image.
-   - **Hosted Agent Name**: confirm the name to register with the hosting service.
+    - **Deployment Method**: **Code** (upload as a ZIP) or **Container** (Docker image via ACR).
+    - For **Code**, pick a packaging option: **Remote** or **Local**.
+    - For **Container**, pick a registry option: default ACR, your own ACR, or a prebuilt ACR image.
+    - **Hosted Agent Name**: confirm the name to register with the hosting service.
 4. On the **Review + Deploy** tab, finalize the runtime and resources:
-   - Confirm the auto-detected runtime details (language, entry point, or Dockerfile).
-   - Pick a **CPU and Memory** size.
-   - Click **Deploy**. Fields are validated inline, and the extension handles the build/upload, agent version creation, and RBAC role assignment.
+    - Confirm the auto-detected runtime details (language, entry point, or Dockerfile).
+    - Pick a **CPU and Memory** size.
+    - Click **Deploy**. Fields are validated inline, and the extension handles the build/upload, agent version creation, and RBAC role assignment.
 5. After deployment, invoke the agent in the Agent Playground and stream live logs from the **Logs** tab.
 
 ## Troubleshooting
