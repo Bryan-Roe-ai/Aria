@@ -304,6 +304,11 @@ jobs:
             echo "No C/C++ files to format."
           fi
 
+      - name: Revert workflow file changes (permissions-safe)
+        run: |
+          set -euo pipefail
+          git restore --staged --worktree -- .github/workflows || true
+
       - id: diff
         name: Detect changes
         run: |
