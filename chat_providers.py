@@ -26,11 +26,6 @@ for _name, _value in _mod.__dict__.items():
         continue
     globals()[_name] = _value
 
-if hasattr(_mod, "__all__"):
-    __all__ = list(_mod.__all__)  # type: ignore[attr-defined]
-else:
-    __all__ = [k for k in globals() if not k.startswith("__")]
-
 # Make this module a direct alias to the canonical implementation so
 # monkeypatching attributes (e.g., AzureOpenAI) updates the globals used by
 # provider classes defined there.

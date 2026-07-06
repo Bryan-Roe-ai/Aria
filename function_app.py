@@ -17,6 +17,7 @@ import sys
 import threading
 import time
 from collections import deque
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -199,18 +200,25 @@ except Exception:
         import shared as shared_module
 
         if not hasattr(shared_module, "chat_memory"):
-            shared_module.chat_memory = shared_chat_memory
+            setattr(shared_module, "chat_memory", shared_chat_memory)
 
 
 # AI safety fallback if middleware import failed
 if AISafetyMiddleware is None:
 
-    class AISafetyMiddleware:  # type: ignore[override]
-        def validate_input(self, _prompt):
-            return type("Decision", (), {"allowed": True, "risk_level": "low", "reason": "disabled", "flags": ()})()
+    @dataclass(frozen=True)
+    class SafetyDecision:
+        allowed: bool = True
+        risk_level: str = "low"
+        reason: str = "disabled"
+        flags: tuple[str, ...] = ()
 
-        def validate_output(self, _output):
-            return type("Decision", (), {"allowed": True, "risk_level": "low", "reason": "disabled", "flags": ()})()
+    class AISafetyMiddleware:  # type: ignore[override]
+        def validate_input(self, _prompt: str) -> SafetyDecision:
+            return SafetyDecision()
+
+        def validate_output(self, _output: str) -> SafetyDecision:
+            return SafetyDecision()
 
 
 # Lightweight in-process AI capability metrics (best-effort observability)

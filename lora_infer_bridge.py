@@ -25,7 +25,5 @@ for _name, _value in _mod.__dict__.items():
         continue
     globals()[_name] = _value
 
-if hasattr(_mod, "__all__"):
-    __all__ = list(_mod.__all__)  # type: ignore[attr-defined]
-else:
-    __all__ = [k for k in globals() if not k.startswith("__")]
+# Mirror canonical module identity for downstream monkeypatch consistency.
+sys.modules[__name__] = _mod
