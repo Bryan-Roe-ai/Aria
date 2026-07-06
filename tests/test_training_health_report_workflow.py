@@ -41,7 +41,6 @@ def test_checkout_step_has_submodules_false() -> None:
         )
 
 
-
 def _run_status_script(tmp_path: Path, training: dict) -> dict:
     (tmp_path / "data_out").mkdir(parents=True, exist_ok=True)
     (tmp_path / "data_out" / "autonomous_training_status.json").write_text(json.dumps(training), encoding="utf-8")
