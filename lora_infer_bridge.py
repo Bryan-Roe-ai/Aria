@@ -25,5 +25,7 @@ for _name, _value in _mod.__dict__.items():
         continue
     globals()[_name] = _value
 
+__all__ = [_n for _n in _mod.__dict__ if not _n.startswith("_")]
+
 # Mirror canonical module identity for downstream monkeypatch consistency.
 sys.modules[__name__] = _mod
