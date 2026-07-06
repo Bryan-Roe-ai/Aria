@@ -33,18 +33,6 @@
         ]
       }
     }
-
-    // Optional hardening rules (enable when policy-ready):
-    // ,{ "type": "required_linear_history" }
-    // ,{ "type": "required_signatures" }
   ],
-  "bypass_actors": [
-    // Preferred: keep empty for strict mode, OR define a tightly scoped audited bypass.
-    // Example team bypass (replace IDs/types with real values):
-    // {
-    //   "actor_id": 1234567,
-    //   "actor_type": "Team",
-    //   "bypass_mode": "pull_request"
-    // }
-  ]
+  "bypass_actors": []
 }
