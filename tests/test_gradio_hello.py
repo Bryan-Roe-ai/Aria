@@ -1,8 +1,7 @@
 import importlib.util
 import os
-from pathlib import Path
 
-EXPECTED_SESSION_HASH_PREFIX_LEN = 16
+import pytest
 
 
 def load_module():
@@ -169,21 +168,13 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_hashes_malicious_session_name_into_safe_filename(monkeypatch, tmp_path):
+def test_save_conversation_json_rejects_path_traversal_when_sanitizer_is_bypassed(monkeypatch, tmp_path):
     m = load_module()
     monkeypatch.setattr(m, "CONV_DIR", tmp_path)
     monkeypatch.setattr(m, "LATEST_PATH", tmp_path / "latest.json")
     monkeypatch.setattr(m, "safe_session_name", lambda *_args, **_kwargs: "../escape")
 
-    saved_path = Path(m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored"))
-    stem_parts = saved_path.stem.split("_", 1)
+    with pytest.raises(ValueError, match="Invalid session path"):
+        m.save_conversation_json([{"user": "hi", "assistant": "hello"}], "ignored")
 
-    assert saved_path.parent == tmp_path
-    assert saved_path.name.endswith(".json")
-    assert "escape" not in saved_path.name
-    assert len(stem_parts) == 2
-    hash_prefix = stem_parts[0]
-    assert hash_prefix.isalnum()
-    assert len(hash_prefix) == EXPECTED_SESSION_HASH_PREFIX_LEN
-    assert stem_parts[1].isdigit()
-    assert (tmp_path / "latest.json").exists()
+    assert not (tmp_path / "latest.json").exists()
