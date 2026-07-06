@@ -43,6 +43,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+          submodules: false
 
       - name: Setup Python
         uses: ./.github/actions/setup-python-env
