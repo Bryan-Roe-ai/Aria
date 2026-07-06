@@ -106,12 +106,12 @@ python .\scripts\repo_health_automation.py --watch --interval 300 --strict-endpo
 
 **Current agents:**
 
-| Agent              | Checks                                                                                                 | Primary source                             |
+| Agent | Checks | Primary source |
 | ------------------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------ |
-| `status-freshness` | Stale, failed, unparseable, or timestamp-less `data_out/**/status.json` files                          | `scripts/agents/status_freshness_agent.py` |
-| `marker-audit`     | `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers in source-like files                                 | `scripts/agents/marker_audit_agent.py`     |
-| `docstring-audit`  | Module/class/function docstring coverage for Python paths, defaulting to `shared` and `scripts/agents` | `scripts/agents/docstring_audit_agent.py`  |
-| `agents-md-audit`  | Structure and hygiene of `AGENTS.md` Learned sections (bullet limits, secrets, stale dates)            | `scripts/agents/agents_md_audit_agent.py`  |
+| `status-freshness` | Stale, failed, unparseable, or timestamp-less `data_out/**/status.json` files | `scripts/agents/status_freshness_agent.py` |
+| `marker-audit` | `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers in source-like files | `scripts/agents/marker_audit_agent.py` |
+| `docstring-audit` | Module/class/function docstring coverage for Python paths, defaulting to `shared` and `scripts/agents` | `scripts/agents/docstring_audit_agent.py` |
+| `agents-md-audit` | Structure and hygiene of `AGENTS.md` Learned sections (bullet limits, secrets, stale dates) | `scripts/agents/agents_md_audit_agent.py` |
 
 **Result contract:** Every agent returns an `AgentResult` with `name`, `status`, `summary`, `findings`, `metrics`, and `timestamp`. Valid statuses are `ok`, `warning`, and `error`; only `ok` makes `AgentResult.ok` true.
 

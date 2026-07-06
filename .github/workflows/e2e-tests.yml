@@ -204,7 +204,35 @@ jobs:
         run: |
           apt-get update
           apt-get install -y wget gnupg ca-certificates xz-utils fonts-liberation libgtk-3-0 libxss1 libasound2 libnss3 libatk-bridge2.0-0 libx11-xcb1 libgbm1
-      - name: Install Python test deps and Pyppeteer Chromium
+      - name: Install Chromium (stable)
+        # cspell:ignore elif
+        run: |
+          set -e
+          # Use Debian repo for chromium; package name varies by image/repo.
+          # chromium-driver is NOT installed: pyppeteer drives chromium directly
+          # via CHROME_PATH and does not use WebDriver/chromedriver. Installing
+          # chromium-driver would pull in libz3-4 which intermittently fails to
+          # download on Debian Bullseye and is not needed for these tests.
+          if apt-get install -y chromium; then
+            echo "Installed chromium"
+          elif apt-get install -y chromium-browser; then
+            echo "Installed chromium-browser"
+          else
+            echo "Failed to install Chromium packages" >&2
+            exit 1
+          fi
+
+          # Normalize executable path expected by CHROME_PATH.
+          if command -v chromium >/dev/null 2>&1; then
+            command -v chromium
+          elif command -v chromium-browser >/dev/null 2>&1; then
+            command -v chromium-browser
+            ln -sf "$(command -v chromium-browser)" /usr/bin/chromium
+          else
+            echo "Chromium executable not found after installation" >&2
+            exit 1
+          fi
+      - name: Install Python test deps
         # cspell:ignore asyncio pyppeteer pytest
         run: |
           python -m pip install --upgrade pip
