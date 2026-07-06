@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tests.workflow_test_helpers import EXPECTED_HARDEN_RUNNER_ACTION
+
 pytestmark = pytest.mark.unit
 
 
@@ -37,3 +39,12 @@ def test_workflow_uses_setup_verify_action(workflow_path: str) -> None:
     uses_values = _iter_step_uses(workflow)
 
     assert "./.github/actions/run-setup-verify" in uses_values
+
+
+def test_ci_workflow_uses_pinned_harden_runner_action() -> None:
+    workflow = _load_yaml(".github/workflows/ci.yml")
+    uses_values = _iter_step_uses(workflow)
+    harden_runner_steps = [uses for uses in uses_values if uses.startswith("step-security/harden-runner@")]
+
+    assert harden_runner_steps
+    assert harden_runner_steps == [EXPECTED_HARDEN_RUNNER_ACTION] * len(harden_runner_steps)
