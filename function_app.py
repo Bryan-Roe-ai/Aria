@@ -6,19 +6,24 @@
 # QAI Azure Functions Application
 # =============================================================================
 import asyncio
+import base64
 import hmac
 import importlib.util as _iu
+import io
 import json
 import logging
 import os
 import re
 import subprocess
 import sys
+import tempfile
 import threading
 import time
+import wave
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -237,7 +242,7 @@ _AI_CAPABILITY_COUNTERS = {
 
 # Short-lived cache for /api/ai/status payloads to reduce repeated heavy
 # diagnostics when dashboards poll frequently.
-_AI_STATUS_CACHE: dict[str, object] = {
+_AI_STATUS_CACHE: dict[str, Any] = {
     "key": None,
     "cached_at": 0.0,
     "payload_json": None,
@@ -270,6 +275,11 @@ except Exception as _sub_err:  # noqa: BLE001
     logging.info(f"[startup] Subscription manager unavailable: {_sub_err}")
     subscription_manager_available = False
 
+    class SubscriptionTier(str, Enum):
+        FREE = "free"
+        PRO = "pro"
+        ENTERPRISE = "enterprise"
+
     def get_subscription_manager() -> object | None:
         return None
 
@@ -280,6 +290,7 @@ try:  # pragma: no cover
 
     _tracer = trace.get_tracer("qai.functions")
 except Exception:  # pragma: no cover - library optional
+    trace = None  # type: ignore
     _tracer = None  # type: ignore
 
 app = func.FunctionApp()
@@ -2094,18 +2105,13 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
             # Try pyttsx3 (offline, best on Windows) first
             try:
                 try:
-                    import base64
-                    import io
-                    import re
-                    import tempfile
-                    import wave
-
                     import pyttsx3
                 except Exception:  # pyttsx3 not available
                     pyttsx3 = None
 
                 if pyttsx3 is not None:
                     tmp = None
+                    tmp_path: str | None = None
                     try:
                         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
                         tmp_path = tmp.name
@@ -2176,23 +2182,20 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                         )
                     finally:
                         try:
-                            if tmp is not None and tmp_path and os.path.exists(tmp_path):
+                            if tmp is not None and tmp_path is not None and os.path.exists(tmp_path):
                                 os.unlink(tmp_path)
                         except Exception:
                             pass
 
                 # If pyttsx3 not available or failed, try gTTS (mp3 output)
                 try:
-                    import base64
-                    import re
-                    import tempfile
-
                     from gtts import gTTS
                 except Exception:
                     gTTS = None
 
                 if gTTS is not None:
                     tmp = None
+                    tmp_path: str | None = None
                     try:
                         tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".mp3")
                         tmp_path = tmp.name
@@ -2233,7 +2236,7 @@ def tts(req: func.HttpRequest) -> func.HttpResponse:
                         )
                     finally:
                         try:
-                            if tmp is not None and tmp_path and os.path.exists(tmp_path):
+                            if tmp is not None and tmp_path is not None and os.path.exists(tmp_path):
                                 os.unlink(tmp_path)
                         except Exception:
                             pass
@@ -2697,7 +2700,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
                 quantum_info["azure_quantum"].update({"error": str(aq_err)})
 
         # Self-Learning System Status
-        learning_info: dict = {
+        learning_info: dict[str, Any] = {
             "enabled": False,
             "training_cycles": 0,
             "total_conversations": 0,
@@ -2724,7 +2727,7 @@ def ai_status(req: func.HttpRequest) -> func.HttpResponse:
             learning_info["error"] = str(_le)
 
         # Orchestrator Health Aggregation
-        orchestrator_health = {
+        orchestrator_health: dict[str, Any] = {
             "enabled": True,
             "orchestrators": {},
             "overall_status": "unknown",

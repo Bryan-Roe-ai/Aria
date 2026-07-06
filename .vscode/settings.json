@@ -224,5 +224,6 @@
         "venv",
         "XDIST"
     ],
-    "prompty.currentModelConfiguration": "My Custom Model"
+    "prompty.currentModelConfiguration": "My Custom Model",
+    "mirrord.promptUsingDefaultConfig": false
 }

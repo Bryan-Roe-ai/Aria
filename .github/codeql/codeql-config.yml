@@ -1,27 +1,17 @@
 ---
-name: "Aria CodeQL — maximum security coverage"
-
-# Use default queries in addition to custom suites to keep Copilot Autofix coverage broad.
 disable-default-queries: false
-
+# Use default queries in addition to custom suites to keep Copilot Autofix coverage broad.
+name: "Aria CodeQL — maximum security coverage"
 # Keep suites explicit and stable.
-queries:
-    - uses: security-extended
-    - uses: security-and-quality
-    - uses: security-experimental
-
-# Optional: remove packs unless you have a specific custom-pack strategy.
-# queries suites already include the standard query packs for analyzed languages.
-
-# Language-specific packs for deep analysis
 packs:
     - codeql/javascript-queries
     - codeql/python-queries
     - codeql/cpp-queries
     - codeql/actions-queries
+# Optional: remove packs unless you have a specific custom-pack strategy.
+# queries suites already include the standard query packs for analyzed languages.
 
-# Exclude only generated/vendor/build artifacts.
-# Avoid excluding broad source directories to keep coverage high.
+# Language-specific packs for deep analysis
 paths-ignore:
     # Dependencies & virtual environments
     - "**/node_modules/**"
@@ -57,3 +47,9 @@ paths-ignore:
     - "**/test/fixtures/**"
     - "**/tests/fixtures/**"
     - "**/*.snap"
+# Exclude only generated/vendor/build artifacts.
+# Avoid excluding broad source directories to keep coverage high.
+queries:
+    - uses: security-extended
+    - uses: security-and-quality
+    - uses: security-experimental
