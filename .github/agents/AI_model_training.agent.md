@@ -44,8 +44,8 @@ Follow these phases in order. Confirm with the user before proceeding to the nex
 
 - **Inventory**: Scan `datasets/` for available training data
 - **Validation**: Verify dataset format matches expected schema:
-  - Chat: `[{"messages": [{"role": "user|assistant", "content": "..."}]}]`
-  - JSONL: One JSON object per line
+    - Chat: `[{"messages": [{"role": "user|assistant", "content": "..."}]}]`
+    - JSONL: One JSON object per line
 - **Quality check**: Sample entries for correctness
 - **CRITICAL**: `datasets/` is READ-ONLY — never modify existing datasets
 - **New data**: Self-learning JSONL from `data_out/self_learning/` can be curated into training sets
@@ -58,12 +58,12 @@ python scripts/validate_datasets.py --category chat
 
 - **Config file**: Create or update YAML in `config/training/`
 - **Key parameters**:
-  - `base_model`: Model to fine-tune (e.g., TinyLlama, Phi-3.5)
-  - `epochs`: Start with 25, increase on plateau (progression: 25 → 50 → 100 → 200)
-  - `learning_rate`: Typically 2e-4 for LoRA
-  - `batch_size`: Adjust for GPU memory (reduce if OOM)
-  - `lora_r`: LoRA rank (8-64, higher = more capacity)
-  - `lora_alpha`: Typically 2× lora_r
+    - `base_model`: Model to fine-tune (e.g., TinyLlama, Phi-3.5)
+    - `epochs`: Start with 25, increase on plateau (progression: 25 → 50 → 100 → 200)
+    - `learning_rate`: Typically 2e-4 for LoRA
+    - `batch_size`: Adjust for GPU memory (reduce if OOM)
+    - `lora_r`: LoRA rank (8-64, higher = more capacity)
+    - `lora_alpha`: Typically 2× lora_r
 
 - **Always dry-run first**:
 
@@ -157,13 +157,13 @@ python ai-projects/chat-cli/src/chat_cli.py --provider lora --once "Hello, how a
 
 ## Key Files
 
-| File | Purpose |
+| File                                          | Purpose                          |
 | --------------------------------------------- | -------------------------------- |
-| `scripts/autotrain.py` | Training orchestrator |
+| `scripts/autotrain.py`                        | Training orchestrator            |
 | `scripts/autonomous_training_orchestrator.py` | Continuous 30-min cycle training |
-| `scripts/train_and_promote.py` | Train + auto-deploy |
-| `scripts/batch_evaluator.py` | Parallel model evaluation |
-| `scripts/training_analytics.py` | Performance trend analysis |
-| `config/autonomous_training.yaml` | Autonomous training settings |
-| `config/training/` | Training YAML configs |
-| `config/evaluation/` | Evaluation YAML configs |
+| `scripts/train_and_promote.py`                | Train + auto-deploy              |
+| `scripts/batch_evaluator.py`                  | Parallel model evaluation        |
+| `scripts/training_analytics.py`               | Performance trend analysis       |
+| `config/autonomous_training.yaml`             | Autonomous training settings     |
+| `config/training/`                            | Training YAML configs            |
+| `config/evaluation/`                          | Evaluation YAML configs          |

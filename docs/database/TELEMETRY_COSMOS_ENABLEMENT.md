@@ -42,11 +42,11 @@ curl http://localhost:7071/api/ai/status | jq '.telemetry'
 **3. What gets traced:**
 
 - `/api/chat` endpoint: Full request lifecycle with custom attributes:
-  - `provider` (azure/openai/local/lora)
-  - `model` (deployment name or adapter path)
-  - `duration_ms` (completion time)
-  - `memory_injected` (number of memory-retrieved messages)
-  - `cosmos_persisted` (whether Cosmos write succeeded)
+    - `provider` (azure/openai/local/lora)
+    - `model` (deployment name or adapter path)
+    - `duration_ms` (completion time)
+    - `memory_injected` (number of memory-retrieved messages)
+    - `cosmos_persisted` (whether Cosmos write succeeded)
 - **Exception tracking**: All unhandled errors with stack traces
 - **Dependency calls**: OpenAI SDK, Cosmos DB, Azure Quantum (if enabled)
 
@@ -448,12 +448,12 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 ### Cosmos DB
 
 - **Serverless tier**: Pay per request (~$0.25/million reads, ~$1.25/million writes)
-  - Best for dev/test or low-traffic apps
+    - Best for dev/test or low-traffic apps
 - **Provisioned throughput**: Fixed monthly cost (400 RU/s minimum ~$24/month)
-  - Best for predictable workloads
+    - Best for predictable workloads
 - **Strategy impact**:
-  - Per-message: ~2 writes per chat turn (user + assistant)
-  - Session-level: ~1 write per chat turn
+    - Per-message: ~2 writes per chat turn (user + assistant)
+    - Session-level: ~1 write per chat turn
 
 **Example costs (per-message strategy, 1000 chat turns/day):**
 
@@ -498,5 +498,5 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 - **Validation Script**: `ai-projects/quantum-ml/scripts/validate_qiskit_env.py` (conflict detection)
 - **Unit Tests**: `tests/test_validate_qiskit_env.py` (conflict detection logic)
 - **Azure Documentation**:
-  - [Application Insights for Azure Functions](https://learn.microsoft.com/azure/azure-functions/functions-monitoring)
-  - [Cosmos DB Python SDK](https://learn.microsoft.com/azure/cosmos-db/nosql/sdk-python)
+    - [Application Insights for Azure Functions](https://learn.microsoft.com/azure/azure-functions/functions-monitoring)
+    - [Cosmos DB Python SDK](https://learn.microsoft.com/azure/cosmos-db/nosql/sdk-python)

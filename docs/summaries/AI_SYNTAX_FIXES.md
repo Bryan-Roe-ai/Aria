@@ -171,10 +171,10 @@ python scripts/test_ai_improvements.py
 **Results**:
 
 - ✅ **Chat improvements**: All tests passing
-  - top_p parameter (nucleus sampling)
-  - top_k parameter (top-k sampling)
-  - repetition_penalty parameter
-  - Proper EOS token handling
+    - top_p parameter (nucleus sampling)
+    - top_k parameter (top-k sampling)
+    - repetition_penalty parameter
+    - Proper EOS token handling
 - ⚠️ **Quantum improvements**: Requires `pennylane` dependency (expected in CI environment)
 - ⚠️ **Training improvements**: Requires `torch` dependency (expected in CI environment)
 

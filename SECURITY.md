@@ -11,8 +11,8 @@ Thank you for helping keep **Aria** and its users safe. This policy explains how
 - [What to Include in a Report](#what-to-include-in-a-report)
 - [Coordinated Disclosure Process](#coordinated-disclosure-process)
 - [Scope](#scope)
-  - [In Scope](#in-scope)
-  - [Out of Scope](#out-of-scope)
+    - [In Scope](#in-scope)
+    - [Out of Scope](#out-of-scope)
 - [Testing Expectations](#testing-expectations)
 - [Safe Harbor & Good-Faith Research](#safe-harbor--good-faith-research)
 - [Remediation and Release Practices](#remediation-and-release-practices)
@@ -24,13 +24,13 @@ Thank you for helping keep **Aria** and its users safe. This policy explains how
 
 Security fixes are provided only for versions listed below. If you’re running an unsupported release, please [upgrade](https://github.com/Bryan-Roe/Aria/releases) before reporting a vulnerability.
 
-| Version | Supported | Notes |
+| Version         | Supported          | Notes                                   |
 | --------------- | ------------------ | --------------------------------------- |
-| latest (`main`) | :white_check_mark: | Active development branch |
-| 5.1.x | :white_check_mark: | Current stable release |
-| 5.0.x | :x: | End of life |
-| 4.0.x | :white_check_mark: | Long-term support (critical fixes only) |
-| < 4.0 | :x: | Unsupported — please upgrade |
+| latest (`main`) | :white_check_mark: | Active development branch               |
+| 5.1.x           | :white_check_mark: | Current stable release                  |
+| 5.0.x           | :x:                | End of life                             |
+| 4.0.x           | :white_check_mark: | Long-term support (critical fixes only) |
+| < 4.0           | :x:                | Unsupported — please upgrade            |
 
 Unsure which version you’re using? Review the [release notes](https://github.com/Bryan-Roe/Aria/releases).
 
@@ -68,12 +68,12 @@ To help us confirm, triage, and fix the issue faster, please include:
 
 We strive to handle reports using a coordinated process and keep reporters informed.
 
-| Stage | Target Response Time |
+| Stage                  | Target Response Time                                |
 | ---------------------- | --------------------------------------------------- |
-| Initial acknowledgment | Within **3 business days** |
-| Triage & assessment | Within **7 business days** |
-| Progress updates | At least every **7 days** until resolution |
-| Fix/disclosure | Typically within **90 days**, depending on severity |
+| Initial acknowledgment | Within **3 business days**                          |
+| Triage & assessment    | Within **7 business days**                          |
+| Progress updates       | At least every **7 days** until resolution          |
+| Fix/disclosure         | Typically within **90 days**, depending on severity |
 
 After triage, you’ll be notified if the report is accepted, declined, or needs more info. Accepted reports proceed to remediation and coordinated disclosure.
 

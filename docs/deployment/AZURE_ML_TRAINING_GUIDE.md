@@ -220,9 +220,9 @@ az ml job stream --name "<job-name>" --resource-group "<your-rg>" --workspace-na
 
 - Use **curated environments** for faster startup (no Docker build needed)
 - Common curated environments:
-  - `AzureML-sklearn-1.5` - Scikit-learn
-  - `AzureML-pytorch-2.0` - PyTorch
-  - `AzureML-tensorflow-2.7` - TensorFlow
+    - `AzureML-sklearn-1.5` - Scikit-learn
+    - `AzureML-pytorch-2.0` - PyTorch
+    - `AzureML-tensorflow-2.7` - TensorFlow
 
 ### 2. Cost Optimization
 
@@ -304,9 +304,9 @@ az ml compute list --resource-group "<your-rg>" --workspace-name "<your-workspac
 
 - [Azure ML Pricing Calculator](https://azure.microsoft.com/pricing/details/machine-learning/)
 - Estimated costs for QAI training:
-  - Quick test (100 samples): ~$0.10
-  - Small training (1000 samples): ~$0.50-1.00
-  - Full training (10000 samples): ~$5-10
+    - Quick test (100 samples): ~$0.10
+    - Small training (1000 samples): ~$0.50-1.00
+    - Full training (10000 samples): ~$5-10
 
 ## 🎓 Next Steps
 

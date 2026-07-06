@@ -437,13 +437,13 @@ python .\quantum-ai\scripts\visualize_hardware_results.py
 Outputs:
 
 - Per-run charts under `ai-projects/quantum-ml/results/visualizations/`:
-  - `<result>_bar.png` – top measurement states
-  - `<result>_heatmap.png` – 2-qubit heatmap (Bell)
-  - `entanglement_summary.png` – entanglement quality across Bell tests
+    - `<result>_bar.png` – top measurement states
+    - `<result>_heatmap.png` – 2-qubit heatmap (Bell)
+    - `entanglement_summary.png` – entanglement quality across Bell tests
 
 - If available, Azure job distribution charts:
-  - `azure_jobs_status.png` – counts by job status
-  - `azure_jobs_provider_status.png` – stacked provider × status
+    - `azure_jobs_status.png` – counts by job status
+    - `azure_jobs_provider_status.png` – stacked provider × status
 
 Notes:
 
@@ -551,11 +551,11 @@ print(circuit)
 
 Benchmark results on standard datasets:
 
-| Dataset | Classical NN | Quantum Classifier | Hybrid QNN |
+| Dataset       | Classical NN | Quantum Classifier | Hybrid QNN |
 | ------------- | ------------ | ------------------ | ---------- |
-| Iris | 96.7% | 94.2% | **97.5%** |
-| Wine | 95.3% | 92.8% | **96.1%** |
-| Breast Cancer | 97.2% | 95.1% | **97.8%** |
+| Iris          | 96.7%        | 94.2%              | **97.5%**  |
+| Wine          | 95.3%        | 92.8%              | **96.1%**  |
+| Breast Cancer | 97.2%        | 95.1%              | **97.8%**  |
 
 > **Note:** Results may vary based on circuit configuration and training parameters
 

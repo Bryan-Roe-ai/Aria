@@ -63,8 +63,8 @@ Make sure to ask the user to confirm to move forward with each step.
 
 - **Prerequisites**: Verify development tools and runtime versions
 - **Best Practices**: Apply Azure Functions and general code generation standards. Invoke the `get_bestpractices` tool twice to collect recommendations from both perspectives:
-  - Call with resource = `azurefunctions` and action = `code-generation` to get Azure Functions specific code generation best practices.
-  - Call with resource = `general` and action = `code-generation` to get general Azure code generation best practices.
+    - Call with resource = `azurefunctions` and action = `code-generation` to get Azure Functions specific code generation best practices.
+    - Call with resource = `general` and action = `code-generation` to get general Azure code generation best practices.
       Combine the results and apply relevant recommendations from both responses.
 - **Security**: Set appropriate authentication levels (default: `function`)
 - **Structure**: Follow language-specific project layouts and conventions
@@ -90,8 +90,8 @@ Don't proceed to testing until you've confirmed a clean startup. If you see any 
 - **Testing**: Achieve 80%+ code coverage with comprehensive test suite
 - **Execution**: Validate local function execution and performance
 - **Process Management**: Clean shutdown of existing instances of the function app before restart
-  - macOS/Linux: `pkill -9 -f func`
-  - Windows: `taskkill /F /IM func.exe /T`
+    - macOS/Linux: `pkill -9 -f func`
+    - Windows: `taskkill /F /IM func.exe /T`
 
 #### Post-Testing Cleanup Protocol
 
@@ -100,21 +100,21 @@ Upon finishing testing, ensure all processes are properly shut down to prevent r
 ### 5. Deployment
 
 - **Infrastructure**: Refer to the following GitHub repos for best practices on generating Bicep templates using Azure Verified Modules (AVM):
-  - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-javascript-azd/tree/main/infra>
-  - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-dotnet-azd-eventgrid-blob/tree/main/infra>
+    - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-javascript-azd/tree/main/infra>
+    - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-dotnet-azd-eventgrid-blob/tree/main/infra>
 - **Best Practices**: Apply Azure Functions and general deployment standards. Invoke the `get_bestpractices` tool twice to collect recommendations from both perspectives:
-  - Call with resource = `azurefunctions` and action = `deployment` to get Azure Functions specific deployment best practices.
-  - Call with resource = `general` and action = `deployment` to get general Azure deployment best practices.
+    - Call with resource = `azurefunctions` and action = `deployment` to get Azure Functions specific deployment best practices.
+    - Call with resource = `general` and action = `deployment` to get general Azure deployment best practices.
       Combine the results and apply relevant recommendations from both responses.
 - **Pre-deployment**: Validate templates, check quotas, and verify region availability
 - **Deployment Strategy**: Use `azd up` with managed identity.
-  - ALWAYS Use Flex Consumption plan (FC1) for deployment, never Y1 dynamic.
-  - ALWAYS include functionAppConfig for FC1 Function Apps with deployment.storage configuration. Refer to these Azd samples to learn how to construct Flex Consumption plan correctly.
-    - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-javascript-azd/tree/main/infra>
-    - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-dotnet-azd-eventgrid-blob/tree/main/infra>
+    - ALWAYS Use Flex Consumption plan (FC1) for deployment, never Y1 dynamic.
+    - ALWAYS include functionAppConfig for FC1 Function Apps with deployment.storage configuration. Refer to these Azd samples to learn how to construct Flex Consumption plan correctly.
+        - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-javascript-azd/tree/main/infra>
+        - #githubRepo: <https://github.com/Azure-Samples/functions-quickstart-dotnet-azd-eventgrid-blob/tree/main/infra>
 - **Documentation**: Record each deployment attempt with failure reasons and solutions
 - **Failure Recovery**: Always clean up partial deployments before retrying
-  - Use `azd down --force` to delete failed deployment resources and deployed code
+    - Use `azd down --force` to delete failed deployment resources and deployed code
 - **Alternative Methods**: If all the resources were provisioned successfully but the app failed to be deployed
   with error message "deployment failed: Input string was not in a correct format. Failure to parse near offset 40.
   Format item ends prematurely.", use Azure CLI deployment to upload the function app code.

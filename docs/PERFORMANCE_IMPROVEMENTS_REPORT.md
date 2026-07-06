@@ -269,26 +269,26 @@ for compiled_pattern, desc in _FILE_OPERATION_PATTERNS:
 
 ### By Category
 
-| Category | Fixes | Best Improvement |
+| Category             | Fixes | Best Improvement |
 | -------------------- | ----- | ---------------- |
-| Algorithm Complexity | 5 | O(n²) → O(n) |
-| String Operations | 1 | O(n²) → O(n) |
-| Regex Compilation | 2 | 400x faster |
-| Standard Library | 1 | 20% faster |
+| Algorithm Complexity | 5     | O(n²) → O(n)     |
+| String Operations    | 1     | O(n²) → O(n)     |
+| Regex Compilation    | 2     | 400x faster      |
+| Standard Library     | 1     | 20% faster       |
 
 ### By File
 
-| File | Issue Type | Performance Gain |
+| File                         | Issue Type          | Performance Gain |
 | ---------------------------- | ------------------- | ---------------- |
-| dashboard/app.py | Regex in loop | 100-400x |
-| function_app.py | String concat | 10-100x |
-| llm-maker/tool_validator.py | Regex compilation | 16x |
-| job_queue.py | Multiple iterations | 6x |
-| backup_manager.py | O(n²) uniqueness | 10-100x |
-| extract_chat_logs_dataset.py | Dual iteration | 2x |
-| automate_quantum_job.py | List lookup | 1.5-2x |
-| master_orchestrator.py | List lookup | 1.5-2x |
-| status_dashboard.py | Manual mean | 1.1-1.2x |
+| dashboard/app.py             | Regex in loop       | 100-400x         |
+| function_app.py              | String concat       | 10-100x          |
+| llm-maker/tool_validator.py  | Regex compilation   | 16x              |
+| job_queue.py                 | Multiple iterations | 6x               |
+| backup_manager.py            | O(n²) uniqueness    | 10-100x          |
+| extract_chat_logs_dataset.py | Dual iteration      | 2x               |
+| automate_quantum_job.py      | List lookup         | 1.5-2x           |
+| master_orchestrator.py       | List lookup         | 1.5-2x           |
+| status_dashboard.py          | Manual mean         | 1.1-1.2x         |
 
 ### Real-World Impact
 

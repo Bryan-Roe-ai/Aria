@@ -61,10 +61,10 @@ Successfully validated **14 out of 15 datasets** with 1-epoch smoke tests, achie
 
 - **Problem:** No header row, ID column mixed with features, M/B labels
 - **Fix:**
-  - Added `header=None` parameter
-  - Skip ID column (column 0)
-  - Extract diagnosis from column 1
-  - Use columns 2+ as features
+    - Added `header=None` parameter
+    - Skip ID column (column 0)
+    - Extract diagnosis from column 1
+    - Use columns 2+ as features
 - **Result:** ✅ 87.50% accuracy in 1 epoch
 
 ### **3. blood_transfusion**
@@ -85,30 +85,30 @@ Successfully validated **14 out of 15 datasets** with 1-epoch smoke tests, achie
 
 ### **By Accuracy (1 epoch):**
 
-| Tier | Accuracy Range | Count | Datasets |
+| Tier            | Accuracy Range | Count | Datasets                                             |
 | --------------- | -------------- | ----- | ---------------------------------------------------- |
-| **Excellent** | 95-100% | 3 | wine_white, wine_red, banknote |
-| **Very Good** | 85-95% | 1 | breast_cancer |
-| **Good** | 70-85% | 3 | magic_gamma, wheat_seeds, heart_disease |
-| **Moderate** | 65-70% | 5 | iris, diabetes, blood_transfusion, ionosphere, sonar |
-| **Challenging** | 50-65% | 2 | glass, haberman |
+| **Excellent**   | 95-100%        | 3     | wine_white, wine_red, banknote                       |
+| **Very Good**   | 85-95%         | 1     | breast_cancer                                        |
+| **Good**        | 70-85%         | 3     | magic_gamma, wheat_seeds, heart_disease              |
+| **Moderate**    | 65-70%         | 5     | iris, diabetes, blood_transfusion, ionosphere, sonar |
+| **Challenging** | 50-65%         | 2     | glass, haberman                                      |
 
 ### **By Dataset Size:**
 
-| Size Category | Samples Range | Count | Examples |
+| Size Category | Samples Range | Count | Examples                                                                 |
 | ------------- | ------------- | ----- | ------------------------------------------------------------------------ |
-| **Tiny** | 150-300 | 5 | iris (150), sonar (207), glass (214), wheat (210), haberman (306) |
-| **Small** | 300-1000 | 5 | heart (303), ionosphere (351), breast (569), diabetes (768), blood (747) |
-| **Medium** | 1000-5000 | 3 | banknote (1,372), wine_red (1,599), wine_white (4,898) |
-| **Large** | 5000+ | 1 | magic_gamma (19,020) 🏆 |
+| **Tiny**      | 150-300       | 5     | iris (150), sonar (207), glass (214), wheat (210), haberman (306)        |
+| **Small**     | 300-1000      | 5     | heart (303), ionosphere (351), breast (569), diabetes (768), blood (747) |
+| **Medium**    | 1000-5000     | 3     | banknote (1,372), wine_red (1,599), wine_white (4,898)                   |
+| **Large**     | 5000+         | 1     | magic_gamma (19,020) 🏆                                                  |
 
 ### **By Feature Count:**
 
-| Feature Range | Count | Datasets |
+| Feature Range     | Count | Datasets                                                         |
 | ----------------- | ----- | ---------------------------------------------------------------- |
-| **Low (3-4)** | 4 | haberman, banknote, blood_transfusion, iris |
-| **Medium (5-15)** | 6 | wheat, diabetes, magic_gamma, glass, wine_red, wine_white, heart |
-| **High (20+)** | 4 | breast_cancer (29), ionosphere (34), sonar (60) |
+| **Low (3-4)**     | 4     | haberman, banknote, blood_transfusion, iris                      |
+| **Medium (5-15)** | 6     | wheat, diabetes, magic_gamma, glass, wine_red, wine_white, heart |
+| **High (20+)**    | 4     | breast_cancer (29), ionosphere (34), sonar (60)                  |
 
 ---
 
@@ -226,17 +226,17 @@ Successfully validated **14 out of 15 datasets** with 1-epoch smoke tests, achie
 
 Based on 1-epoch results and historical data:
 
-| Dataset | 1-Epoch | Expected 25-Epoch | Improvement |
+| Dataset       | 1-Epoch | Expected 25-Epoch | Improvement                    |
 | ------------- | ------- | ----------------- | ------------------------------ |
-| wine_white | 99.59% | 99.8%+ | Minimal (already optimal) |
-| wine_red | 99.38% | 99.5%+ | Minimal (already optimal) |
-| banknote | 94.85% | 99%+ | +4-5% (proven: 100% possible) |
-| breast_cancer | 87.50% | 92-95% | +5-8% |
-| magic_gamma | 77.27% | 80-85% | +3-8% |
-| wheat_seeds | 71.88% | 75-85% | +3-13% |
-| heart_disease | 68.75% | 80-90% | +11-21% (proven: 95% possible) |
-| ionosphere | 65.62% | 80-90% | +14-24% (proven: 85% possible) |
-| sonar | 65.62% | 75-85% | +9-19% (proven: 78% possible) |
+| wine_white    | 99.59%  | 99.8%+            | Minimal (already optimal)      |
+| wine_red      | 99.38%  | 99.5%+            | Minimal (already optimal)      |
+| banknote      | 94.85%  | 99%+              | +4-5% (proven: 100% possible)  |
+| breast_cancer | 87.50%  | 92-95%            | +5-8%                          |
+| magic_gamma   | 77.27%  | 80-85%            | +3-8%                          |
+| wheat_seeds   | 71.88%  | 75-85%            | +3-13%                         |
+| heart_disease | 68.75%  | 80-90%            | +11-21% (proven: 95% possible) |
+| ionosphere    | 65.62%  | 80-90%            | +14-24% (proven: 85% possible) |
+| sonar         | 65.62%  | 75-85%            | +9-19% (proven: 78% possible)  |
 
 **Average Expected Improvement:** +8-15% with full 25-epoch training
 

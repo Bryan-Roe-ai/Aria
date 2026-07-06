@@ -9,9 +9,9 @@ Enhanced the web interface to be more user-friendly and easier to integrate with
 ### 1. **Enhanced Header with Quick Actions**
 
 - Added three prominent action buttons:
-  - 📚 **Integration Guide** - Quick access to integration documentation
-  - 💻 **API Docs** - API endpoint documentation
-  - 💡 **Examples** - Quick example tools
+    - 📚 **Integration Guide** - Quick access to integration documentation
+    - 💻 **API Docs** - API endpoint documentation
+    - 💡 **Examples** - Quick example tools
 
 ### 2. **One-Click Example Tools**
 

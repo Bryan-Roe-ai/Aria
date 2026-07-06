@@ -22,8 +22,8 @@ This feature integrates quantum computing capabilities into passive LLM training
 
 - **Local Simulator**: Fast quantum simulation using PennyLane's default.qubit (free, unlimited use)
 - **Azure Quantum**: Production quantum computing via Azure Quantum service
-  - Free simulators: `ionq.simulator`, `quantinuum.sim.*`
-  - Paid QPU hardware: `ionq.qpu`, `quantinuum.qpu.*` (requires cost confirmation)
+    - Free simulators: `ionq.simulator`, `quantinuum.sim.*`
+    - Paid QPU hardware: `ionq.qpu`, `quantinuum.qpu.*` (requires cost confirmation)
 
 ## Architecture
 
@@ -225,11 +225,11 @@ quantum_settings:
 ### Azure Quantum
 
 - **Free Simulators**:
-  - `ionq.simulator` - IonQ quantum simulator
-  - `quantinuum.sim.h1-1e` - Quantinuum H1 emulator
+    - `ionq.simulator` - IonQ quantum simulator
+    - `quantinuum.sim.h1-1e` - Quantinuum H1 emulator
 - **Paid QPU Hardware**:
-  - `ionq.qpu` - IonQ trapped-ion quantum computer
-  - `quantinuum.qpu.h1-1` - Quantinuum H1-1 quantum computer
+    - `ionq.qpu` - IonQ trapped-ion quantum computer
+    - `quantinuum.qpu.h1-1` - Quantinuum H1-1 quantum computer
 
 ```yaml
 quantum_settings:

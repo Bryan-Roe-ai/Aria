@@ -21,25 +21,25 @@ Following the successful deployment of 5 advanced features in Phase 23 (WebSocke
 **Capabilities:**
 
 - **PNG Export**: Export all 4 Chart.js charts as individual images
-  - Loss trends chart → `qai_lossChart_2024-11-24.png`
-  - GPU utilization chart → `qai_gpuChart_2024-11-24.png`
-  - Performance comparison → `qai_performanceChart_2024-11-24.png`
-  - Time distribution → `qai_timeChart_2024-11-24.png`
-  - Uses canvas.toDataURL() for high-quality output
-  - 500ms delay between downloads for browser stability
+    - Loss trends chart → `qai_lossChart_2024-11-24.png`
+    - GPU utilization chart → `qai_gpuChart_2024-11-24.png`
+    - Performance comparison → `qai_performanceChart_2024-11-24.png`
+    - Time distribution → `qai_timeChart_2024-11-24.png`
+    - Uses canvas.toDataURL() for high-quality output
+    - 500ms delay between downloads for browser stability
 
 - **CSV Export**: Tabular training data for analysis
-  - 7 columns: Job Name, Final Loss, Pre Loss, Post Loss, Improvement %, Duration (min), LoRA Rank
-  - Comma-delimited format compatible with Excel, Google Sheets
-  - Filename: `qai_training_data_2024-11-24.csv`
-  - Automatic improvement percentage calculation
+    - 7 columns: Job Name, Final Loss, Pre Loss, Post Loss, Improvement %, Duration (min), LoRA Rank
+    - Comma-delimited format compatible with Excel, Google Sheets
+    - Filename: `qai_training_data_2024-11-24.csv`
+    - Automatic improvement percentage calculation
 
 - **TXT Report**: Comprehensive human-readable report
-  - Header with generation timestamp
-  - Summary statistics: total jobs, average loss, best model, total training time
-  - Detailed results section: each job with all metrics
-  - Filename: `qai_report_2024-11-24.txt`
-  - Perfect for sharing with stakeholders
+    - Header with generation timestamp
+    - Summary statistics: total jobs, average loss, best model, total training time
+    - Detailed results section: each job with all metrics
+    - Filename: `qai_report_2024-11-24.txt`
+    - Perfect for sharing with stakeholders
 
 **Usage:**
 
@@ -241,15 +241,15 @@ cleanup              Remove old backups
 
 **Notification Types:**
 
-| Icon | Event | Title | Example Message |
+| Icon | Event        | Title               | Example Message                                           |
 | ---- | ------------ | ------------------- | --------------------------------------------------------- |
-| 🚀 | Job Started | Training Started | Job 'phi35_mixed_chat' has begun training |
-| ✅ | Job Complete | Training Complete | Job 'phi35_mixed_chat' finished in 45min with loss 0.2341 |
-| ❌ | Job Failed | Training Failed | Job 'phi35_mixed_chat' failed: CUDA out of memory |
-| 🎯 | Milestone | Milestone Reached | Job 'test': Loss below 0.5 = 0.4523 |
-| ⚠️ | GPU Alert | GPU Alert | GPU utilization at 97% (Memory: 10240MB) |
-| 💾 | Backup Done | Backup Complete | Created backup 'pre_prod_v1' (342.56 MB) |
-| 📊 | Eval Done | Evaluation Complete | Model 'phi35_lora_v3' - Perplexity: 12.34 |
+| 🚀   | Job Started  | Training Started    | Job 'phi35_mixed_chat' has begun training                 |
+| ✅   | Job Complete | Training Complete   | Job 'phi35_mixed_chat' finished in 45min with loss 0.2341 |
+| ❌   | Job Failed   | Training Failed     | Job 'phi35_mixed_chat' failed: CUDA out of memory         |
+| 🎯   | Milestone    | Milestone Reached   | Job 'test': Loss below 0.5 = 0.4523                       |
+| ⚠️   | GPU Alert    | GPU Alert           | GPU utilization at 97% (Memory: 10240MB)                  |
+| 💾   | Backup Done  | Backup Complete     | Created backup 'pre_prod_v1' (342.56 MB)                  |
+| 📊   | Eval Done    | Evaluation Complete | Model 'phi35_lora_v3' - Perplexity: 12.34                 |
 
 **Browser Integration:**
 
@@ -295,8 +295,8 @@ python scripts/notification_system.py \
 - Polls status file every 10 seconds
 - Detects job state transitions (pending → running → completed/failed)
 - Milestone tracking:
-  - Loss threshold: notify when loss drops below 0.5
-  - Epoch interval: notify every 5 epochs
+    - Loss threshold: notify when loss drops below 0.5
+    - Epoch interval: notify every 5 epochs
 - Automatic cleanup when job finishes
 
 **Integration with Dashboards:**
@@ -319,12 +319,12 @@ python scripts/notification_system.py \
 
 **Platform Support:**
 
-| Platform | Method | Dependencies |
+| Platform | Method                | Dependencies             |
 | -------- | --------------------- | ------------------------ |
-| Browser | Web Notifications API | None (built-in) |
-| Windows | win10toast | `pip install win10toast` |
-| macOS | osascript | None (built-in) |
-| Linux | notify-send | None (built-in) |
+| Browser  | Web Notifications API | None (built-in)          |
+| Windows  | win10toast            | `pip install win10toast` |
+| macOS    | osascript             | None (built-in)          |
+| Linux    | notify-send           | None (built-in)          |
 
 **Value Proposition:**
 
@@ -340,29 +340,29 @@ python scripts/notification_system.py \
 
 ### Code Metrics
 
-| Feature | Lines of Code | Files Modified | New Files |
+| Feature              | Lines of Code | Files Modified       | New Files               |
 | -------------------- | ------------- | -------------------- | ----------------------- |
-| Export Functionality | 164 | 1 (`analytics.html`) | 0 |
-| Backup Manager | 415 | 0 | 1 (`backup_manager.py`) |
-| Notification System | 491 | 3 (all dashboards) | 2 (`.py` + guide) |
-| **Total** | **1,070** | **4** | **3** |
+| Export Functionality | 164           | 1 (`analytics.html`) | 0                       |
+| Backup Manager       | 415           | 0                    | 1 (`backup_manager.py`) |
+| Notification System  | 491           | 3 (all dashboards)   | 2 (`.py` + guide)       |
+| **Total**            | **1,070**     | **4**                | **3**                   |
 
 ### Feature Coverage
 
-| Dashboard | Export | Backup | Notifications |
+| Dashboard      | Export | Backup | Notifications |
 | -------------- | ------ | ------ | ------------- |
-| unified.html | ❌ | ❌ | ✅ |
-| analytics.html | ✅ | ❌ | ✅ |
-| hub.html | ❌ | ❌ | ✅ (toggle) |
+| unified.html   | ❌     | ❌     | ✅            |
+| analytics.html | ✅     | ❌     | ✅            |
+| hub.html       | ❌     | ❌     | ✅ (toggle)   |
 
 ### Testing Status
 
-| Component | Unit Tests | Integration Tests | Manual Testing |
+| Component             | Unit Tests        | Integration Tests | Manual Testing |
 | --------------------- | ----------------- | ----------------- | -------------- |
-| Export (PNG/CSV/TXT) | N/A (UI) | N/A | ✅ Verified |
-| Backup Manager CLI | ⏳ Pending | ⏳ Pending | ✅ Verified |
-| Browser Notifications | N/A (browser API) | N/A | ✅ Verified |
-| Python CLI Notifier | ⏳ Pending | ⏳ Pending | ✅ Verified |
+| Export (PNG/CSV/TXT)  | N/A (UI)          | N/A               | ✅ Verified    |
+| Backup Manager CLI    | ⏳ Pending        | ⏳ Pending        | ✅ Verified    |
+| Browser Notifications | N/A (browser API) | N/A               | ✅ Verified    |
+| Python CLI Notifier   | ⏳ Pending        | ⏳ Pending        | ✅ Verified    |
 
 ---
 
@@ -562,10 +562,10 @@ updateNotificationUI()
 **Job Queue** (`scripts/job_queue.py`):
 
 - Trigger notifications on queue events:
-  - Job added to queue
-  - Job starts execution
-  - Job completes/fails
-  - Dependencies resolved
+    - Job added to queue
+    - Job starts execution
+    - Job completes/fails
+    - Dependencies resolved
 
 **Analytics Dashboard** (`dashboard/analytics.html`):
 

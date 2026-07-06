@@ -92,20 +92,20 @@ ms-windows-ai-studio.windows-ai-studio
 Test that custom agents are discoverable:
 
 - [ ] **Primary Agent** (`ai.agent.md`)
-  - [ ] File exists: `test -f .github/agents/ai.agent.md`
-  - [ ] Can reference via `@ai` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/ai.agent.md`
+    - [ ] Can reference via `@ai` in Copilot Chat
 
 - [ ] **Aria Character Agent** (`aria-character.agent.md`)
-  - [ ] File exists: `test -f .github/agents/aria-character.agent.md`
-  - [ ] Can reference via `@aria-character` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/aria-character.agent.md`
+    - [ ] Can reference via `@aria-character` in Copilot Chat
 
 - [ ] **Training Agent** (`autonomous-trainer.agent.md`)
-  - [ ] File exists: `test -f .github/agents/autonomous-trainer.agent.md`
-  - [ ] Can reference via `@autonomous-trainer` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/autonomous-trainer.agent.md`
+    - [ ] Can reference via `@autonomous-trainer` in Copilot Chat
 
 - [ ] **Debug Agent** (`full-stack-debugger.agent.md`)
-  - [ ] File exists: `test -f .github/agents/full-stack-debugger.agent.md`
-  - [ ] Can reference via `@full-stack-debugger` in Copilot Chat
+    - [ ] File exists: `test -f .github/agents/full-stack-debugger.agent.md`
+    - [ ] Can reference via `@full-stack-debugger` in Copilot Chat
 
 ### Count all agents
 

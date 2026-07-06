@@ -273,12 +273,12 @@ docker-compose up
 
 ### Benchmark
 
-| Metric | Value |
+| Metric         | Value |
 | -------------- | ----- |
-| Accuracy | 100% |
-| Precision | 100% |
-| Recall | 100% |
-| F1 Score | 100% |
+| Accuracy       | 100%  |
+| Precision      | 100%  |
+| Recall         | 100%  |
+| F1 Score       | 100%  |
 | Inference Time | ~50ms |
 
 ## Production Considerations

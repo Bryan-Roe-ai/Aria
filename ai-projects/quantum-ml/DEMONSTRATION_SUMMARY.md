@@ -317,14 +317,14 @@ ai-projects/quantum-ml/
 
 ## 🏆 Success Metrics
 
-| Metric | Target | Achieved | Status |
+| Metric           | Target   | Achieved    | Status |
 | ---------------- | -------- | ----------- | ------ |
-| Circuit Creation | 5+ types | 6 types | ✅ |
-| Local Simulation | Working | Perfect | ✅ |
-| ML Training | >70% acc | 85% (Moons) | ✅ |
-| Azure Setup | Guide | Complete | ✅ |
-| Documentation | Complete | 4 READMEs | ✅ |
-| Examples | 3+ | 4 files | ✅ |
+| Circuit Creation | 5+ types | 6 types     | ✅     |
+| Local Simulation | Working  | Perfect     | ✅     |
+| ML Training      | >70% acc | 85% (Moons) | ✅     |
+| Azure Setup      | Guide    | Complete    | ✅     |
+| Documentation    | Complete | 4 READMEs   | ✅     |
+| Examples         | 3+       | 4 files     | ✅     |
 
 ---
 

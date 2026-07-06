@@ -16,9 +16,9 @@ Generate a normalized routing matrix for the refactor prompt suite.
 ### Required behavior
 
 - Build a stage-to-next-command matrix with explicit transition type:
-  - `primary` (normal workflow progression)
-  - `optional` (context-dependent)
-  - `governance` (audit/registry maintenance)
+    - `primary` (normal workflow progression)
+    - `optional` (context-dependent)
+    - `governance` (audit/registry maintenance)
 - Flag orphan stages (no useful outgoing transitions) and dead-end commands.
 - Highlight asymmetric transitions where reverse/adjacent navigation is unexpectedly missing.
 - Recommend minimal edits to fix discovered routing gaps.

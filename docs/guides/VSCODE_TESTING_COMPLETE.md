@@ -128,12 +128,12 @@ python .\scripts\test_runner.py --all --coverage
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
+| Shortcut        | Action            |
 | --------------- | ----------------- |
-| `Ctrl+; Ctrl+A` | Run all tests |
-| `Ctrl+; Ctrl+F` | Run failed tests |
+| `Ctrl+; Ctrl+A` | Run all tests     |
+| `Ctrl+; Ctrl+F` | Run failed tests  |
 | `Ctrl+; Ctrl+L` | Run last test run |
-| `Ctrl+; Ctrl+D` | Debug last test |
+| `Ctrl+; Ctrl+D` | Debug last test   |
 
 ## CI/CD Integration
 

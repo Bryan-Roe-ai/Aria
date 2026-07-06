@@ -227,12 +227,12 @@ Use `scripts/run_repo_agents.py` when you need deterministic repository checks t
 
 ### Current agents
 
-| Agent | Intent | Typical finding |
+| Agent              | Intent                                                                                   | Typical finding                                                 |
 | ------------------ | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `status-freshness` | Inspect `data_out/**/status.json` for stale, failed, timestamp-less, or unparseable runs | A health file has not updated within the configured max age |
-| `marker-audit` | Scan source-like files for `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers | Maintenance marker counts by file and marker type |
-| `docstring-audit` | Measure Python module/class/function docstring coverage | Public functions missing docstrings in audited paths |
-| `agents-md-audit` | Validate `AGENTS.md` Learned sections for structure, bullet limits, and secret patterns | Missing sections, over-limit bullets, or stale referenced dates |
+| `status-freshness` | Inspect `data_out/**/status.json` for stale, failed, timestamp-less, or unparseable runs | A health file has not updated within the configured max age     |
+| `marker-audit`     | Scan source-like files for `TODO`, `FIXME`, `HACK`, `XXX`, and `BUG` markers             | Maintenance marker counts by file and marker type               |
+| `docstring-audit`  | Measure Python module/class/function docstring coverage                                  | Public functions missing docstrings in audited paths            |
+| `agents-md-audit`  | Validate `AGENTS.md` Learned sections for structure, bullet limits, and secret patterns  | Missing sections, over-limit bullets, or stale referenced dates |
 
 ### Contract and outputs
 

@@ -224,15 +224,15 @@ Output includes:
 
 **7 new tasks added:**
 
-| Task | Command |
+| Task                                       | Command                                                              |
 | ------------------------------------------ | -------------------------------------------------------------------- |
-| Run: Model Deployer - Scan | `python .\scripts\model_deployer.py --scan` |
-| Run: Model Deployer - Deploy Best | `python .\scripts\model_deployer.py --deploy best --strategy canary` |
-| Run: Resource Monitor - Snapshot | `python .\scripts\resource_monitor.py --snapshot` |
-| Run: Resource Monitor - Stream | `python .\scripts\resource_monitor.py --stream --duration 60` |
-| Run: Batch Evaluator - Scan | `python .\scripts\batch_evaluator.py --scan-models --evaluate-all` |
-| Run: Results Exporter - Export to Markdown | `python .\scripts\results_exporter.py --all --format markdown` |
-| Run: Auto Scheduler - List | `python .\scripts\auto_scheduler.py --list` |
+| Run: Model Deployer - Scan                 | `python .\scripts\model_deployer.py --scan`                          |
+| Run: Model Deployer - Deploy Best          | `python .\scripts\model_deployer.py --deploy best --strategy canary` |
+| Run: Resource Monitor - Snapshot           | `python .\scripts\resource_monitor.py --snapshot`                    |
+| Run: Resource Monitor - Stream             | `python .\scripts\resource_monitor.py --stream --duration 60`        |
+| Run: Batch Evaluator - Scan                | `python .\scripts\batch_evaluator.py --scan-models --evaluate-all`   |
+| Run: Results Exporter - Export to Markdown | `python .\scripts\results_exporter.py --all --format markdown`       |
+| Run: Auto Scheduler - List                 | `python .\scripts\auto_scheduler.py --list`                          |
 
 ## Configuration Files
 
@@ -323,12 +323,12 @@ pip install croniter GPUtil openpyxl
 
 ## Output Locations
 
-| Tool | Output Directory |
+| Tool             | Output Directory             |
 | ---------------- | ---------------------------- |
-| Model Deployer | `deployed_models/` |
+| Model Deployer   | `deployed_models/`           |
 | Resource Monitor | `data_out/resource_monitor/` |
-| Batch Evaluator | `data_out/batch_evaluator/` |
-| Results Exporter | `exports/` |
+| Batch Evaluator  | `data_out/batch_evaluator/`  |
+| Results Exporter | `exports/`                   |
 
 ## Integration with Existing Tools
 

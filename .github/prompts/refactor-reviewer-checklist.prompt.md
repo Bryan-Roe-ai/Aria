@@ -36,10 +36,10 @@ Optional companion:
 
 - **Overview**: 1-2 lines on refactor risk profile
 - **Role-based checklist**:
-  - **API/Contract reviewer**
-  - **Performance reviewer**
-  - **Testing/QA reviewer**
-  - **Security reviewer**
+    - **API/Contract reviewer**
+    - **Performance reviewer**
+    - **Testing/QA reviewer**
+    - **Security reviewer**
 - **Critical must-pass gates**: blockers before merge
 - **Nice-to-have checks**: optional but valuable
 - **Review completion criteria**: explicit done definition
