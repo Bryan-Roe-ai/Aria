@@ -7,12 +7,12 @@ cycles. You can run it interactively from VS Code, or install it as a
 
 ## Launcher options
 
-| Flag | Env override | Default | Meaning |
+| Flag                   | Env override           | Default | Meaning                                    |
 | ---------------------- | ---------------------- | ------- | ------------------------------------------ |
-| `--cycles N` | `AGI_LAUNCH_CYCLES` | `1` | Number of launcher cycles (`0` = infinite) |
-| `--short-break-sec N` | `AGI_SHORT_BREAK_SEC` | `30` | Sleep between normal cycles |
-| `--long-break-sec N` | `AGI_LONG_BREAK_SEC` | `300` | Sleep after every long-break interval |
-| `--long-break-every N` | `AGI_LONG_BREAK_EVERY` | `5` | Take the long break every N cycles |
+| `--cycles N`           | `AGI_LAUNCH_CYCLES`    | `1`     | Number of launcher cycles (`0` = infinite) |
+| `--short-break-sec N`  | `AGI_SHORT_BREAK_SEC`  | `30`    | Sleep between normal cycles                |
+| `--long-break-sec N`   | `AGI_LONG_BREAK_SEC`   | `300`   | Sleep after every long-break interval      |
+| `--long-break-every N` | `AGI_LONG_BREAK_EVERY` | `5`     | Take the long break every N cycles         |
 
 ## Run via VS Code task
 
@@ -27,12 +27,12 @@ Four tasks manage a `systemd --user` service defined in
 `config/aria-agi-launcher.service` (defaults to `AGI_LAUNCH_CYCLES=0`, i.e.
 runs forever):
 
-| Task | Action |
+| Task                   | Action                                                                       |
 | ---------------------- | ---------------------------------------------------------------------------- |
 | `service: agi install` | Copy the unit to `~/.config/systemd/user/`, `daemon-reload`, and `enable` it |
-| `service: agi start` | Start the service and print its status |
-| `service: agi stop` | Stop the service |
-| `service: agi status` | Show status and the last 30 log lines |
+| `service: agi start`   | Start the service and print its status                                       |
+| `service: agi stop`    | Stop the service                                                             |
+| `service: agi status`  | Show status and the last 30 log lines                                        |
 
 Equivalent manual commands:
 

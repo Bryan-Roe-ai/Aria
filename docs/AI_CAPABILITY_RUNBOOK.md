@@ -7,13 +7,13 @@ Operational controls for AI quality, fallback behavior, latency, memory relevanc
 ## Enable / Disable
 
 - Guardrails:
-  - Enable: `QAI_AI_GUARDRAILS_ENABLED=true`
-  - Disable: `QAI_AI_GUARDRAILS_ENABLED=false`
+    - Enable: `QAI_AI_GUARDRAILS_ENABLED=true`
+    - Disable: `QAI_AI_GUARDRAILS_ENABLED=false`
 - Memory relevance:
-  - `QAI_MEMORY_MIN_SIMILARITY` (default `0.2`)
-  - `QAI_MEMORY_TOP_K` (default `5`)
+    - `QAI_MEMORY_MIN_SIMILARITY` (default `0.2`)
+    - `QAI_MEMORY_TOP_K` (default `5`)
 - Standard prompt:
-  - `QAI_STANDARD_SYSTEM_PROMPT` to override the default concise safety-first system prompt.
+    - `QAI_STANDARD_SYSTEM_PROMPT` to override the default concise safety-first system prompt.
 
 ## Diagnostics
 

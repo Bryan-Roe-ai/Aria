@@ -13,21 +13,21 @@ Successfully implemented quantum computing integration for passive LLM training 
 Main module providing quantum-enhanced LLM training:
 
 - **QuantumAttentionOptimizer**: Uses quantum circuits to optimize attention weight distributions
-  - Quantum phase encoding
-  - Interference pattern generation
-  - Fallback to classical softmax
+    - Quantum phase encoding
+    - Interference pattern generation
+    - Fallback to classical softmax
 
 - **QuantumFeatureEncoder**: Encodes classical features into quantum states
-  - Amplitude encoding
-  - Variational quantum circuits
-  - Dimension normalization
+    - Amplitude encoding
+    - Variational quantum circuits
+    - Dimension normalization
 
 - **QuantumEnhancedLLMTrainer**: Main training orchestrator
-  - Active training mode (single run)
-  - Passive training mode (continuous background)
-  - Dataset loading (JSON/JSONL)
-  - Quantum metrics tracking
-  - Integration with autonomous orchestrator
+    - Active training mode (single run)
+    - Passive training mode (continuous background)
+    - Dataset loading (JSON/JSONL)
+    - Quantum metrics tracking
+    - Integration with autonomous orchestrator
 
 **Key Features**:
 
@@ -96,16 +96,16 @@ Autonomous Cycle:
 Comprehensive test suite:
 
 - **Unit Tests**:
-  - QuantumAttentionOptimizer initialization and optimization
-  - QuantumFeatureEncoder initialization and encoding
-  - QuantumEnhancedLLMTrainer initialization
-  - Dataset loading (JSON/JSONL)
-  - Training epoch execution
+    - QuantumAttentionOptimizer initialization and optimization
+    - QuantumFeatureEncoder initialization and encoding
+    - QuantumEnhancedLLMTrainer initialization
+    - Dataset loading (JSON/JSONL)
+    - Training epoch execution
 
 - **Integration Tests**:
-  - Full training pipeline
-  - Multi-epoch training
-  - Loss progression validation
+    - Full training pipeline
+    - Multi-epoch training
+    - Loss progression validation
 
 ### 5. Documentation
 

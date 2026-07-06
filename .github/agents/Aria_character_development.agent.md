@@ -66,26 +66,26 @@ Aria understands these command types:
 
 ### 8 Core Actions
 
-| Action | Parameters | Example |
+| Action    | Parameters       | Example                                     |
 | --------- | ---------------- | ------------------------------------------- |
-| `move` | x, y | `{"action": "move", "x": 50, "y": 60}` |
-| `say` | text | `{"action": "say", "text": "Hello!"}` |
-| `pickup` | object | `{"action": "pickup", "object": "ball"}` |
-| `drop` | — | `{"action": "drop"}` |
-| `throw` | direction, force | `{"action": "throw", "direction": "right"}` |
-| `gesture` | type | `{"action": "gesture", "type": "wave"}` |
-| `look` | direction | `{"action": "look", "direction": "left"}` |
-| `wait` | duration_ms | `{"action": "wait", "duration_ms": 1000}` |
+| `move`    | x, y             | `{"action": "move", "x": 50, "y": 60}`      |
+| `say`     | text             | `{"action": "say", "text": "Hello!"}`       |
+| `pickup`  | object           | `{"action": "pickup", "object": "ball"}`    |
+| `drop`    | —                | `{"action": "drop"}`                        |
+| `throw`   | direction, force | `{"action": "throw", "direction": "right"}` |
+| `gesture` | type             | `{"action": "gesture", "type": "wave"}`     |
+| `look`    | direction        | `{"action": "look", "direction": "left"}`   |
+| `wait`    | duration_ms      | `{"action": "wait", "duration_ms": 1000}`   |
 
 ### API Endpoints
 
-| Endpoint | Method | Purpose |
+| Endpoint            | Method | Purpose                                  |
 | ------------------- | ------ | ---------------------------------------- |
-| `/api/aria/state` | GET | Current stage state |
-| `/api/aria/command` | POST | Process NL command → actions |
-| `/api/aria/execute` | POST | Run action sequences (plan/execute mode) |
-| `/api/aria/object` | POST | Manage stage objects |
-| `/api/aria/world` | POST | Generate themed worlds |
+| `/api/aria/state`   | GET    | Current stage state                      |
+| `/api/aria/command` | POST   | Process NL command → actions             |
+| `/api/aria/execute` | POST   | Run action sequences (plan/execute mode) |
+| `/api/aria/object`  | POST   | Manage stage objects                     |
+| `/api/aria/world`   | POST   | Generate themed worlds                   |
 
 ### World Generation
 
@@ -139,13 +139,13 @@ curl -X POST http://localhost:8080/api/aria/execute -H "Content-Type: applicatio
 
 ## Key Files
 
-| File | Purpose |
+| File                           | Purpose                                          |
 | ------------------------------ | ------------------------------------------------ |
-| `apps/aria/server.py` | Python HTTP server, AriaActionParser, world gen |
-| `apps/aria/index.html` | Main character UI |
+| `apps/aria/server.py`          | Python HTTP server, AriaActionParser, world gen  |
+| `apps/aria/index.html`         | Main character UI                                |
 | `apps/aria/aria_controller.js` | Animation engine, command handling, eye tracking |
-| `apps/aria/auto-execute.html` | Auto-execute UI for action sequences |
-| `apps/aria/styles.css` | Character CSS animations |
+| `apps/aria/auto-execute.html`  | Auto-execute UI for action sequences             |
+| `apps/aria/styles.css`         | Character CSS animations                         |
 
 ## Design Principles
 

@@ -17,10 +17,10 @@ Determine the minimum required refactor gates for this change before final merge
 ### Required behavior
 
 - Classify refactor profile:
-  - **Low-risk internal**
-  - **Medium-risk internal**
-  - **Contract-sensitive**
-  - **High-risk cross-cutting**
+    - **Low-risk internal**
+    - **Medium-risk internal**
+    - **Contract-sensitive**
+    - **High-risk cross-cutting**
 - Output a required gate set appropriate for the profile.
 - Distinguish mandatory gates vs recommended gates.
 - Provide one next command to start execution.

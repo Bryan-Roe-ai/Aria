@@ -16,9 +16,9 @@
 - ✅ **quantum_provider.py**: Created new quantum-enhanced chat provider
 - ✅ **QuantumClassifier**: Working (4 qubits, 2 layers, PennyLane backend)
 - ✅ **Quantum endpoints**: Fully implemented in `function_app.py`
-  - `/api/quantum/classify` - Quantum classification with sentiment analysis
-  - `/api/quantum/circuit` - Circuit visualization
-  - `/api/quantum/info` - Capabilities and status
+    - `/api/quantum/classify` - Quantum classification with sentiment analysis
+    - `/api/quantum/circuit` - Circuit visualization
+    - `/api/quantum/info` - Capabilities and status
 
 ### 3. Chat Web Interface
 

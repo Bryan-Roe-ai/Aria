@@ -21,9 +21,9 @@ Phase 26 transitions from UI polish to **intelligent, data-driven optimization**
 - **Vocabulary Profiling**: Unique token count, role distribution (user/assistant)
 - **Turn Analysis**: Average turns per conversation
 - **Intelligent Recommendations**: Heuristic engine based on:
-  - **Sample count**: <500 (small), <2k (medium), >2k (large)
-  - **Token length**: >500 reduces batch size to prevent memory issues
-  - **Vocabulary size**: >10k increases LoRA rank for better coverage
+    - **Sample count**: <500 (small), <2k (medium), >2k (large)
+    - **Token length**: >500 reduces batch size to prevent memory issues
+    - **Vocabulary size**: >10k increases LoRA rank for better coverage
 
 **Dashboard Integration**: `dashboard/unified.html`
 
@@ -322,14 +322,14 @@ Safe batch size: 8 (with 20% headroom)
 
 ## Progress Summary
 
-| Feature | Status | Completion |
+| Feature                    | Status         | Completion |
 | -------------------------- | -------------- | ---------- |
-| Dataset Profiling | ✅ Complete | 100% |
-| GPU-Aware Batch Calculator | 🔄 In Progress | 50% |
-| Anomaly Detection | 🔄 In Progress | 40% |
-| Shared CSS | 🔄 In Progress | 70% |
-| Keyboard Navigation | 🔄 In Progress | 40% |
-| Training Session History | 🔄 In Progress | 60% |
+| Dataset Profiling          | ✅ Complete    | 100%       |
+| GPU-Aware Batch Calculator | 🔄 In Progress | 50%        |
+| Anomaly Detection          | 🔄 In Progress | 40%        |
+| Shared CSS                 | 🔄 In Progress | 70%        |
+| Keyboard Navigation        | 🔄 In Progress | 40%        |
+| Training Session History   | 🔄 In Progress | 60%        |
 
 **Overall**: 45% complete (6/6 features touched)
 
@@ -379,13 +379,13 @@ Safe batch size: 8 (with 20% headroom)
 
 - `../../scripts/dataset_profiler.py` (NEW): 250+ line profiler with CLI
 - `../../apps/dashboard/unified.html`: Tuning wizard integration
-  - Added `📊 Profile Dataset` button
-  - Added `buildSuggestions()` refactor to prioritize AI recommendations
-  - Added `buildHeuristicSuggestions()` with existing tier logic
-  - Added `profileDatasetForWizard()` async function
+    - Added `📊 Profile Dataset` button
+    - Added `buildSuggestions()` refactor to prioritize AI recommendations
+    - Added `buildHeuristicSuggestions()` with existing tier logic
+    - Added `profileDatasetForWizard()` async function
 - `../../apps/dashboard/serve.py`:
-  - Added `/api/profile-dataset` endpoint
-  - Shells out to profiler script with subprocess
+    - Added `/api/profile-dataset` endpoint
+    - Shells out to profiler script with subprocess
 
 ---
 

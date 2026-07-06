@@ -11,13 +11,13 @@ Use this instruction to pick the right skill for AI-heavy work in Aria.
 ## Default Skill Selection
 
 - **Planning a new AI capability** (requirements, scope, rollout, fallback design)
-  - Use: `ai-feature-planning-workflow`
+    - Use: `ai-feature-planning-workflow`
 - **Implementing/changing agentic behavior** (tool calls, orchestration, schema contracts)
-  - Use: `ai-agent-implementation-workflow`
+    - Use: `ai-agent-implementation-workflow`
 - **Comparing quality of prompts/models/providers** (metrics and reproducible evaluation)
-  - Use: `ai-response-evaluation-workflow`
+    - Use: `ai-response-evaluation-workflow`
 - **Hardening for safety/abuse** (injection defense, output controls, guardrails)
-  - Use: `ai-safety-guardrails-workflow`
+    - Use: `ai-safety-guardrails-workflow`
 
 ## Combined Usage Patterns
 

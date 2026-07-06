@@ -143,14 +143,14 @@ The `/api/quantum-llm` endpoint returns readiness in responses:
 
 ## Training Status States
 
-| State | Meaning | Inference Ready |
+| State         | Meaning                         | Inference Ready          |
 | ------------- | ------------------------------- | ------------------------ |
-| `not_started` | No training attempted | ✗ |
-| `idle` | Training available, not running | ✓ (if checkpoint exists) |
-| `running` | Training in progress | ✗ |
-| `completed` | Training finished successfully | ✓ (if checkpoint valid) |
-| `failed` | Training completed with errors | ✗ |
-| `error` | Status read failed | ✗ |
+| `not_started` | No training attempted           | ✗                        |
+| `idle`        | Training available, not running | ✓ (if checkpoint exists) |
+| `running`     | Training in progress            | ✗                        |
+| `completed`   | Training finished successfully  | ✓ (if checkpoint valid)  |
+| `failed`      | Training completed with errors  | ✗                        |
+| `error`       | Status read failed              | ✗                        |
 
 ## Checkpoint Resolution
 

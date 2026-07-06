@@ -296,16 +296,16 @@ def benchmark_optimization(old_func, new_func, *args, iterations=100):
 
 ## Expected Performance Gains
 
-| Optimization | File | Speedup | Risk |
+| Optimization        | File            | Speedup | Risk               |
 | ------------------- | --------------- | ------- | ------------------ |
-| Quantum gradient | web_app.py | 10-100x | Low (has fallback) |
-| File caching | serve.py | 5-10x | Low (5s TTL) |
-| Keyword frozensets | agi_provider.py | 3-30x | Very low |
-| Position keywords | server.py | 2-5x | Very low |
-| Single-pass stats | web_app.py | 4x | Very low |
-| Generator counting | serve.py | 5-20% | Very low |
-| Deque rate limiting | serve.py | 2-5x | Low |
-| Gradient norm | web_app.py | <5% | Very low |
+| Quantum gradient    | web_app.py      | 10-100x | Low (has fallback) |
+| File caching        | serve.py        | 5-10x   | Low (5s TTL)       |
+| Keyword frozensets  | agi_provider.py | 3-30x   | Very low           |
+| Position keywords   | server.py       | 2-5x    | Very low           |
+| Single-pass stats   | web_app.py      | 4x      | Very low           |
+| Generator counting  | serve.py        | 5-20%   | Very low           |
+| Deque rate limiting | serve.py        | 2-5x    | Low                |
+| Gradient norm       | web_app.py      | <5%     | Very low           |
 
 ## Implementation Order
 

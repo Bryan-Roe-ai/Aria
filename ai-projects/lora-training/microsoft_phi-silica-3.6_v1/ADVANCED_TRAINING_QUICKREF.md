@@ -162,12 +162,12 @@ python scripts\run_pipeline.py \
 
 ## 🔧 Troubleshooting
 
-| Problem | Solution |
+| Problem          | Solution                                             |
 | ---------------- | ---------------------------------------------------- |
-| Out of memory | `python scripts\gpu_optimizer.py --memory-usage 0.6` |
-| Slow training | Check GPU profile, enable BF16/FP16 |
-| Poor eval scores | More aggressive pruning, longer training |
-| RAG not working | `pip install sentence-transformers` |
+| Out of memory    | `python scripts\gpu_optimizer.py --memory-usage 0.6` |
+| Slow training    | Check GPU profile, enable BF16/FP16                  |
+| Poor eval scores | More aggressive pruning, longer training             |
+| RAG not working  | `pip install sentence-transformers`                  |
 
 ## 📦 Optional Dependencies
 

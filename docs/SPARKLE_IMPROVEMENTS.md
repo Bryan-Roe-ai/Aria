@@ -35,11 +35,11 @@ HEARTS_KEYWORDS = frozenset(['hearts', 'heart', 'love'])
 
 Added three intensity levels for all effects (sparkle, glow, hearts):
 
-| Intensity | Count | Spread | Duration | Delay | Keywords |
+| Intensity  | Count | Spread | Duration | Delay | Keywords                   |
 | ---------- | ----- | ------ | -------- | ----- | -------------------------- |
-| **Light** | 3 | 60% | 1200ms | 150ms | light, subtle, gentle |
-| **Normal** | 5 | 80% | 1500ms | 100ms | _(default)_ |
-| **Heavy** | 10 | 90% | 1800ms | 60ms | heavy, intense, lots, many |
+| **Light**  | 3     | 60%    | 1200ms   | 150ms | light, subtle, gentle      |
+| **Normal** | 5     | 80%    | 1500ms   | 100ms | _(default)_                |
+| **Heavy**  | 10    | 90%    | 1800ms   | 60ms  | heavy, intense, lots, many |
 
 **Usage Examples**:
 

@@ -6,16 +6,16 @@ This directory contains all documentation for the QAI hybrid quantum-AI/ML works
 
 ## 📁 Documentation Structure
 
-| Directory | Description |
+| Directory                      | Description                                                      |
 | ------------------------------ | ---------------------------------------------------------------- |
-| [guides/](guides/) | General guides, feature documentation, and improvement summaries |
-| [quickref/](quickref/) | Quick reference cards for rapid lookup |
-| [training/](training/) | LoRA fine-tuning, automated training, and evaluation guides |
-| [quantum/](quantum/) | Quantum computing, Azure Quantum, and hybrid ML documentation |
-| [database/](database/) | SQL integration, monitoring, and Cosmos DB setup |
-| [deployment/](deployment/) | Azure deployment, ML training, and production guides |
-| [aria/](aria/) | ARIA visual system and movement training documentation |
-| [architecture/](architecture/) | Phase improvements and architectural documentation |
+| [guides/](guides/)             | General guides, feature documentation, and improvement summaries |
+| [quickref/](quickref/)         | Quick reference cards for rapid lookup                           |
+| [training/](training/)         | LoRA fine-tuning, automated training, and evaluation guides      |
+| [quantum/](quantum/)           | Quantum computing, Azure Quantum, and hybrid ML documentation    |
+| [database/](database/)         | SQL integration, monitoring, and Cosmos DB setup                 |
+| [deployment/](deployment/)     | Azure deployment, ML training, and production guides             |
+| [aria/](aria/)                 | ARIA visual system and movement training documentation           |
+| [architecture/](architecture/) | Phase improvements and architectural documentation               |
 
 ## 🚀 Quick Links
 
