@@ -18,7 +18,7 @@ def test_pyppeteer_workflow_uses_supported_chromium_download_command() -> None:
 
 @pytest.mark.unit
 def test_e2e_tests_workflow_uses_pyppeteer_bundled_chromium() -> None:
-    """e2e-tests.yml containerized_chrome job must bundle Chromium with a Bullseye-safe fallback."""
+    """e2e-tests.yml containerized_chrome job must keep the Bullseye-safe Chromium fallback chain."""
     workflow_path = Path(__file__).resolve().parents[1] / ".github" / "workflows" / "e2e-tests.yml"
     content = workflow_path.read_text(encoding="utf-8")
 

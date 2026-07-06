@@ -2,7 +2,7 @@ import importlib.util
 import os
 from pathlib import Path
 
-EXPECTED_SESSION_HASH_LEN = 16
+EXPECTED_SESSION_HASH_PREFIX_LEN = 16
 
 
 def load_module():
@@ -169,7 +169,7 @@ def test_reset_chat_session_keeps_explicit_local_status(monkeypatch):
     )
 
 
-def test_save_conversation_json_hashes_bypassed_session_name_into_safe_filename(monkeypatch, tmp_path):
+def test_save_conversation_json_hashes_malicious_session_name_into_safe_filename(monkeypatch, tmp_path):
     m = load_module()
     monkeypatch.setattr(m, "CONV_DIR", tmp_path)
     monkeypatch.setattr(m, "LATEST_PATH", tmp_path / "latest.json")
@@ -184,5 +184,6 @@ def test_save_conversation_json_hashes_bypassed_session_name_into_safe_filename(
     assert len(stem_parts) == 2
     hash_prefix = stem_parts[0]
     assert hash_prefix.isalnum()
-    assert len(hash_prefix) == EXPECTED_SESSION_HASH_LEN
+    assert len(hash_prefix) == EXPECTED_SESSION_HASH_PREFIX_LEN
+    assert stem_parts[1].isdigit()
     assert (tmp_path / "latest.json").exists()
