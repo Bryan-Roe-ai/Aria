@@ -94,6 +94,59 @@ jobs:
     executor: python311
     parallelism: 2
     steps:
+<<<<<<< HEAD
             - checkout
             - run: echo "Running example step, please edit this file"
 version: "2.1"
+=======
+      - checkout
+      - restore-pip-cache
+      - install-dev-deps
+      - save-pip-cache
+      - run:
+          name: Run unit tests
+          environment:
+            CI: "true"
+            AZURE_CLIENT_ID: ""
+            AZURE_TENANT_ID: ""
+            AZURE_CLIENT_SECRET: ""
+            OPENAI_API_KEY: ""
+          command: |
+            mkdir -p data_out
+            TEST_FILES=$(circleci tests glob "tests/**/*.py" \
+              | grep -Ev "test_ui_(playwright|pyppeteer|selenium)\.py" \
+              | circleci tests split --split-by=timings)
+            python -m pytest $TEST_FILES \
+              -q --tb=short \
+              -m "not slow and not azure and not integration" \
+              --maxfail=1 \
+              --durations=10 \
+              --junitxml=data_out/junit-${CIRCLE_NODE_INDEX}.xml \
+              --cov=shared --cov=scripts \
+              --cov-report=xml:data_out/coverage-${CIRCLE_NODE_INDEX}.xml
+      - store_test_results:
+          path: data_out
+      - store_artifacts:
+          path: data_out
+          destination: test-output
+
+  ci-gate:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - run: echo "All required CI jobs passed."
+
+workflows:
+  ci:
+    jobs:
+      - lint
+      - type-check
+      - pre-commit
+      - unit-test
+      - ci-gate:
+          requires:
+            - lint
+            - unit-test
+            - pre-commit
+>>>>>>> 625f1806b (ci: optimize CircleCI config with Python image, caching, and parallel jobs)
