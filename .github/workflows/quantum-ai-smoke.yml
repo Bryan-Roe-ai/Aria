@@ -7,7 +7,7 @@ on:
       - '.github/workflows/quantum-ai-smoke.yml'
       - '.vscode/tasks.json'
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'quantum-ai/**'
       - '.github/workflows/quantum-ai-smoke.yml'

@@ -8,7 +8,7 @@ on:
       - '.github/actions/validate-site-bundles/**'
       - '.github/workflows/site-bundle-validation.yml'
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - 'generated_sites/**'
       - 'scripts/validate_site_bundles.py'
