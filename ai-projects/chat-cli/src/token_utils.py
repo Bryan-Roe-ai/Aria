@@ -34,6 +34,11 @@ MODEL_CONTEXT_DEFAULTS: dict[str, int] = {
 
 
 def _match_model_default(model: str | None) -> int:
+    """Return the context-window size for ``model`` using substring matching.
+
+    Falls back to 8192 tokens for unrecognised model names, which is a
+    conservative safe default across a wide range of deployed models.
+    """
     m = (model or "").lower()
     for key, ctx in MODEL_CONTEXT_DEFAULTS.items():
         if key in m:
@@ -43,6 +48,16 @@ def _match_model_default(model: str | None) -> int:
 
 @dataclass
 class PruneStats:
+    """Token-usage summary produced by :func:`prune_messages`.
+
+    Attributes:
+        original_tokens: Total tokens in the input message list before pruning.
+        pruned_tokens: Tokens remaining after pruning (excluding removed messages).
+        removed_count: Number of messages dropped from the front of the history.
+        budget: Effective context-window limit used for the pruning pass.
+        reserve_output_tokens: Tokens reserved for the model's generated reply.
+    """
+
     original_tokens: int
     pruned_tokens: int
     removed_count: int
@@ -103,6 +118,21 @@ def count_messages_tokens(
     model: str | None,
     system_prompt: str | None = None,
 ) -> int:
+    """Estimate the total token count for a message list and optional system prompt.
+
+    Uses the same encoder strategy as :func:`prune_messages` (tiktoken for
+    OpenAI/Azure, transformers tokenizer for local models, 4-char heuristic
+    otherwise).  Adds 4 tokens per message as a framing cost approximation.
+
+    Args:
+        messages: List of ``{role, content}`` dicts.
+        provider: Provider name used to choose the encoder (e.g. ``"openai"``).
+        model: Model name for encoder lookup (e.g. ``"gpt-4o-mini"``).
+        system_prompt: Optional system-prompt text counted separately.
+
+    Returns:
+        Approximate total token count as an integer.
+    """
     enc = _get_text_encoder(provider, model)
     total = 0
     if system_prompt:

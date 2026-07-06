@@ -493,7 +493,13 @@ def aria_command_proxy(req: func.HttpRequest) -> func.HttpResponse:
 
 
 def _extract_text_content(content) -> str:
-    """Normalize mixed content payloads to plain text."""
+    """Recursively extract plain text from heterogeneous content payloads.
+
+    Handles the variety of shapes that message ``content`` fields arrive in:
+    plain strings, OpenAI-style block dicts (``{"type": "text", "text": "…"}``),
+    lists of blocks, and objects with ``.text`` / ``.value`` attributes.
+    Returns ``""`` when no text can be extracted.
+    """
     if isinstance(content, str):
         return content.strip()
 
@@ -529,7 +535,12 @@ def _extract_text_content(content) -> str:
 
 
 def _is_compaction_placeholder_message(content) -> bool:
-    """Detect synthetic placeholder messages inserted during chat compaction."""
+    """Return True when ``content`` is a synthetic chat-compaction placeholder.
+
+    Some clients insert placeholder messages such as "Compacted conversation"
+    when they summarise long histories.  These carry no semantic information
+    and should be dropped before the message list is sent to an LLM provider.
+    """
     if not isinstance(content, str):
         return False
 
@@ -747,6 +758,10 @@ def _record_ai_latency(duration_ms: int) -> None:
 
 
 def _percentile(values: list[int], p: float) -> int:
+    """Return the p-th percentile of ``values`` (nearest-rank method).
+
+    Returns 0 for an empty list.  ``p`` should be in ``[0.0, 1.0]``.
+    """
     if not values:
         return 0
     ordered = sorted(values)
@@ -756,6 +771,12 @@ def _percentile(values: list[int], p: float) -> int:
 
 
 def _ai_capability_snapshot() -> dict:
+    """Build a JSON-serialisable snapshot of in-process AI metrics and feature flags.
+
+    Consumed by the ``/api/ai/status`` endpoint.  Data is derived from
+    in-memory counters and the rolling latency window; it resets on process
+    restart and is not persisted.
+    """
     latencies = list(_AI_CAPABILITY_LATENCY_WINDOW)
     return {
         "feature_flags": {
@@ -979,6 +1000,13 @@ def _sse_response(chunks, *, status_code: int = 200) -> func.HttpResponse:
 
 
 def _build_domain_context() -> SimpleNamespace:
+    """Assemble the shared context object passed to domain-module route handlers.
+
+    Domain modules (``function_app_domains/``) receive this namespace instead
+    of importing directly from ``function_app``, which keeps them testable in
+    isolation without the full Azure Functions runtime.  Every helper,
+    provider, and stdlib reference a handler might need is surfaced here.
+    """
     return SimpleNamespace(
         AGI_ANALYZE_SCHEMA=AGI_ANALYZE_SCHEMA,
         AGI_REASON_SCHEMA=AGI_REASON_SCHEMA,
