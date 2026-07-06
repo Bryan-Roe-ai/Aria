@@ -6,7 +6,6 @@ queries:
     - uses: security-and-quality
     - uses: security-experimental
 
-
 # Optional: remove packs unless you have a specific custom-pack strategy.
 # queries suites already include the standard query packs for analyzed languages.
 # packs: []
@@ -19,21 +18,21 @@ packs:
 # Exclude only generated/vendor/build artifacts.
 # Avoid excluding broad source directories to keep coverage high.
 paths-ignore:
-  - "**/node_modules/**"
-  - "**/.venv/**"
-  - "**/venv/**"
-  - "**/__pycache__/**"
-  - "**/.pytest_cache/**"
-  - "**/.mypy_cache/**"
-  - "**/.ruff_cache/**"
-  - "**/dist/**"
-  - "**/build/**"
-  - "**/coverage/**"
-  - "**/.next/**"
-  - "**/*.min.js"
-  - "**/*.generated.*"
-  - "**/vendor/**"
-  - "**/third_party/**"
-  - "**/third-party/**"
-  - "**/test/fixtures/**"
-  - "**/tests/fixtures/**"
+    - "**/node_modules/**"
+    - "**/.venv/**"
+    - "**/venv/**"
+    - "**/__pycache__/**"
+    - "**/.pytest_cache/**"
+    - "**/.mypy_cache/**"
+    - "**/.ruff_cache/**"
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/coverage/**"
+    - "**/.next/**"
+    - "**/*.min.js"
+    - "**/*.generated.*"
+    - "**/vendor/**"
+    - "**/third_party/**"
+    - "**/third-party/**"
+    - "**/test/fixtures/**"
+    - "**/tests/fixtures/**"
