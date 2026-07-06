@@ -105,8 +105,11 @@ jobs:
             case "$file" in
               .github/*)
                 local rel="${file#.github/}"
-                [ "$rel" != "$file" ] || return 1
-                [[ "$rel" != */* ]] || return 1
+                case "$rel" in
+                  */*)
+                    return 1
+                    ;;
+                esac
 
                 case "$(basename "$file")" in
                   COPILOT*.md|copilot-*.md)
