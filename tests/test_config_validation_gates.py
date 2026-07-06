@@ -43,6 +43,22 @@ class TestConfigValidationGates:
         assert result.returncode == 0
         assert "✅" in result.stdout or "valid" in result.stdout.lower()
 
+    def test_repo_automation_validate_flag_handles_non_utf8_stdio(self):
+        """Test repo_automation.py --validate with a non-UTF-8 stdio encoding."""
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "cp1252"
+        result = subprocess.run(
+            [sys.executable, "scripts/repo_automation.py", "--validate"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            env=env,
+            check=False,
+        )
+        assert result.returncode == 0
+        assert "valid" in result.stdout.lower()
+
     def test_repo_automation_wrapper_validate_mode(self):
         """Test start_repo_automation.sh validate mode."""
         result = subprocess.run(

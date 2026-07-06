@@ -9,6 +9,7 @@ install Python package dependencies when needed.
 
 import argparse
 import importlib
+import io
 import json
 import shlex
 import signal
@@ -46,6 +47,19 @@ LEGACY_PID_FILE = REPO_ROOT / "processes.json"
 LEGACY_STATUS_FILE = REPO_ROOT / "automation_status.json"
 
 AUTOMATION_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _ensure_utf8_stdio() -> None:
+    """Re-wrap stdio with UTF-8 when the active console encoding is narrower."""
+    for name in ("stdout", "stderr"):
+        stream = getattr(sys, name, None)
+        if stream is None or not hasattr(stream, "buffer"):
+            continue
+        encoding = (getattr(stream, "encoding", None) or "").lower().replace("-", "")
+        if encoding == "utf8":
+            continue
+        wrapper = io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace")
+        setattr(sys, name, wrapper)
 
 
 class _ExistingProcessWrapper:
@@ -770,6 +784,7 @@ class RepoAutomation:
 
 
 def main():
+    _ensure_utf8_stdio()
     parser = argparse.ArgumentParser(
         description="Repository-Wide Automation System",
         formatter_class=argparse.RawDescriptionHelpFormatter,

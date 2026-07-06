@@ -103,7 +103,7 @@ class QuantumIntegration:
 
         if isinstance(jobs, list):
             normalized_job_name = job_name.strip().lower()
-            for index, entry in enumerate(jobs):
+            for entry in jobs:
                 if not isinstance(entry, dict):
                     continue
 
