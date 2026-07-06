@@ -58,19 +58,11 @@ def check_file_exists(filepath):
 
 def load_subscription_manager():
     """Load subscription manager symbols from the shared directory."""
-    module_path = (
-        Path(__file__).resolve().parent
-        / "shared"
-        / "subscription_manager.py"
-    )
-    spec = importlib.util.spec_from_file_location(
-        "subscription_manager", module_path
-    )
+    module_path = Path(__file__).resolve().parent / "shared" / "subscription_manager.py"
+    spec = importlib.util.spec_from_file_location("subscription_manager", module_path)
 
     if spec is None or spec.loader is None:
-        raise ImportError(
-            f"Unable to load subscription manager from {module_path}"
-        )
+        raise ImportError(f"Unable to load subscription manager from {module_path}")
 
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -134,9 +126,7 @@ def test_subscription_manager():
     print_info("Testing subscription manager...")
 
     try:
-        subscription_tier, get_subscription_manager = (
-            load_subscription_manager()
-        )
+        subscription_tier, get_subscription_manager = load_subscription_manager()
 
         # Create manager instance
         manager = get_subscription_manager()
@@ -161,10 +151,7 @@ def test_subscription_manager():
 
         # Get revenue stats
         stats = manager.get_revenue_stats()
-        print_success(
-            "  Revenue stats retrieved: "
-            f"${stats['monthly_recurring_revenue']} MRR"
-        )
+        print_success(f"  Revenue stats retrieved: ${stats['monthly_recurring_revenue']} MRR")
 
         return True
     except (
@@ -184,9 +171,7 @@ def generate_demo_data():
     print_info("Generating demo data...")
 
     try:
-        subscription_tier, get_subscription_manager = (
-            load_subscription_manager()
-        )
+        subscription_tier, get_subscription_manager = load_subscription_manager()
 
         manager = get_subscription_manager()
 
@@ -217,9 +202,7 @@ def generate_demo_data():
 
         if stats["monthly_recurring_revenue"] >= 2000:
             print_success(
-                "  🎉 TARGET ACHIEVED! "
-                f"({stats['monthly_recurring_revenue'] / 2000 * 100:.1f}% "
-                "of $2,000 goal)"
+                f"  🎉 TARGET ACHIEVED! ({stats['monthly_recurring_revenue'] / 2000 * 100:.1f}% of $2,000 goal)"
             )
 
         return True
@@ -288,16 +271,10 @@ def print_next_steps():
 
     print(f"{Colors.GREEN}1. View the Pricing Page:{Colors.END}")
     print("   python3 -m http.server 8000")
-    print(
-        "   Then open: "
-        "http://localhost:8000/web/monetization/pricing.html\n"
-    )
+    print("   Then open: http://localhost:8000/web/monetization/pricing.html\n")
 
     print(f"{Colors.GREEN}2. View the Admin Dashboard:{Colors.END}")
-    print(
-        "   Open: "
-        "http://localhost:8000/web/monetization/admin_dashboard.html\n"
-    )
+    print("   Open: http://localhost:8000/web/monetization/admin_dashboard.html\n")
 
     print(f"{Colors.GREEN}3. Test the APIs (optional):{Colors.END}")
     print("   func host start")
@@ -311,10 +288,7 @@ def print_next_steps():
     print("   - web/monetization/admin_dashboard.html - Revenue dashboard")
     print("   - web/monetization/my-subscription.html - User subscription")
     print("   - web/monetization/checkout.html - Payment page")
-    print(
-        "   - web/monetization/subscription-success.html "
-        "- Success page"
-    )
+    print("   - web/monetization/subscription-success.html - Success page")
     print("   - web/monetization/account.html - Account settings\n")
 
 
@@ -345,9 +319,7 @@ def main():
 
     # Step 5: Generate demo data
     generate_demo = input(
-        f"{Colors.BLUE}Generate demo data "
-        "(5 Pro + 10 Enterprise subscribers)? "
-        f"(y/n): {Colors.END}"
+        f"{Colors.BLUE}Generate demo data (5 Pro + 10 Enterprise subscribers)? (y/n): {Colors.END}"
     ).lower()
     if generate_demo == "y":
         generate_demo_data()
@@ -357,9 +329,7 @@ def main():
     print_next_steps()
 
     # Step 7: Offer to start server
-    start_server = input(
-        f"{Colors.BLUE}Start test server now? (y/n): {Colors.END}"
-    ).lower()
+    start_server = input(f"{Colors.BLUE}Start test server now? (y/n): {Colors.END}").lower()
     if start_server == "y":
         start_test_server()
 

@@ -109,10 +109,7 @@ def _load_env_file() -> None:
 
 def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statements
     """Install a lightweight azure.functions shim for local development."""
-    logger.debug(
-        "azure.functions not found; "
-        "installing lightweight shim for local dev adapter"
-    )
+    logger.debug("azure.functions not found; installing lightweight shim for local dev adapter")
     fake_mod: Any = types.ModuleType("azure.functions")
 
     class AuthLevel:
@@ -127,11 +124,7 @@ def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statemen
             self.url = kwargs.get("url", "/")
             self.params = dict(kwargs.get("params") or {})
             self.route_params = dict(kwargs.get("route_params") or {})
-            self.headers = {
-                k.lower(): v for k, v in dict(
-                    kwargs.get("headers") or {}
-                ).items()
-            }
+            self.headers = {k.lower(): v for k, v in dict(kwargs.get("headers") or {}).items()}
             self._body = _coerce_bytes(kwargs.get("body"))
             self._json_cache = None
 
@@ -174,6 +167,7 @@ def _install_azure_functions_shim() -> Any:  # pylint: disable=too-many-statemen
 
         def route(self, *args, **kwargs):
             """Decorator placeholder that records route metadata."""
+
             def decorator(fn):
                 try:
                     fn.__qai_route__ = {"args": args, "kwargs": kwargs}
@@ -231,10 +225,7 @@ def _azure_response_parts(
     mimetype = getattr(resp, "mimetype", None)
     headers = dict(getattr(resp, "headers", None) or {})
     if not mimetype:
-        content_type = (
-            headers.get("Content-Type")
-            or headers.get("content-type")
-        )
+        content_type = headers.get("Content-Type") or headers.get("content-type")
         if content_type:
             mimetype = content_type
         else:
@@ -264,10 +255,7 @@ def _azure_to_flask(resp: Any) -> Any:
             flask_resp.headers[k] = v
     except Exception:
         # best-effort fallback for unexpected header shapes
-        logger.debug(
-            "Unexpected header shape when converting azure "
-            "HttpResponse to Flask Response"
-        )
+        logger.debug("Unexpected header shape when converting azure HttpResponse to Flask Response")
 
     return flask_resp
 
@@ -284,10 +272,7 @@ def _build_local_http_request(
     try:
         from azure.functions import HttpRequest as ShimHttpRequest  # type: ignore
     except (ImportError, AttributeError) as exc:
-        raise RuntimeError(
-            "No HttpRequest implementation available "
-            "for local dev adapter"
-        ) from exc
+        raise RuntimeError("No HttpRequest implementation available for local dev adapter") from exc
 
     req_factory = cast(Callable[..., Any], ShimHttpRequest)
     try:
@@ -315,20 +300,13 @@ def _call_function_handler(
     function_app = _get_function_app()
     handler = getattr(function_app, handler_name, None)
     if handler is None:
-        raise RuntimeError(
-            f"function_app.{handler_name} is not available"
-        )
+        raise RuntimeError(f"function_app.{handler_name} is not available")
 
     req_cls = getattr(function_app, "HttpRequest", None)
     body_bytes = _coerce_bytes(body)
 
     request_headers = dict(headers or {})
-    if (
-        body is not None
-        and not any(
-            k.lower() == "content-type" for k in request_headers
-        )
-    ):
+    if body is not None and not any(k.lower() == "content-type" for k in request_headers):
         request_headers["Content-Type"] = "application/json"
 
     if isinstance(req_cls, type) or callable(req_cls):
@@ -479,8 +457,7 @@ def get_ai_routes_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     return _call_function_parts("ai_routes", "GET", "/api/ai/routes")
 
 
-def get_agi_stream_utils_parts(
-) -> tuple[bytes, int, str | None, dict[str, Any]]:
+def get_agi_stream_utils_parts() -> tuple[bytes, int, str | None, dict[str, Any]]:
     """Return AGI stream utility asset parts for non-Flask servers."""
     return _call_function_parts(
         "serve_agi_stream_utils",
@@ -590,9 +567,7 @@ def run_stdlib_server(
                 if request_body is None:
                     resp_body, status_code, mimetype, headers = parts_fn()
                 else:
-                    resp_body, status_code, mimetype, headers = parts_fn(
-                        request_body
-                    )
+                    resp_body, status_code, mimetype, headers = parts_fn(request_body)
             except Exception as exc:  # noqa: BLE001
                 logger.exception(
                     "Failed to build %s response: %s",
@@ -660,11 +635,7 @@ def run_stdlib_server(
                 return
 
             length = int(self.headers.get("Content-Length", "0") or 0)
-            body = (
-                self.rfile.read(length)
-                if length
-                else _json_body({"query": "local dev adapter smoke"})
-            )
+            body = self.rfile.read(length) if length else _json_body({"query": "local dev adapter smoke"})
             self._serve_parts(parts_fn, request_body=body)
 
         # pylint: disable=arguments-differ
@@ -696,21 +667,15 @@ def check_status_endpoints() -> int:  # pylint: disable=broad-exception-caught
         ),
         (
             "POST /api/agi/analyze",
-            lambda: get_agi_analyze_parts(
-                _json_body({"query": "adapter analyze check"})
-            ),
+            lambda: get_agi_analyze_parts(_json_body({"query": "adapter analyze check"})),
         ),
         (
             "POST /api/agi/reason",
-            lambda: get_agi_reason_parts(
-                _json_body({"query": "adapter reason check"})
-            ),
+            lambda: get_agi_reason_parts(_json_body({"query": "adapter reason check"})),
         ),
         (
             "POST /api/agi/stream",
-            lambda: get_agi_stream_parts(
-                _json_body({"query": "adapter stream check"})
-            ),
+            lambda: get_agi_stream_parts(_json_body({"query": "adapter stream check"})),
         ),
     )
     errors: list[str] = []
@@ -777,10 +742,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.check:
         raise SystemExit(check_status_endpoints())
 
-    print(
-        "Starting local dev adapter for /api/ai/status and "
-        f"/api/agi/status on http://{args.host}:{args.port}"
-    )
+    print(f"Starting local dev adapter for /api/ai/status and /api/agi/status on http://{args.host}:{args.port}")
 
     if HAS_FLASK:
         app = create_app()
