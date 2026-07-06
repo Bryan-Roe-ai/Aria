@@ -1,7 +1,6 @@
 import importlib.util as _iu
 import json
 import os
-import subprocess
 import sys
 import threading
 import time
