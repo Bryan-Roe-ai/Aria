@@ -35,7 +35,7 @@ jobs:
           python-version: "3.11"
           install-requirements: "false"
           install-dev-requirements: "false"
-          extra-packages: "ruff==0.11.13 black==25.1.0 pytest==8.3.5"  # cspell:ignore pytest
+          extra-packages: "ruff==0.11.13 black==25.1.0 pytest==8.3.5 pyyaml"  # cspell:ignore pytest pyyaml
 
       - name: Detect safe Python targets
         id: detect
@@ -44,6 +44,7 @@ jobs:
           set -euo pipefail  # cspell:ignore pipefail
 
           python <<'PY'
+          import os
           from pathlib import Path  # cspell:ignore pathlib
 
           ignore_dirs = {
@@ -89,12 +90,14 @@ jobs:
 
           has_python = "true" if targets else "false"
 
-          with open("detect_output.txt", "w", encoding="utf-8") as f:
-              f.write(f"has_python={has_python}\n")
-              f.write(f"targets={' '.join(targets)}\n")
+          # Write directly to GITHUB_OUTPUT to avoid creating a stray file
+          # that would be unintentionally committed by create-pull-request.
+          output_file = os.environ.get("GITHUB_OUTPUT", "")
+          if output_file:
+              with open(output_file, "a", encoding="utf-8") as f:
+                  f.write(f"has_python={has_python}\n")
+                  f.write(f"targets={' '.join(targets)}\n")
           PY
-
-          cat detect_output.txt >> "$GITHUB_OUTPUT"
 
       - name: Show detected targets
         if: steps.detect.outputs.has_python == 'true'
@@ -155,6 +158,28 @@ jobs:
 
           if [ "$ran_tests" = false ]; then
             echo "No supported targeted test directories found; skipping pytest."
+          fi
+
+      - name: Rebase autofix changes on latest origin/main
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Stash any ruff/black changes, reset to the latest origin/main, then restore.
+          # This prevents "refusing to update workflow file without workflows permission"
+          # push rejections caused by a race condition: if another commit (e.g., a
+          # codeql.yml update) landed on origin/main while this autofix job ran with
+          # an older checkout, the pushed branch would contain an older workflow file.
+          # Rebasing on the latest origin/main ensures the autofix branch only
+          # introduces Python file changes — no workflow file diff.
+          stashed=false
+          if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            git stash push --include-untracked -m "autofix-changes"
+            stashed=true
+          fi
+          git fetch origin main
+          git reset --hard origin/main
+          if [ "$stashed" = true ]; then
+            git stash pop
           fi
 
       - name: Detect changes
