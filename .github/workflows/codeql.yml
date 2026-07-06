@@ -492,6 +492,7 @@ jobs:
         if: steps.diff.outputs.changed == 'true' && github.event_name == 'pull_request' && steps.ref.outputs.can_push == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUSH_REF: ${{ steps.ref.outputs.push_ref }}
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
