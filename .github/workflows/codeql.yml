@@ -454,7 +454,8 @@ jobs:
             "!**/third_party/**" \
             "!**/third-party/**" \
             "!**/*.min.*" \
-            "!**/.github/workflows/**" || true
+            "!**/.github/workflows/**" \
+            "!**/datasets/**" || true
 
       - name: Run clang-format (C/C++)
         continue-on-error: true
