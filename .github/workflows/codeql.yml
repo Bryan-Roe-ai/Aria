@@ -499,10 +499,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "style: apply automated autofixes (ruff / prettier / clang-format) [CodeQL Advanced]" || echo "No commit created"
-          if git ls-remote --heads origin "${{ steps.ref.outputs.push_ref }}" | grep -q .; then
-            git push origin "HEAD:${{ steps.ref.outputs.push_ref }}"
+          if git ls-remote --heads origin "$PUSH_REF" | grep -q .; then
+            git push origin "HEAD:$PUSH_REF"
           else
-            echo "PR branch '${{ steps.ref.outputs.push_ref }}' no longer exists on the remote; skipping push."
+            echo "PR branch '$PUSH_REF' no longer exists on the remote; skipping push."
           fi
 
       - name: Produce patch artifact (fork PRs)
