@@ -32,7 +32,7 @@ paths-ignore:
     - "**/.egg-info/**"
     - "**/.mypy_cache/**"
     - "**/.ruff_cache/**"
-    
+
     # Build & dist artifacts
     - "**/dist/**"
     - "**/build/**"
@@ -45,7 +45,7 @@ paths-ignore:
     - "**/*.min.css"
     - "**/bundle.js"
     - "**/*.generated.*"
-    
+
     # Third-party code
     - "**/vendor/**"
     - "**/third_party/**"
