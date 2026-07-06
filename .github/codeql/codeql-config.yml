@@ -39,7 +39,7 @@ paths-ignore:
     - "**/out/**"
     - "**/.next/**"
     - "**/coverage/**"
-    
+
     # Minified & bundled code
     - "**/*.min.js"
     - "**/*.min.css"
@@ -51,7 +51,7 @@ paths-ignore:
     - "**/third_party/**"
     - "**/third-party/**"
     - "**/node_modules-cache/**"
-    
+
     # Test snapshots & fixtures
     - "**/__snapshots__/**"
     - "**/fixtures/**"
