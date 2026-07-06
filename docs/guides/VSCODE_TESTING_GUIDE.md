@@ -75,14 +75,14 @@ python -m pytest -m "not slow and not azure"
 
 Test profiles are pre-configured test run configurations accessible via the Test Explorer:
 
-| Profile               | Description                     | Command                                                 |
+| Profile | Description | Command |
 | --------------------- | ------------------------------- | ------------------------------------------------------- |
-| **Unit Tests (Fast)** | Quick unit tests only           | `-m "not slow and not azure" tests/test_*_unit.py`      |
-| **Integration Tests** | External service integration    | `-m "integration" tests/`                               |
-| **All Fast Tests**    | All tests except slow/azure     | `-m "not slow and not azure" tests/`                    |
-| **Quantum Tests**     | Quantum-specific test files     | `tests/test_quantum*.py tests/test_validate_qiskit*.py` |
-| **All Tests**         | Everything except azure         | `-m "not azure" tests/`                                 |
-| **All with Coverage** | Full suite with coverage report | `--cov=. --cov-report=html tests/`                      |
+| **Unit Tests (Fast)** | Quick unit tests only | `-m "not slow and not azure" tests/test_*_unit.py` |
+| **Integration Tests** | External service integration | `-m "integration" tests/` |
+| **All Fast Tests** | All tests except slow/azure | `-m "not slow and not azure" tests/` |
+| **Quantum Tests** | Quantum-specific test files | `tests/test_quantum*.py tests/test_validate_qiskit*.py` |
+| **All Tests** | Everything except azure | `-m "not azure" tests/` |
+| **All with Coverage** | Full suite with coverage report | `--cov=. --cov-report=html tests/` |
 
 ## Debugging Tests
 
@@ -275,8 +275,8 @@ markers =
 
 ## Resources
 
-- **pytest Documentation**: https://docs.pytest.org/
-- **VS Code Python Testing**: https://code.visualstudio.com/docs/python/testing
+- **pytest Documentation**: <https://docs.pytest.org/>
+- **VS Code Python Testing**: <https://code.visualstudio.com/docs/python/testing>
 - **Test Runner Script**: `scripts/test_runner.py` - Advanced orchestration
 - **CI Pipeline**: `.github/workflows/ci-pipeline.yml` - Automated testing
 

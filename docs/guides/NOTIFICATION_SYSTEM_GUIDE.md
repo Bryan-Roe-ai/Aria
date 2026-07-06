@@ -54,7 +54,7 @@ The QAI platform now includes a comprehensive desktop notification system that a
 
 **First-time setup:**
 
-1. Open http://localhost:8000/hub.html
+1. Open <http://localhost:8000/hub.html>
 2. Click the notification toggle button (🔕 icon in header)
 3. Allow notifications when browser prompts
 4. Toggle turns to 🔔 - you're all set!
@@ -89,7 +89,7 @@ python scripts/notification_system.py --monitor data_out/autotrain/status.json -
 #### Enable/Disable Notifications
 
 1. **Via Hub Toggle**:
-    - Navigate to http://localhost:8000/hub.html
+    - Navigate to <http://localhost:8000/hub.html>
     - Click notification button in header (top right)
     - Allow browser permission when prompted
     - Toggle anytime to enable/disable
@@ -323,6 +323,7 @@ self.milestones = {
     - Edge: Settings → Cookies and site permissions → Notifications
 
 3. Test manually:
+
     ```javascript
     new Notification("Test", { body: "This is a test" })
     ```
@@ -378,6 +379,7 @@ print(f"Enabled: {notifier.enabled}")
     ```
 
 3. Run with verbose output:
+
     ```python
     # Add debug prints in monitor_training() loop
     print(f"Current status: {status}")

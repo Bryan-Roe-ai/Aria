@@ -63,17 +63,17 @@ Client/UI
 
 ## Key Directories
 
-| Directory    | Purpose                                       |
+| Directory | Purpose |
 | ------------ | --------------------------------------------- |
-| `core/`      | Core runtime and shared application logic     |
+| `core/` | Core runtime and shared application logic |
 | `functions/` | Azure Function handlers and execution modules |
-| `shared/`    | Shared utilities and reusable helpers         |
-| `tools/`     | Automation and utility tooling                |
-| `config/`    | Configuration assets and runtime settings     |
-| `docs/`      | Existing project documentation                |
-| `examples/`  | Demonstration and usage examples              |
-| `datasets/`  | Training and evaluation datasets              |
-| `tests/`     | Automated test suite                          |
+| `shared/` | Shared utilities and reusable helpers |
+| `tools/` | Automation and utility tooling |
+| `config/` | Configuration assets and runtime settings |
+| `docs/` | Existing project documentation |
+| `examples/` | Demonstration and usage examples |
+| `datasets/` | Training and evaluation datasets |
+| `tests/` | Automated test suite |
 
 ## Runtime and Tooling
 

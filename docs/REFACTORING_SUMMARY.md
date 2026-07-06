@@ -16,8 +16,8 @@ This refactoring effort focused on identifying and eliminating code duplication 
 **Solution**:
 
 - Created helper methods in `BaseChatProvider`:
-    - `_handle_openai_streaming_response()` - Extracts content from streaming responses
-    - `_handle_openai_non_streaming_response()` - Extracts content from non-streaming responses
+  - `_handle_openai_streaming_response()` - Extracts content from streaming responses
+  - `_handle_openai_non_streaming_response()` - Extracts content from non-streaming responses
 - Refactored OpenAIProvider and LMStudioProvider to use these helpers
 - Kept AzureOpenAIProvider's custom quota handling logic intact
 
@@ -38,8 +38,8 @@ This refactoring effort focused on identifying and eliminating code duplication 
 **Solution**:
 
 - Created `shared/import_helpers.py` with:
-    - `safe_import()` - Safely imports modules/functions with fallback support
-    - `create_stub_function()` - Generates stub functions that return error dicts
+  - `safe_import()` - Safely imports modules/functions with fallback support
+  - `create_stub_function()` - Generates stub functions that return error dicts
 - Refactored function_app.py to use these utilities
 
 **Files Modified**:
@@ -68,11 +68,11 @@ This refactoring effort focused on identifying and eliminating code duplication 
 **Solution**:
 
 - Created `shared/http_utils.py` with utilities:
-    - `validate_messages()` - Common message format validation
-    - `create_cors_headers()` - Consistent CORS header generation
-    - `create_no_cache_headers()` - Cache control headers
-    - `validate_provider_choice()` - Provider validation logic
-    - `serve_static_file()` - DRY file serving with error handling
+  - `validate_messages()` - Common message format validation
+  - `create_cors_headers()` - Consistent CORS header generation
+  - `create_no_cache_headers()` - Cache control headers
+  - `validate_provider_choice()` - Provider validation logic
+  - `serve_static_file()` - DRY file serving with error handling
 - Refactored http_chat/function_app.py to use validation utilities
 - Refactored http_chat_web/function_app.py to use file serving utility
 

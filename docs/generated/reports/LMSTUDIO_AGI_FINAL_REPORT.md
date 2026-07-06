@@ -17,12 +17,12 @@ LM Studio is now fully integrated into the AGI Provider's multi-agent system, en
 - **File Modified**: `ai-projects/chat-cli/src/agi_provider.py`
 - **Agent Name**: `lmstudio-specialist`
 - **Configuration**:
-    - Domains: [] (all domains - acts as intelligent fallback)
-    - Intents: explanation, question, coding, creation
-    - Provider: "lmstudio"
-    - Confidence boost: 0.05 (intentionally low to avoid over-routing)
-    - Subtask templates for reasoning steps
-    - Description: "Local LM Studio inference for general-purpose reasoning and Q&A"
+  - Domains: [] (all domains - acts as intelligent fallback)
+  - Intents: explanation, question, coding, creation
+  - Provider: "lmstudio"
+  - Confidence boost: 0.05 (intentionally low to avoid over-routing)
+  - Subtask templates for reasoning steps
+  - Description: "Local LM Studio inference for general-purpose reasoning and Q&A"
 
 ### 2. Verified Provider Detection ✅
 
@@ -33,8 +33,8 @@ LM Studio is now fully integrated into the AGI Provider's multi-agent system, en
 ### 3. Environment Configuration ✅
 
 - **Settings** (in `.env` and `local.settings.json`):
-    - `LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1`
-    - `LMSTUDIO_MODEL=local-model`
+  - `LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1`
+  - `LMSTUDIO_MODEL=local-model`
 
 ### 4. Created Comprehensive Integration Tests ✅
 
@@ -137,15 +137,15 @@ Total: 4/4 tests passed
 
 **Multi-Agent System Components:**
 
-| Agent                   | Provider     | Domains   | Intents                                     | Status     |
+| Agent | Provider | Domains | Intents | Status |
 | ----------------------- | ------------ | --------- | ------------------------------------------- | ---------- |
-| quantum-specialist      | quantum      | quantum   | theoretical, coding                         | ✓          |
-| code-specialist         | lora         | technical | coding, debugging                           | ✓          |
-| aria-character          | local        | aria      | movement, interaction                       | ✓          |
-| ai-specialist           | lora         | ai        | reasoning, explanation                      | ✓          |
-| reasoning-specialist    | agi          | ai        | explanation, question, reasoning            | ✓          |
+| quantum-specialist | quantum | quantum | theoretical, coding | ✓ |
+| code-specialist | lora | technical | coding, debugging | ✓ |
+| aria-character | local | aria | movement, interaction | ✓ |
+| ai-specialist | lora | ai | reasoning, explanation | ✓ |
+| reasoning-specialist | agi | ai | explanation, question, reasoning | ✓ |
 | **lmstudio-specialist** | **lmstudio** | **(any)** | **explanation, question, coding, creation** | **✅ NEW** |
-| general                 | agi          | (any)     | (any)                                       | ✓          |
+| general | agi | (any) | (any) | ✓ |
 
 **Query Processing Pipeline:**
 

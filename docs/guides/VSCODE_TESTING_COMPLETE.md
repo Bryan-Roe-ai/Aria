@@ -128,12 +128,12 @@ python .\scripts\test_runner.py --all --coverage
 
 ## Keyboard Shortcuts
 
-| Shortcut        | Action            |
+| Shortcut | Action |
 | --------------- | ----------------- |
-| `Ctrl+; Ctrl+A` | Run all tests     |
-| `Ctrl+; Ctrl+F` | Run failed tests  |
+| `Ctrl+; Ctrl+A` | Run all tests |
+| `Ctrl+; Ctrl+F` | Run failed tests |
 | `Ctrl+; Ctrl+L` | Run last test run |
-| `Ctrl+; Ctrl+D` | Debug last test   |
+| `Ctrl+; Ctrl+D` | Debug last test |
 
 ## CI/CD Integration
 
@@ -215,8 +215,8 @@ tests/test_autotrain_unit.py::TestJobDataclass::test_full_job PASSED
 - **Full Guide:** `VSCODE_TESTING_GUIDE.md` (comprehensive documentation)
 - **Quick Ref:** `VSCODE_TESTING_QUICKREF.md` (cheat sheet)
 - **Test Runner:** `scripts/test_runner.py` (advanced orchestration)
-- **Pytest Docs:** https://docs.pytest.org/
-- **VS Code Testing:** https://code.visualstudio.com/docs/python/testing
+- **Pytest Docs:** <https://docs.pytest.org/>
+- **VS Code Testing:** <https://code.visualstudio.com/docs/python/testing>
 
 ## Summary
 

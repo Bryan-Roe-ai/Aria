@@ -12,30 +12,30 @@ Successfully validated all AI training improvements through:
 
 ### Best Performing Models (by Perplexity Improvement)
 
-| Rank | Model                    | Pre-Perplexity | Post-Perplexity | Improvement | Distinct-1 | Distinct-2 | Diversity |
+| Rank | Model | Pre-Perplexity | Post-Perplexity | Improvement | Distinct-1 | Distinct-2 | Diversity |
 | ---- | ------------------------ | -------------- | --------------- | ----------- | ---------- | ---------- | --------- |
-| 1    | qwen_ultra (171830)      | 73.56          | 47.37           | **35.6%**   | 0.623      | 0.890      | 0.815     |
-| 2    | qwen_ultra (171042)      | 73.56          | 48.47           | **34.1%**   | 0.662      | 0.920      | -         |
-| 3    | tinyllama_ultra (200414) | 7.15           | 6.35            | **11.2%**   | 0.714      | 0.975      | 0.845     |
-| 4    | phi35_ultra (172043)     | 24.56          | 23.56           | **4.08%**   | 0.707      | 0.957      | -         |
+| 1 | qwen_ultra (171830) | 73.56 | 47.37 | **35.6%** | 0.623 | 0.890 | 0.815 |
+| 2 | qwen_ultra (171042) | 73.56 | 48.47 | **34.1%** | 0.662 | 0.920 | - |
+| 3 | tinyllama_ultra (200414) | 7.15 | 6.35 | **11.2%** | 0.714 | 0.975 | 0.845 |
+| 4 | phi35_ultra (172043) | 24.56 | 23.56 | **4.08%** | 0.707 | 0.957 | - |
 
 ### Best Performing Models (by Diversity)
 
-| Rank | Model                    | Diversity Avg | Distinct-1 | Distinct-2 | Perplexity Improvement |
+| Rank | Model | Diversity Avg | Distinct-1 | Distinct-2 | Perplexity Improvement |
 | ---- | ------------------------ | ------------- | ---------- | ---------- | ---------------------- |
-| 1    | tinyllama_ultra (200414) | **0.845**     | 0.714      | 0.975      | 11.2%                  |
-| 2    | tinyllama_ultra (200606) | **0.815**     | 0.720      | 0.911      | 11.2%                  |
-| 3    | qwen_ultra (171830)      | **0.756**     | 0.623      | 0.890      | 35.6%                  |
+| 1 | tinyllama_ultra (200414) | **0.845** | 0.714 | 0.975 | 11.2% |
+| 2 | tinyllama_ultra (200606) | **0.815** | 0.720 | 0.911 | 11.2% |
+| 3 | qwen_ultra (171830) | **0.756** | 0.623 | 0.890 | 35.6% |
 
 ### Combined Score Rankings (70% Perplexity + 30% Diversity)
 
 Using the formula: `combined_score = (1/post_perplexity × 0.7) + (diversity_avg × 0.3)`
 
-| Rank | Model                    | Combined Score | Post-Perplexity | Diversity | Notes                         |
+| Rank | Model | Combined Score | Post-Perplexity | Diversity | Notes |
 | ---- | ------------------------ | -------------- | --------------- | --------- | ----------------------------- |
-| 1    | tinyllama_ultra (200414) | **0.264**      | 6.35            | 0.845     | Best overall balance          |
-| 2    | qwen_ultra (171830)      | **0.242**      | 47.37           | 0.815     | Strong perplexity + diversity |
-| 3    | phi35_ultra (172043)     | **0.054**      | 23.56           | -         | Good perplexity baseline      |
+| 1 | tinyllama_ultra (200414) | **0.264** | 6.35 | 0.845 | Best overall balance |
+| 2 | qwen_ultra (171830) | **0.242** | 47.37 | 0.815 | Strong perplexity + diversity |
+| 3 | phi35_ultra (172043) | **0.054** | 23.56 | - | Good perplexity baseline |
 
 ## Diversity Metrics Analysis
 

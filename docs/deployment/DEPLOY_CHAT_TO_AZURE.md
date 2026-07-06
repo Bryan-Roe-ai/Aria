@@ -102,7 +102,7 @@ func azure functionapp publish chat-web-app-123
 
 - Open the chat UI: `/api/chat-web`
 - Call the health endpoint: `/api/ai/status`
-    - Confirms the active provider and whether required env vars are detected
+  - Confirms the active provider and whether required env vars are detected
 
 ## Notes
 

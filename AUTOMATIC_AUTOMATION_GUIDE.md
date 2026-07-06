@@ -255,10 +255,10 @@ Get-Content "c:\Users\Bryan\Aria\logs\continuous_automation.log" -Wait -Tail 30
 
 ## Summary
 
-| Method         | Frequency       | Setup        | Use Case             |
+| Method | Frequency | Setup | Use Case |
 | -------------- | --------------- | ------------ | -------------------- |
-| **Manual**     | On-demand       | None         | Quick testing        |
-| **Scheduled**  | Daily at 2 AM   | ✓ Done       | Regular maintenance  |
+| **Manual** | On-demand | None | Quick testing |
+| **Scheduled** | Daily at 2 AM | ✓ Done | Regular maintenance |
 | **Continuous** | Every X minutes | Start script | Real-time monitoring |
 
 **Recommended:**

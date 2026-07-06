@@ -13,8 +13,8 @@ Comprehensive enhancements to the AI training pipeline focused on improving mode
 - **File**: `AI/microsoft_phi-silica-3.6_v1/scripts/train_lora.py`
 - **Feature**: Added `EarlyStoppingCallback` with configurable patience and threshold
 - **Configuration**:
-    - Patience: 3 evaluation cycles (configurable via YAML)
-    - Threshold: 0.01 (1% minimum improvement required)
+  - Patience: 3 evaluation cycles (configurable via YAML)
+  - Threshold: 0.01 (1% minimum improvement required)
 - **Benefit**: Automatically stops training when validation loss plateaus, preventing overfitting and saving compute time
 
 #### Gradient Checkpointing (Memory Optimization)
@@ -48,11 +48,12 @@ Comprehensive enhancements to the AI training pipeline focused on improving mode
 
 - **File**: `scripts/evaluate_lora_model.py`
 - **New Metrics**:
-    - **Distinct-1**: Ratio of unique unigrams (measures vocabulary diversity)
-    - **Distinct-2**: Ratio of unique bigrams (measures phrase diversity)
-    - **Unique Token Ratio**: Overall unique token percentage
-    - **Aggregated Diversity**: Average of Distinct-1 and Distinct-2
+  - **Distinct-1**: Ratio of unique unigrams (measures vocabulary diversity)
+  - **Distinct-2**: Ratio of unique bigrams (measures phrase diversity)
+  - **Unique Token Ratio**: Overall unique token percentage
+  - **Aggregated Diversity**: Average of Distinct-1 and Distinct-2
 - **Example Output**:
+
     ```json
     {
         "distinct_1": 0.421,
@@ -61,6 +62,7 @@ Comprehensive enhancements to the AI training pipeline focused on improving mode
         "diversity": 0.579
     }
     ```
+
 - **Benefit**: Quantifies model's ability to generate varied responses (higher is better)
 
 #### Improved Perplexity Computation
@@ -127,9 +129,9 @@ early_stopping_threshold: 0.01 # Minimum 1% improvement required
 ### Evaluation Quality
 
 - **Test Results**:
-    - Distinct-1: 0.421 (42.1% unique unigrams)
-    - Distinct-2: 0.738 (73.8% unique bigrams)
-    - Overall Diversity: 0.579 (high variety in responses)
+  - Distinct-1: 0.421 (42.1% unique unigrams)
+  - Distinct-2: 0.738 (73.8% unique bigrams)
+  - Overall Diversity: 0.579 (high variety in responses)
 
 ## Usage Recommendations
 
@@ -227,9 +229,9 @@ python .\scripts\parallel_train.py \
 ### Evaluation Test
 
 - ✅ Diversity metrics computed successfully
-    - Distinct-1: 0.421
-    - Distinct-2: 0.738
-    - Diversity: 0.579
+  - Distinct-1: 0.421
+  - Distinct-2: 0.738
+  - Diversity: 0.579
 - ✅ Perplexity computed (with fallback)
 - ✅ JSON output generated
 

@@ -293,10 +293,10 @@ Updating quantum_config.yaml...
 **What's happening:**
 
 - Updates `config/quantum_config.yaml` with:
-    - Your subscription ID
-    - Workspace name
-    - Resource group
-    - Storage account name
+  - Your subscription ID
+  - Workspace name
+  - Resource group
+  - Storage account name
 - Now your quantum AI knows how to connect to Azure!
 
 ---

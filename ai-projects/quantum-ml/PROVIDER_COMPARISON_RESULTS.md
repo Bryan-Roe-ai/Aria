@@ -60,8 +60,8 @@ Depth: 5, Gates: 8
 
 | State | Count | Percentage |
 | ----- | ----- | ---------- |
-| 0000  | 1000  | 100.0%     |
-| 1111  | 0     | 0.0%       |
+| 0000 | 1000 | 100.0% |
+| 1111 | 0 | 0.0% |
 
 **Entropy:** 0.000 / 4.000 (0.0%)
 **Status:** ❌ **Collapsed to ground state**
@@ -84,8 +84,8 @@ Depth: 10, Gates: 16
 
 | State | Count | Percentage |
 | ----- | ----- | ---------- |
-| 0000  | 1000  | 100.0%     |
-| 1111  | 0     | 0.0%       |
+| 0000 | 1000 | 100.0% |
+| 1111 | 0 | 0.0% |
 
 **Entropy:** 0.000 / 4.000 (0.0%)
 **Status:** ❌ **Collapsed despite native gates**
@@ -133,8 +133,8 @@ Depth: 5, Gates: 8
 
 | State | Count | Percentage |
 | ----- | ----- | ---------- |
-| 0000  | ~500  | 50.0%      |
-| 1111  | ~500  | 50.0%      |
+| 0000 | ~500 | 50.0% |
+| 1111 | ~500 | 50.0% |
 
 **Entropy:** 0.999 / 4.000 (24.9%)
 **Status:** ✅ **Perfect GHZ state**
@@ -190,11 +190,11 @@ Shots: 1000
 
 | State | Count | Percentage |
 | ----- | ----- | ---------- |
-| 1011  | 102   | 10.2%      |
-| 0111  | 97    | 9.7%       |
-| 1001  | 91    | 9.1%       |
-| 0011  | 85    | 8.5%       |
-| 1111  | 81    | 8.1%       |
+| 1011 | 102 | 10.2% |
+| 0111 | 97 | 9.7% |
+| 1001 | 91 | 9.1% |
+| 0011 | 85 | 8.5% |
+| 1111 | 81 | 8.1% |
 
 ---
 
@@ -215,11 +215,11 @@ Shots: 1000
 
 | State | Count | Percentage |
 | ----- | ----- | ---------- |
-| 1011  | 98    | 9.8%       |
-| 0111  | 95    | 9.5%       |
-| 1001  | 93    | 9.3%       |
-| 0011  | 87    | 8.7%       |
-| 1111  | 79    | 7.9%       |
+| 1011 | 98 | 9.8% |
+| 0111 | 95 | 9.5% |
+| 1001 | 93 | 9.3% |
+| 0011 | 87 | 8.7% |
+| 1111 | 79 | 7.9% |
 
 ---
 
@@ -255,13 +255,13 @@ Shots: 1000
 
 ## Provider Compatibility Matrix
 
-| Backend                   | GHZ Test                     | Variational Test | Status          | Notes                                |
+| Backend | GHZ Test | Variational Test | Status | Notes |
 | ------------------------- | ---------------------------- | ---------------- | --------------- | ------------------------------------ |
-| **rigetti.sim.qvm**       | ✅ 99.9% entropy             | ✅ 90.5% entropy | **Production**  | Standard Qiskit gates work perfectly |
-| **quantinuum.sim.h2-1sc** | ❌ 0% entropy (all patterns) | ❌ Untested      | **Broken**      | Fundamental simulator bug; avoid     |
-| **quantinuum.sim.h2-1e**  | ⏳ Not tested                | ⏳ Not tested    | **Unknown**     | May have same issue as h2-1sc        |
-| **ionq.simulator**        | ❌ Not available             | ❌ Not available | **Unavailable** | Requires workspace provisioning      |
-| **ionq.qpu**              | ❌ Not available             | ❌ Not available | **Unavailable** | Requires credits + provisioning      |
+| **rigetti.sim.qvm** | ✅ 99.9% entropy | ✅ 90.5% entropy | **Production** | Standard Qiskit gates work perfectly |
+| **quantinuum.sim.h2-1sc** | ❌ 0% entropy (all patterns) | ❌ Untested | **Broken** | Fundamental simulator bug; avoid |
+| **quantinuum.sim.h2-1e** | ⏳ Not tested | ⏳ Not tested | **Unknown** | May have same issue as h2-1sc |
+| **ionq.simulator** | ❌ Not available | ❌ Not available | **Unavailable** | Requires workspace provisioning |
+| **ionq.qpu** | ❌ Not available | ❌ Not available | **Unavailable** | Requires credits + provisioning |
 
 ---
 

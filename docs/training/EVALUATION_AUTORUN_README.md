@@ -31,13 +31,13 @@ Define evaluation jobs with:
 
 ### Supported Model Types & Metrics
 
-| Model Type | Metrics                                                | Requirements             |
+| Model Type | Metrics | Requirements |
 | ---------- | ------------------------------------------------------ | ------------------------ |
-| `lora`     | accuracy, bleu, rouge, response_time, token_efficiency | LoRA adapter path        |
-| `azure`    | accuracy, bleu, rouge, response_time, cost_per_token   | Azure OpenAI credentials |
-| `openai`   | accuracy, bleu, rouge, response_time, cost_per_token   | OpenAI API key           |
-| `local`    | response_time, determinism, rule_coverage              | None (offline)           |
-| `quantum`  | accuracy, precision, recall, f1_score, circuit_depth   | Quantum model results    |
+| `lora` | accuracy, bleu, rouge, response_time, token_efficiency | LoRA adapter path |
+| `azure` | accuracy, bleu, rouge, response_time, cost_per_token | Azure OpenAI credentials |
+| `openai` | accuracy, bleu, rouge, response_time, cost_per_token | OpenAI API key |
+| `local` | response_time, determinism, rule_coverage | None (offline) |
+| `quantum` | accuracy, precision, recall, f1_score, circuit_depth | Quantum model results |
 
 ### Output Structure
 

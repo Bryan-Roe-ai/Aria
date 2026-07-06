@@ -9,13 +9,13 @@ Thank you for your interest in contributing to **Aria** — an interactive AI ch
 - [Code of Conduct](#code-of-conduct)
 - [Ways to Contribute](#ways-to-contribute)
 - [Development Environment](#development-environment)
-    - [Local Setup](#local-setup)
-    - [Codespaces / Devcontainer](#codespaces--devcontainer)
-    - [Project-Specific Virtualenvs](#project-specific-virtualenvs)
+  - [Local Setup](#local-setup)
+  - [Codespaces / Devcontainer](#codespaces--devcontainer)
+  - [Project-Specific Virtualenvs](#project-specific-virtualenvs)
 - [Running Tests](#running-tests)
-    - [Full Suite](#full-suite)
-    - [Targeted Runs](#targeted-runs)
-    - [Test Watcher](#test-watcher)
+  - [Full Suite](#full-suite)
+  - [Targeted Runs](#targeted-runs)
+  - [Test Watcher](#test-watcher)
 - [Code Style & Quality](#code-style--quality)
 - [Commit & Branch Conventions](#commit--branch-conventions)
 - [Pull Request Process](#pull-request-process)
@@ -68,11 +68,11 @@ This repo includes a [`.devcontainer/devcontainer.json`](.devcontainer/devcontai
 
 Aria is composed of three isolated sub-projects, each with its own virtualenv and dependencies:
 
-| Project                | Path                              | Purpose                                     |
+| Project | Path | Purpose |
 | ---------------------- | --------------------------------- | ------------------------------------------- |
-| Quantum ML             | `ai-projects/quantum-ml/`         | MCP server, dashboard, quantum ML pipelines |
-| Chat CLI               | `ai-projects/chat-cli/`           | Multi-provider chat CLI                     |
-| Phi-Silica fine-tuning | `AI/microsoft_phi-silica-3.6_v1/` | Phi-3.5 LoRA fine-tuning                    |
+| Quantum ML | `ai-projects/quantum-ml/` | MCP server, dashboard, quantum ML pipelines |
+| Chat CLI | `ai-projects/chat-cli/` | Multi-provider chat CLI |
+| Phi-Silica fine-tuning | `AI/microsoft_phi-silica-3.6_v1/` | Phi-3.5 LoRA fine-tuning |
 
 When working in any of these, create a separate virtualenv inside that directory and install its `requirements.txt`. See each project's README for details.
 
@@ -150,11 +150,11 @@ isort .
 
 - **Branch names:** `feature/<short-description>`, `fix/<short-description>`, `docs/<short-description>`.
 - **Commits:** Follow [Conventional Commits](https://www.conventionalcommits.org/):
-    - `feat: add auto-execute action parser`
-    - `fix(chat): handle SSE disconnect gracefully`
-    - `docs: clarify devcontainer setup`
-    - `test: cover quantum job submission errors`
-    - `refactor:`, `perf:`, `chore:`, `ci:` as appropriate.
+  - `feat: add auto-execute action parser`
+  - `fix(chat): handle SSE disconnect gracefully`
+  - `docs: clarify devcontainer setup`
+  - `test: cover quantum job submission errors`
+  - `refactor:`, `perf:`, `chore:`, `ci:` as appropriate.
 - Keep commits focused; avoid mixing unrelated changes.
 
 ---

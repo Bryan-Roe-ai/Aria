@@ -37,12 +37,12 @@ Aria is a full-stack interactive AI character platform. She lives on a virtual 3
 
 The project is organized around four core areas:
 
-| Area                    | Folder                    | Description                                         |
+| Area | Folder | Description |
 | ----------------------- | ------------------------- | --------------------------------------------------- |
-| **Character interface** | `apps/aria/`              | Animated 3D character stage with object interaction |
-| **Chat / AI backends**  | `ai-projects/chat-cli/`   | Multi-provider CLI and streaming chat API           |
-| **Quantum ML**          | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental)    |
-| **Model fine-tuning**   | `AI/`                     | LoRA fine-tuning for Aria's language understanding  |
+| **Character interface** | `apps/aria/` | Animated 3D character stage with object interaction |
+| **Chat / AI backends** | `ai-projects/chat-cli/` | Multi-provider CLI and streaming chat API |
+| **Quantum ML** | `ai-projects/quantum-ml/` | Hybrid quantum-classical training (experimental) |
+| **Model fine-tuning** | `AI/` | LoRA fine-tuning for Aria's language understanding |
 
 Supporting infrastructure lives in `shared/`, `scripts/`, `config/`, and `function_app.py` (Azure Functions API layer).
 
@@ -170,34 +170,45 @@ make start-qai
 If your goal is to start building AI features quickly (providers, prompts, memory, or orchestration), use this path:
 
 1. **Bootstrap env files**
+
     ```bash
     cp .env.example .env
     cp local.settings.json.example local.settings.json
     ```
+
 2. **Install dependencies**
+
     ```bash
     python -m venv .venv
     source .venv/bin/activate
     pip install -r requirements.txt
     pip install -r requirements-dev.txt
     ```
+
 3. **Run a zero-key provider smoke check**
+
     ```bash
     python ai-projects/chat-cli/src/chat_cli.py --provider local --once "hello"
     ```
+
 4. **Run the AI status endpoint locally (optional but recommended)**
+
     ```bash
     func host start
     curl http://localhost:7071/api/ai/status | python -m json.tool
     ```
+
 5. **Validate VS Code MCP wiring before agent/tool work**
+
     ```bash
     .venv/bin/python scripts/validate_mcp_setup.py
     # or structured output for automation
     .venv/bin/python scripts/validate_mcp_setup.py --json
     ```
+
     In VS Code you can also run the tasks `validate: mcp-setup` or `validate: mcp-setup-json`.
 6. **Run fast validation before PRs**
+
     ```bash
     python scripts/test_runner.py --unit
     ```
@@ -253,25 +264,25 @@ The Aria character stage runs at `http://localhost:8080` or the [GitHub Pages de
 
 **Natural language commands (examples):**
 
-| Command                    | Effect                             |
+| Command | Effect |
 | -------------------------- | ---------------------------------- |
-| `move left` / `move right` | Walk to stage edge                 |
-| `wave` / `dance` / `jump`  | Trigger gesture                    |
-| `pick up the ball`         | Pick up a nearby object            |
-| `throw the ball`           | Throw held object with physics     |
-| `say hello`                | Aria speaks the text aloud via TTS |
+| `move left` / `move right` | Walk to stage edge |
+| `wave` / `dance` / `jump` | Trigger gesture |
+| `pick up the ball` | Pick up a nearby object |
+| `throw the ball` | Throw held object with physics |
+| `say hello` | Aria speaks the text aloud via TTS |
 
 The auto-execute system parses complex multi-step requests such as `walk to the table and pick up the apple` into a structured sequence of 8 core actions: `move`, `say`, `pickup`, `drop`, `throw`, `gesture`, `world`, and `expression`.
 
 **Aria web server API (port 8080):**
 
-| Method | Path                | Description                                          |
+| Method | Path | Description |
 | ------ | ------------------- | ---------------------------------------------------- |
-| `GET`  | `/api/aria/state`   | Current stage state (position, objects, expressions) |
-| `POST` | `/api/aria/command` | Process a natural language command                   |
-| `POST` | `/api/aria/execute` | Auto-execute an action sequence                      |
-| `POST` | `/api/aria/object`  | Add / update / remove an object                      |
-| `POST` | `/api/aria/world`   | Generate a themed world via LLM                      |
+| `GET` | `/api/aria/state` | Current stage state (position, objects, expressions) |
+| `POST` | `/api/aria/command` | Process a natural language command |
+| `POST` | `/api/aria/execute` | Auto-execute an action sequence |
+| `POST` | `/api/aria/object` | Add / update / remove an object |
+| `POST` | `/api/aria/world` | Generate a themed world via LLM |
 
 ---
 
@@ -448,13 +459,13 @@ Never commit secrets. Store keys in environment variables or `local.settings.jso
 
 **Optional services** (feature-flagged and safe to leave unset):
 
-| Service              | How to enable                                                                                     |
+| Service | How to enable |
 | -------------------- | ------------------------------------------------------------------------------------------------- |
-| SQL persistence      | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL)                                          |
-| Cosmos DB            | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
-| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING`                                                           |
-| Azure Speech TTS     | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`                                                        |
-| Local TTS fallback   | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent)              |
+| SQL persistence | `QAI_DB_CONN` env var (SQLite, PostgreSQL, or Azure SQL) |
+| Cosmos DB | `QAI_ENABLE_COSMOS=true` + `COSMOS_ENDPOINT`, `COSMOS_KEY`, `COSMOS_DATABASE`, `COSMOS_CONTAINER` |
+| Application Insights | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
+| Azure Speech TTS | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION` |
+| Local TTS fallback | `QAI_ENABLE_LOCAL_TTS=true` (uses pyttsx3 or gTTS when Azure credentials are absent) |
 
 ---
 
@@ -469,17 +480,17 @@ Never commit secrets. Store keys in environment variables or `local.settings.jso
 
 ## 📚 Documentation
 
-| Document                                                                             | Purpose                                   |
+| Document | Purpose |
 | ------------------------------------------------------------------------------------ | ----------------------------------------- |
-| [apps/aria/README.md](apps/aria/README.md)                                           | Character stage API reference             |
-| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md)                 | Quantum ML platform guide                 |
-| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md)                     | Chat CLI reference                        |
-| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md)                   | Tool maker guide                          |
-| [docs/aria/](docs/aria/)                                                             | Aria movement and training documentation  |
+| [apps/aria/README.md](apps/aria/README.md) | Character stage API reference |
+| [ai-projects/quantum-ml/README.md](ai-projects/quantum-ml/README.md) | Quantum ML platform guide |
+| [ai-projects/chat-cli/README.md](ai-projects/chat-cli/README.md) | Chat CLI reference |
+| [ai-projects/llm-maker/README.md](ai-projects/llm-maker/README.md) | Tool maker guide |
+| [docs/aria/](docs/aria/) | Aria movement and training documentation |
 | [docs/guides/AI_CONTRIBUTOR_QUICKSTART.md](docs/guides/AI_CONTRIBUTOR_QUICKSTART.md) | AI-first onboarding path for contributors |
-| [MONETIZATION_GUIDE.md](MONETIZATION_GUIDE.md)                                       | Subscription and revenue system           |
-| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md)         | Full repository automation reference      |
-| [QUANTUM_LLM_TRAINING.md](QUANTUM_LLM_TRAINING.md)                                   | Quantum-LLM concurrent training           |
+| [MONETIZATION_GUIDE.md](MONETIZATION_GUIDE.md) | Subscription and revenue system |
+| [docs/guides/REPO_AUTOMATION_GUIDE.md](docs/guides/REPO_AUTOMATION_GUIDE.md) | Full repository automation reference |
+| [QUANTUM_LLM_TRAINING.md](QUANTUM_LLM_TRAINING.md) | Quantum-LLM concurrent training |
 
 ---
 

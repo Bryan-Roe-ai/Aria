@@ -4,16 +4,16 @@ This directory contains everything needed to deploy Aria to production on Azure.
 
 ## 📦 Contents
 
-| File                                  | Purpose                                                                |
+| File | Purpose |
 | ------------------------------------- | ---------------------------------------------------------------------- |
-| **QUICK-START.md**                    | ⭐ **Start here** — 45-minute deployment walkthrough                   |
-| **deployment-plan.md**                | Comprehensive deployment strategy and architecture                     |
-| **PRE-DEPLOYMENT-CHECKLIST.md**       | Sign-off checklist before going live                                   |
-| **PRODUCTION-RUNBOOK.md**             | Operational procedures, troubleshooting, on-call guide                 |
-| **main.bicep**                        | Infrastructure as Code (Azure Resources: Functions, SQL, Cosmos, etc.) |
-| **environments/prod.parameters.json** | Production environment parameters                                      |
-| **deploy-prod.sh**                    | Automated deployment script                                            |
-| **verify-deployment.sh**              | Deployment verification and smoke tests                                |
+| **QUICK-START.md** | ⭐ **Start here** — 45-minute deployment walkthrough |
+| **deployment-plan.md** | Comprehensive deployment strategy and architecture |
+| **PRE-DEPLOYMENT-CHECKLIST.md** | Sign-off checklist before going live |
+| **PRODUCTION-RUNBOOK.md** | Operational procedures, troubleshooting, on-call guide |
+| **main.bicep** | Infrastructure as Code (Azure Resources: Functions, SQL, Cosmos, etc.) |
+| **environments/prod.parameters.json** | Production environment parameters |
+| **deploy-prod.sh** | Automated deployment script |
+| **verify-deployment.sh** | Deployment verification and smoke tests |
 
 ## 🚀 Quick Deployment
 
@@ -199,13 +199,13 @@ az appservice plan update \
 
 ## 📞 Support
 
-| Issue               | Where to Look                              |
+| Issue | Where to Look |
 | ------------------- | ------------------------------------------ |
-| Deployment problems | QUICK-START.md troubleshooting section     |
-| Runtime errors      | PRODUCTION-RUNBOOK.md → Common Issues      |
-| Performance         | PRODUCTION-RUNBOOK.md → Performance Tuning |
-| Monitoring          | Azure Portal → Application Insights        |
-| Capacity            | PRODUCTION-RUNBOOK.md → Capacity Planning  |
+| Deployment problems | QUICK-START.md troubleshooting section |
+| Runtime errors | PRODUCTION-RUNBOOK.md → Common Issues |
+| Performance | PRODUCTION-RUNBOOK.md → Performance Tuning |
+| Monitoring | Azure Portal → Application Insights |
+| Capacity | PRODUCTION-RUNBOOK.md → Capacity Planning |
 
 ## 🔄 Maintenance
 

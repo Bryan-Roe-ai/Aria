@@ -75,11 +75,11 @@ To deploy your agent to Microsoft Foundry:
     - **Container registry** -- defaults to auto-created; optionally provide your own ACR.
     - **Resource size** -- CPU and memory allocation:
 
-        | Option                        | CPU  | Memory |
+        | Option | CPU | Memory |
         | ----------------------------- | ---- | ------ |
         | 0.25 CPU cores, 0.5 Gi memory | 0.25 | 0.5 Gi |
-        | 0.5 CPU cores, 1 Gi memory    | 0.5  | 1.0 Gi |
-        | 1 CPU cores, 2 Gi memory      | 1.0  | 2.0 Gi |
-        | 2 CPU cores, 4 Gi memory      | 2.0  | 4.0 Gi |
+        | 0.5 CPU cores, 1 Gi memory | 0.5 | 1.0 Gi |
+        | 1 CPU cores, 2 Gi memory | 1.0 | 2.0 Gi |
+        | 2 CPU cores, 4 Gi memory | 2.0 | 4.0 Gi |
 
 4. The extension builds the container image in ACR, creates the agent version, and assigns required RBAC roles automatically.

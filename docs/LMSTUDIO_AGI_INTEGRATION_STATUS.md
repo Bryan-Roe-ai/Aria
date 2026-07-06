@@ -39,15 +39,15 @@ elif explicit == "lmstudio":
 ## KEY FILE INFORMATION
 
 - agi_provider.py
-    - Line 33-120: _AGENT_REGISTRY dict
-    - Line 108: Where lmstudio-specialist was added
-    - Line 412: _select_agent() method - scores agents
-    - Line 481: _dispatch_to_agent() - calls detect_provider(explicit=agent["provider"])
+  - Line 33-120: _AGENT_REGISTRY dict
+  - Line 108: Where lmstudio-specialist was added
+  - Line 412: _select_agent() method - scores agents
+  - Line 481: _dispatch_to_agent() - calls detect_provider(explicit=agent["provider"])
 
 - chat_providers.py
-    - Line 829: LMStudioProvider class definition (already implemented)
-    - Line 1257: detect_provider() function - NEEDS UPDATE
-    - Pattern to find: must find "elif explicit ==" patterns to know where to add case
+  - Line 829: LMStudioProvider class definition (already implemented)
+  - Line 1257: detect_provider() function - NEEDS UPDATE
+  - Pattern to find: must find "elif explicit ==" patterns to know where to add case
 
 ## INTEGRATION FLOW (AFTER CHANGES COMPLETE)
 
@@ -61,7 +61,7 @@ elif explicit == "lmstudio":
 
 ## ENVIRONMENT READY
 
-- .env has LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
+- .env has LMSTUDIO_BASE_URL=<http://127.0.0.1:1234/v1>
 - .env has LMSTUDIO_MODEL=local-model
 - LM Studio running and tested on port 1234
 

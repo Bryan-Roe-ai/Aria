@@ -64,17 +64,17 @@ Highlights:
 
 ## 🎯 Integration Status
 
-| Component                | Status         | Details                                                              |
+| Component | Status | Details |
 | ------------------------ | -------------- | -------------------------------------------------------------------- |
-| Database Schema          | ✅ Complete    | 8 tables (added ChatMessageEmbeddings), 3 views, 4 stored procedures |
-| Quantum Training Logging | ✅ Complete    | Auto-logs via `log_quantum_run_safe()`                               |
-| LoRA Training Logging    | ✅ Complete    | Auto-logs via `log_lora_run_safe()`                                  |
-| Chat Logging             | ✅ Complete    | `/api/chat` logs user + assistant messages automatically             |
-| Semantic Memory          | ✅ Complete    | Embedding generation, similarity retrieval, injection, storage       |
-| Backfill Utility         | ✅ Complete    | `scripts/ingest_chat_logs_to_sql.py` operational                     |
-| Configuration            | ✅ Complete    | Conn string placeholder + embedding env var support                  |
-| Tests                    | ✅ Added       | 3 passing unit tests for memory utilities                            |
-| Fault Tolerance          | ✅ Implemented | Graceful NO-OP when DB or embeddings unavailable                     |
+| Database Schema | ✅ Complete | 8 tables (added ChatMessageEmbeddings), 3 views, 4 stored procedures |
+| Quantum Training Logging | ✅ Complete | Auto-logs via `log_quantum_run_safe()` |
+| LoRA Training Logging | ✅ Complete | Auto-logs via `log_lora_run_safe()` |
+| Chat Logging | ✅ Complete | `/api/chat` logs user + assistant messages automatically |
+| Semantic Memory | ✅ Complete | Embedding generation, similarity retrieval, injection, storage |
+| Backfill Utility | ✅ Complete | `scripts/ingest_chat_logs_to_sql.py` operational |
+| Configuration | ✅ Complete | Conn string placeholder + embedding env var support |
+| Tests | ✅ Added | 3 passing unit tests for memory utilities |
+| Fault Tolerance | ✅ Implemented | Graceful NO-OP when DB or embeddings unavailable |
 
 ## 🔧 Remaining Manual Steps
 

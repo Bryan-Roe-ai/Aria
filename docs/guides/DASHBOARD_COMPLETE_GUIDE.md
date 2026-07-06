@@ -27,9 +27,9 @@ Advanced: http://localhost:8000/advanced.html  ⭐ RECOMMENDED
 - GPU utilization percentage with visual progress bar
 - VRAM usage (current / total)
 - Core temperature with color-coded warnings:
-    - 🟢 Green < 70°C (optimal)
-    - 🟡 Yellow 70-80°C (warm)
-    - 🔴 Red > 80°C (hot - warning shown)
+  - 🟢 Green < 70°C (optimal)
+  - 🟡 Yellow 70-80°C (warm)
+  - 🔴 Red > 80°C (hot - warning shown)
 - Power draw vs power limit
 - GPU model name (e.g., RTX 4050 Laptop GPU)
 
@@ -167,20 +167,20 @@ Invoke-WebRequest -Uri http://localhost:8000/api/history -OutFile history.json
 
 ## 🎨 Dashboard Comparison
 
-| Feature            | Basic | Enhanced | Advanced |
+| Feature | Basic | Enhanced | Advanced |
 | ------------------ | ----- | -------- | -------- |
-| Real-time status   | ✅    | ✅       | ✅       |
-| Job metrics        | ✅    | ✅       | ✅       |
-| GPU monitoring     | ❌    | ❌       | ✅       |
-| System resources   | ❌    | ❌       | ✅       |
-| Interactive charts | ❌    | ❌       | ✅       |
-| Job controls       | ❌    | ✅       | ✅       |
-| Model comparison   | ❌    | ✅       | ✅       |
-| Log viewer         | ❌    | ✅       | ✅       |
-| Dataset browser    | ❌    | ✅       | ✅       |
-| Notifications      | ❌    | ❌       | ✅       |
-| Export reports     | ❌    | ❌       | ✅       |
-| Auto-refresh       | 10s   | 10s      | 5s       |
+| Real-time status | ✅ | ✅ | ✅ |
+| Job metrics | ✅ | ✅ | ✅ |
+| GPU monitoring | ❌ | ❌ | ✅ |
+| System resources | ❌ | ❌ | ✅ |
+| Interactive charts | ❌ | ❌ | ✅ |
+| Job controls | ❌ | ✅ | ✅ |
+| Model comparison | ❌ | ✅ | ✅ |
+| Log viewer | ❌ | ✅ | ✅ |
+| Dataset browser | ❌ | ✅ | ✅ |
+| Notifications | ❌ | ❌ | ✅ |
+| Export reports | ❌ | ❌ | ✅ |
+| Auto-refresh | 10s | 10s | 5s |
 
 ---
 
@@ -242,9 +242,9 @@ Invoke-WebRequest -Uri http://localhost:8000/api/history -OutFile history.json
 - **Warning**: 80-85°C (dashboard shows yellow)
 - **Critical**: > 85°C (dashboard shows red alert)
 - **Action**: If consistently > 85°C:
-    - Check laptop cooling
-    - Reduce batch size
-    - Lower max concurrent jobs
+  - Check laptop cooling
+  - Reduce batch size
+  - Lower max concurrent jobs
 
 ### Memory Optimization
 
@@ -341,7 +341,7 @@ Your current training status:
 
 ## 📝 Next Steps
 
-1. ✅ Open advanced dashboard: http://localhost:8000/advanced.html
+1. ✅ Open advanced dashboard: <http://localhost:8000/advanced.html>
 2. ✅ Enable auto-refresh for hands-free monitoring
 3. ✅ Watch GPU utilization during training
 4. ✅ Get notified when marathon completes

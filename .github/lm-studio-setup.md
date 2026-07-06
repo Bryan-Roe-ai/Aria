@@ -273,6 +273,7 @@ bash scripts/llm_helper.sh tests shared/subscription_manager.py
     ```
 
 4. **Interactive prompt design**:
+
     ```bash
     # Start chat to iterate on prompt before using it in code
     bash scripts/llm_helper.sh chat

@@ -192,9 +192,9 @@ python .\scripts\expand_quantum_datasets.py --all
 
 - Generate qubit/layer recommendations for all 29 datasets
 - Special attention to:
-    - Optical recognition (64 features → 6 qubits with aggressive PCA)
-    - Pendigits (7,494 samples → batch size 32)
-    - Yeast (10 classes → 3-4 layers)
+  - Optical recognition (64 features → 6 qubits with aggressive PCA)
+  - Pendigits (7,494 samples → batch size 32)
+  - Yeast (10 classes → 3-4 layers)
 - Update `architecture_analysis.json`
 
 ### 3. Benchmark Integration
@@ -203,9 +203,9 @@ python .\scripts\expand_quantum_datasets.py --all
 
 - Add 14 new datasets to DATASETS dict with metadata
 - Add dataset-specific loading strategies:
-    - Delimiter handling (comma, space, whitespace)
-    - Header flags
-    - Column skipping (sequence names, IDs)
+  - Delimiter handling (comma, space, whitespace)
+  - Header flags
+  - Column skipping (sequence names, IDs)
 - Test load_dataset() function with new datasets
 
 ### 4. Comprehensive Benchmark

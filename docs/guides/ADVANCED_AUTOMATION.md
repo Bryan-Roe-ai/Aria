@@ -99,25 +99,25 @@ python .\scripts\ci_orchestrator.py --ci-pipeline
 
 All orchestrators available as VS Code tasks (Ctrl+Shift+P → "Run Task"):
 
-| Task                                            | Command                                  |
+| Task | Command |
 | ----------------------------------------------- | ---------------------------------------- |
-| **Run: Evaluation AutoRun (dry-run)**           | Validate evaluation jobs                 |
-| **Run: Evaluation AutoRun (all)**               | Run all evaluation jobs                  |
-| **Run: CI Validate All**                        | Validate all orchestrators in parallel   |
-| **Run: CI Pipeline**                            | Full CI/CD pipeline execution            |
-| **Run: Master Orchestrator - Quick Validation** | Quick workflow validation                |
-| **Run: Master Orchestrator - Status**           | Show orchestrator status                 |
-| **Run: Model Deployer - Scan**                  | Scan for deployable models               |
-| **Run: Model Deployer - Deploy Best**           | Auto-deploy best model                   |
-| **Run: Resource Monitor - Snapshot**            | Capture resource snapshot                |
-| **Run: Resource Monitor - Stream**              | Real-time resource monitoring            |
-| **Run: Batch Evaluator - Scan**                 | Scan and evaluate all models             |
-| **Run: Results Exporter - Export to Markdown**  | Export all results to Markdown           |
-| **Run: Auto Scheduler - List**                  | List scheduled jobs                      |
-| **Run: CI Validate All**                        | Parallel validation of all orchestrators |
-| **Run: CI Pipeline**                            | Full CI/CD pipeline                      |
-| **Run: Master Orchestrator - Quick Validation** | Run quick_validation workflow            |
-| **Run: Master Orchestrator - Status**           | Show master orchestrator status          |
+| **Run: Evaluation AutoRun (dry-run)** | Validate evaluation jobs |
+| **Run: Evaluation AutoRun (all)** | Run all evaluation jobs |
+| **Run: CI Validate All** | Validate all orchestrators in parallel |
+| **Run: CI Pipeline** | Full CI/CD pipeline execution |
+| **Run: Master Orchestrator - Quick Validation** | Quick workflow validation |
+| **Run: Master Orchestrator - Status** | Show orchestrator status |
+| **Run: Model Deployer - Scan** | Scan for deployable models |
+| **Run: Model Deployer - Deploy Best** | Auto-deploy best model |
+| **Run: Resource Monitor - Snapshot** | Capture resource snapshot |
+| **Run: Resource Monitor - Stream** | Real-time resource monitoring |
+| **Run: Batch Evaluator - Scan** | Scan and evaluate all models |
+| **Run: Results Exporter - Export to Markdown** | Export all results to Markdown |
+| **Run: Auto Scheduler - List** | List scheduled jobs |
+| **Run: CI Validate All** | Parallel validation of all orchestrators |
+| **Run: CI Pipeline** | Full CI/CD pipeline |
+| **Run: Master Orchestrator - Quick Validation** | Run quick_validation workflow |
+| **Run: Master Orchestrator - Status** | Show master orchestrator status |
 
 ## Configuration Files
 

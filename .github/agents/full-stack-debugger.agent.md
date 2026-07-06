@@ -95,61 +95,61 @@ python scripts/test_runner.py --unit
 
 **Files**: `apps/aria/server.py`, `apps/aria/aria_controller.js`, `aria_web/server.py`
 
-| Issue                 | Check                                                            |
+| Issue | Check |
 | --------------------- | ---------------------------------------------------------------- |
-| Server won't start    | Port conflict (8080), missing deps, Python path                  |
-| Commands not working  | `POST /api/aria/command` response, tag parsing logic             |
-| Actions failing       | Stage state validation, distance checks, bounds (0-100%)         |
-| Objects not appearing | Object registry in `stage_state['objects']`                      |
-| LLM parsing fails     | Provider availability, `AriaActionParser._initialize_provider()` |
-| Animations broken     | Client-side `aria_controller.js`, CSS transitions, DOM selectors |
+| Server won't start | Port conflict (8080), missing deps, Python path |
+| Commands not working | `POST /api/aria/command` response, tag parsing logic |
+| Actions failing | Stage state validation, distance checks, bounds (0-100%) |
+| Objects not appearing | Object registry in `stage_state['objects']` |
+| LLM parsing fails | Provider availability, `AriaActionParser._initialize_provider()` |
+| Animations broken | Client-side `aria_controller.js`, CSS transitions, DOM selectors |
 
 ### Chat & API Layer
 
 **Files**: `function_app.py`, `shared/chat_providers.py`, `ai-projects/chat-cli/src/`
 
-| Issue               | Check                                                                             |
+| Issue | Check |
 | ------------------- | --------------------------------------------------------------------------------- |
-| Chat returns 500    | Provider detection chain, missing env vars                                        |
-| No streaming        | SSE format: `data: {json}\n\n` + `data: [DONE]\n\n`                               |
+| Chat returns 500 | Provider detection chain, missing env vars |
+| No streaming | SSE format: `data: {json}\n\n` + `data: [DONE]\n\n` |
 | Wrong provider used | Detection order: LM Studio → Ollama → Azure → OpenAI → Local (LoRA explicit-only) |
-| LoRA won't load     | Need both `adapter_config.json` + `adapter_model.safetensors`                     |
-| TTS failing         | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`, fallback chain                        |
-| SQL pool saturated  | `/api/ai/status` → `saturation_alert`, increase `QAI_SQL_POOL_SIZE`               |
+| LoRA won't load | Need both `adapter_config.json` + `adapter_model.safetensors` |
+| TTS failing | `AZURE_SPEECH_KEY` + `AZURE_SPEECH_REGION`, fallback chain |
+| SQL pool saturated | `/api/ai/status` → `saturation_alert`, increase `QAI_SQL_POOL_SIZE` |
 
 ### AGI Provider
 
 **Files**: `ai-projects/chat-cli/src/agi_provider.py`, `agi_provider.py` (shim)
 
-| Issue               | Check                                                            |
+| Issue | Check |
 | ------------------- | ---------------------------------------------------------------- |
-| No reasoning chains | `enable_chain_of_thought=True` in `create_agi_provider()`        |
-| Slow responses      | `reasoning_depth` too high, reduce to 2 for simple queries       |
-| Context overflow    | `MAX_HISTORY_SIZE=50`, `MAX_REASONING_CHAINS=10` limits          |
-| Bad decomposition   | Check `_analyze_query()` complexity/intent/domain classification |
+| No reasoning chains | `enable_chain_of_thought=True` in `create_agi_provider()` |
+| Slow responses | `reasoning_depth` too high, reduce to 2 for simple queries |
+| Context overflow | `MAX_HISTORY_SIZE=50`, `MAX_REASONING_CHAINS=10` limits |
+| Bad decomposition | Check `_analyze_query()` complexity/intent/domain classification |
 
 ### Training Pipeline
 
 **Files**: `scripts/autonomous_training_orchestrator.py`, `scripts/autotrain.py`
 
-| Issue              | Check                                                                          |
+| Issue | Check |
 | ------------------ | ------------------------------------------------------------------------------ |
-| Training stuck     | `data_out/autonomous_training_status.json`, check cycle state                  |
-| Low accuracy       | Epoch selection, dataset quality, learning rate                                |
-| No datasets found  | Scan paths: `datasets/quantum/`, `datasets/chat/`, `datasets/massive_quantum/` |
-| Adapter invalid    | Both files present? `adapter_config.json` + `adapter_model.safetensors`        |
-| Degradation alerts | >5% accuracy drop between cycles, check `performance_history[]`                |
+| Training stuck | `data_out/autonomous_training_status.json`, check cycle state |
+| Low accuracy | Epoch selection, dataset quality, learning rate |
+| No datasets found | Scan paths: `datasets/quantum/`, `datasets/chat/`, `datasets/massive_quantum/` |
+| Adapter invalid | Both files present? `adapter_config.json` + `adapter_model.safetensors` |
+| Degradation alerts | >5% accuracy drop between cycles, check `performance_history[]` |
 
 ### Quantum Workflows
 
 **Files**: `ai-projects/quantum-ml/`, `scripts/quantum_autorun.py`
 
-| Issue            | Check                                                      |
+| Issue | Check |
 | ---------------- | ---------------------------------------------------------- |
-| Circuit errors   | Qubit count (≤10 local, ≤20 Azure), gate sequence validity |
-| Azure timeout    | Network/auth, `az login`, workspace config                 |
-| Cost concern     | Use simulator first: `--job azure_ionq_simulator`          |
-| MCP server crash | Resource cleanup, `CircuitCache` TTL expiry                |
+| Circuit errors | Qubit count (≤10 local, ≤20 Azure), gate sequence validity |
+| Azure timeout | Network/auth, `az login`, workspace config |
+| Cost concern | Use simulator first: `--job azure_ionq_simulator` |
+| MCP server crash | Resource cleanup, `CircuitCache` TTL expiry |
 
 ## Common Root Causes
 

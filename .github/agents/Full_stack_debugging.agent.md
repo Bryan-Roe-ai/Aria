@@ -105,17 +105,17 @@ Get-Process python*, func* | Select-Object ProcessName, Id, CPU, WorkingSet64
 
 ### 4. Common Issue Patterns
 
-| Symptom                  | Likely Cause                 | Fix                                              |
+| Symptom | Likely Cause | Fix |
 | ------------------------ | ---------------------------- | ------------------------------------------------ |
-| Chat returns empty       | Provider not detected        | Check env vars, `/api/ai/status`                 |
-| 500 on `/api/chat`       | Import error in function_app | Check `func host start` logs                     |
-| Aria not responding      | Server not on 8080           | `cd apps/aria && python server.py`               |
-| Training stuck           | Dataset format error         | `python scripts/validate_datasets.py`            |
-| Memory errors            | No embedding DB              | Set `QAI_DB_CONN` or disable memory              |
-| Pool exhaustion          | Too many DB connections      | Increase `QAI_SQL_POOL_SIZE`                     |
-| Quantum simulation fails | Qiskit not installed         | Install in quantum-ml venv                       |
-| SSE stream cuts off      | Timeout or buffer issue      | Check proxy/load balancer timeouts               |
-| LoRA inference fails     | Missing adapter files        | Need both `adapter_config.json` + `.safetensors` |
+| Chat returns empty | Provider not detected | Check env vars, `/api/ai/status` |
+| 500 on `/api/chat` | Import error in function_app | Check `func host start` logs |
+| Aria not responding | Server not on 8080 | `cd apps/aria && python server.py` |
+| Training stuck | Dataset format error | `python scripts/validate_datasets.py` |
+| Memory errors | No embedding DB | Set `QAI_DB_CONN` or disable memory |
+| Pool exhaustion | Too many DB connections | Increase `QAI_SQL_POOL_SIZE` |
+| Quantum simulation fails | Qiskit not installed | Install in quantum-ml venv |
+| SSE stream cuts off | Timeout or buffer issue | Check proxy/load balancer timeouts |
+| LoRA inference fails | Missing adapter files | Need both `adapter_config.json` + `.safetensors` |
 
 ### 5. Test Verification
 
@@ -141,13 +141,13 @@ pytest tests/ -k "test_chat" -v
 
 ## Key Diagnostic Files
 
-| File                       | What It Tells You           |
+| File | What It Tells You |
 | -------------------------- | --------------------------- |
-| `function_app.py`          | All API routes and handlers |
-| `shared/chat_providers.py` | Provider detection chain    |
-| `shared/chat_memory.py`    | Embedding system status     |
-| `shared/db_logging.py`     | DB connection status        |
-| `shared/telemetry.py`      | Telemetry state             |
-| `apps/aria/server.py`      | Aria server endpoints       |
-| `local.settings.json`      | Local env var configuration |
-| `host.json`                | Azure Functions host config |
+| `function_app.py` | All API routes and handlers |
+| `shared/chat_providers.py` | Provider detection chain |
+| `shared/chat_memory.py` | Embedding system status |
+| `shared/db_logging.py` | DB connection status |
+| `shared/telemetry.py` | Telemetry state |
+| `apps/aria/server.py` | Aria server endpoints |
+| `local.settings.json` | Local env var configuration |
+| `host.json` | Azure Functions host config |

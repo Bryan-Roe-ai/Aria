@@ -15,13 +15,13 @@ applyTo: "tests/**"
 
 ## Test Organization
 
-| Test File                        | Tests                     | Requires               |
+| Test File | Tests | Requires |
 | -------------------------------- | ------------------------- | ---------------------- |
-| `test_aria_server.py`            | Aria server API endpoints | —                      |
-| `test_object_api_integration.py` | Object CRUD operations    | —                      |
-| `test_ui_playwright.py`          | Browser E2E (Playwright)  | Aria server running    |
-| `test_ui_pyppeteer.py`           | Browser E2E (Pyppeteer)   | Aria server + Chromium |
-| `test_auto_execute.py`           | Action sequence execution | —                      |
+| `test_aria_server.py` | Aria server API endpoints | — |
+| `test_object_api_integration.py` | Object CRUD operations | — |
+| `test_ui_playwright.py` | Browser E2E (Playwright) | Aria server running |
+| `test_ui_pyppeteer.py` | Browser E2E (Pyppeteer) | Aria server + Chromium |
+| `test_auto_execute.py` | Action sequence execution | — |
 
 ## Patterns
 

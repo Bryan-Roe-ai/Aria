@@ -33,7 +33,7 @@
 ## ENVIRONMENT STATUS
 
 - .env configured with LMSTUDIO_BASE_URL and LMSTUDIO_MODEL
-- LM Studio running on http://127.0.0.1:1234
+- LM Studio running on <http://127.0.0.1:1234>
 - AGI provider ready for multi-agent system
 
 ## FILES MODIFIED

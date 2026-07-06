@@ -164,14 +164,14 @@ for r in results:
 
 ## Files Modified
 
-| File                                          | Optimizations                             | Impact                   |
+| File | Optimizations | Impact |
 | --------------------------------------------- | ----------------------------------------- | ------------------------ |
-| `scripts/autonomous_training_orchestrator.py` | Debounced writes, glob caching            | 70-80% I/O reduction     |
-| `scripts/aria_automation.py`                  | Port/process caching, exponential backoff | 90% scanning reduction   |
-| `scripts/repo_automation.py`                  | Improved polling intervals                | 90% faster startup       |
-| `scripts/batch_evaluator.py`                  | O(1) lookups, single-pass aggregation     | 99% faster comparisons   |
-| `scripts/parallel_train.py`                   | Single-pass aggregation                   | 67% fewer iterations     |
-| `scripts/quantum_llm_trainer.py`              | Combined glob operations                  | 50% fewer filesystem ops |
+| `scripts/autonomous_training_orchestrator.py` | Debounced writes, glob caching | 70-80% I/O reduction |
+| `scripts/aria_automation.py` | Port/process caching, exponential backoff | 90% scanning reduction |
+| `scripts/repo_automation.py` | Improved polling intervals | 90% faster startup |
+| `scripts/batch_evaluator.py` | O(1) lookups, single-pass aggregation | 99% faster comparisons |
+| `scripts/parallel_train.py` | Single-pass aggregation | 67% fewer iterations |
+| `scripts/quantum_llm_trainer.py` | Combined glob operations | 50% fewer filesystem ops |
 
 ## Testing
 

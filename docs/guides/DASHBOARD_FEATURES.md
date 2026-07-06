@@ -1,17 +1,17 @@
 # QAI Enhanced Dashboard - Feature Guide
 
-## 🎉 New Features Added!
+## 🎉 New Features Added
 
 ### 📊 **5 Interactive Tabs**
 
 #### 1. **Overview Tab**
 
 - **Live Statistics Cards**:
-    - ✅ Completed Jobs
-    - 🏃 Running Jobs
-    - ⏳ Pending Jobs
-    - ⚡ Average Duration
-    - 🎯 Best Model (lowest perplexity)
+  - ✅ Completed Jobs
+  - 🏃 Running Jobs
+  - ⏳ Pending Jobs
+  - ⚡ Average Duration
+  - 🎯 Best Model (lowest perplexity)
 - **Overall Progress Bar**: Visual completion percentage
 - **Recent Jobs**: Quick view of last 5 training runs
 
@@ -19,14 +19,14 @@
 
 - **Expandable Job Cards**: Click any job to see detailed metrics
 - **Status-Based Coloring**:
-    - 🟢 Green border = Succeeded
-    - 🟡 Yellow pulsing = Running
-    - 🔴 Red border = Failed
+  - 🟢 Green border = Succeeded
+  - 🟡 Yellow pulsing = Running
+  - 🔴 Red border = Failed
 - **Detailed Metrics Display**:
-    - Pre/Post training loss
-    - Pre/Post perplexity
-    - Training duration
-    - Improvement percentage
+  - Pre/Post training loss
+  - Pre/Post perplexity
+  - Training duration
+  - Improvement percentage
 - **📜 View Logs Button**: Real-time log streaming for each job
 - **Training Command**: Full command line used for reproduction
 
@@ -35,9 +35,9 @@
 - **Model Leaderboard**: Ranked by performance (perplexity)
 - **👑 Winner Badge**: Best performing model highlighted
 - **Side-by-Side Comparison**:
-    - Final perplexity scores
-    - Improvement percentages
-    - Training duration
+  - Final perplexity scores
+  - Improvement percentages
+  - Training duration
 - **🚀 Quick Deploy**: One-click deployment buttons (future integration)
 
 #### 4. **Datasets Tab**
@@ -50,13 +50,13 @@
 #### 5. **⚡ New Training Tab**
 
 - **Interactive Training Controls**:
-    - 📋 Select training configuration (YAML files)
-    - 📁 Choose dataset from dropdown
-    - 🤖 Pick model (Phi-3.5, Qwen2.5)
-    - 🎛️ Configure hyperparameters:
-        - Job name
-        - Number of epochs (1-20)
-        - Learning rate (0.00001-0.001)
+  - 📋 Select training configuration (YAML files)
+  - 📁 Choose dataset from dropdown
+  - 🤖 Pick model (Phi-3.5, Qwen2.5)
+  - 🎛️ Configure hyperparameters:
+    - Job name
+    - Number of epochs (1-20)
+    - Learning rate (0.00001-0.001)
 - **🚀 Start Training Button**: Launch jobs directly from dashboard
 - **Real-time Validation**: Form validation before submission
 
@@ -159,16 +159,16 @@ curl http://localhost:8000/api/logs/phi35_mega_synthetic_full
 ## 🎨 Visual Indicators
 
 - **Colors**:
-    - Purple gradient = Main theme
-    - Green = Success/Positive
-    - Yellow = Running/Warning
-    - Red = Failed/Error
-    - Gray = Pending/Neutral
+  - Purple gradient = Main theme
+  - Green = Success/Positive
+  - Yellow = Running/Warning
+  - Red = Failed/Error
+  - Gray = Pending/Neutral
 
 - **Animations**:
-    - Pulsing = Active job running
-    - Hover lift = Interactive element
-    - Smooth progress bars = Live updates
+  - Pulsing = Active job running
+  - Hover lift = Interactive element
+  - Smooth progress bars = Live updates
 
 ## 🔮 Future Enhancements
 
@@ -183,8 +183,8 @@ curl http://localhost:8000/api/logs/phi35_mega_synthetic_full
 
 ## 📝 Access URLs
 
-- **Enhanced Dashboard**: http://localhost:8000/enhanced.html
-- **Original Dashboard**: http://localhost:8000/index.html
+- **Enhanced Dashboard**: <http://localhost:8000/enhanced.html>
+- **Original Dashboard**: <http://localhost:8000/index.html>
 - **API Docs**: Coming soon
 
 Enjoy your enhanced training dashboard! 🎉
