@@ -453,6 +453,7 @@ jobs:
             "!**/vendor/**" \
             "!**/third_party/**" \
             "!**/third-party/**" \
+            "!**/datasets/**" \
             "!**/*.min.*" \
             "!**/.github/workflows/**" \
             "!**/datasets/**" || true
