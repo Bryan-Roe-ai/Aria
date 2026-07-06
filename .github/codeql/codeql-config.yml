@@ -1,5 +1,8 @@
 name: "Aria CodeQL — maximum security coverage"
 
+# Use default queries in addition to custom packs and suites
+disable-default-queries: false
+
 # Keep suites explicit and stable.
 queries:
     - uses: security-extended
@@ -8,7 +11,8 @@ queries:
 
 # Optional: remove packs unless you have a specific custom-pack strategy.
 # queries suites already include the standard query packs for analyzed languages.
-# packs: []
+
+# Language-specific packs for deep analysis
 packs:
     - codeql/javascript-queries
     - codeql/python-queries
@@ -18,21 +22,39 @@ packs:
 # Exclude only generated/vendor/build artifacts.
 # Avoid excluding broad source directories to keep coverage high.
 paths-ignore:
+    # Dependencies & virtual environments
     - "**/node_modules/**"
     - "**/.venv/**"
     - "**/venv/**"
+    - "**/env/**"
     - "**/__pycache__/**"
     - "**/.pytest_cache/**"
+    - "**/.egg-info/**"
     - "**/.mypy_cache/**"
     - "**/.ruff_cache/**"
+    
+    # Build & dist artifacts
     - "**/dist/**"
     - "**/build/**"
-    - "**/coverage/**"
+    - "**/out/**"
     - "**/.next/**"
+    - "**/coverage/**"
+    
+    # Minified & bundled code
     - "**/*.min.js"
+    - "**/*.min.css"
+    - "**/bundle.js"
     - "**/*.generated.*"
+    
+    # Third-party code
     - "**/vendor/**"
     - "**/third_party/**"
     - "**/third-party/**"
+    - "**/node_modules-cache/**"
+    
+    # Test snapshots & fixtures
+    - "**/__snapshots__/**"
+    - "**/fixtures/**"
     - "**/test/fixtures/**"
     - "**/tests/fixtures/**"
+    - "**/*.snap"
