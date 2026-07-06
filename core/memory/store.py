@@ -224,3 +224,20 @@ class MemoryStore:
             snapshot = list(self._events)
         for e in snapshot:
             yield e.copy()
+
+    def close(self) -> None:
+        """Close the underlying backend connection (if any).
+
+        This is a no-op when no persistent backend is configured.  On
+        Windows, SQLite keeps the database file locked until the connection
+        is explicitly closed, so callers that need to delete the file (e.g.
+        test teardown) must call this method first.
+        """
+        if self._backend is not None:
+            self._backend.close()
+
+    def __enter__(self) -> "MemoryStore":
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
