@@ -2,12 +2,17 @@
 
 import asyncio
 import json
+import os
+from contextlib import suppress
 from datetime import datetime
+from importlib import import_module
 from pathlib import Path
 
-import websockets
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
+
+websockets = import_module("websockets")
+ConnectionClosed = websockets.exceptions.ConnectionClosed
 
 # Track connected clients
 clients = set()
@@ -19,39 +24,54 @@ job_status_cache = {}
 class JobFileHandler(FileSystemEventHandler):
     """Monitor job status files for changes"""
 
-    def __init__(self, broadcast_func):
+    def __init__(self, loop, broadcast_func):
+        self.loop = loop
         self.broadcast = broadcast_func
 
     def on_modified(self, event):
-        if event.src_path.endswith(".json") and "status" in event.src_path:
-            asyncio.run(self.broadcast_status_update(event.src_path))
+        src_path = os.fsdecode(event.src_path)
+
+        if src_path.endswith(".json") and "status" in src_path:
+            asyncio.run_coroutine_threadsafe(
+                self.broadcast_status_update(src_path),
+                self.loop,
+            )
 
     async def broadcast_status_update(self, file_path):
         """Broadcast status update to all connected clients"""
         try:
-            with open(file_path) as f:
-                status = json.load(f)
+            with open(file_path, encoding="utf-8") as file_obj:
+                status = json.load(file_obj)
+        except (OSError, json.JSONDecodeError) as error:
+            print(f"Error broadcasting update: {error}")
+            return
 
-            message = {
-                "type": "job_update",
-                "timestamp": datetime.now().isoformat(),
-                "data": status,
-            }
+        message = {
+            "type": "job_update",
+            "timestamp": datetime.now().isoformat(),
+            "data": status,
+        }
 
-            await broadcast_message(message)
-        except Exception as e:
-            print(f"Error broadcasting update: {e}")
+        await self.broadcast(message)
 
 
 async def broadcast_message(message):
     """Send message to all connected clients"""
     if clients:
         message_str = json.dumps(message)
-        await asyncio.gather(*[client.send(message_str) for client in clients], return_exceptions=True)
+        await asyncio.gather(
+            *[
+                client.send(message_str)
+                for client in tuple(clients)
+            ],
+            return_exceptions=True,
+        )
 
 
-async def handler(websocket, path):
+async def websocket_handler(websocket, _path):
     """Handle WebSocket connections"""
+    del _path
+
     # Register client
     clients.add(websocket)
     print(f"Client connected. Total clients: {len(clients)}")
@@ -90,13 +110,23 @@ async def handler(websocket, path):
                     )
 
             except json.JSONDecodeError:
-                await websocket.send(json.dumps({"type": "error", "message": "Invalid JSON"}))
+                await websocket.send(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "message": "Invalid JSON",
+                        }
+                    )
+                )
 
-    except websockets.exceptions.ConnectionClosed:
-        pass
+    except ConnectionClosed as error:
+        print(
+            "Client connection closed: "
+            f"code={error.code}, reason={error.reason}"
+        )
     finally:
         # Unregister client
-        clients.remove(websocket)
+        clients.discard(websocket)
         print(f"Client disconnected. Total clients: {len(clients)}")
 
 
@@ -108,16 +138,22 @@ def get_current_status():
     if status_dir.exists():
         for status_file in status_dir.glob("**/status.json"):
             try:
-                with open(status_file) as f:
-                    job_data = json.load(f)
-                    jobs.append(job_data)
-            except Exception as e:
-                print(f"Error reading {status_file}: {e}")
+                with open(status_file, encoding="utf-8") as file_obj:
+                    job_data = json.load(file_obj)
+                jobs.append(job_data)
+            except (OSError, json.JSONDecodeError) as error:
+                print(f"Error reading {status_file}: {error}")
 
     return {
         "jobs": jobs,
         "timestamp": datetime.now().isoformat(),
-        "active_count": len([j for j in jobs if j.get("status") == "running"]),
+        "active_count": len(
+            [
+                job
+                for job in jobs
+                if job.get("status") == "running"
+            ]
+        ),
     }
 
 
@@ -142,26 +178,42 @@ async def main():
 
     # Setup file system watcher
     observer = Observer()
-    handler = JobFileHandler(broadcast_message)
+    loop = asyncio.get_running_loop()
+    file_handler = JobFileHandler(loop, broadcast_message)
 
     watch_dir = Path("data_out")
     if watch_dir.exists():
-        observer.schedule(handler, str(watch_dir), recursive=True)
+        observer.schedule(
+            file_handler,
+            str(watch_dir),
+            recursive=True,
+        )
         observer.start()
         print(f"Watching {watch_dir} for changes...")
 
-    # Start WebSocket server
-    async with websockets.serve(handler, "localhost", 8765):
-        # Start heartbeat task
-        # Store a reference to the task so it isn't garbage-collected while running
-        # (see asyncio.create_task docs — the loop only keeps a weak reference).
-        _heartbeat_task = asyncio.create_task(periodic_heartbeat())
+    try:
+        async with websockets.serve(
+            websocket_handler,
+            "localhost",
+            8765,
+        ):
+            heartbeat_task = asyncio.create_task(
+                periodic_heartbeat()
+            )
 
-        print("WebSocket server ready!")
-        print("Connect clients to: ws://localhost:8765")
+            print("WebSocket server ready!")
+            print("Connect clients to: ws://localhost:8765")
 
-        # Run forever
-        await asyncio.Future()
+            try:
+                await asyncio.Future()
+            finally:
+                heartbeat_task.cancel()
+                with suppress(asyncio.CancelledError):
+                    await heartbeat_task
+    finally:
+        if observer.is_alive():
+            observer.stop()
+            observer.join()
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ Integrates real quantum circuits in the attention mechanism
 
 # flake8: noqa
 # pylint: disable=line-too-long,no-name-in-module,too-many-instance-attributes,too-few-public-methods
+# cspell:ignore qubits incompat multinomial
 
 import json
 import logging
@@ -19,8 +20,8 @@ import torch.nn.functional as F
 
 from chat_providers import (
     BaseChatProvider,  # type: ignore[attr-defined]
-    ProviderChoice,
-    RoleMessage,
+    ProviderChoice,  # type: ignore[attr-defined]
+    RoleMessage,  # type: ignore[attr-defined]
 )
 
 # Add quantum-ml to path
@@ -60,6 +61,7 @@ class QuantumLLMChatProvider(BaseChatProvider):
         **_kwargs,
     ):
         super().__init__()
+        _ = _kwargs
         self.model_path = self._validate_model_path(model_path)
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens

@@ -223,5 +223,6 @@
         "PYTEST",
         "venv",
         "XDIST"
-    ]
+    ],
+    "prompty.currentModelConfiguration": "My Custom Model"
 }

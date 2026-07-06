@@ -1,3 +1,6 @@
+# flake8: noqa: E501
+# pylint: disable=line-too-long
+
 """
 AGI (Artificial General Intelligence) Enhanced Chat Provider.
 
@@ -48,7 +51,7 @@ import math
 import os
 import re
 import time
-from collections.abc import Generator, Iterable
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, field
 from typing import Any, Protocol, TypedDict, cast, runtime_checkable
 
@@ -80,6 +83,8 @@ MAX_REASONING_CHAINS = 10
 
 
 class RoleMessage(TypedDict):
+    """A single chat message with a role and content."""
+
     role: str
     content: str
 
@@ -97,11 +102,14 @@ class BaseChatProvider:
         messages: list[RoleMessage],
         stream: bool = True,
     ) -> Iterable[str] | str:
+        _ = (messages, stream)
         raise NotImplementedError
 
 
 @dataclass(frozen=True, slots=True)
 class ProviderChoice:
+    """Resolved provider identity and optional model name."""
+
     name: str
     model: str = ""
 
@@ -114,9 +122,14 @@ def detect_provider(
     max_output_tokens: int | None = None,
 ) -> tuple[BaseChatProvider, ProviderChoice]:
     """Dispatch to the installed chat_providers implementation."""
-    candidate = getattr(_chat_providers, "detect_provider", None)
-    if not callable(candidate):
+    candidate_obj = getattr(_chat_providers, "detect_provider", None)
+    if not callable(candidate_obj):
         raise ImportError("chat_providers.detect_provider is unavailable")
+
+    candidate = cast(
+        Callable[..., tuple[BaseChatProvider, ProviderChoice]],
+        candidate_obj,
+    )
 
     result = candidate(
         explicit=explicit,
@@ -194,6 +207,8 @@ class MemoryInterface(Protocol):
 
 @runtime_checkable
 class ContextInterface(MemoryInterface, Protocol):
+    """Structural protocol for context objects used by AGIProvider."""
+
     conversation_history: list[RoleMessage]
     reasoning_chains: list[list[ReasoningStep]]
     goals: list[str]
@@ -562,7 +577,7 @@ class AGIContext:
             Dict with ``"role"`` and ``"content"`` keys.  Both values are
             sanitised before storage.
         """
-        sanitized = {
+        sanitized: RoleMessage = {
             "role": _sanitize_input(str(message.get("role", "user")), max_length=20),
             "content": _sanitize_input(str(message.get("content", ""))),
         }
@@ -619,6 +634,16 @@ class AGIContext:
 
 class _AGIProviderReasoningMixin:
     """Reasoning, routing, and prompt-construction helpers for AGIProvider."""
+
+    context: ContextInterface
+    max_output_tokens: int
+    reasoning_depth: int
+    enable_task_decomposition: bool
+    enable_chain_of_thought: bool
+    _last_agent_used: str | None
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def _analyze_query(self, query: str) -> dict[str, Any]:
         """Classify *query* by complexity, intent, and domain.
@@ -895,7 +920,7 @@ class _AGIProviderReasoningMixin:
             specialist, choice = detect_provider(
                 explicit=provider_name,
                 model_override=model_override,
-                temperature=self.temperature,
+                temperature=getattr(self, "temperature", None),
                 max_output_tokens=self.max_output_tokens,
             )
             if choice.name != provider_name:
@@ -906,8 +931,13 @@ class _AGIProviderReasoningMixin:
                     choice.name,
                 )
                 return None
-            messages = [{"role": "user", "content": query}]
-            result = specialist.complete(messages, stream=False)
+            agent_messages: list[RoleMessage] = [
+                {
+                    "role": "user",
+                    "content": query,
+                }
+            ]
+            result = specialist.complete(agent_messages, stream=False)
             response = result if isinstance(result, str) else "".join(result)
             _logger.debug("Agent dispatch: %s → %s chars", agent_name, len(response))
             return response
@@ -1278,6 +1308,17 @@ class _AGIProviderReasoningMixin:
         return "\n".join(lines)
 
 
+@dataclass(slots=True)
+class _AGIProviderRuntimeState:
+    """Mutable runtime state for AGIProvider."""
+
+    base_provider: BaseChatProvider | None
+    enable_self_reflection: bool
+    verbose: bool
+    base_provider_choice: ProviderChoice | None = None
+    persistence: Any | None = None
+
+
 class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
     """AGI-enhanced chat provider with reasoning, memory, and multi-agent routing.
 
@@ -1341,18 +1382,57 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
         verbose: bool = False,
     ) -> None:
         super().__init__(temperature=temperature)
-        self.base_provider = base_provider
-        self.temperature = temperature
+        self._runtime = _AGIProviderRuntimeState(
+            base_provider=base_provider,
+            enable_self_reflection=enable_self_reflection,
+            verbose=verbose,
+        )
         self.max_output_tokens = max_output_tokens
         self.enable_chain_of_thought = enable_chain_of_thought
-        self.enable_self_reflection = enable_self_reflection
         self.enable_task_decomposition = enable_task_decomposition
         self.reasoning_depth = min(max(1, reasoning_depth), 5)
-        self.verbose = verbose
         self.context: ContextInterface = AGIContext()
-        self._base_provider_choice: ProviderChoice | None = None
         self._last_agent_used: str | None = None
-        self.persistence: Any | None = None
+
+    @property
+    def base_provider(self) -> BaseChatProvider | None:
+        return self._runtime.base_provider
+
+    @base_provider.setter
+    def base_provider(self, value: BaseChatProvider | None) -> None:
+        self._runtime.base_provider = value
+
+    @property
+    def enable_self_reflection(self) -> bool:
+        return self._runtime.enable_self_reflection
+
+    @enable_self_reflection.setter
+    def enable_self_reflection(self, value: bool) -> None:
+        self._runtime.enable_self_reflection = value
+
+    @property
+    def verbose(self) -> bool:
+        return self._runtime.verbose
+
+    @verbose.setter
+    def verbose(self, value: bool) -> None:
+        self._runtime.verbose = value
+
+    @property
+    def _base_provider_choice(self) -> ProviderChoice | None:
+        return self._runtime.base_provider_choice
+
+    @_base_provider_choice.setter
+    def _base_provider_choice(self, value: ProviderChoice | None) -> None:
+        self._runtime.base_provider_choice = value
+
+    @property
+    def persistence(self) -> Any | None:
+        return self._runtime.persistence
+
+    @persistence.setter
+    def persistence(self, value: Any | None) -> None:
+        self._runtime.persistence = value
 
     def _get_base_provider(self) -> BaseChatProvider:
         """Return the base provider, auto-detecting it on first call.
@@ -1365,11 +1445,11 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
         BaseChatProvider
             The underlying LLM provider used for final response generation.
         """
-        if self.base_provider is None:
+        if self._runtime.base_provider is None:
             provider, choice = detect_provider(explicit="auto")
-            self.base_provider = provider
-            self._base_provider_choice = choice
-        return self.base_provider
+            self._runtime.base_provider = provider
+            self._runtime.base_provider_choice = choice
+        return self._runtime.base_provider
 
     def complete(self, messages: list[RoleMessage], stream: bool = True) -> Iterable[str] | str:
         """Process *messages* through the AGI reasoning pipeline and return a response.
@@ -1425,7 +1505,8 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
                 response = self._reflect_and_improve(user_query, response, reasoning_chain)
             self.context.add_reasoning_chain(reasoning_chain)
             # Persist reasoning chain to optional persistence backend (best-effort)
-            if getattr(self, "persistence", None) is not None:
+            persistence = self.persistence
+            if persistence is not None:
                 try:
                     serialized_chain = []
                     for step in reasoning_chain:
@@ -1438,13 +1519,13 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
                             }
                         )
                     meta = {"query": user_query, "agent": self._last_agent_used, "ts": time.time()}
-                    if hasattr(self.persistence, "write_reasoning_chain"):
-                        self.persistence.write_reasoning_chain(serialized_chain, meta)
-                    elif hasattr(self.persistence, "add_reasoning_chain"):
-                        self.persistence.add_reasoning_chain(serialized_chain)
-                    elif hasattr(self.persistence, "write"):
+                    if hasattr(persistence, "write_reasoning_chain"):
+                        persistence.write_reasoning_chain(serialized_chain, meta)
+                    elif hasattr(persistence, "add_reasoning_chain"):
+                        persistence.add_reasoning_chain(serialized_chain)
+                    elif hasattr(persistence, "write"):
                         try:
-                            self.persistence.write(
+                            persistence.write(
                                 "reasoning_chain",
                                 {"chain": serialized_chain, "meta": meta},
                             )
@@ -1512,7 +1593,8 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
             if self.enable_self_reflection:
                 response = self._reflect_and_improve(sanitized, response, reasoning_chain)
             self.context.add_reasoning_chain(reasoning_chain)
-            if getattr(self, "persistence", None) is not None:
+            persistence = self.persistence
+            if persistence is not None:
                 try:
                     serialized_chain = [
                         {
@@ -1528,10 +1610,10 @@ class AGIProvider(_AGIProviderReasoningMixin, BaseChatProvider):
                         "agent": "quantum-specialist",
                         "ts": time.time(),
                     }
-                    if hasattr(self.persistence, "write_reasoning_chain"):
-                        self.persistence.write_reasoning_chain(serialized_chain, meta)
-                    elif hasattr(self.persistence, "add_reasoning_chain"):
-                        self.persistence.add_reasoning_chain(serialized_chain)
+                    if hasattr(persistence, "write_reasoning_chain"):
+                        persistence.write_reasoning_chain(serialized_chain, meta)
+                    elif hasattr(persistence, "add_reasoning_chain"):
+                        persistence.add_reasoning_chain(serialized_chain)
                 except Exception as pers_exc:
                     _logger.exception(
                         "Failed to persist AGI reasoning chain: %s",
