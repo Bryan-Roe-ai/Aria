@@ -73,7 +73,6 @@ jobs:
           set -euo pipefail
           python -m pip install --upgrade pip
           pip install --disable-pip-version-check yamllint==1.35.1
-          npm install -g markdownlint-cli@0.33.0
 
       - name: Select lint targets
         id: targets
@@ -157,13 +156,21 @@ jobs:
             load_default_targets
           fi
 
+          declare -A seen=()
+
           for file in "${candidate_files[@]}"; do
             [ -f "$file" ] || continue
+            if [ "${seen[$file]+x}" = "x" ]; then
+              continue
+            fi
+            seen["$file"]=1
+
             case "$file" in
               .github/*.yml|.github/*.yaml)
                 printf '%s\0' "$file" >> "$YAML_LIST_FILE"
                 ;;
             esac
+
             is_markdown_target "$file" && printf '%s\0' "$file" >> "$MD_LIST_FILE"
           done
 
@@ -218,7 +225,7 @@ jobs:
           printf 'Linting markdown targets:\n'
           printf ' - %s\n' "${md_targets_unique[@]}"
 
-          markdownlint "${md_targets_unique[@]}"
+          npx --yes markdownlint-cli@0.33.0 "${md_targets_unique[@]}"
 
           echo "status=success" >> "$GITHUB_OUTPUT"
 
@@ -247,7 +254,7 @@ jobs:
             else
               echo "MISSING: $f" >&3
             fi
-          done >> "$REPORT"
+          done
 
           echo >&3
 
