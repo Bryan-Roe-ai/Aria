@@ -171,12 +171,18 @@ jobs:
           # an older checkout, the pushed branch would contain an older workflow file.
           # Rebasing on the latest origin/main ensures the autofix branch only
           # introduces Python file changes — no workflow file diff.
+          #
+          # We check both staged/unstaged changes (git diff --quiet) AND untracked
+          # files (git ls-files --others) because ruff/black leave modifications in the
+          # working tree while detect_output.txt (if any) would be untracked.
           stashed=false
           if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
             git stash push --include-untracked -m "autofix-changes"
             stashed=true
           fi
           git fetch origin main
+          # git reset --hard is safe here: all autofix changes were captured in the
+          # stash above, so no work is discarded.
           git reset --hard origin/main
           if [ "$stashed" = true ]; then
             git stash pop
