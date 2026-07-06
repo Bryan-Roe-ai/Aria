@@ -24,4 +24,4 @@ Notes:
 
 ## Related
 
-- [Agent workspace](/concepts/agent-workspace)
+- [Agent workspace](./AGENTS.md)
