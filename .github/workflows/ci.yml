@@ -19,10 +19,6 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
-defaults:
-  run:
-    shell: bash
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   PYTHON_VERSION: "3.11"
@@ -89,6 +85,7 @@ jobs:
             pyproject.toml
 
       - name: Install lint dependencies
+        shell: bash
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
@@ -99,11 +96,13 @@ jobs:
           fi
 
       - name: Ruff (lint)
+        shell: bash
         run: |
           set -euo pipefail
           python -m ruff check shared scripts tests apps/aria/server.py --output-format=github
 
       - name: Black (format check)
+        shell: bash
         run: |
           set -euo pipefail
           python -m black --check --quiet shared scripts tests apps/aria/server.py
@@ -139,6 +138,7 @@ jobs:
             pyproject.toml
 
       - name: Install type-check dependencies
+        shell: bash
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip setuptools wheel
@@ -154,6 +154,7 @@ jobs:
 
       - name: Run mypy on shared/
         continue-on-error: true
+        shell: bash
         run: python -m mypy shared/ --ignore-missing-imports --show-error-codes
 
   unit-tests:
@@ -190,7 +191,9 @@ jobs:
             constraints.txt
             pyproject.toml
 
-      - name: Install test dependencies
+      - name: Install test dependencies (Linux)
+        if: runner.os != 'Windows'
+        shell: bash
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip setuptools wheel
@@ -205,13 +208,31 @@ jobs:
           python -m pip install pytest pytest-cov
           python -m pip check || true
 
-      - name: Run unit tests
+      - name: Install test dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          if (Test-Path constraints.txt -and Test-Path requirements.txt) {
+            python -m pip install -r requirements.txt -c constraints.txt
+          } elseif (Test-Path requirements.txt) {
+            python -m pip install -r requirements.txt
+          }
+          if (Test-Path requirements-dev.txt) {
+            python -m pip install -r requirements-dev.txt
+          }
+          python -m pip install pytest pytest-cov
+          python -m pip check
+
+      - name: Run unit tests (Linux)
+        if: runner.os != 'Windows'
         env:
           CI: "true"
           AZURE_CLIENT_ID: ""
           AZURE_TENANT_ID: ""
           AZURE_CLIENT_SECRET: ""
           OPENAI_API_KEY: ""
+        shell: bash
         run: |
           set -euo pipefail
           mkdir -p data_out
@@ -228,11 +249,45 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml:data_out/coverage-${{ matrix.os }}.xml
 
-      - name: Run ai-project tests
+      - name: Run unit tests (Windows)
+        if: runner.os == 'Windows'
         env:
           CI: "true"
+          AZURE_CLIENT_ID: ""
+          AZURE_TENANT_ID: ""
+          AZURE_CLIENT_SECRET: ""
+          OPENAI_API_KEY: ""
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path data_out -Force | Out-Null
+          python -m pytest tests/ `
+            -q --tb=short `
+            -m "not slow and not azure and not integration" `
+            --ignore=tests/test_ui_playwright.py `
+            --ignore=tests/test_ui_pyppeteer.py `
+            --ignore=tests/test_ui_selenium.py `
+            --maxfail=1 `
+            --durations=10 `
+            --junitxml=data_out/junit-${{ matrix.os }}.xml `
+            --cov=shared --cov=scripts `
+            --cov-report=term-missing `
+            --cov-report=xml:data_out/coverage-${{ matrix.os }}.xml
+
+      - name: Run ai-project tests (Linux)
+        if: runner.os != 'Windows'
+        env:
+          CI: "true"
+        shell: bash
         run: |
           set -euo pipefail
+          python scripts/test_runner.py --ai-projects
+
+      - name: Run ai-project tests (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CI: "true"
+        shell: pwsh
+        run: |
           python scripts/test_runner.py --ai-projects
 
       - name: Upload test results
@@ -270,6 +325,7 @@ jobs:
           LINT_RESULT: ${{ needs.lint.result }}
           TYPE_RESULT: ${{ needs.type-check.result }}
           TEST_RESULT: ${{ needs.unit-tests.result }}
+        shell: bash
         run: |
           set -euo pipefail
           echo "setup-guardrails=$SETUP_RESULT"
