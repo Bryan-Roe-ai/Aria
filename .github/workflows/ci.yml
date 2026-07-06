@@ -34,12 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          egress-policy: audit
-          disable-sudo: true
+- name: Harden runner
+  uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+  with:
+    egress-policy: audit
+    disable-sudo: true
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -60,12 +59,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          egress-policy: audit
-          disable-sudo: true
+- name: Harden runner
+  uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+  with:
+    egress-policy: audit
+    disable-sudo: true
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -113,13 +111,12 @@ jobs:
     timeout-minutes: 15
     needs: [lint, setup-guardrails]
 
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          egress-policy: audit
-          disable-sudo: true
-
+- name: Harden runner
+  uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+  with:
+    egress-policy: audit
+    disable-sudo: true
+    
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -167,12 +164,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
 
-    steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          egress-policy: audit
-          disable-sudo: true
+- name: Harden runner
+  uses: step-security/harden-runner@<PINNED_NODE24_COMPATIBLE_SHA>
+  with:
+    egress-policy: audit
+    disable-sudo: true
 
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
