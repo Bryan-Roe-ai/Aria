@@ -8,7 +8,8 @@ import pytest
 pytestmark = pytest.mark.unit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-ROOT_RELATIVE_LINK_RE = re.compile(r"\[[^\]]+\]\((/[^)\s]*)\)")
+ROOT_RELATIVE_LINK_RE = re.compile(r"\[[^\]]+\]\((/(?!/)[^)\s]*)\)")
+EXCLUDED_TOP_LEVEL_DIRS = {".git", ".venv", "node_modules", "data_out"}
 
 
 def test_markdown_files_do_not_use_root_relative_links() -> None:
@@ -16,6 +17,8 @@ def test_markdown_files_do_not_use_root_relative_links() -> None:
 
     for path in REPO_ROOT.rglob("*.md"):
         rel_path = path.relative_to(REPO_ROOT)
+        if rel_path.parts and rel_path.parts[0] in EXCLUDED_TOP_LEVEL_DIRS:
+            continue
         text = path.read_text(encoding="utf-8")
         for line_number, line in enumerate(text.splitlines(), start=1):
             match = ROOT_RELATIVE_LINK_RE.search(line)
