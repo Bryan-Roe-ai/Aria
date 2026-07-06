@@ -42,7 +42,9 @@ def test_codeql_autofix_uses_sha_for_checkout_and_branch_for_push() -> None:
 
     # The push step must use push_ref (branch name), not ref (SHA)
     assert 'steps.ref.outputs.push_ref' in content, "git push must target push_ref (branch name)"
-    assert 'HEAD:${{ steps.ref.outputs.push_ref }}' in content, "push must use push_ref"
+    # push_ref is surfaced via PUSH_REF env var to keep shell script clean
+    assert 'PUSH_REF: ${{ steps.ref.outputs.push_ref }}' in content, "PUSH_REF env var must map push_ref"
+    assert 'HEAD:$PUSH_REF' in content, "push must use PUSH_REF env var (branch name)"
 
 
 @pytest.mark.unit
