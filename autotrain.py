@@ -23,5 +23,7 @@ for _name, _value in _canonical.__dict__.items():
         continue
     globals()[_name] = _value
 
+__all__ = [_n for _n in _canonical.__dict__ if not _n.startswith("_")]
+
 # Mirror the canonical module so downstream monkeypatches affect one object.
 sys.modules[__name__] = _canonical
