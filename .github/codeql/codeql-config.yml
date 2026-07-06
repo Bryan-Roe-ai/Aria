@@ -1,3 +1,4 @@
+---
 name: "Aria CodeQL — maximum security coverage"
 
 # Use default queries in addition to custom suites to keep Copilot Autofix coverage broad.
@@ -32,7 +33,6 @@ paths-ignore:
     - "**/.egg-info/**"
     - "**/.mypy_cache/**"
     - "**/.ruff_cache/**"
-
     # Build & dist artifacts
     - "**/dist/**"
     - "**/build/**"
@@ -45,7 +45,6 @@ paths-ignore:
     - "**/*.min.css"
     - "**/bundle.js"
     - "**/*.generated.*"
-
     # Third-party code
     - "**/vendor/**"
     - "**/third_party/**"
