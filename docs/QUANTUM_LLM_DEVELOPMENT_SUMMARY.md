@@ -239,11 +239,11 @@ Data Loading → Tokenization → Dataset Creation
 
 ### Training Speed (Relative to Pure Classical)
 
-| Component | Overhead | With Caching | With Optimization |
+| Component          | Overhead | With Caching | With Optimization |
 | ------------------ | -------- | ------------ | ----------------- |
-| Quantum Attention | 3-5x | 1.5-2x | 1.2-1.5x |
-| Quantum FFN | 2-3x | 1.3-1.8x | 1.1-1.3x |
-| Full Quantum Model | 4-8x | 2-3x | 1.5-2x |
+| Quantum Attention  | 3-5x     | 1.5-2x       | 1.2-1.5x          |
+| Quantum FFN        | 2-3x     | 1.3-1.8x     | 1.1-1.3x          |
+| Full Quantum Model | 4-8x     | 2-3x         | 1.5-2x            |
 
 **Note:** Assumes quantum simulation. Real QPU has different characteristics.
 
@@ -251,10 +251,10 @@ Data Loading → Tokenization → Dataset Creation
 
 | Model Size | Parameters | Memory (CPU) | Memory (GPU) |
 | ---------- | ---------- | ------------ | ------------ |
-| Tiny | 100K | ~50 MB | ~100 MB |
-| Small | 1M | ~200 MB | ~400 MB |
-| Medium | 10M | ~1 GB | ~2 GB |
-| Large | 100M | ~8 GB | ~16 GB |
+| Tiny       | 100K       | ~50 MB       | ~100 MB      |
+| Small      | 1M         | ~200 MB      | ~400 MB      |
+| Medium     | 10M        | ~1 GB        | ~2 GB        |
+| Large      | 100M       | ~8 GB        | ~16 GB       |
 
 **Note:** Quantum circuit simulation adds 20-30% memory overhead.
 
@@ -262,12 +262,12 @@ Data Loading → Tokenization → Dataset Creation
 
 Tested on character-level language modeling:
 
-| Configuration | Perplexity | Training Time |
+| Configuration       | Perplexity | Training Time   |
 | ------------------- | ---------- | --------------- |
-| Pure Classical | 3.2 | 1.0x (baseline) |
-| Quantum Attention | 2.9 | 1.8x |
-| Full Quantum | 2.7 | 2.5x |
-| Multi-Scale Quantum | 2.5 | 2.8x |
+| Pure Classical      | 3.2        | 1.0x (baseline) |
+| Quantum Attention   | 2.9        | 1.8x            |
+| Full Quantum        | 2.7        | 2.5x            |
+| Multi-Scale Quantum | 2.5        | 2.8x            |
 
 **Conclusion:** Quantum provides 15-20% perplexity improvement at 2-3x training cost.
 
@@ -401,14 +401,14 @@ This implementation serves as:
 
 ## 📊 Code Statistics
 
-| Metric | Value |
+| Metric                | Value  |
 | --------------------- | ------ |
-| Total Lines of Code | ~3,500 |
-| Python Files | 7 |
-| Classes | 28 |
-| Functions | 100+ |
-| Configuration Options | 80+ |
-| Documentation Lines | 1,500+ |
+| Total Lines of Code   | ~3,500 |
+| Python Files          | 7      |
+| Classes               | 28     |
+| Functions             | 100+   |
+| Configuration Options | 80+    |
+| Documentation Lines   | 1,500+ |
 
 **Code Quality:**
 

@@ -46,13 +46,13 @@ python scripts/status_dashboard.py --watch       # Live orchestrator status
 
 ## Common Bottlenecks
 
-| Issue | Diagnostic | Fix |
+| Issue              | Diagnostic                               | Fix                                            |
 | ------------------ | ---------------------------------------- | ---------------------------------------------- |
-| Slow responses | Check provider latency in /api/ai/status | Switch to faster provider or reduce max_tokens |
-| Memory overflow | Monitor `prune_messages()` stats | Lower max_context_tokens |
-| DB pool exhaustion | Check pool saturation in /api/ai/status | Increase QAI_SQL_POOL_SIZE |
-| Training stalled | `scripts/training_analytics.py` | Adjust epochs or learning rate |
-| GPU OOM | `scripts/resource_monitor.py` | Reduce batch_size |
+| Slow responses     | Check provider latency in /api/ai/status | Switch to faster provider or reduce max_tokens |
+| Memory overflow    | Monitor `prune_messages()` stats         | Lower max_context_tokens                       |
+| DB pool exhaustion | Check pool saturation in /api/ai/status  | Increase QAI_SQL_POOL_SIZE                     |
+| Training stalled   | `scripts/training_analytics.py`          | Adjust epochs or learning rate                 |
+| GPU OOM            | `scripts/resource_monitor.py`            | Reduce batch_size                              |
 
 ## Autonomous Training Optimization
 

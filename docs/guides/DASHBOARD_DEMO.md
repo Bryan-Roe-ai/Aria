@@ -179,12 +179,12 @@
 
 **Purpose**: Compare all 4 presets side-by-side
 
-| Preset | Epochs | Samples | Rank | Est. Time | Use Case |
+| Preset        | Epochs | Samples  | Rank | Est. Time | Use Case      |
 | ------------- | ------ | -------- | ---- | --------- | ------------- |
-| ⚡ Quick Test | 1 | 100 | 4 | ~2 min | Pipeline test |
-| 📊 Standard | 3 | 1k | 8 | ~10 min | Development |
-| 🏆 Full | 5 | -1 (all) | 16 | ~60 min | Thorough |
-| 🚀 Production | 10 | -1 (all) | 32 | ~4 hours | Production |
+| ⚡ Quick Test | 1      | 100      | 4    | ~2 min    | Pipeline test |
+| 📊 Standard   | 3      | 1k       | 8    | ~10 min   | Development   |
+| 🏆 Full       | 5      | -1 (all) | 16   | ~60 min   | Thorough      |
+| 🚀 Production | 10     | -1 (all) | 32   | ~4 hours  | Production    |
 
 #### Steps
 

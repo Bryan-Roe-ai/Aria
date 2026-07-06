@@ -230,13 +230,13 @@ python scripts\rag_pipeline.py \
 
 ## 🔧 Troubleshooting
 
-| Issue | Solution |
+| Issue            | Solution                                                          |
 | ---------------- | ----------------------------------------------------------------- |
-| Out of memory | Run `python scripts\gpu_optimizer.py --memory-usage 0.6` |
-| Slow training | Check GPU utilization, enable BF16/FP16 |
-| Import errors | Install optional deps: `pip install -r requirements-advanced.txt` |
-| Poor eval scores | More aggressive pruning, increase training epochs |
-| RAG not working | Install: `pip install sentence-transformers` |
+| Out of memory    | Run `python scripts\gpu_optimizer.py --memory-usage 0.6`          |
+| Slow training    | Check GPU utilization, enable BF16/FP16                           |
+| Import errors    | Install optional deps: `pip install -r requirements-advanced.txt` |
+| Poor eval scores | More aggressive pruning, increase training epochs                 |
+| RAG not working  | Install: `pip install sentence-transformers`                      |
 
 ## 📚 Documentation
 
@@ -284,13 +284,13 @@ python scripts\rag_pipeline.py \
 
 ## ✨ Features Summary
 
-| Tool | Purpose | Key Benefit |
+| Tool             | Purpose                 | Key Benefit            |
 | ---------------- | ----------------------- | ---------------------- |
-| GPU Optimizer | Auto-configure hardware | Maximize performance |
-| Semantic Pruning | Clean training data | 30-50% faster training |
-| Auto Evaluation | Benchmark models | Track improvements |
-| RAG Pipeline | Enhance with context | Better responses |
-| Master Pipeline | Orchestrate workflow | One-command training |
+| GPU Optimizer    | Auto-configure hardware | Maximize performance   |
+| Semantic Pruning | Clean training data     | 30-50% faster training |
+| Auto Evaluation  | Benchmark models        | Track improvements     |
+| RAG Pipeline     | Enhance with context    | Better responses       |
+| Master Pipeline  | Orchestrate workflow    | One-command training   |
 
 ## 🎉 You're Ready
 

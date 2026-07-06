@@ -41,13 +41,13 @@ Common trigger phrases:
 
 Before writing anything, choose the right event(s) and exit behavior:
 
-| Goal | Events | Exit on match |
+| Goal                                  | Events                      | Exit on match                      |
 | ------------------------------------- | --------------------------- | ---------------------------------- |
-| Block file write to protected path | `PreToolUse` | 1 (hard block) |
-| Run audit before save, warn if fails | `PreToolUse`, `PostToolUse` | 0 (warn) or 1 (opt-in via env var) |
-| Inject reminder into conversation | `UserPromptSubmit` | 0 (always) |
-| Block agent from stopping prematurely | `Stop` | 1 (conditional) |
-| Check written file state after save | `PostToolUse` | 0 (warn) |
+| Block file write to protected path    | `PreToolUse`                | 1 (hard block)                     |
+| Run audit before save, warn if fails  | `PreToolUse`, `PostToolUse` | 0 (warn) or 1 (opt-in via env var) |
+| Inject reminder into conversation     | `UserPromptSubmit`          | 0 (always)                         |
+| Block agent from stopping prematurely | `Stop`                      | 1 (conditional)                    |
+| Check written file state after save   | `PostToolUse`               | 0 (warn)                           |
 
 **Warn-first default:** Start with exit 0 (warn) unless the risk is catastrophic. Use an env var like `MY_HOOK_BLOCK=true` to let callers opt in to hard-blocking later. This avoids infinite agent retry loops where the agent keeps getting blocked on the fix it's trying to apply.
 
@@ -70,10 +70,10 @@ Before writing anything, choose the right event(s) and exit behavior:
 - Prefer hooks whose policy is supported by multiple repo sources, such as both instructions and automation scripts.
 - Pick the top 1–3 candidates; defer the rest.
 - For each candidate, answer:
-  - What tool names trigger it? (file writes, shell, etc.)
-  - What pattern in the payload identifies the unsafe case? (path regex, content search, JSON field)
-  - Should it block or warn?
-  - Does it need a `PostToolUse` companion to catch misses?
+    - What tool names trigger it? (file writes, shell, etc.)
+    - What pattern in the payload identifies the unsafe case? (path regex, content search, JSON field)
+    - Should it block or warn?
+    - Does it need a `PostToolUse` companion to catch misses?
 
 ### 3. Write the companion Python script
 

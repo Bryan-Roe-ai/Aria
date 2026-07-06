@@ -146,11 +146,11 @@ Server automatically opens at `http://localhost:8000` → redirects to `/consoli
 
 - **Click tabs** at top of page
 - **Keyboard shortcuts** (when fully integrated):
-  - Ctrl+1 → Overview
-  - Ctrl+2 → Training
-  - Ctrl+3 → Analytics
-  - Ctrl+4 → History
-  - Ctrl+5 → Tools
+    - Ctrl+1 → Overview
+    - Ctrl+2 → Training
+    - Ctrl+3 → Analytics
+    - Ctrl+4 → History
+    - Ctrl+5 → Tools
 
 ## Files
 

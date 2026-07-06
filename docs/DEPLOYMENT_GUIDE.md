@@ -38,15 +38,15 @@ Aria/
 
 ### Demo Mode vs Local Development
 
-| Feature | GitHub Pages (Demo) | Local Development |
+| Feature              | GitHub Pages (Demo) | Local Development   |
 | -------------------- | ------------------- | ------------------- |
-| UI Functionality | ✅ Full | ✅ Full |
-| Character Animations | ✅ Full | ✅ Full |
-| API Responses | 🔸 Mock | ✅ Real |
-| AI Chat | 🔸 Simulated | ✅ Multi-provider |
-| Quantum Computing | ❌ No backend | ✅ Azure Quantum |
-| Training | ❌ No backend | ✅ LoRA fine-tuning |
-| Cost | 🆓 Free | 💰 API usage |
+| UI Functionality     | ✅ Full             | ✅ Full             |
+| Character Animations | ✅ Full             | ✅ Full             |
+| API Responses        | 🔸 Mock             | ✅ Real             |
+| AI Chat              | 🔸 Simulated        | ✅ Multi-provider   |
+| Quantum Computing    | ❌ No backend       | ✅ Azure Quantum    |
+| Training             | ❌ No backend       | ✅ LoRA fine-tuning |
+| Cost                 | 🆓 Free             | 💰 API usage        |
 
 ## 🚀 Deployment Process
 

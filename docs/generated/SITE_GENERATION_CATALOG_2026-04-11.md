@@ -4,14 +4,14 @@ This catalog summarizes generated websites and reusable generation assets.
 
 ## Generated bundles
 
-| Bundle | Type | Pages |
+| Bundle             | Type             | Pages |
 | ------------------ | ---------------- | ----- |
-| `portfolio-live` | Portfolio | 1+ |
-| `nebula-launch` | Landing | 1 |
-| `dev-journal` | Blog | 1 |
-| `docs-spark` | Docs | 1 |
-| `quantum-showcase` | Product showcase | 3 |
-| `aria-studio` | Creative studio | 3 |
+| `portfolio-live`   | Portfolio        | 1+    |
+| `nebula-launch`    | Landing          | 1     |
+| `dev-journal`      | Blog             | 1     |
+| `docs-spark`       | Docs             | 1     |
+| `quantum-showcase` | Product showcase | 3     |
+| `aria-studio`      | Creative studio  | 3     |
 
 ## Generated support files
 

@@ -27,8 +27,8 @@ The agent is hosted using the [Agent Framework](https://github.com/microsoft/age
 ## Prerequisites
 
 - An Azure AI Foundry project with:
-  - A deployed chat model (e.g., `gpt-5.4-mini`)
-  - A deployed embedding model (e.g., `text-embedding-3-small`) — used by the memory store itself, not by the agent at runtime
+    - A deployed chat model (e.g., `gpt-5.4-mini`)
+    - A deployed embedding model (e.g., `text-embedding-3-small`) — used by the memory store itself, not by the agent at runtime
 - Azure CLI logged in (`az login`)
 
 ### Required RBAC

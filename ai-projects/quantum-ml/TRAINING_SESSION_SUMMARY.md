@@ -190,11 +190,11 @@ Input (Classical) → Encoder → [Quantum Layer] → Decoder → Output
 
 ### Expected Classical Performance (Literature Values)
 
-| Dataset | Classical SVM | Classical NN | Quantum Hybrid | Quantum Advantage |
+| Dataset    | Classical SVM | Classical NN | Quantum Hybrid | Quantum Advantage |
 | ---------- | ------------- | ------------ | -------------- | ----------------- |
-| Banknote | ~98% | ~97% | **100%** | ✅ +2-3% |
-| Ionosphere | ~82% | ~86% | **85.71%** | ≈ Competitive |
-| Sonar | ~70% | ~73% | **76.19%** | ✅ +3-6% |
+| Banknote   | ~98%          | ~97%         | **100%**       | ✅ +2-3%          |
+| Ionosphere | ~82%          | ~86%         | **85.71%**     | ≈ Competitive     |
+| Sonar      | ~70%          | ~73%         | **76.19%**     | ✅ +3-6%          |
 
 **Note:** Classical baselines are approximate from published literature. Direct comparison would require running classical models on same train/test splits.
 

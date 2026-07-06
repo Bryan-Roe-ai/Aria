@@ -71,13 +71,13 @@ curl http://localhost:7071/api/quantum/info | jq
 
 Available circuit types via MCP:
 
-| Type | Description | Qubits |
+| Type           | Description                          | Qubits |
 | -------------- | ------------------------------------ | ------ |
-| `bell` | Bell state (entanglement pair) | 2 |
-| `ghz` | GHZ state (multi-qubit entanglement) | 3+ |
-| `entanglement` | General entanglement circuit | 2+ |
-| `random` | Random circuit for benchmarking | 1-20 |
-| `custom` | Custom gate sequence | 1-20 |
+| `bell`         | Bell state (entanglement pair)       | 2      |
+| `ghz`          | GHZ state (multi-qubit entanglement) | 3+     |
+| `entanglement` | General entanglement circuit         | 2+     |
+| `random`       | Random circuit for benchmarking      | 1-20   |
+| `custom`       | Custom gate sequence                 | 1-20   |
 
 ### Local Simulation
 
@@ -135,22 +135,22 @@ python scripts/quantum_autorun.py --config quantum_autorun.yaml
 
 ## API Endpoints
 
-| Endpoint | Method | Purpose |
+| Endpoint                | Method | Purpose                           |
 | ----------------------- | ------ | --------------------------------- |
-| `/api/quantum/classify` | POST | Submit quantum classification job |
-| `/api/quantum/circuit` | POST | Create and simulate circuits |
-| `/api/quantum/info` | GET | Backend info and capabilities |
+| `/api/quantum/classify` | POST   | Submit quantum classification job |
+| `/api/quantum/circuit`  | POST   | Create and simulate circuits      |
+| `/api/quantum/info`     | GET    | Backend info and capabilities     |
 
 ## Key Files
 
-| File | Purpose |
+| File                                           | Purpose                             |
 | ---------------------------------------------- | ----------------------------------- |
-| `ai-projects/quantum-ml/quantum_mcp_server.py` | MCP server with quantum tools |
-| `ai-projects/quantum-ml/src/` | Quantum ML pipeline implementations |
-| `config/quantum_llm_config.yaml` | Quantum backend configuration |
-| `config/quantum/` | Quantum orchestrator configs |
-| `scripts/quantum_autorun.py` | Quantum job orchestrator |
-| `function_app.py` | API endpoints (`/api/quantum/*`) |
+| `ai-projects/quantum-ml/quantum_mcp_server.py` | MCP server with quantum tools       |
+| `ai-projects/quantum-ml/src/`                  | Quantum ML pipeline implementations |
+| `config/quantum_llm_config.yaml`               | Quantum backend configuration       |
+| `config/quantum/`                              | Quantum orchestrator configs        |
+| `scripts/quantum_autorun.py`                   | Quantum job orchestrator            |
+| `function_app.py`                              | API endpoints (`/api/quantum/*`)    |
 
 ## Cost Awareness
 

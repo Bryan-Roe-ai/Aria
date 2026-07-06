@@ -27,8 +27,8 @@
 - **SKU:** basic1
 - **Status:** ✅ Succeeded
 - **Available Targets:**
-  - quantinuum.sim.h2-1sc (Syntax Checker - FREE)
-  - quantinuum.sim.h2-1e (Emulator - H1 class)
+    - quantinuum.sim.h2-1sc (Syntax Checker - FREE)
+    - quantinuum.sim.h2-1e (Emulator - H1 class)
 - **Cost:** Syntax checker is free; emulator ~$75/hour
 
 #### 2. Rigetti
@@ -37,7 +37,7 @@
 - **SKU:** azure-basic-qvm-only-unlimited
 - **Status:** ✅ Succeeded
 - **Available Targets:**
-  - rigetti.sim.qvm (Quantum Virtual Machine - FREE)
+    - rigetti.sim.qvm (Quantum Virtual Machine - FREE)
 - **Cost:** Unlimited free simulator access
 
 ### Endpoint Information

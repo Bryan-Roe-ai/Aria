@@ -8,12 +8,12 @@
 
 Successfully trained hybrid quantum models on all 4 downloaded UCI datasets from the centralized dataset storage.
 
-| Dataset | Samples (Train/Val) | Features | Val Accuracy | Status |
+| Dataset           | Samples (Train/Val) | Features     | Val Accuracy | Status     |
 | ----------------- | ------------------- | ------------ | ------------ | ---------- |
-| **Banknote** | 1097/275 | 8 (4→8 pad) | 55.6% | ✅ Trained |
-| **Ionosphere** | 280/71 | 8 (34→8 PCA) | **63.4%** | ✅ Trained |
-| **Sonar** | 166/42 | 8 (60→8 PCA) | 52.4% | ✅ Trained |
-| **Heart Disease** | 237/60 | 8 (13→8 PCA) | 46.7% | ✅ Trained |
+| **Banknote**      | 1097/275            | 8 (4→8 pad)  | 55.6%        | ✅ Trained |
+| **Ionosphere**    | 280/71              | 8 (34→8 PCA) | **63.4%**    | ✅ Trained |
+| **Sonar**         | 166/42              | 8 (60→8 PCA) | 52.4%        | ✅ Trained |
+| **Heart Disease** | 237/60              | 8 (13→8 PCA) | 46.7%        | ✅ Trained |
 
 ## Key Findings
 
@@ -27,9 +27,9 @@ Successfully trained hybrid quantum models on all 4 downloaded UCI datasets from
 - All runs used only 2 epochs for fast validation
 - Accuracies are baseline - will improve with longer training
 - Preprocessing automatically handled:
-  - Standardization (mean=0, std=1)
-  - PCA for high-dimensional datasets
-  - Zero-padding for low-dimensional datasets
+    - Standardization (mean=0, std=1)
+    - PCA for high-dimensional datasets
+    - Zero-padding for low-dimensional datasets
 
 ## Training Commands Used
 

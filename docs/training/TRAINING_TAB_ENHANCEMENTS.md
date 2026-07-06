@@ -201,18 +201,18 @@ total_vram = base_vram + lora_vram
 
 ### Parameter Ranges
 
-| Parameter | Min | Max | Default | Step |
+| Parameter      | Min | Max | Default | Step |
 | -------------- | --- | --- | ------- | ---- |
-| Epochs | 1 | 20 | 3 | 1 |
-| Max Samples | 10 | ∞ | 1000 | 10 |
-| Batch Size | 1 | 8 | 2 | - |
-| LoRA Rank | 4 | 128 | 8 | 4 |
-| LoRA Alpha | 8 | 256 | 16 | 8 |
-| LoRA Dropout | 0 | 0.5 | 0.1 | 0.05 |
-| Gradient Accum | 1 | 32 | 1 | 1 |
-| Warmup Steps | 0 | ∞ | 0 | 10 |
-| Weight Decay | 0 | 0.5 | 0.01 | 0.01 |
-| Max Grad Norm | 0 | 10 | 1.0 | 0.1 |
+| Epochs         | 1   | 20  | 3       | 1    |
+| Max Samples    | 10  | ∞   | 1000    | 10   |
+| Batch Size     | 1   | 8   | 2       | -    |
+| LoRA Rank      | 4   | 128 | 8       | 4    |
+| LoRA Alpha     | 8   | 256 | 16      | 8    |
+| LoRA Dropout   | 0   | 0.5 | 0.1     | 0.05 |
+| Gradient Accum | 1   | 32  | 1       | 1    |
+| Warmup Steps   | 0   | ∞   | 0       | 10   |
+| Weight Decay   | 0   | 0.5 | 0.01    | 0.01 |
+| Max Grad Norm  | 0   | 10  | 1.0     | 0.1  |
 
 ## 🚀 Usage Guide
 

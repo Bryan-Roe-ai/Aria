@@ -10,11 +10,11 @@ This document describes the comprehensive monetization system implemented for th
 
 To achieve the $2,000 monthly recurring revenue (MRR) target:
 
-| Tier | Subscribers | Price/Month | Revenue |
+| Tier       | Subscribers | Price/Month | Revenue    |
 | ---------- | ----------- | ----------- | ---------- |
-| Pro | 5 | $49 | $245 |
-| Enterprise | 10 | $199 | $1,990 |
-| **Total** | **15** | - | **$2,235** |
+| Pro        | 5           | $49         | $245       |
+| Enterprise | 10          | $199        | $1,990     |
+| **Total**  | **15**      | -           | **$2,235** |
 
 **Annual Recurring Revenue (ARR):** $26,820
 
@@ -155,13 +155,13 @@ New endpoints added:
 
 ### Tracked Resources
 
-| Resource | Free Limit | Pro Limit | Enterprise |
+| Resource         | Free Limit | Pro Limit | Enterprise |
 | ---------------- | ---------- | --------- | ---------- |
-| Chat Messages | 100/mo | 10,000/mo | Unlimited |
-| Quantum Jobs | 0 | 50/mo | Unlimited |
-| Training Hours | 0 | 20/mo | Unlimited |
-| API Requests | 0 | 10,000/mo | Unlimited |
-| Websites Created | 0 | 10/mo | Unlimited |
+| Chat Messages    | 100/mo     | 10,000/mo | Unlimited  |
+| Quantum Jobs     | 0          | 50/mo     | Unlimited  |
+| Training Hours   | 0          | 20/mo     | Unlimited  |
+| API Requests     | 0          | 10,000/mo | Unlimited  |
+| Websites Created | 0          | 10/mo     | Unlimited  |
 
 ### Implementation Example
 

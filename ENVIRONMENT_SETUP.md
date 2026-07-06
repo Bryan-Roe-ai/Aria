@@ -10,12 +10,12 @@
 
 Your Aria workspace is configured with:
 
-| Component | Status | Python | Venv Path |
+| Component         | Status        | Python | Venv Path                         |
 | ----------------- | ------------- | ------ | --------------------------------- |
-| **Main Aria** | ✅ Configured | 3.14 | `/workspaces/Aria/.venv` |
-| **Quantum ML** | ✅ Configured | 3.14 | `/workspaces/Aria/.venv` (shared) |
-| **Chat CLI** | ✅ Configured | 3.14 | `/workspaces/Aria/.venv` (shared) |
-| **LoRA Training** | ✅ Configured | 3.14 | `/workspaces/Aria/.venv` (shared) |
+| **Main Aria**     | ✅ Configured | 3.14   | `/workspaces/Aria/.venv`          |
+| **Quantum ML**    | ✅ Configured | 3.14   | `/workspaces/Aria/.venv` (shared) |
+| **Chat CLI**      | ✅ Configured | 3.14   | `/workspaces/Aria/.venv` (shared) |
+| **LoRA Training** | ✅ Configured | 3.14   | `/workspaces/Aria/.venv` (shared) |
 
 ---
 

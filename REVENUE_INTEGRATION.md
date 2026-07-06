@@ -14,10 +14,10 @@ The main Aria character page (`aria_web/index.html`) now features:
 
 - **Navigation Bar:** Clean, responsive navigation at the top
 - **Monetization Links:**
-  - 🏠 Home (monetization hub)
-  - 💰 Pricing
-  - 📊 My Subscription
-  - 👑 Admin Dashboard
+    - 🏠 Home (monetization hub)
+    - 💰 Pricing
+    - 📊 My Subscription
+    - 👑 Admin Dashboard
 - **Subscription Badge:** Displays current tier (Free, Pro, Enterprise)
 - **Upgrade Button:** Prominent call-to-action for up/downgrade
 
@@ -118,25 +118,25 @@ async function loadSubscriptionStatus() {
 
 ### Subscription Tiers
 
-| Tier | Price | Target Users | Revenue |
+| Tier       | Price   | Target Users | Revenue       |
 | ---------- | ------- | ------------ | ------------- |
-| Free | $0/mo | Unlimited | $0 |
-| Pro | $49/mo | 5 | $245 |
-| Enterprise | $199/mo | 10 | $1,990 |
-| **Total** | | 15 | **$2,235/mo** |
+| Free       | $0/mo   | Unlimited    | $0            |
+| Pro        | $49/mo  | 5            | $245          |
+| Enterprise | $199/mo | 10           | $1,990        |
+| **Total**  |         | 15           | **$2,235/mo** |
 
 **Annualized Revenue:** $26,820
 
 ### Feature Gates
 
-| Feature | Free | Pro | Enterprise |
+| Feature            | Free   | Pro       | Enterprise |
 | ------------------ | ------ | --------- | ---------- |
-| Chat Messages | 100/mo | 10,000/mo | Unlimited |
-| Aria Character | Basic | Full | Full |
-| Quantum Computing | ❌ | 50/mo | Unlimited |
-| Model Training | ❌ | 20 hrs/mo | Unlimited |
-| API Access | ❌ | 10K/mo | Unlimited |
-| Commercial License | ❌ | ✅ | ✅ |
+| Chat Messages      | 100/mo | 10,000/mo | Unlimited  |
+| Aria Character     | Basic  | Full      | Full       |
+| Quantum Computing  | ❌     | 50/mo     | Unlimited  |
+| Model Training     | ❌     | 20 hrs/mo | Unlimited  |
+| API Access         | ❌     | 10K/mo    | Unlimited  |
+| Commercial License | ❌     | ✅        | ✅         |
 
 ---
 

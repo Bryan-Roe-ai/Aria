@@ -110,11 +110,11 @@ Get-Content .\data_out\parallel_training\status.json
 
 ## Expected Training Times
 
-| Mode | Samples | Local CPU | Local GPU | Azure V100 |
+| Mode    | Samples | Local CPU | Local GPU | Azure V100 |
 | ------- | ------- | --------- | --------- | ---------- |
-| Quick | 64 | 5-10 min | 2-3 min | 1-2 min |
-| Medium | 256 | 20-30 min | 8-12 min | 4-6 min |
-| Focused | 500 | 40-60 min | 15-20 min | 8-12 min |
+| Quick   | 64      | 5-10 min  | 2-3 min   | 1-2 min    |
+| Medium  | 256     | 20-30 min | 8-12 min  | 4-6 min    |
+| Focused | 500     | 40-60 min | 15-20 min | 8-12 min   |
 
 ## Results Location
 
@@ -124,13 +124,13 @@ Get-Content .\data_out\parallel_training\status.json
 
 ## Comparison: Full vs Fast Training
 
-| Metric | Full Training | Fast Training | Speedup |
+| Metric               | Full Training | Fast Training | Speedup        |
 | -------------------- | ------------- | ------------- | -------------- |
-| Samples | 1000-15000 | 64-500 | 3-20x fewer |
-| Time per job | 2-8 hours | 5-60 min | 3-10x faster |
-| Total time (11 jobs) | 20-80 hours | 1-6 hours | 10-20x faster |
-| Model quality | 100% | 90-95% | Minimal loss |
-| Cost (Azure) | $60-240 | $3-18 | 10-20x cheaper |
+| Samples              | 1000-15000    | 64-500        | 3-20x fewer    |
+| Time per job         | 2-8 hours     | 5-60 min      | 3-10x faster   |
+| Total time (11 jobs) | 20-80 hours   | 1-6 hours     | 10-20x faster  |
+| Model quality        | 100%          | 90-95%        | Minimal loss   |
+| Cost (Azure)         | $60-240       | $3-18         | 10-20x cheaper |
 
 ## Tips
 

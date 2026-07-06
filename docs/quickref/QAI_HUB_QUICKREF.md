@@ -88,14 +88,14 @@ curl http://localhost:8000/api/datasets | ConvertFrom-Json
 
 ## 🎯 Quick Actions (From Hub)
 
-| Icon | Action | Target |
+| Icon | Action         | Target                   |
 | ---- | -------------- | ------------------------ |
-| 🚀 | Start Training | `/unified.html#train` |
-| 📊 | View Datasets | `/unified.html#datasets` |
-| 🤖 | Browse Models | `/unified.html#models` |
-| 📈 | Monitor GPU | `/unified.html#monitor` |
-| ⚛️ | Quantum Jobs | CLI toast message |
-| 💬 | Chat Interface | CLI toast message |
+| 🚀   | Start Training | `/unified.html#train`    |
+| 📊   | View Datasets  | `/unified.html#datasets` |
+| 🤖   | Browse Models  | `/unified.html#models`   |
+| 📈   | Monitor GPU    | `/unified.html#monitor`  |
+| ⚛️   | Quantum Jobs   | CLI toast message        |
+| 💬   | Chat Interface | CLI toast message        |
 
 ---
 
@@ -144,12 +144,12 @@ GET /api/logs/:name           # Training logs
 
 ## 🎨 Training Presets
 
-| Preset | Epochs | Samples | Rank | Time | Use Case |
+| Preset         | Epochs | Samples | Rank | Time     | Use Case           |
 | -------------- | ------ | ------- | ---- | -------- | ------------------ |
-| **Quick Test** | 1 | 100 | 4 | ~2 min | Fast validation |
-| **Standard** | 3 | 1,000 | 8 | ~10 min | Good baseline |
-| **Full** | 5 | All | 16 | ~60 min | Production quality |
-| **Production** | 10 | All | 32 | ~4 hours | Maximum quality |
+| **Quick Test** | 1      | 100     | 4    | ~2 min   | Fast validation    |
+| **Standard**   | 3      | 1,000   | 8    | ~10 min  | Good baseline      |
+| **Full**       | 5      | All     | 16   | ~60 min  | Production quality |
+| **Production** | 10     | All     | 32   | ~4 hours | Maximum quality    |
 
 ---
 
@@ -188,16 +188,16 @@ GET /api/logs/:name           # Training logs
 
 ## 🌟 System Cards Overview
 
-| System | Icon | Description | Link |
+| System                 | Icon | Description                | Link                     |
 | ---------------------- | ---- | -------------------------- | ------------------------ |
-| **Training Dashboard** | 🎯 | LoRA fine-tuning interface | `/unified.html` |
-| **Quantum ML** | ⚛️ | Hybrid quantum-classical | CLI |
-| **Chat Interface** | 💬 | Multi-provider chat | CLI |
-| **Evaluation Suite** | 📊 | Model assessment | CLI |
-| **Dataset Manager** | 🗃️ | Browse & validate | `/unified.html#datasets` |
-| **API Gateway** | 🔌 | Azure Functions API | Port 7071 |
-| **Resource Monitor** | 📈 | GPU/CPU/RAM tracking | CLI |
-| **CI/CD Pipeline** | 🔄 | Testing & deployment | CLI |
+| **Training Dashboard** | 🎯   | LoRA fine-tuning interface | `/unified.html`          |
+| **Quantum ML**         | ⚛️   | Hybrid quantum-classical   | CLI                      |
+| **Chat Interface**     | 💬   | Multi-provider chat        | CLI                      |
+| **Evaluation Suite**   | 📊   | Model assessment           | CLI                      |
+| **Dataset Manager**    | 🗃️   | Browse & validate          | `/unified.html#datasets` |
+| **API Gateway**        | 🔌   | Azure Functions API        | Port 7071                |
+| **Resource Monitor**   | 📈   | GPU/CPU/RAM tracking       | CLI                      |
+| **CI/CD Pipeline**     | 🔄   | Testing & deployment       | CLI                      |
 
 ---
 
@@ -238,12 +238,12 @@ python -c "import torch; print(torch.cuda.is_available())"
 
 ## 📊 Keyboard Shortcuts (In Hub)
 
-| Key | Action |
+| Key              | Action                            |
 | ---------------- | --------------------------------- |
-| **Click Card** | Navigate to system |
-| **Click Action** | Execute quick action |
-| **F5** | Refresh page (auto-updates stats) |
-| **Ctrl+Click** | Open in new tab |
+| **Click Card**   | Navigate to system                |
+| **Click Action** | Execute quick action              |
+| **F5**           | Refresh page (auto-updates stats) |
+| **Ctrl+Click**   | Open in new tab                   |
 
 ---
 
@@ -281,14 +281,14 @@ python -c "import torch; print(torch.cuda.is_available())"
 
 ## 📚 Related Documentation
 
-| File | Description |
+| File                           | Description                                 |
 | ------------------------------ | ------------------------------------------- |
-| `QAI_HUB_GUIDE.md` | Full hub documentation (this file's parent) |
-| `TRAINING_TAB_ENHANCEMENTS.md` | Training features (450 lines) |
-| `TRAINING_TAB_QUICKREF.md` | Training quick reference (350 lines) |
-| `DASHBOARD_DEMO.md` | Live demo script |
-| `AUTOTRAIN_README.md` | LoRA orchestration |
-| `QUANTUM_AUTORUN_README.md` | Quantum jobs |
+| `QAI_HUB_GUIDE.md`             | Full hub documentation (this file's parent) |
+| `TRAINING_TAB_ENHANCEMENTS.md` | Training features (450 lines)               |
+| `TRAINING_TAB_QUICKREF.md`     | Training quick reference (350 lines)        |
+| `DASHBOARD_DEMO.md`            | Live demo script                            |
+| `AUTOTRAIN_README.md`          | LoRA orchestration                          |
+| `QUANTUM_AUTORUN_README.md`    | Quantum jobs                                |
 
 ---
 

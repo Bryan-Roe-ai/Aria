@@ -103,7 +103,7 @@ python .\scripts\quantum_autorun.py --job azure_ionq_simulator
 - Local simulators: FREE
 - Azure simulators: FREE
 - QPU execution: ~$0.00003-$0.00015 per gate-shot
-  - Requires `azure_confirm_cost: true` in YAML
+    - Requires `azure_confirm_cost: true` in YAML
 
 ---
 

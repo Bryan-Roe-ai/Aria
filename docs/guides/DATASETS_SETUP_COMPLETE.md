@@ -43,10 +43,10 @@ AI/
 ### 3. Documentation ✅
 
 - **AI_DATASETS_CATALOG.md**: 400+ line comprehensive guide
-  - Dataset sources (Hugging Face, UCI, Kaggle)
-  - License information
-  - Quality ratings
-  - Usage examples
+    - Dataset sources (Hugging Face, UCI, Kaggle)
+    - License information
+    - Quality ratings
+    - Usage examples
 - **datasets/README.md**: Full usage documentation
 - **DATASETS_QUICK_REF.md**: Fast command reference
 
@@ -105,12 +105,12 @@ python .\scripts\quick_setup_datasets.py
 
 ### Quantum Datasets (Downloaded ✅)
 
-| Dataset | Size | Samples | Features | Use Case |
+| Dataset       | Size  | Samples | Features | Use Case                          |
 | ------------- | ----- | ------- | -------- | --------------------------------- |
-| Heart Disease | 20 KB | 303 | 14 | Medical diagnosis |
-| Ionosphere | 70 KB | 351 | 35 | Radar signal classification |
-| Sonar | 80 KB | 208 | 61 | Object detection (mines vs rocks) |
-| Banknote | 40 KB | 1,372 | 5 | Authentication (fraud detection) |
+| Heart Disease | 20 KB | 303     | 14       | Medical diagnosis                 |
+| Ionosphere    | 70 KB | 351     | 35       | Radar signal classification       |
+| Sonar         | 80 KB | 208     | 61       | Object detection (mines vs rocks) |
+| Banknote      | 40 KB | 1,372   | 5        | Authentication (fraud detection)  |
 
 **Total**: 4 datasets, 210 KB, 2,234 samples
 
@@ -122,11 +122,11 @@ python .\scripts\quick_setup_datasets.py
 
 ### Chat Datasets (Ready to Download)
 
-| Dataset | Size | Quality | License | Command |
+| Dataset       | Size   | Quality    | License           | Command                   |
 | ------------- | ------ | ---------- | ----------------- | ------------------------- |
-| Dolly 15k | 50 MB | ⭐⭐⭐⭐⭐ | Commercial ✅ | `--dataset dolly` |
-| OpenAssistant | 500 MB | ⭐⭐⭐⭐⭐ | Commercial ✅ | `--dataset openassistant` |
-| Alpaca | 100 MB | ⭐⭐⭐⭐ | Non-commercial ⚠️ | `--dataset alpaca` |
+| Dolly 15k     | 50 MB  | ⭐⭐⭐⭐⭐ | Commercial ✅     | `--dataset dolly`         |
+| OpenAssistant | 500 MB | ⭐⭐⭐⭐⭐ | Commercial ✅     | `--dataset openassistant` |
+| Alpaca        | 100 MB | ⭐⭐⭐⭐   | Non-commercial ⚠️ | `--dataset alpaca`        |
 
 ---
 

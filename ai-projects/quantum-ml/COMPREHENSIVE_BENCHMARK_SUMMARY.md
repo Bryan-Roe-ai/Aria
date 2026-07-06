@@ -15,28 +15,28 @@ Successfully expanded quantum ML infrastructure from **4 to 15 datasets** (275% 
 
 ### **Working Datasets (14)**
 
-| # | Dataset | Category | Samples | Features | Classes | Status |
+| #   | Dataset           | Category    | Samples | Features | Classes | Status               |
 | --- | ----------------- | ----------- | ------- | -------- | ------- | -------------------- |
-| 1 | ionosphere | Physics | 351 | 34 | 2 | ✅ 85-90% |
-| 2 | banknote | Forensics | 1,372 | 4 | 2 | ✅ 99-100% |
-| 3 | heart_disease | Medical | 303 | 13 | 2 | ✅ 82% |
-| 4 | sonar | Geophysics | 208 | 60 | 2 | ✅ 76% |
-| 5 | breast_cancer | Medical | 569 | 29 | 2 | ✅ 88% (1-epoch) |
-| 6 | diabetes | Medical | 768 | 8 | 2 | ✅ 71% |
-| 7 | blood_transfusion | Medical | 748 | 4 | 2 | ✅ 83% |
-| 8 | haberman | Medical | 306 | 3 | 2 | ✅ 58% (challenging) |
-| 9 | wine_red | Chemistry | 1,599 | 11 | 6 | ✅ 99% (1-epoch) |
-| 10 | wine_white | Chemistry | 4,898 | 11 | 7 | ✅ 99% (1-epoch) |
-| 11 | magic_gamma | Physics | 19,020 | 10 | 2 | ✅ 78% |
-| 12 | iris | Biology | 150 | 4 | 3 | ✅ 97% |
-| 13 | wheat_seeds | Agriculture | 210 | 7 | 3 | ✅ 72% (1-epoch) |
-| 14 | glass | Forensics | 214 | 10 | 6 | ✅ 88% |
+| 1   | ionosphere        | Physics     | 351     | 34       | 2       | ✅ 85-90%            |
+| 2   | banknote          | Forensics   | 1,372   | 4        | 2       | ✅ 99-100%           |
+| 3   | heart_disease     | Medical     | 303     | 13       | 2       | ✅ 82%               |
+| 4   | sonar             | Geophysics  | 208     | 60       | 2       | ✅ 76%               |
+| 5   | breast_cancer     | Medical     | 569     | 29       | 2       | ✅ 88% (1-epoch)     |
+| 6   | diabetes          | Medical     | 768     | 8        | 2       | ✅ 71%               |
+| 7   | blood_transfusion | Medical     | 748     | 4        | 2       | ✅ 83%               |
+| 8   | haberman          | Medical     | 306     | 3        | 2       | ✅ 58% (challenging) |
+| 9   | wine_red          | Chemistry   | 1,599   | 11       | 6       | ✅ 99% (1-epoch)     |
+| 10  | wine_white        | Chemistry   | 4,898   | 11       | 7       | ✅ 99% (1-epoch)     |
+| 11  | magic_gamma       | Physics     | 19,020  | 10       | 2       | ✅ 78%               |
+| 12  | iris              | Biology     | 150     | 4        | 3       | ✅ 97%               |
+| 13  | wheat_seeds       | Agriculture | 210     | 7        | 3       | ✅ 72% (1-epoch)     |
+| 14  | glass             | Forensics   | 214     | 10       | 6       | ✅ 88%               |
 
 ### **Excluded Dataset (1)**
 
-| Dataset | Category | Reason | Workaround |
+| Dataset          | Category | Reason                          | Workaround                       |
 | ---------------- | -------- | ------------------------------- | -------------------------------- |
-| vertebral_column | Medical | File corruption (binary format) | Download from alternative source |
+| vertebral_column | Medical  | File corruption (binary format) | Download from alternative source |
 
 ---
 
@@ -45,53 +45,53 @@ Successfully expanded quantum ML infrastructure from **4 to 15 datasets** (275% 
 ### **Tier 1: Exceptional (95-100%)**
 
 - **banknote** - 99-100% accuracy
-  - Perfect forensic classification
-  - 4 features, 1,372 samples
-  - Production-ready model
+    - Perfect forensic classification
+    - 4 features, 1,372 samples
+    - Production-ready model
 
 ### **Tier 2: Excellent (85-95%)**
 
 - **ionosphere** - 85-90% accuracy
-  - High-dimensional radar signal classification
-  - 34→4 features via PCA (55% variance)
+    - High-dimensional radar signal classification
+    - 34→4 features via PCA (55% variance)
 - **breast_cancer** - 88% accuracy (1-epoch)
-  - Medical diagnostic classification
-  - 29→4 features via PCA
+    - Medical diagnostic classification
+    - 29→4 features via PCA
 - **glass** - 88% accuracy
-  - 6-class forensic analysis
-  - Excellent multi-class performance
+    - 6-class forensic analysis
+    - Excellent multi-class performance
 
 ### **Tier 3: Very Good (75-85%)**
 
 - **heart_disease** - 82% accuracy
-  - Medical diagnosis with missing values
-  - 13→4 features via PCA (55% variance)
+    - Medical diagnosis with missing values
+    - 13→4 features via PCA (55% variance)
 - **blood_transfusion** - 83% accuracy
-  - Imbalanced binary classification
+    - Imbalanced binary classification
 - **magic_gamma** - 78% accuracy
-  - Largest dataset (19K samples)
-  - Physics signal detection
+    - Largest dataset (19K samples)
+    - Physics signal detection
 - **sonar** - 76% accuracy
-  - High-dimensional (60→4 features)
-  - Mine vs rock detection
+    - High-dimensional (60→4 features)
+    - Mine vs rock detection
 
 ### **Tier 4: Good (70-75%)**
 
 - **diabetes** - 71% accuracy
-  - Medical prediction task
-  - 8→4 features via PCA (70% variance)
+    - Medical prediction task
+    - 8→4 features via PCA (70% variance)
 - **wheat_seeds** - 72% accuracy (1-epoch)
-  - Agricultural classification
-  - 7→4 features via PCA
+    - Agricultural classification
+    - 7→4 features via PCA
 
 ### **Tier 5: Challenging (50-70%)**
 
 - **iris** - 97% accuracy
-  - Classic 3-class problem
-  - Small dataset (150 samples)
+    - Classic 3-class problem
+    - Small dataset (150 samples)
 - **haberman** - 58% accuracy
-  - Highly imbalanced survival prediction
-  - Minimal features (3→4 with padding)
+    - Highly imbalanced survival prediction
+    - Minimal features (3→4 with padding)
 
 ---
 
@@ -160,36 +160,36 @@ Created `quick_test_datasets.py` for 1-epoch smoke tests:
 
 ### **By Dataset Size**
 
-| Size Category | Count | Avg Accuracy | Best Example |
+| Size Category  | Count | Avg Accuracy | Best Example                             |
 | -------------- | ----- | ------------ | ---------------------------------------- |
-| Tiny (150-300) | 5 | 76.4% | iris 97%, glass 88% |
-| Small (300-1K) | 5 | 81.2% | breast_cancer 88%, blood_transfusion 83% |
-| Medium (1K-5K) | 3 | 95.3% | banknote 100%, wine_white 99% |
-| Large (>5K) | 1 | 78.0% | magic_gamma 78% |
+| Tiny (150-300) | 5     | 76.4%        | iris 97%, glass 88%                      |
+| Small (300-1K) | 5     | 81.2%        | breast_cancer 88%, blood_transfusion 83% |
+| Medium (1K-5K) | 3     | 95.3%        | banknote 100%, wine_white 99%            |
+| Large (>5K)    | 1     | 78.0%        | magic_gamma 78%                          |
 
 **Insight:** Medium-sized datasets (1K-5K samples) show best performance, providing sufficient training data without requiring extreme computational resources.
 
 ### **By Feature Count**
 
-| Feature Range | Count | Avg Accuracy | PCA Required |
+| Feature Range | Count | Avg Accuracy | PCA Required      |
 | ------------- | ----- | ------------ | ----------------- |
-| Low (3-4) | 4 | 88.8% | No (padding only) |
-| Medium (5-15) | 6 | 80.5% | Yes (5-15→4) |
-| High (20+) | 4 | 84.8% | Yes (29-60→4) |
+| Low (3-4)     | 4     | 88.8%        | No (padding only) |
+| Medium (5-15) | 6     | 80.5%        | Yes (5-15→4)      |
+| High (20+)    | 4     | 84.8%        | Yes (29-60→4)     |
 
 **Insight:** High-dimensional datasets maintain strong performance after PCA dimensionality reduction, validating quantum circuit efficiency with compressed features.
 
 ### **By Domain**
 
-| Category | Datasets | Avg Accuracy | Best Example |
+| Category    | Datasets | Avg Accuracy | Best Example      |
 | ----------- | -------- | ------------ | ----------------- |
-| Medical | 6 | 75.5% | breast_cancer 88% |
-| Chemistry | 2 | 99.0% | wine_white 99% |
-| Physics | 2 | 84.0% | ionosphere 90% |
-| Forensics | 2 | 94.0% | banknote 100% |
-| Biology | 1 | 97.0% | iris 97% |
-| Agriculture | 1 | 72.0% | wheat_seeds 72% |
-| Geophysics | 1 | 76.0% | sonar 76% |
+| Medical     | 6        | 75.5%        | breast_cancer 88% |
+| Chemistry   | 2        | 99.0%        | wine_white 99%    |
+| Physics     | 2        | 84.0%        | ionosphere 90%    |
+| Forensics   | 2        | 94.0%        | banknote 100%     |
+| Biology     | 1        | 97.0%        | iris 97%          |
+| Agriculture | 1        | 72.0%        | wheat_seeds 72%   |
+| Geophysics  | 1        | 76.0%        | sonar 76%         |
 
 **Insight:** Chemistry and forensics datasets show exceptional quantum advantage, while medical datasets present more challenging classification tasks due to inherent data complexity and imbalance.
 
@@ -264,17 +264,17 @@ Model performance varies by configuration:
 
 ## 📊 Comparison: 1-Epoch vs 25-Epoch
 
-| Dataset | 1-Epoch | 25-Epoch | Improvement |
+| Dataset           | 1-Epoch | 25-Epoch | Improvement |
 | ----------------- | ------- | -------- | ----------- |
-| ionosphere | 65.62% | 90.14% | +24.52% |
-| banknote | 94.85% | 100.00% | +5.15% |
-| heart_disease | 68.75% | 81.97% | +13.22% |
-| sonar | 65.62% | 76.19% | +10.57% |
-| diabetes | 66.67% | 70.78% | +4.11% |
-| blood_transfusion | 66.67% | 83.33% | +16.66% |
-| magic_gamma | 77.27% | 78.05% | +0.78% |
-| iris | 68.75% | 96.67% | +27.92% |
-| glass | 59.38% | 88.37% | +28.99% |
+| ionosphere        | 65.62%  | 90.14%   | +24.52%     |
+| banknote          | 94.85%  | 100.00%  | +5.15%      |
+| heart_disease     | 68.75%  | 81.97%   | +13.22%     |
+| sonar             | 65.62%  | 76.19%   | +10.57%     |
+| diabetes          | 66.67%  | 70.78%   | +4.11%      |
+| blood_transfusion | 66.67%  | 83.33%   | +16.66%     |
+| magic_gamma       | 77.27%  | 78.05%   | +0.78%      |
+| iris              | 68.75%  | 96.67%   | +27.92%     |
+| glass             | 59.38%  | 88.37%   | +28.99%     |
 
 **Average Improvement:** +14.66%
 
@@ -287,9 +287,9 @@ Model performance varies by configuration:
 ### **Tier 1: Immediate Deployment**
 
 - ✅ **banknote** (100% accuracy)
-  - Zero-error forensic classification
-  - Fast inference (<0.1s per sample)
-  - Robust across test sets
+    - Zero-error forensic classification
+    - Fast inference (<0.1s per sample)
+    - Robust across test sets
 
 ### **Tier 2: Production with Monitoring**
 
@@ -378,9 +378,9 @@ Model performance varies by configuration:
 **Quantum Hardware (PAID):**
 
 - 💰 IonQ QPU: ~$0.00003/gate-shot
-  - Example: 100-gate circuit, 100 shots = $0.30
+    - Example: 100-gate circuit, 100 shots = $0.30
 - 💰 Quantinuum H1: ~$0.00015/circuit
-  - Example: Single circuit = $0.15
+    - Example: Single circuit = $0.15
 
 **Recommendation:** Continue using free simulators for development and testing. Reserve QPU hardware for final validation and production deployment.
 

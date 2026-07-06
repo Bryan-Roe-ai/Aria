@@ -9,33 +9,33 @@
 ### LoRA Fine-Tuning (3 models)
 
 - **Phi-3.5 Mini** (microsoft/Phi-3.5-mini-instruct)
-  - Dataset: mixed_chat (full)
-  - Epochs: 3
-  - Output: `data_out/lora_training/phi35/`
+    - Dataset: mixed_chat (full)
+    - Epochs: 3
+    - Output: `data_out/lora_training/phi35/`
 
 - **Qwen2.5 3B** (Qwen/Qwen2.5-3B-Instruct)
-  - Dataset: mixed_chat (full)
-  - Epochs: 3
-  - Output: `data_out/lora_training/qwen25_3b/`
+    - Dataset: mixed_chat (full)
+    - Epochs: 3
+    - Output: `data_out/lora_training/qwen25_3b/`
 
 - **Phi-3.5 MAX** (microsoft/Phi-3.5-mini-instruct)
-  - Dataset: Dolly 15k (full)
-  - Epochs: 3
-  - Output: `data_out/lora_training/phi35_max_performance/`
+    - Dataset: Dolly 15k (full)
+    - Epochs: 3
+    - Output: `data_out/lora_training/phi35_max_performance/`
 
 ### Quantum Training (2 models)
 
 - **Heart Disease Classifier**
-  - Dataset: heart_disease.csv
-  - Qubits: 4
-  - Epochs: 50
-  - Output: `ai-projects/quantum-ml/results/`
+    - Dataset: heart_disease.csv
+    - Qubits: 4
+    - Epochs: 50
+    - Output: `ai-projects/quantum-ml/results/`
 
 - **Ionosphere Classifier**
-  - Dataset: ionosphere.csv
-  - Qubits: 4
-  - Epochs: 100
-  - Output: `ai-projects/quantum-ml/results/`
+    - Dataset: ionosphere.csv
+    - Qubits: 4
+    - Epochs: 100
+    - Output: `ai-projects/quantum-ml/results/`
 
 ## Monitoring
 

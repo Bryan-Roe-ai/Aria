@@ -31,11 +31,11 @@ Validate the current repository state, identify any reproducible failures, and f
 - **Command:** `python3 scripts/pre_commit_check.py`
 - **Result:** ✅ Passed
 - **Checks Passed:** 5/5
-  - Unit tests
-  - Linting
-  - Security scan
-  - Git hygiene
-  - Documentation presence
+    - Unit tests
+    - Linting
+    - Security scan
+    - Git hygiene
+    - Documentation presence
 
 ## Previously Reported Issues Re-checked
 

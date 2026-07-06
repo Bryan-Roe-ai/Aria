@@ -257,13 +257,13 @@ def performance_metrics():
 
 ## 🎯 Optimization Prioritization Matrix
 
-| Optimization | Impact | Effort | Priority |
+| Optimization             | Impact                 | Effort | Priority    |
 | ------------------------ | ---------------------- | ------ | ----------- |
-| Image URL caching | High (if high-traffic) | Low | Conditional |
-| NumPy cosine similarity | Medium | Medium | Medium |
-| File existence caching | Low | Low | Low |
-| Quantum batch processing | Low | High | Low |
-| Performance monitoring | High (visibility) | Medium | High |
+| Image URL caching        | High (if high-traffic) | Low    | Conditional |
+| NumPy cosine similarity  | Medium                 | Medium | Medium      |
+| File existence caching   | Low                    | Low    | Low         |
+| Quantum batch processing | Low                    | High   | Low         |
+| Performance monitoring   | High (visibility)      | Medium | High        |
 
 ---
 

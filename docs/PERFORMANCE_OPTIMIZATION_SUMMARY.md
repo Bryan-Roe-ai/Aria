@@ -203,13 +203,13 @@ for name in status_map:
 
 ### Summary Table
 
-| Optimization | Location | Complexity Change | Typical Speedup |
+| Optimization       | Location                     | Complexity Change | Typical Speedup       |
 | ------------------ | ---------------------------- | ----------------- | --------------------- |
-| Keyword matching | `aria_web/server.py` | O(n×m) → O(n) | 2-5x per command |
-| Connection pooling | `shared/chat_memory.py` | N/A | 50-100ms → 0ms per op |
-| Dict lookup | `scripts/batch_evaluator.py` | O(n×m) → O(n) | 10x for 100 models |
-| Streaming reads | `dashboard/serve.py` | N/A | 100x memory reduction |
-| Direct iteration | 6 files | N/A | 5-10% per iteration |
+| Keyword matching   | `aria_web/server.py`         | O(n×m) → O(n)     | 2-5x per command      |
+| Connection pooling | `shared/chat_memory.py`      | N/A               | 50-100ms → 0ms per op |
+| Dict lookup        | `scripts/batch_evaluator.py` | O(n×m) → O(n)     | 10x for 100 models    |
+| Streaming reads    | `dashboard/serve.py`         | N/A               | 100x memory reduction |
+| Direct iteration   | 6 files                      | N/A               | 5-10% per iteration   |
 
 ### Memory Usage
 
@@ -374,8 +374,8 @@ To monitor the impact of these optimizations:
 ## Changelog
 
 - **2024-02-17**: Phase 1 & 2 optimizations completed
-  - Aria web server keyword matching
-  - Chat memory connection pooling
-  - Batch evaluator O(1) lookups
-  - File I/O streaming
-  - Dictionary iteration improvements
+    - Aria web server keyword matching
+    - Chat memory connection pooling
+    - Batch evaluator O(1) lookups
+    - File I/O streaming
+    - Dictionary iteration improvements

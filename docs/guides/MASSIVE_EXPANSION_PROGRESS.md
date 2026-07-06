@@ -12,10 +12,10 @@
 - **Discovered:** 1,412 quantum-compatible datasets from OpenML
 - **Total available:** 6,369 datasets in OpenML repository
 - **Filter criteria:**
-  - Classification tasks (binary/multi-class)
-  - 50-50,000 samples
-  - 2-100 features
-  - <30% missing values
+    - Classification tasks (binary/multi-class)
+    - 50-50,000 samples
+    - 2-100 features
+    - <30% missing values
 
 **Quality Scoring System (0-100 scale):**
 
@@ -114,13 +114,13 @@ python .\scripts\distributed_benchmark.py --datasets-dir datasets/massive_quantu
 
 ## 📊 Current Status Summary
 
-| Phase | Status | Progress | Duration |
+| Phase            | Status         | Progress               | Duration |
 | ---------------- | -------------- | ---------------------- | -------- |
-| Discovery | ✅ Complete | 1,412/5,000 candidates | 10 min |
-| Download | 🔄 In Progress | 3/100 datasets | Ongoing |
-| Benchmark System | ✅ Complete | System ready | - |
-| Validation | ⏳ Pending | 0/100 validated | TBD |
-| Full Benchmark | ⏳ Pending | 0/100 trained | TBD |
+| Discovery        | ✅ Complete    | 1,412/5,000 candidates | 10 min   |
+| Download         | 🔄 In Progress | 3/100 datasets         | Ongoing  |
+| Benchmark System | ✅ Complete    | System ready           | -        |
+| Validation       | ⏳ Pending     | 0/100 validated        | TBD      |
+| Full Benchmark   | ⏳ Pending     | 0/100 trained          | TBD      |
 
 ---
 

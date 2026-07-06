@@ -12,20 +12,20 @@ The QAI chat interface (`chat-web/`) implements a dual-mode architecture that su
 ### Files
 
 - **`index.html`** (4,300+ lines): Main HTML shell containing:
-  - CSS styles for anime character, chat UI, vision preview, avatar display
-  - Aria anime character container with animation
-  - Chat interface (messages, input, send button)
-  - Vision upload UI (button, file input, preview)
-  - Avatar display container (image, close, regenerate buttons)
-  - Minimal embedded controller script (streaming chat + character animation)
+    - CSS styles for anime character, chat UI, vision preview, avatar display
+    - Aria anime character container with animation
+    - Chat interface (messages, input, send button)
+    - Vision upload UI (button, file input, preview)
+    - Avatar display container (image, close, regenerate buttons)
+    - Minimal embedded controller script (streaming chat + character animation)
 
 - **`chat.js`** (900+ lines): ES6 module responsible for:
-  - All UI event wiring (send, vision upload, avatar buttons)
-  - Vision image analysis via `/api/vision/infer`
-  - AI avatar generation via `/api/image/generate`
-  - Chat message handling (one-shot and streaming via SSE)
-  - Markdown rendering with syntax highlighting
-  - localStorage persistence for chat history
+    - All UI event wiring (send, vision upload, avatar buttons)
+    - Vision image analysis via `/api/vision/infer`
+    - AI avatar generation via `/api/image/generate`
+    - Chat message handling (one-shot and streaming via SSE)
+    - Markdown rendering with syntax highlighting
+    - localStorage persistence for chat history
 
 ### Backend Endpoints
 
@@ -57,11 +57,11 @@ The `window.ARIA_EMBEDDED` flag controls which code path handles UI interactions
 
 - `chat.js` DOMContentLoaded handler executes normally
 - All UI elements wired up by `chat.js`:
-  - Send button → `sendMessage()`
-  - Vision upload button → `handleImageUpload()`
-  - Vision clear button → `clearVisionUpload()`
-  - Avatar regenerate button → `generateAriaAvatar(true)`
-  - Avatar close button → `hideAriaAvatar()`
+    - Send button → `sendMessage()`
+    - Vision upload button → `handleImageUpload()`
+    - Vision clear button → `clearVisionUpload()`
+    - Avatar regenerate button → `generateAriaAvatar(true)`
+    - Avatar close button → `hideAriaAvatar()`
 - Embedded controller only handles character animation (`ariaDance()`)
 - **Recommended for standard deployment**
 
