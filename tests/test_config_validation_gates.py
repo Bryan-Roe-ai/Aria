@@ -36,6 +36,8 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             check=False,
         )
@@ -52,6 +54,8 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             env=env,
             check=False,
