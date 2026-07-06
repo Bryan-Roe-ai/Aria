@@ -187,6 +187,22 @@ jobs:
             git stash pop
           fi
 
+      - name: Revert workflow file changes and remove stray files
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Remove stray untracked files that must not be committed.
+          # detect_output.txt can appear if a prior run wrote it or if the stash
+          # pop restored it from an old workflow version.
+          rm -f detect_output.txt
+          # Ensure no .github/workflows/ files are modified before we create the
+          # PR branch.  GITHUB_TOKEN has contents:write but NOT workflows
+          # permission, so pushing any change under .github/workflows/ would be
+          # rejected by GitHub with "refusing to update workflow file without
+          # workflows permission" — even when the change is accidental (e.g.
+          # caused by a race-condition rebase).
+          git restore --staged --worktree -- .github/workflows 2>/dev/null || true
+
       - name: Detect changes
         id: changes
         shell: bash
