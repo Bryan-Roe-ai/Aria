@@ -207,11 +207,7 @@ class Analyzer:
         results: list[Finding],
     ) -> str:
         lines = cursor.split("\n")
-        offending_lines = [
-            index + 1
-            for index, line in enumerate(lines)
-            if line != line.rstrip(" \t")
-        ]
+        offending_lines = [index + 1 for index, line in enumerate(lines) if line != line.rstrip(" \t")]
         if not offending_lines:
             return cursor
 

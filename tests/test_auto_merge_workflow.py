@@ -71,17 +71,14 @@ def test_auto_merge_has_pull_request_trigger() -> None:
 def test_auto_merge_has_check_run_trigger() -> None:
     wf = _load_auto_merge()
     assert "check_run" in _get_triggers(wf), (
-        "auto-merge.yml must trigger on check_run events so it fires when "
-        "'All Gates Passed' completes"
+        "auto-merge.yml must trigger on check_run events so it fires when 'All Gates Passed' completes"
     )
 
 
 def test_auto_merge_check_run_trigger_on_completed() -> None:
     wf = _load_auto_merge()
     check_run = _get_triggers(wf)["check_run"]
-    assert "completed" in check_run.get("types", []), (
-        "check_run trigger must include the 'completed' type"
-    )
+    assert "completed" in check_run.get("types", []), "check_run trigger must include the 'completed' type"
 
 
 def test_auto_merge_pull_request_trigger_includes_labeled_unlabeled() -> None:
@@ -108,9 +105,7 @@ def test_auto_merge_has_disable_job() -> None:
 
 def test_auto_merge_has_merge_on_gate_pass_job() -> None:
     wf = _load_auto_merge()
-    assert "merge-on-gate-pass" in wf["jobs"], (
-        "auto-merge.yml must have a 'merge-on-gate-pass' job"
-    )
+    assert "merge-on-gate-pass" in wf["jobs"], "auto-merge.yml must have a 'merge-on-gate-pass' job"
 
 
 def test_auto_merge_has_bot_approve_job() -> None:
@@ -142,20 +137,14 @@ def test_merge_on_gate_pass_filters_all_gates_passed_name() -> None:
 def test_merge_on_gate_pass_filters_success_conclusion() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["merge-on-gate-pass"].get("if", "")
-    assert "success" in job_if, (
-        "merge-on-gate-pass must only fire when the check_run conclusion is 'success'"
-    )
+    assert "success" in job_if, "merge-on-gate-pass must only fire when the check_run conclusion is 'success'"
 
 
 def test_merge_on_gate_pass_has_write_permissions() -> None:
     wf = _load_auto_merge()
     perms = wf["jobs"]["merge-on-gate-pass"].get("permissions", {})
-    assert perms.get("contents") == "write", (
-        "merge-on-gate-pass needs contents:write to perform merges"
-    )
-    assert perms.get("pull-requests") == "write", (
-        "merge-on-gate-pass needs pull-requests:write to post comments"
-    )
+    assert perms.get("contents") == "write", "merge-on-gate-pass needs contents:write to perform merges"
+    assert perms.get("pull-requests") == "write", "merge-on-gate-pass needs pull-requests:write to post comments"
 
 
 # ---------------------------------------------------------------------------
@@ -167,25 +156,21 @@ def test_enable_job_guards_against_forks() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["enable"].get("if", "")
     assert "head.repo.full_name == github.repository" in job_if, (
-        "enable job must guard against fork PRs by checking "
-        "head.repo.full_name == github.repository"
+        "enable job must guard against fork PRs by checking head.repo.full_name == github.repository"
     )
 
 
 def test_enable_job_guards_against_drafts() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["enable"].get("if", "")
-    assert "draft" in job_if, (
-        "enable job must guard against draft PRs"
-    )
+    assert "draft" in job_if, "enable job must guard against draft PRs"
 
 
 def test_enable_job_fires_on_pull_request_event() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["enable"].get("if", "")
     assert "github.event_name == 'pull_request'" in job_if, (
-        "enable job must check github.event_name == 'pull_request' to avoid "
-        "running on check_run events"
+        "enable job must check github.event_name == 'pull_request' to avoid running on check_run events"
     )
 
 
@@ -197,29 +182,21 @@ def test_enable_job_fires_on_pull_request_event() -> None:
 def test_disable_job_guards_against_forks() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["disable"].get("if", "")
-    assert "head.repo.full_name == github.repository" in job_if, (
-        "disable job must guard against fork PRs"
-    )
+    assert "head.repo.full_name == github.repository" in job_if, "disable job must guard against fork PRs"
 
 
 def test_disable_job_requires_unlabeled_action() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["disable"].get("if", "")
-    assert "unlabeled" in job_if, (
-        "disable job must check for the 'unlabeled' action"
-    )
+    assert "unlabeled" in job_if, "disable job must check for the 'unlabeled' action"
 
 
 def test_disable_job_checks_no_remaining_label() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["disable"].get("if", "")
     # Must verify both labels are absent before disabling
-    assert "auto-merge" in job_if, (
-        "disable job must check that 'auto-merge' label is no longer present"
-    )
-    assert "autofix" in job_if, (
-        "disable job must check that 'autofix' label is no longer present"
-    )
+    assert "auto-merge" in job_if, "disable job must check that 'auto-merge' label is no longer present"
+    assert "autofix" in job_if, "disable job must check that 'autofix' label is no longer present"
 
 
 # ---------------------------------------------------------------------------
@@ -230,40 +207,28 @@ def test_disable_job_checks_no_remaining_label() -> None:
 def test_bot_approve_gated_by_variable() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["bot-approve"].get("if", "")
-    assert "AUTO_MERGE_BOT_APPROVE" in job_if, (
-        "bot-approve job must be gated by the AUTO_MERGE_BOT_APPROVE variable"
-    )
+    assert "AUTO_MERGE_BOT_APPROVE" in job_if, "bot-approve job must be gated by the AUTO_MERGE_BOT_APPROVE variable"
 
 
 def test_bot_approve_guards_against_forks() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["bot-approve"].get("if", "")
-    assert "head.repo.full_name == github.repository" in job_if, (
-        "bot-approve must guard against fork PRs"
-    )
+    assert "head.repo.full_name == github.repository" in job_if, "bot-approve must guard against fork PRs"
 
 
 def test_bot_approve_skips_drafts() -> None:
     wf = _load_auto_merge()
     job_if = wf["jobs"]["bot-approve"].get("if", "")
-    assert "draft" in job_if, (
-        "bot-approve must skip draft PRs"
-    )
+    assert "draft" in job_if, "bot-approve must skip draft PRs"
 
 
 def test_bot_approve_allowlist_defined_in_env() -> None:
     wf = _load_auto_merge()
     env = wf.get("env", {})
-    assert "BOT_APPROVE_ALLOWLIST" in env, (
-        "BOT_APPROVE_ALLOWLIST must be declared in the workflow-level env block"
-    )
+    assert "BOT_APPROVE_ALLOWLIST" in env, "BOT_APPROVE_ALLOWLIST must be declared in the workflow-level env block"
     allowlist = env["BOT_APPROVE_ALLOWLIST"]
-    assert "github-actions[bot]" in allowlist, (
-        "github-actions[bot] must be in BOT_APPROVE_ALLOWLIST"
-    )
-    assert "copilot-swe-agent[bot]" in allowlist, (
-        "copilot-swe-agent[bot] must be in BOT_APPROVE_ALLOWLIST"
-    )
+    assert "github-actions[bot]" in allowlist, "github-actions[bot] must be in BOT_APPROVE_ALLOWLIST"
+    assert "copilot-swe-agent[bot]" in allowlist, "copilot-swe-agent[bot] must be in BOT_APPROVE_ALLOWLIST"
 
 
 # ---------------------------------------------------------------------------
@@ -303,91 +268,65 @@ def test_auto_merge_on_ci_stub_has_no_automatic_trigger() -> None:
 
 def test_eligibility_action_exists() -> None:
     action_path = ACTIONS_DIR / "check-auto-merge-eligibility" / "action.yml"
-    assert action_path.exists(), (
-        "check-auto-merge-eligibility/action.yml must exist"
-    )
+    assert action_path.exists(), "check-auto-merge-eligibility/action.yml must exist"
 
 
 def test_eligibility_action_has_pr_number_input() -> None:
     action = _load_eligibility_action()
     inputs = action.get("inputs", {})
-    assert "pr-number" in inputs, (
-        "eligibility action must define a 'pr-number' input"
-    )
-    assert inputs["pr-number"].get("required") is True, (
-        "'pr-number' input must be required"
-    )
+    assert "pr-number" in inputs, "eligibility action must define a 'pr-number' input"
+    assert inputs["pr-number"].get("required") is True, "'pr-number' input must be required"
 
 
 def test_eligibility_action_has_github_token_input() -> None:
     action = _load_eligibility_action()
     inputs = action.get("inputs", {})
-    assert "github-token" in inputs, (
-        "eligibility action must define a 'github-token' input"
-    )
+    assert "github-token" in inputs, "eligibility action must define a 'github-token' input"
 
 
 def test_eligibility_action_outputs_eligible() -> None:
     action = _load_eligibility_action()
     outputs = action.get("outputs", {})
-    assert "eligible" in outputs, (
-        "eligibility action must output 'eligible'"
-    )
+    assert "eligible" in outputs, "eligibility action must output 'eligible'"
 
 
 def test_eligibility_action_outputs_reason() -> None:
     action = _load_eligibility_action()
     outputs = action.get("outputs", {})
-    assert "reason" in outputs, (
-        "eligibility action must output 'reason'"
-    )
+    assert "reason" in outputs, "eligibility action must output 'reason'"
 
 
 def test_eligibility_action_is_composite() -> None:
     action = _load_eligibility_action()
-    assert action.get("runs", {}).get("using") == "composite", (
-        "eligibility action must use 'composite' runner"
-    )
+    assert action.get("runs", {}).get("using") == "composite", "eligibility action must use 'composite' runner"
 
 
 def test_eligibility_action_checks_draft() -> None:
     action_path = ACTIONS_DIR / "check-auto-merge-eligibility" / "action.yml"
     content = action_path.read_text(encoding="utf-8")
-    assert "draft" in content.lower(), (
-        "eligibility action script must check for draft status"
-    )
+    assert "draft" in content.lower(), "eligibility action script must check for draft status"
 
 
 def test_eligibility_action_checks_base_branch() -> None:
     action_path = ACTIONS_DIR / "check-auto-merge-eligibility" / "action.yml"
     content = action_path.read_text(encoding="utf-8")
-    assert "main" in content, (
-        "eligibility action must verify the PR targets 'main'"
-    )
+    assert "main" in content, "eligibility action must verify the PR targets 'main'"
 
 
 def test_eligibility_action_checks_fork() -> None:
     action_path = ACTIONS_DIR / "check-auto-merge-eligibility" / "action.yml"
     content = action_path.read_text(encoding="utf-8")
-    assert "fork" in content.lower(), (
-        "eligibility action must guard against fork PRs"
-    )
+    assert "fork" in content.lower(), "eligibility action must guard against fork PRs"
 
 
 def test_eligibility_action_checks_label() -> None:
     action_path = ACTIONS_DIR / "check-auto-merge-eligibility" / "action.yml"
     content = action_path.read_text(encoding="utf-8")
-    assert "auto-merge" in content, (
-        "eligibility action must verify the 'auto-merge' label"
-    )
-    assert "autofix" in content, (
-        "eligibility action must verify the 'autofix' label"
-    )
+    assert "auto-merge" in content, "eligibility action must verify the 'auto-merge' label"
+    assert "autofix" in content, "eligibility action must verify the 'autofix' label"
 
 
 def test_eligibility_action_checks_changes_requested() -> None:
     action_path = ACTIONS_DIR / "check-auto-merge-eligibility" / "action.yml"
     content = action_path.read_text(encoding="utf-8")
-    assert "CHANGES_REQUESTED" in content, (
-        "eligibility action must block on CHANGES_REQUESTED reviews"
-    )
+    assert "CHANGES_REQUESTED" in content, "eligibility action must block on CHANGES_REQUESTED reviews"
