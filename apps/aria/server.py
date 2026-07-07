@@ -1396,7 +1396,7 @@ def determine_position_from_context(cmd: str) -> str:
     else:
         # Context-aware positioning: stay put if already in good position
         # or move to interesting area if idle
-        pos_hash = int(hashlib.sha256(cmd.encode()).hexdigest()[:4], 16)
+        pos_hash = abs(hash(cmd))
         x = 30 + (pos_hash % 40)  # Random between 30-70%
         y = 60 + (pos_hash % 20)  # Random between 60-80%
         return f"[aria:position:{x}:{y}]"
