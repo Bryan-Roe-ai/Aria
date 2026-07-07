@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 import shared.ai_runner as ai_runner
-from shared.ai_safety_middleware import SafetyDecision
+from shared.ai_safety_middleware import AISafetyMiddleware, SafetyDecision
 
 # ---------------------------------------------------------------------------
 # Module-level constants
