@@ -197,7 +197,7 @@ Browse and manage all your tools:
 
 - Ensure server is running (`python web_server.py`)
 - Check firewall settings
-- Try http://127.0.0.1:8090 instead
+- Try <http://127.0.0.1:8090> instead
 
 ## 🚀 Advanced Usage
 

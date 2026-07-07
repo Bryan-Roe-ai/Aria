@@ -1,4 +1,4 @@
-# ✅ Quantum AI Web Dashboard - Setup Complete!
+# ✅ Quantum AI Web Dashboard - Setup Complete
 
 ## 🎉 What's New
 
@@ -26,7 +26,7 @@ cd quantum-ai
 ./start_dashboard.sh
 ```
 
-Then open your browser to: **http://localhost:5000**
+Then open your browser to: **<http://localhost:5000>**
 
 ## ✨ Features
 
@@ -158,7 +158,7 @@ GET  /api/results/:file         # Get detailed results
 
 ### Immediate Actions
 
-1. Open http://localhost:5000 in your browser
+1. Open <http://localhost:5000> in your browser
 2. Select "heart" dataset and click "Start Training"
 3. Watch the real-time charts update!
 
@@ -235,10 +235,10 @@ def create_quantum_circuit(n_qubits, n_layers):
 
 ## 🎓 Learning Resources
 
-- **PennyLane Docs**: https://pennylane.ai/
-- **Quantum ML Tutorial**: https://pennylane.ai/qml/
-- **Chart.js Docs**: https://www.chartjs.org/
-- **Flask Tutorial**: https://flask.palletsprojects.com/
+- **PennyLane Docs**: <https://pennylane.ai/>
+- **Quantum ML Tutorial**: <https://pennylane.ai/qml/>
+- **Chart.js Docs**: <https://www.chartjs.org/>
+- **Flask Tutorial**: <https://flask.palletsprojects.com/>
 
 ## 🙏 Tech Stack
 
@@ -266,7 +266,7 @@ Built with:
 
 ---
 
-## 🚀 Ready to Train!
+## 🚀 Ready to Train
 
 Your quantum AI training dashboard is fully operational. Start the server with:
 
@@ -274,6 +274,6 @@ Your quantum AI training dashboard is fully operational. Start the server with:
 ./start_dashboard.sh
 ```
 
-Open **http://localhost:5000** and train your first quantum machine learning model!
+Open **<http://localhost:5000>** and train your first quantum machine learning model!
 
 **Happy quantum computing!** ⚛️🎉

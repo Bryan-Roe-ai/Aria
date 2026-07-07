@@ -282,9 +282,9 @@ python .\scripts\sql_migrate.py
 
 - **Core Documentation**: `DATABASE_SQL_SETUP.md`
 - **Azure Monitoring**: `AZURE_MONITOR_SQL_SETUP.md`
-- **SQLAlchemy Docs**: https://docs.sqlalchemy.org/en/20/core/pooling.html
-- **Azure Monitor Pricing**: https://azure.microsoft.com/pricing/details/monitor/
-- **Application Insights KQL**: https://learn.microsoft.com/azure/azure-monitor/logs/get-started-queries
+- **SQLAlchemy Docs**: <https://docs.sqlalchemy.org/en/20/core/pooling.html>
+- **Azure Monitor Pricing**: <https://azure.microsoft.com/pricing/details/monitor/>
+- **Application Insights KQL**: <https://learn.microsoft.com/azure/azure-monitor/logs/get-started-queries>
 
 ## Version History
 

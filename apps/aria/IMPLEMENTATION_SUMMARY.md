@@ -59,13 +59,13 @@ Successfully added LLM-powered automatic action generation and execution system 
 
 ## 📁 Files Created/Modified
 
-### Created:
+### Created
 
 - `aria_web/auto-execute.html` - Web UI for testing (529 lines)
 - `aria_web/AUTO-EXECUTE.md` - Comprehensive documentation (450+ lines)
 - This summary document
 
-### Modified:
+### Modified
 
 - `aria_web/server.py` - Added 223 lines:
     - LLM imports and provider detection (lines 12-13, 23-31)
@@ -107,7 +107,7 @@ Result: Successfully parsed 2 actions (say, gesture) and executed both with prop
 
 ## 🔄 Integration with Existing Code
 
-### Preserved Features:
+### Preserved Features
 
 - ✅ Original `/api/aria/command` endpoint (rule-based tags)
 - ✅ `/api/aria/state` endpoint (stage state queries)
@@ -115,7 +115,7 @@ Result: Successfully parsed 2 actions (say, gesture) and executed both with prop
 - ✅ Existing tag generation system (`generate_tags_fallback()`)
 - ✅ AI model loading path (currently disabled for fast startup)
 
-### New Parallel System:
+### New Parallel System
 
 - New `/api/aria/execute` endpoint operates independently
 - Uses same `stage_state` dict for consistency

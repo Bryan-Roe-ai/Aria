@@ -80,9 +80,11 @@ git commit --no-verify
     - On Linux/macOS, confirm the file is executable (`ls -l .githooks/pre-commit`).
 - **`pre-commit.ps1` is blocked by execution policy (Windows)**
     - Run PowerShell as your user and execute:
-        ```powershell
-        Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-        ```
+
+          ```powershell
+          Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+          ```
+
 - **Tests are too slow**
     - Ensure only unit tests are selected; integration/Azure suites should be excluded.
     - Profile with `pytest --durations=10` to identify slow tests.

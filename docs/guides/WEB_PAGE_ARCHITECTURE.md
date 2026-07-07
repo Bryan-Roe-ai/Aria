@@ -68,6 +68,7 @@ The `window.ARIA_EMBEDDED` flag controls which code path handles UI interactions
 **When `ARIA_EMBEDDED = true` (reserved)**:
 
 - `chat.js` detects flag and returns early from DOMContentLoaded:
+
     ```javascript
     if (window && window.ARIA_EMBEDDED) {
         console.log(
@@ -76,6 +77,7 @@ The `window.ARIA_EMBEDDED` flag controls which code path handles UI interactions
         return
     }
     ```
+
 - Embedded inline controller would need to implement all UI handlers
 - **Use case**: Future scenarios requiring custom inline implementation
 - **Current status**: Not recommended; duplicate handlers were removed from embedded script
@@ -151,6 +153,7 @@ Embedded script focuses solely on:
 ### Processing (chat.js)
 
 1. POSTs to `/api/image/generate` with anime-style prompt:
+
     ```json
     {
         "prompt": "Portrait of Aria, anime-style AI assistant character, purple gradient hair, cute anime girl, friendly expression, digital art, high quality, detailed, vibrant colors, soft lighting",
@@ -158,6 +161,7 @@ Embedded script focuses solely on:
         "style": "anime"
     }
     ```
+
 2. Displays loading state (optional)
 3. Receives image URL or base64 data
 4. Sets `<img id="ariaAvatarImage" src="...">`
@@ -303,7 +307,7 @@ typeof hljs // Should be "object"
     func start
     ```
 
-2. Open browser to http://localhost:7071/api/chat-web
+2. Open browser to <http://localhost:7071/api/chat-web>
 
 3. Open DevTools (F12) → Console tab
 

@@ -83,6 +83,12 @@ class TestFileAgeDays:
         f = _touch(tmp_path / "z.json")
         assert ca._file_age_days(f) >= 0.0
 
+    def test_future_mtime_is_clamped_to_zero(self, tmp_path: Path):
+        f = _touch(tmp_path / "future.json")
+        future = time.time() + 1
+        os.utime(f, (future, future))
+        assert ca._file_age_days(f) == 0.0
+
 
 # ---------------------------------------------------------------------------
 # find_candidates — structural / empty cases

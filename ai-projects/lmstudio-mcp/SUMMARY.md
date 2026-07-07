@@ -45,22 +45,26 @@ ai-projects/lmstudio-mcp/
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 cd ai-projects/lmstudio-mcp
 pip install -r mcp-requirements.txt
 ```
 
 ### 2. Verify LM Studio is Running
+
 - Open LM Studio app
 - Ensure a model is loaded
-- Enable "Local Server" (default: http://127.0.0.1:1234/v1)
+- Enable "Local Server" (default: <http://127.0.0.1:1234/v1>)
 
 ### 3. Test the Connection
+
 ```bash
 python test_lmstudio_mcp.py
 ```
 
 ### 4. Start the MCP Server
+
 ```bash
 # Simple start
 python lmstudio_mcp_server.py
@@ -75,12 +79,14 @@ python quickstart.py
 ## 🔧 Configuration
 
 ### Environment Variables
+
 - `LMSTUDIO_BASE_URL` - Server endpoint (default: `http://127.0.0.1:1234/v1`)
 - `LMSTUDIO_MODEL` - Model name (default: `local-model`)
 - `LMSTUDIO_TEMPERATURE` - Sampling temperature (default: `0.7`)
 - `LMSTUDIO_MAX_TOKENS` - Max response tokens (default: `2048`)
 
 ### Examples
+
 ```bash
 # Local setup
 export LMSTUDIO_MODEL=mistral-7b
@@ -99,11 +105,13 @@ python lmstudio_mcp_server.py
 ## 🧪 Testing
 
 ### Test the Server Connection
+
 ```bash
 python test_lmstudio_mcp.py
 ```
 
 This will:
+
 1. ✅ Check TCP connection to LM Studio
 2. ✅ List available models
 3. ✅ Send a test chat message
@@ -111,6 +119,7 @@ This will:
 5. ✅ Check server status
 
 ### Quick Validation
+
 ```bash
 # Using startup script
 ./run.sh --test
@@ -131,16 +140,19 @@ python quickstart.py
 ## 🔌 Integration Points
 
 ### With Aria Platform
+
 - Complements existing `LMStudioProvider` in `shared/chat_providers.py`
 - Provides MCP-protocol access to the same LM Studio instance
 - Can be used alongside other providers (OpenAI, Azure, Local)
 
 ### With MCP Clients
+
 - GitHub Copilot (custom tools)
 - AI Agents using MCP protocol
 - LLM applications requiring standardized tool access
 
 ### With Aria's Chat System
+
 ```python
 # Existing provider way
 from shared.chat_providers import LMStudioProvider
@@ -155,21 +167,25 @@ await client.chat_completion(messages=[...])
 ## 🏗️ Implementation Details
 
 ### HTTP Client
+
 - Uses `httpx` for async HTTP requests
 - Timeout: 30 seconds (configurable)
 - Connection pooling for efficiency
 
 ### OpenAI API Compatibility
+
 - LM Studio exposes OpenAI-compatible endpoints
 - Server expects: `/v1/models` and `/v1/chat/completions`
 - Full support for streaming responses (infrastructure in place)
 
 ### Error Handling
+
 - Graceful connection errors
 - Helpful error messages for common issues
 - Non-blocking failures with fallback behavior
 
 ### Logging
+
 - Structured logging via Python logging module
 - INFO level by default
 - Useful for debugging connection issues
@@ -192,15 +208,18 @@ aiohttp>=3.8.0      # (optional) Better async support
 ## 🎓 Learning Resources
 
 ### MCP Protocol
+
 - [Model Context Protocol Docs](https://modelcontextprotocol.io)
 - Standardized protocol for AI tool access
 
 ### LM Studio
+
 - [LM Studio Official](https://lmstudio.ai)
 - OpenAI API compatible local server
 - Supports Mistral, LLaMA, CodeLLaMA, and more
 
 ### Aria Integration
+
 - See `shared/chat_providers.py` for provider patterns
 - See `ai-projects/chat-cli/` for chat CLI integration
 
@@ -220,16 +239,19 @@ Before deploying, verify:
 ### Common Issues
 
 **"Connection refused"**
+
 - Verify LM Studio is running
 - Check server is enabled in LM Studio UI
 - Confirm correct port (default: 1234)
 
 **"Model not found"**
+
 - List models: Use `list_models` tool
 - Load a model in LM Studio
 - Update `LMSTUDIO_MODEL` environment variable
 
 **"Slow responses"**
+
 - Check system RAM/VRAM
 - Reduce `LMSTUDIO_MAX_TOKENS`
 - Verify model isn't doing other work

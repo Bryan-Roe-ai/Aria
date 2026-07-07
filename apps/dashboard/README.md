@@ -11,13 +11,17 @@ A simple Flask web dashboard for monitoring orchestrator status, resource usage,
 ## Usage
 
 1. Install dependencies:
+
     ```powershell
     pip install -r requirements.txt
     ```
+
 2. Run the dashboard:
+
     ```powershell
     python app.py
     ```
+
 3. Open [http://localhost:5000](http://localhost:5000) in your browser.
 
 ## Endpoints

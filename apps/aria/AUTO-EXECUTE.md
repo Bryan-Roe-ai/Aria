@@ -497,4 +497,4 @@ Part of the QAI (Quantum-AI) project. See root LICENSE file.
 
 ---
 
-**Need Help?** Check the [main README](/README.md) or [copilot instructions](/.github/copilot-instructions.md)
+**Need Help?** Check the [main README](../../README.md) or [copilot instructions](../../.github/copilot-instructions.md)

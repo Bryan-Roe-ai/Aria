@@ -1,0 +1,17 @@
+jobName: keep_working
+jobType: Notebook
+jobPath: keep_working.ipynb
+jobDescription: ""
+scheduleConfig:
+    isEnabled: false
+computeInfo:
+    nodeSize: medium
+    driverCores: 8
+    driverMemory: 56GB
+    executorCores: 8
+    executorMemory: 56GB
+    isExecutorAutoScale: false
+    executorMinCount: 3
+    executorMaxCount: 3
+    friendlyName: medium pool (32 vCores)
+isDisabled: false

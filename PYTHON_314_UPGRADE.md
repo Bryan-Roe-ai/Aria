@@ -163,6 +163,7 @@ On the next GitHub Actions run, workflows will automatically:
 **Packages to Monitor**:
 
 - If you encounter dependency conflicts, add explicit upper bounds to `requirements.txt`:
+
     ```
     package_name>=min_version,<next_major_version
     ```
@@ -246,7 +247,7 @@ A: Not immediately, but they will benefit from Python 3.14's performance improve
 A: Yes, Python 3.9 support has been dropped. If you need to support older versions, keep this upgrade in a separate branch.
 
 **Q: How do I check if packages support Python 3.14?**
-A: Visit https://pythonwheels.com/ or check PyPI package pages for "Requires: Python >=X.Y" clauses.
+A: Visit <https://pythonwheels.com/> or check PyPI package pages for "Requires: Python >=X.Y" clauses.
 
 ## References
 

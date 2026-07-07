@@ -453,15 +453,15 @@ python .\dashboard\websocket_server.py
 
 ### 2. Access Features
 
-| Feature                | URL                                  | Keyboard Shortcut |
-| ---------------------- | ------------------------------------ | ----------------- |
-| **Hub**                | http://localhost:8000/               | -                 |
-| **Training Dashboard** | http://localhost:8000/unified.html   | -                 |
-| **Analytics**          | http://localhost:8000/analytics.html | -                 |
-| **Model Comparison**   | In unified.html                      | `Ctrl+M`          |
-| **Config Templates**   | In unified.html                      | `Ctrl+T`          |
-| **Training History**   | In hub.html                          | `Ctrl+H`          |
-| **Job Queue**          | In hub.html                          | Click "Job Queue" |
+| Feature                | URL                                    | Keyboard Shortcut |
+| ---------------------- | -------------------------------------- | ----------------- |
+| **Hub**                | <http://localhost:8000/>               | -                 |
+| **Training Dashboard** | <http://localhost:8000/unified.html>   | -                 |
+| **Analytics**          | <http://localhost:8000/analytics.html> | -                 |
+| **Model Comparison**   | In unified.html                        | `Ctrl+M`          |
+| **Config Templates**   | In unified.html                        | `Ctrl+T`          |
+| **Training History**   | In hub.html                            | `Ctrl+H`          |
+| **Job Queue**          | In hub.html                            | Click "Job Queue" |
 
 ### 3. Test Features
 

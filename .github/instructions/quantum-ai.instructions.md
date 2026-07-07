@@ -14,7 +14,7 @@ applyTo: "ai-projects/quantum-ml/**"
     - `create_quantum_circuit`, `simulate_quantum_circuit`, `get_quantum_circuit_properties`
     - `connect_azure_quantum`, `list_quantum_backends`, `submit_quantum_job`, `estimate_quantum_cost`
     - `train_quantum_classifier`
-- Interactive Web Dashboard: `ai-projects/quantum-ml/start_dashboard.sh` → http://localhost:5000
+- Interactive Web Dashboard: `ai-projects/quantum-ml/start_dashboard.sh` → <http://localhost:5000>
 - Azure workspace config: `ai-projects/quantum-ml/config/quantum_config.yaml` (requires `az login`).
 - Data immutability: read-only `datasets/`; write-only outputs in `data_out/quantum_autorun/<job>/...`.
 - Unit tests: `python .\\scripts\\test_runner.py --unit` or `pytest -m "not slow and not azure"` for fast local validation.

@@ -128,7 +128,7 @@ python .\scripts\autotrain.py --dry-run
 ### Live Testing
 
 1. Start dashboard: `python dashboard/app.py` or use SocketIO runner
-2. Navigate to http://localhost:5000
+2. Navigate to <http://localhost:5000>
 3. Click theme toggle (moon icon) to test dark mode
 4. Start a training job to see:
     - Per-job ETA in running job row

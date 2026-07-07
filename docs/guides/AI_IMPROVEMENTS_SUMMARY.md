@@ -53,6 +53,7 @@ Comprehensive enhancements to the AI training pipeline focused on improving mode
     - **Unique Token Ratio**: Overall unique token percentage
     - **Aggregated Diversity**: Average of Distinct-1 and Distinct-2
 - **Example Output**:
+
     ```json
     {
         "distinct_1": 0.421,
@@ -61,6 +62,7 @@ Comprehensive enhancements to the AI training pipeline focused on improving mode
         "diversity": 0.579
     }
     ```
+
 - **Benefit**: Quantifies model's ability to generate varied responses (higher is better)
 
 #### Improved Perplexity Computation

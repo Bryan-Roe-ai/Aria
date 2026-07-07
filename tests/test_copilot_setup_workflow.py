@@ -33,6 +33,12 @@ def test_copilot_setup_workflow_has_selective_lint_logic() -> None:
     assert 'load_changed_targets "${PUSH_BEFORE_SHA}" "${HEAD_SHA}" || load_default_targets' in content
     assert 'YAML_LIST_FILE="${{ steps.targets.outputs.yaml_list_file }}"' in content
     assert 'MD_LIST_FILE="${{ steps.targets.outputs.md_list_file }}"' in content
+    assert "is_markdown_target() {" in content
+    assert 'case "$rel" in' in content
+    assert "*/*)" in content
+    assert "COPILOT*.md|copilot-*.md" in content
+    assert "find .github -maxdepth 1 -type f \\( -name 'COPILOT*.md' -o -name 'copilot-*.md' \\)" in content
+    assert 'is_markdown_target "$file" && printf \'%s\\0\' "$file" >> "$MD_LIST_FILE"' in content
 
 
 @pytest.mark.unit

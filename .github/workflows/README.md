@@ -32,24 +32,28 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 ### 🔄 Continuous Integration (CI)
 
 #### `merge-gate.yml` — Canonical PR validation gate
+
 - **Triggers:** pull requests to `main`, merge queue, manual dispatch
 - **Purpose:** single branch-protection check (`Merge Gate / All Gates Passed`) with fan-in across unit tests, PR validation, security review, integration contract checks, setup guardrails, and automatic dependency submission completion
 - **Duration:** ~10–20 minutes
 - **Owner:** Platform team
 
 #### `ci.yml` — Branch CI validation
+
 - **Triggers:** push to `main`, manual dispatch
 - **Purpose:** linting, type-checking (advisory), and matrix unit tests on branch updates
 - **Duration:** ~10–25 minutes
 - **Owner:** Platform team
 
 #### `pr-tests.yml` — Scheduled/manual regression lane
+
 - **Triggers:** push to `main`, daily schedule (`0 3 * * *` UTC), manual dispatch
 - **Purpose:** broader regression lane including pre-commit + unit tests and optional watcher execution
 - **Duration:** ~10–20 minutes
 - **Owner:** Platform team
 
 #### `ci-pipeline.yml` — Scheduled automation pipeline
+
 - **Triggers:** daily schedule (`0 2 * * *` UTC), manual dispatch
 - **Purpose:** orchestrated validation, integration smoke, scheduled training, and deployment chain
 - **Duration:** ~15–30 minutes
@@ -58,18 +62,21 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 ### ✅ Testing Workflows
 
 #### `aria-tests.yml` — Comprehensive Aria testing
+
 - **Triggers:** changes to `apps/aria/**`, `aria_web/**`, or Aria test files
 - **Purpose:** multi-Python (3.10–3.12) and multi-browser end-to-end tests
 - **Duration:** ~20–30 minutes
 - **Notes:** path-filtered; more thorough than quick regression
 
 #### `e2e-tests.yml` — Quick regression testing
+
 - **Triggers:** any push/PR to `main`
 - **Purpose:** fast Aria regression tests
 - **Duration:** ~10–15 minutes
 - **Notes:** not path-filtered; catches broad regressions
 
 #### `pr-test-summary-comment.yml` — AI PR comment summary for workflow runs
+
 - **Triggers:** `workflow_run` (currently `AGI smoke`)
 - **Purpose:** posts or updates a PR comment with AI-written action-run summaries
 - **Duration:** ~1–3 minutes
@@ -78,16 +85,19 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 ### 🔬 Validation Workflows
 
 #### `auto-validation.yml` — Orchestrator validation
+
 - **Triggers:** changes to orchestrator configs/scripts, daily schedule
 - **Purpose:** validates `autotrain.yaml` and `quantum_autorun.yaml`
 - **Duration:** ~5–10 minutes
 
 #### `default-github-automation.yml` — GitHub baseline verification
+
 - **Triggers:** changes to baseline GitHub automation files, weekly schedule, manual dispatch
 - **Purpose:** verifies core repository automation remains configured (merge gate, labeler, stale, dependency review, dependabot)
 - **Duration:** ~2–5 minutes
 
 #### `ruleset-json-validation.yml` — Ruleset template validation
+
 - **Triggers:** changes to `.github/rulesets/*.json` and ruleset docs, weekly schedule, manual dispatch
 - **Purpose:** validates ruleset JSON template structure and required status-check context alignment
 - **Duration:** ~2–5 minutes
@@ -95,11 +105,13 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 ### ☁️ Cloud Workflows
 
 #### `azureml-train.yml` — Azure ML training
+
 - **Triggers:** manual (`workflow_dispatch`) only
 - **Purpose:** submit LoRA fine-tuning jobs to Azure ML
 - **Requires:** Azure credentials and an ML workspace (see [Required Secrets](#required-secrets--variables))
 
 #### `quantum-orchestration.yml` — Azure Quantum
+
 - **Triggers:** push to `main`, manual (`workflow_dispatch`)
 - **Purpose:** execute quantum workflows on Azure Quantum
 - **Requires:** Azure credentials and a Quantum workspace
@@ -134,6 +146,34 @@ This directory contains all GitHub Actions workflows for the **Aria** repository
 - **Support-only lanes (not required for merge):** `ci.yml`, `pr-tests.yml`, and `ci-pipeline.yml`
 - **Workflow hygiene checks remain active:** `workflow-validation.yml` and `actionlint.yml` for workflow/config changes
 
+### Auto-Merge Policy
+
+Auto-merge is controlled by `.github/workflows/auto-merge.yml` (consolidated from the old `auto-merge.yml` + `auto-merge-on-ci.yml`).
+
+| Job | Trigger | Behaviour |
+|-----|---------|-----------|
+| `enable` | `pull_request` labeled `auto-merge` or `autofix` | Arms GitHub native auto-merge (squash) and posts an informational comment |
+| `disable` | `pull_request` last matching label removed | Disables native auto-merge |
+| `merge-on-gate-pass` | `check_run` completed for `All Gates Passed` | Evaluates all associated PRs: checks label, draft, fork, conflicts, and review state; squash-merges eligible PRs and posts results |
+| `bot-approve` | `pull_request` with auto-merge label (gated by `AUTO_MERGE_BOT_APPROVE == 'true'`) | Approves PRs authored by bot actors listed in `BOT_APPROVE_ALLOWLIST` using `AUTO_MERGE_APPROVE_TOKEN` |
+
+**Eligibility requirements** (enforced by `merge-on-gate-pass` and codified in `.github/actions/check-auto-merge-eligibility/action.yml`):
+- PR is not a draft
+- PR targets `main`
+- PR is from the same repo (forks are always skipped)
+- PR has `auto-merge` or `autofix` label
+- Merge state is not `DIRTY` / `BEHIND` / `BLOCKED`
+- No `CHANGES_REQUESTED` reviews
+- At least one `APPROVED` review
+
+**Bot-approve actor allowlist** (`BOT_APPROVE_ALLOWLIST` env var in `auto-merge.yml`):
+- `github-actions[bot]`
+- `copilot-swe-agent[bot]`
+
+Human-authored PRs **always** require a real human approval regardless of the `AUTO_MERGE_BOT_APPROVE` setting.
+
+**Deprecated:** `auto-merge-on-ci.yml` is now a manual-only stub. All auto-merge logic is in `auto-merge.yml`.
+
 ---
 
 ## Required Secrets & Variables
@@ -149,6 +189,8 @@ Configure these under **Settings → Secrets and variables → Actions**.
 | `OPENAI_API_KEY` | Secret | `ci-pipeline.yml`, `pr-test-summary-comment.yml` (optional) | OpenAI API access for provider integration tests and AI-generated PR workflow summaries (falls back to deterministic summary when unset) |
 | `AZURE_OPENAI_ENDPOINT` | Secret | `ci-pipeline.yml` (optional) | Azure OpenAI endpoint URL |
 | `AZURE_OPENAI_API_KEY` | Secret | `ci-pipeline.yml` (optional) | Azure OpenAI API key |
+| `AUTO_MERGE_APPROVE_TOKEN` | Secret | `auto-merge.yml` (bot-approve job) | PAT with `pull-requests:write` scope issued by a separate identity; required for automated approval of bot-authored PRs. Never use `GITHUB_TOKEN` — it cannot approve its own PRs. |
+| `AUTO_MERGE_BOT_APPROVE` | Variable | `auto-merge.yml` (bot-approve job) | Set to `'true'` to enable automated approval of PRs authored by accounts in `BOT_APPROVE_ALLOWLIST`. Defaults to off. Human-authored PRs always require a human approval. |
 
 > 🔐 Never log secret values. Always pass secrets via `env:` blocks scoped to the smallest possible step.
 
@@ -225,9 +267,11 @@ concurrency:
 - **Timeouts:** set `timeout-minutes` on every job to prevent runaway runs
 - **Permissions:** declare minimum required `permissions:` at the workflow or job level (principle of least privilege)
 - **Pinned actions:** pin third-party actions to a full commit SHA for security
+
   ```yaml
   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
   ```
+
 - **Caching:** cache `pip`, `npm`, and build outputs to reduce CI time
 - **Artifacts:** upload logs, screenshots, and reports on failure for debugging
 
@@ -293,6 +337,7 @@ pytest tests/aria/ -v
 - Download artifacts for detailed results (reports, screenshots, traces)
 - Reproduce locally with the same Python/Node version used in CI
 - Re-run with debug logging:
+
   ```
   Set repository variable: ACTIONS_STEP_DEBUG = true
   ```
@@ -313,10 +358,12 @@ pytest tests/aria/ -v
 
 - **Pin actions to SHAs**, not floating tags (`@v4` can change without notice)
 - **Restrict `GITHUB_TOKEN` permissions** at the workflow level:
+
   ```yaml
   permissions:
     contents: read
   ```
+
 - **Avoid `pull_request_target`** unless you fully understand the security implications
 - **Never echo secrets** to logs (`run: echo ${{ secrets.X }}` is unsafe)
 - **Review third-party actions** before adding them to the repository

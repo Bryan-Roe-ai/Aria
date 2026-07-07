@@ -1,6 +1,6 @@
 # QAI Enhanced Dashboard - Feature Guide
 
-## 🎉 New Features Added!
+## 🎉 New Features Added
 
 ### 📊 **5 Interactive Tabs**
 
@@ -183,8 +183,8 @@ curl http://localhost:8000/api/logs/phi35_mega_synthetic_full
 
 ## 📝 Access URLs
 
-- **Enhanced Dashboard**: http://localhost:8000/enhanced.html
-- **Original Dashboard**: http://localhost:8000/index.html
+- **Enhanced Dashboard**: <http://localhost:8000/enhanced.html>
+- **Original Dashboard**: <http://localhost:8000/index.html>
 - **API Docs**: Coming soon
 
 Enjoy your enhanced training dashboard! 🎉

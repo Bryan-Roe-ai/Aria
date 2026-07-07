@@ -380,8 +380,8 @@ export LMSTUDIO_TEMPERATURE=0.3
 
 ## Resources
 
-- **LMStudio Docs**: https://lmstudio.ai
-- **MCP Protocol**: https://modelcontextprotocol.io
+- **LMStudio Docs**: <https://lmstudio.ai>
+- **MCP Protocol**: <https://modelcontextprotocol.io>
 - **Aria AGI Provider**: See `ai-projects/chat-cli/src/agi_provider.py`
 - **Examples**: Run `python lmstudio_agent_integration.py`
 

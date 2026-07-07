@@ -459,9 +459,9 @@ The admin dashboard includes a "Simulate Target Revenue" button that creates dem
 
 ### Contact
 
-- Sales: sales@aria-platform.com
-- Support: support@aria-platform.com
-- Technical: tech@aria-platform.com
+- Sales: <sales@aria-platform.com>
+- Support: <support@aria-platform.com>
+- Technical: <tech@aria-platform.com>
 
 ## Compliance & Legal
 

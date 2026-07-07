@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -36,6 +38,8 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             check=False,
         )
@@ -52,6 +56,8 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             env=env,
             check=False,
@@ -61,6 +67,9 @@ class TestConfigValidationGates:
 
     def test_repo_automation_wrapper_validate_mode(self):
         """Test start_repo_automation.sh validate mode."""
+        if os.name == "nt":
+            pytest.skip("Bash wrapper integration is not reliable on Windows runners without a POSIX shell.")
+
         result = subprocess.run(
             ["bash", "scripts/start_repo_automation.sh", "validate"],
             cwd=REPO_ROOT,

@@ -27,7 +27,7 @@ All integration tests pass successfully. LM Studio is now fully integrated with 
 
 - **File**: `.env`
 - **Settings**:
-    - LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
+    - LMSTUDIO_BASE_URL=<http://127.0.0.1:1234/v1>
     - LMSTUDIO_MODEL=local-model
 
 ### 4. Integration Testing ✅
