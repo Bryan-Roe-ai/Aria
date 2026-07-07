@@ -1682,17 +1682,10 @@ def _check_groq_available(server_url: str) -> bool:
         request = urllib.request.Request(models_url, headers=headers)
         urllib.request.urlopen(request, timeout=3)
         is_available = True
-    except Exception as exc:
-        # Treat 401/403 as "available but wrong key" — key presence already verified above
-        try:
-            import urllib.error as _ue
-
-            if isinstance(exc, _ue.HTTPError) and exc.code in (401, 403):
-                is_available = True
-            else:
-                is_available = False
-        except Exception:
-            is_available = False
+    except Exception:
+        # Any error (connection refused, 401/403 invalid key, timeout) means
+        # Groq is not available for auto-detection purposes.
+        is_available = False
 
     # Update cache under lock
     with _groq_cache_lock:
