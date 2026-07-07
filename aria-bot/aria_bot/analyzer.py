@@ -44,7 +44,7 @@ class Finding:
     path: Path
     detail: str = ""
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, str]:
         """Return a serializable representation of the finding."""
 
         return {

@@ -1,4 +1,5 @@
 # Copyright (c) Microsoft. All rights reserved.
+# cspell:ignore dotenv
 
 """Provision the Azure AI Foundry Memory Store used by this sample.
 
@@ -30,8 +31,9 @@ Your identity needs ``Azure AI User`` on the Foundry project scope.
 """
 
 import os
+from importlib import import_module
+from typing import Any, Protocol, cast
 
-from azure.ai.projects import AIProjectClient, MemoryStoreDefaultDefinition, MemoryStoreDefaultOptions
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
@@ -39,7 +41,57 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+class _NamedResource(Protocol):  # pylint: disable=too-few-public-methods
+    name: str
+    id: str
+
+
+class _MemoryStores(Protocol):
+    def get(self, *, name: str) -> _NamedResource:
+        """Return a memory store by name."""
+        ...
+
+    def create(
+        self,
+        *,
+        name: str,
+        description: str,
+        definition: object,
+    ) -> _NamedResource:
+        """Create and return a memory store."""
+        ...
+
+
+class _ProjectBeta(Protocol):  # pylint: disable=too-few-public-methods
+    memory_stores: _MemoryStores
+
+
+class _ProjectClient(Protocol):  # pylint: disable=too-few-public-methods
+    beta: _ProjectBeta
+
+
+def _load_projects_symbols() -> tuple[Any, Any, Any]:
+    """Load Azure AI Projects types only when the script runs."""
+    try:
+        projects_module = import_module("azure.ai.projects")
+    except ModuleNotFoundError as exc:
+        raise RuntimeError("Missing dependency 'azure-ai-projects'. Install it before running this script.") from exc
+
+    return (
+        projects_module.AIProjectClient,
+        projects_module.MemoryStoreDefaultDefinition,
+        projects_module.MemoryStoreDefaultOptions,
+    )
+
+
 def main() -> None:
+    """Create the configured memory store if it does not already exist."""
+    (
+        ai_project_client_cls,
+        memory_store_definition_cls,
+        memory_store_options_cls,
+    ) = _load_projects_symbols()
+
     endpoint = os.environ["FOUNDRY_PROJECT_ENDPOINT"]
     memory_store_name = os.environ["MEMORY_STORE_NAME"]
     chat_model = os.environ["AZURE_AI_MODEL_DEPLOYMENT_NAME"]
@@ -47,32 +99,34 @@ def main() -> None:
 
     with (
         DefaultAzureCredential() as credential,
-        AIProjectClient(
+        ai_project_client_cls(
             endpoint=endpoint,
             credential=credential,
             allow_preview=True,
         ) as project,
     ):
+        memory_stores: _MemoryStores = cast(_ProjectClient, project).beta.memory_stores
+
         try:
-            existing = project.beta.memory_stores.get(name=memory_store_name)
+            existing: _NamedResource = memory_stores.get(name=memory_store_name)
             print(f"Memory store '{existing.name}' already exists (id={existing.id}); leaving as-is.")
             return
         except ResourceNotFoundError:
-            pass
+            print(f"Memory store '{memory_store_name}' not found; creating it.")
 
         print(f"Creating memory store '{memory_store_name}'...")
-        definition = MemoryStoreDefaultDefinition(
+        definition: object = memory_store_definition_cls(
             chat_model=chat_model,
             embedding_model=embedding_model,
-            options=MemoryStoreDefaultOptions(
+            options=memory_store_options_cls(
                 chat_summary_enabled=False,
                 user_profile_enabled=True,
                 user_profile_details=(
-                    "Avoid irrelevant or sensitive data, such as age, finances, precise location, and credentials"
+                    "Avoid irrelevant or sensitive data, such as age, finances, precise location, and credentials."
                 ),
             ),
         )
-        created = project.beta.memory_stores.create(
+        created: _NamedResource = memory_stores.create(
             name=memory_store_name,
             description=("Memory store for the Agent Framework foundry-hosted memory sample"),
             definition=definition,
@@ -80,16 +134,16 @@ def main() -> None:
         print(f"Created memory store '{created.name}' (id={created.id}).")
 
         # Verify the store actually exists on the service by reading it back.
-        # ``create`` returns the requested definition, but a follow-up ``get``
-        # confirms the store is persisted and reachable for the agent at
-        # runtime.
+        # ``create`` returns the requested definition, but a follow-up
+        # ``get`` confirms the store is persisted and reachable at runtime.
         try:
-            verified = project.beta.memory_stores.get(name=memory_store_name)
+            verified: _NamedResource = memory_stores.get(name=memory_store_name)
         except ResourceNotFoundError as exc:
             raise RuntimeError(
                 "Memory store "
                 f"'{memory_store_name}' was not found "
-                "after creation; the service may not have persisted it."
+                "after creation; the service may not have "
+                "persisted it."
             ) from exc
         print(f"Verified memory store '{verified.name}' is available on the service (id={verified.id}).")
 
