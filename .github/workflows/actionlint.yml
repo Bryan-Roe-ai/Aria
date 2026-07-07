@@ -63,6 +63,12 @@ jobs:
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
           version: ${{ env.SHELLCHECK_VERSION }}
+          # Exclude vendored third-party scripts (dotnet-install.sh is the
+          # Microsoft .NET installer) and generated agent-template directories.
+          ignore_paths: dotnet-install.sh my-agent-0b2avt
+          # Only fail CI on error-severity findings; warnings in our own
+          # scripts are reported but do not block the build.
+          severity: error
 
       - name: Run actionlint
         uses: reviewdog/action-actionlint@6fb7acc99f4a1008869fa8a0f09cfca740837d9d # v1.72.0
