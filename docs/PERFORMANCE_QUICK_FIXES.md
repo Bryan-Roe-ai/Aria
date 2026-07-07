@@ -275,7 +275,7 @@ grep -n "sum(.*).*len(" *.py
 
 ## 📊 When to Optimize
 
-### DO optimize when:
+### DO optimize when
 
 - ✅ Code is in a hot path (called frequently)
 - ✅ Processing large datasets (>1000 items)
@@ -283,7 +283,7 @@ grep -n "sum(.*).*len(" *.py
 - ✅ User-facing performance issue
 - ✅ Easy win (simple fix with big impact)
 
-### DON'T optimize when:
+### DON'T optimize when
 
 - ❌ Code runs once at startup
 - ❌ Small datasets (<100 items)

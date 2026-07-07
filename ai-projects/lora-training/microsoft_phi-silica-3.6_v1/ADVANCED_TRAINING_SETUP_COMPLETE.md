@@ -273,6 +273,7 @@ python scripts\rag_pipeline.py \
     ```
 
 4. **Scale up**:
+
     ```bash
     # Full training run
     python scripts\run_pipeline.py \
@@ -291,7 +292,7 @@ python scripts\rag_pipeline.py \
 | RAG Pipeline     | Enhance with context    | Better responses       |
 | Master Pipeline  | Orchestrate workflow    | One-command training   |
 
-## 🎉 You're Ready!
+## 🎉 You're Ready
 
 All advanced training components are now installed and ready to use. Start with the Quick Start commands above, or dive into the complete guide at `ADVANCED_TRAINING_GUIDE.md`.
 

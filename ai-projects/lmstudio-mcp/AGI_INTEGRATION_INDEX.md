@@ -15,10 +15,12 @@
 ## 📚 Documentation Guide
 
 ### Start Here
+
 1. **`AGI_PROVIDER_SUMMARY.md`** — Overview & quick start (5 min read)
 2. **`QUICK_REFERENCE.md`** — One-page cheat sheet (2 min read)
 
 ### Learn & Implement
+
 3. **`AGI_PROVIDER_INTEGRATION.md`** — Comprehensive integration guide (15 min read)
    - Architecture diagram
    - 4 integration levels
@@ -28,6 +30,7 @@
    - Troubleshooting
 
 ### Code Examples
+
 4. **`agi_provider_examples.py`** — 7 practical, runnable examples
    - Basic routing decisions
    - Query classification
@@ -38,6 +41,7 @@
    - Configuration tuning
 
 ### Implementation Files
+
 5. **`lmstudio_agi_integration.py`** — Core integration (~500 lines)
    - `AGILMStudioRouter` class
    - Routing logic
@@ -50,12 +54,14 @@
 ## 🚀 Quick Start (3 Steps)
 
 ### Step 1: Install Dependencies
+
 ```bash
 cd ai-projects/lmstudio-mcp
 pip install -r mcp-requirements.txt
 ```
 
 ### Step 2: Start Services
+
 ```bash
 # Terminal 1: LM Studio app (https://lmstudio.ai)
 # - Load a model (Mistral 7B recommended)
@@ -66,6 +72,7 @@ python lmstudio_mcp_server.py
 ```
 
 ### Step 3: Use with AGI Provider
+
 ```python
 from agi_provider import AGIProvider
 
@@ -84,6 +91,7 @@ print(response)
 ## 📁 File Reference
 
 ### AG Integration Core
+
 - **`lmstudio_agi_integration.py`** (18 KB)
   - `AGILMStudioRouter` — Main routing class
   - `decompose_task_with_lmstudio()` — Task decomposition
@@ -91,15 +99,18 @@ print(response)
   - `complete_with_lmstudio_routing()` — Smart completion
 
 ### Documentation
+
 - **`AGI_PROVIDER_INTEGRATION.md`** (13 KB) — Full integration guide
 - **`AGI_PROVIDER_SUMMARY.md`** — Complete summary
 - **`QUICK_REFERENCE.md`** — Cheat sheet
 
 ### Examples & Tools
+
 - **`agi_provider_examples.py`** (12 KB) — 7 working examples
 - **`verify_agent_integration.py`** — Verification & diagnostics
 
 ### Supporting Files (From Previous Creation)
+
 - **`lmstudio_agent_integration.py`** (18 KB) — Basic agent integration
 - **`lmstudio_mcp_server.py`** (12 KB) — Core MCP server
 - **`AGENT_INTEGRATION.md`** (13 KB) — Agent guide
@@ -110,6 +121,7 @@ print(response)
 ## 🎓 Integration Levels
 
 ### Level 1: Basic (Easiest)
+
 ```python
 from agi_provider import detect_provider, AGIProvider
 provider, _ = detect_provider("lmstudio")
@@ -117,12 +129,14 @@ agi = AGIProvider(base_provider=provider)
 ```
 
 ### Level 2: Agent Registry
+
 ```python
 from lmstudio_agi_integration import get_lmstudio_agent_registry_entry
 _AGENT_REGISTRY["lmstudio-local"] = get_lmstudio_agent_registry_entry()
 ```
 
 ### Level 3: Custom Router
+
 ```python
 from lmstudio_agi_integration import AGILMStudioRouter
 router = AGILMStudioRouter()
@@ -130,6 +144,7 @@ router = AGILMStudioRouter()
 ```
 
 ### Level 4: Full Workflows
+
 ```python
 from lmstudio_agi_integration import decompose_task_with_lmstudio
 subtasks = await decompose_task_with_lmstudio(complex_task)
@@ -153,6 +168,7 @@ subtasks = await decompose_task_with_lmstudio(complex_task)
 ## 🔧 Configuration
 
 ### Environment Variables
+
 ```bash
 export LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
 export LMSTUDIO_MODEL=mistral-7b
@@ -161,6 +177,7 @@ export LMSTUDIO_MAX_TOKENS=2048        # Lower = faster
 ```
 
 ### Performance Tuning
+
 ```bash
 # Fast responses (shorter, deterministic)
 export LMSTUDIO_TEMPERATURE=0.3
@@ -176,16 +193,19 @@ export LMSTUDIO_MAX_TOKENS=4096
 ## 🧪 Testing
 
 ### Run Verification
+
 ```bash
 python verify_agent_integration.py
 ```
 
 ### Run Examples
+
 ```bash
 python agi_provider_examples.py
 ```
 
 ### Test Routing Logic
+
 ```python
 from lmstudio_agi_integration import AGILMStudioRouter
 router = AGILMStudioRouter()
@@ -200,6 +220,7 @@ should_use = router.should_use_lmstudio(analysis)  # → True
 ## 📊 Architecture Summary
 
 ### Router Decision Flow
+
 ```
 Query → Analysis → Domain/Intent Detection
   ↓
@@ -212,6 +233,7 @@ Evaluate Suitability → YES → Route to LM Studio
 ```
 
 ### Multi-Agent Workflow
+
 ```
 Complex Task
   ↓
@@ -278,13 +300,16 @@ Reasoning & Reflection → Final Response
 ## 🎯 Key Components
 
 ### `AGILMStudioRouter`
+
 Intelligent router that:
+
 - ✓ Checks LM Studio health
 - ✓ Analyzes query suitability
 - ✓ Routes to appropriate provider
 - ✓ Falls back on failure
 
 ### Helper Functions
+
 - `decompose_task_with_lmstudio()` — Break into subtasks
 - `reason_with_lmstudio_chain_of_thought()` — Multi-step reasoning
 - `complete_with_lmstudio_routing()` — Smart completion
@@ -295,16 +320,19 @@ Intelligent router that:
 ## 🛠️ Troubleshooting
 
 **LM Studio not detected?**
+
 - Ensure app is running
 - Check Local Server is enabled
 - Verify endpoint matches LMSTUDIO_BASE_URL
 
 **Routing not working?**
+
 - Check domain/intent classification
 - Review `should_use_lmstudio()` logic
 - Enable verbose logging for debugging
 
 **Slow responses?**
+
 - Reduce LMSTUDIO_MAX_TOKENS
 - Lower LMSTUDIO_TEMPERATURE
 - Check system resources
@@ -313,9 +341,9 @@ Intelligent router that:
 
 ## 📞 Resources
 
-- **LM Studio**: https://lmstudio.ai
+- **LM Studio**: <https://lmstudio.ai>
 - **Aria AGI Provider**: `ai-projects/chat-cli/src/agi_provider.py`
-- **MCP Protocol**: https://modelcontextprotocol.io
+- **MCP Protocol**: <https://modelcontextprotocol.io>
 - **This Integration**: `ai-projects/lmstudio-mcp/`
 
 ---
@@ -325,6 +353,7 @@ Intelligent router that:
 **Complete AGI Provider Integration Created**
 
 3 new files (1,500+ lines):
+
 - Sophisticated routing with intelligent agent selection
 - Task decomposition & multi-step reasoning
 - Fallback & resilience patterns

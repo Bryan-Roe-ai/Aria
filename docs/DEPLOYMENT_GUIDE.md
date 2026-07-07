@@ -57,7 +57,7 @@ GitHub Pages automatically deploys from the repository's configured Pages source
 1. **Trigger**: Push to `main` with updated published content in `docs/**`
 2. **Build**: GitHub Pages publishes the `docs/` directory
 3. **Deploy**: The published site is served at GitHub Pages
-4. **URL**: https://bryan-roe.github.io/Aria
+4. **URL**: <https://bryan-roe.github.io/Aria>
 
 ### Deployment Workflow (.github/workflows/pages.yml)
 
@@ -205,6 +205,7 @@ const DEMO_RESPONSES = [
     ```
 
 4. **Commit and push**
+
     ```bash
     git add docs/myapp
     git commit -m "Add myapp to GitHub Pages"
@@ -254,6 +255,7 @@ git push
     ```
 
 3. **Open browser**
+
     ```
     http://localhost:4000
     ```
@@ -407,10 +409,10 @@ webrick:
 
 ## 📚 Resources
 
-- **GitHub Pages Docs**: https://docs.github.com/pages
-- **Jekyll Docs**: https://jekyllrb.com/docs/
-- **GitHub Actions**: https://docs.github.com/actions
-- **Repository**: https://github.com/Bryan-Roe/Aria
+- **GitHub Pages Docs**: <https://docs.github.com/pages>
+- **Jekyll Docs**: <https://jekyllrb.com/docs/>
+- **GitHub Actions**: <https://docs.github.com/actions>
+- **Repository**: <https://github.com/Bryan-Roe/Aria>
 
 ## 🤝 Contributing
 

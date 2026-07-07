@@ -24,11 +24,13 @@ python -m chat_cli --provider lmstudio "Hello!"
 ## 🔧 Integration Methods
 
 ### Method 1: Chat CLI (Easiest)
+
 ```bash
 python -m chat_cli --provider lmstudio "Tell me about AI"
 ```
 
 ### Method 2: Direct Agent Client
+
 ```python
 from lmstudio_agent_integration import get_lmstudio_agent_client
 import asyncio
@@ -44,6 +46,7 @@ asyncio.run(main())
 ```
 
 ### Method 3: Multi-Agent System
+
 ```python
 from lmstudio_agent_integration import register_lmstudio_agent
 from agi_provider import _AGENT_REGISTRY, detect_provider
@@ -105,22 +108,26 @@ Added **4 new files** for AI agent integration:
 ## 🎯 Agent Integration Features
 
 ✅ **Seamless Integration**
+
 - Works with existing Aria agents
 - Automatic routing & selection
 - No breaking changes
 
 ✅ **Full Features**
+
 - Chat completion
 - Model selection
 - Streaming ready
 - Health checks
 
 ✅ **Well Documented**
+
 - 4 examples included
 - Complete guides
 - Troubleshooting
 
 ✅ **Production Ready**
+
 - Error handling
 - Async/await
 - Diagnost toolkit
@@ -152,24 +159,28 @@ cat INTEGRATION_SUMMARY.md
 ## 💡 Common Tasks
 
 ### Use with specific model
+
 ```bash
 export LMSTUDIO_MODEL=mistral-7b
 python -m chat_cli --provider lmstudio "test"
 ```
 
 ### Register agent in code
+
 ```python
 from lmstudio_agent_integration import register_lmstudio_agent
 register_lmstudio_agent(_AGENT_REGISTRY)
 ```
 
 ### Call from your agent
+
 ```python
 client = get_lmstudio_agent_client()
 response = await client.complete(messages)
 ```
 
 ### Deploy with Function App
+
 ```python
 # In function_app.py
 @app.route(route="api/chat")

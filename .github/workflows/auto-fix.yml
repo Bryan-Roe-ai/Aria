@@ -1,16 +1,16 @@
 name: auto-fix
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "15 2 * * 2"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+    - cron: '15 2 * * 2'
+  workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   autofix:
@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
-
     permissions:
       contents: write
       pull-requests: write
@@ -32,10 +31,10 @@ jobs:
       - name: Set up Python and autofix tooling
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: "3.11"
-          install-requirements: "false"
-          install-dev-requirements: "false"
-          extra-packages: "ruff==0.11.13 black==25.1.0 pytest==8.3.5"  # cspell:ignore pytest
+          python-version: '3.11'
+          install-requirements: 'false'
+          install-dev-requirements: 'false'
+          extra-packages: 'ruff==0.11.13 black==25.1.0 pytest==8.3.5 pyyaml' # cspell:ignore pytest pyyaml
 
       - name: Detect safe Python targets
         id: detect
@@ -44,6 +43,7 @@ jobs:
           set -euo pipefail  # cspell:ignore pipefail
 
           python <<'PY'
+          import os
           from pathlib import Path  # cspell:ignore pathlib
 
           ignore_dirs = {
@@ -89,12 +89,14 @@ jobs:
 
           has_python = "true" if targets else "false"
 
-          with open("detect_output.txt", "w", encoding="utf-8") as f:
-              f.write(f"has_python={has_python}\n")
-              f.write(f"targets={' '.join(targets)}\n")
+          # Write directly to GITHUB_OUTPUT to avoid creating a stray file
+          # that would be unintentionally committed by create-pull-request.
+          output_file = os.environ.get("GITHUB_OUTPUT", "")
+          if output_file:
+              with open(output_file, "a", encoding="utf-8") as f:
+                  f.write(f"has_python={has_python}\n")
+                  f.write(f"targets={' '.join(targets)}\n")
           PY
-
-          cat detect_output.txt >> "$GITHUB_OUTPUT"
 
       - name: Show detected targets
         if: steps.detect.outputs.has_python == 'true'
@@ -157,6 +159,50 @@ jobs:
             echo "No supported targeted test directories found; skipping pytest."
           fi
 
+      - name: Rebase autofix changes on latest origin/main
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Stash any ruff/black changes, reset to the latest origin/main, then restore.
+          # This prevents "refusing to update workflow file without workflows permission"
+          # push rejections caused by a race condition: if another commit (e.g., a
+          # codeql.yml update) landed on origin/main while this autofix job ran with
+          # an older checkout, the pushed branch would contain an older workflow file.
+          # Rebasing on the latest origin/main ensures the autofix branch only
+          # introduces Python file changes — no workflow file diff.
+          #
+          # We check both staged/unstaged changes (git diff --quiet) AND untracked
+          # files (git ls-files --others) because ruff/black leave modifications in the
+          # working tree while detect_output.txt (if any) would be untracked.
+          stashed=false
+          if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            git stash push --include-untracked -m "autofix-changes"
+            stashed=true
+          fi
+          git fetch origin main
+          # git reset --hard is safe here: all autofix changes were captured in the
+          # stash above, so no work is discarded.
+          git reset --hard origin/main
+          if [ "$stashed" = true ]; then
+            git stash pop
+          fi
+
+      - name: Revert workflow file changes and remove stray files
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Remove stray untracked files that must not be committed.
+          # detect_output.txt can appear if a prior run wrote it or if the stash
+          # pop restored it from an old workflow version.
+          rm -f detect_output.txt
+          # Ensure no .github/workflows/ files are modified before we create the
+          # PR branch.  GITHUB_TOKEN has contents:write but NOT workflows
+          # permission, so pushing any change under .github/workflows/ would be
+          # rejected by GitHub with "refusing to update workflow file without
+          # workflows permission" — even when the change is accidental (e.g.
+          # caused by a race-condition rebase).
+          git restore --staged --worktree -- .github/workflows 2>/dev/null || true
+
       - name: Detect changes
         id: changes
         shell: bash
@@ -172,10 +218,10 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: "ci(chore): apply automated safe autofixes"
-          branch: "fix/autofix-weekly"
+          commit-message: 'ci(chore): apply automated safe autofixes'
+          branch: 'fix/autofix-weekly'
           delete-branch: false
-          title: "ci: automated safe autofixes"
+          title: 'ci: automated safe autofixes'
           body: |
             ## Summary
             Apply scheduled/manual safe autofixes for scoped Python targets.
@@ -204,7 +250,9 @@ jobs:
           labels: |
             automation
             maintenance
+            autofix
+            auto-merge
 
-      - name: No changes to commit
-        if: steps.changes.outputs.changed != 'true'
+      - if: steps.changes.outputs.changed != 'true'
+        name: No changes to commit
         run: echo "No autofix changes detected."

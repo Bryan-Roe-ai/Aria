@@ -243,7 +243,7 @@ See `ENVIRONMENT_SETUP.md` for:
 
 ---
 
-## ✨ You're Ready To:
+## ✨ You're Ready To
 
 - ✅ Install all Python dependencies
 - ✅ Start Azure Functions runtime

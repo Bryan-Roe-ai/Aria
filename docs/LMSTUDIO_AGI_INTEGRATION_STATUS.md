@@ -61,7 +61,7 @@ elif explicit == "lmstudio":
 
 ## ENVIRONMENT READY
 
-- .env has LMSTUDIO_BASE_URL=http://127.0.0.1:1234/v1
+- .env has LMSTUDIO_BASE_URL=<http://127.0.0.1:1234/v1>
 - .env has LMSTUDIO_MODEL=local-model
 - LM Studio running and tested on port 1234
 

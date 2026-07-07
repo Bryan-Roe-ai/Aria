@@ -275,8 +275,8 @@ markers =
 
 ## Resources
 
-- **pytest Documentation**: https://docs.pytest.org/
-- **VS Code Python Testing**: https://code.visualstudio.com/docs/python/testing
+- **pytest Documentation**: <https://docs.pytest.org/>
+- **VS Code Python Testing**: <https://code.visualstudio.com/docs/python/testing>
 - **Test Runner Script**: `scripts/test_runner.py` - Advanced orchestration
 - **CI Pipeline**: `.github/workflows/ci-pipeline.yml` - Automated testing
 

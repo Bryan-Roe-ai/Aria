@@ -528,6 +528,7 @@ curl -X POST http://localhost:7071/api/ai/provider-probe \
     ```
 
 5. **Test endpoints:**
+
     ```bash
     curl http://localhost:7071/api/ai/status | python3 -m json.tool
     ```

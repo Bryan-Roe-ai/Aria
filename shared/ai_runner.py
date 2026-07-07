@@ -32,8 +32,14 @@ try:
 except Exception:
     pass
 
+# Intentionally after apply_local_settings() so env vars are set before middleware init.
+from shared.ai_safety_middleware import AISafetyMiddleware  # noqa: E402
+
 # Cached ANSI escape regex for performance across imports
 _ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
+
+# Module-level safety middleware instance (shared across calls)
+_safety = AISafetyMiddleware()
 
 
 def run_chat_once(
@@ -52,7 +58,15 @@ def run_chat_once(
     model: Optional model override forwarded via --model.
     system: Optional system prompt override forwarded via --system.
     timeout: Seconds before aborting the subprocess.
+
+    Raises
+    ------
+    ValueError: If the prompt is rejected by the safety middleware.
     """
+    decision = _safety.validate_input(prompt)
+    if not decision.allowed:
+        raise ValueError(f"Prompt rejected by safety middleware: {decision.reason} (flags: {list(decision.flags)})")
+
     if not CHAT_CLI.exists():
         raise FileNotFoundError(f"chat_cli.py not found at {CHAT_CLI}")
 

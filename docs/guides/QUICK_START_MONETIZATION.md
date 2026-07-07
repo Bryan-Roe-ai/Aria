@@ -72,7 +72,7 @@ curl http://localhost:7071/api/subscription/revenue | jq
 
 ### Add Stripe Integration
 
-1. Get your Stripe API keys from https://stripe.com/dashboard
+1. Get your Stripe API keys from <https://stripe.com/dashboard>
 
 2. Set environment variables:
 
@@ -235,7 +235,7 @@ if percentage > 80:
 - Check the comprehensive documentation
 - Review the test examples in this file
 
-## 🎉 Congratulations!
+## 🎉 Congratulations
 
 Your Aria platform now has a complete, production-ready monetization system capable of generating **$2,000+ per month** in recurring revenue!
 

@@ -4,7 +4,7 @@
 
 ### Primary Dashboard
 
-**URL**: http://localhost:8000/unified.html
+**URL**: <http://localhost:8000/unified.html>
 **Status**: ✅ Server Running
 **File**: `dashboard/unified.html` (2,200+ lines)
 
@@ -23,7 +23,7 @@
 
 **Purpose**: Verify preset system and estimate calculations
 
-#### Steps:
+#### Steps
 
 1. Navigate to "Train" tab (or press `6`)
 2. Enter job name: `test_quick_demo`
@@ -45,7 +45,7 @@
 
 **Purpose**: Verify collapsible section functionality
 
-#### Steps:
+#### Steps
 
 1. Locate **"🔧 Advanced Options"** section
 2. Click the header to expand
@@ -68,7 +68,7 @@
 
 **Purpose**: Verify dynamic calculations update correctly
 
-#### Steps:
+#### Steps
 
 1. Apply Standard preset (📊 button)
 2. Note initial estimate: ~10 minutes
@@ -87,13 +87,13 @@
 
 **Purpose**: Test form validation and error messages
 
-#### Test 4a - Invalid Job Name:
+#### Test 4a - Invalid Job Name
 
 1. Enter job name: `My Test Job` (spaces)
 2. Click "🚀 Start Training"
 3. Expect error: "Job name must be lowercase letters, numbers, and underscores only"
 
-#### Test 4b - Missing Dataset:
+#### Test 4b - Missing Dataset
 
 1. Clear job name field
 2. Click "🚀 Start Training"
@@ -101,7 +101,7 @@
     - "Job name is required"
     - "Please select a dataset"
 
-#### Test 4c - Invalid Range:
+#### Test 4c - Invalid Range
 
 1. Set epochs to 25 (exceeds max of 20)
 2. Try to submit
@@ -115,7 +115,7 @@
 
 **Purpose**: Verify configuration management
 
-#### Save Config:
+#### Save Config
 
 1. Configure a custom training setup:
     - Job name: `my_config_test`
@@ -126,7 +126,7 @@
 3. Verify JSON file downloads: `my_config_test.json`
 4. Open file, confirm all 19 parameters present
 
-#### Load Config:
+#### Load Config
 
 1. Click **"🔄 Reset"** to clear form
 2. Click **"📂 Load Config"** button
@@ -142,7 +142,7 @@
 
 **Purpose**: Verify all fields have helpful guidance
 
-#### Steps:
+#### Steps
 
 1. Hover over "Job Name" label → Tooltip: "Unique identifier for this training job"
 2. Hover over "LoRA Rank" → Tooltip: "LoRA rank parameter"
@@ -158,14 +158,14 @@
 
 **Purpose**: Verify model and dataset info changes
 
-#### Model Info:
+#### Model Info
 
 1. Select "Phi-3.5-mini-instruct"
 2. Observe info: "Fast training, good for chat tasks, 3.8B parameters"
 3. Switch to "Qwen2.5-3B-Instruct"
 4. Observe info: "Efficient architecture, great for reasoning, 3B parameters"
 
-#### Dataset Info:
+#### Dataset Info
 
 1. Select a dataset from dropdown
 2. Observe info updates to show selection
@@ -186,7 +186,7 @@
 | 🏆 Full       | 5      | -1 (all) | 16   | ~60 min   | Thorough      |
 | 🚀 Production | 10     | -1 (all) | 32   | ~4 hours  | Production    |
 
-#### Steps:
+#### Steps
 
 1. Click each preset button in sequence
 2. Observe parameter changes for each
@@ -201,7 +201,7 @@
 
 **Purpose**: Test conditional field visibility
 
-#### Steps:
+#### Steps
 
 1. Ensure "Enable Evaluation" is checked (default)
 2. Verify eval options visible:
@@ -219,7 +219,7 @@
 
 **Purpose**: Verify safety dialog for extended jobs
 
-#### Steps:
+#### Steps
 
 1. Apply Production preset (10 epochs, all samples)
 2. Ensure estimates show >1 hour
@@ -463,7 +463,7 @@ Invoke-WebRequest -Uri "http://localhost:8000/api/start-training" -Method POST -
 
 Before considering demo complete:
 
-- [ ] Server running at http://localhost:8000
+- [ ] Server running at <http://localhost:8000>
 - [ ] Dashboard loads without errors
 - [ ] Train tab visible and accessible
 - [ ] All 20+ fields present and functional
@@ -481,7 +481,7 @@ Before considering demo complete:
 ---
 
 **Demo Status**: ✅ READY TO SHOWCASE
-**Server Status**: 🟢 Online at http://localhost:8000
+**Server Status**: 🟢 Online at <http://localhost:8000>
 **Next Step**: Open browser, navigate to Train tab, begin demo!
 
 _"From zero to advanced training control in 2 minutes!"_ 🚀

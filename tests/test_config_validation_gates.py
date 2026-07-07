@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -36,6 +38,8 @@ class TestConfigValidationGates:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=10,
             check=False,
         )
@@ -43,8 +47,29 @@ class TestConfigValidationGates:
         assert result.returncode == 0
         assert "✅" in result.stdout or "valid" in result.stdout.lower()
 
+    def test_repo_automation_validate_flag_handles_non_utf8_stdio(self):
+        """Test repo_automation.py --validate with a non-UTF-8 stdio encoding."""
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "cp1252"
+        result = subprocess.run(
+            [sys.executable, "scripts/repo_automation.py", "--validate"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=10,
+            env=env,
+            check=False,
+        )
+        assert result.returncode == 0
+        assert "valid" in result.stdout.lower()
+
     def test_repo_automation_wrapper_validate_mode(self):
         """Test start_repo_automation.sh validate mode."""
+        if os.name == "nt":
+            pytest.skip("Bash wrapper integration is not reliable on Windows runners without a POSIX shell.")
+
         result = subprocess.run(
             ["bash", "scripts/start_repo_automation.sh", "validate"],
             cwd=REPO_ROOT,

@@ -117,11 +117,13 @@ BackupManager Class
     # Restore to custom directory
     python scripts/backup_manager.py restore --name pre_production --target-dir ./restore_test
     ```
+
     - Automatic checksum verification
     - Conflict detection and resolution
     - Progress reporting during extraction
 
 4. **Lifecycle Management**:
+
     ```bash
     # List all backups
     python scripts/backup_manager.py list

@@ -38,7 +38,7 @@ python .\cooking-ai\src\main.py --provider github
 
 Notes:
 
-- Endpoint: https://models.inference.ai.azure.com (OpenAI compatible)
+- Endpoint: <https://models.inference.ai.azure.com> (OpenAI compatible)
 - The app uses the OpenAI Python SDK with a custom base_url.
 - If the provider or key is missing, the app falls back to local mode.
 

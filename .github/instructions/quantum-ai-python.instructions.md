@@ -23,7 +23,7 @@ applyTo: "ai-projects/quantum-ml/src/**/*.py"
 - MCP server for tooling: `.venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py`
     - Tools: `create_quantum_circuit`, `simulate_quantum_circuit`, `get_quantum_circuit_properties`, `connect_azure_quantum`, `list_quantum_backends`, `submit_quantum_job`, `estimate_quantum_cost`, `train_quantum_classifier`.
 - Keep local limits reasonable: ≤10 qubits, ≤1000 shots; use `qiskit_aer` backend for fast feedback.
-- Dashboard: `ai-projects/quantum-ml/start_dashboard.sh` → http://localhost:5000 for interactive training.
+- Dashboard: `ai-projects/quantum-ml/start_dashboard.sh` → <http://localhost:5000> for interactive training.
 - Azure config lives in `ai-projects/quantum-ml/config/quantum_config.yaml`; requires `az login`.
 - Data immutability: read-only `datasets/`; write-only outputs under `data_out/quantum_autorun/<job>/`.
 - Tests: `.venv/bin/python scripts/test_runner.py --unit` or `pytest -m "not slow and not azure"`.

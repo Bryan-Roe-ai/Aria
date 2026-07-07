@@ -172,6 +172,7 @@ Get LM Studio server status and configuration.
 **Error:** `Connection refused` or `Unable to connect`
 
 **Solution:**
+
 1. Verify LM Studio is running
 2. Check that the local server is enabled in LM Studio UI
 3. Confirm the endpoint matches `LMSTUDIO_BASE_URL`
@@ -187,6 +188,7 @@ curl http://127.0.0.1:1234/v1/models
 **Error:** `Model not found` or `Does not exist`
 
 **Solution:**
+
 1. List available models: Use the `list_models` tool
 2. Load a model in LM Studio UI
 3. Specify the correct model ID with `LMSTUDIO_MODEL` env var
@@ -194,6 +196,7 @@ curl http://127.0.0.1:1234/v1/models
 ### Slow Responses
 
 **Tips:**
+
 - Increase `max_tokens` if responses are being truncated
 - Reduce `temperature` for more deterministic outputs
 - Check LM Studio's loaded model size (larger models = slower)

@@ -41,4 +41,4 @@ Add whatever helps you do your job. This is your cheat sheet.
 
 ## Related
 
-- [Agent workspace](/concepts/agent-workspace)
+- [Agent workspace](./AGENTS.md)

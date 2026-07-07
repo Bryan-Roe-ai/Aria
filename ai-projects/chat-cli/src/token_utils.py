@@ -34,6 +34,12 @@ MODEL_CONTEXT_DEFAULTS: dict[str, int] = {
 
 
 def _match_model_default(model: str | None) -> int:
+    """Return the context-window size for *model* by substring matching.
+
+    Looks up the model name in :data:`MODEL_CONTEXT_DEFAULTS`.  When no known
+    key is found, returns 8 192 tokens as a safe fallback that fits most local
+    and smaller cloud models.
+    """
     m = (model or "").lower()
     for key, ctx in MODEL_CONTEXT_DEFAULTS.items():
         if key in m:
@@ -43,6 +49,16 @@ def _match_model_default(model: str | None) -> int:
 
 @dataclass
 class PruneStats:
+    """Token-count statistics returned by :func:`prune_messages`.
+
+    Attributes:
+        original_tokens: Estimated token count of the full message list before pruning.
+        pruned_tokens: Token count after pruning (system prompt included).
+        removed_count: Number of messages removed from the front of the history.
+        budget: Effective context-window token budget used for the pruning pass.
+        reserve_output_tokens: Tokens reserved for the model's output (not consumed by input).
+    """
+
     original_tokens: int
     pruned_tokens: int
     removed_count: int
@@ -103,6 +119,22 @@ def count_messages_tokens(
     model: str | None,
     system_prompt: str | None = None,
 ) -> int:
+    """Estimate the total token count for a list of chat messages.
+
+    Adds 4 tokens of framing overhead per message (role header, separators) on
+    top of the raw content token count, matching the rough overhead assumed by
+    the OpenAI API.  A separate framing cost is added for *system_prompt* when
+    provided.
+
+    Args:
+        messages: List of ``{"role": ..., "content": ...}`` dicts.
+        provider: Provider name (e.g. ``"openai"``); influences which tokenizer is used.
+        model: Model name; used to select the appropriate tiktoken encoding.
+        system_prompt: Optional system prompt prepended to the token budget.
+
+    Returns:
+        Approximate token count as an integer.
+    """
     enc = _get_text_encoder(provider, model)
     total = 0
     if system_prompt:

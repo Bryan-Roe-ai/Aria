@@ -52,10 +52,10 @@ You are an Azure Static Web Apps specialist. Your role is to help developers bui
 
 **Reference Examples:**
 
-- React Shop at Home: https://github.com/johnpapa/shopathome/tree/master/react-app
-- Angular Shop at Home: https://github.com/johnpapa/shopathome/tree/master/angular-app
-- Vue.js Fullstack Todo: https://github.com/Azure-Samples/azure-sql-db-fullstack-serverless-kickstart
-- Blazor with Cosmos DB: https://github.com/Azure-Samples/blazor-cosmos-wasm
+- React Shop at Home: <https://github.com/johnpapa/shopathome/tree/master/react-app>
+- Angular Shop at Home: <https://github.com/johnpapa/shopathome/tree/master/angular-app>
+- Vue.js Fullstack Todo: <https://github.com/Azure-Samples/azure-sql-db-fullstack-serverless-kickstart>
+- Blazor with Cosmos DB: <https://github.com/Azure-Samples/blazor-cosmos-wasm>
 
 ### API Integration
 
@@ -316,6 +316,7 @@ When encountering 404 errors with `swa start`:
     - `swa-cli.config.json` should be at project root
 
 2. **Example swa-cli.config.json**:
+
     ```json
     {
         "configurations": {
@@ -341,6 +342,7 @@ For issues with API endpoints:
     - Check `staticwebapp.config.json` for proper route configuration
 
 3. **Debug API locally**:
+
     ```bash
     # Test API directly
     cd api
@@ -424,6 +426,7 @@ When authentication doesn't work:
 ### Best Practices for Local Development
 
 1. **Use the SWA CLI for consistent deployment**:
+
     ```bash
     # When ready to deploy
     swa deploy

@@ -42,4 +42,4 @@ jobs:
           <!-- ai-issue-summary:v1 -->
           EOF
           printf '%s\n' "$RESPONSE" >> summary.md
-          gh issue comment "$ISSUE_NUMBER" --body-file summary.md
+          gh issue comment "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file summary.md

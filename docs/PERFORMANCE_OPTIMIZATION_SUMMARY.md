@@ -356,6 +356,7 @@ To monitor the impact of these optimizations:
     - Connection timeouts
 
 3. **Use profiling tools**:
+
     ```bash
     # Profile aria web server
     python -m cProfile -o profile.stats aria_web/server.py

@@ -341,7 +341,7 @@ Your current training status:
 
 ## 📝 Next Steps
 
-1. ✅ Open advanced dashboard: http://localhost:8000/advanced.html
+1. ✅ Open advanced dashboard: <http://localhost:8000/advanced.html>
 2. ✅ Enable auto-refresh for hands-free monitoring
 3. ✅ Watch GPU utilization during training
 4. ✅ Get notified when marathon completes

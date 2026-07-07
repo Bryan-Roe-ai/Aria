@@ -436,6 +436,7 @@ For existing projects:
     ```
 
 5. **Deploy with model server**:
+
     ```bash
     python scripts\model_server.py --model trained_model
     ```

@@ -1,4 +1,6 @@
 ---
+# Keep the YAML document marker; workflow contract tests use it to catch
+# accidental truncation/regressions before Merge Gate fans in the unit suite.
 disable-default-queries: false
 # Use default queries in addition to custom suites to keep Copilot Autofix coverage broad.
 name: "Aria CodeQL — maximum security coverage"

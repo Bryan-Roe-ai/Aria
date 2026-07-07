@@ -32,6 +32,22 @@
                     }
                 ]
             }
+        },
+        {
+            // Merge queue: prevents the thundering-herd problem when many
+            // auto-merge labeled PRs all become mergeable simultaneously.
+            // Requires enabling the merge queue in repository Settings → General
+            // → Pull Requests → "Allow merge queue" (UI-only setting).
+            "type": "merge_queue",
+            "parameters": {
+                "check_response_timeout_minutes": 60,
+                "grouping_strategy": "ALLGREEN",
+                "max_entries_to_build": 5,
+                "max_entries_to_merge": 5,
+                "merge_method": "SQUASH",
+                "min_entries_to_merge": 1,
+                "min_entries_to_merge_wait_minutes": 5
+            }
         }
 
         // Optional hardening rules (enable when policy-ready):

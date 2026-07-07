@@ -2,7 +2,7 @@ azure:
     location: eastus
     resource_group: rg-quantum-ai
     storage_account: quantumstorage
-    subscription_id: "a07fbd16-e722-446d-8efd-0681e85b725c"
+    subscription_id: a07fbd16-e722-446d-8efd-0681e85b725c
     workspace_name: quantum-ai-workspace
 logging:
     level: INFO

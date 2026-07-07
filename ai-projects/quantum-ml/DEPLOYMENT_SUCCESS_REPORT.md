@@ -42,9 +42,9 @@
 
 ### Endpoint Information
 
-- **Workspace URI:** https://quantum-ai-workspace.eastus.quantum.azure.com
+- **Workspace URI:** <https://quantum-ai-workspace.eastus.quantum.azure.com>
 - **Created:** 2025-10-31T17:28:16Z
-- **Created By:** BryanRoe@BRsite.onmicrosoft.com
+- **Created By:** <BryanRoe@BRsite.onmicrosoft.com>
 
 ---
 
@@ -184,6 +184,7 @@ job = target.submit(program, ...)
     ```powershell
     .\deploy_to_azure_quantum.ps1 -SetupAzureML
     ```
+
     - Deploy compute cluster
     - Register quantum model
     - Create REST API endpoint

@@ -14,8 +14,8 @@
     },
     {
       "check": "Virtual Envs",
-      "status": "ok",
-      "venvs_found": 2,
+      "status": "no_venv",
+      "venvs_found": 0,
       "speed": "instant"
     },
     {
@@ -32,10 +32,8 @@
     },
     {
       "check": "Providers",
-      "status": "ok",
-      "available": [
-        "lmstudio"
-      ],
+      "status": "no_providers",
+      "available": [],
       "speed": "instant"
     },
     {
@@ -59,29 +57,31 @@
         }
       },
       "speed": "instant",
-      "age_seconds": 8449549.946,
-      "age_hours": 2347.097
+      "age_seconds": 8607440.185,
+      "age_hours": 2390.956
     },
     {
       "check": "Dependencies",
-      "status": "ok",
+      "status": "missing_deps",
       "present": [
+        "yaml"
+      ],
+      "missing": [
         "pytest",
-        "yaml",
         "flask",
         "azure.functions"
       ],
-      "missing": [],
-      "speed": "instant",
-      "project_python": ".venv/bin/python"
+      "speed": "instant"
     }
   ],
   "summary": {
     "total_checks": 8,
-    "ok_count": 7,
-    "warning_count": 1,
-    "critical_failure_count": 0,
-    "critical_failure_checks": []
+    "ok_count": 4,
+    "warning_count": 3,
+    "critical_failure_count": 1,
+    "critical_failure_checks": [
+      "Dependencies"
+    ]
   },
-  "all_ok": true
+  "all_ok": false
 }

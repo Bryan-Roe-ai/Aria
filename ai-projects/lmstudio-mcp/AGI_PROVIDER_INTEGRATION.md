@@ -3,6 +3,7 @@
 ## Overview
 
 The **AGI Provider** in Aria is a multi-agent reasoning system that:
+
 - Analyzes queries to determine intent and domain
 - Routes to specialized agents
 - Performs task decomposition and reasoning chains
@@ -218,24 +219,27 @@ response = agi.complete([
 
 The `AGILMStudioRouter` determines when to use LM Studio:
 
-### ✅ Use LM Studio For:
+### ✅ Use LM Studio For
 
 **Explicit requests:**
+
 - "Explain XYZ locally"
 - "Use offline models for this"
 - "Private inference please"
 
 **Technical domains:**
+
 - Domain = "technical"
 - Domain = "coding"
 - Domain = "ai"
 
 **Code-related intents:**
+
 - Intent = "coding"
 - Intent = "creation"
 - Intent = "explanation" (for tech topics)
 
-### ❌ Don't Use LM Studio For:
+### ❌ Don't Use LM Studio For
 
 - Quantum-specific queries (route to quantum-specialist)
 - Aria movement/action commands (route to aria-character)
@@ -528,7 +532,7 @@ export LMSTUDIO_TEMPERATURE=1.0
 - **AGI Provider**: `ai-projects/chat-cli/src/agi_provider.py`
 - **LM Studio MCP Integration**: `ai-projects/lmstudio-mcp/lmstudio_agi_integration.py`
 - **Agent Integration**: `ai-projects/lmstudio-mcp/AGENT_INTEGRATION.md`
-- **LM Studio Docs**: https://lmstudio.ai
+- **LM Studio Docs**: <https://lmstudio.ai>
 
 ---
 

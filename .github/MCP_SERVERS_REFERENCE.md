@@ -604,9 +604,9 @@ pip install --upgrade mcp>=0.9.0
 
 ## MCP Protocol Resources
 
-- **Official MCP Spec**: https://modelcontextprotocol.io/
-- **Python SDK**: https://github.com/modelcontextprotocol/python-sdk
-- **Example Servers**: https://github.com/modelcontextprotocol/servers
+- **Official MCP Spec**: <https://modelcontextprotocol.io/>
+- **Python SDK**: <https://github.com/modelcontextprotocol/python-sdk>
+- **Example Servers**: <https://github.com/modelcontextprotocol/servers>
 
 ---
 
