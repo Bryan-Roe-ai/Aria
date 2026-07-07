@@ -4,7 +4,7 @@ Covers:
   - GroqProvider instantiation (with and without openai package)
   - Streaming and non-streaming complete() paths
   - Friendly error messages for connection, auth, and model-not-found errors
-  - _check_groq_available caching behaviour
+  - _check_groq_available caching behavior
   - detect_provider with explicit 'groq' selection
   - detect_provider auto-detection when Groq key is set and endpoint is reachable
   - GROQ_API_KEY / GROQ_MODEL / GROQ_BASE_URL env-var wiring
@@ -355,7 +355,9 @@ def test_check_groq_available_cache_different_url(monkeypatch):
     def urlopen_side_effect(req, timeout=None):
         nonlocal call_count
         call_count += 1
-        if "api.groq.com" in req.full_url:
+        from urllib.parse import urlparse
+
+        if urlparse(req.full_url).hostname == "api.groq.com":
             return MagicMock()
         import urllib.error
 
