@@ -70,7 +70,7 @@ instance/
 docs/_build/
 target/
 site/
-
+*.env*
 # Jupyter / IPython
 .ipynb_checkpoints/
 profile_default/
