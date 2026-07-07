@@ -18,8 +18,7 @@ def test_markdown_quality_workflow_selects_changed_markdown_targets() -> None:
     steps = workflow["jobs"]["markdownlint"]["steps"]
 
     checkout_step = next(step for step in steps if step["name"] == "Checkout")
-    fetch_depth = checkout_step["with"]["fetch-depth"]
-    assert fetch_depth in {0, "0"}
+    assert checkout_step["with"]["fetch-depth"] == 0
 
     select_step = next(step for step in steps if step["name"] == "Select markdown targets")
     lint_step = next(step for step in steps if step["name"] == "Lint Markdown files")
