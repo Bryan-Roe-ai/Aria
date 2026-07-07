@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 version: '2.1'
 
 jobs:
@@ -12,3 +13,19 @@ workflows:
     main:
         jobs:
             - test
+=======
+version: "2.1"
+
+jobs:
+  test:
+    docker:
+      - image: cimg/node:24.0-browsers
+    steps:
+      - checkout
+      - run: echo "Running example step, please edit this file"
+
+workflows:
+  main:
+    jobs:
+      - test
+>>>>>>> 64b754cfe (fix(ci): populate cci-agent-setup.yml to fix "root is not an object" error)
