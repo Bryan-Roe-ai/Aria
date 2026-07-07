@@ -652,7 +652,7 @@ def save_conversation_markdown(hist_state: list[dict], session_name: str = "sess
     filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.md"))
     if os.path.commonpath([conv_root, filename]) != conv_root:
         raise ValueError("Invalid session name")
-    temp_filename = os.path.realpath(os.path.join(conv_root, f"{safe_name}_{ts}.md.tmp"))
+    temp_filename = os.path.realpath(os.path.join(conv_root, f".tmp_{uuid.uuid4().hex}.md"))
     if os.path.commonpath([conv_root, temp_filename]) != conv_root:
         raise ValueError("Invalid session name")
     try:
