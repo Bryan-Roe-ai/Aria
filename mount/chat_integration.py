@@ -157,11 +157,15 @@ class ChatIntegration:
                 "--provider",
                 normalized_provider,
                 "--once",
-                "--",
-                message,
             ]
 
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(self.chat_path))
+            result = subprocess.run(
+                cmd,
+                input=message,
+                capture_output=True,
+                text=True,
+                cwd=str(self.chat_path),
+            )
 
             return {
                 "success": result.returncode == 0,
