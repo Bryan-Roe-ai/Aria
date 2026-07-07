@@ -1,5 +1,6 @@
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Sequence
 from typing import Any
+
 
 def _as_dict(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
