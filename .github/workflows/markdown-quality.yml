@@ -139,23 +139,31 @@ jobs:
 
       - name: Lint Markdown files
         id: lint
+        env:
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
 
           FILE_LIST="${{ steps.targets.outputs.file_list }}"
 
-          if [ -z "$FILE_LIST" ] || [ ! -f "$FILE_LIST" ] || [ ! -s "$FILE_LIST" ]; then
+          if [ -z "$FILE_LIST" ]; then
             echo "No Markdown files changed for this run, or all changed Markdown files were excluded from linting."
             exit 0
           fi
 
+          if [ ! -f "$FILE_LIST" ] || [ ! -s "$FILE_LIST" ]; then
+            echo "No Markdown files changed for this run, or all changed Markdown files were excluded from linting."
+            exit 0
+          fi
+
+          # Read the NUL-delimited target list written by write_targets_from_diff.
           mapfile -d '' -t markdown_files < "$FILE_LIST"
 
           printf 'Linting markdown targets:\n'
           printf ' - %s\n' "${markdown_files[@]}"
 
           args=()
-          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ] && [ "${{ inputs.fix }}" = "true" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "${{ inputs.fix }}" = "true" ]; then
             args+=(--fix)
           fi
 
