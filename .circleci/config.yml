@@ -94,11 +94,7 @@ jobs:
     executor: python311
     parallelism: 2
     steps:
-<<<<<<< HEAD
-            - checkout
-            - run: echo "Running example step, please edit this file"
 version: "2.1"
-=======
       - checkout
       - restore-pip-cache
       - install-dev-deps
@@ -149,4 +145,3 @@ workflows:
             - lint
             - unit-test
             - pre-commit
->>>>>>> 625f1806b (ci: optimize CircleCI config with Python image, caching, and parallel jobs)
