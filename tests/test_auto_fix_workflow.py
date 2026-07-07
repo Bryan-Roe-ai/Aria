@@ -71,9 +71,7 @@ def test_auto_fix_has_cleanup_step() -> None:
         "are accidentally included in the autofix branch"
     )
 
-    cleanup_step = next(
-        step for step in steps if step["name"] == "Revert workflow file changes and remove stray files"
-    )
+    cleanup_step = next(step for step in steps if step["name"] == "Revert workflow file changes and remove stray files")
     assert "detect_output.txt" in cleanup_step["run"], "Must remove stray detect_output.txt"
     assert ".github/workflows" in cleanup_step["run"], "Must revert workflow file changes"
     assert "git restore" in cleanup_step["run"], "Must use git restore to revert workflow changes"
