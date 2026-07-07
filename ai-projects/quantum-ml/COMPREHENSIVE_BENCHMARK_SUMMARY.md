@@ -421,15 +421,15 @@ Model performance varies by configuration:
 
 ### **Datasets**
 
-- UCI Machine Learning Repository: https://archive.ics.uci.edu/ml
-- Dolly 15k (chat fine-tuning): https://huggingface.co/datasets/databricks/databricks-dolly-15k
+- UCI Machine Learning Repository: <https://archive.ics.uci.edu/ml>
+- Dolly 15k (chat fine-tuning): <https://huggingface.co/datasets/databricks/databricks-dolly-15k>
 
 ### **Tools & Frameworks**
 
-- PennyLane: https://pennylane.ai
-- PyTorch: https://pytorch.org
-- scikit-learn: https://scikit-learn.org
-- Azure Quantum: https://azure.microsoft.com/en-us/services/quantum
+- PennyLane: <https://pennylane.ai>
+- PyTorch: <https://pytorch.org>
+- scikit-learn: <https://scikit-learn.org>
+- Azure Quantum: <https://azure.microsoft.com/en-us/services/quantum>
 
 ### **Documentation**
 

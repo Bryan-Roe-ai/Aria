@@ -35,12 +35,14 @@ The agent is hosted using the [Agent Framework](https://github.com/microsoft/age
 
 Your identity (or the Managed Identity running the container in production) needs **Azure AI User** on the Foundry project scope. This role covers provisioning the memory store with `provision_memory_store.py` and reading/writing memories from `main.py`.
 
-The memory store embeds and retrieves memories through the project's inference endpoint, so the same identity also needs **Cognitive Services OpenAI User** on the Foundry project scope to call the embedding deployment. Without it, memory writes fail with a `401` (`Authentication to the Azure OpenAI resource failed`) and the store stays empty. When deploying, grant both roles to the hosted agent's runtime identity (the `…-AgentIdentity` service principal) at the project scope.
+The memory store embeds and retrieves memories through the project's inference endpoint, so the same identity also needs **Cognitive Services OpenAI User** on the Foundry project scope to call the embedding deployment.
+Without it, memory writes fail with a `401` (`Authentication to the Azure OpenAI resource failed`) and the store stays empty.
+When deploying, grant both roles to the hosted agent's runtime identity (the `…-AgentIdentity` service principal) at the project scope.
 
 ## Option 1: Azure Developer CLI (`azd`)
 
 <details>
-<summary><strong>Show steps</strong></summary>
+<summary>Show steps</summary>
 
 With the bundled `postprovision` hook, a single `azd provision` creates the Foundry Memory Store and sets `MEMORY_STORE_NAME` for you.
 
@@ -48,10 +50,13 @@ With the bundled `postprovision` hook, a single `azd provision` creates the Foun
 
 1. **Azure Developer CLI (`azd`)** — [Install azd](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd) (1.25 or later)
 2. Install the unified Foundry CLI extension bundle:
+
     ```bash
     azd ext install microsoft.foundry
     ```
+
 3. Authenticate:
+
     ```bash
     azd auth login
     ```
@@ -66,11 +71,14 @@ mkdir my-memory-agent && cd my-memory-agent
 azd ai agent init -m https://github.com/microsoft-foundry/foundry-samples/blob/main/samples/python/hosted-agents/agent-framework/responses/13-foundry-memory/agent.manifest.yaml
 ```
 
-Follow the prompts to configure your Foundry project and model deployment. If you don't have an existing Foundry project, `azd ai agent init` will guide you through creating one. Initializing also sets the selected project as the active project, and copies this sample's files into a new service directory `src/<agent-name>/` — including [`provision_memory_store.py`](provision_memory_store.py) and the [`hooks/`](hooks/) scripts.
+Follow the prompts to configure your Foundry project and model deployment. If you don't have an existing Foundry project, `azd ai agent init` will guide you through creating one.
+Initializing also sets the selected project as the active project, and copies this sample's files into a new service directory `src/<agent-name>/` — including [`provision_memory_store.py`](provision_memory_store.py) and the [`hooks/`](hooks/) scripts.
 
 ### 3. Enable one-command provisioning (`postprovision` hook)
 
-Wire the bundled hook into the `azure.yaml` that `azd ai agent init` generated, so the memory store is created automatically every time you run `azd provision`. `postprovision` must be registered at the **top level** of `azure.yaml` (service-scoped hooks only support the package/deploy lifecycle), and the `run:` path must point at the hook inside the generated service directory. Add this top-level block, replacing `<agent-name>` with the service folder `azd ai agent init` created under `src/`:
+Wire the bundled hook into the `azure.yaml` that `azd ai agent init` generated, so the memory store is created automatically every time you run `azd provision`.
+`postprovision` must be registered at the **top level** of `azure.yaml` (service-scoped hooks only support the package/deploy lifecycle), and the `run:` path must point at the hook inside the generated service directory.
+Add this top-level block, replacing `<agent-name>` with the service folder `azd ai agent init` created under `src/`:
 
 ```yaml
 hooks:

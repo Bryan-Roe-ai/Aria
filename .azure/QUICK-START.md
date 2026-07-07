@@ -4,7 +4,7 @@ This guide walks through a minimal deployment to get Aria running on Azure Funct
 
 ## Prerequisites
 
-✓ **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli
+✓ **Azure CLI**: <https://docs.microsoft.com/cli/azure/install-azure-cli>
 ✓ **Azure Account**: Active subscription with admin access
 ✓ **Docker**: For building container images (optional if using azd)
 ✓ **Git**: Latest commit should be on main branch

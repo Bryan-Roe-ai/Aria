@@ -53,18 +53,18 @@
     - `workspaceName`: Must be globally unique (e.g., `quantum-ai-bryan-2025`)
     - `storageAccountName`: Must be globally unique, lowercase, no hyphens (e.g., `quantumstoragebr2025`)
 
-    **Example:**
+        **Example:**
 
-    ```json
-    {
-        "workspaceName": {
-            "value": "quantum-ai-bryan-2025"
-        },
-        "storageAccountName": {
-            "value": "quantumstoragebr2025"
+        ```json
+        {
+            "workspaceName": {
+                "value": "quantum-ai-bryan-2025"
+            },
+            "storageAccountName": {
+                "value": "quantumstoragebr2025"
+            }
         }
-    }
-    ```
+        ```
 
 - [ ] **Set your subscription**
 

@@ -419,11 +419,11 @@ dashboard/
 
 ### 🔗 Quick Links
 
-- **Hub**: http://localhost:8000/
-- **Training**: http://localhost:8000/unified.html
-- **API Health**: http://localhost:8000/api/health
-- **API Stats**: http://localhost:8000/api/stats
-- **GitHub**: https://github.com/Bryan-Roe/QAI
+- **Hub**: <http://localhost:8000/>
+- **Training**: <http://localhost:8000/unified.html>
+- **API Health**: <http://localhost:8000/api/health>
+- **API Stats**: <http://localhost:8000/api/stats>
+- **GitHub**: <https://github.com/Bryan-Roe/QAI>
 
 ---
 
@@ -434,7 +434,7 @@ dashboard/
 
 ---
 
-## 🎊 Thank You!
+## 🎊 Thank You
 
 The QAI Hub has evolved from a simple training dashboard into a comprehensive command center for all quantum-AI operations. Your feedback drives continuous improvement!
 

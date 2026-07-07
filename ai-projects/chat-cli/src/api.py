@@ -1,10 +1,10 @@
 """Public API for chat-cli module.
 
-This module defines the stable interface for the chat-cli component.
-All imports from chat-cli should come through this module.
+Provides a stable interface for the ``chat-cli`` component. All public imports
+should be re‑exported from this module.
 """
 
-# Re-export main APIs from internal modules
+# Re-export main APIs from internal modules – imports are sorted alphabetically
 from .agi_provider import AGIProvider, RoleMessage, create_agi
 from .chat_providers import (
     AzureOpenAIChatProvider,

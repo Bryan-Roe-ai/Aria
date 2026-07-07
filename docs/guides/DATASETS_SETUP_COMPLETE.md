@@ -52,7 +52,7 @@ AI/
 
 ---
 
-## 🚀 Next Steps - Start Training Now!
+## 🚀 Next Steps - Start Training Now
 
 ### Option 1: Train Quantum AI (Fastest - 2 minutes)
 
@@ -132,7 +132,7 @@ python .\scripts\quick_setup_datasets.py
 
 ## 🎯 Recommended Workflow
 
-### For Quantum AI Development:
+### For Quantum AI Development
 
 1. ✅ **Quantum datasets downloaded** - Ready to use!
 2. Train on built-in datasets first (Iris, Wine)
@@ -140,7 +140,7 @@ python .\scripts\quick_setup_datasets.py
 4. Use 4 qubits for Iris, 6-8 qubits for larger datasets
 5. PCA recommended for >10 features
 
-### For LLM Fine-tuning:
+### For LLM Fine-tuning
 
 1. Download Dolly 15k (commercial-safe, high quality)
 2. Test with `--max-train-samples 64` (quick iteration)
@@ -148,7 +148,7 @@ python .\scripts\quick_setup_datasets.py
 4. Monitor GPU memory usage
 5. Use streaming for >5GB datasets
 
-### For Both:
+### For Both
 
 1. Always validate after downloading
 2. Check `dataset_index.json` for metadata
@@ -160,19 +160,19 @@ python .\scripts\quick_setup_datasets.py
 
 ## 🔧 Maintenance Commands
 
-### Check what's downloaded:
+### Check what's downloaded
 
 ```powershell
 python .\scripts\download_datasets.py --list
 ```
 
-### Validate everything:
+### Validate everything
 
 ```powershell
 python .\scripts\validate_datasets.py --verbose
 ```
 
-### Download more datasets:
+### Download more datasets
 
 ```powershell
 # See full catalog
@@ -182,7 +182,7 @@ type AI_DATASETS_CATALOG.md
 python .\scripts\download_datasets.py --category chat --dataset dolly
 ```
 
-### Check storage usage:
+### Check storage usage
 
 ```powershell
 Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
@@ -243,20 +243,20 @@ Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
 
 ## 🎓 Learning Resources
 
-### Dataset Sources:
+### Dataset Sources
 
 - **Hugging Face**: 100,000+ datasets for ML/NLP
 - **UCI ML Repository**: Classic ML datasets (30+ years)
 - **Kaggle**: Competitions and community datasets
 - **Papers with Code**: Research-quality datasets
 
-### Training Tutorials:
+### Training Tutorials
 
 - Quantum AI: `ai-projects/quantum-ml/README.md`
 - Phi-3.6 Fine-tuning: `AI/microsoft_phi-silica-3.6_v1/README.md`
 - Custom datasets: `ai-projects/quantum-ml/train_custom_dataset.py`
 
-### Tools:
+### Tools
 
 - Hugging Face `datasets` library (streaming, caching)
 - Pandas (CSV/Excel processing)
@@ -267,19 +267,19 @@ Get-ChildItem .\datasets -Recurse | Measure-Object -Property Length -Sum
 
 ## 🚨 Important Notes
 
-### Licenses:
+### Licenses
 
 - **Commercial OK**: Dolly, OpenAssistant, UCI datasets
 - **Non-commercial**: Alpaca, some Kaggle datasets
 - Always check license before production use
 
-### Storage:
+### Storage
 
 - Current: ~0.21 MB (quantum datasets)
 - Recommended: 10 GB for diverse datasets
 - Large-scale: 50-500 GB for production
 
-### Dependencies:
+### Dependencies
 
 Some scripts require packages not in base environment:
 
@@ -287,7 +287,7 @@ Some scripts require packages not in base environment:
 pip install -r dataset-requirements.txt
 ```
 
-### Git:
+### Git
 
 Add to `.gitignore`:
 
@@ -308,7 +308,7 @@ datasets/dataset_index.json
 
 ---
 
-## 🎉 You're All Set!
+## 🎉 You're All Set
 
 Your AI workspace now has:
 

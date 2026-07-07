@@ -1,4 +1,4 @@
-# ✅ Chat Website Created Successfully!
+# ✅ Chat Website Created Successfully
 
 ## What Was Built
 
@@ -26,12 +26,12 @@ I've created a complete, production-ready chat website with:
 - Supports 3 providers: Local (free), OpenAI, Azure OpenAI
 - Auto-detects best available provider
 
-## 🚀 It's Already Running!
+## 🚀 It's Already Running
 
 The server is live at:
 
-- **Main Page**: http://localhost:7071/api/chat-web
-- **API Endpoint**: http://localhost:7071/api/chat
+- **Main Page**: <http://localhost:7071/api/chat-web>
+- **API Endpoint**: <http://localhost:7071/api/chat>
 
 ## Quick Commands
 
@@ -89,7 +89,7 @@ c:\Users\Bryan\OneDrive\AI\
 
 ## Next Steps
 
-1. **Try it now**: Open http://localhost:7071/api/chat-web in your browser
+1. **Try it now**: Open <http://localhost:7071/api/chat-web> in your browser
 2. **Test different providers**: Set API keys and restart
 3. **Customize**: Edit colors, system prompts, features
 4. **Deploy to Azure**: Follow the guide in `CHAT_WEBSITE_GUIDE.md`

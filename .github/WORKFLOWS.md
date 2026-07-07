@@ -21,7 +21,7 @@ This repository uses GitHub Actions for continuous integration, testing, deploym
 | Integration Contract Gate | ![Integration Contract](https://github.com/Bryan-Roe/Aria/actions/workflows/integration-contract-gate.yml/badge.svg) | API contract validation on push/PR                                 |
 | Nightly Regression        | ![Nightly Regression](https://github.com/Bryan-Roe/Aria/actions/workflows/nightly-regression.yml/badge.svg)          | Nightly full suite with regression detection                       |
 | Training Health Report    | ![Training Health](https://github.com/Bryan-Roe/Aria/actions/workflows/training-health-report.yml/badge.svg)         | Weekly training pipeline digest                                    |
-| Coverage Report           | ![Coverage Report](https://github.com/Bryan-Roe/Aria/actions/workflows/coverage-report.yml/badge.svg)                | Test coverage tracking and PR diff comments                        |
+| Coverage Report           | ![Coverage Report](https://github.com/Bryan-Roe/Aria/actions/workflows/ci.yml/badge.svg)                             | Test coverage tracking and PR diff comments                        |
 | Dataset Integrity         | ![Dataset Integrity](https://github.com/Bryan-Roe/Aria/actions/workflows/dataset-integrity.yml/badge.svg)            | Enforces datasets/ immutability and schema rules                   |
 | Secrets Scan              | ![Secrets Scan](https://github.com/Bryan-Roe/Aria/actions/workflows/secrets-scan.yml/badge.svg)                      | Gitleaks secret detection and sensitive file guard                 |
 | Dependency Review         | ![Dependency Review](https://github.com/Bryan-Roe/Aria/actions/workflows/dependency-review.yml/badge.svg)            | Blocks risky dependency changes in PRs                             |
@@ -449,6 +449,24 @@ act pull_request
 4. Test locally with `act` if possible
 5. Add to this documentation
 6. Update workflow validation to include new workflow
+
+### Running CLI Scripts Locally
+
+Many workflows invoke CLI scripts from the `scripts/` directory. When running
+these scripts outside of CI, ensure the repository root is on `sys.path` so
+that local package imports resolve correctly:
+
+```python
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+```
+
+All CLI scripts in this repo follow this pattern. See
+[AGENTS.md](../AGENTS.md) for a full list of available CLI scripts and their
+usage.
 
 ## 📚 Additional Resources
 

@@ -146,6 +146,7 @@
     ```
 
 8. **Connection Pooling**
+
     ```python
     # Reuse database/API connections instead of creating new ones
     _connection_pool = []

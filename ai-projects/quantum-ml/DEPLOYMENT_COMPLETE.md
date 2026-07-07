@@ -401,6 +401,7 @@ curl -X POST http://localhost:8080/api/predict \
     ```
 
 3. **Deploy to Azure Quantum (Optional)**
+
     ```bash
     cd quantum-ai
     python deploy_banknote_to_azure.py
@@ -518,7 +519,7 @@ You now have a **complete, production-ready quantum machine learning system** th
 
 ---
 
-## 🎉 Congratulations!
+## 🎉 Congratulations
 
 Your Quantum AI system is now **fully operational** with:
 

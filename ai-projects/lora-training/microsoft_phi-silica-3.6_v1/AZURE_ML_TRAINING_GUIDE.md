@@ -303,6 +303,6 @@ After training:
 
 ## Support
 
-- Azure ML Documentation: https://learn.microsoft.com/azure/machine-learning/
-- Phi-3 Documentation: https://huggingface.co/microsoft/Phi-3.5-mini-instruct
+- Azure ML Documentation: <https://learn.microsoft.com/azure/machine-learning/>
+- Phi-3 Documentation: <https://huggingface.co/microsoft/Phi-3.5-mini-instruct>
 - Issues: Check logs in Azure ML Studio

@@ -33,6 +33,7 @@ Use this checklist to verify that GitHub Copilot is fully integrated and working
     ```
 
 - [ ] Python (ms-python.python)
+
     ```bash
     code --install-extension ms-python.python
     ```
@@ -61,6 +62,7 @@ ms-windows-ai-studio.windows-ai-studio
 - [ ] File exists: `test -f .vscode/settings.json`
 - [ ] Valid JSON: `python3 -m json.tool .vscode/settings.json > /dev/null`
 - [ ] Contains Copilot settings:
+
     ```bash
     grep -q "chat.agent.maxRequests\|python.analysis.extraPaths" .vscode/settings.json
     ```
@@ -70,6 +72,7 @@ ms-windows-ai-studio.windows-ai-studio
 - [ ] File exists: `test -f .vscode/mcp.json`
 - [ ] Valid JSON: `python3 -m json.tool .vscode/mcp.json > /dev/null`
 - [ ] Contains all three servers:
+
     ```bash
     grep -q "quantum-ai\|llm-maker\|task-complete" .vscode/mcp.json
     ```
@@ -79,6 +82,7 @@ ms-windows-ai-studio.windows-ai-studio
 - [ ] File exists: `test -f .vscode/extensions.json`
 - [ ] Valid JSON: `python3 -m json.tool .vscode/extensions.json > /dev/null`
 - [ ] Recommends Copilot:
+
     ```bash
     grep -q "GitHub.copilot" .vscode/extensions.json
     ```
@@ -172,6 +176,7 @@ test -f scripts/task_complete_mcp_server.py
     ```
 
 - [ ] Both files contain practical guidance
+
     ```bash
     grep -q "Quick Guide\|Architecture\|Agents" .github/copilot-instructions.md
     ```
@@ -180,6 +185,7 @@ test -f scripts/task_complete_mcp_server.py
 
 - [ ] Directory exists: `test -d .github/instructions/`
 - [ ] Contains 25+ instruction files:
+
     ```bash
     ls .github/instructions/*.instructions.md | wc -l
     # Should show 25+
@@ -189,6 +195,7 @@ test -f scripts/task_complete_mcp_server.py
 
 - [ ] Skills directory exists: `test -d .github/skills/`
 - [ ] Contains 30+ skill workflows:
+
     ```bash
     ls .github/skills/*/SKILL.md | wc -l
     # Should show 30+
@@ -386,6 +393,7 @@ I'm getting test failures. Help me debug.
 - [ ] Python files are executable (chmod +x)
 - [ ] PYTHONPATH environment variables are set
 - [ ] Try starting servers manually:
+
     ```bash
     .venv/bin/python ai-projects/quantum-ml/quantum_mcp_server.py
     ```

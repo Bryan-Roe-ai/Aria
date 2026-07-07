@@ -32,7 +32,8 @@ try:
 except Exception:
     pass
 
-from shared.ai_safety_middleware import AISafetyMiddleware
+# Intentionally after apply_local_settings() so env vars are set before middleware init.
+from shared.ai_safety_middleware import AISafetyMiddleware  # noqa: E402
 
 # Cached ANSI escape regex for performance across imports
 _ANSI_ESCAPE_RE = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")

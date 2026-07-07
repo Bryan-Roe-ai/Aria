@@ -215,8 +215,8 @@ tests/test_autotrain_unit.py::TestJobDataclass::test_full_job PASSED
 - **Full Guide:** `VSCODE_TESTING_GUIDE.md` (comprehensive documentation)
 - **Quick Ref:** `VSCODE_TESTING_QUICKREF.md` (cheat sheet)
 - **Test Runner:** `scripts/test_runner.py` (advanced orchestration)
-- **Pytest Docs:** https://docs.pytest.org/
-- **VS Code Testing:** https://code.visualstudio.com/docs/python/testing
+- **Pytest Docs:** <https://docs.pytest.org/>
+- **VS Code Testing:** <https://code.visualstudio.com/docs/python/testing>
 
 ## Summary
 

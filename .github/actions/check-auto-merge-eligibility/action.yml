@@ -1,0 +1,118 @@
+name: Check Auto-Merge Eligibility
+description: >
+    Validates all eligibility criteria for automatic PR merging and outputs
+    whether the PR is eligible together with a human-readable reason.
+    Checks: not draft, targets main, not a fork, has auto-merge/autofix label,
+    not blocked/conflicted, no CHANGES_REQUESTED reviews, has an APPROVED review.
+
+inputs:
+    pr-number:
+        description: Pull request number to evaluate
+        required: true
+    github-token:
+        description: >
+            GitHub token with pull-requests:read and checks:read scope.
+            Defaults to the built-in GITHUB_TOKEN.
+        required: false
+        default: ${{ github.token }}
+
+outputs:
+    eligible:
+        description: "'true' if the PR meets all auto-merge criteria, 'false' otherwise"
+        value: ${{ steps.check.outputs.eligible }}
+    reason:
+        description: >
+            Human-readable explanation of the eligibility decision.
+            When eligible=true this is a success message; otherwise it lists failures.
+        value: ${{ steps.check.outputs.reason }}
+
+runs:
+    using: composite
+    steps:
+        - name: Evaluate PR eligibility
+          id: check
+          shell: bash
+          env:
+              GH_TOKEN: ${{ inputs.github-token }}
+              PR_NUMBER: ${{ inputs.pr-number }}
+          run: |
+              set -euo pipefail
+
+              # ---------------------------------------------------------------------------
+              # Fetch PR metadata via the GitHub CLI.
+              # ---------------------------------------------------------------------------
+              pr_json="$(gh pr view "$PR_NUMBER" \
+                --json number,isDraft,baseRefName,headRepository,labels,mergeStateStatus,reviewDecision,state \
+                2>&1)" || {
+                # Sanitize raw gh output: strip ANSI escape codes, keep first line,
+                # truncate using bash substring (character-aware, avoids splitting
+                # multi-byte UTF-8 sequences that cut -c can mishandle on some systems).
+                first_line="$(printf '%s' "${pr_json}" | head -n1 | sed 's/\x1b\[[0-9;]*m//g')"
+                sanitized="${first_line:0:120}"
+                echo "eligible=false" >> "$GITHUB_OUTPUT"
+                printf 'reason=Failed to fetch PR data: %s\n' "${sanitized}" >> "$GITHUB_OUTPUT"
+                exit 0
+              }
+
+              # ---------------------------------------------------------------------------
+              # Extract fields via jq.
+              # ---------------------------------------------------------------------------
+              is_draft="$(jq -r '.isDraft' <<< "$pr_json")"
+              base_ref="$(jq -r '.baseRefName' <<< "$pr_json")"
+              head_repo="$(jq -r '.headRepository.nameWithOwner // empty' <<< "$pr_json")"
+              pr_state="$(jq -r '.state' <<< "$pr_json")"
+              merge_state="$(jq -r '.mergeStateStatus // empty' <<< "$pr_json")"
+              review_decision="$(jq -r '.reviewDecision // empty' <<< "$pr_json")"
+              has_label="$(jq -r '
+                [.labels[].name] | any(. == "auto-merge" or . == "autofix")
+              ' <<< "$pr_json")"
+
+              current_repo="${GITHUB_REPOSITORY:-}"
+
+              # ---------------------------------------------------------------------------
+              # Accumulate failures.
+              # ---------------------------------------------------------------------------
+              FAILURES=()
+
+              [[ "$pr_state" != "OPEN" ]] && \
+                FAILURES+=("PR state is '${pr_state}' (requires OPEN)")
+
+              [[ "$is_draft" == "true" ]] && \
+                FAILURES+=("PR is a draft")
+
+              [[ "$base_ref" != "main" ]] && \
+                FAILURES+=("base branch is '${base_ref}' (requires 'main')")
+
+              if [[ -n "$current_repo" && -n "$head_repo" && "$head_repo" != "$current_repo" ]]; then
+                FAILURES+=("PR is from a fork (${head_repo}); fork PRs are not eligible")
+              fi
+
+              [[ "$has_label" != "true" ]] && \
+                FAILURES+=("missing 'auto-merge' or 'autofix' label")
+
+              case "$merge_state" in
+                DIRTY)   FAILURES+=("merge conflicts detected (mergeStateStatus=DIRTY)") ;;
+                BEHIND)  FAILURES+=("branch is behind base branch (mergeStateStatus=BEHIND)") ;;
+                BLOCKED) FAILURES+=("merge is blocked by required status checks (mergeStateStatus=BLOCKED)") ;;
+              esac
+
+              if [[ "$review_decision" == "CHANGES_REQUESTED" ]]; then
+                FAILURES+=("has CHANGES_REQUESTED review")
+              elif [[ "$review_decision" != "APPROVED" ]]; then
+                FAILURES+=("awaiting required approval (reviewDecision='${review_decision}')")
+              fi
+
+              # ---------------------------------------------------------------------------
+              # Emit outputs.
+              # ---------------------------------------------------------------------------
+              if (( ${#FAILURES[@]} == 0 )); then
+                echo "eligible=true" >> "$GITHUB_OUTPUT"
+                echo "reason=All eligibility checks passed." >> "$GITHUB_OUTPUT"
+                echo "✅ PR #${PR_NUMBER} is eligible for auto-merge."
+              else
+                echo "eligible=false" >> "$GITHUB_OUTPUT"
+                joined="$(printf '%s; ' "${FAILURES[@]}")"
+                joined="${joined%; }"  # trim trailing '; '
+                printf 'reason=%s\n' "${joined}" >> "$GITHUB_OUTPUT"
+                echo "❌ PR #${PR_NUMBER} is NOT eligible: ${joined}"
+              fi

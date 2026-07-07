@@ -32,19 +32,19 @@
                     }
                 ]
             }
+        },
+        {
+            "type": "merge_queue",
+            "parameters": {
+                "check_response_timeout_minutes": 60,
+                "grouping_strategy": "ALLGREEN",
+                "max_entries_to_build": 5,
+                "max_entries_to_merge": 5,
+                "merge_method": "SQUASH",
+                "min_entries_to_merge": 1,
+                "min_entries_to_merge_wait_minutes": 5
+            }
         }
-
-        // Optional hardening rules (enable when policy-ready):
-        // ,{ "type": "required_linear_history" }
-        // ,{ "type": "required_signatures" }
     ],
-    "bypass_actors": [
-        // Preferred: keep empty for strict mode, OR define a tightly scoped audited bypass.
-        // Example team bypass (replace IDs/types with real values):
-        // {
-        //   "actor_id": 1234567,
-        //   "actor_type": "Team",
-        //   "bypass_mode": "pull_request"
-        // }
-    ]
+    "bypass_actors": []
 }

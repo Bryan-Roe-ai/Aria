@@ -170,34 +170,46 @@ make start-qai
 If your goal is to start building AI features quickly (providers, prompts, memory, or orchestration), use this path:
 
 1. **Bootstrap env files**
+
     ```bash
     cp .env.example .env
     cp local.settings.json.example local.settings.json
     ```
+
 2. **Install dependencies**
+
     ```bash
     python -m venv .venv
     source .venv/bin/activate
     pip install -r requirements.txt
     pip install -r requirements-dev.txt
     ```
+
 3. **Run a zero-key provider smoke check**
+
     ```bash
     python ai-projects/chat-cli/src/chat_cli.py --provider local --once "hello"
     ```
+
 4. **Run the AI status endpoint locally (optional but recommended)**
+
     ```bash
     func host start
     curl http://localhost:7071/api/ai/status | python -m json.tool
     ```
+
 5. **Validate VS Code MCP wiring before agent/tool work**
+
     ```bash
     .venv/bin/python scripts/validate_mcp_setup.py
     # or structured output for automation
     .venv/bin/python scripts/validate_mcp_setup.py --json
     ```
+
     In VS Code you can also run the tasks `validate: mcp-setup` or `validate: mcp-setup-json`.
+
 6. **Run fast validation before PRs**
+
     ```bash
     python scripts/test_runner.py --unit
     ```

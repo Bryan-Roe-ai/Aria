@@ -1,78 +1,45 @@
-name: Auto-merge on CI success
+# =============================================================================
+# NOTICE: This workflow has been consolidated into auto-merge.yml
+# =============================================================================
+# The CI-triggered merge path previously in this file (watching the "AGI smoke"
+# workflow_run event) has been replaced by the `merge-on-gate-pass` job in
+# `.github/workflows/auto-merge.yml`, which watches the canonical
+# `Merge Gate / All Gates Passed` check_run instead.
+#
+# Key improvements in the new path:
+#   • Triggers on `check_run` (reliable PR association) instead of
+#     `workflow_run` (pull_requests field is often empty for human PRs).
+#   • Watches the real merge gate, not a single smoke workflow.
+#   • Full eligibility checks: label, draft, fork, conflicts, review state.
+#   • Writes step summary and posts PR comments on result.
+#
+# This file is intentionally left as a manual-only no-op so it does not
+# consume CI minutes. Delete or repurpose it as needed.
+# =============================================================================
+
+name: Auto-merge on CI success (deprecated — see auto-merge.yml)
 
 on:
-  workflow_run:
-    workflows: ["AGI smoke"]
-    types: [completed]
+  workflow_dispatch:
+    inputs:
+      notice:
+        description: >
+          This workflow is a stub. Auto-merge logic has moved to auto-merge.yml
+          (merge-on-gate-pass job). Trigger that workflow instead.
+        required: false
+        default: 'See auto-merge.yml'
 
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  HARDEN_RUNNER_SHA: 0634a2670c59f64b4a01f0f96f84700a4088b9f0  # v2.12.2
-  GITHUB_SCRIPT_SHA: 60a0d83039c74a4aee543508d2ffcb1c3799cdea    # v7.0.1
+  contents: read
 
 jobs:
-  auto-merge:
-    name: Auto-merge PRs labeled 'auto-merge'
+  notice:
+    name: Deprecated — logic moved to auto-merge.yml
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
-      - name: Harden runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
-        with:
-          egress-policy: audit
-          disable-sudo: true
-
-      - name: Auto-merge PRs labeled 'auto-merge'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const run = context.payload.workflow_run;
-            if (!run) return;
-            if (run.conclusion !== 'success') {
-              core.info(`Workflow run conclusion: ${run.conclusion}; skipping`);
-              return;
-            }
-            const prs = run.pull_requests || [];
-            if (!prs.length) {
-              core.info('No pull requests associated; skipping.');
-              return;
-            }
-            for (const pr of prs) {
-              const prNumber = pr.number;
-              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber
-              });
-              const labelNames = labels.map(l => l.name);
-              if (!labelNames.includes('auto-merge')) {
-                core.info(`PR #${prNumber} not labeled auto-merge; skipping`);
-                continue;
-              }
-              const { data: prData } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber
-              });
-              // If mergeable is 'unknown', the API may still be calculating; guard defensively
-              if (prData.mergeable === false) {
-                core.info(`PR #${prNumber} not mergeable; skipping`);
-                continue;
-              }
-              try {
-                await github.rest.pulls.merge({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: prNumber,
-                  merge_method: 'squash'
-                });
-                core.info(`Merged PR #${prNumber}`);
-              } catch (err) {
-                core.info(`Failed to merge PR #${prNumber}: ${err}`);
-              }
-            }
+      - name: Print notice
+        run: |
+          echo "This workflow is a stub."
+          echo "Auto-merge on CI success logic is now in .github/workflows/auto-merge.yml"
+          echo "(merge-on-gate-pass job, triggered by check_run: All Gates Passed)."

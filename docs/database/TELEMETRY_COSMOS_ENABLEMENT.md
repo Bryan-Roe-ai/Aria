@@ -437,10 +437,12 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 
 - **Free tier**: 5 GB ingestion/month (usually sufficient for dev/test)
 - **Sampling**: Configure in `shared/telemetry.py`:
+
     ```python
     from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
     sampler = TraceIdRatioBased(0.1)  # 10% sampling
     ```
+
 - **Filtering**: Exclude low-value operations (e.g., health checks)
 
 ### Cosmos DB
@@ -480,6 +482,7 @@ Set `QAI_ENABLE_COSMOS=false` or remove the environment variable. The system wil
 4. **Secure credentials:**
     - Never commit keys to source control
     - Use Azure Key Vault references in production:
+
         ```json
         "COSMOS_KEY": "@Microsoft.KeyVault(SecretUri=https://...)"
         ```

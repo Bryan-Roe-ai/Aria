@@ -126,21 +126,21 @@ python .\scripts\distributed_benchmark.py --datasets-dir datasets/massive_quantu
 
 ## 🎯 Next Steps
 
-### Immediate (Today):
+### Immediate (Today)
 
 1. ✅ Complete download of 100 high-quality datasets
 2. ✅ Run validation on all downloads
 3. ✅ Execute quick test (1 epoch) to verify system
 4. 📊 Run full 25-epoch benchmark on 100 datasets
 
-### Short-term (This Week):
+### Short-term (This Week)
 
 1. Download next 400 datasets (score 80-90)
 2. Benchmark all 500 datasets
 3. Analyze performance patterns
 4. Identify top 50 production candidates
 
-### Long-term (Next Month):
+### Long-term (Next Month)
 
 1. Download remaining 912 datasets (score 50-80)
 2. Complete benchmark of 1,412 total datasets

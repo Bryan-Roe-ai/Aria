@@ -51,13 +51,17 @@ Before you begin, ensure you have the following installed and configured:
 
 1. Use the one-line command below to create Python environment and install dependencies.
     - Windows
+
         ```powershell
         python -m venv .venv; .\.venv\Scripts\activate; pip install uv; uv pip install -r requirements.txt --prerelease=allow
         ```
+
     - MacOS / Linux
+
         ```bash
         python3 -m venv .venv && source .venv/bin/activate && pip install uv && uv pip install -r requirements.txt --prerelease=allow
         ```
+
 2. Select the Python environment in VS Code: Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`), run `Python: Select Interpreter`, and select the new created environment.
 
 ### Step 2: Configure Environment Variables

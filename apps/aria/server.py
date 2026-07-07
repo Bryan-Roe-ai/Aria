@@ -924,8 +924,13 @@ Rules:
 
 
 def _sanitize_id(raw: str) -> str:
+    """Convert *raw* into a safe, lowercase object-id (alphanumeric + underscore, max 30 chars).
+
+    Falls back to a random ``obj_NNNN`` string when the input collapses to
+    empty after cleaning (e.g., a string that is entirely non-ASCII).
+    """
     cleaned = re.sub(r"[^a-zA-Z0-9_]+", "_", raw.strip().lower())
-    return cleaned[:30] or f"obj_{random.randint(1000, 9999)}"
+    return cleaned[:30] or f"obj_{random.randint(1000, 9999)}"  # noqa: S311
 
 
 THEME_OBJECT_LIBRARY = {
@@ -1049,7 +1054,17 @@ QUANTUM_STAGE_PRESETS = {
 
 
 def apply_world_to_stage(world: dict, *, theme: str) -> None:
-    """Replace stage objects and environment metadata from a generated world."""
+    """Replace the live stage objects and environment metadata from a generated world dict.
+
+    Mutates the global ``stage_state`` in-place: all existing objects are
+    cleared and replaced with those from *world*, and ``environment`` is updated
+    with theme, generation timestamp, and optional stage style.  Stage bounds
+    and Aria's position are not modified.
+
+    Args:
+        world: Output of ``generate_world_fallback`` or ``generate_world_with_llm``.
+        theme: Theme name written to ``environment["theme"]`` as the canonical value.
+    """
     stage_state["objects"] = {}
     for oid, obj in world.get("objects", {}).items():
         stage_state["objects"][oid] = {
@@ -1065,7 +1080,25 @@ def apply_world_to_stage(world: dict, *, theme: str) -> None:
 
 
 def setup_quantum_stage(*, preset: str = "intro", count: int = 6, run_actions: bool = True) -> dict:
-    """Load the quantum-themed world and optionally run a preset action sequence."""
+    """Load the quantum-themed world and optionally execute a preset action sequence.
+
+    Generates and applies the ``"quantum"`` world, guaranteeing that the
+    preset-critical objects ``qubit`` and ``gate`` exist even when the random
+    shuffle omitted them.
+
+    Args:
+        preset: Name of a key in ``QUANTUM_STAGE_PRESETS`` (``"intro"``,
+                ``"entangle"``, ``"measure"``); unknown values fall back to
+                ``"intro"``.
+        count:  Minimum object count (at least 6 to accommodate required objects).
+        run_actions: When ``True``, validates and executes the preset action
+                     sequence, including results in the return dict.
+
+    Returns:
+        A dict with ``status``, ``theme``, ``preset``, ``count``, ``objects``,
+        ``environment``, ``actions``, ``results`` (when *run_actions* is True),
+        and ``state`` (current ``stage_state``).
+    """
     world = generate_world_fallback("quantum", max(count, 6))
     apply_world_to_stage(world, theme="quantum")
 
@@ -1123,7 +1156,22 @@ def _get_agi_provider(*, verbose: bool = False):
 
 
 def generate_world_fallback(theme: str, count: int) -> dict:
-    """Generate a world procedurally without LLM."""
+    """Generate a themed world procedurally without an LLM.
+
+    Draws from ``THEME_OBJECT_LIBRARY`` for the given *theme* (falls back to
+    ``"forest"`` when unknown), ensures ``THEME_REQUIRED_OBJECTS`` are always
+    present, then fills the remaining slots from a shuffled catalog.  Positions
+    are placed with a simple Poisson-ish spread so objects don't visually overlap.
+
+    Args:
+        theme: Theme key (e.g. ``"forest"``, ``"space"``, ``"quantum"``).
+        count: Desired number of objects (required objects are always included
+               and count toward this total).
+
+    Returns:
+        A dict with ``"objects"`` (id → object record) and ``"environment"``
+        (theme, seed, stage bounds, optional stage_style).
+    """
     theme_key = theme.lower()
     objects_catalog = list(THEME_OBJECT_LIBRARY.get(theme_key, THEME_OBJECT_LIBRARY["forest"]))
     required = THEME_REQUIRED_OBJECTS.get(theme_key, [])
@@ -1139,8 +1187,8 @@ def generate_world_fallback(theme: str, count: int) -> dict:
     for name, emoji in chosen:
         # Avoid overlapping positions (simple Poisson-ish attempt)
         for _attempt in range(10):
-            x = random.randint(10, 90)
-            y = random.randint(20, 80)
+            x = random.randint(10, 90)  # noqa: S311
+            y = random.randint(20, 80)  # noqa: S311
             if all(math.hypot(x - px, y - py) > 8 for px, py in used_positions):
                 used_positions.append((x, y))
                 break
@@ -1153,7 +1201,7 @@ def generate_world_fallback(theme: str, count: int) -> dict:
     environment = {
         "theme": theme,
         "generated_at": datetime.datetime.now(timezone.utc).isoformat() + "Z",
-        "seed": random.randint(100000, 999999),
+        "seed": random.randint(100000, 999999),  # noqa: S311
         "stage_bounds": {"width": 100, "height": 100},
     }
     stage_style = THEME_STAGE_STYLES.get(theme.lower())
@@ -1163,7 +1211,17 @@ def generate_world_fallback(theme: str, count: int) -> dict:
 
 
 def generate_world_with_llm(theme: str, count: int, provider) -> dict:
-    """Use LLM provider to generate a themed world. Returns fallback on failure."""
+    """Use an LLM provider to generate a themed world; falls back to procedural on failure.
+
+    Sends a structured prompt to *provider* requesting a JSON world with
+    ``objects`` (id, emoji, position, state) and ``environment``.  The response
+    is sanitised (code fences stripped, positions clamped to [0, 100]) before
+    returning.  If the LLM returns unparseable JSON or raises an exception,
+    ``generate_world_fallback(theme, count)`` is returned instead.
+
+    The returned dict includes an ``"llm": True/False`` key indicating whether
+    the LLM path succeeded.
+    """
     system_prompt = (
         "You are a world generator for a 2D stage (coordinates 0-100 for x and y). "
         "Given a theme, produce JSON with 'objects' and 'environment'. Each object must have: id, emoji, position {x,y}, state. "
@@ -1210,8 +1268,8 @@ def generate_world_with_llm(theme: str, count: int, provider) -> dict:
             object_id = val.get("id") or val.get("name") or key
             oid = _sanitize_id(object_id)
             pos = val.get("position", {})
-            x = int(max(0, min(100, pos.get("x", random.randint(10, 90)))))
-            y = int(max(0, min(100, pos.get("y", random.randint(20, 80)))))
+            x = int(max(0, min(100, pos.get("x", random.randint(10, 90)))))  # noqa: S311
+            y = int(max(0, min(100, pos.get("y", random.randint(20, 80)))))  # noqa: S311
             state = val.get("state", "on_stage")
             emoji = val.get("emoji", "✨")
             sanitized_objects[oid] = {
@@ -1338,7 +1396,7 @@ def determine_position_from_context(cmd: str) -> str:
     else:
         # Context-aware positioning: stay put if already in good position
         # or move to interesting area if idle
-        pos_hash = int(hashlib.md5(cmd.encode()).hexdigest()[:4], 16)
+        pos_hash = abs(hash(cmd))
         x = 30 + (pos_hash % 40)  # Random between 30-70%
         y = 60 + (pos_hash % 20)  # Random between 60-80%
         return f"[aria:position:{x}:{y}]"
@@ -1837,7 +1895,12 @@ def execute_aria_action(action: dict) -> dict:
 
 
 def action_to_tags(action: dict) -> list[str]:
-    """Convert a structured action to Aria tag(s) without mutating stage state."""
+    """Convert a single structured action dict to the equivalent ``[aria:*]`` tag(s).
+
+    Unlike ``execute_aria_action``, this function is pure: it does not mutate
+    ``stage_state`` and is safe to call speculatively.  Returns an empty list
+    for unknown or malformed actions.
+    """
     action_type = action.get("action")
     if not action_type:
         return []
@@ -2024,6 +2087,18 @@ def tags_to_actions(tags: list[str]) -> list[dict]:
 
 
 class AriaRequestHandler(SimpleHTTPRequestHandler):
+    """HTTP request handler for the Aria Visual Command System.
+
+    Extends ``SimpleHTTPRequestHandler`` with:
+    - CORS headers on every response (``end_headers``).
+    - GET endpoints: ``/api/aria/state``, ``/api/aria/objects``,
+      ``/api/aria/schema``, ``/api/aria/presets``, ``/api/aria/health``.
+      Falls back to static file serving for everything else.
+    - POST endpoints: ``/api/aria/command`` (natural-language → tags/actions),
+      ``/api/aria/execute`` (structured action sequence), ``/api/aria/object``
+      (add/update/remove stage objects), ``/api/aria/world`` (world generation).
+    """
+
     def end_headers(self):
         # Add CORS headers
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -2581,7 +2656,7 @@ def main():
             probe_host = "127.0.0.1"
             state_url = f"http://{probe_host}:{port}/api/aria/state"
             try:
-                with urllib.request.urlopen(state_url, timeout=1.0) as resp:
+                with urllib.request.urlopen(state_url, timeout=1.0) as resp:  # noqa: S310 - localhost probe only
                     payload = json.loads(resp.read().decode("utf-8"))
                 if isinstance(payload, dict) and "aria" in payload and "objects" in payload:
                     print(

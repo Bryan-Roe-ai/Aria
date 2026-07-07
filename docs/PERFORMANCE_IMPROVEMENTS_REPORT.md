@@ -477,9 +477,9 @@ The codebase now follows modern Python best practices:
 
 ## References
 
-- Python Performance Tips: https://wiki.python.org/moin/PythonSpeed/PerformanceTips
-- Regex Compilation: https://docs.python.org/3/library/re.html#re.compile
-- Time Complexity: https://wiki.python.org/moin/TimeComplexity
+- Python Performance Tips: <https://wiki.python.org/moin/PythonSpeed/PerformanceTips>
+- Regex Compilation: <https://docs.python.org/3/library/re.html#re.compile>
+- Time Complexity: <https://wiki.python.org/moin/TimeComplexity>
 - Repository Memory: Performance optimization patterns (6 stored facts)
 - Previous Work: `docs/PERFORMANCE_IMPLEMENTATION_SUMMARY.md` (4.6x average speedup)
 

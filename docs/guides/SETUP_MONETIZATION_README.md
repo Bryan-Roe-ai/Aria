@@ -479,7 +479,7 @@ curl http://localhost:7071/api/ai/status
 - 📖 Documentation: See all `.md` files
 - 🐛 Issues: GitHub Issues
 - 💬 Discussions: GitHub Discussions
-- 📧 Email: support@aria-platform.com
+- 📧 Email: <support@aria-platform.com>
 
 ### Common Questions
 

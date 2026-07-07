@@ -48,7 +48,7 @@ graph LR
     B -->|Admin| F[Admin Dashboard]
 ```
 
-#### Flow Summary
+### Flow Summary
 
 1. **Discovery**: User visits monetization hub (`monetization-index.html`)
 2. **Try Platform**: Clicks "Try Aria"
@@ -175,9 +175,9 @@ python server.py
 python -m http.server 8000
 ```
 
-- Visit: http://localhost:8080/ (Aria character)
+- Visit: <http://localhost:8080/> (Aria character)
 - Navigate via the interface links
-- Test "Try Aria" flows on http://localhost:8000/monetization-index.html
+- Test "Try Aria" flows on <http://localhost:8000/monetization-index.html>
 
 ### Visual Verification
 
@@ -235,7 +235,7 @@ python -m http.server 8000
 
 - [ ] See documentation above
 - [ ] Open an issue on GitHub
-- [ ] support@aria-platform.com
+- [ ] <support@aria-platform.com>
 
 ---
 

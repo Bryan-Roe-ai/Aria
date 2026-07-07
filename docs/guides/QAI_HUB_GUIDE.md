@@ -2,7 +2,7 @@
 
 ## 🌌 Overview
 
-The **QAI Hub** (http://localhost:8000/) is the central command center that unifies all three QAI projects into a single, cohesive interface. It provides quick access to training dashboards, quantum ML pipelines, chat interfaces, and monitoring tools.
+The **QAI Hub** (<http://localhost:8000/>) is the central command center that unifies all three QAI projects into a single, cohesive interface. It provides quick access to training dashboards, quantum ML pipelines, chat interfaces, and monitoring tools.
 
 ---
 
@@ -18,7 +18,7 @@ python .\dashboard\serve.py
 # Press Ctrl+Shift+P → "Tasks: Run Task" → "func: host start"
 ```
 
-Server will start at **http://localhost:8000/**
+Server will start at **<http://localhost:8000/>**
 
 The root page (/) automatically redirects to **/hub.html** - your command center.
 
@@ -539,7 +539,7 @@ Update status in hub.html:
 
 ### Hub Not Loading
 
-**Symptom**: 404 or blank page at http://localhost:8000/
+**Symptom**: 404 or blank page at <http://localhost:8000/>
 
 **Fix**:
 
@@ -662,7 +662,7 @@ def get_custom_data(self):
 
 ### 1. Use Hub as Single Entry Point
 
-- Bookmark http://localhost:8000/ (not unified.html)
+- Bookmark <http://localhost:8000/> (not unified.html)
 - All navigation starts from hub
 - Consistent UX across systems
 

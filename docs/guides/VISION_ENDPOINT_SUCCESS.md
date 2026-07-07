@@ -100,6 +100,7 @@ numpy>=1.24.0      # Array operations
 3. Image loads, preview displays with thumbnail
 4. Vision API analyzes automatically in background
 5. Aria responds with expression analysis:
+
     ```
     🖼️ Image Analysis: smile.jpg
     Expression: happy (87.3% confidence)
@@ -110,6 +111,7 @@ numpy>=1.24.0      # Array operations
     - sad: 2.9%
     - angry: 1.7%
     ```
+
 6. User can clear and upload another image
 
 ## Technical Highlights

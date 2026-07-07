@@ -320,6 +320,7 @@ If MCP servers don't appear in Copilot Chat:
     ```
 
 2. **Test individual server**:
+
     ```bash
 
     ```
@@ -574,6 +575,7 @@ Edit `.vscode/settings.json` to route requests to specific models:
 
 1. Create MCP server script (Python, Node.js, etc.)
 2. Add to `.vscode/mcp.json`:
+
     ```json
     {
         "servers": {
