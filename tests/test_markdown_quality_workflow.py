@@ -18,13 +18,13 @@ def test_markdown_quality_workflow_selects_changed_markdown_targets() -> None:
     steps = workflow["jobs"]["markdownlint"]["steps"]
 
     checkout_step = next(step for step in steps if step["name"] == "Checkout")
-    assert checkout_step["with"]["fetch-depth"] == 0
+    assert int(checkout_step["with"]["fetch-depth"]) == 0
 
     select_step = next(step for step in steps if step["name"] == "Select markdown targets")
     lint_step = next(step for step in steps if step["name"] == "Lint Markdown files")
 
     assert "git diff --name-only --diff-filter=ACMR -z" in select_step["run"]
     assert 'git fetch --no-tags origin "$DEFAULT_BRANCH"' in select_step["run"]
-    assert 'No markdown files selected for linting.' in lint_step["run"]
+    assert "No Markdown files changed for this run" in lint_step["run"]
     assert 'markdownlint-cli2 "${args[@]}" "${markdown_files[@]}"' in lint_step["run"]
     assert "uses" not in lint_step, "Lint step should run only on selected markdown files, not the entire repo."
