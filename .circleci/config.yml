@@ -1,4 +1,4 @@
-version: "2.1"
+version: '2.1'
 
 executors:
   python311:
@@ -6,10 +6,10 @@ executors:
       - image: cimg/python:3.11
     resource_class: medium
     environment:
-      PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      PIP_NO_PYTHON_VERSION_WARNING: "1"
-      PYTHONDONTWRITEBYTECODE: "1"
-      PYTHONUNBUFFERED: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      PIP_NO_PYTHON_VERSION_WARNING: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONUNBUFFERED: '1'
 
 commands:
   restore-pip-cache:
@@ -103,11 +103,11 @@ jobs:
       - run:
           name: Run unit tests
           environment:
-            CI: "true"
-            AZURE_CLIENT_ID: ""
-            AZURE_TENANT_ID: ""
-            AZURE_CLIENT_SECRET: ""
-            OPENAI_API_KEY: ""
+            CI: 'true'
+            AZURE_CLIENT_ID: ''
+            AZURE_TENANT_ID: ''
+            AZURE_CLIENT_SECRET: ''
+            OPENAI_API_KEY: ''
           command: |
             mkdir -p data_out
             TEST_FILES=$(circleci tests glob "tests/**/*.py" \
