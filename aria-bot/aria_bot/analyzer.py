@@ -44,7 +44,7 @@ class Finding:
     path: Path
     detail: str = ""
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, str]:
         """Return a serializable representation of the finding."""
 
         return {
@@ -207,7 +207,11 @@ class Analyzer:
         results: list[Finding],
     ) -> str:
         lines = cursor.split("\n")
-        offending_lines = [index + 1 for index, line in enumerate(lines) if line != line.rstrip(" \t")]
+        offending_lines = [
+            index + 1
+            for index, line in enumerate(lines)
+            if line != line.rstrip(" \t")
+        ]
         if not offending_lines:
             return cursor
 
