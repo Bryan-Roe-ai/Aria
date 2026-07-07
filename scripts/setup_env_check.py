@@ -158,8 +158,8 @@ def check_local_services() -> bool:
         try:
             import urllib.request
 
-            request = urllib.request.Request(url, headers={"User-Agent": "setup-check"})
-            with urllib.request.urlopen(request, timeout=1):
+            request = urllib.request.Request(url, headers={"User-Agent": "setup-check"})  # noqa: S310
+            with urllib.request.urlopen(request, timeout=1):  # noqa: S310
                 print_ok(f"{name} is running on port {port}")
         except Exception:
             print_warning(f"{name} not accessible on port {port} (not running)")
@@ -238,9 +238,9 @@ def check_ollama_models() -> bool:
         import urllib.request
 
         url = "http://127.0.0.1:11434/api/tags"
-        request = urllib.request.Request(url, headers={"User-Agent": "setup-check"})
+        request = urllib.request.Request(url, headers={"User-Agent": "setup-check"})  # noqa: S310
 
-        with urllib.request.urlopen(request, timeout=2) as response:
+        with urllib.request.urlopen(request, timeout=2) as response:  # noqa: S310
             data = json_module.loads(response.read().decode())
             models = data.get("models", [])
 

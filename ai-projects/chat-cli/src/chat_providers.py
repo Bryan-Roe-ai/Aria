@@ -277,8 +277,8 @@ def _check_lmstudio_available(url: str) -> bool:
 
             base_url = url.removesuffix("/v1")
             models_endpoint_url = base_url + "/v1/models"
-            request = urllib.request.Request(models_endpoint_url, headers={"User-Agent": "QAI"})
-            urllib.request.urlopen(request, timeout=1)
+            request = urllib.request.Request(models_endpoint_url, headers={"User-Agent": "QAI"})  # noqa: S310
+            urllib.request.urlopen(request, timeout=1)  # noqa: S310 - configurable local endpoint
             return True
         except Exception:
             return False
@@ -1016,7 +1016,7 @@ class LMStudioProvider(BaseChatProvider):
         if lmstudio_api_key:
             headers["Authorization"] = f"Bearer {lmstudio_api_key}"
 
-        req = urllib.request.Request(
+        req = urllib.request.Request(  # noqa: S310 - URL from configurable local endpoint
             self._chat_completions_url(),
             data=json.dumps(payload).encode("utf-8"),
             headers=headers,
@@ -1558,8 +1558,8 @@ def _check_lm_studio_available(server_url: str) -> bool:
         headers = {"User-Agent": "QAI"}
         if lmstudio_api_key:
             headers["Authorization"] = f"Bearer {lmstudio_api_key}"
-        request = urllib.request.Request(models_endpoint_url, headers=headers)
-        urllib.request.urlopen(request, timeout=healthcheck_timeout)
+        request = urllib.request.Request(models_endpoint_url, headers=headers)  # noqa: S310
+        urllib.request.urlopen(request, timeout=healthcheck_timeout)  # noqa: S310 - configurable local endpoint
         is_available = True
     except urllib.error.HTTPError as exc:
         # Endpoint is reachable but auth failed: count as available only when
@@ -1612,8 +1612,8 @@ def _check_ollama_available(server_url: str) -> bool:
         base_url = server_url.removesuffix("/v1")
         # Ollama uses /api/tags to list models
         tags_endpoint_url = base_url + "/api/tags"
-        request = urllib.request.Request(tags_endpoint_url, headers={"User-Agent": "QAI"})
-        urllib.request.urlopen(request, timeout=1)
+        request = urllib.request.Request(tags_endpoint_url, headers={"User-Agent": "QAI"})  # noqa: S310
+        urllib.request.urlopen(request, timeout=1)  # noqa: S310 - configurable local endpoint
         is_available = True
     except Exception:
         # Fallback: try OpenAI-compatible /v1/models endpoint
@@ -1623,8 +1623,8 @@ def _check_ollama_available(server_url: str) -> bool:
 
             base_url = server_url.removesuffix("/v1")
             models_endpoint_url = base_url + "/v1/models"
-            request = urllib.request.Request(models_endpoint_url, headers={"User-Agent": "QAI"})
-            urllib.request.urlopen(request, timeout=1)
+            request = urllib.request.Request(models_endpoint_url, headers={"User-Agent": "QAI"})  # noqa: S310
+            urllib.request.urlopen(request, timeout=1)  # noqa: S310 - configurable local endpoint
             is_available = True
         except Exception:
             is_available = False
