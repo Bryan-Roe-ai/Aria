@@ -37,10 +37,10 @@ This repository uses a default GitHub automation baseline for quality, safety, a
     - Bot-authored PRs can be automatically approved when `AUTO_MERGE_BOT_APPROVE=true`
       (repository variable) and `AUTO_MERGE_APPROVE_TOKEN` (PAT secret) are configured.
     - Required labels (create manually or via the CLI):
-      ```bash
-      gh label create auto-merge --color 0075ca --description "Squash-merge when all CI gates pass"
-      gh label create autofix    --color e4e669 --description "Auto-merge for automated fix PRs"
-      ```
+        ```bash
+        gh label create auto-merge --color 0075ca --description "Squash-merge when all CI gates pass"
+        gh label create autofix    --color e4e669 --description "Auto-merge for automated fix PRs"
+        ```
     - Human-authored PRs always require at least one human approval regardless of labels.
 
 9. **Dependabot auto-merge**
