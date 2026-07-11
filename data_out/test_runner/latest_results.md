@@ -1,3 +1,3 @@
-# Test Runner Results — 20260706T234119Z
+# Test Runner Results — 20260711T162032Z
 
-| ✅ | **unit** | passed=3057 failed=0 errors=0 skipped=88 | 66.52s |
+| ❌ | **unit** | passed=0 failed=0 errors=5 skipped=2 | 13.47s |
