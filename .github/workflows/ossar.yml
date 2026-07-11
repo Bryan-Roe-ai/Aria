@@ -49,7 +49,7 @@ jobs:
         uses: github/ossar-action@v1
         id: ossar
 
-        # Upload results to the Security tab
+      # Upload results to the Security tab
       - name: Upload OSSAR results
         uses: github/codeql-action/upload-sarif@v3
         with:
