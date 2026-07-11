@@ -246,8 +246,10 @@
 .github/workflows/auto-merge-on-ci.yml
 .github/workflows/auto-merge.yml
 .github/workflows/auto-validation.yml
+.github/workflows/autofix-maintenance.yml
 .github/workflows/autofix.yml
 .github/workflows/autonomous-evolver.yml
+.github/workflows/azure-webapps-node.yml
 .github/workflows/azureml-train.yml
 .github/workflows/broken-links.yml
 .github/workflows/ci-pipeline.yml
@@ -262,8 +264,11 @@
 .github/workflows/dependabot-automerge.yml
 .github/workflows/dependency-review.yml
 .github/workflows/devcontainer-ci.yml
+.github/workflows/docs.yml
 .github/workflows/e2e-tests.yml
 .github/workflows/experiment-runner.yml
+.github/workflows/github_workflows_autofix-pr.yml
+.github/workflows/github_workflows_validate-workflows.yml
 .github/workflows/gradio-focused-tests.yml
 .github/workflows/integration-contract-gate.yml
 .github/workflows/labeler.yml
