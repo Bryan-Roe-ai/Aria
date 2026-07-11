@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+import yaml
 
 
 def _read_copilot_setup_workflow() -> str:
@@ -44,18 +45,26 @@ def test_copilot_setup_workflow_has_selective_lint_logic() -> None:
 @pytest.mark.unit
 def test_copilot_setup_workflow_hardening_contract() -> None:
     content = _read_copilot_setup_workflow()
+    workflow = yaml.safe_load(content)
+    setup_steps = workflow["jobs"]["validate-setup"]["steps"]
+    harden_runner_step = next(step for step in setup_steps if step.get("name") == "Harden runner")
+    setup_node_step = next(step for step in setup_steps if step.get("name") == "Setup Node")
+    setup_python_step = next(step for step in setup_steps if step.get("name") == "Setup Python")
 
     assert "runs-on: ubuntu-24.04" in content
     assert "egress-policy: block" in content
-    assert "allowed-endpoints: >" in content
-    assert "github.com:443" in content
-    assert "api.github.com:443" in content
-    assert "objects.githubusercontent.com:443" in content
-    assert "pypi.org:443" in content
-    assert "files.pythonhosted.org:443" in content
-    assert "registry.npmjs.org:443" in content
+    assert harden_runner_step["with"]["allowed-endpoints"].split() == [
+        "github.com:443",
+        "api.github.com:443",
+        "objects.githubusercontent.com:443",
+        "pypi.org:443",
+        "files.pythonhosted.org:443",
+        "registry.npmjs.org:443",
+    ]
     assert "cache: 'npm'" in content
     assert "cache: 'pip'" in content
+    assert setup_node_step["with"]["cache-dependency-path"] == ".github/workflows/copilot-setup-steps.yml"
+    assert setup_python_step["with"]["cache-dependency-path"] == ".github/workflows/copilot-setup-steps.yml"
     assert "yamllint -c .github/yamllint.yml" in content
     assert "YAML_OUTCOME: ${{ steps.yamllint.outcome }}" in content
     assert "MD_OUTCOME: ${{ steps.mdlint.outcome }}" in content
@@ -77,10 +86,10 @@ def test_copilot_setup_yamllint_config_matches_expected_rules() -> None:
     config_path = Path(__file__).resolve().parents[1] / ".github" / "yamllint.yml"
     assert config_path.exists(), "Expected .github/yamllint.yml to exist"
 
-    assert (
-        config_path.read_text(encoding="utf-8")
-        == "extends: default\nrules:\n  line-length:\n    max: 140\n    level: warning\n"
-    )
+    assert yaml.safe_load(config_path.read_text(encoding="utf-8")) == {
+        "extends": "default",
+        "rules": {"line-length": {"max": 140, "level": "warning"}},
+    }
 
 
 @pytest.mark.unit
