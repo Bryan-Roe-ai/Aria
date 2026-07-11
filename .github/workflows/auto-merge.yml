@@ -21,14 +21,10 @@
 # Security       : least-privilege job permissions; no embedded credentials
 # =============================================================================
 
-name: Auto Merge
-
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
-  merge_group:
   check_run:
     types: [completed]
+  merge_group:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
   schedule:
@@ -45,6 +41,8 @@ on:
         description: "Maximum eligible PRs to process this run"
         required: false
         type: number
+
+      name: Auto Merge
 
 concurrency:
   (
@@ -189,7 +187,7 @@ jobs:
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.draft == false &&
-      vars[env.AUTO_MERGE_BOT_APPROVE_VAR] == 'true' &&
+      vars.AUTO_MERGE_BOT_APPROVE == 'true' &&
       (
         github.event.pull_request.user.login == 'github-actions[bot]' ||
         github.event.pull_request.user.login == 'copilot-swe-agent[bot]'
@@ -213,11 +211,11 @@ jobs:
 
       - env:
           BOT_APPROVE_ALLOWLIST: ${{ env.BOT_APPROVE_ALLOWLIST }}
-          HAS_APPROVE_TOKEN: ${{ secrets[env.AUTO_MERGE_APPROVE_TOKEN_SECRET] != '' }}
+          HAS_APPROVE_TOKEN: ${{ secrets.AUTO_MERGE_APPROVE_TOKEN != '' }}
         name: Approve if bot-authored PR
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
-          github-token: ${{ secrets[env.AUTO_MERGE_APPROVE_TOKEN_SECRET] || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.AUTO_MERGE_APPROVE_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             function latestReviewStates(reviews) {
               const latestByUser = new Map();
@@ -430,29 +428,6 @@ jobs:
               .addRaw(`\n\nMerged: ${mergedCount}`)
               .write();
     timeout-minutes: 15
-
-name: Auto Merge
-on: # yamllint disable-line rule:truthy
-  check_run:
-    types: [completed]
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
-  schedule:
-    - cron: "0 * * * *"
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        default: false
-        description: "Evaluate eligibility without merging"
-        required: false
-        type: boolean
-      max_prs:
-        default: "20"
-        description: "Maximum eligible PRs to process this run"
-        required: false
-        type: number
-
-            core.info(`Approved PR #${prNumber}.`);
 
   finish-open-prs:
     name: Finish Open PRs
